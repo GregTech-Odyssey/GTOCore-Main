@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(WorkableMultiblockMachine.class)
-public abstract class WorkableMultiblockMachineMixin extends MultiblockControllerMachine implements IWorkInSpaceMachine {
+public abstract class WorkableMultiblockMachineMixin extends MultiblockControllerMachine implements IWorkInSpaceMachine, IEnhancedMultiblockMachine {
 
     @Shadow(remap = false)
     @Final
