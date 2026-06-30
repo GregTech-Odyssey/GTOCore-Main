@@ -22,9 +22,10 @@ import org.jetbrains.annotations.Nullable;
 public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMachine {
 
     private int outputTier = 0;
-    private int hermeticCasingTier = 0;
     private boolean laser;
     private int base = 2;
+    private double efficiency = 1;
+    private int baseParallel = 64;
 
     public MagneticFluidGeneratorMachine(MetaMachineBlockEntity holder) {
         super(holder, GTORecipeDataKeys.GLASS_TIER);
@@ -45,28 +46,34 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        hermeticCasingTier = getCasingTier(GTORecipeDataKeys.HERMETIC_CASING_TIER);
+        double hermeticCasingTier = getCasingTier(GTORecipeDataKeys.HERMETIC_CASING_TIER);
+        if (hermeticCasingTier > GTValues.LuV) efficiency = hermeticCasingTier / 4;
         int tier = getCasingTier(GTORecipeDataKeys.GLASS_TIER);
         if (tier < outputTier) outputTier = 0;
-        if (getSubFormedAmount() > 0) base = 4;
+        if (getSubFormedAmount() > 0) {
+            base = 4;
+            baseParallel = 256;
+            efficiency *= 2;
+        }
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        hermeticCasingTier = 0;
+        efficiency = 1;
         outputTier = 0;
         laser = false;
         base = 2;
+        baseParallel = 64;
     }
 
     @Nullable
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (outputTier < 1) return null;
-        recipe = ParallelLogic.accurateParallel(this, unit, recipe, laser ? (long) Math.pow(base, outputTier - 1) : 1);
+        recipe = ParallelLogic.accurateParallel(this, unit, recipe, baseParallel * (laser ? (long) Math.pow(base, outputTier - 1) : 1));
         if (recipe == null) return null;
-        if (hermeticCasingTier > GTValues.LuV) recipe.durationMultiplier((double) hermeticCasingTier / 4);
+        recipe.durationMultiplier(efficiency);
         return RecipeModifier.generatorOverclocking(this, unit, recipe);
     }
 }
