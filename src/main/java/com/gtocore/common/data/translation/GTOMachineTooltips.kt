@@ -1532,7 +1532,7 @@ object GTOMachineTooltips {
         important("只能处理MV及以下的配方" translatedTo "Can only process recipes of MV tier or lower")
 
         section("热管理机制" translatedTo "Heat Management")
-        info("需要 >400K 的温温度才能运行配方" translatedTo "Requires >400K Temperature to process recipes")
+        info("需要 >400K 的温度才能运行配方" translatedTo "Requires >400K Temperature to process recipes")
         info("运行配方会按1HU/t速度消耗底部热量，按0.5HU/t速度产生顶部热量" translatedTo "Processing recipes will consume bottom heat at a speed of 1HU/t and generate top heat at a speed of 0.5HU/t")
     }
 
