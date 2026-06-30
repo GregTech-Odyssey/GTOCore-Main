@@ -455,7 +455,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("mana_heater")
 
         section(ComponentSlang.RunningRequirements)
-        command("输入魔力加热" translatedTo "Input mana to heat")
+        command("使用魔力加热，热量仅从顶面输出" translatedTo "Uses mana to heat, heat only outputs from the top side")
         increase("如果输入§c火元素蒸汽§r，则加热速度翻5倍" translatedTo "If §cSalamander Vapor§r is input, the heating speed will be 5 times faster")
     }
 
@@ -846,7 +846,8 @@ object GTOMachineTooltips {
     val HeaterMachineTooltips = ComponentListSupplier {
         setTranslationPrefix("heater_machine")
 
-        section("通过燃烧对四周机器进行加热" translatedTo "Burning to heat up around machines")
+        section(ComponentSlang.RunningRequirements)
+        command("使用燃料加热，热量仅从顶面输出" translatedTo "Uses fuel to heat, heat only outputs from the top side")
         content("前方被阻挡后停止加热" translatedTo "Stop heating after front side is blocked.")
         error(("机器过热会" translatedTo "When machine is too hot, it will ") + ComponentSlang.Explosion)
         danger(ComponentSlang.BeAwareOfBurn)
@@ -865,7 +866,8 @@ object GTOMachineTooltips {
     val ElectricHeaterMachineTooltips = ComponentListSupplier {
         setTranslationPrefix("electric_heater_machine")
 
-        section("使用电力，热量仅从顶面输出" translatedTo "Uses electricity. Heat is output only from the top surface")
+        section(ComponentSlang.RunningRequirements)
+        command("使用电力加热，热量仅从顶面输出" translatedTo "Uses electricity to heat, heat only outputs from the top side")
         ok("此机器不会爆炸" translatedTo "This machine will not explode")
         danger(ComponentSlang.BeAwareOfBurn)
     }
