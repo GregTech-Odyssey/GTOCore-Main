@@ -4410,7 +4410,7 @@
   "gtocore.lang.primitive_distillation_tower.3.1540963040": "每层都可以不安装输出仓，但是对应层会没有产物",
   "gtocore.lang.primitive_distillation_tower.4.737969604": "只能处理MV及以下的配方",
   "gtocore.lang.primitive_distillation_tower.5.-428244877": "热管理机制",
-  "gtocore.lang.primitive_distillation_tower.6.1889162840": "需要 >400K 的温温度才能运行配方",
+  "gtocore.lang.primitive_distillation_tower.6.1889162840": "需要 >400K 的温度才能运行配方",
   "gtocore.lang.primitive_distillation_tower.7.716216444": "运行配方会按1HU/t速度消耗底部热量，按0.5HU/t速度产生顶部热量",
   "gtocore.lang.processing_plant.0.-1839287024": "董事长视察时目睹员工们手忙脚乱地切换机器，萌生了集成化想法",
   "gtocore.lang.processing_plant.1.-1146641894": "小机器电压应与能源仓匹配，§b双仓升压§r时能源仓电压+1级",
