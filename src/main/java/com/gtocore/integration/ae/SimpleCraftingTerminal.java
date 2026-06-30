@@ -1,7 +1,6 @@
 package com.gtocore.integration.ae;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.ae2.ExternalStorageCacheStrategy;
 import com.gtolib.api.blockentity.IDirectionCacheBlockEntity;
 
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
@@ -9,6 +8,8 @@ import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +17,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 import appeng.api.behaviors.ExternalStorageStrategy;
@@ -47,6 +49,7 @@ import appeng.me.storage.MEInventoryHandler;
 import appeng.me.storage.NullInventory;
 import appeng.menu.me.items.CraftingTermMenu;
 import appeng.parts.PartModel;
+import appeng.parts.automation.StackWorldBehaviors;
 import appeng.parts.reporting.AbstractTerminalPart;
 import appeng.util.inv.AppEngInternalInventory;
 
@@ -68,7 +71,7 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
 
     private final AppEngInternalInventory craftingGrid = new AppEngInternalInventory(this, 9);
 
-    private final StorageBusInventory handler = new StorageBusInventory(NullInventory.of());
+    private final MEInventoryHandler handler = new MEInventoryHandler(NullInventory.of());
     @Nullable
     private Map<AEKeyType, ExternalStorageStrategy> externalStorageStrategies;
     @Nullable
@@ -207,9 +210,10 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
 
     private Map<AEKeyType, ExternalStorageStrategy> getExternalStorageStrategies() {
         if (externalStorageStrategies == null) {
-            var host = getHost().getBlockEntity();
-            var side = getSide();
-            this.externalStorageStrategies = ExternalStorageCacheStrategy.createExternalStorageStrategies(host, host.getBlockPos().relative(side), side, side.getOpposite());
+            BlockEntity self = this.getHost().getBlockEntity();
+            BlockPos fromPos = self.getBlockPos().relative(this.getSide());
+            Direction fromSide = this.getSide().getOpposite();
+            this.externalStorageStrategies = StackWorldBehaviors.createExternalStorageStrategies((ServerLevel) this.getLevel(), fromPos, fromSide);
         }
         return externalStorageStrategies;
     }
@@ -261,23 +265,6 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
         storageMounts.mount(this.handler, 1);
-    }
-
-    private static class StorageBusInventory extends MEInventoryHandler {
-
-        StorageBusInventory(MEStorage inventory) {
-            super(inventory);
-        }
-
-        @Override
-        protected MEStorage getDelegate() {
-            return super.getDelegate();
-        }
-
-        @Override
-        protected void setDelegate(MEStorage delegate) {
-            super.setDelegate(delegate);
-        }
     }
 
     /* PowerStorage */

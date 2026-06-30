@@ -38,6 +38,7 @@ import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.mojang.datafixers.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -137,6 +138,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     public void mountInventories(IStorageMounts storageMounts) {
         if (uuid == null) return;
         storageMounts.mount(this, (int) current);
+    }
+
+    @Override
+    public Object getStorageOwner() {
+        return new Pair<>(this.getClass(), uuid);
     }
 
     @Override
