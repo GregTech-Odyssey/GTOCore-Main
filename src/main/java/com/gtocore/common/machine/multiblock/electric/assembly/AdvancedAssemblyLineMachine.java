@@ -4,7 +4,6 @@ import com.gtocore.common.machine.multiblock.part.HugeBusPartMachine;
 import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
-import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
@@ -16,7 +15,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
@@ -30,7 +28,6 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -42,14 +39,6 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
 
     public AdvancedAssemblyLineMachine(MetaMachineBlockEntity holder) {
         super(holder);
-    }
-
-    @Nullable
-    @Override
-    public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        recipe = GTORecipeModifiers.parallel(this, unit, recipe);
-        if (recipe == null) return null;
-        return RecipeModifier.laserLossOverclocking(this, unit, recipe);
     }
 
     /**

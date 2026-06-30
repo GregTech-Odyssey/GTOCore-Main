@@ -69,6 +69,11 @@ public final class MEManaInterface extends MetaMachine implements
     }
 
     @Override
+    public Object getStorageOwner() {
+        return this.wirelessManaContainerCache;
+    }
+
+    @Override
     public IManagedGridNode getMainNode() {
         return nodeHolder.getMainNode();
     }

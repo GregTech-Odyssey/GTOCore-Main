@@ -39,7 +39,6 @@ import appeng.capabilities.Capabilities;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datasream.data.Data;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
@@ -54,7 +53,6 @@ import java.util.function.Supplier;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
 
-@Slf4j
 public final class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, IDropSaveMachine, IWailaDisplayProvider {
 
     public static final int MIN_DEPTH = 2;

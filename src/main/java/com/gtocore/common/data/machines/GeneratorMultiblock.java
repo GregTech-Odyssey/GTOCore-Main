@@ -113,7 +113,7 @@ public final class GeneratorMultiblock {
                             .or(abilities(MAINTENANCE).setExactLimit(1))
                             .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
                             .or(abilities(EXPORT_FLUIDS).setMaxGlobalLimited(1)))
-                    .where(' ', any())
+                    .where(' ', GTOPredicates.hermeticCasing())
                     .build())
             .addSubPattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("  EEEEEEEEE  ", "   EEEEEEE   ", "  AAAFFFAAA  ", "     FFF     ", "  AAAFFFAAA  ", "     A A     ", "     A A     ", "     A A     ", "             ", "             ")

@@ -413,9 +413,9 @@ public final class MultiBlockA {
                 if (r.definition.recipeType == GTORecipeTypes.RANDOM_ORE_RECIPES) {
                     r = ParallelLogic.accurateParallel(m, u, r, 1L << ((((ElectricMultiblockMachine) m).getTier() - GTValues.ZPM) << 1));
                     if (r == null) return null;
-                    return RecipeModifier.overclocking(m, u, r);
+                    return GTORecipeModifiers.UPGRADE_OVERCLOCK.applyModifier(m, u, r);
                 }
-                return RecipeModifier.overclocking(m, u, r);
+                return GTORecipeModifiers.UPGRADE_OVERCLOCK.applyModifier(m, u, r);
             })
             .block(GTBlocks.CASING_TUNGSTENSTEEL_ROBUST)
             .pattern(definition -> MultiBlockFileReader.start(definition)
@@ -569,7 +569,7 @@ public final class MultiBlockA {
             .lossyOCTooltips()
             .glassParallelTooltips()
             .laserTooltips()
-            .recipeModifiers(GTORecipeModifiers.PARALLEL, RecipeModifier::laserLossOverclocking)
+            .recipeModifiers(GTORecipeModifiers.POWER_AMPLIFIER, GTORecipeModifiers.PARALLEL, RecipeModifier::laserLossOverclocking)
             .block(GTOBlocks.OXIDATION_RESISTANT_HASTELLOY_N_MECHANICAL_CASING)
             .pattern(definition -> MultiBlockFileReader.start(definition)
                     .where('a', controller(definition))

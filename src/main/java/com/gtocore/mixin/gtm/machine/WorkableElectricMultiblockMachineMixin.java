@@ -52,7 +52,7 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     private int gtolib$ocLimit;
 
     @Unique
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "VOID_NONE")
     private VoidingMode gtocore$voidingMode = VoidingMode.VOID_NONE;
 
     @Shadow(remap = false)

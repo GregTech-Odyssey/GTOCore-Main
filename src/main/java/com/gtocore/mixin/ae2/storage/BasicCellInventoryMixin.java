@@ -81,9 +81,6 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
     private boolean hasVoidUpgrade;
 
     @Shadow(remap = false)
-    public abstract boolean isPreformatted();
-
-    @Shadow(remap = false)
     @Final
     private IPartitionList partitionList;
 

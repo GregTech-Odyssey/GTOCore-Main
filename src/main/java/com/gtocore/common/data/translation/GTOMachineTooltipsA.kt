@@ -13,6 +13,7 @@ import com.gtocore.common.data.translation.ComponentSlang.RunningRequirements
 import net.minecraft.network.chat.Component
 
 import appeng.api.config.PowerUnits
+import com.gregtechceu.gtceu.api.GTValues
 import com.gregtechceu.gtceu.config.ConfigHolder
 
 object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
@@ -301,6 +302,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         command("实际产出由等离子热值决定" translatedTo "Actual output is determined by plasma heat value")
 
         section(EfficiencyBonus)
+        increase("如果密封外壳等级大于LuV，则提升效率 x 密封外壳等级/4" translatedTo "If the hermetic casing tier is greater than LuV, the efficiency is increased by x (hermetic casing tier) / 4")
         increase("如果使用激光仓，则提升发电量 x 2^等级" translatedTo "If a laser hatch is used, power generation is increased by x 2^tier")
 
         section(AfterModuleInstallation)

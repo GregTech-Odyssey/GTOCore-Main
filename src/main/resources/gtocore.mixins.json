@@ -27,6 +27,7 @@
     "ae2.screen.PatternAccessTermScreenMixin",
     "ae2.screen.PatternProviderScreenMixin",
     "ae2.search.RepoSearchMixin",
+    "ftbxmodcompat.WrappedQuestCacheMixin",
     "gtm.renderer.TagPrefixItemRendererMixin",
     "inventoryessentials.ClientOnlyInventoryControlsMixin",
     "mc.GameRendererMixin",
@@ -36,7 +37,6 @@
     "mc.client.ClientPacketListenerMixin",
     "mc.client.LevelRendererMixin",
     "merequester.NumberFieldMixin",
-    "ftbxmodcompat.WrappedQuestCacheMixin",
     "sodium.SodiumWorldRendererMixin"
   ],
   "mixins": [
@@ -181,6 +181,7 @@
     "gtm.machine.MetaMachineMixin",
     "gtm.machine.MufflerPartMachineMixin",
     "gtm.machine.MultiblockMachineDefinitionMixin",
+    "gtm.machine.PowerSubstationMachineMixin",
     "gtm.machine.SimpleGeneratorMachineMixin",
     "gtm.machine.SimpleTieredMachineMixin",
     "gtm.machine.WorkableElectricMultiblockMachineMixin",

@@ -57,6 +57,7 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
         super(holder);
         this.nodeHolder = new GridNodeHolder(this);
         this.updateSubs = new ConditionalSubscriptionHandler(this, this::updateTick, 20, this::isWorkingEnabled);
+        manaContainer.setAcceptDistributor(false);
     }
 
     @Override

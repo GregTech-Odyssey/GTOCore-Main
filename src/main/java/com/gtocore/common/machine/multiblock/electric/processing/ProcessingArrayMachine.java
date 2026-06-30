@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 
@@ -87,7 +86,7 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
         if (!inventory.getStackInSlot(0).isEmpty()) {
             recipe = ParallelLogic.accurateParallel(this, unit, recipe, getMaxParallel());
             if (recipe == null) return null;
-            return RecipeModifier.laserLossOverclocking(this, unit, recipe);
+            return super.getRealRecipe(unit, recipe);
         }
         return null;
     }

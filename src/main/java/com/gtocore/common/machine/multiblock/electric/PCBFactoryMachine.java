@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -261,7 +260,7 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
         }
         recipe = GTORecipeModifiers.parallel(this, unit, recipe);
         if (recipe == null) return null;
-        return RecipeModifier.overclocking(this, unit, recipe);
+        return super.getRealRecipe(unit, recipe);
     }
 
     @Override

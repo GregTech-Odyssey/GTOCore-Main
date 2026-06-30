@@ -1,5 +1,6 @@
 package com.gtocore.mixin.ae2.storage;
 
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.gtocore.common.machine.multiblock.part.ae.StorageAccessPartMachine;
 
 import appeng.api.config.Actionable;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Set;
 
 @Mixin(NetworkStorage.class)
 public abstract class NetworkStorageMixin {
@@ -59,11 +61,11 @@ public abstract class NetworkStorageMixin {
             }
         } else {
             var owner = inventory.getStorageOwner();
-            for (var inv : gtolib$inventory) {
-                if (inv.obj.getStorageOwner() == owner) {
-                    return;
-                }
-            }
+         for (var  inv : gtolib$inventory) {
+             if (inv.obj.getStorageOwner().equals(owner)) {
+                 return;
+             }
+         }
         }
         gtolib$inventory.add(new IntObjectHolder<>(priority, inventory));
         gtolib$inventory.sort(IntObjectHolder.PRIORITY_SORTER);
