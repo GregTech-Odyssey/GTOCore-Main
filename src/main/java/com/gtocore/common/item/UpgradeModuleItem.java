@@ -31,6 +31,8 @@ public final class UpgradeModuleItem extends Item implements GTOTooltipComponent
 
     @RegisterLanguage(cn = "需要10级经验", en = "Requires 10 levels of experience")
     public static final String experience_not_enough = "gtocore.machine.upgrade.experience_not_enough";
+    @RegisterLanguage(cn = "该方块不可安装升级", en = "this block cannot be upgraded")
+    public static final String not_machine = "gtocore.machine.upgrade.not_machine";
 
     static {
         if (GTCEu.isDataGen()) {
@@ -77,6 +79,9 @@ public final class UpgradeModuleItem extends Item implements GTOTooltipComponent
                         player.setItemInHand(context.getHand(), item.copyWithCount(item.getCount() - 1));
                         return InteractionResult.CONSUME;
                     }
+                } else {
+                    player.sendSystemMessage(Component.translatable(not_machine));
+                    return InteractionResult.PASS;
                 }
             } else {
                 player.sendSystemMessage(Component.translatable(experience_not_enough));

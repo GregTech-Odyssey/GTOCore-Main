@@ -5660,6 +5660,7 @@
   "gtocore.machine.ulv_unpacker.tooltip": "§7Crude Unpacking",
   "gtocore.machine.ulv_wiremill.tooltip": "§7Simple Wire Production",
   "gtocore.machine.upgrade.experience_not_enough": "Requires 10 levels of experience",
+  "gtocore.machine.upgrade.not_machine": "this block cannot be upgraded",
   "gtocore.machine.uv_arc_generator.tooltip": "§7Artificial Lightning Storm",
   "gtocore.machine.uv_cluster.tooltip": "§7Atomic Deposition",
   "gtocore.machine.uv_dehydrator.tooltip": "§7Absolute Dry Zone",

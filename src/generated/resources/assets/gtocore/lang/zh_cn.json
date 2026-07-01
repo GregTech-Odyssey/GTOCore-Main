@@ -5788,6 +5788,7 @@
   "gtocore.machine.ulv_unpacker.tooltip": "§7粗糙地拆开",
   "gtocore.machine.ulv_wiremill.tooltip": "§7简单地生产导线",
   "gtocore.machine.upgrade.experience_not_enough": "需要10级经验",
+  "gtocore.machine.upgrade.not_machine": "该方块不可安装升级",
   "gtocore.machine.uv_arc_generator.tooltip": "§7人工闪电风暴",
   "gtocore.machine.uv_cluster.tooltip": "§7原子级沉积",
   "gtocore.machine.uv_dehydrator.tooltip": "§7绝对干燥领域",
