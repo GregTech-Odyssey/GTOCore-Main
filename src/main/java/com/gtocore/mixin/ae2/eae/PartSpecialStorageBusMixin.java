@@ -17,16 +17,9 @@ import appeng.parts.automation.UpgradeablePart;
 import appeng.util.Platform;
 
 import com.glodblock.github.extendedae.common.parts.base.PartSpecialStorageBus;
-import lombok.Setter;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PartSpecialStorageBus.class)
 public abstract class PartSpecialStorageBusMixin extends UpgradeablePart {
@@ -34,9 +27,6 @@ public abstract class PartSpecialStorageBusMixin extends UpgradeablePart {
     @Shadow(remap = false)
     @Final
     protected PartSpecialStorageBus.StorageBusInventory handler;
-
-    @Shadow(remap = false)
-    protected abstract void remountStorage();
 
     @Shadow(remap = false)
     @Final
@@ -52,39 +42,42 @@ public abstract class PartSpecialStorageBusMixin extends UpgradeablePart {
         super(partItem);
     }
 
-    @Inject(method = "<init>", at = @At("TAIL"), remap = false)
-    private void init(IPartItem partItem, CallbackInfo ci) {
-        ((IStorageBusInventory) handler).setListener(this::remountStorage);
-    }
-
     @Redirect(method = "updateTarget", at = @At(value = "INVOKE", target = "Lappeng/util/Platform;areBlockEntitiesTicking(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z"), remap = false)
     private boolean areBlockEntitiesTicking(Level level, BlockPos pos) {
-        ((IStorageBusInventory) handler).setIdentity(null);
+        ((IStorageBusInventory) handler).gtocore$setIdentity(null);
         var host = getHost().getBlockEntity();
         if (host instanceof IDirectionCacheBlockEntity cacheBlockEntity) {
             var cache = cacheBlockEntity.gtolib$getDirectionCache();
             if (cache == null) return false;
             var n = cache.getAdjacentBlockEntity(level, host.getBlockPos(), getSide());
             if (n == null || StorageBusBlacklist.LIST.contains(n.getClass())) return false;
-            ((IStorageBusInventory) handler).setIdentity(n);
+            ((IStorageBusInventory) handler).gtocore$setIdentity(n);
             return Platform.areBlockEntitiesTicking(level, pos);
         }
         return false;
     }
 
+    /**
+     * @author
+     * @reason
+     */
     @Overwrite(remap = false)
     protected void checkStorageBusOnInterface() {}
 
+    /**
+     * @author
+     * @reason
+     */
     @Overwrite(remap = false)
     public void onNeighborChanged(BlockGetter level, BlockPos pos, BlockPos neighbor) {
         if (pos.relative(getSide()).equals(neighbor)) {
             var te = adjacentStorageAccessor.getBlockEntity();
             if (te == null) {
-                ((IStorageBusInventory) handler).setIdentity(null);
+                ((IStorageBusInventory) handler).gtocore$setIdentity(null);
                 // In case the TE was destroyed, we have to update the target handler immediately.
                 this.updateTarget(false);
             } else {
-                ((IStorageBusInventory) handler).setIdentity(te);
+                ((IStorageBusInventory) handler).gtocore$setIdentity(te);
                 this.scheduleUpdate();
             }
         }
@@ -94,47 +87,28 @@ public abstract class PartSpecialStorageBusMixin extends UpgradeablePart {
     public void removeFromWorld() {
         super.removeFromWorld();
         handler.onUnmount(null);
-        ((IStorageBusInventory) handler).setIdentity(null);
+        ((IStorageBusInventory) handler).gtocore$setIdentity(null);
     }
 
     @Mixin(PartSpecialStorageBus.StorageBusInventory.class)
     public static class StorageBusInventoryMixin extends MEInventoryHandler implements IStorageBusInventory {
 
-        @Nullable
-        private Runnable listenerDelete;
-        @Nullable
-        private Runnable parentListenerDelete;
-        @Setter
-        private Runnable listener;
-        @Setter
-        private Object identity;
+        @Unique
+        private Object gtocore$identity;
 
         public StorageBusInventoryMixin(MEStorage inventory) {
             super(inventory);
         }
 
         @Override
+        public void gtocore$setIdentity(Object identity) {
+            this.gtocore$identity = identity;
+        }
+
+        @Override
         public Object getResourceIdentity() {
             var identity = super.getResourceIdentity();
-            return identity != null ? identity : this.identity;
-        }
-
-        @Override
-        public void onMount(MEStorage parent) {
-            listenerDelete = this.addMountListener(listener);
-            parentListenerDelete = parent.addMountListener(listener);
-        }
-
-        @Override
-        public void onUnmount(MEStorage parent) {
-            if (listenerDelete != null) {
-                listenerDelete.run();
-                listenerDelete = null;
-            }
-            if (parentListenerDelete != null) {
-                parentListenerDelete.run();
-                parentListenerDelete = null;
-            }
+            return identity != null ? identity : this.gtocore$identity;
         }
     }
 }
