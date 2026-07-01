@@ -129,6 +129,11 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     }
 
     @Override
+    public Object getResourceIdentity() {
+        return this;
+    }
+
+    @Override
     @Nullable
     public ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return isFormed ? itemStackHandler : null;

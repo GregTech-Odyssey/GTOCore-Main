@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -115,6 +116,12 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
     public boolean onPartActivate(Player player, InteractionHand hand, Vec3 pos) {
         updateTarget();
         return super.onPartActivate(player, hand, pos);
+    }
+
+    @Override
+    public final void onNeighborChanged(BlockGetter level, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChanged(level, pos, neighbor);
+        updateTarget();
     }
 
     @Override

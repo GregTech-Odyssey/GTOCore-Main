@@ -53,15 +53,17 @@ public final class MEStorageHatch extends MultiblockPartMachine {
 
     @Override
     public @Nullable <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        if (cap == Capabilities.STORAGE) {
-            if (side == null || side == getFrontFacing()) {
-                return capabilityStorage.cast();
+        if (capabilityStorage.isPresent()) {
+            if (cap == Capabilities.STORAGE) {
+                if (side == null || side == getFrontFacing()) {
+                    return capabilityStorage.cast();
+                }
+            } else if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
+                if (side == null || side == getFrontFacing()) {
+                    return capabilityMana.cast();
+                }
+                return LazyOptional.empty();
             }
-        } else if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
-            if (side == null || side == getFrontFacing()) {
-                return capabilityMana.cast();
-            }
-            return LazyOptional.empty();
         }
         return null;
     }

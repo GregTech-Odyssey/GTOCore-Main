@@ -38,7 +38,6 @@ import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.mojang.datafixers.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -141,11 +140,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     }
 
     @Override
-    public Object getStorageOwner() {
-        return new Pair<>(this.getClass(), uuid);
-    }
-
-    @Override
     public Component getDescription() {
         return getDefinition().asItem().getDescription();
     }
@@ -171,6 +165,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         private LONG(MetaMachineBlockEntity holder) {
             super(holder);
+        }
+
+        @Override
+        public Object getResourceIdentity() {
+            return getCellStorage();
         }
 
         @Override
@@ -445,6 +444,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         private Big(MetaMachineBlockEntity holder) {
             super(holder);
+        }
+
+        @Override
+        public Object getResourceIdentity() {
+            return getCellStorage();
         }
 
         @Override
