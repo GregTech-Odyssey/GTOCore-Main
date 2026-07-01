@@ -49,6 +49,8 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         this.item = new ItemHandlerProxyTrait(this, IO.BOTH);
         this.fluid = new FluidTankProxyTrait(this, IO.BOTH);
         this.manaHandler = new AEManaKeyHandler();
+        this.item.setCapabilityValidator(d -> capabilityStorage.isPresent());
+        this.fluid.setCapabilityValidator(d -> capabilityStorage.isPresent());
     }
 
     @Override
