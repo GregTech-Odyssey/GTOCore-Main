@@ -456,6 +456,7 @@ public class SpaceMultiblock {
             .parallelizableTooltips()
             .eutMultiplierTooltips(0.8)
             .durationMultiplierTooltips(0.6)
+            .tooltips(GTOMachineTooltips.OrbitalSmeltingFacilityTooltips)
             .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
             .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.SPACE_SMELTING_RECIPES)

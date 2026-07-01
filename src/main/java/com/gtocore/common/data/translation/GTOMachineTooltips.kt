@@ -2373,6 +2373,14 @@ object GTOMachineTooltips {
     }
 
     @JvmField
+    val OrbitalSmeltingFacilityTooltips = ComponentListSupplier {
+        setTranslationPrefix("orbital_smelting_facility")
+
+        section(ComponentSlang.RunningRequirements)
+        important("仅接收带有无重力条件的电力高炉配方，普通电力高炉配方无法运行" translatedTo "Only accepts Electric Blast Furnace recipes with a zero-gravity condition; normal Electric Blast Furnace recipes cannot run here")
+    }
+
+    @JvmField
     val CoreSpaceStationModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("core_space_station_module")
         section("工业空间站太空舱种类" translatedTo "Types of Industrial Space Station Modules")
