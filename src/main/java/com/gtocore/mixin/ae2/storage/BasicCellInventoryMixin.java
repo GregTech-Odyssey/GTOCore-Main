@@ -274,8 +274,20 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
      */
     @Overwrite(remap = false)
     public void getAvailableStacks(KeyCounter out) {
-        var map = gtolib$getCellStoredMap();
-        out.addAll(map.size(), m -> map.fastForEach(m::insert));
+        var data = gtolib$getCellStorage();
+        if (data == CellDataStorage.EMPTY) return;
+        out.addAll(data.cache.getAvailableStacksCache());
+    }
+
+    /**
+     * @author .
+     * @reason .
+     */
+    @Overwrite(remap = false)
+    public KeyCounter getAvailableStacks() {
+        var data = gtolib$getCellStorage();
+        if (data == CellDataStorage.EMPTY) KeyCounter.empty();
+        return data.cache.getAvailableStacksCache();
     }
 
     /**

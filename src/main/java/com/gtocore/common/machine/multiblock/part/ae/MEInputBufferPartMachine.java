@@ -633,9 +633,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         @Override
         public void deserializeNBT(CompoundTag tag) {
             if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
-            if (tag.tags.get("inv") instanceof CompoundTag inv) {
-                notConsumableItem.storage.deserializeNBT(inv);
-            }
+            notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
             if (tag.tags.get("tank") instanceof ListTag tanks) {
                 for (int i = 0; i < tanks.size(); i++) {
                     var t = tanks.getCompound(i);

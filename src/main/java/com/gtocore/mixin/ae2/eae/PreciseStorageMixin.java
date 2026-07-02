@@ -8,10 +8,7 @@ import appeng.api.storage.MEStorage;
 import com.glodblock.github.extendedae.api.StorageMode;
 import com.glodblock.github.extendedae.common.parts.PartPreciseStorageBus;
 import com.glodblock.github.extendedae.common.parts.base.PartSpecialStorageBus;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 @Mixin(PartPreciseStorageBus.class)
 public abstract class PreciseStorageMixin implements IPreciseBus {
@@ -30,6 +27,8 @@ public abstract class PreciseStorageMixin implements IPreciseBus {
         @Shadow(remap = false)
         @Final
         PartPreciseStorageBus this$0;
+        @Unique
+        private KeyCounter gtocore$out;
 
         public PreciseInvMixin(MEStorage inventory) {
             super(inventory);
@@ -44,17 +43,39 @@ public abstract class PreciseStorageMixin implements IPreciseBus {
             var storageMode = ((IPreciseBus) this$0).gtocore$getStorageMode();
             if (storageMode == StorageMode.DEFAULT || storageMode == null) {
                 super.getAvailableStacks(out);
-                return;
-            }
-            var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
-            var current = new KeyCounter();
-            super.getAvailableStacks(current);
-            for (var entry : current) {
-                long value = entry.getLongValue();
-                long threshold = filter.getAmount(entry.getKey());
-                if (storageMode.test(value, threshold)) {
-                    out.add(entry.getKey(), value);
+            } else {
+                var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
+                for (var entry : this.cache.getAvailableStacksCache()) {
+                    long value = entry.getLongValue();
+                    long threshold = filter.getAmount(entry.getKey());
+                    if (storageMode.test(value, threshold)) {
+                        out.add(entry.getKey(), value);
+                    }
                 }
+            }
+        }
+
+        @Override
+        public KeyCounter getAvailableStacks() {
+            var storageMode = ((IPreciseBus) this$0).gtocore$getStorageMode();
+            if (storageMode == StorageMode.DEFAULT || storageMode == null) {
+                return this.cache.getAvailableStacksCache();
+            } else {
+                var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
+                var out = this.gtocore$out;
+                if (out == null) {
+                    this.gtocore$out = out = new KeyCounter();
+                } else {
+                    out.clear();
+                }
+                for (var entry : this.cache.getAvailableStacksCache()) {
+                    long value = entry.getLongValue();
+                    long threshold = filter.getAmount(entry.getKey());
+                    if (storageMode.test(value, threshold)) {
+                        out.add(entry.getKey(), value);
+                    }
+                }
+                return out;
             }
         }
     }

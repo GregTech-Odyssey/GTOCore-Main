@@ -275,24 +275,14 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         public void getAvailableStacks(KeyCounter out) {
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return;
-            var map = data.getStoredMap();
-            if (map == null) return;
-            out.addAll(map.size(), m -> map.fastForEach(m::insert));
+            out.addAll(data.cache.getAvailableStacksCache());
         }
 
         @Override
         public KeyCounter getAvailableStacks() {
             var data = getCellStorage();
-            var keyCounter = data.getKeyCounter();
-            if (keyCounter == null) {
-                keyCounter = new KeyCounter();
-                data.setKeyCounter(keyCounter);
-            } else {
-                keyCounter.clear();
-            }
-            getAvailableStacks(keyCounter);
-            keyCounter.removeEmptySubmaps();
-            return keyCounter;
+            if (data == CellDataStorage.EMPTY) KeyCounter.empty();
+            return data.cache.getAvailableStacksCache();
         }
     }
 
@@ -554,24 +544,14 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         public void getAvailableStacks(KeyCounter out) {
             var data = getCellStorage();
             if (data == BigCellDataStorage.EMPTY) return;
-            var map = data.getStoredMap();
-            if (map == null) return;
-            out.addAll(map.size(), m -> map.fastForEachLong(m::insert));
+            out.addAll(data.cache.getAvailableStacksCache());
         }
 
         @Override
         public KeyCounter getAvailableStacks() {
             var data = getCellStorage();
-            var keyCounter = data.getKeyCounter();
-            if (keyCounter == null) {
-                keyCounter = new KeyCounter();
-                data.setKeyCounter(keyCounter);
-            } else {
-                keyCounter.clear();
-            }
-            getAvailableStacks(keyCounter);
-            keyCounter.removeEmptySubmaps();
-            return keyCounter;
+            if (data == BigCellDataStorage.EMPTY) KeyCounter.empty();
+            return data.cache.getAvailableStacksCache();
         }
     }
 

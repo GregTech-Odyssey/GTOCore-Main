@@ -384,12 +384,12 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     @Override
     public void loadFromItem(CompoundTag tag) {
         super.loadFromItem(tag);
-        shareInventory.storage.deserializeNBT(tag.getCompound("si"));
+        shareInventory.storage.deserializeNBT(tag.get("si"));
         ListTag tanks = tag.getList("st", Tag.TAG_COMPOUND);
         for (int i = 0; i < tanks.size(); i++) {
             shareTank.getStorages()[i].deserializeNBT(tanks.getCompound(i));
         }
-        circuitInventorySimulated.storage.deserializeNBT(tag.getCompound("ci"));
+        circuitInventorySimulated.storage.deserializeNBT(tag.get("ci"));
     }
 
     @Override
@@ -746,9 +746,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
                     fluidInventory.set(stack, amount);
                 }
             }
-            if (tag.tags.get("inv") instanceof CompoundTag inv) {
-                shareInventory.storage.deserializeNBT(inv);
-            }
+            shareInventory.storage.deserializeNBT(tag.tags.get("inv"));
             if (tag.tags.get("tank") instanceof ListTag tanks) {
                 for (int i = 0; i < tanks.size(); i++) {
                     var t = tanks.getCompound(i);

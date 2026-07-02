@@ -480,7 +480,7 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
     }
 
     override fun loadFromItem(tag: CompoundTag) {
-        patternInventory.deserializeNBT(tag.getCompound("p"))
+        patternInventory.deserializeNBT(tag.get("p"))
         customName = tag.getString("n")
         val list = tag.getList("i", Tag.TAG_COMPOUND.toInt())
         for ((i, element) in internalInventory.withIndex()) {
