@@ -2,7 +2,6 @@ package com.gtocore.common.item;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeTypes;
-import com.gtocore.config.GTOConfig;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.DummyMachine;
@@ -97,78 +96,82 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
     @Override
     public InteractionResult onItemUseFirst(ItemStack itemStack, UseOnContext context) {
         if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown()) {
-            if (GTOConfig.INSTANCE.devMode.recipeCheck) {
-                Set<BiCache> cache = new OpenCacheHashSet<>();
-                for (GTRecipeType recipeType : GTRegistries.RECIPE_TYPES.values()) {
-                    if (recipeType == GTRecipeTypes.BREWING_RECIPES) continue;
-                    if (recipeType == GTRecipeTypes.SCANNER_RECIPES) continue;
-                    if (recipeType == GTORecipeTypes.LARGE_GAS_COLLECTOR_RECIPES) continue;
-                    var stringSetMap = new O2OOpenCacheHashMap<ResourceLocation, Set<String>>(recipeType.recipes.size());
-                    for (var recipe : recipeType.recipes.values()) {
-                        var id = recipe.id;
-                        var input = new OpenCacheHashSet<String>();
-                        if (!recipe.itemInputs.isEmpty()) {
-                            for (var content : recipe.itemInputs) {
-                                var ingredient = content.inner;
-                                Ingredient inner = ingredient.inner;
-                                a:
-                                for (Ingredient.Value value : inner.values) {
-                                    if (value instanceof Ingredient.ItemValue itemValue) {
-                                        Collection<ItemStack> stacks = itemValue.getItems();
-                                        if (stacks.isEmpty()) {
-                                            GTOCore.LOGGER.error("配方 {} 存在空物品输入", id);
-                                            continue;
-                                        }
-                                        for (ItemStack stack : stacks) {
-                                            if (stack.isEmpty()) continue;
-                                            if (stack.is(GTItems.PROGRAMMED_CIRCUIT.get())) {
-                                                input.add("c" + IntCircuitBehaviour.getCircuitConfiguration(stack));
-                                            } else {
-                                                String s = ItemUtils.getId(stack);
-                                                if (stack.getTag() != null) {
-                                                    s = s + stack.getTag();
-                                                }
-                                                input.add(s);
-                                            }
-                                            break a;
-                                        }
-                                    } else if (value instanceof Ingredient.TagValue tagValue) {
-                                        input.add(tagValue.tag.location().toString());
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (!recipe.fluidInputs.isEmpty()) {
-                            for (var content : recipe.fluidInputs) {
-                                FluidStack[] stacks = content.inner.getStacks();
-                                if (stacks.length == 0) {
-                                    GTOCore.LOGGER.error("配方 {} 存在空流体输入", id);
-                                    continue;
-                                }
-                                String s = FluidUtils.getId(stacks[0].getFluid());
-                                if (stacks[0].getTag() != null) {
-                                    s = s + stacks[0].getTag();
-                                }
-                                input.add(s);
-                            }
-                        }
-                        if (input.isEmpty()) continue;
-                        stringSetMap.put(id, input);
+            Set<BiCache> cache = new OpenCacheHashSet<>();
+            for (GTRecipeType recipeType : GTRegistries.RECIPE_TYPES.values()) {
+                if (recipeType == GTRecipeTypes.BREWING_RECIPES) continue;
+                if (recipeType == GTRecipeTypes.SCANNER_RECIPES) continue;
+                if (recipeType == GTORecipeTypes.LARGE_GAS_COLLECTOR_RECIPES) continue;
+                var recipes = new ArrayList<>(recipeType.recipes.values());
+                recipeType.getProxyRecipes().forEach((t) -> {
+                    if (t instanceof GTRecipeType type) {
+                        recipes.addAll(type.recipes.values());
                     }
-                    stringSetMap.forEach((id, set) -> {
-                        var map = new O2OOpenCacheHashMap<>(stringSetMap);
-                        map.remove(id);
-                        map.forEach((k, v) -> {
-                            var object = new BiCache(id, k);
-                            if (cache.contains(object)) return;
-                            if (set.containsAll(v)) {
-                                cache.add(object);
-                                GTOCore.LOGGER.error("\n{} 与 {} 冲突\n{}\n{}", id, k, set, v);
+                });
+                var stringSetMap = new O2OOpenCacheHashMap<ResourceLocation, Set<String>>(recipes.size());
+                for (var recipe : recipes) {
+                    var id = recipe.id;
+                    var input = new OpenCacheHashSet<String>();
+                    if (!recipe.itemInputs.isEmpty()) {
+                        for (var content : recipe.itemInputs) {
+                            var ingredient = content.inner;
+                            Ingredient inner = ingredient.inner;
+                            a:
+                            for (Ingredient.Value value : inner.values) {
+                                if (value instanceof Ingredient.ItemValue itemValue) {
+                                    Collection<ItemStack> stacks = itemValue.getItems();
+                                    if (stacks.isEmpty()) {
+                                        GTOCore.LOGGER.error("配方 {} 存在空物品输入", id);
+                                        continue;
+                                    }
+                                    for (ItemStack stack : stacks) {
+                                        if (stack.isEmpty()) continue;
+                                        if (stack.is(GTItems.PROGRAMMED_CIRCUIT.get())) {
+                                            input.add("c" + IntCircuitBehaviour.getCircuitConfiguration(stack));
+                                        } else {
+                                            String s = ItemUtils.getId(stack);
+                                            if (stack.getTag() != null) {
+                                                s = s + stack.getTag();
+                                            }
+                                            input.add(s);
+                                        }
+                                        break a;
+                                    }
+                                } else if (value instanceof Ingredient.TagValue tagValue) {
+                                    input.add(tagValue.tag.location().toString());
+                                    break;
+                                }
                             }
-                        });
-                    });
+                        }
+                    }
+                    if (!recipe.fluidInputs.isEmpty()) {
+                        for (var content : recipe.fluidInputs) {
+                            FluidStack[] stacks = content.inner.getStacks();
+                            if (stacks.length == 0) {
+                                GTOCore.LOGGER.error("配方 {} 存在空流体输入", id);
+                                continue;
+                            }
+                            String s = FluidUtils.getId(stacks[0].getFluid());
+                            if (stacks[0].getTag() != null) {
+                                s = s + stacks[0].getTag();
+                            }
+                            input.add(s);
+                        }
+                    }
+                    if (input.isEmpty()) continue;
+                    stringSetMap.put(id, input);
                 }
+                stringSetMap.forEach((id, set) -> {
+                    var map = new O2OOpenCacheHashMap<>(stringSetMap);
+                    map.remove(id);
+                    map.forEach((k, v) -> {
+                        var object = new BiCache(id, k);
+                        if (cache.contains(object)) return;
+                        if (set.containsAll(v)) {
+                            cache.add(object);
+                            GTOCore.LOGGER.error("\n{} 与 {} 冲突\n{}\n{}", id, k, set, v);
+                        }
+                    });
+                });
             }
             return InteractionResult.CONSUME;
         }
