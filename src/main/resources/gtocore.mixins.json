@@ -117,7 +117,6 @@
     "ae2.storage.CreativeCellInventoryMixin",
     "ae2.storage.InfinityCellInventoryMixin",
     "ae2.storage.InfinityCellMixin",
-    "ae2.storage.StorageServiceMixin",
     "ae2.wtlib.CraftingTerminalHandlerAccessor",
     "ae2.wtlib.ItemWTMixin",
     "ae2.wtlib.WirelessTerminalMenuHostMixin",

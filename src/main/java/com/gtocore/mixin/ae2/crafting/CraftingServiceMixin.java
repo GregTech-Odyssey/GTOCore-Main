@@ -126,7 +126,8 @@ public abstract class CraftingServiceMixin implements ITemporaryCraftableService
         if (level == null || simRequester == null) {
             throw new IllegalArgumentException("Invalid Crafting Job Request");
         }
-        return GTOUtils.ASYNC_SINGLE_THREAD_EXECUTOR.submit(() -> OptimizedCalculation.executeV2(grid, simRequester, what, amount, strategy));
+        var inventory = grid.getStorageService().getCachedInventory().copy();
+        return GTOUtils.ASYNC_SINGLE_THREAD_EXECUTOR.submit(() -> OptimizedCalculation.executeV2(grid, inventory, simRequester, what, amount, strategy));
     }
 
     /**
