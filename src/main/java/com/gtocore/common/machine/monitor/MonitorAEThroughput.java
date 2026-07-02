@@ -5,9 +5,8 @@ import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
 import com.gtocore.common.machine.multiblock.part.ae.widget.AEFluidConfigWidget;
 import com.gtocore.common.machine.multiblock.part.ae.widget.AEItemConfigWidget;
 
-import com.gtolib.api.ae2.IExpandedStorageService;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.PowerSubstationMachine;
 
 import net.minecraft.ChatFormatting;
@@ -75,6 +74,11 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
     }
 
     @Override
+    protected TickableSubscription subscribe(Runnable runnable) {
+        return this.subscribeServerTick(tickableSubscription, runnable, 40);
+    }
+
+    @Override
     public void syncInfoFromServer() {
         var time = (int) Objects.requireNonNull(getLevel(), "Not on the server side").getGameTime();
         if (lastUpdateTime == 0) {
@@ -97,7 +101,7 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
                 continue;
             }
             hasConfig = true;
-            long amount = IExpandedStorageService.of(grid.getStorageService()).getLazyKeyCounter().get(current);
+            long amount = grid.getStorageService().getCachedInventory().get(current);
             if (stats[i] == null) {
                 stats[i] = new EnergyStat(time);
                 stats[i].update(BigInteger.ZERO, time);

@@ -2377,7 +2377,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("orbital_smelting_facility")
 
         section(ComponentSlang.RunningRequirements)
-        important("仅接收带有无重力条件的电力高炉配方，普通电力高炉配方无法运行" translatedTo "Only accepts Electric Blast Furnace recipes with a zero-gravity condition; normal Electric Blast Furnace recipes cannot run here")
+        important("仅接收带有无重力条件的电力高炉和合金冶炼炉配方，普通配方无法运行" translatedTo "Only accepts electric blast furnace and alloy blast furnace recipes with a zero-gravity condition; normal recipes cannot run here")
     }
 
     @JvmField
