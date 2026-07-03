@@ -1,10 +1,13 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtolib.api.machine.trait.InaccessibleInfiniteTank;
+import com.gtolib.api.machine.trait.MEOutputFluidHandler;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 
@@ -17,6 +20,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import lombok.Getter;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -26,12 +30,34 @@ public class MEOutputHatchPartMachine extends StatusTrackedMEPartMachine {
 
     @SaveToDisk
     private final KeyStorage internalBuffer;
-    private final InaccessibleInfiniteTank tank;
+    private final MEOutputFluidHandler tank;
+
+    @Getter
+    @SaveToDisk(defaultValue = "10000")
+    private int priority = 10000;
 
     public MEOutputHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, IO.OUT);
         internalBuffer = new KeyStorage();
-        tank = new InaccessibleInfiniteTank(this, internalBuffer);
+        tank = new MEOutputFluidHandler(this, internalBuffer);
+    }
+
+    private void setPriority(int priority) {
+        this.priority = priority;
+        tank.setPriority(priority);
+        RecipeHandlerUnit.notify(this);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        tank.setPriority(priority);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
     }
 
     @Override

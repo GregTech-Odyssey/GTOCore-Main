@@ -279,11 +279,7 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
         out.addAll(data.cache.getAvailableStacksCache());
     }
 
-    /**
-     * @author .
-     * @reason .
-     */
-    @Overwrite(remap = false)
+    @Override
     public KeyCounter getAvailableStacks() {
         var data = gtolib$getCellStorage();
         if (data == CellDataStorage.EMPTY) KeyCounter.empty();

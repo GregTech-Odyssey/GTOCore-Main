@@ -27,8 +27,6 @@ public abstract class PreciseStorageMixin implements IPreciseBus {
         @Shadow(remap = false)
         @Final
         PartPreciseStorageBus this$0;
-        @Unique
-        private KeyCounter gtocore$out;
 
         public PreciseInvMixin(MEStorage inventory) {
             super(inventory);
@@ -44,38 +42,17 @@ public abstract class PreciseStorageMixin implements IPreciseBus {
             if (storageMode == StorageMode.DEFAULT || storageMode == null) {
                 super.getAvailableStacks(out);
             } else {
+                var cache = super.cache;
+                cache.clear();
+                super.getAvailableStacks(cache);
                 var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
-                for (var entry : this.cache.getAvailableStacksCache()) {
+                for (var entry : cache) {
                     long value = entry.getLongValue();
                     long threshold = filter.getAmount(entry.getKey());
                     if (storageMode.test(value, threshold)) {
                         out.add(entry.getKey(), value);
                     }
                 }
-            }
-        }
-
-        @Override
-        public KeyCounter getAvailableStacks() {
-            var storageMode = ((IPreciseBus) this$0).gtocore$getStorageMode();
-            if (storageMode == StorageMode.DEFAULT || storageMode == null) {
-                return this.cache.getAvailableStacksCache();
-            } else {
-                var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
-                var out = this.gtocore$out;
-                if (out == null) {
-                    this.gtocore$out = out = new KeyCounter();
-                } else {
-                    out.clear();
-                }
-                for (var entry : this.cache.getAvailableStacksCache()) {
-                    long value = entry.getLongValue();
-                    long threshold = filter.getAmount(entry.getKey());
-                    if (storageMode.test(value, threshold)) {
-                        out.add(entry.getKey(), value);
-                    }
-                }
-                return out;
             }
         }
     }

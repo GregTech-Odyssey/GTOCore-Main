@@ -6,12 +6,15 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.AEItemConfigWidget;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -35,6 +38,7 @@ import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Position;
+import lombok.Getter;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -50,6 +54,10 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
     @SaveToDisk
     protected final NotifiableItemStackHandler circuitInventory;
 
+    @Getter
+    @SaveToDisk(defaultValue = "0")
+    private int priority = 0;
+
     public MEInputBusPartMachine(MetaMachineBlockEntity holder) {
         super(holder, IO.IN);
         aeItemHandler = createInventory();
@@ -58,6 +66,26 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
             aeItemHandler.fastForEachItems((i, l) -> getConfiguredSetting().set(AEItemKey.of(i), l));
         });
         circuitInventory = CircuitHandler.create(this);
+    }
+
+    private void setPriority(int priority) {
+        this.priority = priority;
+        aeItemHandler.setPriority(priority);
+        circuitInventory.setPriority(priority);
+        RecipeHandlerUnit.notify(this);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        aeItemHandler.setPriority(priority);
+        circuitInventory.setPriority(priority);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
     }
 
     /////////////////////////////////

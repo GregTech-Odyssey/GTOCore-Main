@@ -31,6 +31,7 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
@@ -141,6 +142,10 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
 
     protected ConfiguratorPanel configuratorPanel;
 
+    @Getter
+    @SaveToDisk(defaultValue = "0")
+    private int priority = 0;
+
     MEPatternBufferPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
         super(holder, maxPatternCount);
         this.caches = new boolean[maxPatternCount];
@@ -148,6 +153,12 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         this.shareTank = new NotifiableNotConsumableFluidHandler(this, 9, 64000);
         this.circuitInventorySimulated = CircuitHandler.create(this);
         this.internalRecipeHandler = new InternalSlotRecipeHandler(this, getInternalInventory());
+    }
+
+    private void setPriority(int priority) {
+        this.priority = priority;
+        circuitInventorySimulated.setPriority(priority);
+        RecipeHandlerUnit.notify(this);
     }
 
     NotifiableNotConsumableItemHandler createShareInventory() {
@@ -222,12 +233,14 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             recipeType = null;
         }
         MultiMachineModeFancyConfigurator.verify(recipeTypes, recipeType, () -> recipeType = null);
+        circuitInventorySimulated.setPriority(priority);
     }
 
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
         sideTabs.attachSubTab(new MultiMachineModeFancyConfigurator(recipeTypes, recipeType, this::setRecipeType));
+        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
     }
 
     @Override

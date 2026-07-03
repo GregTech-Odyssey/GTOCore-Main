@@ -8,7 +8,7 @@ import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
 import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.IGTOMufflerMachine;
-import com.gtolib.api.machine.trait.InaccessibleInfiniteHandler;
+import com.gtolib.api.machine.trait.MEOutputItemHandler;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -55,7 +55,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     private final NotifiableItemStackHandler mufflerHatchInv;
     @SaveToDisk
     private final NotifiableItemStackHandler amplifierInv;
-    private final InaccessibleInfiniteHandler handler;
+    private final MEOutputItemHandler handler;
 
     @SyncToClient
     private int recoveryChance = 0;
@@ -83,7 +83,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     public MEMufflerHatchPartMachine(@NotNull MetaMachineBlockEntity holder) {
         super(holder, IO.NONE);
         internalBuffer = new KeyStorage();
-        handler = new InaccessibleInfiniteHandler(this, internalBuffer);
+        handler = new MEOutputItemHandler(this, internalBuffer);
         mufflerHatchInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
         mufflerHatchInv.setFilter(stack -> Wrapper.MUFFLER_HATCH.containsKey(stack.getItem()));
         mufflerHatchInv.addChangedListener(this::onMufflerChange);

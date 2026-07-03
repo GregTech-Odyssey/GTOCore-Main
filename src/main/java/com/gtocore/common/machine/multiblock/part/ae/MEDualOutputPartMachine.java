@@ -1,11 +1,14 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtolib.api.machine.trait.InaccessibleInfiniteHandler;
-import com.gtolib.api.machine.trait.InaccessibleInfiniteTank;
+import com.gtolib.api.machine.trait.MEOutputFluidHandler;
+import com.gtolib.api.machine.trait.MEOutputItemHandler;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 
@@ -19,6 +22,7 @@ import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Position;
+import lombok.Getter;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -30,15 +34,39 @@ public class MEDualOutputPartMachine extends StatusTrackedMEPartMachine {
     private final KeyStorage internalBuffer;
     @SaveToDisk
     private final KeyStorage internalTankBuffer;
-    private final InaccessibleInfiniteHandler handler;
-    private final InaccessibleInfiniteTank tank;
+    private final MEOutputItemHandler handler;
+    private final MEOutputFluidHandler tank;
+
+    @Getter
+    @SaveToDisk(defaultValue = "10000")
+    private int priority = 10000;
 
     public MEDualOutputPartMachine(MetaMachineBlockEntity holder) {
         super(holder, IO.OUT);
         internalBuffer = new KeyStorage();
-        handler = new InaccessibleInfiniteHandler(this, internalBuffer);
+        handler = new MEOutputItemHandler(this, internalBuffer);
         internalTankBuffer = new KeyStorage();
-        tank = new InaccessibleInfiniteTank(this, internalTankBuffer);
+        tank = new MEOutputFluidHandler(this, internalTankBuffer);
+    }
+
+    private void setPriority(int priority) {
+        this.priority = priority;
+        handler.setPriority(priority);
+        tank.setPriority(priority);
+        RecipeHandlerUnit.notify(this);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        handler.setPriority(priority);
+        tank.setPriority(priority);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
     }
 
     @Override

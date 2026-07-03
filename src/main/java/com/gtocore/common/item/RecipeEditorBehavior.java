@@ -98,9 +98,11 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
         if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown()) {
             Set<BiCache> cache = new OpenCacheHashSet<>();
             for (GTRecipeType recipeType : GTRegistries.RECIPE_TYPES.values()) {
+                if (recipeType.isNoSearch()) continue;
                 if (recipeType == GTRecipeTypes.BREWING_RECIPES) continue;
                 if (recipeType == GTRecipeTypes.SCANNER_RECIPES) continue;
                 if (recipeType == GTORecipeTypes.LARGE_GAS_COLLECTOR_RECIPES) continue;
+                if (recipeType == GTORecipeTypes.SPACE_STATION_CONSTRUCTION_RECIPES) continue;
                 var recipes = new ArrayList<>(recipeType.recipes.values());
                 recipeType.getProxyRecipes().forEach((t) -> {
                     if (t instanceof GTRecipeType type) {
