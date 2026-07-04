@@ -43,20 +43,16 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
 
     // 升级模块 - 速度
     @JvmField
-    val SpeedUpgradeModuleTooltips = { coefficient: Double, gCoefficient: Double ->
-        ComponentListSupplier {
-            setTranslationPrefix("upgrade_module")
-            highlight("提升机器运作速度" translatedTo "Speed up machine operation")
-        }
+    val SpeedUpgradeModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("upgrade_module")
+        highlight("提升机器运作速度" translatedTo "Speed up machine operation")
     }
 
     // 升级模块 - 能量
     @JvmField
-    val EnergyUpgradeModuleTooltips = { coefficient: Double, gCoefficient: Double ->
-        ComponentListSupplier {
-            setTranslationPrefix("upgrade_module")
-            highlight("降低机器功耗" translatedTo "Reduce machine power consumption")
-        }
+    val EnergyUpgradeModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("upgrade_module")
+        highlight("降低机器功耗" translatedTo "Reduce machine power consumption")
     }
 
     // 样板修改器

@@ -1,16 +1,11 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.gui.graphic.GTOToolTipComponent;
-import com.gtocore.api.gui.graphic.GTOTooltipComponentItem;
-import com.gtocore.api.gui.graphic.impl.GTOComponentTooltipComponent;
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.common.data.translation.GTOItemTooltips;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.IUpgradeMachine;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
@@ -24,22 +19,13 @@ import net.minecraft.world.item.context.UseOnContext;
 import dev.shadowsoffire.placebo.util.EnchantmentUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 @DataGeneratorScanned
-public final class UpgradeModuleItem extends Item implements GTOTooltipComponentItem {
+public final class UpgradeModuleItem extends Item {
 
     @RegisterLanguage(cn = "需要10级经验", en = "Requires 10 levels of experience")
     public static final String experience_not_enough = "gtocore.machine.upgrade.experience_not_enough";
     @RegisterLanguage(cn = "该方块不可安装升级", en = "this block cannot be upgraded")
     public static final String not_machine = "gtocore.machine.upgrade.not_machine";
-
-    static {
-        if (GTCEu.isDataGen()) {
-            GTOItemTooltips.SpeedUpgradeModuleTooltips.invoke(0D, 0D).getArray();
-            GTOItemTooltips.EnergyUpgradeModuleTooltips.invoke(0D, 0D).getArray();
-        }
-    }
 
     public UpgradeModuleItem(Properties properties) {
         super(properties);
@@ -89,18 +75,5 @@ public final class UpgradeModuleItem extends Item implements GTOTooltipComponent
             }
         }
         return super.onItemUseFirst(stack, context);
-    }
-
-    @Override
-    public void attachGTOTooltip(ItemStack itemStack, List<GTOToolTipComponent> tooltips) {
-        if (this == GTOItems.SPEED_UPGRADE_MODULE.get()) {
-            for (Component component : GTOItemTooltips.SpeedUpgradeModuleTooltips.invoke(0d, 0d).getArray())
-                tooltips.add(new GTOComponentTooltipComponent(component));
-        } else {
-            for (Component component : GTOItemTooltips.EnergyUpgradeModuleTooltips.invoke(0d, 0d).getArray()) {
-                tooltips.add(new GTOComponentTooltipComponent(component));
-            }
-
-        }
     }
 }

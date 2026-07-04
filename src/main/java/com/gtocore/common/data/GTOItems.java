@@ -1079,8 +1079,12 @@ public final class GTOItems {
             .tag(CustomTags.PPE_ARMOR)
             .register();
 
-    public static final ItemEntry<UpgradeModuleItem> SPEED_UPGRADE_MODULE = item("speed_upgrade_module", "速度升级模块", UpgradeModuleItem::new).register();
-    public static final ItemEntry<UpgradeModuleItem> ENERGY_UPGRADE_MODULE = item("energy_upgrade_module", "能量升级模块", UpgradeModuleItem::new).register();
+    public static final ItemEntry<UpgradeModuleItem> SPEED_UPGRADE_MODULE = item("speed_upgrade_module", "速度升级模块", UpgradeModuleItem::new)
+            .toolTips(GTOItemTooltips.SpeedUpgradeModuleTooltips.getArray())
+            .register();
+    public static final ItemEntry<UpgradeModuleItem> ENERGY_UPGRADE_MODULE = item("energy_upgrade_module", "能量升级模块", UpgradeModuleItem::new)
+            .toolTips(GTOItemTooltips.EnergyUpgradeModuleTooltips.getArray())
+            .register();
 
     public static final ItemEntry<Item> DISPOSABLE_FILE = item("disposable_file", "一次性锉刀")
             .tag(CustomTags.CRAFTING_FILES).register();
