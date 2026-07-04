@@ -8,7 +8,9 @@ import com.gtocore.data.recipe.builder.ars.ImbuementRecipeBuilder;
 import com.gtocore.data.tag.Tags;
 
 import com.gtolib.GTOCore;
+import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
+import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
@@ -395,6 +397,20 @@ public final class ArsNouveauRecipes {
                             Ingredient.of(GCYMBlocks.CASING_STRESS_PROOF), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(GCYMBlocks.CASING_STRESS_PROOF), Ingredient.of(ExtraBotanyItems.spiritFuel) },
                     new FluidStack[0]);
 
+        }
+
+        // Ars Energistique 灌注核心
+        {
+            MultiblockImbuementRecipe(5, true, "arseng_me_source_jar", Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_jar")), RegistriesUtils.getItemStack("arseng:me_source_jar"), 10000,
+                    new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(TagUtils.createItemTag(RLUtils.ae("interface"))) }, new FluidStack[0]);
+            MultiblockImbuementRecipe(5, true, "arseng_source_acceptor", Ingredient.of(RegistriesUtils.getItem("ae2:energy_acceptor")), RegistriesUtils.getItemStack("arseng:source_acceptor"), 10000,
+                    new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")),
+                            Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK) },
+                    new FluidStack[0]);
+            MultiblockImbuementRecipe(5, true, "arseng_source_cell_housing", Ingredient.of(RegistriesUtils.getItem("ae2:item_cell_housing")), RegistriesUtils.getItemStack("arseng:source_cell_housing"), 10000,
+                    new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem")),
+                            Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT) },
+                    new FluidStack[0]);
         }
 
         // 多方块特供配方
