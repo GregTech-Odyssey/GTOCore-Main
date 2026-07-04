@@ -37,6 +37,7 @@ import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTFluids;
 import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.common.fluid.potion.PotionFluid;
 import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
@@ -142,6 +143,7 @@ public final class GTEMIPlugin implements EmiPlugin {
             c.add(RegistriesUtils.getItem("ad_astra:cryo_freezer"));
             c.add(RegistriesUtils.getItem("ad_astra:compressor"));
             c.add(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
+            c.add(GTMultiMachines.CHARCOAL_PILE_IGNITER.asItem());
 
             if (Mods.EFFORTLESS.isLoaded()) {
                 c.add(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));
