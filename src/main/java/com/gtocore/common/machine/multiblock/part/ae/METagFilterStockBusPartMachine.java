@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.api.machine.ITagFilterMachine;
 import com.gtocore.utils.Caches;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -17,7 +18,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class METagFilterStockBusPartMachine extends MEStockingBusPartMachine implements ITagFilterPartMachine {
+public class METagFilterStockBusPartMachine extends MEStockingBusPartMachine implements ITagFilterMachine {
 
     @SaveToDisk
     private String tagWhite = "";
