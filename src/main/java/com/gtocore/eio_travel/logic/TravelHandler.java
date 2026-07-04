@@ -66,7 +66,7 @@ public class TravelHandler {
                     player.teleportTo(eventPos.get().x(), eventPos.get().y(), eventPos.get().z());
                     serverPlayer.connection.resetPosition();
                     player.fallDistance = 0;
-                    level.playSound(null, BlockPos.containing(eventPos.get()), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1F);
+                    player.playNotifySound(SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1F, 1F);
                 } else {
                     player.playNotifySound(SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 1F, 1F);
                 }
