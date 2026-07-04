@@ -93,6 +93,6 @@ public enum MEWirelessMachineConfigurator implements IItemUIFactory, IAddInforma
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents,
                                TooltipFlag isAdvanced) {
-        tooltipComponents.addAll(GTOItemTooltips.INSTANCE.getMEWirelessMachineConfigurator().get());
+        tooltipComponents.addAll(GTOItemTooltips.MEWirelessMachineConfigurator.get());
     }
 }

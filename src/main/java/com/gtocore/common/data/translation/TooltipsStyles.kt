@@ -27,8 +27,8 @@ fun ComponentListSupplier.ok(info: ComponentSupplier) {
     content(info, { green() }, ComponentSlang.Right(2))
 }
 
-fun ComponentListSupplier.error(info: ComponentSupplier) {
-    content(info, { red() }, ComponentSlang.Wrong(2))
+fun ComponentListSupplier.error(info: ComponentSupplier, tab: Int = 2) {
+    content(info, { red() }, ComponentSlang.Wrong(tab))
 }
 
 fun ComponentListSupplier.command(info: ComponentSupplier) {

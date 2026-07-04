@@ -4,6 +4,7 @@ import com.gtocore.api.lang.ComponentListSupplier
 import com.gtocore.api.lang.ComponentSupplier
 import com.gtocore.api.lang.toComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
+import com.gtocore.api.lang.translatable
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine
 
@@ -22,10 +23,10 @@ import com.lowdragmc.lowdraglib.side.fluid.FluidHelper
  */
 object GTOMachineTooltips {
 
+    // 废弃结构
     @JvmField
     var deprecatedStructureTooltips: ComponentListSupplier = ComponentListSupplier {
-        setTranslationPrefix("multiblock_structure")
-        error("该结构已弃用" translatedTo "This structure has been deprecated")
+        error(translatable("gtocore.structure.deprecated"), 1)
     }
 
     @JvmField

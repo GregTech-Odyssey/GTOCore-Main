@@ -24,6 +24,8 @@ final class ItemLang {
             }
         });
 
+        addCNEN("gtocore.item.deprecated", "该物品已弃用", "This item has been deprecated");
+
         addCNEN("item.gtceu.long_rod_extruder_mold", "模头（长杆）", "Extruder Mold (Long Rod)");
 
         addCNEN("tagprefix.living_rock", "活%s矿石", "Living %s Ore");

@@ -8,11 +8,13 @@ import com.gtocore.client.hud.HUDScreen;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt;
 import com.gtocore.common.saved.WirelessNetworkSavedData;
 import com.gtocore.integration.ae.wireless.WirelessClientHandler;
+import com.gtocore.integration.emi.GTEMIPlugin;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.item.IItem;
@@ -121,6 +123,9 @@ public final class ForgeClientEvent {
         } else {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);
             if (tooltips != null) event.getToolTip().addAll(tooltips);
+        }
+        if (GTEMIPlugin.isItemHidden(item)) {
+            event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());
         }
     }
 

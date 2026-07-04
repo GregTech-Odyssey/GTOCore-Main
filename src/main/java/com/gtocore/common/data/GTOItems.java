@@ -119,14 +119,14 @@ public final class GTOItems {
     public static final ItemEntry<StorageComponentItem> CELL_COMPONENT_256M = registerStorageComponentItem(256);
 
     public static final ItemEntry<ComponentItem> ORDER = item("order", "%s 订单", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getOrderTooltips().getArray())
+            .toolTips(GTOItemTooltips.OrderTooltips.getArray())
             .lang("%s Order")
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(OrderItem.INSTANCE))
             .onRegister(attachRenderer(() -> OrderItemProviderRenderer.INSTANCE))
             .register();
     public static final ItemEntry<ComponentItem> TEMP_ORDER = item("temporary_order", "%s 临时订单", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getOrderTooltips().getArray())
+            .toolTips(GTOItemTooltips.OrderTooltips.getArray())
             .lang("%s Temporary Order")
             .onRegister(attach(OrderItem.INSTANCE))
             .onRegister(attachRenderer(() -> OrderItemProviderRenderer.INSTANCE))
@@ -356,7 +356,7 @@ public final class GTOItems {
     public static final ItemEntry<ComponentItem> WIRELESS_ENERGY_RECEIVE_COVER_MAX_4A = registerTieredCover(4);
 
     public static final ItemEntry<ComponentItem> TIME_TWISTER = item("time_twister", "时间扭曲者", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getTimeTwisterTooltips().getArray())
+            .toolTips(GTOItemTooltips.TimeTwisterTooltips.getArray())
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(TimeTwisterBehavior.INSTANCE))
             .register();
@@ -368,9 +368,9 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> PATTERN_MODIFIER_PRO = item("pattern_modifier_pro", "样板修改器pro", ComponentItem::create)
+            .toolTips(GTOItemTooltips.PatternModifierTooltips.getArray())
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(PatternModifierProBehavior.INSTANCE))
-            .onRegister(attach(new TooltipBehavior(GTOItemTooltips.INSTANCE.getPatternModifierTooltips()::apply)))
             .model(NonNullBiConsumer.noop())
             .register();
 
@@ -1254,7 +1254,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> PALM_SIZED_BANK = item("palm_sized_bank", "泛银河系格雷科技掌上银行", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getPalmSizedBankTooltips().getArray())
+            .toolTips(GTOItemTooltips.PalmSizedBankTooltips.getArray())
             .properties(p -> p.stacksTo(1))
             .lang("Pan-Galactic Greg Technology Palm-Sized Bank")
             .onRegister(attach(PalmSizedBankBehavior.INSTANCE))

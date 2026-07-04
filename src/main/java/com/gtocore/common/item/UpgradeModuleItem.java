@@ -36,8 +36,8 @@ public final class UpgradeModuleItem extends Item implements GTOTooltipComponent
 
     static {
         if (GTCEu.isDataGen()) {
-            GTOItemTooltips.INSTANCE.getSpeedUpgradeModuleTooltips().invoke(0D, 0D).getArray();
-            GTOItemTooltips.INSTANCE.getEnergyUpgradeModuleTooltips().invoke(0D, 0D).getArray();
+            GTOItemTooltips.SpeedUpgradeModuleTooltips.invoke(0D, 0D).getArray();
+            GTOItemTooltips.EnergyUpgradeModuleTooltips.invoke(0D, 0D).getArray();
         }
     }
 
@@ -94,10 +94,10 @@ public final class UpgradeModuleItem extends Item implements GTOTooltipComponent
     @Override
     public void attachGTOTooltip(ItemStack itemStack, List<GTOToolTipComponent> tooltips) {
         if (this == GTOItems.SPEED_UPGRADE_MODULE.get()) {
-            for (Component component : GTOItemTooltips.INSTANCE.getSpeedUpgradeModuleTooltips().invoke(0d, 0d).getArray())
+            for (Component component : GTOItemTooltips.SpeedUpgradeModuleTooltips.invoke(0d, 0d).getArray())
                 tooltips.add(new GTOComponentTooltipComponent(component));
         } else {
-            for (Component component : GTOItemTooltips.INSTANCE.getEnergyUpgradeModuleTooltips().invoke(0d, 0d).getArray()) {
+            for (Component component : GTOItemTooltips.EnergyUpgradeModuleTooltips.invoke(0d, 0d).getArray()) {
                 tooltips.add(new GTOComponentTooltipComponent(component));
             }
 
