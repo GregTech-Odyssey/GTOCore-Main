@@ -156,6 +156,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     }
 
     private void setPriority(int priority) {
+        if (priority == Integer.MIN_VALUE) return;
         this.priority = priority;
         circuitInventorySimulated.setPriority(priority);
         RecipeHandlerUnit.notify(this);

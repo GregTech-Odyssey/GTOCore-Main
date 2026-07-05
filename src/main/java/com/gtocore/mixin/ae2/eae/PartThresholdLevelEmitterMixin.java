@@ -50,8 +50,8 @@ public abstract class PartThresholdLevelEmitterMixin extends AbstractLevelEmitte
             this.lastReportedValue = 0L;
             FuzzyMode fzMode = this.getConfigManager().getSetting(Settings.FUZZY_MODE);
 
-            for (var st : stacks.findFuzzy(myStack, fzMode)) {
-                this.lastReportedValue += st.getLongValue();
+            for (var it = stacks.findFuzzyValue(myStack, fzMode).iterator(); it.hasNext();) {
+                this.lastReportedValue += it.nextLong();
                 if (this.lastReportedValue > this.getUpperValue()) {
                     break;
                 }

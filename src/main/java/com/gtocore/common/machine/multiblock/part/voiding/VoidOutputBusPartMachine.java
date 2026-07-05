@@ -35,6 +35,7 @@ public class VoidOutputBusPartMachine extends WorkableTieredIOPartMachine {
     }
 
     private void setPriority(int priority) {
+        if (priority == Integer.MIN_VALUE) return;
         this.priority = priority;
         handler.setPriority(priority);
         RecipeHandlerUnit.notify(this);

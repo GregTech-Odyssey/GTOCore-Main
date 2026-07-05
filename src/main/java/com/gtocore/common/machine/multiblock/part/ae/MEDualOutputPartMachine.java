@@ -50,6 +50,7 @@ public class MEDualOutputPartMachine extends StatusTrackedMEPartMachine {
     }
 
     private void setPriority(int priority) {
+        if (priority == Integer.MIN_VALUE) return;
         this.priority = priority;
         handler.setPriority(priority);
         tank.setPriority(priority);

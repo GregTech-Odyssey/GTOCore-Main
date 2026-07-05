@@ -69,6 +69,7 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
     }
 
     private void setPriority(int priority) {
+        if (priority == Integer.MIN_VALUE) return;
         this.priority = priority;
         aeItemHandler.setPriority(priority);
         circuitInventory.setPriority(priority);

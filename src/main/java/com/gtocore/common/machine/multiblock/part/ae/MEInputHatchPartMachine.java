@@ -71,6 +71,10 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
     }
 
     private void setPriority(int priority) {
+        // 防御 Integer.MIN_VALUE：客户端 IntInputWidget 初始化时
+        // setMin(Integer.MIN_VALUE) 会触发空文本框被设为 min 值，
+        // 然后通过 CPacketUIClientAction 发送到服务端覆盖正确值
+        if (priority == Integer.MIN_VALUE) return;
         this.priority = priority;
         aeFluidHandler.setPriority(priority);
         circuitInventory.setPriority(priority);
