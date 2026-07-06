@@ -120,7 +120,8 @@ public final class MultiBlockD {
             .hasTESR(true)
             .register();
 
-    public static final MultiblockMachineDefinition SPACE_PROBE_SURFACE_RECEPTION = multiblock("space_probe_surface_reception", "宇宙探测器地面接收单元", SpaceProbeSurfaceReceptionMachine::new)
+    public static final MultiblockMachineDefinition SPACE_PROBE_SURFACE_RECEPTION = multiblock("space_probe_surface_reception", "宇宙探测器接收单元", SpaceProbeSurfaceReceptionMachine::new)
+            .langValue("Space Probe Receiver")
             .nonYAxisRotation()
             .workableInSpace()
             .recipeTypes(GTORecipeTypes.SPACE_PROBE_SURFACE_RECEPTION_RECIPES)

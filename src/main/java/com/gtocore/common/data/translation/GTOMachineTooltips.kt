@@ -684,8 +684,8 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         function("可以存储大量资源" translatedTo "Can store many many resources")
-        guide("使用简易合成终端或者存储总线读取内部资源" translatedTo "Use a simple terminal or a storage bus to read internal resources")
-        info("容量由多方块大小决定" translatedTo "The capacity is determined by the multiblock size")
+        guide("使用简易合成终端或者ME存储总线读取内部资源" translatedTo "Use Simple Crafting Terminal or ME Storage Bus to read internal resources")
+        info("容量由密封机械方块数量和等级决定" translatedTo "The capacity is determined by the number and tier of Hermetic Casings")
         info("大小：3x3x3到15x15x15" translatedTo "Size: 3x3x3 to 15x15x15")
     }
 
@@ -695,7 +695,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         content("可为保险库IO" translatedTo "Can serve as vault IO")
-        info("最大安装数 = 密封外壳数" translatedTo "Maximum installations = hermetic casing amount")
+        info("最大安装数 = 密封机械方块数" translatedTo "Maximum installations = hermetic casing amount")
     }
 
     @JvmField
@@ -1338,7 +1338,9 @@ object GTOMachineTooltips {
         section("戴森球连接" translatedTo "Dyson Sphere Connection")
         content("自动连接星系内未使用的戴森球" translatedTo "Automatically connects to unused Dyson spheres in the galaxy")
         increase("根据戴森球模块数量提升产出" translatedTo "Increases production based on Dyson sphere module count")
+            info("产出乘数 = max(1, floor(模块数量 / 100))" translatedTo "Output multiplier = max(1, ⌊module count / 100⌋)")
         ok("该操作不会损坏戴森球" translatedTo "This operation will not damage the Dyson sphere")
+        important( "一个星系只能有一个接收单元提升产出" translatedTo "Only one Receiver per orbit can increase output")
     }
 
     // 鸿蒙之眼
