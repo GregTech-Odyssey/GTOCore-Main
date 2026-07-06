@@ -1,5 +1,19 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.me.storage.ExternalStorageFacade;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyTankConfigurator;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gtocore.api.gui.configurators.MultiMachineModeFancyConfigurator;
 import com.gtocore.common.data.GTORecipeTypes;
 
@@ -20,20 +34,25 @@ import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DualHatchPartMachine;
 
+import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
+import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.config.Actionable;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 @DataGeneratorScanned
@@ -45,6 +64,9 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     @SaveToDisk
     @SyncToClient
     private GTRecipeType recipeType = null;
+
+    @SaveToDisk
+    private final ProgrammableFluidHandler fluidTank = new ProgrammableFluidHandler(this);
 
     public ProgrammableHatchPartMachine(MetaMachineBlockEntity holder, int tier, IO io, Object... args) {
         super(holder, tier, io, args);
@@ -104,6 +126,12 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     }
 
     @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        configuratorPanel.attachConfigurators(new FancyTankConfigurator(fluidTank.getStorages(), Component.translatable("gui.gtceu.share_tank.title")));
+    }
+
+    @Override
     public void addedToController(@NotNull IMultiController controller) {
         super.addedToController(controller);
         this.recipeTypes.clear();
@@ -154,6 +182,65 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     @Override
     public void setProgrammable(boolean programmable) {}
 
+    private static final class ProgrammableFluidHandler extends NotifiableFluidTank {
+
+        public ProgrammableFluidHandler(MetaMachine machine) {
+            super(machine, Collections.singletonList(new FluidTank()),  IO.IN, IO.IN);
+        }
+
+        @Override
+        public boolean isNotConsumable() {
+            return true;
+        }
+
+        @Override
+        public @NotNull FluidStack getFluidInTank(int tank) {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
+            if (simulate && io == IO.IN) {
+                var stored = this.storages[0].getFluid();
+                if (!stored.isEmpty()) {
+                    var it = fluids.iterator();
+                    while(it.hasNext()) {
+                        var content =it.next();
+                        if (content.chance == 0 && content.inner.test(stored)) {
+                            it.remove();
+                            break;
+                        }
+                    }
+                }
+            }
+            return fluids.isEmpty();
+        }
+
+        private static final class FluidTank extends CustomFluidTank   {
+
+            private FluidTank() {
+                super(1000);
+            }
+
+            @Override
+            public int fill(FluidStack resource, FluidAction action) {
+                return 0;
+            }
+
+            @Override
+            public FluidStack drain(FluidStack resource, FluidAction action) {
+                setFluid(FluidStack.EMPTY);
+                return FluidStack.EMPTY;
+            }
+
+            @Override
+            public FluidStack drain(int maxDrain, FluidAction action) {
+                setFluid(FluidStack.EMPTY);
+                return FluidStack.EMPTY;
+            }
+        }
+    }
+
     public static class ProgrammableCircuitHandler extends CircuitHandler {
 
         public ProgrammableCircuitHandler(MetaMachine machine) {
@@ -163,20 +250,41 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         private static class ProgrammableHandler extends ItemStackHandler {
 
             private final IProgrammableMachine machine;
+            private final ProgrammableFluidHandler fluidTank;
 
             private ProgrammableHandler(Object machine) {
                 super(1);
-                this.machine = machine instanceof IProgrammableMachine programmableMachine ? programmableMachine : null;
+                this.machine =  (IProgrammableMachine)machine;
+                if (machine instanceof ProgrammableHatchPartMachine partMachine) {
+                    this.fluidTank = partMachine.fluidTank;
+                } else {
+                    this.fluidTank = null;
+                }
+            }
+
+            @Override
+            public int insertExternal(AEItemKey itemKey, int amount, Actionable mode) {
+                if (machine.isProgrammable() && itemKey.hasTag()) {
+                    if (itemKey.item == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
+                        setStackInSlot(0, VirtualItemProviderBehavior.getVirtualItem(itemKey.getReadOnlyStack()));
+                        return amount;
+                    } else if (fluidTank!=null && itemKey.item == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
+                        fluidTank.setFluidInTank(0, VirtualFluidProviderBehavior.getVirtualFluid(itemKey.getReadOnlyStack()));
+                        return amount;
+                    }
+                }
+                return 0;
             }
 
             @NotNull
             @Override
             public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-                if (machine.isProgrammable() && stack.hasTag() && stack.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get())) {
-                    setStackInSlot(slot, VirtualItemProviderBehavior.getVirtualItem(stack));
-                    return ItemStack.EMPTY;
-                }
                 return stack;
+            }
+
+            @Override
+            public int insert(int slot, @NotNull ItemStack stack, int count, boolean simulate) {
+                return 0;
             }
         }
     }

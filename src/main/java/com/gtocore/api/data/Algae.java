@@ -59,7 +59,7 @@ public enum Algae {
     }
 
     public static boolean isAlgae(AEItemKey key) {
-        var item = key.getItem();
+        var item = key.item;
         for (Algae algae : VALUES) {
             if (algae.item == item) {
                 return true;
