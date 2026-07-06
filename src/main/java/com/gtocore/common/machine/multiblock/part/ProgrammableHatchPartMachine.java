@@ -1,43 +1,35 @@
 package com.gtocore.common.machine.multiblock.part;
 
-import appeng.api.stacks.AEFluidKey;
-import appeng.me.storage.ExternalStorageFacade;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
-import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
-import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
-import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyTankConfigurator;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gtocore.api.gui.configurators.MultiMachineModeFancyConfigurator;
 import com.gtocore.common.data.GTORecipeTypes;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyTankConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
 import com.gregtechceu.gtceu.api.machine.trait.IRecipeHandlerTrait;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DualHatchPartMachine;
 
-import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
@@ -45,10 +37,9 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
+import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -185,7 +176,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     private static final class ProgrammableFluidHandler extends NotifiableFluidTank {
 
         public ProgrammableFluidHandler(MetaMachine machine) {
-            super(machine, Collections.singletonList(new FluidTank()),  IO.IN, IO.IN);
+            super(machine, Collections.singletonList(new FluidTank()), IO.IN, IO.IN);
         }
 
         @Override
@@ -204,8 +195,8 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
                 var stored = this.storages[0].getFluid();
                 if (!stored.isEmpty()) {
                     var it = fluids.iterator();
-                    while(it.hasNext()) {
-                        var content =it.next();
+                    while (it.hasNext()) {
+                        var content = it.next();
                         if (content.chance == 0 && content.inner.test(stored)) {
                             it.remove();
                             break;
@@ -216,7 +207,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             return fluids.isEmpty();
         }
 
-        private static final class FluidTank extends CustomFluidTank   {
+        private static final class FluidTank extends CustomFluidTank {
 
             private FluidTank() {
                 super(1000);
@@ -254,7 +245,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
             private ProgrammableHandler(Object machine) {
                 super(1);
-                this.machine =  (IProgrammableMachine)machine;
+                this.machine = (IProgrammableMachine) machine;
                 if (machine instanceof ProgrammableHatchPartMachine partMachine) {
                     this.fluidTank = partMachine.fluidTank;
                 } else {
@@ -268,7 +259,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
                     if (itemKey.item == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
                         setStackInSlot(0, VirtualItemProviderBehavior.getVirtualItem(itemKey.getReadOnlyStack()));
                         return amount;
-                    } else if (fluidTank!=null && itemKey.item == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
+                    } else if (fluidTank != null && itemKey.item == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
                         fluidTank.setFluidInTank(0, VirtualFluidProviderBehavior.getVirtualFluid(itemKey.getReadOnlyStack()));
                         return amount;
                     }

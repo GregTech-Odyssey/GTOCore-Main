@@ -273,11 +273,11 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
             manaHandler.setPos(getPos());
             manaHandler.setLevel(getLevel());
         }
-        long totalAmount = 0;
+        double totalAmount = 0;
         for (var e : keyMap) {
-            totalAmount += e.getLongValue() / (e.getKey().getAmountPerByte() / 8);
+            totalAmount += getAmountPerByte(e.getKey().getType(), e.getLongValue());
         }
-        this.storage = totalAmount;
+        this.storage = (long) totalAmount;
     }
 
     @Override
@@ -360,11 +360,11 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
 
     private void saveChanges() {
         holder.setChanged();
-        long totalAmount = 0;
+        double totalAmount = 0;
         for (var e : keyMap) {
-            totalAmount += e.getLongValue() / (e.getKey().getAmountPerByte() / 8);
+            totalAmount += getAmountPerByte(e.getKey().getType(), e.getLongValue());
         }
-        this.storage = totalAmount;
+        this.storage = (long) totalAmount;
     }
 
     @Override
@@ -383,5 +383,12 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
         compoundTag.putLong("storage", storage);
         if (!isFormed) return;
         compoundTag.putIntArray("dimensions", new int[] { lDist + rDist + 1, uDist + dDist + 1, bDist + 1 });
+    }
+
+    private static final AEKeyType ITEM = AEKeyType.items();
+
+    private static double getAmountPerByte(AEKeyType type, long amount) {
+        if (type == ITEM) return (double) amount / 64;
+        return (double) (amount * type.getAmountPerByte()) / 8;
     }
 }
