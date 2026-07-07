@@ -3,7 +3,7 @@ package com.gtocore.mixin.gtm.machine;
 import com.gtocore.common.machine.multiblock.part.ProgrammableHatchPartMachine;
 
 import com.gtolib.api.capability.IWirelessChargerInteraction;
-import com.gtolib.api.machine.feature.IPowerAmplifierMachine;
+import com.gtolib.api.machine.feature.IConfigurablePowerAmplifierMachine;
 import com.gtolib.api.machine.feature.IUpgradeMachine;
 import com.gtolib.api.machine.impl.WirelessChargerMachine;
 
@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.UUID;
 
 @Mixin(SimpleTieredMachine.class)
-public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine implements IUpgradeMachine, IPowerAmplifierMachine, IWirelessChargerInteraction, IProgrammableMachine {
+public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine implements IUpgradeMachine, IConfigurablePowerAmplifierMachine, IWirelessChargerInteraction, IProgrammableMachine {
 
     @Unique
     private double gtolib$speed;
@@ -40,6 +40,8 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     private double gtolib$energy;
     @Unique
     private double gtolib$powerAmplifier;
+    @Unique
+    private double gtolib$powerAmplifierDurationMultiplier;
     @Unique
     private boolean gtolib$hasPowerAmplifier;
     @Unique
@@ -70,6 +72,7 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
         gtolib$speed = 1;
         gtolib$energy = 1;
         gtolib$powerAmplifier = 1;
+        gtolib$powerAmplifierDurationMultiplier = 1;
     }
 
     @Inject(method = "onLoad", at = @At("TAIL"), remap = false)
@@ -136,6 +139,23 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     @Override
     public void gtolib$setPowerAmplifier(double powerAmplifier) {
         this.gtolib$powerAmplifier = powerAmplifier;
+        this.gtolib$powerAmplifierDurationMultiplier = 1D / powerAmplifier;
+    }
+
+    @Override
+    public void gtolib$setPowerAmplifier(double durationMultiplier, double energyMultiplier) {
+        this.gtolib$powerAmplifierDurationMultiplier = durationMultiplier;
+        this.gtolib$powerAmplifier = energyMultiplier;
+    }
+
+    @Override
+    public double gtolib$getPowerAmplifierDurationMultiplier() {
+        return gtolib$powerAmplifierDurationMultiplier;
+    }
+
+    @Override
+    public double gtolib$getPowerAmplifierEnergyMultiplier() {
+        return gtolib$powerAmplifier;
     }
 
     @Override
