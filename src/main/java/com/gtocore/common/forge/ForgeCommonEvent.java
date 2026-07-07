@@ -1,5 +1,6 @@
 package com.gtocore.common.forge;
 
+import com.gtocore.api.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
@@ -17,6 +18,7 @@ import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
+import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.utils.RLUtils;
@@ -331,6 +333,12 @@ public final class ForgeCommonEvent {
         if (event.getLevel() instanceof ServerLevel level) {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
             if (serverLevel == null) return;
+            var dataStorage = serverLevel.getDataStorage();
+            TechTreeSavedData.INSTANCE = FastSavedData.getFromFile(TechTreeSavedData.DATA_NAME, dataStorage, TechTreeSavedData::read, TechTreeSavedData.DATA_VERSION);
+            if (TechTreeSavedData.INSTANCE == null) {
+                TechTreeSavedData.INSTANCE = new TechTreeSavedData();
+                dataStorage.cache.put(TechTreeSavedData.DATA_NAME, TechTreeSavedData.INSTANCE);
+            }
             DysonSphereSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(DysonSphereSavaedData::new, DysonSphereSavaedData::new, "dyson_sphere_data");
             RecipeRunLimitSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(RecipeRunLimitSavaedData::new, RecipeRunLimitSavaedData::new, "recipe_run_limit_data");
             VoidWorldTimeSavedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(VoidWorldTimeSavedData::initialize, VoidWorldTimeSavedData::new, VoidWorldTimeSavedData.DATA_NAME);
@@ -347,6 +355,7 @@ public final class ForgeCommonEvent {
 
     @SubscribeEvent
     public static void onServerStoppedEvent(ServerStoppedEvent event) {
+        TechTreeSavedData.INSTANCE = new TechTreeSavedData();
         DysonSphereSavaedData.INSTANCE = new DysonSphereSavaedData();
         RecipeRunLimitSavaedData.INSTANCE = new RecipeRunLimitSavaedData();
         VoidWorldTimeSavedData.INSTANCE = new VoidWorldTimeSavedData();

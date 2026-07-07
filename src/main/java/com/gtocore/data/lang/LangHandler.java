@@ -1,6 +1,7 @@
 package com.gtocore.data.lang;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
 import com.gtocore.common.data.GTOBedrockFluids;
 import com.gtocore.common.data.GTOFluidStorageKey;
@@ -86,6 +87,8 @@ public final class LangHandler {
         PlayerAttributes.NAMES.forEach((k, v) -> addCNEN(k.getLangKey(), v));
         GTOTrade.init();
         TradeLang.LANG.forEach(LangHandler::addCNEN);
+        TechTreeManager.NODE_LANG.forEach(LangHandler::addCNEN);
+        TechTreeManager.TREE_LANG.forEach(LangHandler::addCNEN);
         for (var reasons : IdleReason.values()) {
             if (reasons.getEn() == null) continue;
             addCNEN(reasons.getKey(), reasons.getCn(), reasons.getEn());

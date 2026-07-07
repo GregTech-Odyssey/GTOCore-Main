@@ -2,6 +2,8 @@ package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.common.machine.multiblock.part.ae.MECraftPatternPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.MathUtil;
@@ -14,6 +16,8 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.utils.ItemStackHashStrategy;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.fastcollection.O2LOpenCustomCacheHashMap;
@@ -23,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+@DataGeneratorScanned
 public class SuperMolecularAssemblerMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
 
     private final List<MECraftPatternPartMachine> partMachines = new ArrayList<>();
@@ -50,6 +55,23 @@ public class SuperMolecularAssemblerMachine extends ElectricMultiblockMachine im
     public void onStructureInvalid() {
         super.onStructureInvalid();
         partMachines.clear();
+    }
+
+    @Override
+    public void customText(@NotNull List<Component> textList) {
+        super.customText(textList);
+        if (isFormed()) {
+            textList.add(Component.translatable(LANG_INSTALLED_PARTS,
+                    Component.literal(String.valueOf(partMachines.size())).withStyle(ChatFormatting.AQUA)));
+            long totalCapacity = 0;
+            long usedCapacity = 0;
+            for (var machine : partMachines) {
+                totalCapacity += machine.getMaxPatternCount();
+                usedCapacity += machine.getAvailablePatterns().size();
+            }
+            textList.add(Component.translatable(LANG_PATTERN_STORAGE_USAGE,
+                    Component.literal("%s/%s".formatted(usedCapacity, totalCapacity)).withStyle(ChatFormatting.AQUA)));
+        }
     }
 
     @Override
@@ -82,4 +104,10 @@ public class SuperMolecularAssemblerMachine extends ElectricMultiblockMachine im
     public boolean alwaysSearchRecipe() {
         return true;
     }
+
+    @RegisterLanguage(cn = "总装仓数：", en = "Installed Parts: ")
+    public static final String LANG_INSTALLED_PARTS = "gtocore.machine.super_molecular_assembler.installed_parts";
+
+    @RegisterLanguage(cn = "样板容量使用情况：", en = "Pattern Storage Usage: ")
+    public static final String LANG_PATTERN_STORAGE_USAGE = "gtocore.machine.super_molecular_assembler.pattern_storage_usage";
 }

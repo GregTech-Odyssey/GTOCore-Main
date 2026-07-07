@@ -3,6 +3,7 @@ package com.gtocore.common;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.techtree.ExampleTree;
 import com.gtocore.client.KeyMessage;
 import com.gtocore.client.Message;
 import com.gtocore.common.block.BlockMap;
@@ -108,6 +109,7 @@ public class CommonProxy {
         GTOCodecs.init();
         GTOCreativeModeTabs.init();
         GTOEntityTypes.init();
+        ExampleTree.init();
         IPushResultsHandler.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();

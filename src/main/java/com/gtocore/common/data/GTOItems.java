@@ -1362,8 +1362,9 @@ public final class GTOItems {
             .register();
 
     // TODO 所有带有此物品的配方都是临时配方，后续会随时被删除
-    public static final ItemEntry<Item> STOPGAP_MEASURES = item("stopgap_measures", "权宜之计")
+    public static final ItemEntry<ComponentItem> STOPGAP_MEASURES = item("stopgap_measures", "权宜之计", ComponentItem::create)
             .toolTips(ComponentBuilder.create().addLines("§7在写了~~§r", "§7On working~~§r").build().getArray())
+            .onRegister(attach(new TechTreeViewer()))
             .register();
 
     public static final ItemEntry<RandomPositiveFoodItem> RANDOM_POSITIVE_FOOD_1 = item("delicious_food_1", "好吃的鱼 I", p -> new RandomPositiveFoodItem(p, 4, 0.6F))

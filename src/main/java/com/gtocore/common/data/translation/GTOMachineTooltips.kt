@@ -1338,9 +1338,9 @@ object GTOMachineTooltips {
         section("戴森球连接" translatedTo "Dyson Sphere Connection")
         content("自动连接星系内未使用的戴森球" translatedTo "Automatically connects to unused Dyson spheres in the galaxy")
         increase("根据戴森球模块数量提升产出" translatedTo "Increases production based on Dyson sphere module count")
-            info("产出乘数 = max(1, floor(模块数量 / 100))" translatedTo "Output multiplier = max(1, ⌊module count / 100⌋)")
+        info("产出乘数 = max(1, floor(模块数量 / 100))" translatedTo "Output multiplier = max(1, ⌊module count / 100⌋)")
         ok("该操作不会损坏戴森球" translatedTo "This operation will not damage the Dyson sphere")
-        important( "一个星系只能有一个接收单元提升产出" translatedTo "Only one Receiver per orbit can increase output")
+        important("一个星系只能有一个接收单元提升产出" translatedTo "Only one Receiver per orbit can increase output")
     }
 
     // 鸿蒙之眼
