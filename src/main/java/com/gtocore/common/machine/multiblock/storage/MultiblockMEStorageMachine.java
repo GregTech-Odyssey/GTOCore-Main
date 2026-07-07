@@ -246,7 +246,6 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     @Override
     public void onStructureFormed() {
         capacity = cells * 800L * (getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1);
-        if (type == AEKeyType.items()) capacity /= 2;
         if (itemStackHandler != null) itemStackHandler.setCapacity(capacity);
         if (fluidStackHandler != null) fluidStackHandler.setCapacity(capacity);
         if (manaHandler != null) manaHandler.setCapacity(capacity);
@@ -331,7 +330,8 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var type = what.getType();
         if (!isFormed || (this.type != null && type != this.type)) return 0;
-        amount = Math.min((type.getAmountPerByte() / 8) * (capacity - storage), amount);
+        var amountPerCapacity = type == ITEM ? 32 : type.getAmountPerByte() / 8;
+        amount = Math.min(amountPerCapacity * (capacity - storage), amount);
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
             keyMap.insert(what, amount);
@@ -388,7 +388,7 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     private static final AEKeyType ITEM = AEKeyType.items();
 
     private static double getCapacityUsage(AEKeyType type, long amount) {
-        if (type == ITEM) return (double) amount / 64;
-        return (double) amount * (type.getAmountPerByte() / 8);
+        if (type == ITEM) return (double) amount / 32;
+        return (double) amount * 8 / type.getAmountPerByte();
     }
 }
