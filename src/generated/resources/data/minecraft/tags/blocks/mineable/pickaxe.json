@@ -368,6 +368,9 @@
     "gtocore:the_end_casing",
     "gtocore:the_chaos_casing",
     "gtocore:the_solaris_lens",
+    "gtocore:heat_sink_casing",
+    "gtocore:chaos_tuning_casing",
+    "gtocore:phase_space_stabilization_casing",
     "gtocore:reactor_core"
   ]
 }

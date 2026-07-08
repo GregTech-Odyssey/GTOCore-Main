@@ -658,6 +658,12 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> THE_CHAOS_CASING = createCasingBlock("the_chaos_casing", "混沌之铭符", GTOCore.id("block/casings/the_chaos_casing"));
     // 天辉凝聚之镜 the_solaris_lens
     public static final BlockEntry<Block> THE_SOLARIS_LENS = createGlassCasingBlock("the_solaris_lens", "天辉凝聚之镜", GTOCore.id("block/casings/the_solaris_lens"));
+    // 热沉外壳 heat_sink_casing
+    public static final BlockEntry<Block> HEAT_SINK_CASING = createCasingBlock("heat_sink_casing", "热沉外壳", GTOCore.id("block/casings/heat_sink_casing"));
+    // 混沌调谐外壳 chaos_tuning_casing
+    public static final BlockEntry<Block> CHAOS_TUNING_CASING = createCasingBlock("chaos_tuning_casing", "混沌调谐外壳", GTOCore.id("block/casings/chaos_tuning_casing"));
+    // 相空间稳定外壳 phase_space_stabilization_casing
+    public static final BlockEntry<Block> PHASE_SPACE_STABILIZATION_CASING = createCasingBlock("phase_space_stabilization_casing", "相空间稳定外壳", GTOCore.id("block/casings/phase_space_stabilization_casing"));
 
     private static void registerPipeBlocks() {
         for (int i = 0; i < HeatPipeType.values().length; ++i) {
