@@ -330,7 +330,7 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var type = what.getType();
         if (!isFormed || (this.type != null && type != this.type)) return 0;
-        var amountPerCapacity = type == ITEM ? 32 : type.getAmountPerByte() / 8;
+        var amountPerCapacity = type == ITEM ? 24 : type.getAmountPerByte() / 8;
         amount = Math.min(amountPerCapacity * (capacity - storage), amount);
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
@@ -388,7 +388,7 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     private static final AEKeyType ITEM = AEKeyType.items();
 
     private static double getCapacityUsage(AEKeyType type, long amount) {
-        if (type == ITEM) return (double) amount / 32;
+        if (type == ITEM) return (double) amount / 24;
         return (double) amount * 8 / type.getAmountPerByte();
     }
 }
