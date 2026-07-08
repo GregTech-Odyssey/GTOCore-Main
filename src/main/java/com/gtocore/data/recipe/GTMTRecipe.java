@@ -6,6 +6,8 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.GTAEMachines;
 
+import com.gtolib.GTOCore;
+
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -35,9 +37,9 @@ public final class GTMTRecipe {
     public static void init() {
         ASSEMBLER_RECIPES.builder("virtual_item_supply_machine")
                 .inputItems(GTOMachines.PROGRAMMABLEC_HATCH[2].asItem())
-                .inputItems(CustomItems.PROGRAMMABLE_COVER.get(), 16)
+                .inputItems(CustomItems.PROGRAMMABLE_COVER.get(), GTOCore.isEasy() ? 4 : 16)
                 .inputItems("gtmthings:virtual_item_provider", 4)
-                .inputItems(GTItems.ROBOT_ARM_MV, 16)
+                .inputItems(GTItems.ROBOT_ARM_MV, GTOCore.isEasy() ? 4 : 16)
                 .outputItems(GTAEMachines.VIRTUAL_ITEM_SUPPLY_MACHINE.asItem())
                 .EUt(120)
                 .duration(400)
@@ -58,7 +60,7 @@ public final class GTMTRecipe {
                 .inputItems(AEBlocks.QUARTZ_VIBRANT_GLASS.block().asItem())
                 .inputItems(TagPrefix.foil, GTMaterials.PolyvinylChloride, 8)
                 .outputItems(CustomItems.VIRTUAL_ITEM_PROVIDER.asItem())
-                .EUt(480)
+                .EUt(GTValues.VA[GTOCore.isEasy() ? GTValues.MV : GTValues.EV])
                 .duration(200)
                 .save();
 
