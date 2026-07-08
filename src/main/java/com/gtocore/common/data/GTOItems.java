@@ -6,6 +6,7 @@ import com.gtocore.api.misc.AutoInitializeImpl;
 import com.gtocore.client.renderer.item.HaloItemRenderer;
 import com.gtocore.client.renderer.item.MaterialsColorMap;
 import com.gtocore.client.renderer.item.OrderItemProviderRenderer;
+import com.gtocore.common.cover.CreativePowerAmplifierCover;
 import com.gtocore.common.cover.HeatInterfaceCover;
 import com.gtocore.common.cover.PowerAmplifierCover;
 import com.gtocore.common.data.translation.GTOItemTooltips;
@@ -57,6 +58,7 @@ import appeng.items.materials.StorageComponentItem;
 
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+import com.hepdd.gtmthings.data.CreativeModeTabs;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import org.jetbrains.annotations.NotNull;
@@ -321,6 +323,17 @@ public final class GTOItems {
                 lines.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(1D / PowerAmplifierCover.getMultiplier(6))));
                 lines.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(PowerAmplifierCover.getMultiplier(6))));
             }), new CoverPlaceBehavior(GTOCovers.POWER_AMPLIFIERS[5])))
+            .register();
+
+    public static final ItemEntry<ComponentItem> CREATIVE_POWER_AMPLIFIER = item("creative_power_amplifier", "创造模式功率增幅器", ComponentItem::create)
+            .tab(CreativeModeTabs.CREATIVE_TAB.getKey())
+            .model((ctx, prov) -> prov.generated(ctx, GTOCore.id("item/power_amplifiers/creative_power_amplifier")))
+            .onRegister(attach(new TooltipBehavior(lines -> {
+                lines.add(Component.translatable("gtmthings.creative_tooltip"));
+                lines.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_DURATION_MULTIPLIER)));
+                lines.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_ENERGY_MULTIPLIER)));
+                lines.add(Component.translatable("gtocore.cover.creative_power_amplifier.tooltip").withStyle(ChatFormatting.GRAY));
+            }), new CoverPlaceBehavior(GTOCovers.CREATIVE_POWER_AMPLIFIER)))
             .register();
 
     public static final ItemEntry<ComponentItem> AIR_VENT = item("air_vent", "通风口", ComponentItem::create)
