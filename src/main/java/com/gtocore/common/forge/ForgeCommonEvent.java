@@ -48,6 +48,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -59,6 +60,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -67,7 +69,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -94,8 +95,6 @@ import java.util.function.Supplier;
 
 @DataGeneratorScanned
 public final class ForgeCommonEvent {
-
-    private static final int VOID_TIME_FIX_INTERVAL = 100;
 
     public static void init() {
         MinecraftForge.EVENT_BUS.register(ForgeCommonEvent.class);
@@ -313,6 +312,7 @@ public final class ForgeCommonEvent {
                 Configurator.setRootLevel(org.apache.logging.log4j.Level.INFO);
             }
             showVoidTimeHint(player);
+            syncPlayerTime(player);
             WirelessNetworkSavedData.write(player);
         }
     }
@@ -321,6 +321,7 @@ public final class ForgeCommonEvent {
     public static void onPlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             showVoidTimeHint(player);
+            syncPlayerTime(player);
             WirelessNetworkSavedData.write(player);
             // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
         }
@@ -339,9 +340,6 @@ public final class ForgeCommonEvent {
             if (Mods.FTBQUESTS.isLoaded()) {
                 AdditionalTeamData.instance = serverLevel.getDataStorage().computeIfAbsent(AdditionalTeamData::new, AdditionalTeamData::new, "ftb_quests_additional_team_data");
             }
-            if (GTODimensions.isVoid(level.dimension()) && VoidWorldTimeSavedData.INSTANCE.isFixedTime()) {
-                level.setDayTime(1000L);
-            }
         }
     }
 
@@ -357,10 +355,19 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !VoidWorldTimeSavedData.INSTANCE.isFixedTime() || !(event.level instanceof ServerLevel serverLevel) || serverLevel.getGameTime() % VOID_TIME_FIX_INTERVAL != 0 || !GTODimensions.isVoid(serverLevel) || serverLevel.getDayTime() == 1000L) return;
-        serverLevel.setDayTime(1000L);
+    public static void syncVoidWorldTime(MinecraftServer server) {
+        server.getPlayerList().getPlayers().stream()
+                .filter(player -> GTODimensions.isVoid(player.serverLevel().dimension()))
+                .forEach(ForgeCommonEvent::syncPlayerTime);
+    }
+
+    @SuppressWarnings("resource")
+    private static void syncPlayerTime(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        boolean fixedTime = VoidWorldTimeSavedData.INSTANCE.isFixedTime() && GTODimensions.isVoid(level.dimension());
+        long dayTime = fixedTime ? 1000L : level.getDayTime();
+        boolean daylightCycle = !fixedTime && level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT);
+        player.connection.send(new ClientboundSetTimePacket(level.getGameTime(), dayTime, daylightCycle));
     }
 
     @RegisterLanguage(valuePrefix = "gtocore.lang", en = "Channel mode command banned in expert", cn = "在专家模式下，频道模式命令被禁止")

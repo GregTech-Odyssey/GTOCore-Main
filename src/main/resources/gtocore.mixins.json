@@ -215,6 +215,7 @@
     "mc.BlockBehaviourMixin",
     "mc.ItemEntityMixin",
     "mc.LanguageMixin",
+    "mc.MinecraftServerMixin",
     "mc.SharedConstantsMixin",
     "mc.mob.AbstractSkeletonMixin",
     "mc.mob.LivingEntityMixin",
