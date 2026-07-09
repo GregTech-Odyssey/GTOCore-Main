@@ -60,7 +60,7 @@ public final class GTMTRecipe {
                 .inputItems(AEBlocks.QUARTZ_VIBRANT_GLASS.block().asItem())
                 .inputItems(TagPrefix.foil, GTMaterials.PolyvinylChloride, 8)
                 .outputItems(CustomItems.VIRTUAL_ITEM_PROVIDER.asItem())
-                .EUt(GTValues.VA[GTOCore.isEasy() ? GTValues.MV : GTValues.EV])
+                .EUt(GTOCore.isEasy() ? 120 : 480)
                 .duration(200)
                 .save();
 
