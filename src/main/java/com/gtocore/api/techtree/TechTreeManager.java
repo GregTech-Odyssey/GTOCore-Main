@@ -10,8 +10,15 @@ import com.gtolib.utils.iostream.IOStreamCodec;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.material.Fluid;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import com.google.common.collect.ImmutableList;
@@ -24,7 +31,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
@@ -69,8 +77,8 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         }
     }
 
-    public Builder<T> builder(String name, String cn, String en, String description) {
-        return new Builder<>(this, name, cn, en, description);
+    public Builder<T> builder(String name, String cn, String en) {
+        return new Builder<>(this, name, cn, en);
     }
 
     public TechTreeLayout<T> getLayout() {
@@ -90,7 +98,6 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         var definition = new TechNode<>(
                 this,
                 name,
-                builder.description,
                 builder.icon,
                 builder.requirements,
                 builder.prerequisites);
@@ -98,6 +105,9 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         layout = null;
         if (NODE_LANG != null) {
             NODE_LANG.put("gtocore.technode." + name, new CNEN(builder.cn, builder.en));
+            if (builder.cnDesc != null && builder.enDesc != null) {
+                NODE_LANG.put("gtocore.technode." + name + ".desc", new CNEN(builder.cnDesc, builder.enDesc));
+            }
         }
         return definition;
     }
@@ -130,17 +140,17 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         private final String name;
         private final String cn;
         private final String en;
-        private final String description;
+        private String cnDesc;
+        private String enDesc;
         private @Nullable AEKey icon;
-        private Function<T, ActionResult> requirements = ignored -> ActionResult.SUCCESS;
+        private BiFunction<T, UUID, ActionResult> requirements = (ign, ored) -> ActionResult.SUCCESS;
         private ImmutableList<TechNode<T>> prerequisites = ImmutableList.of();
 
-        private Builder(TechTreeManager<T> manager, String name, String cn, String en, String description) {
+        private Builder(TechTreeManager<T> manager, String name, String cn, String en) {
             this.manager = Objects.requireNonNull(manager, "manager");
             this.name = Objects.requireNonNull(name, "name");
             this.cn = Objects.requireNonNull(cn, "cn");
             this.en = Objects.requireNonNull(en, "en");
-            this.description = Objects.requireNonNull(description, "description");
         }
 
         public Builder<T> icon(@Nullable AEKey icon) {
@@ -148,8 +158,29 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
             return this;
         }
 
-        public Builder<T> requirements(Function<T, ActionResult> requirements) {
+        public Builder<T> icon(ItemLike icon) {
+            this.icon = AEItemKey.of(icon);
+            return this;
+        }
+
+        public Builder<T> icon(ItemStack icon) {
+            this.icon = AEItemKey.of(icon);
+            return this;
+        }
+
+        public Builder<T> icon(Fluid icon) {
+            this.icon = AEFluidKey.of(icon);
+            return this;
+        }
+
+        public Builder<T> requirements(BiFunction<T, UUID, ActionResult> requirements) {
             this.requirements = Objects.requireNonNull(requirements, "requirements");
+            return this;
+        }
+
+        public Builder<T> description(String cnDesc, String enDesc) {
+            this.cnDesc = Objects.requireNonNull(cnDesc, "cnDesc");
+            this.enDesc = Objects.requireNonNull(enDesc, "enDesc");
             return this;
         }
 
@@ -172,11 +203,19 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         }
     }
 
-    public static Component getNodeName(TechNode<?> node) {
+    public static MutableComponent getNodeName(TechNode<?> node) {
         return Component.translatable("gtocore.technode." + node.name);
     }
 
-    public static Component getTreeName(TechTreeManager<?> manager) {
+    public static @Nullable MutableComponent getNodeDesc(TechNode<?> node) {
+        var key = "gtocore.technode." + node.name + ".desc";
+        if (Language.getInstance().has(key)) {
+            return Component.translatable("gtocore.technode." + node.name + ".desc");
+        }
+        return null;
+    }
+
+    public static MutableComponent getTreeName(TechTreeManager<?> manager) {
         return Component.translatable("gtocore.techtree." + manager.id);
     }
 }

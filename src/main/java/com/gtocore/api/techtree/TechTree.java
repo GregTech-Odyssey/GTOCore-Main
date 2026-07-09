@@ -12,6 +12,7 @@ import lombok.Getter;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 
 public class TechTree<T> implements ITagSerializable<CompoundTag> {
 
@@ -24,14 +25,14 @@ public class TechTree<T> implements ITagSerializable<CompoundTag> {
         this.nodes = new ReferenceOpenHashSet<>();
     }
 
-    public ActionResult unlock(TechNode<T> definition, T args) {
-        var result = definition.tryUnlock(nodes, args);
+    public ActionResult unlock(TechNode<T> definition, T args, UUID team) {
+        var result = definition.tryUnlock(nodes, args, team);
         if (result.isSuccess()) addUnlockedNode(definition);
         return result;
     }
 
-    public ActionResult tryUnlock(TechNode<T> definition, T args) {
-        return definition.tryUnlock(nodes, args);
+    public ActionResult tryUnlock(TechNode<T> definition, T args, UUID team) {
+        return definition.tryUnlock(nodes, args, team);
     }
 
     public Set<TechNode<T>> getEndNodes() {

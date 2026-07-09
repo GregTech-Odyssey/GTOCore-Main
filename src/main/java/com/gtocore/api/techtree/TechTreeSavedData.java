@@ -27,7 +27,7 @@ public class TechTreeSavedData extends FastSavedData {
     private final Map<UUID, Map<String, TechTree<?>>> teamTechTrees = new O2OOpenCacheHashMap<>();
 
     public static TechTreeSavedData get(DimensionDataStorage dataStorage) {
-        return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::read, TechTreeSavedData::new, DATA_VERSION);
+        return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData::new, DATA_VERSION);
     }
 
     public static UUID getTeamUUID(Player player) {
@@ -72,7 +72,7 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static <T> boolean unlock(UUID uuid, TechNode<T> node, T args) {
         TechTree<T> tree = getOrCreateTree(uuid, node.getManager());
-        boolean changed = !tree.isUnlocked(node) && tree.unlock(node, args).isSuccess();
+        boolean changed = !tree.isUnlocked(node) && tree.unlock(node, args, uuid).isSuccess();
         if (changed) {
             INSTANCE.setDirty();
         }
@@ -106,7 +106,7 @@ public class TechTreeSavedData extends FastSavedData {
         return true;
     }
 
-    public static TechTreeSavedData read(DataIOStream stream, int dataVersion) {
+    public static TechTreeSavedData load(DataIOStream stream, int dataVersion) {
         var data = new TechTreeSavedData();
         try {
             int teamCount = stream.readVarInt();

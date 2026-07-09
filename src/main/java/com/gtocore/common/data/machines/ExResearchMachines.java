@@ -9,10 +9,11 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
-import com.gtocore.common.machine.multiblock.electric.AnalysisAndResearchCenterMachine;
-import com.gtocore.common.machine.multiblock.electric.ScanningStationMachine;
 import com.gtocore.common.machine.multiblock.electric.SupercomputingCenterMachine;
-import com.gtocore.common.machine.multiblock.electric.SyntheticDataAssemblyPlantMachine;
+import com.gtocore.common.machine.multiblock.electric.research.AnalysisAndResearchCenterMachine;
+import com.gtocore.common.machine.multiblock.electric.research.DataCenter;
+import com.gtocore.common.machine.multiblock.electric.research.ScanningStationMachine;
+import com.gtocore.common.machine.multiblock.electric.research.SyntheticDataAssemblyPlantMachine;
 import com.gtocore.common.machine.multiblock.part.AnalyzeHolderMachine;
 import com.gtocore.common.machine.multiblock.part.DataGenerateHolderMachine;
 import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
@@ -38,9 +39,7 @@ import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredActiveMachineR
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
-import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.DataBankMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -251,14 +250,8 @@ public final class ExResearchMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(OpV, GTCEu.id("block/machine/part/data_access_hatch")))
             .register();
 
-    public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataBankMachine::new)
-            .tooltips(Component.translatable("gtceu.machine.data_bank.tooltip.0"),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.1"),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.2"),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.3",
-                            FormattingUtil.formatNumbers(DataBankMachine.EUT_PER_HATCH)),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.4",
-                            FormattingUtil.formatNumbers(DataBankMachine.EUT_PER_HATCH_CHAINED)))
+    public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataCenter::new)
+            .tooltipsText("查看+导出", "preview+export")
             .nonYAxisRotation()
             .recipeType(GTRecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
@@ -341,10 +334,7 @@ public final class ExResearchMachines {
             .register();
 
     public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("primordial_scanning_station", "基元扫描站", ScanningStationMachine::new)
-            .tooltipsText("精密的多方块扫描仪。", "Precision multi-block scanner.")
-            .tooltipsText("用于扫描§b数据晶片§r。", "Used to scan onto §fData Crystal§7.")
-            .tooltipsText("需要§b算力§r来进行工作。", "Requires §fComputation§7 to work.")
-            .tooltipsText("提供更多的算力可以使研究进展的更快。", "Providing more Computation allows the recipe to run faster.")
+            .tooltipsText("录入", "input")
             .nonYAxisRotation()
             .recipeTypes(CRYSTAL_SCAN_RECIPES)
             .block(ADVANCED_COMPUTER_CASING)
@@ -391,10 +381,7 @@ public final class ExResearchMachines {
             .register();
 
     public static final MultiblockMachineDefinition ANALYSIS_AND_RESEARCH_CENTER = multiblock("analysis_and_research_center", "分析推演中心", AnalysisAndResearchCenterMachine::new)
-            .tooltipsText("分析/推演的一体化机器。", "An all-in-one analysis/deduction machine.")
-            .tooltipsText("根据§b扫描数据§r得到§b研究数据§r。", "§bResearch data§r is obtained based on §bscanning data§r.")
-            .tooltipsText("需要§b算力§r来进行工作。", "Requires §fComputation§7 to work.")
-            .tooltipsText("提供更多的算力可以使研究进展的更快。", "Providing more Computation allows the recipe to run faster.")
+            .tooltipsText("研究", "research")
             .nonYAxisRotation()
             .recipeTypes(DATA_ANALYSIS_RECIPES, DATA_INTEGRATION_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)

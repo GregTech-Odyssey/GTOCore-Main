@@ -1,6 +1,5 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.techtree.ExampleTree;
 import com.gtocore.api.techtree.TechTreeManager;
 import com.gtocore.api.techtree.ui.TechTreeWidget;
 
@@ -60,7 +59,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
                 @Override
                 public Widget createMainPage(FancyMachineUIWidget widget) {
-                    return new TechTreeWidget<>(0, 0, 176, 166, ExampleTree.MANAGER);
+                    return new TechTreeWidget<>(0, 0, 176, 166, manager);
                 }
 
                 @Override

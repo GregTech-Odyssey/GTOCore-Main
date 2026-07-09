@@ -7,6 +7,7 @@ import com.gtocore.api.techtree.TechTreeSavedData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.utils.ColorUtils;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
@@ -23,10 +24,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.client.AEKeyRendering;
 
+import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.Position;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -34,6 +37,7 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @DataGeneratorScanned
@@ -61,6 +65,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private static final int CONTENT_PADDING = 24;
     private static final int SCROLL_BAR_SIZE = 4;
     private static final int LINE_THICKNESS = 2;
+    private static final int HOVERED_DEPENDENCY_LINE_COLOR = 0xFF4DE3E3;
     private static final double MIN_ZOOM = 0.5D;
     private static final double MAX_ZOOM = 3.0D;
     private static final double ZOOM_STEP = 1.15D;
@@ -81,6 +86,10 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private final int maxNodeX;
     private final int maxNodeY;
     private double zoom = 1.0D;
+    private @Nullable TechNode<T> highlightedNode;
+    @Setter
+    @Nullable
+    private Consumer<TechNode<T>> onNodeClicked = this::tryUnlock;
 
     public TechTreeWidget(int x, int y, int width, int height, TechTreeManager<T> manager) {
         this(x, y, width, height, manager, ignored -> null);
@@ -232,14 +241,14 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             var node = orderedNodes.get(i);
             if (tree.isUnlocked(node)) {
                 states[i] = STATE_UNLOCKED_VALUE;
-            } else if (tree.tryUnlock(node, unlockArgs).isSuccess()) {
+            } else if (tree.tryUnlock(node, unlockArgs, TeamUtil.getTeamUUID(player.getUUID())).isSuccess()) {
                 states[i] = STATE_AVAILABLE;
             }
         }
         return states;
     }
 
-    private void syncNodeStates() {
+    public void syncNodeStates() {
         if (isRemote()) {
             return;
         }
@@ -287,8 +296,9 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private List<Component> createTooltip(TechNode<T> node, byte state) {
         List<Component> tooltips = new ArrayList<>();
         tooltips.add(TechTreeManager.getNodeName(node).copy().withStyle(getFormattingForState(state)));
-        if (!node.description.isBlank()) {
-            tooltips.add(Component.literal(node.description).withStyle(ChatFormatting.GRAY));
+        var desc = node.desc();
+        if (desc != null) {
+            tooltips.add(desc.withStyle(ChatFormatting.GRAY));
         }
         tooltips.add(Component.translatable(switch (state) {
             case STATE_UNLOCKED_VALUE -> STATUS_UNLOCKED;
@@ -332,22 +342,40 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         };
     }
 
-    private int getLineColor(TechNode<T> prerequisite, TechNode<T> node) {
+    @OnlyIn(Dist.CLIENT)
+    private int getPulsingHighlightColor(int baseColor) {
+        return ColorUtils.getInterpolatedColor(HOVERED_DEPENDENCY_LINE_COLOR, baseColor, (float) (0.5 - Math.sin(System.currentTimeMillis() / 200.0D) * 0.5));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private int getNodeBorderColor(TechNode<T> node, byte state) {
+        int baseColor = getNodeBorderColor(state);
+        if (highlightedNode != null && highlightedNode.prerequisites.contains(node)) {
+            return getPulsingHighlightColor(baseColor);
+        }
+        return baseColor;
+    }
+
+    private int getLineColor(TechNode<T> prerequisite, TechNode<T> node, @Nullable TechNode<T> hoveredNode) {
+        int value = 0xFF4F4F57;
         byte prerequisiteState = getNodeState(prerequisite);
         byte nodeState = getNodeState(node);
         if (nodeState == STATE_UNLOCKED_VALUE) {
-            return 0xFF5CC978;
+            value = 0xFF5CC978;
         }
         if (nodeState == STATE_AVAILABLE && prerequisiteState == STATE_UNLOCKED_VALUE) {
-            return 0xFFE3C45D;
+            value = 0xFFE3C45D;
         }
         if (prerequisiteState == STATE_UNLOCKED_VALUE) {
-            return 0xFF7A7A82;
+            value = 0xFF7A7A82;
         }
-        return 0xFF4F4F57;
+        if (hoveredNode == node) {
+            return getPulsingHighlightColor(value);
+        }
+        return value;
     }
 
-    private void tryUnlock(TechNode<T> node) {
+    public void tryUnlock(TechNode<T> node) {
         Player player = getGuiPlayer();
         if (player == null) {
             return;
@@ -359,7 +387,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         }
 
         T unlockArgs = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
-        ActionResult result = tree.tryUnlock(node, unlockArgs);
+        ActionResult result = tree.tryUnlock(node, unlockArgs, TeamUtil.getTeamUUID(player.getUUID()));
         if (!result.isSuccess()) {
             if (result.reason() != null) {
                 player.displayClientMessage(result.reason(), true);
@@ -424,19 +452,44 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
             Position pos = getPosition();
             int nodeSize = getScaledNodeSize();
+            highlightedNode = findHoveredNode(mouseX, mouseY, pos, nodeSize);
             for (var node : orderedNodes) {
-                int endX = pos.x + toCanvasX(node) + nodeSize / 2;
-                int endY = pos.y + toCanvasY(node) + nodeSize / 2;
-                for (var prerequisite : node.prerequisites) {
-                    int startX = pos.x + toCanvasX(prerequisite) + nodeSize / 2;
-                    int startY = pos.y + toCanvasY(prerequisite) + nodeSize / 2;
-                    int middleX = (startX + endX) / 2;
-                    int color = getLineColor(prerequisite, node);
-                    drawHorizontalLine(graphics, startX, middleX, startY, color);
-                    drawVerticalLine(graphics, middleX, startY, endY, color);
-                    drawHorizontalLine(graphics, middleX, endX, endY, color);
+                if (node == highlightedNode) {
+                    continue;
+                }
+                drawDependencyLines(graphics, pos, nodeSize, node, highlightedNode);
+            }
+            if (highlightedNode != null) {
+                drawDependencyLines(graphics, pos, nodeSize, highlightedNode, highlightedNode);
+            }
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private void drawDependencyLines(GuiGraphics graphics, Position pos, int nodeSize, TechNode<T> node, @Nullable TechNode<T> hoveredNode) {
+            int endX = pos.x + toCanvasX(node) + nodeSize / 2;
+            int endY = pos.y + toCanvasY(node) + nodeSize / 2;
+            for (var prerequisite : node.prerequisites) {
+                int startX = pos.x + toCanvasX(prerequisite) + nodeSize / 2;
+                int startY = pos.y + toCanvasY(prerequisite) + nodeSize / 2;
+                int middleX = (startX + endX) / 2;
+                int color = getLineColor(prerequisite, node, hoveredNode);
+                drawHorizontalLine(graphics, startX, middleX, startY, color);
+                drawVerticalLine(graphics, middleX, startY, endY, color);
+                drawHorizontalLine(graphics, middleX, endX, endY, color);
+            }
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private @Nullable TechNode<T> findHoveredNode(double mouseX, double mouseY, Position canvasPosition, int nodeSize) {
+            for (int i = orderedNodes.size() - 1; i >= 0; i--) {
+                TechNode<T> node = orderedNodes.get(i);
+                int nodeX = canvasPosition.x + toCanvasX(node);
+                int nodeY = canvasPosition.y + toCanvasY(node);
+                if (isMouseOver(nodeX, nodeY, nodeSize, nodeSize, mouseX, mouseY)) {
+                    return node;
                 }
             }
+            return null;
         }
 
         @OnlyIn(Dist.CLIENT)
@@ -471,8 +524,8 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
 
         @Override
         public void handleClientAction(int id, FriendlyByteBuf buffer) {
-            if (id == CLICK_ACTION) {
-                tryUnlock(node);
+            if (id == CLICK_ACTION && onNodeClicked != null) {
+                onNodeClicked.accept(node);
                 return;
             }
             super.handleClientAction(id, buffer);
@@ -486,7 +539,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             int nodeSize = getSize().width;
             byte state = getNodeState(index);
             DrawerHelper.drawSolidRect(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeFillColor(state));
-            DrawerHelper.drawBorder(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeBorderColor(state), 1);
+            DrawerHelper.drawBorder(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeBorderColor(node, state), 1);
             if (state == STATE_LOCKED) {
                 DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, nodeSize - 2, nodeSize - 2, 0x55000000);
             }

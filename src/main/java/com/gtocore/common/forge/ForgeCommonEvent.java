@@ -1,5 +1,6 @@
 package com.gtocore.common.forge;
 
+import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
@@ -335,10 +336,15 @@ public final class ForgeCommonEvent {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
             if (serverLevel == null) return;
             var dataStorage = serverLevel.getDataStorage();
-            TechTreeSavedData.INSTANCE = FastSavedData.getFromFile(TechTreeSavedData.DATA_NAME, dataStorage, TechTreeSavedData::read, TechTreeSavedData.DATA_VERSION);
+            TechTreeSavedData.INSTANCE = FastSavedData.getFromFile(TechTreeSavedData.DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData.DATA_VERSION);
+            TeamResearchSavedDtat.INSTANCE = FastSavedData.getFromFile(TeamResearchSavedDtat.DATA_NAME, dataStorage, TeamResearchSavedDtat::load, TeamResearchSavedDtat.DATA_VERSION);
             if (TechTreeSavedData.INSTANCE == null) {
                 TechTreeSavedData.INSTANCE = new TechTreeSavedData();
                 dataStorage.cache.put(TechTreeSavedData.DATA_NAME, TechTreeSavedData.INSTANCE);
+            }
+            if (TeamResearchSavedDtat.INSTANCE == null) {
+                TeamResearchSavedDtat.INSTANCE = new TeamResearchSavedDtat();
+                dataStorage.cache.put(TeamResearchSavedDtat.DATA_NAME, TeamResearchSavedDtat.INSTANCE);
             }
             DysonSphereSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(DysonSphereSavaedData::new, DysonSphereSavaedData::new, "dyson_sphere_data");
             RecipeRunLimitSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(RecipeRunLimitSavaedData::new, RecipeRunLimitSavaedData::new, "recipe_run_limit_data");

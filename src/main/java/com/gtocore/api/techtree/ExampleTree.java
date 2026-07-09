@@ -1,7 +1,5 @@
 package com.gtocore.api.techtree;
 
-import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
-
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
@@ -17,62 +15,55 @@ public final class ExampleTree {
             "Example Tree",
             new ItemStackTexture(Blocks.DIRT.asItem()));
 
-    public static final TechNode<Void> DIRT = MANAGER.builder(
-            "dirt",
-            "泥土",
-            "Dirt",
-            "Example root node")
-            .icon(AEItemKey.of(Blocks.DIRT))
-            .requirements(ignored -> ActionResult.SUCCESS)
+    public static final TechNode<Void> WOOD = MANAGER.builder(
+            "wood",
+            "木头",
+            "Wood")
+            .icon(AEItemKey.of(Blocks.OAK_LOG))
+            .description("示例根节点", "Example root node")
             .build();
 
     public static final TechNode<Void> COBBLESTONE = MANAGER.builder(
             "cobblestone",
             "圆石",
-            "Cobblestone",
-            "Unlocked after dirt")
+            "Cobblestone")
             .icon(AEItemKey.of(Blocks.COBBLESTONE))
-            .requirements(ignored -> ActionResult.SUCCESS)
-            .prerequisites(DIRT)
+            .prerequisites(WOOD)
             .build();
 
     public static final TechNode<Void> IRON = MANAGER.builder(
             "iron",
             "铁",
-            "Iron",
-            "Unlocked after cobblestone")
+            "Iron")
             .icon(AEItemKey.of(Items.IRON_INGOT))
-            .requirements(ignored -> ActionResult.SUCCESS)
+            .description("示例多分支铁节点", "Example iron node with multiple branches")
             .prerequisites(COBBLESTONE)
             .build();
 
     public static final TechNode<Void> GOLD = MANAGER.builder(
             "gold",
             "金",
-            "Gold",
-            "Unlocked after iron")
+            "Gold")
             .icon(AEItemKey.of(Items.GOLD_INGOT))
-            .requirements(ignored -> ActionResult.SUCCESS)
+            .description("示例金节点", "Example gold node")
             .prerequisites(IRON)
             .build();
 
     public static final TechNode<Void> DIAMOND = MANAGER.builder(
             "diamond",
             "钻石",
-            "Diamond",
-            "Unlocked after iron")
+            "Diamond")
             .icon(AEItemKey.of(Items.DIAMOND))
-            .requirements(ignored -> ActionResult.SUCCESS)
+            .description("示例钻石节点", "Example diamond node")
             .prerequisites(IRON)
             .build();
 
     public static final TechNode<Void> NETHERITE = MANAGER.builder(
             "netherite",
             "下界合金",
-            "Netherite",
-            "Unlocked after gold and diamond")
+            "Netherite")
             .icon(AEItemKey.of(Items.NETHERITE_INGOT))
-            .requirements(ignored -> ActionResult.SUCCESS)
+            .description("示例多依赖下界合金节点", "Example netherite node with multiple dependencies")
             .prerequisites(GOLD, DIAMOND)
             .build();
 

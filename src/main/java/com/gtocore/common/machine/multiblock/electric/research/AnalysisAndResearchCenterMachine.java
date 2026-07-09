@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.multiblock.electric;
+package com.gtocore.common.machine.multiblock.electric.research;
 
 import com.gtocore.common.machine.multiblock.part.AnalyzeHolderMachine;
 import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
