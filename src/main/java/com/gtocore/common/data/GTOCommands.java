@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.api.techtree.TechTreeCommands;
+import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.common.saved.DysonSphereSavaedData;
 import com.gtocore.common.saved.VoidWorldTimeSavedData;
@@ -120,8 +121,8 @@ public final class GTOCommands {
             return 0;
         }
         boolean fixed = VoidWorldTimeSavedData.INSTANCE.toggleFixedTime();
+        ForgeCommonEvent.syncVoidWorldTime(ctx.getSource().getServer());
         if (fixed) {
-            player.serverLevel().setDayTime(1000L);
             ctx.getSource().sendSuccess(() -> Component.translatable("gtocore.lang.void_world_time_locked"), false);
         } else {
             ctx.getSource().sendSuccess(() -> Component.translatable("gtocore.lang.void_world_time_unlocked"), false);

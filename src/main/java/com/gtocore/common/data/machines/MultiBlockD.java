@@ -967,7 +967,7 @@ public final class MultiBlockD {
                     .aisle(" GGG ", "DAIAD", "DIIID", "DAIAD", " DDD ")
                     .aisle(" GGG ", "DAIAD", "DIIID", "DAIAD", " DDD ")
                     .aisle("BFBFB", "BFIFB", "BIIIB", "BFIFB", "BBBBB")
-                    .aisle("BEBEB", "CAIAC", "CIIIC", "CAIAC", "BCCCC")
+                    .aisle("BEBEB", "CAIAC", "CIIIC", "CAIAC", "BCCCB")
                     .aisle("BEBEB", "BBBBB", "BHHHB", "BBBBB", "BBBBB")
                     .aisle(" EAE ", "     ", "     ", "     ", "     ")
                     .aisle("AEAEA", "     ", "     ", "     ", "     ")
