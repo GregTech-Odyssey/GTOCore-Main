@@ -6,6 +6,7 @@ import com.gtolib.utils.RLUtils;
 import com.gregtechceu.gtceu.GTCEu;
 
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
+import com.lowdragmc.lowdraglib.gui.texture.TransformTexture;
 
 public final class GTOGuiTextures {
 
@@ -29,6 +30,7 @@ public final class GTOGuiTextures {
     public static final ResourceTexture PROGRESS_BAR_DRILLING_MODULE = getTexture("progress_bar/progress_bar_drilling_module");
 
     public static final ResourceTexture DATA_CRYSTAL_OVERLAY = getTexture("overlay/data_crystal_overlay");
+    public static final TransformTexture NANITES_OVERLAY = getTexture("overlay/nanites_overlay").scale(0.25f);
     public static final ResourceTexture PLANET_TELEPORT = getTexture("overlay/planet_teleport");
     public static final ResourceTexture HIGH_SPEED_MODE = getTexture("overlay/high_speed_mode");
     public static final ResourceTexture OVERCLOCK_CONFIG = getTexture("overlay/overclock_config");

@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
-import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
@@ -143,7 +141,7 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         private String cnDesc;
         private String enDesc;
         private @Nullable AEKey icon;
-        private BiFunction<T, UUID, ActionResult> requirements = (ign, ored) -> ActionResult.SUCCESS;
+        private TechNode.IRequirement<T> requirements = (ign, ored) -> ActionResult.SUCCESS;
         private ImmutableList<TechNode<T>> prerequisites = ImmutableList.of();
 
         private Builder(TechTreeManager<T> manager, String name, String cn, String en) {
@@ -173,7 +171,7 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
             return this;
         }
 
-        public Builder<T> requirements(BiFunction<T, UUID, ActionResult> requirements) {
+        public Builder<T> requirements(TechNode.IRequirement<T> requirements) {
             this.requirements = Objects.requireNonNull(requirements, "requirements");
             return this;
         }

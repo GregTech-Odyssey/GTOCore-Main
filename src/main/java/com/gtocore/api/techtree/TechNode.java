@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiFunction;
 
 @DataGeneratorScanned
 public final class TechNode<T> {
@@ -31,9 +30,9 @@ public final class TechNode<T> {
     @Nullable
     public final AEKey icon;
     public final List<TechNode<T>> prerequisites;
-    private final BiFunction<T, UUID, ActionResult> requirements;
+    private final IRequirement<T> requirements;
 
-    TechNode(TechTreeManager<T> manager, String name, @Nullable AEKey icon, BiFunction<T, UUID, ActionResult> requirements, List<TechNode<T>> prerequisites) {
+    TechNode(TechTreeManager<T> manager, String name, @Nullable AEKey icon, IRequirement<T> requirements, List<TechNode<T>> prerequisites) {
         this.manager = manager;
         this.name = name;
         this.icon = icon;
@@ -45,7 +44,7 @@ public final class TechNode<T> {
         for (var prereq : prerequisites) {
             if (!unlockedNodes.contains(prereq)) return ActionResult.fail(Component.translatable(UNLOCKED, TechTreeManager.getNodeName(prereq)));
         }
-        return requirements.apply(args, team);
+        return requirements.test(args, team);
     }
 
     public MutableComponent desc() {
@@ -54,5 +53,11 @@ public final class TechNode<T> {
 
     public MutableComponent getDisplayName() {
         return TechTreeManager.getNodeName(this);
+    }
+
+    @FunctionalInterface
+    public interface IRequirement<T> {
+
+        ActionResult test(T args, UUID team);
     }
 }

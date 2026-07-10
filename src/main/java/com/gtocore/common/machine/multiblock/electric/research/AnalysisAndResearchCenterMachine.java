@@ -30,7 +30,7 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
         super(holder);
     }
 
-    private int mode = 0;
+    private Mode mode = Mode.NONE;
 
     @Override
     public void onStructureFormed() {
@@ -45,7 +45,7 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
                 this.AnalyzeHolder = analyzeHolder;
                 // 添加物品处理器（包含扫描槽、催化剂槽和数据槽）
                 addHandlerList(RecipeHandlerUnit.of(IO.IN, analyzeHolder.getAsHandler()));
-                mode = 1;
+                mode = Mode.ANALYSIS;
             }
             if (part instanceof ResearchHolderMachine researchHolder) {
                 if (researchHolder.getFrontFacing() != getFrontFacing()) {
@@ -54,12 +54,12 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
                 }
                 this.ResearchHolder = researchHolder;
                 addHandlerList(RecipeHandlerUnit.of(IO.IN, researchHolder.getAsHandler()));
-                mode = 2;
+                mode = Mode.RESEARCH;
             }
         }
 
         // 必须有扫描部件
-        if (mode == 0) {
+        if (mode == Mode.NONE) {
             onStructureInvalid();
         }
     }
@@ -67,7 +67,7 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
     @Override
     public boolean checkPattern() {
         boolean isFormed = super.checkPattern();
-        if (isFormed && mode != 0) {
+        if (isFormed && mode != Mode.NONE) {
             onStructureInvalid();
         }
         return isFormed;
@@ -76,11 +76,11 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
     @Override
     public void onStructureInvalid() {
         // 重置扫描部件状态
-        if (AnalyzeHolder != null && mode == 1) {
+        if (AnalyzeHolder != null && mode == Mode.ANALYSIS) {
             AnalyzeHolder.setLocked(false);
             AnalyzeHolder = null;
         }
-        if (ResearchHolder != null && mode == 2) {
+        if (ResearchHolder != null && mode == Mode.RESEARCH) {
             ResearchHolder.setLocked(false);
             ResearchHolder = null;
         }
@@ -130,5 +130,11 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
         }
 
         return super.getRealRecipe(unit, recipe);
+    }
+
+    enum Mode {
+        NONE,
+        ANALYSIS,
+        RESEARCH
     }
 }

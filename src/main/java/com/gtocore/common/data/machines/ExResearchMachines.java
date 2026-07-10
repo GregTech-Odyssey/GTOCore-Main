@@ -383,7 +383,7 @@ public final class ExResearchMachines {
     public static final MultiblockMachineDefinition ANALYSIS_AND_RESEARCH_CENTER = multiblock("analysis_and_research_center", "分析推演中心", AnalysisAndResearchCenterMachine::new)
             .tooltipsText("研究", "research")
             .nonYAxisRotation()
-            .recipeTypes(DATA_ANALYSIS_RECIPES, DATA_INTEGRATION_RECIPES)
+            .recipeTypes(DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
             .pattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("    ABBBA    ", "    AAAAA    ", "             ", "             ", "             ", "             ", "             ", "             ", "             ", "    AAAAA    ", "    AAAAA    ")
