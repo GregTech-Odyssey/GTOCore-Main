@@ -48,6 +48,7 @@ import static com.gtocore.api.machine.ILargeSpaceStationMachine.ConnectType.*;
 import static com.gtocore.api.machine.part.GTOPartAbility.DRONE_HATCH;
 import static com.gtocore.api.pattern.GTOPredicates.autoSpaceMachineAbilities;
 import static com.gtocore.api.pattern.GTOPredicates.light;
+import static com.gtocore.common.data.GTOMachines.EXHAUST_FAN;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
 
 public class SpaceMultiblock {
@@ -108,7 +109,9 @@ public class SpaceMultiblock {
                     .where('A', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get()))
                     .where('B', blocks(GTOBlocks.ALUMINUM_ALLOY_8090_SKIN_MECHANICAL_BLOCK.get()))
                     .where('C', GTOPredicates.frame(GTOMaterials.StainlessSteelGC4))
-                    .where('D', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)).or(abilities(IMPORT_FLUIDS, EXPORT_FLUIDS, INPUT_ENERGY)))
+                    .where('D', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
+                            .or(abilities(IMPORT_FLUIDS, EXPORT_FLUIDS, INPUT_ENERGY))
+                            .or(blocks(EXHAUST_FAN.get())))
                     .where('e', ISpacePredicateMachine.photovoltaicPlantSupplyingPredicate.get())
                     .where('E', blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))
                     .where('F', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
@@ -211,7 +214,8 @@ public class SpaceMultiblock {
                     .where('K', blocks(GTOBlocks.SPACE_ENGINE_NOZZLE.get()))
                     .where('L', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
                     .where('M', GTOPredicates.frame(GTOMaterials.AluminumAlloy7050))
-                    .where('N', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)))
+                    .where('N', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
+                            .or(blocks(EXHAUST_FAN.get())))
                     .where('O', blocks(GTOBlocks.STAINLESS_STEEL_CORROSION_RESISTANT_CASING.get()))
                     .where('P', blocks(GTOBlocks.INSULATION_TILE_MECHANICAL_BLOCK.get()))
                     .where('Q', blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))

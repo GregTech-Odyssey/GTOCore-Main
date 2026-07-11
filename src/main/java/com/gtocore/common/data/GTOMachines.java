@@ -1098,6 +1098,13 @@ public final class GTOMachines {
                     .register(),
             LV, MV, HV);
 
+    public static final MachineDefinition EXHAUST_FAN = machine("exhaust_fan", "消声仓排气口", ExhaustFanMachine::new)
+            .allRotation()
+            .tooltipsText("Connected to the exhaust pipe of the silencer, which can export the smoke in the silencer to this", "连接到消声仓烟管，可将消声仓内的烟雾导出到此")
+            .overlayTieredHullRenderer("rotor_hatch")
+            .tier(0)
+            .register();
+
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)
             .tooltipBuilder((stack, list) -> GTOMachineTooltips.BasicMonitorTooltips.apply(list))
             .register();
