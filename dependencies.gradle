@@ -138,17 +138,17 @@ dependencies {
     modServerRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
 
     // Sophisticated
-    modCompileOnly("curse.maven:sophisticated-backpacks-422301:8249823")
-    modClientRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
-    modServerRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
+    modCompileOnly("curse.maven:sophisticated-backpacks-422301:9083935")
+    modClientRuntimeOnly("curse.maven:sophisticated-backpacks-422301:9083935")
+    modServerRuntimeOnly("curse.maven:sophisticated-backpacks-422301:9083935")
 
-    modCompileOnly("curse.maven:sophisticated-core-618298:8249804")
-    modClientRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
-    modServerRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
+    modCompileOnly("curse.maven:sophisticated-core-618298:9112479")
+    modClientRuntimeOnly("curse.maven:sophisticated-core-618298:9112479")
+    modServerRuntimeOnly("curse.maven:sophisticated-core-618298:9112479")
 
-    modCompileOnly("curse.maven:sophisticated-storage-619320:8249841")
-    modClientRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
-    modServerRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
+    modCompileOnly("curse.maven:sophisticated-storage-619320:9083978")
+    modClientRuntimeOnly("curse.maven:sophisticated-storage-619320:9083978")
+    modServerRuntimeOnly("curse.maven:sophisticated-storage-619320:9083978")
 
     // Tool Belt
     modCompileOnly("curse.maven:tool-belt-260262:5929061")
