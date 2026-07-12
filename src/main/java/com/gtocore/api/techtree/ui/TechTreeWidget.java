@@ -65,6 +65,9 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private static final int CONTENT_PADDING = 24;
     private static final int SCROLL_BAR_SIZE = 4;
     private static final int LINE_THICKNESS = 2;
+    private static final int TIER_SEPARATOR_DASH_LENGTH = 6;
+    private static final int TIER_SEPARATOR_GAP = 4;
+    private static final int TIER_SEPARATOR_COLOR = 0x66FFFFFF;
     private static final int HOVERED_DEPENDENCY_LINE_COLOR = 0xFF4DE3E3;
     private static final double MIN_ZOOM = 0.5D;
     private static final double MAX_ZOOM = 3.0D;
@@ -87,6 +90,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private final int maxNodeY;
     private double zoom = 1.0D;
     private @Nullable TechNode<T> highlightedNode;
+    private boolean capturedMouseInteraction;
     @Setter
     @Nullable
     private Consumer<TechNode<T>> onNodeClicked = this::tryUnlock;
@@ -204,6 +208,11 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private void panViewport(double deltaX, double deltaY) {
         setScrollXOffset(Mth.clamp(scrollXOffset - (int) deltaX, 0, getHorizontalScrollLimit()));
         setScrollYOffset(Mth.clamp(scrollYOffset - (int) deltaY, 0, getVerticalScrollLimit()));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private boolean isMouseWithinBounds(double mouseX, double mouseY) {
+        return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -432,12 +441,48 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
-        if (wheelDelta != 0 && isMouseOverElement(mouseX, mouseY) && isCtrlDown()) {
+        if (!isMouseWithinBounds(mouseX, mouseY)) {
+            return false;
+        }
+        if (wheelDelta != 0 && isCtrlDown()) {
             zoomAround(mouseX, mouseY, wheelDelta > 0 ? zoom * ZOOM_STEP : zoom / ZOOM_STEP);
             setFocus(true);
             return true;
         }
         return super.mouseWheelMove(mouseX, mouseY, wheelDelta);
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!isMouseWithinBounds(mouseX, mouseY)) {
+            return false;
+        }
+        capturedMouseInteraction = super.mouseClicked(mouseX, mouseY, button);
+        return capturedMouseInteraction;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (!isMouseWithinBounds(mouseX, mouseY)) {
+            return false;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        boolean insideBounds = isMouseWithinBounds(mouseX, mouseY);
+        if (!insideBounds && !capturedMouseInteraction) {
+            return false;
+        }
+        try {
+            return super.mouseReleased(mouseX, mouseY, button);
+        } finally {
+            capturedMouseInteraction = false;
+        }
     }
 
     private final class TechTreeCanvas extends Widget {
@@ -452,7 +497,8 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
             Position pos = getPosition();
             int nodeSize = getScaledNodeSize();
-            highlightedNode = findHoveredNode(mouseX, mouseY, pos, nodeSize);
+            drawTierSeparators(graphics, pos, nodeSize);
+            highlightedNode = TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY) ? findHoveredNode(mouseX, mouseY, pos, nodeSize) : null;
             for (var node : orderedNodes) {
                 if (node == highlightedNode) {
                     continue;
@@ -461,6 +507,26 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             }
             if (highlightedNode != null) {
                 drawDependencyLines(graphics, pos, nodeSize, highlightedNode, highlightedNode);
+            }
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private void drawTierSeparators(GuiGraphics graphics, Position pos, int nodeSize) {
+            List<TechTreeLayout.TierRegion> tierRegions = layout.tierRegions();
+            if (tierRegions.size() < 2) {
+                return;
+            }
+
+            int inset = Math.max(2, getScaledPadding() / 2);
+            int startY = pos.y + inset;
+            int endY = pos.y + getSize().height - inset;
+            for (int i = 0; i < tierRegions.size() - 1; i++) {
+                var left = tierRegions.get(i);
+                var right = tierRegions.get(i + 1);
+                int leftRegionRight = pos.x + scaleValue(left.maxX()) + contentOffsetX + nodeSize;
+                int rightRegionLeft = pos.x + scaleValue(right.minX()) + contentOffsetX;
+                int separatorX = (leftRegionRight + rightRegionLeft) / 2;
+                drawVerticalDashedLine(graphics, separatorX, startY, endY, TIER_SEPARATOR_COLOR);
             }
         }
 
@@ -506,6 +572,19 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             int maxY = Math.max(startY, endY);
             int thickness = getScaledLineThickness();
             graphics.fill(x - thickness / 2, minY, x - thickness / 2 + thickness, maxY + 1, color);
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private void drawVerticalDashedLine(GuiGraphics graphics, int x, int startY, int endY, int color) {
+            int minY = Math.min(startY, endY);
+            int maxY = Math.max(startY, endY);
+            int thickness = Math.max(1, scaleValue(1));
+            int dashLength = Math.max(2, scaleValue(TIER_SEPARATOR_DASH_LENGTH));
+            int gap = Math.max(2, scaleValue(TIER_SEPARATOR_GAP));
+            for (int y = minY; y <= maxY; y += dashLength + gap) {
+                int dashEnd = Math.min(y + dashLength, maxY + 1);
+                graphics.fill(x - thickness / 2, y, x - thickness / 2 + thickness, dashEnd, color);
+            }
         }
     }
 
@@ -571,7 +650,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         @OnlyIn(Dist.CLIENT)
         public void drawInForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
-            if (!isMouseOverNode(mouseX, mouseY)) {
+            if (!isMouseOverNode(mouseX, mouseY) || !TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY)) {
                 return;
             }
 
@@ -582,7 +661,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
 
         @Override
         public boolean allowSelected(double mouseX, double mouseY, int button) {
-            return button == 0 && isMouseOverNode(mouseX, mouseY);
+            return button == 0 && isMouseOverNode(mouseX, mouseY) && TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY);
         }
 
         @Override
@@ -610,6 +689,9 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
 
         @OnlyIn(Dist.CLIENT)
         private boolean isMouseOverNode(double mouseX, double mouseY) {
+            if (!TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY)) {
+                return false;
+            }
             Position position = getPosition();
             return isMouseOver(position.x, position.y, getSize().width, getSize().height, mouseX, mouseY);
         }

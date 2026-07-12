@@ -30,21 +30,25 @@ public final class TechNode<T> {
     @Nullable
     public final AEKey icon;
     public final List<TechNode<T>> prerequisites;
+    @Getter
     private final IRequirement<T> requirements;
+    @Getter
+    private final int tier;
 
-    TechNode(TechTreeManager<T> manager, String name, @Nullable AEKey icon, IRequirement<T> requirements, List<TechNode<T>> prerequisites) {
+    TechNode(TechTreeManager<T> manager, String name, @Nullable AEKey icon, IRequirement<T> requirements, List<TechNode<T>> prerequisites, int tier) {
         this.manager = manager;
         this.name = name;
         this.icon = icon;
         this.requirements = requirements;
         this.prerequisites = prerequisites.isEmpty() ? Collections.emptyList() : prerequisites;
+        this.tier = tier;
     }
 
-    ActionResult tryUnlock(Set<TechNode<T>> unlockedNodes, T args, UUID team) {
+    ActionResult tryUnlock(Set<TechNode<T>> unlockedNodes, T args, UUID team, boolean simulate) {
         for (var prereq : prerequisites) {
             if (!unlockedNodes.contains(prereq)) return ActionResult.fail(Component.translatable(UNLOCKED, TechTreeManager.getNodeName(prereq)));
         }
-        return requirements.test(args, team);
+        return requirements.test(this, args, team, simulate);
     }
 
     public MutableComponent desc() {
@@ -58,6 +62,6 @@ public final class TechNode<T> {
     @FunctionalInterface
     public interface IRequirement<T> {
 
-        ActionResult test(T args, UUID team);
+        ActionResult test(TechNode<T> node, T args, UUID team, boolean simulate);
     }
 }

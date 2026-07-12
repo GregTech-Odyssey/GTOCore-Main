@@ -4,6 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
 import com.gtocore.data.CraftingComponents;
+import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RegistriesUtils;
@@ -49,6 +50,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_PACKER.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.INSTANCE.getAluminumMagnesiumAlloyForging())
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("gravity_bending_device")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)

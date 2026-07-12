@@ -1,5 +1,8 @@
 package com.gtocore.common.data;
 
+import com.gtocore.api.techtree.TechNode;
+import com.gtocore.api.techtree.TechTreeManager;
+
 import net.minecraft.network.FriendlyByteBuf;
 
 import appeng.api.stacks.AEFluidKey;
@@ -11,6 +14,7 @@ import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datasream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datasream.codec.DataCodec;
 import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datasream.data.MapData;
 import com.gto.datasynclib.util.DataCodecs;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +22,15 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class GTOCodecs {
 
+    private static final String TECH_TREE_KEY = "tree";
+    private static final String TECH_NODE_KEY = "node";
+
     public static void init() {
         DataSyncCodec.register(AEItemKey.class, GTOCodecs.AE_ITEM_KEY_STREAM_CODEC, GTOCodecs.AE_ITEM_KEY_DATA_CODEC);
         DataSyncCodec.register(AEFluidKey.class, GTOCodecs.AE_FLUID_KEY_STREAM_CODEC, GTOCodecs.AE_FLUID_KEY_DATA_CODEC);
         DataSyncCodec.register(AEKey.class, GTOCodecs.AE_KEY_STREAM_CODEC, GTOCodecs.AE_KEY_DATA_CODEC);
         DataSyncCodec.register(GenericStack.class, GTOCodecs.GENERIC_STACK_STREAM_CODEC, GTOCodecs.GENERIC_STACK_DATA_CODEC);
+        registerTechNodeCodec();
     }
 
     public final DataCodec<AEItemKey> AE_ITEM_KEY_DATA_CODEC = new DataCodec<>() {
@@ -74,6 +82,25 @@ public class GTOCodecs {
         @Override
         public @NotNull Data encode(GenericStack obj) {
             return DataCodecs.COMPOUND_TAG_CODEC.encode(GenericStack.writeTag(obj));
+        }
+    };
+
+    public final DataCodec<TechNode<?>> TECH_NODE_DATA_CODEC = new DataCodec<>() {
+
+        @Override
+        public TechNode<?> decode(@NotNull Data data, int dataVersion) {
+            if (!(data instanceof MapData mapData)) {
+                return null;
+            }
+            return resolveTechNode(mapData.getString(TECH_TREE_KEY), mapData.getString(TECH_NODE_KEY));
+        }
+
+        @Override
+        public @NotNull Data encode(TechNode<?> obj) {
+            MapData mapData = new MapData(2);
+            mapData.putString(TECH_TREE_KEY, obj.getManager().getId());
+            mapData.putString(TECH_NODE_KEY, obj.name);
+            return mapData;
         }
     };
 
@@ -134,4 +161,31 @@ public class GTOCodecs {
             return new GenericStack(what, buf.readVarLong());
         }
     };
+
+    public final ByteStreamCodec<TechNode<?>> TECH_NODE_STREAM_CODEC = new ByteStreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf buf, TechNode<?> obj) {
+            buf.writeUtf(obj.getManager().getId());
+            buf.writeUtf(obj.name);
+        }
+
+        @Override
+        public TechNode<?> decode(FriendlyByteBuf buf) {
+            return resolveTechNode(buf.readUtf(), buf.readUtf());
+        }
+    };
+
+    private static TechNode<?> resolveTechNode(String treeId, String nodeId) {
+        if (treeId == null || nodeId == null) {
+            return null;
+        }
+        TechTreeManager<?> manager = TechTreeManager.getManager(treeId);
+        return manager == null ? null : manager.getNode(nodeId);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static void registerTechNodeCodec() {
+        DataSyncCodec.register((Class) TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
+    }
 }

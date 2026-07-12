@@ -8,10 +8,18 @@ import java.util.Map;
 
 public final class TechTreeLayout<T> {
 
-    public record NodePlacement(int x, int y, int layer, int row) {}
+    public record NodePlacement(int x, int y, int column, int row, int tier) {
+
+        public int layer() {
+            return column;
+        }
+    }
+
+    public record TierRegion(int tier, int startColumn, int endColumn, int minX, int maxX) {}
 
     private final List<TechNode<T>> orderedNodes;
     private final Map<TechNode<T>, NodePlacement> placements;
+    private final List<TierRegion> tierRegions;
     private final int minX;
     private final int minY;
     private final int maxX;
@@ -19,12 +27,14 @@ public final class TechTreeLayout<T> {
 
     TechTreeLayout(List<TechNode<T>> orderedNodes,
                    Map<TechNode<T>, NodePlacement> placements,
+                   List<TierRegion> tierRegions,
                    int minX,
                    int minY,
                    int maxX,
                    int maxY) {
         this.orderedNodes = List.copyOf(orderedNodes);
         this.placements = Map.copyOf(new IdentityHashMap<>(placements));
+        this.tierRegions = List.copyOf(tierRegions);
         this.minX = minX;
         this.minY = minY;
         this.maxX = maxX;
@@ -50,6 +60,10 @@ public final class TechTreeLayout<T> {
 
     public int getY(TechNode<?> node) {
         return getPlacement(node).y();
+    }
+
+    public List<TierRegion> tierRegions() {
+        return tierRegions;
     }
 
     public int minX() {

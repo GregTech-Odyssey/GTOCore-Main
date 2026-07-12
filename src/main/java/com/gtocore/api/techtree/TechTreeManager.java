@@ -98,7 +98,7 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
                 name,
                 builder.icon,
                 builder.requirements,
-                builder.prerequisites);
+                builder.prerequisites, builder.tier);
         definitions.put(name, definition);
         layout = null;
         if (NODE_LANG != null) {
@@ -132,6 +132,10 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         }
     }
 
+    public TechNode<T> getNode(String name) {
+        return definitions.get(name);
+    }
+
     public static final class Builder<T> {
 
         private final TechTreeManager<T> manager;
@@ -141,8 +145,9 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
         private String cnDesc;
         private String enDesc;
         private @Nullable AEKey icon;
-        private TechNode.IRequirement<T> requirements = (ign, ored) -> ActionResult.SUCCESS;
+        private TechNode.IRequirement<T> requirements = (i, gn, or, ed) -> ActionResult.SUCCESS;
         private ImmutableList<TechNode<T>> prerequisites = ImmutableList.of();
+        private int tier = 0;
 
         private Builder(TechTreeManager<T> manager, String name, String cn, String en) {
             this.manager = Objects.requireNonNull(manager, "manager");
@@ -168,6 +173,11 @@ public final class TechTreeManager<T> implements IOStreamCodec<TechTree<T>> {
 
         public Builder<T> icon(Fluid icon) {
             this.icon = AEFluidKey.of(icon);
+            return this;
+        }
+
+        public Builder<T> tier(int tier) {
+            this.tier = tier;
             return this;
         }
 

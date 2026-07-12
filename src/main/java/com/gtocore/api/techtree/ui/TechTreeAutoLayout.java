@@ -5,10 +5,13 @@ import com.gtocore.api.techtree.TechNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public final class TechTreeAutoLayout {
 
@@ -20,7 +23,7 @@ public final class TechTreeAutoLayout {
 
     public static <T> TechTreeLayout<T> create(Collection<TechNode<T>> definitions) {
         if (definitions.isEmpty()) {
-            return new TechTreeLayout<>(List.of(), Map.of(), 0, 0, 0, 0);
+            return new TechTreeLayout<>(List.of(), Map.of(), List.of(), 0, 0, 0, 0);
         }
 
         List<TechNode<T>> nodes = new ArrayList<>(definitions);
@@ -46,9 +49,10 @@ public final class TechTreeAutoLayout {
         }
 
         List<TechNode<T>> topoOrder = topologicalSort(nodes, indegrees, children);
-        Map<TechNode<T>, Integer> layers = assignLayers(topoOrder);
-        List<List<TechNode<T>>> nodesByLayer = groupByLayer(topoOrder, layers);
-        optimizeLayerOrdering(nodesByLayer, children);
+        Map<TechNode<T>, Integer> depths = assignDepths(topoOrder);
+        TierColumnLayout<T> tierColumnLayout = buildTierColumns(topoOrder, depths);
+        List<List<TechNode<T>>> nodesByColumn = tierColumnLayout.nodesByColumn();
+        optimizeColumnOrdering(nodesByColumn, children);
 
         Map<TechNode<T>, TechTreeLayout.NodePlacement> placements = new IdentityHashMap<>();
         List<TechNode<T>> orderedNodes = new ArrayList<>(nodes.size());
@@ -57,14 +61,14 @@ public final class TechTreeAutoLayout {
         int maxX = Integer.MIN_VALUE;
         int maxY = Integer.MIN_VALUE;
 
-        for (int layer = 0; layer < nodesByLayer.size(); layer++) {
-            var layerNodes = nodesByLayer.get(layer);
-            int startY = -((layerNodes.size() - 1) * VERTICAL_SPACING) / 2;
-            for (int row = 0; row < layerNodes.size(); row++) {
-                TechNode<T> node = layerNodes.get(row);
-                int x = layer * HORIZONTAL_SPACING;
+        for (int column = 0; column < nodesByColumn.size(); column++) {
+            var columnNodes = nodesByColumn.get(column);
+            int startY = -((columnNodes.size() - 1) * VERTICAL_SPACING) / 2;
+            for (int row = 0; row < columnNodes.size(); row++) {
+                TechNode<T> node = columnNodes.get(row);
+                int x = column * HORIZONTAL_SPACING;
                 int y = startY + row * VERTICAL_SPACING;
-                placements.put(node, new TechTreeLayout.NodePlacement(x, y, layer, row));
+                placements.put(node, new TechTreeLayout.NodePlacement(x, y, column, row, node.getTier()));
                 orderedNodes.add(node);
                 minX = Math.min(minX, x);
                 minY = Math.min(minY, y);
@@ -73,7 +77,7 @@ public final class TechTreeAutoLayout {
             }
         }
 
-        return new TechTreeLayout<>(orderedNodes, placements, minX, minY, maxX, maxY);
+        return new TechTreeLayout<>(orderedNodes, placements, tierColumnLayout.tierRegions(), minX, minY, maxX, maxY);
     }
 
     private static <T> List<TechNode<T>> topologicalSort(List<TechNode<T>> nodes,
@@ -112,72 +116,96 @@ public final class TechTreeAutoLayout {
         return ordered;
     }
 
-    private static <T> Map<TechNode<T>, Integer> assignLayers(List<TechNode<T>> topoOrder) {
-        Map<TechNode<T>, Integer> layers = new IdentityHashMap<>();
+    private static <T> Map<TechNode<T>, Integer> assignDepths(List<TechNode<T>> topoOrder) {
+        Map<TechNode<T>, Integer> depths = new IdentityHashMap<>();
         for (var node : topoOrder) {
-            int layer = 0;
+            int depth = 0;
             for (var prerequisite : node.prerequisites) {
-                layer = Math.max(layer, layers.get(prerequisite) + 1);
+                depth = Math.max(depth, depths.get(prerequisite) + 1);
             }
-            layers.put(node, layer);
+            depths.put(node, depth);
         }
-        return layers;
+        return depths;
     }
 
-    private static <T> List<List<TechNode<T>>> groupByLayer(List<TechNode<T>> topoOrder, Map<TechNode<T>, Integer> layers) {
-        int maxLayer = 0;
-        for (var layer : layers.values()) {
-            maxLayer = Math.max(maxLayer, layer);
-        }
-        List<List<TechNode<T>>> nodesByLayer = new ArrayList<>(maxLayer + 1);
-        for (int i = 0; i <= maxLayer; i++) {
-            nodesByLayer.add(new ArrayList<>());
-        }
+    private static <T> TierColumnLayout<T> buildTierColumns(List<TechNode<T>> topoOrder,
+                                                            Map<TechNode<T>, Integer> depths) {
+        Map<Integer, List<TechNode<T>>> nodesByTier = new TreeMap<>();
         for (var node : topoOrder) {
-            nodesByLayer.get(layers.get(node)).add(node);
+            nodesByTier.computeIfAbsent(node.getTier(), ignored -> new ArrayList<>()).add(node);
         }
-        for (var layerNodes : nodesByLayer) {
-            layerNodes.sort(nameOrder);
+
+        List<List<TechNode<T>>> nodesByColumn = new ArrayList<>();
+        List<TechTreeLayout.TierRegion> tierRegions = new ArrayList<>(nodesByTier.size());
+        int columnOffset = 0;
+
+        for (var entry : nodesByTier.entrySet()) {
+            TreeSet<Integer> tierDepths = new TreeSet<>();
+            for (var node : entry.getValue()) {
+                tierDepths.add(depths.get(node));
+            }
+
+            Map<Integer, Integer> localColumns = new HashMap<>(tierDepths.size());
+            int localColumn = 0;
+            for (var depth : tierDepths) {
+                localColumns.put(depth, localColumn++);
+                nodesByColumn.add(new ArrayList<>());
+            }
+
+            for (var node : entry.getValue()) {
+                int globalColumn = columnOffset + localColumns.get(depths.get(node));
+                nodesByColumn.get(globalColumn).add(node);
+            }
+
+            int startColumn = columnOffset;
+            int endColumn = columnOffset + tierDepths.size() - 1;
+            for (int column = startColumn; column <= endColumn; column++) {
+                nodesByColumn.get(column).sort(nameOrder);
+            }
+            tierRegions.add(new TechTreeLayout.TierRegion(entry.getKey(), startColumn, endColumn,
+                    startColumn * HORIZONTAL_SPACING, endColumn * HORIZONTAL_SPACING));
+            columnOffset = endColumn + 1;
         }
-        return nodesByLayer;
+
+        return new TierColumnLayout<>(nodesByColumn, tierRegions);
     }
 
-    private static <T> void optimizeLayerOrdering(List<List<TechNode<T>>> nodesByLayer,
-                                                  Map<TechNode<T>, List<TechNode<T>>> children) {
-        if (nodesByLayer.size() < 2) {
+    private static <T> void optimizeColumnOrdering(List<List<TechNode<T>>> nodesByColumn,
+                                                   Map<TechNode<T>, List<TechNode<T>>> children) {
+        if (nodesByColumn.size() < 2) {
             return;
         }
 
         for (int pass = 0; pass < SWEEP_PASSES; pass++) {
-            Map<TechNode<T>, Integer> rowIndices = buildRowIndices(nodesByLayer);
-            for (int layer = 1; layer < nodesByLayer.size(); layer++) {
-                sortLayer(nodesByLayer.get(layer), rowIndices, true, children);
-                rowIndices = buildRowIndices(nodesByLayer);
+            Map<TechNode<T>, Integer> rowIndices = buildRowIndices(nodesByColumn);
+            for (int column = 1; column < nodesByColumn.size(); column++) {
+                sortColumn(nodesByColumn.get(column), rowIndices, true, children);
+                rowIndices = buildRowIndices(nodesByColumn);
             }
 
-            rowIndices = buildRowIndices(nodesByLayer);
-            for (int layer = nodesByLayer.size() - 2; layer >= 0; layer--) {
-                sortLayer(nodesByLayer.get(layer), rowIndices, false, children);
-                rowIndices = buildRowIndices(nodesByLayer);
+            rowIndices = buildRowIndices(nodesByColumn);
+            for (int column = nodesByColumn.size() - 2; column >= 0; column--) {
+                sortColumn(nodesByColumn.get(column), rowIndices, false, children);
+                rowIndices = buildRowIndices(nodesByColumn);
             }
         }
     }
 
-    private static <T> void sortLayer(List<TechNode<T>> layerNodes,
-                                      Map<TechNode<T>, Integer> rowIndices,
-                                      boolean usePrerequisites,
-                                      Map<TechNode<T>, List<TechNode<T>>> children) {
-        if (layerNodes.size() < 2) {
+    private static <T> void sortColumn(List<TechNode<T>> columnNodes,
+                                       Map<TechNode<T>, Integer> rowIndices,
+                                       boolean usePrerequisites,
+                                       Map<TechNode<T>, List<TechNode<T>>> children) {
+        if (columnNodes.size() < 2) {
             return;
         }
 
         Map<TechNode<T>, Double> barycenters = new IdentityHashMap<>();
-        for (var node : layerNodes) {
+        for (var node : columnNodes) {
             List<TechNode<T>> neighbors = usePrerequisites ? node.prerequisites : children.get(node);
             barycenters.put(node, averageNeighborRow(neighbors, rowIndices, rowIndices.getOrDefault(node, 0)));
         }
 
-        layerNodes.sort(Comparator
+        columnNodes.sort(Comparator
                 .comparingDouble((TechNode<T> node) -> barycenters.get(node))
                 .thenComparingInt(node -> rowIndices.getOrDefault(node, 0))
                 .thenComparing(node -> node.name));
@@ -202,15 +230,18 @@ public final class TechTreeAutoLayout {
         return count == 0 ? fallback : sum / count;
     }
 
-    private static <T> Map<TechNode<T>, Integer> buildRowIndices(List<List<TechNode<T>>> nodesByLayer) {
+    private static <T> Map<TechNode<T>, Integer> buildRowIndices(List<List<TechNode<T>>> nodesByColumn) {
         Map<TechNode<T>, Integer> rowIndices = new IdentityHashMap<>();
-        for (var layerNodes : nodesByLayer) {
-            for (int row = 0; row < layerNodes.size(); row++) {
-                rowIndices.put(layerNodes.get(row), row);
+        for (var columnNodes : nodesByColumn) {
+            for (int row = 0; row < columnNodes.size(); row++) {
+                rowIndices.put(columnNodes.get(row), row);
             }
         }
         return rowIndices;
     }
+
+    private record TierColumnLayout<T>(List<List<TechNode<T>>> nodesByColumn,
+                                       List<TechTreeLayout.TierRegion> tierRegions) {}
 
     private static final Comparator<TechNode> nameOrder = Comparator.comparing(node -> node.name);
 }

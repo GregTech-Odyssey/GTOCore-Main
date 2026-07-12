@@ -26,13 +26,16 @@ public class TechTree<T> implements ITagSerializable<CompoundTag> {
     }
 
     public ActionResult unlock(TechNode<T> definition, T args, UUID team) {
-        var result = definition.tryUnlock(nodes, args, team);
-        if (result.isSuccess()) addUnlockedNode(definition);
+        var result = definition.tryUnlock(nodes, args, team, true);
+        if (result.isSuccess()) {
+            definition.tryUnlock(nodes, args, team, false);
+            addUnlockedNode(definition);
+        }
         return result;
     }
 
     public ActionResult tryUnlock(TechNode<T> definition, T args, UUID team) {
-        return definition.tryUnlock(nodes, args, team);
+        return definition.tryUnlock(nodes, args, team, true);
     }
 
     public Set<TechNode<T>> getEndNodes() {
