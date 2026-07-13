@@ -16,7 +16,7 @@ public class TeamResearchContext {
 
     private final Map<ResearchTag, Long> researchPoints;
     private final Set<AEKey> scannedItems;
-    private final Map<TechNode<?>, Long> techNodeAccCWU;
+    private final Map<TechNode, Long> techNodeAccCWU;
 
     public TeamResearchContext() {
         this(new O2OOpenCacheHashMap<>(), new ReferenceOpenHashSet<>(), new O2OOpenCacheHashMap<>());
@@ -25,7 +25,7 @@ public class TeamResearchContext {
     public TeamResearchContext(
                                Map<ResearchTag, Long> researchPoints,
                                Set<AEKey> scannedItems,
-                               Map<TechNode<?>, Long> techNodeAccCWU) {
+                               Map<TechNode, Long> techNodeAccCWU) {
         this.researchPoints = researchPoints;
         this.scannedItems = scannedItems;
         this.techNodeAccCWU = techNodeAccCWU;
@@ -35,7 +35,7 @@ public class TeamResearchContext {
         return researchPoints.isEmpty() && scannedItems.isEmpty() && techNodeAccCWU.isEmpty();
     }
 
-    public void addTechNodeAccCWU(TechNode<TeamResearchContext> selectedNode, long cwuBuffer) {
+    public void addTechNodeAccCWU(TechNode selectedNode, long cwuBuffer) {
         techNodeAccCWU.merge(selectedNode, cwuBuffer, Long::sum);
         TeamResearchSavedDtat.INSTANCE.setDirty(true);
     }

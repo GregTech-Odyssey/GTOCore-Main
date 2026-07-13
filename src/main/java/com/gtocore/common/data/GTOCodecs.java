@@ -85,10 +85,10 @@ public class GTOCodecs {
         }
     };
 
-    public final DataCodec<TechNode<?>> TECH_NODE_DATA_CODEC = new DataCodec<>() {
+    public final DataCodec<TechNode> TECH_NODE_DATA_CODEC = new DataCodec<>() {
 
         @Override
-        public TechNode<?> decode(@NotNull Data data, int dataVersion) {
+        public TechNode decode(@NotNull Data data, int dataVersion) {
             if (!(data instanceof MapData mapData)) {
                 return null;
             }
@@ -96,7 +96,7 @@ public class GTOCodecs {
         }
 
         @Override
-        public @NotNull Data encode(TechNode<?> obj) {
+        public @NotNull Data encode(TechNode obj) {
             MapData mapData = new MapData(2);
             mapData.putString(TECH_TREE_KEY, obj.getManager().getId());
             mapData.putString(TECH_NODE_KEY, obj.name);
@@ -162,25 +162,25 @@ public class GTOCodecs {
         }
     };
 
-    public final ByteStreamCodec<TechNode<?>> TECH_NODE_STREAM_CODEC = new ByteStreamCodec<>() {
+    public final ByteStreamCodec<TechNode> TECH_NODE_STREAM_CODEC = new ByteStreamCodec<>() {
 
         @Override
-        public void encode(FriendlyByteBuf buf, TechNode<?> obj) {
+        public void encode(FriendlyByteBuf buf, TechNode obj) {
             buf.writeUtf(obj.getManager().getId());
             buf.writeUtf(obj.name);
         }
 
         @Override
-        public TechNode<?> decode(FriendlyByteBuf buf) {
+        public TechNode decode(FriendlyByteBuf buf) {
             return resolveTechNode(buf.readUtf(), buf.readUtf());
         }
     };
 
-    private static TechNode<?> resolveTechNode(String treeId, String nodeId) {
+    private static TechNode resolveTechNode(String treeId, String nodeId) {
         if (treeId == null || nodeId == null) {
             return null;
         }
-        TechTreeManager<?> manager = TechTreeManager.getManager(treeId);
+        TechTreeManager manager = TechTreeManager.getManager(treeId);
         return manager == null ? null : manager.getNode(nodeId);
     }
 

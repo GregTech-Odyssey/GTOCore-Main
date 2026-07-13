@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
-import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.api.research.ui.ResearchInfoTab;
@@ -8,7 +7,6 @@ import com.gtocore.api.techtree.TechNode;
 import com.gtocore.api.techtree.TechTreeSavedData;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
-import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -58,7 +56,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     @SaveToDisk(saveNull = true)
     @SyncToClient
-    private TechNode<TeamResearchContext> selectedNode;
+    private TechNode selectedNode;
     @SaveToDisk(saveNull = true)
     private UUID researchRequester;
     @SaveToDisk
@@ -151,14 +149,14 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             button.setButtonTexture(GuiTextures.BUTTON,
                     new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
                             .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
-            button.setHoverTooltips(AnalyzeData.INSTANCE.getRewardLines(selectedNode));
+            button.setHoverTooltips(selectedNode.getRewardLinesWithHeader());
             return button;
         }));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
         sideTabs.attachSubTab(new RecipeExportTab(this));
     }
 
-    private String getResearchButtonText(@Nullable TechNode<TeamResearchContext> node) {
+    private String getResearchButtonText(@Nullable TechNode node) {
         return Component.translatable(node != null && selectedNode == node ? LANG_DATA_ACCESS_RESEARCHING : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString();
     }
 

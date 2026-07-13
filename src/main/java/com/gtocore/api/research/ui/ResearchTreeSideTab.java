@@ -41,12 +41,6 @@ import java.util.function.Function;
 @DataGeneratorScanned
 public class ResearchTreeSideTab extends WidgetGroup {
 
-    @RegisterLanguage(cn = "[配方奖励]", en = "[Recipe Reward]")
-    public static final String RECIPE_REWARD_LABEL = "gtocore.research.side_tab.recipe_reward";
-    @RegisterLanguage(cn = "[其他奖励]", en = "[Other Reward]")
-    public static final String OTHER_REWARD_LABEL = "gtocore.research.side_tab.other_reward";
-    @RegisterLanguage(cn = "可解锁：", en = "Unlockable:")
-    public static final String UNLOCKABLE_LABEL = "gtocore.research.side_tab.unlockable";
     @RegisterLanguage(cn = "CWU", en = "CWU")
     private static final String CWU_LABEL = "gtocore.research.side_tab.cwu";
     @RegisterLanguage(cn = "CWU(尤里卡！)", en = "CWU(Eureka!)")
@@ -89,22 +83,22 @@ public class ResearchTreeSideTab extends WidgetGroup {
     private static final int MATERIAL_BAR_COLOR = 0xFFD95CE5;
     private static final int MATERIAL_BAR_BORDER = 0xFFF3A5FB;
 
-    private final TechTreeManager<TeamResearchContext> manager;
+    private final TechTreeManager manager;
     private final Function<Player, TeamResearchContext> contextFactory;
     private SyncState currentState = SyncState.hidden();
     private SyncState lastSentState = SyncState.hidden();
-    private @Nullable TechNode<TeamResearchContext> selectedNode;
+    private @Nullable TechNode selectedNode;
 
     private final WidgetGroup innerContent;
 
     public ResearchTreeSideTab(int x, int y, int width, int height,
-                               TechTreeManager<TeamResearchContext> manager,
+                               TechTreeManager manager,
                                Function<Player, TeamResearchContext> contextFactory) {
         this(x, y, width, height, manager, contextFactory, null);
     }
 
     public ResearchTreeSideTab(int x, int y, int width, int height,
-                               TechTreeManager<TeamResearchContext> manager,
+                               TechTreeManager manager,
                                Function<Player, TeamResearchContext> contextFactory,
                                @Nullable Widget contentWidget) {
         super(x, y, width, height);
@@ -118,12 +112,12 @@ public class ResearchTreeSideTab extends WidgetGroup {
         setVisible(false).setActive(false);
     }
 
-    public void toggleNode(TechNode<TeamResearchContext> node) {
+    public void toggleNode(TechNode node) {
         selectedNode = selectedNode == node ? null : node;
         syncState();
     }
 
-    public @Nullable TechNode<TeamResearchContext> getSelectedNode() {
+    public @Nullable TechNode getSelectedNode() {
         return selectedNode;
     }
 
@@ -257,7 +251,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
         return new SyncState(true, nodeName, showCwu, cwuCurrent, cwuNeeded, hasEureka, eurekaScanned, List.copyOf(materials));
     }
 
-    private @Nullable ResearchRequirements getResearchRequirements(TechNode<TeamResearchContext> node) {
+    private @Nullable ResearchRequirements getResearchRequirements(TechNode node) {
         return node.getRequirements() instanceof ResearchRequirements requirements ? requirements : null;
     }
 
@@ -301,8 +295,8 @@ public class ResearchTreeSideTab extends WidgetGroup {
     }
 
     @OnlyIn(Dist.CLIENT)
-    private @Nullable Component createTierTooltip(TechNode<TeamResearchContext> node) {
-        var tierItem = AnalyzeData.INSTANCE.getTierItems().get(node.getTier());
+    private @Nullable Component createTierTooltip(TechNode node) {
+        var tierItem = AnalyzeData.TierItems.get(node.getTier());
         if (tierItem == null) {
             return null;
         }
@@ -314,7 +308,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void drawNodeIcon(GuiGraphics graphics, int x, int y, int size, @Nullable TechNode<TeamResearchContext> node) {
+    private void drawNodeIcon(GuiGraphics graphics, int x, int y, int size, @Nullable TechNode node) {
         if (node != null && node.icon != null) {
             graphics.pose().pushPose();
             graphics.pose().translate(x, y, 0);
@@ -430,7 +424,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private void drawHeader(GuiGraphics graphics, Font font, TechNode<TeamResearchContext> node, int x, int y, int width) {
+        private void drawHeader(GuiGraphics graphics, Font font, TechNode node, int x, int y, int width) {
             DrawerHelper.drawSolidRect(graphics, x, y, HEADER_ICON_SIZE, HEADER_ICON_SIZE, NODE_BOX_FILL);
             DrawerHelper.drawBorder(graphics, x, y, HEADER_ICON_SIZE, HEADER_ICON_SIZE, NODE_BOX_BORDER, 1);
             drawNodeIcon(graphics, x + 8, y + 8, 16, node);
@@ -452,7 +446,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private @Nullable Component getHoveredTooltip(Font font, TechNode<TeamResearchContext> node, List<RowState> rows,
+        private @Nullable Component getHoveredTooltip(Font font, TechNode node, List<RowState> rows,
                                                       int mouseX, int mouseY, int contentX, int contentY, int contentWidth,
                                                       int rowsStartY, int maxRowsBottomY) {
             Component headerTooltip = getHeaderTooltip(font, node, mouseX, mouseY, contentX, contentY, contentWidth);
@@ -463,7 +457,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private @Nullable Component getHeaderTooltip(Font font, TechNode<TeamResearchContext> node, int mouseX, int mouseY, int x, int y, int width) {
+        private @Nullable Component getHeaderTooltip(Font font, TechNode node, int mouseX, int mouseY, int x, int y, int width) {
             int textX = x + HEADER_ICON_SIZE + HEADER_TEXT_GAP;
             int textWidth = Math.max(10, width - HEADER_ICON_SIZE - HEADER_TEXT_GAP);
             List<FormattedCharSequence> nameLines = font.split(node.getDisplayName(), textWidth);
@@ -535,9 +529,9 @@ public class ResearchTreeSideTab extends WidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private List<FormattedCharSequence> getRewardTextLines(Font font, TechNode<TeamResearchContext> node, int width) {
+        private List<FormattedCharSequence> getRewardTextLines(Font font, TechNode node, int width) {
             List<FormattedCharSequence> lines = new ArrayList<>();
-            for (Component rewardLine : AnalyzeData.INSTANCE.getRewardLines(node)) {
+            for (Component rewardLine : node.getRewardLinesWithHeader()) {
                 lines.addAll(font.split(rewardLine, width));
             }
             return lines;

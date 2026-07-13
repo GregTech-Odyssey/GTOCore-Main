@@ -24,7 +24,7 @@ import java.util.UUID;
 
 @Getter
 @DataGeneratorScanned
-public final class ResearchRequirements implements TechNode.IRequirement<TeamResearchContext> {
+public final class ResearchRequirements implements TechNode.IRequirement {
 
     private long cwuNeeded;
     private Reference2LongOpenHashMap<ResearchTag> materialNeeded;
@@ -34,7 +34,7 @@ public final class ResearchRequirements implements TechNode.IRequirement<TeamRes
     private ResearchRequirements() {}
 
     @Override
-    public ActionResult test(TechNode<TeamResearchContext> node, TeamResearchContext teamResource, UUID team, boolean simulate) {
+    public ActionResult test(TechNode node, TeamResearchContext teamResource, UUID team, boolean simulate) {
         var eurekaScanned = teamResource.getScannedItems().contains(eurekaItem);
         var actualCWUNeeded = eurekaScanned ? (long) (cwuNeeded * eurekaProgress) : cwuNeeded;
         if (teamResource.getTechNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {

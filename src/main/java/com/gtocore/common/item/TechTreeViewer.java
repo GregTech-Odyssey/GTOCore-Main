@@ -59,7 +59,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
                 @Override
                 public Widget createMainPage(FancyMachineUIWidget widget) {
-                    return new TechTreeWidget<>(0, 0, 176, 166, manager);
+                    return new TechTreeWidget(0, 0, 176, 166, manager);
                 }
 
                 @Override

@@ -21,23 +21,23 @@ public final class TechTreeAutoLayout {
 
     private TechTreeAutoLayout() {}
 
-    public static <T> TechTreeLayout<T> create(Collection<TechNode<T>> definitions) {
+    public static TechTreeLayout create(Collection<TechNode> definitions) {
         if (definitions.isEmpty()) {
-            return new TechTreeLayout<>(List.of(), Map.of(), List.of(), 0, 0, 0, 0);
+            return new TechTreeLayout(List.of(), Map.of(), List.of(), 0, 0, 0, 0);
         }
 
-        List<TechNode<T>> nodes = new ArrayList<>(definitions);
+        List<TechNode> nodes = new ArrayList<>(definitions);
         nodes.sort(nameOrder);
 
-        Map<TechNode<T>, List<TechNode<T>>> children = new IdentityHashMap<>();
-        Map<TechNode<T>, Integer> indegrees = new IdentityHashMap<>();
+        Map<TechNode, List<TechNode>> children = new IdentityHashMap<>();
+        Map<TechNode, Integer> indegrees = new IdentityHashMap<>();
         for (var node : nodes) {
             children.put(node, new ArrayList<>());
             indegrees.put(node, node.prerequisites.size());
         }
         for (var node : nodes) {
             for (var prerequisite : node.prerequisites) {
-                List<TechNode<T>> dependentNodes = children.get(prerequisite);
+                List<TechNode> dependentNodes = children.get(prerequisite);
                 if (dependentNodes == null) {
                     throw new IllegalStateException("Tech node " + node.name + " references unknown prerequisite " + prerequisite.name);
                 }
@@ -48,14 +48,14 @@ public final class TechTreeAutoLayout {
             dependentNodes.sort(nameOrder);
         }
 
-        List<TechNode<T>> topoOrder = topologicalSort(nodes, indegrees, children);
-        Map<TechNode<T>, Integer> depths = assignDepths(topoOrder);
-        TierColumnLayout<T> tierColumnLayout = buildTierColumns(topoOrder, depths);
-        List<List<TechNode<T>>> nodesByColumn = tierColumnLayout.nodesByColumn();
+        List<TechNode> topoOrder = topologicalSort(nodes, indegrees, children);
+        Map<TechNode, Integer> depths = assignDepths(topoOrder);
+        TierColumnLayout tierColumnLayout = buildTierColumns(topoOrder, depths);
+        List<List<TechNode>> nodesByColumn = tierColumnLayout.nodesByColumn();
         optimizeColumnOrdering(nodesByColumn, children);
 
-        Map<TechNode<T>, TechTreeLayout.NodePlacement> placements = new IdentityHashMap<>();
-        List<TechNode<T>> orderedNodes = new ArrayList<>(nodes.size());
+        Map<TechNode, TechTreeLayout.NodePlacement> placements = new IdentityHashMap<>();
+        List<TechNode> orderedNodes = new ArrayList<>(nodes.size());
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
@@ -65,7 +65,7 @@ public final class TechTreeAutoLayout {
             var columnNodes = nodesByColumn.get(column);
             int startY = -((columnNodes.size() - 1) * VERTICAL_SPACING) / 2;
             for (int row = 0; row < columnNodes.size(); row++) {
-                TechNode<T> node = columnNodes.get(row);
+                TechNode node = columnNodes.get(row);
                 int x = column * HORIZONTAL_SPACING;
                 int y = startY + row * VERTICAL_SPACING;
                 placements.put(node, new TechTreeLayout.NodePlacement(x, y, column, row, node.getTier()));
@@ -77,22 +77,22 @@ public final class TechTreeAutoLayout {
             }
         }
 
-        return new TechTreeLayout<>(orderedNodes, placements, tierColumnLayout.tierRegions(), minX, minY, maxX, maxY);
+        return new TechTreeLayout(orderedNodes, placements, tierColumnLayout.tierRegions(), minX, minY, maxX, maxY);
     }
 
-    private static <T> List<TechNode<T>> topologicalSort(List<TechNode<T>> nodes,
-                                                         Map<TechNode<T>, Integer> indegrees,
-                                                         Map<TechNode<T>, List<TechNode<T>>> children) {
-        PriorityQueue<TechNode<T>> queue = new PriorityQueue<>(nameOrder);
+    private static List<TechNode> topologicalSort(List<TechNode> nodes,
+                                                  Map<TechNode, Integer> indegrees,
+                                                  Map<TechNode, List<TechNode>> children) {
+        PriorityQueue<TechNode> queue = new PriorityQueue<>(nameOrder);
         for (var node : nodes) {
             if (indegrees.get(node) == 0) {
                 queue.add(node);
             }
         }
 
-        List<TechNode<T>> ordered = new ArrayList<>(nodes.size());
+        List<TechNode> ordered = new ArrayList<>(nodes.size());
         while (!queue.isEmpty()) {
-            TechNode<T> node = queue.remove();
+            TechNode node = queue.remove();
             ordered.add(node);
             for (var child : children.get(node)) {
                 int remaining = indegrees.get(child) - 1;
@@ -116,8 +116,8 @@ public final class TechTreeAutoLayout {
         return ordered;
     }
 
-    private static <T> Map<TechNode<T>, Integer> assignDepths(List<TechNode<T>> topoOrder) {
-        Map<TechNode<T>, Integer> depths = new IdentityHashMap<>();
+    private static Map<TechNode, Integer> assignDepths(List<TechNode> topoOrder) {
+        Map<TechNode, Integer> depths = new IdentityHashMap<>();
         for (var node : topoOrder) {
             int depth = 0;
             for (var prerequisite : node.prerequisites) {
@@ -128,14 +128,14 @@ public final class TechTreeAutoLayout {
         return depths;
     }
 
-    private static <T> TierColumnLayout<T> buildTierColumns(List<TechNode<T>> topoOrder,
-                                                            Map<TechNode<T>, Integer> depths) {
-        Map<Integer, List<TechNode<T>>> nodesByTier = new TreeMap<>();
+    private static TierColumnLayout buildTierColumns(List<TechNode> topoOrder,
+                                                     Map<TechNode, Integer> depths) {
+        Map<Integer, List<TechNode>> nodesByTier = new TreeMap<>();
         for (var node : topoOrder) {
             nodesByTier.computeIfAbsent(node.getTier(), ignored -> new ArrayList<>()).add(node);
         }
 
-        List<List<TechNode<T>>> nodesByColumn = new ArrayList<>();
+        List<List<TechNode>> nodesByColumn = new ArrayList<>();
         List<TechTreeLayout.TierRegion> tierRegions = new ArrayList<>(nodesByTier.size());
         int columnOffset = 0;
 
@@ -167,17 +167,17 @@ public final class TechTreeAutoLayout {
             columnOffset = endColumn + 1;
         }
 
-        return new TierColumnLayout<>(nodesByColumn, tierRegions);
+        return new TierColumnLayout(nodesByColumn, tierRegions);
     }
 
-    private static <T> void optimizeColumnOrdering(List<List<TechNode<T>>> nodesByColumn,
-                                                   Map<TechNode<T>, List<TechNode<T>>> children) {
+    private static void optimizeColumnOrdering(List<List<TechNode>> nodesByColumn,
+                                               Map<TechNode, List<TechNode>> children) {
         if (nodesByColumn.size() < 2) {
             return;
         }
 
         for (int pass = 0; pass < SWEEP_PASSES; pass++) {
-            Map<TechNode<T>, Integer> rowIndices = buildRowIndices(nodesByColumn);
+            Map<TechNode, Integer> rowIndices = buildRowIndices(nodesByColumn);
             for (int column = 1; column < nodesByColumn.size(); column++) {
                 sortColumn(nodesByColumn.get(column), rowIndices, true, children);
                 rowIndices = buildRowIndices(nodesByColumn);
@@ -191,29 +191,29 @@ public final class TechTreeAutoLayout {
         }
     }
 
-    private static <T> void sortColumn(List<TechNode<T>> columnNodes,
-                                       Map<TechNode<T>, Integer> rowIndices,
-                                       boolean usePrerequisites,
-                                       Map<TechNode<T>, List<TechNode<T>>> children) {
+    private static void sortColumn(List<TechNode> columnNodes,
+                                   Map<TechNode, Integer> rowIndices,
+                                   boolean usePrerequisites,
+                                   Map<TechNode, List<TechNode>> children) {
         if (columnNodes.size() < 2) {
             return;
         }
 
-        Map<TechNode<T>, Double> barycenters = new IdentityHashMap<>();
+        Map<TechNode, Double> barycenters = new IdentityHashMap<>();
         for (var node : columnNodes) {
-            List<TechNode<T>> neighbors = usePrerequisites ? node.prerequisites : children.get(node);
+            List<TechNode> neighbors = usePrerequisites ? node.prerequisites : children.get(node);
             barycenters.put(node, averageNeighborRow(neighbors, rowIndices, rowIndices.getOrDefault(node, 0)));
         }
 
         columnNodes.sort(Comparator
-                .comparingDouble((TechNode<T> node) -> barycenters.get(node))
+                .comparingDouble((TechNode node) -> barycenters.get(node))
                 .thenComparingInt(node -> rowIndices.getOrDefault(node, 0))
                 .thenComparing(node -> node.name));
     }
 
-    private static <T> double averageNeighborRow(List<TechNode<T>> neighbors,
-                                                 Map<TechNode<T>, Integer> rowIndices,
-                                                 int fallback) {
+    private static double averageNeighborRow(List<TechNode> neighbors,
+                                             Map<TechNode, Integer> rowIndices,
+                                             int fallback) {
         if (neighbors.isEmpty()) {
             return fallback;
         }
@@ -230,8 +230,8 @@ public final class TechTreeAutoLayout {
         return count == 0 ? fallback : sum / count;
     }
 
-    private static <T> Map<TechNode<T>, Integer> buildRowIndices(List<List<TechNode<T>>> nodesByColumn) {
-        Map<TechNode<T>, Integer> rowIndices = new IdentityHashMap<>();
+    private static Map<TechNode, Integer> buildRowIndices(List<List<TechNode>> nodesByColumn) {
+        Map<TechNode, Integer> rowIndices = new IdentityHashMap<>();
         for (var columnNodes : nodesByColumn) {
             for (int row = 0; row < columnNodes.size(); row++) {
                 rowIndices.put(columnNodes.get(row), row);
@@ -240,8 +240,8 @@ public final class TechTreeAutoLayout {
         return rowIndices;
     }
 
-    private record TierColumnLayout<T>(List<List<TechNode<T>>> nodesByColumn,
-                                       List<TechTreeLayout.TierRegion> tierRegions) {}
+    private record TierColumnLayout(List<List<TechNode>> nodesByColumn,
+                                    List<TechTreeLayout.TierRegion> tierRegions) {}
 
     private static final Comparator<TechNode> nameOrder = Comparator.comparing(node -> node.name);
 }

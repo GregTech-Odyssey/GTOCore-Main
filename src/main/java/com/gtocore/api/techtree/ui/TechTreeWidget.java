@@ -1,5 +1,6 @@
 package com.gtocore.api.techtree.ui;
 
+import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.techtree.TechNode;
 import com.gtocore.api.techtree.TechTree;
 import com.gtocore.api.techtree.TechTreeManager;
@@ -41,7 +42,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @DataGeneratorScanned
-public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
+public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
     @RegisterLanguage(cn = "已解锁：%s", en = "Unlocked: %s")
     private static final String UNLOCK_SUCCESS = "gtocore.techtree.widget.unlock_success";
@@ -74,11 +75,11 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private static final double ZOOM_STEP = 1.15D;
     private static final double CLICK_DRAG_THRESHOLD = 3.0D;
 
-    private final TechTreeManager<T> manager;
-    private final @Nullable Function<Player, T> unlockArgumentsFactory;
-    private final TechTreeLayout<T> layout;
-    private final List<TechNode<T>> orderedNodes;
-    private final Map<TechNode<T>, Integer> nodeIndices;
+    private final TechTreeManager manager;
+    private final @Nullable Function<Player, TeamResearchContext> unlockArgumentsFactory;
+    private final TechTreeLayout layout;
+    private final List<TechNode> orderedNodes;
+    private final Map<TechNode, Integer> nodeIndices;
     private byte[] nodeStates;
     private int contentOffsetX;
     private int contentOffsetY;
@@ -89,18 +90,18 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     private final int maxNodeX;
     private final int maxNodeY;
     private double zoom = 1.0D;
-    private @Nullable TechNode<T> highlightedNode;
+    private @Nullable TechNode highlightedNode;
     private boolean capturedMouseInteraction;
     @Setter
     @Nullable
-    private Consumer<TechNode<T>> onNodeClicked = this::tryUnlock;
+    private Consumer<TechNode> onNodeClicked = this::tryUnlock;
 
-    public TechTreeWidget(int x, int y, int width, int height, TechTreeManager<T> manager) {
+    public TechTreeWidget(int x, int y, int width, int height, TechTreeManager manager) {
         this(x, y, width, height, manager, ignored -> null);
     }
 
-    public TechTreeWidget(int x, int y, int width, int height, TechTreeManager<T> manager,
-                          @Nullable Function<Player, T> unlockArgumentsFactory) {
+    public TechTreeWidget(int x, int y, int width, int height, TechTreeManager manager,
+                          @Nullable Function<Player, TeamResearchContext> unlockArgumentsFactory) {
         super(x, y, width, height);
         this.manager = manager;
         this.unlockArgumentsFactory = unlockArgumentsFactory;
@@ -165,11 +166,11 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         }
     }
 
-    private int toCanvasX(TechNode<T> node) {
+    private int toCanvasX(TechNode node) {
         return scaleValue(layout.getX(node)) + contentOffsetX;
     }
 
-    private int toCanvasY(TechNode<T> node) {
+    private int toCanvasY(TechNode node) {
         return scaleValue(layout.getY(node)) + contentOffsetY;
     }
 
@@ -244,13 +245,13 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             return states;
         }
 
-        TechTree<T> tree = TechTreeSavedData.getOrCreateTree(player, manager);
-        T unlockArgs = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
+        TechTree tree = TechTreeSavedData.getOrCreateTree(player, manager);
+        TeamResearchContext unlockContext = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
         for (int i = 0; i < orderedNodes.size(); i++) {
             var node = orderedNodes.get(i);
             if (tree.isUnlocked(node)) {
                 states[i] = STATE_UNLOCKED_VALUE;
-            } else if (tree.tryUnlock(node, unlockArgs, TeamUtil.getTeamUUID(player.getUUID())).isSuccess()) {
+            } else if (tree.tryUnlock(node, unlockContext, TeamUtil.getTeamUUID(player.getUUID())).isSuccess()) {
                 states[i] = STATE_AVAILABLE;
             }
         }
@@ -297,12 +298,12 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         return index >= 0 && index < nodeStates.length ? nodeStates[index] : STATE_LOCKED;
     }
 
-    private byte getNodeState(TechNode<T> node) {
+    private byte getNodeState(TechNode node) {
         Integer index = nodeIndices.get(node);
         return index == null ? STATE_LOCKED : getNodeState(index);
     }
 
-    private List<Component> createTooltip(TechNode<T> node, byte state) {
+    private List<Component> createTooltip(TechNode node, byte state) {
         List<Component> tooltips = new ArrayList<>();
         tooltips.add(TechTreeManager.getNodeName(node).copy().withStyle(getFormattingForState(state)));
         var desc = node.desc();
@@ -357,7 +358,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
     }
 
     @OnlyIn(Dist.CLIENT)
-    private int getNodeBorderColor(TechNode<T> node, byte state) {
+    private int getNodeBorderColor(TechNode node, byte state) {
         int baseColor = getNodeBorderColor(state);
         if (highlightedNode != null && highlightedNode.prerequisites.contains(node)) {
             return getPulsingHighlightColor(baseColor);
@@ -365,7 +366,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         return baseColor;
     }
 
-    private int getLineColor(TechNode<T> prerequisite, TechNode<T> node, @Nullable TechNode<T> hoveredNode) {
+    private int getLineColor(TechNode prerequisite, TechNode node, @Nullable TechNode hoveredNode) {
         int value = 0xFF4F4F57;
         byte prerequisiteState = getNodeState(prerequisite);
         byte nodeState = getNodeState(node);
@@ -384,19 +385,19 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         return value;
     }
 
-    public void tryUnlock(TechNode<T> node) {
+    public void tryUnlock(TechNode node) {
         Player player = getGuiPlayer();
         if (player == null) {
             return;
         }
 
-        TechTree<T> tree = TechTreeSavedData.getOrCreateTree(player, manager);
+        TechTree tree = TechTreeSavedData.getOrCreateTree(player, manager);
         if (tree.isUnlocked(node)) {
             return;
         }
 
-        T unlockArgs = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
-        ActionResult result = tree.tryUnlock(node, unlockArgs, TeamUtil.getTeamUUID(player.getUUID()));
+        TeamResearchContext unlockContext = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
+        ActionResult result = tree.tryUnlock(node, unlockContext, TeamUtil.getTeamUUID(player.getUUID()));
         if (!result.isSuccess()) {
             if (result.reason() != null) {
                 player.displayClientMessage(result.reason(), true);
@@ -404,7 +405,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
             return;
         }
 
-        if (TechTreeSavedData.unlock(player, node, unlockArgs)) {
+        if (TechTreeSavedData.unlock(player, node, unlockContext)) {
             player.displayClientMessage(Component.translatable(UNLOCK_SUCCESS, TechTreeManager.getNodeName(node)), true);
             syncNodeStates();
         }
@@ -531,7 +532,7 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private void drawDependencyLines(GuiGraphics graphics, Position pos, int nodeSize, TechNode<T> node, @Nullable TechNode<T> hoveredNode) {
+        private void drawDependencyLines(GuiGraphics graphics, Position pos, int nodeSize, TechNode node, @Nullable TechNode hoveredNode) {
             int endX = pos.x + toCanvasX(node) + nodeSize / 2;
             int endY = pos.y + toCanvasY(node) + nodeSize / 2;
             for (var prerequisite : node.prerequisites) {
@@ -546,9 +547,9 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private @Nullable TechNode<T> findHoveredNode(double mouseX, double mouseY, Position canvasPosition, int nodeSize) {
+        private @Nullable TechNode findHoveredNode(double mouseX, double mouseY, Position canvasPosition, int nodeSize) {
             for (int i = orderedNodes.size() - 1; i >= 0; i--) {
-                TechNode<T> node = orderedNodes.get(i);
+                TechNode node = orderedNodes.get(i);
                 int nodeX = canvasPosition.x + toCanvasX(node);
                 int nodeY = canvasPosition.y + toCanvasY(node);
                 if (isMouseOver(nodeX, nodeY, nodeSize, nodeSize, mouseX, mouseY)) {
@@ -592,10 +593,10 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
 
         private static final int CLICK_ACTION = 1;
         private final int index;
-        private final TechNode<T> node;
+        private final TechNode node;
         private double totalDraggedDistance;
 
-        private NodeWidget(int index, TechNode<T> node, int x, int y) {
+        private NodeWidget(int index, TechNode node, int x, int y) {
             super(x, y, getScaledNodeSize(), getScaledNodeSize());
             this.index = index;
             this.node = node;

@@ -112,21 +112,21 @@ public class TeamResearchSavedDtat extends FastSavedData {
         return scannedItems;
     }
 
-    private static void writeTechNodeAccCWU(DataIOStream dataIOStream, Map<TechNode<?>, Long> techNodeAccCWU) throws IOException {
+    private static void writeTechNodeAccCWU(DataIOStream dataIOStream, Map<TechNode, Long> techNodeAccCWU) throws IOException {
         dataIOStream.writeInt(techNodeAccCWU.size());
-        for (Map.Entry<TechNode<?>, Long> techNodeEntry : techNodeAccCWU.entrySet()) {
+        for (Map.Entry<TechNode, Long> techNodeEntry : techNodeAccCWU.entrySet()) {
             dataIOStream.writeUTF(techNodeEntry.getKey().name);
             dataIOStream.writeLong(techNodeEntry.getValue());
         }
     }
 
-    private static Map<TechNode<?>, Long> readTechNodeAccCWU(DataIOStream dataIOStream) throws IOException {
+    private static Map<TechNode, Long> readTechNodeAccCWU(DataIOStream dataIOStream) throws IOException {
         int techNodeCount = dataIOStream.readInt();
-        Map<TechNode<?>, Long> techNodeAccCWU = new O2OOpenCacheHashMap<>();
+        Map<TechNode, Long> techNodeAccCWU = new O2OOpenCacheHashMap<>();
         for (int i = 0; i < techNodeCount; i++) {
             String nodeName = dataIOStream.readUTF();
             long accCWU = dataIOStream.readLong();
-            TechNode<?> node = AnalyzeData.INSTANCE.getTechTree().getNode(nodeName);
+            TechNode node = AnalyzeData.TechTree.getNode(nodeName);
             if (node != null) {
                 techNodeAccCWU.put(node, accCWU);
             }

@@ -1,6 +1,5 @@
 package com.gtocore.api.research.ui;
 
-import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.techtree.TechNode;
 import com.gtocore.api.techtree.TechTree;
 import com.gtocore.api.techtree.TechTreeSavedData;
@@ -381,7 +380,7 @@ public class RecipeExportTab implements IFancyUIProvider {
                 }
 
                 var recipe = resolvedEntry.recipe();
-                var tierItem = AnalyzeData.INSTANCE.getTierItems().get(resolvedEntry.node().getTier());
+                var tierItem = AnalyzeData.TierItems.get(resolvedEntry.node().getTier());
                 if (tierItem == null) {
                     return;
                 }
@@ -395,18 +394,17 @@ public class RecipeExportTab implements IFancyUIProvider {
         private List<EntryState> buildEntries() {
             Player player = getGuiPlayer();
             Set<String> unlockedNodeNames = new HashSet<>();
-            TechTree<TeamResearchContext> tree = player == null ? null : TechTreeSavedData.findTree(player, AnalyzeData.INSTANCE.getTechTree());
+            TechTree tree = player == null ? null : TechTreeSavedData.findTree(player, AnalyzeData.TechTree);
             if (tree != null && !tree.isEmpty()) {
-                for (TechNode<TeamResearchContext> node : tree.getUnlockedNodes()) {
+                for (TechNode node : tree.getUnlockedNodes()) {
                     unlockedNodeNames.add(node.name);
                 }
             }
 
             List<EntryState> entries = new ArrayList<>();
-            for (var nodeEntry : AnalyzeData.INSTANCE.getNode2Recipes().entrySet()) {
-                TechNode<TeamResearchContext> node = nodeEntry.getKey();
-                var recipes = nodeEntry.getValue();
-                if (recipes == null || recipes.isEmpty()) {
+            for (TechNode node : AnalyzeData.TechTree.getLayout().orderedNodes()) {
+                var recipes = node.getRecipes();
+                if (recipes.isEmpty()) {
                     continue;
                 }
 
@@ -469,15 +467,11 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
 
         private @Nullable ResolvedEntry resolveEntry(EntryState entry) {
-            TechNode<TeamResearchContext> node = AnalyzeData.INSTANCE.getTechTree().getNode(entry.nodeName());
+            TechNode node = AnalyzeData.TechTree.getNode(entry.nodeName());
             if (node == null) {
                 return null;
             }
-            var recipes = AnalyzeData.INSTANCE.getNode2Recipes().get(node);
-            if (recipes == null) {
-                return null;
-            }
-            for (GTRecipeDefinition recipe : recipes) {
+            for (GTRecipeDefinition recipe : node.getRecipes()) {
                 if (entry.recipeId().equals(recipe.id.toString())) {
                     return new ResolvedEntry(node, recipe);
                 }
@@ -495,7 +489,7 @@ public class RecipeExportTab implements IFancyUIProvider {
             tooltip.add(getMainOutputDisplayName(resolved.recipe()).copy().withStyle(ChatFormatting.WHITE));
             tooltip.add(Component.translatable(NODE_TOOLTIP, resolved.node().getDisplayName()).withStyle(ChatFormatting.GRAY));
 
-            var tierItem = AnalyzeData.INSTANCE.getTierItems().get(resolved.node().getTier());
+            var tierItem = AnalyzeData.TierItems.get(resolved.node().getTier());
             if (tierItem != null) {
                 tooltip.add(Component.translatable(TIER_TOOLTIP, tierItem.asStack().getHoverName()).withStyle(ChatFormatting.GRAY));
             }
@@ -568,7 +562,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         private static final SyncState EMPTY = new SyncState(List.of(), null);
     }
 
-    private record ResolvedEntry(TechNode<TeamResearchContext> node, GTRecipeDefinition recipe) {}
+    private record ResolvedEntry(TechNode node, GTRecipeDefinition recipe) {}
 
     private static void writeEntry(FriendlyByteBuf buffer, EntryState entry) {
         buffer.writeUtf(entry.nodeName());

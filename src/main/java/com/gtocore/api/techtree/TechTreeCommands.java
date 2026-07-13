@@ -36,7 +36,7 @@ public final class TechTreeCommands {
             TechTreeManager.getManagers().stream().map(TechTreeManager::getId).sorted(),
             builder);
     private static final SuggestionProvider<CommandSourceStack> NODE_SUGGESTIONS = (context, builder) -> {
-        TechTreeManager<?> manager = findManager(StringArgumentType.getString(context, "manager"));
+        TechTreeManager manager = findManager(StringArgumentType.getString(context, "manager"));
         if (manager == null) {
             return builder.buildFuture();
         }
@@ -81,8 +81,8 @@ public final class TechTreeCommands {
 
     private static int executeUnlock(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "player");
-        TechTreeManager<?> manager = getManager(context);
-        TechNode<?> node = getNode(context, manager);
+        TechTreeManager manager = getManager(context);
+        TechNode node = getNode(context, manager);
         int changed = 0;
         for (var target : collectTargets(players)) {
             boolean unlocked = forceUnlock(target.teamUUID(), node);
@@ -99,7 +99,7 @@ public final class TechTreeCommands {
 
     private static int executeReset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "player");
-        TechTreeManager<?> manager = getManager(context);
+        TechTreeManager manager = getManager(context);
         int changed = 0;
         for (var target : collectTargets(players)) {
             boolean reset = TechTreeSavedData.reset(target.teamUUID(), manager);
@@ -114,16 +114,15 @@ public final class TechTreeCommands {
 
     private static int executeList(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "player");
-        TechTreeManager<?> manager = getManager(context);
-        TechTreeLayout<?> layout = manager.getLayout();
-        Map<TechNode<?>, Integer> nodeOrder = createNodeOrder(layout);
+        TechTreeManager manager = getManager(context);
+        TechTreeLayout layout = manager.getLayout();
+        Map<TechNode, Integer> nodeOrder = createNodeOrder(layout);
         int totalUnlocked = 0;
         for (var target : collectTargets(players)) {
-            TechTree<?> tree = TechTreeSavedData.findTree(target.teamUUID(), manager);
-            List<TechNode<?>> unlockedNodes = new ArrayList<>();
+            TechTree tree = TechTreeSavedData.findTree(target.teamUUID(), manager);
+            List<TechNode> unlockedNodes = new ArrayList<>();
             if (tree != null) {
                 tree.getUnlockedNodes().stream()
-                        .map(node -> (TechNode<?>) node)
                         .sorted(java.util.Comparator.comparingInt(node -> nodeOrder.getOrDefault(node, Integer.MAX_VALUE)))
                         .forEach(unlockedNodes::add);
             }
@@ -142,25 +141,25 @@ public final class TechTreeCommands {
         return totalUnlocked;
     }
 
-    private static TechTreeManager<?> getManager(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static TechTreeManager getManager(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         String id = StringArgumentType.getString(context, "manager");
-        TechTreeManager<?> manager = findManager(id);
+        TechTreeManager manager = findManager(id);
         if (manager == null) {
             throw MANAGER_NOT_FOUND.create(id);
         }
         return manager;
     }
 
-    private static TechNode<?> getNode(CommandContext<CommandSourceStack> context, TechTreeManager<?> manager) throws CommandSyntaxException {
+    private static TechNode getNode(CommandContext<CommandSourceStack> context, TechTreeManager manager) throws CommandSyntaxException {
         String nodeId = StringArgumentType.getString(context, "node");
-        TechNode<?> node = manager.definitions.get(nodeId);
+        TechNode node = manager.definitions.get(nodeId);
         if (node == null) {
             throw NODE_NOT_FOUND.create(nodeId, manager.getId());
         }
         return node;
     }
 
-    private static TechTreeManager<?> findManager(String id) {
+    private static TechTreeManager findManager(String id) {
         return TechTreeManager.getManager(id);
     }
 
@@ -180,14 +179,14 @@ public final class TechTreeCommands {
         return result;
     }
 
-    private static <T> boolean forceUnlock(UUID teamUUID, TechNode<T> node) {
+    private static boolean forceUnlock(UUID teamUUID, TechNode node) {
         return TechTreeSavedData.forceUnlock(teamUUID, node);
     }
 
-    private static Map<TechNode<?>, Integer> createNodeOrder(TechTreeLayout<?> layout) {
-        Map<TechNode<?>, Integer> order = new IdentityHashMap<>();
+    private static Map<TechNode, Integer> createNodeOrder(TechTreeLayout layout) {
+        Map<TechNode, Integer> order = new IdentityHashMap<>();
         int index = 0;
-        for (TechNode<?> node : layout.orderedNodes()) {
+        for (TechNode node : layout.orderedNodes()) {
             order.put(node, index++);
         }
         return order;

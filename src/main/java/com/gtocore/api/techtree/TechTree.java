@@ -1,5 +1,7 @@
 package com.gtocore.api.techtree;
 
+import com.gtocore.api.research.TeamResearchContext;
+
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
 import net.minecraft.nbt.CompoundTag;
@@ -14,33 +16,33 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-public class TechTree<T> implements ITagSerializable<CompoundTag> {
+public class TechTree implements ITagSerializable<CompoundTag> {
 
     @Getter
-    private final TechTreeManager<T> manager;
-    final Set<TechNode<T>> nodes;
+    private final TechTreeManager manager;
+    final Set<TechNode> nodes;
 
-    public TechTree(TechTreeManager<T> manager) {
+    public TechTree(TechTreeManager manager) {
         this.manager = manager;
         this.nodes = new ReferenceOpenHashSet<>();
     }
 
-    public ActionResult unlock(TechNode<T> definition, T args, UUID team) {
-        var result = definition.tryUnlock(nodes, args, team, true);
+    public ActionResult unlock(TechNode definition, TeamResearchContext context, UUID team) {
+        var result = definition.tryUnlock(nodes, context, team, true);
         if (result.isSuccess()) {
-            definition.tryUnlock(nodes, args, team, false);
+            definition.tryUnlock(nodes, context, team, false);
             addUnlockedNode(definition);
         }
         return result;
     }
 
-    public ActionResult tryUnlock(TechNode<T> definition, T args, UUID team) {
-        return definition.tryUnlock(nodes, args, team, true);
+    public ActionResult tryUnlock(TechNode definition, TeamResearchContext context, UUID team) {
+        return definition.tryUnlock(nodes, context, team, true);
     }
 
-    public Set<TechNode<T>> getEndNodes() {
-        var result = new ReferenceOpenHashSet<TechNode<T>>();
-        var prerequisites = new ReferenceOpenHashSet<TechNode<T>>();
+    public Set<TechNode> getEndNodes() {
+        var result = new ReferenceOpenHashSet<TechNode>();
+        var prerequisites = new ReferenceOpenHashSet<TechNode>();
         for (var node : nodes) {
             for (var prerequisite : node.prerequisites) {
                 if (nodes.contains(prerequisite)) {
@@ -56,7 +58,7 @@ public class TechTree<T> implements ITagSerializable<CompoundTag> {
         return result;
     }
 
-    public boolean isUnlocked(TechNode<T> node) {
+    public boolean isUnlocked(TechNode node) {
         return nodes.contains(node);
     }
 
@@ -64,7 +66,7 @@ public class TechTree<T> implements ITagSerializable<CompoundTag> {
         return nodes.isEmpty();
     }
 
-    public Set<TechNode<T>> getUnlockedNodes() {
+    public Set<TechNode> getUnlockedNodes() {
         return Collections.unmodifiableSet(nodes);
     }
 
@@ -72,7 +74,7 @@ public class TechTree<T> implements ITagSerializable<CompoundTag> {
         nodes.clear();
     }
 
-    void addUnlockedNode(TechNode<T> node) {
+    void addUnlockedNode(TechNode node) {
         if (!nodes.add(node)) return;
         for (var prerequisite : node.prerequisites) {
             addUnlockedNode(prerequisite);
