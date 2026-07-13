@@ -64,6 +64,15 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
     }
 
     @JvmField
+    val DataExportMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_export_machine")
+
+        section(MainFunction)
+        command("用于将科技树解锁的数据导出到闪存等存储设备中" translatedTo "Used to export data unlocked in the tech tree to flash drives and other storage devices")
+        command("需要消耗电力进行导出" translatedTo "Requires power consumption for exporting")
+    }
+
+    @JvmField
     val directedHyperCubeMachineTooltips: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("directed_hyper_cube_machine")
 

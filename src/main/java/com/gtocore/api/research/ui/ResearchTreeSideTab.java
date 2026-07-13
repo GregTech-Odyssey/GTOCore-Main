@@ -379,9 +379,13 @@ public class ResearchTreeSideTab extends WidgetGroup {
             int contentWidth = size.width - CONTENT_PADDING * 2;
             int contentHeight = size.height - CONTENT_PADDING * 2;
             int contentBottom = contentY + contentHeight;
-            int rowsStartY = contentY + HEADER_HEIGHT + HEADER_SECTION_GAP;
+            int rewardTextY = contentY + HEADER_HEIGHT + HEADER_SECTION_GAP;
+            List<FormattedCharSequence> rewardTextLines = getRewardTextLines(font, node, contentWidth);
+            int rewardTextHeight = rewardTextLines.size() * font.lineHeight;
+            int rowsStartY = rewardTextY + rewardTextHeight + (rewardTextLines.isEmpty() ? 0 : HEADER_SECTION_GAP);
 
             drawHeader(graphics, font, node, contentX, contentY, contentWidth);
+            drawRewardLines(graphics, font, rewardTextLines, contentX, rewardTextY);
             List<RowState> rows = buildRows();
             int rowsHeight = rows.isEmpty() ? 0 : rows.size() * ROW_HEIGHT + (rows.size() - 1) * ROW_GAP;
             int preferredInnerContentY = rowsStartY + rowsHeight + INNER_CONTENT_SECTION_GAP;
@@ -408,7 +412,10 @@ public class ResearchTreeSideTab extends WidgetGroup {
             int contentWidth = size.width - CONTENT_PADDING * 2;
             int contentHeight = size.height - CONTENT_PADDING * 2;
             int contentBottom = contentY + contentHeight;
-            int rowsStartY = contentY + HEADER_HEIGHT + HEADER_SECTION_GAP;
+            int rewardTextY = contentY + HEADER_HEIGHT + HEADER_SECTION_GAP;
+            List<FormattedCharSequence> rewardTextLines = getRewardTextLines(font, node, contentWidth);
+            int rewardTextHeight = rewardTextLines.size() * font.lineHeight;
+            int rowsStartY = rewardTextY + rewardTextHeight + (rewardTextLines.isEmpty() ? 0 : HEADER_SECTION_GAP);
 
             List<RowState> rows = buildRows();
             int rowsHeight = rows.isEmpty() ? 0 : rows.size() * ROW_HEIGHT + (rows.size() - 1) * ROW_GAP;
@@ -525,6 +532,24 @@ public class ResearchTreeSideTab extends WidgetGroup {
             String valueText = FormattingUtil.formatNumberReadable(row.current()) + "/" + FormattingUtil.formatNumberReadable(row.total());
             int valueColor = row.total() > 0L && row.current() >= row.total() ? ROW_COMPLETE_VALUE_COLOR : ROW_VALUE_COLOR;
             graphics.drawString(font, valueText, x + progressWidth + 6 + Math.max(0, valueWidth - font.width(valueText)), y + 2, valueColor, false);
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private List<FormattedCharSequence> getRewardTextLines(Font font, TechNode<TeamResearchContext> node, int width) {
+            List<FormattedCharSequence> lines = new ArrayList<>();
+            for (Component rewardLine : AnalyzeData.INSTANCE.getRewardLines(node)) {
+                lines.addAll(font.split(rewardLine, width));
+            }
+            return lines;
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private void drawRewardLines(GuiGraphics graphics, Font font, List<FormattedCharSequence> rewardTextLines, int x, int y) {
+            int currentY = y;
+            for (FormattedCharSequence rewardTextLine : rewardTextLines) {
+                graphics.drawString(font, rewardTextLine, x, currentY, HEADER_DESC_COLOR, false);
+                currentY += font.lineHeight;
+            }
         }
     }
 }

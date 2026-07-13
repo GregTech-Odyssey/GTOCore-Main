@@ -660,6 +660,14 @@ public class TechTreeWidget<T> extends DraggableScrollableWidgetGroup {
         }
 
         @Override
+        protected void drawTooltipTexts(int mouseX, int mouseY) {
+            if (!isMouseOverNode(mouseX, mouseY) || !TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY)) {
+                return;
+            }
+            super.drawTooltipTexts(mouseX, mouseY);
+        }
+
+        @Override
         public boolean allowSelected(double mouseX, double mouseY, int button) {
             return button == 0 && isMouseOverNode(mouseX, mouseY) && TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY);
         }

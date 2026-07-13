@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.research;
 
 import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.api.research.ui.ResearchInfoTab;
 import com.gtocore.api.techtree.TechNode;
 import com.gtocore.api.techtree.TechTreeSavedData;
@@ -24,6 +25,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
@@ -36,6 +38,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
@@ -47,20 +50,29 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @DataGeneratorScanned
-public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder, IEnhancedRecipeLogicMachine {
+public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder, IEnhancedRecipeLogicMachine, RecipeExportTab.DataItemHolder {
 
     @SaveToDisk(saveNull = true)
+    @SyncToClient
     private TechNode<TeamResearchContext> selectedNode;
     @SaveToDisk(saveNull = true)
     private UUID researchRequester;
     @SaveToDisk
     private long cwuBuffer = 0L;
 
+    @SaveToDisk
+    private final NotifiableItemStackHandler inpur;
+    @SaveToDisk
+    private final NotifiableItemStackHandler output;
+
     public DataCenter(MetaMachineBlockEntity holder) {
         super(holder);
+        inpur = new NotifiableItemStackHandler(this, 4, IO.NONE, IO.BOTH);
+        output = new NotifiableItemStackHandler(this, 4, IO.NONE, IO.BOTH);
     }
 
     public int getTotalDataSlots() {
@@ -108,8 +120,12 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
         sideTabs.attachSubTab(new ResearchInfoTab((uiWidget, sideTab) -> {
-            var button = new ButtonWidget(0, 0, 48, 20, clickData -> {
+            AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
+            var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
                 if (clickData.isRemote) {
+                    btnRef.get().setButtonTexture(GuiTextures.BUTTON,
+                            new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+                                    .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
                     return;
                 }
                 var gui = uiWidget.getGui();
@@ -131,11 +147,19 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     getRecipeLogic().resetRecipeLogic();
                 }
             });
-            button.setBackground(GuiTextures.BUTTON, new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString()));
+            btnRef.set(button);
+            button.setButtonTexture(GuiTextures.BUTTON,
+                    new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+                            .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
             button.setHoverTooltips(AnalyzeData.INSTANCE.getRewardLines(selectedNode));
             return button;
         }));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
+        sideTabs.attachSubTab(new RecipeExportTab(this));
+    }
+
+    private String getResearchButtonText(@Nullable TechNode<TeamResearchContext> node) {
+        return Component.translatable(node != null && selectedNode == node ? LANG_DATA_ACCESS_RESEARCHING : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString();
     }
 
     private List<NotifiableItemStackHandler> getDataAccessHandlers() {
@@ -175,8 +199,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public void addDisplayText(List<Component> textList) {
         super.addDisplayText(textList);
         textList.add(Component.translatable(LANG_DATA_ACCESS_USAGE,
-                Component.literal(String.valueOf(getRecipeCount())).withStyle(ChatFormatting.GREEN),
-                Component.literal(String.valueOf(getTotalDataSlots())).withStyle(ChatFormatting.GREEN))
+                Component.literal(String.valueOf(getRecipeCount())).withStyle(ChatFormatting.AQUA),
+                Component.literal(String.valueOf(getTotalDataSlots())).withStyle(ChatFormatting.AQUA))
+                .withStyle(ChatFormatting.GRAY));
+        if (!isFormed()) return;
+        textList.add(Component.translatable(LANG_DATA_ACCESS_MAX_CWU, Component.literal(String.valueOf(getCWUInputLimit())).withStyle(ChatFormatting.GREEN))
                 .withStyle(ChatFormatting.GRAY));
         if (selectedNode != null) {
             textList.add(Component.translatable(LANG_DATA_ACCESS_CURRENT_NODE, selectedNode.getDisplayName().withStyle(ChatFormatting.AQUA))
@@ -202,6 +229,16 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             researchRequester = null;
         }
         cwuBuffer = 0L;
+    }
+
+    @Override
+    public ICustomItemStackHandler getDataItemStorage() {
+        return inpur;
+    }
+
+    @Override
+    public ICustomItemStackHandler getDataOutputStorage() {
+        return output;
     }
 
     private static final class DataAccessStorageTab implements IFancyUIProvider {
@@ -350,6 +387,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_CURRENT_NODE = "gtocore.machine.data_center.data_access.current_node";
     @RegisterLanguage(cn = "启动研究", en = "Launch Research")
     private static final String LANG_DATA_ACCESS_LAUNCH_RESEARCH = "gtocore.machine.data_center.data_access.launch_research";
+    @RegisterLanguage(cn = "正在研究中", en = "Research in Progress")
+    private static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
     @RegisterLanguage(cn = "最大可接受算力：%s CWU/t", en = "Maximum Acceptable CWU: %s CWU/t")
     private static final String LANG_DATA_ACCESS_MAX_CWU = "gtocore.machine.data_center.data_access.max_cwu";
 

@@ -50,7 +50,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_PACKER.asItem())
                         .CWUt(256))
-                .researchNode(AnalyzeData.INSTANCE.getAluminumMagnesiumAlloyForging())
+                .researchNode(AnalyzeData.AluminumMagnesiumAlloyForging)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("gravity_bending_device")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -75,6 +75,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GTMachines.BENDER[GTValues.UHV].asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LowTemperatureResistantPolymerRAndD)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("hand_of_arachne")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
