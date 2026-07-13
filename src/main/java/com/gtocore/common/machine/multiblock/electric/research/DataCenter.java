@@ -106,6 +106,12 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         return true;
     }
 
+    @Override
+    public void onMachineRemoved() {
+        clearInventory(output.storage);
+        clearInventory(inpur.storage);
+    }
+
     public int getRecipeCount() {
         return Arrays.stream(getParts())
                 .filter(IDataAccessHatchMachineAccessor.class::isInstance)

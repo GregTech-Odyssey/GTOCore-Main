@@ -263,7 +263,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         if (langMap is O2OOpenCacheHashMap) {
             langMap[this.name] = CNEN(descriptionCN, descriptionEN)
         } else {
-            rewardLinesWithHeader.add(
+            rewardLines.add(
                 Component.translatable(OTHER_REWARD_LABEL).withStyle(
                     ChatFormatting.DARK_PURPLE,
                 ).append(Component.translatable("gtocore.data.${this.name}").withStyle(ChatFormatting.GRAY)),
