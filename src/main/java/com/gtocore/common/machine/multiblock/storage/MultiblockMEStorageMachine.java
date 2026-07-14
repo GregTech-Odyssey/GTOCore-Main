@@ -39,7 +39,6 @@ import appeng.capabilities.Capabilities;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datasream.data.Data;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
@@ -54,7 +53,6 @@ import java.util.function.Supplier;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
 
-@Slf4j
 public final class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, IDropSaveMachine, IWailaDisplayProvider {
 
     public static final int MIN_DEPTH = 2;
@@ -128,6 +126,11 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
             manaHandler = null;
             capabilityMana = LazyOptional.empty();
         }
+    }
+
+    @Override
+    public Object getResourceIdentity() {
+        return this;
     }
 
     @Override
@@ -243,7 +246,6 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     @Override
     public void onStructureFormed() {
         capacity = cells * 800L * (getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1);
-        if (type == AEKeyType.items()) capacity *= 4;
         if (itemStackHandler != null) itemStackHandler.setCapacity(capacity);
         if (fluidStackHandler != null) fluidStackHandler.setCapacity(capacity);
         if (manaHandler != null) manaHandler.setCapacity(capacity);
@@ -270,11 +272,11 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
             manaHandler.setPos(getPos());
             manaHandler.setLevel(getLevel());
         }
-        long totalAmount = 0;
+        double totalAmount = 0;
         for (var e : keyMap) {
-            totalAmount += e.getLongValue() / (e.getKey().getAmountPerByte() / 8);
+            totalAmount += getCapacityUsage(e.getKey().getType(), e.getLongValue());
         }
-        this.storage = totalAmount;
+        this.storage = (long) totalAmount;
     }
 
     @Override
@@ -328,7 +330,8 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var type = what.getType();
         if (!isFormed || (this.type != null && type != this.type)) return 0;
-        amount = Math.min((type.getAmountPerByte() / 8) * (capacity - storage), amount);
+        var amountPerCapacity = type == ITEM ? 24 : type.getAmountPerByte() / 8;
+        amount = Math.min(amountPerCapacity * (capacity - storage), amount);
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
             keyMap.insert(what, amount);
@@ -357,11 +360,11 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
 
     private void saveChanges() {
         holder.setChanged();
-        long totalAmount = 0;
+        double totalAmount = 0;
         for (var e : keyMap) {
-            totalAmount += e.getLongValue() / (e.getKey().getAmountPerByte() / 8);
+            totalAmount += getCapacityUsage(e.getKey().getType(), e.getLongValue());
         }
-        this.storage = totalAmount;
+        this.storage = (long) totalAmount;
     }
 
     @Override
@@ -380,5 +383,12 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
         compoundTag.putLong("storage", storage);
         if (!isFormed) return;
         compoundTag.putIntArray("dimensions", new int[] { lDist + rDist + 1, uDist + dDist + 1, bDist + 1 });
+    }
+
+    private static final AEKeyType ITEM = AEKeyType.items();
+
+    private static double getCapacityUsage(AEKeyType type, long amount) {
+        if (type == ITEM) return (double) amount / 24;
+        return (double) amount * 8 / type.getAmountPerByte();
     }
 }

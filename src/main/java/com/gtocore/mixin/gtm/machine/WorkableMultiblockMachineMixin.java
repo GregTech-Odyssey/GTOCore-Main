@@ -1,5 +1,6 @@
 package com.gtocore.mixin.gtm.machine;
 
+import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
 import com.gtolib.api.machine.feature.ISpaceWorkspaceMachine;
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.machine.feature.multiblock.IEnhancedMultiblockMachine;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(WorkableMultiblockMachine.class)
-public abstract class WorkableMultiblockMachineMixin extends MultiblockControllerMachine implements IWorkInSpaceMachine {
+public abstract class WorkableMultiblockMachineMixin extends MultiblockControllerMachine implements IWorkInSpaceMachine, IEnhancedRecipeLogicMachine {
 
     @Shadow(remap = false)
     @Final

@@ -28,6 +28,7 @@ import org.joml.Quaternionf;
 // 从GTNL特效修改而来，协议: LGPLv3
 public final class KerrNewmanHomogenizerRenderer extends WorkableCasingMachineRenderer {
 
+    private static final boolean RENDER_RINGS = false;
     private static final int RING_SEGMENTS = 64;
     private static final int RING_SIDES = 16;
 
@@ -39,7 +40,8 @@ public final class KerrNewmanHomogenizerRenderer extends WorkableCasingMachineRe
     @OnlyIn(Dist.CLIENT)
     public void render(BlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource buffer,
                        int combinedLight, int combinedOverlay) {
-        if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity &&
+        if (RENDER_RINGS &&
+                blockEntity instanceof MetaMachineBlockEntity machineBlockEntity &&
                 machineBlockEntity.getMetaMachine() instanceof ElectricMultiblockMachine machine &&
                 machine.isFormed() &&
                 (machine.isActive() || blockEntity.getLevel() instanceof TrackedDummyWorld)) {

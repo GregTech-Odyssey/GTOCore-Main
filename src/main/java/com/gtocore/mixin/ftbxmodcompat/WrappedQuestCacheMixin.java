@@ -2,7 +2,9 @@ package com.gtocore.mixin.ftbxmodcompat;
 
 import dev.ftb.mods.ftbquests.client.ClientQuestFile;
 import dev.ftb.mods.ftbquests.quest.Quest;
-import dev.ftb.mods.ftbquests.quest.task.ItemTask;
+import dev.ftb.mods.ftbquests.quest.TeamData;
+import dev.ftb.mods.ftbquests.quest.reward.Reward;
+import dev.ftb.mods.ftbquests.quest.reward.RewardAutoClaim;
 import dev.ftb.mods.ftbxmodcompat.ftbquests.recipemod_common.WrappedQuest;
 import dev.ftb.mods.ftbxmodcompat.ftbquests.recipemod_common.WrappedQuestCache;
 import org.spongepowered.asm.mixin.Final;
@@ -23,18 +25,19 @@ public class WrappedQuestCacheMixin {
     private List<WrappedQuest> wrappedQuestsCache;
 
     @Inject(method = "lambda$rebuildWrappedQuestCache$1", at = @At("HEAD"), remap = false, cancellable = true)
-    private void gtocore$includeRewardlessItemTasks(Quest quest, CallbackInfo ci) {
-        if (!quest.getRewards().isEmpty()) {
-            return;
+    private void gtocore$includeVisibleQuests(Quest quest, CallbackInfo ci) {
+        TeamData teamData = ClientQuestFile.INSTANCE.selfTeamData;
+        if (quest.isVisible(teamData) && quest.showInRecipeMod()) {
+            wrappedQuestsCache.add(new WrappedQuest(quest, gtocore$getVisibleRewards(quest)));
         }
-        if (ClientQuestFile.INSTANCE.selfTeamData.canStartTasks(quest) && quest.showInRecipeMod() && gtocore$hasItemTask(quest)) {
-            wrappedQuestsCache.add(new WrappedQuest(quest, List.of()));
-        }
+
         ci.cancel();
     }
 
     @Unique
-    private static boolean gtocore$hasItemTask(Quest quest) {
-        return quest.getTasks().stream().anyMatch(ItemTask.class::isInstance);
+    private static List<Reward> gtocore$getVisibleRewards(Quest quest) {
+        return quest.getRewards().stream()
+                .filter(reward -> reward.getAutoClaimType() != RewardAutoClaim.INVISIBLE && reward.getIcon().getIngredient() != null)
+                .toList();
     }
 }

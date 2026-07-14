@@ -540,13 +540,6 @@ public final class MetaTileEntityLoader {
         VanillaRecipeHelper.addShapedRecipe(true, "coke_oven_hatch", GTMachines.COKE_OVEN_HATCH.asItem(),
                 "CBD", 'C', Tags.Items.CHESTS_WOODEN, 'B', GTBlocks.CASING_COKE_BRICKS.asItem(), 'D',
                 GTMachines.WOODEN_DRUM.asItem());
-        VanillaRecipeHelper.addShapedRecipe(true, "charcoal_pile_igniter",
-                GTMultiMachines.CHARCOAL_PILE_IGNITER.asItem(),
-                "ERE", "EHE", "FFF",
-                'E', new MaterialEntry(TagPrefix.plate, GTMaterials.Bronze),
-                'R', new MaterialEntry(TagPrefix.rotor, GTMaterials.Iron),
-                'H', GTBlocks.BRONZE_BRICKS_HULL,
-                'F', Items.FLINT_AND_STEEL);
         if (!ConfigHolder.INSTANCE.recipes.hardMultiRecipes) {
             VanillaRecipeHelper.addShapedRecipe(true, "electric_blast_furnace",
                     GTMultiMachines.ELECTRIC_BLAST_FURNACE.asItem(), "FFF", "CMC", "WCW", 'M',

@@ -6,6 +6,7 @@ import com.gtolib.api.ae2.ExternalStorageCacheStrategy;
 import com.gtolib.api.blockentity.IDirectionCacheBlockEntity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 import appeng.api.behaviors.ExternalStorageStrategy;
@@ -55,7 +56,7 @@ public abstract class StorageBusPartMixin extends UpgradeablePart {
     private Map<AEKeyType, ExternalStorageStrategy> getExternalStorageStrategies() {
         if (externalStorageStrategies == null) {
             var host = getHost().getBlockEntity();
-            this.externalStorageStrategies = ExternalStorageCacheStrategy.createWithManaExternalStorageStrategies(host, host.getBlockPos().relative(getSide()), getSide(), getSide().getOpposite());
+            this.externalStorageStrategies = ExternalStorageCacheStrategy.createWithManaExternalStorageStrategies((ServerLevel) host.getLevel(), host.getBlockPos().relative(getSide()), getSide().getOpposite());
         }
         return externalStorageStrategies;
     }

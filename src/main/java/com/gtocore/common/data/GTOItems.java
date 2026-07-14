@@ -6,6 +6,7 @@ import com.gtocore.api.misc.AutoInitializeImpl;
 import com.gtocore.client.renderer.item.HaloItemRenderer;
 import com.gtocore.client.renderer.item.MaterialsColorMap;
 import com.gtocore.client.renderer.item.OrderItemProviderRenderer;
+import com.gtocore.common.cover.CreativePowerAmplifierCover;
 import com.gtocore.common.cover.HeatInterfaceCover;
 import com.gtocore.common.cover.PowerAmplifierCover;
 import com.gtocore.common.data.translation.GTOItemTooltips;
@@ -57,6 +58,7 @@ import appeng.items.materials.StorageComponentItem;
 
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+import com.hepdd.gtmthings.data.CreativeModeTabs;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import org.jetbrains.annotations.NotNull;
@@ -119,14 +121,14 @@ public final class GTOItems {
     public static final ItemEntry<StorageComponentItem> CELL_COMPONENT_256M = registerStorageComponentItem(256);
 
     public static final ItemEntry<ComponentItem> ORDER = item("order", "%s 订单", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getOrderTooltips().getArray())
+            .toolTips(GTOItemTooltips.OrderTooltips.getArray())
             .lang("%s Order")
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(OrderItem.INSTANCE))
             .onRegister(attachRenderer(() -> OrderItemProviderRenderer.INSTANCE))
             .register();
     public static final ItemEntry<ComponentItem> TEMP_ORDER = item("temporary_order", "%s 临时订单", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getOrderTooltips().getArray())
+            .toolTips(GTOItemTooltips.OrderTooltips.getArray())
             .lang("%s Temporary Order")
             .onRegister(attach(OrderItem.INSTANCE))
             .onRegister(attachRenderer(() -> OrderItemProviderRenderer.INSTANCE))
@@ -323,6 +325,17 @@ public final class GTOItems {
             }), new CoverPlaceBehavior(GTOCovers.POWER_AMPLIFIERS[5])))
             .register();
 
+    public static final ItemEntry<ComponentItem> CREATIVE_POWER_AMPLIFIER = item("creative_power_amplifier", "创造模式功率增幅器", ComponentItem::create)
+            .tab(CreativeModeTabs.CREATIVE_TAB.getKey())
+            .model((ctx, prov) -> prov.generated(ctx, GTOCore.id("item/power_amplifiers/creative_power_amplifier")))
+            .onRegister(attach(new TooltipBehavior(lines -> {
+                lines.add(Component.translatable("gtmthings.creative_tooltip"));
+                lines.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_DURATION_MULTIPLIER)));
+                lines.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_ENERGY_MULTIPLIER)));
+                lines.add(Component.translatable("gtocore.cover.creative_power_amplifier.tooltip").withStyle(ChatFormatting.GRAY));
+            }), new CoverPlaceBehavior(GTOCovers.CREATIVE_POWER_AMPLIFIER)))
+            .register();
+
     public static final ItemEntry<ComponentItem> AIR_VENT = item("air_vent", "通风口", ComponentItem::create)
             .onRegister(attach(new TooltipBehavior(lines -> lines.add(Component.translatable("gtceu.universal.tooltip.produces_fluid", 10))), new CoverPlaceBehavior(GTOCovers.AIR_VENT)))
             .register();
@@ -356,7 +369,7 @@ public final class GTOItems {
     public static final ItemEntry<ComponentItem> WIRELESS_ENERGY_RECEIVE_COVER_MAX_4A = registerTieredCover(4);
 
     public static final ItemEntry<ComponentItem> TIME_TWISTER = item("time_twister", "时间扭曲者", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getTimeTwisterTooltips().getArray())
+            .toolTips(GTOItemTooltips.TimeTwisterTooltips.getArray())
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(TimeTwisterBehavior.INSTANCE))
             .register();
@@ -368,9 +381,9 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> PATTERN_MODIFIER_PRO = item("pattern_modifier_pro", "样板修改器pro", ComponentItem::create)
+            .toolTips(GTOItemTooltips.PatternModifierTooltips.getArray())
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(PatternModifierProBehavior.INSTANCE))
-            .onRegister(attach(new TooltipBehavior(GTOItemTooltips.INSTANCE.getPatternModifierTooltips()::apply)))
             .model(NonNullBiConsumer.noop())
             .register();
 
@@ -1079,8 +1092,12 @@ public final class GTOItems {
             .tag(CustomTags.PPE_ARMOR)
             .register();
 
-    public static final ItemEntry<UpgradeModuleItem> SPEED_UPGRADE_MODULE = item("speed_upgrade_module", "速度升级模块", UpgradeModuleItem::new).register();
-    public static final ItemEntry<UpgradeModuleItem> ENERGY_UPGRADE_MODULE = item("energy_upgrade_module", "能量升级模块", UpgradeModuleItem::new).register();
+    public static final ItemEntry<UpgradeModuleItem> SPEED_UPGRADE_MODULE = item("speed_upgrade_module", "速度升级模块", UpgradeModuleItem::new)
+            .toolTips(GTOItemTooltips.SpeedUpgradeModuleTooltips.getArray())
+            .register();
+    public static final ItemEntry<UpgradeModuleItem> ENERGY_UPGRADE_MODULE = item("energy_upgrade_module", "能量升级模块", UpgradeModuleItem::new)
+            .toolTips(GTOItemTooltips.EnergyUpgradeModuleTooltips.getArray())
+            .register();
 
     public static final ItemEntry<Item> DISPOSABLE_FILE = item("disposable_file", "一次性锉刀")
             .tag(CustomTags.CRAFTING_FILES).register();
@@ -1254,7 +1271,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> PALM_SIZED_BANK = item("palm_sized_bank", "泛银河系格雷科技掌上银行", ComponentItem::create)
-            .toolTips(GTOItemTooltips.INSTANCE.getPalmSizedBankTooltips().getArray())
+            .toolTips(GTOItemTooltips.PalmSizedBankTooltips.getArray())
             .properties(p -> p.stacksTo(1))
             .lang("Pan-Galactic Greg Technology Palm-Sized Bank")
             .onRegister(attach(PalmSizedBankBehavior.INSTANCE))

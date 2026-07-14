@@ -4,6 +4,7 @@ import com.gtocore.api.lang.ComponentListSupplier
 import com.gtocore.api.lang.ComponentSupplier
 import com.gtocore.api.lang.toComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
+import com.gtocore.api.lang.translatable
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine
 
@@ -22,10 +23,10 @@ import com.lowdragmc.lowdraglib.side.fluid.FluidHelper
  */
 object GTOMachineTooltips {
 
+    // 废弃结构
     @JvmField
     var deprecatedStructureTooltips: ComponentListSupplier = ComponentListSupplier {
-        setTranslationPrefix("multiblock_structure")
-        error("该结构已弃用" translatedTo "This structure has been deprecated")
+        error(translatable("gtocore.structure.deprecated"), 1)
     }
 
     @JvmField
@@ -455,7 +456,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("mana_heater")
 
         section(ComponentSlang.RunningRequirements)
-        command("输入魔力加热" translatedTo "Input mana to heat")
+        command("使用魔力加热，热量仅从顶面输出" translatedTo "Uses mana to heat, heat only outputs from the top side")
         increase("如果输入§c火元素蒸汽§r，则加热速度翻5倍" translatedTo "If §cSalamander Vapor§r is input, the heating speed will be 5 times faster")
     }
 
@@ -683,8 +684,8 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         function("可以存储大量资源" translatedTo "Can store many many resources")
-        guide("使用简易合成终端或者存储总线读取内部资源" translatedTo "Use a simple terminal or a storage bus to read internal resources")
-        info("容量由多方块大小决定" translatedTo "The capacity is determined by the multiblock size")
+        guide("使用简易合成终端或者ME存储总线读取内部资源" translatedTo "Use Simple Crafting Terminal or ME Storage Bus to read internal resources")
+        info("容量由密封机械方块数量和等级决定" translatedTo "The capacity is determined by the number and tier of Hermetic Casings")
         info("大小：3x3x3到15x15x15" translatedTo "Size: 3x3x3 to 15x15x15")
     }
 
@@ -694,7 +695,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         content("可为保险库IO" translatedTo "Can serve as vault IO")
-        info("最大安装数 = 密封外壳数" translatedTo "Maximum installations = hermetic casing amount")
+        info("最大安装数 = 密封机械方块数" translatedTo "Maximum installations = hermetic casing amount")
     }
 
     @JvmField
@@ -846,7 +847,8 @@ object GTOMachineTooltips {
     val HeaterMachineTooltips = ComponentListSupplier {
         setTranslationPrefix("heater_machine")
 
-        section("通过燃烧对四周机器进行加热" translatedTo "Burning to heat up around machines")
+        section(ComponentSlang.RunningRequirements)
+        command("使用燃料加热，热量仅从顶面输出" translatedTo "Uses fuel to heat, heat only outputs from the top side")
         content("前方被阻挡后停止加热" translatedTo "Stop heating after front side is blocked.")
         error(("机器过热会" translatedTo "When machine is too hot, it will ") + ComponentSlang.Explosion)
         danger(ComponentSlang.BeAwareOfBurn)
@@ -865,7 +867,8 @@ object GTOMachineTooltips {
     val ElectricHeaterMachineTooltips = ComponentListSupplier {
         setTranslationPrefix("electric_heater_machine")
 
-        section("使用电力，热量仅从顶面输出" translatedTo "Uses electricity. Heat is output only from the top surface")
+        section(ComponentSlang.RunningRequirements)
+        command("使用电力加热，热量仅从顶面输出" translatedTo "Uses electricity to heat, heat only outputs from the top side")
         ok("此机器不会爆炸" translatedTo "This machine will not explode")
         danger(ComponentSlang.BeAwareOfBurn)
     }
@@ -1335,7 +1338,9 @@ object GTOMachineTooltips {
         section("戴森球连接" translatedTo "Dyson Sphere Connection")
         content("自动连接星系内未使用的戴森球" translatedTo "Automatically connects to unused Dyson spheres in the galaxy")
         increase("根据戴森球模块数量提升产出" translatedTo "Increases production based on Dyson sphere module count")
+        info("产出乘数 = max(1, floor(模块数量 / 100))" translatedTo "Output multiplier = max(1, ⌊module count / 100⌋)")
         ok("该操作不会损坏戴森球" translatedTo "This operation will not damage the Dyson sphere")
+        important("一个星系只能有一个接收单元提升产出" translatedTo "Only one Receiver per orbit can increase output")
     }
 
     // 鸿蒙之眼
@@ -1532,7 +1537,7 @@ object GTOMachineTooltips {
         important("只能处理MV及以下的配方" translatedTo "Can only process recipes of MV tier or lower")
 
         section("热管理机制" translatedTo "Heat Management")
-        info("需要 >400K 的温温度才能运行配方" translatedTo "Requires >400K Temperature to process recipes")
+        info("需要 >400K 的温度才能运行配方" translatedTo "Requires >400K Temperature to process recipes")
         info("运行配方会按1HU/t速度消耗底部热量，按0.5HU/t速度产生顶部热量" translatedTo "Processing recipes will consume bottom heat at a speed of 1HU/t and generate top heat at a speed of 0.5HU/t")
     }
 
@@ -2368,6 +2373,14 @@ object GTOMachineTooltips {
                 ("空间站高能转换调配舱" translatedTo "Space Station High-Energy Conversion and Dispensing Module").scrollExotic(),
         )
         highlight("则解锁§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限" translatedTo "The use of advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r will be unlocked")
+    }
+
+    @JvmField
+    val OrbitalSmeltingFacilityTooltips = ComponentListSupplier {
+        setTranslationPrefix("orbital_smelting_facility")
+
+        section(ComponentSlang.RunningRequirements)
+        important("仅接收带有无重力条件的电力高炉和合金冶炼炉配方，普通配方无法运行" translatedTo "Only accepts electric blast furnace and alloy blast furnace recipes with a zero-gravity condition; normal recipes cannot run here")
     }
 
     @JvmField

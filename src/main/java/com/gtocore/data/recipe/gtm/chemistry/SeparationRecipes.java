@@ -138,7 +138,7 @@ final class SeparationRecipes {
                 .outputItems(dust, Gold)
                 .save();
 
-        CENTRIFUGE_RECIPES.recipeBuilder("coal_separation").duration(72).EUt(VA[ULV])
+        CENTRIFUGE_RECIPES.recipeBuilder("coal_separation").duration(36).EUt(VA[LV])
                 .inputItems(dust, Coal)
                 .outputItems(dust, Carbon)
                 .save();

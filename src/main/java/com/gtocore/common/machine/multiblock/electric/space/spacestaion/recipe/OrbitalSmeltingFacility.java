@@ -35,7 +35,7 @@ public class OrbitalSmeltingFacility extends RecipeExtension implements ICoilMac
 
     @Override
     public boolean checkConditions(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
-        if (recipe.recipeType == GTORecipeTypes.BLAST_RECIPES) {
+        if (recipe.recipeType == GTORecipeTypes.BLAST_RECIPES || recipe.recipeType == GTORecipeTypes.ALLOY_BLAST_RECIPES) {
             for (var c : recipe.conditions) {
                 if (c instanceof GravityCondition condition && condition.zero) return super.checkConditions(unit, recipe);
             }
@@ -47,7 +47,7 @@ public class OrbitalSmeltingFacility extends RecipeExtension implements ICoilMac
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        if (recipe.definition.recipeType == GTORecipeTypes.BLAST_RECIPES) {
+        if (recipe.definition.recipeType == GTORecipeTypes.BLAST_RECIPES || recipe.definition.recipeType == GTORecipeTypes.ALLOY_BLAST_RECIPES) {
             recipe.durationMultiplier(0.25);
         }
         return super.getRealRecipe(unit, RecipeModifier.multiplier(recipe, 0.8, 0.6));

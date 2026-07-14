@@ -107,7 +107,7 @@ public class TravelStaffBehavior extends ElectricStats {
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents,
                                TooltipFlag isAdvanced) {
-        tooltipComponents.addAll(GTOItemTooltips.INSTANCE.getTravelStaff().get());
+        tooltipComponents.addAll(GTOItemTooltips.TravelStaffTooltips.get());
         super.appendTooltips(stack, level, tooltipComponents, isAdvanced);
     }
 

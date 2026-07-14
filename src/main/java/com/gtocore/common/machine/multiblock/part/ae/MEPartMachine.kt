@@ -70,7 +70,7 @@ abstract class MEPartMachine(holder: MetaMachineBlockEntity, io: IO) :
     @SaveToDisk
     protected var distinctField: Boolean = false
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     var isAllFacing: Boolean = false
 
     override fun getItemHandlerCap(side: Direction?, useCoverCapability: Boolean): ICustomItemStackHandler? = null

@@ -6,12 +6,15 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.AEFluidConfigWidget;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -35,6 +38,7 @@ import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Position;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -52,6 +56,10 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
     @SaveToDisk
     protected final NotifiableItemStackHandler circuitInventory;
 
+    @Getter
+    @SaveToDisk(defaultValue = "0")
+    private int priority = 0;
+
     public MEInputHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, IO.IN);
         aeFluidHandler = createTank();
@@ -60,6 +68,30 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
             aeFluidHandler.fastForEachFluids((i, l) -> getConfiguredSetting().set(AEFluidKey.of(i), l));
         });
         circuitInventory = CircuitHandler.create(this);
+    }
+
+    private void setPriority(int priority) {
+        // 防御 Integer.MIN_VALUE：客户端 IntInputWidget 初始化时
+        // setMin(Integer.MIN_VALUE) 会触发空文本框被设为 min 值，
+        // 然后通过 CPacketUIClientAction 发送到服务端覆盖正确值
+        if (priority == Integer.MIN_VALUE) return;
+        this.priority = priority;
+        aeFluidHandler.setPriority(priority);
+        circuitInventory.setPriority(priority);
+        RecipeHandlerUnit.notify(this);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        aeFluidHandler.setPriority(priority);
+        circuitInventory.setPriority(priority);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
     }
 
     /////////////////////////////////

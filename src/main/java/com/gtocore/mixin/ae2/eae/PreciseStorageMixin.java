@@ -8,10 +8,7 @@ import appeng.api.storage.MEStorage;
 import com.glodblock.github.extendedae.api.StorageMode;
 import com.glodblock.github.extendedae.common.parts.PartPreciseStorageBus;
 import com.glodblock.github.extendedae.common.parts.base.PartSpecialStorageBus;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 @Mixin(PartPreciseStorageBus.class)
 public abstract class PreciseStorageMixin implements IPreciseBus {
@@ -44,16 +41,17 @@ public abstract class PreciseStorageMixin implements IPreciseBus {
             var storageMode = ((IPreciseBus) this$0).gtocore$getStorageMode();
             if (storageMode == StorageMode.DEFAULT || storageMode == null) {
                 super.getAvailableStacks(out);
-                return;
-            }
-            var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
-            var current = new KeyCounter();
-            super.getAvailableStacks(current);
-            for (var entry : current) {
-                long value = entry.getLongValue();
-                long threshold = filter.getAmount(entry.getKey());
-                if (storageMode.test(value, threshold)) {
-                    out.add(entry.getKey(), value);
+            } else {
+                var cache = super.cache;
+                cache.clear();
+                super.getAvailableStacks(cache);
+                var filter = (PartPreciseStorageBus.PreciseFilter) this.getPartitionList();
+                for (var entry : cache) {
+                    long value = entry.getLongValue();
+                    long threshold = filter.getAmount(entry.getKey());
+                    if (storageMode.test(value, threshold)) {
+                        out.add(entry.getKey(), value);
+                    }
                 }
             }
         }

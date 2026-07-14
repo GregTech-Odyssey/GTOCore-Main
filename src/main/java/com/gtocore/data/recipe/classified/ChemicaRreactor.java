@@ -245,6 +245,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("phosgene")
+                .circuitMeta(1)
                 .inputFluids(GTMaterials.CarbonMonoxide, 1000)
                 .inputFluids(GTMaterials.Chlorine, 2000)
                 .outputFluids(GTOMaterials.Phosgene, 1000)
@@ -3481,6 +3482,7 @@ final class ChemicaRreactor {
                 .outputItems(TagPrefix.dust, GTOMaterials.RheniumPentacarbonylChloride, 7)
                 .inputFluids(GTMaterials.CarbonMonoxide, 5000)
                 .inputFluids(GTMaterials.Chlorine, 1000)
+                .circuitMeta(2)
                 .EUt(640)
                 .duration(1750)
                 .save();

@@ -84,6 +84,60 @@ final class HatchRecipe {
                 " B ",
                 'A', GTBlocks.BRONZE_HULL.asItem(), 'B', RegistriesUtils.getItemStack("gtceu:wood_drum"));
 
+        ASSEMBLER_RECIPES.builder("void_output_bus")
+                .inputItems(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asItem())
+                .inputItems(GTItems.COVER_ITEM_VOIDING)
+                .outputItems(GTOMachines.VOID_OUTPUT_BUS.asItem())
+                .EUt(30)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("void_output_hatch")
+                .inputItems(GTMachines.FLUID_EXPORT_HATCH[GTValues.LV].asItem())
+                .inputItems(GTItems.COVER_FLUID_VOIDING)
+                .outputItems(GTOMachines.VOID_OUTPUT_HATCH.asItem())
+                .EUt(30)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("filter_void_output_bus")
+                .inputItems(GTMachines.ITEM_EXPORT_BUS[GTValues.MV].asItem())
+                .inputItems(GTOMachines.VOID_OUTPUT_BUS.asItem())
+                .inputItems(GTItems.ITEM_FILTER, 9)
+                .inputItems(GTMachines.STEEL_CRATE.asItem())
+                .outputItems(GTOMachines.FILTER_VOID_OUTPUT_BUS.asItem())
+                .EUt(120)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("filter_void_output_hatch")
+                .inputItems(GTMachines.FLUID_EXPORT_HATCH[GTValues.MV].asItem())
+                .inputItems(GTOMachines.VOID_OUTPUT_HATCH.asItem())
+                .inputItems(GTItems.FLUID_FILTER, 9)
+                .inputItems(GTMachines.STEEL_DRUM.asItem())
+                .outputItems(GTOMachines.FILTER_VOID_OUTPUT_HATCH.asItem())
+                .EUt(120)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("tag_filter_void_output_bus")
+                .inputItems(GTMachines.ITEM_EXPORT_BUS[GTValues.HV].asItem())
+                .inputItems(GTOMachines.FILTER_VOID_OUTPUT_BUS.asItem())
+                .inputItems(GTItems.TAG_FILTER, 8)
+                .outputItems(GTOMachines.TAG_FILTER_VOID_OUTPUT_BUS.asItem())
+                .EUt(480)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("tag_filter_void_output_hatch")
+                .inputItems(GTMachines.FLUID_EXPORT_HATCH[GTValues.HV].asItem())
+                .inputItems(GTOMachines.FILTER_VOID_OUTPUT_HATCH.asItem())
+                .inputItems(GTItems.TAG_FLUID_FILTER, 8)
+                .outputItems(GTOMachines.TAG_FILTER_VOID_OUTPUT_HATCH.asItem())
+                .EUt(480)
+                .duration(200)
+                .save();
+
         if (GTOCore.isEasy()) {
             for (int tier : tiersBetween(LV, MAX)) {
                 ASSEMBLER_RECIPES.recipeBuilder("dual_import_bus_" + VN[tier].toLowerCase())

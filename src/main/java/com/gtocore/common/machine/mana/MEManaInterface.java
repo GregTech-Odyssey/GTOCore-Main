@@ -69,6 +69,11 @@ public final class MEManaInterface extends MetaMachine implements
     }
 
     @Override
+    public Object getResourceIdentity() {
+        return getWirelessManaContainer();
+    }
+
+    @Override
     public IManagedGridNode getMainNode() {
         return nodeHolder.getMainNode();
     }

@@ -38,7 +38,7 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
     @SyncToClient
     private boolean[] displayEnabledCache = new boolean[0];
 
-    private TickableSubscription tickableSubscription;
+    protected TickableSubscription tickableSubscription;
 
     AbstractInfoProviderMonitor(MetaMachineBlockEntity holder) {
         super(holder);
@@ -48,14 +48,18 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
     public void onLoad() {
         super.onLoad();
         if (isRemote()) return;
-        tickableSubscription = this.subscribeAsyncTick(tickableSubscription, () -> {
+        tickableSubscription = this.subscribe(() -> {
             try {
                 this.syncInfoFromServer();
                 this.requestSync();
             } catch (Throwable throwable) {
                 GTOCore.LOGGER.error("Error syncing monitor info provider data", throwable);
             }
-        }, 10);
+        });
+    }
+
+    protected TickableSubscription subscribe(Runnable runnable) {
+        return this.subscribeAsyncTick(tickableSubscription, runnable, 10);
     }
 
     @Override

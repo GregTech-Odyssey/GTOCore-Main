@@ -3,8 +3,8 @@ package com.gtocore.mixin.gtm.machine;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.gui.OverclockConfigurator;
+import com.gtolib.api.machine.feature.IConfigurablePowerAmplifierMachine;
 import com.gtolib.api.machine.feature.IOverclockConfigMachine;
-import com.gtolib.api.machine.feature.IPowerAmplifierMachine;
 import com.gtolib.api.machine.feature.IUpgradeMachine;
 import com.gtolib.utils.MachineUtils;
 
@@ -38,10 +38,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(WorkableElectricMultiblockMachine.class)
-public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMultiblockMachine implements IDisplayUIMachine, IOverclockConfigMachine, IUpgradeMachine, IPowerAmplifierMachine {
+public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMultiblockMachine implements IDisplayUIMachine, IOverclockConfigMachine, IUpgradeMachine, IConfigurablePowerAmplifierMachine {
 
     @Unique
     private double gtolib$powerAmplifier;
+    @Unique
+    private double gtolib$powerAmplifierDurationMultiplier;
     @Unique
     private boolean gtolib$hasPowerAmplifier;
     @Unique
@@ -52,7 +54,7 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     private int gtolib$ocLimit;
 
     @Unique
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "VOID_NONE")
     private VoidingMode gtocore$voidingMode = VoidingMode.VOID_NONE;
 
     @Shadow(remap = false)
@@ -67,6 +69,7 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     @Inject(method = "<init>", at = @At("TAIL"), remap = false)
     private void init(MetaMachineBlockEntity holder, Object[] args, CallbackInfo ci) {
         gtolib$powerAmplifier = 1;
+        gtolib$powerAmplifierDurationMultiplier = 1;
         gtolib$speed = 1;
         gtolib$energy = 1;
         gtolib$ocLimit = GTOConfig.INSTANCE.gamePlay.defaultMinOverclockDuration;
@@ -195,6 +198,23 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     @Override
     public void gtolib$setPowerAmplifier(double powerAmplifier) {
         this.gtolib$powerAmplifier = powerAmplifier;
+        this.gtolib$powerAmplifierDurationMultiplier = 1D / powerAmplifier;
+    }
+
+    @Override
+    public void gtolib$setPowerAmplifier(double durationMultiplier, double energyMultiplier) {
+        this.gtolib$powerAmplifierDurationMultiplier = durationMultiplier;
+        this.gtolib$powerAmplifier = energyMultiplier;
+    }
+
+    @Override
+    public double gtolib$getPowerAmplifierDurationMultiplier() {
+        return gtolib$powerAmplifierDurationMultiplier;
+    }
+
+    @Override
+    public double gtolib$getPowerAmplifierEnergyMultiplier() {
+        return gtolib$powerAmplifier;
     }
 
     @Override

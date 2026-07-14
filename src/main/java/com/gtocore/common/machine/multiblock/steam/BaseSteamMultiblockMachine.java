@@ -68,6 +68,11 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
     }
 
     @Override
+    public int getTier() {
+        return GTUtil.getTierByVoltage(this.eut << euMultiplier);
+    }
+
+    @Override
     protected void addSteamEnergy() {
         maxOCamount = 0;
         euMultiplier = 0;

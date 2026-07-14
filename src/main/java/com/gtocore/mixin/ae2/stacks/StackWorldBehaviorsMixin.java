@@ -28,7 +28,7 @@ public class StackWorldBehaviorsMixin {
      */
     @Overwrite(remap = false)
     public static StackImportStrategy createImportFacade(ServerLevel level, BlockPos fromPos, Direction fromSide) {
-        return StorageImportCacheStrategy.createImportFacade(level, level.getBlockEntity(fromPos.relative(fromSide)), fromPos, fromSide.getOpposite(), fromSide);
+        return StorageImportCacheStrategy.createImportFacade(level, fromPos, fromSide);
     }
 
     /**
@@ -37,7 +37,7 @@ public class StackWorldBehaviorsMixin {
      */
     @Overwrite(remap = false)
     public static StackExportStrategy createExportFacade(ServerLevel level, BlockPos fromPos, Direction fromSide) {
-        return StorageExportCacheStrategy.createExportFacade(level, level.getBlockEntity(fromPos.relative(fromSide)), fromPos, fromSide.getOpposite(), fromSide);
+        return StorageExportCacheStrategy.createExportFacade(level, fromPos, fromSide);
     }
 
     /**
@@ -46,6 +46,6 @@ public class StackWorldBehaviorsMixin {
      */
     @Overwrite(remap = false)
     public static Map<AEKeyType, ExternalStorageStrategy> createExternalStorageStrategies(ServerLevel level, BlockPos fromPos, Direction fromSide) {
-        return ExternalStorageCacheStrategy.createExternalStorageStrategies(level.getBlockEntity(fromPos.relative(fromSide)), fromPos, fromSide.getOpposite(), fromSide);
+        return ExternalStorageCacheStrategy.createExternalStorageStrategies(level, fromPos, fromSide);
     }
 }

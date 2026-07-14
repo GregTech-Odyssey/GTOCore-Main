@@ -4,13 +4,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.FriendlyByteBuf;
 
+import com.gto.datasynclib.datasream.codec.ByteStreamCodec;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.ListCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
-import java.util.List;
 
 public record TesseractDirectedTarget(GlobalPos pos, Direction face, int order) implements Comparable<TesseractDirectedTarget> {
 
@@ -18,7 +17,7 @@ public record TesseractDirectedTarget(GlobalPos pos, Direction face, int order) 
             GlobalPos.CODEC.fieldOf("pos").forGetter(TesseractDirectedTarget::pos),
             Direction.CODEC.fieldOf("face").forGetter(TesseractDirectedTarget::face),
             Codec.INT.fieldOf("order").forGetter(TesseractDirectedTarget::order)).apply(i, TesseractDirectedTarget::new));
-    public static final Codec<List<TesseractDirectedTarget>> LIST_CODEC = new ListCodec<>(CODEC);
+    public static final ByteStreamCodec<TesseractDirectedTarget> STREAM_CODEC = ByteStreamCodec.of(TesseractDirectedTarget::writeToBuffer, TesseractDirectedTarget::readFromBuffer);
     public static final Comparator<TesseractDirectedTarget> SORTER = Comparator
             .comparingInt((TesseractDirectedTarget pf) -> {
                 if (pf.order() < 0) {

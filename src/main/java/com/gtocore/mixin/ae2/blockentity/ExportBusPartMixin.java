@@ -1,9 +1,5 @@
 package com.gtocore.mixin.ae2.blockentity;
 
-import com.gtolib.api.ae2.StorageExportCacheStrategy;
-
-import net.minecraft.server.level.ServerLevel;
-
 import appeng.api.behaviors.StackExportStrategy;
 import appeng.api.behaviors.StackTransferContext;
 import appeng.api.config.SchedulingMode;
@@ -43,23 +39,10 @@ public abstract class ExportBusPartMixin extends IOBusPart implements ICraftingR
     protected abstract void updateSchedulingMode(SchedulingMode schedulingMode, int x);
 
     @Shadow(remap = false)
-    private @Nullable StackExportStrategy exportStrategy;
+    protected abstract StackExportStrategy getExportStrategy();
 
     protected ExportBusPartMixin(TickRates tickRates, @Nullable AEKeyFilter filter, IPartItem<?> partItem) {
         super(tickRates, filter, partItem);
-    }
-
-    /**
-     * @author .
-     * @reason .
-     */
-    @Overwrite(remap = false)
-    protected final StackExportStrategy getExportStrategy() {
-        if (exportStrategy == null) {
-            var self = this.getHost().getBlockEntity();
-            exportStrategy = StorageExportCacheStrategy.createExportFacade((ServerLevel) self.getLevel(), self, self.getBlockPos().relative(getSide()), getSide(), getSide().getOpposite());
-        }
-        return exportStrategy;
     }
 
     /**

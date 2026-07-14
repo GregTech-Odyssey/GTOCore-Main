@@ -8,6 +8,7 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -40,7 +41,7 @@ public final class DysonSphereLaunchSiloMachine extends ElectricMultiblockMachin
         if (!GTODimensions.isPlanet(getDimension())) return null;
         int integer = GTODimensions.getPlanetDistances(getDimension());
         if (integer > 0) recipe.duration = recipe.duration * integer / 4;
-        return recipe;
+        return RecipeModifier.overclocking(this, unit, recipe, false, 1, 1, 0.85);
     }
 
     @Override

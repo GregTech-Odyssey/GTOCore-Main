@@ -68,7 +68,6 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     private final GridNodeHolder nodeHolder;
     @SyncToClient
     private boolean isOnline;
-    private boolean change = true;
 
     public VirtualItemProviderMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -77,7 +76,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
         getMainNode().addService(IStorageProvider.class, this);
         storage.setStoredMap(new AEKeyMap<>());
         inventory.addChangedListener(() -> {
-            change = true;
+            storage.cache.markAsDirty();
             storage.getStoredMap().clear();
             storage.getStoredMap().insert(EMPTY_STACK, IParallelMachine.MAX_PARALLEL << 6);
             for (var i = 0; i < inventory.storage.size; i++) {
@@ -206,25 +205,11 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
 
     @Override
     public void getAvailableStacks(KeyCounter out) {
-        var map = storage.getStoredMap();
-        out.addAll(map.size(), m -> map.fastForEach(m::insert));
+        out.addAll(storage.cache.getAvailableStacksCache());
     }
 
     @Override
     public KeyCounter getAvailableStacks() {
-        var keyCounter = storage.getKeyCounter();
-        if (keyCounter == null) {
-            keyCounter = new KeyCounter();
-            storage.setKeyCounter(keyCounter);
-            change = true;
-        } else if (change) {
-            keyCounter.clear();
-        }
-        if (change) {
-            getAvailableStacks(keyCounter);
-            keyCounter.removeEmptySubmaps();
-            change = false;
-        }
-        return keyCounter;
+        return storage.cache.getAvailableStacksCache();
     }
 }

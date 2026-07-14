@@ -4,10 +4,11 @@ import net.minecraft.Util;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import appeng.api.stacks.AEKey;
+import appeng.hooks.IUnique;
 
 import com.glodblock.github.extendedae.common.me.taglist.TagPriorityList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,7 +40,7 @@ public abstract class TagPriorityListMixin {
     private String rawBlackListExpression;
 
     @Unique
-    private volatile ReferenceOpenHashSet<Object> gto$underlyingMemory;
+    private volatile IntOpenHashSet gto$underlyingMemory;
 
     @Unique
     private boolean gtocore$isEmpty;
@@ -51,15 +52,15 @@ public abstract class TagPriorityListMixin {
         INVALIDATOR.remove((TagPriorityList) (Object) this);
         if (!gtocore$isEmpty) {
             CompletableFuture.runAsync(() -> {
-                var memory = new ReferenceOpenHashSet<>();
+                var memory = new IntOpenHashSet();
                 ForgeRegistries.ITEMS.forEach(i -> {
                     if (eval(i)) {
-                        memory.add(i);
+                        memory.add(((IUnique) i).ae2$getUid());
                     }
                 });
                 ForgeRegistries.FLUIDS.forEach(f -> {
                     if (eval(f)) {
-                        memory.add(f);
+                        memory.add(((IUnique) f).ae2$getUid());
                     }
                 });
                 gto$underlyingMemory = memory;
@@ -85,6 +86,6 @@ public abstract class TagPriorityListMixin {
     public boolean isListed(AEKey input) {
         if (gtocore$isEmpty) return true;
         if (gto$underlyingMemory == null) return false;
-        return gto$underlyingMemory.contains(input.getPrimaryKey());
+        return gto$underlyingMemory.contains(input.getUid());
     }
 }

@@ -43,7 +43,7 @@ public final class GrassHarvesterBehaviour extends TooltipBehavior implements II
             Blocks.LARGE_FERN, WHEAT_SEEDS);
 
     private GrassHarvesterBehaviour() {
-        super(lines -> lines.addAll(GTOItemTooltips.INSTANCE.getGrassHarvesterTooltips().get()));
+        super(lines -> lines.addAll(GTOItemTooltips.GrassHarvesterTooltips.get()));
     }
 
     @Override

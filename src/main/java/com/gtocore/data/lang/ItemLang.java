@@ -24,6 +24,8 @@ final class ItemLang {
             }
         });
 
+        addCNEN("gtocore.item.deprecated", "该物品已弃用", "This item has been deprecated");
+
         addCNEN("item.gtceu.long_rod_extruder_mold", "模头（长杆）", "Extruder Mold (Long Rod)");
 
         addCNEN("tagprefix.living_rock", "活%s矿石", "Living %s Ore");
@@ -185,5 +187,10 @@ final class ItemLang {
         addCNEN("item.slot_boost.tooltip1", "右键点击：切换目标槽位", "Right Click: Switch Target Slot");
         addCNEN("item.slot_boost.tooltip2", "Shift+右键：消耗经验扩展槽位（消耗=当前数量×2000）", "Shift+Right Click: Expand Slot with XP (Cost = Current Count × 2000)");
         addCNEN("item.slot_boost.tooltip3", "当前目标：%s槽", "Current Target: %s Slot");
+
+        addCNEN("gtocore.cover.creative_power_amplifier.duration", "耗时倍率", "Duration Multiplier");
+        addCNEN("gtocore.cover.creative_power_amplifier.energy", "耗能倍率", "Energy Multiplier");
+        addCNEN("gtocore.cover.creative_power_amplifier.title", "创造模式功率增幅器", "Creative Power Amplifier");
+        addCNEN("gtocore.cover.creative_power_amplifier.tooltip", "安装后使用螺丝刀打开界面调整倍率", "Use a screwdriver after installation to configure multipliers");
     }
 }

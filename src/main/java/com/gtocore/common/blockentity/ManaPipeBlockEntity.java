@@ -206,6 +206,6 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         if (receiver instanceof ManaCollector collector) return collector.getMaxMana();
         if (receiver instanceof ManaPool pool) return pool.getMaxMana();
         if (receiver instanceof SparkAttachable attachable) return attachable.getAvailableSpaceForMana();
-        return receiver == null || receiver.isFull() ? 0 : 1000;
+        return receiver == null || receiver.isFull() ? 0 : 10000000;
     }
 }

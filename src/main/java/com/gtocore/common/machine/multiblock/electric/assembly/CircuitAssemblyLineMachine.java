@@ -12,7 +12,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 
 import net.minecraft.world.item.ItemStack;
@@ -77,6 +76,6 @@ public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
             recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);
             if (recipe == null) return null;
         }
-        return RecipeModifier.overclocking(this, unit, recipe);
+        return super.getRealRecipe(unit, recipe);
     }
 }

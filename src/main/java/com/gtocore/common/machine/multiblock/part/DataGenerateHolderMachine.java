@@ -143,11 +143,9 @@ public class DataGenerateHolderMachine extends MultiblockPartMachine implements 
         }
 
         // 防止在锁定状态下提取物品
-        @NotNull
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (!machine.isLocked()) return super.extractItem(slot, amount, simulate);
-            return ItemStack.EMPTY;
+        public boolean canCapOutput() {
+            return !machine.isLocked() && super.canCapOutput();
         }
 
         // 槽位物品验证

@@ -3,6 +3,7 @@ package com.gtocore.common.data.translation
 import com.gtocore.api.lang.ComponentListSupplier
 import com.gtocore.api.lang.ComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
+import com.gtocore.api.lang.translatable
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.common.data.GTOBlocks
 import com.gtocore.common.data.GTOItems
@@ -33,23 +34,29 @@ import earth.terrarium.adastra.common.registry.ModBlocks
 import vazkii.botania.common.block.BotaniaBlocks.fabulousPool
 
 object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
+
+    // 废弃物品
+    @JvmField
+    val DeprecatedItemTooltips = ComponentListSupplier {
+        error(translatable("gtocore.item.deprecated"), 1)
+    }
+
     // 升级模块 - 速度
-    val SpeedUpgradeModuleTooltips = { coefficient: Double, gCoefficient: Double ->
-        ComponentListSupplier {
-            setTranslationPrefix("upgrade_module")
-            highlight("提升机器运作速度" translatedTo "Speed up machine operation")
-        }
+    @JvmField
+    val SpeedUpgradeModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("upgrade_module")
+        highlight("提升机器运作速度" translatedTo "Speed up machine operation")
     }
 
     // 升级模块 - 能量
-    val EnergyUpgradeModuleTooltips = { coefficient: Double, gCoefficient: Double ->
-        ComponentListSupplier {
-            setTranslationPrefix("upgrade_module")
-            highlight("降低机器功耗" translatedTo "Reduce machine power consumption")
-        }
+    @JvmField
+    val EnergyUpgradeModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("upgrade_module")
+        highlight("降低机器功耗" translatedTo "Reduce machine power consumption")
     }
 
     // 样板修改器
+    @JvmField
     val PatternModifierTooltips = ComponentListSupplier {
         setTranslationPrefix("pattern_modifier")
 
@@ -60,6 +67,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
     }
 
     // AE2 订单
+    @JvmField
     val OrderTooltips = ComponentListSupplier {
         setTranslationPrefix("order")
 
@@ -73,6 +81,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
     }
 
     // 割草镰刀
+    @JvmField
     val GrassHarvesterTooltips = ComponentListSupplier {
         setTranslationPrefix("grass_harvester")
 
@@ -84,7 +93,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         info("前期大量获取种子去种地的好帮手" translatedTo "A good helper for obtaining seeds in large quantities in the early game")
     }
 
-    val TravelStaff = ComponentListSupplier {
+    // 旅行手杖
+    @JvmField
+    val TravelStaffTooltips = ComponentListSupplier {
         setTranslationPrefix("the_staff_of_travelling")
 
         info("末影接口经典款式传送工具仿制品" translatedTo "A replica of the classic teleportation tool of the Ender IO Inc.")
@@ -98,6 +109,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         command("3.可以选中点击到的目标" translatedTo "Third mode: Can select the target you clicked")
         info("很多AE节点现在都可以作为传送锚点" translatedTo "Many AE nodes can now be used as teleport anchors")
     }
+
+    // ME无线机器配置器
+    @JvmField
     val MEWirelessMachineConfigurator = ComponentListSupplier {
         setTranslationPrefix("me_wireless_machine_configurator")
 
@@ -108,6 +122,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
     }
 
     // 时间扭曲者
+    @JvmField
     val TimeTwisterTooltips = ComponentListSupplier {
         setTranslationPrefix("time_twister")
 
@@ -125,6 +140,20 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         command("使用无线能量系统作为能量来源" translatedTo "Use wireless energy system as energy source")
         command("不同操作消耗不同数量的EU" translatedTo "Different operations consume different amounts of EU")
         command("加速GT机器时，根据难度模式消耗相应倍数EU能量" translatedTo "When accelerating GT machines, consume EU energy according to the difficulty mode")
+    }
+
+    // 泛银河系格雷科技掌上银行
+    @JvmField
+    val PalmSizedBankTooltips = ComponentListSupplier {
+        setTranslationPrefix("item.palm_sized_bank")
+        miraculousTools("泛银河系格雷科技掌上银行" translatedTo "Pan-Galactic Grey Technology Palm-Sized Bank")
+        section("一款集成了跨星系金融服务的便携式终端，由格雷科技星际金融部研发。" translatedTo "A portable terminal integrated with interstellar financial services, developed by Grey Technology Interstellar Finance Division.")
+        section("支持跨星系账户实时同步，无论身处哪个殖民星均可管理资产。" translatedTo "Supports real-time synchronization of interstellar accounts, allowing asset management across any colony.")
+        section("采用量子加密技术，账户信息无法被破解或篡改，安全等级达到星系标准。" translatedTo "Uses quantum encryption technology; account information cannot be hacked or tampered with, meeting galactic security standards.")
+        section("内置能量核心，无需额外供电，可持续运行 730 标准日。" translatedTo "Built-in energy core, no external power required, can operate continuously for 730 standard days.")
+        guide("右键打开银行界面，支持存款、取款及向其他认证账户转账。" translatedTo "Right-click to open the bank interface, supporting deposit, withdrawal, and transfer to other certified accounts.")
+        story("最初为格雷科技员工专属金融工具，后因需求扩大面向全星系公民开放。" translatedTo "Initially an exclusive financial tool for Grey Technology employees, later opened to all galactic citizens due to high demand.")
+        highlight("请勿向未认证账户转账，星际金融法对跨境诈骗有严格处罚。" translatedTo "Do not transfer to uncertified accounts; interstellar financial laws have strict penalties for cross-border fraud.") { color(0xFF5555) }
     }
 
     // Modification
@@ -377,18 +406,5 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 }.get(),
             )
         }
-    }
-
-    // 泛银河系格雷科技掌上银行
-    val PalmSizedBankTooltips = ComponentListSupplier {
-        setTranslationPrefix("item.palm_sized_bank")
-        miraculousTools("泛银河系格雷科技掌上银行" translatedTo "Pan-Galactic Grey Technology Palm-Sized Bank")
-        section("一款集成了跨星系金融服务的便携式终端，由格雷科技星际金融部研发。" translatedTo "A portable terminal integrated with interstellar financial services, developed by Grey Technology Interstellar Finance Division.")
-        section("支持跨星系账户实时同步，无论身处哪个殖民星均可管理资产。" translatedTo "Supports real-time synchronization of interstellar accounts, allowing asset management across any colony.")
-        section("采用量子加密技术，账户信息无法被破解或篡改，安全等级达到星系标准。" translatedTo "Uses quantum encryption technology; account information cannot be hacked or tampered with, meeting galactic security standards.")
-        section("内置能量核心，无需额外供电，可持续运行 730 标准日。" translatedTo "Built-in energy core, no external power required, can operate continuously for 730 standard days.")
-        guide("右键打开银行界面，支持存款、取款及向其他认证账户转账。" translatedTo "Right-click to open the bank interface, supporting deposit, withdrawal, and transfer to other certified accounts.")
-        story("最初为格雷科技员工专属金融工具，后因需求扩大面向全星系公民开放。" translatedTo "Initially an exclusive financial tool for Grey Technology employees, later opened to all galactic citizens due to high demand.")
-        highlight("请勿向未认证账户转账，星际金融法对跨境诈骗有严格处罚。" translatedTo "Do not transfer to uncertified accounts; interstellar financial laws have strict penalties for cross-border fraud.") { color(0xFF5555) }
     }
 }

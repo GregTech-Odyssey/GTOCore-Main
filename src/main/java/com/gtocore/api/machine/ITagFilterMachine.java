@@ -1,4 +1,6 @@
-package com.gtocore.common.machine.multiblock.part.ae;
+package com.gtocore.api.machine;
+
+import com.gtocore.common.machine.multiblock.part.ae.METagFilterStockBusPartMachine;
 
 import com.gregtechceu.gtceu.api.cover.filter.TagFilter;
 import com.gregtechceu.gtceu.api.cover.filter.TagFluidFilter;
@@ -22,7 +24,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-interface ITagFilterPartMachine extends IDropSaveMachine {
+public interface ITagFilterMachine extends IDropSaveMachine {
 
     String getTagWhite();
 
@@ -52,10 +54,9 @@ interface ITagFilterPartMachine extends IDropSaveMachine {
 
     class FilterIFancyConfigurator implements IFancyConfigurator {
 
-        private final ITagFilterPartMachine machine;
-        private TagFilter.StackHandlerWidget<?, ?> handlerWidget;
+        private final ITagFilterMachine machine;
 
-        FilterIFancyConfigurator(ITagFilterPartMachine machine) {
+        public FilterIFancyConfigurator(ITagFilterMachine machine) {
             this.machine = machine;
         }
 

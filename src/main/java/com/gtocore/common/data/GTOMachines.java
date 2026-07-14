@@ -17,6 +17,7 @@ import com.gtocore.common.machine.monitor.*;
 import com.gtocore.common.machine.multiblock.electric.miner.SingleDigitalMiner;
 import com.gtocore.common.machine.multiblock.part.*;
 import com.gtocore.common.machine.multiblock.part.maintenance.*;
+import com.gtocore.common.machine.multiblock.part.voiding.*;
 import com.gtocore.common.machine.noenergy.*;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeploymentMachine;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
@@ -915,6 +916,54 @@ public final class GTOMachines {
             .abilities(PartAbility.IMPORT_ITEMS, GTOPartAbility.ITEMS_INPUT_BUS)
             .tooltipsKey("gtceu.part_sharing.enabled")
             .renderer(() -> new OverlayTieredMachineRenderer(ZPM, GTCEu.id("block/machine/part/item_bus.import")))
+            .register();
+
+    public static final MachineDefinition VOID_OUTPUT_BUS = machine("void_output_bus", "虚空输出总线", VoidOutputBusPartMachine::new)
+            .tier(LV)
+            .allRotation()
+            .abilities(PartAbility.EXPORT_ITEMS)
+            .tooltipsKey("gtceu.part_sharing.enabled")
+            .overlayTieredHullRenderer("void_bus")
+            .register();
+
+    public static final MachineDefinition VOID_OUTPUT_HATCH = machine("void_output_hatch", "虚空输出仓", VoidOutputHatchPartMachine::new)
+            .tier(LV)
+            .allRotation()
+            .abilities(PartAbility.EXPORT_FLUIDS)
+            .tooltipsKey("gtceu.part_sharing.enabled")
+            .overlayTieredHullRenderer("void_hatch")
+            .register();
+
+    public static final MachineDefinition FILTER_VOID_OUTPUT_BUS = machine("filter_void_output_bus", "过滤虚空输出总线", FilterVoidOutputBusPartMachine::new)
+            .tier(MV)
+            .allRotation()
+            .abilities(PartAbility.EXPORT_ITEMS)
+            .tooltipsKey("gtceu.part_sharing.enabled")
+            .overlayTieredHullRenderer("void_bus")
+            .register();
+
+    public static final MachineDefinition FILTER_VOID_OUTPUT_HATCH = machine("filter_void_output_hatch", "过滤虚空输出仓", FilterVoidOutputHatchPartMachine::new)
+            .tier(MV)
+            .allRotation()
+            .abilities(PartAbility.EXPORT_FLUIDS)
+            .tooltipsKey("gtceu.part_sharing.enabled")
+            .overlayTieredHullRenderer("void_hatch")
+            .register();
+
+    public static final MachineDefinition TAG_FILTER_VOID_OUTPUT_BUS = machine("tag_filter_void_output_bus", "标签过滤虚空输出总线", TagFilterVoidOutputBusPartMachine::new)
+            .tier(HV)
+            .allRotation()
+            .abilities(PartAbility.EXPORT_ITEMS)
+            .tooltipsKey("gtceu.part_sharing.enabled")
+            .overlayTieredHullRenderer("void_bus")
+            .register();
+
+    public static final MachineDefinition TAG_FILTER_VOID_OUTPUT_HATCH = machine("tag_filter_void_output_hatch", "标签过滤虚空输出仓", TagFilterVoidOutputHatchPartMachine::new)
+            .tier(HV)
+            .allRotation()
+            .abilities(PartAbility.EXPORT_FLUIDS)
+            .tooltipsKey("gtceu.part_sharing.enabled")
+            .overlayTieredHullRenderer("void_hatch")
             .register();
 
     public static final MachineDefinition STEAM_FLUID_INPUT_HATCH = machine("steam_fluid_input_hatch", "蒸汽流体输入仓", holder -> new SteamFluidHatchPartMachine(holder, IO.IN))

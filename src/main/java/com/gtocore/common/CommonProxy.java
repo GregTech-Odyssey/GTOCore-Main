@@ -69,7 +69,6 @@ import appeng.hotkeys.HotkeyActions;
 import appeng.items.tools.powered.WirelessTerminalItem;
 
 import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datasream.codec.ByteStreamCodec;
 import de.mari_023.ae2wtlib.AE2wtlib;
 import de.mari_023.ae2wtlib.TextConstants;
 import de.mari_023.ae2wtlib.hotkeys.Ae2WTLibLocatingService;
@@ -161,7 +160,7 @@ public class CommonProxy {
         }
         Message.init();
         GTOItemTooltips.INSTANCE.initLanguage();
-        DataSyncCodec.register(TesseractDirectedTarget.class, ByteStreamCodec.of(TesseractDirectedTarget.CODEC), TesseractDirectedTarget.CODEC);
+        DataSyncCodec.register(TesseractDirectedTarget.class, TesseractDirectedTarget.STREAM_CODEC, TesseractDirectedTarget.CODEC);
     }
 
     public static void afterStartup() {

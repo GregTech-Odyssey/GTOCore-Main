@@ -373,6 +373,39 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
+        public int insert(int slot, ItemStack stack, int amount, boolean simulate) {
+            if (amount == 0 || stack.isEmpty()) return 0;
+            if (count < 1 || this.stack.isEmpty()) {
+                if (!simulate) {
+                    this.stack = stack.copy();
+                    this.count = amount;
+                    onContentsChanged(0);
+                }
+                return amount;
+            } else if (this.stack.getItem() == stack.getItem()) {
+                var tag = this.stack.getShareTag();
+                if (tag == null) {
+                    if (stack.getShareTag() == null) {
+                        if (!simulate) {
+                            this.count += amount;
+                            this.stack.setCount(MathUtil.saturatedCast(this.count));
+                            onContentsChanged(0);
+                        }
+                        return amount;
+                    }
+                } else if (tag.equals(stack.getShareTag())) {
+                    if (!simulate) {
+                        this.count += amount;
+                        this.stack.setCount(MathUtil.saturatedCast(this.count));
+                        onContentsChanged(0);
+                    }
+                    return amount;
+                }
+            }
+            return 0;
+        }
+
+        @Override
         public int getSlotLimit(int slot) {
             return Integer.MAX_VALUE;
         }

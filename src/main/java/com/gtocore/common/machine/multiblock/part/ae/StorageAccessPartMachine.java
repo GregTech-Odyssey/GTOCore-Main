@@ -168,6 +168,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
+        public Object getResourceIdentity() {
+            return getCellStorage();
+        }
+
+        @Override
         public void setUUID(UUID uuid) {
             this.uuid = uuid;
             dataStorage = null;
@@ -270,24 +275,14 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         public void getAvailableStacks(KeyCounter out) {
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return;
-            var map = data.getStoredMap();
-            if (map == null) return;
-            out.addAll(map.size(), m -> map.fastForEach(m::insert));
+            out.addAll(data.cache.getAvailableStacksCache());
         }
 
         @Override
         public KeyCounter getAvailableStacks() {
             var data = getCellStorage();
-            var keyCounter = data.getKeyCounter();
-            if (keyCounter == null) {
-                keyCounter = new KeyCounter();
-                data.setKeyCounter(keyCounter);
-            } else {
-                keyCounter.clear();
-            }
-            getAvailableStacks(keyCounter);
-            keyCounter.removeEmptySubmaps();
-            return keyCounter;
+            if (data == CellDataStorage.EMPTY) KeyCounter.empty();
+            return data.cache.getAvailableStacksCache();
         }
     }
 
@@ -410,8 +405,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                         var possible = destination.insert(what, totalStackSize, Actionable.SIMULATE, this.mySrc);
 
                         if (possible > 0) {
-                            possible = Math.min(possible, itemsToMove * what.getAmountPerOperation());
-
                             possible = src.extract(what, possible, Actionable.MODULATE, this.mySrc);
                             if (possible > 0) {
                                 var inserted = StorageHelper.poweredInsert(energy, destination, what, possible, this.mySrc);
@@ -441,6 +434,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         private Big(MetaMachineBlockEntity holder) {
             super(holder);
+        }
+
+        @Override
+        public Object getResourceIdentity() {
+            return getCellStorage();
         }
 
         @Override
@@ -546,24 +544,14 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         public void getAvailableStacks(KeyCounter out) {
             var data = getCellStorage();
             if (data == BigCellDataStorage.EMPTY) return;
-            var map = data.getStoredMap();
-            if (map == null) return;
-            out.addAll(map.size(), m -> map.fastForEachLong(m::insert));
+            out.addAll(data.cache.getAvailableStacksCache());
         }
 
         @Override
         public KeyCounter getAvailableStacks() {
             var data = getCellStorage();
-            var keyCounter = data.getKeyCounter();
-            if (keyCounter == null) {
-                keyCounter = new KeyCounter();
-                data.setKeyCounter(keyCounter);
-            } else {
-                keyCounter.clear();
-            }
-            getAvailableStacks(keyCounter);
-            keyCounter.removeEmptySubmaps();
-            return keyCounter;
+            if (data == BigCellDataStorage.EMPTY) KeyCounter.empty();
+            return data.cache.getAvailableStacksCache();
         }
     }
 

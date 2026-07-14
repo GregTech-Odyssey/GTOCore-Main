@@ -81,9 +81,6 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
     private boolean hasVoidUpgrade;
 
     @Shadow(remap = false)
-    public abstract boolean isPreformatted();
-
-    @Shadow(remap = false)
     @Final
     private IPartitionList partitionList;
 
@@ -277,8 +274,16 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
      */
     @Overwrite(remap = false)
     public void getAvailableStacks(KeyCounter out) {
-        var map = gtolib$getCellStoredMap();
-        out.addAll(map.size(), m -> map.fastForEach(m::insert));
+        var data = gtolib$getCellStorage();
+        if (data == CellDataStorage.EMPTY) return;
+        out.addAll(data.cache.getAvailableStacksCache());
+    }
+
+    @Override
+    public KeyCounter getAvailableStacks() {
+        var data = gtolib$getCellStorage();
+        if (data == CellDataStorage.EMPTY) KeyCounter.empty();
+        return data.cache.getAvailableStacksCache();
     }
 
     /**
