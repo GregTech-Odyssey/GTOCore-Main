@@ -69,7 +69,22 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         command("用于将科技树解锁的数据导出到闪存等存储设备中" translatedTo "Used to export data unlocked in the tech tree to flash drives and other storage devices")
-        command("需要消耗电力进行导出" translatedTo "Requires power consumption for exporting")
+        command("导出需要消耗7680EU/t与一定时间进行数据拷贝" translatedTo "Exporting requires consuming 7680 EU/t and a certain amount of time for data copying")
+    }
+
+    @JvmField
+    val DataCenterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_center")
+
+        section(MainFunction)
+        command("用于存储大量数据的多功能数据中心" translatedTo "A multifunctional data center for storing large amounts of data")
+        command("同时，可以接受算力输入进行数据处理与研究" translatedTo "At the same time, it can accept computational workload input for data processing and research")
+        command("接受算力的上限为(数据容量×已存数据量) CWU/t" translatedTo "The upper limit of computational workload acceptance is (data capacity × stored data amount) CWU/t")
+        guide("从机器UI的左侧访问科技树与便捷导出功能" translatedTo "Access the tech tree and convenient export functions from the left side of the machine UI")
+        section(RunningRequirements)
+        command("闲置时，每个数据/光学仓耗能为§f1920 EU/t§7。" translatedTo "When idle, each data/optical hatch consumes §f1920 EU/t§7.")
+        command("连接时，每个已连接的数据/光学仓耗能为§f30,720 EU/t§7。" translatedTo "When connected, each connected data/optical hatch consumes §f30,720 EU/t§7.")
+        command("处于研究状态时，电力消耗翻倍，并需要100mB/秒的多氯联苯冷却剂" translatedTo "When in research state, power consumption is doubled and requires 100mB/s of PCB coolant")
     }
 
     @JvmField

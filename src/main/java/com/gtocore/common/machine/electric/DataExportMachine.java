@@ -42,7 +42,7 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
         if (in == null || out == null) {
             return null;
         }
-        var r = RecipeBuilder.ofRaw().duration(100).EUt(VA[EV]).inputItems(in).outputItems(out)
+        var r = RecipeBuilder.ofRaw().duration(600).EUt(VA[IV]).inputItems(in).outputItems(out)
                 .build();
         in = null;
         out = null;

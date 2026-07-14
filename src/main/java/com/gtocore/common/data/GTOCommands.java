@@ -1,6 +1,5 @@
 package com.gtocore.common.data;
 
-import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.api.techtree.TechTreeCommands;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;

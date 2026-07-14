@@ -34,6 +34,8 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachi
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -83,7 +85,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     private int getCWUInputLimit() {
-        return 64 * getRecipeCount();
+        return getTotalDataSlots() * getRecipeCount();
     }
 
     @Override
@@ -150,12 +152,20 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     cwuBuffer = 0L;
                     getRecipeLogic().resetRecipeLogic();
                 }
-            });
+            }) {
+
+                @Override
+                @OnlyIn(Dist.CLIENT)
+                protected void drawTooltipTexts(int mouseX, int mouseY) {
+                    if (sideTab.getSelectedNode() != null && isMouseOverElement(mouseX, mouseY) && getHoverElement(mouseX, mouseY) == this && gui != null && gui.getModularUIGui() != null) {
+                        gui.getModularUIGui().setHoverTooltip(sideTab.getSelectedNode().getRewardLinesWithHeader(), ItemStack.EMPTY, null, null);
+                    }
+                }
+            };
             btnRef.set(button);
             button.setButtonTexture(GuiTextures.BUTTON,
                     new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
                             .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
-            button.setHoverTooltips(selectedNode.getRewardLinesWithHeader());
             return button;
         }));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
@@ -182,11 +192,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (researchRequester == null || selectedNode == null) return null;
         return getRecipeBuilder().EUt(energyUsage).duration(20).inputFluids(GTMaterials.PCBCoolant, 100).build();
-    }
-
-    @Override
-    public boolean alwaysSearchRecipe() {
-        return true;
     }
 
     @Override
@@ -231,6 +236,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         if (TechTreeSavedData.unlock(researchRequester, selectedNode, unlockContext)) {
             selectedNode = null;
             researchRequester = null;
+            getRecipeLogic().resetRecipeLogic();
         }
         cwuBuffer = 0L;
     }

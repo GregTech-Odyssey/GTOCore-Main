@@ -13,6 +13,8 @@ import net.minecraft.network.chat.MutableComponent;
 
 import appeng.api.stacks.AEKey;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +51,8 @@ public final class TechNode {
     private final Set<GTRecipeDefinition> recipes = new ReferenceOpenHashSet<>();
     @Getter
     private final List<Component> rewardLines = new ArrayList<>();
+    @Getter
+    private static final Reference2ReferenceMap<GTRecipeDefinition, TechNode> RECIPE_NODE = new Reference2ReferenceOpenHashMap<>();
 
     TechNode(TechTreeManager manager, String name, @Nullable AEKey icon, IRequirement requirements, List<TechNode> prerequisites, int tier) {
         this.manager = manager;
@@ -82,6 +86,7 @@ public final class TechNode {
 
     public void addRecipeToNode(GTRecipeDefinition recipe) {
         recipes.add(recipe);
+        RECIPE_NODE.put(recipe, this);
         rewardLines.add(
                 Component.translatable(RECIPE_REWARD_LABEL).withStyle(net.minecraft.ChatFormatting.DARK_PURPLE)
                         .append(getMainOutputText(recipe).withStyle(net.minecraft.ChatFormatting.GRAY)));

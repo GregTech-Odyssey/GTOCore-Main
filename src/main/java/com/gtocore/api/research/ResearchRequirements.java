@@ -47,13 +47,6 @@ public final class ResearchRequirements implements TechNode.IRequirement {
                 return FAILURE_NO_MATERIAL;
             }
         }
-        if (!simulate) {
-            for (Map.Entry<ResearchTag, Long> entry : materialNeeded.reference2LongEntrySet()) {
-                var tag = entry.getKey();
-                var amount = entry.getValue();
-                teamResource.getResearchPoints().merge(tag, -amount, Long::sum);
-            }
-        }
         return ActionResult.SUCCESS;
     }
 

@@ -2,6 +2,9 @@ package com.gtocore.data.recipe.research
 
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.api.research.ResearchRequirements
+import com.gtocore.api.research.ResearchTag.CATALYSIS
+import com.gtocore.api.research.ResearchTag.ENERGY
+import com.gtocore.api.research.ResearchTag.MATERIAL
 import com.gtocore.api.techtree.TechNode
 import com.gtocore.api.techtree.TechNode.OTHER_REWARD_LABEL
 import com.gtocore.api.techtree.TechTreeManager
@@ -32,10 +35,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     @JvmField
     val TechTree: TechTreeManager =
         TechTreeManager("main_tree", "研究树", "Research Tree", ItemStackTexture(GTOItems.BLUE_HALIDE_LAMP.asStack()))
-
-    @JvmField
-    val recipe2Node: Reference2ReferenceMap<GTRecipeDefinition, TechNode> =
-        Reference2ReferenceOpenHashMap()
 
     @JvmField
     val TierItems = mapOf(
@@ -112,7 +111,12 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .icon(GTOItems.RAW_VACUUM_TUBE)
         .prerequisites(BasicMaterialStudy)
         .tier(1)
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(6666666666).setEurekaItem(GTOItems.RAW_VACUUM_TUBE, 0.5f).build())
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(6666666666)
+                .setEurekaItem(GTOItems.RAW_VACUUM_TUBE, 0.5f)
+                .addMaterialNeeded(MATERIAL, 10).build(),
+        )
         .build()
 
     @JvmField
@@ -131,6 +135,14 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .icon(GTItems.BATTERY_HV_LITHIUM)
         .tier(1)
         .prerequisites(EnergyTransmissionResearch, VacuumResistantMaterialTesting)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(12345)
+                .setEurekaItem(GTOItems.RAW_VACUUM_TUBE, 0.5f)
+                .addMaterialNeeded(MATERIAL, 10)
+                .addMaterialNeeded(CATALYSIS, 100)
+                .addMaterialNeeded(ENERGY, 1000).build(),
+        )
         .build()
 
     @JvmField

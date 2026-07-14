@@ -9,6 +9,7 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
+import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.SupercomputingCenterMachine;
 import com.gtocore.common.machine.multiblock.electric.research.AnalysisAndResearchCenterMachine;
 import com.gtocore.common.machine.multiblock.electric.research.DataCenter;
@@ -251,8 +252,7 @@ public final class ExResearchMachines {
             .register();
 
     public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataCenter::new)
-            .tooltipsText("可以选择一个研究项目，并花费算力来进行研究。", "Select a research project and spend computing power to conduct research.")
-            .tooltipsText("也可以作为数据库使用，存储大量数据。", "Can also be used as a database to store large amounts of data.")
+            .tooltipsSupplier(GTOMachineTooltipsA.DataCenterTooltips)
             .nonYAxisRotation()
             .recipeType(GTRecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)

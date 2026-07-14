@@ -73,7 +73,7 @@ public class TeamResearchSavedDtat extends FastSavedData {
     private static void writeResearchPoints(DataIOStream dataIOStream, Map<ResearchTag, Long> researchPoints) throws IOException {
         dataIOStream.writeInt(researchPoints.size());
         for (Map.Entry<ResearchTag, Long> researchEntry : researchPoints.entrySet()) {
-            dataIOStream.writeUTF(researchEntry.getKey().name());
+            dataIOStream.writeUTF(researchEntry.getKey().getName());
             dataIOStream.writeLong(researchEntry.getValue());
         }
     }
