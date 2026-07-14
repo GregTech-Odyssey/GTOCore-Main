@@ -5,7 +5,6 @@
   },
 
   "ldlib": {
-    "connection": "gtocore:block/casings/chaos_shielding_glass_ctm",
-    "emissive": true
+    "connection": "gtocore:block/casings/chaos_shielding_glass_ctm"
   }
 }
