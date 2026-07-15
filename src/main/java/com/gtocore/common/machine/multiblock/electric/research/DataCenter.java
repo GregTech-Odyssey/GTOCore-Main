@@ -280,6 +280,10 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     lines.add(Component.translatable(LANG_DATA_ACCESS_UNFORMED));
                     return;
                 }
+                if (handlers.size() != machine.getDataAccessHandlers().size()) {
+                    lines.add(Component.translatable(LANG_DATA_ACCESS_REFRESH));
+                    return;
+                }
                 if (handlers.isEmpty()) {
                     lines.add(Component.translatable(LANG_DATA_ACCESS_EMPTY));
                     return;
@@ -391,6 +395,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_UNFORMED = "gtocore.machine.data_center.data_access.unformed";
     @RegisterLanguage(cn = "当前结构中未检测到数据访问仓。", en = "No Data Access Hatch was found in this structure.")
     private static final String LANG_DATA_ACCESS_EMPTY = "gtocore.machine.data_center.data_access.empty";
+    @RegisterLanguage(cn = "刷新页面以查看最新数据访问仓信息。", en = "Refresh the page to view the latest Data Access Hatch information.")
+    private static final String LANG_DATA_ACCESS_REFRESH = "gtocore.machine.data_center.data_access.refresh";
     @RegisterLanguage(cn = "已连接数据访问仓：%s，总槽位：%s", en = "Connected Data Access Hatches: %s, Total Slots: %s")
     private static final String LANG_DATA_ACCESS_SUMMARY = "gtocore.machine.data_center.data_access.summary";
     @RegisterLanguage(cn = "正在处理的研究节点：%s", en = "Currently Processing Research Node: %s")

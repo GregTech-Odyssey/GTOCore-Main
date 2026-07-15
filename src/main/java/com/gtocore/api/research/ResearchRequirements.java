@@ -16,7 +16,6 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
-import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import lombok.Getter;
 
 import java.util.Map;
@@ -27,7 +26,7 @@ import java.util.UUID;
 public final class ResearchRequirements implements TechNode.IRequirement {
 
     private long cwuNeeded;
-    private Reference2LongOpenHashMap<ResearchTag> materialNeeded;
+    private ResearchPoints materialNeeded;
     private AEKey eurekaItem;
     private float eurekaProgress;
 
@@ -53,7 +52,7 @@ public final class ResearchRequirements implements TechNode.IRequirement {
     public static class Builder {
 
         private long cwuNeeded;
-        private final Reference2LongOpenHashMap<ResearchTag> materialNeeded = new Reference2LongOpenHashMap<>();
+        private final ResearchPoints materialNeeded = new ResearchPoints();
         private AEKey eurekaItem;
         private float eurekaProgress;
 

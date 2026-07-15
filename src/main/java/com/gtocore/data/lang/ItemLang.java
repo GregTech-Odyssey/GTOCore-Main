@@ -148,7 +148,6 @@ final class ItemLang {
         addCNEN("item.gtocore.pattern.wildcard", "含通配符处理样板", "With Wildcard Processing Pattern");
 
         addCNEN("item.gtocore.data_item.type.title", "§n%s配方数据：", "§n%s Recipes Data:");
-        addCNEN("gtocore.tooltip.item.empty_data", "§n空数据：", "§nEmpty Data:");
         addCNEN("gtocore.tooltip.item.empty_serial", "- §a编号：%s", "- §aNumber: %s");
         addCNEN("gtocore.tooltip.item.scanning_data", "§n扫描数据：", "§nScan Data:");
         addCNEN("gtocore.tooltip.item.scanned_things", "- %d× %s", "- %d× %s");

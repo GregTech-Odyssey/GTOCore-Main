@@ -3,9 +3,7 @@ package com.gtocore.eio_travel;
 public class EioTravelNbtKeys {
     // region Standard Keys
 
-    public static final String LEVEL = "Level";
     public static final String BLOCK_POS = "BlockPos";
-    public static final String ITEM = "Item";
     public static final String ITEMS = "Items";
     public static final String FLUID = "Fluid";
 

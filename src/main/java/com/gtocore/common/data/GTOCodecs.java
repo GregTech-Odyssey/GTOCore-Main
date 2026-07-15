@@ -1,5 +1,7 @@
 package com.gtocore.common.data;
 
+import com.gtocore.api.research.ResearchPoints;
+import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.techtree.TechNode;
 import com.gtocore.api.techtree.TechTreeManager;
 
@@ -30,7 +32,9 @@ public class GTOCodecs {
         DataSyncCodec.register(AEFluidKey.class, GTOCodecs.AE_FLUID_KEY_STREAM_CODEC, GTOCodecs.AE_FLUID_KEY_DATA_CODEC);
         DataSyncCodec.register(AEKey.class, GTOCodecs.AE_KEY_STREAM_CODEC, GTOCodecs.AE_KEY_DATA_CODEC);
         DataSyncCodec.register(GenericStack.class, GTOCodecs.GENERIC_STACK_STREAM_CODEC, GTOCodecs.GENERIC_STACK_DATA_CODEC);
-        registerTechNodeCodec();
+        DataSyncCodec.register(TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
+        DataSyncCodec.register(ResearchTag.class, RESEARCH_TAG_STREAM_CODEC, RESEARCH_TAG_DATA_CODEC);
+        DataSyncCodec.register(ResearchPoints.class, RESEARCH_POINTS_STREAM_CODEC, RESEARCH_POINTS_DATA_CODEC);
     }
 
     public final DataCodec<AEItemKey> AE_ITEM_KEY_DATA_CODEC = new DataCodec<>() {
@@ -184,8 +188,86 @@ public class GTOCodecs {
         return manager == null ? null : manager.getNode(nodeId);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static void registerTechNodeCodec() {
-        DataSyncCodec.register((Class) TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
-    }
+    public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = new DataCodec<>() {
+
+        @Override
+        public ResearchTag decode(@NotNull Data data, int dataVersion) {
+            if (!(data instanceof MapData mapData)) {
+                return null;
+            }
+            return ResearchTag.TAGS.get(mapData.getString("id"));
+        }
+
+        @Override
+        public @NotNull Data encode(ResearchTag obj) {
+            MapData mapData = new MapData(1);
+            mapData.putString("id", obj.getName());
+            return mapData;
+        }
+    };
+    public final ByteStreamCodec<ResearchTag> RESEARCH_TAG_STREAM_CODEC = new ByteStreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf buf, ResearchTag obj) {
+            buf.writeUtf(obj.getName());
+        }
+
+        @Override
+        public ResearchTag decode(FriendlyByteBuf buf) {
+            return ResearchTag.TAGS.get(buf.readUtf());
+        }
+    };
+    public final DataCodec<ResearchPoints> RESEARCH_POINTS_DATA_CODEC = new DataCodec<>() {
+
+        @Override
+        public ResearchPoints decode(@NotNull Data data, int dataVersion) {
+            if (!(data instanceof MapData mapData)) {
+                return null;
+            }
+            ResearchPoints points = new ResearchPoints();
+            for (var entry : mapData.entrySet()) {
+                ResearchTag tag = ResearchTag.TAGS.get(entry.getKey());
+                if (tag != null) {
+                    points.put(tag, entry.getValue().getLong());
+                }
+            }
+            return points;
+        }
+
+        @Override
+        public @NotNull Data encode(ResearchPoints obj) {
+            MapData mapData = new MapData(obj.size());
+            for (var entry : obj.reference2LongEntrySet()) {
+                mapData.putLong(entry.getKey().getName(), entry.getLongValue());
+            }
+            return mapData;
+        }
+    };
+
+    public final ByteStreamCodec<ResearchPoints> RESEARCH_POINTS_STREAM_CODEC = new ByteStreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf buf, ResearchPoints obj) {
+            buf.writeVarInt(obj.size());
+            for (var entry : obj.reference2LongEntrySet()) {
+                buf.writeUtf(entry.getKey().getName());
+                buf.writeVarLong(entry.getLongValue());
+            }
+        }
+
+        @Override
+        public ResearchPoints decode(FriendlyByteBuf buf) {
+            int size = buf.readVarInt();
+            ResearchPoints points = new ResearchPoints();
+            for (int i = 0; i < size; i++) {
+                String tagName = buf.readUtf();
+                long amount = buf.readVarLong();
+                ResearchTag tag = ResearchTag.TAGS.get(tagName);
+                if (tag != null) {
+                    points.put(tag, amount);
+                }
+            }
+            return points;
+        }
+    };
 }

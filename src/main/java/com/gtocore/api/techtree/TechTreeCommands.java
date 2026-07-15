@@ -36,7 +36,7 @@ public final class TechTreeCommands {
             TechTreeManager.getManagers().stream().map(TechTreeManager::getId).sorted(),
             builder);
     private static final SuggestionProvider<CommandSourceStack> NODE_SUGGESTIONS = (context, builder) -> {
-        TechTreeManager manager = findManager(StringArgumentType.getString(context, "manager"));
+        TechTreeManager manager = TechTreeManager.getManager(StringArgumentType.getString(context, "manager"));
         if (manager == null) {
             return builder.buildFuture();
         }
@@ -85,7 +85,7 @@ public final class TechTreeCommands {
         TechNode node = getNode(context, manager);
         int changed = 0;
         for (var target : collectTargets(players)) {
-            boolean unlocked = forceUnlock(target.teamUUID(), node);
+            boolean unlocked = TechTreeSavedData.forceUnlock(target.teamUUID(), node);
             if (unlocked) {
                 changed++;
             }
@@ -143,7 +143,7 @@ public final class TechTreeCommands {
 
     private static TechTreeManager getManager(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         String id = StringArgumentType.getString(context, "manager");
-        TechTreeManager manager = findManager(id);
+        TechTreeManager manager = TechTreeManager.getManager(id);
         if (manager == null) {
             throw MANAGER_NOT_FOUND.create(id);
         }
@@ -157,10 +157,6 @@ public final class TechTreeCommands {
             throw NODE_NOT_FOUND.create(nodeId, manager.getId());
         }
         return node;
-    }
-
-    private static TechTreeManager findManager(String id) {
-        return TechTreeManager.getManager(id);
     }
 
     private static List<TeamTarget> collectTargets(Collection<ServerPlayer> players) {
@@ -177,10 +173,6 @@ public final class TechTreeCommands {
             result.add(new TeamTarget(entry.getKey(), names));
         }
         return result;
-    }
-
-    private static boolean forceUnlock(UUID teamUUID, TechNode node) {
-        return TechTreeSavedData.forceUnlock(teamUUID, node);
     }
 
     private static Map<TechNode, Integer> createNodeOrder(TechTreeLayout layout) {

@@ -444,11 +444,11 @@ public final class GTOItems {
     public static final ItemEntry<Item> DATA_CRYSTAL_COMPONENT_MK4 = registerLang("data_crystal_component_mk4", "Data Crystal Component MK IV", "数据晶片组件 MK IV");
     public static final ItemEntry<Item> DATA_CRYSTAL_COMPONENT_MK5 = registerLang("data_crystal_component_mk5", "Data Crystal Component MK V", "数据晶片组件 MK V");
 
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK1 = item("data_crystal_mk1", "数据晶片 MK I", DataCrystalItem::new).lang("Data Crystal MK I").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK2 = item("data_crystal_mk2", "数据晶片 MK II", DataCrystalItem::new).lang("Data Crystal MK II").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK3 = item("data_crystal_mk3", "数据晶片 MK III", DataCrystalItem::new).lang("Data Crystal MK III").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK4 = item("data_crystal_mk4", "数据晶片 MK IV", DataCrystalItem::new).lang("Data Crystal MK IV").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK5 = item("data_crystal_mk5", "数据晶片 MK V", DataCrystalItem::new).lang("Data Crystal MK V").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK1 = item("data_crystal_mk1", "数据晶片 MK I", p -> new DataCrystalItem(p, 1)).lang("Data Crystal MK I").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK2 = item("data_crystal_mk2", "数据晶片 MK II", p -> new DataCrystalItem(p, 2)).lang("Data Crystal MK II").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK3 = item("data_crystal_mk3", "数据晶片 MK III", p -> new DataCrystalItem(p, 3)).lang("Data Crystal MK III").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK4 = item("data_crystal_mk4", "数据晶片 MK IV", p -> new DataCrystalItem(p, 4)).lang("Data Crystal MK IV").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK5 = item("data_crystal_mk5", "数据晶片 MK V", p -> new DataCrystalItem(p, 5)).lang("Data Crystal MK V").register();
 
     public static final ItemEntry<KineticRotorItem> WOOD_ROTOR = registerRotor("wood_kinetic_rotor", "木", 2400, 4, 10, 0);
     public static final ItemEntry<KineticRotorItem> IRON_ROTOR = registerRotor("iron_kinetic_rotor", "铁", 14000, 10, 20, 1);
