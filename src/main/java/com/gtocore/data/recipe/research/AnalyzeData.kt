@@ -5,9 +5,9 @@ import com.gtocore.api.research.ResearchRequirements
 import com.gtocore.api.research.ResearchTag.CATALYSIS
 import com.gtocore.api.research.ResearchTag.ENERGY
 import com.gtocore.api.research.ResearchTag.MATERIAL
-import com.gtocore.api.techtree.TechNode
-import com.gtocore.api.techtree.TechNode.OTHER_REWARD_LABEL
-import com.gtocore.api.techtree.TechTreeManager
+import com.gtocore.api.research.techtree.TechNode
+import com.gtocore.api.research.techtree.TechNode.OTHER_REWARD_LABEL
+import com.gtocore.api.research.techtree.TechTreeManager
 import com.gtocore.common.data.GTOBlocks
 import com.gtocore.common.data.GTOItems
 import com.gtocore.common.data.GTOMaterials
@@ -19,14 +19,12 @@ import net.minecraft.world.item.Items
 import com.gregtechceu.gtceu.GTCEu
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix
-import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition
 import com.gregtechceu.gtceu.common.data.GTItems
 import com.gregtechceu.gtceu.common.data.GTMaterials
 import com.gto.fastcollection.O2OOpenCacheHashMap
 import com.gtolib.api.lang.CNEN
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture
 import earth.terrarium.adastra.common.registry.ModItems
-import it.unimi.dsi.fastutil.objects.*
 
 object AnalyzeData : AutoInitialize<AnalyzeData>() {
 

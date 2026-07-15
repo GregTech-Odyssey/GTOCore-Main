@@ -1,8 +1,8 @@
 package com.gtocore.api.research.ui;
 
 import com.gtocore.api.research.TeamResearchSavedDtat;
-import com.gtocore.api.techtree.TechTreeManager;
-import com.gtocore.api.techtree.ui.TechTreeWidget;
+import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;

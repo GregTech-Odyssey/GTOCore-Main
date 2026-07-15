@@ -1,7 +1,7 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.techtree.TechTreeManager;
-import com.gtocore.api.techtree.ui.TechTreeWidget;
+import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;

@@ -2,8 +2,8 @@ package com.gtocore.common.data;
 
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchTag;
-import com.gtocore.api.techtree.TechNode;
-import com.gtocore.api.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTreeManager;
 
 import net.minecraft.network.FriendlyByteBuf;
 

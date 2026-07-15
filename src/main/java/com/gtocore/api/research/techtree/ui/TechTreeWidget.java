@@ -1,10 +1,10 @@
-package com.gtocore.api.techtree.ui;
+package com.gtocore.api.research.techtree.ui;
 
 import com.gtocore.api.research.TeamResearchContext;
-import com.gtocore.api.techtree.TechNode;
-import com.gtocore.api.techtree.TechTree;
-import com.gtocore.api.techtree.TechTreeManager;
-import com.gtocore.api.techtree.TechTreeSavedData;
+import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTree;
+import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;

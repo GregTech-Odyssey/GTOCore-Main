@@ -3,8 +3,8 @@ package com.gtocore.api.research.ui;
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchContext;
-import com.gtocore.api.techtree.TechNode;
-import com.gtocore.api.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;

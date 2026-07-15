@@ -1,8 +1,8 @@
 package com.gtocore.api.research.ui;
 
-import com.gtocore.api.techtree.TechNode;
-import com.gtocore.api.techtree.TechTree;
-import com.gtocore.api.techtree.TechTreeSavedData;
+import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTree;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.integration.jech.PinYinUtils;
 

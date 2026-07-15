@@ -2,7 +2,7 @@ package com.gtocore.data.lang;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.ResearchTag;
-import com.gtocore.api.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
 import com.gtocore.common.data.GTOBedrockFluids;
 import com.gtocore.common.data.GTOFluidStorageKey;

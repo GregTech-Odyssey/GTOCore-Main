@@ -1,7 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.api.research.scanning.ScanningCommands;
-import com.gtocore.api.techtree.TechTreeCommands;
+import com.gtocore.api.research.techtree.TechTreeCommands;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.common.saved.DysonSphereSavaedData;

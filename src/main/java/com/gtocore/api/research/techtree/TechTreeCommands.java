@@ -1,6 +1,6 @@
-package com.gtocore.api.techtree;
+package com.gtocore.api.research.techtree;
 
-import com.gtocore.api.techtree.ui.TechTreeLayout;
+import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.gtocore.api.techtree.TechTreeManager.getNodeName;
+import static com.gtocore.api.research.techtree.TechTreeManager.getNodeName;
 
 public final class TechTreeCommands {
 

@@ -1,7 +1,7 @@
 package com.gtocore.common.forge;
 
 import com.gtocore.api.research.TeamResearchSavedDtat;
-import com.gtocore.api.techtree.TechTreeSavedData;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;

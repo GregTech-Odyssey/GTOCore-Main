@@ -1,6 +1,6 @@
-package com.gtocore.api.techtree.ui;
+package com.gtocore.api.research.techtree.ui;
 
-import com.gtocore.api.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechNode;
 
 import java.util.IdentityHashMap;
 import java.util.List;

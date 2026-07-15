@@ -1,4 +1,4 @@
-package com.gtocore.api.techtree;
+package com.gtocore.api.research.techtree;
 
 import com.gtocore.api.research.TeamResearchContext;
 

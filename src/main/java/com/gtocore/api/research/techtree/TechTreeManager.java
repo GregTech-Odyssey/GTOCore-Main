@@ -1,7 +1,8 @@
-package com.gtocore.api.techtree;
+package com.gtocore.api.research.techtree;
 
-import com.gtocore.api.techtree.ui.TechTreeAutoLayout;
-import com.gtocore.api.techtree.ui.TechTreeLayout;
+import com.gtocore.api.research.ResearchRequirements;
+import com.gtocore.api.research.techtree.ui.TechTreeAutoLayout;
+import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.utils.iostream.DataIOStream;
@@ -207,7 +208,12 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
         }
 
         public TechNode build() {
-            return manager.register(this);
+            var t = manager.register(this);
+
+            if (requirements instanceof ResearchRequirements r && r.getEurekaItem() != null) {
+                ResearchRequirements.EUREKA_REQUIREMENTS.put(r.getEurekaItem(), t);
+            }
+            return t;
         }
     }
 

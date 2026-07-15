@@ -1,6 +1,6 @@
 package com.gtocore.api.research;
 
-import com.gtocore.api.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.recipe.research.AnalyzeData;
 

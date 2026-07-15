@@ -1,6 +1,6 @@
 package com.gtocore.api.research;
 
-import com.gtocore.api.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechNode;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -16,6 +16,7 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.Getter;
 
 import java.util.Map;
@@ -24,6 +25,8 @@ import java.util.UUID;
 @Getter
 @DataGeneratorScanned
 public final class ResearchRequirements implements TechNode.IRequirement {
+
+    public static final Reference2ObjectOpenHashMap<AEKey, TechNode> EUREKA_REQUIREMENTS = new Reference2ObjectOpenHashMap<>();
 
     private long cwuNeeded;
     private ResearchPoints materialNeeded;

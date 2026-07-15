@@ -1,10 +1,10 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.api.research.ui.ResearchInfoTab;
-import com.gtocore.api.techtree.TechNode;
-import com.gtocore.api.techtree.TechTreeSavedData;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
 
