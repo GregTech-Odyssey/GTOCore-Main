@@ -1,6 +1,7 @@
 package com.gtocore.api.research.techtree;
 
 import com.gtocore.api.research.TeamResearchContext;
+import com.gtocore.client.Message;
 
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.utils.iostream.DataIOStream;
@@ -75,6 +76,7 @@ public class TechTreeSavedData extends FastSavedData {
         boolean changed = !tree.isUnlocked(node) && tree.unlock(node, context, uuid).isSuccess();
         if (changed) {
             INSTANCE.setDirty();
+            Message.sendResearchToast(uuid, node, true);
         }
         return changed;
     }

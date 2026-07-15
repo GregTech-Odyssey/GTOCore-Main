@@ -1,8 +1,10 @@
 package com.gtocore.api.research.scanning;
 
 import com.gtocore.api.research.ResearchPoints;
+import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.client.Message;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.AEChemicalHelper;
@@ -63,6 +65,10 @@ public class DataScanningManager {
                 teamContext.getScannedMaterials().add(mat);
             }
             teamContext.getScannedItems().add(key);
+            if (ResearchRequirements.EUREKA_REQUIREMENTS.containsKey(key)) {
+                var node = ResearchRequirements.EUREKA_REQUIREMENTS.get(key);
+                Message.sendResearchToast(team, node, false);
+            }
         }
         var override = dataScanningMap.get(key);
         if (override != null) {

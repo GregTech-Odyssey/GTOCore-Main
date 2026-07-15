@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
-import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import com.hepdd.gtmthings.utils.TeamUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +75,7 @@ public class DataCrystalItem extends Item implements IExDataItem {
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         UUID teamUUID = getTeamUUID(stack);
         if (teamUUID != null) {
-            tooltip.add(Component.translatable(TEAM_DATA_TAG, getTeamName(teamUUID)));
+            tooltip.add(Component.translatable(TEAM_DATA_TAG, TeamUtil.findTeamName(teamUUID)));
         } else {
             tooltip.add(Component.translatable(EMPTY_NBT_TAG));
         }
@@ -95,18 +95,6 @@ public class DataCrystalItem extends Item implements IExDataItem {
     private static void setTeamUUID(ItemStack stack, UUID teamUUID) {
         CompoundTag tag = stack.getOrCreateTag();
         tag.putUUID(teamTag, teamUUID);
-    }
-
-    private static Component getTeamName(UUID teamUUID) {
-        if (FTBTeamsAPI.api().isClientManagerLoaded()) {
-            // Multiplayer client-side
-            var team = FTBTeamsAPI.api().getClientManager().getTeams().stream().filter(
-                    t -> t.getTeamId().equals(teamUUID) || t.getMembers().contains(teamUUID)).findFirst();
-            if (team.isPresent() && team.get().isPartyTeam()) {
-                return team.get().getName();
-            }
-        }
-        return Component.literal(teamUUID.toString());
     }
 
     public static UUID getTeamUUID(ItemStack stack) {
