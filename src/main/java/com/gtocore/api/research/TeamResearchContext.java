@@ -161,4 +161,21 @@ public class TeamResearchContext {
         techNodeAccCWU.merge(selectedNode, cwuBuffer, Long::sum);
         TeamResearchSavedDtat.INSTANCE.setDirty(true);
     }
+
+    public void addResearchPoints(ResearchPoints researchPoints) {
+        for (var entry : researchPoints.reference2LongEntrySet()) {
+            this.researchPoints.addTo(entry.getKey(), entry.getLongValue());
+        }
+        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+    }
+
+    public void addScannedItem(AEKey item) {
+        scannedItems.add(item);
+        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+    }
+
+    public void addScannedMaterial(Material material) {
+        scannedMaterials.add(material);
+        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+    }
 }

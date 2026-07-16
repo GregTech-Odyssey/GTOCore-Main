@@ -1,13 +1,13 @@
 package com.gtocore.common.machine.multiblock.part;
 
-import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.common.item.DataCrystalItem;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.BlockableSlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -28,9 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ResearchHolderMachine extends MultiblockPartMachine implements IMachineLife {
 
-    public static final int CATALYST_SLOT_1 = 0;
-    public static final int CATALYST_SLOT_2 = 1;
-    public static final int EMPTY_SLOT = 2;
+    public static final int EMPTY_SLOT = 0;
 
     protected final IO io;
 
@@ -60,19 +58,13 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
     @Override
     public Widget createUIWidget() {
         WidgetGroup group = new WidgetGroup(new Position(0, 0));
-        int centerX = 60;
+        int centerX = 60 - 18;
         int centerY = 55;
         group.addWidget(new ImageWidget(centerX - 40, centerY - 28 - 16, 98, 74 + 32, GTOGuiTextures.PROGRESS_BAR_RESEARCH_BASE))
 
-                .addWidget(new BlockableSlotWidget(heldItems, CATALYST_SLOT_1, centerX - 64, centerY, true, io.support(IO.IN))
-                        .setIsBlocked(this::isLocked)
-                        .setBackground(GuiTextures.SLOT, GTOGuiTextures.NANITES_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, CATALYST_SLOT_2, centerX + 64, centerY, true, io.support(IO.IN))
-                        .setIsBlocked(this::isLocked)
-                        .setBackground(GuiTextures.SLOT, GTOGuiTextures.NANITES_OVERLAY))
                 .addWidget(new BlockableSlotWidget(heldItems, EMPTY_SLOT, centerX, centerY, true, io.support(IO.IN))
                         .setIsBlocked(this::isLocked)
-                        .setBackground(GuiTextures.SLOT, GuiTextures.MOLECULAR_OVERLAY_1));
+                        .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY));
 
         return group;
     }
@@ -88,19 +80,27 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
         }
     }
 
+    @Override
+    public void onChanged() {
+        super.onChanged();
+        getControllers().forEach(m -> {
+            if (m.self() instanceof IRecipeLogicMachine rm) rm.getRecipeLogic().updateTickSubscription();
+        });
+    }
+
     private static class ResearchHolder extends NotifiableItemStackHandler {
 
         private final ResearchHolderMachine machine;
 
         private ResearchHolder(ResearchHolderMachine machine) {
-            super(machine, 13, IO.IN, IO.BOTH, MyCustomItemStackHandler::new);
+            super(machine, 1, IO.IN, IO.BOTH, MyCustomItemStackHandler::new);
             this.machine = machine;
         }
 
         // 各槽位容量限制
         @Override
         public int getSlotLimit(int slot) {
-            if (slot == CATALYST_SLOT_1) return 1;
+            if (slot == EMPTY_SLOT) return 1;
             else return super.getSlotLimit(slot);
         }
 
@@ -114,7 +114,7 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
             if (stack.isEmpty()) return true;
-            if (slot == CATALYST_SLOT_1 || slot == CATALYST_SLOT_2) return ChemicalHelper.getPrefix(stack.getItem()) == GTOTagPrefix.NANITES;
+            if (slot == EMPTY_SLOT) return stack.getItem() instanceof DataCrystalItem;
             else return super.isItemValid(slot, stack);
         }
 
@@ -126,7 +126,7 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
 
             @Override
             public int getSlotLimit(int slot) {
-                if (slot == CATALYST_SLOT_1) return 1;
+                if (slot == EMPTY_SLOT) return 1;
                 else return super.getSlotLimit(slot);
             }
         }

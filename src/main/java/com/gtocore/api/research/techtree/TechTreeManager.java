@@ -1,6 +1,7 @@
 package com.gtocore.api.research.techtree;
 
 import com.gtocore.api.research.ResearchRequirements;
+import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.techtree.ui.TechTreeAutoLayout;
 import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
@@ -9,7 +10,6 @@ import com.gtolib.utils.iostream.DataIOStream;
 import com.gtolib.utils.iostream.IOStreamCodec;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 public final class TechTreeManager implements IOStreamCodec<TechTree> {
@@ -146,7 +147,7 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
         private String cnDesc;
         private String enDesc;
         private @Nullable AEKey icon;
-        private TechNode.IRequirement requirements = (i, gn, or, ed) -> ActionResult.SUCCESS;
+        private ResearchRequirements requirements = ResearchRequirements.NO_REQUIREMENTS;
         private ImmutableList<TechNode> prerequisites = ImmutableList.of();
         private int tier = 0;
 
@@ -182,7 +183,7 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
             return this;
         }
 
-        public Builder requirements(TechNode.IRequirement requirements) {
+        public Builder requirements(ResearchRequirements requirements) {
             this.requirements = Objects.requireNonNull(requirements, "requirements");
             return this;
         }
@@ -231,5 +232,11 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
 
     public static MutableComponent getTreeName(TechTreeManager manager) {
         return Component.translatable("gtocore.techtree." + manager.id);
+    }
+
+    public void triggerAllResearchUnlock(UUID team, TeamResearchContext context) {
+        for (var node : definitions.values()) {
+            TechTreeSavedData.unlock(team, node, context);
+        }
     }
 }

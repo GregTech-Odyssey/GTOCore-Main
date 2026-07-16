@@ -54,12 +54,11 @@ public class DataCrystalScanningLogic implements GTRecipeType.ICustomRecipeLogic
                     return null;
                 }
                 var bytesScanned = c.countBytes();
-                var EUt = 120 * ((long) (Math.sqrt(bytesScanned) + 1));
                 DataScanningManager.scanData(item.getItem(), team, false);
                 return recipeBuilder.inputItems(dataCrystal.getItem())
                         .inputItems(item.copyWithCount(1))
                         .outputItems(output)
-                        .duration(200 * GTOCore.difficulty).EUt(EUt)
+                        .duration(200 * GTOCore.difficulty).EUt(eut(bytesScanned))
                         .build();
             } else {
                 var c = DataScanningManager.scanData(fluidStack.getFluid(), team, true);
@@ -67,15 +66,18 @@ public class DataCrystalScanningLogic implements GTRecipeType.ICustomRecipeLogic
                     return null;
                 }
                 var bytesScanned = c.countBytes();
-                var EUt = 120 * ((long) (Math.sqrt(bytesScanned) + 1));
                 DataScanningManager.scanData(fluidStack.getFluid(), team, false);
                 return recipeBuilder.inputItems(dataCrystal.getItem())
                         .inputFluids(fluidStack.getFluid(), 1000)
                         .outputItems(output)
-                        .duration(200 * GTOCore.difficulty).EUt(EUt)
+                        .duration(200 * GTOCore.difficulty).EUt(eut(bytesScanned))
                         .build();
             }
         }
+    }
+
+    private static long eut(long bytesScanned) {
+        return 480 * ((long) (Math.cbrt(bytesScanned) + 1));
     }
 
     @Override
@@ -133,7 +135,7 @@ public class DataCrystalScanningLogic implements GTRecipeType.ICustomRecipeLogic
                 .inputItems(toName)
                 .outputItems(named)
                 .duration(200 * GTOCore.difficulty)
-                .EUt(120 * ((long) (Math.sqrt(ResearchTag.MATERIAL.getBytePerPoint()) + 1)))
+                .EUt(eut(ResearchTag.MATERIAL.getBytePerPoint()))
                 .build();
         GTRecipeTypes.SCANNER_RECIPES.addToMainCategory(recipe);
     }

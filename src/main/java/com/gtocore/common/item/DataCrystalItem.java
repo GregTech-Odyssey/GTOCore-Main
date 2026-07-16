@@ -21,9 +21,7 @@ import com.hepdd.gtmthings.utils.TeamUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @DataGeneratorScanned
@@ -82,9 +80,9 @@ public class DataCrystalItem extends Item implements IExDataItem {
         long usedCap = stack.getOrCreateTag().getLong(usedCapTag);
         tooltip.add(Component.translatable(CAPACITY_TAG,
                 Component.literal(String.format("%sB/%sB", FormattingUtil.formatNumberReadable(usedCap), FormattingUtil.formatNumberReadable(dataCapacity))).withStyle(ChatFormatting.GREEN)));
-        for (Map.Entry<ResearchTag, Long> entry : getResearchData(stack).entrySet()) {
+        for (var entry : getResearchData(stack).reference2LongEntrySet()) {
             ResearchTag rt = entry.getKey();
-            long amount = entry.getValue();
+            long amount = entry.getLongValue();
             tooltip.add(Component.translatable(DATA_TAG, rt.getDisplayName())
                     .append("x" + FormattingUtil.formatNumbers(amount))
                     .append(Component.translatable(OCCUPY_TAG, FormattingUtil.formatNumberReadable(amount * rt.getBytePerPoint())))
@@ -118,10 +116,10 @@ public class DataCrystalItem extends Item implements IExDataItem {
         return true;
     }
 
-    public static Map<ResearchTag, Long> getResearchData(ItemStack stack) {
+    public static ResearchPoints getResearchData(ItemStack stack) {
         CompoundTag tag = stack.getOrCreateTag();
         CompoundTag storage = tag.getCompound(storageTag);
-        Map<ResearchTag, Long> dataMap = new HashMap<>();
+        ResearchPoints dataMap = new ResearchPoints();
         for (String key : storage.getAllKeys()) {
             ResearchTag rt = ResearchTag.TAGS.get(key);
             if (rt != null) {

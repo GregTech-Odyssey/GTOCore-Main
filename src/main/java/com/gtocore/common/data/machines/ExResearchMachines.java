@@ -336,9 +336,9 @@ public final class ExResearchMachines {
             .notAllowSharedTooltips()
             .register();
 
-    public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("primordial_scanning_station", "基元扫描站", ScanningStationMachine::new)
-            .tooltipsText("碎片化物品以获取数据", "fragment items to get data")
+    public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("dataunit_scanning_station", "基元扫描站", ScanningStationMachine::new)
             .nonYAxisRotation()
+            .tooltipsText("将晶片中的数据进行录入，融合到团队知识库中。", "Integrate the data in the data crystal into the team knowledge base.")
             .recipeTypes(DUMMY_RECIPES)
             .block(ADVANCED_COMPUTER_CASING)
             .pattern(definition -> FactoryBlockPattern.start(definition)
@@ -384,7 +384,6 @@ public final class ExResearchMachines {
             .register();
 
     public static final MultiblockMachineDefinition ANALYSIS_AND_RESEARCH_CENTER = multiblock("analysis_and_research_center", "分析推演中心", AnalysisAndResearchCenterMachine::new)
-            .tooltipsText("研究", "research")
             .nonYAxisRotation()
             .recipeTypes(DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
@@ -413,8 +412,7 @@ public final class ExResearchMachines {
                             .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1)))
                     .where('F', blocks(GCYMBlocks.ELECTROLYTIC_CELL.get()))
                     .where('G', controller(definition))
-                    .where('H', blocks(ANALYZE_HOLDER.get())
-                            .or(blocks(RESEARCH_HOLDER.get())))
+                    .where('H', blocks(RESEARCH_HOLDER.get()))
                     .where(' ', any())
                     .build())
             .shapeInfos(definition -> {

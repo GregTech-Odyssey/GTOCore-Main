@@ -56,6 +56,7 @@ public class ScanningCommands {
             teamContext.getScannedMaterials().add(mat);
         }
         teamContext.getScannedItems().add(key);
+        TeamResearchSavedDtat.INSTANCE.setDirty(true);
         return 1;
     }
 
@@ -70,6 +71,7 @@ public class ScanningCommands {
             teamContext.getScannedMaterials().remove(mat);
         }
         teamContext.getScannedItems().remove(key);
+        TeamResearchSavedDtat.INSTANCE.setDirty(true);
         return 1;
     }
 

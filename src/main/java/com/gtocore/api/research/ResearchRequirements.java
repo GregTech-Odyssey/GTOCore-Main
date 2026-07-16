@@ -18,25 +18,34 @@ import appeng.api.stacks.AEKey;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
 
 @Getter
 @DataGeneratorScanned
-public final class ResearchRequirements implements TechNode.IRequirement {
+public final class ResearchRequirements {
+
+    public static final ResearchRequirements NO_REQUIREMENTS = new ResearchRequirements();
+    static {
+        NO_REQUIREMENTS.materialNeeded = new ResearchPoints();
+    }
 
     public static final Reference2ObjectOpenHashMap<AEKey, TechNode> EUREKA_REQUIREMENTS = new Reference2ObjectOpenHashMap<>();
 
     private long cwuNeeded;
     private ResearchPoints materialNeeded;
+    @Nullable
     private AEKey eurekaItem;
     private float eurekaProgress;
 
     private ResearchRequirements() {}
 
-    @Override
     public ActionResult test(TechNode node, TeamResearchContext teamResource, UUID team, boolean simulate) {
+        if (this == NO_REQUIREMENTS) {
+            return ActionResult.SUCCESS;
+        }
         var eurekaScanned = teamResource.getScannedItems().contains(eurekaItem);
         var actualCWUNeeded = eurekaScanned ? (long) (cwuNeeded * eurekaProgress) : cwuNeeded;
         if (teamResource.getTechNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {

@@ -183,7 +183,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
         }
 
         TeamResearchContext context = contextFactory.apply(player);
-        ResearchRequirements requirements = getResearchRequirements(selectedNode);
+        ResearchRequirements requirements = selectedNode.getRequirements();
         if (requirements == null) {
             return new SyncState(true, selectedNode.name, false, 0L, 0L, false, false, List.of());
         }
@@ -251,10 +251,6 @@ public class ResearchTreeSideTab extends WidgetGroup {
         return new SyncState(true, nodeName, showCwu, cwuCurrent, cwuNeeded, hasEureka, eurekaScanned, List.copyOf(materials));
     }
 
-    private @Nullable ResearchRequirements getResearchRequirements(TechNode node) {
-        return node.getRequirements() instanceof ResearchRequirements requirements ? requirements : null;
-    }
-
     private @Nullable Player getGuiPlayer() {
         return getGui() == null ? null : getGui().entityPlayer;
     }
@@ -271,7 +267,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
             var eureka = currentState.hasEureka() && currentState.eurekaScanned();
             Component label = Component.translatable(eureka ? CWU_EUREKA_LABEL : CWU_LABEL);
             if (selectedNode != null) {
-                var requirements = getResearchRequirements(selectedNode);
+                var requirements = selectedNode.getRequirements();
                 if (requirements != null) {
                     rows.add(new RowState(label, currentState.cwuCurrent(), currentState.cwuNeeded(), eureka ? requirements.getEurekaProgress() : 0f,
                             CWU_BAR_COLOR, CWU_BAR_BORDER, createCwuTooltip()));
@@ -282,7 +278,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
             var tag = ResearchTag.TAGS.get(material.tagid());
             rows.add(new RowState(tag.getDisplayName(), material.current(), material.needed(), 0f,
                     tag.getColor(),
-                    ColorUtils.getInterpolatedColor(0xffffff, tag.getColor(), 0.5f),
+                    ColorUtils.getInterpolatedColor(0xffffffff, tag.getColor(), 0.5f),
                     null));
         }
         return rows;
@@ -293,7 +289,7 @@ public class ResearchTreeSideTab extends WidgetGroup {
         if (!currentState.hasEureka() || selectedNode == null) {
             return null;
         }
-        ResearchRequirements requirements = getResearchRequirements(selectedNode);
+        ResearchRequirements requirements = selectedNode.getRequirements();
         if (requirements == null || requirements.getEurekaItem() == null) {
             return null;
         }
@@ -521,11 +517,12 @@ public class ResearchTreeSideTab extends WidgetGroup {
                 drawRow(graphics, font, row, x, currentY, progressWidth, VALUE_WIDTH, mouseX, mouseY);
                 currentY += ROW_HEIGHT + ROW_GAP;
             }
+            // △▼▷▾▷▽▵▿
             if (scrollOffset + rowCount < rows.size()) {
-                graphics.drawString(font, "↓", x + progressWidth / 2 - font.width("↓") / 2, currentY - 7, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, "▽", x + progressWidth / 2 - font.width("△") / 2, currentY - 7, ROW_TEXT_COLOR, false);
             }
             if (scrollOffset > 0) {
-                graphics.drawString(font, "↑", x + progressWidth / 2 - font.width("↑") / 2, y - 7, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, "△", x + progressWidth / 2 - font.width("▽") / 2, y - 7, ROW_TEXT_COLOR, false);
             }
         }
 

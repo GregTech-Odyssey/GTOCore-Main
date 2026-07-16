@@ -39,14 +39,15 @@ public final class ResearchTag {
     }
 
     public static final ResearchTag MATERIAL = new ResearchTag("material", "材料", "Material", 32);
+    public static final ResearchTag DATA_ENGINEERING = new ResearchTag("data_engineering", "数据工程", "Data Engineering", 64);
     public static final ResearchTag COMPUTATION = new ResearchTag("computation", "计算", "Computation", 128);
     public static final ResearchTag THERMODYNAMICS = new ResearchTag("thermodynamics", "热力学", "Thermodynamics", 128);
     public static final ResearchTag ENERGY = new ResearchTag("energy", "能源", "Energy", 128);
-    public static final ResearchTag MECHANICS = new ResearchTag("mechanics", "机械", "Mechanics", 1024);
-    public static final ResearchTag ALCHEMY = new ResearchTag("alchemy", "炼金", "Alchemy", 128);
+    public static final ResearchTag ASSEMBLY = new ResearchTag("assembly", "组装", "Assembly", 128);
     public static final ResearchTag ALFHEIMY = new ResearchTag("alfheimy", "精灵", "Alfheimy", 256);
-    public static final ResearchTag ASTRONOMY = new ResearchTag("astronomy", "天文学", "Astronomy", 512);
-    public static final ResearchTag CATALYSIS = new ResearchTag("catalysis", "催化", "Catalysis", 512);
+    public static final ResearchTag CATALYSIS = new ResearchTag("catalysis", "催化", "Catalysis", 256);
+    public static final ResearchTag INTERSTELLAR_ENGINEERING = new ResearchTag("interstellar_engineering", "星际工程", "Interstellar Engineering", 512);
+    public static final ResearchTag MECHANICS = new ResearchTag("mechanics", "机械", "Mechanics", 1024);
     public static final ResearchTag PARTICLE = new ResearchTag("particle", "粒子", "Particle", 4096);
     public static final ResearchTag BIOLOGY = new ResearchTag("biology", "生物", "Biology", 4096);
     public static final ResearchTag OPTICS = new ResearchTag("optics", "光学", "Optics", 2L << 15);

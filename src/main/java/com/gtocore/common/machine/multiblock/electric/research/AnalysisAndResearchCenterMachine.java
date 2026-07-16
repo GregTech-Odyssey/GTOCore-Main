@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
-import com.gtocore.common.machine.multiblock.part.AnalyzeHolderMachine;
 import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -23,30 +22,16 @@ import java.util.List;
 
 public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine {
 
-    private AnalyzeHolderMachine AnalyzeHolder;
     private ResearchHolderMachine ResearchHolder;
 
     public AnalysisAndResearchCenterMachine(MetaMachineBlockEntity holder) {
         super(holder);
     }
 
-    private Mode mode = Mode.NONE;
-
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
         for (IMultiPart part : getParts()) {
-            if (part instanceof AnalyzeHolderMachine analyzeHolder) {
-                // 修改这里：检查是否面与机器方向相同
-                if (analyzeHolder.getFrontFacing() != getFrontFacing()) {
-                    onStructureInvalid();
-                    return;
-                }
-                this.AnalyzeHolder = analyzeHolder;
-                // 添加物品处理器（包含扫描槽、催化剂槽和数据槽）
-                addHandlerList(RecipeHandlerUnit.of(IO.IN, analyzeHolder.getAsHandler()));
-                mode = Mode.ANALYSIS;
-            }
             if (part instanceof ResearchHolderMachine researchHolder) {
                 if (researchHolder.getFrontFacing() != getFrontFacing()) {
                     onStructureInvalid();
@@ -54,33 +39,19 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
                 }
                 this.ResearchHolder = researchHolder;
                 addHandlerList(RecipeHandlerUnit.of(IO.IN, researchHolder.getAsHandler()));
-                mode = Mode.RESEARCH;
             }
         }
 
         // 必须有扫描部件
-        if (mode == Mode.NONE) {
+        if (ResearchHolder == null) {
             onStructureInvalid();
         }
-    }
-
-    @Override
-    public boolean checkPattern() {
-        boolean isFormed = super.checkPattern();
-        if (isFormed && mode != Mode.NONE) {
-            onStructureInvalid();
-        }
-        return isFormed;
     }
 
     @Override
     public void onStructureInvalid() {
         // 重置扫描部件状态
-        if (AnalyzeHolder != null && mode == Mode.ANALYSIS) {
-            AnalyzeHolder.setLocked(false);
-            AnalyzeHolder = null;
-        }
-        if (ResearchHolder != null && mode == Mode.RESEARCH) {
+        if (ResearchHolder != null) {
             ResearchHolder.setLocked(false);
             ResearchHolder = null;
         }
@@ -130,11 +101,5 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
         }
 
         return super.getRealRecipe(unit, recipe);
-    }
-
-    enum Mode {
-        NONE,
-        ANALYSIS,
-        RESEARCH
     }
 }

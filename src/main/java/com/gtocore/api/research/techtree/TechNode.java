@@ -1,5 +1,6 @@
 package com.gtocore.api.research.techtree;
 
+import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.TeamResearchContext;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -44,7 +45,7 @@ public final class TechNode {
     public final AEKey icon;
     public final List<TechNode> prerequisites;
     @Getter
-    private final IRequirement requirements;
+    private final ResearchRequirements requirements;
     @Getter
     private final int tier;
     @Getter
@@ -54,7 +55,7 @@ public final class TechNode {
     @Getter
     private static final Reference2ReferenceMap<GTRecipeDefinition, TechNode> RECIPE_NODE = new Reference2ReferenceOpenHashMap<>();
 
-    TechNode(TechTreeManager manager, String name, @Nullable AEKey icon, IRequirement requirements, List<TechNode> prerequisites, int tier) {
+    TechNode(TechTreeManager manager, String name, @Nullable AEKey icon, ResearchRequirements requirements, List<TechNode> prerequisites, int tier) {
         this.manager = manager;
         this.name = name;
         this.icon = icon;
@@ -76,12 +77,6 @@ public final class TechNode {
 
     public MutableComponent getDisplayName() {
         return TechTreeManager.getNodeName(this);
-    }
-
-    @FunctionalInterface
-    public interface IRequirement {
-
-        ActionResult test(TechNode node, TeamResearchContext context, UUID team, boolean simulate);
     }
 
     public void addRecipeToNode(GTRecipeDefinition recipe) {

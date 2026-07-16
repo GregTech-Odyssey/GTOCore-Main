@@ -62,9 +62,9 @@ public class DataScanningManager {
         } : 1f;
         if (!simulate) {
             if (mat != NULL) {
-                teamContext.getScannedMaterials().add(mat);
+                teamContext.addScannedMaterial(mat);
             }
-            teamContext.getScannedItems().add(key);
+            teamContext.addScannedItem(key);
             if (ResearchRequirements.EUREKA_REQUIREMENTS.containsKey(key)) {
                 var node = ResearchRequirements.EUREKA_REQUIREMENTS.get(key);
                 Message.sendResearchToast(team, node, false);
