@@ -26,6 +26,7 @@ legacyForge {
             programArgument '--nogui'
             gameDirectory.set(file('run/server'))
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'gtolib.debug', 'true'
         }
 
         data {

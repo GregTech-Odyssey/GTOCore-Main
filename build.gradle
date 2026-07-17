@@ -19,7 +19,25 @@ version = mod_version
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+if (project.devBuild != "true") {
+    sourceSets.main.resources { srcDir 'src/generated/resources' }
+} else {
+    try {
+        if (gradle.startParameter.taskNames.first == "build") {
+            sourceSets.main.resources.srcDirs = Collections.emptySet()
+        } else {
+            sourceSets.main.resources { srcDir 'src/generated/resources' }
+        }
+    } catch (Exception ignored) {}
+}
+
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
 
 apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
 apply from: "$rootDir/gradle/scripts/repositories.gradle"
@@ -69,10 +87,19 @@ generateModMetadata.doFirst {
     mkdir('run/client')
     mkdir('run/server')
     mkdir('run/data')
+    if (file('run/client/gtocore/cache').isDirectory()) {
+        delete fileTree('run/client/gtocore/cache')
+    }
 }
 
+tasks.named('spotlessJavaCheck') {
+    dependsOn tasks.named('spotlessApply')
+}
+tasks.named('prepareClientRun') {
+    outputs.upToDateWhen { false }
+}
 
-def configureLegacyWriter = { taskName , preferredConfigName, outFileName ->
+def configureLegacyWriter = { String taskName, String preferredConfigName, String outFileName ->
     tasks.named(taskName) {
         doLast {
             def cfg = configurations.findByName(preferredConfigName) ?: configurations.getByName("runtimeClasspath")
@@ -93,6 +120,10 @@ configureLegacyWriter("writeDataLegacyClasspath",   "dataRuntimeClasspath",   "d
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs << "-Xlint:-deprecation" << "-Xlint:-removal"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 // Ensure Java compilation depends on Kotlin and can resolve Kotlin classes
@@ -120,9 +151,9 @@ afterEvaluate {
                     destDir: destDir,
                     alias: "gtokey",
                     storetype: "jks",
-                    keystore: "keystore.jks",
-                    storepass: System.getenv('GTO_STOREPASS'),
-                    keypass: System.getenv('GTO_KEYPASS'),
+                    keystore: "E:\\gtolib\\protect\\keystore.jks",
+                    storepass: "GregTech-Odyssey",
+                    keypass: "GregTech-Odyssey",
                     preservelastmodified: "true",
                     tsaurl: "http://timestamp.sectigo.com?td=sha256",
             )
@@ -131,7 +162,7 @@ afterEvaluate {
             false
         }
         onlyIf {
-            new File("${projectDir}/keystore.jks").exists()
+            new File("E:\\gtolib\\protect\\keystore.jks").exists()
         }
     }
 

@@ -33,7 +33,7 @@ public class DataCrystalItem extends Item implements IExDataItem {
     public static final String TEAM_DATA_TAG = "gtocore.tooltip.item.team_data";
     @RegisterLanguage(cn = "§n容量使用: %s", en = "§nCapacity Used: %s")
     public static final String CAPACITY_TAG = "gtocore.tooltip.item.capacity";
-    @RegisterLanguage(cn = "[占用%sB]", en = "[Occupying %sB]")
+    @RegisterLanguage(cn = "[占%sB]", en = "[Occupying %sB]")
     public static final String OCCUPY_TAG = "gtocore.tooltip.item.occupy";
     @RegisterLanguage(cn = "数据[%s]", en = "Data[%s]")
     public static final String DATA_TAG = "gtocore.tooltip.item.data";

@@ -6079,7 +6079,7 @@
   "gtocore.tooltip.item.muffler.disabled": "消聲倉已被伺服器配置禁用，無法產生灰燼",
   "gtocore.tooltip.item.muffler.enabled": "使用機器GUI左下方按鈕以暫停/恢復灰燼回收功能",
   "gtocore.tooltip.item.muffler_pipe.desc": "將消聲倉倉口連接到消聲倉排氣口時，消聲倉排氣口將代理該消聲倉排放廢氣",
-  "gtocore.tooltip.item.occupy": "[佔用%sB]",
+  "gtocore.tooltip.item.occupy": "[佔%sB]",
   "gtocore.tooltip.item.onion.0": "假如你切它時流淚了，說明你還不夠強大",
   "gtocore.tooltip.item.onion.1": "§7——來自它下方某塊黑曜石的忠告",
   "gtocore.tooltip.item.prospector.mana.1": "魔力: §b%s§r / §a%s§r ",
