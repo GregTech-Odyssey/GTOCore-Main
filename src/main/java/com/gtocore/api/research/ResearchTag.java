@@ -35,7 +35,7 @@ public final class ResearchTag {
     }
 
     public MutableComponent getDisplayName() {
-        return Component.translatable("gtocore.research.tag." + name).withStyle(style -> style.withColor(color));
+        return Component.translatable("gtocore.research.tag." + name);
     }
 
     public static final ResearchTag MATERIAL = new ResearchTag("material", "材料", "Material", 32);

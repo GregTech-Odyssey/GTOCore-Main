@@ -9,6 +9,7 @@ import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.dev.TestReportOutput;
+import com.gtocore.common.machine.electric.DataExportMachine;
 import com.gtocore.common.machine.electric.ElectricHeaterMachine;
 import com.gtocore.common.machine.electric.VacuumPumpMachine;
 import com.gtocore.common.machine.generator.LightningRodMachine;
@@ -273,6 +274,13 @@ public final class GTOMachines {
             .tooltips(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01))
             .tooltips(Component.translatable(HeatInterfaceCover.GENERATION_RATE, 1.6))
             .renderer(() -> new HeaterRenderer(LV))
+            .register();
+    public static final MachineDefinition DATA_EXPORT_MACHINE = machine("data_export_machine", "数据导出机", DataExportMachine::new)
+            .tier(IV)
+            .recipeType(GTRecipeTypes.DUMMY_RECIPES)
+            .nonYAxisRotation()
+            .tooltips(GTOMachineTooltipsA.DataExportMachineTooltips)
+            .workableTieredHullRenderer(GTOCore.id("block/machines/world_data_scanner"))
             .register();
 
     //////////////////////////////////////
@@ -1097,6 +1105,13 @@ public final class GTOMachines {
                     .tooltips(Component.translatable("gtceu.universal.tooltip.working_area_max", (int) (8 * Math.pow(2, tier)), (int) (8 * Math.pow(2, tier))))
                     .register(),
             LV, MV, HV);
+
+    public static final MachineDefinition EXHAUST_FAN = machine("exhaust_fan", "消声仓排气口", ExhaustFanMachine::new)
+            .allRotation()
+            .tooltipsText("Connected to the exhaust pipe of the silencer, which can export the smoke in the silencer to this", "连接到消声仓烟管，可将消声仓内的烟雾导出到此")
+            .overlayTieredHullRenderer("rotor_hatch")
+            .tier(0)
+            .register();
 
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)
             .tooltipBuilder((stack, list) -> GTOMachineTooltips.BasicMonitorTooltips.apply(list))

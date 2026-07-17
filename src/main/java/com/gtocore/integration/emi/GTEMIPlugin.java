@@ -12,6 +12,7 @@ import com.gtocore.integration.chisel.ChiselRecipe;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
+import com.gtocore.integration.emi.research.ResearchEmiRecipe;
 import com.gtocore.integration.emi.space.SatelliteEmiCategory;
 import com.gtocore.integration.misc.CalculatorOverlay;
 
@@ -269,6 +270,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTProgrammedCircuitCategory.registerDisplays(registry);
 
         PrimordialReconstructorDisassemblyEmiCategory.register(registry);
+        ResearchEmiRecipe.register(registry);
         SatelliteEmiCategory.register(registry);
 
         GTRecipeEMICategory.registerWorkStations(registry);

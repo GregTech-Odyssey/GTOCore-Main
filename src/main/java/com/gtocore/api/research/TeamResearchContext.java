@@ -11,7 +11,7 @@ import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
 import appeng.api.stacks.AEKey;
 
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.data.Data;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;

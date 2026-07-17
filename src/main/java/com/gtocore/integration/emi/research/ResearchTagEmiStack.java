@@ -57,6 +57,6 @@ public class ResearchTagEmiStack extends EmiStack {
 
     @Override
     public Component getName() {
-        return tag.getDisplayName();
+        return tag.getDisplayName().withStyle(style -> style.withColor(tag.getColor()));
     }
 }

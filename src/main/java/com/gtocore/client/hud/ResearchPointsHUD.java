@@ -89,7 +89,7 @@ public class ResearchPointsHUD implements IMoveableHUD {
         for (ResearchPointRow row : rows) {
             int swatchY = cursorY + (font.lineHeight - SWATCH_SIZE) / 2;
             guiGraphics.fill(contentX, swatchY, contentX + SWATCH_SIZE, swatchY + SWATCH_SIZE, row.tag().getColor());
-            guiGraphics.drawString(font, row.tag().getDisplayName(), contentX + SWATCH_SIZE + SWATCH_GAP, cursorY, 0xFFE7EBF0, false);
+            guiGraphics.drawString(font, row.tag.getDisplayName().withStyle(style -> style.withColor(row.tag.getColor())), contentX + SWATCH_SIZE + SWATCH_GAP, cursorY, 0xFFE7EBF0, false);
             guiGraphics.drawString(font, row.formattedAmount(), valueRight - font.width(row.formattedAmount()), cursorY, 0xFFD5DCE5, false);
             cursorY += font.lineHeight + ROW_SPACING;
         }
@@ -185,7 +185,7 @@ public class ResearchPointsHUD implements IMoveableHUD {
         Component emptyMessage = Component.translatable(EMPTY_MESSAGE);
         int width = Math.max(MIN_WIDTH, Math.max(font.width(getDisplayName()), font.width(emptyMessage)) + PADDING * 2);
         for (ResearchPointRow row : rows) {
-            int rowWidth = SWATCH_SIZE + SWATCH_GAP + font.width(row.tag().getDisplayName()) + COLUMN_GAP + font.width(row.formattedAmount());
+            int rowWidth = SWATCH_SIZE + SWATCH_GAP + font.width(row.tag().getDisplayName().withStyle(style -> style.withColor(row.tag.getColor()))) + COLUMN_GAP + font.width(row.formattedAmount());
             width = Math.max(width, rowWidth + PADDING * 2);
         }
 

@@ -990,5 +990,22 @@ final class AssemblerA {
                 .EUt(480)
                 .duration(200)
                 .save();
+        ASSEMBLER_RECIPES.builder("normal_muffler_pipe")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel, 6)
+                .inputItems(TagPrefix.rotor, GTMaterials.Steel)
+                .outputItems("gtocore:normal_muffler_pipe", 2)
+                .circuitMeta(18)
+                .EUt(30)
+                .duration(200)
+                .save();
+        ASSEMBLER_RECIPES.builder("exhaust_fan")
+                .inputItems(GTBlocks.MACHINE_CASING_ULV.asItem())
+                .inputItems(TagPrefix.rotor, GTMaterials.Steel, 4)
+                .inputItems(GTOItems.AIR_VENT, 4)
+                .outputItems(GTOMachines.EXHAUST_FAN.asItem())
+                .circuitMeta(18)
+                .EUt(30)
+                .duration(200)
+                .save();
     }
 }
