@@ -501,7 +501,14 @@ tasks.register('packageGtolibJar', Jar) {
         include 'com/gtolib/**'
         include 'gtolib.mixins.json'
         include 'gtolib.refmap.json'
+        include 'gtocore.refmap.json'
         include 'META-INF/*.kotlin_module'
+    }
+    // AP 产物目录（可能尚未 copy 进 sourceSets.output）
+    from({ file("${buildDir}/mixin") }) {
+        include 'gtolib.refmap.json'
+        include 'gtocore.refmap.json'
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
     doFirst {
         // 二次确认：打包物不能是 Seal 抽空后的 hollow class
@@ -521,6 +528,12 @@ tasks.register('packageGtolibJar', Jar) {
                 }
             }
         }
+        // 打包前再发布一次 refmap（写入 resources + mixin 目录）
+        publishAndInjectGtolibRefmaps(null, true)
+    }
+    doLast {
+        def raw = archiveFile.get().asFile
+        publishAndInjectGtolibRefmaps(raw, true)
     }
 }
 
@@ -843,6 +856,13 @@ tasks.register('buildGtolibProtected') {
         protectedFile.parentFile.mkdirs()
         Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         injectGtolibMixinConfig(protectedFile)
+        // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap 并回写 libs 预构建
+        publishAndInjectGtolibRefmaps(protectedFile, hasGtolibSources)
+        if (hasGtolibSources && protectedFile.exists()) {
+            gtolibProtectedLibsJar.parentFile.mkdirs()
+            Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            logger.lifecycle("GTOLib: 已同步 libs/gtolib-protected.jar（含 refmap）")
+        }
 
         def jarSha = computeFileSha256(protectedFile)
         if (hasGtolibSources && gtolibFingerprint) {
@@ -910,6 +930,169 @@ ext.injectGtolibMixinConfig = { File jarFile ->
         zos.close()
         zis.close()
         Files.move(tmp.toPath(), jarFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    }
+}
+
+/**
+ * 解析「当前最好的」gtolib.refmap.json：
+ * 优先 Mixin AP 产物（有 GTOLib 源码全量编译时最完整），否则仓库预置 resources（无权限/CI）。
+ */
+ext.resolveGtolibRefmapFile = {
+    def ap = file("${buildDir}/mixin/gtolib.refmap.json")
+    def res = file('src/main/resources/gtolib.refmap.json')
+    if (ap.exists() && ap.length() > 64) return ap
+    if (res.exists() && res.length() > 64) return res
+    return null
+}
+
+/**
+ * Mixin AP 有时漏掉个别 mixin（如 ResourceLocationMixn）的 Shadow 字段映射。
+ * 1.20.1 intermediate→srg 已知条目在此补全，避免生产 Shadow 失败。
+ */
+ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
+    if (refmapFile == null || !refmapFile.exists()) return
+    def slurper = new groovy.json.JsonSlurper()
+    def root = slurper.parse(refmapFile)
+    if (!(root instanceof Map)) return
+    def mappings = root.mappings
+    def searge = root.data?.searge
+    if (!(mappings instanceof Map)) {
+        root.mappings = [:]
+        mappings = root.mappings
+    }
+    if (!(searge instanceof Map)) {
+        if (root.data == null) root.data = [:]
+        root.data.searge = [:]
+        searge = root.data.searge
+    }
+    def key = 'com/gtolib/mixin/mc/ResourceLocationMixn'
+    def named = [
+            'namespace'           : 'f_135804_',
+            'path'                : 'f_135805_',
+            'toString'            : 'toString',
+            'assertValidNamespace': 'm_245413_',
+            'assertValidPath'     : 'm_245185_',
+            'withPath'            : 'm_247449_',
+    ]
+    def srg = [
+            'namespace'           : 'f_135804_',
+            'path'                : 'f_135805_',
+            'toString'            : 'Lnet/minecraft/resources/ResourceLocation;toString()Ljava/lang/String;',
+            'assertValidNamespace': 'Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
+            'assertValidPath'     : 'Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
+            'withPath'            : 'Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;',
+    ]
+    def changed = false
+    if (!mappings.containsKey(key) || !(mappings[key] instanceof Map) || !mappings[key].containsKey('namespace')) {
+        mappings[key] = named
+        searge[key] = srg
+        changed = true
+    }
+    if (changed) {
+        // JsonBuilder / 手写精简 JSON
+        refmapFile.text = groovy.json.JsonOutput.toJson(root)
+        logger.lifecycle("GTOLib refmap: 已补全 ${key} Shadow/Overwrite 映射")
+    }
+}
+
+/**
+ * 有源码重建 gtolib 时：把完整 refmap 写入
+ *  - build/mixin（reobf）
+ *  - build/resources/main + src/main/resources（无权限消费 / 下次 CI）
+ *  - 指定 jar 根目录（raw/protected）
+ * 无源码：只消费预置，不改 src/main/resources。
+ */
+ext.publishAndInjectGtolibRefmaps = { File jarFile, boolean writeToRepoResources ->
+    def src = resolveGtolibRefmapFile()
+    if (src == null) {
+        logger.warn("GTOLib refmap: 未找到有效 gtolib.refmap.json（AP 与 resources 均无）")
+        return false
+    }
+    patchCriticalGtolibRefmapEntries(src)
+    def mixinDir = file("${buildDir}/mixin")
+    mixinDir.mkdirs()
+    def mixinGtolib = new File(mixinDir, 'gtolib.refmap.json')
+    def mixinGtocore = new File(mixinDir, 'gtocore.refmap.json')
+    if (src.absolutePath != mixinGtolib.absolutePath) {
+        Files.copy(src.toPath(), mixinGtolib.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    }
+    // gtocore.mixins.json 声明 refmap=gtocore.refmap.json：与完整映射同步
+    Files.copy(mixinGtolib.toPath(), mixinGtocore.toPath(), StandardCopyOption.REPLACE_EXISTING)
+
+    def resOut = file("${buildDir}/resources/main")
+    resOut.mkdirs()
+    Files.copy(mixinGtolib.toPath(), new File(resOut, 'gtolib.refmap.json').toPath(), StandardCopyOption.REPLACE_EXISTING)
+    Files.copy(mixinGtocore.toPath(), new File(resOut, 'gtocore.refmap.json').toPath(), StandardCopyOption.REPLACE_EXISTING)
+
+    if (writeToRepoResources) {
+        def repoGtolib = file('src/main/resources/gtolib.refmap.json')
+        def repoGtocore = file('src/main/resources/gtocore.refmap.json')
+        repoGtolib.parentFile.mkdirs()
+        Files.copy(mixinGtolib.toPath(), repoGtolib.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(mixinGtocore.toPath(), repoGtocore.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        logger.lifecycle("GTOLib refmap: 已写入 src/main/resources（有源码打包；无权限开发者/CI 消费） ${mixinGtolib.length()} bytes")
+    }
+
+    if (jarFile != null && jarFile.exists() && jarFile.length() > 0) {
+        def tmp = new File(jarFile.absolutePath + '.refmapfix')
+        def zis = new java.util.zip.ZipInputStream(new FileInputStream(jarFile))
+        def zos = new java.util.zip.ZipOutputStream(new FileOutputStream(tmp))
+        java.util.zip.ZipEntry e
+        def skip = ['gtolib.refmap.json', 'gtocore.refmap.json'] as Set
+        while ((e = zis.nextEntry) != null) {
+            if (skip.contains(e.name)) {
+                zis.closeEntry()
+                continue
+            }
+            def outEntry = new java.util.zip.ZipEntry(e.name)
+            zos.putNextEntry(outEntry)
+            zis.transferTo(zos)
+            zos.closeEntry()
+            zis.closeEntry()
+        }
+        zos.putNextEntry(new java.util.zip.ZipEntry('gtolib.refmap.json'))
+        mixinGtolib.withInputStream { is -> is.transferTo(zos) }
+        zos.closeEntry()
+        zos.putNextEntry(new java.util.zip.ZipEntry('gtocore.refmap.json'))
+        mixinGtocore.withInputStream { is -> is.transferTo(zos) }
+        zos.closeEntry()
+        zos.close()
+        zis.close()
+        Files.move(tmp.toPath(), jarFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        logger.lifecycle("GTOLib refmap: 已注入 ${jarFile.name}")
+    }
+    return true
+}
+
+tasks.register('syncGtolibRefmaps') {
+    group = 'gtolib'
+    description = '同步 Mixin refmap：有源码时从 AP 写入 resources；始终保证 build 资源与 jar 可消费'
+    // classes 会跑 Mixin AP；无源码时仅回填预置
+    dependsOn {
+        hasGtolibSources ? ['classes'] : []
+    }
+    outputs.upToDateWhen { false }
+    doLast {
+        def ok = publishAndInjectGtolibRefmaps(null, hasGtolibSources)
+        if (!ok && !hasGtolibSources) {
+            def res = file('src/main/resources/gtolib.refmap.json')
+            if (!res.exists() || res.length() < 64) {
+                throw new GradleException(
+                        "无 GTOLib 源码时必须有预置 src/main/resources/gtolib.refmap.json（由有权限打包时写入）。"
+                )
+            }
+        }
+        def gtolibRm = file("${buildDir}/mixin/gtolib.refmap.json")
+        if (!gtolibRm.exists()) {
+            gtolibRm = file('src/main/resources/gtolib.refmap.json')
+        }
+        if (gtolibRm.exists() && gtolibRm.length() > 64) {
+            // 快速检查：ResourceLocationMixn 必须在 mappings 里（生产 Shadow 必需）
+            def text = gtolibRm.getText('UTF-8')
+            if (!text.contains('ResourceLocationMixn')) {
+                logger.warn("GTOLib refmap: 缺少 ResourceLocationMixn 映射（生产可能 Shadow 失败）— 请有权限时 -PgtolibRebuild=true 全量重编")
+            }
+        }
     }
 }
 
@@ -1250,7 +1433,7 @@ afterEvaluate {
     tasks.matching { isGtolibLaunchTask(it) }.configureEach { Task t -> wireGtolibInstallTo(t) }
 
     tasks.named('jar', Jar).configure {
-        dependsOn 'installGtolibIntoModOutput', 'buildGtolibProtected', 'prepareGtolibModJar'
+        dependsOn 'installGtolibIntoModOutput', 'buildGtolibProtected', 'prepareGtolibModJar', 'syncGtolibRefmaps', 'ensureMixinRefmapMappings'
         if (tasks.findByName('syncSealRuntimeToLibs') != null) {
             dependsOn 'syncSealRuntimeToLibs'
         }
@@ -1279,15 +1462,7 @@ afterEvaluate {
             include 'com/gtolib/GTOLibMod.class'
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
-        // Mixin refmap：生产环境必须带（否则 SharedConstants 等注入找 named 名失败）。
-        // 禁止 exclude gtolib.refmap.json（历史上误排除导致 No refMap loaded）。
-        // 映射文件在 src/main/resources/{gtocore,gtolib}.refmap.json，经 sourceSets 进入 jar；
-        // ensureMixinRefmapMappings 负责在 AP 未写出时用 resources 回填 build/mixin（供 reobf）。
-        dependsOn 'ensureMixinRefmapMappings'
-        // 禁止把 Seal Runtime 打进 gtocore：
-        // Forge 会把含 ITransformationService SPI 的 jar 整包排除出 mods 扫描，
-        // 导致 gtocore/gtceu/jarJar 全部不加载。Seal 必须作为独立 jar 放在 mods/。
-        // 玩家包：同一 jar 内双 modId（配置期注册 from，内容由 writeDualModsToml 写出）
+        // 禁止把 Seal Runtime 打进 gtocore（ITransformationService 会导致整包被 Forge 排除）
         dependsOn 'writeDualModsToml'
         from(layout.buildDirectory.file('gtolib/mods-dual.toml')) {
             into 'META-INF'
@@ -1295,27 +1470,32 @@ afterEvaluate {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
         doFirst {
-            // 仍要求 libs 有完整 Runtime（发行/运行时配套），但不打进本 jar
             if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
                 throw new GradleException(
                         "发行需要完整 GTO Seal Runtime（独立 jar，勿内嵌）: ${sealRuntimeLibsJar}\n" +
                                 "请保证 libs/gto-seal-runtime-1.0.jar 存在（或 ./gradlew syncSealRuntimeToLibs）"
                 )
             }
-            def mixinDir = file("${buildDir}/mixin")
-            def gtolibRm = new File(mixinDir, 'gtolib.refmap.json')
-            def gtocoreRm = new File(mixinDir, 'gtocore.refmap.json')
-            if (!gtolibRm.exists() || gtolibRm.length() < 64) {
+            // 写入 resources / mixin（不在 from 里叠多份，避免 reobf Duplicate entries）
+            publishAndInjectGtolibRefmaps(null, hasGtolibSources)
+        }
+        doLast {
+            // 打入最终 jar 根目录唯一一份 refmap（含关键 Shadow 补丁）
+            def outJar = archiveFile.get().asFile
+            if (!publishAndInjectGtolibRefmaps(outJar, false)) {
+                throw new GradleException("无法将 gtolib.refmap.json 注入发行 jar")
+            }
+            def text = new java.util.zip.ZipFile(outJar).withCloseable { zf ->
+                def e = zf.getEntry('gtolib.refmap.json')
+                if (e == null) return ''
+                zf.getInputStream(e).getText('UTF-8')
+            }
+            if (!text.contains('ResourceLocationMixn')) {
                 throw new GradleException(
-                        "发行 jar 缺少有效 gtolib.refmap.json（生产 Mixin 必需）。\n" +
-                                "期望: ${gtolibRm} （当前 ${gtolibRm.exists() ? gtolibRm.length() : 0} bytes）"
+                        "发行 jar 内 gtolib.refmap.json 仍缺 ResourceLocationMixn"
                 )
             }
-            logger.lifecycle(
-                    "GTO jar: 不内嵌 Seal Runtime（独立产物 ${sealRuntimeLibsJar.name}，" +
-                            "${sealRuntimeLibsJar.length()} bytes）—— 避免 ITransformationService 导致 gtocore 被 Forge 排除; " +
-                            "refmap gtolib=${gtolibRm.length()}B gtocore=${gtocoreRm.exists() ? gtocoreRm.length() : 0}B"
-            )
+            logger.lifecycle("GTO jar: Seal 独立; refmap 已注入且含 ResourceLocationMixn")
         }
     }
 
@@ -1408,29 +1588,8 @@ side="BOTH"
                     logger.warn("Mixin: 写入空 gtocore.refmap.json.mappings.tsrg")
                 }
             }
-            // Mixin AP 常把两套配置的映射都写进 gtolib.refmap.json，gtocore.refmap 为空或不存在。
-            // gtocore.mixins.json 仍声明 refmap=gtocore.refmap.json —— 必须与完整映射同步。
-            def gtocoreJson = new File(mixinDir, 'gtocore.refmap.json')
-            def gtolibJson = new File(mixinDir, 'gtolib.refmap.json')
-            // CI 无 GTOLib 源码时 AP 可能几乎不写映射：回退到仓库内预置 resources
-            def fallbackGtolib = file('src/main/resources/gtolib.refmap.json')
-            def fallbackGtocore = file('src/main/resources/gtocore.refmap.json')
-            if ((!gtolibJson.exists() || gtolibJson.length() < 64) && fallbackGtolib.exists() && fallbackGtolib.length() > 64) {
-                Files.copy(fallbackGtolib.toPath(), gtolibJson.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                logger.lifecycle("Mixin: gtolib.refmap.json ← src/main/resources fallback (${fallbackGtolib.length()} bytes)")
-            }
-            if (gtolibJson.exists() && gtolibJson.length() > 64) {
-                if (!gtocoreJson.exists() || gtocoreJson.length() < 64) {
-                    Files.copy(gtolibJson.toPath(), gtocoreJson.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                    logger.lifecycle("Mixin: gtocore.refmap.json ← gtolib.refmap.json (${gtolibJson.length()} bytes)")
-                }
-            } else if (fallbackGtocore.exists() && fallbackGtocore.length() > 64) {
-                Files.copy(fallbackGtocore.toPath(), gtocoreJson.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                logger.lifecycle("Mixin: gtocore.refmap.json ← src/main/resources fallback")
-            } else if (!gtocoreJson.exists()) {
-                gtocoreJson.text = '{"mappings":{},"data":{}}\n'
-                logger.warn("Mixin: gtolib.refmap.json 缺失，gtocore.refmap 写入空壳（生产包将失败校验）")
-            }
+            // 统一走 publish：AP 优先，否则 resources 预置
+            publishAndInjectGtolibRefmaps(null, false)
         }
     }
     tasks.matching { it.name == 'reobfJar' }.configureEach {
