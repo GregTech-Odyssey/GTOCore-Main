@@ -1,0 +1,42 @@
+package com.gtocore.utils
+
+import com.gtocore.common.item.misc.OrganItemBase
+import com.gtocore.common.item.misc.OrganType
+
+import net.minecraft.world.item.ItemStack
+
+import com.gtolib.api.player.PlayerData
+
+import kotlin.math.min
+
+fun PlayerData.ktGetOrganStack(): Map<OrganType, List<ItemStack>> = this.organItemStacks
+    .filter { it.item is OrganItemBase }
+    .groupBy { (it.item as OrganItemBase).organType }
+fun PlayerData.ktMatchOrganTier(tier: Int, type: OrganType): Boolean {
+    val mapValues: Map<OrganType, Int> = ktGetOrganStack()
+        .mapValues { entry -> entry.value.filter { stack -> stack.item is OrganItemBase.TierOrganItem } }
+        .filter { entry -> entry.value.isNotEmpty() }
+        .mapValues { entry -> entry.value.maxOf { stack -> (stack.item as OrganItemBase.TierOrganItem).tier } }
+    return (mapValues[type] ?: -1) >= tier
+}
+
+fun PlayerData.ktFreshOrganState() {
+    this.organTierCache.clear()
+    (0..4).forEach { tier ->
+        for (type in OrganType.entries) {
+            if (this.ktMatchOrganTier(tier, type)) {
+                this.organTierCache.put(type, tier)
+            }
+        }
+    }
+}
+
+fun PlayerData.getSetOrganTier(): Int {
+    var tier = Int.MAX_VALUE
+    for (type in OrganType.entries) {
+        if (type.ordinal == 0) continue
+        tier = min(tier, this.organTierCache.getInt(type))
+        if (tier < 1) break
+    }
+    return tier
+}

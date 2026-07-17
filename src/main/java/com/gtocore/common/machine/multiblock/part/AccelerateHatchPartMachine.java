@@ -1,0 +1,52 @@
+package com.gtocore.common.machine.multiblock.part;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.part.WorkableAmountConfigurationPartMachine;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import org.jetbrains.annotations.NotNull;
+
+@DataGeneratorScanned
+public final class AccelerateHatchPartMachine extends WorkableAmountConfigurationPartMachine {
+
+    @RegisterLanguage(cn = "耗时百分比", en = "Percentage of duration")
+    private static final String PERCENTAGE = "gtocore.machine.accelerate_hatch.percentage";
+
+    public AccelerateHatchPartMachine(MetaMachineBlockEntity holder, int tier) {
+        super(holder, tier, 52 - 2L * tier, 100);
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        return ((WidgetGroup) super.createUIWidget()).addWidget(new LabelWidget(24, -16, () -> PERCENTAGE));
+    }
+
+    @Override
+    public GTRecipe modifyRecipe(IWorkableMultiController controller, RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        if (controller instanceof WorkableElectricMultiblockMachine) {
+            int reduction = (int) getCurrent();
+            int recipeTier = recipe.tier;
+            int t = recipeTier - getTier();
+            if (t > 0) {
+                reduction = Math.min(100, reduction + 20 * t);
+            }
+            recipe.duration = Math.max(1, recipe.duration * reduction / 100);
+        }
+        return recipe;
+    }
+
+    @Override
+    protected long getCurrent() {
+        if (current == -1) current = min;
+        return current;
+    }
+}

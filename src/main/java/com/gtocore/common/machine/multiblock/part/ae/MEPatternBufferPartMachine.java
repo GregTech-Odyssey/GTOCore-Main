@@ -1,0 +1,790 @@
+package com.gtocore.common.machine.multiblock.part.ae;
+
+import com.gtocore.api.gui.configurators.MultiMachineModeFancyConfigurator;
+import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.common.data.machines.GTAEMachines;
+import com.gtocore.common.machine.trait.InternalSlotRecipeHandler;
+import com.gtocore.integration.ae.PatternContainerGroupHelper;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.trait.NotifiableNotConsumableFluidHandler;
+import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
+import com.gtolib.api.recipe.RecipeBuilder;
+import com.gtolib.api.recipe.RecipeType;
+import com.gtolib.utils.RLUtils;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyTankConfigurator;
+import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
+import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
+import com.gregtechceu.gtceu.client.util.TooltipHelper;
+import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.TaskHandler;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+
+import appeng.api.crafting.IPatternDetails;
+import appeng.api.implementations.blockentities.PatternContainerGroup;
+import appeng.api.networking.crafting.ICraftingProvider;
+import appeng.api.stacks.*;
+import appeng.api.storage.MEStorage;
+import appeng.api.storage.StorageHelper;
+import appeng.crafting.pattern.EncodedPatternItem;
+import appeng.crafting.pattern.ProcessingPatternItem;
+
+import com.fast.recipesearch.IntLongMap;
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.annotations.SyncToServer;
+import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.listener.IntNotifiableHolder;
+import com.gto.fastcollection.OpenCacheHashSet;
+import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import lombok.Getter;
+import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.ITooltip;
+import snownee.jade.api.config.IPluginConfig;
+import snownee.jade.api.fluid.JadeFluidObject;
+import snownee.jade.api.ui.IElementHelper;
+
+import java.util.*;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@DataGeneratorScanned
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<MEPatternBufferPartMachine.InternalSlot> implements IDataStickInteractable, IWailaDisplayProvider {
+
+    @RegisterLanguage(cn = "此槽已缓存配方", en = "Recipe cached in this slot")
+    private static final String CACHE = "gtocore.pattern_buffer.cache";
+    @RegisterLanguage(cn = "样板独立配置", en = "Pattern independent configuration")
+    private static final String INDEPENDENT = "gtocore.pattern_buffer.independent";
+    @RegisterLanguage(cn = "总成共享配置", en = "Buffer share configuration")
+    private static final String SHARE = "gtocore.pattern_buffer.share";
+
+    @Override
+    public @Nullable GTRecipeType gto$getRecipeType() {
+        return recipeType;
+    }
+
+    @Override
+    public @Nullable Collection<GTRecipeType> gto$getRecipeTypes() {
+        return recipeTypes;
+    }
+
+    @SaveToDisk
+    @SyncToClient
+    @Getter
+    private final ArrayList<GTRecipeType> recipeTypes = new ArrayList<>();
+    @SaveToDisk
+    @SyncToClient
+    @Getter
+    public GTRecipeType recipeType = null;
+
+    @SyncToClient
+    private final boolean[] caches;
+    @SaveToDisk
+    public final NotifiableNotConsumableItemHandler shareInventory;
+    @SaveToDisk
+    public final NotifiableNotConsumableFluidHandler shareTank;
+    @SaveToDisk
+    public final NotifiableItemStackHandler circuitInventorySimulated;
+
+    @SaveToDisk
+    private final Set<BlockPos> proxies = new OpenCacheHashSet<>();
+    private final Set<MEPatternBufferProxyPartMachine> proxyMachines = new ReferenceOpenHashSet<>();
+    public final InternalSlotRecipeHandler internalRecipeHandler;
+
+    /// C2S sync field for configurator slot index
+    @Getter
+    @SyncToServer
+    protected IntNotifiableHolder configuratorField = IntNotifiableHolder.create(-1)
+            .setSenderListener((side, o, n) -> {}).setReceiverListener((side, o, n) -> {
+                if (side.isServer()) TaskHandler.enqueueTask(Objects.requireNonNull(getLevel()), () -> freshWidgetGroup.serverFresh());
+            });
+
+    protected ConfiguratorPanel configuratorPanel;
+
+    @Getter
+    @SaveToDisk(defaultValue = "0")
+    private int priority = 0;
+
+    MEPatternBufferPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
+        super(holder, maxPatternCount);
+        this.caches = new boolean[maxPatternCount];
+        this.shareInventory = createShareInventory();
+        this.shareTank = new NotifiableNotConsumableFluidHandler(this, 9, 64000);
+        this.circuitInventorySimulated = CircuitHandler.create(this);
+        this.internalRecipeHandler = new InternalSlotRecipeHandler(this, getInternalInventory());
+    }
+
+    private void setPriority(int priority) {
+        if (priority == Integer.MIN_VALUE) return;
+        this.priority = priority;
+        circuitInventorySimulated.setPriority(priority);
+        RecipeHandlerUnit.notify(this);
+    }
+
+    NotifiableNotConsumableItemHandler createShareInventory() {
+        var h = new NotifiableNotConsumableItemHandler(this, 9, IO.NONE);
+        h.setFilter(stack -> !(stack.getItem() instanceof EncodedPatternItem));
+        return h;
+    }
+
+    @Override
+    public InternalSlot[] createInternalSlotArray() {
+        return new InternalSlot[getMaxPatternCount()];
+    }
+
+    @Override
+    public boolean patternFilter(ItemStack stack) {
+        if (stack.getOrCreateTag().tags.get("recipe") instanceof StringTag stringTag) {
+            var recipe = RecipeBuilder.get(RLUtils.parse(stringTag.getAsString()));
+            if (recipe != null) {
+                if (recipeType == null) {
+                    if (!recipeTypes.isEmpty() && !RecipeType.available(recipe.recipeType, recipeTypes.toArray(new GTRecipeType[0]))) return false;
+                } else if (!RecipeType.available(recipe.recipeType, recipeType)) {
+                    return false;
+                }
+            }
+        }
+        var f = stack.getItem() instanceof ProcessingPatternItem;
+        if (!f) return false;
+        return MEPatternPartMachineKtKt.checkDuplicatedPattern(this, stack);
+    }
+
+    @Override
+    public InternalSlot createInternalSlot(int i) {
+        return new InternalSlot(this, i);
+    }
+
+    @Override
+    public List<RecipeHandlerUnit> getRecipeHandlers() {
+        return internalRecipeHandler.getSlotHandlers();
+    }
+
+    @Override
+    public boolean canShared() {
+        return true;
+    }
+
+    void addProxy(MEPatternBufferProxyPartMachine proxy) {
+        proxies.add(proxy.getPos());
+        proxyMachines.add(proxy);
+    }
+
+    void removeProxy(MEPatternBufferProxyPartMachine proxy) {
+        proxies.remove(proxy.getPos());
+        proxyMachines.remove(proxy);
+    }
+
+    private Set<MEPatternBufferProxyPartMachine> getProxies() {
+        return proxyMachines;
+    }
+
+    private void refundAll(ClickData clickData) {
+        if (!clickData.isRemote) {
+            for (InternalSlot internalSlot : getInternalInventory()) {
+                internalSlot.refund();
+            }
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (recipeType == GTORecipeTypes.DUMMY_RECIPES || recipeType == GTORecipeTypes.HATCH_COMBINED) {
+            recipeType = null;
+        }
+        MultiMachineModeFancyConfigurator.verify(recipeTypes, recipeType, () -> recipeType = null);
+        circuitInventorySimulated.setPriority(priority);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new MultiMachineModeFancyConfigurator(recipeTypes, recipeType, this::setRecipeType));
+        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
+    }
+
+    @Override
+    public void addedToController(IMultiController controller) {
+        super.addedToController(controller);
+        this.recipeTypes.clear();
+        this.recipeTypes.addAll(MultiMachineModeFancyConfigurator.extractRecipeTypes(this.getController()));
+        MultiMachineModeFancyConfigurator.verify(recipeTypes, recipeType, () -> recipeType = null);
+        for (InternalSlot internalSlot : getInternalInventory()) {
+            internalSlot.verify(recipeTypes);
+        }
+    }
+
+    @Override
+    public void setAvailableRecipeTypes(@NotNull GTRecipeType[] types) {
+        this.recipeTypes.clear();
+        this.recipeTypes.addAll(Arrays.asList(types));
+        MultiMachineModeFancyConfigurator.verify(recipeTypes, recipeType, () -> recipeType = null);
+    }
+
+    @Override
+    public void removedFromController(IMultiController controller) {
+        super.removedFromController(controller);
+        this.recipeTypes.clear();
+    }
+
+    public void setRecipeType(GTRecipeType type) {
+        if (type != recipeType) {
+            recipeType = type;
+            for (var c : getControllers()) {
+                if (c instanceof IRecipeLogicMachine machine) {
+                    machine.getRecipeLogic().markLastRecipeDirty();
+                    machine.getRecipeLogic().updateTickSubscription();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onPatternChange(int index) {
+        getInternalInventory()[index].setLock(false);
+        super.onPatternChange(index);
+    }
+
+    @Override
+    public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
+        var slot = getDetailsSlotMap().get(patternDetails);
+        if (slot != null) {
+            return slot.pushPattern(patternDetails, inputHolder);
+        }
+        return false;
+    }
+
+    @Override
+    public @Nullable IPatternDetails decodePattern(ItemStack stack, int index) {
+        var pattern = super.decodePattern(stack, index);
+        if (pattern == null) return null;
+        if (!caches[index]) {
+            MEPatternVirtualInputHelper.readRecipeTag(stack, getInternalInventory()[index]::setRecipe);
+        }
+        return pattern;
+    }
+
+    @Override
+    public IPatternDetails convertPattern(IPatternDetails pattern, int index) {
+        var slot = getInternalInventory()[index];
+        return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
+                slot.circuitInventory, slot.shareInventory.storage, () -> {
+                    slot.setLock(true);
+                    return true;
+                });
+    }
+
+    @Override
+    @Nullable
+    public Component appendHoverTooltips(int index) {
+        if (caches[index]) {
+            return Component.translatable(CACHE);
+        }
+        return null;
+    }
+
+    @Override
+    public void onMouseClicked(int index) {
+        if (!isRemote()) return;
+        if (configuratorField.get() == index) {
+            configuratorField.set(-1);
+        } else {
+            configuratorField.set(index);
+        }
+        configuratorField.markAsChanged();
+        syncToServer();
+    }
+
+    @Override
+    public void addWidget(WidgetGroup group) {
+        group.addWidget(new LabelWidget(81, 2, () -> configuratorField.get() < 0 ? SHARE : INDEPENDENT).setHoverTooltips(Component.translatable("monitor.gui.title.slot").append(String.valueOf(configuratorField.get()))));
+    }
+
+    @Override
+    public PatternContainerGroup getTerminalGroup() {
+        if (isFormed()) {
+            IMultiController controller = getController();
+            Collection<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
+                    Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : List.of();
+            return PatternContainerGroupHelper.forPatternBuffer(
+                    controller.self(), this, getCustomName(), recipeType, availableRecipeTypes);
+        } else {
+            if (!getCustomName().isEmpty()) {
+                return new PatternContainerGroup(AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem()), Component.literal(getCustomName()), Collections.emptyList());
+            } else {
+                return new PatternContainerGroup(AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem()), GTAEMachines.ME_PATTERN_BUFFER.get().getDefinition().asItem().getDescription(), Collections.emptyList());
+            }
+        }
+    }
+
+    @Override
+    public Component gto$getTerminalGroupSearchName() {
+        if (!isFormed()) {
+            return getTerminalGroup().name();
+        }
+        if (!getCustomName().isEmpty() && !getCustomName().startsWith("+")) {
+            return Component.literal(getCustomName());
+        }
+        IMultiController controller = getController();
+        Collection<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
+                Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : List.of();
+        String extraSuffix = getCustomName().startsWith("+") ? getCustomName().substring(1).strip() : "";
+        return PatternContainerGroupHelper.getSearchName(controller.self(), extraSuffix, recipeType, availableRecipeTypes);
+    }
+
+    @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        this.configuratorPanel = configuratorPanel;
+        configuratorPanel.attachConfigurators(new ButtonConfigurator(new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.REFUND_OVERLAY), this::refundAll).setTooltips(List.of(Component.translatable("gui.gtceu.refund_all.desc"))));
+        configuratorPanel.attachConfigurators(new CircuitFancyConfigurator(circuitInventorySimulated.storage));
+        configuratorPanel.attachConfigurators(new FancyInvConfigurator(shareInventory.storage, Component.translatable("gui.gtceu.share_inventory.title")).setTooltips(List.of(Component.translatable("gui.gtceu.share_inventory.desc.0"), Component.translatable("gui.gtceu.share_inventory.desc.1"))));
+        configuratorPanel.attachConfigurators(new FancyTankConfigurator(shareTank.getStorages(), Component.translatable("gui.gtceu.share_tank.title")).setTooltips(List.of(Component.translatable("gui.gtceu.share_tank.desc.0"), Component.translatable("gui.gtceu.share_inventory.desc.1"))));
+        super.attachConfigurators(configuratorPanel);
+    }
+
+    @Override
+    public void saveToItem(CompoundTag tag) {
+        super.saveToItem(tag);
+        tag.put("si", shareInventory.storage.serializeNBT());
+        ListTag tanks = new ListTag();
+        for (var tank : shareTank.getStorages()) {
+            tanks.add(tank.serializeNBT());
+        }
+        tag.put("st", tanks);
+        tag.put("ci", circuitInventorySimulated.storage.serializeNBT());
+    }
+
+    @Override
+    public void loadFromItem(CompoundTag tag) {
+        super.loadFromItem(tag);
+        shareInventory.storage.deserializeNBT(tag.get("si"));
+        ListTag tanks = tag.getList("st", Tag.TAG_COMPOUND);
+        for (int i = 0; i < tanks.size(); i++) {
+            shareTank.getStorages()[i].deserializeNBT(tanks.getCompound(i));
+        }
+        circuitInventorySimulated.storage.deserializeNBT(tag.get("ci"));
+    }
+
+    @Override
+    public InteractionResult onDataStickShiftUse(Player player, ItemStack dataStick) {
+        dataStick.getOrCreateTag().putIntArray("pos", new int[] { getPos().getX(), getPos().getY(), getPos().getZ() });
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
+        if (!data.getBoolean("formed")) return;
+        var proxies = data.getInt("proxies");
+        if (proxies > 0) iTooltip.add(Component.translatable("gtceu.top.proxies_bound", data.getInt("proxies")).withStyle(TooltipHelper.RAINBOW_HSL_SLOW));
+        readBufferTag(iTooltip, data);
+    }
+
+    @Override
+    public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
+        if (!isFormed()) {
+            data.putBoolean("formed", false);
+            return;
+        }
+        data.putBoolean("formed", true);
+        var proxies = getProxies().size();
+        if (proxies > 0) data.putInt("proxies", proxies);
+        writeBufferTag(data, this);
+    }
+
+    @Override
+    public void clearMachineRecipeCache() {
+        for (InternalSlot slot : getInternalInventory()) {
+            slot.setRecipe(null);
+        }
+        getControllers().forEach(controller -> {
+            if (controller instanceof IRecipeLogicMachine rlm) {
+                rlm.getRecipeLogic().updateTickSubscription();
+            }
+        });
+    }
+
+    @Override
+    public void clearPatternRecipeCache() {
+        for (var pattern : getInternalPatternInventory()) {
+            pattern.getOrCreateTag().remove("recipe");
+        }
+        ICraftingProvider.requestUpdate(getMainNode());
+        clearMachineRecipeCache();
+    }
+
+    static void writeBufferTag(CompoundTag data, MEPatternBufferPartMachine buffer) {
+        var items = new AEKeyMap<AEItemKey>();
+        var fluids = new AEKeyMap<AEFluidKey>();
+        for (InternalSlot slot : buffer.getInternalInventory()) {
+            slot.itemInventory.fastForEach(items::insert);
+            slot.fluidInventory.fastForEach(fluids::insert);
+        }
+
+        ListTag itemsTag = new ListTag();
+        for (var entry : items) {
+            var ct = entry.getKey().toTag();
+            ct.putLong("real", entry.getLongValue());
+            itemsTag.add(ct);
+        }
+        if (!itemsTag.isEmpty()) data.put("items", itemsTag);
+
+        ListTag fluidsTag = new ListTag();
+        for (var entry : fluids) {
+            var ct = entry.getKey().toTag();
+            ct.putLong("real", entry.getLongValue());
+            fluidsTag.add(ct);
+        }
+        if (!fluidsTag.isEmpty()) data.put("fluids", fluidsTag);
+    }
+
+    static void readBufferTag(ITooltip iTooltip, CompoundTag data) {
+        IElementHelper helper = iTooltip.getElementHelper();
+
+        ListTag itemsTag = data.getList("items", Tag.TAG_COMPOUND);
+        for (Tag t : itemsTag) {
+            if (!(t instanceof CompoundTag ct)) continue;
+            var stack = AEItemKey.fromTag(ct);
+            if (stack == null) continue;
+            var amount = ct.getLong("real");
+            if (amount > 0) {
+                iTooltip.add(helper.smallItem(stack.getReadOnlyStack()));
+                Component text = Component.literal(" ")
+                        .append(Component.literal(String.valueOf(amount)).withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(Component.literal("× ").withStyle(ChatFormatting.WHITE))
+                        .append(stack.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+                iTooltip.append(text);
+            }
+        }
+        ListTag fluidsTag = data.getList("fluids", Tag.TAG_COMPOUND);
+        for (Tag t : fluidsTag) {
+            if (!(t instanceof CompoundTag ct)) continue;
+            var stack = AEFluidKey.fromTag(ct);
+            if (stack == null) continue;
+            var amount = ct.getLong("real");
+            if (amount > 0) {
+                iTooltip.add(GTElementHelper.smallFluid(JadeFluidObject.of(stack.getFluid())));
+                Component text = Component.literal(" ")
+                        .append(Component.literal(FormattingUtil.formatBuckets(amount)))
+                        .withStyle(ChatFormatting.DARK_PURPLE)
+                        .append(Component.literal(" ").withStyle(ChatFormatting.WHITE))
+                        .append(stack.getDisplayName().copy().withStyle(ChatFormatting.DARK_AQUA));
+                iTooltip.append(text);
+            }
+        }
+    }
+
+    public static final class InternalSlot extends AbstractRecipeInternalSlot {
+
+        public GTRecipeDefinition recipe;
+        public final MEPatternBufferPartMachine machine;
+        public final int index;
+        private final InputSink inputSink;
+        public final IntLongMap ingredientMap = new IntLongMap();
+        public final AEKeyMap<AEItemKey> itemInventory = new AEKeyMap<>();
+        public final AEKeyMap<AEFluidKey> fluidInventory = new AEKeyMap<>();
+
+        public final NotifiableNotConsumableItemHandler shareInventory;
+        public final NotifiableNotConsumableFluidHandler shareTank;
+        public final NotifiableItemStackHandler circuitInventory;
+        final LockableItemStackHandler lockableInventory;
+        @Getter
+        private boolean lock;
+        @Setter
+        private boolean shouldLockRecipe = true;
+
+        private InternalSlot(MEPatternBufferPartMachine machine, int index) {
+            this.machine = machine;
+            this.index = index;
+            this.shareInventory = machine.createShareInventory();
+            this.shareTank = new NotifiableNotConsumableFluidHandler(machine, 9, 64000);
+            this.circuitInventory = CircuitHandler.create(machine);
+            this.inputSink = new InputSink(this);
+            this.lockableInventory = new LockableItemStackHandler(shareInventory.storage);
+        }
+
+        public void verify(Collection<GTRecipeType> recipeTypes) {
+            if (recipe != null && !recipeTypes.contains(recipe.recipeType)) {
+                setRecipe(null);
+            }
+        }
+
+        public void setLock(boolean lock) {
+            if (this.lock) {
+                circuitInventory.storage.setStackInSlot(0, ItemStack.EMPTY);
+                for (int i = 0; i < 9; i++) {
+                    shareInventory.setStackInSlot(i, ItemStack.EMPTY);
+                }
+            }
+            this.lock = lock;
+            lockableInventory.setLock(lock);
+        }
+
+        public void setRecipe(@Nullable GTRecipeDefinition recipe) {
+            if (!shouldLockRecipe) return;
+            if (recipe != null && recipe.registered) {
+                this.recipe = recipe;
+                machine.caches[index] = true;
+            } else {
+                this.recipe = null;
+                machine.caches[index] = false;
+            }
+        }
+
+        public boolean isEmpty() {
+            return itemInventory.isEmpty() && fluidInventory.isEmpty();
+        }
+
+        private void refund() {
+            var network = machine.getMainNode().getGrid();
+            if (network != null) {
+                MEStorage networkInv = network.getStorageService().getInventory();
+                var energy = network.getEnergyService();
+                for (var it = itemInventory.iterator(); it.hasNext();) {
+                    var entry = it.next();
+
+                    var count = entry.getLongValue();
+                    if (count == 0) {
+                        it.remove();
+                        continue;
+                    }
+                    var key = entry.getKey();
+                    if (key == null) continue;
+                    long inserted = StorageHelper.poweredInsert(energy, networkInv, key, count, machine.getActionSourceField());
+                    if (inserted > 0) {
+                        count -= inserted;
+                        if (count == 0) it.remove();
+                        else entry.setValue(count);
+                    }
+                }
+                for (var it = fluidInventory.iterator(); it.hasNext();) {
+                    var entry = it.next();
+                    var amount = entry.getLongValue();
+                    if (amount == 0) {
+                        it.remove();
+                        continue;
+                    }
+                    var key = entry.getKey();
+                    if (key == null) continue;
+                    long inserted = StorageHelper.poweredInsert(energy, networkInv, key, amount, machine.getActionSourceField());
+                    if (inserted > 0) {
+                        amount -= inserted;
+                        if (amount == 0) it.remove();
+                        else entry.setValue(amount);
+                    }
+                }
+                markContentsChanged();
+            }
+        }
+
+        @Override
+        public void onPatternChange() {
+            setRecipe(null);
+            refund();
+        }
+
+        @Override
+        public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
+            patternDetails.pushInputsToExternalInventory(inputHolder, inputSink);
+            markContentsChanged();
+            return true;
+        }
+
+        public boolean handleItemInternal(List<Content<ItemIngredient>> items, boolean simulate) {
+            boolean changed = false;
+            for (var it = items.iterator(); it.hasNext();) {
+                var ingredient = it.next();
+                if (ingredient.isEmpty()) {
+                    it.remove();
+                    continue;
+                }
+                for (var it2 = itemInventory.iterator(); it2.hasNext();) {
+                    var entry = it2.next();
+                    if (!ingredient.inner.testAeKay(entry.getKey())) continue;
+                    var count = entry.getLongValue();
+                    long extracted = Math.min(count, ingredient.amount);
+                    if (extracted > 0) {
+                        if (!simulate) {
+                            changed = true;
+                            count -= extracted;
+                            if (count < 1) it2.remove();
+                            else entry.setValue(count);
+                        }
+                        ingredient.shrink(extracted);
+                        if (ingredient.amount < 1) {
+                            it.remove();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (changed) {
+                markContentsChanged();
+            }
+            return items.isEmpty();
+        }
+
+        public boolean handleFluidInternal(List<Content<FluidIngredient>> fluids, boolean simulate) {
+            boolean changed = false;
+            for (var it = fluids.iterator(); it.hasNext();) {
+                var ingredient = it.next();
+                if (ingredient.isEmpty()) {
+                    it.remove();
+                    continue;
+                }
+                for (var it2 = fluidInventory.iterator(); it2.hasNext();) {
+                    var entry = it2.next();
+                    if (!ingredient.inner.testAeKay(entry.getKey())) continue;
+                    var count = entry.getLongValue();
+                    long extracted = Math.min(count, ingredient.amount);
+                    if (extracted > 0) {
+                        if (!simulate) {
+                            changed = true;
+                            count -= extracted;
+                            if (count < 1) it2.remove();
+                            else entry.setValue(count);
+                        }
+                        ingredient.shrink(extracted);
+                        if (ingredient.amount < 1) {
+                            it.remove();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (changed) {
+                markContentsChanged();
+            }
+            return fluids.isEmpty();
+        }
+
+        @Override
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = super.serializeNBT();
+            if (recipe != null) {
+                tag.putByteArray("recipe", GTRecipeDefinition.DATA_CODEC.encode(recipe).writeToBytes());
+            }
+            ListTag itemsTag = new ListTag();
+            for (var entry : itemInventory) {
+                var ct = entry.getKey().toTag();
+                ct.putLong("real", entry.getLongValue());
+                itemsTag.add(ct);
+            }
+            if (!itemsTag.isEmpty()) tag.put("inventory", itemsTag);
+            ListTag fluidsTag = new ListTag();
+            for (var entry : fluidInventory) {
+                var ct = entry.getKey().toTag();
+                ct.putLong("real", entry.getLongValue());
+                fluidsTag.add(ct);
+            }
+            if (!fluidsTag.isEmpty()) tag.put("fluidInventory", fluidsTag);
+            if (!lock && !shareInventory.isEmpty()) tag.put("inv", shareInventory.storage.serializeNBT());
+            if (!shareTank.isEmpty()) {
+                ListTag tanks = new ListTag();
+                for (var tank : shareTank.getStorages()) {
+                    if (tank.isEmpty()) {
+                        tanks.add(new CompoundTag());
+                    } else tanks.add(tank.serializeNBT());
+                }
+                tag.put("tank", tanks);
+
+            }
+            if (!lock) {
+                var c = IntCircuitBehaviour.getCircuitConfiguration(circuitInventory.storage.getStackInSlot(0));
+                if (c > 0) tag.putInt("c", c);
+            }
+            tag.putBoolean("l", lock);
+            return tag;
+        }
+
+        @Override
+        public void deserializeNBT(CompoundTag tag) {
+            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
+            ListTag items = tag.getList("inventory", Tag.TAG_COMPOUND);
+            for (Tag t : items) {
+                if (!(t instanceof CompoundTag ct)) continue;
+                var stack = AEItemKey.fromTag(ct);
+                if (stack == null) continue;
+                var amount = ct.getLong("real");
+                if (amount > 0) {
+                    itemInventory.set(stack, amount);
+                }
+            }
+            ListTag fluids = tag.getList("fluidInventory", Tag.TAG_COMPOUND);
+            for (Tag t : fluids) {
+                if (!(t instanceof CompoundTag ct)) continue;
+                var stack = AEFluidKey.fromTag(ct);
+                if (stack == null) continue;
+                var amount = ct.getLong("real");
+                if (amount > 0) {
+                    fluidInventory.set(stack, amount);
+                }
+            }
+            shareInventory.storage.deserializeNBT(tag.tags.get("inv"));
+            if (tag.tags.get("tank") instanceof ListTag tanks) {
+                for (int i = 0; i < tanks.size(); i++) {
+                    var t = tanks.getCompound(i);
+                    if (t.isEmpty()) continue;
+                    var tank = shareTank.getStorages()[i];
+                    tank.deserializeNBT(t);
+                }
+            }
+            var c = tag.getInt("c");
+            if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
+            setLock(tag.getBoolean("l"));
+        }
+    }
+
+    private record InputSink(InternalSlot slot) implements IPatternDetails.PatternInputSink {
+
+        @Override
+        public void pushInput(AEKey key, long amount) {
+            if (amount < 1) return;
+            if (key instanceof AEItemKey itemKey) {
+                slot.itemInventory.insert(itemKey, amount);
+            } else if (key instanceof AEFluidKey fluidKey) {
+                slot.fluidInventory.insert(fluidKey, amount);
+            }
+        }
+    }
+}

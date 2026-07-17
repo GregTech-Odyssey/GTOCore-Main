@@ -1,0 +1,86 @@
+repositories {
+    mavenLocal()
+    flatDir {
+        dir "libs"
+    }
+    mavenCentral()
+
+    maven { url = 'https://maven.gtodyssey.com/releases' }
+    exclusiveContent { // Curseforge Maven
+        forRepository { maven { url = "https://cursemaven.com" } }
+        filter { includeGroup("curse.maven") }
+    }
+
+    exclusiveContent { // terraformers - EMI
+        forRepository { maven { url = "https://maven.terraformersmc.com/releases/" } }
+        filter { includeGroup("dev.emi") }
+    }
+
+    exclusiveContent { // Xaero's
+        forRepository { maven { url = "https://chocolateminecraft.com/maven/" } }
+        filter { includeGroupAndSubgroups("xaero") }
+    }
+
+    maven {
+        url "https://maven.shadowsoffire.dev/releases"
+        content {
+            includeGroup "dev.shadowsoffire"
+        }
+    }
+    maven {
+        name = 'GeckoLib'
+        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
+    }
+
+    maven { // JEI
+        name = "Jared's Maven"
+        url = "https://maven.blamejared.com/"
+    }
+
+    maven { // JEI mirror, AE2
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+
+    maven {
+        url "https://maven.firstdarkdev.xyz/snapshots/"
+    }
+    maven {
+        url "https://maven.quiltmc.org/repository/release/"
+    }
+    maven {
+        url "https://maven.parchmentmc.org"
+    }
+    maven {
+        url "https://maven.architectury.dev/"
+    }
+    maven {
+        url "https://maven.teamresourceful.com/repository/maven-public/"
+    }
+    maven {
+        url "https://maven.jt-dev.tech/releases/"
+    }
+    maven {
+        url "https://mvnrepository.com/artifact/com.hollingsworth.ars_nouveau"
+    }
+    maven {
+        url "https://maven.bawnorton.com/releases"
+    }
+    maven {
+        url "https://maven.enjarai.dev/mirrors"
+    }
+    maven {
+        url "https://maven.blamejared.com/vazkii/botania/Botania/"
+    }
+    maven {
+        url "https://maven.twelveiterations.com/repository/maven-public/"
+
+        content {
+            includeGroup "net.blay09.mods"
+        }
+    }
+}

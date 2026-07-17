@@ -1,0 +1,199 @@
+package com.gtocore.common.machine.multiblock.noenergy;
+
+import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.client.renderer.StructurePattern;
+import com.gtocore.client.renderer.StructureVBO;
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTORecipeDataKeys;
+
+import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
+import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
+import com.gtolib.api.machine.trait.TierCasingTrait;
+import com.gtolib.api.recipe.TierDataKey;
+import com.gtolib.utils.ClientUtil;
+import com.gtolib.utils.MultiBlockFileReader;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.pattern.BlockPattern;
+import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+
+import java.util.function.Supplier;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import static com.gtocore.common.block.BlockMap.GRAVITONFLOWMAP;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public final class GodForgeMachine extends NoEnergyMultiblockMachine implements ITierCasingMachine, ICustomRecipeLogicHolder {
+
+    @SyncToClient
+    @SaveToDisk
+    public float color;
+    private boolean isRemoved = false;
+    public long rotation;
+    public int timer;
+    @SyncToClient
+    @SaveToDisk
+    public int tier;
+
+    private TickableSubscription rotationSubscription;
+
+    private final TierCasingTrait tierCasingTrait;
+
+    public GodForgeMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+        tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.GRAVITON_FLOW_TIER);
+    }
+
+    @Override
+    public Reference2IntMap<TierDataKey> getCasingTiers() {
+        return tierCasingTrait.getCasingTiers();
+    }
+
+    @Override
+    public void onStructureFormedClient() {
+        super.onStructureFormedClient();
+        rotationSubscription = subscribeClientTick(rotationSubscription, this::rotation);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void rotation() {
+        if (this.isActive() || this.timer > this.rotation) {
+            this.rotation++;
+            this.timer = 20;
+            if (!isRemoved) {
+                if (removeBlockFromWorld()) {
+                    isRemoved = true;
+                }
+            }
+        } else {
+            this.timer = 0;
+            if (this.rotation > 0) {
+                this.rotation = (this.rotation - 1) % 180;
+            } else if (isRemoved) {
+                if (addBlockToWorld()) {
+                    isRemoved = false;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        color = 1 - 0.1F * getCasingTier(GTORecipeDataKeys.GRAVITON_FLOW_TIER);
+        tier = getCasingTier(GTORecipeDataKeys.GRAVITON_FLOW_TIER);
+    }
+
+    private BlockPos getRealPos(int x, int y, int z) {
+        String[][] structure = StructurePattern.ringOne;
+        BlockPos.MutableBlockPos pos = BlockPos.ZERO.offset(122 + structure.length / 2 - x, -structure[0].length / 2 + y, -structure[0][0].length() / 2 + z).mutable();
+        switch (getFrontFacing()) {
+            case EAST -> pos.set(-pos.getX(), pos.getY(), -pos.getZ());
+            case NORTH -> pos.set(-pos.getZ(), pos.getY(), pos.getX());
+            case SOUTH -> pos.set(pos.getZ(), pos.getY(), -pos.getX());
+        }
+        return pos.offset(this.getPos());
+    }
+
+    private boolean removeBlockFromWorld() {
+        String[][] structure = StructurePattern.ringOne;
+        for (int x = 0; x < structure.length; x++) {
+            String[] plane = structure[x];
+            for (int y = 0; y < plane.length; y++) {
+                String row = plane[y];
+                for (int z = 0; z < row.length(); z++) {
+                    char letter = row.charAt(z);
+                    if (letter == ' ') continue;
+                    BlockPos realPos = getRealPos(x, y, z);
+                    if (!getLevel().isLoaded(realPos)) return false;
+                    getLevel().setBlock(realPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_KNOWN_SHAPE);
+                    ClientUtil.getPreventUpdate(getLevel()).add(realPos.asLong());
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean addBlockToWorld() {
+        StructureVBO ringStructure = (new StructureVBO()).addMapping('B', GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get())
+                .addMapping('C', GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get())
+                .addMapping('D', GTOBlocks.BOUNDLESS_GRAVITATIONALLY_SEVERED_STRUCTURE_CASING.get())
+                .addMapping('E', GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get())
+                .addMapping('F', GTOBlocks.STELLAR_ENERGY_SIPHON_CASING.get())
+                .addMapping('1', GTOBlocks.REMOTE_GRAVITON_FLOW_MODULATOR.get())
+                .addMapping('2', GTOBlocks.MEDIAL_GRAVITON_FLOW_MODULATOR.get())
+                .addMapping('3', GTOBlocks.CENTRAL_GRAVITON_FLOW_MODULATOR.get())
+                .addMapping('H', GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get());
+
+        String[][] structure = StructurePattern.ringOne;
+        if (tier == 2) {
+            structure = StructurePattern.ringTwo;
+        } else if (tier == 3) {
+            structure = StructurePattern.ringThree;
+        }
+        ringStructure.assignStructure(structure);
+
+        for (int x = 0; x < structure.length; x++) {
+            String[] plane = structure[x];
+            for (int y = 0; y < plane.length; y++) {
+                String row = plane[y];
+                for (int z = 0; z < row.length(); z++) {
+                    char letter = row.charAt(z);
+                    if (letter == ' ') continue;
+                    BlockPos realPos = getRealPos(x, y, z);
+                    if (!getLevel().isLoaded(realPos)) return false;
+                    BlockState blockState = ringStructure.mapper.get(letter).defaultBlockState();
+                    ClientUtil.getPreventUpdate(getLevel()).remove(realPos.asLong());
+                    getLevel().setBlock(realPos, blockState, Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_KNOWN_SHAPE);
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public Supplier<BlockPattern>[] getPattern() {
+        return new Supplier[] { () -> getBlockPattern(getDefinition()) };
+    }
+
+    public static BlockPattern getBlockPattern(MultiblockMachineDefinition definition) {
+        return MultiBlockFileReader.start(definition)
+                .where('~', Predicates.controller(definition))
+                .where(' ', Predicates.any())
+                .where('A', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()).or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMaxGlobalLimited(1)))
+                .where('B', Predicates.blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get()))
+                .where('C', Predicates.blocks(GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get()))
+                .where('D', Predicates.blocks(GTOBlocks.BOUNDLESS_GRAVITATIONALLY_SEVERED_STRUCTURE_CASING.get()))
+                .where('E', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()))
+                .where('F', Predicates.blocks(GTOBlocks.STELLAR_ENERGY_SIPHON_CASING.get()))
+                .where('G', GTOPredicates.tierBlock(GRAVITONFLOWMAP, GTORecipeDataKeys.GRAVITON_FLOW_TIER))
+                .where('H', Predicates.blocks(GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get()))
+                .build();
+    }
+
+    @Override
+    public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
+        return getRecipeBuilder().inputFluids(Fluids.WATER, 100).duration(20).build();
+    }
+}

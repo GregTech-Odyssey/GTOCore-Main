@@ -1,0 +1,177 @@
+package com.gtocore.common.machine.multiblock.electric.space;
+
+import com.gtocore.client.hud.HUDConfigurator;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.data.IdleReason;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.data.Dimension;
+import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.fluids.FluidStack;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import earth.terrarium.adastra.common.registry.ModFluids;
+import earth.terrarium.adastra.common.registry.ModItems;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static com.gregtechceu.gtceu.api.GTValues.HV;
+import static com.gregtechceu.gtceu.api.GTValues.V;
+
+@DataGeneratorScanned
+public final class SatelliteControlCenterMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
+
+    @RegisterLanguage(en = "Selected planet: ", cn = "已选择的星球：")
+    private static final String PLANET = "gtocore.satellite_control_center.planet";
+
+    @RegisterLanguage(en = "The required rocket: ", cn = "需要的火箭：")
+    private static final String ROCKET = "gtocore.satellite_control_center.rocket";
+
+    @RegisterLanguage(en = "The required fuel: ", cn = "需要的燃料：")
+    private static final String FUEL = "gtocore.satellite_control_center.fuel";
+
+    @RegisterLanguage(cn = "建造空间站", en = "Build Space Station")
+    private static final String BUILD_SPACE_STATION = "gtocore.satellite_control_center.emi.space_station";
+    @RegisterLanguage(cn = "在该星球建造空间站时，", en = "When building a space station on this planet,")
+    public static final String BUILD_SPACE_STATION_DESC_1 = "gtocore.satellite_control_center.emi.space_station.desc.1";
+    @RegisterLanguage(cn = "需要将这些材料带入太空中。", en = "you need to bring these materials into space.")
+    public static final String BUILD_SPACE_STATION_DESC_2 = "gtocore.satellite_control_center.emi.space_station.desc.2";
+
+    private boolean launch;
+
+    @SaveToDisk
+    private int index;
+
+    public SatelliteControlCenterMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+    }
+
+    @Override
+    public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        HUDConfigurator c;
+        configuratorPanel.attachConfigurators(
+                c = new HUDConfigurator(GuiTextures.LIGHT_ON, GuiTextures.LIGHT_OFF));
+        if (isRemote()) c.setHudInstance("adastra_hud");
+    }
+
+    @Override
+    public void customText(@NotNull List<Component> textList) {
+        super.customText(textList);
+        var buttonText = Component.translatable(PLANET).append(Component.translatable(Wrapper.LIST[index].getKey()));
+        buttonText.append(" ");
+        buttonText.append(ComponentPanelWidget.withButton(Component.literal("[-]"), "sub"));
+        buttonText.append(" ");
+        buttonText.append(ComponentPanelWidget.withButton(Component.literal("[+]"), "add"));
+        textList.add(buttonText);
+        textList.add(Component.translatable("ars_nouveau.tier", Wrapper.LIST[index].getTier()));
+        Item item = getRocket(Wrapper.LIST[index].getTier());
+        if (item != null) {
+            textList.add(Component.translatable(ROCKET).append(item.getDescription()));
+            textList.add(Component.translatable(FUEL).append(getFuel(Wrapper.LIST[index].getTier()).getDisplayName()));
+            textList.add(ComponentPanelWidget.withButton(Component.translatable("gtocore.machine.space_elevator.set_out"), "set_out"));
+        }
+    }
+
+    @Override
+    public void handleDisplayClick(String componentData, ClickData clickData) {
+        if (clickData.isRemote) return;
+        if ("set_out".equals(componentData)) {
+            launch = true;
+            getRecipeLogic().updateTickSubscription();
+        } else if (!isActive()) {
+            index = Mth.clamp(index + (componentData.equals("add") ? 1 : -1), 0, Wrapper.LIST.length - 1);
+        }
+    }
+
+    public static Dimension[] getPlanets() {
+        return Wrapper.LIST;
+    }
+
+    public static Item getRocket(int tier) {
+        return Wrapper.ROCKET.get(tier);
+    }
+
+    public static FluidStack getFuel(int tier) {
+        return Wrapper.FUEL.get(tier);
+    }
+
+    @Override
+    public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
+        if (launch && getTier() > GTValues.MV && getOwnerUUID() != null) {
+            launch = false;
+            Item item = getRocket(Wrapper.LIST[index].getTier());
+            if (item == null) return null;
+            return getRecipeBuilder()
+                    .inputItems(GTOItems.PLANET_SCAN_SATELLITE.asStack())
+                    .inputFluids(getFuel(Wrapper.LIST[index].getTier()))
+                    .inputItems(item)
+                    .inputItems(GTOItems.PLANET_DATA_CHIP.asStack())
+                    .outputItems(item)
+                    .outputItems(GTOItems.PLANET_DATA_CHIP.get().getPlanetDataChip(getOwnerUUID(), Wrapper.LIST[index].getLocation()))
+                    .EUt(V[HV])
+                    .duration(6000)
+                    .build();
+        } else if (getTier() <= GTValues.MV) {
+            setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES);
+        }
+        return null;
+    }
+
+    private static class Wrapper {
+
+        private static final Map<Integer, Item> ROCKET = GTCEu.isProd() ? Map.of(
+                1, ModItems.TIER_1_ROCKET.get(),
+                2, ModItems.TIER_2_ROCKET.get(),
+                3, ModItems.TIER_3_ROCKET.get(),
+                4, ModItems.TIER_4_ROCKET.get(),
+                5, RegistriesUtils.getItem("ad_astra_rocketed:tier_5_rocket"),
+                6, RegistriesUtils.getItem("ad_astra_rocketed:tier_6_rocket"),
+                7, RegistriesUtils.getItem("ad_astra_rocketed:tier_7_rocket")) :
+                Map.of(
+                        1, ModItems.TIER_1_ROCKET.get(),
+                        2, ModItems.TIER_2_ROCKET.get(),
+                        3, ModItems.TIER_3_ROCKET.get(),
+                        4, ModItems.TIER_4_ROCKET.get());
+
+        private static final Map<Integer, FluidStack> FUEL = Map.of(
+                1, GTMaterials.RocketFuel.getFluid(16000),
+                2, GTOMaterials.RocketFuelRp1.getFluid(16000),
+                3, GTOMaterials.DenseHydrazineFuelMixture.getFluid(16000),
+                4, GTOMaterials.RocketFuelCn3h7o3.getFluid(16000),
+                5, GTOMaterials.RocketFuelH8n4c2o4.getFluid(16000),
+                6, new FluidStack(ModFluids.CRYO_FUEL.get(), 16000),
+                7, GTOMaterials.StellarEnergyRocketFuel.getFluid(16000));
+
+        private static final Dimension[] LIST;
+
+        static {
+            List<Dimension> list = new ArrayList<>();
+            GTODimensions.forEachPlanet(list::add);
+            LIST = list.toArray(new Dimension[0]);
+        }
+    }
+}

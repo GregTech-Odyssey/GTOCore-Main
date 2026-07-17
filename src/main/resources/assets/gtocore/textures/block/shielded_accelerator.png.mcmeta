@@ -1,0 +1,5 @@
+{
+  "ldlib": {
+    "connection": "gtocore:block/shielded_accelerator_ctm"
+  }
+}

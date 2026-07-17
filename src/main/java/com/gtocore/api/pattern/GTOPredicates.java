@@ -1,0 +1,372 @@
+package com.gtocore.api.pattern;
+
+import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.common.block.MEStorageCoreBlock;
+import com.gtocore.common.block.WirelessEnergyUnitBlock;
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.machines.ManaMachine;
+
+import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
+import com.gtolib.api.recipe.TierDataKey;
+import com.gtolib.utils.GTOUtils;
+
+import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
+import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IRotorHolderMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.pattern.BlockPattern;
+import com.gregtechceu.gtceu.api.pattern.MultiblockState;
+import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
+import com.gregtechceu.gtceu.api.pattern.error.PatternStringError;
+import com.gregtechceu.gtceu.api.pattern.predicates.PredicateBlocks;
+import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
+import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
+import com.gregtechceu.gtceu.common.data.GTMachines;
+import com.gregtechceu.gtceu.common.machine.multiblock.part.RotorHolderPartMachine;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+
+import com.gto.datasynclib.datastream.DataComponentKey;
+import com.gto.fastcollection.OpenCacheHashSet;
+import com.lowdragmc.lowdraglib.utils.BlockInfo;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
+
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.INPUT_LASER;
+import static com.gregtechceu.gtceu.api.pattern.Predicates.abilities;
+import static com.gtocore.common.block.BlockMap.*;
+
+public final class GTOPredicates {
+
+    public static TraceabilityPredicate module(MachineDefinition... definition) {
+        return Predicates.blocks(Blocks.BARRIER).or(Predicates.air().setPreviewCount(0)).or(Predicates.blocks(Arrays.stream(definition).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)).setPreviewCount(0));
+    }
+
+    public static TraceabilityPredicate glass() {
+        return tierBlock(GLASSMAP, GTORecipeDataKeys.GLASS_TIER);
+    }
+
+    public static TraceabilityPredicate machineCasing() {
+        return tierBlock(MACHINECASINGMAP, GTORecipeDataKeys.MACHINE_CASING_TIER);
+    }
+
+    public static TraceabilityPredicate integralFramework() {
+        return tierBlock(INTEGRALFRAMEWORKMAP, GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
+    }
+
+    public static TraceabilityPredicate absBlocks() {
+        return Predicates.blocks(ABS_CASING);
+    }
+
+    public static TraceabilityPredicate light() {
+        return Predicates.blocks(LIGHT);
+    }
+
+    public static TraceabilityPredicate hermeticCasing() {
+        return tierBlock(HERMETIC_CASING, GTORecipeDataKeys.HERMETIC_CASING_TIER);
+    }
+
+    public static TraceabilityPredicate autoIOAbilities(GTRecipeType... recipeType) {
+        return Predicates.autoAbilities(recipeType, false, false, true, true, true, true);
+    }
+
+    public static TraceabilityPredicate autoLaserAbilities(GTRecipeType... recipeType) {
+        TraceabilityPredicate predicate = Predicates.autoAbilities(recipeType, false, false, true, true, true, true);
+        for (GTRecipeType type : recipeType) {
+            if (type.getMaxInputs(EURecipeInfo.INSTANCE) > 0) {
+                predicate = predicate.or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(0)).or(Predicates.abilities(PartAbility.INPUT_LASER).setMaxGlobalLimited(2).setPreviewCount(1));
+                break;
+            } else if (type.getMaxOutputs(EURecipeInfo.INSTANCE) > 0) {
+                predicate = predicate.or(Predicates.abilities(PartAbility.OUTPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(0)).or(Predicates.abilities(PartAbility.OUTPUT_LASER).setMaxGlobalLimited(2).setPreviewCount(1));
+                break;
+            }
+        }
+        return predicate;
+    }
+
+    public static TraceabilityPredicate autoGCYMAbilities(GTRecipeType... recipeType) {
+        return Predicates.autoAbilities(recipeType, false, false, true, true, true, true).or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(8).setPreviewCount(1)).or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1)).or(Predicates.blocks(ManaMachine.MANA_AMPLIFIER_HATCH.get(), ManaMachine.ME_MANA_AMPLIFIER_HATCH.get()).setMaxGlobalLimited(1));
+    }
+
+    public static TraceabilityPredicate autoAccelerateAbilities(GTRecipeType... recipeType) {
+        return Predicates.autoAbilities(recipeType).or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1));
+    }
+
+    public static TraceabilityPredicate autoThreadLaserAbilities(GTRecipeType... recipeType) {
+        return autoLaserAbilities(recipeType).or(Predicates.abilities(GTOPartAbility.THREAD_HATCH).setMaxGlobalLimited(1)).or(Predicates.abilities(GTOPartAbility.OVERCLOCK_HATCH).setMaxGlobalLimited(1)).or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1));
+    }
+
+    public static TraceabilityPredicate autoSpaceMachineAbilities(GTRecipeType... recipeType) {
+        return autoGCYMAbilities(recipeType)
+                .or(abilities(INPUT_LASER).setMaxGlobalLimited(2))
+                .or(Predicates.abilities(GTOPartAbility.THREAD_HATCH).setMaxGlobalLimited(1))
+                .or(Predicates.abilities(GTOPartAbility.OVERCLOCK_HATCH).setMaxGlobalLimited(1))
+                .or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1));
+    }
+
+    public static TraceabilityPredicate tierBlock(Int2ObjectMap<Supplier<?>> map, TierDataKey tierType) {
+        Block[] blocks = new Block[map.size()];
+        int index = 0;
+        var list = new ArrayList<>(map.int2ObjectEntrySet());
+        list.sort(Comparator.comparingInt(Int2ObjectMap.Entry::getIntKey));
+        for (Int2ObjectMap.Entry<Supplier<?>> entry : list) {
+            blocks[index] = (Block) entry.getValue().get();
+            index++;
+        }
+        return new TraceabilityPredicate(state -> {
+            BlockState blockState = state.getBlockState();
+            for (Int2ObjectMap.Entry<Supplier<?>> entry : map.int2ObjectEntrySet()) {
+                if (blockState.is((Block) entry.getValue().get())) {
+                    int tier = entry.getIntKey();
+                    int type = state.getMatchContext().getOrPut(tierType, tier);
+                    if (type != tier) {
+                        state.setError(new PatternStringError("gtocore.machine.pattern.error.tier"));
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }, () -> BlockInfo.fromBlock(blocks[0]), () -> blocks).addTooltips(Component.translatable("gtocore.machine.pattern.error.tier"));
+    }
+
+    public static TraceabilityPredicate RotorBlock(int tier) {
+        return RotorBlock(tier, (Function<MultiblockState, Direction>) null);
+    }
+
+    public static TraceabilityPredicate RotorBlock(int tier, RelativeDirection relativeDirection) {
+        Function<MultiblockState, Direction> direction = s -> {
+            if (s.controller == null) {
+                return relativeDirection.equivalentGlobal;
+            }
+            var controller = s.controller.self();
+            return relativeDirection.getRelative(
+                    controller.getFrontFacing(),
+                    controller.getUpwardsFacing(),
+                    controller.isFlipped());
+        };
+        return RotorBlock(tier, direction);
+    }
+
+    public static TraceabilityPredicate RotorBlockFacingOutwards(int tier) {
+        Function<MultiblockState, Direction> faceAwayFromCenterline = state -> {
+            if (state.controller == null) {
+                return Direction.NORTH;
+            }
+            var controller = state.controller.self();
+            BlockPos controllerPos = controller.getPos();
+            BlockPos currentPos = state.getPos();
+            Direction controllerFront = controller.getFrontFacing();
+            Direction controllerUp = controller.getUpwardsFacing();
+            boolean isFlipped = controller.isFlipped();
+            Direction controllerRightDir = RelativeDirection.RIGHT.getRelative(controllerFront, controllerUp, isFlipped);
+            Vec3i offsetVector = currentPos.subtract(controllerPos);
+            int dotProduct = offsetVector.getX() * controllerRightDir.getStepX() +
+                    offsetVector.getY() * controllerRightDir.getStepY() +
+                    offsetVector.getZ() * controllerRightDir.getStepZ();
+            if (dotProduct > 0) {
+                return controllerRightDir;
+            } else if (dotProduct < 0) {
+                return controllerRightDir.getOpposite();
+            } else {
+                return controllerFront.getOpposite();
+            }
+        };
+        return RotorBlock(tier, faceAwayFromCenterline);
+    }
+
+    public static TraceabilityPredicate RotorBlock(int tier, Function<MultiblockState, Direction> direction) {
+        var predicate = new TraceabilityPredicate(new SimplePredicate(state -> {
+            MetaMachine machine = MetaMachine.getMachine(state.getTileEntity());
+            if (machine instanceof IRotorHolderMachine && machine.getDefinition().getTier() >= tier) {
+                return checkRotorClearance(state, machine.getFrontFacing());
+            }
+            state.setError(new PatternStringError("gtocore.idle_reason.block_tier_not_satisfies"));
+            return false;
+        },
+                () -> BlockInfo.fromBlockState(GTMachines.ROTOR_HOLDER[tier].defaultBlockState()),
+                () -> PartAbility.ROTOR_HOLDER.getAllBlocks().stream()
+                        .filter(b -> b instanceof MetaMachineBlock mmb && mmb.getDefinition().getTier() >= tier)
+                        .toArray(Block[]::new)))
+                .addTooltips(Component.translatable("gtceu.multiblock.pattern.clear_amount_3"));
+        if (direction != null) {
+            predicate.direction = direction;
+        }
+        return predicate;
+    }
+
+    private static boolean checkRotorClearance(MultiblockState state, Direction machineFacing) {
+        boolean permuteXZ = machineFacing.getAxis() == Direction.Axis.Z;
+        for (int x = -2; x < 3; x++) {
+            for (int y = -2; y < 3; y++) {
+                if (x == 0 && y == 0) continue;
+                var offset = state.getPos().offset(permuteXZ ? x : 0, y, permuteXZ ? 0 : x);
+                if (state.getWorld().getBlockState(offset).hasBlockEntity() &&
+                        MetaMachine.getMachine(state.getWorld(), offset) instanceof RotorHolderPartMachine) {
+                    state.setError(new PatternStringError("gtceu.machine.rotor_holder.tooltip.2"));
+                    return false;
+                }
+                if (x == -2 || x == 2 || y == -2 || y == 2) continue;
+                if (!state.getWorld().getBlockState(offset.relative(machineFacing)).isAir()) {
+                    state.setError(new PatternStringError("gtceu.multiblock.pattern.clear_amount_3"));
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static TraceabilityPredicate MEStorageCore() {
+        return dataBlock(DataKeys.ME_STORAGE_CORE, () -> 0D, (data, state) -> {
+            if (state.getBlockState().getBlock() instanceof MEStorageCoreBlock block) {
+                data += block.getCapacity();
+            }
+            return data;
+        }, ME_STORAGE_CORE);
+    }
+
+    public static TraceabilityPredicate craftingStorageCore() {
+        return dataBlock(DataKeys.CRAFTING_STORAGE_CORE, () -> new double[2], (data, state) -> {
+            if (state.getBlockState().getBlock() instanceof MEStorageCoreBlock block) {
+                data[0] += block.getCapacity();
+                data[1]++;
+            }
+            return data;
+        }, CRAFTING_STORAGE_CORE);
+    }
+
+    public static TraceabilityPredicate wirelessEnergyUnit() {
+        return dataBlock(DataKeys.WIRELESS_ENERGY_UNIT, ArrayList::new, (data, state) -> {
+            if (state.getBlockState().getBlock() instanceof WirelessEnergyUnitBlock block) {
+                data.add(new WirelessEnergyUnitBlock.BlockData(block, state.getPos()));
+            } else data.add(new WirelessEnergyUnitBlock.BlockData(null, state.getPos()));
+            return data;
+        }, WIRELESS_ENERGY_UNIT).setPreviewCount(1);
+    }
+
+    public static TraceabilityPredicate fissionComponent() {
+        return dataBlock(DataKeys.FISSION_COMPONENT, () -> new int[4], (integer, state) -> {
+            Block block = state.getBlockState().getBlock();
+            if (block == GTOBlocks.FISSION_FUEL_COMPONENT.get()) {
+                integer[0]++;
+                integer[2] += GTOUtils.adjacentBlock(side -> getBlockState(state, state.pos.relative(side)).getBlock(), GTOBlocks.FISSION_FUEL_COMPONENT.get());
+            } else if (block == GTOBlocks.FISSION_COOLER_COMPONENT.get() && GTOUtils.adjacentBlock(side -> getBlockState(state, state.pos.relative(side)).getBlock(), GTOBlocks.FISSION_FUEL_COMPONENT.get()) > 0) {
+                integer[1]++;
+                integer[3] += GTOUtils.adjacentBlock(side -> getBlockState(state, state.pos.relative(side)).getBlock(), GTOBlocks.FISSION_COOLER_COMPONENT.get());
+            }
+            return integer;
+        }, GTOBlocks.FISSION_FUEL_COMPONENT.get(), GTOBlocks.FISSION_COOLER_COMPONENT.get()).setPreviewCount(1);
+    }
+
+    public static TraceabilityPredicate countBlock(DataComponentKey<Integer> key, Block... blocks) {
+        return dataBlock(key, () -> 0, (integer, state) -> ++integer, blocks);
+    }
+
+    public static <T> TraceabilityPredicate dataBlock(DataComponentKey<T> key, Supplier<T> dataSupplier, BiFunction<T, MultiblockState, T> dataFunction, Block... blocks) {
+        TraceabilityPredicate predicate = Predicates.blocks(blocks);
+        return new TraceabilityPredicate(new SimplePredicate(state -> {
+            if (predicate.test(state)) {
+                var context = state.getMatchContext();
+                context.set(key, dataFunction.apply(context.getOrCreate(key, dataSupplier), state));
+                return true;
+            }
+            return false;
+        }, () -> BlockInfo.fromBlock(blocks[0]), () -> predicate.common.stream().map(p -> p.candidates).filter(Objects::nonNull).map(Supplier::get).flatMap(Arrays::stream).toArray(Block[]::new)));
+    }
+
+    private static BlockState getBlockState(MultiblockState state, BlockPos pos) {
+        return state.blockStateCache.computeIfAbsent(pos.asLong(), k -> state.world.getBlockState(pos));
+    }
+
+    public static TraceabilityPredicate recordPosition(DataComponentKey<Set<BlockPos>> key, TraceabilityPredicate original) {
+        return new TraceabilityPredicate(original) {
+
+            @Override
+            public boolean test(MultiblockState blockWorldState) {
+                if (super.test(blockWorldState)) {
+                    blockWorldState.getMatchContext().getOrCreate(key, ObjectOpenHashSet::new).add(blockWorldState.getPos());
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean testOnly() {
+                return original.testOnly();
+            }
+
+            @Override
+            public boolean isAir() {
+                return false;
+            }
+        };
+    }
+
+    public static TraceabilityPredicate frame(Material frameMaterial) {
+        var block = ChemicalHelper.getBlock(TagPrefix.frameGt, frameMaterial);
+        if (block == null) {
+            throw new IllegalArgumentException("No frame block found for material: " + frameMaterial.getName());
+        }
+        return new TraceabilityPredicate(
+                new PredicateBlocks(block)) {
+
+            @Override
+            public boolean test(MultiblockState blockWorldState) {
+                if (super.test(blockWorldState)) return true;
+                if (blockWorldState.world.isLoaded(blockWorldState.getPos()) && blockWorldState.getTileEntity() instanceof PipeBlockEntity<?, ?> pipeTile) return pipeTile.getFrameMaterial() == frameMaterial;
+                return false;
+            }
+        };
+    }
+
+    static {
+        BlockPattern.addWhitelistBlockEntity(ManaPoolBlockEntity.class);
+    }
+
+    public static final class DataKeys {
+
+        public static final DataComponentKey<Set<IWorkInSpaceMachine>> SPACE_MACHINE = DataComponentKey.create("spaceMachine", DataComponentKey.collectionBuilder(ReferenceOpenHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> SPACE = DataComponentKey.create("space", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> SPACE_MACHINE_PHOTOVOLTAIC_SUPP = DataComponentKey.create("spaceMachinePhotovoltaicSupp", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Double> ME_STORAGE_CORE = DataComponentKey.createNoCodec("MEStorageCore");
+        public static final DataComponentKey<double[]> CRAFTING_STORAGE_CORE = DataComponentKey.createNoCodec("CraftingStorageCore");
+        public static final DataComponentKey<ArrayList<WirelessEnergyUnitBlock.BlockData>> WIRELESS_ENERGY_UNIT = DataComponentKey.create("wirelessEnergyUnit", DataComponentKey.collectionBuilder(ArrayList::new));
+        public static final DataComponentKey<int[]> FISSION_COMPONENT = DataComponentKey.createNoCodec("fissionComponent");
+
+        public static final DataComponentKey<Integer> STEEL_FRAME = DataComponentKey.createNoCodec("SteelFrame");
+        public static final DataComponentKey<Set<BlockPos>> BLAST_FURNACE_HEAT = DataComponentKey.create("blastFurnaceHeat", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Integer> SPEED_PIPE = DataComponentKey.createNoCodec("SpeedPipe");
+        public static final DataComponentKey<Integer> LAMINATED_GLASS = DataComponentKey.createNoCodec("laminated_glass");
+
+        public static final DataComponentKey<Set<BlockPos>> CYAN = DataComponentKey.create("cyan", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> MAGENTA = DataComponentKey.create("magenta", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> YELLOW = DataComponentKey.create("yellow", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> BLACK = DataComponentKey.create("black", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> WHITE = DataComponentKey.create("white", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> A = DataComponentKey.create("a", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> B = DataComponentKey.create("b", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> C = DataComponentKey.create("c", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+    }
+}

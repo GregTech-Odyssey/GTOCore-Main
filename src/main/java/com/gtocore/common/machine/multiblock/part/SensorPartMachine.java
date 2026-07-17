@@ -1,0 +1,140 @@
+package com.gtocore.common.machine.multiblock.part;
+
+import com.gtocore.common.data.GTOMachines;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.widget.FloatInputWidget;
+import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.Direction;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import com.lowdragmc.lowdraglib.gui.widget.TextBoxWidget;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
+import com.lowdragmc.lowdraglib.utils.Position;
+import com.lowdragmc.lowdraglib.utils.Size;
+import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public final class SensorPartMachine extends MultiblockPartMachine {
+
+    @SaveToDisk
+    @SyncToClient
+    private float min;
+    @SaveToDisk
+    @SyncToClient
+    private float max;
+    @SaveToDisk
+    private boolean isInverted;
+    @Getter
+    @SaveToDisk
+    private int redstoneSignalOutput;
+
+    public SensorPartMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        WidgetGroup group = new WidgetGroup(Position.ORIGIN, new Size(176, 112));
+        boolean isNeutronSensor = getHolder().getBlockState().is(GTOMachines.NEUTRON_SENSOR.get());
+        if (isNeutronSensor) group.addWidget(new TextBoxWidget(105, 10, 45, List.of("MeV")));
+        group.addWidget(new TextBoxWidget(35, 28, 65, List.of(LocalizationUtils.format("cover.advanced_energy_detector.min") + ":")));
+        group.addWidget(new TextBoxWidget(35, 74, 65, List.of(LocalizationUtils.format("cover.advanced_energy_detector.max") + ":")));
+        group.addWidget(new FloatInputWidget(80, 26, 85, 18, this::getMin, this::setMin));
+        group.addWidget(new FloatInputWidget(80, 72, 85, 18, this::getMax, this::setMax));
+        group.addWidget(new MyToggleButtonWidget());
+        return group;
+    }
+
+    public void update(float a) {
+        int output = computeRedstoneBetweenValues(a, max, min, isInverted);
+        if (redstoneSignalOutput != output) {
+            redstoneSignalOutput = output;
+            updateSignal();
+        }
+    }
+
+    private static int computeRedstoneBetweenValues(float value, float maxValue, float minValue, boolean isInverted) {
+        float lower = Math.min(minValue, maxValue);
+        float upper = Math.max(minValue, maxValue);
+        if (value < lower) {
+            return isInverted ? 15 : 0;
+        }
+        if (value > upper) {
+            return isInverted ? 15 : 0;
+        }
+        if (Float.compare(lower, upper) == 0) {
+            return isInverted ? 0 : 15;
+        }
+        float normalized = isInverted ? (upper - value) / (upper - lower) : (value - lower) / (upper - lower);
+        return Math.clamp((int) Math.ceil(15 * normalized), 0, 15);
+    }
+
+    @Override
+    public int getOutputSignal(@Nullable Direction side) {
+        if (side == getFrontFacing().getOpposite()) {
+            return redstoneSignalOutput;
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean canConnectRedstone(Direction side) {
+        return side == getFrontFacing();
+    }
+
+    @Override
+    public boolean canShared() {
+        return false;
+    }
+
+    private class MyToggleButtonWidget extends ToggleButtonWidget {
+
+        MyToggleButtonWidget() {
+            super(8, 8, 20, 20, GuiTextures.INVERT_REDSTONE_BUTTON, SensorPartMachine.this::isInverted, SensorPartMachine.this::setInverted);
+        }
+
+        @Override
+        public void updateScreen() {
+            super.updateScreen();
+            setHoverTooltips("gtocore.machine.sensor.invert." + (isPressed ? "enabled" : "disabled"));
+        }
+    }
+
+    private float getMin() {
+        return this.min;
+    }
+
+    private float getMax() {
+        return this.max;
+    }
+
+    private boolean isInverted() {
+        return this.isInverted;
+    }
+
+    private void setMin(final float min) {
+        this.min = min;
+    }
+
+    private void setMax(final float max) {
+        this.max = max;
+    }
+
+    private void setInverted(final boolean isInverted) {
+        this.isInverted = isInverted;
+    }
+}

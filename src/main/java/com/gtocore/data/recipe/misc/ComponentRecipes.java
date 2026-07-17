@@ -1,0 +1,1036 @@
+package com.gtocore.data.recipe.misc;
+
+import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.ExResearchMachines;
+import com.gtocore.data.CraftingComponents;
+
+import com.gtolib.GTOCore;
+import com.gtolib.api.recipe.RecipeBuilder;
+
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
+import com.gregtechceu.gtceu.data.recipe.CustomTags;
+import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
+
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+
+import static com.gregtechceu.gtceu.api.GTValues.*;
+import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
+import static com.gregtechceu.gtceu.common.data.GTItems.*;
+import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gregtechceu.gtceu.data.recipe.GTCraftingComponents.*;
+import static com.gtocore.common.data.GTOMaterials.*;
+import static com.gtocore.common.data.GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER;
+import static com.gtocore.common.data.GTORecipeTypes.*;
+
+public final class ComponentRecipes {
+
+    public static void init() {
+        componentULV();
+
+        assembler(LV, ChemicalHelper.getItem(gem, Quartzite), ChemicalHelper.getItem(gem, EnderPearl), Steel, Tin, SteelMagnetic, Copper, Rubber, Bronze, Tin, Brass, ManganesePhosphide);
+        assembler(MV, ChemicalHelper.getItem(gemFlawless, Emerald), ChemicalHelper.getItem(gem, EnderEye), Aluminium, Copper, SteelMagnetic, Cupronickel, Rubber, Steel, Bronze, Electrum, MagnesiumDiboride);
+        assembler(HV, ChemicalHelper.getItem(gem, EnderEye), QUANTUM_EYE.asItem(), StainlessSteel, Silver, SteelMagnetic, Electrum, Rubber, VanadiumSteel, Steel, Chromium, MercuryBariumCalciumCuprate);
+        assembler(EV, QUANTUM_EYE.asItem(), ChemicalHelper.getItem(gem, NetherStar), Titanium, Aluminium, NeodymiumMagnetic, Kanthal, SiliconeRubber, StainlessSteel, Aluminium, Platinum, UraniumTriplatinum);
+        assembler(IV, QUANTUM_STAR.asItem(), QUANTUM_STAR.asItem(), TungstenSteel, Tungsten, NeodymiumMagnetic, Graphene, SiliconeRubber, TungstenCarbide, Titanium, Iridium, SamariumIronArsenicOxide);
+
+        assembly_line(LuV, ChemicalHelper.getItem(pipeSmallFluid, NiobiumTitanium), QUANTUM_STAR.asItem(), ChemicalHelper.getItem(rodLong, SamariumMagnetic), HSSS, Ruridit, NiobiumTitanium, SolderingAlloy, Lubricant, HSSE, SiliconeRubber, HSSS, Palladium, Ruthenium, IndiumTinBariumTitaniumCuprate);
+        assembly_line(ZPM, ChemicalHelper.getItem(pipeNormalFluid, Polybenzimidazole), QUANTUM_STAR.asItem(), ChemicalHelper.getItem(rodLong, SamariumMagnetic), Osmiridium, Europium, VanadiumGallium, SolderingAlloy, Lubricant, MarM200Steel, StyreneButadieneRubber, NaquadahAlloy, Trinium, Duranium, UraniumRhodiumDinaquadide);
+        assembly_line(UV, ChemicalHelper.getItem(pipeLargeFluid, Naquadah), GRAVI_STAR.asItem(), ChemicalHelper.getItem(rodLong, SamariumMagnetic), Tritanium, Americium, YttriumBariumCuprate, SolderingAlloy, Lubricant, Naquadria, StyreneButadieneRubber, Tritanium, Naquadah, Tritanium, EnrichedNaquadahTriniumEuropiumDuranide);
+        assembly_line(UHV, ChemicalHelper.getItem(pipeNormalFluid, Neutronium), GRAVI_STAR.asItem(), ChemicalHelper.getItem(rodLong, EnergeticNetherite), Orichalcum, AbyssalAlloy, Europium, MutatedLivingSolder, Lubricant, HighDurabilityCompoundSteel, StyreneButadieneRubber, Neutronium, AbyssalAlloy, FluxedElectrum, RutheniumTriniumAmericiumNeutronate);
+        assembly_line(UEV, ChemicalHelper.getItem(pipeNormalFluid, Enderium), GRAVI_STAR.asItem(), ChemicalHelper.getItem(rodLong, EnergeticNetherite), HastelloyX78, TitanSteel, Mithril, MutatedLivingSolder, Lubricant, Bohrium, StyreneButadieneRubber, Quantanium, TitanSteel, Dalisenite, Enderite);
+        assembly_line(UIV, ChemicalHelper.getItem(pipeNormalFluid, FullerenePolymerMatrixPulp), GTOItems.UNSTABLE_STAR.asItem(), ChemicalHelper.getItem(rodLong, AttunedTengam), Infuscolium, Adamantine, Neutronium, SuperMutatedLivingSolder, Lubricant, Taranium, StyreneButadieneRubber, Adamantium, Adamantine, ArceusAlloy2B, Echoite);
+        assembly_line(UXV, ChemicalHelper.getItem(pipeNormalFluid, HeavyQuarkDegenerateMatter), GTOItems.UNSTABLE_STAR.asItem(), ChemicalHelper.getItem(rodLong, AttunedTengam), HastelloyK243, NaquadriaticTaranium, Taranium, SuperMutatedLivingSolder, Lubricant, AstralTitanium, StyreneButadieneRubber, Vibranium, NaquadriaticTaranium, TitanPrecisionSteel, Legendarium);
+        assembly_line(OpV, ChemicalHelper.getItem(pipeLargeFluid, HeavyQuarkDegenerateMatter), GTOItems.UNSTABLE_STAR.asItem(), ChemicalHelper.getItem(rodLong, AttunedTengam), Vibramantium, Starmetal, CrystalMatrix, SuperMutatedLivingSolder, Lubricant, CelestialTungsten, StyreneButadieneRubber, Draconium, Starmetal, Hikarium, AwakenedDraconium);
+
+        integrated_control_core(UV, GTResearchMachines.HPCA_ADVANCED_COMPUTATION_COMPONENT.asItem(), TOOL_DATA_MODULE.asItem(), ChemicalHelper.getItem(pipeLargeFluid, Naquadah), Tritanium, Americium, YttriumBariumCuprate, SolderingAlloy, Lubricant, StyreneButadieneRubber, Naquadria);
+        integrated_control_core(UHV, GTResearchMachines.HPCA_ADVANCED_COMPUTATION_COMPONENT.asItem(), GTOItems.NEURAL_MATRIX.asItem(), ChemicalHelper.getItem(pipeNormalFluid, Neutronium), Orichalcum, AbyssalAlloy, Europium, RutheniumTriniumAmericiumNeutronate, MutatedLivingSolder, Lubricant, StyreneButadieneRubber, HighDurabilityCompoundSteel);
+        integrated_control_core(UEV, ExResearchMachines.NICH_COMPUTING_COMPONENTS.asItem(), GTOItems.NEURAL_MATRIX.asItem(), ChemicalHelper.getItem(pipeNormalFluid, Enderium), HastelloyX78, TitanSteel, Mithril, Dalisenite, MutatedLivingSolder, Lubricant, StyreneButadieneRubber, Bohrium);
+        integrated_control_core(UIV, ExResearchMachines.NICH_COMPUTING_COMPONENTS.asItem(), GTOItems.ATOMIC_ARCHIVES.asItem(), ChemicalHelper.getItem(pipeNormalFluid, FullerenePolymerMatrixPulp), Infuscolium, Adamantine, Neutronium, Echoite, SuperMutatedLivingSolder, Lubricant, StyreneButadieneRubber, Taranium);
+        integrated_control_core(UXV, ExResearchMachines.GWCA_COMPUTING_COMPONENTS.asItem(), GTOItems.ATOMIC_ARCHIVES.asItem(), ChemicalHelper.getItem(pipeNormalFluid, HeavyQuarkDegenerateMatter), HastelloyK243, NaquadriaticTaranium, Taranium, Legendarium, SuperMutatedLivingSolder, Lubricant, StyreneButadieneRubber, AstralTitanium);
+        integrated_control_core(OpV, ExResearchMachines.GWCA_COMPUTING_COMPONENTS.asItem(), GTOItems.OBSIDIAN_MATRIX.asItem(), ChemicalHelper.getItem(pipeLargeFluid, HeavyQuarkDegenerateMatter), Vibramantium, Starmetal, CrystalMatrix, AwakenedDraconium, SuperMutatedLivingSolder, Lubricant, StyreneButadieneRubber, CelestialTungsten);
+
+        componentMAX();
+    }
+
+    private static void componentULV() {
+        // 工作台
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_electric_motor"), GTOItems.ULV_ELECTRIC_MOTOR.asItem(),
+                "CWR", "WMW", "RWC", 'C', new MaterialEntry(GTOTagPrefix.CURVED_PLATE, Copper), 'W', new MaterialEntry(wireGtDouble, Tin),
+                'R', new MaterialEntry(rod, Copper), 'M', new MaterialEntry(rod, IronMagnetic));
+
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_electric_piston"), GTOItems.ULV_ELECTRIC_PISTON.asItem(),
+                "PPP", "CRR", "CMG", 'P', new MaterialEntry(plate, Copper), 'C', new MaterialEntry(cableGtSingle, Lead),
+                'R', new MaterialEntry(rod, Copper), 'M', GTOItems.ULV_ELECTRIC_MOTOR.asItem(), 'G', new MaterialEntry(gearSmall, Copper));
+
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_electric_conveyor"), GTOItems.ULV_CONVEYOR_MODULE.asItem(),
+                "RRR", "MCM", "RRR", 'R', new MaterialEntry(plate, Rubber), 'M', GTOItems.ULV_ELECTRIC_MOTOR.asItem(),
+                'C', new MaterialEntry(cableGtSingle, Lead));
+
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_electric_pump"), GTOItems.ULV_ELECTRIC_PUMP.asItem(),
+                "SFR", "sPw", "RMC", 'S', new MaterialEntry(screw, Iron), 'R', new MaterialEntry(ring, Rubber),
+                'F', new MaterialEntry(rotor, Iron), 'P', new MaterialEntry(pipeNormalFluid, Copper), 'M', GTOItems.ULV_ELECTRIC_MOTOR.asItem(), 'C', new MaterialEntry(cableGtSingle, Lead));
+
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_robot_arm"), GTOItems.ULV_ROBOT_ARM.asItem(),
+                "CCC", "MRM", "PVR", 'R', new MaterialEntry(rod, Copper), 'C', new MaterialEntry(cableGtSingle, Lead),
+                'M', GTOItems.ULV_ELECTRIC_MOTOR.asItem(), 'P', GTOItems.ULV_ELECTRIC_PISTON.asItem(), 'V', VACUUM_TUBE.asItem());
+
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_fluid_regulator"), GTOItems.ULV_FLUID_REGULATOR.asItem(),
+                "SFR", "sPw", "RMC", 'S', new MaterialEntry(screw, Iron), 'R', VACUUM_TUBE.asItem(),
+                'F', new MaterialEntry(rotor, Iron), 'P', GTOItems.ULV_ELECTRIC_PUMP.asItem(), 'M', GTOItems.ULV_ELECTRIC_MOTOR.asItem(), 'C', new MaterialEntry(cableGtSingle, Lead));
+
+        // 组装机
+        ASSEMBLER_RECIPES.recipeBuilder("motor_ulv")
+                .inputItems(GTOTagPrefix.CURVED_PLATE, Copper, 2)
+                .inputItems(rod, Copper, 2)
+                .inputItems(rod, IronMagnetic)
+                .inputItems(wireGtDouble, Tin, 4)
+                .outputItems(GTOItems.ULV_ELECTRIC_MOTOR)
+                .duration(50).EUt(VA[ULV]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("conveyor_ulv")
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR, 2)
+                .inputItems(cableGtSingle, Lead, 2)
+                .inputFluids(Rubber, L * 6)
+                .outputItems(GTOItems.ULV_CONVEYOR_MODULE)
+                .duration(50).EUt(VA[ULV]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("pump_ulv")
+                .inputItems(pipeNormalFluid, Copper)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR)
+                .inputItems(screw, Iron)
+                .inputItems(rotor, Iron)
+                .inputItems(ring, Rubber, 2)
+                .inputItems(cableGtSingle, Lead)
+                .outputItems(GTOItems.ULV_ELECTRIC_PUMP)
+                .duration(50).EUt(VA[ULV]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("fluid_regulator_ulv")
+                .inputItems(GTOItems.ULV_ELECTRIC_PUMP)
+                .inputItems(CIRCUIT.get(ULV), 2)
+                .inputItems(rotor, Iron)
+                .circuitMeta(1)
+                .outputItems(GTOItems.ULV_FLUID_REGULATOR)
+                .duration(50).EUt(VA[ULV]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("piston_ulv")
+                .inputItems(rod, Copper, 2)
+                .inputItems(cableGtSingle, Lead, 2)
+                .inputItems(plate, Copper, 3)
+                .inputItems(gearSmall, Copper)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR)
+                .outputItems(GTOItems.ULV_ELECTRIC_PISTON)
+                .duration(50).EUt(VA[ULV]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("arm_ulv")
+                .inputItems(cableGtSingle, Lead, 3)
+                .inputItems(rod, Copper, 2)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR, 2)
+                .inputItems(GTOItems.ULV_ELECTRIC_PISTON)
+                .inputItems(CIRCUIT.get(ULV))
+                .outputItems(GTOItems.ULV_ROBOT_ARM)
+                .duration(100).EUt(VA[ULV]).save();
+
+        // 部件装配线
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("motor_ulv")
+                .circuitMeta(1)
+                .inputItems(rod, IronMagnetic, 12)
+                .inputItems(wireGtDouble, Tin, 48)
+                .inputFluids(Copper, L * 36)
+                .outputItems(GTOItems.ULV_ELECTRIC_MOTOR, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, LV)
+                .duration(400).EUt(VA[ULV]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("conveyor_ulv")
+                .circuitMeta(2)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR, 24)
+                .inputItems(cableGtSingle, Lead, 12)
+                .inputFluids(Rubber, L * 72)
+                .outputItems(GTOItems.ULV_CONVEYOR_MODULE, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, LV)
+                .duration(400).EUt(VA[ULV]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("pump_ulv")
+                .circuitMeta(3)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR, 12)
+                .inputItems(cableGtSingle, Lead, 12)
+                .inputFluids(Copper, L * 36)
+                .inputFluids(Iron, L * 50)
+                .inputFluids(Rubber, L * 6)
+                .outputItems(GTOItems.ULV_ELECTRIC_PUMP, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, LV)
+                .duration(400).EUt(VA[ULV]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("piston_ulv")
+                .circuitMeta(4)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR, 12)
+                .inputItems(cableGtSingle, Lead, 24)
+                .inputFluids(Copper, L * 60)
+                .outputItems(GTOItems.ULV_ELECTRIC_PISTON, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, LV)
+                .duration(400).EUt(VA[ULV]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("arm_ulv")
+                .circuitMeta(5)
+                .inputItems(GTOItems.ULV_ELECTRIC_MOTOR, 12)
+                .inputItems(GTOItems.ULV_ELECTRIC_PISTON, 12)
+                .inputItems(cableGtSingle, Lead, 36)
+                .inputItems(CIRCUIT.get(ULV), 12)
+                .inputFluids(Copper, L * 24)
+                .outputItems(GTOItems.ULV_ROBOT_ARM, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, LV)
+                .duration(400).EUt(VA[ULV]).save();
+    }
+
+    private static void componentMAX() {
+        // 普通配方使用超时空装配线
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_integrated_control_core")
+                .circuitMeta(9)
+                .inputItems(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT, 48)
+                .inputItems(GTOItems.OBSIDIAN_MATRIX, 96)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.ChaosInfinityAlloy, 288)
+                .inputItems(CustomTags.MAX_CIRCUITS, 96)
+                .inputItems(GTOItems.MAX_EMITTER, 96)
+                .inputItems(GTOItems.NUCLEAR_STAR, 192)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.Cosmic, 3072)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 96)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1769472)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 3538944)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Shirabon, 110592)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.INTEGRATED_CONTROL_CORE_MAX, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_field_generator")
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.ChaosInfinityAlloy, 288)
+                .inputItems(CustomTags.MAX_CIRCUITS, 96)
+                .inputItems(GTOItems.MAX_EMITTER, 96)
+                .inputItems(GTOItems.NUCLEAR_STAR, 192)
+                .inputItems(TagPrefix.frameGt, GTOMaterials.Infinity, 48)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.Cosmic, 3072)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 96)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1769472)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 3538944)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Shirabon, 110592)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.MAX_FIELD_GENERATOR, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_sensor")
+                .circuitMeta(7)
+                .inputItems(CustomTags.MAX_CIRCUITS, 96)
+                .inputItems(TagPrefix.plate, GTOMaterials.TranscendentMetal, 192)
+                .inputItems(GTOItems.MAX_ELECTRIC_MOTOR, 48)
+                .inputItems(GTOItems.NUCLEAR_STAR, 192)
+                .inputItems(TagPrefix.frameGt, GTOMaterials.Infinity, 48)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 96)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1769472)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 3538944)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Shirabon, 110592)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.MAX_SENSOR, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_electric_piston")
+                .circuitMeta(2)
+                .inputItems(GTOItems.MAX_ELECTRIC_MOTOR, 48)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.TranscendentMetal, 192)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 48)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 884736)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 1769472)
+                .inputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 3072000)
+                .inputFluids(GTOMaterials.TranscendentMetal, 148992)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.MAX_ELECTRIC_PISTON, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_electric_pump")
+                .circuitMeta(3)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.TranscendentMetal, 96)
+                .inputItems(GTOItems.MAX_ELECTRIC_MOTOR, 48)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 48)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 884736)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 1769472)
+                .inputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 3072000)
+                .inputFluids(GTMaterials.StyreneButadieneRubber, 110592)
+                .inputFluids(GTOMaterials.TranscendentMetal, 33792)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Infinity, 41472)
+                .inputFluids(GTOMaterials.Neutron, 442368)
+                .outputItems(GTOItems.MAX_ELECTRIC_PUMP, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_conveyor_module")
+                .circuitMeta(5)
+                .inputItems(GTOItems.MAX_ELECTRIC_MOTOR, 96)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.TranscendentMetal, 96)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 48)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 884736)
+                .inputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 3072000)
+                .inputFluids(GTMaterials.StyreneButadieneRubber, 1050624)
+                .inputFluids(GTOMaterials.TranscendentMetal, 44544)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.MAX_CONVEYOR_MODULE, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_electric_motor")
+                .circuitMeta(1)
+                .inputItems(TagPrefix.rodLong, GTOMaterials.Magmatter, 48)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 48)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 768000)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 1536000)
+                .inputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 3072000)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .inputFluids(GTOMaterials.TranscendentMetal, 95 * L * 8)
+                .outputItems(GTOItems.MAX_ELECTRIC_MOTOR, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_robot_arm")
+                .circuitMeta(4)
+                .inputItems(CustomTags.UXV_CIRCUITS, 192)
+                .inputItems(CustomTags.OpV_CIRCUITS, 96)
+                .inputItems(GTOItems.MAX_ELECTRIC_MOTOR, 192)
+                .inputItems(GTOItems.MAX_ELECTRIC_PISTON, 48)
+                .inputItems(CustomTags.MAX_CIRCUITS, 48)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 96)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 884736)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 1769472)
+                .inputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 3072000)
+                .inputFluids(GTOMaterials.TranscendentMetal, 152064)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.MAX_ROBOT_ARM, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder("max_emitter")
+                .circuitMeta(6)
+                .inputItems(CustomTags.MAX_CIRCUITS, 96)
+                .inputItems(GTOItems.MAX_ELECTRIC_MOTOR, 48)
+                .inputItems(GTOItems.NUCLEAR_STAR, 192)
+                .inputItems(TagPrefix.frameGt, GTOMaterials.Infinity, 48)
+                .inputItems(TagPrefix.foil, GTOMaterials.Cosmic, 3072)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 96)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1769472)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 3538944)
+                .inputFluids(GTOMaterials.TranscendentMetal, 55296)
+                .inputFluids(GTOMaterials.BlackDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.WhiteDwarfMatter, 110592)
+                .inputFluids(GTOMaterials.Shirabon, 110592)
+                .inputFluids(GTOMaterials.Infinity, 27648)
+                .outputItems(GTOItems.MAX_EMITTER, 64)
+                .EUt(2013265920)
+                .duration(12000)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, 14)
+                .save();
+    }
+
+    private static void assembler(int tier, Item emitter_gem, Item field_gem, Material... material) {
+        Item motor = (Item) MOTOR.get(tier);
+        Item conveyor = (Item) CONVEYOR.get(tier);
+        Item pump = (Item) PUMP.get(tier);
+        Item piston = (Item) PISTON.get(tier);
+        Item robot_arm = (Item) ROBOT_ARM.get(tier);
+        Item emitter = (Item) EMITTER.get(tier);
+        Item sensor = (Item) SENSOR.get(tier);
+        Item field_generator = (Item) FIELD_GENERATOR.get(tier);
+        TagKey<Item> circuit = (TagKey<Item>) CIRCUIT.get(tier);
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("motor_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.MOTOR_ENCLOSURE, material[0])
+                .inputItems(rod, material[0], 2)
+                .inputItems(rod, material[2])
+                .inputItems(round, material[0], 4)
+                .inputItems(wireGtDouble, material[3], 4)
+                .inputItems(cableGtSingle, material[1], 2)
+                .outputItems(motor)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("motor_%s", VN[tier].toLowerCase()))
+                .circuitMeta(1)
+                .inputItems(rod, material[2], 12)
+                .inputItems(wireGtDouble, material[3], 48)
+                .inputItems(cableGtSingle, material[1], 24)
+                .inputFluids(material[0], L * 40)
+                .outputItems(motor, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("conveyor_%s", VN[tier].toLowerCase()))
+                .inputItems(motor, 2)
+                .inputItems(rod, material[0], 2)
+                .inputItems(ring, material[0], 4)
+                .inputItems(cableGtSingle, material[1], 2)
+                .inputFluids(material[4], L * 6)
+                .outputItems(conveyor)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("conveyor_%s", VN[tier].toLowerCase()))
+                .circuitMeta(2)
+                .inputItems(motor, 24)
+                .inputItems(cableGtSingle, material[1], 24)
+                .inputFluids(material[0], L * 24)
+                .inputFluids(material[4], L * 72)
+                .outputItems(conveyor, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("pump_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.PUMP_BARREL, material[0])
+                .inputItems(pipeNormalFluid, material[5])
+                .inputItems(motor)
+                .inputItems(screw, material[6], 2)
+                .inputItems(rotor, material[6])
+                .inputItems(ring, material[4], 2)
+                .inputItems(cableGtSingle, material[1], 2)
+                .outputItems(pump)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("pump_%s", VN[tier].toLowerCase()))
+                .circuitMeta(3)
+                .inputItems(motor, 12)
+                .inputItems(cableGtSingle, material[1], 24)
+                .inputFluids(material[0], L * 30)
+                .inputFluids(material[5], L * 36)
+                .inputFluids(material[6], L * 51)
+                .inputFluids(material[4], L * 6)
+                .outputItems(pump, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("fluid_regulator_%s", VN[tier].toLowerCase()))
+                .inputItems(pump)
+                .inputItems(circuit, 2)
+                .inputItems(GTOTagPrefix.CURVED_PLATE, material[0], 2)
+                .circuitMeta(1)
+                .outputItems(CraftingComponents.FLUID_REGULATOR.get(tier))
+                .duration(100).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("piston_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.PISTON_HOUSING, material[0])
+                .inputItems(rod, material[0], 2)
+                .inputItems(cableGtSingle, material[1], 2)
+                .inputItems(plate, material[0])
+                .inputItems(gearSmall, material[0])
+                .inputItems(motor)
+                .outputItems(piston)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("piston_%s", VN[tier].toLowerCase()))
+                .circuitMeta(4)
+                .inputItems(motor, 12)
+                .inputItems(cableGtSingle, material[1], 24)
+                .inputFluids(material[0], L * (36 + 6 * 12 + 12))
+                .outputItems(piston, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("arm_%s", VN[tier].toLowerCase()))
+                .inputItems(cableGtSingle, material[1], 3)
+                .inputItems(rod, material[0], 2)
+                .inputItems(motor, 2)
+                .inputItems(piston)
+                .inputItems(circuit)
+                .outputItems(robot_arm)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("arm_%s", VN[tier].toLowerCase()))
+                .circuitMeta(5)
+                .inputItems(motor, 12)
+                .inputItems(piston, 12)
+                .inputItems(cableGtSingle, material[1], 36)
+                .inputItems(circuit, 12)
+                .inputFluids(material[0], L * 24)
+                .outputItems(robot_arm, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("emitter_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.EMITTER_BASES, material[0])
+                .inputItems(rod, material[7], 2)
+                .inputItems(cableGtSingle, material[1], 2)
+                .inputItems(circuit, 2)
+                .inputItems(emitter_gem)
+                .outputItems(emitter)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("emitter_%s", VN[tier].toLowerCase()))
+                .circuitMeta(6)
+                .inputItems(emitter_gem, 12)
+                .inputItems(cableGtSingle, material[1], 24)
+                .inputItems(circuit, 24)
+                .inputFluids(material[0], L * 48)
+                .inputFluids(material[7], L * 12)
+                .outputItems(emitter, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("sensor_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.SENSOR_CASING, material[0])
+                .inputItems(rod, material[7])
+                .inputItems(cableGtSingle, material[1])
+                .inputItems(circuit, 2)
+                .inputItems(emitter_gem)
+                .outputItems(sensor)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("sensor_%s", VN[tier].toLowerCase()))
+                .circuitMeta(7)
+                .inputItems(emitter_gem, 12)
+                .inputItems(cableGtSingle, material[1], 12)
+                .inputItems(circuit, 24)
+                .inputFluids(material[0], L * 54)
+                .inputFluids(material[7], L * 6)
+                .outputItems(sensor, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("field_generator_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.FIELD_GENERATOR_CASING, material[0])
+                .inputItems(emitter)
+                .inputItems(field_gem)
+                .inputItems(circuit, 2)
+                .inputItems(wireGtQuadruple, material[8], 4)
+                .outputItems(field_generator)
+                .duration(100).EUt(VA[tier - 1]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("field_generator_%s", VN[tier].toLowerCase()))
+                .circuitMeta(8)
+                .inputItems(emitter, 12)
+                .inputItems(field_gem, 12)
+                .inputItems(wireGtQuadruple, material[8], 48)
+                .inputItems(circuit, 24)
+                .inputFluids(material[0], L * 96)
+                .outputItems(field_generator, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(400).EUt(VA[tier]).save();
+    }
+
+    private static void assembly_line(int tier, Item pipe, Item emitter_gem, Item magnetic, Material... material) {
+        int fluidMultiplier = getFluidMultiplier(tier);
+        Item motor = (Item) MOTOR.get(tier);
+        Item conveyor = (Item) CONVEYOR.get(tier);
+        Item pump = (Item) PUMP.get(tier);
+        Item piston = (Item) PISTON.get(tier);
+        Item robot_arm = (Item) ROBOT_ARM.get(tier);
+        Item emitter = (Item) EMITTER.get(tier);
+        Item sensor = (Item) SENSOR.get(tier);
+        Item field_generator = (Item) FIELD_GENERATOR.get(tier);
+        TagKey<Item> circuit = (TagKey<Item>) CIRCUIT.get(tier);
+
+        RecipeBuilder builder_motor = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("motor_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.MOTOR_ENCLOSURE, material[0])
+                .inputItems(magnetic)
+                .inputItems(rodLong, material[0], 4)
+                .inputItems(ring, material[0], 4)
+                .inputItems(round, material[0], 8)
+                .inputFluids(material[3], L * fluidMultiplier)
+                .inputFluids(material[4], 250 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(motor)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier >= UXV) {
+            builder_motor.inputItems(wireFine, material[1], 64)
+                    .inputItems(wireFine, material[1], 64)
+                    .inputItems(wireFine, material[1], 64)
+                    .inputItems(wireFine, material[1], 64)
+                    .researchStation(b -> b
+                            .researchStack((Item) MOTOR.get(tier - 1))
+                            .CWUt(1 << (tier - 3))
+                            .EUt(VA[tier - 1]));
+        } else if (tier >= UV) {
+            builder_motor.inputItems(wireFine, material[1], 64)
+                    .inputItems(wireFine, material[1], 64)
+                    .researchStation(b -> b
+                            .researchStack((Item) MOTOR.get(tier - 1))
+                            .CWUt(1 << (tier - 3))
+                            .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_motor.inputItems(wireFine, material[1], 64)
+                    .scanner(b -> b
+                            .researchStack(ELECTRIC_MOTOR_LuV.asItem())
+                            .duration(1200)
+                            .EUt(VA[IV]));
+        } else {
+            builder_motor.inputItems(wireFine, material[1], 32)
+                    .scanner(b -> b
+                            .researchStack(ELECTRIC_MOTOR_IV.asItem())
+                            .duration(900)
+                            .EUt(VA[EV]));
+        }
+        builder_motor.inputItems(cableGtSingle, material[2], 2).save();
+
+        // UV 有特判，线缆两倍但是其他流体遵循正常倍率
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("motor_%s", VN[tier].toLowerCase()))
+                .circuitMeta(1)
+                .inputItems(magnetic, 12)
+                .inputItems(cableGtSingle, material[2], 24)
+                .inputFluids(material[0], L * 95)
+                .inputFluids(material[1], tier == UV ? L * 192 : L * 24 * fluidMultiplier)
+                .inputFluids(material[3], L * 12 * fluidMultiplier)
+                .inputFluids(material[4], 3000 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .outputItems(motor, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        RecipeBuilder builder_conveyor = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("conveyor_%s", VN[tier].toLowerCase()))
+                .inputItems(motor, 2)
+                .inputItems(plate, material[0], 2)
+                .inputItems(ring, material[0], 4)
+                .inputItems(round, material[0], 16)
+                .inputItems(screw, material[0], 4)
+                .inputItems(cableGtSingle, material[2], 2)
+                .inputFluids(material[3], L * fluidMultiplier)
+                .inputFluids(material[4], 250 * fluidMultiplier)
+                .inputFluids(material[6], L * 8 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(conveyor)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_conveyor.researchStation(b -> b
+                    .researchStack((Item) CONVEYOR.get(tier - 1))
+                    .CWUt(1 << (tier - 3))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_conveyor.scanner(b -> b
+                    .researchStack(CONVEYOR_MODULE_LuV.asItem())
+                    .duration(1200)
+                    .EUt(VA[IV]));
+        } else {
+            builder_conveyor.scanner(b -> b
+                    .researchStack(CONVEYOR_MODULE_IV.asItem())
+                    .duration(900)
+                    .EUt(VA[EV]));
+        }
+        builder_conveyor.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("conveyor_%s", VN[tier].toLowerCase()))
+                .circuitMeta(2)
+                .inputItems(motor, 24)
+                .inputItems(cableGtSingle, material[2], 24)
+                .inputFluids(material[0], L * 63)
+                .inputFluids(material[3], L * 12 * fluidMultiplier)
+                .inputFluids(material[4], 3000 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .inputFluids(material[6], L * 96 * fluidMultiplier)
+                .outputItems(conveyor, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        RecipeBuilder builder_pump = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("pump_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.PUMP_BARREL, material[0])
+                .inputItems(motor)
+                .inputItems(pipe)
+                .inputItems(screw, material[0], 8)
+                .inputItems(rotor, material[0])
+                .inputItems(cableGtSingle, material[2], 2)
+                .inputFluids(material[3], L * fluidMultiplier)
+                .inputFluids(material[4], 250 * fluidMultiplier)
+                .inputFluids(material[6], L * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(pump)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_pump.researchStation(b -> b
+                    .researchStack((Item) PUMP.get(tier - 1))
+                    .CWUt(1 << (tier - 3))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_pump.scanner(b -> b
+                    .researchStack(ELECTRIC_PUMP_LuV.asItem())
+                    .duration(1200)
+                    .EUt(VA[IV]));
+        } else {
+            builder_pump.scanner(b -> b
+                    .researchStack(ELECTRIC_PUMP_IV.asItem())
+                    .duration(900)
+                    .EUt(VA[EV]));
+        }
+        builder_pump.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("pump_%s", VN[tier].toLowerCase()))
+                .circuitMeta(3)
+                .inputItems(motor, 12)
+                .inputItems(pipe, 12)
+                .inputItems(cableGtSingle, material[2], 24)
+                .inputFluids(material[0], L * 90)
+                .inputFluids(material[3], L * 12 * fluidMultiplier)
+                .inputFluids(material[4], 3000 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .inputFluids(material[6], L * 12 * fluidMultiplier)
+                .outputItems(pump, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        ASSEMBLER_RECIPES.recipeBuilder(String.format("fluid_regulator_%s", VN[tier].toLowerCase()))
+                .inputItems(pump)
+                .inputItems(circuit, 2)
+                .inputItems(GTOTagPrefix.CURVED_PLATE, material[0], 2)
+                .circuitMeta(1)
+                .outputItems(CraftingComponents.FLUID_REGULATOR.get(tier))
+                .EUt(VA[tier])
+                .duration(100)
+                .save();
+
+        RecipeBuilder builder_piston = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("piston_%s", VN[tier].toLowerCase()))
+                .inputItems(GTOTagPrefix.PISTON_HOUSING, material[0])
+                .inputItems(motor)
+                .inputItems(plate, material[0], 2)
+                .inputItems(ring, material[0], 4)
+                .inputItems(round, material[0], 16)
+                .inputItems(rod, material[0], 4)
+                .inputItems(gear, material[0])
+                .inputItems(gearSmall, material[0], 2)
+                .inputItems(cableGtSingle, material[2], 2)
+                .inputFluids(material[3], L * fluidMultiplier)
+                .inputFluids(material[4], 250 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(piston)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_piston.researchStation(b -> b
+                    .researchStack((Item) PISTON.get(tier - 1))
+                    .CWUt(1 << (tier - 3))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_piston.scanner(b -> b
+                    .researchStack(ELECTRIC_PISTON_LuV.asItem())
+                    .duration(1200)
+                    .EUt(VA[IV]));
+        } else {
+            builder_piston.scanner(b -> b
+                    .researchStack(ELECTRIC_PISTON_IV.asItem())
+                    .duration(900)
+                    .EUt(VA[EV]));
+        }
+        builder_piston.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("piston_%s", VN[tier].toLowerCase()))
+                .circuitMeta(4)
+                .inputItems(motor, 12)
+                .inputItems(cableGtSingle, material[2], 24)
+                .inputFluids(material[0], L * 192)
+                .inputFluids(material[3], L * 12 * fluidMultiplier)
+                .inputFluids(material[4], 3000 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .outputItems(piston, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        RecipeBuilder builder_arm = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("arm_%s", VN[tier].toLowerCase()))
+                .inputItems(rodLong, material[0], 4)
+                .inputItems(gear, material[0])
+                .inputItems(gearSmall, material[0], 3)
+                .inputItems(motor, 2)
+                .inputItems(piston)
+                .inputItems(circuit)
+                .inputItems((TagKey<Item>) CIRCUIT.get(tier - 1), 2)
+                .inputItems((TagKey<Item>) CIRCUIT.get(tier - 2), 4)
+                .inputItems(cableGtSingle, material[2], 4)
+                .inputFluids(material[3], L * 2 * fluidMultiplier)
+                .inputFluids(material[4], 250 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(robot_arm)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_arm.researchStation(b -> b
+                    .researchStack((Item) ROBOT_ARM.get(tier - 1))
+                    .CWUt(1 << (tier - 3))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_arm.scanner(b -> b
+                    .researchStack(ROBOT_ARM_LuV.asItem())
+                    .duration(1200)
+                    .EUt(VA[IV]));
+        } else {
+            builder_arm.scanner(b -> b
+                    .researchStack(ROBOT_ARM_IV.asItem())
+                    .duration(900)
+                    .EUt(VA[EV]));
+        }
+        builder_arm.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("arm_%s", VN[tier].toLowerCase()))
+                .circuitMeta(5)
+                .inputItems(motor, 24)
+                .inputItems(piston, 12)
+                .inputItems(circuit, 12)
+                .inputItems((TagKey<Item>) CIRCUIT.get(tier - 1), 24)
+                .inputItems((TagKey<Item>) CIRCUIT.get(tier - 3), 36)
+                .inputItems(cableGtSingle, material[2], 48)
+                .inputFluids(material[0], L * 132)
+                .inputFluids(material[3], L * 24 * fluidMultiplier)
+                .inputFluids(material[4], 3000 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .outputItems(robot_arm, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        RecipeBuilder builder_emitter = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("emitter_%s", VN[tier].toLowerCase()))
+                .inputItems(frameGt, material[7])
+                .inputItems(GTOTagPrefix.EMITTER_BASES, material[0])
+                .inputItems(motor)
+                .inputItems(rodLong, material[0], 2)
+                .inputItems(emitter_gem, 2)
+                .inputItems(circuit, 2)
+                .inputItems(foil, material[8], 64)
+                .inputItems(foil, material[9], 64)
+                .inputItems(cableGtSingle, material[2], 4)
+                .inputFluids(material[3], L * 2 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(emitter)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_emitter.researchStation(b -> b
+                    .researchStack((Item) EMITTER.get(tier - 1))
+                    .CWUt((int) ((1 << (tier - 3)) * 1.5))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_emitter.researchStation(b -> b
+                    .researchStack((Item) EMITTER.get(ZPM - 1))
+                    .CWUt(1 << (tier - 4))
+                    .EUt(VA[tier - 1]));
+        } else {
+            builder_emitter.scanner(b -> b
+                    .researchStack(EMITTER_IV.asItem())
+                    .duration(600)
+                    .EUt(VA[IV]));
+        }
+        builder_emitter.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("emitter_%s", VN[tier].toLowerCase()))
+                .circuitMeta(6)
+                .inputItems(motor, 12)
+                .inputItems(emitter_gem, 24)
+                .inputItems(circuit, 24)
+                .inputItems(cableGtSingle, material[2], 48)
+                .inputFluids(material[0], L * 72)
+                .inputFluids(material[3], L * 24 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .inputFluids(material[7], L * 24)
+                .inputFluids(material[8], L * 192)
+                .inputFluids(material[9], L * 192)
+                .outputItems(emitter, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        RecipeBuilder builder_sensor = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("sensor_%s", VN[tier].toLowerCase()))
+                .inputItems(frameGt, material[7])
+                .inputItems(GTOTagPrefix.SENSOR_CASING, material[0])
+                .inputItems(motor)
+                .inputItems(plate, material[0], 2)
+                .inputItems(emitter_gem, 2)
+                .inputItems(circuit, 2)
+                .inputItems(foil, material[8], 64)
+                .inputItems(foil, material[9], 64)
+                .inputItems(cableGtSingle, material[2], 4)
+                .inputFluids(material[3], L * 2 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(sensor)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_sensor.researchStation(b -> b
+                    .researchStack((Item) SENSOR.get(tier - 1))
+                    .CWUt((int) ((1 << (tier - 3)) * 1.5))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_sensor.researchStation(b -> b
+                    .researchStack((Item) SENSOR.get(ZPM - 1))
+                    .CWUt(1 << (tier - 4))
+                    .EUt(VA[tier - 1]));
+        } else {
+            builder_sensor.scanner(b -> b
+                    .researchStack(SENSOR_IV.asItem())
+                    .duration(600)
+                    .EUt(VA[IV]));
+        }
+        builder_sensor.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("sensor_%s", VN[tier].toLowerCase()))
+                .circuitMeta(7)
+                .inputItems(motor, 12)
+                .inputItems(emitter_gem, 24)
+                .inputItems(circuit, 24)
+                .inputItems(cableGtSingle, material[2], 48)
+                .inputFluids(material[0], L * 78)
+                .inputFluids(material[3], L * 24 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .inputFluids(material[7], L * 24)
+                .inputFluids(material[8], L * 192)
+                .inputFluids(material[9], L * 192)
+                .outputItems(sensor, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+
+        RecipeBuilder builder_field_generator = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("field_generator_%s", VN[tier].toLowerCase()))
+                .inputItems(frameGt, material[7])
+                .inputItems(GTOTagPrefix.FIELD_GENERATOR_CASING, material[0])
+                .inputItems(emitter_gem)
+                .inputItems(emitter, 2)
+                .inputItems(circuit, 2)
+                .inputItems(wireFine, material[10], 64)
+                .inputItems(wireFine, material[10], 64)
+                .inputItems(cableGtSingle, material[2], 4)
+                .inputFluids(material[3], L * 2 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(field_generator)
+                .duration(600).EUt(VA[tier]);
+
+        if (tier > ZPM) {
+            builder_field_generator.researchStation(b -> b
+                    .researchStack((Item) FIELD_GENERATOR.get(tier - 1))
+                    .CWUt((int) ((1 << (tier - 3)) * 1.5))
+                    .EUt(VA[tier - 1]));
+        } else if (tier == ZPM) {
+            builder_field_generator.researchStation(b -> b
+                    .researchStack((Item) FIELD_GENERATOR.get(ZPM - 1))
+                    .CWUt(1 << (tier - 4))
+                    .EUt(VA[tier - 1]));
+        } else {
+            builder_field_generator.scanner(b -> b
+                    .researchStack(FIELD_GENERATOR_IV.asItem())
+                    .duration(600)
+                    .EUt(VA[IV]));
+        }
+        builder_field_generator.save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("field_generator_%s", VN[tier].toLowerCase()))
+                .circuitMeta(8)
+                .inputItems(emitter, 24)
+                .inputItems(emitter_gem, 12)
+                .inputItems(circuit, 24)
+                .inputItems(cableGtSingle, material[2], 48)
+                .inputFluids(material[0], L * 96)
+                .inputFluids(material[3], L * 24 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .inputFluids(material[7], L * 24)
+                .inputFluids(material[10], L * 384)
+                .outputItems(field_generator, 16)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .duration(2400).EUt(VA[tier]).save();
+    }
+
+    private static int getFluidMultiplier(int tier) {
+        return switch (tier) {
+            case 12, 13, 14, 15, 16 -> 16;
+            case 9, 10, 11 -> 8;
+            case 8, 7 -> 4;
+            case 6 -> 2;
+            default -> 1;
+        };
+    }
+
+    /**
+     *
+     * @param tier                 Tier
+     * @param computationComponent Computation Component
+     * @param computationUnit      Computation Component & Computation Unit
+     * @param pipe                 Fluid Pipe
+     * @param material
+     * 
+     *                             <pre>
+     *                             <code>
+     *                                 Material mainMaterial = material[0];
+     *                                 Material wireMaterial = material[1];
+     *                                 Material superConductorMaterial = material[2];
+     *                                 Material solderMaterial = material[3];
+     *                                 Material insulatorMaterial = material[4];
+     *                                 Material rubberMaterial = material[5];
+     *                                 Material enclosureMaterial = material[6];
+     *                             </code>
+     *                             </pre>
+     */
+    private static void integrated_control_core(int tier, Item computationComponent, Item computationUnit, Item pipe, Material... material) {
+        int fluidMultiplier = getFluidMultiplier(tier);
+        Item field_generator = (Item) FIELD_GENERATOR.get(tier);
+        Item sensor = (Item) SENSOR.get(tier);
+        Item pump = (Item) PUMP.get(tier);
+        TagKey<Item> circuit = (TagKey<Item>) CIRCUIT.get(tier);
+
+        ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("integrated_control_core_%s", VN[tier].toLowerCase()))
+                .inputItems(ring, material[0], 16)
+                .inputItems(circuit, 2)
+                .inputItems(field_generator)
+                .inputItems(sensor)
+                .inputItems(pump)
+                .inputItems(computationComponent, 2)
+                .inputItems(computationUnit)
+                .inputItems(foil, material[6], 64)
+                .inputItems(wireFine, material[1], 64)
+                .inputItems(wireGtSingle, material[2], 8)
+                .inputItems(pipe, 4)
+                .inputFluids(material[3], L * 2 * fluidMultiplier)
+                .inputFluids(material[4], L * 4 * fluidMultiplier)
+                .inputFluids(material[5], L * fluidMultiplier)
+                .outputItems(CraftingComponents.INTEGRATED_CONTROL_CORE.get(tier))
+                .researchStation(b -> b
+                        .researchStack(tier == UV ? GTOItems.WETWARE_SOC.asItem() : (Item) CraftingComponents.INTEGRATED_CONTROL_CORE.get(tier - 1))
+                        .CWUt((int) ((1 << (tier - 3)) * 1.5))
+                        .EUt(VA[tier - 1]))
+                .duration(1200).EUt(VA[tier]).save();
+
+        COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("integrated_control_core_%s", VN[tier].toLowerCase()))
+                .circuitMeta(9)
+                .inputItems(field_generator, 12)
+                .inputItems(sensor, 12)
+                .inputItems(pump, 12)
+                .inputItems(computationUnit, 12)
+                .inputItems(computationComponent, 24)
+                .inputItems(circuit, 48)
+                .inputItems(cableGtSingle, material[2], 96)
+                .inputFluids(material[0], L * 96)
+                .inputFluids(material[3], L * 24 * fluidMultiplier)
+                .inputFluids(material[5], L * 12 * fluidMultiplier)
+                .inputFluids(material[6], L * 24)
+                .addData(COMPONENT_ASSEMBLY_CASING_TIER, tier)
+                .outputItems(CraftingComponents.INTEGRATED_CONTROL_CORE.get(tier), 16)
+                .duration(2400).EUt(VA[tier]).save();
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gtocore:block/phase_space_stabilization_casing"
+    }
+  }
+}
