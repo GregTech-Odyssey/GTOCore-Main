@@ -60,12 +60,13 @@ GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和
 
 ### 开发环境
 
-- Java 21
+- **Java 25**（运行 Gradle / IDE 的 JDK）
+- 模组字节码目标为 **Java 21**（依赖与 reobf 兼容，构建脚本已自动设置；请勿用 25 作为 `--release`）
 - Git
 - 可访问 Gradle 和项目依赖仓库的网络环境
 - 足够的可用内存；当前 Gradle 配置的最大堆内存为 8 GiB
 
-请确认 `java -version` 指向 Java 21，并在 IDE 和终端中使用同一个 JDK。
+请确认 `java -version` 指向 Java 25，并在 IDE 和终端中使用同一个 JDK。
 
 ### 克隆与构建
 
@@ -91,7 +92,7 @@ gradlew.bat build
 
 使用 IntelliJ IDEA 或其他支持 Gradle 的 IDE 打开仓库根目录：
 
-1. 将项目 JDK 和 Gradle JVM 设置为 Java 21。
+1. 将项目 JDK 和 Gradle JVM 设置为 Java 25。
 2. 以 Gradle 项目导入并等待依赖同步完成。
 3. 不要把 `build/`、`run/` 或 IDE 本地配置加入提交。
 

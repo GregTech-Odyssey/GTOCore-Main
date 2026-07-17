@@ -207,7 +207,7 @@ class PlatformCreators {
         int rx = outX;
         int rz = outZ;
 
-        // Java 21增强switch
+        // Java 25 增强 switch
         rx = switch (rotation) {
             case 90 -> {
                 int t = rx;

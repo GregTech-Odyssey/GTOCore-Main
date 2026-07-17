@@ -61,12 +61,13 @@ Do not directly modify or replace closed-source components or prebuilt binary de
 
 ### Development Requirements
 
-- Java 21
+- **Java 25** (JDK used to run Gradle / the IDE)
+- Mod bytecode target is **Java 21** (required by dependencies / reobf; set automatically — do not use 25 as `--release`)
 - Git
 - Network access to Gradle and the project's dependency repositories
 - Sufficient available memory; the current Gradle configuration allows a maximum heap size of 8 GiB
 
-Confirm that `java -version` reports Java 21, and configure both your IDE and terminal to use the same JDK.
+Confirm that `java -version` reports Java 25, and configure both your IDE and terminal to use the same JDK.
 
 ### Clone and Build
 
@@ -92,7 +93,7 @@ The first build downloads Gradle and project dependencies, so it will take consi
 
 Open the repository root in IntelliJ IDEA or another IDE with Gradle support:
 
-1. Set both the project JDK and the Gradle JVM to Java 21.
+1. Set both the project JDK and the Gradle JVM to Java 25.
 2. Import the repository as a Gradle project and wait for dependency synchronization to finish.
 3. Do not add `build/`, `run/`, or local IDE configuration files to a commit.
 

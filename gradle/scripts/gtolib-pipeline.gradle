@@ -366,7 +366,7 @@ if (hasGtosealSources) {
     }
     tasks.named('compileSealRuntimeJava', JavaCompile).configure {
         options.encoding = 'UTF-8'
-        options.release = 17
+        options.release = 21
         // 仅编译；classpath 与 main 一致（含 Forge / modlauncher）
         classpath = sourceSets.main.compileClasspath
         // 避免与 main compile 抢 libs 产物顺序
@@ -1258,7 +1258,6 @@ afterEvaluate {
         // 注意：不要在 jar 任务顶层 exclude 'com/gtolib/**' —— Gradle 的 exclude 作用于
         // 所有 from()，会把 Seal 加密包里的 hollow class 一并丢掉，玩家包只剩 .bin。
         // 加密模式下 installGtolibIntoModOutput 已清掉 main 里的明文 com.gtolib。
-        exclude 'gtolib.refmap.json'
         // 玩家包统一用 writeDualModsToml 的双 modId，禁止 resources 再塞一份
         exclude 'META-INF/mods.toml'
         // 加密 gtolib（hollow class + bins + Manifest Salt + mixins）
@@ -1280,6 +1279,11 @@ afterEvaluate {
             include 'com/gtolib/GTOLibMod.class'
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
+        // Mixin refmap：生产环境必须带（否则 SharedConstants 等注入找 named 名失败）。
+        // 禁止 exclude gtolib.refmap.json（历史上误排除导致 No refMap loaded）。
+        // 映射文件在 src/main/resources/{gtocore,gtolib}.refmap.json，经 sourceSets 进入 jar；
+        // ensureMixinRefmapMappings 负责在 AP 未写出时用 resources 回填 build/mixin（供 reobf）。
+        dependsOn 'ensureMixinRefmapMappings'
         // 禁止把 Seal Runtime 打进 gtocore：
         // Forge 会把含 ITransformationService SPI 的 jar 整包排除出 mods 扫描，
         // 导致 gtocore/gtceu/jarJar 全部不加载。Seal 必须作为独立 jar 放在 mods/。
@@ -1298,9 +1302,19 @@ afterEvaluate {
                                 "请保证 libs/gto-seal-runtime-1.0.jar 存在（或 ./gradlew syncSealRuntimeToLibs）"
                 )
             }
+            def mixinDir = file("${buildDir}/mixin")
+            def gtolibRm = new File(mixinDir, 'gtolib.refmap.json')
+            def gtocoreRm = new File(mixinDir, 'gtocore.refmap.json')
+            if (!gtolibRm.exists() || gtolibRm.length() < 64) {
+                throw new GradleException(
+                        "发行 jar 缺少有效 gtolib.refmap.json（生产 Mixin 必需）。\n" +
+                                "期望: ${gtolibRm} （当前 ${gtolibRm.exists() ? gtolibRm.length() : 0} bytes）"
+                )
+            }
             logger.lifecycle(
                     "GTO jar: 不内嵌 Seal Runtime（独立产物 ${sealRuntimeLibsJar.name}，" +
-                            "${sealRuntimeLibsJar.length()} bytes）—— 避免 ITransformationService 导致 gtocore 被 Forge 排除"
+                            "${sealRuntimeLibsJar.length()} bytes）—— 避免 ITransformationService 导致 gtocore 被 Forge 排除; " +
+                            "refmap gtolib=${gtolibRm.length()}B gtocore=${gtocoreRm.exists() ? gtocoreRm.length() : 0}B"
             )
         }
     }
@@ -1394,9 +1408,28 @@ side="BOTH"
                     logger.warn("Mixin: 写入空 gtocore.refmap.json.mappings.tsrg")
                 }
             }
+            // Mixin AP 常把两套配置的映射都写进 gtolib.refmap.json，gtocore.refmap 为空或不存在。
+            // gtocore.mixins.json 仍声明 refmap=gtocore.refmap.json —— 必须与完整映射同步。
             def gtocoreJson = new File(mixinDir, 'gtocore.refmap.json')
-            if (!gtocoreJson.exists()) {
+            def gtolibJson = new File(mixinDir, 'gtolib.refmap.json')
+            // CI 无 GTOLib 源码时 AP 可能几乎不写映射：回退到仓库内预置 resources
+            def fallbackGtolib = file('src/main/resources/gtolib.refmap.json')
+            def fallbackGtocore = file('src/main/resources/gtocore.refmap.json')
+            if ((!gtolibJson.exists() || gtolibJson.length() < 64) && fallbackGtolib.exists() && fallbackGtolib.length() > 64) {
+                Files.copy(fallbackGtolib.toPath(), gtolibJson.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: gtolib.refmap.json ← src/main/resources fallback (${fallbackGtolib.length()} bytes)")
+            }
+            if (gtolibJson.exists() && gtolibJson.length() > 64) {
+                if (!gtocoreJson.exists() || gtocoreJson.length() < 64) {
+                    Files.copy(gtolibJson.toPath(), gtocoreJson.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    logger.lifecycle("Mixin: gtocore.refmap.json ← gtolib.refmap.json (${gtolibJson.length()} bytes)")
+                }
+            } else if (fallbackGtocore.exists() && fallbackGtocore.length() > 64) {
+                Files.copy(fallbackGtocore.toPath(), gtocoreJson.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: gtocore.refmap.json ← src/main/resources fallback")
+            } else if (!gtocoreJson.exists()) {
                 gtocoreJson.text = '{"mappings":{},"data":{}}\n'
+                logger.warn("Mixin: gtolib.refmap.json 缺失，gtocore.refmap 写入空壳（生产包将失败校验）")
             }
         }
     }

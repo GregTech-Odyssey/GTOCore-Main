@@ -76,11 +76,11 @@ jobs:
           submodules: false
           fetch-depth: 1
 
-      - name: Setup Java 21
+      - name: Setup Java 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -127,7 +127,7 @@ jobs:
           # 禁止把 Seal 打进 gtocore：Forge 会排除含 ITransformationService 的整 jar
           ./gradlew spotlessApply build --no-daemon --stacktrace
 
-      - name: Verify gtocore does not embed Seal SPI
+      - name: Verify gtocore packaging
         run: |
           set -euo pipefail
           GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
@@ -137,6 +137,14 @@ jobs:
             exit 1
           fi
           echo "OK: $GTO has no ITransformationService SPI"
+          # 生产 Mixin 必需：refmap 缺失会导致 SharedConstants 等注入失败 (No refMap loaded)
+          jar tf "$GTO" | grep -q 'gtolib.refmap.json' || { echo "::error::gtocore missing gtolib.refmap.json"; exit 1; }
+          jar tf "$GTO" | grep -q 'gtocore.refmap.json' || { echo "::error::gtocore missing gtocore.refmap.json"; exit 1; }
+          # 空壳 refmap（仅 {}）也不可接受
+          TMP=$(mktemp -d)
+          unzip -p "$GTO" gtolib.refmap.json > "$TMP/gtolib.refmap.json"
+          python3 -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); n=len(d.get('mappings') or {});
+assert n>=10, f'mappings too few: {n}'; print(f'OK: gtolib.refmap.json mappings={n}')" "$TMP/gtolib.refmap.json"
           test -s build/libs/gto-seal-runtime-1.0.jar
           jar tf build/libs/gto-seal-runtime-1.0.jar | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'
           echo "OK: gto-seal-runtime-1.0.jar has SPI"
