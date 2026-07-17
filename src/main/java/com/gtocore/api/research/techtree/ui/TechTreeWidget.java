@@ -258,6 +258,23 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         return states;
     }
 
+    @Override
+    public void initWidget() {
+        super.initWidget();
+        if (isClientSideWidget) {
+            nodeStates = collectNodeStates(getGuiPlayer());
+        }
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void updateScreen() {
+        super.updateScreen();
+        if (isClientSideWidget) {
+            nodeStates = collectNodeStates(getGuiPlayer());
+        }
+    }
+
     public void syncNodeStates() {
         if (isRemote()) {
             return;
@@ -691,7 +708,10 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         @OnlyIn(Dist.CLIENT)
         public void endDrag(double mouseX, double mouseY) {
             if (totalDraggedDistance <= CLICK_DRAG_THRESHOLD && isMouseOverNode(mouseX, mouseY)) {
-                writeClientAction(CLICK_ACTION, buf -> {});
+                if (!isClientSideWidget) writeClientAction(CLICK_ACTION, buf -> {});
+                else if (onNodeClicked != null) {
+                    onNodeClicked.accept(node);
+                }
                 playButtonClickSound();
             }
         }

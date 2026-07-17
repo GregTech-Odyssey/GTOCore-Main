@@ -3,9 +3,14 @@ package com.gtocore.api.research.techtree;
 import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.client.Message;
 
+import com.gtolib.GTOCore;
 import com.gtolib.api.misc.FastSavedData;
+import com.gtolib.api.network.NetworkPack;
 import com.gtolib.utils.iostream.DataIOStream;
 
+import com.gregtechceu.gtceu.GTCEu;
+
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -26,8 +31,26 @@ public class TechTreeSavedData extends FastSavedData {
     public static final String DATA_NAME = "tech_tree_data";
     public static final int DATA_VERSION = 1;
     public static TechTreeSavedData INSTANCE = new TechTreeSavedData();
+    public static TechTreeSavedData CLIENT_INSTANCE = new TechTreeSavedData();
+
+    private static boolean syncPending;
+
+    private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("techTreeSavedDataSyncS2C", (player, buffer) -> {
+        try (var stream = DataIOStream.of(new ByteArrayInputStream(buffer.readByteArray()))) {
+            TechTreeSavedData data = load(stream, DATA_VERSION);
+            CLIENT_INSTANCE = data == null ? new TechTreeSavedData() : data;
+        } catch (IOException | RuntimeException exception) {
+            GTOCore.LOGGER.error("Failed to synchronize tech tree data", exception);
+        }
+    });
 
     private final Map<UUID, Map<String, TechTree>> teamTechTrees = new O2OOpenCacheHashMap<>();
+
+    public static void init() {}
+
+    public static TechTreeSavedData get() {
+        return GTCEu.isClientThread() ? CLIENT_INSTANCE : INSTANCE;
+    }
 
     public static TechTreeSavedData get(DimensionDataStorage dataStorage) {
         return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData::new, DATA_VERSION);
@@ -47,13 +70,13 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static TechTree getOrCreateTree(UUID uuid, TechTreeManager manager) {
         UUID teamUUID = TeamUtil.getTeamUUID(uuid);
-        Map<String, TechTree> teamTrees = INSTANCE.teamTechTrees.computeIfAbsent(teamUUID, ignored -> new O2OOpenCacheHashMap<>());
+        Map<String, TechTree> teamTrees = get().teamTechTrees.computeIfAbsent(teamUUID, ignored -> new O2OOpenCacheHashMap<>());
         return teamTrees.computeIfAbsent(manager.getId(), ignored -> new TechTree(manager));
     }
 
     public static TechTree findTree(UUID uuid, TechTreeManager manager) {
         UUID teamUUID = TeamUtil.getTeamUUID(uuid);
-        Map<String, TechTree> teamTrees = INSTANCE.teamTechTrees.get(teamUUID);
+        Map<String, TechTree> teamTrees = get().teamTechTrees.get(teamUUID);
         if (teamTrees == null) return null;
         return teamTrees.get(manager.getId());
     }
@@ -106,6 +129,46 @@ public class TechTreeSavedData extends FastSavedData {
         }
         INSTANCE.setDirty();
         return true;
+    }
+
+    public static void sync(ServerPlayer player) {
+        sendSnapshot(player);
+    }
+
+    public static void syncIfNeeded(MinecraftServer server) {
+        if (!syncPending || server.getPlayerList().getPlayerCount() == 0) return;
+        syncPending = false;
+        sendSnapshot(server);
+    }
+
+    public static void clearClientInstance() {
+        CLIENT_INSTANCE = new TechTreeSavedData();
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        super.setDirty(dirty);
+        if (dirty && this == INSTANCE) {
+            syncPending = true;
+        }
+    }
+
+    private static void sendSnapshot(Object recipient) {
+        try {
+            byte[] payload = encodeSnapshot();
+            CLIENT_INSTANCE_SYNC.send(buffer -> buffer.writeByteArray(payload), recipient);
+        } catch (IOException exception) {
+            GTOCore.LOGGER.error("Failed to serialize tech tree data for synchronization", exception);
+        }
+    }
+
+    private static byte[] encodeSnapshot() throws IOException {
+        var output = new ByteArrayOutputStream();
+        try (var stream = DataIOStream.of(output)) {
+            INSTANCE.save(stream);
+            stream.flush();
+        }
+        return output.toByteArray();
     }
 
     public static TechTreeSavedData load(DataIOStream stream, int dataVersion) {

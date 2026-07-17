@@ -114,6 +114,10 @@ public class TechTreeSideTab extends WidgetGroup {
 
     public void toggleNode(TechNode node) {
         selectedNode = selectedNode == node ? null : node;
+        if (isClientSideWidget) {
+            applyState(buildState());
+            return;
+        }
         syncState();
     }
 
@@ -171,6 +175,15 @@ public class TechTreeSideTab extends WidgetGroup {
         }
         lastSentState = state;
         writeUpdateInfo(UPDATE_SYNC_STATE, buffer -> writeState(buffer, state));
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void updateScreen() {
+        super.updateScreen();
+        if (isRemote()) {
+            applyState(buildState());
+        }
     }
 
     private SyncState buildState() {

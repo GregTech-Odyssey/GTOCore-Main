@@ -319,6 +319,7 @@ public final class ForgeCommonEvent {
             syncPlayerTime(player);
             WirelessNetworkSavedData.write(player);
             TeamResearchSavedDtat.sync(player);
+            TechTreeSavedData.sync(player);
         }
     }
 
@@ -326,6 +327,7 @@ public final class ForgeCommonEvent {
     public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             TeamResearchSavedDtat.syncIfNeeded(event.getServer());
+            TechTreeSavedData.syncIfNeeded(event.getServer());
         }
     }
 
