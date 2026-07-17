@@ -72,6 +72,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -317,6 +318,14 @@ public final class ForgeCommonEvent {
             showVoidTimeHint(player);
             syncPlayerTime(player);
             WirelessNetworkSavedData.write(player);
+            TeamResearchSavedDtat.sync(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            TeamResearchSavedDtat.syncIfNeeded(event.getServer());
         }
     }
 
