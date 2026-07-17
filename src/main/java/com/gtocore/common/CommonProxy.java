@@ -3,8 +3,6 @@ package com.gtocore.common;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.api.machine.part.GTOPartAbility;
-import com.gtocore.api.research.TeamResearchSavedDtat;
-import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.KeyMessage;
 import com.gtocore.client.Message;
 import com.gtocore.common.block.BlockMap;
@@ -17,7 +15,6 @@ import com.gtocore.config.SparkRange;
 import com.gtocore.data.Data;
 import com.gtocore.data.Datagen;
 import com.gtocore.data.lootTables.tool.GTONumberProviders;
-import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.eio_travel.api.TravelRegistry;
 import com.gtocore.eio_travel.client.travel.TravelAnchorRenderers;
 import com.gtocore.eio_travel.implementations.AnchorTravelTarget;
@@ -162,9 +159,6 @@ public class CommonProxy {
             KeyMessage.init();
         }
         Message.init();
-        TeamResearchSavedDtat.init();
-        TechTreeSavedData.init();
-        AnalyzeData.INSTANCE.init();
         GTOItemTooltips.INSTANCE.initLanguage();
         DataSyncCodec.register(TesseractDirectedTarget.class, TesseractDirectedTarget.STREAM_CODEC, TesseractDirectedTarget.CODEC);
     }

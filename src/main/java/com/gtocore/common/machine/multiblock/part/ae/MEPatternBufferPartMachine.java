@@ -65,7 +65,7 @@ import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.annotations.SyncToServer;
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.gto.fastcollection.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;

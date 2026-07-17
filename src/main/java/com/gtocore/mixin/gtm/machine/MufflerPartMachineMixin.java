@@ -2,7 +2,6 @@ package com.gtocore.mixin.gtm.machine;
 
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.mana.multiblock.PulseMachineMaintenancePedestal;
-import com.gtocore.common.pipe.muffler.IMufflerConduction;
 
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.feature.IAirScrubberInteractor;
@@ -25,12 +24,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
-import com.gregtechceu.gtceu.common.data.GTParticleTypes;
 import com.gregtechceu.gtceu.common.machine.electric.AirScrubberMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,12 +39,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.Position;
-import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -61,7 +56,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 @Mixin(MufflerPartMachine.class)
-public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine implements IGTOMufflerMachine, IDroneInteractionMachine, IAirScrubberInteractor, IMufflerConduction {
+public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine implements IGTOMufflerMachine, IDroneInteractionMachine, IAirScrubberInteractor {
 
     @Unique
     @SaveToDisk
@@ -87,12 +82,6 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
     private int gto$chanceOfNotProduceAsh = 100;
     @Unique
     private boolean gtolib$lastFrontFaceFree;
-    @Unique
-    @SyncToClient
-    private BlockPos gtolib$pollutionPos;
-    @Unique
-    @SyncToClient
-    private Direction gtolib$pollutionFacing;
     @Unique
     private long gtocore$refresh = 0;
 
@@ -221,22 +210,12 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
     public boolean isFrontFaceFree() {
         var time = getOffsetTimer();
         if (time > gtocore$refresh) {
-            gtolib$lastFrontFaceFree = !PlanetApi.API.isSpace(getLevel());
+            gtolib$lastFrontFaceFree = true;
             BlockPos pos = self().getPos();
             for (int i = 0; i < 3; i++) {
                 pos = pos.relative(this.self().getFrontFacing());
                 if (!self().getLevel().getBlockState(pos).isAir()) {
                     gtolib$lastFrontFaceFree = false;
-                }
-            }
-            gtolib$pollutionPos = getPos();
-            gtolib$pollutionFacing = getFrontFacing();
-            if (!gtolib$lastFrontFaceFree) {
-                var output = IMufflerConduction.getMufflerPipeNetOutput(this);
-                if (output != null && output.shouldWorkAsMufflerSource()) {
-                    gtolib$lastFrontFaceFree = true;
-                    gtolib$pollutionPos = output.self().getPos();
-                    gtolib$pollutionFacing = output.self().getFrontFacing();
                 }
             }
             gtocore$refresh = time + 100;
@@ -324,31 +303,5 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
         }
         return machine instanceof PulseMachineMaintenancePedestal p &&
                 p.inRange(getPos());
-    }
-
-    @Override
-    public boolean isMufflerSource() {
-        return true;
-    }
-
-    @Override
-    public void emitPollutionParticles() {
-        if (PlanetApi.API.isSpace(getLevel())) return;
-
-        var pos = gtolib$pollutionPos != null ? gtolib$pollutionPos : self().getPos();
-        var facing = gtolib$pollutionFacing != null ? gtolib$pollutionFacing : self().getFrontFacing();
-
-        var center = pos.getCenter();
-        var offset = .75f;
-        var xPos = (float) (center.x + facing.getStepX() * offset + (GTValues.RNG.nextFloat() - .5f) * .35f);
-        var yPos = (float) (center.y + facing.getStepY() * offset + (GTValues.RNG.nextFloat() - .5f) * .35f);
-        var zPos = (float) (center.z + facing.getStepZ() * offset + (GTValues.RNG.nextFloat() - .5f) * .35f);
-
-        var ySpd = facing.getStepY() + (GTValues.RNG.nextFloat() - .15f) * .5f;
-        var xSpd = facing.getStepX() + (GTValues.RNG.nextFloat() - .5f) * .5f;
-        var zSpd = facing.getStepZ() + (GTValues.RNG.nextFloat() - .5f) * .5f;
-
-        self().getLevel().addParticle(GTParticleTypes.MUFFLER_PARTICLE.get(),
-                xPos, yPos, zPos, xSpd, ySpd, zSpd);
     }
 }

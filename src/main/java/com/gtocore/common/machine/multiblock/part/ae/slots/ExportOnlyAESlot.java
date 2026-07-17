@@ -10,7 +10,7 @@ import appeng.api.stacks.GenericStack;
 
 import com.gto.datasynclib.AbstractDataSerializable;
 import com.gto.datasynclib.LogicalSide;
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.util.DataCodecs;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -128,13 +128,13 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
     }
 
     @Override
-    public void writeBuf(LogicalSide side, @NotNull FriendlyByteBuf data) {
+    public void writeBuffer(LogicalSide side, @NotNull FriendlyByteBuf data) {
         GenericStack.writeBuffer(this.config, data);
         GenericStack.writeBuffer(this.stock, data);
     }
 
     @Override
-    public void readBuf(LogicalSide side, @NotNull FriendlyByteBuf data) {
+    public void readBuffer(LogicalSide side, @NotNull FriendlyByteBuf data) {
         this.config = GenericStack.readBuffer(data);
         this.stock = GenericStack.readBuffer(data);
     }

@@ -386,7 +386,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
                     if (!extraMaterials.isEmpty()) {
                         textList.add(Component.translatable("gtocore.machine.industrial_platform_deployment_tools.material.extra_demand"));
                         extraMaterials.forEach(e -> textList.add(
-                                Component.literal("[").append(e.obj.getDisplayName()).append("×").append(String.valueOf(e.number)).append("]")));
+                                Component.literal("[").append(e.value.getDisplayName()).append("×").append(String.valueOf(e.priority)).append("]")));
                     }
                     if (!insufficient) textList.add(Component.translatable("gtocore.machine.industrial_platform_deployment_tools.material.insufficient"));
                     else textList.add(Component.translatable("gtocore.machine.industrial_platform_deployment_tools.material.adequate"));
@@ -829,8 +829,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             if (stack.isEmpty()) continue;
             for (int k = 0; k < ITEM_VALUE_HOLDERS.size(); k++) {
                 for (IntObjectHolder<Item> holder : ITEM_VALUE_HOLDERS.get(k)) {
-                    if (holder.obj.equals(stack.getItem())) {
-                        materialInventory[k] += holder.number * stack.getCount();
+                    if (holder.value.equals(stack.getItem())) {
+                        materialInventory[k] += holder.priority * stack.getCount();
                         inventory.setStackInSlot(i, ItemStack.EMPTY);
                         break;
                     }
@@ -846,10 +846,10 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             boolean filled = false;
             for (int k = 0; k < ITEM_VALUE_HOLDERS.size() && !filled; k++) {
                 for (IntObjectHolder<Item> holder : ITEM_VALUE_HOLDERS.get(k)) {
-                    int count = Math.min(materialInventory[k] / holder.number, 64);
+                    int count = Math.min(materialInventory[k] / holder.priority, 64);
                     if (count > 0) {
-                        inventory.setStackInSlot(i, new ItemStack(holder.obj, count));
-                        materialInventory[k] -= holder.number * count;
+                        inventory.setStackInSlot(i, new ItemStack(holder.value, count));
+                        materialInventory[k] -= holder.priority * count;
                         filled = true;
                         break;
                     }
@@ -917,8 +917,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             }
         }
         for (IntObjectHolder<ItemStack> holder : extraMaterials) {
-            Item item = holder.obj.getItem();
-            int required = holder.number;
+            Item item = holder.value.getItem();
+            int required = holder.priority;
             int available = inventoryCount.getOrDefault(item, 0);
             if (available < required) {
                 materialsSufficient = false;
@@ -936,8 +936,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         for (int i = 0; i < materialInventory.length; i++) materialInventory[i] -= costMaterial[i];
         List<IntObjectHolder<ItemStack>> extraMaterials = structure.extraMaterials();
         for (IntObjectHolder<ItemStack> holder : extraMaterials) {
-            Item item = holder.obj.getItem();
-            int remaining = holder.number;
+            Item item = holder.value.getItem();
+            int remaining = holder.priority;
             for (int i = 0; i < inventory.getSlots() && remaining > 0; i++) {
                 ItemStack stack = inventory.getStackInSlot(i);
                 if (stack.getItem() == item) {

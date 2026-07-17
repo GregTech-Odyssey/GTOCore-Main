@@ -24,6 +24,8 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
 apply from: "$rootDir/gradle/scripts/repositories.gradle"
 apply from: "$rootDir/dependencies.gradle"
+// GTOLib：先打包/保护，再由 gtocore 加载（run*/jar 均依赖此流水线）
+apply from: "$rootDir/gradle/scripts/gtolib-pipeline.gradle"
 apply from: "$rootDir/gradle/scripts/resources.gradle"
 apply from: "$rootDir/gradle/scripts/jars.gradle"
 apply from: "$rootDir/gradle/scripts/spotless.gradle"

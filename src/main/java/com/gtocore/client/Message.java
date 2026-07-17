@@ -1,8 +1,5 @@
 package com.gtocore.client;
 
-import com.gtocore.api.research.techtree.TechNode;
-import com.gtocore.api.research.techtree.TechNodeToast;
-import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.integration.ae.hooks.ICraftAmountMenu;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
@@ -31,10 +28,7 @@ import appeng.blockentity.networking.CableBusBlockEntity;
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.menu.me.common.MEStorageMenu;
 
-import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.UUID;
 
 public final class Message {
 
@@ -90,32 +84,6 @@ public final class Message {
         Client.patternDestinationReceived(destinations);
     });
 
-    public static final NetworkPack SEND_RESEARCH_S2C = NetworkPack.registerS2C("sendResearchS2C", (p, b) -> {
-        var isUnlock = b.readBoolean();
-        var node = GTOCodecs.TECH_NODE_STREAM_CODEC.decode(b);
-        if (node != null) {
-            Client.addToast(node, isUnlock);
-        }
-    });
-
-    public static void sendResearchToast(UUID teamid, TechNode node, boolean isUnlock) {
-        var teamManager = FTBTeamsAPI.api().getManager();
-        var team = teamManager.getTeamByID(teamid).orElse(teamManager.getTeamForPlayerID(teamid).orElse(null));
-        if (team == null) {
-            SEND_RESEARCH_S2C.send(buf -> {
-                buf.writeBoolean(isUnlock);
-                GTOCodecs.TECH_NODE_STREAM_CODEC.encode(buf, node);
-            }, ServerUtils.getServer().getPlayerList().getPlayer(teamid));
-            return;
-        }
-        for (var player : team.getMembers()) {
-            SEND_RESEARCH_S2C.send(buf -> {
-                buf.writeBoolean(isUnlock);
-                GTOCodecs.TECH_NODE_STREAM_CODEC.encode(buf, node);
-            }, ServerUtils.getServer().getPlayerList().getPlayer(player));
-        }
-    }
-
     public static void sendPatternDestination(ServerPlayer player, PatternDestination[] destinations) {
         SEND_PATTERN_DESTINATION_S2C.send(buf -> {
             buf.writeVarInt(destinations.length);
@@ -160,10 +128,6 @@ public final class Message {
                     listBox.addPatternContainerGroup(dest.group(), i, dest.full());
                 }
             }
-        }
-
-        public static void addToast(TechNode node, boolean isUnlock) {
-            Minecraft.getInstance().getToasts().addToast(new TechNodeToast(node, isUnlock ? TechNodeToast.Type.FINISHED_RESEARCH : TechNodeToast.Type.EUREKA_GAINED));
         }
     }
 }

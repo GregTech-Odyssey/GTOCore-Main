@@ -1,0 +1,6 @@
+[submodule "GTOLib"]
+	path = GTOLib
+	url = https://github.com/GregTech-Odyssey/GTOCore-GTOlib.git
+[submodule "GTOSeal"]
+	path = GTOSeal
+	url = https://github.com/GregTech-Odyssey/GTOCore-Seal.git

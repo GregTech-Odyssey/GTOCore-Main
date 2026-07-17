@@ -1,67 +1,38 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.research.ResearchPoints;
-import com.gtocore.api.research.ResearchTag;
+import com.gtocore.api.lang.ComponentListSupplier;
+import com.gtocore.api.placeholder.IPlaceholder;
+import com.gtocore.data.recipe.research.AnalyzeData;
 
-import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.item.tool.IExDataItem;
-
-import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gtolib.utils.RLUtils;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import com.hepdd.gtmthings.utils.TeamUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
-@DataGeneratorScanned
-public class DataCrystalItem extends Item implements IExDataItem {
+import static com.gtocore.data.recipe.builder.research.ExResearchManager.*;
+import static com.gtolib.utils.RegistriesUtils.getItem;
 
-    @RegisterLanguage(cn = "§n空数据", en = "§nEmpty Data")
-    public static final String EMPTY_NBT_TAG = "gtocore.tooltip.item.empty_data";
-    @RegisterLanguage(cn = "队伍%s的积累数据", en = "Accumulated Data of Team %s")
-    public static final String TEAM_DATA_TAG = "gtocore.tooltip.item.team_data";
-    @RegisterLanguage(cn = "§n容量使用: %s", en = "§nCapacity Used: %s")
-    public static final String CAPACITY_TAG = "gtocore.tooltip.item.capacity";
-    @RegisterLanguage(cn = "[占用%sB]", en = "[Occupying %sB]")
-    public static final String OCCUPY_TAG = "gtocore.tooltip.item.occupy";
-    @RegisterLanguage(cn = "数据[%s]", en = "Data[%s]")
-    public static final String DATA_TAG = "gtocore.tooltip.item.data";
+public class DataCrystalItem extends Item implements IExDataItem, IPlaceholder<Object, ItemStack, Void> {
 
-    public static final String usedCapTag = "usedCap";
-    public static final String storageTag = "storage";
-    public static final String teamTag = "team";
-    public final int tier;
-    public final long dataCapacity;
-
-    public DataCrystalItem(Properties properties, int tier) {
+    public DataCrystalItem(Properties properties) {
         super(properties);
-        this.tier = tier;
-        this.dataCapacity = 2L << (5 * tier + 6);
-    }
-
-    public static boolean setDataCrystalData(ItemStack output, UUID team, ResearchPoints c) {
-        setTeamUUID(output, team);
-        var outputTest = output.copy();
-        for (var entry : c.reference2LongEntrySet()) {
-            ResearchTag rt = entry.getKey();
-            long amount = entry.getLongValue();
-            if (!addResearchData(outputTest, rt, amount)) {
-                return false;
-            }
-        }
-        output.setTag(outputTest.getTag());
-        return true;
     }
 
     @Override
@@ -71,61 +42,99 @@ public class DataCrystalItem extends Item implements IExDataItem {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        UUID teamUUID = getTeamUUID(stack);
-        if (teamUUID != null) {
-            tooltip.add(Component.translatable(TEAM_DATA_TAG, TeamUtil.findTeamName(teamUUID)));
-        } else {
-            tooltip.add(Component.translatable(EMPTY_NBT_TAG));
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return;
+
+        if (tag.contains(EMPTY_NBT_TAG)) {
+            tooltip.add(Component.translatable("gtocore.tooltip.item.empty_data")
+                    .withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("gtocore.tooltip.item.empty_serial",
+                    Component.literal(String.format("%08X", 0)).withStyle(ChatFormatting.YELLOW)));
         }
-        long usedCap = stack.getOrCreateTag().getLong(usedCapTag);
-        tooltip.add(Component.translatable(CAPACITY_TAG,
-                Component.literal(String.format("%sB/%sB", FormattingUtil.formatNumberReadable(usedCap), FormattingUtil.formatNumberReadable(dataCapacity))).withStyle(ChatFormatting.GREEN)));
-        for (var entry : getResearchData(stack).reference2LongEntrySet()) {
-            ResearchTag rt = entry.getKey();
-            long amount = entry.getLongValue();
-            tooltip.add(Component.translatable(DATA_TAG, rt.getDisplayName())
-                    .append("x" + FormattingUtil.formatNumbers(amount))
-                    .append(Component.translatable(OCCUPY_TAG, FormattingUtil.formatNumberReadable(amount * rt.getBytePerPoint())))
-                    .withStyle(style -> style.withColor(rt.getColor())));
+
+        // 处理扫描数据
+        if (tag.contains(SCANNING_NBT_TAG)) {
+            CompoundTag scanningTag = tag.getCompound(SCANNING_NBT_TAG);
+            int serial = scanningTag.getInt(SCANNING_SERIAL_NBT_TAG);
+            String scanningId = scanningTag.getString(SCANNING_ID_NBT_TAG);
+
+            tooltip.add(Component.translatable("gtocore.tooltip.item.scanning_data")
+                    .withStyle(ChatFormatting.AQUA));
+
+            Object scanned = parseTargetFromScanningId(scanningId);
+            if (scanned instanceof ItemStack itemStack) {
+                tooltip.add(Component.translatable("gtocore.tooltip.item.scanned_things",
+                        Component.literal(String.valueOf(itemStack.getCount())).withStyle(ChatFormatting.GREEN),
+                        itemStack.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
+            } else if (scanned instanceof FluidStack fluidStack) {
+                tooltip.add(Component.translatable("gtocore.tooltip.item.scanned_things",
+                        Component.literal(String.valueOf(fluidStack.getAmount())).withStyle(ChatFormatting.GREEN),
+                        fluidStack.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE)));
+            }
+
+            tooltip.add(Component.translatable("gtocore.tooltip.item.scanning_serial",
+                    Component.literal(String.format("%08X", serial)).withStyle(ChatFormatting.YELLOW)));
         }
-    }
 
-    private static void setTeamUUID(ItemStack stack, UUID teamUUID) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putUUID(teamTag, teamUUID);
-    }
+        // 处理分析数据
+        if (tag.contains(ANALYZE_NBT_TAG)) {
+            CompoundTag analyzeTag = tag.getCompound(ANALYZE_NBT_TAG);
+            int serial = analyzeTag.getInt(ANALYZE_SERIAL_NBT_TAG);
+            String analyzeId = analyzeTag.getString(ANALYZE_ID_NBT_TAG);
 
-    public static UUID getTeamUUID(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains(teamTag)) return null;
-        return tag.getUUID(teamTag);
-    }
+            tooltip.add(Component.translatable("gtocore.tooltip.item.analyze_data")
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
 
-    public static boolean addResearchData(ItemStack stack, ResearchTag rt, long amount) {
-        CompoundTag tag = stack.getOrCreateTag();
-        CompoundTag storage = tag.getCompound(storageTag);
-        long usedCap = tag.getLong(usedCapTag);
-        long a = usedCap + amount * rt.getBytePerPoint();
-        if (a > (stack.getItem() instanceof DataCrystalItem dataCrystalItem ? dataCrystalItem.dataCapacity : 0)) {
-            return false;
-        }
-        long currentAmount = storage.getLong(rt.getName());
-        storage.putLong(rt.getName(), currentAmount + amount);
-        tag.put(storageTag, storage);
-        tag.putLong(usedCapTag, a);
-        return true;
-    }
+            tooltip.add(Component.translatable("gtocore.tooltip.item.analyze_things",
+                    Component.literal(I18n.get("gtocore.data." + analyzeId)).withStyle(ChatFormatting.GOLD)));
 
-    public static ResearchPoints getResearchData(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        CompoundTag storage = tag.getCompound(storageTag);
-        ResearchPoints dataMap = new ResearchPoints();
-        for (String key : storage.getAllKeys()) {
-            ResearchTag rt = ResearchTag.TAGS.get(key);
-            if (rt != null) {
-                dataMap.put(rt, storage.getLong(key));
+            tooltip.add(Component.translatable("gtocore.tooltip.item.analyze_serial",
+                    Component.literal(String.format("%08X", serial)).withStyle(ChatFormatting.YELLOW)));
+
+            ComponentListSupplier tooltipSupplier = AnalyzeData.INSTANCE.getTooltip(serial);
+            if (tooltipSupplier != null) {
+                tooltip.addAll(tooltipSupplier.get());
             }
         }
-        return dataMap;
+    }
+
+    @Override
+    public List<List<Object>> getTargetLists(ItemStack source) {
+        Object target = getCurrentTarget(source, null);
+        if (target == null) return Collections.emptyList();
+        return Collections.singletonList(Collections.singletonList(target));
+    }
+
+    @Override
+    public Object getCurrentTarget(ItemStack source, Void context) {
+        CompoundTag tag = source.getTag();
+        if (tag == null || !tag.contains(SCANNING_NBT_TAG)) return null;
+        CompoundTag scanningTag = tag.getCompound(SCANNING_NBT_TAG);
+        String scanningId = scanningTag.getString(SCANNING_ID_NBT_TAG);
+        return parseTargetFromScanningId(scanningId);
+    }
+
+    @Nullable
+    private static Object parseTargetFromScanningId(String idString) {
+        String[] parts = idString.split("-", 3);
+        if (parts.length != 3) return null;
+        String countPart = parts[0];
+        int count = Integer.parseInt(countPart.substring(0, countPart.length() - 1));
+        String type = countPart.substring(countPart.length() - 1);
+        String namespace = parts[1];
+        String path = parts[2];
+        if (type.equals("i")) {
+            Item item = getItem(namespace, path);
+            if (item != null && item != net.minecraft.world.item.Items.AIR) {
+                return new ItemStack(item, count);
+            }
+        }
+        if (type.equals("f")) {
+            Fluid fluid = ForgeRegistries.FLUIDS.getValue(RLUtils.fromNamespaceAndPath(namespace, path));
+            if (fluid != null && fluid != Fluids.EMPTY) {
+                return new FluidStack(fluid, count);
+            }
+        }
+        return null;
     }
 }

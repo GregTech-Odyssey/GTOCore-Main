@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.data.Data;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

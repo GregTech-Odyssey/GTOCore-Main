@@ -47,7 +47,7 @@ public class SpaceBioResearchModule extends RecipeExtension {
             setIdleReason(IdleReason.CANNOT_WORK_IN_SPACE);
             return null;
         }
-        if (recipe.data.contains(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
+        if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
             setIdleReason(Component.translatable(LANGUAGE_INSUFFICIENT_CLEANROOM));
             return null;
         }

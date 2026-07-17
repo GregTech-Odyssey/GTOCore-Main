@@ -61,8 +61,8 @@ public class AlchemyCauldron extends SimpleManaMachine implements IHeatContainer
         boolean param = false;
         for (int i = 0; i < 3; i++) {
             var key = GTORecipeDataKeys.PARAM[i];
-            param = param || recipe.data.contains(key);
-            currentRecipeParams[i] = recipe.data.contains(key) ? recipe.data.getInt(key) * 100 : 10000;
+            param = param || recipe.data.containsKey(key);
+            currentRecipeParams[i] = recipe.data.containsKey(key) ? recipe.data.getInt(key) * 100 : 10000;
         }
         if (param) {
             adjustParameters(currentRecipeParams);

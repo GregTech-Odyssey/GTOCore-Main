@@ -130,11 +130,11 @@ public final class GTOTrade {
      * @return 构建好的简易抽奖交易项目
      */
     public static TradeEntry SimpleLotteryTrading(String unlockCondition, String currency, int amount, List<Component> components, List<IntObjectHolder<ItemStack>> reward) {
-        ItemStack[] itemStacks = reward.stream().map(i -> i.obj).toArray(ItemStack[]::new);
+        ItemStack[] itemStacks = reward.stream().map(i -> i.value).toArray(ItemStack[]::new);
         List<Component> description = new ArrayList<>(components);
         for (IntObjectHolder<ItemStack> entry : reward) {
-            ItemStack itemStack = entry.obj;
-            description.add(Component.translatable("gtocore.trade_lottery.weight", itemStack.getDisplayName(), itemStack.getCount(), entry.number));
+            ItemStack itemStack = entry.value;
+            description.add(Component.translatable("gtocore.trade_lottery.weight", itemStack.getDisplayName(), itemStack.getCount(), entry.priority));
         }
         List<IntObjectHolder<ItemStack>> finalReward = ImmutableList.copyOf(reward);
         TradeEntry.Builder builder = new TradeEntry.Builder()
@@ -153,16 +153,16 @@ public final class GTOTrade {
     // 执行逻辑：抽奖
     private static void performLottery(TradeData data, TradeEntry entry, int multiplier, List<IntObjectHolder<ItemStack>> rewards) {
         if (!(data.level() instanceof ServerLevel serverLevel)) return;
-        int totalWeight = rewards.stream().mapToInt(i -> i.number).sum();
+        int totalWeight = rewards.stream().mapToInt(i -> i.priority).sum();
         List<ItemStack> stackList = new ArrayList<>();
         RandomSource random = serverLevel.getRandom();
         for (int i = 0; i < multiplier; i++) {
             int randomRoll = random.nextInt(totalWeight);
             int currentWeight = 0;
             for (IntObjectHolder<ItemStack> rewardEntry : rewards) {
-                currentWeight += rewardEntry.number;
+                currentWeight += rewardEntry.priority;
                 if (randomRoll < currentWeight) {
-                    ItemStack winningStack = rewardEntry.obj.copy();
+                    ItemStack winningStack = rewardEntry.value.copy();
                     stackList.add(winningStack);
                     break;
                 }

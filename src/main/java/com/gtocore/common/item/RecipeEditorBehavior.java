@@ -63,7 +63,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.google.common.collect.Tables;
-import com.gto.datasynclib.datasream.DataComponentMap;
+import com.gto.datasynclib.datastream.DataComponentMap;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import com.gto.fastcollection.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;

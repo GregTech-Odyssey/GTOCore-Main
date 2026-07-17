@@ -3,10 +3,8 @@ package com.gtocore.common.data;
 import com.gtocore.common.block.*;
 import com.gtocore.common.item.HeatPipeBlockItem;
 import com.gtocore.common.item.ManaPipeBlockItem;
-import com.gtocore.common.item.MufflerPipeBlockItem;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
-import com.gtocore.common.pipe.muffler.MufflerPipeType;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.client.YLayeredModelBuilder;
@@ -42,8 +40,6 @@ public final class GTOBlocks {
     public static final BlockEntry<HeatPipeBlock>[] HEAT_PIPES = (BlockEntry<HeatPipeBlock>[]) new BlockEntry<?>[HeatPipeType.values().length];
     @SuppressWarnings("unchecked")
     public static final BlockEntry<ManaPipeBlock>[] MANA_PIPES = (BlockEntry<ManaPipeBlock>[]) new BlockEntry<?>[ManaPipeType.values().length];
-    @SuppressWarnings("unchecked")
-    public static final BlockEntry<MufflerPipeBlock>[] MUFFLER_PIPES = (BlockEntry<MufflerPipeBlock>[]) new BlockEntry<?>[MufflerPipeType.values().length];
 
     public static void init() {
         GTO.removeDefaultCreativeTab();
@@ -704,24 +700,6 @@ public final class GTOBlocks {
                     .build()
                     .register();
             MANA_PIPES[i] = entry;
-        }
-
-        for (int i = 0; i < MufflerPipeType.values().length; ++i) {
-            var type = MufflerPipeType.values()[i];
-            var entry = block("%s_muffler_pipe".formatted(type.getSerializedName()), type.cnName + "消声仓烟管", (p) -> new MufflerPipeBlock(p, type))
-                    .initialProperties(() -> Blocks.IRON_BLOCK)
-                    .properties(p -> p.dynamicShape().noOcclusion().forceSolidOn())
-                    .blockstate(NonNullBiConsumer.noop())
-                    .defaultLoot()
-                    .tag(CustomTags.MINEABLE_WITH_WRENCH)
-                    .addLayer(() -> RenderType::cutoutMipped)
-                    .color(() -> () -> MufflerPipeBlock.tintedColor(type.material))
-                    .item(MufflerPipeBlockItem::new)
-                    .color(() -> () -> ITagPrefixItem.tintColor(type.material))
-                    .model(NonNullBiConsumer.noop())
-                    .build()
-                    .register();
-            MUFFLER_PIPES[i] = entry;
         }
     }
 }

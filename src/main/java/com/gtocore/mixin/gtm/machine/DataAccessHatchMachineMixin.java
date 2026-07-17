@@ -1,13 +1,11 @@
 package com.gtocore.mixin.gtm.machine;
 
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
 
 import net.minecraft.world.item.Item;
@@ -22,10 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
-import java.util.Set;
 
 @Mixin(DataAccessHatchMachine.class)
-public class DataAccessHatchMachineMixin extends TieredPartMachine implements IDataAccessHatchMachineAccessor {
+public class DataAccessHatchMachineMixin extends TieredPartMachine {
 
     @Unique
     private static final Map<Item, Integer> gtolib$DATA = Map.of(
@@ -37,10 +34,6 @@ public class DataAccessHatchMachineMixin extends TieredPartMachine implements ID
     @Shadow(remap = false)
     @Final
     public NotifiableItemStackHandler importItems;
-
-    @Shadow(remap = false)
-    @Final
-    private Set<GTRecipeDefinition> recipes;
 
     public DataAccessHatchMachineMixin(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier);
@@ -67,15 +60,5 @@ public class DataAccessHatchMachineMixin extends TieredPartMachine implements ID
                 break;
             }
         }
-    }
-
-    @Override
-    public NotifiableItemStackHandler gtocore$getImportItems() {
-        return importItems;
-    }
-
-    @Override
-    public Set<GTRecipeDefinition> gtocore$recipes() {
-        return recipes;
     }
 }

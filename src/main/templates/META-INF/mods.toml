@@ -9,10 +9,31 @@ displayName="${mod_name}"
 description='''${mod_description}'''
 
 [[dependencies.${mod_id}]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,1.20.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "gtceu"
 mandatory = true
 versionRange = "[1,)"
 ordering = "BEFORE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "datasynclib"
+mandatory = true
+versionRange = "[1,)"
+ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]

@@ -88,7 +88,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         String id = recipe.definition.id.getPath();
         Object[] tierEffect = getTierEffect("");
 
-        if (recipe.data.contains(GTORecipeDataKeys.RESONANCE)) {
+        if (recipe.data.containsKey(GTORecipeDataKeys.RESONANCE)) {
             Object[] resonance = fromResonanceTag(recipe.data.getData(GTORecipeDataKeys.RESONANCE));
             if (resonance[0] instanceof ItemStack itemStack) {
                 resonanceItem = itemStack;

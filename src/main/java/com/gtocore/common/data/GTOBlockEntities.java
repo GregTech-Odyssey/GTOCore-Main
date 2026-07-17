@@ -2,7 +2,6 @@ package com.gtocore.common.data;
 
 import com.gtocore.common.blockentity.HeatPipeBlockEntity;
 import com.gtocore.common.blockentity.ManaPipeBlockEntity;
-import com.gtocore.common.blockentity.MufflerPipeBlockEntity;
 
 import com.gto.registrate.util.entry.BlockEntityEntry;
 
@@ -20,10 +19,5 @@ public class GTOBlockEntities {
     public static final BlockEntityEntry<ManaPipeBlockEntity> MANA_PIPE = GTO
             .blockEntity("mana_pipe", ManaPipeBlockEntity::new)
             .validBlocks(GTOBlocks.MANA_PIPES)
-            .register();
-
-    public static final BlockEntityEntry<MufflerPipeBlockEntity> MUFFLER_PIPE = GTO
-            .blockEntity("muffler_pipe", MufflerPipeBlockEntity::new)
-            .validBlocks(GTOBlocks.MUFFLER_PIPES)
             .register();
 }

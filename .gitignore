@@ -9,9 +9,13 @@ classes/
 bin/
 run/
 src/generated/resources/.cache/
-libs/gtolib*
 libs/*-sources.jar
 libs/*-debug.jar
+# 明文 gtolib：仅本地调试，禁止提交
+libs/gtolib-unprotected.jar
+**/gtolib-unprotected.jar
+.gtolib-debug
+# libs/gtolib-protected.jar 可提交：必须是 protected 成品（updateGtolibProtectedJar）
 *.launch
 *.iml
 *.ipr
@@ -23,3 +27,12 @@ libs/*-debug.jar
 keystore.jks
 tmp_gtolib/
 /.codex_tmp/
+build/gtolib/
+# 保护链只允许出现在私有 submodule；误放在 Main 根目录时忽略
+/protect/
+
+# Never commit private lib sources as normal files (must be submodule gitlink only)
+# If someone clones without submodule, empty GTOLib/ / GTOSeal/ is fine.
+
+# 旧 Runtime 文件名（已统一为 gto-seal-runtime-1.0.jar）
+libs/gtonativelib*.jar

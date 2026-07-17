@@ -14,6 +14,7 @@ open class AutoInitialize<T> {
         MachineSlang.init()
         MultiblockSlang.init()
         GTOTarotArcanumTooltips.init()
+        AnalyzeData.init()
     }
     open fun init() {}
     init {

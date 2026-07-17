@@ -1,7 +1,5 @@
 package com.gtocore.client.forge;
 
-import com.gtocore.api.research.TeamResearchSavedDtat;
-import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
@@ -240,8 +238,6 @@ public final class ForgeClientEvent {
 
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
-        TeamResearchSavedDtat.clearClientInstance();
-        TechTreeSavedData.clearClientInstance();
         WirelessNetworkSavedData.setCLIENT_INSTANCE(new WirelessNetworkSavedData());
         FXManager.clearFXs();
     }

@@ -133,6 +133,7 @@ public final class GTMachineModify {
                     .where('#', Predicates.air())
                     .build();
         }));
+        // GTMultiMachines.DISTILLATION_TOWER.setRecoveryItems(GTMachineModify::tinydustFromDustOutput);
 
         GTMultiMachines.ELECTRIC_BLAST_FURNACE.setSubPatternFactory(List.of(definition -> FactoryBlockPattern.start(definition)
                 .aisle("AAAAA", " DBD ", " DBD ", " CCC ")

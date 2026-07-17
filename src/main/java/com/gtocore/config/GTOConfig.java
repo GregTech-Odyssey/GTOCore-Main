@@ -381,25 +381,6 @@ public final class GTOConfig {
             public int wirelessEnergyHUDDefaultY = 75;
 
             @Configurable
-            @Configurable.Comment({ "启用研究点数 HUD 显示", "Enable Research Points HUD display" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Research Points HUD Enabled", cn = "研究点数 HUD 启用")
-            public boolean researchPointsHUDEnabled = false;
-
-            @Configurable
-            @Configurable.Comment({ "研究点数 HUD 的默认 X 相对位置", "0意味着屏幕左侧，100意味着屏幕右侧", "The default X relative position of the Research Points HUD", "0 means the left side of the screen, 100 means the right side of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Research Points HUD Default X", cn = "研究点数 HUD 默认 X 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int researchPointsHUDDefaultX = 92;
-
-            @Configurable
-            @Configurable.Comment({ "研究点数 HUD 的默认 Y 相对位置", "0意味着屏幕顶部，100意味着屏幕底部", "The default Y relative position of the Research Points HUD", "0 means the top of the screen, 100 means the bottom of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Research Points HUD Default Y", cn = "研究点数 HUD 默认 Y 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int researchPointsHUDDefaultY = 12;
-
-            @Configurable
             @Configurable.Comment({ "启用客户端属性 HUD 显示", "Enable Client Attributes HUD display" })
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Client Attributes HUD Enabled", cn = "客户端属性 HUD 启用")
             public boolean clientAttributesHUDEnabled = false;

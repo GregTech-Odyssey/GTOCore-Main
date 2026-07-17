@@ -1,6 +1,5 @@
 package com.gtocore.mixin.gtm.registry;
 
-import com.gtocore.common.machine.electric.ScannerMachine;
 import com.gtocore.utils.register.MachineRegisterUtils;
 
 import com.gtolib.api.recipe.GTORecipeModifiers;
@@ -80,10 +79,8 @@ public final class GTMachineUtilsMixin {
 
     @Inject(method = "registerSimpleMachines(Ljava/lang/String;Lcom/gregtechceu/gtceu/api/recipe/GTRecipeType;Lit/unimi/dsi/fastutil/ints/Int2IntFunction;Z[I)[Lcom/gregtechceu/gtceu/api/machine/MachineDefinition;", at = @At("HEAD"), remap = false, cancellable = true)
     private static void registerSimpleMachines(String name, GTRecipeType recipeType, Int2IntFunction tankScalingFunction, boolean hasPollutionDebuff, int[] tiers, CallbackInfoReturnable<MachineDefinition[]> cir) {
-        var isScanner = name.equals("scanner");
-        BiFunction<MetaMachineBlockEntity, Integer, MetaMachine> factory = isScanner ? (holder, tier) -> new ScannerMachine(holder, tier, tankScalingFunction) : (holder, tier) -> new SimpleTieredMachine(holder, tier, tankScalingFunction);
         cir.setReturnValue(MachineRegisterUtils.registerTieredGTMMachines(name,
-                factory, (tier, builder) -> builder
+                (holder, tier) -> new SimpleTieredMachine(holder, tier, tankScalingFunction), (tier, builder) -> builder
                         .editableUI(SimpleTieredMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id(name), recipeType))
                         .nonYAxisRotation()
                         .recipeType(recipeType)
