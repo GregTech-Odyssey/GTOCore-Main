@@ -1,4 +1,4 @@
-package com.gtocore.api.research.ui;
+package com.gtocore.api.research.techtree.ui;
 
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.function.Function;
 
 @DataGeneratorScanned
-public class ResearchTreeSideTab extends WidgetGroup {
+public class TechTreeSideTab extends WidgetGroup {
 
     @RegisterLanguage(cn = "CWU", en = "CWU")
     private static final String CWU_LABEL = "gtocore.research.side_tab.cwu";
@@ -91,16 +91,16 @@ public class ResearchTreeSideTab extends WidgetGroup {
 
     private final WidgetGroup innerContent;
 
-    public ResearchTreeSideTab(int x, int y, int width, int height,
-                               TechTreeManager manager,
-                               Function<Player, TeamResearchContext> contextFactory) {
+    public TechTreeSideTab(int x, int y, int width, int height,
+                           TechTreeManager manager,
+                           Function<Player, TeamResearchContext> contextFactory) {
         this(x, y, width, height, manager, contextFactory, null);
     }
 
-    public ResearchTreeSideTab(int x, int y, int width, int height,
-                               TechTreeManager manager,
-                               Function<Player, TeamResearchContext> contextFactory,
-                               @Nullable Widget contentWidget) {
+    public TechTreeSideTab(int x, int y, int width, int height,
+                           TechTreeManager manager,
+                           Function<Player, TeamResearchContext> contextFactory,
+                           @Nullable Widget contentWidget) {
         super(x, y, width, height);
         this.manager = manager;
         this.contextFactory = contextFactory;

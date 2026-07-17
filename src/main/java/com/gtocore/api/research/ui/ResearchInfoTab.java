@@ -2,6 +2,7 @@ package com.gtocore.api.research.ui;
 
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.ui.TechTreeSideTab;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
@@ -27,9 +28,9 @@ public class ResearchInfoTab implements IFancyUIProvider {
     private static final int SIDE_TAB_WIDTH = 166;
 
     private final @NotNull TechTreeManager manager;
-    private final BiFunction<FancyMachineUIWidget, ResearchTreeSideTab, Widget> innerContentFactory;
+    private final BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory;
 
-    public ResearchInfoTab(@Nullable BiFunction<FancyMachineUIWidget, ResearchTreeSideTab, Widget> innerContentFactory) {
+    public ResearchInfoTab(@Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
         this.manager = AnalyzeData.TechTree;
         this.innerContentFactory = innerContentFactory == null ? (uiWidget, sideTab) -> new WidgetGroup() : innerContentFactory;
     }
@@ -38,7 +39,7 @@ public class ResearchInfoTab implements IFancyUIProvider {
     public Widget createMainPage(FancyMachineUIWidget widget) {
         var root = new WidgetGroup(0, 0, TREE_WIDTH + SIDE_TAB_GAP + SIDE_TAB_WIDTH, CONTENT_HEIGHT);
         var treeWidget = new TechTreeWidget(0, 0, TREE_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
-        var sideTab = new ResearchTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+        var sideTab = new TechTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
         sideTab.setInnerContent(innerContentFactory.apply(widget, sideTab));
         treeWidget.setOnNodeClicked(sideTab::toggleNode);
         root.addWidget(treeWidget);
