@@ -1,0 +1,233 @@
+package com.gtocore.api.gui;
+
+import com.gtocore.common.machine.monitor.DisplayRegistry;
+
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+
+import com.gto.fastcollection.O2OOpenCacheHashMap;
+import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.utils.Position;
+import com.lowdragmc.lowdraglib.utils.Size;
+import it.unimi.dsi.fastutil.objects.ObjectBooleanPair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+public class DisplayComponentGroup extends WidgetGroup {
+
+    private static final int PACKET_ID = 1;
+    @Nullable
+    private final Consumer<List<ObjectBooleanPair<ResourceLocation>>> orderedCallback;
+    @NotNull
+    private final List<ResourceLocation> originList;
+    /// Uses both sides
+    private final List<ObjectBooleanPair<ResourceLocation>> current = new ArrayList<>();
+    private final Map<ResourceLocation, DisplayComponentWidget> displayWidgets = new O2OOpenCacheHashMap<>();
+    private DraggableScrollableWidgetGroup scrollArea;
+
+    public DisplayComponentGroup(@NotNull List<ResourceLocation> originList,
+                                 @NotNull List<ObjectBooleanPair<ResourceLocation>> currentWithState,
+                                 @Nullable Consumer<List<ObjectBooleanPair<ResourceLocation>>> orderedCallback, Position position, Size size) {
+        super(position, size);
+        this.orderedCallback = orderedCallback;
+        this.originList = originList;
+
+        this.current.addAll(currentWithState);
+        // 为了兼容版本更新（比如新加了组件），检查 originList 中是否有任何组件不在已保存的列表中
+        // 如果有，则将它们作为禁用的项添加到末尾。
+        List<ResourceLocation> loadedRLs = this.current.stream().map(ObjectBooleanPair::left).toList();
+        this.current.addAll(originList.stream()
+                .filter(rl -> loadedRLs.stream().noneMatch(rl::equals))
+                .map(rl -> ObjectBooleanPair.of(rl, false))
+                .toList());
+
+        this.setBackground(GuiTextures.BACKGROUND_INVERSE);
+
+        this.addWidget(new ButtonWidget(this.getSizeWidth() - 16, this.getSizeHeight() - 12, 10, 10, (click) -> {
+            if (!isRemote()) {
+                reset();
+            }
+        }).setButtonTexture(GuiTextures.BUTTON, GuiTextures.BUTTON_VOID.copy().scale(0.8f))
+                .setHoverTooltips(Component.translatable("gtocore.machine.monitor.adjust_component.reset")));
+
+        init();
+    }
+
+    public void init() {
+        int lastScrollY = 0;
+        if (this.scrollArea != null) {
+            lastScrollY = this.scrollArea.getScrollYOffset();
+        }
+        boolean firstInit = this.scrollArea == null;
+        if (firstInit) {
+            scrollArea = new DraggableScrollableWidgetGroup(4, 4, this.getSizeWidth() - 8, this.getSizeHeight() - 8);
+            this.addWidget(scrollArea);
+            scrollArea.setScrollable(true);
+            scrollArea.setYBarStyle(GuiTextures.BACKGROUND, GuiTextures.BOX_OVERLAY);
+        } else {
+            scrollArea.clearAllWidgets();
+        }
+        int y = 2;
+        for (var rl : current) {
+            var displayWidget = firstInit ? new DisplayComponentWidget(rl.left(), rl.rightBoolean()) :
+                    displayWidgets.get(rl.left()).setEnabled(rl.rightBoolean());
+            displayWidget.setSelfPosition(5, y);
+            displayWidget.setSize(155, 20);
+            scrollArea.acceptWidget(displayWidget);
+            displayWidgets.putIfAbsent(rl.left(), displayWidget);
+            y += 10;
+        }
+        if (!firstInit) {
+            scrollArea.setScrollYOffset(lastScrollY);
+        }
+    }
+
+    @Override
+    public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
+        if (id == PACKET_ID) {
+            this.current.clear();
+            int size = buffer.readVarInt();
+            for (int i = 0; i < size; i++) {
+                ResourceLocation rl = buffer.readResourceLocation();
+                boolean enabled = buffer.readBoolean();
+                this.current.add(ObjectBooleanPair.of(rl, enabled));
+            }
+            // Update the corresponding widget
+            init();
+        } else {
+            super.readUpdateInfo(id, buffer);
+        }
+    }
+
+    /// 仅在服务端调用
+    private void reset() {
+        this.current.clear();
+        this.current.addAll(originList.stream()
+                .map(rl -> ObjectBooleanPair.of(rl, true))
+                .toList());
+        init();
+        writeUpdateInfo(PACKET_ID, buf -> {
+            buf.writeVarInt(current.size());
+            for (var rl : current) {
+                buf.writeResourceLocation(rl.left());
+                buf.writeBoolean(rl.rightBoolean());
+            }
+        });
+    }
+
+    /// 仅在服务端调用
+    private void updateOrdered() {
+        List<ObjectBooleanPair<ResourceLocation>> visuallyOrderedState = scrollArea.widgets.stream()
+                .filter(widget -> widget instanceof DisplayComponentWidget)
+                .map(widget -> (DisplayComponentWidget) widget)
+                .map(widget -> ObjectBooleanPair.of(widget.getRL(), widget.isEnabled()))
+                .toList();
+
+        // Step 2: 更新服务端的 `current` 列表
+        this.current.clear();
+        this.current.addAll(visuallyOrderedState);
+
+        // Step 3: 回调完整的状态列表，以便保存
+        if (orderedCallback != null) {
+            orderedCallback.accept(visuallyOrderedState); // <-- 回调完整的列表
+        }
+
+        // Step 4: 刷新GUI并同步到客户端
+        init();
+        writeUpdateInfo(PACKET_ID, buf -> {
+            buf.writeVarInt(current.size());
+            for (var rl : current) {
+                buf.writeResourceLocation(rl.left());
+                buf.writeBoolean(rl.rightBoolean());
+            }
+        });
+    }
+
+    private void moveWidgetUp(DisplayComponentWidget widget) {
+        int index = scrollArea.widgets.indexOf(widget);
+        if (index > 0) {
+            scrollArea.removeWidget(widget);
+            scrollArea.widgets.add(index - 1, widget);
+        }
+        updateOrdered();
+    }
+
+    private void moveWidgetDown(DisplayComponentWidget widget) {
+        int index = scrollArea.widgets.indexOf(widget);
+        if (index < scrollArea.widgets.size() - 1) {
+            scrollArea.removeWidget(widget);
+            scrollArea.widgets.add(index + 1, widget);
+        }
+        updateOrdered();
+    }
+
+    private class DisplayComponentWidget extends WidgetGroup {
+
+        private final ResourceLocation id;
+        private final SwitchWidget switchWidget;
+        private final LabelWidget labelWidget;
+
+        @SuppressWarnings("ConstantConditions")
+        DisplayComponentWidget(ResourceLocation id, boolean enabledInitially) {
+            this.id = id;
+
+            var color = enabledInitially ? ChatFormatting.GREEN : ChatFormatting.YELLOW;
+            this.addWidget(labelWidget = new LabelWidget(0, 0, Component.translatable(DisplayRegistry.langKey(id))
+                    .withStyle(color)));
+            labelWidget.setClientSideWidget();
+
+            this.addWidget(switchWidget = new SwitchWidget(110, 0, 10, 10, (click, result) -> {
+                if (!isRemote()) {
+                    updateOrdered();
+                } else this.labelWidget.setColor(result ? ChatFormatting.GREEN.getColor() : ChatFormatting.YELLOW.getColor());
+            })
+                    .setPressed(enabledInitially)
+                    .setBaseTexture(GuiTextures.BUTTON,
+                            GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true)
+                                    .copy()
+                                    .getSubTexture(0.0F, 0.0F, 1.0F, (double) 0.5F).scale(0.8F))
+                    .setPressedTexture(GuiTextures.BUTTON,
+                            GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true)
+                                    .copy()
+                                    .getSubTexture(0.0F, 0.5F, 1.0F, (double) 0.5F).scale(0.8F)));
+            switchWidget.setHoverTooltips(Component.translatable("gtocore.machine.monitor.adjust_component.switch"));
+
+            // Add up and down buttons for moving the widget
+            ButtonWidget upButton;
+            this.addWidget(upButton = new ButtonWidget(125, 0, 10, 10, (click) -> {
+                if (!isRemote()) moveWidgetUp(this);
+            }).setButtonTexture(GuiTextures.BUTTON, GuiTextures.BUTTON_RIGHT.copy().rotate(-45).scale(0.8f)));
+            upButton.setHoverTooltips(Component.translatable("gtocore.machine.monitor.adjust_component.move_up"));
+
+            ButtonWidget downButton;
+            this.addWidget(downButton = new ButtonWidget(140, 0, 10, 10, (click) -> {
+                if (!isRemote()) moveWidgetDown(this);
+            }).setButtonTexture(GuiTextures.BUTTON, GuiTextures.BUTTON_LEFT.copy().rotate(-45).scale(0.8f)));
+            downButton.setHoverTooltips(Component.translatable("gtocore.machine.monitor.adjust_component.move_down"));
+        }
+
+        ResourceLocation getRL() {
+            return id;
+        }
+
+        boolean isEnabled() {
+            return switchWidget.isPressed();
+        }
+
+        @SuppressWarnings("ConstantConditions")
+        DisplayComponentWidget setEnabled(boolean enabled) {
+            switchWidget.setPressed(enabled);
+            if (isRemote()) labelWidget.setColor(enabled ? ChatFormatting.GREEN.getColor() : ChatFormatting.YELLOW.getColor());
+            return this;
+        }
+    }
+}

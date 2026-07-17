@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gtocore:item/circuit/circuit_uev",
+    "layer1": "gtocore:item/circuit/uev"
+  }
+}

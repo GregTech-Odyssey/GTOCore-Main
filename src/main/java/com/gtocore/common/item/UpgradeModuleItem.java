@@ -1,0 +1,79 @@
+package com.gtocore.common.item;
+
+import com.gtocore.common.data.GTOItems;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.feature.IUpgradeMachine;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+
+import dev.shadowsoffire.placebo.util.EnchantmentUtils;
+import org.jetbrains.annotations.NotNull;
+
+@DataGeneratorScanned
+public final class UpgradeModuleItem extends Item {
+
+    @RegisterLanguage(cn = "需要10级经验", en = "Requires 10 levels of experience")
+    public static final String experience_not_enough = "gtocore.machine.upgrade.experience_not_enough";
+    @RegisterLanguage(cn = "该方块不可安装升级", en = "this block cannot be upgraded")
+    public static final String not_machine = "gtocore.machine.upgrade.not_machine";
+
+    public UpgradeModuleItem(Properties properties) {
+        super(properties);
+    }
+
+    private static double randomMultiple(int tier) {
+        return 1D - (GTValues.RNG.nextDouble() / (20D / tier));
+    }
+
+    @Override
+    public @NotNull InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+        if (context.getPlayer() instanceof ServerPlayer player) {
+            var item = player.getItemInHand(context.getHand());
+            if (player.experienceLevel >= 10) {
+                var machine = MetaMachine.getMachine(context.getLevel(), context.getClickedPos());
+                if (machine instanceof IUpgradeMachine upgradeMachine && upgradeMachine.gtolib$canUpgraded()) {
+                    var randomMultiple = randomMultiple(Math.min(10, player.experienceLevel / 10));
+                    player.giveExperiencePoints(-EnchantmentUtils.getTotalExperienceForLevel(100));
+                    if (this == GTOItems.SPEED_UPGRADE_MODULE.get()) {
+                        double speed = upgradeMachine.gtolib$getSpeed();
+                        if (speed < 1) {
+                            speed = speed * Math.sqrt(randomMultiple);
+                        } else {
+                            speed = randomMultiple;
+                        }
+                        upgradeMachine.gtolib$setSpeed(Math.max(0.5, speed));
+                        player.setItemInHand(context.getHand(), item.copyWithCount(item.getCount() - 1));
+                        return InteractionResult.CONSUME;
+                    } else {
+                        double energy = upgradeMachine.gtolib$getEnergy();
+                        if (energy < 1) {
+                            energy = randomMultiple * Math.sqrt(energy);
+                        } else {
+                            energy = randomMultiple;
+                        }
+                        upgradeMachine.gtolib$setEnergy(Math.max(0.5, energy));
+                        player.setItemInHand(context.getHand(), item.copyWithCount(item.getCount() - 1));
+                        return InteractionResult.CONSUME;
+                    }
+                } else {
+                    player.sendSystemMessage(Component.translatable(not_machine));
+                    return InteractionResult.PASS;
+                }
+            } else {
+                player.sendSystemMessage(Component.translatable(experience_not_enough));
+                return InteractionResult.PASS;
+            }
+        }
+        return super.onItemUseFirst(stack, context);
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "animation": {
+    "interpolate": true,
+    "frametime": 20,
+    "frames": [0, 1]
+  },
+
+  "ldlib": {
+    "connection": "gtocore:block/casings/accelerator/accelerator_particle_constrained_casing_ctm"
+  }
+}

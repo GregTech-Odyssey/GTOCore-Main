@@ -1,0 +1,354 @@
+package com.gtocore.common.machine.multiblock.generator;
+
+import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.client.forge.ForgeClientEvent;
+import com.gtocore.data.IdleReason;
+
+import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.machine.feature.multiblock.ICustomHighlightMachine;
+import com.gtolib.api.machine.mana.feature.IManaMultiblock;
+import com.gtolib.api.machine.mana.trait.ManaTrait;
+import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
+import com.gtolib.api.misc.ManaContainerList;
+import com.gtolib.utils.GTOUtils;
+import com.gtolib.utils.MachineUtils;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.pattern.BlockPattern;
+import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
+import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
+import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+
+import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.registrate.util.entry.BlockEntry;
+import earth.terrarium.adastra.api.planets.PlanetApi;
+import org.jetbrains.annotations.NotNull;
+import vazkii.botania.common.block.BotaniaBlocks;
+
+import java.util.List;
+import java.util.function.Supplier;
+
+import static com.gregtechceu.gtceu.api.GTValues.HV;
+import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
+import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
+import static com.gregtechceu.gtceu.common.data.GTMachines.*;
+import static com.gtocore.common.data.GTOMachines.ENERGY_OUTPUT_HATCH_16A;
+import static com.gtocore.common.data.machines.ManaMachine.WIRELESS_MANA_OUTPUT_HATCH;
+import static com.gtocore.data.IdleReason.INCORRECT_DIRECTION_VOLTA;
+import static com.gtocore.data.IdleReason.OBSTRUCTED_VOLTA;
+import static net.minecraft.world.level.block.Blocks.AIR;
+
+public final class PhotovoltaicPowerStationMachine extends StorageMultiblockMachine implements IManaMultiblock, ICustomHighlightMachine, ICustomRecipeLogicHolder {
+
+    private final int basic_rate;
+
+    private final ManaTrait manaTrait;
+
+    private final Supplier<BlockPattern> patternInSpace;
+
+    private int refreshSky = 0;
+    private boolean canSeeSky;
+    private IdleReason idleReason = null;
+
+    @SyncToClient
+    private BlockPos highlightStartPos_1 = BlockPos.ZERO;
+    @SyncToClient
+    private BlockPos highlightEndPos_1 = BlockPos.ZERO;
+    @SyncToClient
+    private BlockPos highlightStartPos_2 = BlockPos.ZERO;
+    @SyncToClient
+    private BlockPos highlightEndPos_2 = BlockPos.ZERO;
+
+    public PhotovoltaicPowerStationMachine(MetaMachineBlockEntity holder, int basicRate, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
+        super(holder, 64, i -> i.getItem() == BotaniaBlocks.motifDaybloom.asItem());
+        basic_rate = basicRate;
+        this.manaTrait = new ManaTrait(this);
+        this.patternInSpace = () -> getPatternInSpace(getDefinition(), casing, photovoltaicBlock);
+    }
+
+    @Override
+    public Supplier<BlockPattern>[] getPattern() {
+        if (isInSpace()) {
+            return new Supplier[] { patternInSpace };
+        }
+        return super.getPattern();
+    }
+
+    private boolean isInSpace() {
+        Level level = getLevel();
+        return level != null && PlanetApi.API.isSpace(level);
+    }
+
+    @Override
+    public @NotNull ManaContainerList getManaContainer() {
+        return manaTrait.getManaContainers();
+    }
+
+    @Override
+    public boolean isGeneratorMana() {
+        return true;
+    }
+
+    private boolean canSeeSky(Level level) {
+        BlockPos pos;
+        if (isInSpace()) {
+            if (getFrontFacing().getAxis() == Direction.Axis.Y) {
+                setIdleReason(INCORRECT_DIRECTION_VOLTA);
+                idleReason = INCORRECT_DIRECTION_VOLTA;
+                return false;
+            }
+            pos = MachineUtils.getOffsetPos(-11, 0, 0, getFrontFacing(), getPos());
+            Direction upwards = getFrontFacing();
+            boolean permuteXZ = upwards.getAxis() == Direction.Axis.Z;
+            if (permuteXZ) {
+                highlightStartPos_1 = pos.offset(-1, 0, -7);
+                highlightEndPos_1 = pos.offset(1, 0, -1);
+                highlightStartPos_2 = pos.offset(-1, 0, 1);
+                highlightEndPos_2 = pos.offset(1, 0, 7);
+            } else {
+                highlightStartPos_1 = pos.offset(-7, 0, -1);
+                highlightEndPos_1 = pos.offset(-1, 0, 1);
+                highlightStartPos_2 = pos.offset(1, 0, -1);
+                highlightEndPos_2 = pos.offset(7, 0, 1);
+            }
+        } else {
+            if (getFrontFacing().getAxis() == Direction.Axis.Y || getUpwardsFacing() != Direction.NORTH) {
+                setIdleReason(INCORRECT_DIRECTION_VOLTA);
+                idleReason = INCORRECT_DIRECTION_VOLTA;
+                return false;
+            }
+            pos = MachineUtils.getOffsetPos(1, 4, getFrontFacing(), getPos());
+            Direction upwards = getFrontFacing();
+            boolean permuteXZ = upwards.getAxis() == Direction.Axis.Z;
+            if (permuteXZ) {
+                highlightStartPos_1 = pos.offset(-3, 0, 1);
+                highlightEndPos_1 = pos.offset(3, 0, 2);
+                highlightStartPos_2 = pos.offset(-3, 0, -2);
+                highlightEndPos_2 = pos.offset(3, 0, -1);
+            } else {
+                highlightStartPos_1 = pos.offset(1, 0, -3);
+                highlightEndPos_1 = pos.offset(2, 0, 3);
+                highlightStartPos_2 = pos.offset(-2, 0, -3);
+                highlightEndPos_2 = pos.offset(-1, 0, 3);
+            }
+        }
+        for (BlockPos checkPos : BlockPos.betweenClosed(highlightStartPos_1, highlightEndPos_1)) {
+            if (!level.canSeeSky(new BlockPos(checkPos.getX(), pos.getY() + 1, checkPos.getZ()))) {
+                setIdleReason(OBSTRUCTED_VOLTA);
+                idleReason = OBSTRUCTED_VOLTA;
+                return false;
+            }
+        }
+        for (BlockPos checkPos : BlockPos.betweenClosed(highlightStartPos_2, highlightEndPos_2)) {
+            if (!level.canSeeSky(new BlockPos(checkPos.getX(), pos.getY() + 1, checkPos.getZ()))) {
+                setIdleReason(OBSTRUCTED_VOLTA);
+                idleReason = OBSTRUCTED_VOLTA;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean keepSubscribing() {
+        return true;
+    }
+
+    public static BlockPattern getPatternCommon(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
+        return FactoryBlockPattern.start(definition, RelativeDirection.BACK, RelativeDirection.UP, RelativeDirection.LEFT)
+                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
+                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("  ~CD  ", "   C   ", "   C   ", " AACAA ", "ABBCBBA")
+                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
+                .where('A', frames(GTMaterials.Aluminium))
+                .where('B', blocks(photovoltaicBlock.get()))
+                .where('C', blocks(casing.get()))
+                .where('D', blocks(casing.get())
+                        .or(Predicates.blocks(CONTROL_HATCH.get()).setMaxGlobalLimited(1).setPreviewCount(0))
+                        .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
+                        .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(1))
+                        .or(abilities(GTOPartAbility.OUTPUT_MANA).setMaxGlobalLimited(4))
+                        .or(abilities(MAINTENANCE).setExactLimit(1)))
+                .where('~', controller(definition))
+                .where(' ', any())
+                .build();
+    }
+
+    public static MultiblockShapeInfo getPatternCommonPreview(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
+        return MultiblockShapeInfo.builder()
+                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
+                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("   q   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("   p   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("  ~CC  ", "   C   ", "   C   ", " AACAA ", "ABBCBBA")
+                .aisle("   n   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("   m   ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
+                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
+                .where('A', ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.Aluminium))
+                .where('B', photovoltaicBlock)
+                .where('C', casing)
+                .where('m', WIRELESS_MANA_OUTPUT_HATCH[HV], Direction.WEST)
+                .where('n', ENERGY_OUTPUT_HATCH_16A[HV], Direction.WEST)
+                .where('p', CONTROL_HATCH, Direction.WEST)
+                .where('q', MAINTENANCE_HATCH, Direction.WEST)
+                .where('~', definition, Direction.WEST)
+                .where(' ', AIR)
+                .build(definition);
+    }
+
+    public static BlockPattern getPatternInSpace(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
+        return FactoryBlockPattern.start(definition)
+                .aisle(" CDC ")
+                .aisle("CC CC")
+                .aisle("C   C")
+                .aisle("AAAAA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("AAAAA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("AAAAA")
+                .where('A', GTOPredicates.frame(GTMaterials.Aluminium))
+                .where('B', blocks(photovoltaicBlock.get()))
+                .where('C', blocks(casing.get())
+                        .or(Predicates.blocks(CONTROL_HATCH.get()).setMaxGlobalLimited(1).setPreviewCount(0))
+                        .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
+                        .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(1))
+                        .or(abilities(GTOPartAbility.OUTPUT_MANA).setMaxGlobalLimited(4))
+                        .or(abilities(MAINTENANCE).setExactLimit(1)))
+                .where('D', controller(definition))
+                .where(' ', any())
+                .build();
+    }
+
+    public static MultiblockShapeInfo getPatternInSpacePreview(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
+        return MultiblockShapeInfo.builder()
+                .aisle("AAAAA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("AAAAA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("ABBBA")
+                .aisle("AAAAA")
+                .aisle("C   o")
+                .aisle("mn pq")
+                .aisle(" CDC ")
+                .where('A', ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.Aluminium))
+                .where('B', photovoltaicBlock)
+                .where('C', casing)
+                .where('m', WIRELESS_MANA_OUTPUT_HATCH[HV], Direction.UP)
+                .where('n', ENERGY_OUTPUT_HATCH_16A[HV], Direction.UP)
+                .where('o', FLUID_IMPORT_HATCH[HV], Direction.UP)
+                .where('p', CONTROL_HATCH, Direction.UP)
+                .where('q', MAINTENANCE_HATCH, Direction.UP)
+                .where('D', definition.defaultBlockState())
+                .where(' ', AIR)
+                .build(() -> getPatternInSpace(definition, casing, photovoltaicBlock));
+    }
+
+    @Override
+    public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        attachHighlightConfigurators(configuratorPanel);
+    }
+
+    @Override
+    public List<ForgeClientEvent.HighlightNeed> getCustomHighlights() {
+        return List.of(
+                new ForgeClientEvent.HighlightNeed(highlightStartPos_1, highlightEndPos_1, ChatFormatting.YELLOW.getColor()),
+                new ForgeClientEvent.HighlightNeed(highlightStartPos_2, highlightEndPos_2, ChatFormatting.YELLOW.getColor()));
+    }
+
+    @Override
+    public List<Component> getHighlightText() {
+        return List.of(Component.translatable("gtocore.machine.highlight_obstruction"));
+    }
+
+    @Override
+    public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
+        Level level = getLevel();
+        if (level != null) {
+            boolean canSeeSky;
+            if (refreshSky > 0) {
+                refreshSky--;
+                canSeeSky = this.canSeeSky;
+            } else {
+                this.canSeeSky = canSeeSky = canSeeSky(level);
+                refreshSky = 10;
+            }
+            if (!canSeeSky) {
+                setIdleReason(idleReason);
+                return null;
+            }
+            int eut;
+            int basic = (int) (basic_rate * PlanetApi.API.getSolarPower(level));
+            boolean distilledWater = false;
+            if (PlanetApi.API.isSpace(level)) {
+                distilledWater = true;
+                eut = unit.matchFluid(GTMaterials.DistilledWater.getFluid(), basic / 4) ? basic << 4 : 0;
+                if (eut == 0) setIdleReason(Component.translatable("gtceu.recipe_logic.insufficient_in").append(": ").append(GTMaterials.DistilledWater.getLocalizedName()));
+            } else {
+                eut = (int) (basic * (GTODimensions.isVoid(level.dimension()) ? 14 : GTOUtils.getSunIntensity(level.getDayTime()) * 15 / 100 * (level.isRaining() ? (level.isThundering() ? 0.3f : 0.7f) : 1)));
+                if (eut == 0) setIdleReason(Component.translatable("recipe.condition.daytime.day.tooltip"));
+            }
+            if (eut == 0) return null;
+            var builder = getRecipeBuilder().duration(20);
+            if (distilledWater) builder.inputFluids(GTMaterials.DistilledWater.getFluid(), basic / 4);
+            if (getStorageStack().getCount() == 64) {
+                builder.MANAt(-eut);
+            } else {
+                builder.EUt(-eut);
+            }
+            return builder.build();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean alwaysSearchRecipe() {
+        return true;
+    }
+}

@@ -1,0 +1,154 @@
+package com.gtocore.client.forge;
+
+import com.gtocore.client.KeyBind;
+import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.Mods;
+
+import com.gtolib.GTOCore;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
+import appeng.client.gui.AEBaseScreen;
+import appeng.menu.SlotSemantic;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.PoseStack;
+import lombok.Getter;
+
+/// A useful debug tool to inspect the slot indices in container screens.
+/// This file is under the MPL-2.0 license.
+/// [link](https://github.com/TeamDman/SuperFactoryManager/blob/1.20.1/src/main/java/ca/teamdman/sfm/client/handler/ContainerScreenInspectorHandler.java)
+/// @author teamdman
+@OnlyIn(Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = GTOCore.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+public class DebugScreenInspector {
+
+    @Getter
+    private static boolean visible = false;
+
+    @SubscribeEvent
+    public static void onGuiRender(ScreenEvent.Render.Post event) {
+        if (!visible) return;
+        if (event.getScreen() instanceof AbstractContainerScreen<?> screen) {
+            AbstractContainerMenu menu = screen.getMenu();
+            int containerSlotCount = 0;
+            int inventorySlotCount = 0;
+            GuiGraphics graphics = event.getGuiGraphics();
+            PoseStack poseStack = graphics.pose();
+            poseStack.pushPose();
+            poseStack.translate(0, 0, 350); // render text over the items but under the tooltips
+
+            // draw index on each slot
+            Font font = Minecraft.getInstance().font;
+            for (var slot : menu.slots) {
+                int color;
+                if (slot.container instanceof Inventory) {
+                    // noinspection DataFlowIssue
+                    color = ChatFormatting.YELLOW.getColor();
+                    inventorySlotCount++;
+                } else {
+                    color = 0xFFF;
+                    containerSlotCount++;
+                }
+                graphics.drawString(
+                        font,
+                        Component.literal(Integer.toString(slot.getSlotIndex())),
+                        screen.getGuiLeft() + slot.x,
+                        screen.getGuiTop() + slot.y,
+                        color,
+                        false);
+            }
+
+            // draw text for slot totals
+            graphics.drawString(
+                    font,
+                    Component.literal(String.valueOf(containerSlotCount)).withStyle(ChatFormatting.BLUE),
+                    5,
+                    25,
+                    0xFFFFFF,
+                    false);
+            graphics.drawString(
+                    font,
+                    Component.literal(String.valueOf(inventorySlotCount)).withStyle(ChatFormatting.YELLOW),
+                    5,
+                    40,
+                    0xFFFFFF,
+                    false);
+            poseStack.popPose();
+
+            var mouseAbsX = event.getMouseX();
+            var mouseAbsY = event.getMouseY();
+            var mouseRelX = event.getMouseX() - screen.getGuiLeft();
+            var mouseRelY = event.getMouseY() - screen.getGuiTop();
+            // draw mouse position
+            graphics.drawString(
+                    font,
+                    Component.literal(String.format("Mouse Abs: %d, %d", mouseAbsX, mouseAbsY))
+                            .withStyle(ChatFormatting.GREEN),
+                    mouseAbsX + 5,
+                    mouseAbsY + 5,
+                    0xFFFFFF,
+                    false);
+            graphics.drawString(
+                    font,
+                    Component.literal(String.format("Mouse Rel: %d, %d", mouseRelX, mouseRelY))
+                            .withStyle(ChatFormatting.YELLOW),
+                    mouseAbsX + 5,
+                    mouseAbsY + 20,
+                    0xFFFFFF,
+                    false);
+
+            var slot = screen.findSlot(mouseAbsX, mouseAbsY);
+            if (slot != null) {
+                // draw slot class name
+                graphics.drawString(
+                        font,
+                        Component.literal(slot.getClass().getSimpleName())
+                                .withStyle(ChatFormatting.GOLD),
+                        mouseAbsX + 5,
+                        mouseAbsY - 30,
+                        0xFFFFFF,
+                        false);
+                if (screen instanceof AEBaseScreen<?> aeScreen) {
+                    // draw slot semantics
+                    SlotSemantic semantics = aeScreen.getMenu().getSlotSemantic(slot);
+                    if (semantics != null) {
+                        graphics.drawString(
+                                font,
+                                Component.literal(semantics.id())
+                                        .withStyle(ChatFormatting.AQUA),
+                                mouseAbsX + 5,
+                                mouseAbsY - 45,
+                                0xFFFFFF,
+                                false);
+                    }
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onKeyDown(ScreenEvent.KeyPressed.Pre event) {
+        if (Mods.SFM.isLoaded()) return; // Skip if SFM is loaded, as it handles the hotkey itself
+        if (!GTOConfig.INSTANCE.devMode.dev) return; // Only enable in dev mode
+        // Handle Ctrl+I hotkey to toggle overlay
+        var toggleKey = KeyBind.debugInspectKey;
+        var toggleKeyPressed = toggleKey.isActiveAndMatches(InputConstants.Type.KEYSYM.getOrCreate(event.getKeyCode()));
+        if (toggleKeyPressed) {
+            visible = !visible;
+            event.setCanceled(true);
+        }
+    }
+}

@@ -1,0 +1,174 @@
+package com.gtocore.data.recipe.gtm.chemistry;
+
+import static com.gregtechceu.gtceu.api.GTValues.*;
+import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
+import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gtocore.common.data.GTORecipeTypes.*;
+
+final class TitaniumRecipes {
+
+    private TitaniumRecipes() {}
+
+    public static void init() {
+        titaniumProcess();
+        solvayProcess();
+        bauxiteProcess();
+        ilmeniteProcess();
+    }
+
+    private static void titaniumProcess() {
+        // Rutile extraction from Ilmenite
+        // FeTiO3 + C -> Fe + TiO2 + CO
+        REACTION_FURNACE_RECIPES.recipeBuilder("rutile_from_ilmenite")
+                .inputItems(dust, Ilmenite, 5)
+                .inputItems(dust, Carbon)
+                .outputItems(ingot, WroughtIron)
+                .outputItems(dust, Rutile, 3)
+                .outputFluids(CarbonDioxide.getFluid(1000))
+                .blastFurnaceTemp(1700)
+                .duration(1600).EUt(VA[HV]).save();
+
+        // Chloride Process
+        // TiO2 + 2C + 4Cl -> TiCl4 + 2CO
+        CHEMICAL_RECIPES.recipeBuilder("titanium_tetrachloride")
+                .inputItems(dust, Carbon, 2)
+                .inputItems(dust, Rutile)
+                .inputFluids(Chlorine, 4000)
+                .outputFluids(CarbonMonoxide.getFluid(2000))
+                .outputFluids(TitaniumTetrachloride.getFluid(1000))
+                .priority(1)
+                .duration(400).EUt(VA[HV]).save();
+
+        // Kroll Process
+        // TiCl4 + 2Mg -> Ti + 2MgCl2
+        REACTION_FURNACE_RECIPES.recipeBuilder("titanium_from_tetrachloride")
+                .inputItems(dust, Magnesium, 2)
+                .inputFluids(TitaniumTetrachloride, 1000)
+                .outputItems(ingotHot, Titanium)
+                .outputItems(dust, MagnesiumChloride, 6)
+                .blastFurnaceTemp(Titanium.getBlastTemperature() + 200)
+                .priority(1)
+                .duration(800).EUt(VA[HV]).save();
+
+        CHEMICAL_RECIPES.recipeBuilder("salt_from_magnesium_chloride")
+                .inputItems(dust, MagnesiumChloride, 3)
+                .inputItems(dust, Sodium, 2)
+                .outputItems(dust, Magnesium, 1)
+                .outputItems(dust, Salt, 4)
+                .duration(200).EUt(VA[HV]).save();
+    }
+
+    private static void solvayProcess() {
+        // CaCO3 -> CaO + CO2
+        REACTION_FURNACE_RECIPES.recipeBuilder("quicklime_from_calcite")
+                .circuitMeta(1)
+                .inputItems(dust, Calcite, 5)
+                .outputItems(dust, Quicklime, 2)
+                .outputFluids(CarbonDioxide.getFluid(1000))
+                .blastFurnaceTemp(1250)
+                .duration(200).EUt(VA[LV]).save();
+
+        // NaCl(H2O) + CO2 + NH3 -> NH4Cl + NaHCO3
+        CHEMICAL_RECIPES.recipeBuilder("sodium_bicarbonate_from_salt")
+                .inputItems(dust, Salt, 4)
+                .inputFluids(CarbonDioxide, 1000)
+                .inputFluids(Ammonia, 1000)
+                .inputFluids(Water, 1000)
+                .outputItems(dust, AmmoniumChloride, 2)
+                .outputItems(dust, SodiumBicarbonate, 6)
+                .duration(400).EUt(VA[MV]).save();
+
+        // 2NaHCO3 -> Na2CO3 + CO2 + H2O
+        ELECTROLYZER_RECIPES.recipeBuilder("soda_ash_from_bicarbonate")
+                .inputItems(dust, SodiumBicarbonate, 12)
+                .outputItems(dust, SodaAsh, 6)
+                .outputFluids(CarbonDioxide.getFluid(1000))
+                .outputFluids(Water.getFluid(1000))
+                .duration(200).EUt(VA[MV]).save();
+
+        // 2NH4Cl + CaO -> CaCl2 + 2NH3 + H2O
+        CHEMICAL_RECIPES.recipeBuilder("calcium_chloride_from_quicklime")
+                .inputItems(dust, AmmoniumChloride, 12)
+                .inputItems(dust, Quicklime, 2)
+                .outputItems(dust, CalciumChloride, 3)
+                .outputFluids(Ammonia.getFluid(2000))
+                .outputFluids(Water.getFluid(1000))
+                .duration(200).EUt(VA[MV]).save();
+    }
+
+    private static void bauxiteProcess() {
+        // Bauxite (crushed) + Soda Ash + Calcium Chloride -> Bauxite Slurry
+        MIXER_RECIPES.recipeBuilder("bauxite_slurry_from_crushed_bauxite")
+                .inputItems(crushed, Bauxite, 32)
+                .inputItems(dust, SodaAsh, 12)
+                .inputItems(dust, CalciumChloride, 6)
+                .inputFluids(Water, 1000)
+                .outputFluids(BauxiteSlurry.getFluid(4000))
+                .duration(500).EUt(VA[HV]).save();
+
+        // Bauxite (washed) + Soda Ash + Calcium Chloride -> Bauxite Slurry
+        MIXER_RECIPES.recipeBuilder("bauxite_slurry_from_washed_bauxite")
+                .inputItems(crushedPurified, Bauxite, 32)
+                .inputItems(dust, SodaAsh, 12)
+                .inputItems(dust, CalciumChloride, 6)
+                .inputFluids(Water, 1000)
+                .outputFluids(BauxiteSlurry.getFluid(4000))
+                .duration(500).EUt(VA[HV]).save();
+
+        // Bauxite Slurry -> Cracked Bauxite Slurry
+        CRACKING_RECIPES.recipeBuilder("cracked_bauxite_slurry")
+                .circuitMeta(1)
+                .inputFluids(BauxiteSlurry, 16000)
+                .inputFluids(Steam, 1000)
+                .outputFluids(CrackedBauxiteSlurry.getFluid(16000))
+                .duration(500).EUt(VA[HV]).save();
+
+        // Bauxite Slurry + Sulfuric -> Aluminium, Slag, Sludge, and SO3 (for looping back to Sulfuric Acid)
+        LARGE_CHEMICAL_RECIPES.recipeBuilder("bauxite_sludge_from_slurry")
+                .inputFluids(CrackedBauxiteSlurry, 4000)
+                .inputFluids(SulfuricAcid, 1000)
+                .outputItems(dust, Aluminium, 24)
+                .outputItems(dust, BauxiteSlag, 8)
+                .outputFluids(BauxiteSludge.getFluid(2500))
+                .outputFluids(SulfurTrioxide.getFluid(1000))
+                .duration(500).EUt(VA[HV]).save();
+
+        // Bauxite Slag -> Salt (looped) + Nd + Cr (byproducts)
+        ELECTROMAGNETIC_SEPARATOR_RECIPES.recipeBuilder("bauxite_slag_separation")
+                .inputItems(dust, BauxiteSlag)
+                .outputItems(dust, Salt)
+                .chancedOutput(dust, Neodymium, 2000, 250)
+                .chancedOutput(dust, Chromium, 1000, 250)
+                .duration(50).EUt(VA[MV]).save();
+
+        // Bauxite Sludge -> Calcite (looped) + Decalcified Bauxite Sludge
+        DISTILLERY_RECIPES.recipeBuilder("bauxite_sludge_decalcification")
+                .circuitMeta(1)
+                .inputFluids(BauxiteSludge, 500)
+                .outputItems(dust, Calcite, 2)
+                .outputFluids(DecalcifiedBauxiteSludge.getFluid(500))
+                .duration(100).EUt(VA[MV]).save();
+
+        // Decalcified Bauxite Sludge -> Rutile, Gallium, SiO2, Iron, Water
+        CENTRIFUGE_RECIPES.recipeBuilder("bauxite_sludge_centrifuge")
+                .inputFluids(DecalcifiedBauxiteSludge, 250)
+                .outputItems(dust, Rutile, 2)
+                .chancedOutput(dust, Gallium, 5000, 550)
+                .chancedOutput(dust, Gallium, 3000, 800)
+                .chancedOutput(dust, Gallium, 1000, 1000)
+                .chancedOutput(dust, SiliconDioxide, 9000, 250)
+                .chancedOutput(dust, Iron, 8000, 250)
+                .outputFluids(Water.getFluid(250))
+                .duration(100).EUt(VA[MV]).save();
+    }
+
+    private static void ilmeniteProcess() {
+        // Byproduct separation for Ilmenite
+        ELECTROMAGNETIC_SEPARATOR_RECIPES.recipeBuilder("ilmenite_separation")
+                .inputItems(dust, IlmeniteSlag)
+                .chancedOutput(dust, Iron, 8000, 0)
+                .chancedOutput(dust, Tantalum, 2000, 0)
+                .chancedOutput(dust, Niobium, 500, 0)
+                .duration(50).EUt(VA[MV]).save();
+    }
+}

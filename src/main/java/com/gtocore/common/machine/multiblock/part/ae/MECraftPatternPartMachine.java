@@ -1,0 +1,115 @@
+package com.gtocore.common.machine.multiblock.part.ae;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+
+import appeng.api.crafting.IPatternDetails;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.KeyCounter;
+import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
+import appeng.crafting.pattern.EncodedPatternItem;
+import appeng.crafting.pattern.ProcessingPatternItem;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@Setter
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPatternPartMachine.InternalSlot> {
+
+    private Runnable onContentsChanged = () -> {};
+
+    public MECraftPatternPartMachine(MetaMachineBlockEntity holder) {
+        super(holder, 72);
+    }
+
+    @Override
+    public InternalSlot[] createInternalSlotArray() {
+        return new InternalSlot[72];
+    }
+
+    @Override
+    public boolean patternFilter(ItemStack stack) {
+        return stack.getItem() instanceof EncodedPatternItem &&
+                !(stack.getItem() instanceof ProcessingPatternItem) &&
+                MEPatternPartMachineKtKt.checkDuplicatedPattern(this, stack);
+    }
+
+    @Override
+    public InternalSlot createInternalSlot(int i) {
+        return new InternalSlot(this);
+    }
+
+    @Override
+    public boolean defaultShowInTravel() {
+        return false;
+    }
+
+    public static final class InternalSlot extends AbstractInternalSlot {
+
+        @Getter
+        private ItemStack output;
+        @Setter
+        @Getter
+        private long amount;
+        private final MECraftPatternPartMachine machine;
+
+        private InternalSlot(MECraftPatternPartMachine machine) {
+            this.machine = machine;
+        }
+
+        @Override
+        public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
+            if (patternDetails instanceof IMolecularAssemblerSupportedPattern pattern && pattern.getOutputs().length == 1 && pattern.getOutputs()[0].what() instanceof AEItemKey itemKey) {
+                if (output == null) output = itemKey.toStack();
+                amount += pattern.getOutputs()[0].amount();
+                machine.onContentsChanged.run();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void onPatternChange() {
+            output = null;
+            amount = 0;
+        }
+
+        @Override
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = super.serializeNBT();
+            if (output != null) {
+                tag.put("output", output.serializeNBT());
+                tag.putLong("amount", amount);
+            }
+            return tag;
+        }
+
+        @Override
+        public void deserializeNBT(CompoundTag nbt) {
+            amount = nbt.getLong("amount");
+            if (nbt.contains("output")) {
+                output = ItemStack.of(nbt.getCompound("output"));
+            }
+        }
+
+        @Override
+        public void setOnContentsChanged(Runnable onContentChanged) {}
+
+        @Override
+        public Runnable getOnContentsChanged() {
+            return machine.onContentsChanged;
+        }
+    }
+
+    @Override
+    public boolean gto$isCraftingContainer() {
+        return true;
+    }
+}

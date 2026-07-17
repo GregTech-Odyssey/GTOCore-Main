@@ -1,0 +1,148 @@
+package com.gtocore.common.machine.multiblock.water;
+
+import com.gtocore.common.machine.multiblock.part.IndicatorHatchPartMachine;
+
+import com.gtolib.api.machine.part.ItemPartMachine;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public final class HighEnergyLaserPurificationUnitMachine extends WaterPurificationUnitMachine {
+
+    private static final List<Item> LENS = List.of(
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Red),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Orange),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Brown),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Yellow),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Green),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Cyan),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Blue),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Purple),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Magenta),
+            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Pink));
+
+    @SaveToDisk
+    private int index;
+
+    @SaveToDisk
+    private int time;
+
+    @SaveToDisk
+    private int await;
+
+    @SaveToDisk
+    private int working;
+
+    @SaveToDisk
+    private int chance;
+
+    @SaveToDisk
+    private long inputCount;
+
+    private IndicatorHatchPartMachine indicatorHatchPartMachine;
+    private ItemPartMachine ItemPartMachine;
+
+    public HighEnergyLaserPurificationUnitMachine(MetaMachineBlockEntity holder) {
+        super(holder, 32);
+    }
+
+    @Override
+    public void onPartScan(IMultiPart part) {
+        super.onPartScan(part);
+        if (indicatorHatchPartMachine == null && part instanceof IndicatorHatchPartMachine lensSensorPart) {
+            indicatorHatchPartMachine = lensSensorPart;
+        } else if (ItemPartMachine == null && part instanceof ItemPartMachine itemHatchPart) {
+            ItemPartMachine = itemHatchPart;
+        }
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        super.onStructureInvalid();
+        indicatorHatchPartMachine = null;
+        ItemPartMachine = null;
+    }
+
+    @Override
+    public void customText(List<Component> textList) {
+        super.customText(textList);
+        if (getRecipeLogic().isWorking()) {
+            textList.add(Component.translatable("gtceu.jei.ore_vein_diagram.chance", chance));
+            textList.add(Component.translatable("attributeslib.gui.current", LENS.get(index).getDescription()));
+        }
+    }
+
+    @Override
+    public void onWorking() {
+        super.onWorking();
+        if (getRecipeLogic().getProgress() > time) {
+            time = GTValues.RNG.nextInt(120) + 120 + getRecipeLogic().getProgress();
+            if (index < 9) {
+                index++;
+            } else {
+                index = 0;
+            }
+            await = 80;
+        }
+        if (working > 0 && match()) {
+            working++;
+        }
+        if (working > 80) {
+            working = -1;
+            chance += 10;
+        }
+        if (await > 0) {
+            if (match()) {
+                await = 0;
+                working = 1;
+            } else {
+                indicatorHatchPartMachine.setRedstoneSignalOutput(15);
+            }
+            await--;
+        } else {
+            indicatorHatchPartMachine.setRedstoneSignalOutput(0);
+        }
+    }
+
+    private boolean match() {
+        return ItemPartMachine.getInventory().storage.getStackInSlot(0).is(LENS.get(index));
+    }
+
+    @Override
+    public void afterWorking() {
+        super.afterWorking();
+        if (GTValues.RNG.nextInt(100) <= chance) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater6, inputCount * 9 / 10);
+    }
+
+    @Override
+    long prepareRecipe(RecipeHandlerUnit unit) {
+        eut = 0;
+        chance = 0;
+        time = GTValues.RNG.nextInt(120) + 120;
+        inputCount = Math.min(parallel(), unit.getFluidAmount(true, WaterPurificationPlantMachine.GradePurifiedWater5)[0]);
+        if (inputCount > 0) {
+            recipe = getRecipeBuilder().duration(WaterPurificationPlantMachine.DURATION).inputFluids(WaterPurificationPlantMachine.GradePurifiedWater5, inputCount).buildRawRecipe();
+            if (matchRecipe(unit, recipe)) {
+                calculateVoltage(inputCount);
+            }
+        }
+        return eut;
+    }
+}

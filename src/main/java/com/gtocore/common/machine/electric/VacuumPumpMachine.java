@@ -1,0 +1,89 @@
+package com.gtocore.common.machine.electric;
+
+import com.gtocore.common.data.GTORecipeDataKeys;
+
+import com.gtolib.api.machine.feature.IVacuumMachine;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
+import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
+import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
+
+import net.minecraft.network.chat.Component;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+public final class VacuumPumpMachine extends SimpleTieredMachine implements IVacuumMachine {
+
+    @SaveToDisk
+    @SyncToClient
+    private int vacuumTier;
+    @Getter
+    @SaveToDisk
+    private int totalEU;
+    @Getter
+    private TickableSubscription tickSubs;
+
+    public VacuumPumpMachine(MetaMachineBlockEntity holder, int tier, Object... args) {
+        super(holder, tier, GTMachineUtils.defaultTankSizeFunction, args);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!isRemote()) {
+            tickSubs = subscribeServerTick(tickSubs, this::tick, 20);
+        }
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        if (tickSubs != null) {
+            tickSubs.unsubscribe();
+            tickSubs = null;
+        }
+    }
+
+    private void tick() {
+        if (getRecipeLogic().isWorking()) {
+            if (totalEU < 12000) totalEU += 2 * GTValues.VA[getTier()];
+        } else if (totalEU > 0) {
+            totalEU -= 4 * GTValues.VA[getTier()];
+        }
+        vacuumTier = Math.min(getTier() + 1, (int) Math.ceil(totalEU / 1200.0));
+    }
+
+    @Override
+    public void afterWorking() {
+        super.afterWorking();
+        update();
+    }
+
+    @Override
+    public boolean checkConditions(RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
+        return getTier() == recipe.data.getInt(GTORecipeDataKeys.TIER) && super.checkConditions(unit, recipe);
+    }
+
+    @Override
+    public void attachTooltips(TooltipsPanel tooltipsPanel) {
+        super.attachTooltips(tooltipsPanel);
+        tooltipsPanel.attachTooltips(new IFancyTooltip.Basic(() -> GuiTextures.INFO_ICON, () -> List.of(Component.translatable("gtocore.recipe.vacuum.tier", vacuumTier)), () -> true, () -> null));
+    }
+
+    @Override
+    public int getVacuumTier() {
+        return this.vacuumTier;
+    }
+}

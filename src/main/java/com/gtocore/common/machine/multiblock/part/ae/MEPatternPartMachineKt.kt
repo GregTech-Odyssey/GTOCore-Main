@@ -1,0 +1,520 @@
+package com.gtocore.common.machine.multiblock.part.ae
+
+import com.gtocore.common.data.machines.GTAEMachines
+import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt
+import com.gtocore.eio_travel.logic.TravelSavedData
+import com.gtocore.eio_travel.logic.TravelUtils
+import com.gtocore.integration.ae.PatternContainerGroupHelper
+import com.gtocore.integration.ae.hooks.IExtendedPatternContainer
+import com.gtocore.integration.ae.wireless.WirelessMachine
+
+import net.minecraft.MethodsReturnNonnullByDefault
+import net.minecraft.core.BlockPos
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.ListTag
+import net.minecraft.nbt.Tag
+import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.phys.BlockHitResult
+
+import appeng.api.crafting.IPatternDetails
+import appeng.api.crafting.PatternDetailsHelper
+import appeng.api.implementations.blockentities.PatternContainerGroup
+import appeng.api.inventories.InternalInventory
+import appeng.api.networking.IGrid
+import appeng.api.networking.IGridNodeListener
+import appeng.api.networking.crafting.ICraftingProvider
+import appeng.api.stacks.AEItemKey
+import appeng.api.stacks.KeyCounter
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity
+import com.gregtechceu.gtceu.api.gui.GuiTextures
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton
+import com.gregtechceu.gtceu.api.machine.TickableSubscription
+import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine
+import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine
+import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController
+import com.gregtechceu.gtceu.api.recipe.handler.IO
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit
+import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler
+import com.gregtechceu.gtceu.utils.TaskHandler
+import com.gregtechceu.gtceu.utils.asm.EmptyMethodChecker
+import com.gto.datasynclib.annotations.SaveToDisk
+import com.gto.datasynclib.annotations.SyncToClient
+import com.gto.datasynclib.listener.IntNotifiableHolder
+import com.gtolib.api.ae2.MyPatternDetailsHelper
+import com.gtolib.api.ae2.pattern.IParallelPatternDetails
+import com.gtolib.api.annotation.DataGeneratorScanned
+import com.gtolib.api.annotation.language.RegisterLanguage
+import com.gtolib.api.gui.ktflexible.*
+import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup
+import com.lowdragmc.lowdraglib.gui.util.ClickData
+import com.lowdragmc.lowdraglib.gui.widget.Widget
+import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup
+import com.lowdragmc.lowdraglib.syncdata.IContentChangeAware
+import com.lowdragmc.lowdraglib.syncdata.ITagSerializable
+
+import java.util.function.IntSupplier
+import javax.annotation.ParametersAreNonnullByDefault
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+@DataGeneratorScanned
+abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInternalSlot>(holder: MetaMachineBlockEntity, val maxPatternCount: Int) :
+    MEPartMachine(holder, IO.IN),
+    ICraftingProvider,
+    WirelessMachine,
+    IInteractedMachine,
+    IExtendedPatternContainer,
+    IDropSaveMachine {
+    override fun onUse(state: BlockState?, world: Level?, pos: BlockPos?, player: Player?, hand: InteractionHand?, hit: BlockHitResult?): InteractionResult? {
+        if (!isRemote) {
+            newPageField.set(newPageField.get())
+            newPageField.markAsChanged()
+            syncToClient()
+        }
+        return super.onUse(state, world, pos, player, hand, hit)
+    }
+
+    // ==================== 常量和静态成员 ====================
+    @DataGeneratorScanned
+    companion object {
+
+        @RegisterLanguage(cn = "AE显示名称:", en = "AE Name:")
+        const val AE_NAME: String = "gtceu.ae.pattern_part_machine.ae_name"
+
+        @RegisterLanguage(cn = "仅在简单游戏难度下启用", en = "Enable only in Easy Game Mode")
+        const val NOT_SIMPLE: String = "gtceu.ae.pattern_part_machine.not_simple"
+
+        @RegisterLanguage(cn = "不在旅行网络中显示", en = "Do not show in Travel Network")
+        const val NOT_SHOW_IN_TRAVEL: String = "gtceu.ae.pattern_part_machine.not_show_in_travel"
+
+        @RegisterLanguage(cn = "在旅行网络中显示", en = "Show in Travel Network")
+        const val SHOW_IN_TRAVEL: String = "gtceu.ae.pattern_part_machine.show_in_travel"
+
+        @RegisterLanguage(cn = "重置缓存", en = "Clear Machine Recipe Cache")
+        const val CLEAR_MACHINE_RECIPE_CACHE: String = "gtceu.ae.pattern_part_machine.clear_machine_recipe_cache"
+
+        @RegisterLanguage(cn = "重置机器的所有配方缓存，不会改变样板的任何数据内容", en = "Clear all recipe cache of the machine, will not change any data content in pattern")
+        const val CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP: String = "gtceu.ae.pattern_part_machine.clear_machine_recipe_cache_tooltip"
+
+        @RegisterLanguage(cn = "清除配方", en = "Clear Recipe in Pattern")
+        const val CLEAR_PATTERN_RECIPE_CACHE: String = "gtceu.ae.pattern_part_machine.clear_pattern_recipe_cache"
+
+        @RegisterLanguage(cn = "重置样板内的配方缓存，会清除样板内的编写的配方（不会改变原料与产物内容）", en = "Clear recipe cache in pattern, will clear the recipe written in pattern (will not change input and output)")
+        const val CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP: String = "gtceu.ae.pattern_part_machine.clear_pattern_recipe_cache_tooltip"
+    }
+
+    // ==================== 持久化属性 ====================
+    @SaveToDisk
+    @SyncToClient
+    val patternInventory: CustomItemStackHandler = CustomItemStackHandler(maxPatternCount)
+
+    @SaveToDisk
+    private val internalInventory: Array<AbstractInternalSlot> = createInternalSlotArray()
+
+    @SyncToClient
+    @SaveToDisk
+    var customName: String = ""
+
+    @SaveToDisk
+    var showInTravelNetwork: Boolean = defaultShowInTravel()
+
+    // ==================== 运行时属性 ====================
+    val detailsSlotMap: BiMap<IPatternDetails, T> = HashBiMap.create(maxPatternCount)
+    var detailsInit = false
+
+    var patterns: List<IPatternDetails> = emptyList()
+    private var needPatternSync: Boolean = false
+    private var updateSubs: TickableSubscription? = null
+
+    // ==================== 委托属性 ====================
+    val internalPatternInventory by lazy {
+        MEPartInv(this)
+    }
+
+    // ==================== 初始化 ====================
+    init {
+        patternInventory.setFilter(::patternFilter)
+        internalInventory.indices.forEach { i ->
+            internalInventory[i] = createInternalSlot(i)
+        }
+        mainNode.addService(ICraftingProvider::class.java, this)
+    }
+
+    // ==================== 抽象方法 ====================
+    abstract fun createInternalSlotArray(): Array<AbstractInternalSlot>
+    abstract fun patternFilter(stack: ItemStack): Boolean
+    abstract fun createInternalSlot(i: Int): T
+
+    // ==================== 公开方法 ====================
+    @Suppress("UNCHECKED_CAST")
+    fun getInternalInventory(): Array<T> = internalInventory as Array<T>
+
+    open fun onPatternChange(index: Int) {
+        if (isRemote) return
+        onChanged()
+
+        val internalInv = getInternalInventory()[index]
+        val newPattern = patternInventory.getStackInSlot(index)
+        val newPatternDetails = decodePattern(newPattern, index)
+        val oldPatternDetails = detailsSlotMap.inverse()[internalInv]
+
+        detailsSlotMap.forcePut(newPatternDetails, internalInv)
+
+        oldPatternDetails.takeIf { it != newPatternDetails }.let {
+            internalInv.onPatternChange()
+        }
+
+        updatePatterns()
+    }
+
+    open fun defaultShowInTravel(): Boolean = true
+
+    // ==================== 扩展钩子方法 ====================
+    open fun appendHoverTooltips(index: Int): Component? = null
+    open fun onMouseClicked(index: Int) {}
+    open fun getApplyIndex(): IntSupplier = IntSupplier { -1 }
+    open fun runOnUpdate() {}
+    open fun addWidget(group: WidgetGroup) {}
+    open fun onDetailsPostInit() {}
+
+    // ==================== 生命周期方法 ====================
+    @SyncToClient
+    val newPageField: IntNotifiableHolder = IntNotifiableHolder.create()
+
+    override fun onLoad() {
+        super.onLoad()
+        detailsInit = false
+        level?.let { TravelUtils.removeAndReadd(it, this) }
+    }
+
+    override fun onUnload() {
+        super.onUnload()
+        detailsInit = false
+        level?.let { TravelSavedData.getTravelData(it).removeTravelTargetAt(it, holder.blockPos) }
+    }
+
+    override fun canShared(): Boolean = false
+
+    override fun addedToController(controller: IMultiController) {
+        super.addedToController(controller)
+        TravelUtils.requireResync(level!!)
+    }
+
+    override fun onMainNodeStateChanged(reason: IGridNodeListener.State) {
+        super<MEPartMachine>.onMainNodeStateChanged(reason)
+        if (isOnline) {
+            if (!detailsInit) {
+                when (val level = getLevel()) {
+                    is ServerLevel -> {
+                        TaskHandler.enqueueTask(level, {
+                            (0 until patternInventory.slots).forEach { i ->
+                                val pattern = patternInventory.getStackInSlot(i)
+                                decodePattern(pattern, i)?.let { patternDetails ->
+                                    detailsSlotMap.forcePut(patternDetails, getInternalInventory()[i])
+                                }
+                            }
+                            updatePatterns()
+                            onDetailsPostInit()
+                            detailsInit = true
+                        }, 10)
+                    }
+                }
+            }
+        } else {
+            detailsInit = false
+        }
+    }
+
+    // ==================== ICraftingProvider 接口实现 ====================
+    override fun getAvailablePatterns(): List<IPatternDetails> = patterns
+
+    override fun pushPattern(patternDetails: IPatternDetails, inputHolder: Array<KeyCounter>): Boolean = getMainNode().takeIf { it.isActive }?.let {
+        detailsSlotMap[patternDetails]?.pushPattern(patternDetails, inputHolder)
+    } ?: false
+
+    override fun isBusy(): Boolean = false
+
+    // ==================== PatternContainer 接口实现 ====================
+    override fun getTerminalPatternInventory(): InternalInventory = internalPatternInventory
+
+    override fun getTerminalGroup(): PatternContainerGroup = when {
+        isFormed -> {
+            val controller = getController()
+            val availableRecipeTypes =
+                if (controller is IRecipeLogicMachine) controller.availableRecipeTypes.asList() else emptyList()
+            PatternContainerGroupHelper.forPatternBuffer(
+                controller.self(),
+                this,
+                customName,
+                null,
+                availableRecipeTypes,
+            )
+        }
+
+        else -> {
+            val itemKey = AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem())
+            val description =
+                if (customName.isNotEmpty()) {
+                    Component.literal(customName)
+                } else {
+                    GTAEMachines.ME_PATTERN_BUFFER.get().definition.asItem().description
+                }
+            PatternContainerGroup(itemKey, description, emptyList())
+        }
+    }
+
+    override fun `gto$getTerminalGroupSearchName`(): Component {
+        if (!isFormed) {
+            return getTerminalGroup().name()
+        }
+        if (customName.isNotEmpty() && !customName.startsWith("+")) {
+            return Component.literal(customName)
+        }
+
+        val controller = getController()
+        val availableRecipeTypes =
+            if (controller is IRecipeLogicMachine) controller.availableRecipeTypes.asList() else emptyList()
+        val extraSuffix = if (customName.startsWith("+")) customName.substring(1).trim() else ""
+        return PatternContainerGroupHelper.getSearchName(
+            controller.self(),
+            extraSuffix,
+            null,
+            availableRecipeTypes,
+        )
+    }
+
+    // ==================== 其他接口实现 ====================
+    override fun getGrid(): IGrid? = mainNode.grid
+
+    override fun getRecipeHandlers(): List<RecipeHandlerUnit> = emptyList()
+    override fun getHandlerUnit(): RecipeHandlerUnit = RecipeHandlerUnit.NO_DATA
+    override fun isWorkingEnabled(): Boolean = true
+    override fun setWorkingEnabled(ignored: Boolean) {}
+    override fun isDistinct(): Boolean = true
+    override fun setDistinct(isDistinct: Boolean) {}
+    override fun attachConfigurators(configuratorPanel: ConfiguratorPanel) {
+        val configuratorToggle = IFancyConfiguratorButton.Toggle(
+            GuiTextureGroup(
+                GuiTextures.BUTTON,
+                GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true).copy()
+                    .getSubTexture(0.0, 0.0, 1.0, 0.5),
+            ),
+
+            GuiTextureGroup(
+                GuiTextures.BUTTON,
+                GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true).copy()
+                    .getSubTexture(0.0, 0.5, 1.0, 0.5),
+            ),
+            { showInTravelNetwork },
+            { _: ClickData, b: Boolean ->
+                run {
+                    showInTravelNetwork = b
+                    TravelUtils.requireResync(level!!)
+                }
+            },
+        ).setTooltipsSupplier { b ->
+            listOf(SHOW_IN_TRAVEL.takeIf { b } ?: NOT_SHOW_IN_TRAVEL).map { Component.translatable(it) }
+        }
+        configuratorPanel.attachConfigurators(configuratorToggle)
+    }
+
+    // ==================== UI 相关方法 ====================
+    lateinit var freshWidgetGroup: FreshWidgetGroupAbstract
+    override fun createUIWidget(): Widget {
+        freshWidgetGroup = rootFresh(176, 148) {
+            vBox(width = availableWidth, style = { spacing = 3 }) {
+                buildHeader(this, this@MEPatternPartMachineKt)
+                val height1 = this@rootFresh.availableHeight - 24 - 16
+                val pageWidget =
+                    createPatternPageWidget(
+                        container = this,
+                        machine = this@MEPatternPartMachineKt,
+                        pageHeight = height1,
+                        buildToolBoxContent = { buildToolBoxContent() },
+                        emptyPageTextSupplier = { Component.translatable(NOT_SIMPLE) },
+                    )
+                val wid = this@vBox.availableWidth - 2 * 2
+                if (pageWidget.getMaxPageSize() > 1) {
+                    hBox(height = 13, style = { spacing = 2 }) {
+                        button(
+                            width = 30,
+                            height = 13,
+                            onClick = { _ ->
+                                if (!isRemote) {
+                                    newPageField.set((newPageField.get() - 1).coerceAtLeast(0))
+                                    newPageField.markAsChanged()
+                                    syncToClient()
+                                }
+                            },
+                            text = { "<<" },
+                        )
+                        text(height = 13, width = wid - 60, text = { Component.literal("${newPageField.get() + 1} / ${pageWidget.getMaxPageSize()}") })
+                        button(
+                            height = 13,
+                            width = 30,
+                            onClick = { _ ->
+                                if (!isRemote) {
+                                    newPageField.set((newPageField.get() + 1).coerceAtMost(pageWidget.getMaxPageSize() - 1))
+                                    newPageField.markAsChanged()
+                                    syncToClient()
+                                }
+                            },
+                            text = { ">>" },
+                        )
+                    }
+                }
+                if (needAClearButton) {
+                    hBox(height = 13, style = { spacing = 2 }) {
+                        button(
+                            height = 13,
+                            width = 60,
+                            onClick = { _ ->
+                                clearMachineRecipeCache()
+                            },
+                            transKey = CLEAR_MACHINE_RECIPE_CACHE,
+                        ).setHoverTooltips(CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP)
+                        blank(width = wid - 120)
+                        button(
+                            width = 60,
+                            height = 13,
+                            onClick = { _ ->
+                                clearPatternRecipeCache()
+                            },
+                            transKey = CLEAR_PATTERN_RECIPE_CACHE,
+                        ).setHoverTooltips(CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP)
+                    }
+                }
+                pageWidget.refresh()
+            }
+        }
+        return freshWidgetGroup
+    }
+
+    // ==================== 私有辅助方法 ====================
+    private fun updatePatterns() {
+        patterns = detailsSlotMap.keys.filterNotNull()
+        needPatternSync = true
+        when {
+            getMainNode().isOnline -> {
+                updateSubs = subscribeServerTick(updateSubs, ::update)
+            }
+
+            updateSubs != null -> {
+                updateSubs?.unsubscribe()
+                updateSubs = null
+            }
+        }
+    }
+
+    open fun convertPattern(pattern: IPatternDetails, index: Int): IPatternDetails = pattern
+
+    open fun decodePattern(stack: ItemStack, index: Int): IPatternDetails? {
+        val pattern = MyPatternDetailsHelper.decodePattern(stack, holder, getGrid()) ?: return null
+        return IParallelPatternDetails.of(convertPattern(pattern, index), level, 1)
+    }
+
+    private fun update() {
+        if (needPatternSync) {
+            if (isOnline) {
+                ICraftingProvider.requestUpdate(getMainNode())
+                needPatternSync = false
+            }
+        } else if (updateSubs != null) {
+            updateSubs?.unsubscribe()
+            updateSubs = null
+        }
+    }
+
+    open fun createPatternSlotWidget(index: Int): AEPatternViewSlotWidgetKt = AEPatternViewSlotWidgetKt(
+        0,
+        0,
+        index,
+        getApplyIndex(),
+        patternInventory,
+        { onMouseClicked(-1) },
+    ) { onMouseClicked(index) }
+
+    fun createPatternSlot(index: Int): AEPatternViewSlotWidgetKt {
+        val slot = createPatternSlotWidget(index)
+
+        slot.inner.setChangeListener { onPatternChange(index) }
+        slot.inner.setOnAddedTooltips { _, tooltips ->
+            appendHoverTooltips(index)?.let { tooltips.add(it) }
+        }
+        return slot
+    }
+    open fun VBoxBuilder.buildToolBoxContent() {}
+    override fun createMainPage(widget: FancyMachineUIWidget?): Widget? = super.createMainPage(widget)
+
+    override fun savePickClone(): Boolean = false
+
+    val needAClearButton: Boolean by lazy {
+        EmptyMethodChecker.hasMethodBody(javaClass.getMethod("clearMachineRecipeCache")) &&
+            EmptyMethodChecker.hasMethodBody(javaClass.getMethod("clearPatternRecipeCache"))
+    }
+
+    open fun clearPatternRecipeCache() {}
+
+    open fun clearMachineRecipeCache() {}
+
+    override fun saveToItem(tag: CompoundTag) {
+        tag.put("p", patternInventory.serializeNBT())
+        tag.putString("n", customName)
+        val list = ListTag()
+        for (element in internalInventory) {
+            list.add(element.serializeNBT())
+        }
+        tag.put("i", list)
+    }
+
+    override fun loadFromItem(tag: CompoundTag) {
+        patternInventory.deserializeNBT(tag.get("p"))
+        customName = tag.getString("n")
+        val list = tag.getList("i", Tag.TAG_COMPOUND.toInt())
+        for ((i, element) in internalInventory.withIndex()) {
+            element.deserializeNBT(list.getCompound(i))
+        }
+    }
+
+    // ==================== 内部类 ====================
+    abstract class AbstractInternalSlot :
+        ITagSerializable<CompoundTag>,
+        IContentChangeAware {
+        abstract fun pushPattern(patternDetails: IPatternDetails, inputHolder: Array<KeyCounter>): Boolean
+        abstract fun onPatternChange()
+        override fun serializeNBT(): CompoundTag = CompoundTag()
+    }
+}
+
+class MEPartInv(val machine: MEPatternPartMachineKt<*>) : InternalInventory {
+    override fun size(): Int = machine.maxPatternCount
+    override fun getStackInSlot(slotIndex: Int): ItemStack = machine.patternInventory.getStackInSlot(slotIndex)
+    override fun setItemDirect(slotIndex: Int, stack: ItemStack) {
+        machine.patternInventory.run {
+            setStackInSlot(slotIndex, stack)
+            onContentsChanged(slotIndex)
+        }
+        machine.onPatternChange(slotIndex)
+    }
+}
+
+fun checkDuplicatedPattern(machine: MEPatternPartMachineKt<*>, stack: ItemStack): Boolean = with(machine) {
+    val patternDetails = PatternDetailsHelper.decodePattern(stack, level) ?: return false
+    if (level?.isClientSide == true) return true
+    if (detailsSlotMap.isEmpty()) return true
+    val primaryOutput = patternDetails.primaryOutput.what()
+    return patterns
+        .none { details: IPatternDetails -> details.primaryOutput.what() == primaryOutput }
+}

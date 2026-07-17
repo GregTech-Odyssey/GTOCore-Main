@@ -1,0 +1,179 @@
+import org.gradle.plugins.ide.eclipse.model.SourceFolder
+
+plugins {
+    id 'idea'
+    id 'eclipse'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    alias libs.plugins.modDevGradleLegacy
+    alias libs.plugins.lombok
+    alias libs.plugins.spotless
+    alias libs.plugins.kotlin.jvm
+    alias libs.plugins.kotlin.plugin
+    alias libs.plugins.kotlin.lombok
+    alias libs.plugins.gtopublishgradleplugin
+}
+
+version = mod_version
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
+apply from: "$rootDir/gradle/scripts/repositories.gradle"
+apply from: "$rootDir/dependencies.gradle"
+// GTOLib：先打包/保护，再由 gtocore 加载（run*/jar 均依赖此流水线）
+apply from: "$rootDir/gradle/scripts/gtolib-pipeline.gradle"
+apply from: "$rootDir/gradle/scripts/resources.gradle"
+apply from: "$rootDir/gradle/scripts/jars.gradle"
+apply from: "$rootDir/gradle/scripts/spotless.gradle"
+
+// Eclipse classpath configuration for VS Code Java Language Server
+eclipse {
+    classpath {
+        // Include all compile/runtime configurations so VS Code can resolve all dependencies
+        plusConfigurations += [configurations.compileClasspath, configurations.runtimeClasspath]
+        downloadSources = true
+        downloadJavadoc = true
+        file.whenMerged { cp ->
+            // Add Kotlin compiled output so VS Code JDT LS can resolve Kotlin classes from Java
+            cp.entries += new SourceFolder(
+                "build/classes/kotlin/main", null
+            )
+
+            // Collect all jars already in the Eclipse classpath
+            def existingPaths = cp.entries
+                .findAll { it instanceof org.gradle.plugins.ide.eclipse.model.Library }
+                .collect { it.path }
+                .toSet()
+
+            // Add any resolved compileClasspath files that Eclipse missed
+            // (e.g. ModDevGradle artifact-transform outputs for modImplementation deps)
+            configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.each { art ->
+                def f = art.file
+                if (f.exists() && f.name.endsWith('.jar') && !existingPaths.contains(f.absolutePath)) {
+                    def lib = new org.gradle.plugins.ide.eclipse.model.Library(
+                        cp.fileReferenceFactory.fromFile(f)
+                    )
+                    cp.entries += lib
+                    existingPaths.add(f.absolutePath)
+                }
+            }
+        }
+    }
+}
+
+generateModMetadata.doFirst {
+    mkdir('run/client')
+    mkdir('run/server')
+    mkdir('run/data')
+}
+
+
+def configureLegacyWriter = { taskName , preferredConfigName, outFileName ->
+    tasks.named(taskName) {
+        doLast {
+            def cfg = configurations.findByName(preferredConfigName) ?: configurations.getByName("runtimeClasspath")
+            def out = file("$buildDir/moddev/${outFileName}")
+            out.parentFile.mkdirs()
+            out.text += cfg.files.collect { it.absolutePath }.findAll {
+                it.contains("commons-math3") || it.contains("opencc4j") ||
+                        it.contains("heaven") || it.contains("nlp-common")
+            }.join(System.lineSeparator())
+        }
+    }
+}
+
+configureLegacyWriter("writeClientLegacyClasspath", "clientRuntimeClasspath", "clientLegacyClasspath.txt")
+configureLegacyWriter("writeServerLegacyClasspath", "serverRuntimeClasspath", "serverLegacyClasspath.txt")
+configureLegacyWriter("writeDataLegacyClasspath",   "dataRuntimeClasspath",   "dataLegacyClasspath.txt")
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.compilerArgs << "-Xlint:-deprecation" << "-Xlint:-removal"
+}
+
+// Ensure Java compilation depends on Kotlin and can resolve Kotlin classes
+tasks.named('compileJava', JavaCompile) {
+    dependsOn tasks.named('compileKotlin')
+    classpath += files(tasks.named('compileKotlin').map { it.destinationDirectory })
+}
+
+jar {
+    exclude "**/.cache"
+    exclude "**/SimplifiedToTraditional.properties"
+}
+
+java {
+    withSourcesJar()
+}
+afterEvaluate {
+    tasks.register("signJar") {
+        doLast {
+            def destDir = "$buildDir/libs"
+            def originalJar = "${buildDir}/libs/${mod_id}-forge-1.20.1-${version}.jar"
+            mkdir(destDir)
+            ant.signjar(
+                    jar: originalJar,
+                    destDir: destDir,
+                    alias: "gtokey",
+                    storetype: "jks",
+                    keystore: "keystore.jks",
+                    storepass: System.getenv('GTO_STOREPASS'),
+                    keypass: System.getenv('GTO_KEYPASS'),
+                    preservelastmodified: "true",
+                    tsaurl: "http://timestamp.sectigo.com?td=sha256",
+            )
+        }
+        outputs.upToDateWhen {
+            false
+        }
+        onlyIf {
+            new File("${projectDir}/keystore.jks").exists()
+        }
+    }
+
+    reobfJar.finalizedBy signJar
+}
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = mod_group_id
+            artifactId = mod_id
+        }
+    }
+    repositories {
+        maven {
+            name = 'gtodysseyRepository'
+            url = 'https://maven.gtodyssey.com/releases'
+            credentials {
+                username = findProperty('gtodysseyRepositoryUsername') ?: ''
+                password = findProperty('gtodysseyRepositoryPassword') ?: ''
+            }
+        }
+    }
+}
+
+
+gtoPublish {
+    publishMaven      = true        // 默认 true
+    publishGithub     = false       // 默认 false
+    publishCurseforge = false       // 默认 false
+    mavenRepoName     = 'gtodysseyRepository'  // 默认值
+    mavenRepoUrl      = 'releases'  // 必填，可选值: 'releases' 或 'private'
+    minecraftVersion  = '1.20.1'      // 必填，Minecraft 版本号
+    modLoader         = 'Forge'  // 必填，模组加载器（NeoForge, Forge, Fabric 等）
+    githubRepo        = 'owner/repo-name'      // GitHub 仓库（启用 GitHub 发布时必填）
+    curseforgeProjectId   = '123456'    // CurseForge 项目 ID（启用 CurseForge 时必填）
+    curseforgeJavaVersion = 'Java 21'   // Java 版本（启用 CurseForge 时必填，如 Java 8, Java 17, Java 21, Java 25）
+}

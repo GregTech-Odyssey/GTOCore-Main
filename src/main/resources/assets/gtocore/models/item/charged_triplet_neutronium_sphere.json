@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gtocore:item/triplet_neutronium_sphere",
+    "layer1": "gtocore:item/neutronium_sphere_charged_particle"
+  }
+}

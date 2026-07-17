@@ -1,0 +1,209 @@
+package com.gtocore.common.machine.multiblock.water;
+
+import com.gtocore.common.data.GTOMaterials;
+
+import com.gtolib.api.capability.IIWirelessInteractor;
+import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.utils.ClientUtil;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.GTUtil;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.level.material.Fluid;
+
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import it.unimi.dsi.fastutil.objects.Object2BooleanRBTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanSortedMap;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public final class WaterPurificationPlantMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
+
+    static final int DURATION = 2400;
+
+    static final Fluid GradePurifiedWater1 = GTOMaterials.FilteredSater.getFluid();
+    static final Fluid GradePurifiedWater2 = GTOMaterials.OzoneWater.getFluid();
+    static final Fluid GradePurifiedWater3 = GTOMaterials.FlocculentWater.getFluid();
+    static final Fluid GradePurifiedWater4 = GTOMaterials.PHNeutralWater.getFluid();
+    static final Fluid GradePurifiedWater5 = GTOMaterials.ExtremeTemperatureWater.getFluid();
+    static final Fluid GradePurifiedWater6 = GTOMaterials.ElectricEquilibriumWater.getFluid();
+    static final Fluid GradePurifiedWater7 = GTOMaterials.DegassedWater.getFluid();
+    static final Fluid GradePurifiedWater8 = GTOMaterials.BaryonicPerfectionWater.getFluid();
+    public static final Fluid[] GradePurifiedWater = { GradePurifiedWater1, GradePurifiedWater2, GradePurifiedWater3, GradePurifiedWater4, GradePurifiedWater5, GradePurifiedWater6, GradePurifiedWater7, GradePurifiedWater8 };
+
+    long availableEu;
+
+    final Object2BooleanSortedMap<WaterPurificationUnitMachine> waterPurificationUnitMachineMap = new Object2BooleanRBTreeMap<>(Comparator.comparingLong(a -> -a.multiple));
+
+    public WaterPurificationPlantMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        IIWirelessInteractor.addToNet(this);
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        IIWirelessInteractor.removeFromNet(this);
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        IIWirelessInteractor.removeFromNet(this);
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            if (entry.getBooleanValue()) {
+                entry.getKey().getRecipeLogic().resetRecipeLogic();
+                entry.setValue(false);
+            }
+        }
+        super.onStructureInvalid();
+    }
+
+    @Override
+    public void afterWorking() {
+        super.afterWorking();
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            if (entry.getBooleanValue() && entry.getKey().getRecipeLogic().getLastRecipe() != null) {
+                entry.getKey().getRecipeLogic().onRecipeFinish();
+                entry.setValue(false);
+            }
+        }
+    }
+
+    @Override
+    public void onWorking() {
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            if (entry.getBooleanValue()) {
+                entry.getKey().onWorking();
+                entry.getKey().getRecipeLogic().setProgress(getRecipeLogic().getProgress());
+            }
+        }
+        super.onWorking();
+    }
+
+    @Override
+    public void onWaiting() {
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            if (entry.getBooleanValue()) {
+                entry.getKey().getRecipeLogic().setWaiting(getRecipeLogic().getIdleReason());
+            }
+        }
+        super.onWaiting();
+    }
+
+    @Override
+    public void setWorkingEnabled(boolean isWorkingAllowed) {
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            var machine = entry.getKey();
+            machine.setWorking(isWorkingAllowed);
+            entry.setValue(machine.getRecipeLogic().isWorking());
+        }
+        super.setWorkingEnabled(isWorkingAllowed);
+    }
+
+    @Override
+    public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            var m = entry.getKey();
+            if (entry.getBooleanValue() && m.recipe != null && m.unit != null) {
+                var l = m.getRecipeLogic();
+                l.resetRecipeLogic();
+                if (!l.isSuspend() && m.isRecipeLogicAvailable()) l.setupRecipe(m.unit, m.recipe);
+            }
+        }
+    }
+
+    @Override
+    public int getOutputSignal(@Nullable Direction side) {
+        if (getRecipeLogic().getProgress() == 0) return 0;
+        return 15 * getRecipeLogic().getProgress() / DURATION;
+    }
+
+    @Override
+    public void customText(List<Component> textList) {
+        super.customText(textList);
+        textList.add(ComponentPanelWidget.withButton(Component.translatable("gtocore.digital_miner.show_range"), "show"));
+    }
+
+    @Override
+    public void addDisplayText(List<Component> textList) {
+        super.addDisplayText(textList);
+        if (!isFormed()) return;
+        textList.add(Component.translatable("gtocore.machine.water_purification_plant.bind"));
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            MutableComponent component = Component.translatable(entry.getKey().getBlockState().getBlock().getDescriptionId()).append(" ");
+            if (entry.getBooleanValue()) {
+                component.append(Component.translatable("gtceu.multiblock.running").append("\n").append(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(entry.getKey().eut), Component.literal(GTValues.VNF[GTUtil.getTierByVoltage(entry.getKey().eut)]))));
+            } else {
+                component.append(Component.translatable("gtceu.multiblock.idling"));
+            }
+            textList.add(component);
+        }
+    }
+
+    @Override
+    public void handleDisplayClick(String componentData, ClickData clickData) {
+        if (clickData.isRemote && "show".equals(componentData)) {
+            ClientUtil.highlighting(getPos(), 32);
+        }
+    }
+
+    @Override
+    @Nullable
+    public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
+        long eut = 0;
+        if (getEnergyContainer().getEnergyStored() < 1000) return null;
+        availableEu = getOverclockVoltage();
+        for (var it = waterPurificationUnitMachineMap.object2BooleanEntrySet().iterator(); it.hasNext();) {
+            var entry = it.next();
+            entry.setValue(false);
+            var machine = entry.getKey();
+            if (machine.isFormed() && !machine.isInValid()) {
+                if (machine.getRecipeLogic().isIdle()) {
+                    for (var u : machine.getInputUnits()) {
+                        long eu = machine.prepareRecipe(u);
+                        if (eu > 0) {
+                            entry.setValue(true);
+                            machine.unit = u;
+                            availableEu -= eu;
+                            eut += eu;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                it.remove();
+            }
+        }
+        if (eut > 0) {
+            return getRecipeBuilder().duration(DURATION).EUt(eut).build();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean alwaysSearchRecipe() {
+        return true;
+    }
+}

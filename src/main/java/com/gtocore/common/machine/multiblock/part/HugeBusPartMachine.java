@@ -1,0 +1,442 @@
+package com.gtocore.common.machine.multiblock.part;
+
+import com.gtolib.utils.MathUtil;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.TaskHandler;
+import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+
+import com.fast.recipesearch.IntLongMap;
+import com.gto.datasynclib.LogicalSide;
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.util.DataCodecs;
+import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
+import com.hepdd.gtmthings.api.transfer.UnlimitItemTransferHelper;
+import com.lowdragmc.lowdraglib.gui.editor.Icons;
+import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
+import com.lowdragmc.lowdraglib.gui.texture.ResourceBorderTexture;
+import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.function.ObjLongConsumer;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implements IMachineLife {
+
+    @SaveToDisk
+    private final HugeNotifiableItemStackHandler inventory;
+    @Nullable
+    private TickableSubscription autoIOSubs;
+    @Nullable
+    private ISubscription inventorySubs;
+
+    public HugeBusPartMachine(MetaMachineBlockEntity holder) {
+        super(holder, GTValues.IV, IO.IN);
+        this.inventory = new HugeNotifiableItemStackHandler(this);
+        workingEnabled = false;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (getLevel() instanceof ServerLevel serverLevel) {
+            TaskHandler.enqueueTask(serverLevel, this::updateInventorySubscription);
+        }
+        inventorySubs = inventory.addChangedListener(this::updateInventorySubscription);
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        if (inventorySubs != null) {
+            inventorySubs.unsubscribe();
+            inventorySubs = null;
+        }
+    }
+
+    private void refundAll(ClickData clickData) {
+        if (clickData.isRemote) return;
+        setWorkingEnabled(false);
+        exportToNearby(inventory, getFrontFacing());
+    }
+
+    @Override
+    public void onPaintingColorChanged(int color) {
+        getHandlerUnit().setColor(color, true);
+    }
+
+    @Override
+    public void onNeighborChanged(Block block, BlockPos fromPos, boolean isMoving) {
+        super.onNeighborChanged(block, fromPos, isMoving);
+        updateInventorySubscription();
+    }
+
+    @Override
+    public void onRotated(Direction oldFacing, Direction newFacing) {
+        super.onRotated(oldFacing, newFacing);
+        updateInventorySubscription();
+    }
+
+    @Override
+    public void onMachineRemoved() {
+        clearInventory(inventory.storage);
+    }
+
+    private void updateInventorySubscription() {
+        var level = getLevel();
+        if (level != null && isWorkingEnabled() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing())) {
+            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoIO, 40);
+        } else if (autoIOSubs != null) {
+            autoIOSubs.unsubscribe();
+            autoIOSubs = null;
+        }
+    }
+
+    private void autoIO() {
+        if (isWorkingEnabled()) {
+            inventory.importFromNearby(getFrontFacing());
+        }
+        updateInventorySubscription();
+    }
+
+    private void exportToNearby(HugeNotifiableItemStackHandler handler, Direction facing) {
+        if (handler.getCount() < 1) return;
+        var level = getLevel();
+        var pos = getPos();
+        if (level != null) {
+            UnlimitItemTransferHelper.exportToTarget(handler.storage, Integer.MAX_VALUE, f -> true, level, pos.relative(facing), facing.getOpposite());
+        }
+    }
+
+    @Override
+    public void setWorkingEnabled(boolean workingEnabled) {
+        super.setWorkingEnabled(workingEnabled);
+        updateInventorySubscription();
+    }
+
+    @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        configuratorPanel.attachConfigurators(new ButtonConfigurator(new GuiTextureGroup(GuiTextures.BUTTON, new TextTexture("\ud83d\udd19")), this::refundAll).setTooltips(List.of(Component.translatable("gtmthings.machine.huge_item_bus.tooltip.1"))));
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        var group = new WidgetGroup(0, 0, 109, 63);
+        var importItems = createImportItems();
+        group.addWidget(new ImageWidget(4, 4, 82, 55, GuiTextures.DISPLAY))
+                .addWidget(new LabelWidget(8, 8, "gtceu.machine.quantum_chest.items_stored"))
+                .addWidget(new LabelWidget(8, 18, () -> FormattingUtil.formatNumbers(inventory.getCount())))
+                .addWidget(new com.gregtechceu.gtceu.api.gui.widget.SlotWidget(importItems, 0, 87, 4, false, true).setBackgroundTexture(new GuiTextureGroup(GuiTextures.SLOT, GuiTextures.IN_SLOT_OVERLAY)))
+                .addWidget(new com.gregtechceu.gtceu.api.gui.widget.SlotWidget(inventory, 0, 87, 22, false, false).setItemHook(s -> s.copyWithCount((int) Math.min(inventory.getCount(), s.getMaxStackSize()))).setBackgroundTexture(GuiTextures.SLOT))
+                .addWidget(new ButtonWidget(87, 41, 18, 18, new GuiTextureGroup(ResourceBorderTexture.BUTTON_COMMON, Icons.DOWN.scale(0.7F)), cd -> {
+                    if (!cd.isRemote) {
+                        if (!inventory.isEmpty()) {
+                            var extracted = inventory.extractItemInternal(0, (int) Math.min(inventory.getCount(), inventory.getStackInSlot(0).getMaxStackSize()), false);
+                            if (!group.getGui().entityPlayer.addItem(extracted)) {
+                                Block.popResource(group.getGui().entityPlayer.level(), group.getGui().entityPlayer.getOnPos(), extracted);
+                            }
+                        }
+                    }
+                }));
+        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
+        return group;
+    }
+
+    private CustomItemStackHandler createImportItems() {
+        var importItems = new CustomItemStackHandler();
+        importItems.setFilter(itemStack -> inventory.canCapInput() && (inventory.insertItem(0, itemStack, true).getCount() != itemStack.getCount()));
+        importItems.setOnContentsChanged(() -> {
+            var item = importItems.getStackInSlot(0).copy();
+            if (!item.isEmpty()) {
+                importItems.setStackInSlot(0, ItemStack.EMPTY);
+                importItems.onContentsChanged(0);
+                inventory.insertItem(0, item.copy(), false);
+            }
+        });
+        return importItems;
+    }
+
+    private static final class HugeNotifiableItemStackHandler extends NotifiableItemStackHandler {
+
+        private HugeNotifiableItemStackHandler(MetaMachine machine) {
+            super(machine, 1, IO.IN, IO.BOTH, i -> new HugeCustomItemStackHandler());
+        }
+
+        private long getCount() {
+            return ((HugeCustomItemStackHandler) storage).count;
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int i) {
+            return ((HugeCustomItemStackHandler) storage).stack;
+        }
+
+        @Override
+        public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
+            var amount = ((HugeCustomItemStackHandler) storage).count;
+            if (amount > 0) {
+                return function.test(getStackInSlot(0), amount);
+            }
+            return false;
+        }
+
+        @Override
+        public void fastForEachItems(ObjLongConsumer<ItemStack> function) {
+            var amount = ((HugeCustomItemStackHandler) storage).count;
+            if (amount > 0) {
+                function.accept(getStackInSlot(0), amount);
+            }
+        }
+
+        @Override
+        public boolean updateEmpty() {
+            return ((HugeCustomItemStackHandler) storage).stack.isEmpty();
+        }
+
+        @Override
+        public void fillSearchMap(GTRecipeType type, IntLongMap map) {
+            var amount = ((HugeCustomItemStackHandler) storage).count;
+            if (amount > 0) {
+                type.convertItem(getStackInSlot(0), amount, map);
+            }
+        }
+
+        @Override
+        public boolean canCapOutput() {
+            return true;
+        }
+
+        @Override
+        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
+            if (io != IO.IN || getCount() < 1) return items.isEmpty();
+            for (var it = items.iterator(); it.hasNext();) {
+                var ingredient = it.next();
+                if (ingredient.isEmpty()) {
+                    it.remove();
+                    continue;
+                }
+                if (ingredient.inner.test(getStackInSlot(0))) {
+                    var extracted = Math.min(ingredient.amount, getCount());
+                    if (!simulate) {
+                        ((HugeCustomItemStackHandler) storage).count -= extracted;
+                        getStackInSlot(0).setCount(MathUtil.saturatedCast(((HugeCustomItemStackHandler) storage).count));
+                        storage.onContentsChanged(0);
+                    }
+                    ingredient.shrink(extracted);
+                    if (ingredient.amount <= 0) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+            return items.isEmpty();
+        }
+    }
+
+    private static final class HugeCustomItemStackHandler extends CustomItemStackHandler {
+
+        @NotNull
+        private ItemStack stack = ItemStack.EMPTY;
+        private long count;
+
+        private HugeCustomItemStackHandler() {
+            super(1);
+        }
+
+        @Override
+        public int getSlots() {
+            return 1;
+        }
+
+        @Override
+        public void setStackInSlot(int index, ItemStack stack) {
+            this.stack = stack;
+            count = stack.getCount();
+            onContentsChanged(index);
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            return stack;
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            if (stack.isEmpty()) return ItemStack.EMPTY;
+            if (count < 1 || this.stack.isEmpty()) {
+                if (!simulate) {
+                    this.stack = stack.copy();
+                    count = stack.getCount();
+                    onContentsChanged(0);
+                }
+                return ItemStack.EMPTY;
+            } else if (this.stack.getItem() == stack.getItem()) {
+                var tag = this.stack.getShareTag();
+                if (tag == null) {
+                    if (stack.getShareTag() == null) {
+                        if (!simulate) {
+                            count += stack.getCount();
+                            this.stack.setCount(MathUtil.saturatedCast(count));
+                            onContentsChanged(0);
+                        }
+                        return ItemStack.EMPTY;
+                    }
+                } else if (tag.equals(stack.getShareTag())) {
+                    if (!simulate) {
+                        count += stack.getCount();
+                        this.stack.setCount(MathUtil.saturatedCast(count));
+                        onContentsChanged(0);
+                    }
+                    return ItemStack.EMPTY;
+                }
+            }
+            return stack;
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (amount == 0 || count < 1 || this.stack.isEmpty()) return ItemStack.EMPTY;
+            if (amount >= count) {
+                if (simulate) {
+                    return stack;
+                } else {
+                    count = 0;
+                    var stack = this.stack;
+                    this.stack = ItemStack.EMPTY;
+                    onContentsChanged(0);
+                    return stack;
+                }
+            } else {
+                if (!simulate) {
+                    count -= amount;
+                    stack.setCount(MathUtil.saturatedCast(count));
+                    onContentsChanged(0);
+                }
+                return this.stack.copyWithCount(amount);
+            }
+        }
+
+        @Override
+        public int extract(int slot, int amount, boolean simulate) {
+            var count = MathUtil.saturatedCast(this.count);
+            if (amount == 0 || count < 1 || this.stack.isEmpty()) return 0;
+            if (amount >= count) {
+                if (!simulate) {
+                    this.count = 0;
+                    this.stack = ItemStack.EMPTY;
+                    onContentsChanged(0);
+                }
+                return count;
+            } else {
+                if (!simulate) {
+                    this.count -= amount;
+                    stack.setCount(MathUtil.saturatedCast(count));
+                    onContentsChanged(0);
+                }
+                return amount;
+            }
+        }
+
+        @Override
+        public int insert(int slot, ItemStack stack, int amount, boolean simulate) {
+            if (amount == 0 || stack.isEmpty()) return 0;
+            if (count < 1 || this.stack.isEmpty()) {
+                if (!simulate) {
+                    this.stack = stack.copy();
+                    this.count = amount;
+                    onContentsChanged(0);
+                }
+                return amount;
+            } else if (this.stack.getItem() == stack.getItem()) {
+                var tag = this.stack.getShareTag();
+                if (tag == null) {
+                    if (stack.getShareTag() == null) {
+                        if (!simulate) {
+                            this.count += amount;
+                            this.stack.setCount(MathUtil.saturatedCast(this.count));
+                            onContentsChanged(0);
+                        }
+                        return amount;
+                    }
+                } else if (tag.equals(stack.getShareTag())) {
+                    if (!simulate) {
+                        this.count += amount;
+                        this.stack.setCount(MathUtil.saturatedCast(this.count));
+                        onContentsChanged(0);
+                    }
+                    return amount;
+                }
+            }
+            return 0;
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public void writeBuffer(LogicalSide side, FriendlyByteBuf data) {}
+
+        @Override
+        public void readBuffer(LogicalSide side, FriendlyByteBuf data) {}
+
+        @Override
+        public Data writeData() {
+            CompoundTag nbt = new CompoundTag();
+            nbt.put("stack", stack.serializeNBT());
+            nbt.putLong("count", count);
+            return DataCodecs.COMPOUND_TAG_CODEC.encode(nbt);
+        }
+
+        @Override
+        public void readData(Data data, int dataVersion) {
+            var nbt = DataCodecs.COMPOUND_TAG_CODEC.decode(data);
+            var stack = nbt.get("stack");
+            if (stack instanceof CompoundTag tag) {
+                this.stack = ItemStack.of(tag);
+            }
+            count = nbt.getLong("count");
+            this.stack.setCount(MathUtil.saturatedCast(count));
+        }
+    }
+
+    public NotifiableItemStackHandler getInventory() {
+        return this.inventory;
+    }
+}

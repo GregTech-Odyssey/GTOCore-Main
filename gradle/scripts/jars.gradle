@@ -1,0 +1,69 @@
+base {
+    archivesName = mod_id
+}
+
+/**
+ * 从 gtolib 加密包读取 Seal Manifest 字段。
+ * Runtime 用 SecureJar 的 NTPT-Salt 解密；必须与 Packager 写入 bins 时的 Salt 一致。
+ * 禁止在发行 jar 上再随机生成 Salt。
+ */
+ext.readGtoSealManifestFromJar = { File jarFile ->
+    def result = [:]
+    if (jarFile == null || !jarFile.exists()) return result
+    def zis = new java.util.zip.ZipInputStream(new FileInputStream(jarFile))
+    java.util.zip.ZipEntry e
+    while ((e = zis.nextEntry) != null) {
+        if (e.name.equalsIgnoreCase('META-INF/MANIFEST.MF')) {
+            def mf = new java.util.jar.Manifest(new ByteArrayInputStream(zis.readAllBytes()))
+            def main = mf.mainAttributes
+            ['GTO-Seal', 'GTO-Seal-Salt', 'GTO-Seal-Version', 'NTPT-Salt', 'NTPT-Version'].each { k ->
+                def v = main.getValue(k)
+                if (v != null) result[k] = v
+            }
+            break
+        }
+        zis.closeEntry()
+    }
+    zis.close()
+    return result
+}
+
+afterEvaluate {
+    tasks.withType(org.gradle.jvm.tasks.Jar).configureEach { jarTask ->
+        manifest.attributes([
+                'MixinConfigs'           : "gtocore.mixins.json,gtolib.mixins.json",
+                'Specification-Title'    : project.name,
+                'Specification-Version'  : mod_version,
+                'Implementation-Title'   : base.archivesName,
+                'Implementation-Version' : version,
+                'Name'                   : 'com/gtocore/mixin',
+                'Sealed'                 : 'true',
+        ])
+        // 主 jar：用加密 gtolib 包内的 Salt，禁止随机
+        if (jarTask.name == 'jar' || jarTask.name == 'reobfJar') {
+            jarTask.doFirst {
+                def candidates = [
+                        file("${buildDir}/gtolib/gtolib-protected.jar"),
+                        file("${buildDir}/gtolib/gtolib-sealed.jar"),
+                        file('libs/gtolib-protected.jar'),
+                ]
+                def src = candidates.find { it.exists() && it.length() > 0 }
+                def seal = src != null ? readGtoSealManifestFromJar(src) : [:]
+                if (seal['NTPT-Salt'] || seal['GTO-Seal-Salt']) {
+                    def salt = seal['NTPT-Salt'] ?: seal['GTO-Seal-Salt']
+                    def ver = seal['NTPT-Version'] ?: seal['GTO-Seal-Version'] ?: (project.findProperty('gto_seal_min') ?: '0')
+                    jarTask.manifest.attributes([
+                            'GTO-Seal'         : '1',
+                            'GTO-Seal-Salt'    : salt,
+                            'GTO-Seal-Version' : ver,
+                            'NTPT-Salt'        : salt,
+                            'NTPT-Version'     : ver,
+                    ])
+                    logger.lifecycle("GTO Seal: jar Manifest Salt 与加密包对齐 ← ${src.name}")
+                } else {
+                    logger.warn("GTO Seal: 未从加密包读到 Salt，Runtime 可能无法解密")
+                }
+            }
+        }
+    }
+}

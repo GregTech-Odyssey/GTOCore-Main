@@ -1,0 +1,171 @@
+package com.gtocore.common.machine.mana;
+
+import com.gtolib.api.machine.SimpleNoEnergyMachine;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.ITooltip;
+import snownee.jade.api.config.IPluginConfig;
+
+import static com.gtocore.common.machine.mana.CelestialHandler.*;
+
+public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaDisplayProvider {
+
+    private final CelestialHandler celestialHandler;
+
+    @Getter
+    @SaveToDisk
+    private long solaris = 0;
+    @Getter
+    @SaveToDisk
+    private long lunara = 0;
+    @Getter
+    @SaveToDisk
+    private long voidflux = 0;
+    @Getter
+    @SaveToDisk
+    private long stellarm = 0;
+
+    private static final long MAX_CAPACITY = 1000000;
+
+    private CelestialHandler.Mode mode = CelestialHandler.Mode.OVERWORLD;
+
+    private int timing;
+    private boolean clearSky;
+    private TickableSubscription tickSubs;
+
+    public CelestialCondenser(MetaMachineBlockEntity holder) {
+        super(holder, 1, t -> 16000);
+        this.celestialHandler = new CelestialHandler(MAX_CAPACITY);
+    }
+
+    @Override
+    public boolean checkConditions(RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
+        int solarisCost = recipe.data.getInt(SOLARIS);
+        int lunaraCost = recipe.data.getInt(LUNARA);
+        int voidfluxCost = recipe.data.getInt(VOIDFLUX);
+        int stellarmCost = recipe.data.getInt(STELLARM);
+        int anyCost = recipe.data.getInt(ANY);
+
+        ResourceResult deductResult = null;
+        if (solarisCost > 0) {
+            deductResult = celestialHandler.deductResource(SOLARIS, solarisCost, 1, solaris, lunara, voidflux, stellarm);
+        } else if (lunaraCost > 0) {
+            deductResult = celestialHandler.deductResource(LUNARA, lunaraCost, 1, solaris, lunara, voidflux, stellarm);
+        } else if (voidfluxCost > 0) {
+            deductResult = celestialHandler.deductResource(VOIDFLUX, voidfluxCost, 1, solaris, lunara, voidflux, stellarm);
+        } else if (stellarmCost > 0) {
+            deductResult = celestialHandler.deductResource(STELLARM, stellarmCost, 1, solaris, lunara, voidflux, stellarm);
+        } else if (anyCost > 0) {
+            deductResult = celestialHandler.deductResource(ANY, anyCost, 1, solaris, lunara, voidflux, stellarm);
+        }
+
+        if (deductResult == null || !deductResult.success()) {
+            return false;
+        }
+        this.solaris = deductResult.solaris();
+        this.lunara = deductResult.lunara();
+        this.voidflux = deductResult.voidflux();
+        this.stellarm = deductResult.stellarm();
+
+        return super.checkConditions(unit, recipe);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        this.mode = celestialHandler.initMode(getLevel());
+        if (!isRemote()) {
+            tickSubs = subscribeServerTick(tickSubs, this::tickUpdate, 10);
+        }
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        if (tickSubs != null) {
+            tickSubs.unsubscribe();
+            tickSubs = null;
+        }
+    }
+
+    private void tickUpdate() {
+        Level world = getLevel();
+        if (world == null) return;
+        BlockPos pos = getPos();
+        if (timing == 0) {
+            getRecipeLogic().updateTickSubscription();
+            clearSky = hasClearSky(world, pos);
+            timing = 40;
+        } else if (timing % 10 == 0) {
+            clearSky = hasClearSky(world, pos);
+            timing--;
+        } else {
+            timing--;
+        }
+        if (clearSky) {
+            Resource updatedResources = celestialHandler.increase(world, 1, solaris, lunara, voidflux, stellarm, mode);
+            this.solaris = updatedResources.solaris();
+            this.lunara = updatedResources.lunara();
+            this.voidflux = updatedResources.voidflux();
+            this.stellarm = updatedResources.stellarm();
+        }
+    }
+
+    private static boolean hasClearSky(Level world, BlockPos pos) {
+        BlockPos checkPos = pos.above();
+        if (!canSeeSky(world, pos)) return false;
+        if (world.dimension() == Level.END) return true;
+        Biome biome = world.getBiome(checkPos).value();
+        boolean hasPrecipitation = world.isRaining() && (biome.warmEnoughToRain(checkPos) || biome.coldEnoughToSnow(checkPos));
+        return !hasPrecipitation;
+    }
+
+    private static boolean canSeeSky(Level world, BlockPos blockPos) {
+        int maxY = world.getMaxBuildHeight();
+        BlockPos.MutableBlockPos checkPos = blockPos.mutable().move(Direction.UP);
+        while (checkPos.getY() < maxY) {
+            if (!world.getBlockState(checkPos).getBlock().equals(Blocks.AIR)) return false;
+            checkPos.move(Direction.UP);
+        }
+        return true;
+    }
+
+    @Override
+    public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
+        long solaris = data.getLong(SOLARIS.name);
+        long lunara = data.getLong(LUNARA.name);
+        long voidflux = data.getLong(VOIDFLUX.name);
+        long stellarm = data.getLong(STELLARM.name);
+        long maxCapacity = data.getLong("max_capacity");
+        if (solaris > 0) iTooltip.add(Component.translatable("gtocore.celestial_condenser.solaris", solaris + "/" + maxCapacity));
+        if (lunara > 0) iTooltip.add(Component.translatable("gtocore.celestial_condenser.lunara", lunara + "/" + maxCapacity));
+        if (voidflux > 0) iTooltip.add(Component.translatable("gtocore.celestial_condenser.voidflux", voidflux + "/" + maxCapacity));
+        if (stellarm > 0) iTooltip.add(Component.translatable("gtocore.celestial_condenser.stellarm", stellarm + "/" + maxCapacity));
+    }
+
+    @Override
+    public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
+        data.putLong(SOLARIS.name, this.solaris);
+        data.putLong(LUNARA.name, this.lunara);
+        data.putLong(VOIDFLUX.name, this.voidflux);
+        data.putLong(STELLARM.name, this.stellarm);
+        data.putLong("max_capacity", MAX_CAPACITY);
+    }
+}
