@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.machine.noenergy.ExhaustFanMachine;
 
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
 import com.gtolib.api.machine.feature.ISpaceWorkspaceMachine;
@@ -137,7 +138,7 @@ public interface ISpacePredicateMachine extends ISpaceWorkspaceMachine, ICleanro
     });
 
     static boolean isMachineBanned(MetaMachine machine) {
-        return machine instanceof ISpaceWorkspaceMachine || machine instanceof ICleanroomProvider;
+        return machine instanceof ISpaceWorkspaceMachine || machine instanceof ICleanroomProvider || machine instanceof ExhaustFanMachine;
     }
 
     class BlockPredicate extends TraceabilityPredicate {

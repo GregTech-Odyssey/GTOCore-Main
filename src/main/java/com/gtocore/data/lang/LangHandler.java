@@ -1,6 +1,8 @@
 package com.gtocore.data.lang;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.research.ResearchTag;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
 import com.gtocore.common.data.GTOBedrockFluids;
 import com.gtocore.common.data.GTOFluidStorageKey;
@@ -79,6 +81,7 @@ public final class LangHandler {
         Tooltips.LANG.forEach(LangHandler::addCNEN);
         PlatformTemplateStorage.LANG.forEach((k, v) -> addCNEN("gtocore.platform." + k, v));
         AnalyzeData.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
+        ResearchTag.LNAG.forEach(LangHandler::addCNEN);
         GTOPartAbility.LANG.forEach(LangHandler::addCNEN);
         ScanningClass.LANG.forEach(LangHandler::addCNEN);
         DynamicInitialData.LANG.forEach(LangHandler::addCNEN);
@@ -86,6 +89,8 @@ public final class LangHandler {
         PlayerAttributes.NAMES.forEach((k, v) -> addCNEN(k.getLangKey(), v));
         GTOTrade.init();
         TradeLang.LANG.forEach(LangHandler::addCNEN);
+        TechTreeManager.NODE_LANG.forEach(LangHandler::addCNEN);
+        TechTreeManager.TREE_LANG.forEach(LangHandler::addCNEN);
         for (var reasons : IdleReason.values()) {
             if (reasons.getEn() == null) continue;
             addCNEN(reasons.getKey(), reasons.getCn(), reasons.getEn());
