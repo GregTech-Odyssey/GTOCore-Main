@@ -935,14 +935,25 @@ ext.injectGtolibMixinConfig = { File jarFile ->
 
 /**
  * 解析「当前最好的」gtolib.refmap.json：
- * 优先 Mixin AP 产物（有 GTOLib 源码全量编译时最完整），否则仓库预置 resources（无权限/CI）。
+ * 选 mappings 更多 / 体积更大的（CI 无 GTOLib 时 AP 产物往往残缺，不能盖过预置完整版）。
  */
 ext.resolveGtolibRefmapFile = {
-    def ap = file("${buildDir}/mixin/gtolib.refmap.json")
-    def res = file('src/main/resources/gtolib.refmap.json')
-    if (ap.exists() && ap.length() > 64) return ap
-    if (res.exists() && res.length() > 64) return res
-    return null
+    def candidates = [
+            file("${buildDir}/mixin/gtolib.refmap.json"),
+            file('src/main/resources/gtolib.refmap.json'),
+            file("${buildDir}/resources/main/gtolib.refmap.json"),
+    ].findAll { it.exists() && it.length() > 64 }
+    if (candidates.isEmpty()) return null
+    def score = { File f ->
+        try {
+            def root = new groovy.json.JsonSlurper().parse(f)
+            def n = (root instanceof Map && root.mappings instanceof Map) ? root.mappings.size() : 0
+            return n * 1_000_000L + f.length()
+        } catch (Throwable t) {
+            return f.length()
+        }
+    }
+    return candidates.max { score(it) }
 }
 
 /**
