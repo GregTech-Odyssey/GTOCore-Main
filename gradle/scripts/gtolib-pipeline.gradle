@@ -977,24 +977,29 @@ ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
         searge = root.data.searge
     }
     def key = 'com/gtolib/mixin/mc/ResourceLocationMixn'
+    // 使用 public 访问器方法映射（字段 Shadow 的 refmap 描述符在生产环境不可靠）
     def named = [
-            'namespace'           : 'f_135804_',
-            'path'                : 'f_135805_',
+            'getNamespace'        : 'm_135827_',
+            'getPath'             : 'm_135815_',
             'toString'            : 'toString',
+            'hashCode'            : 'hashCode',
+            'equals'              : 'equals',
             'assertValidNamespace': 'm_245413_',
             'assertValidPath'     : 'm_245185_',
             'withPath'            : 'm_247449_',
     ]
     def srg = [
-            'namespace'           : 'f_135804_',
-            'path'                : 'f_135805_',
+            'getNamespace'        : 'Lnet/minecraft/resources/ResourceLocation;m_135827_()Ljava/lang/String;',
+            'getPath'             : 'Lnet/minecraft/resources/ResourceLocation;m_135815_()Ljava/lang/String;',
             'toString'            : 'Lnet/minecraft/resources/ResourceLocation;toString()Ljava/lang/String;',
+            'hashCode'            : 'Lnet/minecraft/resources/ResourceLocation;hashCode()I',
+            'equals'              : 'Lnet/minecraft/resources/ResourceLocation;equals(Ljava/lang/Object;)Z',
             'assertValidNamespace': 'Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
             'assertValidPath'     : 'Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
             'withPath'            : 'Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;',
     ]
     def changed = false
-    if (!mappings.containsKey(key) || !(mappings[key] instanceof Map) || !mappings[key].containsKey('namespace')) {
+    if (!mappings.containsKey(key) || !(mappings[key] instanceof Map) || !mappings[key].containsKey('getNamespace')) {
         mappings[key] = named
         searge[key] = srg
         changed = true
