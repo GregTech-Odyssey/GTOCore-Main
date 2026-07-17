@@ -1,6 +1,8 @@
 mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
+    add sourceSets.main, "gtocore.refmap.json"
+    add sourceSets.main, "gtolib.refmap.json"
+    config "gtocore.mixins.json"
+    config "gtolib.mixins.json"
 }
 
 legacyForge {

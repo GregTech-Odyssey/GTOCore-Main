@@ -8,9 +8,9 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 
 import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datasream.codec.ByteStreamCodec;
-import com.gto.datasynclib.datasream.codec.DataCodec;
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.DataCodec;
+import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.util.DataCodecs;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;

@@ -68,7 +68,7 @@ public final class IncubatorMachine extends TierCasingMultiblockMachine {
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
-        if (recipe.data.contains(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > cleanroomTier) {
+        if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > cleanroomTier) {
             setIdleReason(IdleReason.BLOCK_TIER_NOT_SATISFIES);
             return false;
         }

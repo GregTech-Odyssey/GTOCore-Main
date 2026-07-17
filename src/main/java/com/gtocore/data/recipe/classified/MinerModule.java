@@ -44,7 +44,7 @@ final class MinerModule {
         ItemStack[] blocks = new ItemStack[oreHolders.length];
         for (int i = 0; i < oreHolders.length; i++) {
             IntObjectHolder<Material> holder = oreHolders[i];
-            blocks[i] = ChemicalHelper.get(TagPrefix.ore, holder.obj, holder.number);
+            blocks[i] = ChemicalHelper.get(TagPrefix.ore, holder.value, holder.priority);
         }
         buildMinerModule(circuit, minDroneTire, blocks);
     }

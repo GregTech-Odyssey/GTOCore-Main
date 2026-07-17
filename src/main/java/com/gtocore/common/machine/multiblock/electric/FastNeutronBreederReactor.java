@@ -75,7 +75,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         recipe = GTORecipeModifiers.parallel(this, unit, recipe);
         if (recipe == null) return null;
-        if (recipe.data.contains(GTORecipeDataKeys.NEUTRON_FLUX)) {
+        if (recipe.data.containsKey(GTORecipeDataKeys.NEUTRON_FLUX)) {
             var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
             if (neutronFluxkeV < neededNeutronFlux) {
                 setIdleReason(Component.translatable("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies"));
@@ -166,7 +166,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     }
 
     private double getRecipeHeat(GTRecipe recipe) {
-        if (recipe.data.contains(GTORecipeDataKeys.HEAT)) {
+        if (recipe.data.containsKey(GTORecipeDataKeys.HEAT)) {
             return (recipe.data.getFloat(GTORecipeDataKeys.HEAT) * 1.27 * Math.pow(neutronFluxkeV / 100d, 1.88));
         }
         return 0;

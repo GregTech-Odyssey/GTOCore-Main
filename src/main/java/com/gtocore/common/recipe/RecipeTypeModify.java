@@ -84,7 +84,7 @@ public final class RecipeTypeModify {
 
         LASER_ENGRAVER_RECIPES.setMaxIOSize(2, 1, 2, 1)
                 .onRecipeBuild((recipeBuilder) -> {
-                    if (recipeBuilder.getData().contains(GTORecipeDataKeys.SPECIAL)) return;
+                    if (recipeBuilder.getData().containsKey(GTORecipeDataKeys.SPECIAL)) return;
                     var recipe = DIMENSIONAL_FOCUS_ENGRAVING_ARRAY_RECIPES.copyFrom(recipeBuilder)
                             .duration((int) (recipeBuilder.getDuration() * 0.2))
                             .EUt(recipeBuilder.EUt() << 2);

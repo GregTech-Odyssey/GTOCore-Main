@@ -37,7 +37,7 @@ import appeng.api.storage.MEStorage;
 import appeng.capabilities.Capabilities;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.data.Data;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

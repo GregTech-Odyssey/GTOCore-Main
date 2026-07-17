@@ -502,7 +502,7 @@ public final class GTORecipeTypes {
                 };
                 return LocalizationUtils.format("gtceu.recipe.cleanroom", filterCasing);
             })
-            .addDataInfo(data -> data.data.contains(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "");
+            .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "");
 
     public static final RecipeType PCB_FACTORY_RECIPES = register("pcb_factory", "PCB工厂", MULTIBLOCK)
             .setEUIO(IO.IN)
@@ -902,7 +902,7 @@ public final class GTORecipeTypes {
             .setEUIO(IO.IN)
             .setMaxIOSize(3, 2, 5, 1)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .addDataInfo(data -> data.data.contains(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
+            .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
             .setSound(GTSoundEntries.COOLING);
 
     public static final RecipeType FUEL_CELL_ENERGY_ABSORPTION_RECIPES = register("fuel_cell_energy_absorption", "燃料电池液能量吸收", MULTIBLOCK)
@@ -1024,7 +1024,7 @@ public final class GTORecipeTypes {
                 return "";
             })
             .addDataInfo(data -> {
-                boolean flag = data.data.contains(GTORecipeDataKeys.PARAM3) || data.data.contains(GTORecipeDataKeys.PARAM1) || data.data.contains(GTORecipeDataKeys.PARAM2);
+                boolean flag = data.data.containsKey(GTORecipeDataKeys.PARAM3) || data.data.containsKey(GTORecipeDataKeys.PARAM1) || data.data.containsKey(GTORecipeDataKeys.PARAM2);
                 if (flag) {
                     return I18n.get("gtocore.machine.alchemical.chance_can_be_boosted");
                 }

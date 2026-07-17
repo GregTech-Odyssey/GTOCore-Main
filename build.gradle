@@ -24,6 +24,8 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
 apply from: "$rootDir/gradle/scripts/repositories.gradle"
 apply from: "$rootDir/dependencies.gradle"
+// GTOLib：先打包/保护，再由 gtocore 加载（run*/jar 均依赖此流水线）
+apply from: "$rootDir/gradle/scripts/gtolib-pipeline.gradle"
 apply from: "$rootDir/gradle/scripts/resources.gradle"
 apply from: "$rootDir/gradle/scripts/jars.gradle"
 apply from: "$rootDir/gradle/scripts/spotless.gradle"
@@ -91,6 +93,10 @@ configureLegacyWriter("writeDataLegacyClasspath",   "dataRuntimeClasspath",   "d
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs << "-Xlint:-deprecation" << "-Xlint:-removal"
+    // Mixin AP + 大体量工程：worker 默认堆过小会 OOM（与 daemon 的 org.gradle.jvmargs 无关）
+    options.fork = true
+    options.forkOptions.jvmArgs = ['-Xmx4g', '-Xms512m']
+    options.forkOptions.memoryMaximumSize = '4g'
 }
 
 // Ensure Java compilation depends on Kotlin and can resolve Kotlin classes
@@ -124,6 +130,35 @@ afterEvaluate {
                     preservelastmodified: "true",
                     tsaurl: "http://timestamp.sectigo.com?td=sha256",
             )
+            // Seal Runtime 独立产物一并签名（与 gtocore 并列分发）
+            def sealJar = file("${buildDir}/libs/gto-seal-runtime-1.0.jar")
+            if (!sealJar.exists()) {
+                def libsSeal = file("libs/gto-seal-runtime-1.0.jar")
+                if (libsSeal.exists()) {
+                    copy {
+                        from libsSeal
+                        into destDir
+                        rename { 'gto-seal-runtime-1.0.jar' }
+                    }
+                }
+            }
+            sealJar = file("${buildDir}/libs/gto-seal-runtime-1.0.jar")
+            if (sealJar.exists() && sealJar.length() > 0) {
+                ant.signjar(
+                        jar: sealJar.absolutePath,
+                        destDir: destDir,
+                        alias: "gtokey",
+                        storetype: "jks",
+                        keystore: "keystore.jks",
+                        storepass: System.getenv('GTO_STOREPASS'),
+                        keypass: System.getenv('GTO_KEYPASS'),
+                        preservelastmodified: "true",
+                        tsaurl: "http://timestamp.sectigo.com?td=sha256",
+                )
+                logger.lifecycle("GTO Seal: signed ${sealJar.name}")
+            } else {
+                logger.warn("GTO Seal: build/libs/gto-seal-runtime-1.0.jar 不存在，跳过签名")
+            }
         }
         outputs.upToDateWhen {
             false
@@ -133,6 +168,12 @@ afterEvaluate {
         }
     }
 
+    // 确保签名前 seal 已 stage 到 build/libs
+    tasks.named('signJar').configure {
+        if (tasks.findByName('stageSealRuntimeArtifact') != null) {
+            dependsOn 'stageSealRuntimeArtifact'
+        }
+    }
     reobfJar.finalizedBy signJar
 }
 idea {

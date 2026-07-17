@@ -9,9 +9,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datasream.codec.DataCodec;
-import com.gto.datasynclib.datasream.codec.DataDecoder;
-import com.gto.datasynclib.datasream.codec.DataEncoder;
+import com.gto.datasynclib.datastream.codec.DataCodec;
+import com.gto.datasynclib.datastream.codec.DataDecoder;
+import com.gto.datasynclib.datastream.codec.DataEncoder;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;

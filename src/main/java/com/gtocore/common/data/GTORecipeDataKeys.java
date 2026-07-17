@@ -11,7 +11,7 @@ import com.gregtechceu.gtceu.common.data.GTRecipeDataKeys;
 import net.minecraft.nbt.CompoundTag;
 
 import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datasream.DataComponentKey;
+import com.gto.datasynclib.datastream.DataComponentKey;
 
 public final class GTORecipeDataKeys {
 

@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.Block;
 import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.datasream.data.Data;
+import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.util.DataCodecs;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.hepdd.gtmthings.api.transfer.UnlimitItemTransferHelper;
@@ -411,10 +411,10 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
-        public void writeBuf(LogicalSide side, FriendlyByteBuf data) {}
+        public void writeBuffer(LogicalSide side, FriendlyByteBuf data) {}
 
         @Override
-        public void readBuf(LogicalSide side, FriendlyByteBuf data) {}
+        public void readBuffer(LogicalSide side, FriendlyByteBuf data) {}
 
         @Override
         public Data writeData() {
