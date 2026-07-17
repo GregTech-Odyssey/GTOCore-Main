@@ -18,6 +18,7 @@ legacyForge {
             client()
             gameDirectory.set(file('run/client'))
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty '-gtolib.debug','true'
         }
 
         server {
