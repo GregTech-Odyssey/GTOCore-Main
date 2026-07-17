@@ -2,8 +2,14 @@
  * GTOLib 流水线（只有两档）
  *
  * 1) 未加密（调试）：gtolib-unprotected 明文
- * 2) 加密（默认 / 发行 / 公开 prebuild）：ProGuard + GTO Seal 抽空
+ * 2) 加密（默认 / 发行 / 公开 prebuild）：reobf → ProGuard → GTO Seal
  *    + libs 完整 Seal Runtime（jni，可解密）
+ *
+ * 【与旧独立 GTOLib+GTOCore 对齐】
+ * 旧模型：GTOLib 自己 jar→proguard→reobfJar→encrypt→publish；
+ *         GTOCore jarJar 成品 gtolib（成员已是 f_/m_ SRG），外层不再改 gtolib mixin。
+ * 新 monorepo 曾变成 seal(Mojmap)→embed→外层 reobf，CI 无源码时 tsrg 不全就炸。
+ * 现恢复「gtolib 先 ART reobf 再 seal」，密封体/ hollow class 与官方 maven 一样已是 SRG。
  *
  * 有源码（GTOLib/）：始终并入 sourceSets.main，供 IDEA 跳转/增量编译；
  *   isGtolibJarUpToDate 仅跳过 ProGuard/Seal，不改为只依赖 unprotected jar。
@@ -587,12 +593,103 @@ tasks.register('resolveGtolibRaw') {
     }
 }
 
+/**
+ * 对齐旧 GTOLib：在 ProGuard/Seal 之前用 ART 把 gtolib mixin 成员 reobf 成 SRG。
+ * 这样 seal 的 .prod.bin / hollow class 与 maven gtolib-forge 一样已是 f_/m_。
+ */
+tasks.register('reobfGtolibRaw', JavaExec) {
+    group = 'gtolib'
+    description = 'ART reobf gtolib-raw（旧 GTOLib: reobf 后再 encrypt）'
+    onlyIf {
+        hasGtolibSources && !isGtolibJarUpToDate && !detectGtolibDebugMode()
+    }
+    dependsOn 'resolveGtolibRaw', 'classes', 'createMinecraftArtifacts'
+    classpath = configurations.artTool
+    mainClass = 'net.neoforged.art.Main'
+    // 参数在 doFirst 填，依赖文件存在性
+    doFirst {
+        def raw = gtolibRawJar.get().asFile
+        def out = file("${buildDir}/gtolib/gtolib-raw-reobf.jar")
+        def named = file("${buildDir}/moddev/artifacts/namedToIntermediate.tsrg")
+        def mixinTsrg = file("${buildDir}/mixin/gtolib.refmap.json.mappings.tsrg")
+        def repoTsrg = file('src/main/resources/gtolib.refmap.json.mappings.tsrg')
+        def forgeLib = file("${buildDir}/moddev/artifacts/forge-1.20.1-${forge_version}.jar")
+        if (!forgeLib.exists()) {
+            // 兼容不同 MDG 产物名
+            def alt = file("${buildDir}/moddev/artifacts").listFiles()?.find {
+                it.name.startsWith('forge-') && it.name.endsWith('.jar')
+            }
+            if (alt != null) forgeLib = alt
+        }
+        if (!raw.exists()) throw new GradleException("reobfGtolibRaw: missing ${raw}")
+        if (!named.exists()) throw new GradleException("reobfGtolibRaw: missing ${named} (run createMinecraftArtifacts)")
+        // 合并/补全 ResourceLocationMixn tsrg（与 ensureMixin 一致）
+        if ((!mixinTsrg.exists() || mixinTsrg.length() < 32) && repoTsrg.exists()) {
+            mixinTsrg.parentFile.mkdirs()
+            Files.copy(repoTsrg.toPath(), mixinTsrg.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+        if (!mixinTsrg.exists()) {
+            mixinTsrg.parentFile.mkdirs()
+            mixinTsrg.text = ''
+        }
+        ensureResourceLocationMixnTsrg(mixinTsrg)
+        if (out.exists()) out.delete()
+        args = [
+                '--input', raw.absolutePath,
+                '--output', out.absolutePath,
+                '--names', named.absolutePath,
+                '--names', mixinTsrg.absolutePath,
+        ]
+        if (forgeLib != null && forgeLib.exists()) {
+            args += ['--lib', forgeLib.absolutePath]
+        }
+        logger.lifecycle("GTOLib ART reobf: ${raw.name} → ${out.name} (names=${named.name}+${mixinTsrg.name})")
+    }
+    doLast {
+        def raw = gtolibRawJar.get().asFile
+        def out = file("${buildDir}/gtolib/gtolib-raw-reobf.jar")
+        if (!out.exists() || out.length() < 1024) {
+            throw new GradleException("reobfGtolibRaw: ART 未写出 ${out}")
+        }
+        // 校验 ResourceLocationMixn 已是 SRG（旧官方 jar 合同）
+        def zf = new java.util.zip.ZipFile(out)
+        try {
+            def e = zf.getEntry('com/gtolib/mixin/mc/ResourceLocationMixn.class')
+            if (e == null) throw new GradleException("reobfGtolibRaw: 缺 ResourceLocationMixn.class")
+            def text = new String(zf.getInputStream(e).bytes, 'ISO-8859-1')
+            if (!text.contains('f_135804_') || !text.contains('m_245413_') || text.contains('assertValidNamespace')) {
+                throw new GradleException(
+                        "reobfGtolibRaw: ResourceLocationMixn 未正确 reobf 成 SRG " +
+                                "(f_135804_=${text.contains('f_135804_')} m_245413_=${text.contains('m_245413_')} " +
+                                "assertValidNamespace=${text.contains('assertValidNamespace')})"
+                )
+            }
+        } finally {
+            zf.close()
+        }
+        // 覆盖 raw + unprotected（后续 ProGuard/Seal 消费已 SRG 的字节码）
+        Files.copy(out.toPath(), raw.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(out.toPath(), gtolibUnprotectedJar.get().asFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        gtolibUnprotectedLibsJar.parentFile.mkdirs()
+        Files.copy(out.toPath(), gtolibUnprotectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        logger.lifecycle("GTOLib ART reobf OK → raw/unprotected 已是 SRG (ResourceLocationMixn f_/m_)")
+    }
+}
+
+// 无 artTool 配置时补上（与 MDG 同版 ART）
+if (configurations.findByName('artTool') == null) {
+    configurations.create('artTool')
+    dependencies {
+        artTool 'net.neoforged:AutoRenamingTool:2.0.17:all'
+    }
+}
+
 tasks.register('proguardGtolib', JavaExec) {
     group = 'gtolib'
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canProguard && !detectGtolibDebugMode()
     }
-    dependsOn 'resolveGtolibRaw', 'classes'
+    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes'
     classpath = configurations.proguardCp
     mainClass = 'proguard.ProGuard'
 
@@ -725,8 +822,9 @@ tasks.register('sealPackGtolib', Exec) {
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canSealPack && !detectGtolibDebugMode()
     }
+    // 必须先 reobf（对齐旧 GTOLib: reobfJar.finalizedBy encryptJar）
     dependsOn {
-        canProguard ? ['proguardGtolib'] : ['resolveGtolibRaw']
+        canProguard ? ['reobfGtolibRaw', 'proguardGtolib'] : ['reobfGtolibRaw', 'resolveGtolibRaw']
     }
     inputs.file(sealPackagerJar)
     outputs.file(file("${buildDir}/gtolib/gtolib-sealed.jar"))
