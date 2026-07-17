@@ -17,7 +17,8 @@ plugins {
 
 version = mod_version
 
-// 模组字节码目标 21。开发可用 Java 25 跑 Gradle；CI 使用 Java 21 runner（与旧 GTOCore 签名构建一致）。
+// 模组字节码目标 21（GTCEu/gtmthings/datasynclib 等依赖要求 JVM 21+；Java 17 无法运行）。
+// 开发可用 Java 25 跑 Gradle；CI 使用 Java 21 runner。
 // Java 25 字节码 (major 69) 无法被当前 reobf/ART 处理。
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
@@ -94,7 +95,7 @@ configureLegacyWriter("writeDataLegacyClasspath",   "dataRuntimeClasspath",   "d
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
-    // 模组发行字节码固定 21（勿用 25，否则 reobf 报 major version 69）
+    // 模组发行字节码固定 21（GTCEu 等依赖的属性元数据要求；勿用 25，否则 reobf 报 major 69）
     options.release = 21
     options.compilerArgs << "-Xlint:-deprecation" << "-Xlint:-removal"
     // Mixin AP + 大体量工程：worker 默认堆过小会 OOM（与 daemon 的 org.gradle.jvmargs 无关）
@@ -222,5 +223,5 @@ gtoPublish {
     modLoader         = 'Forge'  // 必填，模组加载器（NeoForge, Forge, Fabric 等）
     githubRepo        = 'owner/repo-name'      // GitHub 仓库（启用 GitHub 发布时必填）
     curseforgeProjectId   = '123456'    // CurseForge 项目 ID（启用 CurseForge 时必填）
-    curseforgeJavaVersion = 'Java 21'   // 运行时最低 Java（模组字节码 21；开发机可用 Java 25）
+    curseforgeJavaVersion = 'Java 21'   // 运行时最低 Java（GTCEu 等依赖要求 21+；开发机可用 Java 25）
 }
