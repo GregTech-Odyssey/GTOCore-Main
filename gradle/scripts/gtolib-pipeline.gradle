@@ -640,10 +640,26 @@ tasks.register('reobfGtolibRaw', JavaExec) {
                 '--names', named.absolutePath,
                 '--names', mixinTsrg.absolutePath,
         ]
-        if (forgeLib != null && forgeLib.exists()) {
-            args += ['--lib', forgeLib.absolutePath]
-        }
-        logger.lifecycle("GTOLib ART reobf: ${raw.name} → ${out.name} (names=${named.name}+${mixinTsrg.name})")
+        // 必须带上继承关系：否则 invokevirtual CleanroomFilterType.getSerializedName
+        // 不会变成 m_7912_，而 gtocore 类外层 reobf 后只剩 m_7912_ → NoSuchMethodError
+        def libs = []
+        if (forgeLib != null && forgeLib.exists()) libs << forgeLib
+        // 本工程已编译的 gtocore 类（含 CleanroomFilterType 等）
+        def gtocoreClasses = file("${buildDir}/classes/java/main")
+        if (gtocoreClasses.exists()) libs << gtocoreClasses
+        def gtocoreKotlin = file("${buildDir}/classes/kotlin/main")
+        if (gtocoreKotlin.exists()) libs << gtocoreKotlin
+        // jarJar 依赖（GTCEu 等，IFilterType / IFusionCasingType）
+        configurations.runtimeClasspath.files.findAll { f ->
+            def n = f.name.toLowerCase()
+            (n.contains('gtceu') || n.contains('gtmthings') || n.contains('datasynclib') ||
+                    n.contains('ae2') || n.contains('appliedenergistics')) && n.endsWith('.jar')
+        }.each { libs << it }
+        libs.unique().each { args += ['--lib', it.absolutePath] }
+        logger.lifecycle(
+                "GTOLib ART reobf: ${raw.name} → ${out.name}; " +
+                        "names=${named.name}+${mixinTsrg.name}; libs=${libs.size()}"
+        )
     }
     doLast {
         def raw = gtolibRawJar.get().asFile
