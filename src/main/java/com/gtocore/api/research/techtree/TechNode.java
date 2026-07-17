@@ -12,6 +12,8 @@ import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
@@ -51,6 +53,8 @@ public final class TechNode {
     @Getter
     private final Set<GTRecipeDefinition> recipes = new ReferenceOpenHashSet<>();
     @Getter
+    private final Set<AEKey> recipePrimaryOutputs = new ReferenceOpenHashSet<>();
+    @Getter
     private final List<Component> rewardLines = new ArrayList<>();
     @Getter
     private static final Reference2ReferenceMap<GTRecipeDefinition, TechNode> RECIPE_NODE = new Reference2ReferenceOpenHashMap<>();
@@ -82,9 +86,26 @@ public final class TechNode {
     public void addRecipeToNode(GTRecipeDefinition recipe) {
         recipes.add(recipe);
         RECIPE_NODE.put(recipe, this);
+        var mainOutput = getMainOutput(recipe);
+        if (mainOutput != null) {
+            recipePrimaryOutputs.add(mainOutput);
+        }
         rewardLines.add(
                 Component.translatable(RECIPE_REWARD_LABEL).withStyle(net.minecraft.ChatFormatting.DARK_PURPLE)
                         .append(getMainOutputText(recipe).withStyle(net.minecraft.ChatFormatting.GRAY)));
+    }
+
+    @Nullable
+    private static AEKey getMainOutput(GTRecipeDefinition recipe) {
+        var outputs0 = recipe.itemOutputs;
+        if (!outputs0.isEmpty()) {
+            return AEItemKey.of(outputs0.getFirst().inner.getInnerItemStack());
+        }
+        var outputs1 = recipe.fluidOutputs;
+        if (!outputs1.isEmpty()) {
+            return AEFluidKey.of(outputs1.getFirst().inner.getFluidStack());
+        }
+        return null;
     }
 
     private static MutableComponent getMainOutputText(GTRecipeDefinition recipe) {

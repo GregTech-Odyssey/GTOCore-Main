@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import dev.emi.emi.api.stack.EmiStack;
 
 import java.util.List;
+import java.util.Set;
 
 public class ResearchTagEmiStack extends EmiStack {
 
@@ -20,6 +21,11 @@ public class ResearchTagEmiStack extends EmiStack {
     public ResearchTagEmiStack(ResearchTag tag) {
         super();
         this.tag = tag;
+    }
+
+    @Override
+    public boolean isEqual(EmiStack stack) {
+        return stack instanceof ResearchTagEmiStack other && other.tag == this.tag;
     }
 
     @Override
@@ -58,5 +64,11 @@ public class ResearchTagEmiStack extends EmiStack {
     @Override
     public Component getName() {
         return tag.getDisplayName().withStyle(style -> style.withColor(tag.getColor()));
+    }
+
+    public static void registerResearchTagEmiStack(Set<EmiStack> c) {
+        for (var it : ResearchTag.TAGS.values()) {
+            c.add(new ResearchTagEmiStack(it));
+        }
     }
 }
