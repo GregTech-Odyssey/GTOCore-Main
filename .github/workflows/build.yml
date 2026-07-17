@@ -147,6 +147,17 @@ jobs:
           test -s build/libs/gto-seal-runtime-1.0.jar
           jar tf build/libs/gto-seal-runtime-1.0.jar | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'
           echo "OK: gto-seal-runtime SPI present"
+          # ResourceLocationMixn 必须已 reobf 成 SRG（与 maven gtolib-forge 一致）
+          GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
+          TMP=$(mktemp -d)
+          unzip -p "$GTO" com/gtolib/mixin/mc/ResourceLocationMixn.class > "$TMP/RL.class"
+          strings "$TMP/RL.class" | grep -q 'f_135804_' || { echo "::error::ResourceLocationMixn missing f_135804_ (reobf failed)"; exit 1; }
+          strings "$TMP/RL.class" | grep -q 'm_245413_' || { echo "::error::ResourceLocationMixn missing m_245413_ (reobf failed)"; exit 1; }
+          if strings "$TMP/RL.class" | grep -q 'assertValidNamespace'; then
+            echo "::error::ResourceLocationMixn still has assertValidNamespace (not reobfed)"
+            exit 1
+          fi
+          echo "OK: ResourceLocationMixn SRG names present"
 
       - name: List outputs
         run: |

@@ -957,9 +957,34 @@ ext.resolveGtolibRefmapFile = {
 }
 
 /**
- * Mixin AP 有时漏掉个别 mixin（如 ResourceLocationMixn）的 Shadow 字段映射。
- * 1.20.1 intermediate→srg 已知条目在此补全，避免生产 Shadow 失败。
+ * ResourceLocationMixn 与官方 GTOLib 26.7.5 一致：@Shadow namespace/path + @Overwrite。
+ * 生产 jar 必须经 reobf 把成员改成 f_/m_（见 maven gtolib-forge 已 reobf 的 class）。
+ * CI 无 GTOLib 源码时没有 Mixin AP → 没有 .mappings.tsrg → reobf 不改名 → Overwrite 失败。
+ * 因此 JSON refmap + tsrg 都必须预置/补全，且 mappings 使用 owner;name+desc 全量格式。
  */
+ext.resourceLocationMixnRefmapNamed = {
+    [
+            'namespace'           : 'Lnet/minecraft/resources/ResourceLocation;f_135804_:Ljava/lang/String;',
+            'path'                : 'Lnet/minecraft/resources/ResourceLocation;f_135805_:Ljava/lang/String;',
+            'toString'            : 'Lnet/minecraft/resources/ResourceLocation;toString()Ljava/lang/String;',
+            'assertValidNamespace': 'Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
+            'assertValidPath'     : 'Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
+            'withPath'            : 'Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;',
+    ]
+}
+ext.resourceLocationMixnTsrgLines = {
+    // 字段：与 Mixin AP 一致「类 字段名 srg名」（不要带类型描述符，否则 ART 不改名）
+    // 方法：类 方法名 描述符 srg名
+    [
+            'com/gtolib/mixin/mc/ResourceLocationMixn namespace f_135804_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn path f_135805_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn toString ()Ljava/lang/String; toString',
+            'com/gtolib/mixin/mc/ResourceLocationMixn assertValidNamespace (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245413_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn assertValidPath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245185_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn withPath (Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation; m_247449_',
+    ]
+}
+
 ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
     if (refmapFile == null || !refmapFile.exists()) return
     def slurper = new groovy.json.JsonSlurper()
@@ -977,33 +1002,36 @@ ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
         searge = root.data.searge
     }
     def key = 'com/gtolib/mixin/mc/ResourceLocationMixn'
-    // Mixin production mappings 必须用 owner;name+desc 全量格式（与 AP 其它条目一致）。
-    // 短名 m_135827_ 会导致 @Shadow/@Overwrite 在生产环境 “was not located”。
-    // ResourceLocationMixn 已改为无 @Shadow：仅保留 Overwrite 目标映射。
-    def named = [
-            'toString'            : 'Lnet/minecraft/resources/ResourceLocation;toString()Ljava/lang/String;',
-            'assertValidNamespace': 'Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
-            'assertValidPath'     : 'Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
-            'withPath'            : 'Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;',
-    ]
-    def srg = [
-            'toString'            : 'Lnet/minecraft/resources/ResourceLocation;toString()Ljava/lang/String;',
-            'assertValidNamespace': 'Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
-            'assertValidPath'     : 'Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
-            'withPath'            : 'Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;',
-    ]
+    def named = resourceLocationMixnRefmapNamed()
     def cur = mappings[key]
     def need = !(cur instanceof Map) ||
-            cur.containsKey('getNamespace') || cur.containsKey('namespace') ||
-            cur.get('assertValidNamespace') == 'm_245413_' ||
+            !cur.containsKey('namespace') ||
             !cur.containsKey('assertValidNamespace') ||
+            cur.containsKey('getNamespace') ||
+            !(cur.get('namespace')?.toString()?.contains('f_135804_')) ||
             !(cur.get('assertValidNamespace')?.toString()?.startsWith('L'))
     if (need) {
         mappings[key] = named
-        searge[key] = srg
+        searge[key] = named
         refmapFile.text = groovy.json.JsonOutput.toJson(root)
-        logger.lifecycle("GTOLib refmap: 已写入 ${key} Overwrite 全量映射（无 Shadow）")
+        logger.lifecycle("GTOLib refmap: 已写入 ${key} 字段+Overwrite 全量映射（对齐官方 gtolib）")
     }
+}
+
+/** 保证 ART/reobfJar 使用的 tsrg 含 ResourceLocationMixn（CI 无源码时尤其关键） */
+ext.ensureResourceLocationMixnTsrg = { File tsrgFile ->
+    if (tsrgFile == null) return
+    tsrgFile.parentFile?.mkdirs()
+    def lines = tsrgFile.exists() ? tsrgFile.readLines() : []
+    def body = lines.findAll { !it.contains('com/gtolib/mixin/mc/ResourceLocationMixn') }
+    // 保留文件头（若有 tsrg2）
+    def header = body.takeWhile { it.startsWith('tsrg') || it.trim().isEmpty() }
+    def rest = body.drop(header.size())
+    def out = []
+    out.addAll(header)
+    out.addAll(resourceLocationMixnTsrgLines())
+    out.addAll(rest)
+    tsrgFile.text = out.join('\n') + '\n'
 }
 
 /**
@@ -1444,7 +1472,8 @@ afterEvaluate {
     tasks.matching { isGtolibLaunchTask(it) }.configureEach { Task t -> wireGtolibInstallTo(t) }
 
     tasks.named('jar', Jar).configure {
-        dependsOn 'installGtolibIntoModOutput', 'buildGtolibProtected', 'prepareGtolibModJar', 'syncGtolibRefmaps', 'ensureMixinRefmapMappings'
+        // ensureMixinRefmapMappings 只挂 reobfJar（必须在 jar 之后补 tsrg，避免循环依赖）
+        dependsOn 'installGtolibIntoModOutput', 'buildGtolibProtected', 'prepareGtolibModJar', 'syncGtolibRefmaps'
         if (tasks.findByName('syncSealRuntimeToLibs') != null) {
             dependsOn 'syncSealRuntimeToLibs'
         }
@@ -1580,33 +1609,109 @@ side="BOTH"
             f.text = dualToml
         }
     }
-    // Mixin AP 有时只写出 gtolib.refmap*.tsrg（其中已含 com.gtocore.mixin 映射），
-    // reobfJar 仍硬编码要 gtocore.refmap.json.mappings.tsrg —— 缺则补一份。
+    // Mixin AP 写出 gtolib.refmap*.tsrg；reobfJar/ART 靠它把 mixin 成员改成 f_/m_。
+    // CI submodules:false 无 GTOLib 源码 → 无 AP → 必须从 resources 预置 tsrg，否则
+    // Overwrite assertValidNamespace 等仍为 Mojmap 名，生产 “was not located”。
     tasks.register('ensureMixinRefmapMappings') {
         group = 'gtolib'
+        // 必须在 jar（Mixin AP 已写 tsrg）之后、reobfJar 之前执行；不可 dependsOn jar（jar 会间接依赖本任务链）
+        mustRunAfter 'classes', 'jar'
         def mixinDir = file("${buildDir}/mixin")
         def gtocoreMap = new File(mixinDir, 'gtocore.refmap.json.mappings.tsrg')
         def gtolibMap = new File(mixinDir, 'gtolib.refmap.json.mappings.tsrg')
-        outputs.file(gtocoreMap)
+        def repoGtolibTsrg = file('src/main/resources/gtolib.refmap.json.mappings.tsrg')
+        def repoGtocoreTsrg = file('src/main/resources/gtocore.refmap.json.mappings.tsrg')
+        outputs.files(gtocoreMap, gtolibMap)
         doLast {
             mixinDir.mkdirs()
-            if (!gtocoreMap.exists() || gtocoreMap.length() == 0) {
-                if (gtolibMap.exists() && gtolibMap.length() > 0) {
-                    Files.copy(gtolibMap.toPath(), gtocoreMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                    logger.lifecycle("Mixin: 补写 gtocore.refmap.json.mappings.tsrg ← gtolib 映射")
-                } else {
-                    gtocoreMap.text = 'tsrg2 left right\n'
-                    logger.warn("Mixin: 写入空 gtocore.refmap.json.mappings.tsrg")
-                }
+            // 1) 预置/恢复 tsrg（AP 优先已在 build/mixin；否则 resources）
+            if ((!gtolibMap.exists() || gtolibMap.length() < 32) && repoGtolibTsrg.exists()) {
+                Files.copy(repoGtolibTsrg.toPath(), gtolibMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: gtolib tsrg ← src/main/resources（CI 无源码路径）")
             }
-            // 统一走 publish：AP 优先，否则 resources 预置
-            publishAndInjectGtolibRefmaps(null, false)
+            if ((!gtocoreMap.exists() || gtocoreMap.length() < 32) && repoGtocoreTsrg.exists()) {
+                Files.copy(repoGtocoreTsrg.toPath(), gtocoreMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: gtocore tsrg ← src/main/resources")
+            }
+            if ((!gtocoreMap.exists() || gtocoreMap.length() < 32) && gtolibMap.exists() && gtolibMap.length() > 0) {
+                Files.copy(gtolibMap.toPath(), gtocoreMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: 补写 gtocore.refmap.json.mappings.tsrg ← gtolib 映射")
+            }
+            if (!gtolibMap.exists() || gtolibMap.length() < 32) {
+                gtolibMap.text = ''
+            }
+            if (!gtocoreMap.exists() || gtocoreMap.length() < 32) {
+                gtocoreMap.text = ''
+            }
+            // 2) 强制补全 ResourceLocationMixn（reobf 必需）
+            ensureResourceLocationMixnTsrg(gtolibMap)
+            ensureResourceLocationMixnTsrg(gtocoreMap)
+            // 3) 有源码打包时回写 resources，供下次 CI 无 AP 使用
+            if (hasGtolibSources && gtolibMap.exists() && gtolibMap.length() > 32) {
+                repoGtolibTsrg.parentFile.mkdirs()
+                Files.copy(gtolibMap.toPath(), repoGtolibTsrg.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(gtocoreMap.toPath(), repoGtocoreTsrg.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: 已同步 tsrg → src/main/resources（供 CI reobf）")
+            }
+            // 4) JSON refmap
+            publishAndInjectGtolibRefmaps(null, hasGtolibSources)
+            def tsrgOk = gtolibMap.text.contains('ResourceLocationMixn') && gtolibMap.text.contains('m_245413_')
+            if (!tsrgOk) {
+                throw new GradleException(
+                        "gtolib.refmap.json.mappings.tsrg 缺少 ResourceLocationMixn/m_245413_，reobf 将失败"
+                )
+            }
+            logger.lifecycle("Mixin: tsrg OK (ResourceLocationMixn → f_/m_)")
         }
     }
     tasks.matching { it.name == 'reobfJar' }.configureEach {
         dependsOn 'buildGtolibProtected', 'ensureMixinRefmapMappings', 'jar'
-        mustRunAfter 'jar'
+        mustRunAfter 'jar', 'ensureMixinRefmapMappings'
     }
+    // 单独校验任务：reobf 完成后检查（RemapJar 的 archiveFile 属性因版本而异，直接扫 build/libs）
+    tasks.register('verifyResourceLocationMixnReobf') {
+        group = 'gtolib'
+        description = '校验 reobf 后 ResourceLocationMixn 已为 SRG 名（对齐官方 gtolib）'
+        dependsOn 'reobfJar'
+        doLast {
+            def out = file("${buildDir}/libs/${project.mod_id}-forge-1.20.1-${project.version}.jar")
+            if (!out.exists()) {
+                def found = file("${buildDir}/libs").listFiles()?.find {
+                    it.name.startsWith('gtocore') && it.name.endsWith('.jar') &&
+                            !it.name.contains('sources') && !it.name.contains('javadoc')
+                }
+                out = found ?: out
+            }
+            if (!out.exists()) {
+                throw new GradleException("verifyResourceLocationMixnReobf: 找不到 gtocore jar")
+            }
+            def zf = new java.util.zip.ZipFile(out)
+            try {
+                def e = zf.getEntry('com/gtolib/mixin/mc/ResourceLocationMixn.class')
+                if (e == null) {
+                    throw new GradleException("reobf 产物缺少 ResourceLocationMixn.class")
+                }
+                def bytes = zf.getInputStream(e).bytes
+                def text = new String(bytes, 'ISO-8859-1')
+                def hasSrgField = text.contains('f_135804_')
+                def hasSrgMethod = text.contains('m_245413_')
+                def stillNamed = text.contains('assertValidNamespace')
+                if (!hasSrgField || !hasSrgMethod || stillNamed) {
+                    throw new GradleException(
+                            "reobf 后 ResourceLocationMixn 仍非 SRG 名（对齐官方 gtolib 失败）。\n" +
+                                    "  f_135804_=${hasSrgField} m_245413_=${hasSrgMethod} " +
+                                    "assertValidNamespace仍在=${stillNamed}\n" +
+                                    "  检查 build/mixin/*.mappings.tsrg 是否含 ResourceLocationMixn"
+                    )
+                }
+                logger.lifecycle("verify: ResourceLocationMixn SRG OK (f_135804_/m_245413_) ← ${out.name}")
+            } finally {
+                zf.close()
+            }
+        }
+    }
+    tasks.named('build').configure { dependsOn 'verifyResourceLocationMixnReobf' }
+    tasks.matching { it.name == 'signJar' }.configureEach { dependsOn 'verifyResourceLocationMixnReobf' }
     tasks.named('sourcesJar', Jar).configure {
         exclude 'com/gtolib/**'
         exclude '**/GTOLib/**'
