@@ -1676,51 +1676,69 @@ afterEvaluate {
 
     tasks.register('writeDualModsToml') {
         group = 'gtolib'
-        description = '写出玩家包双 modId mods.toml（gtocore + gtolib）'
+        description = '写出玩家包双 modId mods.toml（gtocore + gtolib，保留完整依赖）'
+        dependsOn 'processResources'
         def out = layout.buildDirectory.file('gtolib/mods-dual.toml')
+        // 优先用 processResources 展开后的 mods.toml（含 deeperdarker AFTER 等）
+        def expanded = file("${buildDir}/resources/main/META-INF/mods.toml")
+        def template = file('src/main/templates/META-INF/mods.toml')
+        inputs.files(expanded, template).optional()
         outputs.file(out)
         doLast {
-            def dualToml = """\
-modLoader="javafml"
-loaderVersion="[47,)"
-license="${project.findProperty('mod_license') ?: 'All Rights Reserved'}"
-
-[[mods]]
-modId="${project.mod_id}"
-version="${project.version}"
-displayName="${project.findProperty('mod_name') ?: project.name}"
-description='''${project.findProperty('mod_description') ?: ''}'''
+            def baseText = null
+            if (expanded.exists() && expanded.length() > 0) {
+                baseText = expanded.getText('UTF-8')
+            } else if (template.exists()) {
+                // 简易占位展开（CI/无 processResources 时）
+                baseText = template.getText('UTF-8')
+                        .replace('${mod_license}', "${project.findProperty('mod_license') ?: 'All Rights Reserved'}")
+                        .replace('${mod_id}', "${project.mod_id}")
+                        .replace('${version}', "${project.version}")
+                        .replace('${mod_name}', "${project.findProperty('mod_name') ?: project.name}")
+                        .replace('${mod_description}', "${project.findProperty('mod_description') ?: ''}")
+            }
+            if (baseText == null || baseText.trim().isEmpty()) {
+                throw new GradleException("writeDualModsToml: 找不到 mods.toml 模板/展开结果")
+            }
+            // 已有 gtolib 段则不重复
+            if (!baseText.contains('modId="gtolib"') && !baseText.contains("modId = \"gtolib\"")) {
+                def gtolibMod = """
 
 [[mods]]
 modId="gtolib"
 version="${project.version}"
 displayName="GTOLib"
 description='''Seal-protected GTO library (bundled).'''
+"""
+                // 插在第一个 [[dependencies 之前，否则依赖块在 mods 前不合法
+                def depIdx = baseText.indexOf('[[dependencies')
+                if (depIdx >= 0) {
+                    baseText = baseText.substring(0, depIdx) + gtolibMod + baseText.substring(depIdx)
+                } else {
+                    baseText = baseText + gtolibMod
+                }
+            }
+            // 强制 datasynclib 依赖（jarJar 提供）
+            if (!baseText.contains('datasynclib')) {
+                baseText += """
 
 [[dependencies.${project.mod_id}]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.20.1,1.20.2)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.${project.mod_id}]]
-modId="forge"
-mandatory=true
-versionRange="[47,)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.${project.mod_id}]]
-modId="gtceu"
+modId="datasynclib"
 mandatory=true
 versionRange="[1,)"
-ordering="BEFORE"
+ordering="NONE"
 side="BOTH"
-""".stripIndent()
+"""
+            }
             def f = out.get().asFile
             f.parentFile.mkdirs()
-            f.text = dualToml
+            f.text = baseText
+            // 必须含 deeperdarker AFTER，否则 sculk_stone 注册时 DD 未就绪
+            if (!baseText.contains('deeperdarker')) {
+                logger.warn("writeDualModsToml: 模板缺少 deeperdarker 依赖，注册可能 NPE")
+            } else {
+                logger.lifecycle("writeDualModsToml: 双 modId + 完整依赖（含 deeperdarker）")
+            }
         }
     }
     // Mixin AP 写出 gtolib.refmap*.tsrg；reobfJar/ART 靠它把 mixin 成员改成 f_/m_。
