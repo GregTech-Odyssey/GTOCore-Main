@@ -22,9 +22,10 @@ dependencies {
     jarJar(modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$project.gtceu_version"))
     jarJar(modImplementation("com.hepdd.gtmthings:gtmthings-forge-1.20.1:26.7.1"))
 
-    // 旧独立 gtolib 时代由 gtolib 传递/包依赖带上；合并后 gtolib 被 seal 嵌入，
-    // 若仅 modImplementation 不 jarJar，发行包缺 datasynclib → ClassNotFoundException: DataComponentMap
-    jarJar(modImplementation("com.gto:datasynclib-forge-1.20.1:26.7.2"))
+    // 官方 Maven：https://maven.gtodyssey.com/releases/com/gto/datasynclib-forge-1.20.1/
+    // 旧独立 gtolib 时代由传递依赖带上；合并后 gtolib 被 seal 嵌入，必须 jarJar 否则
+    // 发行包缺 DataComponentMap → ClassNotFoundException
+    jarJar(modImplementation("com.gto:datasynclib-forge-1.20.1:26.7.3"))
 
     // compile-only targets for gtolib mixins (optional at runtime)
     modCompileOnly("curse.maven:ferritecore-429235:4810975")
