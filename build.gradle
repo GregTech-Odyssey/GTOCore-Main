@@ -17,9 +17,9 @@ plugins {
 
 version = mod_version
 
-// 开发 / CI 使用 Java 25 运行 Gradle；模组字节码仍发行为 21
-// （依赖 gtceu 等要求 ≥21；Java 25 字节码 reobf/ART 无法处理 major 69）
-java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+// 模组字节码目标 21。开发可用 Java 25 跑 Gradle；CI 使用 Java 21 runner（与旧 GTOCore 签名构建一致）。
+// Java 25 字节码 (major 69) 无法被当前 reobf/ART 处理。
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
