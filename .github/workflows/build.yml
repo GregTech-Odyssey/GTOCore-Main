@@ -148,16 +148,16 @@ jobs:
           jar tf build/libs/gto-seal-runtime-1.0.jar | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'
           echo "OK: gto-seal-runtime SPI present"
           # ResourceLocationMixn 必须已 reobf 成 SRG（与 maven gtolib-forge 一致）
-          GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
-          TMP=$(mktemp -d)
-          unzip -p "$GTO" com/gtolib/mixin/mc/ResourceLocationMixn.class > "$TMP/RL.class"
-          strings "$TMP/RL.class" | grep -q 'f_135804_' || { echo "::error::ResourceLocationMixn missing f_135804_ (reobf failed)"; exit 1; }
-          strings "$TMP/RL.class" | grep -q 'm_245413_' || { echo "::error::ResourceLocationMixn missing m_245413_ (reobf failed)"; exit 1; }
-          if strings "$TMP/RL.class" | grep -q 'assertValidNamespace'; then
-            echo "::error::ResourceLocationMixn still has assertValidNamespace (not reobfed)"
-            exit 1
-          fi
-          echo "OK: ResourceLocationMixn SRG names present"
+          python3 - "$GTO" <<'PY'
+import sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    data = z.read("com/gtolib/mixin/mc/ResourceLocationMixn.class")
+text = data.decode("latin-1")
+assert "f_135804_" in text, "missing f_135804_ (reobf failed)"
+assert "m_245413_" in text, "missing m_245413_ (reobf failed)"
+assert "assertValidNamespace" not in text, "still has assertValidNamespace (not reobfed)"
+print("OK: ResourceLocationMixn SRG names present")
+PY
 
       - name: List outputs
         run: |
