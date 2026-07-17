@@ -19,7 +19,7 @@ import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiStack;
 import org.jetbrains.annotations.Nullable;
 
-public final class ResearchEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
+public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
 
     private static final int TREE_WIDTH = 176;
     private static final int CONTENT_HEIGHT = 166;
@@ -37,7 +37,7 @@ public final class ResearchEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
 
     private final TechTreeManager manager;
 
-    private ResearchEmiRecipe(TechTreeManager manager) {
+    private TechTreeEmiRecipe(TechTreeManager manager) {
         super(() -> createWidget(manager));
         this.manager = manager;
     }
@@ -45,7 +45,7 @@ public final class ResearchEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
     public static void register(EmiRegistry registry) {
         registry.addCategory(CATEGORY);
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.STOPGAP_MEASURES.asItem()));
-        TechTreeManager.getManagers().forEach(manager -> registry.addRecipe(new ResearchEmiRecipe(manager)));
+        TechTreeManager.getManagers().forEach(manager -> registry.addRecipe(new TechTreeEmiRecipe(manager)));
     }
 
     private static WidgetGroup createWidget(TechTreeManager manager) {

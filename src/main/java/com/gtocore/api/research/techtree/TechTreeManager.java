@@ -29,10 +29,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 public final class TechTreeManager implements IOStreamCodec<TechTree> {
@@ -136,6 +133,10 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
 
     public TechNode getNode(String name) {
         return definitions.get(name);
+    }
+
+    public Iterator<TechNode> getAllNodes() {
+        return definitions.values().iterator();
     }
 
     public static final class Builder {

@@ -7,12 +7,13 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineKt;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.integration.Mods;
-import com.gtocore.integration.biomeswevegone.BYGWoodTypes;
 import com.gtocore.integration.chisel.ChiselRecipe;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
-import com.gtocore.integration.emi.research.ResearchEmiRecipe;
+import com.gtocore.integration.emi.research.ResearchTagEmiStack;
+import com.gtocore.integration.emi.research.TechNodeEmiStack;
+import com.gtocore.integration.emi.research.TechTreeEmiRecipe;
 import com.gtocore.integration.emi.space.SatelliteEmiCategory;
 import com.gtocore.integration.misc.CalculatorOverlay;
 
@@ -27,8 +28,6 @@ import com.gtolib.api.emi.stack.EmiSearchTextStackSerializer;
 import com.gtolib.api.emi.stack.EmiTagprefixStack;
 import com.gtolib.api.emi.stack.EmiTagprefixStackSerializer;
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.RegistriesUtils;
-import com.gtolib.utils.register.BlockRegisterUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
@@ -36,10 +35,8 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTFluids;
 import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.common.fluid.potion.PotionFluid;
 import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
@@ -50,7 +47,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionUtils;
 
 import appeng.core.AppEng;
@@ -62,7 +58,6 @@ import appeng.menu.me.items.PatternEncodingTermMenu;
 
 import com.arsmeteorites.arsmeteorites.ArsMeteorites;
 import com.arsmeteorites.arsmeteorites.emi.MeteoritesEmiPlugin;
-import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import com.glodblock.github.extendedae.container.ContainerExCraftingTerminal;
 import com.hollingsworth.arsnouveau.client.jei.JEIArsNouveauPlugin;
 import com.lowdragmc.lowdraglib.LDLib;
@@ -98,15 +93,11 @@ import umpaz.farmersrespite.integration.jei.JEIFRPlugin;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.integration.emi.BotaniaEmiPlugin;
 import vectorwing.farmersdelight.FarmersDelight;
-import vectorwing.farmersdelight.common.registry.ModItems;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public final class GTEMIPlugin implements EmiPlugin {
-
-    private static final Set<Item> HIDDEN_ITEMS = new ReferenceOpenHashSet<>();
 
     public static void init() {
         GTOApi.EMI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addEMIPlugin);
@@ -139,45 +130,9 @@ public final class GTEMIPlugin implements EmiPlugin {
                 }));
             }
         }
-        GTOApi.EMI_HIDE_ITEM_EVENT.addListener(CommonProxy.class, c -> {
-            HIDDEN_ITEMS.add(BlockRegisterUtils.REACTOR_CORE.asItem());
-            HIDDEN_ITEMS.add(ModItems.WHEAT_DOUGH.get());
-            HIDDEN_ITEMS.add(RegistriesUtils.getItem("morered:red_alloy_ingot"));
-            HIDDEN_ITEMS.add(EPPItemAndBlock.CIRCUIT_CUTTER.asItem());
-            HIDDEN_ITEMS.add(EPPItemAndBlock.SILICON_BLOCK.asItem());
-            HIDDEN_ITEMS.add(RegistriesUtils.getItem("ad_astra:fuel_refinery"));
-            HIDDEN_ITEMS.add(RegistriesUtils.getItem("ad_astra:cryo_freezer"));
-            HIDDEN_ITEMS.add(RegistriesUtils.getItem("ad_astra:compressor"));
-            HIDDEN_ITEMS.add(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
-            HIDDEN_ITEMS.add(GTMultiMachines.CHARCOAL_PILE_IGNITER.asItem());
-            HIDDEN_ITEMS.add(GTBlocks.BRITTLE_CHARCOAL.asItem());
-
-            if (Mods.EFFORTLESS.isLoaded()) {
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("effortlessbuilding:golden_randomizer_bag"));
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("effortlessbuilding:diamond_randomizer_bag"));
-            }
-
-            if (Mods.MYTHICBOTANY.isLoaded()) {
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("mythicbotany:feysythia"));
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("mythicbotany:feysythia_floating"));
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("mythicbotany:raw_elementium"));
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("mythicbotany:raw_elementium_block"));
-                HIDDEN_ITEMS.add(RegistriesUtils.getItem("mythicbotany:elementium_ore"));
-            }
-
-            if (Mods.BIOMESWEVEGONE.isLoaded()) {
-                for (String woodName : BYGWoodTypes.WOOD_NAMES) {
-                    HIDDEN_ITEMS.add(RegistriesUtils.getItem("biomeswevegone:" + woodName + "_bookshelf"));
-                    HIDDEN_ITEMS.add(RegistriesUtils.getItem("biomeswevegone:" + woodName + "_crafting_table"));
-                }
-            }
-            c.addAll(HIDDEN_ITEMS);
-        });
-    }
-
-    public static boolean isItemHidden(Item item) {
-        return HIDDEN_ITEMS.contains(item);
+        GTOApi.EMI_HIDE_ITEM_EVENT.addListener(HiddenItems.class, HiddenItems::registerHiddenItems);
+        GTOApi.EMI_ADD_STACK_EVENT.addListener(TechNodeEmiStack.class, TechNodeEmiStack::registerTechNodeEmiStack);
+        GTOApi.EMI_ADD_STACK_EVENT.addListener(ResearchTagEmiStack.class, ResearchTagEmiStack::registerResearchTagEmiStack);
     }
 
     private static void addJEIPlugin(Consumer<IModPlugin> list) {
@@ -270,7 +225,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTProgrammedCircuitCategory.registerDisplays(registry);
 
         PrimordialReconstructorDisassemblyEmiCategory.register(registry);
-        ResearchEmiRecipe.register(registry);
+        TechTreeEmiRecipe.register(registry);
         SatelliteEmiCategory.register(registry);
 
         GTRecipeEMICategory.registerWorkStations(registry);
