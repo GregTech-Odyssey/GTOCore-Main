@@ -31,6 +31,8 @@
 # 或全量重建：./gradlew -PgtolibRebuild=true build
 ```
 
+**Agent 要求**：每次修改完 `GTOLib/` 下的代码后，必须运行 `./gradlew updateGtolibProtectedJar -PgtolibProtected=true` 尝试编译并重建 gtolib 预构建，确认能通过再继续后续工作。
+
 ## 相关路径
 
 | 路径 | 说明 |
