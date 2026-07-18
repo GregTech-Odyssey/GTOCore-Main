@@ -25,14 +25,15 @@
 
 原因：CI / 无 submodule 环境只认 `libs/gtolib-protected.jar`；只推源码指针不刷新预构建会跑旧字节码。jar 与 `.PROTECTED`（含 jarSha256）必须成对提交。
 
-有 GTOLib 源码时，`build` / `runClient` / `runData` 会在源码指纹变化后自动刷新 jar + `.PROTECTED`；也可显式强制：
+有 GTOLib 源码时，默认始终走**加密**流水线；`build` / `runClient` / `runData` 会在源码指纹变化后自动刷新 `libs/gtolib-protected.jar` + `.PROTECTED`。也可显式：
 
 ```bash
-./gradlew updateGtolibProtectedJar -PgtolibProtected=true
-# 或全量重建：./gradlew -PgtolibRebuild=true build
+./gradlew buildGtolibProtected
+# 全量重建：./gradlew -PgtolibRebuild=true build
+# 明文调试（仅本地，不写 libs）：./gradlew runClient -PgtolibUnprotected=true
 ```
 
-**Agent 要求**：若本次 Prompt 修改了 `GTOLib/` 下的代码，须在**完成该 Prompt 前**运行一次 `./gradlew updateGtolibProtectedJar -PgtolibProtected=true` 尝试编译并重建 gtolib 预构建，确认通过后再收尾。不要每改一处就重建一次——一个 Prompt 只在收尾时重建这一次。
+**Agent 要求**：若本次 Prompt 修改了 `GTOLib/` 下的代码，须在**完成该 Prompt 前**运行一次 `./gradlew buildGtolibProtected` 尝试编译并重建 gtolib 预构建，确认通过后再收尾。不要每改一处就重建一次——一个 Prompt 只在收尾时重建这一次。**不要**加 `-PgtolibUnprotected` / `-PgtolibDebug`（明文不会写入 libs，且不符合预构建要求）。
 
 ## 相关路径
 

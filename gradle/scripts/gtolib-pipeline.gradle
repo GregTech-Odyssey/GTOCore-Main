@@ -1,18 +1,17 @@
 /**
  * GTOLib 流水线（只有两档）
  *
- * 1) 未加密（调试）：gtolib-unprotected 明文
- * 2) 加密（默认 / 发行 / 公开 prebuild）：reobf → ProGuard → GTO Seal
- *    + libs 完整 Seal Runtime（jni，可解密）
+ * 1) 加密（默认 / 发行 / 公开 prebuild / 无权限唯一路径）：
+ *    reobf → ProGuard → GTO Seal + libs 完整 Seal Runtime
+ * 2) 未加密（仅有源码 + 显式参数）：gtolib-unprotected 明文，便于断点
+ *    开关：-PgtolibUnprotected=true | -PgtolibDebug=true | -PskipGtolibProtect=true
+ *    （或 env GTOLIB_DEBUG / PROGUARD_DISABLE / 本地 .gtolib-debug 标记）
+ *    明文绝不同步到 libs/gtolib-protected.jar，无权限也永远拿不到明文。
  *
- * 【与旧独立 GTOLib+GTOCore 对齐】
- * 旧模型：GTOLib 自己 jar→proguard→reobfJar→encrypt→publish；
- *         GTOCore jarJar 成品 gtolib（成员已是 f_/m_ SRG），外层不再改 gtolib mixin。
- * 新 monorepo 曾变成 seal(Mojmap)→embed→外层 reobf，CI 无源码时 tsrg 不全就炸。
- * 现恢复「gtolib 先 ART reobf 再 seal」，密封体/ hollow class 与官方 maven 一样已是 SRG。
+ * 任务：buildGtolibProtected（加密构建并同步 libs 预构建）
  *
  * 有源码（GTOLib/）：始终并入 sourceSets.main，供 IDEA 跳转/增量编译；
- *   isGtolibJarUpToDate 仅跳过 ProGuard/Seal，不改为只依赖 unprotected jar。
+ *   isGtolibJarUpToDate 仅跳过 ProGuard/Seal。
  * 无源码：libs/gtolib-protected.jar + libs/gto-seal-runtime-1.0.jar
  * 强制重建：-PgtolibRebuild=true
  */
@@ -276,16 +275,15 @@ ext.isGtolibJarUpToDate = {
     return stamp.fingerprint == gtolibFingerprint
 }()
 /**
- * 是否按调试模式使用未保护 gtolib（仅有源码时有意义）。
+ * 是否显式要求未保护（明文）gtolib。
+ * 默认永远加密；无 GTOLib 源码时恒 false（只能用 libs 加密预构建）。
+ * 不会因 IDE 调试器 / JDWP 自动切明文——必须显式 opt-in。
  */
 ext.detectGtolibDebugMode = {
     if (!hasGtolibSources) {
         return false
     }
-    if (findProperty('gtolibProtected') == 'true') {
-        return false
-    }
-    if (findProperty('gtolibDebug') == 'true' || findProperty('gtolibUnprotected') == 'true') {
+    if (findProperty('gtolibUnprotected') == 'true' || findProperty('gtolibDebug') == 'true') {
         return true
     }
     if (findProperty('skipGtolibProtect') == 'true') {
@@ -295,30 +293,6 @@ ext.detectGtolibDebugMode = {
         return true
     }
     if (file('.gtolib-debug').exists()) {
-        return true
-    }
-    try {
-        if (gradle.startParameter.debugJvm) {
-            return true
-        }
-    } catch (Throwable ignored) {
-    }
-    try {
-        def args = java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments
-        if (args.any { String a ->
-            a.contains('jdwp') || a.contains('debugger') || a.contains('jetbrains.debug')
-        }) {
-            return true
-        }
-    } catch (Throwable ignored) {
-    }
-    if (System.getProperty('idea.debugger.dispatch.port') != null) {
-        return true
-    }
-    if (System.getProperty('intellij.debug.agent') != null) {
-        return true
-    }
-    if (System.getProperty('idea.debug.mode') != null) {
         return true
     }
     return false
@@ -954,11 +928,12 @@ tasks.register('sealPackGtolib', Exec) {
 }
 
 /**
- * protected = ProGuard（可选）+ GTO Seal Packager 加密（非调试）。
+ * 生成加密 gtolib（默认）并同步 libs 预构建。
+ * 明文模式（-PgtolibUnprotected 等）只写 build/，绝不覆盖 libs。
  */
 tasks.register('buildGtolibProtected') {
     group = 'gtolib'
-    description = '生成/复用 gtolib-protected.jar（ProGuard + GTO Seal）并写 stamp'
+    description = '生成加密 gtolib-protected.jar（ProGuard+Seal）并同步 libs/ 预构建；明文仅 -PgtolibUnprotected'
     dependsOn {
         if (!hasGtolibSources) {
             return ['copyPrebuiltGtolib']
@@ -972,6 +947,10 @@ tasks.register('buildGtolibProtected') {
         }
         return steps
     }
+    // 刷新 Runtime 校验（改 gtolib 不需要 GTOSeal 源码，沿用 libs）
+    if (tasks.findByName('syncSealRuntimeToLibs') != null) {
+        dependsOn 'syncSealRuntimeToLibs'
+    }
     outputs.file(gtolibProtectedJar)
 
     doLast {
@@ -980,6 +959,7 @@ tasks.register('buildGtolibProtected') {
         def sealed = file("${buildDir}/gtolib/gtolib-sealed.jar")
         def pg = gtolibPgJar.get().asFile
         def raw = gtolibRawJar.get().asFile
+        def unprotectedMode = hasGtolibSources && detectGtolibDebugMode()
 
         if (hasGtolibSources && isGtolibJarUpToDate) {
             logger.lifecycle("GTOLib: jar 已是最新 (stamp 命中)，跳过打包/保护 → 执行一致性校验")
@@ -987,34 +967,83 @@ tasks.register('buildGtolibProtected') {
             return
         }
 
-        // 加密档 = ProGuard + Seal 抽空（完整保护）
-        // 回退顺序 raw 先于 unprotected：raw 经 reobfGtolibRaw 已是 SRG（prod 合同），
-        // unprotected 是 named 的 dev jar，进生产会 NoSuchMethod（m_7912_ 事故）。
-        def src = null
-        if (sealed.exists() && sealed.length() > 0) {
+        if (unprotectedMode) {
+            // 明文：仅本地 build/，禁止写入 libs/gtolib-protected.jar
+            def src = (unprotected.exists() && unprotected.length() > 0) ? unprotected :
+                    ((raw.exists() && raw.length() > 0) ? raw : null)
+            if (src == null) {
+                throw new GradleException("无法生成明文 gtolib（缺 unprotected/raw）")
+            }
+            protectedFile.parentFile.mkdirs()
+            Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            injectGtolibMixinConfig(protectedFile)
+            publishAndInjectGtolibRefmaps(protectedFile, true)
+            // 作废 stamp：避免下次默认加密构建把明文 jar 当成 up-to-date 跳过
+            def stamp = gtolibStampFile.get().asFile
+            if (stamp.exists()) {
+                stamp.delete()
+            }
+            logger.lifecycle(
+                    "GTOLib: 【未加密/本地】${protectedFile} (${protectedFile.length()} bytes) " +
+                            "— 未写入 libs；已清除 stamp（下次默认构建将重新加密）"
+            )
+            return
+        }
+
+        // 加密档：必须是 Seal 抽空成品（完整保护）。
+        // 无源码路径由 copyPrebuiltGtolib 已写入 protectedFile。
+        def src
+        if (!hasGtolibSources) {
+            src = protectedFile.exists() && protectedFile.length() > 0 ? protectedFile : gtolibProtectedLibsJar
+        } else if (sealed.exists() && sealed.length() > 0) {
             src = sealed
         } else if (pg.exists() && pg.length() > 0) {
+            // ProGuard 完成但 Seal 未跑：允许仅当 packager 不可用（本地缺工具）时降级
+            if (canSealPack) {
+                throw new GradleException(
+                        "GTO Seal Packager 已配置但未产出 gtolib-sealed.jar。\n" +
+                                "请检查 sealPackGtolib 日志，或 ./gradlew -PgtolibRebuild=true buildGtolibProtected"
+                )
+            }
             src = pg
-        } else if (raw.exists() && raw.length() > 0) {
-            src = raw
+            logger.warn("GTOLib: 无 Seal Packager，降级为仅 ProGuard（不应提交到公开 libs）")
         } else {
-            src = unprotected
+            throw new GradleException(
+                    "无法生成加密 gtolib-protected.jar（缺 sealed/proguard 产物）。\n" +
+                            "需要 GTOLib 源码 + protect/ 工具链；无权限者请使用 libs 预构建。"
+            )
         }
         if (src == null || !src.exists() || src.length() == 0) {
             throw new GradleException("无法生成 gtolib-protected.jar")
         }
+        if (unprotected.exists() && src.length() == unprotected.length() && hasGtolibSources) {
+            throw new GradleException("protected 与 unprotected 同大小，疑似未加密，拒绝写入")
+        }
+
         protectedFile.parentFile.mkdirs()
         Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         injectGtolibMixinConfig(protectedFile)
-        // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap 并回写 libs 预构建
+        // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap
         publishAndInjectGtolibRefmaps(protectedFile, hasGtolibSources)
         def jarSha = computeFileSha256(protectedFile)
+
+        // 有源码 + 加密：同步公开预构建 libs/（无权限消费方唯一入口）
         if (hasGtolibSources && protectedFile.exists()) {
+            if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
+                throw new GradleException(
+                        "libs/gto-seal-runtime-1.0.jar 必须是完整 Runtime（>100KB）。\n" +
+                                "请先: ./gradlew syncSealRuntimeToLibs"
+                )
+            }
             gtolibProtectedLibsJar.parentFile.mkdirs()
             Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            // 与 jar 同步写 .PROTECTED，避免 CI sources=false 时 jar/侧车不一致
+            injectGtolibMixinConfig(gtolibProtectedLibsJar)
             jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
-            logger.lifecycle("GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED（含 refmap）")
+            logger.lifecycle(
+                    "GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED " +
+                            "(${gtolibProtectedLibsJar.length()} bytes); " +
+                            "runtime=${sealRuntimeLibsJar.length()} bytes"
+            )
         }
 
         if (hasGtolibSources && gtolibFingerprint) {
@@ -1024,7 +1053,7 @@ tasks.register('buildGtolibProtected') {
                             "jarSha=${jarSha.take(16)}…"
             )
         }
-        def mode = (sealed.exists() && sealed.length() > 0) ? 'ProGuard+Seal' : (pg.exists() ? 'ProGuard' : 'plain')
+        def mode = (sealed.exists() && sealed.length() > 0) ? 'ProGuard+Seal' : (pg.exists() ? 'ProGuard' : 'prebuilt')
         logger.lifecycle("GTOLib protected (${mode}): ${protectedFile} (${protectedFile.length()} bytes)")
     }
 }
@@ -1333,63 +1362,6 @@ tasks.register('finalizeGtolib') {
                         "${ready.length()} bytes | debug=${debug}"
         )
     }
-}
-
-tasks.register('updateGtolibProtectedJar') {
-    group = 'gtolib'
-    description = '同步完整加密 prebuild：Seal 抽空 gtolib + 完整 Seal Runtime → libs/'
-    dependsOn 'buildGtolibProtected'
-    // 有 GTOSeal 可刷新 Runtime；仅 GTOLib 时沿用/校验 libs Runtime
-    if (tasks.findByName('syncSealRuntimeToLibs') != null) {
-        dependsOn 'syncSealRuntimeToLibs'
-    }
-
-    doLast {
-        if (detectGtolibDebugMode()) {
-            throw new GradleException(
-                    "拒绝更新 libs/gtolib-protected.jar：调试模式。\n" +
-                            "请 -PgtolibProtected=true 后执行: ./gradlew updateGtolibProtectedJar"
-            )
-        }
-        if (!hasGtolibSources) {
-            throw new GradleException("无 GTOLib 源码")
-        }
-        def unprotected = gtolibUnprotectedJar.get().asFile
-        def sealed = file("${buildDir}/gtolib/gtolib-sealed.jar")
-        def protectedFile = gtolibProtectedJar.get().asFile
-        // 必须是 Seal 抽空成品（完整保护）
-        def outSrc = (sealed.exists() && sealed.length() > 0) ? sealed : protectedFile
-        if (outSrc == null || !outSrc.exists() || outSrc.length() == 0) {
-            throw new GradleException("gtolib-protected/sealed 无效")
-        }
-        if (unprotected.exists() && outSrc.length() == unprotected.length()) {
-            throw new GradleException("protected 与 unprotected 同大小，疑似未加密")
-        }
-        if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
-            throw new GradleException(
-                    "libs/gto-seal-runtime-1.0.jar 必须是完整 Runtime（>100KB）。\n" +
-                            "请先: ./gradlew syncSealRuntimeToLibs"
-            )
-        }
-        gtolibProtectedLibsJar.parentFile.mkdirs()
-        Files.copy(outSrc.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        injectGtolibMixinConfig(gtolibProtectedLibsJar)
-        def jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
-        if (gtolibFingerprint) {
-            writeGtolibStamp(gtolibFingerprint, jarSha)
-        }
-        logger.lifecycle(
-                "GTOLib: libs/gtolib-protected.jar ← Seal 加密 (${outSrc.length()} bytes); " +
-                        "runtime=${sealRuntimeLibsJar.length()} bytes"
-        )
-    }
-}
-
-// 兼容旧任务名
-tasks.register('updateGtolibDevJar') {
-    group = 'gtolib'
-    description = '已废弃别名 → updateGtolibProtectedJar'
-    dependsOn 'updateGtolibProtectedJar'
 }
 
 /**
