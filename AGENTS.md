@@ -12,9 +12,20 @@
 
 ## 云端构建与签名（进整合包的唯一途径）
 
-- commit message 含 `--build` / `-build` / `-b`（单独成词，如 `release --build`）时，push 会触发 **Build and Sign** 云端工作流，产出**签名版** jar——只有这个版本可以放进整合包使用。
-- 仅**组织成员**能触发签名构建（工作流校验 actor 的组织成员身份，bot 与外部人员会被拒绝）。
+触发 **Build and Sign** 云端工作流：
+
+| 触发 | 条件 | 是否需要 `--build` / `-build` / `-b` |
+|------|------|--------------------------------------|
+| `push` | commit message 含构建标记（单独成词，如 `release --build`） | **需要** |
+| PR **opened** | 提起人为**组织成员** → 自动构建一次（按 PR head） | **不需要** |
+| PR **synchronize**（新提交） | head commit 含构建标记，且推送者为组织成员 | **需要** |
+| PR **评论** | 组织成员在 PR 下评论含 `-b` / `--build` / `-build` | 评论中带标记 |
+
+- 产出**签名版** jar——只有这个版本可以放进整合包使用。
+- 仅**组织成员**（或本仓 write 级 collaborator）能触发签名构建；bot 与外部人员会被拒绝。
 - **本地构建的 jar 未经签名，无法放进整合包**；本地构建只用于开发调试（runClient 等）。
+- **外部 fork PR**：工作流使用 `pull_request_target`，在 base 仓上下文运行，**可以**使用 org secrets 签名。外部贡献者开 PR 不会自动构建；组织成员审阅后在 PR 下评论 `--build`（或 `-b`）即可触发对 **PR head（含 fork）** 的签名构建。
+- **安全**：`pull_request_target` 会执行 PR 侧代码（`build.gradle` 等）并注入签名 secrets。成员评论 `--build` 即表示已审阅并愿意签名；勿对未审代码轻易触发。
 
 ## 分支与 gtolib 预构建
 
