@@ -18,36 +18,64 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
-import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 
 public class DataScanningManager {
 
-    private static final Reference2ObjectMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(new Hash.Strategy<>() {
+    private static final Reference2ObjectMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
+    private static final Reference2ReferenceMap<ResearchTag, Set<AEKey>> dataScanningSources = new Reference2ReferenceOpenHashMap<>();
 
-        @Override
-        public int hashCode(AEKey aeKey) {
-            if (aeKey == null || aeKey.getPrimaryKey() == null) {
-                return 0;
+    public static synchronized void registerDataScanning(AEKey key, ResearchPoints points) {
+        Objects.requireNonNull(key, "key");
+        Objects.requireNonNull(points, "points");
+
+        var storedPoints = points.copy();
+        var previous = dataScanningMap.put(key, storedPoints);
+        if (previous != null) {
+            for (var entry : previous.reference2LongEntrySet()) {
+                var sources = dataScanningSources.get(entry.getKey());
+                if (sources != null) {
+                    sources.remove(key);
+                    if (sources.isEmpty()) {
+                        dataScanningSources.remove(entry.getKey());
+                    }
+                }
             }
-            return aeKey.getPrimaryKey().hashCode();
         }
-
-        @Override
-        public boolean equals(AEKey aeKey, AEKey k1) {
-            return aeKey == null ? k1 == null : (k1 != null &&
-                    Objects.equals(aeKey.getPrimaryKey(), k1.getPrimaryKey()));
+        for (var entry : storedPoints.reference2LongEntrySet()) {
+            if (entry.getLongValue() <= 0L) {
+                continue;
+            }
+            dataScanningSources.computeIfAbsent(entry.getKey(), ignored -> new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY)).add(key);
         }
-    });
+    }
 
-    public static void registerDataScanning(AEKey key, ResearchPoints points) {
-        dataScanningMap.put(key, points);
+    public static synchronized List<DataScanningEntry> getDataScanningEntries() {
+        List<DataScanningEntry> entries = new ArrayList<>(dataScanningMap.size());
+        for (var entry : dataScanningMap.reference2ObjectEntrySet()) {
+            entries.add(new DataScanningEntry(entry.getKey(), entry.getValue().copy()));
+        }
+        entries.sort(Comparator.comparing((DataScanningEntry entry) -> entry.key().getType().getId().toString())
+                .thenComparing(entry -> entry.key().getId().toString()));
+        return List.copyOf(entries);
+    }
+
+    public static synchronized Set<AEKey> getDataScanningSources(ResearchTag tag) {
+        var sources = dataScanningSources.get(tag);
+        return sources == null ? Set.of() : Set.copyOf(sources);
     }
 
     private static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
@@ -65,8 +93,7 @@ public class DataScanningManager {
                 teamContext.addScannedMaterial(mat);
             }
             teamContext.addScannedItem(key);
-            if (ResearchRequirements.EUREKA_REQUIREMENTS.containsKey(key)) {
-                var node = ResearchRequirements.EUREKA_REQUIREMENTS.get(key);
+            for (var node : ResearchRequirements.getEurekaRequirements(key)) {
                 Message.sendResearchToast(team, node, false);
             }
         }
@@ -91,4 +118,14 @@ public class DataScanningManager {
     public static ResearchPoints scanData(Fluid fluid, UUID team, boolean simulate) {
         return scanData(AEFluidKey.of(fluid), team, simulate);
     }
+
+    public static synchronized void registerDataScanning(ItemLike item, ResearchPoints points) {
+        registerDataScanning(AEItemKey.of(item), points);
+    }
+
+    public static synchronized void registerDataScanning(Fluid fluid, ResearchPoints points) {
+        registerDataScanning(AEFluidKey.of(fluid), points);
+    }
+
+    public record DataScanningEntry(AEKey key, ResearchPoints points) {}
 }

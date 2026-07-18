@@ -1,6 +1,7 @@
 package com.gtocore.api.research;
 
 import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
@@ -13,6 +14,7 @@ import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
@@ -24,13 +26,15 @@ import java.util.Set;
 @Getter
 public class TeamResearchContext {
 
+    private static final int TECH_NODE_MANAGER_ID_FORMAT_MARKER = -1;
+
     private final ResearchPoints researchPoints;
     private final Set<AEKey> scannedItems;
     private final Set<Material> scannedMaterials;
     private final Map<TechNode, Long> techNodeAccCWU;
 
     public TeamResearchContext() {
-        this(new ResearchPoints(), new ReferenceOpenHashSet<>(), new ReferenceOpenHashSet<>(), new O2OOpenCacheHashMap<>());
+        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new O2OOpenCacheHashMap<>());
     }
 
     public TeamResearchContext(
@@ -100,7 +104,7 @@ public class TeamResearchContext {
 
     static Set<AEKey> readScannedItems(DataIOStream dataIOStream) throws IOException {
         int scannedItemCount = dataIOStream.readInt();
-        Set<AEKey> scannedItems = new ReferenceOpenHashSet<>();
+        Set<AEKey> scannedItems = new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY);
         for (int i = 0; i < scannedItemCount; i++) {
             byte[] itemData = dataIOStream.readByteArray();
             AEKey item = GTOCodecs.AE_KEY_DATA_CODEC.decode(Data.readData(itemData));
@@ -112,8 +116,10 @@ public class TeamResearchContext {
     }
 
     static void writeTechNodeAccCWU(DataIOStream dataIOStream, Map<TechNode, Long> techNodeAccCWU) throws IOException {
+        dataIOStream.writeInt(TECH_NODE_MANAGER_ID_FORMAT_MARKER);
         dataIOStream.writeInt(techNodeAccCWU.size());
         for (Map.Entry<TechNode, Long> techNodeEntry : techNodeAccCWU.entrySet()) {
+            dataIOStream.writeUTF(techNodeEntry.getKey().getManager().getId());
             dataIOStream.writeUTF(techNodeEntry.getKey().name);
             dataIOStream.writeLong(techNodeEntry.getValue());
         }
@@ -121,11 +127,17 @@ public class TeamResearchContext {
 
     static Map<TechNode, Long> readTechNodeAccCWU(DataIOStream dataIOStream) throws IOException {
         int techNodeCount = dataIOStream.readInt();
+        boolean hasManagerIds = techNodeCount == TECH_NODE_MANAGER_ID_FORMAT_MARKER;
+        if (hasManagerIds) {
+            techNodeCount = dataIOStream.readInt();
+        }
         Map<TechNode, Long> techNodeAccCWU = new Reference2LongOpenHashMap<>();
         for (int i = 0; i < techNodeCount; i++) {
+            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : AnalyzeData.TechTree;
+            // todo remove datafix in future
             String nodeName = dataIOStream.readUTF();
             long accCWU = dataIOStream.readLong();
-            TechNode node = AnalyzeData.TechTree.getNode(nodeName);
+            TechNode node = manager == null ? null : manager.getNode(nodeName);
             if (node != null) {
                 techNodeAccCWU.put(node, accCWU);
             }

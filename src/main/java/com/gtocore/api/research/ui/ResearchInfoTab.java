@@ -4,7 +4,6 @@ import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.ui.TechTreeSideTab;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
-import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
@@ -30,8 +29,8 @@ public class ResearchInfoTab implements IFancyUIProvider {
     private final @NotNull TechTreeManager manager;
     private final BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory;
 
-    public ResearchInfoTab(@Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
-        this.manager = AnalyzeData.TechTree;
+    public ResearchInfoTab(TechTreeManager manager, @Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
+        this.manager = manager;
         this.innerContentFactory = innerContentFactory == null ? (uiWidget, sideTab) -> new WidgetGroup() : innerContentFactory;
     }
 

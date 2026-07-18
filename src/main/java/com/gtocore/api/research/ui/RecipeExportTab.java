@@ -2,6 +2,7 @@ package com.gtocore.api.research.ui;
 
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTree;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.integration.jech.PinYinUtils;
@@ -93,9 +94,11 @@ public class RecipeExportTab implements IFancyUIProvider {
     private static final String FILTER_EMPTY_RECIPES = "gtocore.research.recipe_export_tab.filter_empty";
 
     private final DataItemHolder holder;
+    private final TechTreeManager techTree;
 
-    public RecipeExportTab(DataItemHolder holder) {
+    public RecipeExportTab(DataItemHolder holder, TechTreeManager techTree) {
         this.holder = holder;
+        this.techTree = techTree;
     }
 
     @Override
@@ -105,7 +108,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget fancyMachineUIWidget) {
-        return new RecipeExportWidget(holder);
+        return new RecipeExportWidget(holder, techTree);
     }
 
     @Override
@@ -150,6 +153,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         private static final int SLOT_COLUMNS = 9;
 
         private final DataItemHolder holder;
+        private final TechTreeManager techTree;
         private final DraggableScrollableWidgetGroup recipePanel;
         private final WidgetGroup recipeContent;
         private final DraggableScrollableWidgetGroup slotPanel;
@@ -160,9 +164,10 @@ public class RecipeExportTab implements IFancyUIProvider {
         private SyncState currentState = SyncState.EMPTY;
         private SyncState lastSentState = SyncState.EMPTY;
 
-        private RecipeExportWidget(DataItemHolder holder) {
+        private RecipeExportWidget(DataItemHolder holder, TechTreeManager techTree) {
             super(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
             this.holder = holder;
+            this.techTree = techTree;
             setBackground(GuiTextures.BACKGROUND_INVERSE);
 
             TextFieldWidget searchField = new TextFieldWidget(4, 4, SEARCH_FIELD_WIDTH, SEARCH_FIELD_HEIGHT, () -> searchText, this::setSearchText);
@@ -394,7 +399,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         private List<EntryState> buildEntries() {
             Player player = getGuiPlayer();
             Set<String> unlockedNodeNames = new HashSet<>();
-            TechTree tree = player == null ? null : TechTreeSavedData.findTree(player, AnalyzeData.TechTree);
+            TechTree tree = player == null ? null : TechTreeSavedData.findTree(player, techTree);
             if (tree != null && !tree.isEmpty()) {
                 for (TechNode node : tree.getUnlockedNodes()) {
                     unlockedNodeNames.add(node.name);
@@ -402,7 +407,7 @@ public class RecipeExportTab implements IFancyUIProvider {
             }
 
             List<EntryState> entries = new ArrayList<>();
-            for (TechNode node : AnalyzeData.TechTree.getLayout().orderedNodes()) {
+            for (TechNode node : techTree.getLayout().orderedNodes()) {
                 var recipes = node.getRecipes();
                 if (recipes.isEmpty()) {
                     continue;
@@ -467,7 +472,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
 
         private @Nullable ResolvedEntry resolveEntry(EntryState entry) {
-            TechNode node = AnalyzeData.TechTree.getNode(entry.nodeName());
+            TechNode node = techTree.getNode(entry.nodeName());
             if (node == null) {
                 return null;
             }
