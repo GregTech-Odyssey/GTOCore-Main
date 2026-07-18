@@ -60,6 +60,7 @@ jobs:
       checkout_repo: ${{ steps.resolve.outputs.checkout_repo }}
       checkout_ref: ${{ steps.resolve.outputs.checkout_ref }}
       reason: ${{ steps.resolve.outputs.reason }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
     steps:
       - name: Resolve trigger, ref, membership
         id: resolve
@@ -71,7 +72,7 @@ jobs:
           REPO: ${{ github.repository }}
           # push
           PUSH_SHA: ${{ github.sha }}
-          # pull_request_target
+          # pull_request_target / issue_comment
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || 0 }}
           PR_USER: ${{ github.event.pull_request.user.login || '' }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
@@ -157,6 +158,7 @@ jobs:
             echo "checkout_repo=" >> "$GITHUB_OUTPUT"
             echo "checkout_ref=" >> "$GITHUB_OUTPUT"
             echo "reason=$1" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
             echo "SKIP: $1"
             exit 0
           }
@@ -167,6 +169,7 @@ jobs:
           CHECKOUT_REPO="$REPO"
           CHECKOUT_REF=""
           REASON=""
+          OUT_PR=""
           # push / 评论 / 同步带标记：非成员应失败或 skip；opened 外部贡献 soft skip
           MEMBER_MODE="hard"
 
@@ -180,11 +183,20 @@ jobs:
               CHECKOUT_REF="$PUSH_SHA"
               REASON="push with build marker"
               MEMBER_MODE="hard"
+              # 若该 commit 关联打开中的 PR，也在 PR 下发状态评论
+              OUT_PR=$(curl -sS -f \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github.groot-preview+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "${API}/repos/${REPO}/commits/${PUSH_SHA}/pulls" \
+                | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['number'] if isinstance(d,list) and d else '')" \
+                2>/dev/null || true)
               ;;
 
             pull_request_target)
               CHECKOUT_REPO="$PR_HEAD_REPO"
               CHECKOUT_REF="$PR_HEAD_SHA"
+              OUT_PR="$PR_NUMBER"
               echo "PR #${PR_NUMBER} author=@${PR_USER} head=${PR_HEAD_REPO}@${PR_HEAD_SHA}"
 
               if [ "$EVENT_ACTION" = "opened" ]; then
@@ -221,6 +233,7 @@ jobs:
               fi
               # 评论触发：评论者须为组织成员；非成员评论 --build soft skip
               CHECK_USER="${COMMENT_USER:-$ACTOR}"
+              OUT_PR="$PR_NUMBER"
               PR_JSON=$(curl -sS "${HDR[@]}" "${API}/repos/${REPO}/pulls/${PR_NUMBER}")
               CHECKOUT_REPO=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['repo']['full_name'])" <<<"$PR_JSON")
               CHECKOUT_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['sha'])" <<<"$PR_JSON")
@@ -242,13 +255,19 @@ jobs:
 
           require_member_or_skip "$CHECK_USER" "$MEMBER_MODE"
 
+          # 规范化 pr_number（0 / 空视为无 PR）
+          if [ -z "${OUT_PR:-}" ] || [ "$OUT_PR" = "0" ]; then
+            OUT_PR=""
+          fi
+
           {
             echo "should_build=true"
             echo "checkout_repo=${CHECKOUT_REPO}"
             echo "checkout_ref=${CHECKOUT_REF}"
             echo "reason=${REASON}"
+            echo "pr_number=${OUT_PR}"
           } >> "$GITHUB_OUTPUT"
-          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF}"
+          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF} pr=${OUT_PR:-none}"
 
   build:
     needs: gate
@@ -257,7 +276,46 @@ jobs:
     permissions:
       contents: read
       actions: write
+      issues: write
+      pull-requests: write
     steps:
+      # issue_comment 触发的 run 不会出现在 PR Checks 页，必须靠评论反馈
+      - name: Post PR status (building)
+        id: pr_status
+        if: needs.gate.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REASON: ${{ needs.gate.outputs.reason }}
+          REF: ${{ needs.gate.outputs.checkout_ref }}
+          REPO_HEAD: ${{ needs.gate.outputs.checkout_repo }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${REF:0:12}"
+          BODY=$(cat <<EOF
+          <!-- gto-build-sign-run:${{ github.run_id }} -->
+          ### 🔨 Build and Sign
+
+          **状态:** ⏳ 正在构建…
+
+          🔗 [打开本次构建](${RUN_URL})
+
+          | | |
+          |---|---|
+          | 触发 | ${REASON} |
+          | 代码 | \`${REPO_HEAD}@${SHORT_SHA}\` |
+          | Run | [\`${{ github.run_id }}\`](${RUN_URL}) |
+
+          > 构建成功后可在上述链接的 **Artifacts** 下载签名 jar。
+          EOF
+          )
+          # 去掉 heredoc 公共缩进，避免评论变成代码块缩进
+          BODY=$(printf '%s\n' "$BODY" | sed 's/^          //')
+          ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -f body="$BODY" --jq .id)
+          echo "comment_id=$ID" >> "$GITHUB_OUTPUT"
+          echo "Posted building status comment id=$ID on PR #${PR_NUMBER}"
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -370,3 +428,50 @@ jobs:
           path: build/libs/gto-seal-runtime-1.0.jar
           if-no-files-found: error
           retention-days: 7
+
+      - name: Update PR status (final)
+        if: always() && steps.pr_status.outputs.comment_id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_ID: ${{ steps.pr_status.outputs.comment_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REASON: ${{ needs.gate.outputs.reason }}
+          REF: ${{ needs.gate.outputs.checkout_ref }}
+          REPO_HEAD: ${{ needs.gate.outputs.checkout_repo }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${REF:0:12}"
+          case "$JOB_STATUS" in
+            success)
+              STATUS_LINE="**状态:** ✅ 构建完成"
+              EXTRA=$'\n\n可在构建页面 **Artifacts** 下载 `gtocore-build` 与 `gto-seal-runtime`。'
+              ;;
+            cancelled)
+              STATUS_LINE="**状态:** ⚠️ 构建已取消（可能被同 PR 的新构建取代）"
+              EXTRA=""
+              ;;
+            *)
+              STATUS_LINE="**状态:** ❌ 构建失败"
+              EXTRA=$'\n\n请打开构建链接查看失败日志。'
+              ;;
+          esac
+          BODY=$(cat <<EOF
+          <!-- gto-build-sign-run:${{ github.run_id }} -->
+          ### 🔨 Build and Sign
+
+          ${STATUS_LINE}
+
+          🔗 [打开本次构建](${RUN_URL})
+
+          | | |
+          |---|---|
+          | 触发 | ${REASON} |
+          | 代码 | \`${REPO_HEAD}@${SHORT_SHA}\` |
+          | Run | [\`${{ github.run_id }}\`](${RUN_URL}) |
+          ${EXTRA}
+          EOF
+          )
+          BODY=$(printf '%s\n' "$BODY" | sed 's/^          //')
+          gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY"
+          echo "Updated status comment id=${COMMENT_ID} → ${JOB_STATUS}"
