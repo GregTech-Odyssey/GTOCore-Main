@@ -15,7 +15,7 @@ libs/*-debug.jar
 libs/gtolib-unprotected.jar
 **/gtolib-unprotected.jar
 .gtolib-debug
-# libs/gtolib-protected.jar 可提交：必须是 protected 成品（updateGtolibProtectedJar）
+# libs/gtolib-protected.jar 可提交：必须是 protected 成品（buildGtolibProtected）
 *.launch
 *.iml
 *.ipr

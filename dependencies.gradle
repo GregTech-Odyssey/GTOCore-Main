@@ -7,8 +7,9 @@ dependencies {
     implementation("org.lwjgl:lwjgl:3.3.2")
     implementation("org.lwjgl:lwjgl-opengl:3.3.2")
 
-    // GTO Seal Runtime：开发 classpath + 发行时平铺进 gtocore jar（见 gtolib-pipeline jar 任务）
-    // CI 只上传 gtocore，不再单独上传 seal 产物
+    // GTO Seal Runtime：开发 classpath（flatDir）。
+    // 禁止打进 gtocore jar（ITransformationService SPI 会使 Forge 整包排除 gtocore）。
+    // 运行时 / 发行：独立 gto-seal-runtime-1.0.jar 与 gtocore 并列放在 mods/。
     implementation("dev:gto-seal-runtime:1.0")
 
     implementation("dev:RecipeSearch-1.3")
@@ -23,8 +24,10 @@ dependencies {
     jarJar(modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$project.gtceu_version"))
     jarJar(modImplementation("com.hepdd.gtmthings:gtmthings-forge-1.20.1:26.7.1"))
 
-    // previously provided transitively by gtolib
-    modImplementation("com.gto:datasynclib-forge-1.20.1:26.7.2")
+    // 官方 Maven：https://maven.gtodyssey.com/releases/com/gto/datasynclib-forge-1.20.1/
+    // 旧独立 gtolib 时代由传递依赖带上；合并后 gtolib 被 seal 嵌入，必须 jarJar 否则
+    // 发行包缺 DataComponentMap → ClassNotFoundException
+    jarJar(modImplementation("com.gto:datasynclib-forge-1.20.1:26.7.3"))
 
     // compile-only targets for gtolib mixins (optional at runtime)
     modCompileOnly("curse.maven:ferritecore-429235:4810975")

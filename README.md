@@ -60,12 +60,13 @@ GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和
 
 ### 开发环境
 
-- Java 21
+- **Java 25**（运行 Gradle / IDE 的 JDK）
+- 模组字节码目标为 **Java 21**（依赖与 reobf 兼容，构建脚本已自动设置；请勿用 25 作为 `--release`）
 - Git
 - 可访问 Gradle 和项目依赖仓库的网络环境
 - 足够的可用内存；当前 Gradle 配置的最大堆内存为 8 GiB
 
-请确认 `java -version` 指向 Java 21，并在 IDE 和终端中使用同一个 JDK。
+请确认 `java -version` 指向 Java 25，并在 IDE 和终端中使用同一个 JDK。
 
 ### 克隆与构建
 
@@ -76,6 +77,8 @@ git clone https://github.com/GregTech-Odyssey/GTOCore-Main.git
 cd GTOCore-Main
 bash ./gradlew build
 ```
+
+若有 gtolib 权限：在 `cd` 之后先执行 `git submodule update --init GTOLib`，再 `bash ./gradlew build`。
 
 Windows PowerShell 或命令提示符：
 
@@ -89,7 +92,7 @@ gradlew.bat build
 
 使用 IntelliJ IDEA 或其他支持 Gradle 的 IDE 打开仓库根目录：
 
-1. 将项目 JDK 和 Gradle JVM 设置为 Java 21。
+1. 将项目 JDK 和 Gradle JVM 设置为 Java 25。
 2. 以 Gradle 项目导入并等待依赖同步完成。
 3. 不要把 `build/`、`run/` 或 IDE 本地配置加入提交。
 
@@ -115,6 +118,17 @@ gradlew.bat build
 6. 至少运行一次完整 `build`。
 7. 使用 `git diff` 检查改动，排除生成物、日志、缓存、凭据和其他本地文件。
 8. 推送分支并创建 Pull Request。
+
+## 协作方式
+
+有 GTOLib（gtocore-gtolib）写权限的协作者请按下列规则处理分支与提交，避免主仓与 submodule 指针不一致。
+
+1. **修改了 gtocore-gtolib（`GTOLib/` submodule）时**  
+   提交与推送时，请将 **gtocore-gtolib** 与 **gtocore-main** 都上传到**同名**的各自分支（例如两边都使用 `ae-rework`）。  
+   主仓提交中需包含对 `GTOLib` submodule 指针的更新，并指向已推送到远端同名分支上的 gtolib 提交。
+
+2. **未修改 gtocore-gtolib，只修改 gtocore-main，且 `libs/gtolib-protected.jar` 没有变化时**  
+   可以只在 **gtocore-main** 迁出新分支并推送，不必同步新建 gtolib 分支。
 
 ### Pull Request 要求
 

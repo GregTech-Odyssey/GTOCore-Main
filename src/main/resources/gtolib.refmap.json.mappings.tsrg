@@ -1,0 +1,92 @@
+com/gtolib/mixin/mc/ResourceLocationMixn namespace f_135804_
+com/gtolib/mixin/mc/ResourceLocationMixn path f_135805_
+com/gtolib/mixin/mc/ResourceLocationMixn toString ()Ljava/lang/String; toString
+com/gtolib/mixin/mc/ResourceLocationMixn assertValidNamespace (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245413_
+com/gtolib/mixin/mc/ResourceLocationMixn assertValidPath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245185_
+com/gtolib/mixin/mc/ResourceLocationMixn withPath (Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation; m_247449_
+com/gtocore/mixin/mc/LanguageMixin instance f_128104_
+com/gtolib/mixin/mc/client/LevelSummaryMixin settings f_78344_
+com/gtolib/mixin/mc/client/MinecraftMixin singleplayerServer f_91007_
+com/gtolib/mixin/mc/client/WorldSelectionListMixin screen f_101654_
+com/gtolib/mixin/mc/DependencySorterMixin contents f_283882_
+com/gtolib/mixin/mc/entity/EntityMixin tickCount f_19797_
+com/gtolib/mixin/mc/entity/PlayerMixin abilities f_36077_
+com/gtolib/mixin/mc/entity/ServerPlayerMixin server f_8924_
+com/gtolib/mixin/mc/ItemLayerModelMixin LAYERS f_111635_
+com/gtolib/mixin/mc/ItemMixin maxDamage f_41371_
+com/gtolib/mixin/mc/ItemMixin maxStackSize f_41370_
+com/gtolib/mixin/mc/ItemStackMixin tag f_41590_
+com/gtolib/mixin/mc/ItemStackMixin count f_41587_
+com/gtolib/mixin/mc/ItemStackMixin item f_41589_
+com/gtolib/mixin/mc/LootDataManagerMixin typeKeys f_278404_
+com/gtolib/mixin/mc/LootDataManagerMixin elements f_278415_
+com/gtolib/mixin/mc/nbt/CompoundTagMixin tags f_128329_
+com/gtolib/mixin/mc/nbt/ListTagMixin type f_128717_
+com/gtolib/mixin/mc/nbt/ListTagMixin list f_128716_
+com/gtolib/mixin/mc/pack/PathPackResourcesMixin root f_243919_
+com/gtolib/mixin/mc/pack/VanillaPackResourcesMixin rootPaths f_244169_
+com/gtolib/mixin/mc/pack/VanillaPackResourcesMixin pathsForType f_244459_
+com/gtolib/mixin/mc/recipe/IngredientMixin values f_43902_
+com/gtolib/mixin/mc/recipe/IngredientMixin itemStacks f_43903_
+com/gtolib/mixin/mc/recipe/RecipeManagerMixin recipes f_44007_
+com/gtolib/mixin/mc/recipe/RecipeManagerMixin hasErrors f_44008_
+com/gtolib/mixin/mc/recipe/RecipeManagerMixin byName f_199900_
+com/gtolib/mixin/mc/ReferenceMixin tags f_205749_
+com/gtolib/mixin/mc/TagLoaderMixin directory f_13449_
+com/gtolib/mixin/mc/world/ChunkMapMixin visibleChunkMap f_140130_
+com/gtolib/mixin/mc/world/ClientLevelMixin clientLevelData f_104563_
+com/gtolib/mixin/mc/world/LevelChunkMixin tickersInLevel f_156362_
+com/gtolib/mixin/mc/world/LevelChunkMixin NULL_TICKER f_156361_
+com/gtolib/mixin/mc/world/LevelMixin dimension f_46421_
+com/gtolib/mixin/mc/world/ServerChunkCacheMixin chunkMap f_8325_
+com/gtolib/mixin/mc/world/ServerChunkCacheMixin level f_8329_
+com/gtolib/mixin/mc/world/ServerLevelMixin entityManager f_143244_
+com/gtocore/mixin/mc/client/ClientPacketListenerMixin getLevel ()Lnet/minecraft/client/multiplayer/ClientLevel; m_105147_
+com/gtocore/mixin/mc/GameRendererMixin getNightVisionScale (Lnet/minecraft/world/entity/LivingEntity;F)F m_109108_
+com/gtocore/mixin/mc/GuiGraphicsMixin renderItem (Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V m_280405_
+com/gtocore/mixin/mc/GuiGraphicsMixin renderItemDecorations (Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V m_280302_
+com/gtocore/mixin/mc/mob/LivingEntityMixin dropCustomDeathLoot (Lnet/minecraft/world/damagesource/DamageSource;IZ)V m_7472_
+com/gtocore/mixin/mc/mob/LivingEntityMixin dropEquipment ()V m_5907_
+com/gtocore/mixin/mc/mob/LivingEntityMixin getRandom ()Lnet/minecraft/util/RandomSource; m_217043_
+com/gtolib/mixin/forge/NamespacedWrapperMixin createTag (Lnet/minecraft/tags/TagKey;)Lnet/minecraft/core/HolderSet$Named; m_211067_
+com/gtolib/mixin/forge/NamespacedWrapperMixin bindTags (Ljava/util/Map;)V m_203652_
+com/gtolib/mixin/forge/NamespacedWrapperMixin resetTags ()V m_203635_
+com/gtolib/mixin/lowdraglib/CompassManagerMixin onResourceManagerReload (Lnet/minecraft/server/packs/resources/ResourceManager;)V m_6213_
+com/gtolib/mixin/mc/BlockMixin wasExploded (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/Explosion;)V m_7592_
+com/gtolib/mixin/mc/client/CreateWorldScreenMixin onCreate ()V m_100972_
+com/gtolib/mixin/mc/client/MinecraftMixin isConnectedToRealms ()Z m_91294_
+com/gtolib/mixin/mc/client/MinecraftMixin getCurrentServer ()Lnet/minecraft/client/multiplayer/ServerData; m_91089_
+com/gtolib/mixin/mc/client/MinecraftMixin getConnection ()Lnet/minecraft/client/multiplayer/ClientPacketListener; m_91403_
+com/gtolib/mixin/mc/DependencySorterMixin addDependencyIfNotCyclic (Lcom/google/common/collect/Multimap;Ljava/lang/Object;Ljava/lang/Object;)V m_284232_
+com/gtolib/mixin/mc/DependencySorterMixin visitDependenciesAndElement (Lcom/google/common/collect/Multimap;Ljava/util/Set;Ljava/lang/Object;Ljava/util/function/BiConsumer;)V m_284372_
+com/gtolib/mixin/mc/DependencySorterMixin orderByDependencies (Ljava/util/function/BiConsumer;)V m_284430_
+com/gtolib/mixin/mc/EnchantmentTableBlockMixin isValidBookShelf (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z m_207909_
+com/gtolib/mixin/mc/ItemMixin getMaxStackSize ()I m_41459_
+com/gtolib/mixin/mc/ItemMixin canBeDepleted ()Z m_41465_
+com/gtolib/mixin/mc/ItemMixin toString ()Ljava/lang/String; toString
+com/gtolib/mixin/mc/ItemStackMixin setCount (I)V m_41764_
+com/gtolib/mixin/mc/ItemStackMixin isEmpty ()Z m_41619_
+com/gtolib/mixin/mc/ItemStackMixin getItem ()Lnet/minecraft/world/item/Item; m_41720_
+com/gtolib/mixin/mc/ItemStackMixin getCount ()I m_41613_
+com/gtolib/mixin/mc/ItemStackMixin shrink (I)V m_41774_
+com/gtolib/mixin/mc/ItemStackMixin save (Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag; m_41739_
+com/gtolib/mixin/mc/ItemStackMixin isSameItemSameTags (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z m_150942_
+com/gtolib/mixin/mc/MthMixin sin (F)F m_14031_
+com/gtolib/mixin/mc/MthMixin cos (F)F m_14089_
+com/gtolib/mixin/mc/nbt/CompoundTagMixin sizeInBytes ()I m_263179_
+com/gtolib/mixin/mc/nbt/CompoundTagMixin entries ()Ljava/util/Map; m_128450_
+com/gtolib/mixin/mc/nbt/CompoundTagMixin copy ()Lnet/minecraft/nbt/CompoundTag; m_6426_
+com/gtolib/mixin/mc/nbt/ListTagMixin copy ()Lnet/minecraft/nbt/ListTag; m_6426_
+com/gtolib/mixin/mc/nbt/NbtOpsMixin build (Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/Tag;)Lcom/mojang/serialization/DataResult; build
+com/gtolib/mixin/mc/recipe/IngredientMixin isEmpty ()Z m_43947_
+com/gtolib/mixin/mc/recipe/IngredientMixin getItems ()[Lnet/minecraft/world/item/ItemStack; m_43908_
+com/gtolib/mixin/mc/recipe/IngredientMixin test (Lnet/minecraft/world/item/ItemStack;)Z test
+com/gtolib/mixin/mc/recipe/IngredientMixin of (Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/item/crafting/Ingredient; m_204132_
+com/gtolib/mixin/mc/ReferenceMixin bindTags (Ljava/util/Collection;)V m_205769_
+com/gtolib/mixin/mc/SimpleJsonResourceReloadListenerMixin scanDirectory (Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/lang/String;Lcom/google/gson/Gson;Ljava/util/Map;)V m_278771_
+com/gtolib/mixin/mc/TagLoaderMixin load (Lnet/minecraft/server/packs/resources/ResourceManager;)Ljava/util/Map; m_144495_
+com/gtolib/mixin/mc/UtilMixin getMillis ()J m_137550_
+com/gtolib/mixin/mc/world/ChunkMapMixin getChunks ()Ljava/lang/Iterable; m_140416_
+com/gtolib/mixin/mc/world/LevelChunkMixin clearAllBlockEntities ()V m_187957_
+com/gtolib/mixin/mc/world/ServerLevelMixin isNaturalSpawningAllowed (Lnet/minecraft/core/BlockPos;)Z m_201918_
+com/gtolib/mixin/mc/world/ServerLevelMixin isNaturalSpawningAllowed (Lnet/minecraft/world/level/ChunkPos;)Z m_201916_

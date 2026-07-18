@@ -1,10 +1,17 @@
 /**
  * GTOLib 流水线（只有两档）
  *
- * 1) 未加密（调试）：gtolib-unprotected 明文
- * 2) 加密（默认 / 发行 / 公开 prebuild）：ProGuard + GTO Seal 抽空
- *    + libs 完整 Seal Runtime（jni，可解密）
+ * 1) 加密（默认 / 发行 / 公开 prebuild / 无权限唯一路径）：
+ *    reobf → ProGuard → GTO Seal + libs 完整 Seal Runtime
+ * 2) 未加密（仅有源码 + 显式参数）：gtolib-unprotected 明文，便于断点
+ *    开关：-PgtolibUnprotected=true | -PgtolibDebug=true | -PskipGtolibProtect=true
+ *    （或 env GTOLIB_DEBUG / PROGUARD_DISABLE / 本地 .gtolib-debug 标记）
+ *    明文绝不同步到 libs/gtolib-protected.jar，无权限也永远拿不到明文。
  *
+ * 任务：buildGtolibProtected（加密构建并同步 libs 预构建）
+ *
+ * 有源码（GTOLib/）：始终并入 sourceSets.main，供 IDEA 跳转/增量编译；
+ *   isGtolibJarUpToDate 仅跳过 ProGuard/Seal。
  * 无源码：libs/gtolib-protected.jar + libs/gto-seal-runtime-1.0.jar
  * 强制重建：-PgtolibRebuild=true
  */
@@ -119,6 +126,30 @@ ext.writeGtolibStamp = { String fingerprint, String jarSha256 ->
     def stamp = gtolibStampFile.get().asFile
     stamp.parentFile.mkdirs()
     stamp.text = "fingerprint=${fingerprint}\njarSha256=${jarSha256}\n"
+}
+
+/**
+ * 与 libs/gtolib-protected.jar 成对的侧车元数据（CI sources=false 用 jarSha256 校验）。
+ * 凡同步/写入 libs 预构建 jar 时必须调用，避免 jar 已新、.PROTECTED 仍旧。
+ */
+ext.writeGtolibProtectedSidecar = { File jarFile, String fingerprint = gtolibFingerprint ->
+    if (jarFile == null || !jarFile.exists()) {
+        throw new GradleException("writeGtolibProtectedSidecar: jar 无效: ${jarFile}")
+    }
+    def jarSha = computeFileSha256(jarFile)
+    def fp = (fingerprint != null && !fingerprint.isEmpty()) ? fingerprint : ''
+    file('libs/gtolib-protected.PROTECTED').text =
+            "protected=true\nmethod=proguard+gto-seal\n" +
+                    "runtime=full-seal-runtime\n" +
+                    "updated=${new Date()}\n" +
+                    "size=${jarFile.length()}\n" +
+                    "fingerprint=${fp}\n" +
+                    "jarSha256=${jarSha}\n"
+    logger.lifecycle(
+            "GTOLib: 已写入 libs/gtolib-protected.PROTECTED " +
+                    "size=${jarFile.length()} jarSha=${jarSha.take(16)}…"
+    )
+    return jarSha
 }
 
 ext.readProtectedMeta = {
@@ -244,16 +275,15 @@ ext.isGtolibJarUpToDate = {
     return stamp.fingerprint == gtolibFingerprint
 }()
 /**
- * 是否按调试模式使用未保护 gtolib（仅有源码时有意义）。
+ * 是否显式要求未保护（明文）gtolib。
+ * 默认永远加密；无 GTOLib 源码时恒 false（只能用 libs 加密预构建）。
+ * 不会因 IDE 调试器 / JDWP 自动切明文——必须显式 opt-in。
  */
 ext.detectGtolibDebugMode = {
     if (!hasGtolibSources) {
         return false
     }
-    if (findProperty('gtolibProtected') == 'true') {
-        return false
-    }
-    if (findProperty('gtolibDebug') == 'true' || findProperty('gtolibUnprotected') == 'true') {
+    if (findProperty('gtolibUnprotected') == 'true' || findProperty('gtolibDebug') == 'true') {
         return true
     }
     if (findProperty('skipGtolibProtect') == 'true') {
@@ -263,30 +293,6 @@ ext.detectGtolibDebugMode = {
         return true
     }
     if (file('.gtolib-debug').exists()) {
-        return true
-    }
-    try {
-        if (gradle.startParameter.debugJvm) {
-            return true
-        }
-    } catch (Throwable ignored) {
-    }
-    try {
-        def args = java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments
-        if (args.any { String a ->
-            a.contains('jdwp') || a.contains('debugger') || a.contains('jetbrains.debug')
-        }) {
-            return true
-        }
-    } catch (Throwable ignored) {
-    }
-    if (System.getProperty('idea.debugger.dispatch.port') != null) {
-        return true
-    }
-    if (System.getProperty('intellij.debug.agent') != null) {
-        return true
-    }
-    if (System.getProperty('idea.debug.mode') != null) {
         return true
     }
     return false
@@ -301,16 +307,24 @@ logger.lifecycle(
                 "GTOSeal=${hasGtosealSources}"
 )
 
-// 源码过期才并入 main 一起编；IDEA 同步时始终暴露源码目录用于索引。
-def isIdeaSync = System.getProperty('idea.sync.active') == 'true'
-if (hasGtolibSources && (!isGtolibJarUpToDate || isIdeaSync)) {
+// 有源码时始终并入 main（IDEA 可跳转真源码；增量编译下未改文件几乎不重编）。
+// isGtolibJarUpToDate 只跳过 ProGuard/Seal 等保护流水线，不再改为「只依赖 unprotected jar」。
+if (hasGtolibSources) {
+    // Seal 安装（installGtolibIntoModOutput）会从 main 输出剥离 com/gtolib。
+    // Kotlin 增量缓存感知不到外部删除 → compileKotlin 误判 up-to-date →
+    // 下次 compileJava 找不到 gtolib Kotlin 类（如 VBoxBuilder）。缺类时强制重编。
+    tasks.named('compileKotlin').configure {
+        outputs.upToDateWhen {
+            file("${buildDir}/classes/kotlin/main/com/gtolib").exists()
+        }
+    }
     sourceSets.main.java.srcDir 'GTOLib/src/main/java'
     sourceSets.main.resources.srcDir 'GTOLib/src/main/resources'
-    logger.lifecycle(isIdeaSync && isGtolibJarUpToDate
-            ? "GTOLib: IDEA 同步 → 暴露源码目录用于索引，构建仍复用已有 jar"
-            : "GTOLib: 源码有变更 → 将重新编译并打包")
-} else if (hasGtolibSources && isGtolibJarUpToDate) {
-    logger.lifecycle("GTOLib: 指纹未变 → 跳过 gtolib 重编/保护，复用已有 jar")
+    if (isGtolibJarUpToDate) {
+        logger.lifecycle("GTOLib: 指纹未变 → 索引源码供 IDE/增量编译，跳过保护流水线，复用已有 jar")
+    } else {
+        logger.lifecycle("GTOLib: 源码有变更 → 将重新编译并走保护流水线")
+    }
 }
 // processResources 额外拷贝明文 mixin 配置（不改整体 resources include 规则）
 if (hasGtolibSources) {
@@ -335,6 +349,8 @@ configurations {
 dependencies {
     proguardCp 'com.guardsquare:proguard-base:7.8.0'
 
+    // 无源码：编译期依赖预构建 protected jar。
+    // 有源码：始终走 sourceSets（见上），勿再 implementation(unprotected jar)，否则 IDEA 只跳进反编译。
     if (!hasGtolibSources) {
         if (gtolibProtectedLibsJar.exists()) {
             implementation(files(gtolibProtectedLibsJar))
@@ -345,9 +361,6 @@ dependencies {
                             "无权限: 确保公开仓带有 libs/gtolib-protected.jar"
             )
         }
-    } else if (isGtolibJarUpToDate) {
-        // 用明文 jar 编译（原始类名），运行时仍按 debug/默认在 ready 里选 protected/unprotected
-        implementation(files(gtolibUnprotectedJar))
     }
 }
 
@@ -365,7 +378,7 @@ if (hasGtosealSources) {
     }
     tasks.named('compileSealRuntimeJava', JavaCompile).configure {
         options.encoding = 'UTF-8'
-        options.release = 17
+        options.release = 21
         // 仅编译；classpath 与 main 一致（含 Forge / modlauncher）
         classpath = sourceSets.main.compileClasspath
         // 避免与 main compile 抢 libs 产物顺序
@@ -474,13 +487,6 @@ tasks.named('compileJava').configure {
 }
 tasks.named('compileKotlin').configure {
     mustRunAfter 'cleanGtolibClassesForPackage'
-    outputs.upToDateWhen {
-        if (!hasGtolibSources || isGtolibJarUpToDate) {
-            return true
-        }
-        def d = file("${buildDir}/classes/kotlin/main/com/gtolib")
-        d.exists() && d.listFiles() != null && d.listFiles().length > 0
-    }
 }
 
 tasks.register('packageGtolibJar', Jar) {
@@ -490,8 +496,6 @@ tasks.register('packageGtolibJar', Jar) {
     destinationDirectory = file("${buildDir}/gtolib")
     onlyIf { hasGtolibSources && !isGtolibJarUpToDate }
     dependsOn 'cleanGtolibClassesForPackage', 'classes'
-    inputs.property('gtolibFingerprint', { gtolibFingerprint })
-    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     // GTO Seal Manifest（Packager / Runtime 读取 Salt + Version）
     manifest {
@@ -509,7 +513,14 @@ tasks.register('packageGtolibJar', Jar) {
         include 'com/gtolib/**'
         include 'gtolib.mixins.json'
         include 'gtolib.refmap.json'
+        include 'gtocore.refmap.json'
         include 'META-INF/*.kotlin_module'
+    }
+    // AP 产物目录（可能尚未 copy 进 sourceSets.output）
+    from({ file("${buildDir}/mixin") }) {
+        include 'gtolib.refmap.json'
+        include 'gtocore.refmap.json'
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
     doFirst {
         // 二次确认：打包物不能是 Seal 抽空后的 hollow class
@@ -529,6 +540,12 @@ tasks.register('packageGtolibJar', Jar) {
                 }
             }
         }
+        // 打包前再发布一次 refmap（写入 resources + mixin 目录）
+        publishAndInjectGtolibRefmaps(null, true)
+    }
+    doLast {
+        def raw = archiveFile.get().asFile
+        publishAndInjectGtolibRefmaps(raw, true)
     }
 }
 
@@ -536,10 +553,7 @@ tasks.register('copyPrebuiltGtolib') {
     group = 'gtolib'
     description = '无 submodule 时使用 libs/gtolib-protected.jar'
     onlyIf { !hasGtolibSources }
-    inputs.file(gtolibProtectedLibsJar).withPropertyName('prebuiltGtolibJar').optional()
-    inputs.file(file('libs/gtolib-protected.PROTECTED'))
-            .withPropertyName('prebuiltGtolibMetadata')
-            .optional()
+    inputs.file(gtolibProtectedLibsJar).optional()
     outputs.file(gtolibProtectedJar)
     doLast {
         if (!gtolibProtectedLibsJar.exists()) {
@@ -585,54 +599,127 @@ tasks.register('resolveGtolibRaw') {
     }
 }
 
-def resolveProguardLibraryJars = {
-    def seen = new HashSet<String>()
-    def jars = []
-    project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
-        try {
-            config.resolve().each { f ->
-                if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
-                    jars << f
-                }
-            }
-        } catch (Exception ignored) {
-        }
+/**
+ * 对齐旧 GTOLib：在 ProGuard/Seal 之前用 ART 把 gtolib mixin 成员 reobf 成 SRG。
+ * 这样 seal 的 .prod.bin / hollow class 与 maven gtolib-forge 一样已是 f_/m_。
+ */
+tasks.register('reobfGtolibRaw', JavaExec) {
+    group = 'gtolib'
+    description = 'ART reobf gtolib-raw（旧 GTOLib: reobf 后再 encrypt）'
+    onlyIf {
+        hasGtolibSources && !isGtolibJarUpToDate && !detectGtolibDebugMode()
     }
-    jars.sort { a, b -> a.absolutePath <=> b.absolutePath }
+    dependsOn 'resolveGtolibRaw', 'classes', 'createMinecraftArtifacts'
+    classpath = configurations.artTool
+    mainClass = 'net.neoforged.art.Main'
+    // 参数在 doFirst 填，依赖文件存在性
+    doFirst {
+        def raw = gtolibRawJar.get().asFile
+        def out = file("${buildDir}/gtolib/gtolib-raw-reobf.jar")
+        def named = file("${buildDir}/moddev/artifacts/namedToIntermediate.tsrg")
+        def mixinTsrg = file("${buildDir}/mixin/gtolib.refmap.json.mappings.tsrg")
+        def repoTsrg = file('src/main/resources/gtolib.refmap.json.mappings.tsrg')
+        def forgeLib = file("${buildDir}/moddev/artifacts/forge-1.20.1-${forge_version}.jar")
+        if (!forgeLib.exists()) {
+            // 兼容不同 MDG 产物名
+            def alt = file("${buildDir}/moddev/artifacts").listFiles()?.find {
+                it.name.startsWith('forge-') && it.name.endsWith('.jar')
+            }
+            if (alt != null) forgeLib = alt
+        }
+        if (!raw.exists()) throw new GradleException("reobfGtolibRaw: missing ${raw}")
+        if (!named.exists()) throw new GradleException("reobfGtolibRaw: missing ${named} (run createMinecraftArtifacts)")
+        // 合并/补全 ResourceLocationMixn tsrg（与 ensureMixin 一致）
+        if ((!mixinTsrg.exists() || mixinTsrg.length() < 32) && repoTsrg.exists()) {
+            mixinTsrg.parentFile.mkdirs()
+            Files.copy(repoTsrg.toPath(), mixinTsrg.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+        if (!mixinTsrg.exists()) {
+            mixinTsrg.parentFile.mkdirs()
+            mixinTsrg.text = ''
+        }
+        ensureResourceLocationMixnTsrg(mixinTsrg)
+        if (out.exists()) out.delete()
+        args = [
+                '--input', raw.absolutePath,
+                '--output', out.absolutePath,
+                '--names', named.absolutePath,
+                '--names', mixinTsrg.absolutePath,
+        ]
+        // 必须带上继承关系：否则 invokevirtual CleanroomFilterType.getSerializedName
+        // 不会变成 m_7912_，而 gtocore 类外层 reobf 后只剩 m_7912_ → NoSuchMethodError
+        def libs = []
+        if (forgeLib != null && forgeLib.exists()) libs << forgeLib
+        // 本工程已编译的 gtocore 类（含 CleanroomFilterType 等）
+        def gtocoreClasses = file("${buildDir}/classes/java/main")
+        if (gtocoreClasses.exists()) libs << gtocoreClasses
+        def gtocoreKotlin = file("${buildDir}/classes/kotlin/main")
+        if (gtocoreKotlin.exists()) libs << gtocoreKotlin
+        // jarJar 依赖（GTCEu 等，IFilterType / IFusionCasingType）
+        configurations.runtimeClasspath.files.findAll { f ->
+            def n = f.name.toLowerCase()
+            (n.contains('gtceu') || n.contains('gtmthings') || n.contains('datasynclib') ||
+                    n.contains('ae2') || n.contains('appliedenergistics')) && n.endsWith('.jar')
+        }.each { libs << it }
+        libs.unique().each { args += ['--lib', it.absolutePath] }
+        logger.lifecycle(
+                "GTOLib ART reobf: ${raw.name} → ${out.name}; " +
+                        "names=${named.name}+${mixinTsrg.name}; libs=${libs.size()}"
+        )
+    }
+    doLast {
+        def raw = gtolibRawJar.get().asFile
+        def out = file("${buildDir}/gtolib/gtolib-raw-reobf.jar")
+        if (!out.exists() || out.length() < 1024) {
+            throw new GradleException("reobfGtolibRaw: ART 未写出 ${out}")
+        }
+        // 校验 ResourceLocationMixn 已是 SRG（旧官方 jar 合同）
+        def zf = new java.util.zip.ZipFile(out)
+        try {
+            def e = zf.getEntry('com/gtolib/mixin/mc/ResourceLocationMixn.class')
+            if (e == null) throw new GradleException("reobfGtolibRaw: 缺 ResourceLocationMixn.class")
+            def text = new String(zf.getInputStream(e).bytes, 'ISO-8859-1')
+            if (!text.contains('f_135804_') || !text.contains('m_245413_') || text.contains('assertValidNamespace')) {
+                throw new GradleException(
+                        "reobfGtolibRaw: ResourceLocationMixn 未正确 reobf 成 SRG " +
+                                "(f_135804_=${text.contains('f_135804_')} m_245413_=${text.contains('m_245413_')} " +
+                                "assertValidNamespace=${text.contains('assertValidNamespace')})"
+                )
+            }
+        } finally {
+            zf.close()
+        }
+        // 只覆盖 raw（ProGuard/Seal prod 链消费 SRG 字节码）。
+        // unprotected 必须保持 named：它是 Seal Packager 的 dev jar → .dev.bin，
+        // userdev 运行时 Minecraft 是官方名，SRG 的 @Shadow(m_xxx_) 会
+        // "was not located in the target class" 崩溃（MinecraftMixin m_91294_ 事故）。
+        Files.copy(out.toPath(), raw.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        logger.lifecycle("GTOLib ART reobf OK → raw 已是 SRG (ResourceLocationMixn f_/m_)；unprotected 保持 named 供 dev")
+    }
 }
 
-def proguardRulesFile = file("${gtolibProtectDir}/proguard-rules.pro")
-def proguardDictionaryFile = file("${gtolibProtectDir}/my_dict.txt")
+// 无 artTool 配置时补上（与 MDG 同版 ART）
+if (configurations.findByName('artTool') == null) {
+    configurations.create('artTool')
+    dependencies {
+        artTool 'net.neoforged:AutoRenamingTool:2.0.17:all'
+    }
+}
 
 tasks.register('proguardGtolib', JavaExec) {
     group = 'gtolib'
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canProguard && !detectGtolibDebugMode()
     }
-    dependsOn 'resolveGtolibRaw', 'classes'
+    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes'
     classpath = configurations.proguardCp
     mainClass = 'proguard.ProGuard'
-    inputs.file(gtolibRawJar).withPropertyName('rawGtolibJar')
-    inputs.file(proguardRulesFile).withPropertyName('proguardRules')
-    inputs.file(proguardDictionaryFile).withPropertyName('obfuscationDictionary').optional()
-    inputs.files({ resolveProguardLibraryJars() }).withPropertyName('libraryClasspath')
-    inputs.files({
-        def javaHome = System.getProperty('java.home')
-        [
-                new File("${javaHome}/lib/rt.jar"),
-                new File("${javaHome}/jmods/java.base.jmod"),
-        ].findAll { it.exists() }
-    }).withPropertyName('javaRuntimeLibraries')
-    inputs.property('gtolibFingerprint', { gtolibFingerprint })
-    inputs.property('javaRuntimeVersion', { System.getProperty('java.runtime.version') })
-    outputs.file(gtolibPgJar)
-    outputs.file(file("${buildDir}/gtolib/gtolib-mapping.txt"))
 
     doFirst {
         def dir = file("${buildDir}/gtolib")
         dir.mkdirs()
         def protectDir = gtolibProtectDir
-        def dictFile = proguardDictionaryFile
+        def dictFile = file("${protectDir}/my_dict.txt")
         if (!dictFile.exists()) {
             dictFile.parentFile.mkdirs()
             dictFile.text = (('a'..'z').collectMany { l -> (0..9).collect { n -> "${l}${n}" } }).join('\n') + '\n'
@@ -653,8 +740,16 @@ tasks.register('proguardGtolib', JavaExec) {
         } else if (jmod.exists()) {
             libArgs.append("-libraryjars '${jmod.absolutePath.replace('\\', '/')}'\n")
         }
-        resolveProguardLibraryJars().each { f ->
-            libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
+        def seen = new HashSet<String>()
+        project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
+            try {
+                config.resolve().each { f ->
+                    if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
+                        libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
+                    }
+                }
+            } catch (Exception ignored) {
+            }
         }
         def abs = { String name -> file("${buildDir}/gtolib/${name}").absolutePath.replace('\\', '/') }
         libArgs.append("-classobfuscationdictionary '${abs('my_class_names_shuffled.txt')}'\n")
@@ -666,7 +761,7 @@ tasks.register('proguardGtolib', JavaExec) {
         def inJar = gtolibRawJar.get().asFile.absolutePath.replace('\\', '/')
         def outJar = gtolibPgJar.get().asFile.absolutePath.replace('\\', '/')
         args = [
-                "@${proguardRulesFile.absolutePath}",
+                "@${file("${protectDir}/proguard-rules.pro").absolutePath}",
                 "@${file("${buildDir}/gtolib/proguard-extra.pro").absolutePath}",
                 "-injars", inJar,
                 "-outjars", outJar,
@@ -749,33 +844,26 @@ tasks.register('sealPackGtolib', Exec) {
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canSealPack && !detectGtolibDebugMode()
     }
+    // 必须先 reobf（对齐旧 GTOLib: reobfJar.finalizedBy encryptJar）
     dependsOn {
-        canProguard ? ['proguardGtolib'] : ['resolveGtolibRaw']
+        canProguard ? ['reobfGtolibRaw', 'proguardGtolib'] : ['reobfGtolibRaw', 'resolveGtolibRaw']
     }
-    inputs.file(sealPackagerJar).withPropertyName('sealPackager')
-    inputs.file({
-        canProguard ? gtolibPgJar.get().asFile : gtolibRawJar.get().asFile
-    }).withPropertyName('productionJar')
-    inputs.file(gtolibUnprotectedJar).withPropertyName('developmentJar')
-    inputs.property('gtolibFingerprint', { gtolibFingerprint })
-    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
-    outputs.files(
-            file("${buildDir}/gtolib/gtolib-seal-input.jar"),
-            file("${buildDir}/gtolib/gtolib-seal-dev.jar"),
-            file("${buildDir}/gtolib/gtolib-sealed.jar")
-    )
+    inputs.file(sealPackagerJar)
+    outputs.file(file("${buildDir}/gtolib/gtolib-sealed.jar"))
 
     doFirst {
         def pg = gtolibPgJar.get().asFile
         def raw = gtolibRawJar.get().asFile
         def unprotected = gtolibUnprotectedJar.get().asFile
         def prodSrc = (pg.exists() && pg.length() > 0) ? pg : raw
-        def devSrc = (unprotected.exists() && unprotected.length() > 0) ? unprotected : raw
+        // dev jar 只能用 named 的 unprotected；raw 经 reobf 已是 SRG，
+        // 进 .dev.bin 会让 userdev @Shadow 找不到目标（m_91294_ 事故），不允许回退
+        def devSrc = unprotected
         if (!prodSrc.exists() || prodSrc.length() == 0) {
             throw new GradleException("GTO Seal Packager prod jar 无效: ${prodSrc}")
         }
         if (!devSrc.exists() || devSrc.length() == 0) {
-            throw new GradleException("GTO Seal Packager dev jar 无效: ${devSrc}")
+            throw new GradleException("GTO Seal Packager dev jar 无效（需 named 的 gtolib-unprotected.jar）: ${devSrc}")
         }
 
         def salt = Long.toString(new Random().nextLong())
@@ -840,11 +928,12 @@ tasks.register('sealPackGtolib', Exec) {
 }
 
 /**
- * protected = ProGuard（可选）+ GTO Seal Packager 加密（非调试）。
+ * 生成加密 gtolib（默认）并同步 libs 预构建。
+ * 明文模式（-PgtolibUnprotected 等）只写 build/，绝不覆盖 libs。
  */
 tasks.register('buildGtolibProtected') {
     group = 'gtolib'
-    description = '生成/复用 gtolib-protected.jar（ProGuard + GTO Seal）并写 stamp'
+    description = '生成加密 gtolib-protected.jar（ProGuard+Seal）并同步 libs/ 预构建；明文仅 -PgtolibUnprotected'
     dependsOn {
         if (!hasGtolibSources) {
             return ['copyPrebuiltGtolib']
@@ -858,24 +947,10 @@ tasks.register('buildGtolibProtected') {
         }
         return steps
     }
-    inputs.files({
-        if (!hasGtolibSources || isGtolibJarUpToDate) {
-            return []
-        }
-        [
-                gtolibRawJar.get().asFile,
-                gtolibUnprotectedJar.get().asFile,
-                gtolibPgJar.get().asFile,
-                file("${buildDir}/gtolib/gtolib-sealed.jar"),
-        ].findAll { it.exists() }
-    }).withPropertyName('protectedJarCandidates')
-    inputs.file(file('GTOLib/src/main/resources/gtolib.mixins.json'))
-            .withPropertyName('gtolibMixinConfig')
-            .optional()
-    inputs.property('gtolibFingerprint', { gtolibFingerprint })
-    inputs.property('proguardEnabled', canProguard)
-    inputs.property('sealPackEnabled', canSealPack)
-    inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
+    // 刷新 Runtime 校验（改 gtolib 不需要 GTOSeal 源码，沿用 libs）
+    if (tasks.findByName('syncSealRuntimeToLibs') != null) {
+        dependsOn 'syncSealRuntimeToLibs'
+    }
     outputs.file(gtolibProtectedJar)
 
     doLast {
@@ -884,6 +959,7 @@ tasks.register('buildGtolibProtected') {
         def sealed = file("${buildDir}/gtolib/gtolib-sealed.jar")
         def pg = gtolibPgJar.get().asFile
         def raw = gtolibRawJar.get().asFile
+        def unprotectedMode = hasGtolibSources && detectGtolibDebugMode()
 
         if (hasGtolibSources && isGtolibJarUpToDate) {
             logger.lifecycle("GTOLib: jar 已是最新 (stamp 命中)，跳过打包/保护 → 执行一致性校验")
@@ -891,25 +967,85 @@ tasks.register('buildGtolibProtected') {
             return
         }
 
-        // 加密档 = ProGuard + Seal 抽空（完整保护）
-        def src = null
-        if (sealed.exists() && sealed.length() > 0) {
+        if (unprotectedMode) {
+            // 明文：仅本地 build/，禁止写入 libs/gtolib-protected.jar
+            def src = (unprotected.exists() && unprotected.length() > 0) ? unprotected :
+                    ((raw.exists() && raw.length() > 0) ? raw : null)
+            if (src == null) {
+                throw new GradleException("无法生成明文 gtolib（缺 unprotected/raw）")
+            }
+            protectedFile.parentFile.mkdirs()
+            Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            injectGtolibMixinConfig(protectedFile)
+            publishAndInjectGtolibRefmaps(protectedFile, true)
+            // 作废 stamp：避免下次默认加密构建把明文 jar 当成 up-to-date 跳过
+            def stamp = gtolibStampFile.get().asFile
+            if (stamp.exists()) {
+                stamp.delete()
+            }
+            logger.lifecycle(
+                    "GTOLib: 【未加密/本地】${protectedFile} (${protectedFile.length()} bytes) " +
+                            "— 未写入 libs；已清除 stamp（下次默认构建将重新加密）"
+            )
+            return
+        }
+
+        // 加密档：必须是 Seal 抽空成品（完整保护）。
+        // 无源码路径由 copyPrebuiltGtolib 已写入 protectedFile。
+        def src
+        if (!hasGtolibSources) {
+            src = protectedFile.exists() && protectedFile.length() > 0 ? protectedFile : gtolibProtectedLibsJar
+        } else if (sealed.exists() && sealed.length() > 0) {
             src = sealed
         } else if (pg.exists() && pg.length() > 0) {
+            // ProGuard 完成但 Seal 未跑：允许仅当 packager 不可用（本地缺工具）时降级
+            if (canSealPack) {
+                throw new GradleException(
+                        "GTO Seal Packager 已配置但未产出 gtolib-sealed.jar。\n" +
+                                "请检查 sealPackGtolib 日志，或 ./gradlew -PgtolibRebuild=true buildGtolibProtected"
+                )
+            }
             src = pg
-        } else if (unprotected.exists() && unprotected.length() > 0) {
-            src = unprotected
+            logger.warn("GTOLib: 无 Seal Packager，降级为仅 ProGuard（不应提交到公开 libs）")
         } else {
-            src = raw
+            throw new GradleException(
+                    "无法生成加密 gtolib-protected.jar（缺 sealed/proguard 产物）。\n" +
+                            "需要 GTOLib 源码 + protect/ 工具链；无权限者请使用 libs 预构建。"
+            )
         }
         if (src == null || !src.exists() || src.length() == 0) {
             throw new GradleException("无法生成 gtolib-protected.jar")
         }
+        if (unprotected.exists() && src.length() == unprotected.length() && hasGtolibSources) {
+            throw new GradleException("protected 与 unprotected 同大小，疑似未加密，拒绝写入")
+        }
+
         protectedFile.parentFile.mkdirs()
         Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         injectGtolibMixinConfig(protectedFile)
-
+        // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap
+        publishAndInjectGtolibRefmaps(protectedFile, hasGtolibSources)
         def jarSha = computeFileSha256(protectedFile)
+
+        // 有源码 + 加密：同步公开预构建 libs/（无权限消费方唯一入口）
+        if (hasGtolibSources && protectedFile.exists()) {
+            if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
+                throw new GradleException(
+                        "libs/gto-seal-runtime-1.0.jar 必须是完整 Runtime（>100KB）。\n" +
+                                "请先: ./gradlew syncSealRuntimeToLibs"
+                )
+            }
+            gtolibProtectedLibsJar.parentFile.mkdirs()
+            Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            injectGtolibMixinConfig(gtolibProtectedLibsJar)
+            jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
+            logger.lifecycle(
+                    "GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED " +
+                            "(${gtolibProtectedLibsJar.length()} bytes); " +
+                            "runtime=${sealRuntimeLibsJar.length()} bytes"
+            )
+        }
+
         if (hasGtolibSources && gtolibFingerprint) {
             writeGtolibStamp(gtolibFingerprint, jarSha)
             logger.lifecycle(
@@ -917,7 +1053,7 @@ tasks.register('buildGtolibProtected') {
                             "jarSha=${jarSha.take(16)}…"
             )
         }
-        def mode = (sealed.exists() && sealed.length() > 0) ? 'ProGuard+Seal' : (pg.exists() ? 'ProGuard' : 'plain')
+        def mode = (sealed.exists() && sealed.length() > 0) ? 'ProGuard+Seal' : (pg.exists() ? 'ProGuard' : 'prebuilt')
         logger.lifecycle("GTOLib protected (${mode}): ${protectedFile} (${protectedFile.length()} bytes)")
     }
 }
@@ -978,6 +1114,208 @@ ext.injectGtolibMixinConfig = { File jarFile ->
     }
 }
 
+/**
+ * 解析「当前最好的」gtolib.refmap.json：
+ * 选 mappings 更多 / 体积更大的（CI 无 GTOLib 时 AP 产物往往残缺，不能盖过预置完整版）。
+ */
+ext.resolveGtolibRefmapFile = {
+    def candidates = [
+            file("${buildDir}/mixin/gtolib.refmap.json"),
+            file('src/main/resources/gtolib.refmap.json'),
+            file("${buildDir}/resources/main/gtolib.refmap.json"),
+    ].findAll { it.exists() && it.length() > 64 }
+    if (candidates.isEmpty()) return null
+    def score = { File f ->
+        try {
+            def root = new groovy.json.JsonSlurper().parse(f)
+            def n = (root instanceof Map && root.mappings instanceof Map) ? root.mappings.size() : 0
+            return n * 1_000_000L + f.length()
+        } catch (Throwable t) {
+            return f.length()
+        }
+    }
+    return candidates.max { score(it) }
+}
+
+/**
+ * ResourceLocationMixn 与官方 GTOLib 26.7.5 一致：@Shadow namespace/path + @Overwrite。
+ * 生产 jar 必须经 reobf 把成员改成 f_/m_（见 maven gtolib-forge 已 reobf 的 class）。
+ * CI 无 GTOLib 源码时没有 Mixin AP → 没有 .mappings.tsrg → reobf 不改名 → Overwrite 失败。
+ * 因此 JSON refmap + tsrg 都必须预置/补全，且 mappings 使用 owner;name+desc 全量格式。
+ */
+ext.resourceLocationMixnRefmapNamed = {
+    [
+            'namespace'           : 'Lnet/minecraft/resources/ResourceLocation;f_135804_:Ljava/lang/String;',
+            'path'                : 'Lnet/minecraft/resources/ResourceLocation;f_135805_:Ljava/lang/String;',
+            'toString'            : 'Lnet/minecraft/resources/ResourceLocation;toString()Ljava/lang/String;',
+            'assertValidNamespace': 'Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
+            'assertValidPath'     : 'Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;',
+            'withPath'            : 'Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;',
+    ]
+}
+ext.resourceLocationMixnTsrgLines = {
+    // 字段：与 Mixin AP 一致「类 字段名 srg名」（不要带类型描述符，否则 ART 不改名）
+    // 方法：类 方法名 描述符 srg名
+    [
+            'com/gtolib/mixin/mc/ResourceLocationMixn namespace f_135804_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn path f_135805_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn toString ()Ljava/lang/String; toString',
+            'com/gtolib/mixin/mc/ResourceLocationMixn assertValidNamespace (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245413_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn assertValidPath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245185_',
+            'com/gtolib/mixin/mc/ResourceLocationMixn withPath (Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation; m_247449_',
+    ]
+}
+
+ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
+    if (refmapFile == null || !refmapFile.exists()) return
+    def slurper = new groovy.json.JsonSlurper()
+    def root = slurper.parse(refmapFile)
+    if (!(root instanceof Map)) return
+    def mappings = root.mappings
+    def searge = root.data?.searge
+    if (!(mappings instanceof Map)) {
+        root.mappings = [:]
+        mappings = root.mappings
+    }
+    if (!(searge instanceof Map)) {
+        if (root.data == null) root.data = [:]
+        root.data.searge = [:]
+        searge = root.data.searge
+    }
+    def key = 'com/gtolib/mixin/mc/ResourceLocationMixn'
+    def named = resourceLocationMixnRefmapNamed()
+    def cur = mappings[key]
+    def need = !(cur instanceof Map) ||
+            !cur.containsKey('namespace') ||
+            !cur.containsKey('assertValidNamespace') ||
+            cur.containsKey('getNamespace') ||
+            !(cur.get('namespace')?.toString()?.contains('f_135804_')) ||
+            !(cur.get('assertValidNamespace')?.toString()?.startsWith('L'))
+    if (need) {
+        mappings[key] = named
+        searge[key] = named
+        refmapFile.text = groovy.json.JsonOutput.toJson(root)
+        logger.lifecycle("GTOLib refmap: 已写入 ${key} 字段+Overwrite 全量映射（对齐官方 gtolib）")
+    }
+}
+
+/** 保证 ART/reobfJar 使用的 tsrg 含 ResourceLocationMixn（CI 无源码时尤其关键） */
+ext.ensureResourceLocationMixnTsrg = { File tsrgFile ->
+    if (tsrgFile == null) return
+    tsrgFile.parentFile?.mkdirs()
+    def lines = tsrgFile.exists() ? tsrgFile.readLines() : []
+    def body = lines.findAll { !it.contains('com/gtolib/mixin/mc/ResourceLocationMixn') }
+    // 保留文件头（若有 tsrg2）
+    def header = body.takeWhile { it.startsWith('tsrg') || it.trim().isEmpty() }
+    def rest = body.drop(header.size())
+    def out = []
+    out.addAll(header)
+    out.addAll(resourceLocationMixnTsrgLines())
+    out.addAll(rest)
+    tsrgFile.text = out.join('\n') + '\n'
+}
+
+/**
+ * 有源码重建 gtolib 时：把完整 refmap 写入
+ *  - build/mixin（reobf）
+ *  - build/resources/main + src/main/resources（无权限消费 / 下次 CI）
+ *  - 指定 jar 根目录（raw/protected）
+ * 无源码：只消费预置，不改 src/main/resources。
+ */
+ext.publishAndInjectGtolibRefmaps = { File jarFile, boolean writeToRepoResources ->
+    def src = resolveGtolibRefmapFile()
+    if (src == null) {
+        logger.warn("GTOLib refmap: 未找到有效 gtolib.refmap.json（AP 与 resources 均无）")
+        return false
+    }
+    patchCriticalGtolibRefmapEntries(src)
+    def mixinDir = file("${buildDir}/mixin")
+    mixinDir.mkdirs()
+    def mixinGtolib = new File(mixinDir, 'gtolib.refmap.json')
+    def mixinGtocore = new File(mixinDir, 'gtocore.refmap.json')
+    if (src.absolutePath != mixinGtolib.absolutePath) {
+        Files.copy(src.toPath(), mixinGtolib.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    }
+    // gtocore.mixins.json 声明 refmap=gtocore.refmap.json：与完整映射同步
+    Files.copy(mixinGtolib.toPath(), mixinGtocore.toPath(), StandardCopyOption.REPLACE_EXISTING)
+
+    def resOut = file("${buildDir}/resources/main")
+    resOut.mkdirs()
+    Files.copy(mixinGtolib.toPath(), new File(resOut, 'gtolib.refmap.json').toPath(), StandardCopyOption.REPLACE_EXISTING)
+    Files.copy(mixinGtocore.toPath(), new File(resOut, 'gtocore.refmap.json').toPath(), StandardCopyOption.REPLACE_EXISTING)
+
+    if (writeToRepoResources) {
+        def repoGtolib = file('src/main/resources/gtolib.refmap.json')
+        def repoGtocore = file('src/main/resources/gtocore.refmap.json')
+        repoGtolib.parentFile.mkdirs()
+        Files.copy(mixinGtolib.toPath(), repoGtolib.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(mixinGtocore.toPath(), repoGtocore.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        logger.lifecycle("GTOLib refmap: 已写入 src/main/resources（有源码打包；无权限开发者/CI 消费） ${mixinGtolib.length()} bytes")
+    }
+
+    if (jarFile != null && jarFile.exists() && jarFile.length() > 0) {
+        def tmp = new File(jarFile.absolutePath + '.refmapfix')
+        def zis = new java.util.zip.ZipInputStream(new FileInputStream(jarFile))
+        def zos = new java.util.zip.ZipOutputStream(new FileOutputStream(tmp))
+        java.util.zip.ZipEntry e
+        def skip = ['gtolib.refmap.json', 'gtocore.refmap.json'] as Set
+        while ((e = zis.nextEntry) != null) {
+            if (skip.contains(e.name)) {
+                zis.closeEntry()
+                continue
+            }
+            def outEntry = new java.util.zip.ZipEntry(e.name)
+            zos.putNextEntry(outEntry)
+            zis.transferTo(zos)
+            zos.closeEntry()
+            zis.closeEntry()
+        }
+        zos.putNextEntry(new java.util.zip.ZipEntry('gtolib.refmap.json'))
+        mixinGtolib.withInputStream { is -> is.transferTo(zos) }
+        zos.closeEntry()
+        zos.putNextEntry(new java.util.zip.ZipEntry('gtocore.refmap.json'))
+        mixinGtocore.withInputStream { is -> is.transferTo(zos) }
+        zos.closeEntry()
+        zos.close()
+        zis.close()
+        Files.move(tmp.toPath(), jarFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        logger.lifecycle("GTOLib refmap: 已注入 ${jarFile.name}")
+    }
+    return true
+}
+
+tasks.register('syncGtolibRefmaps') {
+    group = 'gtolib'
+    description = '同步 Mixin refmap：有源码时从 AP 写入 resources；始终保证 build 资源与 jar 可消费'
+    // classes 会跑 Mixin AP；无源码时仅回填预置
+    dependsOn {
+        hasGtolibSources ? ['classes'] : []
+    }
+    outputs.upToDateWhen { false }
+    doLast {
+        def ok = publishAndInjectGtolibRefmaps(null, hasGtolibSources)
+        if (!ok && !hasGtolibSources) {
+            def res = file('src/main/resources/gtolib.refmap.json')
+            if (!res.exists() || res.length() < 64) {
+                throw new GradleException(
+                        "无 GTOLib 源码时必须有预置 src/main/resources/gtolib.refmap.json（由有权限打包时写入）。"
+                )
+            }
+        }
+        def gtolibRm = file("${buildDir}/mixin/gtolib.refmap.json")
+        if (!gtolibRm.exists()) {
+            gtolibRm = file('src/main/resources/gtolib.refmap.json')
+        }
+        if (gtolibRm.exists() && gtolibRm.length() > 64) {
+            // 快速检查：ResourceLocationMixn 必须在 mappings 里（生产 Shadow 必需）
+            def text = gtolibRm.getText('UTF-8')
+            if (!text.contains('ResourceLocationMixn')) {
+                logger.warn("GTOLib refmap: 缺少 ResourceLocationMixn 映射（生产可能 Shadow 失败）— 请有权限时 -PgtolibRebuild=true 全量重编")
+            }
+        }
+    }
+}
+
 tasks.register('finalizeGtolib') {
     group = 'gtolib'
     description = '两档：调试=未加密 unprotected；默认=加密 protected'
@@ -990,23 +1328,8 @@ tasks.register('finalizeGtolib') {
     }
     inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
     inputs.property('gtolibFingerprint', { gtolibFingerprint })
-    inputs.file({
-        def hasSrc = hasGtolibSources
-        def debug = hasSrc && detectGtolibDebugMode()
-        def protectedFile = gtolibProtectedJar.get().asFile
-        def unprotected = gtolibUnprotectedJar.get().asFile
-        if (!hasSrc) {
-            return protectedFile.exists() && protectedFile.length() > 0 ? protectedFile : gtolibProtectedLibsJar
-        }
-        if (debug) {
-            return unprotected.exists() && unprotected.length() > 0 ? unprotected : gtolibRawJar.get().asFile
-        }
-        return protectedFile.exists() && protectedFile.length() > 0 ? protectedFile : unprotected
-    }).withPropertyName('selectedGtolibJar')
-    inputs.file(file('GTOLib/src/main/resources/gtolib.mixins.json'))
-            .withPropertyName('gtolibMixinConfig')
-            .optional()
     outputs.file(gtolibReadyJar)
+    outputs.upToDateWhen { false }
 
     doLast {
         def hasSrc = hasGtolibSources
@@ -1041,70 +1364,6 @@ tasks.register('finalizeGtolib') {
     }
 }
 
-tasks.register('updateGtolibProtectedJar') {
-    group = 'gtolib'
-    description = '同步完整加密 prebuild：Seal 抽空 gtolib + 完整 Seal Runtime → libs/'
-    dependsOn 'buildGtolibProtected'
-    // 有 GTOSeal 可刷新 Runtime；仅 GTOLib 时沿用/校验 libs Runtime
-    if (tasks.findByName('syncSealRuntimeToLibs') != null) {
-        dependsOn 'syncSealRuntimeToLibs'
-    }
-
-    doLast {
-        if (detectGtolibDebugMode()) {
-            throw new GradleException(
-                    "拒绝更新 libs/gtolib-protected.jar：调试模式。\n" +
-                            "请 -PgtolibProtected=true 后执行: ./gradlew updateGtolibProtectedJar"
-            )
-        }
-        if (!hasGtolibSources) {
-            throw new GradleException("无 GTOLib 源码")
-        }
-        def unprotected = gtolibUnprotectedJar.get().asFile
-        def sealed = file("${buildDir}/gtolib/gtolib-sealed.jar")
-        def protectedFile = gtolibProtectedJar.get().asFile
-        // 必须是 Seal 抽空成品（完整保护）
-        def outSrc = (sealed.exists() && sealed.length() > 0) ? sealed : protectedFile
-        if (outSrc == null || !outSrc.exists() || outSrc.length() == 0) {
-            throw new GradleException("gtolib-protected/sealed 无效")
-        }
-        if (unprotected.exists() && outSrc.length() == unprotected.length()) {
-            throw new GradleException("protected 与 unprotected 同大小，疑似未加密")
-        }
-        if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
-            throw new GradleException(
-                    "libs/gto-seal-runtime-1.0.jar 必须是完整 Runtime（>100KB）。\n" +
-                            "请先: ./gradlew syncSealRuntimeToLibs"
-            )
-        }
-        gtolibProtectedLibsJar.parentFile.mkdirs()
-        Files.copy(outSrc.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        injectGtolibMixinConfig(gtolibProtectedLibsJar)
-        def jarSha = computeFileSha256(gtolibProtectedLibsJar)
-        if (gtolibFingerprint) {
-            writeGtolibStamp(gtolibFingerprint, jarSha)
-        }
-        file('libs/gtolib-protected.PROTECTED').text =
-                "protected=true\nmethod=proguard+gto-seal\n" +
-                        "runtime=full-seal-runtime\n" +
-                        "updated=${new Date()}\n" +
-                        "size=${gtolibProtectedLibsJar.length()}\n" +
-                        "fingerprint=${gtolibFingerprint}\n" +
-                        "jarSha256=${jarSha}\n"
-        logger.lifecycle(
-                "GTOLib: libs/gtolib-protected.jar ← Seal 加密 (${outSrc.length()} bytes); " +
-                        "runtime=${sealRuntimeLibsJar.length()} bytes"
-        )
-    }
-}
-
-// 兼容旧任务名
-tasks.register('updateGtolibDevJar') {
-    group = 'gtolib'
-    description = '已废弃别名 → updateGtolibProtectedJar'
-    dependsOn 'updateGtolibProtectedJar'
-}
-
 /**
  * 把 ready 打成「独立 gtolib 模组 jar」（含 mods.toml + 原 Manifest Salt）。
  * Seal Runtime 按 modId=gtolib 的 SecureJar 定位加密体与 bins——与玩家发行布局一致。
@@ -1122,9 +1381,6 @@ tasks.register('prepareGtolibModJar') {
     group = 'gtolib'
     description = '准备独立 gtolib 模组 jar（Seal 加密体 + mods.toml + 明文 @Mod stub）'
     dependsOn 'finalizeGtolib'
-    inputs.file(gtolibReadyJar).withPropertyName('readyGtolibJar')
-    inputs.file(gtolibModStubClass).withPropertyName('gtolibModStub')
-    inputs.property('gtolibModVersion', { project.version.toString() })
     outputs.file(gtolibModJar)
     doLast {
         def ready = gtolibReadyJar.get().asFile
@@ -1137,10 +1393,33 @@ tasks.register('prepareGtolibModJar') {
         if (!stubClass.exists() || stubClass.length() < 50) {
             throw new GradleException("缺少明文 GTOLibMod stub: ${stubClass}")
         }
+        // 本 jar 只进 run/*/mods 供 userdev（发行 jar 直接取 protected jar，不经过本任务）。
+        // Mixin 处理器直接读 jar 里的明文 mixin 类（不走 .dev.bin 解密），而加密档的
+        // mixin 类经 ART reobf 已是 SRG（m_xxx_），userdev 的 Minecraft 是官方名，
+        // @Shadow 会 "was not located in the target class"（m_91294_ 事故）。
+        // 所以用 named 的 unprotected mixin 类覆盖明文 mixin；其余类 dev 运行时
+        // 由 Seal 从 .dev.bin（named）定义，两侧命名一致。
+        def mixinOverlay = [:]
+        def overlaySrc = gtolibUnprotectedJar.get().asFile
+        if (!overlaySrc.exists() || overlaySrc.length() == 0) {
+            overlaySrc = gtolibUnprotectedLibsJar
+        }
+        if (overlaySrc.exists() && overlaySrc.length() > 0) {
+            new java.util.zip.ZipFile(overlaySrc).withCloseable { uzf ->
+                uzf.entries().each { ue ->
+                    if (ue.name.startsWith('com/gtolib/mixin/') && ue.name.endsWith('.class')) {
+                        mixinOverlay[ue.name] = uzf.getInputStream(ue).bytes
+                    }
+                }
+            }
+        } else {
+            logger.warn("GTOLib mod jar: 无 named unprotected jar，mixin 类保持原样（userdev 下 @Shadow 可能失败）")
+        }
         // 复制 ready，注入 mods.toml + pack.mcmeta + 明文 @Mod（不覆盖 Seal Manifest）
         def zis = new java.util.zip.ZipInputStream(new FileInputStream(ready))
         def zos = new java.util.zip.ZipOutputStream(new FileOutputStream(out))
         java.util.zip.ZipEntry e
+        def overlaid = 0
         while ((e = zis.nextEntry) != null) {
             // 统一由下方写入
             if (e.name.equalsIgnoreCase('META-INF/mods.toml') ||
@@ -1149,10 +1428,19 @@ tasks.register('prepareGtolibModJar') {
                 zis.closeEntry()
                 continue
             }
+            def named = mixinOverlay.remove(e.name)
             zos.putNextEntry(new java.util.zip.ZipEntry(e.name))
-            zis.transferTo(zos)
+            if (named != null) {
+                zos.write((byte[]) named)
+                overlaid++
+            } else {
+                zis.transferTo(zos)
+            }
             zos.closeEntry()
             zis.closeEntry()
+        }
+        if (overlaid > 0) {
+            logger.lifecycle("GTOLib mod jar: ${overlaid} 个 mixin 类已换成 named（userdev @Shadow 兼容）")
         }
         def toml = """\
 modLoader="javafml"
@@ -1217,11 +1505,30 @@ tasks.register('installGtolibIntoModOutput') {
         def oldMixin = new File(resOut, 'gtolib.mixins.json')
         if (oldMixin.exists()) oldMixin.delete()
 
-        // 清理 run/mods 里旧 gtolib
+        // 清理 run/mods 里旧 gtolib / 旧 seal
         ['client', 'data', 'server'].each { runName ->
             def modsDir = file("run/${runName}/mods")
             if (modsDir.exists()) {
-                modsDir.listFiles()?.findAll { it.name.startsWith('gtolib') && it.name.endsWith('.jar') }?.each { it.delete() }
+                modsDir.listFiles()?.findAll {
+                    def n = it.name
+                    (n.startsWith('gtolib') || n.startsWith('gto-seal-runtime') || n.startsWith('gtonativelib')) &&
+                            n.endsWith('.jar')
+                }?.each { it.delete() }
+            }
+        }
+
+        // Seal Runtime 必须作为独立 jar 放进 run/*/mods（ITransformationService），
+        // 不可打进 gtocore（否则 Forge 会把 gtocore 整包排除出 mod 发现）。
+        def installSealToRunMods = {
+            if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
+                throw new GradleException("需要完整 Seal Runtime: ${sealRuntimeLibsJar}")
+            }
+            ['client', 'data', 'server'].each { runName ->
+                def modsDir = file("run/${runName}/mods")
+                modsDir.mkdirs()
+                def dest = new File(modsDir, 'gto-seal-runtime-1.0.jar')
+                Files.copy(sealRuntimeLibsJar.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("GTO Seal: 【独立】${dest}")
             }
         }
 
@@ -1242,6 +1549,8 @@ tasks.register('installGtolibIntoModOutput') {
                 duplicatesStrategy = DuplicatesStrategy.INCLUDE
             }
             injectGtolibMixinConfig(null)
+            // 调试模式仍放 seal，保持与生产一致的服务发现路径
+            installSealToRunMods()
             logger.lifecycle("GTOLib: 【未加密】已解压明文 → main classes")
             return
         }
@@ -1259,14 +1568,12 @@ tasks.register('installGtolibIntoModOutput') {
         }
         // 主工程只保留明文 mixin 配置名列表（FML 仍声明 gtolib.mixins，实际由 gtolib 模组提供）
         injectGtolibMixinConfig(null)
-        // 同步完整 Runtime 到 libs（classpath / jarJar）
+        // 同步完整 Runtime 到 libs（classpath）
         if (tasks.findByName('syncSealRuntimeToLibs') != null) {
             // already depended via finalize when sources present
         }
-        if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
-            throw new GradleException("加密档需要完整 Seal Runtime: ${sealRuntimeLibsJar}")
-        }
-        logger.lifecycle("GTOLib: 【加密】独立 gtolib 模组 + Seal Runtime (${sealRuntimeLibsJar.length()} bytes)")
+        installSealToRunMods()
+        logger.lifecycle("GTOLib: 【加密】独立 gtolib 模组 + 独立 Seal Runtime (${sealRuntimeLibsJar.length()} bytes)")
     }
 }
 
@@ -1314,7 +1621,8 @@ afterEvaluate {
     tasks.matching { isGtolibLaunchTask(it) }.configureEach { Task t -> wireGtolibInstallTo(t) }
 
     tasks.named('jar', Jar).configure {
-        dependsOn 'installGtolibIntoModOutput', 'buildGtolibProtected', 'prepareGtolibModJar'
+        // ensureMixinRefmapMappings 只挂 reobfJar（必须在 jar 之后补 tsrg，避免循环依赖）
+        dependsOn 'installGtolibIntoModOutput', 'buildGtolibProtected', 'prepareGtolibModJar', 'syncGtolibRefmaps'
         if (tasks.findByName('syncSealRuntimeToLibs') != null) {
             dependsOn 'syncSealRuntimeToLibs'
         }
@@ -1322,7 +1630,6 @@ afterEvaluate {
         // 注意：不要在 jar 任务顶层 exclude 'com/gtolib/**' —— Gradle 的 exclude 作用于
         // 所有 from()，会把 Seal 加密包里的 hollow class 一并丢掉，玩家包只剩 .bin。
         // 加密模式下 installGtolibIntoModOutput 已清掉 main 里的明文 com.gtolib。
-        exclude 'gtolib.refmap.json'
         // 玩家包统一用 writeDualModsToml 的双 modId，禁止 resources 再塞一份
         exclude 'META-INF/mods.toml'
         // 加密 gtolib（hollow class + bins + Manifest Salt + mixins）
@@ -1344,23 +1651,7 @@ afterEvaluate {
             include 'com/gtolib/GTOLibMod.class'
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
-        // 完整 Seal Runtime 打进 gtocore：玩家 / 整合包只装这一个 jar 即可解密
-        // CI 不单独上传 seal 产物，避免和 gtocore 并列两个文件
-        from({
-            def seal = sealRuntimeLibsJar
-            if (!seal.exists() || seal.length() < 100_000) {
-                throw new GradleException(
-                        "发行 jar 需要完整 GTO Seal Runtime: ${seal}\n" +
-                                "请保证 libs/gto-seal-runtime-1.0.jar 存在（或 ./gradlew syncSealRuntimeToLibs）"
-                )
-            }
-            zipTree(seal)
-        }) {
-            exclude 'META-INF/mods.toml'
-            exclude 'pack.mcmeta'
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        }
-        // 玩家包：同一 jar 内双 modId（配置期注册 from，内容由 writeDualModsToml 写出）
+        // 禁止把 Seal Runtime 打进 gtocore（ITransformationService 会导致整包被 Forge 排除）
         dependsOn 'writeDualModsToml'
         from(layout.buildDirectory.file('gtolib/mods-dual.toml')) {
             into 'META-INF'
@@ -1368,92 +1659,226 @@ afterEvaluate {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
         doFirst {
-            def seal = sealRuntimeLibsJar
-            if (!seal.exists() || seal.length() < 100_000) {
-                throw new GradleException("发行 jar 需要完整 GTO Seal Runtime: ${seal}")
+            if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
+                throw new GradleException(
+                        "发行需要完整 GTO Seal Runtime（独立 jar，勿内嵌）: ${sealRuntimeLibsJar}\n" +
+                                "请保证 libs/gto-seal-runtime-1.0.jar 存在（或 ./gradlew syncSealRuntimeToLibs）"
+                )
             }
-            logger.lifecycle("GTO jar: 内嵌 Seal Runtime ← ${seal.name} (${seal.length()} bytes)；CI 仅上传 gtocore 一个产物")
+            // 写入 resources / mixin（不在 from 里叠多份，避免 reobf Duplicate entries）
+            publishAndInjectGtolibRefmaps(null, hasGtolibSources)
+        }
+        doLast {
+            // 打入最终 jar 根目录唯一一份 refmap（含关键 Shadow 补丁）
+            def outJar = archiveFile.get().asFile
+            if (!publishAndInjectGtolibRefmaps(outJar, false)) {
+                throw new GradleException("无法将 gtolib.refmap.json 注入发行 jar")
+            }
+            def text = new java.util.zip.ZipFile(outJar).withCloseable { zf ->
+                def e = zf.getEntry('gtolib.refmap.json')
+                if (e == null) return ''
+                zf.getInputStream(e).getText('UTF-8')
+            }
+            if (!text.contains('ResourceLocationMixn')) {
+                throw new GradleException(
+                        "发行 jar 内 gtolib.refmap.json 仍缺 ResourceLocationMixn"
+                )
+            }
+            logger.lifecycle("GTO jar: Seal 独立; refmap 已注入且含 ResourceLocationMixn")
         }
     }
 
+    // 将 Seal Runtime 复制到 build/libs，供 CI / 本地与 gtocore 一并分发
+    tasks.register('stageSealRuntimeArtifact', Copy) {
+        group = 'gtolib'
+        description = '复制 gto-seal-runtime 到 build/libs（与 gtocore 并列产物）'
+        if (tasks.findByName('syncSealRuntimeToLibs') != null) {
+            dependsOn 'syncSealRuntimeToLibs'
+        }
+        from(sealRuntimeLibsJar)
+        into(layout.buildDirectory.dir('libs'))
+        rename { 'gto-seal-runtime-1.0.jar' }
+        onlyIf { sealRuntimeLibsJar.exists() && sealRuntimeLibsJar.length() >= 100_000 }
+        doFirst {
+            if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
+                throw new GradleException("stageSealRuntimeArtifact: 缺少 ${sealRuntimeLibsJar}")
+            }
+            logger.lifecycle("GTO Seal: stage → build/libs/gto-seal-runtime-1.0.jar")
+        }
+    }
+    tasks.named('jar').configure { finalizedBy 'stageSealRuntimeArtifact' }
+    tasks.matching { it.name == 'build' }.configureEach { dependsOn 'stageSealRuntimeArtifact' }
+
     tasks.register('writeDualModsToml') {
         group = 'gtolib'
-        description = '写出玩家包双 modId mods.toml（gtocore + gtolib）'
+        description = '写出玩家包双 modId mods.toml（gtocore + gtolib，保留完整依赖）'
+        dependsOn 'processResources'
         def out = layout.buildDirectory.file('gtolib/mods-dual.toml')
+        // 优先用 processResources 展开后的 mods.toml（含 deeperdarker AFTER 等）
+        def expanded = file("${buildDir}/resources/main/META-INF/mods.toml")
+        def template = file('src/main/templates/META-INF/mods.toml')
+        inputs.files(expanded, template).optional()
         outputs.file(out)
         doLast {
-            def dualToml = """\
-modLoader="javafml"
-loaderVersion="[47,)"
-license="${project.findProperty('mod_license') ?: 'All Rights Reserved'}"
-
-[[mods]]
-modId="${project.mod_id}"
-version="${project.version}"
-displayName="${project.findProperty('mod_name') ?: project.name}"
-description='''${project.findProperty('mod_description') ?: ''}'''
+            def baseText = null
+            if (expanded.exists() && expanded.length() > 0) {
+                baseText = expanded.getText('UTF-8')
+            } else if (template.exists()) {
+                // 简易占位展开（CI/无 processResources 时）
+                baseText = template.getText('UTF-8')
+                        .replace('${mod_license}', "${project.findProperty('mod_license') ?: 'All Rights Reserved'}")
+                        .replace('${mod_id}', "${project.mod_id}")
+                        .replace('${version}', "${project.version}")
+                        .replace('${mod_name}', "${project.findProperty('mod_name') ?: project.name}")
+                        .replace('${mod_description}', "${project.findProperty('mod_description') ?: ''}")
+            }
+            if (baseText == null || baseText.trim().isEmpty()) {
+                throw new GradleException("writeDualModsToml: 找不到 mods.toml 模板/展开结果")
+            }
+            // 已有 gtolib 段则不重复
+            if (!baseText.contains('modId="gtolib"') && !baseText.contains("modId = \"gtolib\"")) {
+                def gtolibMod = """
 
 [[mods]]
 modId="gtolib"
 version="${project.version}"
 displayName="GTOLib"
 description='''Seal-protected GTO library (bundled).'''
+"""
+                // 插在第一个 [[dependencies 之前，否则依赖块在 mods 前不合法
+                def depIdx = baseText.indexOf('[[dependencies')
+                if (depIdx >= 0) {
+                    baseText = baseText.substring(0, depIdx) + gtolibMod + baseText.substring(depIdx)
+                } else {
+                    baseText = baseText + gtolibMod
+                }
+            }
+            // 强制 datasynclib 依赖（jarJar 提供）
+            if (!baseText.contains('datasynclib')) {
+                baseText += """
 
 [[dependencies.${project.mod_id}]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.20.1,1.20.2)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.${project.mod_id}]]
-modId="forge"
-mandatory=true
-versionRange="[47,)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.${project.mod_id}]]
-modId="gtceu"
+modId="datasynclib"
 mandatory=true
 versionRange="[1,)"
-ordering="BEFORE"
+ordering="NONE"
 side="BOTH"
-""".stripIndent()
+"""
+            }
             def f = out.get().asFile
             f.parentFile.mkdirs()
-            f.text = dualToml
+            f.text = baseText
+            // 必须含 deeperdarker AFTER，否则 sculk_stone 注册时 DD 未就绪
+            if (!baseText.contains('deeperdarker')) {
+                logger.warn("writeDualModsToml: 模板缺少 deeperdarker 依赖，注册可能 NPE")
+            } else {
+                logger.lifecycle("writeDualModsToml: 双 modId + 完整依赖（含 deeperdarker）")
+            }
         }
     }
-    // Mixin AP 有时只写出 gtolib.refmap*.tsrg（其中已含 com.gtocore.mixin 映射），
-    // reobfJar 仍硬编码要 gtocore.refmap.json.mappings.tsrg —— 缺则补一份。
+    // Mixin AP 写出 gtolib.refmap*.tsrg；reobfJar/ART 靠它把 mixin 成员改成 f_/m_。
+    // CI submodules:false 无 GTOLib 源码 → 无 AP → 必须从 resources 预置 tsrg，否则
+    // Overwrite assertValidNamespace 等仍为 Mojmap 名，生产 “was not located”。
     tasks.register('ensureMixinRefmapMappings') {
         group = 'gtolib'
+        // 必须在 jar（Mixin AP 已写 tsrg）之后、reobfJar 之前执行；不可 dependsOn jar（jar 会间接依赖本任务链）
+        mustRunAfter 'classes', 'jar'
         def mixinDir = file("${buildDir}/mixin")
         def gtocoreMap = new File(mixinDir, 'gtocore.refmap.json.mappings.tsrg')
         def gtolibMap = new File(mixinDir, 'gtolib.refmap.json.mappings.tsrg')
-        outputs.file(gtocoreMap)
+        def repoGtolibTsrg = file('src/main/resources/gtolib.refmap.json.mappings.tsrg')
+        def repoGtocoreTsrg = file('src/main/resources/gtocore.refmap.json.mappings.tsrg')
+        outputs.files(gtocoreMap, gtolibMap)
         doLast {
             mixinDir.mkdirs()
-            if (!gtocoreMap.exists() || gtocoreMap.length() == 0) {
-                if (gtolibMap.exists() && gtolibMap.length() > 0) {
-                    Files.copy(gtolibMap.toPath(), gtocoreMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                    logger.lifecycle("Mixin: 补写 gtocore.refmap.json.mappings.tsrg ← gtolib 映射")
-                } else {
-                    gtocoreMap.text = 'tsrg2 left right\n'
-                    logger.warn("Mixin: 写入空 gtocore.refmap.json.mappings.tsrg")
-                }
+            // 1) 预置/恢复 tsrg（AP 优先已在 build/mixin；否则 resources）
+            if ((!gtolibMap.exists() || gtolibMap.length() < 32) && repoGtolibTsrg.exists()) {
+                Files.copy(repoGtolibTsrg.toPath(), gtolibMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: gtolib tsrg ← src/main/resources（CI 无源码路径）")
             }
-            def gtocoreJson = new File(mixinDir, 'gtocore.refmap.json')
-            if (!gtocoreJson.exists()) {
-                gtocoreJson.text = '{"mappings":{},"data":{}}\n'
+            if ((!gtocoreMap.exists() || gtocoreMap.length() < 32) && repoGtocoreTsrg.exists()) {
+                Files.copy(repoGtocoreTsrg.toPath(), gtocoreMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: gtocore tsrg ← src/main/resources")
             }
+            if ((!gtocoreMap.exists() || gtocoreMap.length() < 32) && gtolibMap.exists() && gtolibMap.length() > 0) {
+                Files.copy(gtolibMap.toPath(), gtocoreMap.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: 补写 gtocore.refmap.json.mappings.tsrg ← gtolib 映射")
+            }
+            if (!gtolibMap.exists() || gtolibMap.length() < 32) {
+                gtolibMap.text = ''
+            }
+            if (!gtocoreMap.exists() || gtocoreMap.length() < 32) {
+                gtocoreMap.text = ''
+            }
+            // 2) 强制补全 ResourceLocationMixn（reobf 必需）
+            ensureResourceLocationMixnTsrg(gtolibMap)
+            ensureResourceLocationMixnTsrg(gtocoreMap)
+            // 3) 有源码打包时回写 resources，供下次 CI 无 AP 使用
+            if (hasGtolibSources && gtolibMap.exists() && gtolibMap.length() > 32) {
+                repoGtolibTsrg.parentFile.mkdirs()
+                Files.copy(gtolibMap.toPath(), repoGtolibTsrg.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(gtocoreMap.toPath(), repoGtocoreTsrg.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("Mixin: 已同步 tsrg → src/main/resources（供 CI reobf）")
+            }
+            // 4) JSON refmap
+            publishAndInjectGtolibRefmaps(null, hasGtolibSources)
+            def tsrgOk = gtolibMap.text.contains('ResourceLocationMixn') && gtolibMap.text.contains('m_245413_')
+            if (!tsrgOk) {
+                throw new GradleException(
+                        "gtolib.refmap.json.mappings.tsrg 缺少 ResourceLocationMixn/m_245413_，reobf 将失败"
+                )
+            }
+            logger.lifecycle("Mixin: tsrg OK (ResourceLocationMixn → f_/m_)")
         }
     }
     tasks.matching { it.name == 'reobfJar' }.configureEach {
         dependsOn 'buildGtolibProtected', 'ensureMixinRefmapMappings', 'jar'
-        mustRunAfter 'jar'
+        mustRunAfter 'jar', 'ensureMixinRefmapMappings'
     }
+    // 单独校验任务：reobf 完成后检查（RemapJar 的 archiveFile 属性因版本而异，直接扫 build/libs）
+    tasks.register('verifyResourceLocationMixnReobf') {
+        group = 'gtolib'
+        description = '校验 reobf 后 ResourceLocationMixn 已为 SRG 名（对齐官方 gtolib）'
+        dependsOn 'reobfJar'
+        doLast {
+            def out = file("${buildDir}/libs/${project.mod_id}-forge-1.20.1-${project.version}.jar")
+            if (!out.exists()) {
+                def found = file("${buildDir}/libs").listFiles()?.find {
+                    it.name.startsWith('gtocore') && it.name.endsWith('.jar') &&
+                            !it.name.contains('sources') && !it.name.contains('javadoc')
+                }
+                out = found ?: out
+            }
+            if (!out.exists()) {
+                throw new GradleException("verifyResourceLocationMixnReobf: 找不到 gtocore jar")
+            }
+            def zf = new java.util.zip.ZipFile(out)
+            try {
+                def e = zf.getEntry('com/gtolib/mixin/mc/ResourceLocationMixn.class')
+                if (e == null) {
+                    throw new GradleException("reobf 产物缺少 ResourceLocationMixn.class")
+                }
+                def bytes = zf.getInputStream(e).bytes
+                def text = new String(bytes, 'ISO-8859-1')
+                def hasSrgField = text.contains('f_135804_')
+                def hasSrgMethod = text.contains('m_245413_')
+                def stillNamed = text.contains('assertValidNamespace')
+                if (!hasSrgField || !hasSrgMethod || stillNamed) {
+                    throw new GradleException(
+                            "reobf 后 ResourceLocationMixn 仍非 SRG 名（对齐官方 gtolib 失败）。\n" +
+                                    "  f_135804_=${hasSrgField} m_245413_=${hasSrgMethod} " +
+                                    "assertValidNamespace仍在=${stillNamed}\n" +
+                                    "  检查 build/mixin/*.mappings.tsrg 是否含 ResourceLocationMixn"
+                    )
+                }
+                logger.lifecycle("verify: ResourceLocationMixn SRG OK (f_135804_/m_245413_) ← ${out.name}")
+            } finally {
+                zf.close()
+            }
+        }
+    }
+    tasks.named('build').configure { dependsOn 'verifyResourceLocationMixnReobf' }
+    tasks.matching { it.name == 'signJar' }.configureEach { dependsOn 'verifyResourceLocationMixnReobf' }
     tasks.named('sourcesJar', Jar).configure {
         exclude 'com/gtolib/**'
         exclude '**/GTOLib/**'
