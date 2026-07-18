@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.gtocore.integration.emi.research.ResearchEmiNameHelper.CATEGORY_NAME;
-import static com.gtocore.integration.emi.research.ResearchEmiNameHelper.EUREKA_NAME;
+import static com.gtocore.integration.emi.research.EmiResearchHelper.CATEGORY_NAME;
+import static com.gtocore.integration.emi.research.EmiResearchHelper.EUREKA_NAME;
 
 public final class DataScanningEmiRecipe implements EmiRecipe {
 
@@ -111,7 +111,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
         Set<AEKey> eurekaKeys = new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY);
         for (var entry : ResearchRequirements.getEurekaRequirementEntries()) {
             eurekaKeys.add(entry.key());
-            var input = ResearchEmiStacks.toEmiStack(entry.key());
+            var input = EmiResearchHelper.toEmiStack(entry.key());
             if (input == null) {
                 continue;
             }
@@ -125,7 +125,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
             if (eurekaKeys.contains(entry.key())) {
                 continue;
             }
-            var input = ResearchEmiStacks.toEmiStack(entry.key());
+            var input = EmiResearchHelper.toEmiStack(entry.key());
             if (input == null) {
                 continue;
             }

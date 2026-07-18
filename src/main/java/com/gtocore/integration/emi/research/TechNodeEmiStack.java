@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.gtocore.integration.emi.research.ResearchEmiNameHelper.TECH_NODE_NAME;
+import static com.gtocore.integration.emi.research.EmiResearchHelper.TECH_NODE_NAME;
 
 public class TechNodeEmiStack extends EmiStack {
 
@@ -47,6 +47,8 @@ public class TechNodeEmiStack extends EmiStack {
         if ((flags & RENDER_ICON) == 0) {
             return;
         }
+        ResourceLocation texture = GTOCore.id("textures/gui/overlay/technode_overlay.png");
+        graphics.blit(texture, x, y, 0, 0, 16, 16, 16, 16);
         if (data.icon != null) {
             AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x, y, data.icon);
             return;

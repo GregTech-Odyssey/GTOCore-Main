@@ -6,7 +6,7 @@ import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.data.recipe.research.AnalyzeData;
-import com.gtocore.integration.emi.research.ResearchEmiStacks;
+import com.gtocore.integration.emi.research.EmiResearchHelper;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
@@ -434,7 +434,7 @@ public class TechTreeSideTab extends WidgetGroup {
         private List<EmiStack> getUnlockableRecipeStacks() {
             if (cachedRecipeNode != selectedNode) {
                 cachedRecipeNode = selectedNode;
-                cachedRecipeStacks = selectedNode == null ? List.of() : ResearchEmiStacks.toEmiStacks(selectedNode.getRecipePrimaryOutputs());
+                cachedRecipeStacks = selectedNode == null ? List.of() : EmiResearchHelper.toEmiStacks(selectedNode.getRecipePrimaryOutputs());
                 recipeScrollOffset = 0;
             }
             return cachedRecipeStacks;

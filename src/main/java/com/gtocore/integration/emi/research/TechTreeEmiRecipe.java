@@ -47,7 +47,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
         super(() -> createWidget(node));
         this.node = node;
         this.techNodeInput = List.of(new TechNodeEmiStack(node));
-        this.recipeOutputs = ResearchEmiStacks.toEmiStacks(node.getRecipePrimaryOutputs());
+        this.recipeOutputs = EmiResearchHelper.toEmiStacks(node.getRecipePrimaryOutputs());
     }
 
     public static void register(EmiRegistry registry) {
