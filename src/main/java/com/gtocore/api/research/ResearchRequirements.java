@@ -16,11 +16,19 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -32,7 +40,20 @@ public final class ResearchRequirements {
         NO_REQUIREMENTS.materialNeeded = new ResearchPoints();
     }
 
-    public static final Reference2ObjectOpenHashMap<AEKey, TechNode> EUREKA_REQUIREMENTS = new Reference2ObjectOpenHashMap<>();
+    public static final Hash.Strategy<AEKey> AE_KEY_STRATEGY = new Hash.Strategy<>() {
+
+        @Override
+        public int hashCode(AEKey key) {
+            return key == null || key.getPrimaryKey() == null ? 0 : key.getPrimaryKey().hashCode();
+        }
+
+        @Override
+        public boolean equals(AEKey left, AEKey right) {
+            return left == null ? right == null : right != null && Objects.equals(left.getPrimaryKey(), right.getPrimaryKey());
+        }
+    };
+
+    private static final Reference2ObjectMap<AEKey, Set<TechNode>> EUREKA_REQUIREMENTS = new Reference2ObjectOpenCustomHashMap<>(AE_KEY_STRATEGY);
 
     private long cwuNeeded;
     private ResearchPoints materialNeeded;
@@ -41,6 +62,28 @@ public final class ResearchRequirements {
     private float eurekaProgress;
 
     private ResearchRequirements() {}
+
+    public static synchronized void registerEurekaRequirement(AEKey key, TechNode node) {
+        EUREKA_REQUIREMENTS.computeIfAbsent(key, ignored -> new ReferenceOpenHashSet<>()).add(node);
+    }
+
+    public static synchronized Set<TechNode> getEurekaRequirements(AEKey key) {
+        var nodes = EUREKA_REQUIREMENTS.get(key);
+        return nodes == null ? Set.of() : Set.copyOf(nodes);
+    }
+
+    public static synchronized List<EurekaRequirementEntry> getEurekaRequirementEntries() {
+        List<EurekaRequirementEntry> entries = new ArrayList<>(EUREKA_REQUIREMENTS.size());
+        for (var entry : EUREKA_REQUIREMENTS.reference2ObjectEntrySet()) {
+            List<TechNode> nodes = entry.getValue().stream()
+                    .sorted(Comparator.comparing((TechNode node) -> node.getManager().getId()).thenComparing(node -> node.name))
+                    .toList();
+            entries.add(new EurekaRequirementEntry(entry.getKey(), nodes));
+        }
+        entries.sort(Comparator.comparing((EurekaRequirementEntry entry) -> entry.key().getType().getId().toString())
+                .thenComparing(entry -> entry.key().getId().toString()));
+        return List.copyOf(entries);
+    }
 
     public ActionResult test(TechNode node, TeamResearchContext teamResource, UUID team, boolean simulate) {
         if (this == NO_REQUIREMENTS) {
@@ -112,4 +155,6 @@ public final class ResearchRequirements {
     public static final String FAIL_NO_MATERIAL = "research.requirements.fail.no_material";
     public static final ActionResult FAILURE_NO_CWU = new ActionResult(false, Component.translatable(FAIL_NO_CWU));
     public static final ActionResult FAILURE_NO_MATERIAL = new ActionResult(false, Component.translatable(FAIL_NO_MATERIAL));
+
+    public record EurekaRequirementEntry(AEKey key, List<TechNode> nodes) {}
 }

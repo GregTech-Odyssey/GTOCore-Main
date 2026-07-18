@@ -6,6 +6,9 @@ import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.integration.emi.research.ResearchEmiStacks;
+import com.gtocore.integration.emi.research.ResearchTagEmiStack;
+import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -29,9 +32,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.client.AEKeyRendering;
 
+import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import dev.emi.emi.api.EmiApi;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.EmiStackInteraction;
+import dev.emi.emi.screen.EmiScreenManager;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector4f;
 
@@ -71,6 +80,9 @@ public class TechTreeSideTab extends WidgetGroup {
     private static final int VALUE_WIDTH = 42;
     private static final int PROGRESS_INSET = 1;
     private static final int PROGRESS_TEXT_X = 4;
+    private static final int RECIPE_SLOT_SIZE = 18;
+    private static final int RECIPE_SLOT_GAP = 2;
+    private static final int RECIPE_LABEL_GAP = 2;
 
     private static final int NODE_BOX_FILL = 0xFF2F2F34;
     private static final int NODE_BOX_BORDER = 0xFF8C8C93;
@@ -113,9 +125,42 @@ public class TechTreeSideTab extends WidgetGroup {
     }
 
     public void toggleNode(TechNode node) {
-        selectedNode = selectedNode == node ? null : node;
+        showNode(selectedNode == node ? null : node);
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        var mc = Minecraft.getInstance();
+        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        var ing = getXEIIngredientOverMouse(mouseX, mouseY);
+        if (ing != null) {
+            return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
+                    bind -> bind.matchesKey(keyCode, scanCode));
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        var ing = getXEIIngredientOverMouse(mouseX, mouseY);
+        if (ing instanceof ResearchTagEmiStack || ing instanceof TechNodeEmiStack) {
+            return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
+                    bind -> bind.matchesMouse(button));
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    public void showNode(@Nullable TechNode node) {
+        selectedNode = node;
         if (isClientSideWidget) {
-            applyState(buildState());
+            if (getGuiPlayer() != null) {
+                applyState(buildState());
+            } else {
+                setVisible(node != null).setActive(node != null);
+            }
             return;
         }
         syncState();
@@ -283,7 +328,7 @@ public class TechTreeSideTab extends WidgetGroup {
                 var requirements = selectedNode.getRequirements();
                 if (requirements != null) {
                     rows.add(new RowState(label, currentState.cwuCurrent(), currentState.cwuNeeded(), eureka ? requirements.getEurekaProgress() : 0f,
-                            CWU_BAR_COLOR, CWU_BAR_BORDER, createCwuTooltip()));
+                            CWU_BAR_COLOR, CWU_BAR_BORDER, createCwuTooltip(), null));
                 }
             }
         }
@@ -292,7 +337,7 @@ public class TechTreeSideTab extends WidgetGroup {
             rows.add(new RowState(tag.getDisplayName(), material.current(), material.needed(), 0f,
                     tag.getColor(),
                     ColorUtils.getInterpolatedColor(0xffffffff, tag.getColor(), 0.5f),
-                    null));
+                    null, tag));
         }
         return rows;
     }
@@ -358,11 +403,21 @@ public class TechTreeSideTab extends WidgetGroup {
 
     @OnlyIn(Dist.CLIENT)
     private record RowState(Component label, long current, long total, float eurekaPercent, int fillColor, int borderColor,
-                            @Nullable Component tooltip) {}
+                            @Nullable Component tooltip, @Nullable ResearchTag researchTag) {}
 
-    private final class ContentWidget extends Widget {
+    private final class ContentWidget extends Widget implements IIngredientSlot {
 
         private int scrollOffset = 0;
+        private int recipeScrollOffset = 0;
+        private int rowAreaX;
+        private int rowAreaY;
+        private int rowAreaWidth;
+        private int rowAreaBottom;
+        private int recipeSlotsX;
+        private int recipeSlotsY;
+        private int visibleRecipeSlots;
+        private @Nullable TechNode cachedRecipeNode;
+        private List<EmiStack> cachedRecipeStacks = List.of();
 
         private ContentWidget(int x, int y, int width, int height) {
             super(x, y, width, height);
@@ -371,7 +426,18 @@ public class TechTreeSideTab extends WidgetGroup {
         @Override
         public Widget setVisible(boolean isVisible) {
             scrollOffset = 0;
+            recipeScrollOffset = 0;
             return super.setVisible(isVisible);
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private List<EmiStack> getUnlockableRecipeStacks() {
+            if (cachedRecipeNode != selectedNode) {
+                cachedRecipeNode = selectedNode;
+                cachedRecipeStacks = selectedNode == null ? List.of() : ResearchEmiStacks.toEmiStacks(selectedNode.getRecipePrimaryOutputs());
+                recipeScrollOffset = 0;
+            }
+            return cachedRecipeStacks;
         }
 
         @OnlyIn(Dist.CLIENT)
@@ -409,11 +475,29 @@ public class TechTreeSideTab extends WidgetGroup {
             graphics.drawString(font, requirementsLabel, contentX, reqLabelTextY, HEADER_DESC_COLOR, false);
 
             List<RowState> rows = buildRows();
+            List<EmiStack> recipeStacks = getUnlockableRecipeStacks();
             int rowsHeight = rows.isEmpty() ? 0 : rows.size() * ROW_HEIGHT + (rows.size() - 1) * ROW_GAP;
-            int preferredInnerContentY = rowsStartY + rowsHeight + INNER_CONTENT_SECTION_GAP;
-            int maxInnerContentY = Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT);
-            int innerContentY = Math.min(preferredInnerContentY, maxInnerContentY);
-            drawRows(graphics, font, rows, contentX, rowsStartY, contentWidth, innerContentY - INNER_CONTENT_SECTION_GAP, mouseX, mouseY);
+            int maxRowsBottom = Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT);
+            int rowsBottom = Math.min(rowsStartY + rowsHeight, maxRowsBottom);
+            drawRows(graphics, font, rows, contentX, rowsStartY, contentWidth, rowsBottom, mouseX, mouseY);
+
+            rowAreaX = contentX;
+            rowAreaY = rowsStartY;
+            rowAreaWidth = contentWidth;
+            rowAreaBottom = rowsBottom;
+
+            int innerContentY;
+            if (recipeStacks.isEmpty()) {
+                recipeSlotsX = 0;
+                recipeSlotsY = 0;
+                visibleRecipeSlots = 0;
+                innerContentY = Math.min(rowsStartY + rowsHeight + INNER_CONTENT_SECTION_GAP, Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT));
+            } else {
+                int recipeLabelY = rowsBottom + INNER_CONTENT_SECTION_GAP;
+                graphics.drawString(font, Component.translatable(TechNode.UNLOCKABLE_LABEL), contentX, recipeLabelY, HEADER_DESC_COLOR, false);
+                drawRecipeStacks(graphics, font, recipeStacks, contentX, recipeLabelY + font.lineHeight + RECIPE_LABEL_GAP, contentWidth, partialTicks);
+                innerContentY = recipeSlotsY + RECIPE_SLOT_SIZE + INNER_CONTENT_SECTION_GAP;
+            }
             updateInnerContentBounds(contentX - pos.x, innerContentY - pos.y, contentWidth, contentBottom - innerContentY);
         }
 
@@ -433,10 +517,6 @@ public class TechTreeSideTab extends WidgetGroup {
             int contentX = pos.x + CONTENT_PADDING;
             int contentY = pos.y + CONTENT_PADDING;
             int contentWidth = size.width - CONTENT_PADDING * 2;
-            int contentHeight = size.height - CONTENT_PADDING * 2;
-            int contentBottom = contentY + contentHeight;
-            int rewardTextY = contentY + HEADER_HEIGHT + HEADER_SECTION_GAP;
-            int rowsStartY = rewardTextY + 9;
             int textX = contentX + HEADER_ICON_SIZE + HEADER_TEXT_GAP;
             int textWidth = Math.max(10, contentWidth - HEADER_ICON_SIZE - HEADER_TEXT_GAP);
             var headerTooltip = createTierTooltip(node);
@@ -444,15 +524,12 @@ public class TechTreeSideTab extends WidgetGroup {
                 return List.of(headerTooltip);
             }
 
-            List<RowState> rows = buildRows();
-            int rowsHeight = rows.isEmpty() ? 0 : rows.size() * ROW_HEIGHT + (rows.size() - 1) * ROW_GAP;
-            int preferredInnerContentY = rowsStartY + rowsHeight + INNER_CONTENT_SECTION_GAP;
-            int maxInnerContentY = Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT);
-            int innerContentY = Math.min(preferredInnerContentY, maxInnerContentY);
-
-            Component hoveredTooltip = getRowTooltip(rows, i, j, contentX, rowsStartY, contentWidth, innerContentY - INNER_CONTENT_SECTION_GAP);
-
-            return hoveredTooltip == null ? super.getTooltipTexts() : List.of(hoveredTooltip);
+            EmiStack recipeStack = getXEIIngredientOverMouse(i, j);
+            if (recipeStack != null) {
+                return recipeStack.getTooltipText();
+            }
+            RowState hoveredRow = getHoveredRow(buildRows(), i, j);
+            return hoveredRow == null || hoveredRow.tooltip() == null ? super.getTooltipTexts() : List.of(hoveredRow.tooltip());
         }
 
         @OnlyIn(Dist.CLIENT)
@@ -498,23 +575,67 @@ public class TechTreeSideTab extends WidgetGroup {
             graphics.disableScissor();
         }
 
+        @Override
         @OnlyIn(Dist.CLIENT)
-        private @Nullable Component getRowTooltip(List<RowState> rows, int mouseX, int mouseY, int x, int y, int width, int maxBottomY) {
-            int currentY = y;
-            int progressWidth = Math.max(20, width - VALUE_WIDTH - 6);
-            for (RowState row : rows) {
-                if (currentY + ROW_HEIGHT > maxBottomY) {
-                    return null;
+        public EmiStack getXEIIngredientOverMouse(double mouseX, double mouseY) {
+            var pos = getPosition();
+            if (Widget.isMouseOver(pos.x, pos.y,
+                    HEADER_ICON_SIZE, HEADER_ICON_SIZE, mouseX, mouseY) && selectedNode != null) {
+                return new TechNodeEmiStack(selectedNode);
+            }
+            RowState row = getHoveredRow(buildRows(), mouseX, mouseY);
+            if (row != null && row.researchTag() != null) {
+                return new ResearchTagEmiStack(row.researchTag()).setAmount(row.total());
+            }
+            if (!Widget.isMouseOver(recipeSlotsX, recipeSlotsY,
+                    visibleRecipeSlots * RECIPE_SLOT_SIZE + Math.max(0, visibleRecipeSlots - 1) * RECIPE_SLOT_GAP,
+                    RECIPE_SLOT_SIZE, mouseX, mouseY)) {
+                return null;
+            }
+            int index = (int) (mouseX - recipeSlotsX) / (RECIPE_SLOT_SIZE + RECIPE_SLOT_GAP);
+            if (index >= visibleRecipeSlots || (mouseX - recipeSlotsX) % (RECIPE_SLOT_SIZE + RECIPE_SLOT_GAP) >= RECIPE_SLOT_SIZE) {
+                return null;
+            }
+            List<EmiStack> stacks = getUnlockableRecipeStacks();
+            int stackIndex = recipeScrollOffset + index;
+            return stackIndex < stacks.size() ? stacks.get(stackIndex) : null;
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private @Nullable RowState getHoveredRow(List<RowState> rows, double mouseX, double mouseY) {
+            int currentY = rowAreaY;
+            for (RowState row : rows.subList(Math.min(scrollOffset, rows.size()), rows.size())) {
+                if (currentY + ROW_HEIGHT > rowAreaBottom) {
+                    break;
                 }
-                if (row.tooltip() != null) {
-                    int labelWidth = progressWidth - PROGRESS_TEXT_X * 2;
-                    if (Widget.isMouseOver(x + PROGRESS_TEXT_X, currentY, labelWidth, ROW_HEIGHT, mouseX, mouseY)) {
-                        return row.tooltip();
-                    }
+                if (Widget.isMouseOver(rowAreaX, currentY, rowAreaWidth, ROW_HEIGHT, mouseX, mouseY)) {
+                    return row;
                 }
                 currentY += ROW_HEIGHT + ROW_GAP;
             }
             return null;
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private void drawRecipeStacks(GuiGraphics graphics, Font font, List<EmiStack> stacks, int x, int y, int width, float partialTicks) {
+            int maxVisible = Math.max(1, (width + RECIPE_SLOT_GAP) / (RECIPE_SLOT_SIZE + RECIPE_SLOT_GAP));
+            visibleRecipeSlots = Math.min(maxVisible, stacks.size());
+            recipeScrollOffset = Mth.clamp(recipeScrollOffset, 0, Math.max(0, stacks.size() - visibleRecipeSlots));
+            int stripWidth = visibleRecipeSlots * RECIPE_SLOT_SIZE + Math.max(0, visibleRecipeSlots - 1) * RECIPE_SLOT_GAP;
+            recipeSlotsX = x + (width - stripWidth) / 2;
+            recipeSlotsY = y;
+
+            for (int i = 0; i < visibleRecipeSlots; i++) {
+                int slotX = recipeSlotsX + i * (RECIPE_SLOT_SIZE + RECIPE_SLOT_GAP);
+                GuiTextures.SLOT.draw(graphics, 0, 0, slotX, y, RECIPE_SLOT_SIZE, RECIPE_SLOT_SIZE);
+                stacks.get(recipeScrollOffset + i).render(graphics, slotX + 1, y + 1, partialTicks, EmiIngredient.RENDER_ICON);
+            }
+            if (recipeScrollOffset > 0) {
+                graphics.drawString(font, "<", x + 1, y + 5, ROW_TEXT_COLOR, false);
+            }
+            if (recipeScrollOffset + visibleRecipeSlots < stacks.size()) {
+                graphics.drawString(font, ">", x + width - font.width(">") - 1, y + 5, ROW_TEXT_COLOR, false);
+            }
         }
 
         @OnlyIn(Dist.CLIENT)
@@ -541,7 +662,55 @@ public class TechTreeSideTab extends WidgetGroup {
 
         @Override
         @OnlyIn(Dist.CLIENT)
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (visibleRecipeSlots > 0 && Widget.isMouseOver(rowAreaX, recipeSlotsY, rowAreaWidth, RECIPE_SLOT_SIZE, mouseX, mouseY)) {
+                EmiStack stack = getXEIIngredientOverMouse(mouseX, mouseY);
+                if (stack != null && (button == 0 || button == 1)) {
+                    if (button == 0) {
+                        EmiApi.displayRecipes(stack);
+                    } else {
+                        EmiApi.displayUses(stack);
+                    }
+                    playButtonClickSound();
+                    return true;
+                }
+                if (button == 0 && mouseX < recipeSlotsX && recipeScrollOffset > 0) {
+                    recipeScrollOffset--;
+                    playButtonClickSound();
+                    return true;
+                }
+                List<EmiStack> stacks = getUnlockableRecipeStacks();
+                if (button == 0 && mouseX >= recipeSlotsX + visibleRecipeSlots * (RECIPE_SLOT_SIZE + RECIPE_SLOT_GAP) - RECIPE_SLOT_GAP &&
+                        recipeScrollOffset + visibleRecipeSlots < stacks.size()) {
+                    recipeScrollOffset++;
+                    playButtonClickSound();
+                    return true;
+                }
+            }
+
+            RowState row = getHoveredRow(buildRows(), mouseX, mouseY);
+            if (row != null && row.researchTag() != null && (button == 0 || button == 1)) {
+                EmiApi.displayRecipes(new ResearchTagEmiStack(row.researchTag()));
+                playButtonClickSound();
+                return true;
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
         public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
+            if (visibleRecipeSlots > 0 && Widget.isMouseOver(rowAreaX, recipeSlotsY, rowAreaWidth, RECIPE_SLOT_SIZE, mouseX, mouseY)) {
+                List<EmiStack> stacks = getUnlockableRecipeStacks();
+                int maxRecipeScrollOffset = Math.max(0, stacks.size() - visibleRecipeSlots);
+                if (wheelDelta > 0 && recipeScrollOffset > 0) {
+                    recipeScrollOffset--;
+                    return true;
+                } else if (wheelDelta < 0 && recipeScrollOffset < maxRecipeScrollOffset) {
+                    recipeScrollOffset++;
+                    return true;
+                }
+            }
             if (isMouseOverElement((int) mouseX, (int) mouseY)) {
                 List<RowState> rows = buildRows();
                 int maxScrollOffset = Math.max(0, rows.size() - 1);

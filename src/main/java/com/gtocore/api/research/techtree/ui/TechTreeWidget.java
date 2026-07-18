@@ -5,6 +5,7 @@ import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTree;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -26,10 +27,14 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.client.AEKeyRendering;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
+import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.Position;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStackInteraction;
+import dev.emi.emi.screen.EmiScreenManager;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,6 +75,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private static final int TIER_SEPARATOR_GAP = 4;
     private static final int TIER_SEPARATOR_COLOR = 0x66FFFFFF;
     private static final int HOVERED_DEPENDENCY_LINE_COLOR = 0xFF4DE3E3;
+    private static final int SELECTED_NODE_BORDER_COLOR = 0xFF8BE7DE;
     private static final double MIN_ZOOM = 0.5D;
     private static final double MAX_ZOOM = 3.0D;
     private static final double ZOOM_STEP = 1.15D;
@@ -91,6 +97,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private final int maxNodeY;
     private double zoom = 1.0D;
     private @Nullable TechNode highlightedNode;
+    private @Nullable TechNode selectedNode;
     private boolean capturedMouseInteraction;
     @Setter
     @Nullable
@@ -211,6 +218,21 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         setScrollYOffset(Mth.clamp(scrollYOffset - (int) deltaY, 0, getVerticalScrollLimit()));
     }
 
+    public void setSelectedNode(@Nullable TechNode node) {
+        selectedNode = node != null && nodeIndices.containsKey(node) ? node : null;
+    }
+
+    public void focusNode(@Nullable TechNode node) {
+        setSelectedNode(node);
+        if (selectedNode == null) {
+            return;
+        }
+        int targetX = toCanvasX(selectedNode) + getScaledNodeSize() / 2 - getSize().width / 2;
+        int targetY = toCanvasY(selectedNode) + getScaledNodeSize() / 2 - getSize().height / 2;
+        setScrollXOffset(Mth.clamp(targetX, 0, getHorizontalScrollLimit()));
+        setScrollYOffset(Mth.clamp(targetY, 0, getVerticalScrollLimit()));
+    }
+
     @OnlyIn(Dist.CLIENT)
     private boolean isMouseWithinBounds(double mouseX, double mouseY) {
         return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
@@ -273,6 +295,20 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         if (isClientSideWidget) {
             nodeStates = collectNodeStates(getGuiPlayer());
         }
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        var mc = Minecraft.getInstance();
+        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        var ing = getXEIIngredientOverMouse(mouseX, mouseY);
+        if (ing != null) {
+            return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
+                    bind -> bind.matchesKey(keyCode, scanCode));
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     public void syncNodeStates() {
@@ -606,7 +642,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         }
     }
 
-    private final class NodeWidget extends Widget implements DraggableScrollableWidgetGroup.IDraggable {
+    private final class NodeWidget extends Widget implements DraggableScrollableWidgetGroup.IDraggable, IIngredientSlot {
 
         private static final int CLICK_ACTION = 1;
         private final int index;
@@ -637,6 +673,9 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             byte state = getNodeState(index);
             DrawerHelper.drawSolidRect(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeFillColor(state));
             DrawerHelper.drawBorder(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeBorderColor(node, state), 1);
+            if (node == selectedNode) {
+                DrawerHelper.drawBorder(graphics, pos.x - 1, pos.y - 1, nodeSize + 2, nodeSize + 2, SELECTED_NODE_BORDER_COLOR, 1);
+            }
             if (state == STATE_LOCKED) {
                 DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, nodeSize - 2, nodeSize - 2, 0x55000000);
             }
@@ -723,6 +762,11 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             }
             Position position = getPosition();
             return isMouseOver(position.x, position.y, getSize().width, getSize().height, mouseX, mouseY);
+        }
+
+        @Override
+        public Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
+            return new TechNodeEmiStack(node);
         }
     }
 }

@@ -11,8 +11,11 @@ import com.gtocore.integration.chisel.ChiselRecipe;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
+import com.gtocore.integration.emi.research.DataScanningEmiRecipe;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
+import com.gtocore.integration.emi.research.ResearchTagEmiStackSerializer;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
+import com.gtocore.integration.emi.research.TechNodeEmiStackSerializer;
 import com.gtocore.integration.emi.research.TechTreeEmiRecipe;
 import com.gtocore.integration.emi.space.SatelliteEmiCategory;
 import com.gtocore.integration.misc.CalculatorOverlay;
@@ -225,6 +228,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTProgrammedCircuitCategory.registerDisplays(registry);
 
         PrimordialReconstructorDisassemblyEmiCategory.register(registry);
+        DataScanningEmiRecipe.register(registry);
         TechTreeEmiRecipe.register(registry);
         SatelliteEmiCategory.register(registry);
 
@@ -297,6 +301,8 @@ public final class GTEMIPlugin implements EmiPlugin {
 
         registry.addIngredientSerializer(EmiSearchTextStack.class, new EmiSearchTextStackSerializer());
         registry.addIngredientSerializer(EmiTagprefixStack.class, new EmiTagprefixStackSerializer());
+        registry.addIngredientSerializer(ResearchTagEmiStack.class, new ResearchTagEmiStackSerializer());
+        registry.addIngredientSerializer(TechNodeEmiStack.class, new TechNodeEmiStackSerializer());
         registry.addGenericStackProvider((Screen screen, int x, int y) -> {
             for (var widget : screen.renderables) {
                 if (widget instanceof EditBox editBox && !editBox.isFocused() && editBox.isMouseOver(x, y)) {

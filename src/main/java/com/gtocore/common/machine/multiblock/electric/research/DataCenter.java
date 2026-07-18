@@ -7,6 +7,7 @@ import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.api.research.ui.ResearchInfoTab;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
+import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -125,7 +126,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(new ResearchInfoTab((uiWidget, sideTab) -> {
+        sideTabs.attachSubTab(new ResearchInfoTab(AnalyzeData.TechTree, (uiWidget, sideTab) -> {
             AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
             var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
                 if (clickData.isRemote) {
@@ -169,7 +170,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             return button;
         }));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
-        sideTabs.attachSubTab(new RecipeExportTab(this));
+        sideTabs.attachSubTab(new RecipeExportTab(this, AnalyzeData.TechTree));
     }
 
     private String getResearchButtonText(@Nullable TechNode node) {

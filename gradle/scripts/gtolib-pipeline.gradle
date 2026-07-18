@@ -471,6 +471,13 @@ tasks.named('compileJava').configure {
 }
 tasks.named('compileKotlin').configure {
     mustRunAfter 'cleanGtolibClassesForPackage'
+    outputs.upToDateWhen {
+        if (!hasGtolibSources || isGtolibJarUpToDate) {
+            return true
+        }
+        def d = file("${buildDir}/classes/kotlin/main/com/gtolib")
+        d.exists() && d.listFiles() != null && d.listFiles().length > 0
+    }
 }
 
 tasks.register('packageGtolibJar', Jar) {
@@ -480,6 +487,8 @@ tasks.register('packageGtolibJar', Jar) {
     destinationDirectory = file("${buildDir}/gtolib")
     onlyIf { hasGtolibSources && !isGtolibJarUpToDate }
     dependsOn 'cleanGtolibClassesForPackage', 'classes'
+    inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     // GTO Seal Manifest（Packager / Runtime 读取 Salt + Version）
     manifest {
@@ -524,7 +533,10 @@ tasks.register('copyPrebuiltGtolib') {
     group = 'gtolib'
     description = '无 submodule 时使用 libs/gtolib-protected.jar'
     onlyIf { !hasGtolibSources }
-    inputs.file(gtolibProtectedLibsJar).optional()
+    inputs.file(gtolibProtectedLibsJar).withPropertyName('prebuiltGtolibJar').optional()
+    inputs.file(file('libs/gtolib-protected.PROTECTED'))
+            .withPropertyName('prebuiltGtolibMetadata')
+            .optional()
     outputs.file(gtolibProtectedJar)
     doLast {
         if (!gtolibProtectedLibsJar.exists()) {
@@ -570,6 +582,25 @@ tasks.register('resolveGtolibRaw') {
     }
 }
 
+def resolveProguardLibraryJars = {
+    def seen = new HashSet<String>()
+    def jars = []
+    project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
+        try {
+            config.resolve().each { f ->
+                if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
+                    jars << f
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+    jars.sort { a, b -> a.absolutePath <=> b.absolutePath }
+}
+
+def proguardRulesFile = file("${gtolibProtectDir}/proguard-rules.pro")
+def proguardDictionaryFile = file("${gtolibProtectDir}/my_dict.txt")
+
 tasks.register('proguardGtolib', JavaExec) {
     group = 'gtolib'
     onlyIf {
@@ -578,12 +609,27 @@ tasks.register('proguardGtolib', JavaExec) {
     dependsOn 'resolveGtolibRaw', 'classes'
     classpath = configurations.proguardCp
     mainClass = 'proguard.ProGuard'
+    inputs.file(gtolibRawJar).withPropertyName('rawGtolibJar')
+    inputs.file(proguardRulesFile).withPropertyName('proguardRules')
+    inputs.file(proguardDictionaryFile).withPropertyName('obfuscationDictionary').optional()
+    inputs.files({ resolveProguardLibraryJars() }).withPropertyName('libraryClasspath')
+    inputs.files({
+        def javaHome = System.getProperty('java.home')
+        [
+                new File("${javaHome}/lib/rt.jar"),
+                new File("${javaHome}/jmods/java.base.jmod"),
+        ].findAll { it.exists() }
+    }).withPropertyName('javaRuntimeLibraries')
+    inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.property('javaRuntimeVersion', { System.getProperty('java.runtime.version') })
+    outputs.file(gtolibPgJar)
+    outputs.file(file("${buildDir}/gtolib/gtolib-mapping.txt"))
 
     doFirst {
         def dir = file("${buildDir}/gtolib")
         dir.mkdirs()
         def protectDir = gtolibProtectDir
-        def dictFile = file("${protectDir}/my_dict.txt")
+        def dictFile = proguardDictionaryFile
         if (!dictFile.exists()) {
             dictFile.parentFile.mkdirs()
             dictFile.text = (('a'..'z').collectMany { l -> (0..9).collect { n -> "${l}${n}" } }).join('\n') + '\n'
@@ -604,16 +650,8 @@ tasks.register('proguardGtolib', JavaExec) {
         } else if (jmod.exists()) {
             libArgs.append("-libraryjars '${jmod.absolutePath.replace('\\', '/')}'\n")
         }
-        def seen = new HashSet<String>()
-        project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
-            try {
-                config.resolve().each { f ->
-                    if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
-                        libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
-                    }
-                }
-            } catch (Exception ignored) {
-            }
+        resolveProguardLibraryJars().each { f ->
+            libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
         }
         def abs = { String name -> file("${buildDir}/gtolib/${name}").absolutePath.replace('\\', '/') }
         libArgs.append("-classobfuscationdictionary '${abs('my_class_names_shuffled.txt')}'\n")
@@ -625,7 +663,7 @@ tasks.register('proguardGtolib', JavaExec) {
         def inJar = gtolibRawJar.get().asFile.absolutePath.replace('\\', '/')
         def outJar = gtolibPgJar.get().asFile.absolutePath.replace('\\', '/')
         args = [
-                "@${file("${protectDir}/proguard-rules.pro").absolutePath}",
+                "@${proguardRulesFile.absolutePath}",
                 "@${file("${buildDir}/gtolib/proguard-extra.pro").absolutePath}",
                 "-injars", inJar,
                 "-outjars", outJar,
@@ -711,8 +749,18 @@ tasks.register('sealPackGtolib', Exec) {
     dependsOn {
         canProguard ? ['proguardGtolib'] : ['resolveGtolibRaw']
     }
-    inputs.file(sealPackagerJar)
-    outputs.file(file("${buildDir}/gtolib/gtolib-sealed.jar"))
+    inputs.file(sealPackagerJar).withPropertyName('sealPackager')
+    inputs.file({
+        canProguard ? gtolibPgJar.get().asFile : gtolibRawJar.get().asFile
+    }).withPropertyName('productionJar')
+    inputs.file(gtolibUnprotectedJar).withPropertyName('developmentJar')
+    inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
+    outputs.files(
+            file("${buildDir}/gtolib/gtolib-seal-input.jar"),
+            file("${buildDir}/gtolib/gtolib-seal-dev.jar"),
+            file("${buildDir}/gtolib/gtolib-sealed.jar")
+    )
 
     doFirst {
         def pg = gtolibPgJar.get().asFile
@@ -807,6 +855,24 @@ tasks.register('buildGtolibProtected') {
         }
         return steps
     }
+    inputs.files({
+        if (!hasGtolibSources || isGtolibJarUpToDate) {
+            return []
+        }
+        [
+                gtolibRawJar.get().asFile,
+                gtolibUnprotectedJar.get().asFile,
+                gtolibPgJar.get().asFile,
+                file("${buildDir}/gtolib/gtolib-sealed.jar"),
+        ].findAll { it.exists() }
+    }).withPropertyName('protectedJarCandidates')
+    inputs.file(file('GTOLib/src/main/resources/gtolib.mixins.json'))
+            .withPropertyName('gtolibMixinConfig')
+            .optional()
+    inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.property('proguardEnabled', canProguard)
+    inputs.property('sealPackEnabled', canSealPack)
+    inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
     outputs.file(gtolibProtectedJar)
 
     doLast {
@@ -921,8 +987,23 @@ tasks.register('finalizeGtolib') {
     }
     inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
     inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.file({
+        def hasSrc = hasGtolibSources
+        def debug = hasSrc && detectGtolibDebugMode()
+        def protectedFile = gtolibProtectedJar.get().asFile
+        def unprotected = gtolibUnprotectedJar.get().asFile
+        if (!hasSrc) {
+            return protectedFile.exists() && protectedFile.length() > 0 ? protectedFile : gtolibProtectedLibsJar
+        }
+        if (debug) {
+            return unprotected.exists() && unprotected.length() > 0 ? unprotected : gtolibRawJar.get().asFile
+        }
+        return protectedFile.exists() && protectedFile.length() > 0 ? protectedFile : unprotected
+    }).withPropertyName('selectedGtolibJar')
+    inputs.file(file('GTOLib/src/main/resources/gtolib.mixins.json'))
+            .withPropertyName('gtolibMixinConfig')
+            .optional()
     outputs.file(gtolibReadyJar)
-    outputs.upToDateWhen { false }
 
     doLast {
         def hasSrc = hasGtolibSources
@@ -1038,6 +1119,9 @@ tasks.register('prepareGtolibModJar') {
     group = 'gtolib'
     description = '准备独立 gtolib 模组 jar（Seal 加密体 + mods.toml + 明文 @Mod stub）'
     dependsOn 'finalizeGtolib'
+    inputs.file(gtolibReadyJar).withPropertyName('readyGtolibJar')
+    inputs.file(gtolibModStubClass).withPropertyName('gtolibModStub')
+    inputs.property('gtolibModVersion', { project.version.toString() })
     outputs.file(gtolibModJar)
     doLast {
         def ready = gtolibReadyJar.get().asFile

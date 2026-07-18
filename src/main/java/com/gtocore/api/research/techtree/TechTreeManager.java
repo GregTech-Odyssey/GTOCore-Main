@@ -213,7 +213,7 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
             var t = manager.register(this);
 
             if (requirements instanceof ResearchRequirements r && r.getEurekaItem() != null) {
-                ResearchRequirements.EUREKA_REQUIREMENTS.put(r.getEurekaItem(), t);
+                ResearchRequirements.registerEurekaRequirement(r.getEurekaItem(), t);
             }
             return t;
         }

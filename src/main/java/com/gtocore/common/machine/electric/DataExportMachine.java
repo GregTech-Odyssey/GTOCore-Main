@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.electric;
 
 import com.gtocore.api.research.ui.RecipeExportTab;
+import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.api.recipe.RecipeBuilder;
 
@@ -51,7 +52,7 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 166, this, entityPlayer).widget(new FancyMachineUIWidget(new RecipeExportTab(this), 176, 166));
+        return new ModularUI(176, 166, this, entityPlayer).widget(new FancyMachineUIWidget(new RecipeExportTab(this, AnalyzeData.TechTree), 176, 166));
     }
 
     @Override

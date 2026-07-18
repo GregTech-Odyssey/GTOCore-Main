@@ -24,7 +24,7 @@ import static com.hepdd.gtmthings.utils.TeamUtil.getTeamUUID;
 public class TeamResearchSavedDtat extends FastSavedData {
 
     public static final String DATA_NAME = "team_research_data";
-    public static final int DATA_VERSION = 3;
+    public static final int DATA_VERSION = 4;
     public static TeamResearchSavedDtat INSTANCE = new TeamResearchSavedDtat();
     public static TeamResearchSavedDtat CLIENT_INSTANCE = new TeamResearchSavedDtat();
 

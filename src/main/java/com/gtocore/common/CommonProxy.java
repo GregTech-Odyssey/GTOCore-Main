@@ -17,7 +17,6 @@ import com.gtocore.config.SparkRange;
 import com.gtocore.data.Data;
 import com.gtocore.data.Datagen;
 import com.gtocore.data.lootTables.tool.GTONumberProviders;
-import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.eio_travel.api.TravelRegistry;
 import com.gtocore.eio_travel.client.travel.TravelAnchorRenderers;
 import com.gtocore.eio_travel.implementations.AnchorTravelTarget;
@@ -164,7 +163,6 @@ public class CommonProxy {
         Message.init();
         TeamResearchSavedDtat.init();
         TechTreeSavedData.init();
-        AnalyzeData.INSTANCE.init();
         GTOItemTooltips.INSTANCE.initLanguage();
         DataSyncCodec.register(TesseractDirectedTarget.class, TesseractDirectedTarget.STREAM_CODEC, TesseractDirectedTarget.CODEC);
     }
