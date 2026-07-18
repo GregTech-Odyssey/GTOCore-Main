@@ -1,77 +1,270 @@
 name: "Build and Sign"
 
-# 监听所有 push；仅当 commit message 含触发标记时打包签名
-# 触发标记: -b / --build / -build（建议单独成词，如 "release --build"）
+# 触发（官方仓 GregTech-Odyssey/GTOCore-Main）：
+# 1) push：commit message 含 -b / --build / -build
+# 2) pull_request_target opened：PR 由组织成员提起 → 自动构建一次（无需标记）
+# 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
+# 4) issue_comment：组织成员在 PR 下评论含 -b / --build / -build → 构建 PR head
+#
+# 使用 pull_request_target（而非 pull_request）以便 fork 来源的 PR 也能使用
+# 本仓/组织 secrets 签名。工作流文件始终取 base 分支，降低被 PR 篡改 workflow 的风险。
+# 安全：仅组织成员（或写权限 collaborator）可通过上述路径触发；构建仍会执行 PR 代码，
+# 成员在外部贡献上评论 --build 即表示已审阅并愿意签名构建。
 on:
   push:
+  pull_request_target:
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: build-sign-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    # 1) 仅官方仓（禁止 fork 上同名 workflow 误触发后向本仓传产物）
-    # 2) commit 含构建标记
+  # 门禁：解析 ref、构建标记、组织成员；通过后才跑签名构建
+  gate:
     if: >
       github.repository == 'GregTech-Odyssey/GTOCore-Main' &&
       (
-        contains(github.event.head_commit.message, '--build') ||
-        contains(github.event.head_commit.message, '-build') ||
-        contains(github.event.head_commit.message, ' -b') ||
-        endsWith(github.event.head_commit.message, '-b') ||
-        startsWith(github.event.head_commit.message, '-b ')
+        (
+          github.event_name == 'push' &&
+          (
+            contains(github.event.head_commit.message, '--build') ||
+            contains(github.event.head_commit.message, '-build') ||
+            contains(github.event.head_commit.message, ' -b') ||
+            endsWith(github.event.head_commit.message, '-b') ||
+            startsWith(github.event.head_commit.message, '-b ')
+          )
+        ) ||
+        (
+          github.event_name == 'pull_request_target' &&
+          (github.event.action == 'opened' || github.event.action == 'synchronize')
+        ) ||
+        (
+          github.event_name == 'issue_comment' &&
+          github.event.issue.pull_request &&
+          (
+            contains(github.event.comment.body, '--build') ||
+            contains(github.event.comment.body, '-build') ||
+            contains(github.event.comment.body, '-b')
+          )
+        )
       )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      should_build: ${{ steps.resolve.outputs.should_build }}
+      checkout_repo: ${{ steps.resolve.outputs.checkout_repo }}
+      checkout_ref: ${{ steps.resolve.outputs.checkout_ref }}
+      reason: ${{ steps.resolve.outputs.reason }}
+    steps:
+      - name: Resolve trigger, ref, membership
+        id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          # push
+          PUSH_SHA: ${{ github.sha }}
+          # pull_request_target
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || 0 }}
+          PR_USER: ${{ github.event.pull_request.user.login || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          # issue_comment
+          COMMENT_BODY: ${{ github.event.comment.body || '' }}
+          COMMENT_USER: ${{ github.event.comment.user.login || '' }}
+          IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || 'false' }}
+          HEAD_COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
+        run: |
+          set -euo pipefail
+          ORG="GregTech-Odyssey"
+          API="https://api.github.com"
+          HDR=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
+
+          has_build_marker() {
+            local msg="$1"
+            [[ "$msg" == *'--build'* ]] && return 0
+            [[ "$msg" == *'-build'* ]] && return 0
+            [[ "$msg" == *' -b'* ]] && return 0
+            [[ "$msg" == '-b' || "$msg" == '-b '* || "$msg" == *'-b' ]] && return 0
+            return 1
+          }
+
+          # 返回 0=成员/写权限；1=明确拒绝（bot）；2=非成员
+          check_org_member_or_writer() {
+            local user="$1"
+            if [[ "$user" == *'[bot]' ]]; then
+              echo "BOT: @${user}"
+              return 1
+            fi
+            local code
+            code=$(curl -sS -o /tmp/member_body.txt -w "%{http_code}" \
+              "${HDR[@]}" "${API}/orgs/${ORG}/members/${user}")
+            echo "Membership API HTTP $code for @${user}"
+            if [ "$code" = "204" ]; then
+              echo "OK: @${user} is a member of ${ORG}"
+              return 0
+            fi
+            local code2
+            code2=$(curl -sS -o /tmp/collab_body.txt -w "%{http_code}" \
+              "${HDR[@]}" "${API}/repos/${REPO}/collaborators/${user}/permission")
+            echo "Collaborator permission API HTTP $code2"
+            if [ "$code2" = "200" ]; then
+              local perm
+              perm=$(python3 -c "import json; print(json.load(open('/tmp/collab_body.txt')).get('permission',''))" 2>/dev/null || true)
+              echo "permission=$perm"
+              case "$perm" in
+                admin|maintain|write)
+                  if [ "$code" = "302" ] || [ "$code" = "404" ]; then
+                    echo "WARN: membership=$code but repo permission=$perm on official repo — allow"
+                    return 0
+                  fi
+                  ;;
+              esac
+            fi
+            echo "DENIED: @${user} is not an org member / write collaborator (membership=$code)"
+            return 2
+          }
+
+          # require_member=true 时非成员使 job 失败（红叉）；false 时仅 skip（外部开 PR 不刷红）
+          require_member_or_skip() {
+            local user="$1"
+            local soft="$2" # "soft" | "hard"
+            local rc=0
+            check_org_member_or_writer "$user" || rc=$?
+            if [ "$rc" -eq 0 ]; then
+              return 0
+            fi
+            if [ "$rc" -eq 1 ]; then
+              echo "::error::Bots cannot trigger signed builds."
+              exit 1
+            fi
+            if [ "$soft" = "soft" ]; then
+              skip "user @${user} is not an org member"
+            fi
+            echo "::error::Only members of ${ORG} may trigger this signed build. User @${user} denied."
+            exit 1
+          }
+
+          skip() {
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "checkout_repo=" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=" >> "$GITHUB_OUTPUT"
+            echo "reason=$1" >> "$GITHUB_OUTPUT"
+            echo "SKIP: $1"
+            exit 0
+          }
+
+          echo "Event=$EVENT_NAME action=${EVENT_ACTION:-} actor=$ACTOR repo=$REPO"
+
+          CHECK_USER=""
+          CHECKOUT_REPO="$REPO"
+          CHECKOUT_REF=""
+          REASON=""
+          # push / 评论 / 同步带标记：非成员应失败或 skip；opened 外部贡献 soft skip
+          MEMBER_MODE="hard"
+
+          case "$EVENT_NAME" in
+            push)
+              if ! has_build_marker "$HEAD_COMMIT_MSG"; then
+                skip "push without build marker"
+              fi
+              CHECK_USER="$ACTOR"
+              CHECKOUT_REPO="$REPO"
+              CHECKOUT_REF="$PUSH_SHA"
+              REASON="push with build marker"
+              MEMBER_MODE="hard"
+              ;;
+
+            pull_request_target)
+              CHECKOUT_REPO="$PR_HEAD_REPO"
+              CHECKOUT_REF="$PR_HEAD_SHA"
+              echo "PR #${PR_NUMBER} author=@${PR_USER} head=${PR_HEAD_REPO}@${PR_HEAD_SHA}"
+
+              if [ "$EVENT_ACTION" = "opened" ]; then
+                # 开启时：仅组织成员提起 → 自动构建，无需标记；外部贡献 soft skip（不红叉）
+                CHECK_USER="$PR_USER"
+                REASON="PR opened by org member"
+                MEMBER_MODE="soft"
+              elif [ "$EVENT_ACTION" = "synchronize" ]; then
+                # 同步时：最新 head commit 必须带构建标记
+                # -f：HTTP 4xx/5xx 视为失败，便于回退到 base 仓 commits API
+                COMMIT_JSON=$(curl -sS -f "${HDR[@]}" \
+                  "${API}/repos/${PR_HEAD_REPO}/commits/${PR_HEAD_SHA}" \
+                  || curl -sS -f "${HDR[@]}" "${API}/repos/${REPO}/commits/${PR_HEAD_SHA}")
+                COMMIT_MSG=$(python3 -c "import json,sys; print(json.load(sys.stdin).get('commit',{}).get('message',''))" <<<"$COMMIT_JSON")
+                echo "Head commit message (first line): $(echo "$COMMIT_MSG" | head -n1)"
+                if ! has_build_marker "$COMMIT_MSG"; then
+                  skip "PR synchronize without build marker on head commit"
+                fi
+                # 同步带标记：校验推送者（actor）为组织成员；外部带标记 push soft skip
+                CHECK_USER="$ACTOR"
+                REASON="PR synchronize with build marker"
+                MEMBER_MODE="soft"
+              else
+                skip "unsupported pull_request_target action=${EVENT_ACTION}"
+              fi
+              ;;
+
+            issue_comment)
+              if [ "$IS_PR_COMMENT" != "true" ]; then
+                skip "comment is not on a pull request"
+              fi
+              if ! has_build_marker "$COMMENT_BODY"; then
+                skip "PR comment without build marker"
+              fi
+              # 评论触发：评论者须为组织成员；非成员评论 --build soft skip
+              CHECK_USER="${COMMENT_USER:-$ACTOR}"
+              PR_JSON=$(curl -sS "${HDR[@]}" "${API}/repos/${REPO}/pulls/${PR_NUMBER}")
+              CHECKOUT_REPO=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['repo']['full_name'])" <<<"$PR_JSON")
+              CHECKOUT_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['sha'])" <<<"$PR_JSON")
+              HEAD_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['ref'])" <<<"$PR_JSON")
+              echo "PR #${PR_NUMBER} comment by @${CHECK_USER} → build ${CHECKOUT_REPO}@${CHECKOUT_REF} (${HEAD_REF})"
+              REASON="PR comment build marker by org member"
+              MEMBER_MODE="soft"
+              ;;
+
+            *)
+              skip "unsupported event ${EVENT_NAME}"
+              ;;
+          esac
+
+          if [ -z "$CHECKOUT_REF" ] || [ -z "$CHECKOUT_REPO" ]; then
+            echo "::error::Failed to resolve checkout ref/repo"
+            exit 1
+          fi
+
+          require_member_or_skip "$CHECK_USER" "$MEMBER_MODE"
+
+          {
+            echo "should_build=true"
+            echo "checkout_repo=${CHECKOUT_REPO}"
+            echo "checkout_ref=${CHECKOUT_REF}"
+            echo "reason=${REASON}"
+          } >> "$GITHUB_OUTPUT"
+          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF}"
+
+  build:
+    needs: gate
+    if: needs.gate.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: write
     steps:
-      - name: Org members only
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          ORG="GregTech-Odyssey"
-          ACTOR="${{ github.actor }}"
-          echo "Actor: $ACTOR  Repository: ${{ github.repository }}"
-          if [[ "$ACTOR" == *"[bot]" ]]; then
-            echo "::error::Bots cannot trigger signed builds."
-            exit 1
-          fi
-          # 204 = 组织成员；404 = 非成员；302 = 私有成员关系（请求方权限不足时偶发）
-          CODE=$(curl -sS -o /tmp/member_body.txt -w "%{http_code}" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/orgs/${ORG}/members/${ACTOR}")
-          echo "Membership API HTTP $CODE"
-          if [ "$CODE" = "204" ]; then
-            echo "OK: @${ACTOR} is a member of ${ORG}"
-            exit 0
-          fi
-          # 回退：检查是否为对本仓有写权限的 collaborator（仍限本仓，且须能 push）
-          CODE2=$(curl -sS -o /tmp/collab_body.txt -w "%{http_code}" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${{ github.repository }}/collaborators/${ACTOR}/permission")
-          echo "Collaborator permission API HTTP $CODE2"
-          if [ "$CODE2" = "200" ]; then
-            PERM=$(python3 -c "import json; print(json.load(open('/tmp/collab_body.txt')).get('permission',''))" 2>/dev/null || true)
-            echo "permission=$PERM"
-            case "$PERM" in
-              admin|maintain|write)
-                # 组织私有成员有时 membership API 非 204；写权限 + 官方仓仍放行
-                if [ "$CODE" = "302" ] || [ "$CODE" = "404" ]; then
-                  echo "WARN: membership=$CODE but repo permission=$PERM on official repo — allow"
-                  exit 0
-                fi
-                ;;
-            esac
-          fi
-          echo "::error::Only members of ${ORG} may trigger this signed build workflow. Actor @${ACTOR} denied (membership=$CODE)."
-          exit 1
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # fork PR：显式拉 head 仓与 sha；persist-credentials=false 避免把 token 留给不可信构建脚本
+          repository: ${{ needs.gate.outputs.checkout_repo }}
+          ref: ${{ needs.gate.outputs.checkout_ref }}
+          persist-credentials: false
           # 无权限/公开 CI：只用 libs 预构建，不拉私有 submodule
           submodules: false
           fetch-depth: 1
@@ -156,6 +349,8 @@ jobs:
           echo "--- 产物：gtocore（内容 mod）+ gto-seal-runtime（独立 ITransformationService）---"
           ls -la build/libs/gtocore*.jar 2>/dev/null | grep -v sources | grep -v javadoc || true
           ls -la build/libs/gto-seal-runtime*.jar 2>/dev/null || true
+          echo "Gate reason: ${{ needs.gate.outputs.reason }}"
+          echo "Built: ${{ needs.gate.outputs.checkout_repo }}@${{ needs.gate.outputs.checkout_ref }}"
 
       - name: Upload gtocore
         uses: actions/upload-artifact@v4
