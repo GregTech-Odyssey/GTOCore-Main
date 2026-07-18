@@ -25,6 +25,7 @@
 - 仅**组织成员**（或本仓 write 级 collaborator）能触发签名构建；bot 与外部人员会被拒绝。
 - **本地构建的 jar 未经签名，无法放进整合包**；本地构建只用于开发调试（runClient 等）。
 - **外部 fork PR**：工作流使用 `pull_request_target`，在 base 仓上下文运行，**可以**使用 org secrets 签名。外部贡献者开 PR 不会自动构建；组织成员审阅后在 PR 下评论 `--build`（或 `-b`）即可触发对 **PR head（含 fork）** 的签名构建。
+- **PR 状态反馈**：构建开始时会在 PR 下发一条 bot 评论（⏳ 正在构建 + Actions 链接）；完成/失败/取消后会**原地更新**同一条评论。`issue_comment` 触发的 run **不会**出现在 PR Checks 页，请看这条评论或 [Actions](https://github.com/GregTech-Odyssey/GTOCore-Main/actions)。
 - **安全**：`pull_request_target` 会执行 PR 侧代码（`build.gradle` 等）并注入签名 secrets。成员评论 `--build` 即表示已审阅并愿意签名；勿对未审代码轻易触发。
 
 ## 分支与 gtolib 预构建
