@@ -301,11 +301,14 @@ logger.lifecycle(
                 "GTOSeal=${hasGtosealSources}"
 )
 
-// 源码过期才并入 main 一起编；已是最新则编译期直接依赖 jar（省掉重编 gtolib）
-if (hasGtolibSources && !isGtolibJarUpToDate) {
+// 源码过期才并入 main 一起编；IDEA 同步时始终暴露源码目录用于索引。
+def isIdeaSync = System.getProperty('idea.sync.active') == 'true'
+if (hasGtolibSources && (!isGtolibJarUpToDate || isIdeaSync)) {
     sourceSets.main.java.srcDir 'GTOLib/src/main/java'
     sourceSets.main.resources.srcDir 'GTOLib/src/main/resources'
-    logger.lifecycle("GTOLib: 源码有变更 → 将重新编译并打包")
+    logger.lifecycle(isIdeaSync && isGtolibJarUpToDate
+            ? "GTOLib: IDEA 同步 → 暴露源码目录用于索引，构建仍复用已有 jar"
+            : "GTOLib: 源码有变更 → 将重新编译并打包")
 } else if (hasGtolibSources && isGtolibJarUpToDate) {
     logger.lifecycle("GTOLib: 指纹未变 → 跳过 gtolib 重编/保护，复用已有 jar")
 }

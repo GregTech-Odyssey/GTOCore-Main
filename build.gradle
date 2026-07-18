@@ -19,7 +19,14 @@ version = mod_version
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
 
 apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
 apply from: "$rootDir/gradle/scripts/repositories.gradle"
@@ -69,10 +76,16 @@ generateModMetadata.doFirst {
     mkdir('run/client')
     mkdir('run/server')
     mkdir('run/data')
+    if (file('run/client/gtocore/cache').isDirectory()) {
+        delete fileTree('run/client/gtocore/cache')
+    }
 }
 
+tasks.named('prepareClientRun') {
+    outputs.upToDateWhen { false }
+}
 
-def configureLegacyWriter = { taskName , preferredConfigName, outFileName ->
+def configureLegacyWriter = { String taskName, String preferredConfigName, String outFileName ->
     tasks.named(taskName) {
         doLast {
             def cfg = configurations.findByName(preferredConfigName) ?: configurations.getByName("runtimeClasspath")
@@ -93,6 +106,10 @@ configureLegacyWriter("writeDataLegacyClasspath",   "dataRuntimeClasspath",   "d
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs << "-Xlint:-deprecation" << "-Xlint:-removal"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 // Ensure Java compilation depends on Kotlin and can resolve Kotlin classes
