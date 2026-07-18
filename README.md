@@ -119,6 +119,17 @@ gradlew.bat build
 7. 使用 `git diff` 检查改动，排除生成物、日志、缓存、凭据和其他本地文件。
 8. 推送分支并创建 Pull Request。
 
+## 协作方式
+
+有 GTOLib（gtocore-gtolib）写权限的协作者请按下列规则处理分支与提交，避免主仓与 submodule 指针不一致。
+
+1. **修改了 gtocore-gtolib（`GTOLib/` submodule）时**  
+   提交与推送时，请将 **gtocore-gtolib** 与 **gtocore-main** 都上传到**同名**的各自分支（例如两边都使用 `ae-rework`）。  
+   主仓提交中需包含对 `GTOLib` submodule 指针的更新，并指向已推送到远端同名分支上的 gtolib 提交。
+
+2. **未修改 gtocore-gtolib，只修改 gtocore-main，且 `libs/gtolib-protected.jar` 没有变化时**  
+   可以只在 **gtocore-main** 迁出新分支并推送，不必同步新建 gtolib 分支。
+
 ### Pull Request 要求
 
 Pull Request 请包含：

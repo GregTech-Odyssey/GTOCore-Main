@@ -120,6 +120,17 @@ Open the repository root in IntelliJ IDEA or another IDE with Gradle support:
 7. Review the changes with `git diff` and exclude generated outputs, logs, caches, credentials, and other local files.
 8. Push the branch and open a Pull Request.
 
+## Collaboration Workflow
+
+Collaborators with write access to GTOLib (gtocore-gtolib) should follow these branch and push rules so the main repository and the submodule pointer stay consistent.
+
+1. **When gtocore-gtolib (`GTOLib/` submodule) was modified**  
+   Push **both** gtocore-gtolib and gtocore-main to **identically named** branches on each repository (for example, `ae-rework` on both sides).  
+   The gtocore-main commit must update the `GTOLib` submodule pointer to the gtolib commit that already exists on that same-named remote branch.
+
+2. **When only gtocore-main was modified, gtocore-gtolib was not changed, and `libs/gtolib-protected.jar` is unchanged**  
+   You may create and push a new branch **only** on gtocore-main; a matching gtolib branch is not required.
+
 ### Pull Request Requirements
 
 Each Pull Request should include:
