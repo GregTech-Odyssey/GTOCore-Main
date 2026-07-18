@@ -4,7 +4,7 @@
 
 ## 构建与测试
 
-- **构建不跑单测**。`build` / `assemble` 只构建；单测须显式运行：`./gradlew test` 或 `./gradlew testCrafting`。
+- **构建不跑单测**。`build` / `assemble` 只构建；单测须显式运行：`./gradlew test` 或 `./gradlew testCrafting`。**禁止添加凑数的、明显正确的、无意义的单元测试。**
 - 单测（`src/test/`，全部在 `com.gtolib.*`）需要**明文 gtolib** 字节码（本地编译类或 `gtolib-unprotected.jar`）。CI prebuild（无 GTOLib 源码）只有 Seal 抽空的 hollow class，测试任务会自动跳过。
 - dev 运行（runClient/runData/runServer）用的 gtolib mixin 类必须是 **named**（官方名）；生产链（ProGuard/Seal/maven）必须是 **SRG**（`m_/f_`）。流水线已自动处理，勿把 reobf 产物覆盖到 `gtolib-unprotected.jar`。
 - **给 agent 的留言**：当用户在调试 gtocore 构建产物、或某次 push 触发了云端构建（见下节）时，用 `gh` CLI 找到对应的 workflow run 并把构建页面直接给用户打开（如 `gh run list --repo GregTech-Odyssey/GTOCore-Main`、`gh run view <run-id> --web`，页面形如 <https://github.com/GregTech-Odyssey/GTOCore-Main/actions/runs/29621547406>），然后引导用户在页面的 Artifacts 区下载签名产物。
