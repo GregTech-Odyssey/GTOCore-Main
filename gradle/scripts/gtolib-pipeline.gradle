@@ -129,6 +129,30 @@ ext.writeGtolibStamp = { String fingerprint, String jarSha256 ->
     stamp.text = "fingerprint=${fingerprint}\njarSha256=${jarSha256}\n"
 }
 
+/**
+ * 与 libs/gtolib-protected.jar 成对的侧车元数据（CI sources=false 用 jarSha256 校验）。
+ * 凡同步/写入 libs 预构建 jar 时必须调用，避免 jar 已新、.PROTECTED 仍旧。
+ */
+ext.writeGtolibProtectedSidecar = { File jarFile, String fingerprint = gtolibFingerprint ->
+    if (jarFile == null || !jarFile.exists()) {
+        throw new GradleException("writeGtolibProtectedSidecar: jar 无效: ${jarFile}")
+    }
+    def jarSha = computeFileSha256(jarFile)
+    def fp = (fingerprint != null && !fingerprint.isEmpty()) ? fingerprint : ''
+    file('libs/gtolib-protected.PROTECTED').text =
+            "protected=true\nmethod=proguard+gto-seal\n" +
+                    "runtime=full-seal-runtime\n" +
+                    "updated=${new Date()}\n" +
+                    "size=${jarFile.length()}\n" +
+                    "fingerprint=${fp}\n" +
+                    "jarSha256=${jarSha}\n"
+    logger.lifecycle(
+            "GTOLib: 已写入 libs/gtolib-protected.PROTECTED " +
+                    "size=${jarFile.length()} jarSha=${jarSha.take(16)}…"
+    )
+    return jarSha
+}
+
 ext.readProtectedMeta = {
     def f = file('libs/gtolib-protected.PROTECTED')
     def out = [fingerprint: '', jarSha256: '', size: '']
@@ -312,6 +336,14 @@ logger.lifecycle(
 // 有源码时始终并入 main（IDEA 可跳转真源码；增量编译下未改文件几乎不重编）。
 // isGtolibJarUpToDate 只跳过 ProGuard/Seal 等保护流水线，不再改为「只依赖 unprotected jar」。
 if (hasGtolibSources) {
+    // Seal 安装（installGtolibIntoModOutput）会从 main 输出剥离 com/gtolib。
+    // Kotlin 增量缓存感知不到外部删除 → compileKotlin 误判 up-to-date →
+    // 下次 compileJava 找不到 gtolib Kotlin 类（如 VBoxBuilder）。缺类时强制重编。
+    tasks.named('compileKotlin').configure {
+        outputs.upToDateWhen {
+            file("${buildDir}/classes/kotlin/main/com/gtolib").exists()
+        }
+    }
     sourceSets.main.java.srcDir 'GTOLib/src/main/java'
     sourceSets.main.resources.srcDir 'GTOLib/src/main/resources'
     if (isGtolibJarUpToDate) {
@@ -683,12 +715,12 @@ tasks.register('reobfGtolibRaw', JavaExec) {
         } finally {
             zf.close()
         }
-        // 覆盖 raw + unprotected（后续 ProGuard/Seal 消费已 SRG 的字节码）
+        // 只覆盖 raw（ProGuard/Seal prod 链消费 SRG 字节码）。
+        // unprotected 必须保持 named：它是 Seal Packager 的 dev jar → .dev.bin，
+        // userdev 运行时 Minecraft 是官方名，SRG 的 @Shadow(m_xxx_) 会
+        // "was not located in the target class" 崩溃（MinecraftMixin m_91294_ 事故）。
         Files.copy(out.toPath(), raw.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        Files.copy(out.toPath(), gtolibUnprotectedJar.get().asFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        gtolibUnprotectedLibsJar.parentFile.mkdirs()
-        Files.copy(out.toPath(), gtolibUnprotectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        logger.lifecycle("GTOLib ART reobf OK → raw/unprotected 已是 SRG (ResourceLocationMixn f_/m_)")
+        logger.lifecycle("GTOLib ART reobf OK → raw 已是 SRG (ResourceLocationMixn f_/m_)；unprotected 保持 named 供 dev")
     }
 }
 
@@ -850,12 +882,14 @@ tasks.register('sealPackGtolib', Exec) {
         def raw = gtolibRawJar.get().asFile
         def unprotected = gtolibUnprotectedJar.get().asFile
         def prodSrc = (pg.exists() && pg.length() > 0) ? pg : raw
-        def devSrc = (unprotected.exists() && unprotected.length() > 0) ? unprotected : raw
+        // dev jar 只能用 named 的 unprotected；raw 经 reobf 已是 SRG，
+        // 进 .dev.bin 会让 userdev @Shadow 找不到目标（m_91294_ 事故），不允许回退
+        def devSrc = unprotected
         if (!prodSrc.exists() || prodSrc.length() == 0) {
             throw new GradleException("GTO Seal Packager prod jar 无效: ${prodSrc}")
         }
         if (!devSrc.exists() || devSrc.length() == 0) {
-            throw new GradleException("GTO Seal Packager dev jar 无效: ${devSrc}")
+            throw new GradleException("GTO Seal Packager dev jar 无效（需 named 的 gtolib-unprotected.jar）: ${devSrc}")
         }
 
         def salt = Long.toString(new Random().nextLong())
@@ -954,15 +988,17 @@ tasks.register('buildGtolibProtected') {
         }
 
         // 加密档 = ProGuard + Seal 抽空（完整保护）
+        // 回退顺序 raw 先于 unprotected：raw 经 reobfGtolibRaw 已是 SRG（prod 合同），
+        // unprotected 是 named 的 dev jar，进生产会 NoSuchMethod（m_7912_ 事故）。
         def src = null
         if (sealed.exists() && sealed.length() > 0) {
             src = sealed
         } else if (pg.exists() && pg.length() > 0) {
             src = pg
-        } else if (unprotected.exists() && unprotected.length() > 0) {
-            src = unprotected
-        } else {
+        } else if (raw.exists() && raw.length() > 0) {
             src = raw
+        } else {
+            src = unprotected
         }
         if (src == null || !src.exists() || src.length() == 0) {
             throw new GradleException("无法生成 gtolib-protected.jar")
@@ -972,13 +1008,15 @@ tasks.register('buildGtolibProtected') {
         injectGtolibMixinConfig(protectedFile)
         // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap 并回写 libs 预构建
         publishAndInjectGtolibRefmaps(protectedFile, hasGtolibSources)
+        def jarSha = computeFileSha256(protectedFile)
         if (hasGtolibSources && protectedFile.exists()) {
             gtolibProtectedLibsJar.parentFile.mkdirs()
             Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            logger.lifecycle("GTOLib: 已同步 libs/gtolib-protected.jar（含 refmap）")
+            // 与 jar 同步写 .PROTECTED，避免 CI sources=false 时 jar/侧车不一致
+            jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
+            logger.lifecycle("GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED（含 refmap）")
         }
 
-        def jarSha = computeFileSha256(protectedFile)
         if (hasGtolibSources && gtolibFingerprint) {
             writeGtolibStamp(gtolibFingerprint, jarSha)
             logger.lifecycle(
@@ -1336,17 +1374,10 @@ tasks.register('updateGtolibProtectedJar') {
         gtolibProtectedLibsJar.parentFile.mkdirs()
         Files.copy(outSrc.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
         injectGtolibMixinConfig(gtolibProtectedLibsJar)
-        def jarSha = computeFileSha256(gtolibProtectedLibsJar)
+        def jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
         if (gtolibFingerprint) {
             writeGtolibStamp(gtolibFingerprint, jarSha)
         }
-        file('libs/gtolib-protected.PROTECTED').text =
-                "protected=true\nmethod=proguard+gto-seal\n" +
-                        "runtime=full-seal-runtime\n" +
-                        "updated=${new Date()}\n" +
-                        "size=${gtolibProtectedLibsJar.length()}\n" +
-                        "fingerprint=${gtolibFingerprint}\n" +
-                        "jarSha256=${jarSha}\n"
         logger.lifecycle(
                 "GTOLib: libs/gtolib-protected.jar ← Seal 加密 (${outSrc.length()} bytes); " +
                         "runtime=${sealRuntimeLibsJar.length()} bytes"
@@ -1390,10 +1421,33 @@ tasks.register('prepareGtolibModJar') {
         if (!stubClass.exists() || stubClass.length() < 50) {
             throw new GradleException("缺少明文 GTOLibMod stub: ${stubClass}")
         }
+        // 本 jar 只进 run/*/mods 供 userdev（发行 jar 直接取 protected jar，不经过本任务）。
+        // Mixin 处理器直接读 jar 里的明文 mixin 类（不走 .dev.bin 解密），而加密档的
+        // mixin 类经 ART reobf 已是 SRG（m_xxx_），userdev 的 Minecraft 是官方名，
+        // @Shadow 会 "was not located in the target class"（m_91294_ 事故）。
+        // 所以用 named 的 unprotected mixin 类覆盖明文 mixin；其余类 dev 运行时
+        // 由 Seal 从 .dev.bin（named）定义，两侧命名一致。
+        def mixinOverlay = [:]
+        def overlaySrc = gtolibUnprotectedJar.get().asFile
+        if (!overlaySrc.exists() || overlaySrc.length() == 0) {
+            overlaySrc = gtolibUnprotectedLibsJar
+        }
+        if (overlaySrc.exists() && overlaySrc.length() > 0) {
+            new java.util.zip.ZipFile(overlaySrc).withCloseable { uzf ->
+                uzf.entries().each { ue ->
+                    if (ue.name.startsWith('com/gtolib/mixin/') && ue.name.endsWith('.class')) {
+                        mixinOverlay[ue.name] = uzf.getInputStream(ue).bytes
+                    }
+                }
+            }
+        } else {
+            logger.warn("GTOLib mod jar: 无 named unprotected jar，mixin 类保持原样（userdev 下 @Shadow 可能失败）")
+        }
         // 复制 ready，注入 mods.toml + pack.mcmeta + 明文 @Mod（不覆盖 Seal Manifest）
         def zis = new java.util.zip.ZipInputStream(new FileInputStream(ready))
         def zos = new java.util.zip.ZipOutputStream(new FileOutputStream(out))
         java.util.zip.ZipEntry e
+        def overlaid = 0
         while ((e = zis.nextEntry) != null) {
             // 统一由下方写入
             if (e.name.equalsIgnoreCase('META-INF/mods.toml') ||
@@ -1402,10 +1456,19 @@ tasks.register('prepareGtolibModJar') {
                 zis.closeEntry()
                 continue
             }
+            def named = mixinOverlay.remove(e.name)
             zos.putNextEntry(new java.util.zip.ZipEntry(e.name))
-            zis.transferTo(zos)
+            if (named != null) {
+                zos.write((byte[]) named)
+                overlaid++
+            } else {
+                zis.transferTo(zos)
+            }
             zos.closeEntry()
             zis.closeEntry()
+        }
+        if (overlaid > 0) {
+            logger.lifecycle("GTOLib mod jar: ${overlaid} 个 mixin 类已换成 named（userdev @Shadow 兼容）")
         }
         def toml = """\
 modLoader="javafml"
