@@ -445,7 +445,7 @@ jobs:
           case "$JOB_STATUS" in
             success)
               STATUS_LINE="**状态:** ✅ 构建完成"
-              EXTRA=$'\n\n可在构建页面 **Artifacts** 下载 `gtocore-build` 与 `gto-seal-runtime`。'
+              EXTRA=$'\n\n可在构建页面 **Artifacts** 下载 `gtocore-build` 与 `gto-seal-runtime`。\n\n请放入整合包测试你的功能。'
               ;;
             cancelled)
               STATUS_LINE="**状态:** ⚠️ 构建已取消（可能被同 PR 的新构建取代）"
