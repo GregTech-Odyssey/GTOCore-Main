@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
+import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -27,6 +28,7 @@ import com.kyanite.deeperdarker.content.DDItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
+import static com.gtocore.data.recipe.research.AnalyzeData.*;
 
 final class AssemblyLine {
 
@@ -131,6 +133,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_ARC_GENERATOR.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("nano_phagocytosis_plant")
@@ -153,6 +156,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_MACERATION_TOWER.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("extreme_compressor")
@@ -173,6 +177,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_MATERIAL_PRESS.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("high_energy_laser_lathe")
@@ -195,6 +200,7 @@ final class AssemblyLine {
                         .researchStack(GTOMachines.ULV_LATHE[ULV].asItem())
                         .EUt(8388608)
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("heavy_rolling")
@@ -216,6 +222,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_ROLLING.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("comprehensive_tombarthite_processing_facility")
@@ -256,6 +263,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_CHEMICAL_BATH.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("superconducting_magnetic_presser")
@@ -277,6 +285,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_FORMING.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("supercomputing_center")
@@ -319,6 +328,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(MultiBlockA.VACUUM_DRYING_FURNACE.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("neutronium_wire_cutting")
@@ -340,6 +350,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_CUTTER.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("microorganism_master")
@@ -387,6 +398,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GTMultiMachines.CRACKER.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("high_temperature_reaction_hub")
@@ -409,6 +421,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(MultiBlockB.REACTION_FURNACE.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("neutron_vortex")
@@ -429,6 +442,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(MultiBlockD.NEUTRON_ACTIVATOR.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("bio_data_access_hatch")
@@ -443,6 +457,7 @@ final class AssemblyLine {
                 .EUt(524288)
                 .duration(400)
                 .scanner(RegistriesUtils.getItemStack("gtceu:advanced_data_access_hatch"))
+                .researchNode(AnalyzeData.DataBase)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("lapotronic_energy_orb_cluster")
@@ -463,6 +478,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.SolderingAlloy.getFluid(L * 5))
                 .outputItems(GTItems.ENERGY_LAPOTRONIC_ORB_CLUSTER)
                 .scanner(GTItems.ENERGY_LAPOTRONIC_ORB.asItem())
+                .researchNode(HighDensityEnergyStorage)
                 .EUt(80000)
                 .duration(1000)
                 .save();
@@ -487,6 +503,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GTItems.ENERGY_LAPOTRONIC_ORB_CLUSTER.asItem())
                         .CWUt(16))
+                .researchNode(HighDensityEnergyStorage)
                 .EUt(100000)
                 .duration(1200)
                 .save();
@@ -516,6 +533,7 @@ final class AssemblyLine {
                         .CWUt(144)
                         .EUt(VA[UHV]))
                 .EUt(300000)
+                .researchNode(UltimateEnergyStorage)
                 .duration(2000)
                 .save();
 
@@ -527,6 +545,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.SolderingAlloy, L << 2)
                 .inputFluids(GTMaterials.Polybenzimidazole, L << 2)
                 .researchStation(b -> b.researchStack(GTResearchMachines.DATA_BANK.asItem()).CWUt(4))
+                .researchNode(AnalyzeData.DataCenter)
                 .duration(400).EUt(6000).save();
 
         ASSEMBLY_LINE_RECIPES.builder("object_holder")
@@ -562,6 +581,7 @@ final class AssemblyLine {
                         .researchStack(new ItemStack(GTBlocks.OPTICAL_PIPES[0]))
                         .CWUt(32)
                         .EUt(GTValues.VA[GTValues.ZPM]))
+                .researchNode(AnalyzeData.ComputationArray)
                 .duration(1200).EUt(100000).save();
 
         ASSEMBLY_LINE_RECIPES.builder("high_performance_computing_array")
@@ -580,6 +600,7 @@ final class AssemblyLine {
                         .researchStack(GTItems.COVER_SCREEN.asItem())
                         .duration(2400)
                         .EUt(GTValues.VA[GTValues.IV]))
+                .researchNode(AnalyzeData.ComputationArray)
                 .duration(1200).EUt(100000).save();
 
         ASSEMBLY_LINE_RECIPES.builder("data_center")
@@ -608,6 +629,7 @@ final class AssemblyLine {
                         .duration(2400)
                         .EUt(GTValues.VA[GTValues.UEV]))
                 .EUt(VA[UEV])
+                .researchNode(AnalyzeData.DataCenter)
                 .duration(400)
                 .save();
 
@@ -629,6 +651,7 @@ final class AssemblyLine {
                         .duration(1200)
                         .EUt(VA[LuV]))
                 .duration(600).EUt(VA[LuV])
+                .researchNode(AnalyzeData.BaseMEMachines)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("me_pattern_buffer_proxy")
@@ -646,6 +669,7 @@ final class AssemblyLine {
                 .outputItems(GTAEMachines.ME_PATTERN_BUFFER_PROXY)
                 .researchStation(b -> b.researchStack(GTAEMachines.ME_PATTERN_BUFFER.asItem())
                         .CWUt(32))
+                .researchNode(AnalyzeData.BaseMEMachines)
                 .duration(600).EUt(VA[ZPM])
                 .save();
 
@@ -668,6 +692,7 @@ final class AssemblyLine {
                         .duration(1200)
                         .CWUt(128))
                 .duration(600).EUt(VA[UV])
+                .researchNode(MECatalystSupplying)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("me_extend_pattern_buffer")
@@ -685,6 +710,7 @@ final class AssemblyLine {
                         .duration(1200)
                         .CWUt(128))
                 .duration(600).EUt(VA[UV])
+                .researchNode(MECapacityExpansion)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("me_extend_pattern_buffer_ultra")
@@ -717,6 +743,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.SolderingAlloy, 5 * L)
                 .outputItems(GTMachines.ENERGY_OUTPUT_HATCH[LuV])
                 .duration(400).EUt(VA[LuV])
+                .researchNode(AnalyzeData.EnergyIOs[LuV])
                 .scanner(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[IV].asItem()).duration(1200).EUt(VA[IV]))
                 .save();
 
@@ -736,6 +763,7 @@ final class AssemblyLine {
                         .researchStack(GTMachines.ENERGY_OUTPUT_HATCH[LuV].asItem())
                         .CWUt(8))
                 .duration(600).EUt(VA[ZPM])
+                .researchNode(AnalyzeData.EnergyIOs[ZPM])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("dynamo_hatch_uv")
@@ -750,6 +778,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.SodiumPotassium, 10000)
                 .inputFluids(GTMaterials.SolderingAlloy, 20 * L)
                 .outputItems(GTMachines.ENERGY_OUTPUT_HATCH[UV])
+                .researchNode(AnalyzeData.EnergyIOs[UV])
                 .researchStation(b -> b
                         .researchStack(GTMachines.ENERGY_OUTPUT_HATCH[ZPM].asItem())
                         .CWUt(64)
@@ -770,6 +799,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.SolderingAlloy, 5 * L)
                 .outputItems(GTMachines.ENERGY_INPUT_HATCH[LuV])
                 .scanner(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[IV].asItem()).duration(1200).EUt(VA[IV]))
+                .researchNode(AnalyzeData.EnergyIOs[LuV])
                 .duration(400).EUt(VA[LuV])
                 .save();
 
@@ -788,6 +818,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GTMachines.ENERGY_INPUT_HATCH[LuV].asItem())
                         .CWUt(8))
+                .researchNode(AnalyzeData.EnergyIOs[ZPM])
                 .duration(600).EUt(VA[ZPM])
                 .save();
 
@@ -807,6 +838,7 @@ final class AssemblyLine {
                         .researchStack(GTMachines.ENERGY_INPUT_HATCH[ZPM].asItem())
                         .CWUt(64)
                         .EUt(VA[ZPM]))
+                .researchNode(AnalyzeData.EnergyIOs[UV])
                 .duration(800).EUt(VA[UV])
                 .save();
 
@@ -826,6 +858,7 @@ final class AssemblyLine {
                         .researchStack(GTBlocks.SUPERCONDUCTING_COIL.asItem())
                         .duration(1200)
                         .EUt(VA[IV]))
+                .researchNode(AnalyzeData.TokamakFusionReactor)
                 .duration(800).EUt(VA[LuV])
                 .save();
 
@@ -846,6 +879,7 @@ final class AssemblyLine {
                         .researchStack(GTMultiMachines.FUSION_REACTOR[LuV].asItem())
                         .CWUt(16)
                         .EUt(VA[ZPM]))
+                .researchNode(AnalyzeData.TokamakFusionReactor2)
                 .duration(1000).EUt(61440)
                 .save();
 
@@ -866,6 +900,7 @@ final class AssemblyLine {
                         .researchStack(GTMultiMachines.FUSION_REACTOR[ZPM].asItem())
                         .CWUt(96)
                         .EUt(VA[UV]))
+                .researchNode(AnalyzeData.TokamakFusionReactor3)
                 .duration(1000).EUt(VA[ZPM])
                 .save();
 
@@ -892,6 +927,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.NANITES, GTMaterials.Copper))
                         .CWUt(128)
                         .EUt(122880))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("ore_extraction_module")
@@ -913,6 +949,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_CRUSHER.asItem())
                         .CWUt(128)
                         .EUt(122880))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("polymer_twisting_module")
@@ -934,6 +971,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockG.POLYMERIZATION_REACTOR.asItem())
                         .CWUt(128)
                         .EUt(122880))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("bioengineering_module")
@@ -955,6 +993,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockD.INCUBATOR.asItem())
                         .CWUt(128)
                         .EUt(122880))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("magnetic_confinement_dimensionality_shock_device")
@@ -1078,6 +1117,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTItems.GRAVITATION_ENGINE.asItem())
                         .CWUt(64)
                         .EUt(30720))
+                .researchNode(SpaceElevator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("max_energy_output_hatch")
@@ -1098,6 +1138,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[GTValues.OpV].asItem())
                         .CWUt(4096)
                         .EUt(503316480))
+                .researchNode(AnalyzeData.EnergyIOs[MAX])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("transcendent_max_battery")
@@ -1171,6 +1212,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD.asItem())
                         .CWUt(32)
                         .EUt(491520))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("chemical_plant")
@@ -1189,6 +1231,7 @@ final class AssemblyLine {
                 .EUt(30720)
                 .duration(600)
                 .scanner(GTMultiMachines.LARGE_CHEMICAL_REACTOR.asItem())
+                .researchNode(AnalyzeData.ChemicalPlantEnvironmentControl)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uiv_energy_input_hatch")
@@ -1209,6 +1252,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[GTValues.UEV].asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(AnalyzeData.EnergyIOs[UIV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("super_particle_collider")
@@ -1232,6 +1276,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.ACCELERATED_PIPELINE.asItem())
                         .CWUt(32)
                         .EUt(122880))
+                .researchNode(AnalyzeData.ParticleAccelerators)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("annihilate_generator")
@@ -1309,6 +1354,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_ASSEMBLER.asItem())
                         .CWUt(32)
                         .EUt(122880))
+                .researchNode(AnalyzeData.PreciseManufacturingTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("time_dilation_containment_unit")
@@ -1347,6 +1393,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[GTValues.UXV].asItem())
                         .CWUt(2048)
                         .EUt(503316480))
+                .researchNode(AnalyzeData.EnergyIOs[OpV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dimension_injection_casing")
@@ -1418,6 +1465,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_CIRCUIT_ASSEMBLER.asItem())
                         .CWUt(64)
                         .EUt(491520))
+                .researchNode(CircuitAssemblyLine)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("assembler_module")
@@ -1437,6 +1485,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockD.ADVANCED_ASSEMBLY_LINE.asItem())
                         .CWUt(256)
                         .EUt(491520))
+                .researchNode(SpaceElevator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("atomic_energy_excitation_plant")
@@ -1714,6 +1763,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("gtceu:activated_carbon_dust"))
                         .CWUt(32)
                         .EUt(122880))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("manifold_oscillatory_power_cell")
@@ -1764,6 +1814,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMultiMachines.MULTI_SMELTER.asItem())
                         .CWUt(256)
                         .EUt(1966080))
+                .researchNode(LaserBatchProduction0)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("exotic_processing_core")
@@ -1811,6 +1862,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ORE_WASHER[GTValues.IV].asItem())
                         .CWUt(32)
                         .EUt(7680))
+                .researchNode(AnalyzeData.IsaMillingMachine)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("spacetime_continuum_ripper")
@@ -1990,6 +2042,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("ad_astra_rocketed:tier_7_rocket"))
                         .CWUt(64)
                         .EUt(491520))
+                .researchNode(SpaceElevator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("resource_collection_module")
@@ -2009,6 +2062,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("gtceu:luv_large_miner"))
                         .CWUt(256)
                         .EUt(491520))
+                .researchNode(SpaceElevator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("fuel_refining_complex")
@@ -2050,6 +2104,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[GTValues.UIV].asItem())
                         .CWUt(1024)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.EnergyIOs[UXV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uhv_energy_output_hatch")
@@ -2070,6 +2125,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[GTValues.UV].asItem())
                         .CWUt(128)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.EnergyIOs[UHV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uev_fusion_reactor")
@@ -2090,6 +2146,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockD.FUSION_REACTOR[GTValues.UHV].asItem())
                         .CWUt(600)
                         .EUt(7864320))
+                .researchNode(AnalyzeData.TokamakFusionReactor5)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uhv_energy_input_hatch")
@@ -2107,6 +2164,7 @@ final class AssemblyLine {
                 .outputItems(GTMachines.ENERGY_INPUT_HATCH[GTValues.UHV].asItem())
                 .EUt(1966080)
                 .duration(800)
+                .researchNode(AnalyzeData.EnergyIOs[UHV])
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[GTValues.UV].asItem())
                         .CWUt(128)
                         .EUt(1966080))
@@ -2135,6 +2193,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UIV.asItem())
                         .CWUt(2048)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[UXV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_uiv")
@@ -2160,6 +2219,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UEV.asItem())
                         .CWUt(1024)
                         .EUt(31457280))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[UIV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_uhv")
@@ -2185,6 +2245,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UV.asItem())
                         .CWUt(384)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[UHV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_uev")
@@ -2210,6 +2271,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UHV.asItem())
                         .CWUt(512)
                         .EUt(7864320))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[UEV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uev_energy_input_hatch")
@@ -2227,6 +2289,7 @@ final class AssemblyLine {
                 .outputItems(GTMachines.ENERGY_INPUT_HATCH[GTValues.UEV].asItem())
                 .EUt(7864320)
                 .duration(800)
+                .researchNode(AnalyzeData.EnergyIOs[UEV])
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[GTValues.UHV].asItem())
                         .CWUt(256)
                         .EUt(7864320))
@@ -2255,6 +2318,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("ad_astra_rocketed:tier_6_rocket"))
                         .CWUt(48)
                         .EUt(122880))
+                .researchNode(SuperRocketTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("void_fluid_drilling_rig")
@@ -2275,6 +2339,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("gtceu:ev_fluid_drilling_rig"))
                         .CWUt(64)
                         .EUt(30720))
+                .researchNode(AnalyzeData.VoidMiner)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("iridium_casing")
@@ -2292,6 +2357,7 @@ final class AssemblyLine {
                 .EUt(30720)
                 .duration(200)
                 .scanner(ChemicalHelper.get(TagPrefix.block, GTMaterials.Osmiridium))
+                .researchNode(AnalyzeData.IridiumCasingProduction)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_zpm")
@@ -2317,6 +2383,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_LUV.asItem())
                         .CWUt(192)
                         .EUt(122880))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[ZPM])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("spacetime_assembly_line_unit")
@@ -2406,6 +2473,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMultiMachines.FUSION_REACTOR[GTValues.UV].asItem())
                         .CWUt(240)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.TokamakFusionReactor4)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dimensionally_transcendent_plasma_forge")
@@ -2455,6 +2523,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[GTValues.UHV].asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(AnalyzeData.EnergyIOs[UEV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("power_module_3")
@@ -2556,6 +2625,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_OPV.asItem())
                         .CWUt(16384)
                         .EUt(2013265920))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[MAX])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("matter_fabricator")
@@ -2625,6 +2695,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_IV.asItem())
                         .CWUt(128)
                         .EUt(30720))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[LuV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("leptonic_charge")
@@ -2717,6 +2788,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.CHEMICAL_PLANT.asItem())
                         .CWUt(256)
                         .EUt(1966080))
+                .researchNode(LaserBatchProduction0)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dyson_deployment_casing")
@@ -2806,6 +2878,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UXV.asItem())
                         .CWUt(8192)
                         .EUt(503316480))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[OpV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dimensional_stability_casing")
@@ -2949,6 +3022,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_OUTPUT_HATCH[GTValues.UEV].asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(AnalyzeData.EnergyIOs[UIV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("nano_forge")
@@ -2970,6 +3044,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("gtocore:carbon_nanites"))
                         .CWUt(64)
                         .EUt(491520))
+                .researchNode(NanitesTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uxv_energy_input_hatch")
@@ -2990,6 +3065,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[GTValues.UIV].asItem())
                         .CWUt(1024)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.EnergyIOs[UXV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("space_probe_surface_reception")
@@ -3144,6 +3220,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.VOID_MINER.asItem())
                         .CWUt(32)
                         .EUt(122880))
+                .researchNode(AnalyzeData.VoidMiner)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("mega_brewer")
@@ -3330,6 +3407,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[GTValues.UXV].asItem())
                         .CWUt(2048)
                         .EUt(503316480))
+                .researchNode(AnalyzeData.EnergyIOs[OpV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("hypogen_coil_block")
@@ -3460,6 +3538,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.WORLD_ACCELERATOR[GTValues.ZPM].asItem())
                         .CWUt(32)
                         .EUt(491520))
+                .researchNode(AnalyzeData.ParticleAccelerators)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("crystal_builder")
@@ -3483,6 +3562,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_AUTOCLAVE.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("auto_configuration_maintenance_hatch")
@@ -3504,6 +3584,7 @@ final class AssemblyLine {
                 .EUt(30720)
                 .duration(800)
                 .scanner(b -> b.researchStack(GTMachines.AUTO_MAINTENANCE_HATCH.asItem()).duration(1200).EUt(30720))
+                .researchNode(AnalyzeData.SelfMaintenanceSystem)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line")
@@ -3633,6 +3714,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_ZPM.asItem())
                         .CWUt(256)
                         .EUt(491520))
+                .researchNode(AnalyzeData.ComponentCasingsNodes[UV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("nano_core")
@@ -3793,6 +3875,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.ENERGY_INPUT_HATCH[GTValues.OpV].asItem())
                         .CWUt(4096)
                         .EUt(503316480))
+                .researchNode(AnalyzeData.EnergyIOs[MAX])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("superconducting_electromagnetism")
@@ -3818,6 +3901,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.IMPROVED_SUPERCONDUCTOR_COIL.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction0)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("extremely_durable_plasma_cell")
@@ -3859,6 +3943,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.Lubricant, 6000)
                 .inputFluids(GTMaterials.Zeron100, 1152)
                 .outputItems(MultiBlockD.ISA_MILL.asItem())
+                .researchNode(AnalyzeData.IsaMillingMachine)
                 .EUt(30720)
                 .duration(2400)
                 .researchStation(b -> b.researchStack(GTMachines.MACERATOR[GTValues.IV].asItem())
@@ -3885,6 +3970,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMultiMachines.ASSEMBLY_LINE.asItem())
                         .CWUt(32)
                         .EUt(491520))
+                .researchNode(AnalyzeData.AdvancedAssemblyLineMachine)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("energy_cluster")
@@ -3935,6 +4021,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.IV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(16)
                         .EUt(122880))
+                .researchNode(AnalyzeData.EnergyIOs[LuV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("zpm_wireless_energy_unit")
@@ -3959,6 +4046,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.LUV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(32)
                         .EUt(30270))
+                .researchNode(AnalyzeData.EnergyIOs[ZPM])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uv_wireless_energy_unit")
@@ -3983,6 +4071,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.ZPM_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(64)
                         .EUt(122880))
+                .researchNode(AnalyzeData.EnergyIOs[UV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uhv_wireless_energy_unit")
@@ -4008,6 +4097,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.UV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(128)
                         .EUt(491520))
+                .researchNode(AnalyzeData.EnergyIOs[UHV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uev_wireless_energy_unit")
@@ -4032,6 +4122,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.UHV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(256)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.EnergyIOs[UEV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uiv_wireless_energy_unit")
@@ -4056,6 +4147,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.UEV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(512)
                         .EUt(7864320))
+                .researchNode(AnalyzeData.EnergyIOs[UIV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uxv_wireless_energy_unit")
@@ -4080,6 +4172,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.UIV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(1024)
                         .EUt(31457280))
+                .researchNode(AnalyzeData.EnergyIOs[UXV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("opv_wireless_energy_unit")
@@ -4104,6 +4197,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.UXV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(2048)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.EnergyIOs[OpV])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("max_wireless_energy_unit")
@@ -4128,6 +4222,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.OPV_WIRELESS_ENERGY_UNIT.asItem())
                         .CWUt(4096)
                         .EUt(503316480))
+                .researchNode(AnalyzeData.EnergyIOs[MAX])
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("me_craft_pattern_part_machine")
@@ -4147,6 +4242,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(AEItems.CRAFTING_PATTERN)
                         .CWUt(32)
                         .EUt(122880))
+                .researchNode(AnalyzeData.BaseMEMachines)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("super_molecular_assembler")
@@ -4166,6 +4262,7 @@ final class AssemblyLine {
                         .EUt(122880))
                 .EUt(122880)
                 .duration(600)
+                .researchNode(AnalyzeData.BaseMEMachines)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uranium_rhodium_dinaquadide_single_wire")
@@ -4179,6 +4276,7 @@ final class AssemblyLine {
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(122880)
                 .duration(400)
+                .researchNode(AnalyzeData.SuperConductingMaterialResearch)
                 .scanner(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.UraniumRhodiumDinaquadide)).EUt(30720))
                 .save();
 
@@ -4196,6 +4294,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.EnrichedNaquadahTriniumEuropiumDuranide))
                         .CWUt(8)
                         .EUt(122880))
+                .researchNode(AnalyzeData.SuperConductingMaterialResearch)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("ruthenium_trinium_americium_neutronate_single_wire")
@@ -4212,6 +4311,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.RutheniumTriniumAmericiumNeutronate))
                         .CWUt(16)
                         .EUt(491520))
+                .researchNode(AnalyzeData.SuperConductingMaterialResearch)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("enderite_single_wire")
@@ -4228,6 +4328,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTOMaterials.Enderite))
                         .CWUt(64)
                         .EUt(1966080))
+                .researchNode(CryotheumSupercoductingTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("echoite_single_wire")
@@ -4243,6 +4344,7 @@ final class AssemblyLine {
                 .duration(400).researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTOMaterials.Echoite))
                         .CWUt(128)
                         .EUt(7864320))
+                .researchNode(CryotheumSupercoductingTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("legendarium_single_wire")
@@ -4259,6 +4361,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTOMaterials.Legendarium))
                         .CWUt(256)
                         .EUt(31457280))
+                .researchNode(CryotheumSupercoductingTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("awakened_draconium_single_wire")
@@ -4275,6 +4378,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(ChemicalHelper.get(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTOMaterials.AwakenedDraconium))
                         .CWUt(512)
                         .EUt(125829120))
+                .researchNode(CryotheumSupercoductingTech)
                 .save();
     }
 }

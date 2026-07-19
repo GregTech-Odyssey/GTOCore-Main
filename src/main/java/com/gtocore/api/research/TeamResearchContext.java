@@ -5,6 +5,7 @@ import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
+import com.gtolib.utils.AEChemicalHelper;
 import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
@@ -189,5 +190,9 @@ public class TeamResearchContext {
     public void addScannedMaterial(Material material) {
         scannedMaterials.add(material);
         TeamResearchSavedDtat.INSTANCE.setDirty(true);
+    }
+
+    public boolean hasScanned(AEKey key) {
+        return scannedItems.contains(key) || scannedMaterials.contains(AEChemicalHelper.getMaterial(key));
     }
 }

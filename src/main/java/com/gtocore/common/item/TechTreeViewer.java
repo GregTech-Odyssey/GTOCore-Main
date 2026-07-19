@@ -1,11 +1,15 @@
 package com.gtocore.common.item;
 
+import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.editor.TechNodeEditor;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
+import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
+import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
@@ -59,7 +63,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
                 @Override
                 public Widget createMainPage(FancyMachineUIWidget widget) {
-                    return new TechTreeWidget(0, 0, 176, 166, manager);
+                    return new TechTreeWidget(0, 0, 176, 166, manager, TeamResearchSavedDtat::getOrCreateContext);
                 }
 
                 @Override
@@ -81,6 +85,13 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
                 tabs.setMainTab(page);
             } else {
                 tabs.attachSubTab(page);
+            }
+        }
+        if (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes) {
+            if (tabs.getMainTab() == null) {
+                tabs.setMainTab(TechNodeEditor.INSTANCE);
+            } else {
+                tabs.attachSubTab(TechNodeEditor.INSTANCE);
             }
         }
     }

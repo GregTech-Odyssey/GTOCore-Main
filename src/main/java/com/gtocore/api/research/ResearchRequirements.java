@@ -4,7 +4,10 @@ import com.gtocore.api.research.techtree.TechNode;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.utils.AEChemicalHelper;
 
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
 import net.minecraft.network.chat.Component;
@@ -124,6 +127,12 @@ public final class ResearchRequirements {
         public Builder setEurekaItem(ItemLike eurekaItem, float eurekaProgress) {
             this.eurekaProgress = eurekaProgress;
             this.eurekaItem = AEItemKey.of(eurekaItem);
+            return this;
+        }
+
+        public Builder setEurekaItem(TagPrefix form, Material mat, float eurekaProgress) {
+            this.eurekaProgress = eurekaProgress;
+            this.eurekaItem = AEChemicalHelper.getKey(form, mat);
             return this;
         }
 

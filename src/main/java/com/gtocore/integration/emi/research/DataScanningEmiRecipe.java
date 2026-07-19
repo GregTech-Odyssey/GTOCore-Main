@@ -2,14 +2,20 @@ package com.gtocore.integration.emi.research;
 
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
+import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.client.renderer.RenderUtil;
 import com.gtocore.common.data.GTOItems;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -35,8 +41,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.gtocore.integration.emi.research.EmiResearchHelper.CATEGORY_NAME;
-import static com.gtocore.integration.emi.research.EmiResearchHelper.EUREKA_NAME;
+import static com.gtocore.integration.emi.research.EmiResearchHelper.*;
 
 public final class DataScanningEmiRecipe implements EmiRecipe {
 
@@ -186,7 +191,19 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
     @Override
     public void addWidgets(WidgetHolder widgets) {
         widgets.addTexture(BACKGROUND, 0, 0, BASE_WIDTH, HEIGHT, 0, 0, BASE_WIDTH, HEIGHT, BASE_WIDTH, HEIGHT);
-        widgets.addSlot(input, CENTER_SLOT_X, CENTER_SLOT_Y).drawBack(false);
+        widgets.add(new SlotWidget(input, CENTER_SLOT_X, CENTER_SLOT_Y) {
+
+            @Override
+            public void drawOverlay(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+                super.drawOverlay(draw, mouseX, mouseY, delta);
+                if (TeamResearchSavedDtat.getOrCreateContext(Minecraft.getInstance().player).hasScanned(key)) {
+                    RenderUtil.drawRainbowBorder(draw, x, y, 18, 18, 300, 1F);
+                }
+            }
+        }).drawBack(false).appendTooltip(
+                () -> ClientTooltipComponent.create((TeamResearchSavedDtat.getOrCreateContext(Minecraft.getInstance().player).hasScanned(key) ?
+                        Component.translatable(DOMAIN_DATA_STORAGE_REPEAT, FormattingUtil.formatNumber2Places(DataScanningManager.getRepeatedScanPenalty() * 100)).withStyle(ChatFormatting.RED) :
+                        Component.translatable(DOMAIN_DATA_STORAGE_NOT_SCANNED).withStyle(ChatFormatting.GREEN)).getVisualOrderText()));
         for (int i = 0; i < Math.min(researchOutputs.size(), BAR_X.length); i++) {
             EmiStack output = researchOutputs.get(i);
             int color = ((ResearchTagEmiStack) output).tag.getColor();

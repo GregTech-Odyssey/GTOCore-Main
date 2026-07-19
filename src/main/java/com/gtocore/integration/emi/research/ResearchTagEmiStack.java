@@ -126,6 +126,10 @@ public class ResearchTagEmiStack extends EmiStack {
         } finally {
             shader.clear();
             shader.safeGetUniform("useLocalMaskUv").set(0.0F);
+            shader.safeGetUniform("outlineColor").set(0.3F, 0.85f, 1.0f, 0.8f);
+            shader.safeGetUniform("waveColor").set(0.72F, 0.95F, 1.0F, 0.7F);
+            shader.safeGetUniform("waveLifetime").set(0.45F);
+            shader.safeGetUniform("waveStart").set(0.25F);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.depthMask(true);
             RenderSystem.enableCull();

@@ -6,10 +6,13 @@ import com.gtocore.api.research.techtree.ui.TechTreeAutoLayout;
 import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
 import com.gtolib.api.lang.CNEN;
+import com.gtolib.utils.AEChemicalHelper;
 import com.gtolib.utils.iostream.DataIOStream;
 import com.gtolib.utils.iostream.IOStreamCodec;
 
 import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -164,6 +167,11 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
             return this;
         }
 
+        public Builder icon(TagPrefix tagPrefix, Material material) {
+            this.icon = AEChemicalHelper.getKey(tagPrefix, material);
+            return this;
+        }
+
         public Builder icon(ItemLike icon) {
             this.icon = AEItemKey.of(icon);
             return this;
@@ -207,6 +215,20 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
         public final Builder prerequisites(TechNode... prerequisites) {
             this.prerequisites = ImmutableList.copyOf(prerequisites);
             return this;
+        }
+
+        @SafeVarargs
+        public final Builder prerequisites(String... prerequisites) {
+            return prerequisites(builder -> {
+                for (String name : prerequisites) {
+                    var node = manager.getNode(name);
+                    if (node == null) {
+                        throw new IllegalArgumentException("Prerequisite node " + name + " not found");
+                    }
+                    builder.add(node);
+                }
+                return builder;
+            });
         }
 
         public TechNode build() {

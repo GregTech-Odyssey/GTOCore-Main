@@ -46,6 +46,10 @@ public class EmiResearchHelper {
     static final String DOMAIN_DATA_STORAGE = "gtocore.research.domain_data.storage";
     @RegisterLanguage(cn = "(共占用%s)", en = "(Occupies %s in total)")
     static final String DOMAIN_DATA_STORAGE_TOTAL = "gtocore.research.domain_data.storage.total";
+    @RegisterLanguage(cn = "这件物品已经被扫描，重复扫描仅能获得%s%%的研究点数", en = "This item has already been scanned, and repeated scanning can only obtain %s%% of the research points")
+    static final String DOMAIN_DATA_STORAGE_REPEAT = "gtocore.research.domain_data.storage.repeat";
+    @RegisterLanguage(cn = "这件物品还没有被扫描", en = "This item has not been scanned yet")
+    static final String DOMAIN_DATA_STORAGE_NOT_SCANNED = "gtocore.research.domain_data.storage.not_scanned";
 
     public static Component getResearchTagTeamTotal(ResearchTag tag) {
         var plr = Minecraft.getInstance().player;
@@ -59,9 +63,12 @@ public class EmiResearchHelper {
     public static Component getTechNodeState(TechNode tag) {
         var plr = Minecraft.getInstance().player;
         if (plr != null) {
-            var ctx = TechTreeSavedData.findTree(plr, AnalyzeData.TechTree).getUnlockedNodes().contains(tag);
-            return Component.translatable("gtocore.techtree.widget.status." + (ctx ? "unlocked" : "locked"))
-                    .withStyle(ctx ? ChatFormatting.GREEN : ChatFormatting.GOLD);
+            var plrTree = TechTreeSavedData.findTree(plr, AnalyzeData.TechTree);
+            if (plrTree != null) {
+                var ctx = plrTree.getUnlockedNodes().contains(tag);
+                return Component.translatable("gtocore.techtree.widget.status." + (ctx ? "unlocked" : "locked"))
+                        .withStyle(ctx ? ChatFormatting.GREEN : ChatFormatting.GOLD);
+            }
         }
         return Component.empty();
     }

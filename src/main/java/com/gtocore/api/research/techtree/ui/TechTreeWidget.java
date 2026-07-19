@@ -76,8 +76,8 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private static final int TIER_SEPARATOR_COLOR = 0x66FFFFFF;
     private static final int HOVERED_DEPENDENCY_LINE_COLOR = 0xFF4DE3E3;
     private static final int SELECTED_NODE_BORDER_COLOR = 0xFF8BE7DE;
-    private static final double MIN_ZOOM = 0.5D;
-    private static final double MAX_ZOOM = 3.0D;
+    private static final double MIN_ZOOM = 0.05D;
+    private static final double MAX_ZOOM = 5.0D;
     private static final double ZOOM_STEP = 1.15D;
     private static final double CLICK_DRAG_THRESHOLD = 3.0D;
 

@@ -1,6 +1,7 @@
 package com.gtocore.api.research;
 
 import com.gtolib.api.lang.CNEN;
+import com.gtolib.utils.ColorUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 
@@ -29,8 +30,8 @@ public final class ResearchTag {
         }
         TAGS.put(name, this);
         this.name = name;
-        var ran = RandomSource.create(name.hashCode());
-        this.color = ran.nextInt(0xFFFFFF) | 0xFF000000;
+        var ran = RandomSource.create(name.hashCode() * 31L);
+        this.color = ColorUtils.getInterpolatedColor(ran.nextInt(0xFFFFFF) | 0xFF000000, 0xFFFFFFFF, 0.5f);
         this.bytePerPoint = bytePerPoint;
     }
 

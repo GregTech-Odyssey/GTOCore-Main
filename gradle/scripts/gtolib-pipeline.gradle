@@ -260,19 +260,50 @@ ext.isGtolibJarUpToDate = {
     if (findProperty('gtolibRebuild') == 'true') {
         return false
     }
+    def rebuild = { String reason ->
+        logger.lifecycle("GTOLib: ${reason} -> 自动重建保护产物")
+        return false
+    }
     def stamp = readGtolibStamp()
     def prot = gtolibProtectedJar.get().asFile
     def unprot = gtolibUnprotectedJar.get().asFile
+    def meta = readProtectedMeta()
     if (!stamp.fingerprint || gtolibFingerprint.isEmpty()) {
-        return false
+        return rebuild('缺少源码指纹记录')
     }
     if (!prot.exists() || prot.length() == 0) {
-        return false
+        return rebuild('build/gtolib/gtolib-protected.jar 缺失')
     }
     if (!unprot.exists() || unprot.length() == 0) {
-        return false
+        return rebuild('build/gtolib/gtolib-unprotected.jar 缺失')
     }
-    return stamp.fingerprint == gtolibFingerprint
+    if (stamp.fingerprint != gtolibFingerprint) {
+        return rebuild('源码指纹已变化')
+    }
+    if (!stamp.jarSha256) {
+        return rebuild('stamp 缺少 protected jar 哈希')
+    }
+    def protectedSha = computeFileSha256(prot)
+    if (protectedSha != stamp.jarSha256) {
+        return rebuild(
+                "build protected jar 哈希不一致 " +
+                        "(actual=${protectedSha.take(16)}... expected=${stamp.jarSha256.take(16)}...)"
+        )
+    }
+    if (!gtolibProtectedLibsJar.exists() || gtolibProtectedLibsJar.length() == 0) {
+        return rebuild('libs/gtolib-protected.jar 缺失')
+    }
+    if (!meta.fingerprint || meta.fingerprint != gtolibFingerprint || !meta.jarSha256) {
+        return rebuild('libs/gtolib-protected.PROTECTED 与当前源码不一致')
+    }
+    def prebuiltSha = computeFileSha256(gtolibProtectedLibsJar)
+    if (prebuiltSha != meta.jarSha256 || prebuiltSha != protectedSha) {
+        return rebuild(
+                "build/libs protected jar 不一致 " +
+                        "(build=${protectedSha.take(16)}... libs=${prebuiltSha.take(16)}...)"
+        )
+    }
+    return true
 }()
 /**
  * 是否显式要求未保护（明文）gtolib。
@@ -848,7 +879,11 @@ tasks.register('sealPackGtolib', Exec) {
     dependsOn {
         canProguard ? ['reobfGtolibRaw', 'proguardGtolib'] : ['reobfGtolibRaw', 'resolveGtolibRaw']
     }
-    inputs.file(sealPackagerJar)
+    inputs.file(sealPackagerJar).withPropertyName('sealPackager')
+    inputs.files(gtolibPgJar, gtolibRawJar)
+            .withPropertyName('prodJarCandidates').optional()
+    inputs.file(gtolibUnprotectedJar).withPropertyName('devJar')
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
     outputs.file(file("${buildDir}/gtolib/gtolib-sealed.jar"))
 
     doFirst {
@@ -951,7 +986,33 @@ tasks.register('buildGtolibProtected') {
     if (tasks.findByName('syncSealRuntimeToLibs') != null) {
         dependsOn 'syncSealRuntimeToLibs'
     }
+    inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
+    inputs.property('hasGtolibSources', hasGtolibSources)
+    inputs.property('canProguard', canProguard)
+    inputs.property('canSealPack', canSealPack)
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
+    if (hasGtolibSources) {
+        inputs.files(
+                gtolibRawJar,
+                gtolibUnprotectedJar,
+                gtolibPgJar,
+                file("${buildDir}/gtolib/gtolib-sealed.jar")
+        ).withPropertyName('candidateBuildJars').optional()
+        inputs.file(sealRuntimeLibsJar).withPropertyName('sealRuntime').optional()
+        inputs.file('GTOLib/src/main/resources/gtolib.mixins.json')
+                .withPropertyName('mixinConfig').optional()
+    } else {
+        inputs.file(gtolibProtectedLibsJar).withPropertyName('prebuiltProtectedJar')
+        inputs.file(file('libs/gtolib-protected.PROTECTED'))
+                .withPropertyName('prebuiltProtectedMetadata').optional()
+    }
     outputs.file(gtolibProtectedJar)
+    if (hasGtolibSources && !detectGtolibDebugMode()) {
+        outputs.file(gtolibProtectedLibsJar)
+        outputs.file(file('libs/gtolib-protected.PROTECTED'))
+        outputs.file(gtolibStampFile)
+    }
 
     doLast {
         def protectedFile = gtolibProtectedJar.get().asFile
@@ -1037,8 +1098,14 @@ tasks.register('buildGtolibProtected') {
             }
             gtolibProtectedLibsJar.parentFile.mkdirs()
             Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            injectGtolibMixinConfig(gtolibProtectedLibsJar)
-            jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
+            def prebuiltSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
+            if (prebuiltSha != jarSha) {
+                throw new GradleException(
+                        "GTOLib 同步失败：build 与 libs protected jar 字节不一致。\n" +
+                                "  build jarSha256 = ${jarSha}\n" +
+                                "  libs  jarSha256 = ${prebuiltSha}"
+                )
+            }
             logger.lifecycle(
                     "GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED " +
                             "(${gtolibProtectedLibsJar.length()} bytes); " +
@@ -1328,6 +1395,12 @@ tasks.register('finalizeGtolib') {
     }
     inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
     inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.files(
+            gtolibProtectedJar,
+            gtolibUnprotectedJar,
+            gtolibRawJar,
+            gtolibProtectedLibsJar
+    ).withPropertyName('candidateReadyJars').optional()
     outputs.file(gtolibReadyJar)
     outputs.upToDateWhen { false }
 
@@ -1381,6 +1454,11 @@ tasks.register('prepareGtolibModJar') {
     group = 'gtolib'
     description = '准备独立 gtolib 模组 jar（Seal 加密体 + mods.toml + 明文 @Mod stub）'
     dependsOn 'finalizeGtolib'
+    inputs.file(gtolibReadyJar).withPropertyName('readyJar')
+    inputs.files(gtolibUnprotectedJar, gtolibUnprotectedLibsJar)
+            .withPropertyName('namedMixinOverlayJars').optional()
+    inputs.file(gtolibModStubClass).withPropertyName('gtolibModStub')
+    inputs.property('gtolibModVersion', project.version.toString())
     outputs.file(gtolibModJar)
     doLast {
         def ready = gtolibReadyJar.get().asFile
@@ -1593,8 +1671,8 @@ ext.isGtolibLaunchTask = { Task t ->
     // IDEA / NeoForged DevLaunch 注入
     if (n.contains('devlaunch') || n.contains('DevLaunch')) return true
     if (n.contains('Main.main') || n.endsWith('.main()') || n.contains('.main_')) return true
-    // 部分 IDE 用 prepare* / forge runs
-    if (n.startsWith('prepareRun')) return true
+    // IDEA External Projects 的 before-compile 会调用 prepareClientRun 等任务。
+    if (n.startsWith('prepare') && n.endsWith('Run')) return true
     if (n.startsWith('run') && n.toLowerCase().contains('forge')) return true
     return false
 }

@@ -52,6 +52,9 @@ public class DataCrystalItem extends Item implements IExDataItem {
 
     public static boolean setDataCrystalData(ItemStack output, UUID team, ResearchPoints c) {
         setTeamUUID(output, team);
+        if (c.isEmpty()) {
+            return true;
+        }
         var outputTest = output.copy();
         for (var entry : c.reference2LongEntrySet()) {
             ResearchTag rt = entry.getKey();

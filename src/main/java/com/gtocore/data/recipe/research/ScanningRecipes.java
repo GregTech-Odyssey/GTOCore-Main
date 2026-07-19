@@ -13,5 +13,6 @@ public final class ScanningRecipes {
     public static void init() {
         /// 基元扫描
         DataScanningManager.registerDataScanning(Items.COMPASS, ResearchPoints.of(ResearchTag.MECHANICS, 1));
+        DataScanningManager.freeze();
     }
 }

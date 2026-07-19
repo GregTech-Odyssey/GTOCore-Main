@@ -1,5 +1,6 @@
 package com.gtocore.api.research.scanning;
 
+import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.DataCrystalItem;
@@ -19,6 +20,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.hepdd.gtmthings.utils.TeamUtil;
@@ -50,7 +54,10 @@ public class DataCrystalScanningLogic implements GTRecipeType.ICustomRecipeLogic
             boolean istem = !item.isEmpty();
             if (istem) {
                 var c = DataScanningManager.scanData(item.getItem(), team, true);
-                if (c.isEmpty() || !DataCrystalItem.setDataCrystalData(output, team, c)) {
+                if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEItemKey.of(item.getItem())).isEmpty()) {
+                    return null;
+                }
+                if (!DataCrystalItem.setDataCrystalData(output, team, c)) {
                     return null;
                 }
                 var bytesScanned = c.countBytes();
@@ -62,7 +69,10 @@ public class DataCrystalScanningLogic implements GTRecipeType.ICustomRecipeLogic
                         .build();
             } else {
                 var c = DataScanningManager.scanData(fluidStack.getFluid(), team, true);
-                if (c.isEmpty() || !DataCrystalItem.setDataCrystalData(output, team, c)) {
+                if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEFluidKey.of(fluidStack.getFluid())).isEmpty()) {
+                    return null;
+                }
+                if (!DataCrystalItem.setDataCrystalData(output, team, c)) {
                     return null;
                 }
                 var bytesScanned = c.countBytes();
@@ -77,7 +87,7 @@ public class DataCrystalScanningLogic implements GTRecipeType.ICustomRecipeLogic
     }
 
     private static long eut(long bytesScanned) {
-        return 480 * ((long) (Math.cbrt(bytesScanned) + 1));
+        return 480 * ((long) (Math.cbrt(bytesScanned) + 1)) + 8;
     }
 
     @Override

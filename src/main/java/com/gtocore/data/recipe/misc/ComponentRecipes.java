@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.data.CraftingComponents;
+import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -598,6 +599,7 @@ public final class ComponentRecipes {
                             .duration(900)
                             .EUt(VA[EV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_motor.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_motor.inputItems(cableGtSingle, material[2], 2).save();
 
         // UV 有特判，线缆两倍但是其他流体遵循正常倍率
@@ -644,6 +646,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_conveyor.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_conveyor.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("conveyor_%s", VN[tier].toLowerCase()))
@@ -689,6 +692,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_pump.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_pump.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("pump_%s", VN[tier].toLowerCase()))
@@ -747,6 +751,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_piston.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_piston.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("piston_%s", VN[tier].toLowerCase()))
@@ -793,6 +798,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_arm.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_arm.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("arm_%s", VN[tier].toLowerCase()))
@@ -842,6 +848,7 @@ public final class ComponentRecipes {
                     .duration(600)
                     .EUt(VA[IV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_emitter.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_emitter.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("emitter_%s", VN[tier].toLowerCase()))
@@ -891,6 +898,7 @@ public final class ComponentRecipes {
                     .duration(600)
                     .EUt(VA[IV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_sensor.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_sensor.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("sensor_%s", VN[tier].toLowerCase()))
@@ -939,6 +947,7 @@ public final class ComponentRecipes {
                     .duration(600)
                     .EUt(VA[IV]));
         }
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_field_generator.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
         builder_field_generator.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("field_generator_%s", VN[tier].toLowerCase()))
@@ -994,7 +1003,7 @@ public final class ComponentRecipes {
         Item pump = (Item) PUMP.get(tier);
         TagKey<Item> circuit = (TagKey<Item>) CIRCUIT.get(tier);
 
-        ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("integrated_control_core_%s", VN[tier].toLowerCase()))
+        var rb = ASSEMBLY_LINE_RECIPES.recipeBuilder(String.format("integrated_control_core_%s", VN[tier].toLowerCase()))
                 .inputItems(ring, material[0], 16)
                 .inputItems(circuit, 2)
                 .inputItems(field_generator)
@@ -1014,7 +1023,10 @@ public final class ComponentRecipes {
                         .researchStack(tier == UV ? GTOItems.WETWARE_SOC.asItem() : (Item) CraftingComponents.INTEGRATED_CONTROL_CORE.get(tier - 1))
                         .CWUt((int) ((1 << (tier - 3)) * 1.5))
                         .EUt(VA[tier - 1]))
-                .duration(1200).EUt(VA[tier]).save();
+                .duration(1200).EUt(VA[tier]);
+
+        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) rb.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        rb.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("integrated_control_core_%s", VN[tier].toLowerCase()))
                 .circuitMeta(9)

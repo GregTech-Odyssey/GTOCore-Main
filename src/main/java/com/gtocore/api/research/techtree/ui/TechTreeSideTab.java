@@ -716,11 +716,10 @@ public class TechTreeSideTab extends WidgetGroup {
                 int maxScrollOffset = Math.max(0, rows.size() - 1);
                 if (wheelDelta > 0 && scrollOffset > 0) {
                     scrollOffset--;
-                    return true;
                 } else if (wheelDelta < 0 && scrollOffset < maxScrollOffset) {
                     scrollOffset++;
-                    return true;
                 }
+                return true;
             }
             return super.mouseWheelMove(mouseX, mouseY, wheelDelta);
         }
