@@ -1,14 +1,18 @@
 /**
- * GTOLib 流水线（只有两档）
+ * GTOLib 流水线（路线 A：dev 双轨 + 发行单轨 两种加密产物）
  *
- * 1) 加密（默认 / 发行 / 公开 prebuild / 无权限唯一路径）：
- *    reobf → ProGuard → GTO Seal + libs 完整 Seal Runtime
+ * 1) 加密（默认）产出两份，均由 buildGtolibProtected 同步到 libs/：
+ *    a. dev 预构建 libs/gtolib-protected.jar（双轨 keepnames：hollow + .prod.bin + .dev.bin）
+ *       —— 无权限开发者编译 + userdev 运行的唯一入口，类名保留（.dev.bin 路径键约定）
+ *    b. 发行单轨 libs/gtolib-release.jar（proguard-release-rules.pro：内部类名/包名混淆，
+ *       -repackageclasses；Seal 以混淆 jar 自洽打包后剥除全部 .dev.bin）
+ *       —— 玩家发行 jar 的唯一包体来源；named 字节码不进发行包
  * 2) 未加密（仅有源码 + 显式参数）：gtolib-unprotected 明文，便于断点
  *    开关：-PgtolibUnprotected=true | -PgtolibDebug=true | -PskipGtolibProtect=true
  *    （或 env GTOLIB_DEBUG / PROGUARD_DISABLE / 本地 .gtolib-debug 标记）
  *    明文绝不同步到 libs/gtolib-protected.jar，无权限也永远拿不到明文。
  *
- * 任务：buildGtolibProtected（加密构建并同步 libs 预构建）
+ * 任务：buildGtolibProtected（加密构建并同步 libs 预构建对：protected + release）
  *
  * 有源码（GTOLib/）：始终并入 sourceSets.main，供 IDEA 跳转/增量编译；
  *   isGtolibJarUpToDate 仅跳过 ProGuard/Seal。
@@ -30,6 +34,14 @@ ext.gtolibReadyJar = layout.buildDirectory.file('gtolib/gtolib-ready.jar')
 ext.gtolibStampFile = layout.buildDirectory.file('gtolib/inputs.stamp')
 ext.gtolibProtectedLibsJar = file('libs/gtolib-protected.jar')
 ext.gtolibUnprotectedLibsJar = file('libs/gtolib-unprotected.jar')
+// 路线 A：发行单轨产物（内部类名混淆、无 .dev.bin）。
+// libs/gtolib-protected.jar 仍是无权限开发者的 dev 预构建（双轨、keepnames），
+// 玩家发行 jar 改从 gtolib-release 组装。
+ext.gtolibPgReleaseJar = layout.buildDirectory.file('gtolib/gtolib-proguard-release.jar')
+ext.gtolibSealedReleaseJar = layout.buildDirectory.file('gtolib/gtolib-sealed-release.jar')
+ext.gtolibReleaseJar = layout.buildDirectory.file('gtolib/gtolib-release.jar')
+ext.gtolibReleaseLibsJar = file('libs/gtolib-release.jar')
+ext.gtolibReleaseSidecarFile = file('libs/gtolib-release.PROTECTED')
 ext.gtolibProtectDir = file('GTOLib/protect')
 // GTO Seal 私有 submodule（GTOCore-Seal → GTOSeal/）——仅改 Runtime 本身时需要
 ext.gtosealDir = file('GTOSeal')
@@ -38,6 +50,7 @@ ext.hasGtosealSources = file('GTOSeal/src/main/java/gto/native0').exists()
 
 ext.hasGtolibSources = file('GTOLib/src/main/java/com/gtolib').exists()
 ext.canProguard = file("${gtolibProtectDir}/proguard-rules.pro").exists()
+ext.canProguardRelease = file("${gtolibProtectDir}/proguard-release-rules.pro").exists()
 // Packager 在 GTOLib/protect：改 gtolib 只需 GTOLib 权限即可重新加密。
 // GTOSeal/protect 仅作历史/备用路径。
 ext.sealPackagerJar = {
@@ -132,30 +145,33 @@ ext.writeGtolibStamp = { String fingerprint, String jarSha256 ->
  * 与 libs/gtolib-protected.jar 成对的侧车元数据（CI sources=false 用 jarSha256 校验）。
  * 凡同步/写入 libs 预构建 jar 时必须调用，避免 jar 已新、.PROTECTED 仍旧。
  */
-ext.writeGtolibProtectedSidecar = { File jarFile, String fingerprint = gtolibFingerprint ->
+ext.writeGtolibSidecar = { File jarFile, File sidecarFile, String fingerprint, String method ->
     if (jarFile == null || !jarFile.exists()) {
-        throw new GradleException("writeGtolibProtectedSidecar: jar 无效: ${jarFile}")
+        throw new GradleException("writeGtolibSidecar: jar 无效: ${jarFile}")
     }
     def jarSha = computeFileSha256(jarFile)
     def fp = (fingerprint != null && !fingerprint.isEmpty()) ? fingerprint : ''
-    file('libs/gtolib-protected.PROTECTED').text =
-            "protected=true\nmethod=proguard+gto-seal\n" +
+    sidecarFile.text =
+            "protected=true\nmethod=${method}\n" +
                     "runtime=full-seal-runtime\n" +
                     "updated=${new Date()}\n" +
                     "size=${jarFile.length()}\n" +
                     "fingerprint=${fp}\n" +
                     "jarSha256=${jarSha}\n"
     logger.lifecycle(
-            "GTOLib: 已写入 libs/gtolib-protected.PROTECTED " +
+            "GTOLib: 已写入 ${sidecarFile.name} " +
                     "size=${jarFile.length()} jarSha=${jarSha.take(16)}…"
     )
     return jarSha
 }
 
-ext.readProtectedMeta = {
-    def f = file('libs/gtolib-protected.PROTECTED')
+ext.writeGtolibProtectedSidecar = { File jarFile, String fingerprint = gtolibFingerprint ->
+    writeGtolibSidecar(jarFile, file('libs/gtolib-protected.PROTECTED'), fingerprint, 'proguard+gto-seal')
+}
+
+ext.readSidecarMeta = { File f ->
     def out = [fingerprint: '', jarSha256: '', size: '']
-    if (!f.exists()) return out
+    if (f == null || !f.exists()) return out
     f.eachLine { line ->
         def i = line.indexOf('=')
         if (i <= 0) return
@@ -164,6 +180,10 @@ ext.readProtectedMeta = {
         if (out.containsKey(k)) out[k] = v
     }
     return out
+}
+
+ext.readProtectedMeta = {
+    readSidecarMeta(file('libs/gtolib-protected.PROTECTED'))
 }
 
 /**
@@ -251,6 +271,166 @@ ext.verifyGtolibSkipConsistency = { File jarFile, boolean skippedRebuild ->
     }
 }
 
+/**
+ * 扫描 gtocore 主源码对 com.gtolib 的 import，要求指定 jar 内存在对应 .class（hollow 亦可）。
+ * 捕获「主仓 import 面与 jar 不一致」——发行单轨混淆后 keep 面不足时在构建期报错。
+ *
+ * 解析规则：
+ * - {@code import com.gtolib.pkg.Type;} → 需要 Type.class
+ * - {@code import com.gtolib.pkg.Type.*;} / {@code import static com.gtolib.pkg.Type.*;}
+ *   → Type.class 或 pkg/Type/ 下存在 class（嵌套类型 / 包）
+ * - {@code import static com.gtolib.pkg.Type.MEMBER;} → 需要 Type.class（MEMBER 为字段/方法）
+ */
+ext.verifyMainGtolibImportsAgainstJar = { File jarFile ->
+    if (jarFile == null || !jarFile.exists()) {
+        throw new GradleException("verifyMainGtolibImportsAgainstJar: jar 无效 → ${jarFile}")
+    }
+    def entries = new HashSet<String>()
+    def zf = new java.util.zip.ZipFile(jarFile)
+    try {
+        zf.entries().each { e -> entries.add(e.name) }
+    } finally {
+        zf.close()
+    }
+    def hasClass = { String fqn ->
+        entries.contains(fqn.replace('.', '/') + '.class')
+    }
+    def hasPackageOrClass = { String fqn ->
+        if (hasClass(fqn)) return true
+        def prefix = fqn.replace('.', '/') + '/'
+        return entries.any { it.startsWith(prefix) && it.endsWith('.class') }
+    }
+    // static import 的 MEMBER 可能是字段/方法：从右剥离直到命中 class
+    def resolveStaticTarget = { String fqn ->
+        def parts = fqn.split('\\.') as List
+        // 至少 com.gtolib.X
+        for (int n = parts.size(); n >= 3; n--) {
+            def tryFqn = parts.subList(0, n).join('.')
+            if (hasClass(tryFqn)) return true
+        }
+        return false
+    }
+    def importRe = ~/^import\s+(static\s+)?(com\.gtolib\.[A-Za-z0-9_.*]+)\s*;?\s*$/
+    def missing = new LinkedHashSet<String>()
+    def scanned = 0
+    def roots = [file('src/main/java'), file('src/main/kotlin')].findAll { it.exists() }
+    roots.each { root ->
+        root.eachFileRecurse { f ->
+            if (!f.isFile()) return
+            if (!(f.name.endsWith('.java') || f.name.endsWith('.kt'))) return
+            f.eachLine { line ->
+                def m = importRe.matcher(line.trim())
+                if (!m.find()) return
+                scanned++
+                def isStatic = m.group(1) != null
+                def fqn = m.group(2)
+                if (fqn.endsWith('.*')) {
+                    def base = fqn.substring(0, fqn.length() - 2)
+                    if (!hasPackageOrClass(base)) {
+                        missing.add(fqn + "  (type/package missing in jar)")
+                    }
+                    return
+                }
+                // 精确类型
+                if (hasClass(fqn)) {
+                    return
+                }
+                // static / Kotlin 成员 import：com.gtolib...Type.member
+                if (resolveStaticTarget(fqn)) {
+                    return
+                }
+                // Kotlin 顶层函数：com.gtolib.pkg.funcName → 包内存在任一 .class
+                def parts = fqn.split('\\.') as List
+                if (parts.size() >= 4) {
+                    def parent = parts.subList(0, parts.size() - 1).join('.')
+                    def parentSimple = parts.get(parts.size() - 2)
+                    // 父段小写开头 → 视为包（Kotlin top-level）；大写 → 已在 resolveStatic 处理
+                    if (!Character.isUpperCase(parentSimple.charAt(0)) && hasPackageOrClass(parent)) {
+                        return
+                    }
+                }
+                missing.add(isStatic ? ("static " + fqn) : fqn)
+            }
+        }
+    }
+    if (!missing.isEmpty()) {
+        def sample = missing.take(30).collect { "  - ${it}" }.join('\n')
+        throw new GradleException(
+                "GTOLib 预构建 API 校验失败：gtocore 主源码 import 了 jar 中不存在的 com.gtolib 类型。\n" +
+                        "发行单轨下通常表示混淆 keep 面不足（或 jar 相对源码过期）。\n" +
+                        "缺失 ${missing.size()} 项（最多列出 30）：\n${sample}\n" +
+                        "有权限者请: ./gradlew -PgtolibRebuild=true buildGtolibProtected"
+        )
+    }
+    logger.lifecycle(
+            "GTOLib API 校验 OK: 主源码 com.gtolib import ${scanned} 条均可在 ${jarFile.name} 解析"
+    )
+}
+
+/**
+ * 路线 A：校验发行单轨预构建对（libs/gtolib-release.jar + libs/gtolib-release.PROTECTED）。
+ * - jar 内容哈希必须与 sidecar 一致；
+ * - 有源码：sidecar.fingerprint 必须等于当前源码指纹；
+ *   无源码（CI）：必须等于 libs/gtolib-protected.PROTECTED 的 fingerprint（同一次构建产物）；
+ * - gtocore 主源码全部 com.gtolib import 必须能在发行 jar 内按名解析
+ *   （keep 面不足 → 混淆改掉了 gtocore 链接面 → 在这里而不是玩家端崩）。
+ */
+ext.verifyGtolibReleasePair = {
+    def jar = gtolibReleaseLibsJar
+    def meta = readSidecarMeta(gtolibReleaseSidecarFile)
+    if (!jar.exists() || jar.length() == 0) {
+        throw new GradleException(
+                "GTOLib release 校验失败：libs/gtolib-release.jar 不存在或为空。\n" +
+                        "请有权限者: ./gradlew -PgtolibRebuild=true buildGtolibProtected\n" +
+                        "并提交 libs/gtolib-release.jar + libs/gtolib-release.PROTECTED。"
+        )
+    }
+    if (!meta.jarSha256) {
+        throw new GradleException(
+                "GTOLib release 校验失败：libs/gtolib-release.PROTECTED 缺少 jarSha256。\n" +
+                        "请有权限者重建并提交成对文件。"
+        )
+    }
+    def actual = computeFileSha256(jar)
+    if (actual != meta.jarSha256) {
+        throw new GradleException(
+                "GTOLib release 校验失败：libs/gtolib-release.jar 与 .PROTECTED 记录不一致。\n" +
+                        "  实际 jarSha256 = ${actual}\n" +
+                        "  记录 jarSha256 = ${meta.jarSha256}\n" +
+                        "请有权限者: ./gradlew -PgtolibRebuild=true buildGtolibProtected"
+        )
+    }
+    def expectFp = hasGtolibSources ? gtolibFingerprint : readProtectedMeta().fingerprint
+    if (!meta.fingerprint || (expectFp && meta.fingerprint != expectFp)) {
+        throw new GradleException(
+                "GTOLib release 校验失败：发行单轨与当前源码/dev 预构建不同源。\n" +
+                        "  release fingerprint = ${meta.fingerprint}\n" +
+                        "  期望 fingerprint    = ${expectFp}\n" +
+                        "请有权限者: ./gradlew -PgtolibRebuild=true buildGtolibProtected"
+        )
+    }
+    verifyMainGtolibImportsAgainstJar(jar)
+    logger.lifecycle("GTOLib release 一致性 OK: jarSha=${actual.take(16)}…")
+}
+
+/**
+ * 玩家发行 jar 应嵌入的 gtolib 包体（jar 任务与 Salt 读取共用，保证同一份）：
+ * - 调试明文模式：沿用本地 protected（此时它是明文）/ ready；
+ * - 默认：build 新产物 gtolib-release.jar，其次 libs 预构建；
+ * - 都没有 → null（jar 任务据此硬失败，禁止悄悄回退到弱的双轨 protected 包）。
+ */
+ext.resolveGtolibReleaseEmbedJar = {
+    if (hasGtolibSources && detectGtolibDebugMode()) {
+        def protectedFile = gtolibProtectedJar.get().asFile
+        def ready = gtolibReadyJar.get().asFile
+        return (protectedFile.exists() && protectedFile.length() > 0) ? protectedFile : ready
+    }
+    def rel = gtolibReleaseJar.get().asFile
+    if (rel.exists() && rel.length() > 0) return rel
+    if (gtolibReleaseLibsJar.exists() && gtolibReleaseLibsJar.length() > 0) return gtolibReleaseLibsJar
+    return null
+}
+
 ext.gtolibFingerprint = computeGtolibFingerprint()
 
 ext.isGtolibJarUpToDate = {
@@ -272,7 +452,20 @@ ext.isGtolibJarUpToDate = {
     if (!unprot.exists() || unprot.length() == 0) {
         return false
     }
-    return stamp.fingerprint == gtolibFingerprint
+    if (stamp.fingerprint != gtolibFingerprint) {
+        return false
+    }
+    // 路线 A：能构建发行单轨时，libs 发行对也必须在场且同源，否则不许跳过
+    if (canProguardRelease && canSealPack) {
+        def relMeta = readSidecarMeta(gtolibReleaseSidecarFile)
+        if (!relMeta.jarSha256 || relMeta.fingerprint != gtolibFingerprint) {
+            return false
+        }
+        if (!gtolibReleaseLibsJar.exists() || computeFileSha256(gtolibReleaseLibsJar) != relMeta.jarSha256) {
+            return false
+        }
+    }
+    return true
 }()
 /**
  * 是否显式要求未保护（明文）gtolib。
@@ -303,7 +496,7 @@ ext.isGtolibDebugMode = detectGtolibDebugMode()
 logger.lifecycle(
         "GTOLib pipeline: sources=${hasGtolibSources}, jarUpToDate=${isGtolibJarUpToDate}, " +
                 "debugMode=${isGtolibDebugMode}, fingerprint=${gtolibFingerprint.take(12)}${gtolibFingerprint ? '…' : ''}, " +
-                "proguard=${canProguard}, sealPack=${canSealPack}, " +
+                "proguard=${canProguard}, proguardRelease=${canProguardRelease}, sealPack=${canSealPack}, " +
                 "GTOSeal=${hasGtosealSources}"
 )
 
@@ -706,6 +899,116 @@ if (configurations.findByName('artTool') == null) {
     }
 }
 
+/** 混淆字典（dev/release 两条 ProGuard 链共用；确定性 shuffle） */
+ext.ensureProguardDictionaries = {
+    def dictFile = file("${gtolibProtectDir}/my_dict.txt")
+    if (!dictFile.exists()) {
+        dictFile.parentFile.mkdirs()
+        dictFile.text = (('a'..'z').collectMany { l -> (0..9).collect { n -> "${l}${n}" } }).join('\n') + '\n'
+    }
+    def rnd = new SecureRandom(998244353L * (1e9 + 7) as byte[])
+    ['my_class_names_shuffled.txt', 'my_package_names_shuffled.txt', 'my_dict_names_shuffled.txt'].each { name ->
+        def lines = Files.readAllLines(dictFile.toPath())
+        Collections.shuffle(lines, rnd)
+        Files.write(file("${buildDir}/gtolib/${name}").toPath(), lines)
+    }
+}
+
+/** 生成 ProGuard 附加配置：libraryjars + 字典 + mapping 输出（按链取不同 mapping 文件名） */
+ext.writeProguardExtraFile = { File target, String mappingName ->
+    def libArgs = new StringBuilder()
+    def javaHome = System.getProperty('java.home')
+    def jmod = new File("${javaHome}/jmods/java.base.jmod")
+    def rt = new File("${javaHome}/lib/rt.jar")
+    if (rt.exists()) {
+        libArgs.append("-libraryjars '${rt.absolutePath.replace('\\', '/')}'\n")
+    } else if (jmod.exists()) {
+        libArgs.append("-libraryjars '${jmod.absolutePath.replace('\\', '/')}'\n")
+    }
+    def seen = new HashSet<String>()
+    project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
+        try {
+            config.resolve().each { f ->
+                if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
+                    libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+    def abs = { String name -> file("${buildDir}/gtolib/${name}").absolutePath.replace('\\', '/') }
+    libArgs.append("-classobfuscationdictionary '${abs('my_class_names_shuffled.txt')}'\n")
+    libArgs.append("-packageobfuscationdictionary '${abs('my_package_names_shuffled.txt')}'\n")
+    libArgs.append("-obfuscationdictionary '${abs('my_dict_names_shuffled.txt')}'\n")
+    libArgs.append("-printmapping '${abs(mappingName)}'\n")
+    target.text = libArgs.toString()
+}
+
+/**
+ * 路线 A：扫描 gtocore（非 com.gtolib）编译产物常量池中的 com.gtolib 引用，
+ * 生成发行混淆的 keep 文件。这些类是 gtocore 字节码的运行时链接面，
+ * 发行单轨里必须保住「类名 + public/protected 成员名」，其余内部类放开混淆。
+ */
+ext.writeReleaseKeepFromGtocoreRefs = { File target ->
+    def refs = new TreeSet<String>()
+    def reSlash = java.util.regex.Pattern.compile('com/gtolib/[A-Za-z0-9_$/]+')
+    def reDot = java.util.regex.Pattern.compile('com\\.gtolib\\.[A-Za-z0-9_$.]+')
+    def roots = [file("${buildDir}/classes/java/main"), file("${buildDir}/classes/kotlin/main")]
+    def scanned = 0
+    roots.each { root ->
+        if (!root.exists()) return
+        root.eachFileRecurse { f ->
+            if (!f.isFile() || !f.name.endsWith('.class')) return
+            def rel = root.toPath().relativize(f.toPath()).toString().replace('\\', '/')
+            if (rel.startsWith('com/gtolib/')) return
+            scanned++
+            def text = new String(f.bytes, 'ISO-8859-1')
+            def m = reSlash.matcher(text)
+            while (m.find()) refs.add(m.group().replace('/', '.'))
+            m = reDot.matcher(text)
+            while (m.find()) refs.add(m.group())
+        }
+    }
+    if (scanned == 0) {
+        throw new GradleException(
+                "writeReleaseKeepFromGtocoreRefs: 找不到已编译的 gtocore 类（需先 classes）"
+        )
+    }
+    // 源码 import 声明也并入：内联常量/未使用 import 在字节码里无引用，
+    // 但 verifyMainGtolibImportsAgainstJar 会要求它们在发行 jar 内按名可解析
+    def importRe = ~/^import\s+(static\s+)?(com\.gtolib\.[A-Za-z0-9_.]+)\s*;?\s*$/
+    [file('src/main/java'), file('src/main/kotlin')].findAll { it.exists() }.each { root ->
+        root.eachFileRecurse { f ->
+            if (!f.isFile() || !(f.name.endsWith('.java') || f.name.endsWith('.kt'))) return
+            f.eachLine { line ->
+                def m = importRe.matcher(line.trim())
+                if (!m.find()) return
+                def fqn = m.group(2)
+                if (fqn.endsWith('.*')) return // 通配 import 由字节码扫描覆盖实际用到的类
+                // static/Kotlin 成员 import 的末段可能是成员名：父级一并纳入
+                // （父级若是包名，keepnames 空匹配无害）
+                def i = fqn.lastIndexOf('.')
+                if (i > 'com.gtolib'.length()) refs.add(fqn.substring(0, i))
+                refs.add(fqn)
+            }
+        }
+    }
+    def sb = new StringBuilder('# generated: gtocore 字节码+import 对 com.gtolib 的引用面（发行单轨保名）\n')
+    def kept = 0
+    refs.each { raw ->
+        def fqn = raw
+        while (fqn.endsWith('.') || fqn.endsWith('$')) fqn = fqn.substring(0, fqn.length() - 1)
+        if (fqn.length() <= 'com.gtolib.'.length() || fqn.contains('..')) return
+        sb.append("-keepnames class ${fqn} { public protected *; }\n")
+        kept++
+    }
+    target.text = sb.toString()
+    logger.lifecycle(
+            "GTOLib release: gtocore 引用面 ${kept} 项 → ${target.name}（扫描 ${scanned} class）"
+    )
+    return kept
+}
+
 tasks.register('proguardGtolib', JavaExec) {
     group = 'gtolib'
     onlyIf {
@@ -716,56 +1019,91 @@ tasks.register('proguardGtolib', JavaExec) {
     mainClass = 'proguard.ProGuard'
 
     doFirst {
-        def dir = file("${buildDir}/gtolib")
-        dir.mkdirs()
-        def protectDir = gtolibProtectDir
-        def dictFile = file("${protectDir}/my_dict.txt")
-        if (!dictFile.exists()) {
-            dictFile.parentFile.mkdirs()
-            dictFile.text = (('a'..'z').collectMany { l -> (0..9).collect { n -> "${l}${n}" } }).join('\n') + '\n'
-        }
-        def rnd = new SecureRandom(998244353L * (1e9 + 7) as byte[])
-        ['my_class_names_shuffled.txt', 'my_package_names_shuffled.txt', 'my_dict_names_shuffled.txt'].each { name ->
-            def lines = Files.readAllLines(dictFile.toPath())
-            Collections.shuffle(lines, rnd)
-            Files.write(file("${buildDir}/gtolib/${name}").toPath(), lines)
-        }
-
-        def libArgs = new StringBuilder()
-        def javaHome = System.getProperty('java.home')
-        def jmod = new File("${javaHome}/jmods/java.base.jmod")
-        def rt = new File("${javaHome}/lib/rt.jar")
-        if (rt.exists()) {
-            libArgs.append("-libraryjars '${rt.absolutePath.replace('\\', '/')}'\n")
-        } else if (jmod.exists()) {
-            libArgs.append("-libraryjars '${jmod.absolutePath.replace('\\', '/')}'\n")
-        }
-        def seen = new HashSet<String>()
-        project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
-            try {
-                config.resolve().each { f ->
-                    if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
-                        libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
-                    }
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        def abs = { String name -> file("${buildDir}/gtolib/${name}").absolutePath.replace('\\', '/') }
-        libArgs.append("-classobfuscationdictionary '${abs('my_class_names_shuffled.txt')}'\n")
-        libArgs.append("-packageobfuscationdictionary '${abs('my_package_names_shuffled.txt')}'\n")
-        libArgs.append("-obfuscationdictionary '${abs('my_dict_names_shuffled.txt')}'\n")
-        libArgs.append("-printmapping '${abs('gtolib-mapping.txt')}'\n")
-        file("${buildDir}/gtolib/proguard-extra.pro").text = libArgs.toString()
+        file("${buildDir}/gtolib").mkdirs()
+        ensureProguardDictionaries()
+        writeProguardExtraFile(file("${buildDir}/gtolib/proguard-extra.pro"), 'gtolib-mapping.txt')
 
         def inJar = gtolibRawJar.get().asFile.absolutePath.replace('\\', '/')
         def outJar = gtolibPgJar.get().asFile.absolutePath.replace('\\', '/')
         args = [
-                "@${file("${protectDir}/proguard-rules.pro").absolutePath}",
+                "@${file("${gtolibProtectDir}/proguard-rules.pro").absolutePath}",
                 "@${file("${buildDir}/gtolib/proguard-extra.pro").absolutePath}",
                 "-injars", inJar,
                 "-outjars", outJar,
         ]
+    }
+}
+
+/**
+ * 路线 A：发行单轨 ProGuard —— 内部类名/包名参与混淆（-repackageclasses）。
+ * keep 面 = proguard-release-rules.pro（api/utils/mixin/入口/注解类）
+ *         + build/gtolib/proguard-release-keep.pro（gtocore 字节码实际引用面）。
+ */
+tasks.register('proguardGtolibRelease', JavaExec) {
+    group = 'gtolib'
+    description = '发行单轨 ProGuard：内部类名/包名混淆（路线 A）'
+    onlyIf {
+        hasGtolibSources && !isGtolibJarUpToDate && canProguardRelease && !detectGtolibDebugMode()
+    }
+    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes'
+    mustRunAfter 'proguardGtolib'
+    classpath = configurations.proguardCp
+    mainClass = 'proguard.ProGuard'
+
+    doFirst {
+        file("${buildDir}/gtolib").mkdirs()
+        ensureProguardDictionaries()
+        def extraFile = file("${buildDir}/gtolib/proguard-release-extra.pro")
+        // mapping 留在 build/gtolib（gitignored）：崩溃反混淆用，发版时自行归档，勿公开
+        writeProguardExtraFile(extraFile, 'gtolib-release-mapping.txt')
+        def keepFile = file("${buildDir}/gtolib/proguard-release-keep.pro")
+        writeReleaseKeepFromGtocoreRefs(keepFile)
+
+        def inJar = gtolibRawJar.get().asFile.absolutePath.replace('\\', '/')
+        def outJar = gtolibPgReleaseJar.get().asFile.absolutePath.replace('\\', '/')
+        args = [
+                "@${file("${gtolibProtectDir}/proguard-release-rules.pro").absolutePath}",
+                "@${keepFile.absolutePath}",
+                "@${extraFile.absolutePath}",
+                "-injars", inJar,
+                "-outjars", outJar,
+        ]
+    }
+
+    doLast {
+        def out = gtolibPgReleaseJar.get().asFile
+        if (!out.exists() || out.length() < 1024) {
+            throw new GradleException("proguardGtolibRelease: 未产出 ${out}")
+        }
+        // 混淆必须真的发生：与 named unprotected 对比 class 路径集合
+        def unprot = gtolibUnprotectedJar.get().asFile
+        if (unprot.exists() && unprot.length() > 0) {
+            def listCls = { File jf ->
+                def s = new HashSet<String>()
+                new java.util.zip.ZipFile(jf).withCloseable { zf ->
+                    zf.entries().each { e ->
+                        if (!e.isDirectory() && e.name.startsWith('com/gtolib') && e.name.endsWith('.class')) {
+                            s.add(e.name)
+                        }
+                    }
+                }
+                return s
+            }
+            def relNames = listCls(out)
+            def devNames = listCls(unprot)
+            def renamed = relNames - devNames
+            def hidden = devNames - relNames
+            if (renamed.isEmpty() || hidden.isEmpty()) {
+                throw new GradleException(
+                        "proguardGtolibRelease: 类名混淆未生效（renamed=${renamed.size()} hidden=${hidden.size()}）。\n" +
+                                "检查 proguard-release-rules.pro 的 keep 面是否过宽（keepnames 是否被误加回）。"
+                )
+            }
+            logger.lifecycle(
+                    "GTOLib release ProGuard OK: ${relNames.size()} class，" +
+                            "改名/隐藏 ${hidden.size()}，保名 ${relNames.size() - renamed.size()}"
+            )
+        }
     }
 }
 
@@ -928,6 +1266,117 @@ tasks.register('sealPackGtolib', Exec) {
 }
 
 /**
+ * 路线 A：发行单轨 Seal 打包。
+ * prod = dev = 混淆后的 release jar（同一 Salt 盖章两份副本）→ 输出自洽：
+ * hollow shell / .prod.bin 路径 / 字节码内引用全部使用混淆名。
+ * 打包完成后剥除全部 .dev.bin —— 发行包不携带 named 或任何 dev 轨字节码。
+ */
+tasks.register('sealPackGtolibRelease', Exec) {
+    group = 'gtolib'
+    description = 'GTO Seal Packager 加密发行单轨 gtolib（类名混淆、无 dev.bin）'
+    onlyIf {
+        hasGtolibSources && !isGtolibJarUpToDate && canSealPack && canProguardRelease && !detectGtolibDebugMode()
+    }
+    dependsOn 'proguardGtolibRelease'
+    mustRunAfter 'sealPackGtolib'
+    inputs.file(sealPackagerJar)
+    inputs.files(gtolibPgReleaseJar)
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
+    outputs.file(gtolibSealedReleaseJar)
+    outputs.upToDateWhen { findProperty('gtolibRebuild') != 'true' }
+
+    doFirst {
+        def pg = gtolibPgReleaseJar.get().asFile
+        if (!pg.exists() || pg.length() == 0) {
+            throw new GradleException("sealPackGtolibRelease: release ProGuard jar 无效: ${pg}")
+        }
+        def salt = Long.toString(new Random().nextLong())
+        def version = gtoSealMinVersion
+        def stampedProd = file("${buildDir}/gtolib/gtolib-release-seal-input.jar")
+        def stampedDev = file("${buildDir}/gtolib/gtolib-release-seal-dev.jar")
+        def out = gtolibSealedReleaseJar.get().asFile
+        out.parentFile.mkdirs()
+        if (out.exists()) out.delete()
+
+        stampGtolibJarForSeal(pg, stampedProd, salt, version)
+        stampGtolibJarForSeal(pg, stampedDev, salt, version)
+        logger.lifecycle("GTO Seal(release): Salt=${salt} 单轨 prod=dev=${pg.name}")
+
+        executable 'java'
+        args '-jar', sealPackagerJar.absolutePath,
+                stampedProd.absolutePath, stampedDev.absolutePath, out.absolutePath
+    }
+
+    doLast {
+        def out = gtolibSealedReleaseJar.get().asFile
+        if (!out.exists() || out.length() < 1024) {
+            throw new GradleException(
+                    "GTO Seal Packager(release) 未生成有效输出 (${out.exists() ? out.length() : 0} bytes)"
+            )
+        }
+        // 剥除 .dev.bin：发行包只保留 hollow shell + .prod.bin + 明文 mixin
+        def tmp = new File(out.absolutePath + '.strip')
+        def zis = new java.util.zip.ZipInputStream(new FileInputStream(out))
+        def zos = new java.util.zip.ZipOutputStream(new FileOutputStream(tmp))
+        java.util.zip.ZipEntry e
+        def stripped = 0
+        while ((e = zis.nextEntry) != null) {
+            if (e.name.endsWith('.dev.bin')) {
+                stripped++
+                zis.closeEntry()
+                continue
+            }
+            zos.putNextEntry(new java.util.zip.ZipEntry(e.name))
+            zis.transferTo(zos)
+            zos.closeEntry()
+            zis.closeEntry()
+        }
+        zos.close()
+        zis.close()
+        Files.move(tmp.toPath(), out.toPath(), StandardCopyOption.REPLACE_EXISTING)
+
+        // 自洽校验：路径键三方对齐 + 无 dev 轨 + mixin 明文 SRG
+        def zf = new java.util.zip.ZipFile(out)
+        try {
+            def names = zf.entries().collect { it.name } as Set
+            def leftoverDev = names.count { it.endsWith('.dev.bin') }
+            if (leftoverDev > 0) {
+                throw new GradleException("release 包剥除 dev.bin 失败：仍剩 ${leftoverDev} 个")
+            }
+            def missing = []
+            names.findAll { it.startsWith('native0/native/') && it.endsWith('.prod.bin') }.each { bin ->
+                def cls = bin.substring('native0/native/'.length(), bin.length() - '.prod.bin'.length()) + '.class'
+                if (!names.contains(cls)) {
+                    missing << cls
+                }
+            }
+            if (missing) {
+                def sample = missing.take(12).join('\n  ')
+                throw new GradleException(
+                        "release Seal 输出不自洽：${missing.size()} 个 .prod.bin 缺少同路径 hollow .class。\n样例:\n  ${sample}"
+                )
+            }
+            def rlm = zf.getEntry('com/gtolib/mixin/mc/ResourceLocationMixn.class')
+            if (rlm == null) {
+                throw new GradleException("release 包缺少明文 mixin: ResourceLocationMixn.class（keep 面/包名被混淆？）")
+            }
+            def rlmText = new String(zf.getInputStream(rlm).bytes, 'ISO-8859-1')
+            if (!rlmText.contains('f_135804_')) {
+                throw new GradleException("release 包 ResourceLocationMixn 非 SRG（reobf 链断了）")
+            }
+            def nProd = names.count { it.endsWith('.prod.bin') }
+            def nCls = names.count { it.startsWith('com/gtolib') && it.endsWith('.class') }
+            logger.lifecycle(
+                    "GTO Seal(release) OK → ${out.name} (${out.length()} bytes) " +
+                            "class=${nCls} prod.bin=${nProd} 已剥除 dev.bin=${stripped}"
+            )
+        } finally {
+            zf.close()
+        }
+    }
+}
+
+/**
  * 生成加密 gtolib（默认）并同步 libs 预构建。
  * 明文模式（-PgtolibUnprotected 等）只写 build/，绝不覆盖 libs。
  */
@@ -942,8 +1391,14 @@ tasks.register('buildGtolibProtected') {
             return []
         }
         def steps = ['resolveGtolibRaw', 'proguardGtolib']
+        if (canProguardRelease) {
+            steps << 'proguardGtolibRelease'
+        }
         if (canSealPack) {
             steps << 'sealPackGtolib'
+            if (canProguardRelease) {
+                steps << 'sealPackGtolibRelease'
+            }
         }
         return steps
     }
@@ -964,6 +1419,10 @@ tasks.register('buildGtolibProtected') {
         if (hasGtolibSources && isGtolibJarUpToDate) {
             logger.lifecycle("GTOLib: jar 已是最新 (stamp 命中)，跳过打包/保护 → 执行一致性校验")
             verifyGtolibSkipConsistency(protectedFile, true)
+            // 路线 A：发行单轨预构建对也必须同源有效
+            if (canProguardRelease && canSealPack) {
+                verifyGtolibReleasePair()
+            }
             return
         }
 
@@ -1052,6 +1511,44 @@ tasks.register('buildGtolibProtected') {
                     "GTOLib: 已写入 stamp fp=${gtolibFingerprint.take(16)}… " +
                             "jarSha=${jarSha.take(16)}…"
             )
+        }
+
+        // —— 路线 A：发行单轨产物（内部类名混淆、无 dev.bin），玩家 jar 的唯一来源 ——
+        if (hasGtolibSources) {
+            def sealedRel = gtolibSealedReleaseJar.get().asFile
+            def releaseFile = gtolibReleaseJar.get().asFile
+            if (canProguardRelease && canSealPack) {
+                if (!sealedRel.exists() || sealedRel.length() == 0) {
+                    throw new GradleException(
+                            "发行单轨未产出 gtolib-sealed-release.jar（sealPackGtolibRelease 未跑成）。\n" +
+                                    "请检查其日志，或 ./gradlew -PgtolibRebuild=true buildGtolibProtected"
+                    )
+                }
+                releaseFile.parentFile.mkdirs()
+                Files.copy(sealedRel.toPath(), releaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                injectGtolibMixinConfig(releaseFile)
+                publishAndInjectGtolibRefmaps(releaseFile, false)
+                // 先验 gtocore 链接面，再同步 libs——校验失败时不落地半成品发行对
+                verifyMainGtolibImportsAgainstJar(releaseFile)
+                gtolibReleaseLibsJar.parentFile.mkdirs()
+                Files.copy(releaseFile.toPath(), gtolibReleaseLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                writeGtolibSidecar(
+                        gtolibReleaseLibsJar, gtolibReleaseSidecarFile, gtolibFingerprint,
+                        'proguard-release+gto-seal(single-track,no-dev-bin)'
+                )
+                verifyGtolibReleasePair()
+                logger.lifecycle(
+                        "GTOLib release(单轨): 已同步 libs/gtolib-release.jar + .PROTECTED " +
+                                "(${gtolibReleaseLibsJar.length()} bytes)"
+                )
+            } else if (canProguardRelease) {
+                logger.warn("GTOLib release: 无 Seal Packager，发行单轨未生成（发行 jar 将无法构建）")
+            } else {
+                logger.warn(
+                        "GTOLib release: 缺 GTOLib/protect/proguard-release-rules.pro，" +
+                                "发行单轨未生成（发行 jar 将无法构建）"
+                )
+            }
         }
         def mode = (sealed.exists() && sealed.length() > 0) ? 'ProGuard+Seal' : (pg.exists() ? 'ProGuard' : 'prebuilt')
         logger.lifecycle("GTOLib protected (${mode}): ${protectedFile} (${protectedFile.length()} bytes)")
@@ -1633,11 +2130,11 @@ afterEvaluate {
         // 玩家包统一用 writeDualModsToml 的双 modId，禁止 resources 再塞一份
         exclude 'META-INF/mods.toml'
         // 加密 gtolib（hollow class + bins + Manifest Salt + mixins）
+        // 路线 A：默认嵌入发行单轨 gtolib-release（类名混淆、无 dev.bin）；
+        // 仅调试明文模式沿用本地 protected/ready。选择逻辑与 Salt 读取共用同一 resolver。
         from({
-            def protectedFile = gtolibProtectedJar.get().asFile
-            def ready = gtolibReadyJar.get().asFile
-            def f = (protectedFile.exists() && protectedFile.length() > 0) ? protectedFile : ready
-            f.exists() && f.length() > 0 ? zipTree(f) : []
+            def f = resolveGtolibReleaseEmbedJar()
+            (f != null && f.exists() && f.length() > 0) ? zipTree(f) : []
         }) {
             exclude 'META-INF/mods.toml' // 用下方双 modId 清单
             exclude 'com/gtolib/GTOLibMod.class' // 明文 stub 见下
@@ -1665,6 +2162,19 @@ afterEvaluate {
                                 "请保证 libs/gto-seal-runtime-1.0.jar 存在（或 ./gradlew syncSealRuntimeToLibs）"
                 )
             }
+            // 路线 A：发行包体必须是单轨 release；缺失时硬失败，不许悄悄退回双轨 protected
+            def embed = resolveGtolibReleaseEmbedJar()
+            if (embed == null) {
+                throw new GradleException(
+                        "发行 jar 需要单轨 gtolib-release（类名混淆、无 dev.bin）。\n" +
+                                "请有权限者: ./gradlew -PgtolibRebuild=true buildGtolibProtected\n" +
+                                "并提交 libs/gtolib-release.jar + libs/gtolib-release.PROTECTED。"
+                )
+            }
+            if (embed.canonicalPath == gtolibReleaseLibsJar.canonicalPath) {
+                verifyGtolibReleasePair()
+            }
+            logger.lifecycle("GTO jar: 嵌入 gtolib 包体 ← ${embed.name}")
             // 写入 resources / mixin（不在 from 里叠多份，避免 reobf Duplicate entries）
             publishAndInjectGtolibRefmaps(null, hasGtolibSources)
         }
