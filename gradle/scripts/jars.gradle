@@ -39,15 +39,28 @@ afterEvaluate {
                 'Name'                   : 'com/gtocore/mixin',
                 'Sealed'                 : 'true',
         ])
-        // 主 jar：用加密 gtolib 包内的 Salt，禁止随机
+        // 主 jar：用加密 gtolib 包内的 Salt，禁止随机。
+        // 必须与 jar 任务实际嵌入的包体同源（路线 A：发行单轨 gtolib-release），
+        // 否则 Manifest Salt 与 bins 加密 Salt 不一致，Runtime 解密必失败。
         if (jarTask.name == 'jar' || jarTask.name == 'reobfJar') {
             jarTask.doFirst {
-                def candidates = [
-                        file("${buildDir}/gtolib/gtolib-protected.jar"),
-                        file("${buildDir}/gtolib/gtolib-sealed.jar"),
-                        file('libs/gtolib-protected.jar'),
-                ]
-                def src = candidates.find { it.exists() && it.length() > 0 }
+                def src = null
+                if (project.ext.has('resolveGtolibReleaseEmbedJar')) {
+                    try {
+                        src = project.ext.resolveGtolibReleaseEmbedJar()
+                    } catch (Throwable ignored) {
+                    }
+                }
+                if (src == null || !src.exists() || src.length() == 0) {
+                    def candidates = [
+                            file("${buildDir}/gtolib/gtolib-release.jar"),
+                            file('libs/gtolib-release.jar'),
+                            file("${buildDir}/gtolib/gtolib-protected.jar"),
+                            file("${buildDir}/gtolib/gtolib-sealed.jar"),
+                            file('libs/gtolib-protected.jar'),
+                    ]
+                    src = candidates.find { it.exists() && it.length() > 0 }
+                }
                 def seal = src != null ? readGtoSealManifestFromJar(src) : [:]
                 if (seal['NTPT-Salt'] || seal['GTO-Seal-Salt']) {
                     def salt = seal['NTPT-Salt'] ?: seal['GTO-Seal-Salt']
