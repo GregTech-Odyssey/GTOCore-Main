@@ -186,8 +186,8 @@ public class ResearchTagEmiStack extends EmiStack {
                 Component.translatable(TEAM_TOTAL_DESC).withStyle(ChatFormatting.DARK_GRAY),
                 Component.translatable(DOMAIN_DATA_STORAGE,
                         tag.getDisplayName().withStyle(style -> style.withColor(tag.getColor())),
-                        Component.literal(FormattingUtil.formatNumberReadable(tag.getBytePerPoint())).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.DARK_GRAY)
-                        .append(amount > 1 ? Component.translatable(DOMAIN_DATA_STORAGE_TOTAL, Component.literal(FormattingUtil.formatNumberReadable(tag.getBytePerPoint() * amount)).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.DARK_GRAY) : Component.empty()));
+                        Component.literal(FormattingUtil.formatNumberReadable(tag.getBytePerPoint()) + "B").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.DARK_GRAY)
+                        .append(amount > 1 ? Component.translatable(DOMAIN_DATA_STORAGE_TOTAL, Component.literal(FormattingUtil.formatNumberReadable(tag.getBytePerPoint() * amount) + "B").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.DARK_GRAY) : Component.empty()));
     }
 
     @Override

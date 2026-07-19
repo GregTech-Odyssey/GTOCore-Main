@@ -23,6 +23,7 @@ version = mod_version
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 sourceSets {
     test {
         compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
