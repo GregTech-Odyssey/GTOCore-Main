@@ -370,6 +370,7 @@
     "gtocore:chaos_tuning_casing",
     "gtocore:phase_space_stabilization_casing",
     "gtocore:normal_heat_pipe",
-    "gtocore:normal_mana_pipe"
+    "gtocore:normal_mana_pipe",
+    "gtocore:normal_muffler_pipe"
   ]
 }

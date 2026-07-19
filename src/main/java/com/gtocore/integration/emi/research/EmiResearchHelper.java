@@ -36,12 +36,16 @@ public class EmiResearchHelper {
     static final String TEAM_TOTAL_NAME = "gtocore.research.team_total";
     @RegisterLanguage(cn = "科技节点[%s]", en = "Tech Node [%s]")
     static final String TECH_NODE_NAME = "gtocore.research.tech_node";
-    @RegisterLanguage(cn = "[%s]领域数据", en = "[%s] Domain Data")
+    @RegisterLanguage(cn = "[%s]研究点数", en = "[%s] Research Points")
     static final String DOMAIN_DATA_NAME = "gtocore.research.domain_data";
-    @RegisterLanguage(cn = "领域数据可由扫描站扫描存储了此领域数据的晶片获得", en = "Domain Data can be obtained by scanning the chip that stores this domain data with a scanning station")
+    @RegisterLanguage(cn = "研究点数可由扫描站扫描存储了此领域数据的晶片获得", en = "Research Points can be obtained by scanning the chip that stores this domain data with a scanning station")
     static final String DOMAIN_DATA_DESC = "gtocore.research.domain_data.desc";
     @RegisterLanguage(cn = "可累计到团队总量，并用于解锁科技节点", en = "Can be accumulated to the team total and used to unlock tech nodes")
     static final String TEAM_TOTAL_DESC = "gtocore.research.team_total.desc";
+    @RegisterLanguage(cn = "每一份[%s]需要占用%s晶片存储空间", en = "Each [%s] requires %s chip storage space")
+    static final String DOMAIN_DATA_STORAGE = "gtocore.research.domain_data.storage";
+    @RegisterLanguage(cn = "(共占用%s)", en = "(Occupies %s in total)")
+    static final String DOMAIN_DATA_STORAGE_TOTAL = "gtocore.research.domain_data.storage.total";
 
     public static Component getResearchTagTeamTotal(ResearchTag tag) {
         var plr = Minecraft.getInstance().player;

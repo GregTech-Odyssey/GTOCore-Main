@@ -5,6 +5,8 @@ import com.gtocore.client.renderer.GTORenderTypes;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -181,7 +183,11 @@ public class ResearchTagEmiStack extends EmiStack {
     public List<Component> getTooltipText() {
         return List.of(getName(),
                 Component.translatable(DOMAIN_DATA_DESC).withStyle(ChatFormatting.DARK_GRAY),
-                Component.translatable(TEAM_TOTAL_DESC).withStyle(ChatFormatting.DARK_GRAY));
+                Component.translatable(TEAM_TOTAL_DESC).withStyle(ChatFormatting.DARK_GRAY),
+                Component.translatable(DOMAIN_DATA_STORAGE,
+                        tag.getDisplayName().withStyle(style -> style.withColor(tag.getColor())),
+                        Component.literal(FormattingUtil.formatNumberReadable(tag.getBytePerPoint())).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.DARK_GRAY)
+                        .append(amount > 1 ? Component.translatable(DOMAIN_DATA_STORAGE_TOTAL, Component.literal(FormattingUtil.formatNumberReadable(tag.getBytePerPoint() * amount)).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.DARK_GRAY) : Component.empty()));
     }
 
     @Override
