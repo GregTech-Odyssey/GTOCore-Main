@@ -151,9 +151,9 @@ afterEvaluate {
                     destDir: destDir,
                     alias: "gtokey",
                     storetype: "jks",
-                    keystore: "keystore.jks",
-                    storepass: System.getenv('GTO_STOREPASS'),
-                    keypass: System.getenv('GTO_KEYPASS'),
+                    keystore: "E:\\gtolib\\protect\\keystore.jks",
+                    storepass: "GregTech-Odyssey",
+                    keypass: "GregTech-Odyssey",
                     preservelastmodified: "true",
                     tsaurl: "http://timestamp.sectigo.com?td=sha256",
             )
@@ -191,7 +191,7 @@ afterEvaluate {
             false
         }
         onlyIf {
-            new File("${projectDir}/keystore.jks").exists()
+            new File("E:\\gtolib\\protect\\keystore.jks").exists()
         }
     }
 

@@ -5,7 +5,6 @@ import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
-import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.integration.emi.research.EmiResearchHelper;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
@@ -363,11 +362,11 @@ public class TechTreeSideTab extends WidgetGroup {
         if (node == null) {
             return null;
         }
-        var tierItem = AnalyzeData.TierItems.get(node.getTier());
+        var tierItem = node.getTierItem();
         if (tierItem == null) {
             return null;
         }
-        return Component.translatable(TIER_DESC, tierItem.asStack().getHoverName().copy().withStyle(ChatFormatting.AQUA));
+        return Component.translatable(TIER_DESC, tierItem.getHoverName().copy().withStyle(ChatFormatting.AQUA));
     }
 
     @OnlyIn(Dist.CLIENT)

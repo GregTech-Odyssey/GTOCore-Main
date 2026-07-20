@@ -40,6 +40,15 @@ public class TechTree implements ITagSerializable<CompoundTag> {
         return definition.tryUnlock(nodes, context, team, true);
     }
 
+    public boolean isAllPrerequisitesUnlocked(TechNode definition) {
+        for (var prerequisite : definition.prerequisites) {
+            if (!nodes.contains(prerequisite)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Set<TechNode> getEndNodes() {
         var result = new ReferenceOpenHashSet<TechNode>();
         var prerequisites = new ReferenceOpenHashSet<TechNode>();

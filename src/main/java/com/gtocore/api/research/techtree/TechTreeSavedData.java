@@ -82,11 +82,11 @@ public class TechTreeSavedData extends FastSavedData {
     }
 
     public static boolean isUnlocked(ServerPlayer player, TechNode node) {
-        return isUnlocked(getTeamUUID(player), node);
+        return isUnlocked(player.getUUID(), node);
     }
 
     public static boolean isUnlocked(UUID uuid, TechNode node) {
-        TechTree tree = findTree(uuid, node.getManager());
+        TechTree tree = findTree(TeamUtil.getTeamUUID(uuid), node.getManager());
         return tree != null && tree.isUnlocked(node);
     }
 

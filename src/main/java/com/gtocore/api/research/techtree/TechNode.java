@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
@@ -27,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static com.gtocore.data.recipe.research.AnalyzeData.TierItems;
 
 @DataGeneratorScanned
 public final class TechNode {
@@ -106,6 +109,13 @@ public final class TechNode {
             return AEFluidKey.of(outputs1.getFirst().inner.getFluidStack());
         }
         return null;
+    }
+
+    public ItemStack getTierItem() {
+        if (tier < 0 || tier >= TierItems.size()) {
+            return ItemStack.EMPTY;
+        }
+        return TierItems.get(tier).asStack();
     }
 
     private static MutableComponent getMainOutputText(GTRecipeDefinition recipe) {

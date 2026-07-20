@@ -4,7 +4,6 @@ import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTree;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
-import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.integration.jech.PinYinUtils;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -385,11 +384,11 @@ public class RecipeExportTab implements IFancyUIProvider {
                 }
 
                 var recipe = resolvedEntry.recipe();
-                var tierItem = AnalyzeData.TierItems.get(resolvedEntry.node().getTier());
+                var tierItem = resolvedEntry.node().getTierItem();
                 if (tierItem == null) {
                     return;
                 }
-                holder.exportSelectedRecipe(tierItem.asStack(), recipe);
+                holder.exportSelectedRecipe(tierItem, recipe);
             } else {
                 currentState = new SyncState(currentState.entries(), matchingEntry);
             }
@@ -494,9 +493,9 @@ public class RecipeExportTab implements IFancyUIProvider {
             tooltip.add(getMainOutputDisplayName(resolved.recipe()).copy().withStyle(ChatFormatting.WHITE));
             tooltip.add(Component.translatable(NODE_TOOLTIP, resolved.node().getDisplayName()).withStyle(ChatFormatting.GRAY));
 
-            var tierItem = AnalyzeData.TierItems.get(resolved.node().getTier());
+            var tierItem = resolved.node().getTierItem();
             if (tierItem != null) {
-                tooltip.add(Component.translatable(TIER_TOOLTIP, tierItem.asStack().getHoverName()).withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.translatable(TIER_TOOLTIP, tierItem.getHoverName()).withStyle(ChatFormatting.GRAY));
             }
 
             if (!entry.unlocked()) {

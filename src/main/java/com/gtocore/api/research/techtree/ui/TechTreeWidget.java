@@ -233,8 +233,12 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         setScrollYOffset(Mth.clamp(targetY, 0, getVerticalScrollLimit()));
     }
 
+    @SuppressWarnings("unused")
     @OnlyIn(Dist.CLIENT)
-    private boolean isMouseWithinBounds(double mouseX, double mouseY) {
+    private boolean isMouseWithinBounds(double a1, double a2) {
+        var mc = Minecraft.getInstance();
+        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
         return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
     }
 
@@ -268,12 +272,11 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         }
 
         TechTree tree = TechTreeSavedData.getOrCreateTree(player, manager);
-        TeamResearchContext unlockContext = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
         for (int i = 0; i < orderedNodes.size(); i++) {
             var node = orderedNodes.get(i);
             if (tree.isUnlocked(node)) {
                 states[i] = STATE_UNLOCKED_VALUE;
-            } else if (tree.tryUnlock(node, unlockContext, TeamUtil.getTeamUUID(player.getUUID())).isSuccess()) {
+            } else if (tree.isAllPrerequisitesUnlocked(node)) {
                 states[i] = STATE_AVAILABLE;
             }
         }
@@ -392,7 +395,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private int getNodeFillColor(byte state) {
         return switch (state) {
             case STATE_UNLOCKED_VALUE -> 0xFF1E4D2B;
-            case STATE_AVAILABLE -> 0xFF5A4815;
+            case STATE_AVAILABLE -> ColorUtils.getInterpolatedColor(0xFF2F2F34, 0xFF4C4C50, 0.5F + (float) Math.sin(System.currentTimeMillis() / 200.0D) * 0.5F);
             default -> 0xFF2F2F34;
         };
     }
@@ -400,7 +403,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private int getNodeBorderColor(byte state) {
         return switch (state) {
             case STATE_UNLOCKED_VALUE -> 0xFF6CDA84;
-            case STATE_AVAILABLE -> 0xFFF1CE67;
+            case STATE_AVAILABLE -> ColorUtils.getInterpolatedColor(0xFF8C8C93, 0xFF9999a2, 0.5F + (float) Math.sin(System.currentTimeMillis() / 200.0D) * 0.5F);
             default -> 0xFF8C8C93;
         };
     }
@@ -707,7 +710,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         @OnlyIn(Dist.CLIENT)
         public void drawInForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
-            if (!isMouseOverNode(mouseX, mouseY) || !TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY)) {
+            if (!isMouseOverNode(mouseX, mouseY)) {
                 return;
             }
 
@@ -718,7 +721,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         protected void drawTooltipTexts(int mouseX, int mouseY) {
-            if (!isMouseOverNode(mouseX, mouseY) || !TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY)) {
+            if (!isMouseOverNode(mouseX, mouseY)) {
                 return;
             }
             super.drawTooltipTexts(mouseX, mouseY);
@@ -726,7 +729,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         public boolean allowSelected(double mouseX, double mouseY, int button) {
-            return button == 0 && isMouseOverNode(mouseX, mouseY) && TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY);
+            return button == 0 && isMouseOverNode(mouseX, mouseY);
         }
 
         @Override
@@ -766,7 +769,10 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         public Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
-            return new TechNodeEmiStack(node);
+            if (isMouseOverNode(mouseX, mouseY)) {
+                return new TechNodeEmiStack(node);
+            }
+            return null;
         }
     }
 }

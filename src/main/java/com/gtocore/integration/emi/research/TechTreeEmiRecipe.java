@@ -31,7 +31,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
     private static final int SIDE_TAB_WIDTH = 166;
 
     public static final EmiRecipeCategory CATEGORY = new EmiRecipeCategory(
-            GTOCore.id("research"), EmiStack.of(GTOItems.STOPGAP_MEASURES.asItem())) {
+            GTOCore.id("research"), EmiStack.of(GTOItems.BLUE_HALIDE_LAMP.asStack())) {
 
         @Override
         public Component getName() {
