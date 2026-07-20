@@ -6,6 +6,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.AEChemicalHelper;
 
+import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
@@ -13,6 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 
 import appeng.api.stacks.AEFluidKey;
@@ -149,6 +151,9 @@ public final class ResearchRequirements {
         }
 
         public ResearchRequirements build() {
+            if (this.eurekaItem.getPrimaryKey() == Blocks.BARRIER.asItem() && GTCEu.isDev()) {
+                throw new IllegalStateException("Eureka item is not present.");
+            }
             var r = new ResearchRequirements();
             r.cwuNeeded = this.cwuNeeded;
             r.materialNeeded = this.materialNeeded;

@@ -52,6 +52,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GTBlocks.CLEANROOM_GLASS.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("mega_mixer")
@@ -73,6 +74,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_MIXER.asItem())
                         .CWUt(256))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("nanites_circuit_assembly_factory")
@@ -92,6 +94,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(MultiBlockD.CIRCUIT_ASSEMBLY_LINE.asItem())
                         .CWUt(256))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("precision_assembly_center")
@@ -111,6 +114,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(MultiBlockA.INTEGRATED_ASSEMBLER.asItem())
                         .CWUt(512))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("lightning_rod")
@@ -242,6 +246,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GTMachines.THERMAL_CENTRIFUGE[GTValues.UHV].asItem())
                         .CWUt(512))
+                .researchNode(AnalyzeData.RareEarthProcessing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("mega_bath_tank")
@@ -307,6 +312,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(GTResearchMachines.HPCA_ACTIVE_COOLER_COMPONENT.asItem())
                         .CWUt(128))
+                .researchNode(SupercomputingTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("mega_vacuum_drying_furnace")
@@ -375,6 +381,7 @@ final class AssemblyLine {
                 .researchStation(b -> b
                         .researchStack(MultiBlockC.BIOENGINEERING_MODULE.asItem())
                         .CWUt(256))
+                .researchNode(HighEnergyBioEngineering)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("cracker_hub")
@@ -457,7 +464,7 @@ final class AssemblyLine {
                 .EUt(524288)
                 .duration(400)
                 .scanner(RegistriesUtils.getItemStack("gtceu:advanced_data_access_hatch"))
-                .researchNode(AnalyzeData.DataBase)
+                .researchNode(BiowareDataStorage)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("lapotronic_energy_orb_cluster")
@@ -604,33 +611,23 @@ final class AssemblyLine {
                 .duration(1200).EUt(100000).save();
 
         ASSEMBLY_LINE_RECIPES.builder("data_center")
-                .inputItems(GTResearchMachines.DATA_BANK, 16)
-                .inputItems(GTOItems.NEURAL_MATRIX, 64)
-                .inputItems(GTOItems.BIOWARE_MAINFRAME, 32)
-                .inputItems(GTOItems.OPTICAL_PROCESSING_CORE, 16)
-                .inputItems(GTOItems.EXOTIC_WAFER, 64)
-                .inputItems(GTOItems.EXOTIC_RAM_WAFER, 64)
-                .inputItems(GTBlocks.OPTICAL_PIPES[0], 64)
-                .inputItems(GTBlocks.OPTICAL_PIPES[0], 64)
-                .inputItems(TagPrefix.wireFine, GTOMaterials.CarbonNanotubes, 64)
-                .inputItems(TagPrefix.wireFine, GTOMaterials.CarbonNanotubes, 64)
-                .inputItems(TagPrefix.wireFine, GTOMaterials.TitaniumDioxideNanotubes, 64)
-                .inputItems(TagPrefix.wireFine, GTOMaterials.TitaniumDioxideNanotubes, 64)
-                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UEV, 8)
-                .inputItems(GTOItems.REALLY_MAX_BATTERY, 8)
-                .outputItems(ExResearchMachines.DATA_CENTER.asItem())
-                .inputFluids(GTOMaterials.MutatedLivingSolder, L << 6)
-                .inputFluids(GTOMaterials.WoodsGlass, L << 6)
-                .inputFluids(GTOMaterials.AbyssalAlloy, L << 6)
-                .inputFluids(GTMaterials.Neutronium, L << 6)
-                .researchStation(b -> b
-                        .researchStack(ExResearchMachines.BIO_DATA_ACCESS_HATCH.asItem())
-                        .CWUt(512)
-                        .duration(2400)
-                        .EUt(GTValues.VA[GTValues.UEV]))
-                .EUt(VA[UEV])
+                .inputItems("gtceu:data_bank", 2)
+                .inputItems(CustomTags.ZPM_CIRCUITS, 16)
+                .inputItems(GTItems.FIELD_GENERATOR_LuV, 8)
+                .inputItems(GTItems.TOOL_DATA_ORB, 32)
+                .inputItems(GTItems.COVER_SCREEN, 8)
+                .inputItems("gtceu:normal_optical_pipe", 32)
+                .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.StainlessSteel, 32)
+                .inputItems(GTItems.CRYSTAL_SYSTEM_ON_CHIP, 32)
+                .inputItems(GTOItems.CELL_COMPONENT_64M, 2)
+                .inputItems(TagPrefix.foil, GTMaterials.Trinium, 32)
+                .outputItems("gtocore:data_center")
+                .inputFluids(GTMaterials.SolderingAlloy, 1152)
+                .inputFluids(GTMaterials.PCBCoolant, 10000)
+                .inputFluids(GTMaterials.BlueAlloy, 2304)
+                .EUt(32000)
+                .duration(600)
                 .researchNode(AnalyzeData.DataCenter)
-                .duration(400)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("me_pattern_buffer")
@@ -728,6 +725,7 @@ final class AssemblyLine {
                         .duration(1200)
                         .CWUt(256))
                 .duration(2400).EUt(VA[UHV])
+                .researchNode(MECapacityExpansion)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("dynamo_hatch_luv")
@@ -1019,6 +1017,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockH.KERR_NEWMAN_HOMOGENIZER.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(MagneticConfinementDimensionallyShockProcess)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_mainframe_complex")
@@ -1048,6 +1047,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.SUPRACHRONAL_CIRCUIT[GTValues.MAX].asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(Create)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("sps_crafting")
@@ -1071,6 +1071,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.PELLET_ANTIMATTER.asItem())
                         .CWUt(256)
                         .EUt(31457280))
+                .researchNode(SPSTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("engraving_laser_plant")
@@ -1096,6 +1097,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_ENGRAVING_LASER.asItem())
                         .CWUt(64)
                         .EUt(491520))
+                .researchNode(LaserEngraver)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("power_module")
@@ -1167,6 +1169,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.REALLY_MAX_BATTERY.asItem())
                         .CWUt(576)
                         .EUt(7864320))
+                .researchNode(UltimateBattery3)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("mega_canner")
@@ -1187,6 +1190,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMachines.CANNER[GTValues.UEV].asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("pcb_factory")
@@ -1300,6 +1304,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.ANNIHILATION_CONSTRAINER.asItem())
                         .CWUt(4096)
                         .EUt(125829120))
+                .researchNode(AnnihilationGenerator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("eye_of_harmony")
@@ -1329,6 +1334,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.RECURSIVELY_FOLDED_NEGATIVE_SPACE.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(UniverseSimulation)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("precision_assembler")
@@ -1373,6 +1379,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.EMPTY_LASER_COOLING_CONTAINER.asItem())
                         .CWUt(64)
                         .EUt(31457280))
+                .researchNode(TimeDilationTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("opv_energy_output_hatch")
@@ -1414,6 +1421,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACETIME_ASSEMBLY_LINE_CASING.asItem())
                         .CWUt(512)
                         .EUt(7864320))
+                .researchNode(DimensionSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("cosmic_processing_core")
@@ -1440,6 +1448,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.COSMIC_PROCESSING_UNIT_CORE.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(CosmicTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("circuit_assembly_line")
@@ -1508,6 +1517,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.RESTRAINT_DEVICE.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(AtomicEnergyExciting)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("spacetime_bending_core")
@@ -1529,6 +1539,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACETIME_CONTINUUM_RIPPER.asItem())
                         .CWUt(1024)
                         .EUt(125829120))
+                .researchNode(QFTSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("element_copying")
@@ -1554,6 +1565,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockE.STAR_ULTIMATE_MATERIAL_FORGE_FACTORY.asItem())
                         .CWUt(2048)
                         .EUt(125829120))
+                .researchNode(ElementFabricationTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("infinity_coil_block")
@@ -1572,6 +1584,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.STARMETAL_COIL_BLOCK.asItem())
                         .CWUt(2048)
                         .EUt(2013265920))
+                .researchNode(HyperDimensionalForgeCoil)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("really_max_battery")
@@ -1600,6 +1613,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTItems.ULTIMATE_BATTERY.asItem())
                         .CWUt(288)
                         .EUt(1966080))
+                .researchNode(UltimateBattery2)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_assembly_line")
@@ -1625,6 +1639,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockD.ASSEMBLER_MODULE.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(SuprachronalAssemblyLine)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dyson_sphere_receiving_station")
@@ -1647,6 +1662,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.DYSON_RECEIVER_CASING.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(DysonSphere)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("mass_fabricator")
@@ -1670,6 +1686,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.MATTER_FABRICATOR.asItem())
                         .CWUt(512)
                         .EUt(125829120))
+                .researchNode(MassEnergyConversionTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("hyper_reactor")
@@ -1694,6 +1711,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GeneratorMultiblock.LARGE_NAQUADAH_REACTOR.asItem())
                         .CWUt(128)
                         .EUt(7864320))
+                .researchNode(AtomicEnergyExciting)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("chaotic_energy_core")
@@ -1718,6 +1736,7 @@ final class AssemblyLine {
                 .inputFluids(GTOMaterials.SpaceTime, 10000)
                 .inputFluids(GTOMaterials.PrimordialMatter, 10000)
                 .outputItems(GTOItems.CHAOTIC_ENERGY_CORE)
+                .researchNode(ChaosCore)
                 .EUt(128849018880L)
                 .duration(2560)
                 .researchStation(b -> b.researchStack(GTOItems.CREATE_ULTIMATE_BATTERY.asItem())
@@ -1744,6 +1763,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.ENGRAVING_LASER_PLANT.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserEngraver2)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("carbon_nanites")
@@ -1785,6 +1805,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTItems.BATTERY_LuV_VANADIUM.asItem())
                         .CWUt(128)
                         .EUt(31457280))
+                .researchNode(ManifoldOscillatory)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("super_blast_smelter")
@@ -1840,6 +1861,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.EXOTIC_CHIP.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(ExoticTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("flotation_cell_regulator")
@@ -1884,6 +1906,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.MANIPULATOR.asItem())
                         .CWUt(512)
                         .EUt(125829120))
+                .researchNode(QFTSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("star_ultimate_material_forge_factory")
@@ -1909,6 +1932,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.ULTIMATE_STELLAR_CONTAINMENT_CASING.asItem())
                         .CWUt(1024)
                         .EUt(31457280))
+                .researchNode(StellarUltimateForge)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("restraint_device")
@@ -1928,6 +1952,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.CONTAINMENT_FIELD_GENERATOR.asItem())
                         .CWUt(512)
                         .EUt(1966080))
+                .researchNode(DimensionSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("bedrock_drilling_rig")
@@ -1957,6 +1982,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.BEDROCK_DRILL.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(BedrockMining)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("advanced_mass_fabricator")
@@ -1984,6 +2010,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.MASS_FABRICATOR.asItem())
                         .CWUt(1024)
                         .EUt(31457280))
+                .researchNode(AdvancedMassFabricationTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("optical_processing_core")
@@ -2013,6 +2040,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.SIMPLE_OPTICAL_SOC.asItem())
                         .CWUt(128)
                         .EUt(1966080))
+                .researchNode(OpticalTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("space_elevator")
@@ -2084,6 +2112,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.LARGE_CRACKER.asItem())
                         .CWUt(72)
                         .EUt(122880))
+                .researchNode(FuelRefineryComplex)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uxv_energy_output_hatch")
@@ -2408,6 +2437,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.ADVANCED_ASSEMBLY_LINE_UNIT.asItem())
                         .CWUt(256)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.SpaceTimeAssemblyLine)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("holy_separator")
@@ -2429,6 +2459,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_CENTRIFUGE.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("create_aggregatione_core")
@@ -2454,6 +2485,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.DRAGON_STABILIZER_CORE.asItem())
                         .CWUt(16384)
                         .EUt(491520))
+                .researchNode(Create)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uhv_fusion_reactor")
@@ -2503,6 +2535,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.STELLAR_FORGE.asItem())
                         .CWUt(4096)
                         .EUt(31457280))
+                .researchNode(HyperDimensionalForge)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uev_energy_output_hatch")
@@ -2543,6 +2576,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACE_ELEVATOR_POWER_MODULE_2.asItem())
                         .CWUt(256)
                         .EUt(491520))
+                .researchNode(SpaceElevator3)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("power_module_2")
@@ -2562,6 +2596,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACE_ELEVATOR_POWER_MODULE_1.asItem())
                         .CWUt(128)
                         .EUt(122880))
+                .researchNode(SpaceElevator2)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("power_module_5")
@@ -2581,6 +2616,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACE_ELEVATOR_POWER_MODULE_4.asItem())
                         .CWUt(1024)
                         .EUt(7864320))
+                .researchNode(SpaceElevator5)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("power_module_4")
@@ -2600,6 +2636,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACE_ELEVATOR_POWER_MODULE_3.asItem())
                         .CWUt(512)
                         .EUt(1966080))
+                .researchNode(SpaceElevator4)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_max")
@@ -2649,6 +2686,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.RECYCLER.asItem())
                         .CWUt(128)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.MatterFabricator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("compound_distillation_fractionator")
@@ -2670,6 +2708,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_DISTILLERY.asItem())
                         .CWUt(600)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_luv")
@@ -2721,6 +2760,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.NAQUADRIA_CHARGE.asItem())
                         .CWUt(64)
                         .EUt(31457280))
+                .researchNode(AnalyzeData.LeptonicCharge)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("mega_wiremill")
@@ -2742,6 +2782,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_WIREMILL.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("plasma_condenser")
@@ -2767,6 +2808,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.MEGA_VACUUM_FREEZER.asItem())
                         .CWUt(64)
                         .EUt(1966080))
+                .researchNode(LaserPlasmaCondenser)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("large_chemical_plant")
@@ -2808,6 +2850,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.MODULE_CONNECTOR.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(DysonSphereSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("draconic_energy_core")
@@ -2833,6 +2876,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.WYVERN_ENERGY_CORE.asItem())
                         .CWUt(1024)
                         .EUt(503316480))
+                .researchNode(AwakenedCore)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("field_extruder_factory")
@@ -2853,6 +2897,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_EXTRUDER.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_opv")
@@ -2902,6 +2947,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.DIMENSIONAL_BRIDGE_CASING.asItem())
                         .CWUt(1024)
                         .EUt(125829120))
+                .researchNode(TimeDilationDimensionSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("advanced_sps_crafting")
@@ -2954,6 +3000,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.EXTREMELY_MAX_BATTERY.asItem())
                         .CWUt(2304)
                         .EUt(125829120))
+                .researchNode(UltimateBattery5)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("quantum_chromodynamic_charge")
@@ -2973,6 +3020,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.LEPTONIC_CHARGE.asItem())
                         .CWUt(128)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.QuantumChromodynamicCharge)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("quantum_force_transformer_coil")
@@ -3002,6 +3050,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTBlocks.FUSION_COIL.asItem())
                         .CWUt(512)
                         .EUt(125829120))
+                .researchNode(QFTSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("uiv_energy_output_hatch")
@@ -3091,6 +3140,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockD.RESOURCE_COLLECTION_MODULE.asItem())
                         .CWUt(512)
                         .EUt(125829120))
+                .researchNode(SpaceProbeSurfaceReception)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("hollow_casing")
@@ -3111,6 +3161,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.MOLECULAR_CASING.asItem())
                         .CWUt(128)
                         .EUt(491520))
+                .researchNode(MolecularSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dimension_creation_casing")
@@ -3140,6 +3191,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.DIMENSION_CONNECTION_CASING.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(TimeDilationDimensionSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("mega_max_battery")
@@ -3167,6 +3219,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.INSANELY_MAX_BATTERY.asItem())
                         .CWUt(4608)
                         .EUt(503316480))
+                .researchNode(UltimateBattery6)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("bioware_processing_core")
@@ -3191,6 +3244,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.BIOWARE_CHIP.asItem())
                         .CWUt(64)
                         .EUt(491520))
+                .researchNode(AnalyzeData.BiowareTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("large_void_miner")
@@ -3242,6 +3296,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_BREWER.asItem())
                         .CWUt(512)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("containment_field_generator")
@@ -3262,6 +3317,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.FORCE_FIELD_GLASS.asItem())
                         .CWUt(128)
                         .EUt(491520))
+                .researchNode(MolecularSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("infinite_cell_component")
@@ -3298,6 +3354,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.DIMENSION_INJECTION_CASING.asItem())
                         .CWUt(1024)
                         .EUt(31457280))
+                .researchNode(DimensionSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("quark_pipe")
@@ -3323,6 +3380,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(RegistriesUtils.getItemStack("gtocore:heavy_quark_degenerate_matter_nonuple_fluid_pipe"))
                         .CWUt(2048)
                         .EUt(31457280))
+                .researchNode(DimensionSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("molecular_coil")
@@ -3341,6 +3399,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMBlocks.MOLYBDENUM_DISILICIDE_COIL_BLOCK.asItem())
                         .CWUt(128)
                         .EUt(491520))
+                .researchNode(MolecularSeriesCasings)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dyson_control_toroid")
@@ -3361,6 +3420,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACETIME_ASSEMBLY_LINE_UNIT.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(DysonSphereSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("supracausal_processing_core")
@@ -3387,6 +3447,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.RELATIVISTIC_SPINORIAL_MEMORY_SYSTEM.asItem())
                         .CWUt(1024)
                         .EUt(125829120))
+                .researchNode(SupracausalTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("opv_energy_input_hatch")
@@ -3426,6 +3487,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.INFINITY_COIL_BLOCK.asItem())
                         .CWUt(4096)
                         .EUt(2013265920))
+                .researchNode(HyperDimensionalForgeCoil)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("phase_change_cube")
@@ -3447,6 +3509,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GCYMMachines.LARGE_EXTRACTOR.asItem())
                         .CWUt(256)
                         .EUt(7864320))
+                .researchNode(LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("dyson_deployment_core")
@@ -3468,6 +3531,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACE_ELEVATOR_POWER_CORE.asItem())
                         .CWUt(512)
                         .EUt(31457280))
+                .researchNode(DysonSphereSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("compound_extreme_cooling_unit")
@@ -3497,6 +3561,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTMultiMachines.VACUUM_FREEZER.asItem())
                         .CWUt(256)
                         .EUt(1966080))
+                .researchNode(ComplexPlasmaCondenser)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("spacetime_compression_field_generator")
@@ -3520,6 +3585,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.TIME_DILATION_CONTAINMENT_UNIT.asItem())
                         .CWUt(1024)
                         .EUt(503316480))
+                .researchNode(TimeDilationDimensionSeriesCasing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("decay_hastener")
@@ -3610,6 +3676,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockC.COMPONENT_ASSEMBLER.asItem())
                         .CWUt(512)
                         .EUt(1966080))
+                .researchNode(ComponentProductionEnhancement)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("stellar_forge")
@@ -3635,6 +3702,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.STELLAR_CONTAINMENT_CASING.asItem())
                         .CWUt(256)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.StellarForge)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("hyperdimensional_drone")
@@ -3664,6 +3732,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.SPACE_DRONE_MK6.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalDrone)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("quantum_force_transformer")
@@ -3689,6 +3758,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.SPACETIME_BENDING_CORE.asItem())
                         .CWUt(2048)
                         .EUt(125829120))
+                .researchNode(QFTManipulator)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("component_assembly_line_casing_uv")
@@ -3734,6 +3804,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockD.NANO_FORGE.asItem())
                         .CWUt(1200)
                         .EUt(503316480))
+                .researchNode(NanitesMassiveProduction)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("eternity_coil_block")
@@ -3753,6 +3824,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOBlocks.HYPOGEN_COIL_BLOCK.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(HyperDimensionalForgeCoil)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("advanced_hyper_reactor")
@@ -3777,6 +3849,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GeneratorMultiblock.HYPER_REACTOR.asItem())
                         .CWUt(1024)
                         .EUt(31457280))
+                .researchNode(AnalyzeData.AdvancedHyperReactor)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("extremely_max_battery")
@@ -3804,6 +3877,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.TRANSCENDENT_MAX_BATTERY.asItem())
                         .CWUt(1152)
                         .EUt(31457280))
+                .researchNode(UltimateBattery4)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("mage_assembler")
@@ -3832,6 +3906,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.PRECISION_ASSEMBLER.asItem())
                         .CWUt(128)
                         .EUt(1966080))
+                .researchNode(AnalyzeData.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("large_naquadah_reactor")
@@ -3855,6 +3930,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOMachines.NAQUADAH_REACTOR_GENERATOR[GTValues.ZPM].asItem())
                         .CWUt(64)
                         .EUt(491520))
+                .researchNode(LargeNaquadahReactor)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("max_energy_input_hatch")
@@ -3926,6 +4002,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTOItems.PLASMA_CONTAINMENT_CELL.asItem())
                         .CWUt(128)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.ExDurablePlasmaContainer)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("isa_mill")
@@ -3997,6 +4074,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(GTItems.ENERGY_MODULE.asItem())
                         .CWUt(96)
                         .EUt(122880))
+                .researchNode(HighDensityEnergyStorage)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("luv_wireless_energy_unit")
@@ -4379,6 +4457,63 @@ final class AssemblyLine {
                         .CWUt(512)
                         .EUt(125829120))
                 .researchNode(CryotheumSupercoductingTech)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("wyvern_core")
+                .inputItems(GTOItems.DRACONIC_CORE, 16)
+                .inputItems(GTOItems.QUANTUMCHROMODYNAMIC_PROTECTIVE_PLATING, 32)
+                .inputItems(GTOItems.CONTAINED_KERR_NEWMANN_SINGULARITY, 32)
+                .inputItems(GTOItems.DRAGON_STABILIZER_CORE, 16)
+                .inputItems(CustomTags.UIV_CIRCUITS, 32)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UXV, 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UIV, 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UEV, 16)
+                .inputItems(GTOItems.ANNIHILATION_CONSTRAINER, 64)
+                .inputItems(GTOBlocks.ANNIHILATE_CORE.asItem(), 4)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Draconium, 16)
+                .inputItems(TagPrefix.rodLong, GTOMaterials.HexaphaseCopper, 64)
+                .inputItems(TagPrefix.rodLong, GTOMaterials.Astrium, 64)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.AstralTitanium, 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.AwakenedDraconium, 32)
+                .outputItems(GTOItems.WYVERN_CORE)
+                .inputFluids(GTOMaterials.AwakenedDraconium, FluidStorageKeys.PLASMA, 256000)
+                .inputFluids(GTOMaterials.Adamantium, FluidStorageKeys.PLASMA, 384000)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 27648)
+                .EUt(12288000)
+                .duration(3200)
+                .researchNode(DragonCore)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("awakened_core")
+                .inputItems(GTOItems.WYVERN_CORE, 32)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Enderium, 64)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Starmetal, 64)
+                .inputItems(CustomTags.UXV_CIRCUITS, 32)
+                .inputItems(GTOItems.EXTREMELY_MAX_BATTERY, 32)
+                .inputItems(GTOItems.MANIFOLD_OSCILLATORY_POWER_CELL, 16)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Infinity, 16)
+                .inputItems(GTOItems.MACROWORMHOLE_GENERATOR, 4)
+                .outputItems(GTOItems.AWAKENED_CORE)
+                .inputFluids(GTOMaterials.AwakenedDraconium, FluidStorageKeys.PLASMA, 256000)
+                .inputFluids(GTOMaterials.Legendarium, FluidStorageKeys.PLASMA, 384000)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 27648)
+                .EUt(42288000)
+                .researchNode(AwakenedCore)
+                .duration(3200)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("chaotic_core")
+                .inputItems(GTOItems.AWAKENED_CORE, 16)
+                .inputItems(GTOItems.CHAOS_SHARD, 16)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Starmetal, 64)
+                .inputItems(TagPrefix.frameGt, GTOMaterials.Infinity, 4)
+                .inputItems(GTOItems.NUCLEAR_STAR, 16)
+                .inputItems(CustomTags.OpV_CIRCUITS, 32)
+                .inputItems(GTOItems.STABILIZED_WORMHOLE_GENERATOR, 4)
+                .outputItems(GTOItems.CHAOTIC_CORE)
+                .inputFluids(GTOMaterials.AwakenedDraconium, FluidStorageKeys.PLASMA, 256000)
+                .inputFluids(GTOMaterials.CosmicMesh, FluidStorageKeys.PLASMA, 384000)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 27648)
+                .EUt(122288000)
+                .duration(3200)
+                .researchNode(ChaosCore)
                 .save();
     }
 }
