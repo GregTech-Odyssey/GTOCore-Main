@@ -218,9 +218,9 @@ dependencies {
     modRuntimeOnly("xaero.map:xaeroworldmap-forge-1.20.1:1.41.2")
     modRuntimeOnly("xaero.minimap:xaerominimap-forge-1.20.1:26.1.0")
     modRuntimeOnly("curse.maven:ae2-network-analyser-961856:5107131")
-    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
-    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
-    modRuntimeOnly("curse.maven:ftb-chunks-forge-314906:7880858") // 有个人存档有
+//    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
+//    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
+//    modRuntimeOnly("curse.maven:ftb-chunks-forge-314906:7880858") // 有个人存档有
 //    modRuntimeOnly("curse.maven:effortless-building-302113:6330928")
 //    modRuntimeOnly("curse.maven:worldedit-225608:4586218")
 
