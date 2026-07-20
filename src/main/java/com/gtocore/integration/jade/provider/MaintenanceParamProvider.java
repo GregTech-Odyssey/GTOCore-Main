@@ -89,7 +89,9 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
     }
 
     static float getDamageMultiplier(IMaintenanceMachine machine) {
-        int pa = machine.getController().getParts().length;
+        var controller = machine.getController();
+        // write() already skips when null; keep defensive for other callers.
+        int pa = controller == null || controller.getParts() == null ? 1 : Math.max(1, controller.getParts().length);
         return machine.getTimeMultiplier() * GTOCore.difficulty * pa;
     }
 
