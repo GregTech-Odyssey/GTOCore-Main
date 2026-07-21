@@ -1,6 +1,6 @@
 package com.gtocore.api.research.techtree;
 
-import com.gtocore.api.research.TeamResearchContext;
+import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.client.Message;
 
 import com.gtolib.GTOCore;
@@ -90,12 +90,19 @@ public class TechTreeSavedData extends FastSavedData {
         return tree != null && tree.isUnlocked(node);
     }
 
-    public static boolean unlock(Player player, TechNode node, TeamResearchContext context) {
-        return unlock(getTeamUUID(player), node, context);
+    public static boolean unlock(Player player, TechNode node) {
+        return unlock(getTeamUUID(player), node);
     }
 
-    public static boolean unlock(UUID uuid, TechNode node, TeamResearchContext context) {
+    public static boolean hasNodeMetCWURequirements(UUID uuid, TechNode node) {
+        TechTree tree = findTree(TeamUtil.getTeamUUID(uuid), node.getManager());
+        var context = TeamResearchSavedDtat.getOrCreateContext(uuid);
+        return tree != null && tree.hasNodeMetCWURequirements(node, context);
+    }
+
+    public static boolean unlock(UUID uuid, TechNode node) {
         TechTree tree = getOrCreateTree(uuid, node.getManager());
+        var context = TeamResearchSavedDtat.getOrCreateContext(uuid);
         boolean changed = !tree.isUnlocked(node) && tree.unlock(node, context, uuid).isSuccess();
         if (changed) {
             INSTANCE.setDirty();

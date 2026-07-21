@@ -1,7 +1,6 @@
 package com.gtocore.api.research.techtree;
 
 import com.gtocore.api.research.ResearchRequirements;
-import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.techtree.ui.TechTreeAutoLayout;
 import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
@@ -257,9 +256,9 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
         return Component.translatable("gtocore.techtree." + manager.id);
     }
 
-    public void triggerAllResearchUnlock(UUID team, TeamResearchContext context) {
+    public void triggerAllResearchUnlock(UUID team) {
         for (var node : definitions.values()) {
-            TechTreeSavedData.unlock(team, node, context);
+            TechTreeSavedData.unlock(team, node);
         }
     }
 }

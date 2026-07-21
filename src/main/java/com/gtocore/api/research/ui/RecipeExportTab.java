@@ -1,5 +1,6 @@
 package com.gtocore.api.research.ui;
 
+import com.gtocore.api.research.ExResearchManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTree;
 import com.gtocore.api.research.techtree.TechTreeManager;
@@ -21,7 +22,6 @@ import com.gregtechceu.gtceu.utils.ResearchManager;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -29,11 +29,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.client.AEKeyRendering;
-import appeng.api.stacks.AEFluidKey;
-import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
+import appeng.client.gui.me.common.StackSizeRenderer;
 
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -91,6 +90,10 @@ public class RecipeExportTab implements IFancyUIProvider {
     private static final String LOCKED_TOOLTIP = "gtocore.research.recipe_export_tab.locked";
     @RegisterLanguage(cn = "没有找到匹配的配方奖励", en = "No matching recipe rewards were found.")
     private static final String FILTER_EMPTY_RECIPES = "gtocore.research.recipe_export_tab.filter_empty";
+    @RegisterLanguage(cn = "已含有", en = "Included")
+    private static final String INCLUDED_TOOLTIP = "gtocore.research.recipe_export_tab.included";
+    @RegisterLanguage(cn = "该配方数据已包含在数据库中", en = "This recipe data is already included in the database.")
+    private static final String INCLUDED_TOOLTIP_DETAIL = "gtocore.research.recipe_export_tab.included.detail";
 
     private final DataItemHolder holder;
     private final TechTreeManager techTree;
@@ -127,8 +130,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
     private static boolean isConvertibleDataItem(ItemStack stack, ItemStack expectedTierItem) {
         return !stack.isEmpty() &&
-                stack.is(expectedTierItem.getItem()) &&
-                !ResearchManager.hasResearchTag(stack);
+                stack.is(expectedTierItem.getItem());
     }
 
     private static boolean isSameEntry(@Nullable EntryState first, @Nullable EntryState second) {
@@ -414,21 +416,16 @@ public class RecipeExportTab implements IFancyUIProvider {
 
                 boolean unlocked = unlockedNodeNames.contains(node.name);
                 for (GTRecipeDefinition recipe : recipes) {
-                    if (hasRenderableMainOutput(recipe)) {
-                        entries.add(new EntryState(node.name, recipe.id.toString(), getMainOutputSearchName(recipe), unlocked));
+                    boolean included = holder.getExistRecipes().contains(recipe);
+                    if (ExResearchManager.hasRenderableMainOutput(recipe)) {
+                        entries.add(new EntryState(node.name, recipe.id.toString(), ExResearchManager.getMainOutputDisplayName(recipe).getString(), unlocked, included));
                     }
                 }
             }
 
             entries.sort(Comparator
                     .comparingInt((EntryState entry) -> entry.unlocked() ? 0 : 1)
-                    .thenComparingInt(entry -> {
-                        ResolvedEntry resolved = resolveEntry(entry);
-                        return resolved == null ? Integer.MAX_VALUE : resolved.node().getTier();
-                    })
-                    .thenComparing(EntryState::searchName, String.CASE_INSENSITIVE_ORDER)
-                    .thenComparing(EntryState::nodeName)
-                    .thenComparing(EntryState::recipeId));
+                    .thenComparing(entryState -> entryState.included ? 1 : 0));
             return entries;
         }
 
@@ -490,7 +487,7 @@ public class RecipeExportTab implements IFancyUIProvider {
             }
 
             List<Component> tooltip = new ArrayList<>();
-            tooltip.add(getMainOutputDisplayName(resolved.recipe()).copy().withStyle(ChatFormatting.WHITE));
+            tooltip.add(ExResearchManager.getMainOutputDisplayName(resolved.recipe()).copy().withStyle(ChatFormatting.WHITE));
             tooltip.add(Component.translatable(NODE_TOOLTIP, resolved.node().getDisplayName()).withStyle(ChatFormatting.GRAY));
 
             var tierItem = resolved.node().getTierItem();
@@ -505,61 +502,14 @@ public class RecipeExportTab implements IFancyUIProvider {
 
             tooltip.add(Component.translatable(isSameEntry(currentState.selected(), entry) ? EXPORT_TOOLTIP : SELECT_TOOLTIP)
                     .withStyle(isSameEntry(currentState.selected(), entry) ? ChatFormatting.AQUA : ChatFormatting.GRAY));
+            if (entry.included()) {
+                tooltip.add(Component.translatable(INCLUDED_TOOLTIP_DETAIL).withStyle(ChatFormatting.GOLD));
+            }
             return tooltip;
-        }
-
-        private static boolean hasRenderableMainOutput(GTRecipeDefinition recipe) {
-            return !getMainItemOutput(recipe).isEmpty() || !getMainFluidOutput(recipe).isEmpty();
-        }
-
-        private static @NotNull ItemStack getMainItemOutput(GTRecipeDefinition recipe) {
-            if (recipe.itemOutputs.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-            var ingredient = recipe.itemOutputs.getFirst().inner;
-            ItemStack stack = ingredient.getInnerItemStack().copy();
-            if (stack.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-            stack.setCount(Math.max(1, ingredient.getAmount()));
-            return stack;
-        }
-
-        private static @NotNull FluidStack getMainFluidOutput(GTRecipeDefinition recipe) {
-            if (recipe.fluidOutputs.isEmpty()) {
-                return FluidStack.EMPTY;
-            }
-            return recipe.fluidOutputs.getFirst().inner.getFluidStack();
-        }
-
-        private static Component getMainOutputDisplayName(GTRecipeDefinition recipe) {
-            ItemStack itemStack = getMainItemOutput(recipe);
-            if (!itemStack.isEmpty()) {
-                return Component.literal(itemStack.getCount() + "x ").append(itemStack.getHoverName());
-            }
-
-            FluidStack fluidStack = getMainFluidOutput(recipe);
-            if (!fluidStack.isEmpty()) {
-                return Component.literal(fluidStack.getAmount() + "mB ").append(fluidStack.getDisplayName());
-            }
-            return Component.empty();
-        }
-
-        private static String getMainOutputSearchName(GTRecipeDefinition recipe) {
-            ItemStack itemStack = getMainItemOutput(recipe);
-            if (!itemStack.isEmpty()) {
-                return itemStack.getHoverName().getString();
-            }
-
-            FluidStack fluidStack = getMainFluidOutput(recipe);
-            if (!fluidStack.isEmpty()) {
-                return fluidStack.getDisplayName().getString();
-            }
-            return "";
         }
     }
 
-    private record EntryState(String nodeName, String recipeId, String searchName, boolean unlocked) {}
+    private record EntryState(String nodeName, String recipeId, String searchName, boolean unlocked, boolean included) {}
 
     private record SyncState(List<EntryState> entries, @Nullable EntryState selected) {
 
@@ -573,10 +523,11 @@ public class RecipeExportTab implements IFancyUIProvider {
         buffer.writeUtf(entry.recipeId());
         buffer.writeUtf(entry.searchName());
         buffer.writeBoolean(entry.unlocked());
+        buffer.writeBoolean(entry.included());
     }
 
     private static EntryState readEntry(FriendlyByteBuf buffer) {
-        return new EntryState(buffer.readUtf(), buffer.readUtf(), buffer.readUtf(), buffer.readBoolean());
+        return new EntryState(buffer.readUtf(), buffer.readUtf(), buffer.readUtf(), buffer.readBoolean(), buffer.readBoolean());
     }
 
     private static final class SlotSectionLabelWidget extends WidgetGroup {
@@ -585,29 +536,6 @@ public class RecipeExportTab implements IFancyUIProvider {
             super(x, y, width, height);
             addWidget(new LabelWidget(0, inputLabelY, Component.translatable(INPUT_LABEL)));
             addWidget(new LabelWidget(0, outputLabelY, Component.translatable(OUTPUT_LABEL)));
-        }
-    }
-
-    private static final class EmptyTextWidget extends Widget {
-
-        private final Component text;
-
-        private EmptyTextWidget(int x, int y, int width, int height, Component text) {
-            super(x, y, width, height);
-            this.text = text;
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
-            Position pos = getPosition();
-            Size size = getSize();
-            Font font = Minecraft.getInstance().font;
-            int textWidth = font.width(text);
-            int x = pos.x + Math.max(0, (size.width - textWidth) / 2);
-            int y = pos.y + Math.max(0, (size.height - font.lineHeight) / 2);
-            graphics.drawString(font, text, x, y, 0xFFB9B9C0, false);
         }
     }
 
@@ -646,6 +574,8 @@ public class RecipeExportTab implements IFancyUIProvider {
             GuiTextures.SLOT.draw(graphics, mouseX, mouseY, pos.x, pos.y, size.width, size.height);
             if (entry.unlocked() && isSameEntry(parentWidget.currentState.selected(), entry)) {
                 DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, size.width - 2, size.height - 2, 0x5539C5BB);
+            } else if (entry.included()) {
+                DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, size.width - 2, size.height - 2, 0x77C5BB39);
             }
 
             drawRecipeIcon(graphics, pos.x + 1, pos.y + 1);
@@ -654,12 +584,20 @@ public class RecipeExportTab implements IFancyUIProvider {
                 DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, size.width - 2, size.height - 2, 0xAA2B2B2B);
                 DrawerHelper.drawBorder(graphics, pos.x, pos.y, size.width, size.height, isMouseOver(mouseX, mouseY) ? 0xFF6A6A6A : 0xFF4C4C4C, 1);
                 return;
+            } else if (entry.included()) {
+                StackSizeRenderer.renderSizeLabel(
+                        graphics, Minecraft.getInstance().font,
+                        pos.x + 1,
+                        pos.y + 17 - Minecraft.getInstance().font.lineHeight * 0.5f,
+                        Component.translatable(INCLUDED_TOOLTIP), 0.5f, true, true);
             }
 
             if (isSameEntry(parentWidget.currentState.selected(), entry)) {
                 DrawerHelper.drawBorder(graphics, pos.x, pos.y, size.width, size.height, 0xFF39C5BB, 1);
             } else if (isMouseOver(mouseX, mouseY)) {
                 DrawerHelper.drawBorder(graphics, pos.x, pos.y, size.width, size.height, 0xFFF3F3F3, 1);
+            } else if (entry.included) {
+                DrawerHelper.drawBorder(graphics, pos.x, pos.y, size.width, size.height, 0xFFC5BB39, 1);
             }
         }
 
@@ -699,22 +637,10 @@ public class RecipeExportTab implements IFancyUIProvider {
                 return;
             }
 
-            ItemStack itemStack = RecipeExportWidget.getMainItemOutput(resolved.recipe());
-            if (!itemStack.isEmpty()) {
-                var key = AEItemKey.of(itemStack);
-                if (key != null) {
-                    AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x, y, key);
-                    return;
-                }
-            }
-
-            FluidStack fluidStack = RecipeExportWidget.getMainFluidOutput(resolved.recipe());
-            if (!fluidStack.isEmpty()) {
-                var key = AEFluidKey.of(fluidStack);
-                if (key != null) {
-                    AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x, y, key);
-                    return;
-                }
+            AEKey key = ExResearchManager.getMainItemOutput(resolved.recipe());
+            if (key != null) {
+                AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x, y, key);
+                return;
             }
 
             graphics.drawString(Minecraft.getInstance().font, "?", x + 5, y + 4, 0xFFFFFFFF, false);
@@ -722,9 +648,9 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         @OnlyIn(Dist.CLIENT)
         private boolean isMouseOver(double mouseX, double mouseY) {
-            Position pos = getPosition();
-            Size size = getSize();
-            return mouseX >= pos.x && mouseX < pos.x + size.width && mouseY >= pos.y && mouseY < pos.y + size.height;
+            return Widget.isMouseOver(parentWidget.recipeContent.getPosition().x, parentWidget.recipeContent.getPosition().y,
+                    parentWidget.recipeContent.getSize().width, parentWidget.recipeContent.getSize().height, mouseX, mouseY) &&
+                    Widget.isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
         }
     }
 
@@ -753,6 +679,10 @@ public class RecipeExportTab implements IFancyUIProvider {
                 }
                 input.extractItem(slot, inserted, false);
             }
+        }
+
+        default Set<GTRecipeDefinition> getExistRecipes() {
+            return Collections.emptySet();
         }
     }
 

@@ -119,7 +119,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine implements
         if (lastRecipe != null && researchPoints != null) {
             var teamData = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
             teamData.addResearchPoints(researchPoints);
-            AnalyzeData.TechTree.triggerAllResearchUnlock(getOwnerUUID(), teamData);
+            AnalyzeData.TechTree.triggerAllResearchUnlock(getOwnerUUID());
             researchPoints = null;
         }
         objectHolder.setLocked(false);

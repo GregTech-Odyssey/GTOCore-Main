@@ -86,8 +86,10 @@ public class DataScanningManager {
                 teamContext.addScannedMaterial(mat);
             }
             teamContext.addScannedItem(key);
-            for (var node : ResearchRequirements.getEurekaRequirements(key)) {
-                Message.sendResearchToast(team, node, false);
+            if (!hasScanned) {
+                for (var node : ResearchRequirements.getEurekaRequirements(key)) {
+                    Message.sendResearchToast(team, node, false);
+                }
             }
         }
         return scanDataRaw(key, penalty);

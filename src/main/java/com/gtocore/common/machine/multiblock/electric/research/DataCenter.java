@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
+import com.gtocore.api.research.ExResearchManager;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
@@ -19,6 +20,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -47,10 +49,7 @@ import com.lowdragmc.lowdraglib.gui.widget.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -86,7 +85,14 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     private int getCWUInputLimit() {
-        return getTotalDataSlots() * getRecipeCount();
+        return getTotalDataSlots() * getExistRecipes().size();
+    }
+
+    @Override
+    public void tick() {
+        if (getRecipeLogic().getLastRecipe() == null) {
+            super.tick();
+        }
     }
 
     @Override
@@ -95,11 +101,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             var eu = recipe.eut;
             if (eu != 0) {
                 if (!this.useEnergy(eu, false)) {
-                    if (eu > 0) {
-                        setIdleReason(() -> ActionResult.failInsufficientIn(EURecipeInfo.INSTANCE.getName()).reason());
-                    } else {
-                        setIdleReason(ActionResult.FAIL_INSUFFICIENT_OUT);
-                    }
+                    setIdleReason(() -> ActionResult.failInsufficientIn(EURecipeInfo.INSTANCE.getName()).reason());
                     return false;
                 }
             }
@@ -115,62 +117,12 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         clearInventory(inpur.storage);
     }
 
-    public int getRecipeCount() {
+    public Set<GTRecipeDefinition> getExistRecipes() {
         return Arrays.stream(getParts())
                 .filter(IDataAccessHatchMachineAccessor.class::isInstance)
                 .map(IDataAccessHatchMachineAccessor.class::cast)
                 .flatMap(i -> i.gtocore$recipes().stream())
-                .collect(Collectors.toSet()).size();
-    }
-
-    @Override
-    public void attachSideTabs(TabsWidget sideTabs) {
-        super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(new ResearchInfoTab(AnalyzeData.TechTree, (uiWidget, sideTab) -> {
-            AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
-            var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
-                if (clickData.isRemote) {
-                    btnRef.get().setButtonTexture(GuiTextures.BUTTON,
-                            new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
-                                    .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
-                    return;
-                }
-                var gui = uiWidget.getGui();
-                if (gui == null || gui.entityPlayer == null) {
-                    return;
-                }
-                var node = sideTab.getSelectedNode();
-                if (node == null) {
-                    return;
-                }
-
-                UUID requester = gui.entityPlayer.getUUID();
-                boolean selectionChanged = selectedNode != node || researchRequester == null || !researchRequester.equals(requester);
-                selectedNode = node;
-                researchRequester = requester;
-
-                if (selectionChanged) {
-                    cwuBuffer = 0L;
-                    getRecipeLogic().resetRecipeLogic();
-                }
-            }) {
-
-                @Override
-                @OnlyIn(Dist.CLIENT)
-                protected void drawTooltipTexts(int mouseX, int mouseY) {
-                    if (sideTab.getSelectedNode() != null && isMouseOverElement(mouseX, mouseY) && getHoverElement(mouseX, mouseY) == this && gui != null && gui.getModularUIGui() != null) {
-                        gui.getModularUIGui().setHoverTooltip(sideTab.getSelectedNode().getRewardLinesWithHeader(), ItemStack.EMPTY, null, null);
-                    }
-                }
-            };
-            btnRef.set(button);
-            button.setButtonTexture(GuiTextures.BUTTON,
-                    new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
-                            .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
-            return button;
-        }));
-        sideTabs.attachSubTab(new DataAccessStorageTab(this));
-        sideTabs.attachSubTab(new RecipeExportTab(this, AnalyzeData.TechTree));
+                .collect(Collectors.toSet());
     }
 
     private String getResearchButtonText(@Nullable TechNode node) {
@@ -190,9 +142,14 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     @Override
+    public boolean isActive() {
+        return recipeLogic.isWorking();
+    }
+
+    @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (researchRequester == null || selectedNode == null) return null;
-        return getRecipeBuilder().EUt(energyUsage).duration(20).inputFluids(GTMaterials.PCBCoolant, 100).build();
+        return getRecipeBuilder().EUt(energyUsage * 2L).duration(20).inputFluids(GTMaterials.PCBCoolant, 100).build();
     }
 
     @Override
@@ -207,9 +164,13 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     @Override
     public void addDisplayText(List<Component> textList) {
-        super.addDisplayText(textList);
+        MultiblockDisplayText.builder(textList, isFormed())
+                .setWorkingStatus(true, isActive())
+                .setWorkingStatusKeys(LANG_DATA_ACCESS_WARN_ENERGY, LANG_DATA_ACCESS_WARN_ENERGY, "gtceu.multiblock.data_bank.providing")
+                .addEnergyUsageExactLine(energyUsage)
+                .addWorkingStatusLine();
         textList.add(Component.translatable(LANG_DATA_ACCESS_USAGE,
-                Component.literal(String.valueOf(getRecipeCount())).withStyle(ChatFormatting.AQUA),
+                Component.literal(String.valueOf(getExistRecipes().size())).withStyle(ChatFormatting.AQUA),
                 Component.literal(String.valueOf(getTotalDataSlots())).withStyle(ChatFormatting.AQUA))
                 .withStyle(ChatFormatting.GRAY));
         if (!isFormed()) return;
@@ -234,7 +195,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
         var unlockContext = TeamResearchSavedDtat.getOrCreateContext(researchRequester);
         unlockContext.addTechNodeAccCWU(selectedNode, cwuBuffer);
-        if (TechTreeSavedData.unlock(researchRequester, selectedNode, unlockContext)) {
+        if (TechTreeSavedData.hasNodeMetCWURequirements(researchRequester, selectedNode)) {
+            TechTreeSavedData.unlock(researchRequester, selectedNode);
             selectedNode = null;
             researchRequester = null;
             getRecipeLogic().resetRecipeLogic();
@@ -251,6 +213,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public ICustomItemStackHandler getDataOutputStorage() {
         return output;
     }
+
+    // ========= UI Tabs =========
 
     private static final class DataAccessStorageTab implements IFancyUIProvider {
 
@@ -296,6 +260,16 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 int x = slot % SLOT_COLUMNS;
                 int y = slot / SLOT_COLUMNS;
                 content.addWidget(new SlotWidget(itemHandler, slot, x * 18, SLOT_Y + y * 18, true, true)
+                        .setItemHook(i -> {
+                            var recipe = ExResearchManager.getRecipeInDataItem(i);
+                            if (recipe != null) {
+                                var outpur = ExResearchManager.getMainItemOutput(recipe);
+                                if (outpur != null) {
+                                    return outpur.wrapForDisplayOrFilter();
+                                }
+                            }
+                            return i;
+                        })
                         .setBackground(GuiTextures.SLOT));
             }
 
@@ -312,13 +286,67 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
         @Override
         public List<Component> getTabTooltips() {
-            return List.of(DATA_ACCESS_TITLE);
+            return List.of(Component.translatable(LANG_DATA_ACCESS_TITLE));
         }
 
         @Override
         public Component getTitle() {
-            return DATA_ACCESS_TITLE;
+            return Component.translatable(LANG_DATA_ACCESS_TITLE);
         }
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new ResearchInfoTab(AnalyzeData.TechTree, (uiWidget, sideTab) -> {
+            AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
+            var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
+                if (clickData.isRemote) {
+                    btnRef.get().setButtonTexture(GuiTextures.BUTTON,
+                            new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+                                    .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())).setType(TextTexture.TextType.ROLL));
+                    return;
+                }
+                var gui = uiWidget.getGui();
+                if (gui == null || gui.entityPlayer == null) {
+                    return;
+                }
+                var node = sideTab.getSelectedNode();
+                if (node == null) {
+                    return;
+                }
+
+                UUID requester = gui.entityPlayer.getUUID();
+                boolean selectionChanged = researchRequester == null || !researchRequester.equals(requester);
+                selectedNode = node == selectedNode ? null : node;
+                researchRequester = requester;
+
+                if (selectionChanged) {
+                    cwuBuffer = 0L;
+                    getRecipeLogic().resetRecipeLogic();
+                }
+            }) {
+
+                @Override
+                @OnlyIn(Dist.CLIENT)
+                protected void drawTooltipTexts(int mouseX, int mouseY) {
+                    if (sideTab.getSelectedNode() != null && isMouseOverElement(mouseX, mouseY) && getHoverElement(mouseX, mouseY) == this && gui != null && gui.getModularUIGui() != null) {
+                        var lines = sideTab.getSelectedNode().getRewardLinesWithHeader();
+                        if (selectedNode == sideTab.getSelectedNode()) {
+                            lines.add(Component.translatable(LANG_DATA_ACCESS_CANCEL_RESEARCH).withStyle(ChatFormatting.YELLOW));
+                        }
+                        gui.getModularUIGui().setHoverTooltip(lines, ItemStack.EMPTY, null, null);
+                    }
+                }
+            };
+            btnRef.set(button);
+            button.setButtonTexture(GuiTextures.BUTTON,
+                    new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+                            .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
+            return button;
+        }));
+        sideTabs.attachSubTab(new DataAccessStorageTab(this));
+        sideTabs.attachSubTab(new RecipeExportTab(this, AnalyzeData.TechTree));
     }
 
     private record CombinedDataAccessHatchHandler(DataCenter machine) implements ICustomItemStackHandler {
@@ -406,8 +434,10 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_LAUNCH_RESEARCH = "gtocore.machine.data_center.data_access.launch_research";
     @RegisterLanguage(cn = "正在研究中", en = "Research in Progress")
     private static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
+    @RegisterLanguage(cn = "再次点击以取消研究", en = "Click again to cancel research")
+    private static final String LANG_DATA_ACCESS_CANCEL_RESEARCH = "gtocore.machine.data_center.data_access.cancel_research";
     @RegisterLanguage(cn = "最大可接受算力：%s CWU/t", en = "Maximum Acceptable CWU: %s CWU/t")
     private static final String LANG_DATA_ACCESS_MAX_CWU = "gtocore.machine.data_center.data_access.max_cwu";
-
-    private static final Component DATA_ACCESS_TITLE = Component.translatable(LANG_DATA_ACCESS_TITLE);
+    @RegisterLanguage(cn = "§6警告：未正常运行§r", en = "§6Warning: Not Running Properly§r")
+    private static final String LANG_DATA_ACCESS_WARN_ENERGY = "gtocore.machine.data_center.data_access.warn.energy";
 }

@@ -33,6 +33,7 @@ import appeng.api.client.AEKeyRendering;
 
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
+import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import dev.emi.emi.api.EmiApi;
@@ -47,7 +48,7 @@ import java.util.*;
 import java.util.function.Function;
 
 @DataGeneratorScanned
-public class TechTreeSideTab extends WidgetGroup {
+public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
     @RegisterLanguage(cn = "CWU", en = "CWU")
     private static final String CWU_LABEL = "gtocore.research.side_tab.cwu";
@@ -99,6 +100,9 @@ public class TechTreeSideTab extends WidgetGroup {
     private SyncState currentState = SyncState.hidden();
     private SyncState lastSentState = SyncState.hidden();
     private @Nullable TechNode selectedNode;
+    private @Nullable SyncState cachedRowsState;
+    private @Nullable TechNode cachedRowsNode;
+    private List<RowState> cachedRows = List.of();
 
     private final WidgetGroup innerContent;
 
@@ -116,6 +120,7 @@ public class TechTreeSideTab extends WidgetGroup {
         this.manager = manager;
         this.contextFactory = contextFactory;
         this.innerContent = new WidgetGroup(0, 0, 0, 0);
+        setYScrollBarWidth(2);
         setInnerContent(contentWidget);
         setBackground(GuiTextures.BACKGROUND_INVERSE);
         addWidget(new ContentWidget(OUTER_PADDING, OUTER_PADDING, width - OUTER_PADDING * 2, height - OUTER_PADDING * 2));
@@ -319,6 +324,10 @@ public class TechTreeSideTab extends WidgetGroup {
 
     @OnlyIn(Dist.CLIENT)
     private List<RowState> buildRows() {
+        if (currentState.equals(cachedRowsState) && selectedNode == cachedRowsNode) {
+            return cachedRows;
+        }
+
         List<RowState> rows = new ArrayList<>(1 + currentState.materials().size());
         if (currentState.showCwu()) {
             var eureka = currentState.hasEureka() && currentState.eurekaScanned();
@@ -338,7 +347,10 @@ public class TechTreeSideTab extends WidgetGroup {
                     ColorUtils.getInterpolatedColor(0xffffffff, tag.getColor(), 0.5f),
                     null, tag));
         }
-        return rows;
+        cachedRowsState = currentState;
+        cachedRowsNode = selectedNode;
+        cachedRows = List.copyOf(rows);
+        return cachedRows;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -407,7 +419,13 @@ public class TechTreeSideTab extends WidgetGroup {
     private final class ContentWidget extends Widget implements IIngredientSlot {
 
         private int scrollOffset = 0;
+        private int descTextOffset = 0;
         private int recipeScrollOffset = 0;
+        private int descTextX;
+        private int descTextY;
+        private int descTextWidth;
+        private int descTextHeight;
+        private int maxDescTextOffset;
         private int rowAreaX;
         private int rowAreaY;
         private int rowAreaWidth;
@@ -415,6 +433,7 @@ public class TechTreeSideTab extends WidgetGroup {
         private int recipeSlotsX;
         private int recipeSlotsY;
         private int visibleRecipeSlots;
+        private @Nullable TechNode cachedDescNode;
         private @Nullable TechNode cachedRecipeNode;
         private List<EmiStack> cachedRecipeStacks = List.of();
 
@@ -425,6 +444,7 @@ public class TechTreeSideTab extends WidgetGroup {
         @Override
         public Widget setVisible(boolean isVisible) {
             scrollOffset = 0;
+            descTextOffset = 0;
             recipeScrollOffset = 0;
             return super.setVisible(isVisible);
         }
@@ -447,6 +467,7 @@ public class TechTreeSideTab extends WidgetGroup {
             }
         }
 
+        @SuppressWarnings("MathClampMigration")
         @Override
         @OnlyIn(Dist.CLIENT)
         public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
@@ -539,6 +560,10 @@ public class TechTreeSideTab extends WidgetGroup {
 
             int textX = x + HEADER_ICON_SIZE + HEADER_TEXT_GAP;
             int textWidth = Math.max(10, width - HEADER_ICON_SIZE - HEADER_TEXT_GAP);
+            if (cachedDescNode != node) {
+                cachedDescNode = node;
+                descTextOffset = 0;
+            }
 
             var text = node.getDisplayName().append(Component.translatable(TIER_LABEL, node.getTier()).withStyle(ChatFormatting.BLUE));
             List<FormattedCharSequence> texts = font.split(text, textWidth);
@@ -549,13 +574,22 @@ public class TechTreeSideTab extends WidgetGroup {
             }
             var desc = node.desc();
             if (desc == null) {
+                maxDescTextOffset = 0;
+                descTextHeight = 0;
                 return;
             }
 
             List<FormattedCharSequence> descLines = font.split(desc, textWidth);
             int maxLines = Math.max(0, (HEADER_HEIGHT - 14) / font.lineHeight);
-            for (int i = 0; i < Math.min(maxLines, descLines.size()); i++) {
-                graphics.drawString(font, descLines.get(i), textX, y + 12 + i * font.lineHeight, HEADER_DESC_COLOR, false);
+            descTextX = textX;
+            descTextY = y + 12;
+            descTextWidth = textWidth;
+            descTextHeight = maxLines * font.lineHeight;
+            maxDescTextOffset = Math.max(0, descLines.size() - maxLines);
+            descTextOffset = Mth.clamp(descTextOffset, 0, maxDescTextOffset);
+            int endLine = Math.min(descTextOffset + maxLines, descLines.size());
+            for (int i = descTextOffset; i < endLine; i++) {
+                graphics.drawString(font, descLines.get(i), textX, descTextY + (i - descTextOffset) * font.lineHeight, HEADER_DESC_COLOR, false);
             }
         }
 
@@ -699,6 +733,11 @@ public class TechTreeSideTab extends WidgetGroup {
         @Override
         @OnlyIn(Dist.CLIENT)
         public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
+            if (maxDescTextOffset > 0 && wheelDelta != 0 && Widget.isMouseOver(
+                    descTextX, descTextY, descTextWidth, descTextHeight, mouseX, mouseY)) {
+                descTextOffset = Mth.clamp(descTextOffset + (wheelDelta > 0 ? -1 : 1), 0, maxDescTextOffset);
+                return true;
+            }
             if (visibleRecipeSlots > 0 && Widget.isMouseOver(rowAreaX, recipeSlotsY, rowAreaWidth, RECIPE_SLOT_SIZE, mouseX, mouseY)) {
                 List<EmiStack> stacks = getUnlockableRecipeStacks();
                 int maxRecipeScrollOffset = Math.max(0, stacks.size() - visibleRecipeSlots);
@@ -710,7 +749,7 @@ public class TechTreeSideTab extends WidgetGroup {
                     return true;
                 }
             }
-            if (isMouseOverElement((int) mouseX, (int) mouseY)) {
+            if (isMouseOverElement((int) mouseX, (int) mouseY) && getHoveredRow(buildRows(), mouseX, mouseY) != null) {
                 List<RowState> rows = buildRows();
                 int maxScrollOffset = Math.max(0, rows.size() - 1);
                 if (wheelDelta > 0 && scrollOffset > 0) {
@@ -734,7 +773,7 @@ public class TechTreeSideTab extends WidgetGroup {
                 DrawerHelper.drawSolidRect(graphics, x + PROGRESS_INSET, y + PROGRESS_INSET, fillWidth, ROW_HEIGHT - PROGRESS_INSET * 2, row.fillColor());
             }
             var eurekaPercent = row.eurekaPercent();
-            var highlightWidth = Mth.clamp(Math.round((progressWidth - PROGRESS_INSET * 2) * eurekaPercent), 0, progressWidth - PROGRESS_INSET * 2);
+            var highlightWidth = Mth.clamp(Math.round((progressWidth - PROGRESS_INSET * 2) * eurekaPercent), 0, progressWidth - PROGRESS_INSET * 2 - fillWidth);
             var hilightStartX = x + PROGRESS_INSET + fillWidth;
             if (highlightWidth > 0 && hilightStartX < x + progressWidth - PROGRESS_INSET) {
                 DrawerHelper.drawSolidRect(graphics, hilightStartX, y + PROGRESS_INSET, highlightWidth, ROW_HEIGHT - PROGRESS_INSET * 2,

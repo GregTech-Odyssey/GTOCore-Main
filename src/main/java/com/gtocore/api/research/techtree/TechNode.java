@@ -130,12 +130,12 @@ public final class TechNode {
         return Component.empty();
     }
 
-    public List<Component> getRewardLinesWithHeader() {
+    public ArrayList<Component> getRewardLinesWithHeader() {
         if (rewardLines.isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         var firstLine = Component.translatable(UNLOCKABLE_LABEL).withStyle(net.minecraft.ChatFormatting.GRAY);
-        List<Component> lines = new ArrayList<>();
+        ArrayList<Component> lines = new ArrayList<>();
         lines.add(firstLine);
         lines.addAll(rewardLines);
         return lines;

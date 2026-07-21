@@ -461,7 +461,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             return;
         }
 
-        if (TechTreeSavedData.unlock(player, node, unlockContext)) {
+        if (TechTreeSavedData.unlock(player, node)) {
             player.displayClientMessage(Component.translatable(UNLOCK_SUCCESS, TechTreeManager.getNodeName(node)), true);
             syncNodeStates();
         }
