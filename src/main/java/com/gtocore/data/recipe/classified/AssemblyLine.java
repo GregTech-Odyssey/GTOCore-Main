@@ -570,6 +570,7 @@ final class AssemblyLine {
                         .researchStack(GTMachines.ITEM_IMPORT_BUS[GTValues.ZPM].asItem())
                         .duration(2400)
                         .EUt(GTValues.VA[GTValues.IV]))
+                .researchNode(ScanStation)
                 .duration(1200).EUt(100000).save();
 
         ASSEMBLY_LINE_RECIPES.builder("network_switch")
@@ -4514,6 +4515,21 @@ final class AssemblyLine {
                 .EUt(122288000)
                 .duration(3200)
                 .researchNode(ChaosCore)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("research_holder")
+                .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.IV].asItem())
+                .inputItems(GTItems.EMITTER_LuV, 8)
+                .inputItems(CustomTags.LuV_CIRCUITS)
+                .inputItems(GTItems.ROBOT_ARM_ZPM, 2)
+                .inputItems(GTItems.ELECTRIC_MOTOR_ZPM, 2)
+                .inputItems(TagPrefix.wireGtDouble, GTMaterials.UraniumRhodiumDinaquadide, 16)
+                .inputItems("gtceu:normal_optical_pipe", 2)
+                .outputItems("gtocore:research_holder")
+                .inputFluids(GTMaterials.SolderingAlloy, 576)
+                .inputFluids(GTMaterials.Polybenzimidazole, 288)
+                .EUt(122800)
+                .duration(200)
+                .researchNode(ScanStation)
                 .save();
     }
 }

@@ -174,11 +174,11 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     }
 
     private int toCanvasX(TechNode node) {
-        return scaleValue(layout.getX(node)) + contentOffsetX;
+        return scaleValue(layout.getX(node)) + contentOffsetX + (contentWidth < getSize().width ? (getSize().width - contentWidth) / 2 : 0);
     }
 
     private int toCanvasY(TechNode node) {
-        return scaleValue(layout.getY(node)) + contentOffsetY;
+        return scaleValue(layout.getY(node)) + contentOffsetY + (contentHeight < getSize().height ? (getSize().height - contentHeight) / 2 : 0);
     }
 
     private int scaleValue(int value) {
@@ -186,19 +186,19 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     }
 
     private int getScaledPadding() {
-        return Math.max(8, scaleValue(CONTENT_PADDING));
+        return Math.max(2, scaleValue(CONTENT_PADDING));
     }
 
     private int getScaledNodeSize() {
-        return Math.max(12, scaleValue(NODE_SIZE));
+        return Math.max(3, scaleValue(NODE_SIZE));
     }
 
     private int getScaledIconOffset() {
-        return Math.max(2, scaleValue(ICON_OFFSET));
+        return Math.max(0, scaleValue(ICON_OFFSET));
     }
 
     private int getScaledIconSize() {
-        return Math.max(8, scaleValue(ICON_SIZE));
+        return Math.max(2, scaleValue(ICON_SIZE));
     }
 
     private int getScaledLineThickness() {
@@ -233,13 +233,21 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         setScrollYOffset(Mth.clamp(targetY, 0, getVerticalScrollLimit()));
     }
 
-    @SuppressWarnings("unused")
     @OnlyIn(Dist.CLIENT)
-    private boolean isMouseWithinBounds(double a1, double a2) {
+    private boolean isMouseWithinBounds() {
+        return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, getRealMouseX(), getRealMouseY());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private double getRealMouseX() {
         var mc = Minecraft.getInstance();
-        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
-        return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
+        return mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private double getRealMouseY() {
+        var mc = Minecraft.getInstance();
+        return mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -498,7 +506,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
-        if (!isMouseWithinBounds(mouseX, mouseY)) {
+        if (!isMouseWithinBounds()) {
             return false;
         }
         if (wheelDelta != 0 && isCtrlDown()) {
@@ -512,7 +520,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!isMouseWithinBounds(mouseX, mouseY)) {
+        if (!isMouseWithinBounds()) {
             return false;
         }
         capturedMouseInteraction = super.mouseClicked(mouseX, mouseY, button);
@@ -522,7 +530,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (!isMouseWithinBounds(mouseX, mouseY)) {
+        if (!isMouseWithinBounds()) {
             return false;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
@@ -531,7 +539,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        boolean insideBounds = isMouseWithinBounds(mouseX, mouseY);
+        boolean insideBounds = isMouseWithinBounds();
         if (!insideBounds && !capturedMouseInteraction) {
             return false;
         }
@@ -555,7 +563,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             Position pos = getPosition();
             int nodeSize = getScaledNodeSize();
             drawTierSeparators(graphics, pos, nodeSize);
-            highlightedNode = TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY) ? findHoveredNode(mouseX, mouseY, pos, nodeSize) : null;
+            highlightedNode = TechTreeWidget.this.isMouseWithinBounds() ? findHoveredNode(mouseX, mouseY, pos, nodeSize) : null;
             for (var node : orderedNodes) {
                 if (node == highlightedNode) {
                     continue;
@@ -575,14 +583,16 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             }
 
             int inset = Math.max(2, getScaledPadding() / 2);
-            int startY = pos.y + inset;
-            int endY = pos.y + getSize().height - inset;
+            var offsetHorizontal = (contentWidth < TechTreeWidget.this.getSize().width ? (TechTreeWidget.this.getSize().width - contentWidth) / 2 : 0);
+            var offsetVertical = (contentHeight < TechTreeWidget.this.getSize().height ? (TechTreeWidget.this.getSize().height - contentHeight) / 2 : 0);
+            int startY = pos.y + inset + offsetVertical;
+            int endY = pos.y + getSize().height - inset + offsetVertical;
             for (int i = 0; i < tierRegions.size() - 1; i++) {
                 var left = tierRegions.get(i);
                 var right = tierRegions.get(i + 1);
                 int leftRegionRight = pos.x + scaleValue(left.maxX()) + contentOffsetX + nodeSize;
                 int rightRegionLeft = pos.x + scaleValue(right.minX()) + contentOffsetX;
-                int separatorX = (leftRegionRight + rightRegionLeft) / 2;
+                int separatorX = (leftRegionRight + rightRegionLeft) / 2 + offsetHorizontal;
                 drawVerticalDashedLine(graphics, separatorX, startY, endY, TIER_SEPARATOR_COLOR);
             }
         }
@@ -710,7 +720,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         @OnlyIn(Dist.CLIENT)
         public void drawInForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
-            if (!isMouseOverNode(mouseX, mouseY)) {
+            if (!isMouseOverNode()) {
                 return;
             }
 
@@ -720,8 +730,9 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         }
 
         @Override
+        @OnlyIn(Dist.CLIENT)
         protected void drawTooltipTexts(int mouseX, int mouseY) {
-            if (!isMouseOverNode(mouseX, mouseY)) {
+            if (!isMouseOverNode()) {
                 return;
             }
             super.drawTooltipTexts(mouseX, mouseY);
@@ -729,7 +740,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         public boolean allowSelected(double mouseX, double mouseY, int button) {
-            return button == 0 && isMouseOverNode(mouseX, mouseY);
+            return button == 0 && isMouseOverNode();
         }
 
         @Override
@@ -749,7 +760,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         @Override
         @OnlyIn(Dist.CLIENT)
         public void endDrag(double mouseX, double mouseY) {
-            if (totalDraggedDistance <= CLICK_DRAG_THRESHOLD && isMouseOverNode(mouseX, mouseY)) {
+            if (totalDraggedDistance <= CLICK_DRAG_THRESHOLD && isMouseOverNode()) {
                 if (!isClientSideWidget) writeClientAction(CLICK_ACTION, buf -> {});
                 else if (onNodeClicked != null) {
                     onNodeClicked.accept(node);
@@ -759,17 +770,18 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
-        private boolean isMouseOverNode(double mouseX, double mouseY) {
-            if (!TechTreeWidget.this.isMouseWithinBounds(mouseX, mouseY)) {
+        private boolean isMouseOverNode() {
+            if (!TechTreeWidget.this.isMouseWithinBounds()) {
                 return false;
             }
             Position position = getPosition();
-            return isMouseOver(position.x, position.y, getSize().width, getSize().height, mouseX, mouseY);
+            return isMouseOver(position.x, position.y, getSize().width, getSize().height, getRealMouseX(), getRealMouseY());
         }
 
         @Override
+        @OnlyIn(Dist.CLIENT)
         public Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
-            if (isMouseOverNode(mouseX, mouseY)) {
+            if (isMouseOverNode()) {
                 return new TechNodeEmiStack(node);
             }
             return null;

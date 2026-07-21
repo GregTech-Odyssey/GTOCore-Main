@@ -6,6 +6,7 @@ import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.api.research.ui.ResearchInfoTab;
+import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
 import com.gtocore.data.recipe.research.AnalyzeData;
@@ -13,6 +14,11 @@ import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
+import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
+import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
+import com.gtolib.api.machine.trait.MultiblockTrait;
+import com.gtolib.api.machine.trait.TierCasingTrait;
+import com.gtolib.api.recipe.TierDataKey;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -33,6 +39,7 @@ import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.DataBankMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -46,6 +53,7 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.widget.*;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,8 +61,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static com.gregtechceu.gtceu.api.GTValues.LuV;
+
 @DataGeneratorScanned
-public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder, IEnhancedRecipeLogicMachine, RecipeExportTab.DataItemHolder {
+public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder,
+                        IEnhancedRecipeLogicMachine,
+                        RecipeExportTab.DataItemHolder,
+                        ITierCasingMachine,
+                        IMultiblockTraitHolder {
 
     @SaveToDisk(saveNull = true)
     @SyncToClient
@@ -63,6 +77,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private UUID researchRequester;
     @SaveToDisk
     private long cwuBuffer = 0L;
+    private final TierCasingTrait tierCasingTrait;
 
     @SaveToDisk
     private final NotifiableItemStackHandler inpur;
@@ -73,6 +88,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         super(holder);
         inpur = new NotifiableItemStackHandler(this, 4, IO.NONE, IO.BOTH);
         output = new NotifiableItemStackHandler(this, 4, IO.NONE, IO.BOTH);
+        tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.GLASS_TIER);
     }
 
     public int getTotalDataSlots() {
@@ -84,8 +100,12 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         return totalSlots;
     }
 
-    private int getCWUInputLimit() {
-        return getTotalDataSlots() * getExistRecipes().size();
+    private long getCWUInputLimit() {
+        var startTier = getCasingTier(GTORecipeDataKeys.GLASS_TIER) - LuV;
+        if (startTier < 0) {
+            return 0;
+        }
+        return (long) ((1f + getTotalDataSlots() / 100f) * (1f + getExistRecipes().size() / 100f)) * 8L << (startTier * 2);
     }
 
     @Override
@@ -142,6 +162,18 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        tierCasingTrait.onStructureFormed();
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        super.onStructureInvalid();
+        tierCasingTrait.onStructureInvalid();
+    }
+
+    @Override
     public boolean isActive() {
         return recipeLogic.isWorking();
     }
@@ -170,11 +202,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 .addEnergyUsageExactLine(energyUsage)
                 .addWorkingStatusLine();
         textList.add(Component.translatable(LANG_DATA_ACCESS_USAGE,
-                Component.literal(String.valueOf(getExistRecipes().size())).withStyle(ChatFormatting.AQUA),
-                Component.literal(String.valueOf(getTotalDataSlots())).withStyle(ChatFormatting.AQUA))
+                Component.literal(FormattingUtil.formatNumbers(getExistRecipes().size())).withStyle(ChatFormatting.AQUA),
+                Component.literal(FormattingUtil.formatNumbers(getTotalDataSlots())).withStyle(ChatFormatting.AQUA))
                 .withStyle(ChatFormatting.GRAY));
         if (!isFormed()) return;
-        textList.add(Component.translatable(LANG_DATA_ACCESS_MAX_CWU, Component.literal(String.valueOf(getCWUInputLimit())).withStyle(ChatFormatting.GREEN))
+        textList.add(Component.translatable(LANG_DATA_ACCESS_MAX_CWU, Component.literal(FormattingUtil.formatNumbers(getCWUInputLimit())).withStyle(ChatFormatting.GREEN))
                 .withStyle(ChatFormatting.GRAY));
         if (selectedNode != null) {
             textList.add(Component.translatable(LANG_DATA_ACCESS_CURRENT_NODE, selectedNode.getDisplayName().withStyle(ChatFormatting.AQUA))
@@ -212,6 +244,16 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public ICustomItemStackHandler getDataOutputStorage() {
         return output;
+    }
+
+    @Override
+    public Reference2IntMap<TierDataKey> getCasingTiers() {
+        return tierCasingTrait.getCasingTiers();
+    }
+
+    @Override
+    public List<MultiblockTrait> getMultiblockTraits() {
+        return new ArrayList<>();
     }
 
     // ========= UI Tabs =========

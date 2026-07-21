@@ -1,6 +1,7 @@
 package com.gtocore.common.item;
 
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.scanning.editor.DataScanningEditor;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.editor.TechNodeEditor;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
@@ -93,6 +94,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
             } else {
                 tabs.attachSubTab(TechNodeEditor.INSTANCE);
             }
+            tabs.attachSubTab(DataScanningEditor.INSTANCE);
         }
     }
 }

@@ -7,7 +7,7 @@ import com.gtocore.api.research.ResearchRequirements
 import com.gtocore.api.research.ResearchTag
 import com.gtocore.api.research.ResearchTag.BIOLOGY
 import com.gtocore.api.research.ResearchTag.CATALYSIS
-import com.gtocore.api.research.ResearchTag.DATA_ENGINEERING
+import com.gtocore.api.research.ResearchTag.DATA_STORAGE
 import com.gtocore.api.research.ResearchTag.ENERGY
 import com.gtocore.api.research.ResearchTag.EXOTIC
 import com.gtocore.api.research.ResearchTag.INTERSTELLAR_ENGINEERING
@@ -328,7 +328,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     @JvmField
     val DataCenter = TechTree.builder("data_in_research", "科研数据中心", "Data Center in Research")
         .description("科研数据中心是一个用于存储和处理科研数据的高性能计算平台，相比于数据库，它可以将其中标准化的生产数据与积累的科研数据进行整合，推进基地技术迭代", "The research data center is a high-performance computing platform for storing and processing research data. Compared to databases, it can integrate standardized production data with accumulated research data, promoting base technology iteration")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(20).addMaterialNeeded(DATA_ENGINEERING, 120).setEurekaItem(GTResearchMachines.DATA_ACCESS_HATCH, 1.0f).build())
+        .requirements(ResearchRequirements.Builder().setCWUNeeded(20).addMaterialNeeded(DATA_STORAGE, 120).setEurekaItem(GTResearchMachines.DATA_ACCESS_HATCH, 1.0f).build())
         .icon(GTResearchMachines.DATA_BANK)
         .prerequisites(DataBase)
         .build()
@@ -563,7 +563,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(DATA_ENGINEERING, 512)
+                .addMaterialNeeded(DATA_STORAGE, 512)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy"), 0.8F)
                 .build(),
         )
@@ -594,7 +594,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(DATA_ENGINEERING, 128)
+                .addMaterialNeeded(DATA_STORAGE, 128)
                 .addMaterialNeeded(MECHANICS, 64)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), if (GTOCore.isEasy()) 1f else 0.8F)
                 .build(),
@@ -670,7 +670,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 2400L)
-                .addMaterialNeeded(DATA_ENGINEERING, 128)
+                .addMaterialNeeded(DATA_STORAGE, 128)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:hpca_active_cooler_component"), 0.7F)
                 .build(),
         )
@@ -941,7 +941,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(DATA_ENGINEERING, 128)
+                .addMaterialNeeded(DATA_STORAGE, 128)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:bio_data_access_hatch"), 0.8F)
                 .build(),
         )
@@ -1346,7 +1346,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(4096 * 20 * 7200L)
-                .addMaterialNeeded(DATA_ENGINEERING, 256)
+                .addMaterialNeeded(DATA_STORAGE, 256)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:black_hole_data_access_hatch"), 0.8F)
                 .build(),
         )
@@ -1556,7 +1556,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(16384 * 20 * 28800L)
-                .addMaterialNeeded(DATA_ENGINEERING, 512)
+                .addMaterialNeeded(DATA_STORAGE, 512)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:recursively_folded_negative_space"), 0.7F)
                 .build(),
         )
