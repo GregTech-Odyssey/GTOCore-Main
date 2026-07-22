@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
-import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
+import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 

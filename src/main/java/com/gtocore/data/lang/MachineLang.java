@@ -240,6 +240,8 @@ final class MachineLang {
         addCNEN("gtocore.machine.space_shield_hatch.not_in_space", "机器太空护盾：不在太空中", "Machine Space Shield: Not in Space");
         addCNEN("gtocore.machine.tooltips.items_are_hidden", "（剩余%s项已隐藏）", "（%s items hidden）");
         addCNEN("gtocore.machine.tooltip.upgrade_action", "Shift + 右键点击%s，可升级内部等级较低的%s", "Shift + Right-click %s to upgrade lower-tier %s");
+        addCNEN("gtocore.lang.space_elevator_connector_module.3", "会增加太空电梯%s%%的算力消耗", "Increases the space elevator's Computational Workload consumption by %s%%");
+        addCNEN("gtocore.lang.space_elevator_engineering_data_module.1", "将每收集的%s次运行数据，转化为1点星际工程研究点数", "Converts every %s collected operation data into 1 point of interstellar engineering research points");
 
         addCNEN("gtocore.machine.industrial_platform_deployment_tools.title.0", "简介", "Introduction");
         addCNEN("gtocore.machine.industrial_platform_deployment_tools.title.1", "选择预设", "Select Preset");

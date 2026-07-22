@@ -55,6 +55,7 @@ import static com.gtocore.api.pattern.GTOPredicates.autoIOAbilities;
 import static com.gtocore.common.block.BlockMap.CALMAP;
 import static com.gtocore.common.block.BlockMap.SCMAP;
 import static com.gtocore.common.data.GTORecipeTypes.*;
+import static com.gtocore.common.data.machines.ExResearchMachines.CATALYSIS_DATA_HOLDER;
 import static com.gtocore.utils.register.MachineRegisterUtils.CHEMICAL_PLANT_DISPLAY;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
 
@@ -444,7 +445,8 @@ public final class MultiBlockA {
                     .where('a', controller(definition))
                     .where('b', blocks(GTBlocks.CASING_PTFE_INERT.get())
                             .setMinGlobalLimited(60)
-                            .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1))
+                            .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1)
+                                    .or(blocks(CATALYSIS_DATA_HOLDER.get()).setMaxGlobalLimited(1, 0)))
                             .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
                             .or(GTOPredicates.autoAccelerateAbilities(definition.getRecipeTypes()))
                             .or(blocks(GTOMachines.MACHINE_ACCESS_LINK.get()).setMaxGlobalLimited(1, 0))
@@ -778,7 +780,8 @@ public final class MultiBlockA {
             .pattern(definition -> MultiBlockFileReader.start(definition)
                     .where('A', blocks(GTOBlocks.NAQUADAH_REINFORCED_PLANT_CASING.get()))
                     .where('B', blocks(GTBlocks.CASING_PTFE_INERT.get())
-                            .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(2))
+                            .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(2)
+                                    .or(blocks(CATALYSIS_DATA_HOLDER.get()).setMaxGlobalLimited(1, 0)))
                             .or(GTOPredicates.autoThreadLaserAbilities(definition.getRecipeTypes()))
                             .or(abilities(MAINTENANCE).setExactLimit(1)))
                     .where('C', blocks(GTOBlocks.PRESSURE_CONTAINMENT_CASING.get()))

@@ -182,6 +182,11 @@ public class TeamResearchContext {
         TeamResearchSavedDtat.INSTANCE.setDirty(true);
     }
 
+    public void addResearchPoints(ResearchTag tag, long points) {
+        this.researchPoints.addTo(tag, points);
+        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+    }
+
     public void addScannedItem(AEKey item) {
         scannedItems.add(item);
         TeamResearchSavedDtat.INSTANCE.setDirty(true);

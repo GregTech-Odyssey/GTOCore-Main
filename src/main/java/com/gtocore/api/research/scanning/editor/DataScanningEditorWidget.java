@@ -188,18 +188,17 @@ final class DataScanningEditorWidget extends DraggableScrollableWidgetGroup {
     }
 
     private String generateCode() {
-        StringBuilder code = new StringBuilder("var researchPoints = new ResearchPoints();\n");
-        for (PointEntry point : state.points) {
-            code.append("researchPoints.put(ResearchTag.TAGS.get(\"")
-                    .append(escape(point.tagName))
-                    .append("\"), ")
-                    .append(point.amount)
-                    .append("L);\n");
-        }
-        code.append("DataScanningManager.registerDataScanning(")
+        StringBuilder code = new StringBuilder("DataScanningManager.registerDataScanning(")
                 .append(ingredientExpression(state.target))
-                .append(", researchPoints);");
-        return code.toString();
+                .append(", ResearchPoints.of(");
+        for (PointEntry point : state.points) {
+            code.append("ResearchTag.")
+                    .append(escape(point.tagName).toUpperCase())
+                    .append(", ")
+                    .append(point.amount)
+                    .append("L, ");
+        }
+        return code.delete(code.length() - 2, code.length()).append("));").toString();
     }
 
     private static String ingredientExpression(IngredientValue value) {

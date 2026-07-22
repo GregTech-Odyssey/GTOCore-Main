@@ -10,6 +10,7 @@ import com.gtocore.common.data.GTOItems;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -103,6 +104,9 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.DATA_CRYSTAL_MK3.asItem()));
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.DATA_CRYSTAL_MK4.asItem()));
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.DATA_CRYSTAL_MK5.asItem()));
+        for (var scanner : GTMachines.SCANNER) {
+            if (scanner != null) registry.addWorkstation(CATEGORY, EmiStack.of(scanner.asItem()));
+        }
         registry.addDeferredRecipes(DataScanningEmiRecipe::registerRecipes);
     }
 

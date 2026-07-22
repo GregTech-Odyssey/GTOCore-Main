@@ -18,6 +18,7 @@ import com.gtocore.common.machine.multiblock.electric.processing.ColdIceFreezerM
 import com.gtocore.common.machine.multiblock.electric.processing.ProcessingPlantMachine;
 import com.gtocore.common.machine.multiblock.electric.smelter.BlazeBlastFurnaceMachine;
 import com.gtocore.common.machine.multiblock.electric.smelter.DimensionallyTranscendentPlasmaForgeMachine;
+import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorDataModuleMachine;
 import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorMachine;
 import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorModuleMachine;
 import com.gtocore.common.machine.multiblock.electric.space.SpaceProbeSurfaceReceptionMachine;
@@ -69,6 +70,8 @@ import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gtocore.api.machine.part.GTOPartAbility.*;
 import static com.gtocore.common.block.BlockMap.SEPMMAP;
 import static com.gtocore.common.data.GTORecipeTypes.*;
+import static com.gtocore.common.data.machines.ExResearchMachines.CATALYSIS_DATA_HOLDER;
+import static com.gtocore.common.data.machines.ExResearchMachines.INTERSTELLAR_ENGINEERING_DATA_HOLDER;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
 import static com.gtocore.utils.register.MachineRegisterUtils.registerTieredMultis;
 
@@ -243,6 +246,21 @@ public final class MultiBlockD {
                     .where('~', controller(definition))
                     .where('b', blocks(GTOBlocks.SPACE_ELEVATOR_MECHANICAL_CASING.get())
                             .or(autoAbilities(definition.getRecipeTypes())))
+                    .where('a', blocks(GTOBlocks.SPACE_ELEVATOR_MODULE_BASE.get()))
+                    .where('c', blocks(GTOBlocks.MODULE_CONNECTOR.get()))
+                    .build())
+            .workableCasingRenderer(GTOCore.id("block/casings/space_elevator_mechanical_casing"), GTCEu.id("block/multiblock/gcym/large_assembler"))
+            .register();
+
+    public static final MultiblockMachineDefinition ENGINEERED_DATA_MODULE = multiblock("engineered_data_module", "太空电梯工程信息模块", (holder) -> new SpaceElevatorDataModuleMachine(holder, false))
+            .nonYAxisRotation()
+            .recipeTypes(DUMMY_RECIPES)
+            .tooltipsSupplier(GTOMachineTooltipsA.SpaceElevatorEngineeringDataModule)
+            .block(GTOBlocks.SPACE_ELEVATOR_MECHANICAL_CASING)
+            .pattern(definition -> MultiBlockFileReader.start(definition)
+                    .where('~', controller(definition))
+                    .where('b', blocks(GTOBlocks.SPACE_ELEVATOR_MECHANICAL_CASING.get())
+                            .or(blocks(INTERSTELLAR_ENGINEERING_DATA_HOLDER.get()).setExactLimit(1)))
                     .where('a', blocks(GTOBlocks.SPACE_ELEVATOR_MODULE_BASE.get()))
                     .where('c', blocks(GTOBlocks.MODULE_CONNECTOR.get()))
                     .build())
@@ -508,7 +526,8 @@ public final class MultiBlockD {
                     .where('A', blocks(GTOBlocks.MULTI_FUNCTIONAL_CASING.get())
                             .or(GTOPredicates.autoIOAbilities(definition.getRecipeTypes()))
                             .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(4))
-                            .or(blocks(GTOMachines.CATALYST_HATCH.get()).setMaxGlobalLimited(1))
+                            .or(blocks(GTOMachines.CATALYST_HATCH.get()).setMaxGlobalLimited(1)
+                                    .or(blocks(CATALYSIS_DATA_HOLDER.get()).setMaxGlobalLimited(1, 0)))
                             .or(Predicates.blocks(ManaMachine.MANA_AMPLIFIER_HATCH.get()).setMaxGlobalLimited(1)))
                     .where('B', blocks(GTOBlocks.MULTI_FUNCTIONAL_CASING.get()))
                     .where('C', blocks(GTBlocks.CASING_LAMINATED_GLASS.get()))
@@ -726,7 +745,7 @@ public final class MultiBlockD {
                     .where('H', GTOPredicates.tierBlock(SEPMMAP, GTORecipeDataKeys.POWER_MODULE_TIER))
                     .where('I', air())
                     .where('J', blocks(GTOBlocks.SPACE_ELEVATOR_POWER_CORE.get()))
-                    .where('M', GTOPredicates.module(ASSEMBLER_MODULE, RESOURCE_COLLECTION_MODULE))
+                    .where('M', GTOPredicates.module(ASSEMBLER_MODULE, RESOURCE_COLLECTION_MODULE, MultiBlockD.ENGINEERED_DATA_MODULE))
                     .where('X', blocks(GTOBlocks.SPACE_ELEVATOR_MECHANICAL_CASING.get())
                             .or(abilities(GTOPartAbility.ITEMS_INPUT_BUS).setExactLimit(1))
                             .or(abilities(INPUT_ENERGY).setExactLimit(1))

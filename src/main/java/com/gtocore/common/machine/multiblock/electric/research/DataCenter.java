@@ -105,7 +105,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         if (startTier < 0) {
             return 0;
         }
-        return (long) ((1f + getTotalDataSlots() / 100f) * (1f + getExistRecipes().size() / 100f)) * 8L << (startTier * 2);
+        return (long) ((1f + getTotalDataSlots() / 100f) * (1f + getExistRecipes().size() / 100f) * (8L << (startTier * 2)));
     }
 
     @Override

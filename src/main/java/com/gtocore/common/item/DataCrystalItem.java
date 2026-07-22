@@ -67,6 +67,12 @@ public class DataCrystalItem extends Item implements IExDataItem {
         return true;
     }
 
+    public static long getRemainingCapacity(ItemStack dataCrystalStack) {
+        long usedCap = dataCrystalStack.getOrCreateTag().getLong(usedCapTag);
+        long capacity = dataCrystalStack.getItem() instanceof DataCrystalItem dataCrystalItem ? dataCrystalItem.dataCapacity : 0;
+        return capacity - usedCap;
+    }
+
     @Override
     public boolean requireDataBank() {
         return false;
@@ -93,7 +99,7 @@ public class DataCrystalItem extends Item implements IExDataItem {
         }
     }
 
-    private static void setTeamUUID(ItemStack stack, UUID teamUUID) {
+    public static void setTeamUUID(ItemStack stack, UUID teamUUID) {
         CompoundTag tag = stack.getOrCreateTag();
         tag.putUUID(teamTag, teamUUID);
     }

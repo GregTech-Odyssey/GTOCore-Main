@@ -1007,5 +1007,28 @@ final class AssemblerA {
                 .EUt(30)
                 .duration(200)
                 .save();
+        ASSEMBLER_RECIPES.builder("fermi_energy_gap_transition_glass")
+                .inputItems(GTOBlocks.PLASMA_FIELD_GLASS.asItem())
+                .inputItems(GTOBlocks.QUANTUM_GLASS.asItem())
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Astrium, 4)
+                .inputItems(GTOTagPrefix.MXene, GTOMaterials.SiliconNitrideCeramic, 4)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.Enderite, 16)
+                .outputItems(GTOBlocks.FERMI_ENERGY_GAP_TRANSITION_GLASS.asItem())
+                .inputFluids(GTOMaterials.UltraHighPuritySilicon, 1000)
+                .EUt(4100000)
+                .duration(400)
+                .save();
+        ASSEMBLER_RECIPES.builder("coprocessor_computing_casing")
+                .inputItems(GTBlocks.ADVANCED_COMPUTER_CASING.asItem())
+                .inputItems("gtceu:high_performance_computation_array")
+                .inputItems(GTOItems.OPTICAL_PROCESSING_CORE, 16)
+                .inputItems(GTOItems.MACHINING_CONTROL_MODULE_MK3, 8)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UHV, 2)
+                .inputItems(GTItems.COVER_SCREEN, 8)
+                .outputItems(GTOBlocks.COPROCESSOR_COMPUTING_CASING.asItem())
+                .inputFluids(GTMaterials.Indium, 5760)
+                .EUt(30720)
+                .duration(400)
+                .save();
     }
 }

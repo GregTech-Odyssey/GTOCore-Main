@@ -1,5 +1,6 @@
 package com.gtocore.api.research.scanning;
 
+import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
@@ -169,9 +170,12 @@ public class DataScanningManager {
         boolean isMaterial = mat != NULL;
         var points = new ResearchPoints();
         if (isMaterial) {
-            points.addTo(ResearchTag.MATERIAL, (long) (32 * (float) 1.0));
+            points.addTo(ResearchTag.MATERIAL, 32);
             if (mat.hasFlags(MaterialFlags.MAGICAL)) {
-                points.addTo(ResearchTag.ALFHEIMY, (long) (8 * (float) 1.0));
+                points.addTo(ResearchTag.ALFHEIMY, 8);
+            }
+            if (mat.hasFlags(GTOMaterialFlags.GENERATE_CATALYST)) {
+                points.addTo(ResearchTag.CATALYSIS, 3);
             }
         }
         if (key instanceof MetaMachineItem mmi && mmi.getDefinition() instanceof MultiblockDefinition) {

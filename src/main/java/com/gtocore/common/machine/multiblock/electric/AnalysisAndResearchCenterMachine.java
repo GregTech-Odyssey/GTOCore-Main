@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gtocore.common.machine.multiblock.part.AnalyzeHolderMachine;
-import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
+import com.gtocore.common.machine.multiblock.part.research.AnalyzeHolderMachine;
+import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 

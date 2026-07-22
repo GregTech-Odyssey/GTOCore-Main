@@ -625,7 +625,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 1200L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 64)
+                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 400)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:gravitation_engine_unit"), 0.8F)
                 .build(),
         )

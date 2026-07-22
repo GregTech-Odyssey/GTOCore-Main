@@ -2,6 +2,7 @@ package com.gtocore.common.data.machines;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.api.research.ExResearchManager;
 import com.gtocore.common.data.GTOMachines;
 
 import com.gtolib.api.annotation.NewDataAttributes;
@@ -164,7 +165,10 @@ public final class GTMachineModify {
                                 String planet = tag.getString("planet");
                                 if (!planet.isEmpty()) {
                                     UUID uuid = tag.getUUID("uuid");
-                                    PlanetManagement.unlock(uuid, GTODimensions.getDimensionKey(RLUtils.parse(planet)));
+                                    var dim = GTODimensions.getDimensionKey(RLUtils.parse(planet));
+                                    if (PlanetManagement.isUnlocked(uuid, dim)) return false;
+                                    PlanetManagement.unlock(uuid, dim);
+                                    ExResearchManager.delayedTriggerPlanetaryResearch(uuid, dim);
                                     stack.setCount(0);
                                     return true;
                                 }

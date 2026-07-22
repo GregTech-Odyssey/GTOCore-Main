@@ -1,10 +1,16 @@
 package com.gtocore.api.research;
 
+import com.gtolib.api.data.GTODimensions;
+import com.gtolib.utils.ServerUtils;
+
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.utils.ResearchManager;
+import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
@@ -14,6 +20,7 @@ import appeng.api.stacks.AEKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.UUID;
 
 public final class ExResearchManager {
 
@@ -52,5 +59,12 @@ public final class ExResearchManager {
         Collection<GTRecipeDefinition> recipes = researchData.recipeType().getDataStickEntry(researchData.researchId());
         if (recipes == null || recipes.isEmpty()) return null;
         return recipes.iterator().next();
+    }
+
+    public static void delayedTriggerPlanetaryResearch(UUID team, ResourceKey<Level> planet) {
+        var dimTier = GTODimensions.getTier(planet);
+        TaskHandler.enqueueTask(ServerUtils.getServer().overworld(), () -> {
+            TeamResearchSavedDtat.getOrCreateContext(team).addResearchPoints(ResearchTag.INTERSTELLAR_ENGINEERING, 1L << dimTier);
+        }, 5);
     }
 }

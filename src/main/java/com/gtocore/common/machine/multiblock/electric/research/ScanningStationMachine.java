@@ -3,7 +3,7 @@ package com.gtocore.common.machine.multiblock.electric.research;
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.common.item.DataCrystalItem;
-import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
+import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.GTOCore;

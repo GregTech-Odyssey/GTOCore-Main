@@ -44,7 +44,7 @@ public class EmiResearchHelper {
     static final String TEAM_TOTAL_DESC = "gtocore.research.team_total.desc";
     @RegisterLanguage(cn = "每一份[%s]需要占用%s晶片存储空间", en = "Each [%s] requires %s chip storage space")
     static final String DOMAIN_DATA_STORAGE = "gtocore.research.domain_data.storage";
-    @RegisterLanguage(cn = "(共占用%s)", en = "(Occupies %s in total)")
+    @RegisterLanguage(cn = "(共%s份，占用%s)", en = "(Total %s pieces, occupying %s)")
     static final String DOMAIN_DATA_STORAGE_TOTAL = "gtocore.research.domain_data.storage.total";
     @RegisterLanguage(cn = "这件物品已经被扫描，重复扫描仅能获得%s%%的研究点数", en = "This item has already been scanned, and repeated scanning can only obtain %s%% of the research points")
     static final String DOMAIN_DATA_STORAGE_REPEAT = "gtocore.research.domain_data.storage.repeat";

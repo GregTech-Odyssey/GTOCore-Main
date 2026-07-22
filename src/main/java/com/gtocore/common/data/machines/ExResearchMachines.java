@@ -2,6 +2,7 @@ package com.gtocore.common.data.machines;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.api.research.ResearchTag;
 import com.gtocore.client.renderer.machine.ExResearchPartRenderer;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.GTOBlocks;
@@ -15,14 +16,11 @@ import com.gtocore.common.machine.multiblock.electric.research.AnalysisAndResear
 import com.gtocore.common.machine.multiblock.electric.research.DataCenter;
 import com.gtocore.common.machine.multiblock.electric.research.ScanningStationMachine;
 import com.gtocore.common.machine.multiblock.electric.research.SyntheticDataAssemblyPlantMachine;
-import com.gtocore.common.machine.multiblock.part.AnalyzeHolderMachine;
-import com.gtocore.common.machine.multiblock.part.DataGenerateHolderMachine;
-import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
-import com.gtocore.common.machine.multiblock.part.ScanningHolderMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBridgePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchComputationPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchCoolerPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchEmptyPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.*;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchCoolerPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchEmptyPartMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.registries.GTOMachineBuilder;
@@ -304,8 +302,19 @@ public final class ExResearchMachines {
     // *********** 研究机器 *********** //
     /////////////////////////////////////
 
-    public static final MachineDefinition SCANNING_HOLDER = machine("scanning_holder", "扫描支架", ScanningHolderMachine::new)
-            .tier(IV)
+    public static final MachineDefinition CATALYSIS_DATA_HOLDER = machine("catalysis_data_holder", "催化反应数据支架", CatalysisDataPartMachine::new)
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.CatalystDataHolder)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(IV, GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
+
+    public static final MachineDefinition INTERSTELLAR_ENGINEERING_DATA_HOLDER = machine("interstellar_engineering_data_holder", "星际工程数据支架", SimpleResearchTagPartMachine.create(ResearchTag.INTERSTELLAR_ENGINEERING, 1024))
+            .tier(UV)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayTieredActiveMachineRenderer(IV, GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -338,7 +347,7 @@ public final class ExResearchMachines {
 
     public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("dataunit_scanning_station", "基元扫描站", ScanningStationMachine::new)
             .nonYAxisRotation()
-            .tooltipsText("将晶片中的数据进行录入，融合到团队知识库中。", "Integrate the data in the data crystal into the team knowledge base.")
+            .tooltipsSupplier(GTOMachineTooltipsA.ScanStationMachineTooltips)
             .recipeTypes(DUMMY_RECIPES)
             .block(ADVANCED_COMPUTER_CASING)
             .pattern(definition -> FactoryBlockPattern.start(definition)
@@ -352,7 +361,7 @@ public final class ExResearchMachines {
                     .where('S', controller(definition))
                     .where('X', blocks(COMPUTER_CASING.get()))
                     .where(' ', any())
-                    .where('-', air())
+                    .where('-', any())
                     .where('V', blocks(COMPUTER_HEAT_VENT.get()))
                     .where('A', blocks(ADVANCED_COMPUTER_CASING.get()))
                     .where('P', blocks(COMPUTER_CASING.get())
