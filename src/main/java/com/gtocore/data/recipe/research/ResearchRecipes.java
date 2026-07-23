@@ -8,8 +8,6 @@ public final class ResearchRecipes {
         if (GTCEu.isDev()) {
             ScanningRecipes.init();
             AnalyzeData.INSTANCE.init();
-            AnalyzeRecipes.init();
-            DataGenerateRecipe.init();
         }
     }
 }

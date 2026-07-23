@@ -1,5 +1,7 @@
 package com.gtocore.client.forge;
 
+import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
@@ -14,7 +16,7 @@ import com.gtocore.common.item.StructureWriteBehavior;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt;
 import com.gtocore.common.saved.WirelessNetworkSavedData;
 import com.gtocore.integration.ae.wireless.WirelessClientHandler;
-import com.gtocore.integration.emi.GTEMIPlugin;
+import com.gtocore.integration.emi.HiddenItems;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.item.IItem;
@@ -124,7 +126,7 @@ public final class ForgeClientEvent {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);
             if (tooltips != null) event.getToolTip().addAll(tooltips);
         }
-        if (GTEMIPlugin.isItemHidden(item)) {
+        if (HiddenItems.isItemHidden(item)) {
             event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());
         }
     }
@@ -238,6 +240,8 @@ public final class ForgeClientEvent {
 
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
+        TeamResearchSavedDtat.clearClientInstance();
+        TechTreeSavedData.clearClientInstance();
         WirelessNetworkSavedData.setCLIENT_INSTANCE(new WirelessNetworkSavedData());
         FXManager.clearFXs();
     }

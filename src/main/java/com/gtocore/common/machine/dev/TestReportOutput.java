@@ -47,7 +47,6 @@ public class TestReportOutput extends MetaMachine implements IFancyUIMachine {
     private void handleDisplayClick(String componentData, ClickData clickData) {
         if (!clickData.isRemote) {
             switch (componentData) {
-                case "data_crystal" -> DataCrystalReport.grtDataCrystalReport();
                 case "enchantment" -> EnchantmentStorage.getEnchantmentsReport();
                 case "affix_reporter" -> AffixReporter.getAffixReporter();
                 case "ore_reporter" -> OreReport.generateOreReport();

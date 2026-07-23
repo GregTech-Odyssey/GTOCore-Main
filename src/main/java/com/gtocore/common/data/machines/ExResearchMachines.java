@@ -2,6 +2,7 @@ package com.gtocore.common.data.machines;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.api.research.ResearchTag;
 import com.gtocore.client.renderer.machine.ExResearchPartRenderer;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.GTOBlocks;
@@ -9,21 +10,18 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
-import com.gtocore.common.machine.multiblock.electric.AnalysisAndResearchCenterMachine;
-import com.gtocore.common.machine.multiblock.electric.ScanningStationMachine;
+import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.SupercomputingCenterMachine;
-import com.gtocore.common.machine.multiblock.electric.SyntheticDataAssemblyPlantMachine;
-import com.gtocore.common.machine.multiblock.part.AnalyzeHolderMachine;
-import com.gtocore.common.machine.multiblock.part.DataGenerateHolderMachine;
-import com.gtocore.common.machine.multiblock.part.ResearchHolderMachine;
-import com.gtocore.common.machine.multiblock.part.ScanningHolderMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBridgePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchComputationPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchCoolerPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchEmptyPartMachine;
+import com.gtocore.common.machine.multiblock.electric.research.*;
+import com.gtocore.common.machine.multiblock.part.research.*;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchCoolerPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchEmptyPartMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.registries.GTOMachineBuilder;
+import com.gtolib.utils.MultiBlockFileReader;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -38,9 +36,7 @@ import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredActiveMachineR
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
-import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.DataBankMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -55,6 +51,9 @@ import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.common.data.GTBlocks.*;
 import static com.gregtechceu.gtceu.common.data.machines.GTResearchMachines.OVERHEAT_TOOLTIPS;
+import static com.gtocore.api.machine.part.GTOPartAbility.HEAT_CONDUCTION;
+import static com.gtocore.api.pattern.GTOPredicates.DataKeys.HIGH_TEMP_INTERFACE;
+import static com.gtocore.api.pattern.GTOPredicates.DataKeys.LOW_TEMP_INTERFACE;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 import static com.gtocore.utils.register.MachineRegisterUtils.machine;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
@@ -251,14 +250,8 @@ public final class ExResearchMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(OpV, GTCEu.id("block/machine/part/data_access_hatch")))
             .register();
 
-    public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataBankMachine::new)
-            .tooltips(Component.translatable("gtceu.machine.data_bank.tooltip.0"),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.1"),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.2"),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.3",
-                            FormattingUtil.formatNumbers(DataBankMachine.EUT_PER_HATCH)),
-                    Component.translatable("gtceu.machine.data_bank.tooltip.4",
-                            FormattingUtil.formatNumbers(DataBankMachine.EUT_PER_HATCH_CHAINED)))
+    public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataCenter::new)
+            .tooltipsSupplier(GTOMachineTooltipsA.DataCenterTooltips)
             .nonYAxisRotation()
             .recipeType(GTRecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
@@ -282,22 +275,24 @@ public final class ExResearchMachines {
                     .where('B', controller(definition))
                     .where('C', abilities(PartAbility.DATA_ACCESS)
                             .or(blocks(GTBlocks.HIGH_POWER_CASING.get()))
-                            .or(abilities(PartAbility.OPTICAL_DATA_TRANSMISSION))
+                            .or(abilities(IMPORT_FLUIDS))
+                            .or(abilities(COMPUTATION_DATA_RECEPTION))
                             .or(abilities(PartAbility.OPTICAL_DATA_RECEPTION)))
                     .where('D', blocks(GTBlocks.HIGH_POWER_CASING.get())
-                            .or(abilities(PartAbility.OPTICAL_DATA_TRANSMISSION).setMaxGlobalLimited(16, 1))
+                            .or(abilities(PartAbility.OPTICAL_DATA_TRANSMISSION).setMaxGlobalLimited(4, 1))
                             .or(abilities(PartAbility.OPTICAL_DATA_RECEPTION).setMaxGlobalLimited(4, 1))
                             .or(abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(8, 2))
+                            .or(abilities(COMPUTATION_DATA_RECEPTION, IMPORT_FLUIDS))
                             .or(abilities(MAINTENANCE).setExactLimit(1)))
                     .where('E', blocks(GTBlocks.ADVANCED_COMPUTER_CASING.get()))
                     .where('F', blocks(GTOBlocks.COBALT_OXIDE_CERAMIC_STRONG_THERMALLY_CONDUCTIVE_MECHANICAL_BLOCK.get()))
-                    .where('G', blocks(GTOBlocks.ELECTRON_PERMEABLE_AMPROSIUM_COATED_GLASS.get()))
-                    .where('H', blocks(ExResearchMachines.NICH_COOLING_COMPONENTS.get()))
+                    .where('G', GTOPredicates.glass())
+                    .where('H', blocks(COMPUTER_HEAT_VENT.get()))
                     .where('I', blocks(GTOBlocks.CHEMICAL_CORROSION_RESISTANT_PIPE_CASING.get()))
                     .where('J', blocks(GTOBlocks.IRIDIUM_CASING.get()))
                     .where('K', blocks(GTBlocks.HIGH_POWER_CASING.get()))
                     .where('L', blocks(GCYMBlocks.ELECTROLYTIC_CELL.get()))
-                    .where('M', GTOPredicates.frame(GTMaterials.Naquadria))
+                    .where('M', GTOPredicates.frame(GTOMaterials.BerylliumAluminumZ))
                     .where('N', blocks(GTOBlocks.IRIDIUM_PIPE_CASING.get()))
                     .where(' ', any())
                     .build())
@@ -308,10 +303,30 @@ public final class ExResearchMachines {
     // *********** 研究机器 *********** //
     /////////////////////////////////////
 
-    public static final MachineDefinition SCANNING_HOLDER = machine("scanning_holder", "扫描支架", ScanningHolderMachine::new)
-            .tier(IV)
+    public static final MachineDefinition CATALYSIS_DATA_HOLDER = machine("catalysis_data_holder", "催化反应数据支架", SimpleResearchTagPartMachine.create(ResearchTag.CATALYSIS, 1024))
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.CatalystDataHolder)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
-            .renderer(() -> new OverlayTieredActiveMachineRenderer(IV, GTCEu.id("block/machine/part/object_holder"),
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
+    public static final MachineDefinition THERMODYNAMIC_DATA_HOLDER = machine("thermodynamic_data_holder", "热力学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.THERMODYNAMICS, 1024))
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.ThermaldynamicsDataHolder)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
+
+    public static final MachineDefinition INTERSTELLAR_ENGINEERING_DATA_HOLDER = machine("interstellar_engineering_data_holder", "星际工程数据支架", SimpleResearchTagPartMachine.create(ResearchTag.INTERSTELLAR_ENGINEERING, 256))
+            .tier(UV)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(UV, GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
@@ -340,13 +355,10 @@ public final class ExResearchMachines {
             .notAllowSharedTooltips()
             .register();
 
-    public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("primordial_scanning_station", "基元扫描站", ScanningStationMachine::new)
-            .tooltipsText("精密的多方块扫描仪。", "Precision multi-block scanner.")
-            .tooltipsText("用于扫描§b数据晶片§r。", "Used to scan onto §fData Crystal§7.")
-            .tooltipsText("需要§b算力§r来进行工作。", "Requires §fComputation§7 to work.")
-            .tooltipsText("提供更多的算力可以使研究进展的更快。", "Providing more Computation allows the recipe to run faster.")
+    public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("dataunit_scanning_station", "基元扫描站", ScanningStationMachine::new)
             .nonYAxisRotation()
-            .recipeTypes(CRYSTAL_SCAN_RECIPES)
+            .tooltipsSupplier(GTOMachineTooltipsA.ScanStationMachineTooltips)
+            .recipeTypes(DUMMY_RECIPES)
             .block(ADVANCED_COMPUTER_CASING)
             .pattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("XXX", "VVV", "PPP", "PPP", "PPP", "VVV", "XXX")
@@ -359,14 +371,14 @@ public final class ExResearchMachines {
                     .where('S', controller(definition))
                     .where('X', blocks(COMPUTER_CASING.get()))
                     .where(' ', any())
-                    .where('-', air())
+                    .where('-', any())
                     .where('V', blocks(COMPUTER_HEAT_VENT.get()))
                     .where('A', blocks(ADVANCED_COMPUTER_CASING.get()))
                     .where('P', blocks(COMPUTER_CASING.get())
                             .or(abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(2, 1))
                             .or(abilities(PartAbility.COMPUTATION_DATA_RECEPTION).setExactLimit(1))
                             .or(autoAbilities(true, false, false)))
-                    .where('H', blocks(SCANNING_HOLDER.get()))
+                    .where('H', blocks(RESEARCH_HOLDER.get()))
                     .build())
             .shapeInfo(definition -> MultiblockShapeInfo.builder()
                     .aisle("---", "XXX", "---", "---", "---", "XXX", "---")
@@ -385,18 +397,14 @@ public final class ExResearchMachines {
                     .where('O', GTResearchMachines.COMPUTATION_HATCH_RECEIVER, Direction.SOUTH)
                     .where('E', GTMachines.ENERGY_INPUT_HATCH[GTValues.LuV], Direction.SOUTH)
                     .where('M', GTMachines.MAINTENANCE_HATCH.get(), Direction.SOUTH)
-                    .where('H', SCANNING_HOLDER.get(), Direction.SOUTH)
+                    .where('H', RESEARCH_HOLDER.get(), Direction.SOUTH)
                     .build(definition))
             .workableCasingRenderer(GTCEu.id("block/casings/hpca/advanced_computer_casing/front"), GTCEu.id("block/multiblock/research_station"))
             .register();
 
     public static final MultiblockMachineDefinition ANALYSIS_AND_RESEARCH_CENTER = multiblock("analysis_and_research_center", "分析推演中心", AnalysisAndResearchCenterMachine::new)
-            .tooltipsText("分析/推演的一体化机器。", "An all-in-one analysis/deduction machine.")
-            .tooltipsText("根据§b扫描数据§r得到§b研究数据§r。", "§bResearch data§r is obtained based on §bscanning data§r.")
-            .tooltipsText("需要§b算力§r来进行工作。", "Requires §fComputation§7 to work.")
-            .tooltipsText("提供更多的算力可以使研究进展的更快。", "Providing more Computation allows the recipe to run faster.")
             .nonYAxisRotation()
-            .recipeTypes(DATA_ANALYSIS_RECIPES, DATA_INTEGRATION_RECIPES)
+            .recipeTypes(DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
             .pattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("    ABBBA    ", "    AAAAA    ", "             ", "             ", "             ", "             ", "             ", "             ", "             ", "    AAAAA    ", "    AAAAA    ")
@@ -423,8 +431,7 @@ public final class ExResearchMachines {
                             .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1)))
                     .where('F', blocks(GCYMBlocks.ELECTROLYTIC_CELL.get()))
                     .where('G', controller(definition))
-                    .where('H', blocks(ANALYZE_HOLDER.get())
-                            .or(blocks(RESEARCH_HOLDER.get())))
+                    .where('H', blocks(RESEARCH_HOLDER.get()))
                     .where(' ', any())
                     .build())
             .shapeInfos(definition -> {
@@ -527,5 +534,41 @@ public final class ExResearchMachines {
                     .where('J', GTMachines.MAINTENANCE_HATCH.get(), Direction.NORTH)
                     .build(definition))
             .workableCasingRenderer(GTCEu.id("block/casings/hpca/high_power_casing"), GTCEu.id("block/multiblock/research_station"))
+            .register();
+
+    // 热力学分析平台
+    public static final MultiblockMachineDefinition THERMODYNAMIC_ANALYSIS_PLATFORM = multiblock("thermodynamic_analysis_platform", "热力学分析平台", ThermodynamicAnalysisPlatformMachine::new)
+            .nonYAxisRotation()
+            .recipeTypes(DUMMY_RECIPES)
+            .block(GTOBlocks.STABLE_BASE_CASING)
+            .tooltipsSupplier(GTOMachineTooltipsA.ThermodynamicAnalysisPlatformMachineTooltips)
+            .nonYAxisRotation()
+            .pattern(definition -> MultiBlockFileReader.start(definition)
+                    .where('A', blocks(GTBlocks.COMPUTER_CASING.get()))
+                    .where('B', blocks(GTOBlocks.STABLE_BASE_CASING.get())
+                            .or(abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(1))
+                            .or(blocks(THERMODYNAMIC_DATA_HOLDER.get()).setExactLimit(1))
+                            .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1))
+                            .or(blocks(GTMachines.CONTROL_HATCH.get())))
+                    .where('C', controller(definition))
+                    .where('D', blocks(GTOBlocks.STABLE_BASE_CASING.get()))
+                    .where('E', GTOPredicates.recordPosition(LOW_TEMP_INTERFACE,
+                            blocks(GTOBlocks.STABLE_BASE_CASING.get())
+                                    .or(abilities(HEAT_CONDUCTION).setExactLimit(1))))
+                    .where('F', blocks(GTBlocks.ADVANCED_COMPUTER_CASING.get()))
+                    .where('G', blocks(GTOBlocks.VACUUM_CHAMBER_OBSERVATION_GLASS.get()))
+                    .where('H', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
+                    .where('I', blocks(GTOBlocks.HIGH_PRESSURE_PIPE_CASING.get()))
+                    .where('J', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get()))
+                    .where('K', blocks(GTBlocks.FUSION_GLASS.get()))
+                    .where('L', blocks(GTOBlocks.COLD_ICE_CASING.get()))
+                    .where('M', blocks(GTOBlocks.BLAZE_CASING.get()))
+                    .where('N', blocks(GTOBlocks.ELECTRIC_POWER_TRANSMISSION_CASING.get()))
+                    .where('O', GTOPredicates.recordPosition(HIGH_TEMP_INTERFACE,
+                            blocks(GTOBlocks.STABLE_BASE_CASING.get())
+                                    .or(abilities(HEAT_CONDUCTION).setExactLimit(1))))
+                    .where(' ', any())
+                    .build())
+            .workableCasingRenderer(GTOCore.id("block/casings/stable_base_casing"), GTCEu.id("block/multiblock/research_station"))
             .register();
 }

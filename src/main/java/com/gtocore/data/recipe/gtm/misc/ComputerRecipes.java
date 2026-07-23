@@ -1,5 +1,9 @@
 package com.gtocore.data.recipe.gtm.misc;
 
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.machines.ExResearchMachines;
+import com.gtocore.data.recipe.research.AnalyzeData;
+
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.config.ConfigHolder;
@@ -89,6 +93,7 @@ final class ComputerRecipes {
                         .researchStack(DATA_ACCESS_HATCH.asItem())
                         .duration(2400)
                         .EUt(VA[EV]))
+                .researchNode(AnalyzeData.DataBase)
                 .duration(1200).EUt(6000)
                 .save();
 
@@ -108,6 +113,22 @@ final class ComputerRecipes {
                         .researchStack(SCANNER[LuV].asItem())
                         .duration(2400)
                         .EUt(VA[IV]))
+                .researchNode(AnalyzeData.ScanStation)
+                .duration(1200).EUt(100000)
+                .save();
+        ASSEMBLY_LINE_RECIPES.recipeBuilder("scan__station")
+                .inputItems(DATA_BANK)
+                .inputItems(SENSOR_LuV, 8)
+                .inputItems(CustomTags.ZPM_CIRCUITS, 8)
+                .inputItems(FIELD_GENERATOR_LuV, 2)
+                .inputItems(GTOItems.DATA_CRYSTAL_MK1, 1)
+                .inputItems(wireGtDouble, UraniumRhodiumDinaquadide, 32)
+                .inputItems(foil, Trinium, 32)
+                .inputItems(OPTICAL_PIPES[0].asItem(), 16)
+                .inputFluids(SolderingAlloy, L << 3)
+                .inputFluids(VanadiumGallium, L << 3)
+                .outputItems(ExResearchMachines.PRIMORDIAL_SCANNING_STATION)
+                .researchNode(AnalyzeData.ScanStation)
                 .duration(1200).EUt(100000)
                 .save();
 

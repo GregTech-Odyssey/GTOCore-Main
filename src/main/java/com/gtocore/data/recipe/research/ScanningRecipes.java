@@ -1,11 +1,12 @@
 package com.gtocore.data.recipe.research;
 
-import com.gtocore.data.recipe.builder.research.DataCrystalConstruction;
+import com.gtocore.api.research.ResearchPoints;
+import com.gtocore.api.research.ResearchTag;
+import com.gtocore.api.research.scanning.DataScanningManager;
 
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gtolib.utils.RegistriesUtils;
+
+import net.minecraft.world.item.Items;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 
@@ -13,43 +14,25 @@ public final class ScanningRecipes {
 
     public static void init() {
         /// 基元扫描
-        /// buildDataCrystal输入null不生成配方只生成扫描晶片数据, true会生成基元扫描配方, false会生成扫描仪配方
-        /// input 需要输入输入被扫描的物品或流体Stack, 数据等级(0-15), 晶片等级(1-5)
-        /// EUt 消耗电量
-        /// 扫描仪需要输入一个时间 .duration
-        /// 基元扫描需要输入一个算力消耗 .CWUt( ) 或 .CWUt( , ) 和一个催化剂 .catalyst
-        DataCrystalConstruction.buildDataCrystal(false)
-                .input(ChemicalHelper.get(TagPrefix.dust, GTMaterials.Naquadah, 1), 1, 1)
-                .EUt(VA[IV])
-                .duration(200)
-                .save();
+        DataScanningManager.registerDataScanning(Items.COMPASS, ResearchPoints.of(ResearchTag.MECHANICS, 1));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:catalyst_base"), ResearchPoints.of(ResearchTag.CATALYSIS, 1L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:stem_cells"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:biological_cells"), ResearchPoints.of(ResearchTag.BIOLOGY, 6L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_1m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 1L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_4m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 2L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_16m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 3L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_64m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 4L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_256m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 5L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:infinite_cell_component"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 12L));
 
-        DataCrystalConstruction.buildDataCrystal(true)
-                .input(ChemicalHelper.get(TagPrefix.dust, GTMaterials.ActivatedCarbon), 2, 2)
-                .catalyst(ChemicalHelper.get(TagPrefix.lens, GTMaterials.Amethyst))
-                .EUt(VA[ZPM])
-                .CWUt(16)
-                .save();
-
-        DataCrystalConstruction.buildDataCrystal(true)
-                .input(GTMaterials.Water.getFluid(50050), 3, 2)
-                .catalyst(ChemicalHelper.get(TagPrefix.lens, GTMaterials.Amethyst))
-                .EUt(VA[ZPM])
-                .CWUt(16)
-                .save();
-
-        DataCrystalConstruction.buildDataCrystal(true)
-                .input(GTMaterials.Steel.getFluid(3000), 4, 2)
-                .catalyst(ChemicalHelper.get(TagPrefix.lens, GTMaterials.Amethyst))
-                .EUt(VA[ZPM])
-                .CWUt(16)
-                .save();
-
-        DataCrystalConstruction.buildDataCrystal(true)
-                .input(GTMaterials.Iron.getFluid(FluidStorageKeys.PLASMA, 2000), 5, 3)
-                .catalyst(ChemicalHelper.get(TagPrefix.lens, GTMaterials.Amethyst))
-                .EUt(VA[ZPM])
-                .CWUt(16, 2048)
-                .save();
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:bifidobacterium_breve_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cupriavidus_necator_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:hyperthermophilic_archaeon_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:eschericia_coli_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:clostridium_pasteurianum_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:shewanella_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:streptococcus_pyogenes_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:brevibacterium_flavium_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.freeze();
     }
 }

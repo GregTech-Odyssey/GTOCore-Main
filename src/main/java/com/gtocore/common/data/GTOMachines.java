@@ -9,6 +9,7 @@ import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.dev.TestReportOutput;
+import com.gtocore.common.machine.electric.DataExportMachine;
 import com.gtocore.common.machine.electric.ElectricHeaterMachine;
 import com.gtocore.common.machine.electric.VacuumPumpMachine;
 import com.gtocore.common.machine.generator.LightningRodMachine;
@@ -72,6 +73,7 @@ import it.unimi.dsi.fastutil.Pair;
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.PARALLEL_HATCH;
 import static com.gregtechceu.gtceu.api.recipe.handler.IO.IN;
+import static com.gtocore.api.machine.part.GTOPartAbility.HEAT_CONDUCTION;
 import static com.gtocore.common.machine.multiblock.part.maintenance.ACMHatchPartMachine.LANG_PLACEMENT_TOOLTIP;
 import static com.gtocore.utils.register.MachineRegisterUtils.*;
 
@@ -273,6 +275,13 @@ public final class GTOMachines {
             .tooltips(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01))
             .tooltips(Component.translatable(HeatInterfaceCover.GENERATION_RATE, 1.6))
             .renderer(() -> new HeaterRenderer(LV))
+            .register();
+    public static final MachineDefinition DATA_EXPORT_MACHINE = machine("data_export_machine", "数据导出机", DataExportMachine::new)
+            .tier(IV)
+            .recipeType(GTRecipeTypes.DUMMY_RECIPES)
+            .nonYAxisRotation()
+            .tooltips(GTOMachineTooltipsA.DataExportMachineTooltips)
+            .workableTieredHullRenderer(GTOCore.id("block/machines/world_data_scanner"))
             .register();
 
     //////////////////////////////////////
@@ -590,7 +599,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition HEAT_HATCH = machine("heat_hatch", "导热仓", h -> new HeatHatchPartMachine(h, 850, 1, 1))
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, HEAT_CONDUCTION)
             .tooltips(GTOMachineTooltips.TempInterfaceTooltips)
             .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 850))
             .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 1))
@@ -602,7 +611,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition ADVANCED_HEAT_HATCH = machine("advanced_heat_hatch", "高级导热仓", h -> new HeatHatchPartMachine(h, 3600, 2, 4))
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, HEAT_CONDUCTION)
             .tooltips(GTOMachineTooltips.TempInterfaceTooltips)
             .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 3600))
             .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 2))
@@ -1097,6 +1106,13 @@ public final class GTOMachines {
                     .tooltips(Component.translatable("gtceu.universal.tooltip.working_area_max", (int) (8 * Math.pow(2, tier)), (int) (8 * Math.pow(2, tier))))
                     .register(),
             LV, MV, HV);
+
+    public static final MachineDefinition EXHAUST_FAN = machine("exhaust_fan", "消声仓排气口", ExhaustFanMachine::new)
+            .allRotation()
+            .tooltipsText("Connected to the exhaust pipe of the silencer, which can export the smoke in the silencer to this", "连接到消声仓烟管，可将消声仓内的烟雾导出到此")
+            .overlayTieredHullRenderer("rotor_hatch")
+            .tier(0)
+            .register();
 
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)
             .tooltipBuilder((stack, list) -> GTOMachineTooltips.BasicMonitorTooltips.apply(list))

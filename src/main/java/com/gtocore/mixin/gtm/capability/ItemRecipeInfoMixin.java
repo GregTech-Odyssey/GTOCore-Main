@@ -1,6 +1,8 @@
 package com.gtocore.mixin.gtm.capability;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.common.recipe.condition.ResearchRecipeCondition;
+import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gtolib.api.item.ItemStackHandler;
 import com.gtolib.api.recipe.ContentBuilder;
@@ -25,11 +27,13 @@ import net.minecraft.network.chat.Component;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(ItemRecipeInfo.class)
 public abstract class ItemRecipeInfoMixin extends ContentRecipeInfo<ItemIngredient> {
@@ -37,6 +41,29 @@ public abstract class ItemRecipeInfoMixin extends ContentRecipeInfo<ItemIngredie
     protected ItemRecipeInfoMixin(String name, int color, boolean doRenderSlot, int sortIndex) {
         super(name, color, doRenderSlot, sortIndex);
     }
+
+    @Override
+    public @Nullable("null when getWidgetClass() == null") Widget createWidget() {
+        SlotWidget slot = new SlotWidget() {
+
+            @Override
+            public @Nullable Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
+                if (gto$getXEIIngredientOverMouse != null && self().isMouseOverElement(mouseX, mouseY)) {
+                    var e = gto$getXEIIngredientOverMouse.apply(this, mouseX, mouseY);
+                    if (e != null) {
+                        return e;
+                    }
+                }
+                return super.getXEIIngredientOverMouse(mouseX, mouseY);
+            }
+        };
+        slot.initTemplate();
+        return slot;
+    }
+
+    @Nullable
+    @Unique
+    private TriFunction<SlotWidget, Double, Double, Object> gto$getXEIIngredientOverMouse = null;
 
     /**
      * @author .
@@ -56,6 +83,25 @@ public abstract class ItemRecipeInfoMixin extends ContentRecipeInfo<ItemIngredie
                     ResearchCondition condition = recipeHolder.conditions().stream().filter(ResearchCondition.class::isInstance).findAny().map(ResearchCondition.class::cast).orElse(null);
                     if (condition != null) {
                         slot.setHandlerSlot(new ItemStackHandler(condition.dataStack), 0);
+                        slot.setIngredientIO(IngredientIO.CATALYST);
+                        slot.setCanTakeItems(false);
+                        slot.setCanPutItems(false);
+                    }
+                    var condition0 = recipeHolder.conditions().stream().filter(ResearchRecipeCondition.class::isInstance).findAny().map(ResearchRecipeCondition.class::cast).orElse(null);
+                    if (condition0 != null) {
+                        if (condition0.isRequiresNode() && condition0.getTechNode().icon != null) {
+                            var i = new ItemStackHandler(condition0.getTechNode().icon.wrapForDisplayOrFilter());
+                            slot.setHandlerSlot(i, 0);
+                            gto$getXEIIngredientOverMouse = (s, mouseX, mouseY) -> {
+                                if (s == slot) {
+                                    return new TechNodeEmiStack(condition0.getTechNode());
+                                } else {
+                                    return null;
+                                }
+                            };
+                        } else {
+                            slot.setHandlerSlot(new ItemStackHandler(condition0.getDataStack()), 0);
+                        }
                         slot.setIngredientIO(IngredientIO.CATALYST);
                         slot.setCanTakeItems(false);
                         slot.setCanPutItems(false);

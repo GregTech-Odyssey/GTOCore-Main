@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gtocore.api.machine.ILargeSpaceStationMachine.ConnectType.MODULE;
+import static com.gtocore.common.data.GTOMachines.EXHAUST_FAN;
 
 @DataGeneratorScanned
 public class WorkspaceExtension extends Extension {
@@ -190,7 +191,8 @@ public class WorkspaceExtension extends Extension {
                     .where('L', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .where('M', blocks(GTOBlocks.SPACE_ENGINE_NOZZLE.get()))
                     .where('N', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
-                    .where('O', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)))
+                    .where('O', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
+                            .or(blocks(EXHAUST_FAN.get())))
                     .where('p', ISpacePredicateMachine.innerBlockPredicate.get())
                     .where(' ', any())
                     .build();

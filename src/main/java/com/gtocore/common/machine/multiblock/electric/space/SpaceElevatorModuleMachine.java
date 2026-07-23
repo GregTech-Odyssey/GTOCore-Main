@@ -88,6 +88,15 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
         textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(getDurationMultiplier())));
     }
 
+    @Override
+    public boolean handleRecipeOutput(GTRecipe recipe) {
+        var result = super.handleRecipeOutput(recipe);
+        if (result && controller != null) {
+            controller.addModuleWorks(recipe.batchParallels);
+        }
+        return result;
+    }
+
     private double getDurationMultiplier() {
         double mul = 1;
         if (controller != null) {

@@ -3,6 +3,7 @@ package com.gtocore.common.data.translation
 import com.gtocore.api.data.Algae
 import com.gtocore.api.lang.ComponentListSupplier
 import com.gtocore.api.lang.ComponentSupplier
+import com.gtocore.api.lang.toComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.common.data.translation.ComponentSlang.AfterModuleInstallation
@@ -15,6 +16,7 @@ import net.minecraft.network.chat.Component
 import appeng.api.config.PowerUnits
 import com.gregtechceu.gtceu.api.GTValues
 import com.gregtechceu.gtceu.config.ConfigHolder
+import com.gtolib.GTOCore
 
 object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
@@ -61,6 +63,93 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         command("用于在行星表面收集大气中的气体(效率非常惊人)" translatedTo "Used to collect gases from the atmosphere on the surface of planets (with an amazing efficiency)")
         command("在地球建立的空间站能够收集到来自主世界、下界和末地的气体" translatedTo "In the space station built on Earth, gases from the Overworld, Nether, and End can be collected")
         command("在其他行星建立的空间站能够收集到该行星特有的大气气体" translatedTo "In the space station built on other planets, the unique atmospheric gases of that planet can be collected")
+    }
+
+    @JvmField
+    val space3DPrinterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("space_3d_printer")
+
+        story("GTO的工程师们想到，只要在重力微乎其微的空间站中进行3D打印，就不用像在地球上那样，还要打印支架" translatedTo "GTO engineers thought that as long as 3D printing is done in a space station with minimal gravity, there is no need to print supports like on Earth")
+        story("于是，空间站3D打印机诞生了" translatedTo "Thus, the space station 3D printer was born")
+    }
+
+    @JvmField
+    val DataExportMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_export_machine")
+
+        section(MainFunction)
+        command("用于将科技树解锁的数据导出到闪存等存储设备中" translatedTo "Used to export data unlocked in the tech tree to flash drives and other storage devices")
+        command("导出需要消耗7680EU/t与一定时间进行数据拷贝" translatedTo "Exporting requires consuming 7680 EU/t and a certain amount of time for data copying")
+    }
+
+    @JvmField
+    val DataCenterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_center")
+
+        section(MainFunction)
+        function("用于存储大量数据的多功能数据中心" translatedTo "A multifunctional data center for storing large amounts of data")
+        function("同时，可以接受算力输入进行数据处理与研究" translatedTo "At the same time, it can accept computational workload input for data processing and research")
+        command("接受算力的上限为8*4^(玻璃等级-6)CWU/t" translatedTo "The upper limit of computational workload accepted is 8*4^(glass level-6) CWU/t")
+        command("每个数据仓的槽位与每个安装的配方数据分别额外提供1%的算力输入上限（独立乘区）" translatedTo "Each slot of the data hatch and each installed recipe data respectively provide an additional 1% of the computational workload input limit (independent multiplicative)")
+        info("等效上限公式：8*4^(玻璃等级-6)*(1+数据仓槽位数*0.01)*(1+配方数据数*0.01)CWU/t" translatedTo "Equivalent upper limit formula: 8*4^(glass level-6)*(1+data hatch slot count*0.01)*(1+recipe data count*0.01) CWU/t")
+        guide("从机器UI的左侧访问科技树与便捷导出功能" translatedTo "Access the tech tree and convenient export functions from the left side of the machine UI")
+        section(RunningRequirements)
+        command("闲置时，每个数据/光学仓耗能为§f1920 EU/t§7。" translatedTo "When idle, each data/optical hatch consumes §f1920 EU/t§7.")
+        command("连接时，每个已连接的数据/光学仓耗能为§f30,720 EU/t§7。" translatedTo "When connected, each connected data/optical hatch consumes §f30,720 EU/t§7.")
+        command("处于研究状态时，电力消耗翻倍，并需要100mB/秒的多氯联苯冷却剂" translatedTo "When in research state, power consumption is doubled and requires 100mB/s of PCB coolant")
+    }
+
+    @JvmField
+    val ScanStationMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("scan_station_machine")
+
+        section(MainFunction)
+        function("将存储在晶片中的数据进行解析，转化为团队共享的研究点数" translatedTo "Parse the data stored in the data crystal and convert it into team-shared research points")
+        command("每张晶片需要消耗§f24,576EU/t§r与一定时间进行数据解析，晶片等级每高出I级，耗能翻4倍" translatedTo "Each data crystal requires §f24,576EU/t§r and a certain amount of time for data parsing. For each level above I, the energy consumption quadruples")
+    }
+
+    @JvmField
+    val CatalystDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("catalyst_data_holder")
+
+        section(MainFunction)
+        function("安装在化工厂等场所，用于监测使用催化剂的反应" translatedTo "Installed in chemical plants and other places, used to monitor reactions that use catalysts")
+        function("每次机器运行包含催化剂的反应时，催化剂数据仓将记录该次配方的总效率" translatedTo "Each time the machine runs a reaction that contains a catalyst, the catalyst data hatch will record the total efficiency of that recipe")
+        info("总效率为配方时间乘以能耗与标准配方时间与能耗的比值" translatedTo "Total efficiency is the product of recipe time and energy consumption divided by the standard recipe time and energy consumption")
+        command("配方完成后，记录并产生(总效率×配方并行数)的催化研究点数，并存储于机器内的晶片中" translatedTo "After the recipe is completed, the catalyst data hatch will record and generate (total efficiency × recipe parallelism) catalyst research points, which will be stored in the data crystal inside the machine")
+    }
+
+    @JvmField
+    val ThermaldynamicsDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("thermodynamic_data_holder")
+
+        section(MainFunction)
+        function("配合热力学分析平台使用，用于热力学相关的研究" translatedTo "Used in conjunction with the thermodynamic analysis platform for thermodynamics-related research")
+    }
+
+    @JvmField
+    val ThermodynamicAnalysisPlatformMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("thermodynamic_analysis_platform_machine")
+
+        section(MainFunction)
+        function("用于监测热力学相关的实验" translatedTo "Used to monitor thermodynamics-related experiments")
+        info("机器结构中，可见有两个热力学封闭体系，分别为§b低温体系§r与§c高温体系§r" translatedTo "In the machine structure, there are two independent thermodynamic closed systems, namely §blow-temperature system§r and §chigh-temperature system§r")
+        info("当两边体系温差热平衡时（温差不超过10K即可计入），热力学分析平台将开始进行热力学分析" translatedTo "When the temperature difference between the two systems reaches thermal equilibrium(<10K), the thermodynamic analysis platform will begin thermodynamic analysis")
+        info("分析持续30秒，期间可以通过对应的热传导仓向两边体系输入热量以调节温差" translatedTo "The analysis lasts for 30 seconds, during which heat can be input to both systems through the corresponding thermal conduction hatches to adjust the temperature difference")
+        command("分析结束时，两侧体系的温差越大，产生的热力学研究点数越多" translatedTo "At the end of the analysis, the greater the temperature difference between the two systems, the more thermodynamic research points are generated")
+        command("每次分析产生的热力学研究点数 = (温差/250K)" translatedTo "The thermodynamic research points generated by each analysis = (temperature difference / 250K)")
+
+        section(RunningRequirements)
+        command("分析期间，热力学分析平台每秒消耗§f30,720 EU/t§r" translatedTo "During the analysis, the thermodynamic analysis platform consumes §f30,720 EU/t§r per second")
+    }
+
+    @JvmField
+    val DataHolderUniversal: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_holder_universal")
+
+        section("数据支架仓" translatedTo "About Data Holder")
+        info("这种仓室可以收集不同来源的数据，并转化为研究点数存储于晶片中" translatedTo "This hatch can collect data from different sources and convert it into research points stored in the data crystal")
+        info("安装到对应的机器上以生效" translatedTo "Install it on the corresponding machine to take effect")
     }
 
     @JvmField
@@ -117,9 +206,21 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
             "太空电梯安装的模块也将获得额外(0.8^(n/2))×的耗时减免" translatedTo
                 "Modules installed on the space elevator will also receive a time reduction of (0.8^(n/2))×",
         )
-        decrease("会增加太空电梯50%的算力消耗" translatedTo "Increases the space elevator's Computational Workload consumption by 50%")
+        decrease(Component.translatable("gtocore.lang.space_elevator_connector_module.3", 50.0 + 150.0 * GTOCore.difficulty).toComponentSupplier())
 
         command("该模块仅能连接在其他模块的下方" translatedTo "This module can only connect below other modules")
+    }
+
+    @JvmField
+    val SpaceElevatorEngineeringDataModule: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("space_elevator_engineering_data_module")
+
+        section(MainFunction)
+        command("收集太空电梯其他模块的运行数据" translatedTo "Collects operational data from other modules of the space elevator")
+        command(Component.translatable("gtocore.lang.space_elevator_engineering_data_module.1", if (GTOCore.isExpert()) 75 else 50).toComponentSupplier())
+        command("转化为的研究点数将存储于通用数据仓的晶片中" translatedTo "The converted research points will be stored in the data crystal of the universal data hatch")
+        increase("太空电梯动力模块等级为n时，每次收集需要的运行次数乘以(4/(3+n))" translatedTo "When the power module level of the space elevator is n, the number of runs needed for each collection is multiplied by (4/(3+n))")
+        increase("连接到空间站时，转化为的研究点数翻倍" translatedTo "When connected to the space station, the converted research points are doubled")
     }
 
     // 合金冶炼炉

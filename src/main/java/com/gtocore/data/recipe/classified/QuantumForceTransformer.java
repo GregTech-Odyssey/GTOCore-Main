@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import static com.gtocore.common.data.GTORecipeTypes.QUANTUM_FORCE_TRANSFORMER_RECIPES;
 
@@ -258,6 +259,20 @@ final class QuantumForceTransformer {
                 .chancedOutput(GTOItems.TIMEPIECE.asItem(), 2500, 0)
                 .EUt(2013265920)
                 .duration(200)
+                .save();
+        QUANTUM_FORCE_TRANSFORMER_RECIPES.builder("microcosm")
+                .inputItems(GTOItems.COSMIC_SINGULARITY)
+                .inputItems(CustomTags.MAX_CIRCUITS, 32)
+                .inputItems(GTOItems.SUPRACAUSAL_RAM_CHIP, 32)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.TranscendentMetal, 16)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Eternity, 16)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.SpaceTime, 16)
+                .inputItems(GTOItems.TIMEPIECE, 64)
+                .outputItems(GTOItems.MICROCOSM)
+                .inputFluids(GTOMaterials.TemporalFluid, 10000)
+                .inputFluids(GTOMaterials.SpatialFluid, 10000)
+                .EUt(4_280_000_000L)
+                .duration(400)
                 .save();
     }
 }

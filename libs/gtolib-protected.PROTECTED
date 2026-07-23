@@ -1,7 +1,7 @@
 protected=true
 method=proguard+gto-seal
 runtime=full-seal-runtime
-updated=Sun Jul 19 13:32:06 CST 2026
-size=7770447
-fingerprint=0756a4e866835d12619f71df97af64e32d111d5c490d39fef872cab50ff70f05
-jarSha256=f3c7dcd73856f25c4f28c506a8ce6379b0af6676278b7df8a241772b045a28af
+updated=Thu Jul 23 19:18:23 CST 2026
+size=7815569
+fingerprint=c720b954497c81f39aeaece2e775b9a3f4574ad393490faaa34ac40355154168
+jarSha256=77db33df6b1c24db939dc6e538a1a10dd79a4ee2909e53781543d2fb78e73a2b

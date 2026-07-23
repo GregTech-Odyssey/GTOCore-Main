@@ -1,5 +1,8 @@
 dependencies {
     compileOnly libs.jetbrains.annotations
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("org.lwjgl:lwjgl:3.3.2")
     implementation("org.lwjgl:lwjgl-opengl:3.3.2")
@@ -10,7 +13,6 @@ dependencies {
     implementation("dev:gto-seal-runtime:1.0")
 
     implementation("dev:RecipeSearch-1.3")
-    modCompileOnly("dev:calculatoroverlay-1.0.2")
     implementation("com.github.houbb:opencc4j:1.14.0")//用来datagen繁中的
 
 
@@ -20,12 +22,12 @@ dependencies {
     jarJar(implementation("org.apache.commons:commons-math3:3.6.1"))
     jarJar(modImplementation("appeng:appliedenergistics2-forge-1.20.1:${project.ae2_version}"))
     jarJar(modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$project.gtceu_version"))
-    jarJar(modImplementation("com.hepdd.gtmthings:gtmthings-forge-1.20.1:26.7.1"))
+    jarJar(modImplementation("com.hepdd.gtmthings:gtmthings-forge-1.20.1:$project.gtmt_version"))
 
     // 官方 Maven：https://maven.gtodyssey.com/releases/com/gto/datasynclib-forge-1.20.1/
     // 旧独立 gtolib 时代由传递依赖带上；合并后 gtolib 被 seal 嵌入，必须 jarJar 否则
     // 发行包缺 DataComponentMap → ClassNotFoundException
-    jarJar(modImplementation("com.gto:datasynclib-forge-1.20.1:26.7.3"))
+    jarJar(modImplementation("com.gto:datasynclib-forge-1.20.1:$project.datasynclib_version"))
 
     // compile-only targets for gtolib mixins (optional at runtime)
     modCompileOnly("curse.maven:ferritecore-429235:4810975")
@@ -48,7 +50,7 @@ dependencies {
     compileOnly(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.2-beta.4"))
     implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:0.3.2-beta.4")
 
-    modImplementation("curse.maven:ldlib-626676:7809449")
+    modImplementation("com.lowdragmc.ldlib:ldlib-forge-1.20.1:1.0.50")
 
     modImplementation("org.appliedenergistics:guideme:20.1.13")
     modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
@@ -183,7 +185,6 @@ dependencies {
     modImplementation("dev:Jade-1.20.1-Forge-11.13.1")
 
     modCompileOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
-    modRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
 
     modRuntimeOnly("curse.maven:huge-structure-blocks-474114:4803547")
 
@@ -200,13 +201,41 @@ dependencies {
 
     modCompileOnly("dev:gtoepp:1.0.1")
     modCompileOnly("curse.maven:tool-belt-260262:5929061")
+    modCompileOnly("com.ref:calculatoroverlay:1.0.2")
 
+//    modCompileOnly("curse.maven:rts-building-build-from-above-1553142:8155138")
+//    modRuntimeOnly("curse.maven:rts-building-build-from-above-1553142:8155138")
     modImplementation("curse.maven:jumbo-furnace-390880:4685578")
 
     modImplementation("curse.maven:easy-villagers-400514:6831415")
 
-    modImplementation("curse.maven:cc-tweaked-282001:5714507")
-    modImplementation("curse.maven:super-factory-manager-306935:7021189")
-    modImplementation("curse.maven:modular-routers-250294:5056687")
-//    modRuntimeOnly("curse.maven:tool-belt-260262:5929061")
+    modCompileOnly("dev:calculatoroverlay:1.0.2")
+//    modRuntimeOnly("curse.maven:super-factory-manager-306935:7021189")
+    modRuntimeOnly("curse.maven:modular-routers-250294:5056687")
+    modCompileOnly("curse.maven:modular-routers-250294:5056687")
+    modRuntimeOnly("curse.maven:open-parties-and-claims-636608:8230795")
+    modRuntimeOnly("xaero.lib:xaerolib-forge-1.20.1:1.1.15")
+    modRuntimeOnly("xaero.map:xaeroworldmap-forge-1.20.1:1.41.2")
+    modRuntimeOnly("xaero.minimap:xaerominimap-forge-1.20.1:26.1.0")
+    modRuntimeOnly("curse.maven:ae2-network-analyser-961856:5107131")
+//    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
+//    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
+//    modRuntimeOnly("curse.maven:ftb-chunks-forge-314906:7880858") // 有个人存档有
+//    modRuntimeOnly("curse.maven:effortless-building-302113:6330928")
+//    modRuntimeOnly("curse.maven:worldedit-225608:4586218")
+
+    // 牢模组
+//    modRuntimeOnly("curse.maven:re-avaritia-623969:7229795")
+//    modCompileOnly("curse.maven:ender-io-64578:7183516")
+    try {
+        if (gradle.startParameter.taskNames.first != "runData") {
+            modRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")  // 不能参与runData任务
+            modRuntimeOnly("curse.maven:tool-belt-260262:5929061")
+//            modRuntimeOnly("curse.maven:ftb-xmod-compat-forge-889915:6402486")
+        }
+        if (gradle.startParameter.taskNames.first != "runServer") {
+            modRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
+            modRuntimeOnly("curse.maven:imblocker-483760:6922546") // 不能参与runServer任务
+        }
+    } catch (Exception ignored) {}
 }

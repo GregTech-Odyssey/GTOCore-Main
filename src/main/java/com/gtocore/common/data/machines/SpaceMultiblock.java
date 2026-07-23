@@ -48,6 +48,7 @@ import static com.gtocore.api.machine.ILargeSpaceStationMachine.ConnectType.*;
 import static com.gtocore.api.machine.part.GTOPartAbility.DRONE_HATCH;
 import static com.gtocore.api.pattern.GTOPredicates.autoSpaceMachineAbilities;
 import static com.gtocore.api.pattern.GTOPredicates.light;
+import static com.gtocore.common.data.GTOMachines.EXHAUST_FAN;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
 
 public class SpaceMultiblock {
@@ -108,7 +109,9 @@ public class SpaceMultiblock {
                     .where('A', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get()))
                     .where('B', blocks(GTOBlocks.ALUMINUM_ALLOY_8090_SKIN_MECHANICAL_BLOCK.get()))
                     .where('C', GTOPredicates.frame(GTOMaterials.StainlessSteelGC4))
-                    .where('D', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)).or(abilities(IMPORT_FLUIDS, EXPORT_FLUIDS, INPUT_ENERGY)))
+                    .where('D', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
+                            .or(abilities(IMPORT_FLUIDS, EXPORT_FLUIDS, INPUT_ENERGY))
+                            .or(blocks(EXHAUST_FAN.get())))
                     .where('e', ISpacePredicateMachine.photovoltaicPlantSupplyingPredicate.get())
                     .where('E', blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))
                     .where('F', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
@@ -211,7 +214,8 @@ public class SpaceMultiblock {
                     .where('K', blocks(GTOBlocks.SPACE_ENGINE_NOZZLE.get()))
                     .where('L', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
                     .where('M', GTOPredicates.frame(GTOMaterials.AluminumAlloy7050))
-                    .where('N', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)))
+                    .where('N', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
+                            .or(blocks(EXHAUST_FAN.get())))
                     .where('O', blocks(GTOBlocks.STAINLESS_STEEL_CORROSION_RESISTANT_CASING.get()))
                     .where('P', blocks(GTOBlocks.INSULATION_TILE_MECHANICAL_BLOCK.get()))
                     .where('Q', blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))
@@ -874,5 +878,49 @@ public class SpaceMultiblock {
                     .where(' ', any())
                     .build())
             .workableCasingRenderer(GTOCore.id("block/casings/pressure_resistant_housing_mechanical_block"), GTCEu.id("block/multiblock/fusion_reactor"))
+            .register();
+
+    // 空间3D打印机
+    public static final MachineDefinition SPACE_3D_PRINTER = multiblock("space_3d_printer", "空间3D打印机", (d -> new RecipeExtension(d, ILargeSpaceStationMachine.twoWayPositionFunction(41))))
+            .langValue("Space 3D Printer")
+            .recipeType(GTORecipeTypes.THREE_DIMENSIONAL_PRINTER_RECIPES)
+            .workableInSpace()
+            .parallelizableTooltips()
+            .allRotation()
+            .tooltips(GTOMachineTooltipsA.space3DPrinterTooltips)
+            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .block(GTOBlocks.THREE_PROOF_COMPUTER_CASING)
+            .pattern(definition -> MultiBlockFileReader.start(definition)
+                    .where('A', blocks(GTOBlocks.ALUMINUM_ALLOY_7050_SUPPORT_MECHANICAL_BLOCK.get()))
+                    .where('B', blocks(GTOBlocks.ALUMINUM_ALLOY_2090_SKIN_MECHANICAL_BLOCK.get()))
+                    .where('C', blocks(GTOBlocks.TITANIUM_ALLOY_FRAME_INTERNAL.get()))
+                    .where('D', blocks(GTOBlocks.SPACECRAFT_DOCKING_CASING.get()))
+                    .where('E', ISpacePredicateMachine.innerBlockPredicate.get())
+                    .where('F', GTOPredicates.frame(GTOMaterials.StainlessSteel316))
+                    .where('G', MODULE.traceabilityPredicate.get())
+                    .where('H', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
+                    .where('I', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get()))
+                    .where('J', blocks(GTBlocks.FUSION_GLASS.get()))
+                    .where('K', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
+                    .where('L', blocks(GTOBlocks.MACHINING_CONTROL_CASING_MK3.get()))
+                    .where('M', blocks(GTOBlocks.LOW_TEMPERATURE_FUEL_TANK_CASING.get()))
+                    .where('N', blocks(GTOBlocks.COPROCESSOR_COMPUTING_CASING.get()))
+                    .where('O', GTOPredicates.frame(GTOMaterials.HastelloyN))
+                    .where('P', GTOPredicates.light())
+                    .where('Q', blocks(GTOBlocks.SENSOR_PROTECTIVE_COVER_CASING.get()))
+                    .where('R', blocks(GCYMBlocks.CASING_LASER_SAFE_ENGRAVING.get()))
+                    .where('S', blocks(GTOBlocks.FERMI_ENERGY_GAP_TRANSITION_GLASS.get()))
+                    .where('T', blocks(GTOBlocks.PRECISION_PROCESSING_MECHANICAL_CASING.get()))
+                    .where('U', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
+                    .where('V', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
+                    .where('W', blocks(GTOBlocks.HIGH_PRESSURE_GAS_STORAGE_TANKS_CASING.get()))
+                    .where('X', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get())
+                            .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
+                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)))
+                    .where('Y', controller(definition))
+                    .where(' ', any())
+                    .build())
+            .workableCasingRenderer(GTOCore.id("block/casings/three_proof_computer_casing"), GTCEu.id("block/multiblock/fusion_reactor"))
             .register();
 }

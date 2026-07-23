@@ -22,7 +22,15 @@ version = mod_version
 // Java 25 字节码 (major 69) 无法被当前 reobf/ART 处理。
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
 
 apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
 apply from: "$rootDir/gradle/scripts/repositories.gradle"
@@ -72,10 +80,16 @@ generateModMetadata.doFirst {
     mkdir('run/client')
     mkdir('run/server')
     mkdir('run/data')
+    if (file('run/client/gtocore/cache').isDirectory()) {
+        delete fileTree('run/client/gtocore/cache')
+    }
 }
 
+tasks.named('prepareClientRun') {
+    outputs.upToDateWhen { false }
+}
 
-def configureLegacyWriter = { taskName , preferredConfigName, outFileName ->
+def configureLegacyWriter = { String taskName, String preferredConfigName, String outFileName ->
     tasks.named(taskName) {
         doLast {
             def cfg = configurations.findByName(preferredConfigName) ?: configurations.getByName("runtimeClasspath")
@@ -106,6 +120,10 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 // Ensure Java compilation depends on Kotlin and can resolve Kotlin classes

@@ -3,10 +3,10 @@ package com.gtocore.common.machine.multiblock.electric;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.ThermalConductorHatchPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBasePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBridgePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchComputationPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchCoolerPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBasePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchCoolerPartMachine;
 
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
