@@ -302,12 +302,12 @@ public final class ExResearchMachines {
     // *********** 研究机器 *********** //
     /////////////////////////////////////
 
-    public static final MachineDefinition CATALYSIS_DATA_HOLDER = machine("catalysis_data_holder", "催化反应数据支架", CatalysisDataPartMachine::new)
+    public static final MachineDefinition CATALYSIS_DATA_HOLDER = machine("catalysis_data_holder", "催化反应数据支架", SimpleResearchTagPartMachine.create(ResearchTag.CATALYSIS, 1024))
             .tier(LuV)
             .tooltips(GTOMachineTooltipsA.CatalystDataHolder)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
-            .renderer(() -> new OverlayTieredActiveMachineRenderer(IV, GTCEu.id("block/machine/part/object_holder"),
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
@@ -316,7 +316,7 @@ public final class ExResearchMachines {
             .tier(UV)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
-            .renderer(() -> new OverlayTieredActiveMachineRenderer(IV, GTCEu.id("block/machine/part/object_holder"),
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(UV, GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
