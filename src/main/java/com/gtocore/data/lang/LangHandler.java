@@ -562,6 +562,7 @@ public final class LangHandler {
         addCNEN("gtocore.message.otherside_pass_required", "你感受到来自幽冥的隔绝感...", "You feel a sense of isolation from the Other Side...");
         addCNEN("gtocore.message.otherside_pass_required.1", "似乎需要伪装成幽冥中最强大的生物之一，才能通过这里。", "It seems you need to disguise yourself as one of the most powerful beings in the Other Side to pass through here.");
         addCNEN("key.gtocore.movable_hud_toggle", "HUD 调节", "HUD Editing key");
+        addCNEN("gtocore.recipe.require_technode", "可通过科技节点解锁", "Unlockable through Tech Node");
     }
 
     public static void enInitialize(LanguageProvider provider) {

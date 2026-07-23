@@ -1,6 +1,7 @@
 package com.gtocore.api.research.ui;
 
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.ui.TechTreeSideTab;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
@@ -28,6 +29,7 @@ public class ResearchInfoTab implements IFancyUIProvider {
 
     private final @NotNull TechTreeManager manager;
     private final BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory;
+    private TechNode initialSelectedNode;
 
     public ResearchInfoTab(TechTreeManager manager, @Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
         this.manager = manager;
@@ -41,6 +43,10 @@ public class ResearchInfoTab implements IFancyUIProvider {
         var sideTab = new TechTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
         sideTab.setInnerContent(innerContentFactory.apply(widget, sideTab));
         treeWidget.setOnNodeClicked(sideTab::toggleNode);
+        if (initialSelectedNode != null) {
+            treeWidget.focusNode(initialSelectedNode);
+            sideTab.showNode(initialSelectedNode);
+        }
         root.addWidget(treeWidget);
         root.addWidget(sideTab);
         return root;
@@ -59,5 +65,10 @@ public class ResearchInfoTab implements IFancyUIProvider {
     @Override
     public Component getTitle() {
         return TechTreeManager.getTreeName(manager);
+    }
+
+    public IFancyUIProvider setSelectedNode(TechNode selectedNode) {
+        initialSelectedNode = selectedNode;
+        return this;
     }
 }

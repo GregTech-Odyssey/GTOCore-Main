@@ -162,6 +162,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     @Override
+    public boolean alwaysSearchRecipe() {
+        return true;
+    }
+
+    @Override
     public void onStructureFormed() {
         super.onStructureFormed();
         tierCasingTrait.onStructureFormed();
@@ -344,6 +349,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
             var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
                 if (clickData.isRemote) {
+                    selectedNode = sideTab.getSelectedNode() == selectedNode ? null : sideTab.getSelectedNode();
                     btnRef.get().setButtonTexture(GuiTextures.BUTTON,
                             new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
                                     .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())).setType(TextTexture.TextType.ROLL));
@@ -359,14 +365,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 }
 
                 UUID requester = gui.entityPlayer.getUUID();
-                boolean selectionChanged = researchRequester == null || !researchRequester.equals(requester);
                 selectedNode = node == selectedNode ? null : node;
                 researchRequester = requester;
 
-                if (selectionChanged) {
-                    cwuBuffer = 0L;
-                    getRecipeLogic().resetRecipeLogic();
-                }
+                cwuBuffer = 0L;
+                getRecipeLogic().resetRecipeLogic();
             }) {
 
                 @Override
@@ -386,7 +389,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     new TextTexture(Component.translatable(LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
                             .setSupplier(() -> getResearchButtonText(sideTab.getSelectedNode())));
             return button;
-        }));
+        }).setSelectedNode(selectedNode));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
         sideTabs.attachSubTab(new RecipeExportTab(this, AnalyzeData.TechTree));
     }

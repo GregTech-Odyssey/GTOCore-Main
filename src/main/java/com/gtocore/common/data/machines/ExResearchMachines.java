@@ -12,10 +12,7 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.SupercomputingCenterMachine;
-import com.gtocore.common.machine.multiblock.electric.research.AnalysisAndResearchCenterMachine;
-import com.gtocore.common.machine.multiblock.electric.research.DataCenter;
-import com.gtocore.common.machine.multiblock.electric.research.ScanningStationMachine;
-import com.gtocore.common.machine.multiblock.electric.research.SyntheticDataAssemblyPlantMachine;
+import com.gtocore.common.machine.multiblock.electric.research.*;
 import com.gtocore.common.machine.multiblock.part.research.*;
 import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
 import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
@@ -24,6 +21,7 @@ import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchEm
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.registries.GTOMachineBuilder;
+import com.gtolib.utils.MultiBlockFileReader;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -53,6 +51,9 @@ import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.common.data.GTBlocks.*;
 import static com.gregtechceu.gtceu.common.data.machines.GTResearchMachines.OVERHEAT_TOOLTIPS;
+import static com.gtocore.api.machine.part.GTOPartAbility.HEAT_CONDUCTION;
+import static com.gtocore.api.pattern.GTOPredicates.DataKeys.HIGH_TEMP_INTERFACE;
+import static com.gtocore.api.pattern.GTOPredicates.DataKeys.LOW_TEMP_INTERFACE;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 import static com.gtocore.utils.register.MachineRegisterUtils.machine;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
@@ -311,8 +312,17 @@ public final class ExResearchMachines {
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
+    public static final MachineDefinition THERMODYNAMIC_DATA_HOLDER = machine("thermodynamic_data_holder", "热力学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.THERMODYNAMICS, 1024))
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.ThermaldynamicsDataHolder)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
 
-    public static final MachineDefinition INTERSTELLAR_ENGINEERING_DATA_HOLDER = machine("interstellar_engineering_data_holder", "星际工程数据支架", SimpleResearchTagPartMachine.create(ResearchTag.INTERSTELLAR_ENGINEERING, 1024))
+    public static final MachineDefinition INTERSTELLAR_ENGINEERING_DATA_HOLDER = machine("interstellar_engineering_data_holder", "星际工程数据支架", SimpleResearchTagPartMachine.create(ResearchTag.INTERSTELLAR_ENGINEERING, 256))
             .tier(UV)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
@@ -524,5 +534,41 @@ public final class ExResearchMachines {
                     .where('J', GTMachines.MAINTENANCE_HATCH.get(), Direction.NORTH)
                     .build(definition))
             .workableCasingRenderer(GTCEu.id("block/casings/hpca/high_power_casing"), GTCEu.id("block/multiblock/research_station"))
+            .register();
+
+    // 热力学分析平台
+    public static final MultiblockMachineDefinition THERMODYNAMIC_ANALYSIS_PLATFORM = multiblock("thermodynamic_analysis_platform", "热力学分析平台", ThermodynamicAnalysisPlatformMachine::new)
+            .nonYAxisRotation()
+            .recipeTypes(DUMMY_RECIPES)
+            .block(GTOBlocks.STABLE_BASE_CASING)
+            .tooltipsSupplier(GTOMachineTooltipsA.ThermodynamicAnalysisPlatformMachineTooltips)
+            .nonYAxisRotation()
+            .pattern(definition -> MultiBlockFileReader.start(definition)
+                    .where('A', blocks(GTBlocks.COMPUTER_CASING.get()))
+                    .where('B', blocks(GTOBlocks.STABLE_BASE_CASING.get())
+                            .or(abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(1))
+                            .or(blocks(THERMODYNAMIC_DATA_HOLDER.get()).setExactLimit(1))
+                            .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1))
+                            .or(blocks(GTMachines.CONTROL_HATCH.get())))
+                    .where('C', controller(definition))
+                    .where('D', blocks(GTOBlocks.STABLE_BASE_CASING.get()))
+                    .where('E', GTOPredicates.recordPosition(LOW_TEMP_INTERFACE,
+                            blocks(GTOBlocks.STABLE_BASE_CASING.get())
+                                    .or(abilities(HEAT_CONDUCTION).setExactLimit(1))))
+                    .where('F', blocks(GTBlocks.ADVANCED_COMPUTER_CASING.get()))
+                    .where('G', blocks(GTOBlocks.VACUUM_CHAMBER_OBSERVATION_GLASS.get()))
+                    .where('H', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
+                    .where('I', blocks(GTOBlocks.HIGH_PRESSURE_PIPE_CASING.get()))
+                    .where('J', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get()))
+                    .where('K', blocks(GTBlocks.FUSION_GLASS.get()))
+                    .where('L', blocks(GTOBlocks.COLD_ICE_CASING.get()))
+                    .where('M', blocks(GTOBlocks.BLAZE_CASING.get()))
+                    .where('N', blocks(GTOBlocks.ELECTRIC_POWER_TRANSMISSION_CASING.get()))
+                    .where('O', GTOPredicates.recordPosition(HIGH_TEMP_INTERFACE,
+                            blocks(GTOBlocks.STABLE_BASE_CASING.get())
+                                    .or(abilities(HEAT_CONDUCTION).setExactLimit(1))))
+                    .where(' ', any())
+                    .build())
+            .workableCasingRenderer(GTOCore.id("block/casings/stable_base_casing"), GTCEu.id("block/multiblock/research_station"))
             .register();
 }

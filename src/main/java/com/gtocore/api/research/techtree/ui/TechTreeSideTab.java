@@ -41,6 +41,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.screen.EmiScreenManager;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector4f;
 
@@ -121,8 +122,9 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         this.contextFactory = contextFactory;
         this.innerContent = new WidgetGroup(0, 0, 0, 0);
         setYScrollBarWidth(2);
+        setYBarStyle(GuiTextures.BACKGROUND_INVERSE, GuiTextures.BUTTON);
         setInnerContent(contentWidget);
-        setBackground(GuiTextures.BACKGROUND_INVERSE);
+        setBackground(GuiTextures.BACKGROUND_INVERSE, GuiTextures.DISPLAY);
         addWidget(new ContentWidget(OUTER_PADDING, OUTER_PADDING, width - OUTER_PADDING * 2, height - OUTER_PADDING * 2));
         addWidget(innerContent);
         setVisible(false).setActive(false);
@@ -138,10 +140,12 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         var mc = Minecraft.getInstance();
         var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
         var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
-        var ing = getXEIIngredientOverMouse(mouseX, mouseY);
-        if (ing != null) {
-            return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
-                    bind -> bind.matchesKey(keyCode, scanCode));
+        if (isMouseOver()) {
+            var ing = getXEIIngredientOverMouse(mouseX, mouseY);
+            if (ing != null) {
+                return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
+                        bind -> bind.matchesKey(keyCode, scanCode));
+            }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
@@ -149,21 +153,32 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     @OnlyIn(Dist.CLIENT)
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        var ing = getXEIIngredientOverMouse(mouseX, mouseY);
-        if (ing instanceof ResearchTagEmiStack || ing instanceof TechNodeEmiStack) {
-            return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
-                    bind -> bind.matchesMouse(button));
+        if (isMouseOver()) {
+            var ing = getXEIIngredientOverMouse(mouseX, mouseY);
+            if (ing instanceof ResearchTagEmiStack || ing instanceof TechNodeEmiStack) {
+                return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
+                        bind -> bind.matchesMouse(button));
+            }
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
+    public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
+        return super.mouseWheelMove(mouseX, mouseY, wheelDelta);
+    }
+
+    @Override
+    public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+    }
+
     public void showNode(@Nullable TechNode node) {
         selectedNode = node;
+        setVisible(node != null).setActive(node != null);
         if (isClientSideWidget) {
             if (getGuiPlayer() != null) {
                 applyState(buildState());
-            } else {
-                setVisible(node != null).setActive(node != null);
             }
             return;
         }
@@ -179,8 +194,9 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         if (contentWidget == null) {
             return;
         }
-        contentWidget.setSelfPosition(0, 0);
+        contentWidget.setSelfPosition(4, 4);
         innerContent.addWidget(contentWidget);
+        innerContent.setSize(contentWidget.getSizeWidth() + 8, contentWidget.getSizeHeight() + 8);
     }
 
     @Override
@@ -317,9 +333,12 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         return getGui() == null ? null : getGui().entityPlayer;
     }
 
-    private void updateInnerContentBounds(int x, int y, int width, int height) {
-        innerContent.setSelfPosition(x, y);
-        innerContent.setSize(width, Math.max(0, height));
+    @OnlyIn(Dist.CLIENT)
+    private boolean isMouseOver() {
+        var mc = Minecraft.getInstance();
+        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        return isMouseOverElement(mouseX, mouseY);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -479,7 +498,6 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
             var pos = getPosition();
             var size = getSize();
-            GuiTextures.DISPLAY.draw(graphics, mouseX, mouseY, pos.x, pos.y, size.width, size.height);
 
             Font font = Minecraft.getInstance().font;
             int contentX = pos.x + CONTENT_PADDING;
@@ -518,13 +536,13 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 drawRecipeStacks(graphics, font, recipeStacks, contentX, recipeLabelY + font.lineHeight + RECIPE_LABEL_GAP, contentWidth, partialTicks);
                 innerContentY = recipeSlotsY + RECIPE_SLOT_SIZE + INNER_CONTENT_SECTION_GAP;
             }
-            updateInnerContentBounds(contentX - pos.x, innerContentY - pos.y, contentWidth, contentBottom - innerContentY);
+            innerContent.setSelfPosition(contentX - pos.x, innerContentY - pos.y - scrollYOffset);
         }
 
         @OnlyIn(Dist.CLIENT)
         public List<Component> getTooltipText() {
             var node = selectedNode;
-            if (node == null || !currentState.visible()) {
+            if (node == null || !currentState.visible() || !TechTreeSideTab.this.isMouseOver()) {
                 return super.getTooltipTexts();
             }
 
@@ -611,6 +629,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         @Override
         @OnlyIn(Dist.CLIENT)
         public EmiStack getXEIIngredientOverMouse(double mouseX, double mouseY) {
+            if (!TechTreeSideTab.this.isMouseOver()) return null;
             var pos = getPosition();
             if (Widget.isMouseOver(pos.x, pos.y,
                     HEADER_ICON_SIZE, HEADER_ICON_SIZE, mouseX, mouseY) && selectedNode != null) {
@@ -696,6 +715,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         @Override
         @OnlyIn(Dist.CLIENT)
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (!TechTreeSideTab.this.isMouseOver()) return super.mouseClicked(mouseX, mouseY, button);
             if (visibleRecipeSlots > 0 && Widget.isMouseOver(rowAreaX, recipeSlotsY, rowAreaWidth, RECIPE_SLOT_SIZE, mouseX, mouseY)) {
                 EmiStack stack = getXEIIngredientOverMouse(mouseX, mouseY);
                 if (stack != null && (button == 0 || button == 1)) {
@@ -733,6 +753,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         @Override
         @OnlyIn(Dist.CLIENT)
         public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
+            if (!TechTreeSideTab.this.isMouseOver()) return super.mouseWheelMove(mouseX, mouseY, wheelDelta);
             if (maxDescTextOffset > 0 && wheelDelta != 0 && Widget.isMouseOver(
                     descTextX, descTextY, descTextWidth, descTextHeight, mouseX, mouseY)) {
                 descTextOffset = Mth.clamp(descTextOffset + (wheelDelta > 0 ? -1 : 1), 0, maxDescTextOffset);
@@ -756,6 +777,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                     scrollOffset--;
                 } else if (wheelDelta < 0 && scrollOffset < maxScrollOffset) {
                     scrollOffset++;
+                } else {
+                    return false;
                 }
                 return true;
             }
