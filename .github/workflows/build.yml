@@ -4,12 +4,12 @@ name: "Build and Sign"
 # 1) push：commit message 含 -b / --build / -build
 # 2) pull_request_target opened：PR 由组织成员提起 → 自动构建一次（无需标记）
 # 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
-# 4) issue_comment：组织成员在 PR 下评论含 -b / --build / -build → 构建 PR head
+# 4) issue_comment：组织成员在 PR 下评论，且第一行精确为 /build → 构建 PR head
 #
 # 使用 pull_request_target（而非 pull_request）以便 fork 来源的 PR 也能使用
 # 本仓/组织 secrets 签名。工作流文件始终取 base 分支，降低被 PR 篡改 workflow 的风险。
 # 安全：仅组织成员（或写权限 collaborator）可通过上述路径触发；构建仍会执行 PR 代码，
-# 成员在外部贡献上评论 --build 即表示已审阅并愿意签名构建。
+# 成员在外部贡献上评论 /build 即表示已审阅并愿意签名构建。
 on:
   push:
   pull_request_target:
@@ -44,11 +44,7 @@ jobs:
         (
           github.event_name == 'issue_comment' &&
           github.event.issue.pull_request &&
-          (
-            contains(github.event.comment.body, '--build') ||
-            contains(github.event.comment.body, '-build') ||
-            contains(github.event.comment.body, '-b')
-          )
+          startsWith(github.event.comment.body, '/build')
         )
       )
     runs-on: ubuntu-latest
@@ -90,11 +86,14 @@ jobs:
 
           has_build_marker() {
             local msg="$1"
-            [[ "$msg" == *'--build'* ]] && return 0
-            [[ "$msg" == *'-build'* ]] && return 0
-            [[ "$msg" == *' -b'* ]] && return 0
-            [[ "$msg" == '-b' || "$msg" == '-b '* || "$msg" == *'-b' ]] && return 0
-            return 1
+            [[ "$msg" =~ (^|[[:space:]])(--build|-build|-b)($|[[:space:]]) ]]
+          }
+
+          has_pr_build_command() {
+            local first_line
+            IFS= read -r first_line <<< "$1"
+            first_line="${first_line%$'\r'}"
+            [[ "$first_line" == '/build' ]]
           }
 
           # 返回 0=成员/写权限；1=明确拒绝（bot）；2=非成员
@@ -228,10 +227,10 @@ jobs:
               if [ "$IS_PR_COMMENT" != "true" ]; then
                 skip "comment is not on a pull request"
               fi
-              if ! has_build_marker "$COMMENT_BODY"; then
-                skip "PR comment without build marker"
+              if ! has_pr_build_command "$COMMENT_BODY"; then
+                skip "PR comment first line is not exactly /build"
               fi
-              # 评论触发：评论者须为组织成员；非成员评论 --build soft skip
+              # 评论触发：评论者须为组织成员；非成员评论 /build soft skip
               CHECK_USER="${COMMENT_USER:-$ACTOR}"
               OUT_PR="$PR_NUMBER"
               PR_JSON=$(curl -sS "${HDR[@]}" "${API}/repos/${REPO}/pulls/${PR_NUMBER}")
@@ -239,7 +238,7 @@ jobs:
               CHECKOUT_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['sha'])" <<<"$PR_JSON")
               HEAD_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['ref'])" <<<"$PR_JSON")
               echo "PR #${PR_NUMBER} comment by @${CHECK_USER} → build ${CHECKOUT_REPO}@${CHECKOUT_REF} (${HEAD_REF})"
-              REASON="PR comment build marker by org member"
+              REASON="PR /build command by org member"
               MEMBER_MODE="soft"
               ;;
 
