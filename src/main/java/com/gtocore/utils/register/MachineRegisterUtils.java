@@ -4,6 +4,7 @@ import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.data.machines.MultiBlockA;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.mana.SimpleWorkManaMachine;
@@ -550,6 +551,7 @@ public final class MachineRegisterUtils {
                                 .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(8))
                                 .or(abilities(EXPORT_FLUIDS).setMaxGlobalLimited(2))
                                 .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(4))
+                                .or(blocks(ExResearchMachines.ENERGY_DATA_HOLDER.get()).setMaxGlobalLimited(1))
                                 .or(blocks(GTOMachines.ROTOR_HATCH.get()).setMaxGlobalLimited(1)))
                         .where('D', controller(definition))
                         .where('E', blocks(gear.get()))

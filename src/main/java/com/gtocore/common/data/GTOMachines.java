@@ -491,6 +491,13 @@ public final class GTOMachines {
     public static final MachineDefinition[] LASER_OUTPUT_HATCH_16777216 = registerLaserHatch(IO.OUT, 16777216,
             PartAbility.OUTPUT_LASER);
 
+    public static final MachineDefinition VOID_ENERGY_HATCH = machine("void_energy_hatch", "能量销毁仓", VoidEnergyHatch::new)
+            .tier(MAX)
+            .abilities(PartAbility.OUTPUT_ENERGY, PartAbility.OUTPUT_LASER)
+            .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/" + "energy_hatch.output_16a")))
+            .tooltipsText("§cVoid energy generated from generator machine§r", "§c直接销毁发电机产生的能量§r")
+            .register();
+
     public static final MachineDefinition ME_WIRELESS_CONNECTION_MACHINE = machine("me_wireless_connection_machine", "ME无线连接机", MeWirelessConnectMachine::new)
             .renderer(MeWirelessConnectMachineRenderer::new)
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)

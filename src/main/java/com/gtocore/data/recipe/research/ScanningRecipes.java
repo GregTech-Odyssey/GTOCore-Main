@@ -18,21 +18,35 @@ public final class ScanningRecipes {
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:catalyst_base"), ResearchPoints.of(ResearchTag.CATALYSIS, 1L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:stem_cells"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:biological_cells"), ResearchPoints.of(ResearchTag.BIOLOGY, 6L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_1m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 1L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_4m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 2L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_16m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 3L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_64m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 4L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_256m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 5L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:infinite_cell_component"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 12L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_1m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 10L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_4m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 15L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_16m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 30L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_64m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 40L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cell_component_256m"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 50L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:infinite_cell_component"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 120L));
 
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:bifidobacterium_breve_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cupriavidus_necator_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:hyperthermophilic_archaeon_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:eschericia_coli_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:clostridium_pasteurianum_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:shewanella_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:streptococcus_pyogenes_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
-        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:brevibacterium_flavium_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 2L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:bifidobacterium_breve_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:cupriavidus_necator_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:hyperthermophilic_archaeon_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:eschericia_coli_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:clostridium_pasteurianum_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:shewanella_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:streptococcus_pyogenes_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:brevibacterium_flavium_dust"), ResearchPoints.of(ResearchTag.BIOLOGY, 16L, ResearchTag.MATERIAL, 32L));
+
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:rydberg_spinorial_assembly"), ResearchPoints.of(ResearchTag.EXOTIC, 6L));
+
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:lapotronic_energy_orb"), ResearchPoints.of(ResearchTag.ENERGY, 10L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:lapotronic_energy_orb_cluster"), ResearchPoints.of(ResearchTag.ENERGY, 15L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:energy_module"), ResearchPoints.of(ResearchTag.ENERGY, 20L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:energy_cluster"), ResearchPoints.of(ResearchTag.ENERGY, 30L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:max_battery"), ResearchPoints.of(ResearchTag.ENERGY, 50L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:really_max_battery"), ResearchPoints.of(ResearchTag.ENERGY, 60L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:transcendent_max_battery"), ResearchPoints.of(ResearchTag.ENERGY, 80L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:extremely_max_battery"), ResearchPoints.of(ResearchTag.ENERGY, 120L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:insanely_max_battery"), ResearchPoints.of(ResearchTag.ENERGY, 200L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:mega_max_battery"), ResearchPoints.of(ResearchTag.ENERGY, 300L));
+
         DataScanningManager.freeze();
     }
 }

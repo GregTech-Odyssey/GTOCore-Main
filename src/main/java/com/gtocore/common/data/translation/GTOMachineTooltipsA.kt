@@ -116,7 +116,17 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         function("安装在化工厂等场所，用于监测使用催化剂的反应" translatedTo "Installed in chemical plants and other places, used to monitor reactions that use catalysts")
         function("每次机器运行包含催化剂的反应时，催化剂数据仓将记录该次配方的总效率" translatedTo "Each time the machine runs a reaction that contains a catalyst, the catalyst data hatch will record the total efficiency of that recipe")
         info("总效率为配方时间乘以能耗与标准配方时间与能耗的比值" translatedTo "Total efficiency is the product of recipe time and energy consumption divided by the standard recipe time and energy consumption")
-        command("配方完成后，记录并产生(总效率×配方并行数)的催化研究点数，并存储于机器内的晶片中" translatedTo "After the recipe is completed, the catalyst data hatch will record and generate (total efficiency × recipe parallelism) catalyst research points, which will be stored in the data crystal inside the machine")
+        command("配方完成后，记录并产生(总效率×配方并行数×原始配方等级)的催化研究点数，并存储于机器内的晶片中" translatedTo "After the recipe is completed, the catalyst data hatch will record and generate (total efficiency × recipe parallelism × original recipe level) catalyst research points, which will be stored in the data crystal inside the machine")
+    }
+
+    @JvmField
+    val EnergyDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("energy_data_holder")
+
+        section(MainFunction)
+        function("安装在能源产生相关的机器上，对能源稳定性与功率进行监测" translatedTo "Installed on energy generation-related machines to monitor energy stability and power")
+        command(Component.translatable("gtocore.lang.energy_data_holder.2", 15 + 15 * GTOCore.difficulty).toComponentSupplier())
+        command("此后每次机器完成输出UEV级及以上功率的配方时，能源数据仓将转化(功率等级 - 10)的能源研究点数，并存储于机器内的晶片中" translatedTo "Thereafter, each time the machine finishes recipes that output UEV-level or higher power, the energy data hatch will convert (power level - 9) energy research points and store them in the data crystal inside the machine")
     }
 
     @JvmField
@@ -217,7 +227,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         command("收集太空电梯其他模块的运行数据" translatedTo "Collects operational data from other modules of the space elevator")
-        command(Component.translatable("gtocore.lang.space_elevator_engineering_data_module.1", if (GTOCore.isExpert()) 75 else 50).toComponentSupplier())
+        command(Component.translatable("gtocore.lang.space_elevator_engineering_data_module.2", if (GTOCore.isExpert()) 75 else 50).toComponentSupplier())
         command("转化为的研究点数将存储于通用数据仓的晶片中" translatedTo "The converted research points will be stored in the data crystal of the universal data hatch")
         increase("太空电梯动力模块等级为n时，每次收集需要的运行次数乘以(4/(3+n))" translatedTo "When the power module level of the space elevator is n, the number of runs needed for each collection is multiplied by (4/(3+n))")
         increase("连接到空间站时，转化为的研究点数翻倍" translatedTo "When connected to the space station, the converted research points are doubled")

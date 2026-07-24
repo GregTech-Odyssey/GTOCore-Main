@@ -53,12 +53,12 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
     private static final int MaxCanReleaseParallel = 50;
 
-    @DynamicInitialValue(key = "fuelcell.chance_consume", easyValue = "0.0d", normalValue = "0.0035d", expertValue = "0.007d", typeKey = DynamicInitialValueTypes.KEY_PROBABILITY, cn = "放电时膜损坏概率", cnComment = """
+    @DynamicInitialValue(key = "fuelcell.chance_consume", easyValue = "0.0d", normalValue = "0.035d", expertValue = "0.055d", typeKey = DynamicInitialValueTypes.KEY_PROBABILITY, cn = "放电时膜损坏概率", cnComment = """
             放电时使用的膜材料的损坏概率。
             """, en = "Fuel Cell Membrane Damage Chance on Discharge", enComment = """
             The chance of the membrane material used being damaged upon discharging.
             """)
-    public static double chanceConsumeMembraneOnDischarge = 0.0035d;
+    public static double chanceConsumeMembraneOnDischarge = 0.035d;
 
     @SyncToClient
     private boolean isGenerator = false;
@@ -260,11 +260,11 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
         public static final ImmutableMap<Material, Long> ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET = ImmutableMap.<Material, Long>builder()
                 .put(GTOMaterials.IronChromiumRedoxFlowBatteryElectrolyte, V[UEV] * 2 / 1000)
-                .put(GTOMaterials.VanadiumRedoxFlowBatteryElectrolyte, V[UXV] / 1000)
-                .put(GTOMaterials.ZincIodideFlowBatteryElectrolyte, V[OpV] * 2 / 1000)
-                .put(GTOMaterials.OrganicMoleculeRedoxFlowBatteryElectrolyte, V[MAX] * 4 / 1000)
-                .put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 32 / 1000)
-                .put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 256 / 1000)
+                .put(GTOMaterials.VanadiumRedoxFlowBatteryElectrolyte, V[UIV] * 4 / 1000)
+                .put(GTOMaterials.ZincIodideFlowBatteryElectrolyte, V[UXV] * 6 / 1000)
+                .put(GTOMaterials.OrganicMoleculeRedoxFlowBatteryElectrolyte, V[OpV] * 8 / 1000)
+                .put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 10 / 1000)
+                .put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 7 * 12 / 1000)
                 .build();
         public static final MembraneBonusInfo[] MEMBRANE_MATS = new MembraneBonusInfo[] {
                 new MembraneBonusInfo(

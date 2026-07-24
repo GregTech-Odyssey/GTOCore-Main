@@ -31,12 +31,12 @@ public class FuelCell {
             var membrane = ChemicalHelper.get(GTOTagPrefix.MEMBRANE_ELECTRODE, membraneInfo.membrane());
             FUEL_CELL_ENERGY_RELEASE_RECIPES.recipeBuilder(material.getName() + "_release")
                     .notConsumable(membrane.copy())
-                    .inputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_ANODE), 20)
-                    .inputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_CATHODE), 20)
-                    .outputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE), 19)
-                    .outputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE), 19)
+                    .inputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_ANODE), 200)
+                    .inputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_CATHODE), 200)
+                    .outputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE), 190)
+                    .outputFluids(material.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE), 190)
                     .EUt(-euPerMb * 5)
-                    .duration(20)
+                    .duration(200)
                     .save();
             for (var materialSet2 : ImmutableMap.copyOf(FullCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET).entrySet()) {
                 var material2 = materialSet2.getKey();

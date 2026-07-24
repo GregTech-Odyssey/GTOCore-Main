@@ -322,6 +322,16 @@ public final class ExResearchMachines {
             .notAllowSharedTooltips()
             .register();
 
+    public static final MachineDefinition ENERGY_DATA_HOLDER = machine("energy_data_holder", "能量数据支架", SimpleResearchTagPartMachine.create(ResearchTag.ENERGY, 1024))
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.EnergyDataHolder)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .abilities(OUTPUT_ENERGY, OUTPUT_LASER)
+            .allRotation()
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
     public static final MachineDefinition INTERSTELLAR_ENGINEERING_DATA_HOLDER = machine("interstellar_engineering_data_holder", "星际工程数据支架", SimpleResearchTagPartMachine.create(ResearchTag.INTERSTELLAR_ENGINEERING, 256))
             .tier(UV)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
