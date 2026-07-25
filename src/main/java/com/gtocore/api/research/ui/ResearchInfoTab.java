@@ -31,7 +31,7 @@ public class ResearchInfoTab implements IFancyUIProvider {
     private final BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory;
     private TechNode initialSelectedNode;
 
-    public ResearchInfoTab(TechTreeManager manager, @Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
+    public ResearchInfoTab(@NotNull TechTreeManager manager, @Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
         this.manager = manager;
         this.innerContentFactory = innerContentFactory == null ? (uiWidget, sideTab) -> new WidgetGroup() : innerContentFactory;
     }

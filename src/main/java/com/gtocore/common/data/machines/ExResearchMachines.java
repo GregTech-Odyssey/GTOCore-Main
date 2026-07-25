@@ -250,6 +250,13 @@ public final class ExResearchMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(OpV, GTCEu.id("block/machine/part/data_access_hatch")))
             .register();
 
+    public static final MachineDefinition DATA_FORM_TESTING_ME_INTERFACE = machine("data_form_testing_me_interface", "数据形式测试机ME接口", DataFormTestingPart::new)
+            .tier(EV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .renderer(() -> new OverlayTieredMachineRenderer(HV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
+
     public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataCenter::new)
             .tooltipsSupplier(GTOMachineTooltipsA.DataCenterTooltips)
             .nonYAxisRotation()
@@ -337,6 +344,14 @@ public final class ExResearchMachines {
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayTieredActiveMachineRenderer(UV, GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
+    public static final MachineDefinition STORAGE_DATA_HOLDER = machine("storage_data_holder", "存储数据支架", SimpleResearchTagPartMachine.create(ResearchTag.DATA_STORAGE, 256))
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
@@ -483,14 +498,11 @@ public final class ExResearchMachines {
             .workableCasingRenderer(GTCEu.id("block/casings/hpca/high_power_casing"), GTCEu.id("block/multiblock/research_station"))
             .register();
 
-    public static final MultiblockMachineDefinition SYNTHETIC_DATA_ASSEMBLY_PLANT = multiblock("synthetic_data_assembly_plant", "合成数据组装厂", SyntheticDataAssemblyPlantMachine::new)
-            .tooltipsText("分析/推演的一体化机器。", "Precision multi-block scanner.")
-            .tooltipsText("根据§b扫描数据§r得到§b研究数据§r。", "Precision multi-block scanner.")
-            .tooltipsText("需要§b算力§r来进行工作。", "Requires §fComputation§7 to work.")
-            .tooltipsText("提供更多的算力可以使研究进展的更快。", "Providing more Computation allows the recipe to run faster.")
+    public static final MultiblockMachineDefinition DATA_FORM_TESTING_PLANT = multiblock("data_form_testing_plant", "数据形式测试厂", DataFormTestingPlantMachine::new)
             .nonYAxisRotation()
-            .recipeTypes(RECIPES_DATA_GENERATE_RECIPES)
+            .recipeTypes(DATA_TESTING_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
+            .tooltipsSupplier(GTOMachineTooltipsA.DataFormTestingPlantMachineTooltips)
             .pattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("           ", "    EEE    ", "    EGE    ", "    EEE    ", "           ")
                     .aisle("  A  A  A  ", "  A DDD A  ", "  B DDD B  ", "  A DDD A  ", "  A  A  A  ")
@@ -511,14 +523,15 @@ public final class ExResearchMachines {
                     .where('D', blocks(GTBlocks.HIGH_POWER_CASING.get()))
                     .where('E', blocks(GTBlocks.HIGH_POWER_CASING.get())
                             .or(abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2))
-                            .or(abilities(PartAbility.COMPUTATION_DATA_RECEPTION).setExactLimit(1))
+                            .or(abilities(IMPORT_ITEMS))
+                            .or(blocks(STORAGE_DATA_HOLDER.get()).setExactLimit(1))
                             .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1)))
                     .where('F', controller(definition))
-                    .where('G', blocks(DATA_GENERATE_HOLDER.get()))
+                    .where('G', blocks(DATA_FORM_TESTING_ME_INTERFACE.get()))
                     .where(' ', any())
                     .build())
             .shapeInfo(definition -> MultiblockShapeInfo.builder()
-                    .aisle("           ", "    HII    ", "    JFE    ", "    EEE    ", "           ")
+                    .aisle("           ", "    EII    ", "    JFE    ", "    EEE    ", "           ")
                     .aisle("  A  A  A  ", "  A DDD A  ", "  B DDD B  ", "  A DDD A  ", "  A  A  A  ")
                     .aisle(" AA  A  AA ", " AD DDD DA ", " BBBBBBBBB ", " AD DDD DA ", " AA  A  AA ")
                     .aisle("AAA  A  AAA", "AAD DDD DAA", "BBD DBD DBB", "AAD DDD DAA", "AAA  A  AAA")
@@ -536,10 +549,9 @@ public final class ExResearchMachines {
                     .where('C', GTOBlocks.HIGH_PRESSURE_RESISTANT_CASING.get())
                     .where('D', GTBlocks.HIGH_POWER_CASING.get())
                     .where('E', GTBlocks.HIGH_POWER_CASING.get())
-                    .where('F', ExResearchMachines.SYNTHETIC_DATA_ASSEMBLY_PLANT, Direction.NORTH)
+                    .where('F', DATA_FORM_TESTING_ME_INTERFACE, Direction.NORTH)
                     .where('G', DATA_GENERATE_HOLDER, Direction.SOUTH)
                     .where(' ', Blocks.AIR)
-                    .where('H', GTResearchMachines.COMPUTATION_HATCH_RECEIVER, Direction.NORTH)
                     .where('I', GTMachines.ENERGY_INPUT_HATCH[ZPM], Direction.NORTH)
                     .where('J', GTMachines.MAINTENANCE_HATCH.get(), Direction.NORTH)
                     .build(definition))

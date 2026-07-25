@@ -1,6 +1,5 @@
 package com.gtocore.common.data;
 
-import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.machine.mana.CelestialHandler;
 
@@ -51,7 +50,7 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Integer> PARAM2 = register("param2", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> PARAM3 = register("param3", DataSyncCodec.INT_CODEC);
 
-    public static final DataComponentKey<ResearchPoints> RESEARCH_POINTS = register("researchpoints", GTOCodecs.RESEARCH_POINTS_SYNC_CODEC);
+    public static final DataComponentKey<Integer> DATA_TESTING_LEVEL = register("data_testing_level", DataSyncCodec.INT_CODEC);
     @SuppressWarnings("unchecked")
     public static final DataComponentKey<Integer>[] PARAM = (DataComponentKey<Integer>[]) new DataComponentKey<?>[] { PARAM1, PARAM2, PARAM3 };
 

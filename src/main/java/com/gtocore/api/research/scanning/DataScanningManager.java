@@ -178,8 +178,11 @@ public class DataScanningManager {
                 points.addTo(ResearchTag.CATALYSIS, 3);
             }
         }
-        if (key instanceof MetaMachineItem mmi && mmi.getDefinition() instanceof MultiblockDefinition) {
-            points.addTo(ResearchTag.MECHANICS, (long) ((float) 1.0));
+        if (key instanceof MetaMachineItem mmi && mmi.getDefinition() instanceof MultiblockDefinition d) {
+            points.addTo(ResearchTag.MECHANICS, 1);
+            if (d.canWorkInSpaceIndependently()) {
+                points.addTo(ResearchTag.INTERSTELLAR_ENGINEERING, 3);
+            }
         }
         return points;
     }

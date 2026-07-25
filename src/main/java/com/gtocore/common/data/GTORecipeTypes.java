@@ -973,10 +973,12 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.COMPUTATION);
 
-    public static final RecipeType DATA_INTEGRATION_RECIPES = register("data_integration", "数据统合", ELECTRIC)
-            .setMaxIOSize(13, 2, 0, 0)
+    public static final RecipeType DATA_TESTING_RECIPES = register("data_form_density_testing", "数据密度测试", ELECTRIC)
+            .setMaxIOSize(2, 0, 0, 0)
+            .setEUIO(IO.IN)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.COMPUTATION);
+            .setSound(GTSoundEntries.COMPUTATION)
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.data_form_density_testing.density", FormattingUtil.formatNumber2Places(data.data.getInt(GTORecipeDataKeys.DATA_TESTING_LEVEL))));
 
     public static final RecipeType RECIPES_DATA_GENERATE_RECIPES = register("recipes_data_generate", "配方数据生成", ELECTRIC)
             .setMaxIOSize(11, 1, 0, 0)

@@ -489,6 +489,8 @@ public final class LangHandler {
 
         addCNEN("gtocore.recipe.recycler.random_output", "随机物品", "Random Item");
         addCNEN("gtocore.recipe.coil.uruium", "超级热熔", "Uruium");
+        addCNEN("gtocore.recipe.require_technode", "可通过科技节点解锁", "Unlockable through Tech Node");
+        addCNEN("gtocore.recipe.data_form_density_testing.density", "数据密度等级: %s", "Data Density Level: %s");
 
         addCNEN("gtocore.emi.search_text", "已保存的搜索: %s", "Saved Search: %s");
         addCNEN("gtocore.emi.search_text.how_to_use", "将它拖拽至文本框以快速填入搜索栏", "Drag it to the text box to quickly fill in the search bar");
@@ -562,7 +564,6 @@ public final class LangHandler {
         addCNEN("gtocore.message.otherside_pass_required", "你感受到来自幽冥的隔绝感...", "You feel a sense of isolation from the Other Side...");
         addCNEN("gtocore.message.otherside_pass_required.1", "似乎需要伪装成幽冥中最强大的生物之一，才能通过这里。", "It seems you need to disguise yourself as one of the most powerful beings in the Other Side to pass through here.");
         addCNEN("key.gtocore.movable_hud_toggle", "HUD 调节", "HUD Editing key");
-        addCNEN("gtocore.recipe.require_technode", "可通过科技节点解锁", "Unlockable through Tech Node");
     }
 
     public static void enInitialize(LanguageProvider provider) {
