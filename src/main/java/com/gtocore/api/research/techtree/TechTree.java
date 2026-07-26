@@ -4,11 +4,6 @@ import com.gtocore.api.research.TeamResearchContext;
 
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-
-import com.lowdragmc.lowdraglib.syncdata.ITagSerializable;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 
@@ -16,7 +11,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-public class TechTree implements ITagSerializable<CompoundTag> {
+public class TechTree {
 
     @Getter
     private final TechTreeManager manager;
@@ -87,29 +82,6 @@ public class TechTree implements ITagSerializable<CompoundTag> {
         if (!nodes.add(node)) return;
         for (var prerequisite : node.prerequisites) {
             addUnlockedNode(prerequisite);
-        }
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        var tag = new CompoundTag();
-        var list = new ListTag();
-        for (var node : getEndNodes()) {
-            list.add(StringTag.valueOf(node.name));
-        }
-        tag.put("nodes", list);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        nodes.clear();
-        var list = nbt.getList("nodes", StringTag.TAG_STRING);
-        for (var name : list) {
-            var d = manager.definitions.get(name.getAsString());
-            if (d != null) {
-                addUnlockedNode(d);
-            }
         }
     }
 

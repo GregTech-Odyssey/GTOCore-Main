@@ -9,7 +9,6 @@ import com.gto.fastcollection.O2LOpenCacheHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -73,10 +72,11 @@ public class VirtualCoinSavedData extends SavedData {
 
     @Override
     public @NotNull CompoundTag save(@NotNull CompoundTag compoundTag) {
-        for (Map.Entry<UUID, Long> entry : teamCurrentCoinWork.object2LongEntrySet()) {
+        for (var it = teamCurrentCoinWork.object2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             CompoundTag tag = new CompoundTag();
             tag.putUUID("u", entry.getKey());
-            tag.putLong("n", entry.getValue());
+            tag.putLong("n", entry.getLongValue());
             tag.putLong("h", teamTimesHasRun.getLong(entry.getKey()));
             compoundTag.put(entry.getKey().toString(), tag);
         }

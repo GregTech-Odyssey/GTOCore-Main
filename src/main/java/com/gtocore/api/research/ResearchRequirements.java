@@ -22,16 +22,13 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -99,9 +96,10 @@ public final class ResearchRequirements {
         if (teamResource.getTechNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {
             return FAILURE_NO_CWU;
         }
-        for (Map.Entry<ResearchTag, Long> entry : materialNeeded.reference2LongEntrySet()) {
+        for (var it = materialNeeded.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             var tag = entry.getKey();
-            var amount = entry.getValue();
+            var amount = entry.getLongValue();
             if (teamResource.getResearchPoints().getOrDefault(tag, 0L) < amount) {
                 return FAILURE_NO_MATERIAL;
             }

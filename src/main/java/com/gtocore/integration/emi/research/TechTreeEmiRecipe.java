@@ -54,7 +54,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
         registry.addCategory(CATEGORY);
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.STOPGAP_MEASURES.asItem()));
         registry.addDeferredRecipes(recipeConsumer -> TechTreeManager.getManagers()
-                .forEach(manager -> manager.getAllNodes().forEachRemaining(node -> recipeConsumer.accept(new TechTreeEmiRecipe(node)))));
+                .forEach(manager -> manager.getAllNodes().forEach(node -> recipeConsumer.accept(new TechTreeEmiRecipe(node)))));
     }
 
     private static WidgetGroup createWidget(TechNode node) {

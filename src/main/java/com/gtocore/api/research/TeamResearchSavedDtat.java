@@ -12,11 +12,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import com.gto.fastcollection.O2OOpenCacheHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.hepdd.gtmthings.utils.TeamUtil.getTeamUUID;
@@ -30,15 +28,23 @@ public class TeamResearchSavedDtat extends FastSavedData {
 
     private static boolean syncPending;
 
-    private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("teamResearchSavedDataSyncS2C", (player, buffer) -> {
-        try (var stream = DataIOStream.of(new ByteArrayInputStream(buffer.readByteArray()))) {
-            CLIENT_INSTANCE = load(stream, DATA_VERSION);
-        } catch (IOException | RuntimeException exception) {
-            GTOCore.LOGGER.error("Failed to synchronize team research data", exception);
-        }
-    });
+    private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("teamResearchSavedDataSyncS2C",
+            (objs, buf) -> {
+                try {
+                    INSTANCE.save(DataIOStream.of(buf));
+                } catch (IOException exception) {
+                    GTOCore.LOGGER.error("Failed to serialize team research data for synchronization", exception);
+                }
+            },
+            (player, buffer) -> {
+                try {
+                    CLIENT_INSTANCE = load(DataIOStream.of(buffer), DATA_VERSION);
+                } catch (IOException | RuntimeException exception) {
+                    GTOCore.LOGGER.error("Failed to synchronize team research data", exception);
+                }
+            });
 
-    private final Map<UUID, TeamResearchContext> teamResearchContexts = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, TeamResearchContext> teamResearchContexts = new O2OOpenCacheHashMap<>();
 
     public static void init() {}
 
@@ -49,7 +55,7 @@ public class TeamResearchSavedDtat extends FastSavedData {
     @Override
     public void save(DataIOStream dataIOStream) throws IOException {
         dataIOStream.writeInt(teamResearchContexts.size());
-        for (Map.Entry<UUID, TeamResearchContext> entry : teamResearchContexts.entrySet()) {
+        for (var entry : Object2ObjectMaps.fastIterable(teamResearchContexts)) {
             dataIOStream.writeUUID(entry.getKey());
             TeamResearchContext.writeContext(dataIOStream, entry.getValue());
         }
@@ -96,20 +102,6 @@ public class TeamResearchSavedDtat extends FastSavedData {
     }
 
     private static void sendSnapshot(Object recipient) {
-        try {
-            byte[] payload = encodeSnapshot();
-            CLIENT_INSTANCE_SYNC.send(buffer -> buffer.writeByteArray(payload), recipient);
-        } catch (IOException exception) {
-            GTOCore.LOGGER.error("Failed to serialize team research data for synchronization", exception);
-        }
-    }
-
-    private static byte[] encodeSnapshot() throws IOException {
-        var output = new ByteArrayOutputStream();
-        try (var stream = DataIOStream.of(output)) {
-            INSTANCE.save(stream);
-            stream.flush();
-        }
-        return output.toByteArray();
+        CLIENT_INSTANCE_SYNC.send(recipient);
     }
 }

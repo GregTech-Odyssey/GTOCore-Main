@@ -25,9 +25,9 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +35,7 @@ import java.util.Set;
 public class DataFormTestingPlantMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder, IResearchPointsOperation {
 
     @SaveToDisk
-    private final Set<AEKey> containedKeys = new HashSet<>();
+    private final Set<AEKey> containedKeys = new ReferenceOpenHashSet<>();
     @SaveToDisk
     private long nextTestBytes = 0;
     @SaveToDisk

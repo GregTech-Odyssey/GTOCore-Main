@@ -95,6 +95,6 @@ public class TechNodeEmiStack extends EmiStack {
     }
 
     public static void registerTechNodeEmiStack(Set<EmiStack> c) {
-        TechTreeManager.getManagers().forEach(manager -> manager.getAllNodes().forEachRemaining(node -> c.add(new TechNodeEmiStack(node))));
+        TechTreeManager.getManagers().forEach(manager -> manager.getAllNodes().forEach(node -> c.add(new TechNodeEmiStack(node))));
     }
 }

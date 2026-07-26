@@ -19,9 +19,9 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 
-import com.gto.fastcollection.OpenCacheHashSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.gregtechceu.gtceu.api.GTValues.VA;
@@ -40,10 +40,10 @@ public class ThermodynamicAnalysisPlatformMachine extends ElectricMultiblockMach
 
     @Override
     public void onPartScan(@NotNull IMultiPart part) {
-        if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.LOW_TEMP_INTERFACE, new OpenCacheHashSet<>()).contains(part.self().getPos())) {
+        if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.LOW_TEMP_INTERFACE, Collections.emptySet()).contains(part.self().getPos())) {
             lowTempInterface = (HeatHatchPartMachine) part;
         }
-        if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.HIGH_TEMP_INTERFACE, new OpenCacheHashSet<>()).contains(part.self().getPos())) {
+        if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.HIGH_TEMP_INTERFACE, Collections.emptySet()).contains(part.self().getPos())) {
             highTempInterface = (HeatHatchPartMachine) part;
         }
         if (part instanceof SimpleResearchTagPartMachine) {

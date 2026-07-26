@@ -4,6 +4,7 @@ import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.techtree.ui.TechTreeAutoLayout;
 import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
+import com.gtolib.GTOCore;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.utils.AEChemicalHelper;
 import com.gtolib.utils.iostream.DataIOStream;
@@ -12,6 +13,7 @@ import com.gtolib.utils.iostream.IOStreamCodec;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.registry.GTRegistry;
 
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -25,6 +27,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import com.google.common.collect.ImmutableList;
+import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import lombok.Getter;
@@ -34,46 +37,37 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-public final class TechTreeManager implements IOStreamCodec<TechTree> {
+public final class TechTreeManager extends GTRegistry.Str<TechNode> implements IOStreamCodec<TechTree> {
 
     public static final Map<String, CNEN> NODE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
     public static final Map<String, CNEN> TREE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
-    private static final Map<String, TechTreeManager> REGISTRY = new O2OOpenCacheHashMap<>();
+    public static final Registry<String, TechTreeManager> REGISTRY = new GTRegistry.Str<>(GTOCore.id("techtree_manager"));
 
     @Getter
     private final String id;
     @Getter
     private final IGuiTexture icon;
-    final Map<String, TechNode> definitions = new O2OOpenCacheHashMap<>();
     private @Nullable TechTreeLayout layout;
 
     public TechTreeManager(String id,
                            String cn,
                            String en,
                            IGuiTexture icon) {
+        super(GTOCore.id(id));
         this.id = Objects.requireNonNull(id, "id");
         this.icon = Objects.requireNonNull(icon, "icon");
         if (TREE_LANG != null) {
             TREE_LANG.put("gtocore.techtree." + id, new CNEN(cn, en));
         }
-        synchronized (REGISTRY) {
-            var previous = REGISTRY.putIfAbsent(id, this);
-            if (previous != null && previous != this) {
-                throw new IllegalArgumentException("TechTreeManager with id " + id + " already registered");
-            }
-        }
+        REGISTRY.register(id, this);
     }
 
     public static TechTreeManager getManager(String id) {
-        synchronized (REGISTRY) {
-            return REGISTRY.get(id);
-        }
+        return REGISTRY.get(id);
     }
 
     public static Collection<TechTreeManager> getManagers() {
-        synchronized (REGISTRY) {
-            return java.util.List.copyOf(REGISTRY.values());
-        }
+        return REGISTRY.values();
     }
 
     public Builder builder(String name, String cn, String en) {
@@ -83,7 +77,7 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
     public TechTreeLayout getLayout() {
         TechTreeLayout currentLayout = layout;
         if (currentLayout == null) {
-            currentLayout = TechTreeAutoLayout.create(definitions.values());
+            currentLayout = TechTreeAutoLayout.create(this.values());
             layout = currentLayout;
         }
         return currentLayout;
@@ -91,16 +85,13 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
 
     TechNode register(Builder builder) {
         String name = builder.name;
-        if (definitions.containsKey(name)) {
-            throw new IllegalArgumentException("Node with name " + name + " already registered");
-        }
         var definition = new TechNode(
                 this,
                 name,
                 builder.icon,
                 builder.requirements,
                 builder.prerequisites, builder.tier);
-        definitions.put(name, definition);
+        this.register(name, definition);
         layout = null;
         if (NODE_LANG != null) {
             NODE_LANG.put("gtocore.technode." + name, new CNEN(builder.cn, builder.en));
@@ -116,7 +107,7 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
         var tree = new TechTree(this);
         var n = dis.readVarInt();
         for (int i = 0; i < n; i++) {
-            var d = definitions.get(dis.readUTF());
+            var d = this.get(dis.readUTF());
             if (d != null) {
                 tree.addUnlockedNode(d);
             }
@@ -134,11 +125,11 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
     }
 
     public TechNode getNode(String name) {
-        return definitions.get(name);
+        return this.get(name);
     }
 
-    public Iterator<TechNode> getAllNodes() {
-        return definitions.values().iterator();
+    public Collection<TechNode> getAllNodes() {
+        return this.values();
     }
 
     public static final class Builder {
@@ -257,7 +248,7 @@ public final class TechTreeManager implements IOStreamCodec<TechTree> {
     }
 
     public void triggerAllResearchUnlock(UUID team) {
-        for (var node : definitions.values()) {
+        for (var node : this.values()) {
             TechTreeSavedData.unlock(team, node);
         }
     }

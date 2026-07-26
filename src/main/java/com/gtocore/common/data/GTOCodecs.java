@@ -16,6 +16,7 @@ import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.data.ListData;
 import com.gto.datasynclib.datastream.data.StringMapData;
 import com.gto.datasynclib.util.DataCodecs;
 import lombok.experimental.UtilityClass;
@@ -24,9 +25,6 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class GTOCodecs {
 
-    private static final String TECH_TREE_KEY = "tree";
-    private static final String TECH_NODE_KEY = "node";
-
     public static void init() {
         DataSyncCodec.register(AEItemKey.class, GTOCodecs.AE_ITEM_KEY_STREAM_CODEC, GTOCodecs.AE_ITEM_KEY_DATA_CODEC);
         DataSyncCodec.register(AEFluidKey.class, GTOCodecs.AE_FLUID_KEY_STREAM_CODEC, GTOCodecs.AE_FLUID_KEY_DATA_CODEC);
@@ -34,7 +32,6 @@ public class GTOCodecs {
         DataSyncCodec.register(GenericStack.class, GTOCodecs.GENERIC_STACK_STREAM_CODEC, GTOCodecs.GENERIC_STACK_DATA_CODEC);
         DataSyncCodec.register(TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
         DataSyncCodec.register(ResearchTag.class, RESEARCH_TAG_STREAM_CODEC, RESEARCH_TAG_DATA_CODEC);
-        RESEARCH_POINTS_SYNC_CODEC = DataSyncCodec.register(ResearchPoints.class, RESEARCH_POINTS_STREAM_CODEC, RESEARCH_POINTS_DATA_CODEC);
     }
 
     public final DataCodec<AEItemKey> AE_ITEM_KEY_DATA_CODEC = new DataCodec<>() {
@@ -93,18 +90,17 @@ public class GTOCodecs {
 
         @Override
         public TechNode decode(@NotNull Data data, int dataVersion) {
-            if (!(data instanceof StringMapData mapData)) {
-                return null;
-            }
-            return resolveTechNode(mapData.getString(TECH_TREE_KEY), mapData.getString(TECH_NODE_KEY));
+            var list = data.getList();
+            if (list.isEmpty()) return null;
+            return resolveTechNode(list.get(0).getString(), list.get(1).getString());
         }
 
         @Override
         public @NotNull Data encode(TechNode obj) {
-            StringMapData mapData = new StringMapData(2);
-            mapData.putString(TECH_TREE_KEY, obj.getManager().getId());
-            mapData.putString(TECH_NODE_KEY, obj.name);
-            return mapData;
+            var listData = new ListData(2);
+            listData.addString(obj.getManager().getId());
+            listData.addString(obj.name);
+            return listData;
         }
     };
 
@@ -170,13 +166,16 @@ public class GTOCodecs {
 
         @Override
         public void encode(FriendlyByteBuf buf, TechNode obj) {
-            buf.writeUtf(obj.getManager().getId());
-            buf.writeUtf(obj.name);
+            var manager = obj.getManager();
+            TechTreeManager.REGISTRY.streamCodec().encode(buf, manager);
+            manager.streamCodec().encode(buf, obj);
         }
 
         @Override
         public TechNode decode(FriendlyByteBuf buf) {
-            return resolveTechNode(buf.readUtf(), buf.readUtf());
+            var manager = TechTreeManager.REGISTRY.streamCodec().decode(buf);
+            if (manager == null) return null;
+            return manager.streamCodec().decode(buf);
         }
     };
 
@@ -270,5 +269,6 @@ public class GTOCodecs {
             return points;
         }
     };
-    public DataSyncCodec<ResearchPoints> RESEARCH_POINTS_SYNC_CODEC;
+
+    public final DataSyncCodec<ResearchPoints> RESEARCH_POINTS_SYNC_CODEC = DataSyncCodec.register(ResearchPoints.class, RESEARCH_POINTS_STREAM_CODEC, RESEARCH_POINTS_DATA_CODEC);
 }

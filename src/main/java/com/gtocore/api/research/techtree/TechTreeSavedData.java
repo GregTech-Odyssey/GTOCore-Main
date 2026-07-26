@@ -35,14 +35,21 @@ public class TechTreeSavedData extends FastSavedData {
 
     private static boolean syncPending;
 
-    private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("techTreeSavedDataSyncS2C", (player, buffer) -> {
-        try (var stream = DataIOStream.of(new ByteArrayInputStream(buffer.readByteArray()))) {
-            TechTreeSavedData data = load(stream, DATA_VERSION);
-            CLIENT_INSTANCE = data == null ? new TechTreeSavedData() : data;
-        } catch (IOException | RuntimeException exception) {
-            GTOCore.LOGGER.error("Failed to synchronize tech tree data", exception);
-        }
-    });
+    private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("techTreeSavedDataSyncS2C",
+            (objs, buf) -> {
+                try {
+                    INSTANCE.save(DataIOStream.of(buf));
+                } catch (IOException exception) {
+                    GTOCore.LOGGER.error("Failed to serialize tech tree data for synchronization", exception);
+                }
+            }, (player, buffer) -> {
+                try {
+                    TechTreeSavedData data = load(DataIOStream.of(buffer), DATA_VERSION);
+                    CLIENT_INSTANCE = data == null ? new TechTreeSavedData() : data;
+                } catch (RuntimeException exception) {
+                    GTOCore.LOGGER.error("Failed to synchronize tech tree data", exception);
+                }
+            });
 
     private final Map<UUID, Map<String, TechTree>> teamTechTrees = new O2OOpenCacheHashMap<>();
 
@@ -161,21 +168,7 @@ public class TechTreeSavedData extends FastSavedData {
     }
 
     private static void sendSnapshot(Object recipient) {
-        try {
-            byte[] payload = encodeSnapshot();
-            CLIENT_INSTANCE_SYNC.send(buffer -> buffer.writeByteArray(payload), recipient);
-        } catch (IOException exception) {
-            GTOCore.LOGGER.error("Failed to serialize tech tree data for synchronization", exception);
-        }
-    }
-
-    private static byte[] encodeSnapshot() throws IOException {
-        var output = new ByteArrayOutputStream();
-        try (var stream = DataIOStream.of(output)) {
-            INSTANCE.save(stream);
-            stream.flush();
-        }
-        return output.toByteArray();
+        CLIENT_INSTANCE_SYNC.send(recipient);
     }
 
     public static TechTreeSavedData load(DataIOStream stream, int dataVersion) {

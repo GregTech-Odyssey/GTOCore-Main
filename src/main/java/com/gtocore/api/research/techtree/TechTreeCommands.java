@@ -40,7 +40,7 @@ public final class TechTreeCommands {
         if (manager == null) {
             return builder.buildFuture();
         }
-        return SharedSuggestionProvider.suggest(manager.definitions.keySet().stream().sorted(), builder);
+        return SharedSuggestionProvider.suggest(manager.keys().stream().sorted(), builder);
     };
 
     private TechTreeCommands() {}
@@ -152,7 +152,7 @@ public final class TechTreeCommands {
 
     private static TechNode getNode(CommandContext<CommandSourceStack> context, TechTreeManager manager) throws CommandSyntaxException {
         String nodeId = StringArgumentType.getString(context, "node");
-        TechNode node = manager.definitions.get(nodeId);
+        TechNode node = manager.get(nodeId);
         if (node == null) {
             throw NODE_NOT_FOUND.create(nodeId, manager.getId());
         }

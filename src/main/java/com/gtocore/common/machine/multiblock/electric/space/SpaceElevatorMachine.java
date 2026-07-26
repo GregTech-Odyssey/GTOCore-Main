@@ -38,11 +38,11 @@ import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import earth.terrarium.adastra.common.menus.base.PlanetsMenuProvider;
 import earth.terrarium.botarium.common.menu.MenuHooks;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -69,7 +69,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Setter
     SpaceElevatorConnectorModule netMachineCache;
 
-    final Set<SpaceElevatorDataModuleMachine> dataModules = new HashSet<>();
+    final Set<SpaceElevatorDataModuleMachine> dataModules = new ReferenceOpenHashSet<>();
 
     protected void update() {
         if (getOffsetTimer() % 80 == 0) {
