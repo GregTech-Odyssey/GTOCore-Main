@@ -258,7 +258,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 FluidStack.EMPTY;
         long amt;
         if (isCtrlDown()) {
-            amt = wheelDelta > 0 ? fluid.getAmount() : fluid.getAmount() / 2L;
+            amt = wheelDelta > 0 ? fluid.getAmount() * 2L : fluid.getAmount() / 2L;
         } else {
             amt = wheelDelta > 0 ? fluid.getAmount() + 1L : fluid.getAmount() - 1L;
         }
