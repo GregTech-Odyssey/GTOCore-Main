@@ -1,10 +1,10 @@
 package com.gtocore.common.data.machines;
 
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
+import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.renderer.machine.SpaceElevatorConnectorModuleRenderer;
 import com.gtocore.common.data.GTOBlocks;
-import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.translation.GTOMachineStories;
@@ -795,7 +795,8 @@ public class SpaceMultiblock {
                     .where('Q', blocks(GTOBlocks.BIOLOGICAL_MECHANICAL_CASING.get())
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
                             .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
-                            .or(blocks(GTOMachines.RADIATION_HATCH.get()).setMaxGlobalLimited(2)))
+                            .or(abilities(GTOPartAbility.RADIATION_HATCH).setMaxGlobalLimited(2))
+                            .or(blocks(ExResearchMachines.BIOLOGY_DATA_HOLDER.get()).setMaxGlobalLimited(1)))
                     .where('R', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
                     .where('S', blocks(GTOBlocks.STRONTIUM_CARBONATE_CERAMIC_RAY_ABSORBING_MECHANICAL_CUBE.get()))
                     .where('T', blocks(GTBlocks.PLASTCRETE.get()))

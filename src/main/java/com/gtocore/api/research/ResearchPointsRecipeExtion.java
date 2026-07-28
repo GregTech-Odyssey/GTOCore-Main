@@ -14,8 +14,10 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -24,6 +26,8 @@ import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import dev.emi.emi.api.stack.EmiStackInteraction;
+import dev.emi.emi.screen.EmiScreenManager;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,15 +69,20 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
     @Override
     public void setParallel(GTRecipe recipe, long parallel) {}
 
+    private static int c1 = -10;
+    private static int c2 = 30;
+
     @Override
     public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {
         var points = recipe.data.getData(INSTANCE);
         if (points != null) {
-            group.addWidget(new LabelWidget(3 - xOffset, yOffset.getAndAdd(10), Component.translatable(RESEARCH_POINTS)));
+            group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable(RESEARCH_POINTS)));
+            yOffset.add(10);
             for (var entry : points.reference2LongEntrySet()) {
                 var researchTag = entry.getKey();
                 var amount = entry.getLongValue();
                 int finalXOffset = 3 - xOffset;
+                var tag = new ResearchTagEmiStack(researchTag).setAmount(amount);
                 class ResearchTagDisplay extends ImageWidget implements IIngredientSlot {
 
                     ResearchTagDisplay() {
@@ -84,16 +93,55 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
                     @OnlyIn(Dist.CLIENT)
                     public Object getXEIIngredientOverMouse(double v, double v1) {
                         if (isMouseOverElement(v, v1)) {
-                            return new ResearchTagEmiStack(researchTag).setAmount(amount);
+                            return tag;
                         }
                         return null;
+                    }
+
+                    @OnlyIn(Dist.CLIENT)
+                    protected void drawTooltipTexts(int mouseX, int mouseY) {
+                        if (isMouseOverElement(mouseX, mouseY) && gui != null && gui.getModularUIGui() != null) {
+                            gui.getModularUIGui().setHoverTooltip(tag.getTooltipText(), ItemStack.EMPTY, null, null);
+                        }
+                    }
+
+                    @Override
+                    @OnlyIn(Dist.CLIENT)
+                    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                        if (isMouseOverElement(mouseX, mouseY)) {
+                            return EmiScreenManager.stackInteraction(new EmiStackInteraction(tag, null, true),
+                                    bind -> bind.matchesMouse(button));
+                        }
+                        return super.mouseClicked(mouseX, mouseY, button);
+                    }
+
+                    @Override
+                    @OnlyIn(Dist.CLIENT)
+                    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+                        var mc = Minecraft.getInstance();
+                        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+                        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+                        if (isMouseOverElement(mouseX, mouseY)) {
+                            return EmiScreenManager.stackInteraction(new EmiStackInteraction(tag, null, true),
+                                    bind -> bind.matchesKey(keyCode, scanCode));
+                        }
+                        return super.keyPressed(keyCode, scanCode, modifiers);
                     }
 
                     @Override
                     @OnlyIn(Dist.CLIENT)
                     public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
                         super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-                        new ResearchTagEmiStack(researchTag).setAmount(amount).render(graphics, getPositionX() + 1, getPositionY() + 1, partialTicks, 3);
+                        tag.render(graphics, getPositionX() + 1, getPositionY() + 1, partialTicks, 3);
+                    }
+
+                    @Override
+                    @OnlyIn(Dist.CLIENT)
+                    public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+                        if (isMouseOverElement(mouseX, mouseY)) {
+                            graphics.fill(getPositionX() + 1, getPositionY() + 1, getPositionX() + 17, getPositionY() + 17, 0x80FFFFFF);
+                        }
+                        super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
                     }
                 }
                 var d = new ResearchTagDisplay();
@@ -102,12 +150,13 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
                 group.addWidget(d);
                 xOffset += 18;
             }
+            yOffset.add(10);
         }
     }
 
     @Override
     public int getInfoHeight(GTRecipeDefinition recipe) {
-        return 10 + 18;
+        return 30 + 18;
     }
 
     @RegisterLanguage(cn = "可获得的研究点数", en = "Research Points")

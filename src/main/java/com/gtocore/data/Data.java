@@ -1,5 +1,6 @@
 package com.gtocore.data;
 
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.data.*;
 import com.gtocore.data.recipe.*;
 import com.gtocore.data.recipe.ae2.AE2;
@@ -173,6 +174,7 @@ public final class Data {
         TagsHandler.initBlock();
         TagsHandler.initFluid();
 
+        DataScanningManager.freeze();
         GTOTrade.init();
 
         GTOCore.LOGGER.info("Data loading took {}ms", System.currentTimeMillis() - time);

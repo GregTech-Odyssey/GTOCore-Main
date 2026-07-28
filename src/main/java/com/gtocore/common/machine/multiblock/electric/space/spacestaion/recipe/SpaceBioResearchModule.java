@@ -1,6 +1,8 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion.recipe;
 
+import com.gtocore.api.research.IResearchPointsOperation;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.RecipeExtension;
 import com.gtocore.common.machine.trait.RadioactivityTrait;
 
@@ -10,9 +12,11 @@ import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -28,10 +32,10 @@ import java.util.List;
 import java.util.Set;
 
 @DataGeneratorScanned
-public class SpaceBioResearchModule extends RecipeExtension {
+public class SpaceBioResearchModule extends RecipeExtension implements IResearchPointsOperation {
 
     @SaveToDisk
-    private final RadioactivityTrait radioactivityTrait;
+    private final Trait radioactivityTrait;
 
     @SaveToDisk
     private int radioactivity = 80;
@@ -50,6 +54,13 @@ public class SpaceBioResearchModule extends RecipeExtension {
         if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
             setIdleReason(Component.translatable(LANGUAGE_INSUFFICIENT_CLEANROOM));
             return null;
+        }
+        if (recipe.definition.recipeType == GTORecipeTypes.BIO_RESEARCH_RECIPES) {
+            if (!isWorkspaceReady()) {
+                setIdleReason(IdleReason.CANNOT_WORK_IN_SPACE);
+                return null;
+            }
+            return RecipeModifier.OVERCLOCKING.applyModifier(this, unit, recipe);
         }
         return super.getRealRecipe(unit, recipe);
     }
@@ -91,6 +102,33 @@ public class SpaceBioResearchModule extends RecipeExtension {
         }
     }
 
+    @Override
+    public boolean handleTickRecipe(GTRecipe recipe) {
+        var result = super.handleTickRecipe(recipe);
+        var intensity = recipe.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END);
+        if (getProgress() == getMaxProgress() - 1 && intensity > 0 && outside(intensity)) {
+            com.gtocore.data.IdleReason.RADIATION.setReason(this);
+            return false;
+        }
+        return result;
+    }
+
+    @Override
+    public void regressRecipe(RecipeLogic recipeLogic) {
+        super.regressRecipe(recipeLogic);
+        if (recipeLogic.getLastRecipe() != null) {
+            var intensity = recipeLogic.getLastRecipe().data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END);
+            if (intensity > 0 && outside(intensity)) {
+                recipeLogic.resetRecipeLogic();
+            }
+        }
+    }
+
+    private boolean outside(int intensity) {
+        var r = radioactivityTrait.getRecipeRadioactivity();
+        return r < intensity - 5 || r > intensity + 5;
+    }
+
     private class Trait extends RadioactivityTrait {
 
         Trait(IMultiblockTraitHolder machine) {
@@ -98,7 +136,7 @@ public class SpaceBioResearchModule extends RecipeExtension {
         }
 
         @Override
-        protected int getRecipeRadioactivity() {
+        public int getRecipeRadioactivity() {
             return super.getRecipeRadioactivity() + radioactivity;
         }
     }

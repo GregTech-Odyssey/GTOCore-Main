@@ -22,7 +22,7 @@ dependencyResolutionManagement {
             version("kotlin", "2.3.20")
             version("kotlin-plugin", "2.3.20")
 
-            version("gtopublishgradleplugin", "1.0.23")
+            version("gtopublishgradleplugin", "1.0.24")
 
             plugin("modDevGradleLegacy", "net.neoforged.moddev.legacyforge").versionRef("modDevGradleLegacy")
 

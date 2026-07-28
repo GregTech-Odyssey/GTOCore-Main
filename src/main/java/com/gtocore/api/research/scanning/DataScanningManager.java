@@ -6,9 +6,11 @@ import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.client.Message;
+import com.gtocore.common.data.GTORecipeTypes;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.MultiblockDefinition;
+import com.gtolib.api.recipe.RecipeType;
 import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.material.Fluid;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.hooks.IUnique;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
@@ -132,6 +135,7 @@ public class DataScanningManager {
 
     public static void freeze() {
         frozen = true;
+        var prof = System.nanoTime();
         dataScanningMap.putAll(regMap);
         BuiltInRegistries.ITEM.stream().forEach(key -> {
             var aeKey = AEItemKey.of(key);
@@ -153,6 +157,7 @@ public class DataScanningManager {
                 putSearch(aeKey, points);
             }
         });
+        GTOCore.LOGGER.info("Data scanning freeze took {}ms", (System.nanoTime() - prof) / 1_000_000);
     }
 
     private static void putSearch(AEKey key, ResearchPoints points) {
@@ -182,6 +187,12 @@ public class DataScanningManager {
             points.addTo(ResearchTag.MECHANICS, 1);
             if (d.canWorkInSpaceIndependently()) {
                 points.addTo(ResearchTag.INTERSTELLAR_ENGINEERING, 3);
+            }
+        }
+        for (var rt : new RecipeType[] { GTORecipeTypes.ASSEMBLER_RECIPES, GTORecipeTypes.ASSEMBLY_LINE_RECIPES, GTORecipeTypes.CIRCUIT_ASSEMBLER_RECIPES, GTORecipeTypes.ASSEMBLER_MODULE_RECIPES }) {
+            if (rt.itemsCanBeProduced.contains(((IUnique) key).ae2$getUid())) {
+                points.addTo(ResearchTag.ASSEMBLY, 4);
+                break;
             }
         }
         return points;

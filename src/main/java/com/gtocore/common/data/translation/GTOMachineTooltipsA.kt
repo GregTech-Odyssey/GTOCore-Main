@@ -203,8 +203,10 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         command("用于在空间站内进行生物研究" translatedTo "Used for biological research in the space station")
+        important("生物研究的运行结束时辐射剂量指的是，配方的最后一刻时，机器需要满足的辐射剂量要求" translatedTo "The radiation dose at the end of biological research refers to the radiation dose requirement that the machine needs to meet at the last moment of the recipe")
+        error("生物研究配方仅采用常规超频模式运行" translatedTo "Biological research recipes only run in normal overclocking mode")
         command("超净间环境等级由环境维护舱决定" translatedTo "The cleanroom environment level is determined by the Environmental Maintenance Module")
-        info("当运行培养缸或生化反应室配方时，提供可调节的0~80Sv背景辐射环境" translatedTo "Provides an adjustable 0~80Sv background radiation environment when running bioreactor or biochemical reaction chamber recipes")
+        info("机器本体可以为各种配方提供可调节的0~80Sv背景辐射环境" translatedTo "The machine body can provide an adjustable 0~80Sv background radiation environment for various recipes")
     }
 
     @JvmField

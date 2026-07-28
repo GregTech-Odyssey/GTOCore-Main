@@ -25,6 +25,7 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Float> EFFICIENCY = register("efficiency", DataSyncCodec.FLOAT_CODEC);
 
     public static final DataComponentKey<Integer> RADIOACTIVITY = register("radioactivity", DataSyncCodec.INT_CODEC);
+    public static final DataComponentKey<Integer> RADIOACTIVITY_END = register("radioactivity_end", DataSyncCodec.INT_CODEC);
 
     public static final DataComponentKey<Integer> FILTER_CASING = register("filter_casing", DataSyncCodec.INT_CODEC);
 

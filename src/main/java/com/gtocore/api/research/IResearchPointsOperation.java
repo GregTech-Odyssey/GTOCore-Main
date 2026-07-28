@@ -6,7 +6,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 
 import java.util.Arrays;
 
-public interface IResearchPointsOperation extends IMultiController {
+public interface IResearchPointsOperation {
 
     static void findHatchAndAddResearchData(IMultiController controller, ResearchTag tag, double data) {
         Arrays.stream(controller.getParts())
@@ -16,6 +16,8 @@ public interface IResearchPointsOperation extends IMultiController {
     }
 
     default void addResearchData(ResearchTag tag, double data) {
-        findHatchAndAddResearchData(this, tag, data);
+        if (this instanceof IMultiController controller) {
+            findHatchAndAddResearchData(controller, tag, data);
+        }
     }
 }

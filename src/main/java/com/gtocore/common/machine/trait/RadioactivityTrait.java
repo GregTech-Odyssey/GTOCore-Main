@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.trait;
 
+import com.gtocore.api.machine.part.IRadiationHatch;
 import com.gtocore.common.data.GTORecipeDataKeys;
-import com.gtocore.common.machine.multiblock.part.RadiationHatchPartMachine;
 import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
@@ -25,7 +25,7 @@ public class RadioactivityTrait extends MultiblockTrait {
     @SaveToDisk
     private int recipeRadioactivity;
 
-    private final Set<RadiationHatchPartMachine> radiationHatchPartMachines = new ReferenceOpenHashSet<>();
+    private final Set<IRadiationHatch> radiationHatchPartMachines = new ReferenceOpenHashSet<>();
 
     public RadioactivityTrait(IMultiblockTraitHolder machine) {
         super(machine);
@@ -33,7 +33,7 @@ public class RadioactivityTrait extends MultiblockTrait {
 
     @Override
     public void onPartScan(IMultiPart part) {
-        if (part instanceof RadiationHatchPartMachine radiationHatchPartMachine) {
+        if (part instanceof IRadiationHatch radiationHatchPartMachine) {
             radiationHatchPartMachines.add(radiationHatchPartMachine);
         }
     }
@@ -67,7 +67,7 @@ public class RadioactivityTrait extends MultiblockTrait {
 
     protected int getRecipeRadioactivity() {
         int radioactivity = 0;
-        for (RadiationHatchPartMachine partMachine : radiationHatchPartMachines) {
+        for (IRadiationHatch partMachine : radiationHatchPartMachines) {
             radioactivity += partMachine.getRadioactivity();
         }
         return radioactivity;

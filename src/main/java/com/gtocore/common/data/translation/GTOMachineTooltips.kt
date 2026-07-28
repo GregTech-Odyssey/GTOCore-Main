@@ -542,6 +542,7 @@ object GTOMachineTooltips {
         content("仓中的辐射遵循以下规则：" translatedTo "The radiation in the hatch follows the following rules:")
         info("初始辐射=(配方辐射-抑制量)x(1+放射材料数量/64)" translatedTo "Initial radiation = (Recipe radiation - inhibition) * (1 + count of radiation materials / 64)")
         decrease("当仓中没有放射性材料时辐射随时间逐渐衰减" translatedTo "When there are no radiation materials in the barn, the radioactivity gradually decreases over time")
+        command("通入红石脉冲以清除残余辐射" translatedTo "Input a redstone pulse to clear residual radiation")
     }
 
     // 模块化可配置维护仓

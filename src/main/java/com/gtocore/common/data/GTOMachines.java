@@ -785,8 +785,20 @@ public final class GTOMachines {
             .notAllowSharedTooltips()
             .recipeType(GTORecipeTypes.RADIATION_HATCH_RECIPES)
             .allRotation()
+            .abilities(GTOPartAbility.RADIATION_HATCH)
             .overlayTieredHullRenderer("radiation_hatch")
             .allowCoverOnFront(true)
+            .register();
+
+    public static final MachineDefinition CREATIVE_RADIATION_HATCH = machine("creative_radiation_hatch", "创造放射仓", CreativeRadiationHatch::new)
+            .tier(MAX)
+            .tooltips(GTOMachineTooltips.RadiationHatchTooltips)
+            .notAllowSharedTooltips()
+            .recipeType(GTORecipeTypes.RADIATION_HATCH_RECIPES)
+            .allRotation()
+            .abilities(GTOPartAbility.RADIATION_HATCH)
+            .overlayTieredHullRenderer("radiation_hatch")
+            .allowCoverOnFront(false)
             .register();
 
     public static final MachineDefinition SPOOL_HATCH = machine("spool_hatch", "线轴仓", SpoolHatchPartMachine::new)

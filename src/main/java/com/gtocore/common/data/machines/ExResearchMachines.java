@@ -4,6 +4,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.client.renderer.machine.ExResearchPartRenderer;
+import com.gtocore.client.renderer.machine.OverlayActiveMachineRenderer;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMachines;
@@ -254,7 +255,7 @@ public final class ExResearchMachines {
             .tier(EV)
             .allRotation()
             .notAllowSharedTooltips()
-            .renderer(() -> new OverlayTieredMachineRenderer(HV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/high_power_casing"), GTCEu.id("block/machine/part/me_pattern_buffer_proxy"), GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 
     public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataCenter::new)
@@ -324,7 +325,7 @@ public final class ExResearchMachines {
             .tooltips(GTOMachineTooltipsA.ThermaldynamicsDataHolder)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
-            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
+            .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/stable_base_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
@@ -343,7 +344,7 @@ public final class ExResearchMachines {
             .tier(UV)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
-            .renderer(() -> new OverlayTieredActiveMachineRenderer(UV, GTCEu.id("block/machine/part/object_holder"),
+            .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/space_elevator_mechanical_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
@@ -351,7 +352,15 @@ public final class ExResearchMachines {
             .tier(LuV)
             .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
-            .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
+            .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/computer_casing"), GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
+    public static final MachineDefinition BIOLOGY_DATA_HOLDER = machine("biology_data_holder", "生物学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.BIOLOGY, 256))
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/biological_mechanical_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
@@ -530,31 +539,6 @@ public final class ExResearchMachines {
                     .where('G', blocks(DATA_FORM_TESTING_ME_INTERFACE.get()))
                     .where(' ', any())
                     .build())
-            .shapeInfo(definition -> MultiblockShapeInfo.builder()
-                    .aisle("           ", "    EII    ", "    JFE    ", "    EEE    ", "           ")
-                    .aisle("  A  A  A  ", "  A DDD A  ", "  B DDD B  ", "  A DDD A  ", "  A  A  A  ")
-                    .aisle(" AA  A  AA ", " AD DDD DA ", " BBBBBBBBB ", " AD DDD DA ", " AA  A  AA ")
-                    .aisle("AAA  A  AAA", "AAD DDD DAA", "BBD DBD DBB", "AAD DDD DAA", "AAA  A  AAA")
-                    .aisle("AA  AAA  AA", "AC  ABA  CA", "BC  ABA  CB", "AC  ABA  CA", "AA  AAA  AA")
-                    .aisle("AA AABAA AA", "AC ADBDA CA", "BC ADDDA CB", "AC A B A CA", "AA AABAA AA")
-                    .aisle("AA  BBB  AA", "AC BB BB CA", "BC BD DB CB", "AC BB BB CA", "AA  BBB  AA")
-                    .aisle("AA AABAA AA", "AC ADBDA CA", "BC ADDDA CB", "AC A B A CA", "AA AABAA AA")
-                    .aisle("AA  AAA  AA", "AC  ABA  CA", "BC  ABA  CB", "AC  ABA  CA", "AA  AAA  AA")
-                    .aisle("AAA  A  AAA", "AAD DDD DAA", "BBD DBD DBB", "AAD DDD DAA", "AAA  A  AAA")
-                    .aisle(" AA  A  AA ", " AD DDD DA ", " BBBBBBBBB ", " AD DDD DA ", " AA  A  AA ")
-                    .aisle("  A  A  A  ", "  A DDD A  ", "  B DDD B  ", "  A DDD A  ", "  A  A  A  ")
-                    .aisle("           ", "    EEE    ", "    EGE    ", "    EEE    ", "           ")
-                    .where('A', GTBlocks.COMPUTER_CASING.get())
-                    .where('B', GTBlocks.ADVANCED_COMPUTER_CASING.get())
-                    .where('C', GTOBlocks.HIGH_PRESSURE_RESISTANT_CASING.get())
-                    .where('D', GTBlocks.HIGH_POWER_CASING.get())
-                    .where('E', GTBlocks.HIGH_POWER_CASING.get())
-                    .where('F', DATA_FORM_TESTING_ME_INTERFACE, Direction.NORTH)
-                    .where('G', DATA_GENERATE_HOLDER, Direction.SOUTH)
-                    .where(' ', Blocks.AIR)
-                    .where('I', GTMachines.ENERGY_INPUT_HATCH[ZPM], Direction.NORTH)
-                    .where('J', GTMachines.MAINTENANCE_HATCH.get(), Direction.NORTH)
-                    .build(definition))
             .workableCasingRenderer(GTCEu.id("block/casings/hpca/high_power_casing"), GTCEu.id("block/multiblock/research_station"))
             .register();
 

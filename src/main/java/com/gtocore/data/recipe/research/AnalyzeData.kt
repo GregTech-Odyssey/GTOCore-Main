@@ -61,6 +61,10 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
 
     val langMap: Map<String, CNEN> = if (GTCEu.isDataGen()) O2OOpenCacheHashMap() else emptyMap()
 
+    init {
+        TechTreeManager.REGISTRY.unfreeze()
+    }
+
     @JvmField
     val TechTree: TechTreeManager =
         TechTreeManager("main_tree", "研究树", "Research Tree", ItemStackTexture(GTOItems.BLUE_HALIDE_LAMP.asStack()))
@@ -78,6 +82,8 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     )
 
     override fun init() {
+        TechTreeManager.REGISTRY.freeze()
+        TechTree.freeze()
     }
 
     @JvmField

@@ -7,6 +7,7 @@ import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 import com.gtolib.GTOCore;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.utils.AEChemicalHelper;
+import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.iostream.DataIOStream;
 import com.gtolib.utils.iostream.IOStreamCodec;
 
@@ -41,7 +42,7 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
 
     public static final Map<String, CNEN> NODE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
     public static final Map<String, CNEN> TREE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
-    public static final Registry<String, TechTreeManager> REGISTRY = new GTRegistry.Str<>(GTOCore.id("techtree_manager"));
+    public static final Registry<String, TechTreeManager> REGISTRY = new GTRegistry.Str<>(RLUtils.mc("techtree_manager"));
 
     @Getter
     private final String id;
@@ -60,6 +61,12 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
             TREE_LANG.put("gtocore.techtree." + id, new CNEN(cn, en));
         }
         REGISTRY.register(id, this);
+        this.unfreeze();
+    }
+
+    @Override
+    public boolean isContextValid() {
+        return true;
     }
 
     public static TechTreeManager getManager(String id) {

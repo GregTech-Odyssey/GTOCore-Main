@@ -66,7 +66,5 @@ public final class ScanningRecipes {
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 150L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 200L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:space_elevator_power_module_5"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 250L));
-
-        DataScanningManager.freeze();
     }
 }

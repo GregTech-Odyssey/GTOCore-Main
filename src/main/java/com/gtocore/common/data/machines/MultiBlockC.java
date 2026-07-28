@@ -639,7 +639,7 @@ public final class MultiBlockC {
                             .or(autoAbilities(definition.getRecipeTypes()))
                             .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
                             .or(abilities(MAINTENANCE).setExactLimit(1))
-                            .or(blocks(GTOMachines.RADIATION_HATCH.get()).setMaxGlobalLimited(2)))
+                            .or(abilities(GTOPartAbility.RADIATION_HATCH).setMaxGlobalLimited(2)))
                     .where('H', blocks(GTOBlocks.IRIDIUM_CASING.get()))
                     .where('I', blocks(GTBlocks.CLEANROOM_GLASS.get()))
                     .where('J', blocks(GTOBlocks.BIOLOGICAL_MECHANICAL_CASING.get()))

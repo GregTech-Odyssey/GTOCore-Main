@@ -223,6 +223,7 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.law_cleanroom.display_name", "绝对超净间", "Absolute Clean");
         addCNEN("gtocore.recipe.nano_forge_tier", "纳米锻炉等级：%s", "Nano Forge Tier: %s");
         addCNEN("gtocore.recipe.radioactivity", "辐射剂量：%s Sv", "Radiation Dose: %s Sv");
+        addCNEN("gtocore.recipe.radioactivity_end", "运行结束时辐射剂量：%s Sv", "Radiation Dose at the End of Operation: %s Sv");
         addCNEN("gtocore.recipe.vacuum.tier", "真空等级：%s", "Vacuum Tier: %s");
         addCNEN("gtocore.recipe.restricted_machine", "只能运行在：%s", "Only runnable on: %s");
         addCNEN("gtocore.recipe.heat.temperature", "需要外部热源：%s K", "External heat source is required: %s K");

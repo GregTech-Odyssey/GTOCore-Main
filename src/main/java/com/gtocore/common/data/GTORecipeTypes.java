@@ -986,9 +986,11 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.COMPUTATION);
 
     public static final RecipeType BIO_RESEARCH_RECIPES = register("bio_research", "生物研究", ELECTRIC)
-            .setMaxIOSize(4, 4, 0, 0)
+            .setMaxIOSize(4, 1, 2, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.COMPUTATION);
+            .setSound(GTSoundEntries.COMPUTATION)
+            .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
+            .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY_END) ? LocalizationUtils.format("gtocore.recipe.radioactivity_end", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END)) : "");
 
     public static final RecipeType SPACE_STATION_CONSTRUCTION_RECIPES = register("space_station_construction", "空间站建造", MULTIBLOCK)
             .setMaxIOSize(9, 0, 0, 0)
