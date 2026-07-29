@@ -754,6 +754,9 @@ tasks.register('copyPrebuiltGtolib') {
         }
         // 预构建路径：校验 jar 与 .PROTECTED 中 jarSha256（防漏传/被改）
         verifyGtolibSkipConsistency(gtolibProtectedLibsJar, true)
+        // 无源码开发者拿到的就是这一个包：明文 mixin 必须是 named，
+        // 否则 runClient 才炸（m_91294_ 事故），这里提前在构建期报清楚。
+        verifyGtolibMixinNamespace(gtolibProtectedLibsJar, true, 'GTOLib 无源码 dev 预构建')
         file("${buildDir}/gtolib").mkdirs()
         [gtolibRawJar, gtolibUnprotectedJar, gtolibProtectedJar].each { p ->
             Files.copy(gtolibProtectedLibsJar.toPath(), p.get().asFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
@@ -1168,6 +1171,220 @@ ext.stampGtolibJarForSeal = { File srcJar, File destJar, String salt, String ver
 }
 
 /**
+ * mixin 明文命名空间契约。
+ *
+ * gtolib 的 mixin 类在封装包里是明文且只有一份（不进 .dev.bin/.prod.bin）——
+ * Mixin 处理器在 Seal Runtime 生效之前就要读它。所以这一份必须按消费方选名字：
+ *
+ * - dev 预构建 libs/gtolib-protected.jar → userdev 的 Minecraft 是官方名 → 必须 named
+ * - 发行单轨 libs/gtolib-release.jar     → 玩家侧 Minecraft 是 SRG      → 必须 SRG
+ *
+ * 搞反的后果是 @Shadow "was not located in the target class"（m_91294_ 事故）：
+ * 只在 runClient 装载 mixin 时炸，build 和 CI 全绿，排查成本极高。这里构建期判死。
+ */
+ext.scanGtolibMixinNamespace = { File jarFile ->
+    def srgPattern = ~/[mf]_\d+_/
+    def total = 0
+    def srgClasses = 0
+    def lvtClasses = 0
+    def samples = new TreeSet<String>()
+    new java.util.zip.ZipFile(jarFile).withCloseable { zf ->
+        zf.entries().each { entry ->
+            if (entry.isDirectory()) return
+            if (!entry.name.startsWith('com/gtolib/mixin/') || !entry.name.endsWith('.class')) return
+            total++
+            def text = new String(zf.getInputStream(entry).bytes, 'ISO-8859-1')
+            def matcher = srgPattern.matcher(text)
+            if (matcher.find()) {
+                srgClasses++
+                if (samples.size() < 6) samples << (entry.name + ' → ' + matcher.group())
+            }
+            if (text.contains('LocalVariableTable')) lvtClasses++
+        }
+    }
+    [total: total, srgClasses: srgClasses, lvtClasses: lvtClasses, samples: samples]
+}
+
+ext.verifyGtolibMixinNamespace = { File jarFile, boolean expectNamed, String label ->
+    if (jarFile == null || !jarFile.exists() || jarFile.length() == 0) {
+        throw new GradleException("${label}: gtolib jar 缺失或为空 → ${jarFile}")
+    }
+    def scan = scanGtolibMixinNamespace(jarFile)
+    if (scan.total == 0) {
+        throw new GradleException(
+                "${label}: jar 里没有明文 mixin 类（com/gtolib/mixin/**.class）→ ${jarFile}")
+    }
+    // 来源校验：明文 mixin 只能出自受保护链（ProGuard 的 -keepattributes 不含
+    // LocalVariableTable，会剥掉它）。一旦出现 LVT，说明字节取自未加保护的
+    // gtolib-unprotected.jar —— 那是明文档，绝不允许进入发布产物。
+    if (scan.lvtClasses > 0) {
+        throw new GradleException(
+                "${label}: 明文 mixin 含 LocalVariableTable（${scan.lvtClasses}/${scan.total} 个类），\n" +
+                        "  说明字节来自 gtolib-unprotected.jar（明文链）而非 ProGuard 产物。\n" +
+                        "  发布产物的明文 mixin 必须取自受保护链。\n" +
+                        "  jar = ${jarFile}")
+    }
+    def actualNamed = scan.srgClasses == 0
+    if (actualNamed != expectNamed) {
+        def hint = expectNamed ?
+                'dev 预构建的明文 mixin 必须是官方名，否则 userdev 下 @Shadow 会报 not located（例：m_91294_ ↔ isConnectedToRealms）。' :
+                '发行单轨的明文 mixin 必须是 SRG，否则玩家侧 @Shadow 找不到目标。'
+        throw new GradleException(
+                "${label}: mixin 明文命名空间错误。\n" +
+                        "  期望 = ${expectNamed ? 'named（官方名，供 userdev）' : 'SRG（编号名，供玩家发行）'}\n" +
+                        "  实际 = ${actualNamed ? 'named' : 'SRG'}" +
+                        "（${scan.srgClasses}/${scan.total} 个 mixin 类含 SRG 成员名）\n" +
+                        (scan.samples ? "  样例 = ${scan.samples.join(', ')}\n" : '') +
+                        "  jar  = ${jarFile}\n" + hint)
+    }
+    logger.info("${label}: mixin 命名空间 OK（${expectNamed ? 'named' : 'SRG'}, ${scan.total} 个类）")
+}
+
+/**
+ * Seal Packager 的输出里，明文 mixin 类来自 prod 侧（已 reobf 成 SRG）。
+ * dev 预构建给 userdev 用，必须把这批类换成 named 版本。
+ * 来源见 proguardGtolibDevNamed（dev 轨 ProGuard 的 named 产物，非明文档）。
+ * 只替换 com/gtolib/mixin/**.class——加密体、hollow class、资源一律不动。
+ */
+ext.overlayNamedGtolibMixins = { File targetJar, File namedJar ->
+    if (targetJar == null || !targetJar.exists() || targetJar.length() == 0) {
+        throw new GradleException("named mixin 覆盖目标缺失: ${targetJar}")
+    }
+    if (namedJar == null || !namedJar.exists() || namedJar.length() == 0) {
+        throw new GradleException("named mixin 覆盖来源缺失（需 proguardGtolibDevNamed 产物）: ${namedJar}")
+    }
+    def overlay = new TreeMap<String, byte[]>()
+    new java.util.zip.ZipFile(namedJar).withCloseable { zf ->
+        zf.entries().each { entry ->
+            if (entry.isDirectory()) return
+            if (entry.name.startsWith('com/gtolib/mixin/') && entry.name.endsWith('.class')) {
+                overlay[entry.name] = zf.getInputStream(entry).bytes
+            }
+        }
+    }
+    if (overlay.isEmpty()) {
+        throw new GradleException("named mixin 覆盖来源里没有 mixin 类: ${namedJar}")
+    }
+    def temp = new File(targetJar.parentFile, targetJar.name + '.overlay.tmp')
+    if (temp.exists()) temp.delete()
+    def replaced = 0
+    new java.util.zip.ZipInputStream(new FileInputStream(targetJar)).withCloseable { zis ->
+        new java.util.zip.ZipOutputStream(new FileOutputStream(temp)).withCloseable { zos ->
+            java.util.zip.ZipEntry entry
+            while ((entry = zis.nextEntry) != null) {
+                zos.putNextEntry(new java.util.zip.ZipEntry(entry.name))
+                def named = overlay.remove(entry.name)
+                if (named != null) {
+                    zos.write(named)
+                    replaced++
+                } else {
+                    zis.transferTo(zos)
+                }
+                zos.closeEntry()
+                zis.closeEntry()
+            }
+        }
+    }
+    // 剩余项说明两侧 mixin 类集合对不上（ProGuard 改名/删类），此时覆盖是不完整的
+    if (!overlay.isEmpty()) {
+        temp.delete()
+        throw new GradleException(
+                "named mixin 覆盖不完整：加密包里缺 ${overlay.size()} 个 mixin 类 → " +
+                        overlay.keySet().take(8).join(', '))
+    }
+    if (replaced == 0) {
+        temp.delete()
+        throw new GradleException("named mixin 覆盖没有替换任何类: ${targetJar}")
+    }
+    Files.move(temp.toPath(), targetJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    logger.lifecycle("GTOLib dev 预构建：${replaced} 个明文 mixin 类已换成 named")
+}
+
+/** dev 轨 ProGuard 的 named 产物；只取其中的 mixin 类做覆盖。 */
+ext.gtolibDevNamedJar = layout.buildDirectory.file('gtolib/gtolib-proguard-named.jar')
+
+/**
+ * dev 预构建的明文 mixin 必须同时满足两件事：
+ *   1. named —— userdev 的 Minecraft 是官方名，SRG 的 @Shadow 找不到目标
+ *   2. 出自受保护链 —— 明文档 gtolib-unprotected.jar 的字节绝不能进发布产物
+ *
+ * 主链是 raw(named) → reobf → raw(SRG) → ProGuard，明文 mixin 只能拿到 SRG 那份。
+ * 这里用同一份 proguard-rules.pro 对 reobf 之前的 named 输入再跑一遍，
+ * 得到「ProGuard 处理过且是 named」的 mixin 字节。
+ *
+ * 为什么不用 ART 反向映射：ART 靠 --lib 走继承链定位方法归属，而工作区里
+ * 能拿到的 Minecraft 库全是 named，SRG 引用（如 PlayerList.m_11314_）在库里
+ * 查不到就不会被改名——实测 160 个类里有 74 个换不回来。
+ *
+ * 校验点是 LocalVariableTable：proguard-rules.pro 的 -keepattributes 不含它，
+ * 必然被剥掉；所以产物里出现 LVT 就说明混进了未经 ProGuard 的明文字节。
+ */
+tasks.register('proguardGtolibDevNamed', JavaExec) {
+    group = 'gtolib'
+    description = 'dev 轨 ProGuard 跑在 named 输入上：产出 named 的受保护 mixin 明文'
+    onlyIf {
+        hasGtolibSources && !isGtolibJarUpToDate && canProguard && !detectGtolibDebugMode()
+    }
+    dependsOn 'resolveGtolibRaw', 'classes'
+    // 三条 ProGuard 共用 build/gtolib 下的混淆字典，串行避免互相覆盖
+    mustRunAfter 'proguardGtolib', 'proguardGtolibRelease'
+    classpath = configurations.proguardCp
+    mainClass = 'proguard.ProGuard'
+
+    doFirst {
+        file("${buildDir}/gtolib").mkdirs()
+        ensureProguardDictionaries()
+        writeProguardExtraFile(
+                file("${buildDir}/gtolib/proguard-extra-dev-named.pro"),
+                'gtolib-dev-named-mapping.txt')
+
+        // resolveGtolibRaw 在 reobfGtolibRaw 之前留下的 named 副本
+        def src = gtolibUnprotectedJar.get().asFile
+        if (!src.exists() || src.length() == 0) {
+            throw new GradleException("proguardGtolibDevNamed: 缺少 named 输入 ${src}")
+        }
+        def srcScan = scanGtolibMixinNamespace(src)
+        if (srcScan.srgClasses > 0) {
+            throw new GradleException(
+                    "proguardGtolibDevNamed: 输入已被 reobf 成 SRG " +
+                            "(${srcScan.srgClasses}/${srcScan.total})，" +
+                            "说明 resolveGtolibRaw / reobfGtolibRaw 的顺序被破坏了")
+        }
+        def out = gtolibDevNamedJar.get().asFile
+        if (out.exists()) out.delete()
+        args = [
+                "@${file("${gtolibProtectDir}/proguard-rules.pro").absolutePath}",
+                "@${file("${buildDir}/gtolib/proguard-extra-dev-named.pro").absolutePath}",
+                "-injars", src.absolutePath.replace('\\', '/'),
+                "-outjars", out.absolutePath.replace('\\', '/'),
+        ]
+        logger.lifecycle("GTOLib dev named ProGuard: ${src.name} → ${out.name}")
+    }
+
+    doLast {
+        def out = gtolibDevNamedJar.get().asFile
+        if (!out.exists() || out.length() < 1024) {
+            throw new GradleException("proguardGtolibDevNamed: ProGuard 未写出 ${out}")
+        }
+        def scan = scanGtolibMixinNamespace(out)
+        if (scan.total == 0) {
+            throw new GradleException("proguardGtolibDevNamed: 产物里没有 mixin 类")
+        }
+        if (scan.srgClasses > 0) {
+            throw new GradleException(
+                    "proguardGtolibDevNamed: 产物里有 ${scan.srgClasses}/${scan.total} " +
+                            "个 mixin 类含 SRG 成员名: ${scan.samples.join(', ')}")
+        }
+        if (scan.lvtClasses > 0) {
+            throw new GradleException(
+                    "proguardGtolibDevNamed: 产物含 LocalVariableTable " +
+                            "(${scan.lvtClasses}/${scan.total})，ProGuard 未按预期剥离属性")
+        }
+        logger.lifecycle("GTOLib dev named ProGuard OK: ${scan.total} 个 mixin 类，named 且无 LVT")
+    }
+}
+
+/**
  * GTO Seal Packager：在 ProGuard 之后加密 class（需 Seal Runtime 运行时解密）。
  *
  * 调用约定:
@@ -1390,7 +1607,7 @@ tasks.register('buildGtolibProtected') {
         if (isGtolibJarUpToDate) {
             return []
         }
-        def steps = ['resolveGtolibRaw', 'proguardGtolib']
+        def steps = ['resolveGtolibRaw', 'proguardGtolib', 'proguardGtolibDevNamed']
         if (canProguardRelease) {
             steps << 'proguardGtolibRelease'
         }
@@ -1419,6 +1636,8 @@ tasks.register('buildGtolibProtected') {
         if (hasGtolibSources && isGtolibJarUpToDate) {
             logger.lifecycle("GTOLib: jar 已是最新 (stamp 命中)，跳过打包/保护 → 执行一致性校验")
             verifyGtolibSkipConsistency(protectedFile, true)
+            // stamp 命中不代表内容对：缓存里可能是换 named 覆盖之前的旧产物
+            verifyGtolibMixinNamespace(protectedFile, true, 'GTOLib dev 预构建（stamp 命中）')
             // 路线 A：发行单轨预构建对也必须同源有效
             if (canProguardRelease && canSealPack) {
                 verifyGtolibReleasePair()
@@ -1481,9 +1700,17 @@ tasks.register('buildGtolibProtected') {
 
         protectedFile.parentFile.mkdirs()
         Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        if (hasGtolibSources) {
+            // Seal 输出的明文 mixin 来自 prod 侧（reobf 过，SRG）。这份给 userdev，
+            // 必须换回 named，否则 @Shadow 找不到目标。来源用 proguardGtolibDevNamed
+            // 产出的「dev 轨 ProGuard 的 named 产物」—— 明文档
+            // gtolib-unprotected.jar 不参与发布产物。
+            overlayNamedGtolibMixins(protectedFile, gtolibDevNamedJar.get().asFile)
+        }
         injectGtolibMixinConfig(protectedFile)
         // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap
         publishAndInjectGtolibRefmaps(protectedFile, hasGtolibSources)
+        verifyGtolibMixinNamespace(protectedFile, true, 'GTOLib dev 预构建')
         def jarSha = computeFileSha256(protectedFile)
 
         // 有源码 + 加密：同步公开预构建 libs/（无权限消费方唯一入口）
@@ -1497,6 +1724,8 @@ tasks.register('buildGtolibProtected') {
             gtolibProtectedLibsJar.parentFile.mkdirs()
             Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
             injectGtolibMixinConfig(gtolibProtectedLibsJar)
+            // 公开仓唯一的 dev 入口，落地前再确认一次命名空间
+            verifyGtolibMixinNamespace(gtolibProtectedLibsJar, true, 'libs/gtolib-protected.jar')
             jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
             logger.lifecycle(
                     "GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED " +
@@ -1528,6 +1757,8 @@ tasks.register('buildGtolibProtected') {
                 Files.copy(sealedRel.toPath(), releaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
                 injectGtolibMixinConfig(releaseFile)
                 publishAndInjectGtolibRefmaps(releaseFile, false)
+                // 发行单轨是反向契约：明文 mixin 必须保持 SRG（别被 dev 覆盖逻辑波及）
+                verifyGtolibMixinNamespace(releaseFile, false, 'GTOLib 发行单轨')
                 // 先验 gtocore 链接面，再同步 libs——校验失败时不落地半成品发行对
                 verifyMainGtolibImportsAgainstJar(releaseFile)
                 gtolibReleaseLibsJar.parentFile.mkdirs()

@@ -363,6 +363,41 @@ jobs:
             echo "---- gtolib-protected.PROTECTED ----"
             cat libs/gtolib-protected.PROTECTED
           fi
+          # 明文 mixin 命名空间契约（本 job 是 submodules=false，走的正是无权限开发者那条路）。
+          # dev 预构建必须 named、发行单轨必须 SRG；搞反了 build 依然全绿，只在 runClient
+          # 装载 mixin 时炸 @Shadow "was not located in the target class"（m_91294_ 事故）。
+          python3 - <<'PY'
+          import os, re, sys, zipfile
+
+          PAT = re.compile(rb'[mf]_\d+_')
+
+          def check(path, expect):
+              if not os.path.exists(path):
+                  sys.exit(f'::error::{path} 不存在')
+              zf = zipfile.ZipFile(path)
+              names = [n for n in zf.namelist()
+                       if n.startswith('com/gtolib/mixin/') and n.endswith('.class')]
+              if not names:
+                  sys.exit(f'::error::{path} 里没有明文 mixin 类')
+              blobs = {n: zf.read(n) for n in names}
+              srg = [n for n in names if PAT.search(blobs[n])]
+              lvt = [n for n in names if b'LocalVariableTable' in blobs[n]]
+              actual = 'srg' if srg else 'named'
+              print(f'{path}: {len(names)} 个 mixin 类, {len(srg)} 个含 SRG 成员名 -> {actual} (期望 {expect}), LVT={len(lvt)}')
+              if actual != expect:
+                  sample = ', '.join(n.rsplit('/', 1)[-1] for n in (srg or names)[:5])
+                  sys.exit(f'::error::{path} mixin 明文命名空间错误：期望 {expect}，实际 {actual} ({sample})')
+              # ProGuard 的 -keepattributes 不含 LocalVariableTable。出现 LVT 说明明文
+              # 档 gtolib-unprotected.jar 的字节混进了发布产物。
+              if lvt:
+                  sample = ', '.join(n.rsplit('/', 1)[-1] for n in lvt[:5])
+                  sys.exit(f'::error::{path} 明文 mixin 含 LocalVariableTable（{len(lvt)}/{len(names)}），'
+                           f'字节来自明文链而非受保护链 ({sample})')
+
+          check('libs/gtolib-protected.jar', 'named')
+          check('libs/gtolib-release.jar', 'srg')
+          print('OK: gtolib mixin 明文命名空间符合契约')
+          PY
 
       - name: Build and sign
         env:
