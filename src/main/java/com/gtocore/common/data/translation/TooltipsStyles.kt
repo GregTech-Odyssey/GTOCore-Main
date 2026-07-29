@@ -59,7 +59,7 @@ fun ComponentListSupplier.danger(info: ComponentSupplier) {
     content(info, { red() }, ComponentSlang.Warning(1))
 }
 
-// 固定搭配
+// 固定搭配：静态金色（与 highlight 默认一致，非彩虹）
 fun ComponentListSupplier.miraculousTools(name: ComponentSupplier) {
-    highlight(("妙妙工具: " translatedTo "Miraculous Tools: ") + name) { rainbow() }
+    highlight(("妙妙工具: " translatedTo "Miraculous Tools: ") + name) { gold() }
 }

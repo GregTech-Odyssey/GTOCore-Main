@@ -484,16 +484,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition ME_WIRELESS_CONNECTION_MACHINE = machine("me_wireless_connection_machine", "ME无线连接机", MeWirelessConnectMachine::new)
             .renderer(MeWirelessConnectMachineRenderer::new)
-            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
-            .tooltips(NewDataAttributes.MIRACULOUS_TOOLS.create(new CNEN("ME无线连接机", "ME Wireless Connection Machine"), p -> p.addCommentLines(
-                    """
-                            多对多的ME无线网络节点
-                            可以在不同世界传输
-                            可以连接GTO ME无线网络""",
-                    """
-                            A many-to-many ME wireless network node
-                            Can transmit across different worlds
-                            Can connect to GTO ME wireless network""")))
+            .tooltips(GTOMachineTooltips.MeWirelessConnectionMachineTooltips)
             .allRotation()
             .register();
 
