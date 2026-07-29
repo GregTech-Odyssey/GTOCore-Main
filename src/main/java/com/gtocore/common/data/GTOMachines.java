@@ -12,6 +12,7 @@ import com.gtocore.common.machine.dev.TestReportOutput;
 import com.gtocore.common.machine.electric.DataExportMachine;
 import com.gtocore.common.machine.electric.ElectricHeaterMachine;
 import com.gtocore.common.machine.electric.VacuumPumpMachine;
+import com.gtocore.common.machine.electric.beam.*;
 import com.gtocore.common.machine.generator.LightningRodMachine;
 import com.gtocore.common.machine.generator.WindMillTurbineMachine;
 import com.gtocore.common.machine.monitor.*;
@@ -65,6 +66,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import com.hepdd.gtmthings.GTMThings;
 import it.unimi.dsi.fastutil.Function;
@@ -101,6 +103,9 @@ public final class GTOMachines {
                     .allRotation()
                     .tooltipsText("Print some test information", "打印一些测试用信息")
                     .register();
+        }
+        if (GTCEu.isClientSide()) {
+            ClientData.init();
         }
     }
 
@@ -171,6 +176,71 @@ public final class GTOMachines {
                     .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, GTORecipeTypes.VACUUM_PUMP_RECIPES, GTMachineUtils.defaultTankSizeFunction.apply(tier), true))
                     .register(),
             LV, MV, HV);
+    public static final MachineDefinition[] BEAM_GENERATOR = registerTieredMachines("raybeam_generator", tier -> "%s射线发生器%s".formatted(GTOValues.VLVHCN[tier], VLVT[tier]), BeamGeneratorMachine::new,
+            (tier, builder) -> builder
+                    .langValue("%s Beam Generator%s".formatted(VLVH[tier], VLVT[tier]))
+                    .noneRotation()
+                    .recipeModifier(BeamGeneratorMachine.BEAM_OVERCLOCK)
+                    .editableUI(SimpleTieredMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("raybeam_generator"), GTORecipeTypes.BEAM_GENERATE_RECIPES))
+                    .recipeType(GTORecipeTypes.BEAM_GENERATE_RECIPES)
+                    .workableTieredHullRenderer(GTOCore.id("block/machines/raybeam_generator"))
+                    .tooltips(GTOMachineTooltipsA.BeamGeneratorTooltips)
+                    .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, GTORecipeTypes.BEAM_GENERATE_RECIPES, GTMachineUtils.defaultTankSizeFunction.apply(tier), true))
+                    .register(),
+            UV, UHV, UEV, UIV, UXV, OpV);
+
+    public static final MachineDefinition ADJUSTABLE_SEMI_REFLECTOR = machine("adjustable_semi_reflector", "可调节半透镜", AdjustableSemiReflector::new)
+            .tier(UV)
+            .recipeType(GTORecipeTypes.DUMMY_RECIPES)
+            .tooltips(GTOMachineTooltipsA.BeamSemiReflectorTooltips)
+            .noRecipeModifier()
+            .noneRotation()
+            .renderer(() -> new MachineRenderer(GTOCore.id("block/semi_reflector")))
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition BEAM_REDIRECTOR = machine("beam_redirector", "光束偏向器", BeamRedirector::new)
+            .tier(UV)
+            .recipeType(GTORecipeTypes.DUMMY_RECIPES)
+            .noRecipeModifier()
+            .tooltips(GTOMachineTooltipsA.BeamRedirectorTooltips)
+            .noneRotation()
+            .renderer(() -> new MachineRenderer(GTOCore.id("block/redirector")))
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition EXCITATION_CRYSTAL = machine("excitation_crystal", "激发晶体", ExcitationCrystal::new)
+            .tier(UV)
+            .recipeType(GTORecipeTypes.DUMMY_RECIPES)
+            .tooltips(GTOMachineTooltipsA.ExcitationCrystalTooltips)
+            .noRecipeModifier()
+            .noneRotation()
+            .renderer(() -> new MachineRenderer(GTOCore.id("block/excitation_crystal")))
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition[] CRYSTAL_EXCITER = registerTieredMachines("crystal_exciter", tier -> "%s晶体激发器%s".formatted(GTOValues.VLVHCN[tier], VLVT[tier]), CrystalExciterMachine::new,
+            (tier, builder) -> builder
+                    .recipeType(GTORecipeTypes.DUMMY_RECIPES)
+                    .noRecipeModifier()
+                    .noneRotation()
+                    .workableTieredHullRenderer(GTOCore.id("block/machines/crystal_exciter"))
+                    .tooltips(GTOMachineTooltipsA.CrystalExciterTooltips)
+                    .register(),
+            UV, UHV, UEV, UIV, UXV, OpV);
+
+    public static final MachineDefinition RAY_BEAM_POLARIZER = machine("ray_beam_polarizer", "光束偏振器", BeamPolarizerMachine::new)
+            .tier(UV)
+            .langValue("Beam Polarizer")
+            .recipeType(GTORecipeTypes.BEAM_POLARIZE_RECIPES)
+            .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("ray_beam_polarizer"), GTORecipeTypes.BEAM_POLARIZE_RECIPES))
+            .noneRotation()
+            .renderer(() -> new MachineRenderer(GTOCore.id("block/polarizer")))
+            .tooltips(GTOMachineTooltipsA.BeamPolarizerTooltips)
+            .tooltips(GTMachineUtils.workableTiered(UV, V[UV], V[UV] << 6, GTORecipeTypes.BEAM_POLARIZE_RECIPES, 16000L, true))
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
     public static final MachineDefinition[] LIGHTNING_ROD = registerTieredMachines(
             "lightning_rod", tier -> "%s避雷针%s".formatted(GTOValues.VLVHCN[tier], VLVT[tier]),
             LightningRodMachine::new,
@@ -1100,6 +1170,7 @@ public final class GTOMachines {
             .noneRotation()
             .tooltips(GTOMachineStories.travelAnchorTooltips)
             .modelRenderer(() -> ResourceLocation.fromNamespaceAndPath("enderio", "block/travel_anchor"))
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
 
     public static final MachineDefinition[] TRADING_STATION = registerTieredMachines("trading_station", tier -> "泛银河系格雷科技贸易站 " + "Tier " + tier, TradingStationMachine::new,
@@ -1131,6 +1202,13 @@ public final class GTOMachines {
             .tooltipsText("Connected to the exhaust pipe of the silencer, which can export the smoke in the silencer to this", "连接到消声仓烟管，可将消声仓内的烟雾导出到此")
             .overlayTieredHullRenderer("rotor_hatch")
             .tier(0)
+            .register();
+
+    public static final MachineDefinition BEAM_ACCESS_HATCH = machine("beam_access_hatch", "光束接入仓", BeamAccessPartMachine::new)
+            .allRotation()
+            .tooltips(GTOMachineTooltipsA.BeamAccessHatchTooltips)
+            .overlayTieredHullRenderer("neutron_sensor")
+            .tier(UV)
             .register();
 
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)

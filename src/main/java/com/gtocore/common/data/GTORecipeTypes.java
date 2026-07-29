@@ -980,15 +980,42 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.COMPUTATION)
             .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.data_form_density_testing.density", FormattingUtil.formatNumber2Places(data.data.getInt(GTORecipeDataKeys.DATA_TESTING_LEVEL))));
 
-    public static final RecipeType RECIPES_DATA_GENERATE_RECIPES = register("recipes_data_generate", "配方数据生成", ELECTRIC)
-            .setMaxIOSize(11, 1, 0, 0)
+    public static final RecipeType BEAM_GENERATE_RECIPES = register("ray_beam_generate", "射线束生成", ELECTRIC)
+            .setMaxIOSize(2, 0, 0, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.COMPUTATION);
+            .addDataInfo(data -> {
+                int au = data.data.getInt(GTORecipeDataKeys.RAY_INTENSITY);
+                if (au > 0) {
+                    return I18n.get("gtocore.recipe.ray_intensity", FormattingUtil.formatNumbers(au));
+                }
+                return "";
+            })
+            .addDataInfo(data -> {
+                int au = data.data.getInt(GTORecipeDataKeys.RAY_WAVELENGTH);
+                if (au > 0) {
+                    return I18n.get("gtocore.recipe.ray_wavelength", FormattingUtil.formatNumbers(au));
+                }
+                return "";
+            })
+            .setEUIO(IO.IN)
+            .setSound(GTSoundEntries.MOTOR);
 
+    public static final RecipeType BEAM_POLARIZE_RECIPES = register("ray_beam_polarize", "射线束偏转", DUMMY)
+            .setMaxIOSize(0, 0, 1, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .addDataInfo(data -> {
+                var rad = data.data.getDouble(GTORecipeDataKeys.RAY_POLARIZATION);
+                if (rad != 0) {
+                    return I18n.get("gtocore.recipe.ray_polarization", FormattingUtil.formatNumber2Places(Math.toDegrees(rad)));
+                }
+                return "";
+            })
+            .setSound(GTSoundEntries.MOTOR);
     public static final RecipeType BIO_RESEARCH_RECIPES = register("bio_research", "生物研究", ELECTRIC)
             .setMaxIOSize(4, 1, 2, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.COMPUTATION)
+            .setEUIO(IO.IN)
             .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
             .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY_END) ? LocalizationUtils.format("gtocore.recipe.radioactivity_end", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END)) : "");
 

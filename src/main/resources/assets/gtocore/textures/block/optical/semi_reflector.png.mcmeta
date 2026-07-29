@@ -1,0 +1,5 @@
+{
+  "ldlib": {
+    "connection": "gtocore:block/optical/semi_reflector_ctm"
+  }
+}

@@ -243,6 +243,7 @@ final class MachineLang {
         addCNEN("gtocore.lang.space_elevator_connector_module.3", "会增加太空电梯%s%%的算力消耗", "Increases the space elevator's Computational Workload consumption by %s%%");
         addCNEN("gtocore.lang.space_elevator_engineering_data_module.2", "将每收集的%s次运行数据，转化为1点星际工程研究点数", "Converts every %s collected operation data into 1 point of interstellar engineering research points");
         addCNEN("gtocore.lang.energy_data_holder.2", "在机器正常连续运行%s秒后，此仓才会开始收集数据", "After the machine has been running continuously for %s seconds, this hatch will start collecting data");
+        addCNEN("gtocore.machine.raybeam_generator.tooltip.0", "在机器GUI内调节光束的发射角度和发射功率", "Adjust the emission angle and emission power of the beam in the machine GUI");
 
         addCNEN("gtocore.machine.industrial_platform_deployment_tools.title.0", "简介", "Introduction");
         addCNEN("gtocore.machine.industrial_platform_deployment_tools.title.1", "选择预设", "Select Preset");

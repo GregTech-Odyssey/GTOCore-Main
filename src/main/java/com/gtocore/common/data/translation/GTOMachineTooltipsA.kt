@@ -126,7 +126,10 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         function("安装在能源产生相关的机器上，对能源稳定性与功率进行监测" translatedTo "Installed on energy generation-related machines to monitor energy stability and power")
-        command(Component.translatable("gtocore.lang.energy_data_holder.2", 15 + 15 * GTOCore.difficulty).toComponentSupplier())
+        command(
+            Component.translatable("gtocore.lang.energy_data_holder.2", 15 + 15 * GTOCore.difficulty)
+                .toComponentSupplier(),
+        )
         command("此后每次机器完成输出UEV级及以上功率的配方时，能源数据仓将转化(功率等级 - 10)²的能源研究点数，并存储于机器内的晶片中" translatedTo "Thereafter, each time the machine finishes recipes that output UEV-level or higher power, the energy data hatch will convert (power level - 9)² energy research points and store them in the data crystal inside the machine")
     }
 
@@ -188,7 +191,8 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         ok("为ME网络提供额外的能量供应" translatedTo "Provides additional energy supply for the ME network")
         command(
             ("每一点EU可以转换成 " translatedTo "Each point of EU can be converted into ") +
-                PowerUnits.FE.convertTo(PowerUnits.AE, ConfigHolder.INSTANCE.compat.energy.euToFeRatio.toDouble()).toLiteralSupplier() +
+                PowerUnits.FE.convertTo(PowerUnits.AE, ConfigHolder.INSTANCE.compat.energy.euToFeRatio.toDouble())
+                    .toLiteralSupplier() +
                 (" 点AE能量" translatedTo " points of AE energy"),
         )
         info("使用ME能量访问仓导出能量到ME网络" translatedTo "Use the ME Energy Access Hatch to export energy to the ME network")
@@ -222,7 +226,12 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
             "太空电梯安装的模块也将获得额外(0.8^(n/2))×的耗时减免" translatedTo
                 "Modules installed on the space elevator will also receive a time reduction of (0.8^(n/2))×",
         )
-        decrease(Component.translatable("gtocore.lang.space_elevator_connector_module.3", 50.0 + 150.0 * GTOCore.difficulty).toComponentSupplier())
+        decrease(
+            Component.translatable(
+                "gtocore.lang.space_elevator_connector_module.3",
+                50.0 + 150.0 * GTOCore.difficulty,
+            ).toComponentSupplier(),
+        )
 
         command("该模块仅能连接在其他模块的下方" translatedTo "This module can only connect below other modules")
     }
@@ -233,7 +242,12 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         command("收集太空电梯其他模块的运行数据" translatedTo "Collects operational data from other modules of the space elevator")
-        command(Component.translatable("gtocore.lang.space_elevator_engineering_data_module.2", if (GTOCore.isExpert()) 75 else 50).toComponentSupplier())
+        command(
+            Component.translatable(
+                "gtocore.lang.space_elevator_engineering_data_module.2",
+                if (GTOCore.isExpert()) 75 else 50,
+            ).toComponentSupplier(),
+        )
         command("转化为的研究点数将存储于通用数据仓的晶片中" translatedTo "The converted research points will be stored in the data crystal of the universal data hatch")
         increase("太空电梯动力模块等级为n时，每次收集需要的运行次数乘以(4/(3+n))" translatedTo "When the power module level of the space elevator is n, the number of runs needed for each collection is multiplied by (4/(3+n))")
         increase("连接到空间站时，转化为的研究点数翻倍" translatedTo "When connected to the space station, the converted research points are doubled")
@@ -478,5 +492,70 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         function("为ME网络提供虚拟物品" translatedTo "Provides virtual items for the ME network")
         increase("虚拟物品可用于替代样板中不消耗的物品" translatedTo "Virtual items can be used to replace items in the blueprint that do not consume resources")
         content("将任何物品放入供应机中均可转换为虚拟物品" translatedTo "Place any item into the supply machine to convert it into a virtual item")
+    }
+
+    @JvmField
+    val BeamGeneratorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_generator")
+
+        section(MainFunction)
+        function("根据运行的配方发射高能光束射线" translatedTo "Emits high-energy beam rays based on the running recipe")
+        command("超频规则：每提升4倍电压，光强等级提升2倍" translatedTo "Overclocking rule: For every 4 times increase in voltage, the light intensity level increases by 2 times")
+        content("在机器gui中调节射线的水平角与俯仰角" translatedTo "Adjust the horizontal and pitch angles of the beam in the machine GUI")
+
+        important("光束射线在非超净间的环境中，光强会受到每方块0.95倍系数的衰减" translatedTo "In a non-cleanroom environment, the light intensity of the beam will be attenuated by a factor of 0.95 per block")
+    }
+
+    @JvmField
+    val BeamRedirectorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_redirector")
+
+        section(MainFunction)
+        function("用于改变高能光束射线的方向" translatedTo "Used to change the direction of high-energy beam rays")
+        command("在机器GUI中调节射线的水平角与俯仰角" translatedTo "Adjust the horizontal and pitch angles of the beam in the machine GUI")
+    }
+
+    @JvmField
+    val ExcitationCrystalTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("excitation_crystal")
+
+        section(MainFunction)
+        function("如果它周围有晶体激发器，它将会被激发并使穿过的高能光束射线的光强翻倍" translatedTo "If there are crystal exciters around it, it will be excited and double the light intensity of the high-energy beam rays passing through it")
+        command("该过程需要(光强 * 4096EU/t)的能量" translatedTo "This process requires (light intensity * 4096 EU/t) of energy")
+        command("并且激发功率受到晶体激发器的等级限制（至多2A*机器等级）" translatedTo "And the excitation power is limited by the level of the crystal exciter (up to 2A * machine level)")
+    }
+
+    @JvmField
+    val CrystalExciterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("crystal_exciter")
+        section(MainFunction)
+        function("用于激发周围的晶体" translatedTo "Used to excite the surrounding crystals")
+        command("需要消耗能量来激发晶体" translatedTo "Requires energy consumption to excite the crystals")
+    }
+
+    @JvmField
+    val BeamSemiReflectorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_semi_reflector")
+
+        section(MainFunction)
+        function("将穿过的高能光束射线分为两路，一路继续前进，一路被反射" translatedTo "Splits the high-energy beam rays passing through into two paths, one continues forward, and the other is reflected")
+        command("在机器GUI中调节射线的反射率" translatedTo "Adjust the reflectivity of the beam in the machine GUI")
+    }
+
+    @JvmField
+    val BeamPolarizerTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_polarizer")
+
+        section(MainFunction)
+        function("改变穿过的高能光束射线的振动方向" translatedTo "Changes the vibration direction of the high-energy beam rays passing through")
+        command("旋光角度由机器内的流体决定" translatedTo "The angle of rotation is determined by the fluid inside the machine")
+    }
+
+    @JvmField
+    val BeamAccessHatchTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_access_hatch")
+
+        section(MainFunction)
+        function("为机器提供导入精确的高能光束射线" translatedTo "Provides precise high-energy beam rays for the machine")
     }
 }

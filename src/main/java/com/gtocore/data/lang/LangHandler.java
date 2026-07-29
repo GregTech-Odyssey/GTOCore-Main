@@ -224,12 +224,17 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.nano_forge_tier", "纳米锻炉等级：%s", "Nano Forge Tier: %s");
         addCNEN("gtocore.recipe.radioactivity", "辐射剂量：%s Sv", "Radiation Dose: %s Sv");
         addCNEN("gtocore.recipe.radioactivity_end", "运行结束时辐射剂量：%s Sv", "Radiation Dose at the End of Operation: %s Sv");
+        addCNEN("gtocore.recipe.ray_requirement.1", "需要%snm~%snm波长,%sa.u.以上强度,%s°偏振的光束", "Requires a beam with wavelength %snm~%snm, intensity above %sa.u., and polarization of %s°");
+        addCNEN("gtocore.recipe.ray_requirement.2", "需要%snm~%snm波长,%sa.u.以上强度的光束", "Requires a beam with wavelength %snm~%snm and intensity above %sa.u.");
         addCNEN("gtocore.recipe.vacuum.tier", "真空等级：%s", "Vacuum Tier: %s");
         addCNEN("gtocore.recipe.restricted_machine", "只能运行在：%s", "Only runnable on: %s");
         addCNEN("gtocore.recipe.heat.temperature", "需要外部热源：%s K", "External heat source is required: %s K");
         addCNEN("gtocore.recipe.runlimit.count", "运行次数限制：%s", "Run Limit: %s times");
         addCNEN("gtocore.recipe.mana_consumption", "魔力消耗", "Mana Consumption");
         addCNEN("gtocore.recipe.mana_production", "魔力产出", "Mana Production");
+        addCNEN("gtocore.recipe.ray_intensity", "光束强度：%s a.u.", "Ray Intensity: %s a.u.");
+        addCNEN("gtocore.recipe.ray_wavelength", "光束波长：%s nm", "Ray Wavelength: %s nm");
+        addCNEN("gtocore.recipe.ray_polarization", "光束偏振：%s°", "Ray Polarization: %s°");
         addCNEN("gtocore.recipe.efficiency", "总耗能倍率：%s", "Total Energy Cost Multiplier: %s");
         addCNEN("gtocore.recipe.efficiency.o", "总产能倍率：%s", "Total Energy Cost Multiplier: %s");
         addCNEN("gtocore.recipe.mana_efficiency", "总耗魔倍率：%s", "Total Mana Cost Multiplier: %s");
