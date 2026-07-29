@@ -362,6 +362,35 @@ jobs:
           if [ -f libs/gtolib-protected.PROTECTED ]; then
             echo "---- gtolib-protected.PROTECTED ----"
             cat libs/gtolib-protected.PROTECTED
+            # gtolib 预构建身份闸。本 job 是 submodules=false（私有仓 + pull_request_target 会执行
+            # PR 侧代码，不能注入 GTOLib 凭据），算不出源码指纹；改比对主仓 tree 里的 gitlink 与
+            # 重建时写进侧车的 commit。不一致 = 指针动了但 libs/ 没重建 → 会签出跑旧字节码的产物。
+            POINTER=$(git ls-tree HEAD GTOLib | awk '$2 == "commit" { print $3 }' || true)
+            RECORDED=$(sed -n 's/^gtolibCommit=//p' libs/gtolib-protected.PROTECTED)
+            echo "gtolib gitlink  = ${POINTER:-<none>}"
+            echo "gtolib recorded = ${RECORDED:-<none>}"
+            if [ -z "$POINTER" ]; then
+              echo "::error::无法从主仓 tree 读出 GTOLib gitlink"
+              exit 1
+            fi
+            case "$RECORDED" in
+              "")
+                # 过渡期：早于本校验的预构建没有该字段。等有 GTOLib 权限者重建并提交 libs/ 之后，
+                # 把这条 warning 改成 exit 1，闸门即完全生效。
+                echo "::warning::.PROTECTED 无 gtolibCommit（预构建早于本校验），跳过指针比对"
+                ;;
+              *-dirty)
+                echo "::error::预构建来自未提交的 GTOLib 工作区（$RECORDED）；请先提交并推送 GTOLib 再重建"
+                exit 1
+                ;;
+              "$POINTER")
+                echo "OK: gtolib pointer == prebuilt record"
+                ;;
+              *)
+                echo "::error::GTOLib 指针($POINTER) 与预构建记录($RECORDED) 不一致 —— 指针动了但 libs/gtolib-protected.jar 没重建"
+                exit 1
+                ;;
+            esac
           fi
           # 明文 mixin 命名空间契约（本 job 是 submodules=false，走的正是无权限开发者那条路）。
           # dev 预构建必须 named、发行单轨必须 SRG；搞反了 build 依然全绿，只在 runClient

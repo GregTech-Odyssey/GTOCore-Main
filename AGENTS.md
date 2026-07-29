@@ -35,7 +35,7 @@
 | 改了 `GTOLib/`（submodule） | gtolib 与 main 用**同名分支**并都推远端；main 提交须包含 submodule 指针 + 新的 `libs/gtolib-protected.jar` + `.PROTECTED`（三者一起 add/push） |
 | 只改 main（protected 未变） | 仅 main 开分支即可；不必动 gtolib 分支，也不必重建预构建 |
 
-原因：CI / 无 submodule 环境只认 `libs/gtolib-protected.jar`；只推源码指针不刷新预构建会跑旧字节码。jar 与 `.PROTECTED`（含 jarSha256）必须成对提交。
+原因：CI / 无 submodule 环境只认 `libs/gtolib-protected.jar`；只推源码指针不刷新预构建会跑旧字节码（现由下节的 `gtolibCommit` 闸门拦截）。jar 与 `.PROTECTED`（含 jarSha256）必须成对提交。
 
 有 GTOLib 源码时，默认始终走**加密**流水线；`build` / `runClient` / `runData` 会在源码指纹变化后自动刷新 `libs/gtolib-protected.jar` + `.PROTECTED`。也可显式：
 
@@ -46,6 +46,50 @@
 ```
 
 **Agent 要求**：若本次 Prompt 修改了 `GTOLib/` 下的代码，须在**完成该 Prompt 前**运行一次 `./gradlew buildGtolibProtected` 尝试编译并重建 gtolib 预构建，确认通过后再收尾。不要每改一处就重建一次——一个 Prompt 只在收尾时重建这一次。**不要**加 `-PgtolibUnprotected` / `-PgtolibDebug`（明文不会写入 libs，且不符合预构建要求）。
+
+## 三件套：提交、校验与多人合并
+
+`GTOLib` 指针 + `libs/gtolib-protected.jar` + `.PROTECTED` 是**一套生成物**，同进同出，不单独 merge。
+
+### 开发者怎么提交
+
+改了 `GTOLib/`：先在 GTOLib 提交并**推送**（工作区必须干净），回主仓重建，三者一个 commit：
+
+```bash
+./gradlew buildGtolibProtected
+git add GTOLib libs/gtolib-protected.jar libs/gtolib-protected.PROTECTED
+```
+
+带未提交改动重建时侧车会写成 `gtolibCommit=<sha>-dirty`，云端直接拒绝；本地 runClient 迭代不受影响。
+
+### SHA 校验是怎么做的
+
+`.PROTECTED` 有两个身份字段，各管一种环境：
+
+| 字段 | 内容 | 谁校验 |
+|------|------|--------|
+| `fingerprint` | `GTOLib/src` + `GTOLib/protect` 内容哈希 | 本地**有**源码时 |
+| `gtolibCommit` | 重建时的 `git -C GTOLib rev-parse HEAD` | 云端 / 任何**无**源码环境 |
+
+云端是 `submodules: false`（私有仓，且 `pull_request_target` 会执行 PR 侧代码，**不能**注入 GTOLib 凭据），算不出 `fingerprint`，改比对主仓 tree 里的 gitlink：
+
+```bash
+git ls-tree HEAD GTOLib   # → 160000 commit <sha>	GTOLib
+```
+
+`gitlink != .PROTECTED 的 gtolibCommit` → 构建硬失败。它挡住的是「指针前进但 libs/ 没重建」（会签出跑旧字节码的产物）；**挡不住** jar 是否真由该 commit 编出——构建不可复现，只能谁重建谁负责。
+
+### 多人同时改 gtolib 时怎么合
+
+指针和 jar 的冲突**不要手工 merge**，一律丢弃后统一重建一次：
+
+1. **先在 GTOLib 仓**按序合完所有 PR，源码冲突在那边解干净，记下 main 最终 SHA。
+2. 主仓开集成分支，只合各 PR 中**三件套以外**的改动；三件套一律取 main 旧值。
+3. submodule 切到该 SHA → `./gradlew buildGtolibProtected` → 三者一个 commit。
+4. `./gradlew build` 确认主仓源码能编过新 gtolib（日志出现 `GTOLib 一致性 OK`）。
+5. 集成分支一次性合入 main —— main 不经历「指针新、jar 旧」的破碎窗口。
+
+`.PROTECTED` 是文本文件，git 会逐行 merge，可能拼出 A 的 `jarSha256` 配 B 的 `size`。**永远整体重新生成，不要手改。**
 
 ## 相关路径
 

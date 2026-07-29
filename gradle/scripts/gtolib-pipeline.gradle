@@ -141,6 +141,38 @@ ext.writeGtolibStamp = { String fingerprint, String jarSha256 ->
     stamp.text = "fingerprint=${fingerprint}\njarSha256=${jarSha256}\n"
 }
 
+/** 在 rootDir 下跑一条只读 git 命令；失败/无 .git 时返回空串。 */
+ext.gitQuiet = { String cmd, File dir = rootDir ->
+    try {
+        // 显式 cast：execute(String[], File) / execute(List, File) 两个重载，裸 null 在旧 Groovy 上会歧义
+        def p = cmd.execute((String[]) null, dir)
+        def out = p.text.trim()
+        return p.waitFor() == 0 ? out : ''
+    } catch (Exception ignored) {
+        return ''
+    }
+}
+
+/**
+ * 重建预构建时 GTOLib submodule 所在的 commit —— 写进侧车，供无源码环境（CI）与主仓 gitlink 比对。
+ * 工作区脏时打 -dirty 标记：本地带未提交改动迭代照常，云端见到就拒（jar 里的代码没有 commit 对得上）。
+ */
+ext.gtolibCommitSha = {
+    if (!hasGtolibSources) return ''
+    def sha = gitQuiet('git rev-parse HEAD', file('GTOLib'))
+    if (!(sha ==~ /[0-9a-f]{40}/)) {
+        logger.warn('GTOLib: 无法读取 submodule commit，侧车 gtolibCommit 留空')
+        return ''
+    }
+    return gitQuiet('git status --porcelain', file('GTOLib')).isEmpty() ? sha : "${sha}-dirty"
+}
+
+/** 主仓 tree 里记录的 GTOLib gitlink —— 不需要任何 GTOLib 权限即可读出。 */
+ext.gtolibGitlinkSha = {
+    def m = gitQuiet('git ls-tree HEAD GTOLib') =~ /160000 commit ([0-9a-f]{40})/
+    return m ? m[0][1] : ''
+}
+
 /**
  * 与 libs/gtolib-protected.jar 成对的侧车元数据（CI sources=false 用 jarSha256 校验）。
  * 凡同步/写入 libs 预构建 jar 时必须调用，避免 jar 已新、.PROTECTED 仍旧。
@@ -151,16 +183,18 @@ ext.writeGtolibSidecar = { File jarFile, File sidecarFile, String fingerprint, S
     }
     def jarSha = computeFileSha256(jarFile)
     def fp = (fingerprint != null && !fingerprint.isEmpty()) ? fingerprint : ''
+    def commit = gtolibCommitSha()
     sidecarFile.text =
             "protected=true\nmethod=${method}\n" +
                     "runtime=full-seal-runtime\n" +
                     "updated=${new Date()}\n" +
                     "size=${jarFile.length()}\n" +
                     "fingerprint=${fp}\n" +
+                    "gtolibCommit=${commit}\n" +
                     "jarSha256=${jarSha}\n"
     logger.lifecycle(
             "GTOLib: 已写入 ${sidecarFile.name} " +
-                    "size=${jarFile.length()} jarSha=${jarSha.take(16)}…"
+                    "size=${jarFile.length()} jarSha=${jarSha.take(16)}… commit=${commit ?: '<none>'}"
     )
     return jarSha
 }
@@ -170,7 +204,7 @@ ext.writeGtolibProtectedSidecar = { File jarFile, String fingerprint = gtolibFin
 }
 
 ext.readSidecarMeta = { File f ->
-    def out = [fingerprint: '', jarSha256: '', size: '']
+    def out = [fingerprint: '', gtolibCommit: '', jarSha256: '', size: '']
     if (f == null || !f.exists()) return out
     f.eachLine { line ->
         def i = line.indexOf('=')
@@ -249,7 +283,20 @@ ext.verifyGtolibSkipConsistency = { File jarFile, boolean skippedRebuild ->
                         "fp=${currentFp.take(16)}… jarSha=${actualJarSha.take(16)}…"
         )
     } else {
-        // 无源码：只能校验公开预构建 jar 与 .PROTECTED 中的 jarSha256
+        // 无源码：算不出源码指纹，改比对「主仓 gitlink」与「侧车记录的 gtolib commit」。
+        // 拦的是「指针前进了但 libs/ 没重建」——否则会拿旧字节码构建出看似正常的产物。
+        def pointer = gtolibGitlinkSha()
+        if (pointer && meta.gtolibCommit && meta.gtolibCommit != pointer) {
+            throw new GradleException(
+                    "GTOLib 一致性校验失败：submodule 指针与预构建记录不一致。\n" +
+                            (meta.gtolibCommit.endsWith('-dirty') ?
+                                    "原因：预构建来自未提交的 GTOLib 工作区。\n" :
+                                    "原因：GTOLib 指针动过，但 libs/gtolib-protected.jar 未随之重建。\n") +
+                            "  主仓 gitlink      = ${pointer}\n" +
+                            "  .PROTECTED 记录   = ${meta.gtolibCommit}\n" +
+                            "请由有 GTOLib 权限者：切到该 commit → ./gradlew buildGtolibProtected → 指针+jar+.PROTECTED 同一 commit 提交。"
+            )
+        }
         if (expectedJarSha) {
             if (actualJarSha != expectedJarSha) {
                 throw new GradleException(
