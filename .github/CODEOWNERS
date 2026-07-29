@@ -1,0 +1,6 @@
+# GitHub cannot target the Organization Owner role dynamically. Keep this list
+# synchronized with the current GregTech-Odyssey organization owners.
+/.github/workflows/** @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+
+# Keep ownership changes under the same approval boundary.
+/.github/CODEOWNERS @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
