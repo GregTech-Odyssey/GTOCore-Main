@@ -77,7 +77,7 @@ git add GTOLib libs/gtolib-protected.jar libs/gtolib-protected.PROTECTED
 git ls-tree HEAD GTOLib   # → 160000 commit <sha>	GTOLib
 ```
 
-`gitlink != .PROTECTED 的 gtolibCommit` → 构建硬失败。它挡住的是「指针前进但 libs/ 没重建」（会签出跑旧字节码的产物）；**挡不住** jar 是否真由该 commit 编出——构建不可复现，只能谁重建谁负责。
+`gtolibCommit` 与 gitlink 不一致、带 `-dirty`、或**整个字段缺失**（旧流水线产物）→ 构建一律硬失败，必须重建 `libs/`。它挡住的是「指针前进但 libs/ 没重建」（会签出跑旧字节码的产物）；**挡不住** jar 是否真由该 commit 编出——构建不可复现，只能谁重建谁负责。
 
 ### 多人同时改 gtolib 时怎么合
 

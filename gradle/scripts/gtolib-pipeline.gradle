@@ -502,6 +502,18 @@ ext.isGtolibJarUpToDate = {
     if (stamp.fingerprint != gtolibFingerprint) {
         return false
     }
+    // libs/ 的 protected 对同样是提交物（此前只校验了下面的发行对，这里是缺口）：
+    // 被外部还原/删除、与侧车不同源、或来自旧流水线（无 gtolibCommit）时都不许跳过，
+    // 否则会走「跳过打包/保护」分支，libs/ 永远同步不到新产物而构建照样 BUILD SUCCESSFUL。
+    def protMeta = readProtectedMeta()
+    if (!gtolibProtectedLibsJar.exists() || !protMeta.jarSha256 ||
+            protMeta.fingerprint != gtolibFingerprint ||
+            computeFileSha256(gtolibProtectedLibsJar) != protMeta.jarSha256) {
+        return false
+    }
+    if (protMeta.gtolibCommit != gtolibCommitSha()) {
+        return false
+    }
     // 路线 A：能构建发行单轨时，libs 发行对也必须在场且同源，否则不许跳过
     if (canProguardRelease && canSealPack) {
         def relMeta = readSidecarMeta(gtolibReleaseSidecarFile)
@@ -1450,8 +1462,17 @@ tasks.register('sealPackGtolib', Exec) {
     dependsOn {
         canProguard ? ['reobfGtolibRaw', 'proguardGtolib'] : ['reobfGtolibRaw', 'resolveGtolibRaw']
     }
+    // devSrc 取 proguardGtolibDevNamed 的 named 产物（doFirst 会校验其存在），
+    // 此前只靠任务排列顺序侥幸成立 —— 显式声明（!canProguard 时该任务 onlyIf 自会跳过）
+    dependsOn 'proguardGtolibDevNamed'
     inputs.file(sealPackagerJar)
+    // 上游产物必须声明为输入。只声明 packager 时，ProGuard 重跑后本任务仍判 UP-TO-DATE，
+    // 链条从这里断掉：libs/ 同步被跳过，构建照样绿，预构建却停在旧字节码。
+    inputs.files(gtolibPgJar, gtolibRawJar, gtolibUnprotectedJar)
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
     outputs.file(file("${buildDir}/gtolib/gtolib-sealed.jar"))
+    // -PgtolibRebuild=true 只作用于 isGtolibJarUpToDate，接不到 Gradle 任务级判定，须显式打通
+    outputs.upToDateWhen { findProperty('gtolibRebuild') != 'true' }
 
     doFirst {
         def pg = gtolibPgJar.get().asFile
@@ -1670,7 +1691,18 @@ tasks.register('buildGtolibProtected') {
     if (tasks.findByName('syncSealRuntimeToLibs') != null) {
         dependsOn 'syncSealRuntimeToLibs'
     }
+    // 上游 seal/proguard 产物须声明为输入：本任务此前只有 outputs，上游重新加密后
+    // （Seal 每次换随机 Salt，产物必变）Gradle 仍可能判 UP-TO-DATE 而跳过对 libs/ 的同步。
+    // libs/ 本身不能声明成 outputs——copyPrebuiltGtolib 以它为输入，会与 dependsOn 成环；
+    // libs/ 是否同源由 isGtolibJarUpToDate 负责把关。
+    inputs.files(
+            file("${buildDir}/gtolib/gtolib-sealed.jar"),
+            gtolibSealedReleaseJar,
+            gtolibPgJar,
+            gtolibUnprotectedJar,
+    )
     outputs.file(gtolibProtectedJar)
+    outputs.upToDateWhen { findProperty('gtolibRebuild') != 'true' }
 
     doLast {
         def protectedFile = gtolibProtectedJar.get().asFile
