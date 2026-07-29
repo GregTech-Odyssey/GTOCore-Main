@@ -296,13 +296,13 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     public record MembraneBonusInfo(
-            int tier,
-            Material membrane,
-            Material electrolyte,
-            double efficiencyBonus,
-            double efficiencyBonusDecayFactor,
-            double efficiencyBonusExpertMode,
-            double efficiencyBonusDecayFactorExpertMode) {
+                                    int tier,
+                                    Material membrane,
+                                    Material electrolyte,
+                                    double efficiencyBonus,
+                                    double efficiencyBonusDecayFactor,
+                                    double efficiencyBonusExpertMode,
+                                    double efficiencyBonusDecayFactorExpertMode) {
 
         public void getInfoComponents(List<Component> components) {
             components.add(Component.translatable(MEMBRANE_TIER, Component.literal(String.valueOf(tier)).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
