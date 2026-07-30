@@ -2175,7 +2175,7 @@ object GTOMachineTooltips {
         section("配方相关" translatedTo "Recipe Related")
         command("输入：增殖棒与对应元素粉，不同配方需不同中子通量" translatedTo "Input: Breeding Rods and corresponding Element Dust, different recipes require different neutron flux")
         content("输出：枯竭增殖棒" translatedTo "Output: Depleted Breeding Rods")
-        info("实际并行越大，运行时间越短，公式：T = t * (0.9 - (当前中子通量 - 需要的中子通量) / 10MeV)^0.5" translatedTo "The larger the actual parallelism, the shorter the running time, formula: T = t * (0.9 - (current neutron flux - required neutron flux) / 10MeV)^0.5")
+        info("实际并行数P越大，运行时间越短，公式：T = t * (0.9 - (当前中子通量 - 需要的中子通量) / 100MeV)^(P^0.5)，其中t为原始运行时间" translatedTo "The larger the actual parallelism P, the shorter the running time, formula: T = t * (0.9 - (current neutron flux - required neutron flux) / 100MeV)^(P^0.5), where t is raw running time")
 
         section("数值机制" translatedTo "Numerical Mechanism")
         function("消耗粒子源提供初始通量：锑-铍10keV，钚-铍100keV，锎-252 1MeV" translatedTo "Consume neutron sources to provide initial flux: Sb-Be 10keV, Pu-Be 100keV, Cf-252 1MeV")
@@ -2183,11 +2183,11 @@ object GTOMachineTooltips {
         function("小撮/小堆/石墨粉分别降低0.1/0.25/1MeV" translatedTo "Small Pile/Big Pile/Graphite Dust reduce by 0.1/0.25/1MeV respectively")
         function("中子通量为E(keV)时，在主机内放入N个铱中子反射板后，中子通量每秒增加 (EN)^0.5 keV" translatedTo "When neutron flux is E (keV), after placing N Iridium Neutron Reflectors in the mainframe, neutron flux increases by (EN)^0.5 keV per second")
         info("初始温度298K，临界点2098K" translatedTo "Initial temperature 298K, critical point 2098K")
-        function("每秒产热公式：H=K×1.27×(E×10)^1.88，结果向上取整" translatedTo "Heat generation formula per second: H=K×1.27×(E×10)^1.88, result rounded up")
+        function("当前温度为K时，每秒产热公式：H=K×1.27×(E/100)^1.88，结果向上取整" translatedTo "Heat generation formula per second: H=K×1.27×(E/100)^1.88 where K is the current temperature. Result rounded up")
         function("冷却液系数(K/mB/s)：蒸馏水1，液氮4，液氦80" translatedTo "Coolant coefficients(K/mB/s): Distilled Water 1, Liquid Nitrogen 4, Liquid Helium 80")
         content("冷却后分别输出蒸汽、气态氮、气态氦" translatedTo "Outputs Steam, Gaseous Nitrogen, Gaseous Helium respectively after cooling")
-        command("每秒将消耗全部输入的中子调节剂/冷却剂" translatedTo "Will consume all neutron moderators/coolants input per second")
-        function("每秒温度变化：ΔT=H-C×M，结果向下取整" translatedTo "Temperature change per second: ΔT=H-C×M, result rounded down")
+        command("每秒将消耗全部输入的中子调节剂，不会过量地消耗冷却剂" translatedTo "Will consume all neutron moderators input per second. Won't consume excessive amounts of coolant(s).")
+        function("每秒温度变化：ΔT=H-C×M，C×M为消耗的冷却剂提供的冷却量，结果向下取整" translatedTo "Temperature change per second: ΔT=H-C×M, where C×M is the cooling capacity provided by the consumed coolant(s). Result rounded down")
     }
 
     // 燃料电池发电机
