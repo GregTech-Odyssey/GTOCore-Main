@@ -159,7 +159,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         fuelEnergyPerUnit = (long) (fuelEnergyPerUnit * bonusEfficiency);
         if (fuelEnergyPerUnit == 0) return null;
         if (sensorPart != null) {
-            sensorPart.update((float) bonusEfficiency * 4.0f);
+            sensorPart.update((float) bonusEfficiency);
         }
 
         // find existing electrolytes
@@ -217,7 +217,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         super.customText(textList);
         if (!isGenerator) {
             textList.add(
-                    Component.translatable(FUEL_EFFICIENCY, FormattingUtil.formatNumber2Places(bonusEfficiency * 400) + "%"));
+                    Component.translatable(FUEL_EFFICIENCY, FormattingUtil.formatNumber2Places(bonusEfficiency * 100) + "%"));
             textList.add(
                     Component.translatable(EFFICIENCY_DECAY, DECIMAL_FORMAT_4F.format((1 - accumulatedEfficiencyDecay) * 100) + "%"));
         }
@@ -307,12 +307,12 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         public void getInfoComponents(List<Component> components) {
             components.add(Component.translatable(MEMBRANE_TIER, Component.literal(String.valueOf(tier)).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
             components.add(Component.translatable(DISCHARGE_ELECTROLYTE, electrolyte.getLocalizedName().withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GRAY));
-            components.add(Component.translatable(ABSORPTION_EFFICIENCY, Component.literal(FormattingUtil.formatNumber2Places(efficiencyBonus * 400) + "%").withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
+            components.add(Component.translatable(ABSORPTION_EFFICIENCY, Component.literal(FormattingUtil.formatNumber2Places(GTOCore.isExpert() ? efficiencyBonusExpertMode * 100 : efficiencyBonus * 100) + "%").withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
             if (!GTOCore.isEasy()) {
-                if (efficiencyBonusDecayFactor == 1.0d) {
+                if ((GTOCore.isExpert() ? efficiencyBonusDecayFactorExpertMode : efficiencyBonusDecayFactor) == 1.0d) {
                     components.add(Component.translatable(ABSORPTION_EFFICIENCY_NO_DECAY).withStyle(ChatFormatting.GRAY));
                 } else {
-                    components.add(Component.translatable(ABSORPTION_EFFICIENCY_DECAY, Component.literal("x" + DECIMAL_FORMAT_4F.format(efficiencyBonusDecayFactor)).withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
+                    components.add(Component.translatable(ABSORPTION_EFFICIENCY_DECAY, Component.literal("x" + DECIMAL_FORMAT_4F.format(GTOCore.isExpert() ? efficiencyBonusDecayFactorExpertMode : efficiencyBonusDecayFactor)).withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
                 }
             }
         }

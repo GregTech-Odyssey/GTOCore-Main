@@ -362,7 +362,70 @@ jobs:
           if [ -f libs/gtolib-protected.PROTECTED ]; then
             echo "---- gtolib-protected.PROTECTED ----"
             cat libs/gtolib-protected.PROTECTED
+            # gtolib 预构建身份闸。本 job 是 submodules=false（私有仓 + pull_request_target 会执行
+            # PR 侧代码，不能注入 GTOLib 凭据），算不出源码指纹；改比对主仓 tree 里的 gitlink 与
+            # 重建时写进侧车的 commit。不一致 = 指针动了但 libs/ 没重建 → 会签出跑旧字节码的产物。
+            POINTER=$(git ls-tree HEAD GTOLib | awk '$2 == "commit" { print $3 }' || true)
+            RECORDED=$(sed -n 's/^gtolibCommit=//p' libs/gtolib-protected.PROTECTED)
+            echo "gtolib gitlink  = ${POINTER:-<none>}"
+            echo "gtolib recorded = ${RECORDED:-<none>}"
+            if [ -z "$POINTER" ]; then
+              echo "::error::无法从主仓 tree 读出 GTOLib gitlink"
+              exit 1
+            fi
+            case "$RECORDED" in
+              "")
+                echo "::error::.PROTECTED 缺少 gtolibCommit —— 该预构建由旧流水线生成。请由有 GTOLib 权限者重建：./gradlew buildGtolibProtected，然后把 GTOLib 指针 + libs/gtolib-protected.jar + .PROTECTED 一并提交"
+                exit 1
+                ;;
+              *-dirty)
+                echo "::error::预构建来自未提交的 GTOLib 工作区（$RECORDED）；请先提交并推送 GTOLib 再重建"
+                exit 1
+                ;;
+              "$POINTER")
+                echo "OK: gtolib pointer == prebuilt record"
+                ;;
+              *)
+                echo "::error::GTOLib 指针($POINTER) 与预构建记录($RECORDED) 不一致 —— 指针动了但 libs/gtolib-protected.jar 没重建"
+                exit 1
+                ;;
+            esac
           fi
+          # 明文 mixin 命名空间契约（本 job 是 submodules=false，走的正是无权限开发者那条路）。
+          # dev 预构建必须 named、发行单轨必须 SRG；搞反了 build 依然全绿，只在 runClient
+          # 装载 mixin 时炸 @Shadow "was not located in the target class"（m_91294_ 事故）。
+          python3 - <<'PY'
+          import os, re, sys, zipfile
+
+          PAT = re.compile(rb'[mf]_\d+_')
+
+          def check(path, expect):
+              if not os.path.exists(path):
+                  sys.exit(f'::error::{path} 不存在')
+              zf = zipfile.ZipFile(path)
+              names = [n for n in zf.namelist()
+                       if n.startswith('com/gtolib/mixin/') and n.endswith('.class')]
+              if not names:
+                  sys.exit(f'::error::{path} 里没有明文 mixin 类')
+              blobs = {n: zf.read(n) for n in names}
+              srg = [n for n in names if PAT.search(blobs[n])]
+              lvt = [n for n in names if b'LocalVariableTable' in blobs[n]]
+              actual = 'srg' if srg else 'named'
+              print(f'{path}: {len(names)} 个 mixin 类, {len(srg)} 个含 SRG 成员名 -> {actual} (期望 {expect}), LVT={len(lvt)}')
+              if actual != expect:
+                  sample = ', '.join(n.rsplit('/', 1)[-1] for n in (srg or names)[:5])
+                  sys.exit(f'::error::{path} mixin 明文命名空间错误：期望 {expect}，实际 {actual} ({sample})')
+              # ProGuard 的 -keepattributes 不含 LocalVariableTable。出现 LVT 说明明文
+              # 档 gtolib-unprotected.jar 的字节混进了发布产物。
+              if lvt:
+                  sample = ', '.join(n.rsplit('/', 1)[-1] for n in lvt[:5])
+                  sys.exit(f'::error::{path} 明文 mixin 含 LocalVariableTable（{len(lvt)}/{len(names)}），'
+                           f'字节来自明文链而非受保护链 ({sample})')
+
+          check('libs/gtolib-protected.jar', 'named')
+          check('libs/gtolib-release.jar', 'srg')
+          print('OK: gtolib mixin 明文命名空间符合契约')
+          PY
 
       - name: Build and sign
         env:
