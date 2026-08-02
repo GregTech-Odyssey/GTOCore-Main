@@ -1011,6 +1011,13 @@ public final class GTORecipeTypes {
                 return "";
             })
             .setSound(GTSoundEntries.MOTOR);
+
+    public static final RecipeType BEAM_GUIDED_COMPUTATION_TESTING_RECIPES = register("beam_guided_computation_testing", "射线束引导计算测试", ELECTRIC)
+            .setMaxIOSize(2, 1, 2, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setEUIO(IO.IN)
+            .setSound(GTSoundEntries.COMPUTATION);
+
     public static final RecipeType BIO_RESEARCH_RECIPES = register("bio_research", "生物研究", ELECTRIC)
             .setMaxIOSize(4, 1, 2, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)

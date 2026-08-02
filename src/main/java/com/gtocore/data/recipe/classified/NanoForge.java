@@ -351,5 +351,20 @@ final class NanoForge {
                 .duration(16000)
                 .addData(GTORecipeDataKeys.NANO_FORGE_TIER, 1)
                 .save();
+        NANO_FORGE_RECIPES.builder("photonic_kristallite_nanites")
+                .notConsumable(GTOItems.NON_LINEAR_OPTICAL_LENS)
+                .inputItems(TagPrefix.block, GTOMaterials.PhotonicKristallite, 8)
+                .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 32)
+                .inputItems(GTOItems.LOW_FREQUENCY_LASER, 4)
+                .inputItems(GTOItems.MEDIUM_FREQUENCY_LASER, 4)
+                .inputItems(GTOItems.HIGH_FREQUENCY_LASER, 4)
+                .outputItems(GTOTagPrefix.NANITES, GTOMaterials.PhotonicKristallite)
+                .inputFluids(GTOMaterials.NitinolA, 10000)
+                .inputFluids(GTOMaterials.CarbonFiberReinforcedEpoxyComposite, 10000)
+                .inputFluids(GTMaterials.SolderingAlloy, 20000)
+                .EUt(1048576)
+                .addData(GTORecipeDataKeys.NANO_FORGE_TIER, 1)
+                .duration(6000)
+                .save();
     }
 }

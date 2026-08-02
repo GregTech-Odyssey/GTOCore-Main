@@ -161,6 +161,18 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
     }
 
     @JvmField
+    val LaserComputationTestingPlatformMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("laser_computation_testing_platform_machine")
+
+        story("光子计算是GTO集团近年重点研究的方向之一" translatedTo "Photon computation is one of the key research directions of GTO Group in recent years")
+        story("攻克了它，便能使设备的计算与处理能力达到前所未有的高度" translatedTo "Overcoming it will enable the computing and processing capabilities of devices to reach unprecedented heights")
+        story("还能让各种杂碎的产线也能得到驾驭超高能的能力，生产力获得史诗级的飞跃" translatedTo "It can also allow various miscellaneous production lines to gain the ability to harness ultra-high energy, resulting in an epic leap in productivity")
+
+        section(MainFunction)
+        content("机制施工中..." translatedTo "Mechanism under construction...")
+    }
+
+    @JvmField
     val DataHolderUniversal: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("data_holder_universal")
 

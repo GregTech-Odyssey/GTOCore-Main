@@ -89,6 +89,7 @@ public final class Data {
         RecipeBuilder.initialization();
         RecipeFilter.init();
 
+        OpticalRecipe.init();
         ResearchRecipes.init();
 
         ComponentRecipes.init();

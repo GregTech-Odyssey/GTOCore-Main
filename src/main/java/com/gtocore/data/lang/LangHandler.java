@@ -226,6 +226,9 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.radioactivity_end", "运行结束时辐射剂量：%s Sv", "Radiation Dose at the End of Operation: %s Sv");
         addCNEN("gtocore.recipe.ray_requirement.1", "需要%snm~%snm波长,%sa.u.以上强度,%s°偏振的光束", "Requires a beam with wavelength %snm~%snm, intensity above %sa.u., and polarization of %s°");
         addCNEN("gtocore.recipe.ray_requirement.2", "需要%snm~%snm波长,%sa.u.以上强度的光束", "Requires a beam with wavelength %snm~%snm and intensity above %sa.u.");
+        addCNEN("gtocore.recipe.ray_requirement.wavelength", "光束波长：%s nm~%s nm", "Ray Wavelength: %s nm~%s nm");
+        addCNEN("gtocore.recipe.ray_requirement.intensity", "光束强度：>%s a.u.", "Ray Intensity: >%s a.u.");
+        addCNEN("gtocore.recipe.ray_requirement.polarization", "光束偏振：%s°", "Ray Polarization: %s°");
         addCNEN("gtocore.recipe.vacuum.tier", "真空等级：%s", "Vacuum Tier: %s");
         addCNEN("gtocore.recipe.restricted_machine", "只能运行在：%s", "Only runnable on: %s");
         addCNEN("gtocore.recipe.heat.temperature", "需要外部热源：%s K", "External heat source is required: %s K");

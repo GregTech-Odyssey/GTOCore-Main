@@ -205,20 +205,20 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
         }
 
         private void set(long tick, long intensity) {
-            int index = Math.floorMod(tick, AVERAGE_WINDOW_TICKS);
-            ticks[index] = tick;
+            int index = Math.floorMod(tick / 5, AVERAGE_WINDOW_TICKS);
+            ticks[index] = tick / 5;
             intensities[index] = intensity;
         }
 
         private long get(long tick) {
-            int index = Math.floorMod(tick, AVERAGE_WINDOW_TICKS);
-            return ticks[index] == tick ? intensities[index] : 0L;
+            int index = Math.floorMod(tick / 5, AVERAGE_WINDOW_TICKS);
+            return ticks[index] == tick / 5 ? intensities[index] : 0L;
         }
 
         private boolean hasRecentSample(long now) {
-            long oldest = now - AVERAGE_WINDOW_TICKS + 1L;
+            long oldest = now / 5 - AVERAGE_WINDOW_TICKS + 1L;
             for (int i = 0; i < ticks.length; i++) {
-                if (ticks[i] >= oldest && ticks[i] <= now && intensities[i] > 0) return true;
+                if (ticks[i] >= oldest && ticks[i] <= now / 5 && intensities[i] > 0) return true;
             }
             return false;
         }

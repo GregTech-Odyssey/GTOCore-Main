@@ -10,6 +10,10 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.network.chat.Component;
 
+import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import org.apache.commons.lang3.mutable.MutableInt;
+
 import java.util.HashMap;
 
 public final class BeamCondition extends RecipeCondition {
@@ -46,6 +50,18 @@ public final class BeamCondition extends RecipeCondition {
         return Component.translatable("gtocore.recipe.ray_requirement.1", minWavelength, maxWavelength, minIntensity, polarization);
     }
 
+    public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {
+        group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable("gtocore.recipe.ray_requirement.wavelength", minWavelength, maxWavelength)));
+        group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable("gtocore.recipe.ray_requirement.intensity", minIntensity)));
+        if (hasPolarization) {
+            group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable("gtocore.recipe.ray_requirement.polarization", polarization)));
+        }
+    }
+
+    public int getInfoHeight(GTRecipeDefinition recipe) {
+        return hasPolarization ? 30 : 20;
+    }
+
     @Override
     public boolean testCondition(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         if (!(holder instanceof IMultiController controller)) return false;
@@ -61,7 +77,7 @@ public final class BeamCondition extends RecipeCondition {
         for (var entry : samples.entrySet()) {
             var key = entry.getKey();
             if (key.waveLength() < minimumWavelength || key.waveLength() > maximumWavelength) continue;
-            if (!hasPolarization && Float.compare(key.polarization(), requiredPolarization) != 0) continue;
+            if (hasPolarization && Float.compare(key.polarization(), requiredPolarization) != 0) continue;
             if (average(entry.getValue()) >= minIntensity) return true;
         }
         return false;

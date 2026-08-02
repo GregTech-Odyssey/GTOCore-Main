@@ -364,6 +364,14 @@ public final class ExResearchMachines {
                     GTCEu.id("block/machine/part/object_holder_active")))
             .notAllowSharedTooltips()
             .register();
+    public static final MachineDefinition OPTICAL_DATA_HOLDER = machine("optical_data_holder", "光学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.OPTICS, 256))
+            .tier(UHV)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .allRotation()
+            .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/laser_safe_engraving_casing"), GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
 
     public static final MachineDefinition ANALYZE_HOLDER = machine("analyze_holder", "分析支架", AnalyzeHolderMachine::new)
             .tier(IV)
@@ -576,5 +584,35 @@ public final class ExResearchMachines {
                     .where(' ', any())
                     .build())
             .workableCasingRenderer(GTOCore.id("block/casings/stable_base_casing"), GTCEu.id("block/multiblock/research_station"))
+            .register();
+    // 激光计算测试平台
+    public static final MultiblockMachineDefinition LASER_COMPUTATION_TESTING_PLATFORM = multiblock("laser_computation_testing_platform", "激光计算测试平台", LaserComputationTestingPlatformMachine::new)
+            .nonYAxisRotation()
+            .recipeTypes(BEAM_GUIDED_COMPUTATION_TESTING_RECIPES)
+            .tooltipsSupplier(GTOMachineTooltipsA.LaserComputationTestingPlatformMachineTooltips)
+            .nonYAxisRotation()
+            .block(GCYMBlocks.CASING_LASER_SAFE_ENGRAVING)
+            .pattern(definition -> MultiBlockFileReader.start(definition)
+                    .where('A', blocks(GCYMBlocks.CASING_LASER_SAFE_ENGRAVING.get()))
+                    .where('B', blocks(GTOMachines.BEAM_ACCESS_HATCH.get()))
+                    .where('C', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get()))
+                    .where('D', blocks(GTOBlocks.OPTICAL_RESONANCE_CHAMBER.get()))
+                    .where('E', blocks(GTBlocks.COMPUTER_CASING.get()))
+                    .where('F', blocks(GTOBlocks.LASER_CASING.get()))
+                    .where('G', blocks(GTBlocks.ADVANCED_COMPUTER_CASING.get()))
+                    .where('H', blocks(GTOBlocks.ELECTRON_PERMEABLE_AMPROSIUM_COATED_GLASS.get()))
+                    .where('I', blocks(GTOBlocks.IRIDIUM_CASING.get()))
+                    .where('J', blocks(GTOBlocks.OPTICAL_DYNAMIC_COATING_INSTRUMENT_PROTECTIVE_SHIELD_GLASS.get()))
+                    .where('K', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
+                    .where('L', blocks(GTOBlocks.HIGH_ENERGY_LASER_EMITTER.get()))
+                    .where('M', blocks(GCYMBlocks.CASING_LASER_SAFE_ENGRAVING.get())
+                            .or(autoAbilities(definition.getRecipeTypes()))
+                            .or(abilities(MAINTENANCE).setExactLimit(1))
+                            .or(blocks(OPTICAL_DATA_HOLDER.get()).setExactLimit(1)))
+                    .where('N', controller(definition))
+                    .where('O', blocks(GTOMachines.EXCITATION_CRYSTAL.get()))
+                    .where(' ', any())
+                    .build())
+            .workableCasingRenderer(GTCEu.id("block/casings/gcym/laser_safe_engraving_casing"), GTCEu.id("block/multiblock/research_station"))
             .register();
 }
