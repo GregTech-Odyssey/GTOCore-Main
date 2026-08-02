@@ -980,7 +980,7 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.COMPUTATION)
             .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.data_form_density_testing.density", FormattingUtil.formatNumber2Places(data.data.getInt(GTORecipeDataKeys.DATA_TESTING_LEVEL))));
 
-    public static final RecipeType BEAM_GENERATE_RECIPES = register("ray_beam_generate", "射线束生成", ELECTRIC)
+    public static final RecipeType BEAM_GENERATE_RECIPES = register("beam_generate", "射线束生成", ELECTRIC)
             .setMaxIOSize(2, 0, 0, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .addDataInfo(data -> {
@@ -1000,7 +1000,7 @@ public final class GTORecipeTypes {
             .setEUIO(IO.IN)
             .setSound(GTSoundEntries.MOTOR);
 
-    public static final RecipeType BEAM_POLARIZE_RECIPES = register("ray_beam_polarize", "射线束偏转", DUMMY)
+    public static final RecipeType BEAM_POLARIZE_RECIPES = register("beam_polarize", "射线束偏转", DUMMY)
             .setMaxIOSize(0, 0, 1, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .addDataInfo(data -> {
