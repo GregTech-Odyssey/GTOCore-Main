@@ -41,8 +41,11 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
 
     private final Object2ObjectOpenHashMap<BeamPassKey, ActiveBeam> activeBeams = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<BeamKey, IntensityHistory> intensityHistories = new Object2ObjectOpenHashMap<>();
+    /** Packed as [wavelength, Float.floatToIntBits(polarization), ...]. */
     @SyncToClient
-    private Component[] receivedBeamDisplay = new Component[0];
+    private int[] receivedBeamProperties = new int[0];
+    @SyncToClient
+    private long[] receivedBeamIntensities = new long[0];
     private TickableSubscription tickSubscription;
     private long sampledTick = Long.MIN_VALUE;
     private boolean activeBeamsDirty = true;
@@ -99,11 +102,19 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
 
     private void addDisplayText(List<Component> textList) {
         textList.add(Component.translatable("gtocore.machine.ray_beam_part.received_beams").withStyle(ChatFormatting.GOLD));
-        if (receivedBeamDisplay.length == 0) {
+        int beamCount = Math.min(receivedBeamProperties.length / 2, receivedBeamIntensities.length);
+        if (beamCount == 0) {
             textList.add(Component.translatable("gtocore.machine.ray_beam_part.no_received_beam").withStyle(ChatFormatting.GRAY));
             return;
         }
-        textList.addAll(Arrays.asList(receivedBeamDisplay));
+        for (int i = 0; i < beamCount; i++) {
+            var key = new BeamKey(receivedBeamProperties[i * 2], Float.intBitsToFloat(receivedBeamProperties[i * 2 + 1]));
+            textList.add(Component.translatable("gtocore.machine.ray_beam_part.received_beam",
+                    key.waveLength(),
+                    String.format(Locale.ROOT, "%.2f", Math.toDegrees(key.polarization())),
+                    FormattingUtil.formatNumbers(receivedBeamIntensities[i]))
+                    .withStyle(ChatFormatting.AQUA));
+        }
     }
 
     /** Adds this receiver's last-second samples to arrays ordered from oldest to newest. */
@@ -157,18 +168,22 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
     }
 
     private void updateReceivedBeamDisplay(Map<BeamKey, Long> currentIntensities) {
-        var display = currentIntensities.entrySet().stream()
+        var entries = currentIntensities.entrySet().stream()
                 .filter(entry -> entry.getValue() > 0)
                 .sorted(Comparator.comparingInt((Map.Entry<BeamKey, Long> entry) -> entry.getKey().waveLength())
                         .thenComparingDouble(entry -> entry.getKey().polarization()))
-                .map(entry -> Component.translatable("gtocore.machine.ray_beam_part.received_beam",
-                        entry.getKey().waveLength(),
-                        String.format(Locale.ROOT, "%.2f", Math.toDegrees(entry.getKey().polarization())),
-                        FormattingUtil.formatNumbers(entry.getValue()))
-                        .withStyle(ChatFormatting.AQUA))
-                .toArray(Component[]::new);
-        if (!Arrays.equals(receivedBeamDisplay, display)) {
-            receivedBeamDisplay = display;
+                .toList();
+        var properties = new int[entries.size() * 2];
+        var intensities = new long[entries.size()];
+        for (int i = 0; i < entries.size(); i++) {
+            var entry = entries.get(i);
+            properties[i * 2] = entry.getKey().waveLength();
+            properties[i * 2 + 1] = Float.floatToIntBits(entry.getKey().polarization());
+            intensities[i] = entry.getValue();
+        }
+        if (!Arrays.equals(receivedBeamProperties, properties) || !Arrays.equals(receivedBeamIntensities, intensities)) {
+            receivedBeamProperties = properties;
+            receivedBeamIntensities = intensities;
             requestSync();
         }
     }

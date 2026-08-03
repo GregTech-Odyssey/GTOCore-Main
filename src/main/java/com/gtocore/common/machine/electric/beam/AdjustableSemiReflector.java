@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IBeamOperator {
@@ -110,11 +109,12 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
 
     private void tick() {
         var manager = BeamManager.get(getLevel());
-        for (var entry : List.copyOf(incidents.entrySet())) {
-            var incident = entry.getValue();
-            if (incidents.get(entry.getKey()) != incident) continue;
+        for (var iter = incidents.entrySet().iterator(); iter.hasNext();) {
+            var it = iter.next();
+            var incident = it.getValue();
+            if (incidents.get(it.getKey()) != incident) continue;
             if (!manager.isPassActive(incident.context)) {
-                incidents.remove(entry.getKey(), incident);
+                iter.remove();
                 transmittedDirty = true;
             }
         }
@@ -122,11 +122,15 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
         transmittedDirty = false;
 
         var aggregates = collectTransmittedBeams();
-        for (var entry : List.copyOf(transmittedBeams.entrySet())) {
+        for (var iter = transmittedBeams.entrySet().iterator(); iter.hasNext();) {
+            var entry = iter.next();
             if (aggregates.containsKey(entry.getKey())) continue;
-            transmittedBeams.remove(entry.getKey(), entry.getValue());
-            if (entry.getValue() == null) continue;
+            if (entry.getValue() == null) {
+                iter.remove();
+                continue;
+            }
             if (entry.getValue().beamId >= 0) manager.unregister(entry.getValue().beamId);
+            iter.remove();
         }
         for (var entry : aggregates.entrySet()) {
             var aggregate = entry.getValue();
@@ -218,7 +222,7 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
 
     private static final class TransmittedBeam {
 
-        private long beamId = -1;
+        private int beamId = -1;
         private TransmittedSnapshot snapshot;
     }
 
@@ -245,7 +249,7 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
     }
 
     private static int comparePass(BeamPassContext first, BeamPassContext second) {
-        int beamComparison = Long.compare(first.beamId(), second.beamId());
+        int beamComparison = Integer.compare(first.beamId(), second.beamId());
         return beamComparison != 0 ? beamComparison : Integer.compare(first.passIndex(), second.passIndex());
     }
 

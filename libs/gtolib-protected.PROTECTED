@@ -1,8 +1,8 @@
 protected=true
 method=proguard+gto-seal
 runtime=full-seal-runtime
-updated=Mon Aug 03 02:39:43 CST 2026
-size=8025172
-fingerprint=00f20d5e0ae5e7cfd122d3e9b09c6bdce9db70d418cb573e6bdef9218bb25f61
-gtolibCommit=2763a54b692e35701f2c9df0822f67ca8b8d90ef
-jarSha256=12c2d248e63fa95f2bf9324203f5610ca3dd5f7da3c34e93ee955326e482efe7
+updated=Mon Aug 03 13:15:36 CST 2026
+size=8023994
+fingerprint=96947e71c74e3bbf300be73ccdcaf7321dd6882f7415941c81b6c9934ba0cab7
+gtolibCommit=2763a54b692e35701f2c9df0822f67ca8b8d90ef-dirty
+jarSha256=e18351573a3a389671695f8ff2c357404f768f885563045139edc49494abec37

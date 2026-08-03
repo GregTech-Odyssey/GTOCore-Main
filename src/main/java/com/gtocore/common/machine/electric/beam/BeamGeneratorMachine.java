@@ -44,7 +44,7 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
     private float phiRad;
 
     private TickableSubscription tickSubscription;
-    private long beamId = -1;
+    private int beamId = -1;
     private long emittedIntensity = -1;
     private int emittedWaveLength = -1;
     private int emittedThetaBits;
