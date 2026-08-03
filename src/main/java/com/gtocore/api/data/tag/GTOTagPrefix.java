@@ -3,10 +3,12 @@ package com.gtocore.api.data.tag;
 import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.client.renderer.item.HaloItemRenderer;
 import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtocore.common.machine.multiblock.generator.FullCellGenerator;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.NewDataAttributes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.chemical.material.GTOMaterialBuilder;
 import com.gtolib.utils.RLUtils;
@@ -20,6 +22,7 @@ import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.TagPrefixItem;
 import com.gregtechceu.gtceu.api.item.component.ICustomRenderer;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -159,6 +162,15 @@ public final class GTOTagPrefix extends TagPrefix {
                     mInfo.getInfoComponents(list);
                 }
             });
+
+    @SuppressWarnings({ "Convert2MethodRef", "DataFlowIssue" })
+    public static final TagPrefix CONNECTING_ROD = new GTOTagPrefix("connecting_rod")
+            .tooltip((m, l) -> {
+                var mInfo = BioOscillationGenerator.BioOscillationGeneratorData.CONNECTING_ROD_TIER.get(m);
+                l.addAll(NewDataAttributes.LEVEL.create(Component.literal(String.valueOf(mInfo)).withStyle(ChatFormatting.GRAY)).get());
+                var durability = BioOscillationGenerator.BioOscillationGeneratorData.CONNECTING_ROD_DURABILITY.get(m);
+                l.add(Component.translatable("item.gtceu.tool.tooltip.max_uses", FormattingUtil.formatNumbers(durability)).withStyle(ChatFormatting.GRAY));
+            }).idPattern("%s_connecting_rod").defaultTagPath("connecting_rods/%s").maxDamage((m) -> BioOscillationGenerator.BioOscillationGeneratorData.CONNECTING_ROD_DURABILITY.get(m)).unformattedTagPath("connecting_rods").materialAmount(GTValues.M * 3).materialIconType(new MaterialIconType("connecting_rod")).unificationEnabled(true).generateItem(true).enableRecycling().generationCondition(m -> BioOscillationGenerator.BioOscillationGeneratorData.CONNECTING_ROD_DURABILITY.containsKey(m));
 
     private GTOTagPrefix useRenderer(final ICustomRenderer renderer) {
         this.customRenderer = renderer;

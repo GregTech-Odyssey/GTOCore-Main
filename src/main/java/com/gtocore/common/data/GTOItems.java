@@ -942,6 +942,17 @@ public final class GTOItems {
     public static final ItemEntry<Item> SPOOLS_LARGE = register("spools_large", "大型线轴");
     public static final ItemEntry<Item> SPOOLS_JUMBO = register("spools_jumbo", "巨型线轴");
 
+    // 生物心肌细胞簇
+    public static final ItemEntry<Item> BIO_CARDIOMYOCYTE_CLUSTER = register("bio_cardiomyocyte_cluster", "生物心肌细胞簇");
+    // 突变心肌细胞簇
+    public static final ItemEntry<Item> MUTANT_CARDIOMYOCYTE_CLUSTER = register("mutant_cardiomyocyte_cluster", "突变心肌细胞簇");
+    // 龙心肌细胞簇
+    public static final ItemEntry<Item> DRAGON_CARDIOMYOCYTE_CLUSTER = register("dragon_cardiomyocyte_cluster", "龙心肌细胞簇");
+    // 改造龙心
+    public static final ItemEntry<Item> MODIFIED_DRAGON_HEART = register("modified_dragon_heart", "改造龙心");
+    // 觉醒龙心
+    public static final ItemEntry<Item> AWAKENED_DRAGON_HEART = register("awakened_dragon_heart", "觉醒龙心");
+
     public static final ItemEntry<Item> COLORFUL_MYSTICAL_FLOWER = register("colorful_mystical_flower", "多彩神秘花瓣");
     public static final ItemEntry<Item> GAIA_CORE = register("gaia_core", "§e盖亚之核");
     public static final ItemEntry<Item> UNSTABLE_GAIA_SOUL = item("unstable_gaia_soul", "不稳定的盖亚之魂").properties(p -> p.rarity(Rarity.UNCOMMON)).register();

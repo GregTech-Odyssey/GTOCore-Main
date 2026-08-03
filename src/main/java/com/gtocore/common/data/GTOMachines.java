@@ -830,6 +830,13 @@ public final class GTOMachines {
             .notAllowSharedTooltips()
             .overlayTieredHullRenderer("neutron_sensor")
             .register();
+    public static final MachineDefinition TISSUE_SENSOR = machine("tissue_sensor", "组织传感器", SensorPartMachine::new)
+            .tier(ZPM)
+            .allRotation()
+            .tooltips(GTOMachineTooltips.SensorTooltips)
+            .notAllowSharedTooltips()
+            .overlayTieredHullRenderer("neutron_sensor")
+            .register();
 
     public static final MachineDefinition GRIND_BALL_HATCH = machine("grind_ball_hatch", "研磨球仓", BallHatchPartMachine::new)
             .tier(IV)
@@ -1199,6 +1206,14 @@ public final class GTOMachines {
             .tooltips(GTOMachineTooltipsA.BeamAccessHatchTooltips)
             .overlayTieredHullRenderer("neutron_sensor")
             .tier(UV)
+            .register();
+
+    public static final MachineDefinition CONNECTING_ROD_HATCH = machine("connecting_rod_hatch", "连接杆仓", ConnectingRodHatch::new)
+            .tier(ZPM)
+            .allRotation()
+            .tooltips(GTOMachineTooltipsA.ConnectingRodHatchTooltips)
+            .notAllowSharedTooltips()
+            .overlayTieredHullRenderer("catalyst_hatch")
             .register();
 
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)

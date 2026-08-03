@@ -1287,6 +1287,12 @@ public final class GTOMaterials {
     public static Material RemnantErosionCatalyst;
     public static Material InactiveRemnantErosionCatalyst;
 
+    public static Material EssenceMediumRaw;
+    public static Material DragonSoulMediumRaw;
+    public static Material SoulInfusionSolvent;
+    public static Material WyvernInfusionSolvent;
+    public static Material DraconicInfusionSolvent;
+
     public static void init() {
         GTMaterialExtend.init();
         MagicMaterial.init();
@@ -1296,7 +1302,7 @@ public final class GTOMaterials {
         MaterialSpaceEra.init();
         MaterialComposite.init();
         MaterialIgnored.init();
-        FiberExtruderTempDefinitions.init();
+        MaterialPostInit.init();
 
         MATERIAL_VOLTAGE = Map.of(
                 GTMaterials.Gold, VA[LV],

@@ -259,6 +259,18 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
+    val SupercriticalPhaseBasicResearch = TechTree.builder("supercritical_phase_basic_research", "超临界相态基础研究", "Supercritical Phase Basic Research")
+        .description("研究物质在极端条件下处于超临界相态的物理特性与应用", "Study the physical properties and applications of matter in a supercritical phase under extreme conditions")
+        .icon(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTOMaterials.SupercriticalSteam)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(32 * 20 * 300L)
+                .setEurekaFluid(GTOMaterials.SupercriticalSteam.fluid, 1.0F)
+                .build(),
+        )
+        .build()
+
+    @JvmField
     val TokamakFusionReactor = TechTree.builder("tokamak_fusion_reactor", "托卡马克聚变反应堆", "Tokamak Fusion Reactor")
         .description("掌握可控的托卡马克聚变反应堆技术，实现元素的聚变与等离子体的生产", "Master the technology of controllable Tokamak fusion reactors, achieving element fusion and plasma production")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTBlocks.SUPERCONDUCTING_COIL, 1.0f).build())
@@ -708,6 +720,21 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(256 * 20 * 2400L)
                 .addMaterialNeeded(MECHANICS, 32)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:high_frequency_laser"), 0.8F)
+                .build(),
+        )
+        .tier(2)
+        .build()
+
+    @JvmField
+    val BioEnergyConversion = TechTree.builder("bio_energy_conversion", "生物能量转换技术", "Bio-Energy Conversion Technology")
+        .description("利用生物体的代谢过程，将生物能量转化为可用的电能，实现绿色能源的高效利用", "Utilize the metabolic processes of organisms to convert bio-energy into usable electrical energy, achieving efficient use of green energy")
+        .icon(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"))
+        .prerequisites(BiowareTech)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(256 * 20 * 2400L)
+                .addMaterialNeeded(BIOLOGY, 64)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"), 0.7F)
                 .build(),
         )
         .tier(2)

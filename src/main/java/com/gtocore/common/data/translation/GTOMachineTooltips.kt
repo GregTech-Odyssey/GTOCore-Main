@@ -450,7 +450,7 @@ object GTOMachineTooltips {
     }
 
     @JvmField
-    var spaceShieldHatchTooltips: ComponentListSupplier = ComponentListSupplier {
+    val spaceShieldHatchTooltips: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("space_shield_hatch")
 
         content("在GTO寰宇重工的空间站技术还没完全完善的时候科研人员紧急开发出的小型防护罩" translatedTo "A small protective shield urgently developed by researchers when GTO Universal Heavy Industries' space station technology was not fully developed")

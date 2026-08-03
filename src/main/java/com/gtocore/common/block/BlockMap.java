@@ -3,6 +3,7 @@ package com.gtocore.common.block;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.machines.GTAEMachines;
 
+import com.gtolib.api.GTOValues;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.GTOUtils;
@@ -58,6 +59,9 @@ public final class BlockMap {
     public static final Int2ObjectMap<Supplier<?>> COMPUTER_HEAT_MAP = new Int2ObjectOpenHashMap<>();
 
     public static final Int2ObjectMap<Supplier<?>> HERMETIC_CASING = new Int2ObjectOpenHashMap<>();
+
+    public static final Int2ObjectMap<Supplier<?>> ENERGY_CASING = new Int2ObjectOpenHashMap<>();
+    public static final Int2ObjectMap<Supplier<?>> MACHINING_CASING = new Int2ObjectOpenHashMap<>();
 
     public static final Reference2ObjectOpenHashMap<Block, String> BLOCK_CATEGORY_MAP = new Reference2ObjectOpenHashMap<>();
 
@@ -211,6 +215,15 @@ public final class BlockMap {
 
         tiers1 = Arrays.stream(GTMachines.ROTOR_HOLDER).filter(Objects::nonNull).distinct().sorted(Comparator.comparingInt(MachineDefinition::getTier)).map(MachineDefinition::get).collect(Collectors.toList());
         MAP.put(rotor_hatch, tiers1.toArray(new Block[0]));
+
+        ENERGY_CASING.put(1, GTOBlocks.ENERGY_CONTROL_CASING_MK1);
+        ENERGY_CASING.put(2, GTOBlocks.ENERGY_CONTROL_CASING_MK2);
+        ENERGY_CASING.put(3, GTOBlocks.ENERGY_CONTROL_CASING_MK3);
+        MACHINING_CASING.put(1, GTOBlocks.MACHINING_CONTROL_CASING_MK1);
+        MACHINING_CASING.put(2, GTOBlocks.MACHINING_CONTROL_CASING_MK2);
+        MACHINING_CASING.put(3, GTOBlocks.MACHINING_CONTROL_CASING_MK3);
+        MAP.put(GTOValues.ENERGY_CONTROL_MODULE_TIER, ENERGY_CASING.values().stream().map(Supplier::get).toArray(Block[]::new));
+        MAP.put(GTOValues.MACHINING_CONTROL_MODULE_TIER, MACHINING_CASING.values().stream().map(Supplier::get).toArray(Block[]::new));
 
         MAP.forEach((category, blocks) -> {
             for (Block block : blocks) {

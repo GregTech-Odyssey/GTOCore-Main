@@ -605,6 +605,7 @@ final class AssemblyLineA {
                 .EUt(30720)
                 .duration(400)
                 .scanner(GeneratorMultiblock.SUPERCRITICAL_MEGA_STEAM_TURBINE.asItem())
+                .researchNode(SupercriticalPhaseBasicResearch)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("black_hole_data_access_hatch")
@@ -663,6 +664,7 @@ final class AssemblyLineA {
                 .inputFluids(GTMaterials.SolderingAlloy, 1296)
                 .EUt(480)
                 .duration(1440)
+                .researchNode(BaseMEMachines)
                 .scanner(GTAEMachines.ITEM_IMPORT_BUS_ME.asItem())
                 .save();
 
@@ -675,6 +677,7 @@ final class AssemblyLineA {
                 .inputFluids(GTMaterials.SolderingAlloy, 1296)
                 .EUt(480)
                 .duration(1440)
+                .researchNode(BaseMEMachines)
                 .scanner(GTAEMachines.FLUID_IMPORT_HATCH_ME.asItem())
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("me_input_buffer_part_machine")
@@ -695,6 +698,49 @@ final class AssemblyLineA {
                 .scanner(Registration.REQUESTER.asItem())
                 .EUt(480)
                 .duration(1440)
+                .researchNode(MESmartGatingClustering)
+                .save();
+
+        ASSEMBLY_LINE_RECIPES.builder("bio_oscillation_generator")
+                .inputItems(GTItems.ULTRA_HIGH_POWER_INTEGRATED_CIRCUIT, 64)
+                .inputItems(GTOItems.NM_CHIP, 64)
+                .inputItems(GTOItems.BIOWARE_CHIP, 64)
+                .inputItems(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER, 16)
+                .inputItems(GTOItems.SMD_INDUCTOR_BIOWARE, 64)
+                .inputItems(TagPrefix.wireFine, GTMaterials.Titanium, 64)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.AbyssalAlloy, 64)
+                .inputItems(TagPrefix.wireGtSingle, GTMaterials.RutheniumTriniumAmericiumNeutronate, 16)
+                .inputItems(GTItems.ULTIMATE_BATTERY, 8)
+                .inputItems(CustomTags.UEV_CIRCUITS, 8)
+                .inputItems(GTItems.EMITTER_UHV, 8)
+                .inputItems(GTItems.SENSOR_UHV, 8)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UHV, 4)
+                .outputItems("gtocore:bio_oscillation_generator")
+                .inputFluids(GTOMaterials.BiohmediumSterilized, 10000)
+                .inputFluids(GTMaterials.SolderingAlloy, 10000)
+                .inputFluids(GTMaterials.Neutronium, 10000)
+                .inputFluids(GTMaterials.Tritanium, 10000)
+                .EUt(122800)
+                .duration(600)
+                .researchNode(BioEnergyConversion)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("bio_oscillation_electric_stimulator")
+                .inputItems(TagPrefix.rod, GTOMaterials.DuraniumAlloy, 32)
+                .inputItems(GTItems.EMITTER_UHV, 8)
+                .inputItems(GTItems.SENSOR_UHV, 8)
+                .inputItems(GTOTagPrefix.MEMBRANE_ELECTRODE, GTOMaterials.NanocrackRegulatedSelfHumidifyingCompositeMaterial, 2)
+                .inputItems(GTItems.FLUID_REGULATOR_UHV, 4)
+                .inputItems(TagPrefix.wireFine, GTMaterials.Titanium, 64)
+                .inputItems(GTItems.ENGRAVED_LAPOTRON_CHIP, 64)
+                .inputItems(TagPrefix.wireGtHex, GTMaterials.RutheniumTriniumAmericiumNeutronate, 8)
+                .inputItems(CustomTags.UEV_CIRCUITS, 8)
+                .outputItems("gtocore:bio_oscillation_electric_stimulator")
+                .inputFluids(GTOMaterials.BiohmediumSterilized, 10000)
+                .inputFluids(RegistriesUtils.getFluid("gtocore:dew_of_the_void"), 10000)
+                .inputFluids(RegistriesUtils.getFluid("gtocore:vapor_of_levity"), 10000)
+                .EUt(122800)
+                .researchNode(BioEnergyConversion)
+                .duration(600)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("virtual_coin_miner")

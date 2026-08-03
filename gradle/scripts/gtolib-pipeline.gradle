@@ -487,20 +487,34 @@ ext.isGtolibJarUpToDate = {
     if (findProperty('gtolibRebuild') == 'true') {
         return false
     }
+    def rebuild = { String reason ->
+        logger.lifecycle("GTOLib: ${reason} -> 自动重建保护产物")
+        return false
+    }
     def stamp = readGtolibStamp()
     def prot = gtolibProtectedJar.get().asFile
     def unprot = gtolibUnprotectedJar.get().asFile
     if (!stamp.fingerprint || gtolibFingerprint.isEmpty()) {
-        return false
+        return rebuild('缺少源码指纹记录')
     }
     if (!prot.exists() || prot.length() == 0) {
-        return false
+        return rebuild('build/gtolib/gtolib-protected.jar 缺失')
     }
     if (!unprot.exists() || unprot.length() == 0) {
-        return false
+        return rebuild('build/gtolib/gtolib-unprotected.jar 缺失')
     }
     if (stamp.fingerprint != gtolibFingerprint) {
-        return false
+        return rebuild('源码指纹已变化')
+    }
+    if (!stamp.jarSha256) {
+        return rebuild('stamp 缺少 protected jar 哈希')
+    }
+    def protectedSha = computeFileSha256(prot)
+    if (protectedSha != stamp.jarSha256) {
+        return rebuild(
+                "build protected jar 哈希不一致 " +
+                        "(actual=${protectedSha.take(16)}... expected=${stamp.jarSha256.take(16)}...)"
+        )
     }
     // libs/ 的 protected 对同样是提交物（此前只校验了下面的发行对，这里是缺口）：
     // 被外部还原/删除、与侧车不同源、或来自旧流水线（无 gtolibCommit）时都不许跳过，
@@ -509,19 +523,32 @@ ext.isGtolibJarUpToDate = {
     if (!gtolibProtectedLibsJar.exists() || !protMeta.jarSha256 ||
             protMeta.fingerprint != gtolibFingerprint ||
             computeFileSha256(gtolibProtectedLibsJar) != protMeta.jarSha256) {
-        return false
+        return rebuild('libs/gtolib-protected.jar 与 sidecar 不一致')
     }
     if (protMeta.gtolibCommit != gtolibCommitSha()) {
-        return false
+        return rebuild('libs protected 的 gtolibCommit 与当前工作区不一致')
+    }
+    if (protMeta.jarSha256 != protectedSha) {
+        return rebuild(
+                "build/libs protected jar 不一致 " +
+                        "(build=${protectedSha.take(16)}... libs=${protMeta.jarSha256.take(16)}...)"
+        )
     }
     // 路线 A：能构建发行单轨时，libs 发行对也必须在场且同源，否则不许跳过
     if (canProguardRelease && canSealPack) {
         def relMeta = readSidecarMeta(gtolibReleaseSidecarFile)
         if (!relMeta.jarSha256 || relMeta.fingerprint != gtolibFingerprint) {
-            return false
+            return rebuild('libs/gtolib-release.PROTECTED 与当前源码不一致')
         }
         if (!gtolibReleaseLibsJar.exists() || computeFileSha256(gtolibReleaseLibsJar) != relMeta.jarSha256) {
-            return false
+            return rebuild('libs/gtolib-release.jar 与 sidecar 哈希不一致')
+        }
+        if (relMeta.gtolibCommit != gtolibCommitSha()) {
+            return rebuild('libs release 的 gtolibCommit 与当前工作区不一致')
+        }
+        def release = gtolibReleaseJar.get().asFile
+        if (release.exists() && computeFileSha256(release) != relMeta.jarSha256) {
+            return rebuild('build/libs release jar 不一致')
         }
     }
     return true
@@ -1699,10 +1726,22 @@ tasks.register('buildGtolibProtected') {
             file("${buildDir}/gtolib/gtolib-sealed.jar"),
             gtolibSealedReleaseJar,
             gtolibPgJar,
+            gtolibDevNamedJar,
             gtolibUnprotectedJar,
+            gtolibRawJar,
     )
+    inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.property('gtolibCommit', { gtolibCommitSha() })
+    inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
     outputs.file(gtolibProtectedJar)
-    outputs.upToDateWhen { findProperty('gtolibRebuild') != 'true' }
+    // 只在输出文件本身变化时，Gradle 才会自动判定任务过期；libs/ 与 sidecar
+    // 是本任务的同步副作用，不能声明为 output（会和 copyPrebuiltGtolib 构成环）。
+    // 因此必须把完整一致性校验接到 up-to-date 判定上：只要任一记录损坏，
+    // 即使 build/gtolib/gtolib-protected.jar 未变，也要执行 doLast 重新同步。
+    outputs.upToDateWhen {
+        findProperty('gtolibRebuild') != 'true' &&
+                (!hasGtolibSources || isGtolibJarUpToDate)
+    }
 
     doLast {
         def protectedFile = gtolibProtectedJar.get().asFile
@@ -1802,10 +1841,16 @@ tasks.register('buildGtolibProtected') {
             }
             gtolibProtectedLibsJar.parentFile.mkdirs()
             Files.copy(protectedFile.toPath(), gtolibProtectedLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            injectGtolibMixinConfig(gtolibProtectedLibsJar)
             // 公开仓唯一的 dev 入口，落地前再确认一次命名空间
             verifyGtolibMixinNamespace(gtolibProtectedLibsJar, true, 'libs/gtolib-protected.jar')
-            jarSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
+            def prebuiltSha = writeGtolibProtectedSidecar(gtolibProtectedLibsJar, gtolibFingerprint)
+            if (prebuiltSha != jarSha) {
+                throw new GradleException(
+                        "GTOLib dev 同步失败：build 与 libs protected jar 字节不一致。\n" +
+                                "  build jarSha256 = ${jarSha}\n" +
+                                "  libs  jarSha256 = ${prebuiltSha}"
+                )
+            }
             logger.lifecycle(
                     "GTOLib: 已同步 libs/gtolib-protected.jar + .PROTECTED " +
                             "(${gtolibProtectedLibsJar.length()} bytes); " +
@@ -1840,12 +1885,20 @@ tasks.register('buildGtolibProtected') {
                 verifyGtolibMixinNamespace(releaseFile, false, 'GTOLib 发行单轨')
                 // 先验 gtocore 链接面，再同步 libs——校验失败时不落地半成品发行对
                 verifyMainGtolibImportsAgainstJar(releaseFile)
+                def releaseSha = computeFileSha256(releaseFile)
                 gtolibReleaseLibsJar.parentFile.mkdirs()
                 Files.copy(releaseFile.toPath(), gtolibReleaseLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                writeGtolibSidecar(
+                def releasePrebuiltSha = writeGtolibSidecar(
                         gtolibReleaseLibsJar, gtolibReleaseSidecarFile, gtolibFingerprint,
                         'proguard-release+gto-seal(single-track,no-dev-bin)'
                 )
+                if (releasePrebuiltSha != releaseSha) {
+                    throw new GradleException(
+                            "GTOLib release 同步失败：build 与 libs release jar 字节不一致。\n" +
+                                    "  build jarSha256 = ${releaseSha}\n" +
+                                    "  libs  jarSha256 = ${releasePrebuiltSha}"
+                    )
+                }
                 verifyGtolibReleasePair()
                 logger.lifecycle(
                         "GTOLib release(单轨): 已同步 libs/gtolib-release.jar + .PROTECTED " +
@@ -2135,6 +2188,12 @@ tasks.register('finalizeGtolib') {
     }
     inputs.property('gtolibDebugMode', { detectGtolibDebugMode() })
     inputs.property('gtolibFingerprint', { gtolibFingerprint })
+    inputs.files(
+            gtolibProtectedJar,
+            gtolibUnprotectedJar,
+            gtolibRawJar,
+            gtolibProtectedLibsJar
+    ).withPropertyName('candidateReadyJars').optional()
     outputs.file(gtolibReadyJar)
     outputs.upToDateWhen { false }
 
@@ -2188,6 +2247,11 @@ tasks.register('prepareGtolibModJar') {
     group = 'gtolib'
     description = '准备独立 gtolib 模组 jar（Seal 加密体 + mods.toml + 明文 @Mod stub）'
     dependsOn 'finalizeGtolib'
+    inputs.file(gtolibReadyJar).withPropertyName('readyJar')
+    inputs.files(gtolibUnprotectedJar, gtolibUnprotectedLibsJar)
+            .withPropertyName('namedMixinOverlayJars').optional()
+    inputs.file(gtolibModStubClass).withPropertyName('gtolibModStub')
+    inputs.property('gtolibModVersion', project.version.toString())
     outputs.file(gtolibModJar)
     doLast {
         def ready = gtolibReadyJar.get().asFile
@@ -2394,14 +2458,22 @@ tasks.register('stripGtolibFromMainClasses') {
 // IDEA 直接 Run Main 时不会走 runData，而是注入 net.neoforged.devlaunch.Main.main()。
 // 若不挂 installGtolib：main 明文 com.gtolib + run/<client|data|server>/mods/gtolib-protected.jar
 // → JPMS: Modules gtocore and gtolib export package com.gtolib...
+// IDEA Gradle Sync 也可能执行 prepareClientRun；此时只能建模，不能把
+// installGtolibIntoModOutput 的 classes 依赖带进来，否则依赖接口变化时
+// compileJava 失败会直接阻断 IDE 解析新依赖。
+ext.isIdeaGradleSync = (
+        System.getProperty('idea.sync.active')?.toString()?.equalsIgnoreCase('true') ||
+                System.getProperty('idea.gradle.sync')?.toString()?.equalsIgnoreCase('true') ||
+                findProperty('idea.sync.active')?.toString()?.equalsIgnoreCase('true')
+)
 ext.isGtolibLaunchTask = { Task t ->
     def n = t.name
     if (n in ['runClient', 'runServer', 'runData', 'runGameTestServer']) return true
     // IDEA / NeoForged DevLaunch 注入
     if (n.contains('devlaunch') || n.contains('DevLaunch')) return true
     if (n.contains('Main.main') || n.endsWith('.main()') || n.contains('.main_')) return true
-    // 部分 IDE 用 prepare* / forge runs
-    if (n.startsWith('prepareRun')) return true
+    // IDEA External Projects 的 before-compile 会调用 prepareClientRun 等任务。
+    if (n.startsWith('prepare') && n.endsWith('Run')) return true
     if (n.startsWith('run') && n.toLowerCase().contains('forge')) return true
     return false
 }
@@ -2409,6 +2481,7 @@ ext.isGtolibLaunchTask = { Task t ->
 // 尽早挂 whenTaskAdded（init script 可能在 afterEvaluate 前注册 DevLaunch 任务）
 ext.__gtolibLaunchWired = new HashSet<String>()
 ext.wireGtolibInstallTo = { Task t ->
+    if (isIdeaGradleSync) return
     if (!isGtolibLaunchTask(t)) return
     if (!__gtolibLaunchWired.add(t.path)) return
     // install 任务可能尚未 register：用路径字符串依赖

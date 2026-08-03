@@ -260,11 +260,11 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
         public static final ImmutableMap<Material, Long> ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET = ImmutableMap.<Material, Long>builder()
                 .put(GTOMaterials.IronChromiumRedoxFlowBatteryElectrolyte, V[UEV] * 2 / 1000)
-                .put(GTOMaterials.VanadiumRedoxFlowBatteryElectrolyte, V[UIV] * 4 / 1000)
-                .put(GTOMaterials.ZincIodideFlowBatteryElectrolyte, V[UXV] * 6 / 1000)
-                .put(GTOMaterials.OrganicMoleculeRedoxFlowBatteryElectrolyte, V[OpV] * 8 / 1000)
-                .put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 10 / 1000)
-                .put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 7 * 12 / 1000)
+                .put(GTOMaterials.VanadiumRedoxFlowBatteryElectrolyte, V[UXV] / 1000)
+                .put(GTOMaterials.ZincIodideFlowBatteryElectrolyte, V[OpV] * 2 / 1000)
+                .put(GTOMaterials.OrganicMoleculeRedoxFlowBatteryElectrolyte, V[MAX] * 4 / 1000)
+                .put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 32 / 1000)
+                .put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 256 / 1000)
                 .build();
         public static final MembraneBonusInfo[] MEMBRANE_MATS = new MembraneBonusInfo[] {
                 new MembraneBonusInfo(

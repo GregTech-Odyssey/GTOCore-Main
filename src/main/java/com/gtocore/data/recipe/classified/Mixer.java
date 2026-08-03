@@ -789,5 +789,14 @@ final class Mixer {
                 .EUt(16777214)
                 .duration(1180)
                 .save();
+        MIXER_RECIPES.builder("essence_medium_raw")
+                .inputItems(GTOItems.SPACE_ESSENCE, 32)
+                .inputItems(GTOItems.DRACONIUM_DIRT, 1)
+                .inputFluids(GTOMaterials.BiomediumRaw, 8000)
+                .outputFluids(GTOMaterials.EssenceMediumRaw, 8000)
+                .EUt(128000)
+                .duration(800)
+                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .save();
     }
 }

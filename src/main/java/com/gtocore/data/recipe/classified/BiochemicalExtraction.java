@@ -104,5 +104,17 @@ final class BiochemicalExtraction {
                 .EUt(30)
                 .duration(200)
                 .save();
+        BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart")
+                .inputItems(Items.GOAT_SPAWN_EGG)
+                .outputItems("gtocore:tier_0_heart")
+                .EUt(1920)
+                .duration(400)
+                .save();
+        BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart1")
+                .inputItems(Items.SHEEP_SPAWN_EGG)
+                .outputItems("gtocore:tier_0_heart")
+                .EUt(1920)
+                .duration(400)
+                .save();
     }
 }

@@ -125,5 +125,6 @@ public final class $ClassifiedRecipe {
         FastNeutronBreeder.init();
         ElectroPlating.init();
         FuelCell.init();
+        BioOscillation.init();
     }
 }

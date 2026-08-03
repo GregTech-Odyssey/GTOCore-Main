@@ -287,5 +287,34 @@ final class TranscendingCrafting {
                 .EUt(1048576)
                 .duration(200)
                 .save();
+        TRANSCENDING_CRAFTING_RECIPES.builder("dragon_soul_medium_raw")
+                .inputItems(GTOItems.DRACONIUM_DIRT, 4)
+                .inputItems(GTOItems.SPACE_ESSENCE, 256)
+                .inputFluids(GTOMaterials.EnrichedDragonBreath, 5000)
+                .inputFluids(GTOMaterials.TranscendingMatter, 5000)
+                .inputFluids(GTOMaterials.Echoite, FluidStorageKeys.PLASMA, 1000)
+                .outputFluids(GTOMaterials.DragonSoulMediumRaw, 30000)
+                .EUt(1048000)
+                .duration(40)
+                .save();
+        TRANSCENDING_CRAFTING_RECIPES.builder("wyvern_infusion_solvent")
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Draconium, 3)
+                .inputItems(TagPrefix.dust, GTOMaterials.DarkMatterBoundNodes, 512)
+                .inputFluids(GTOMaterials.SoulInfusionSolvent, 100000)
+                .outputFluids(GTOMaterials.WyvernInfusionSolvent, 20000)
+                .inputFluids(GTOMaterials.TranscendingMatter, 90000)
+                .EUt(1650000)
+                .duration(40)
+                .save();
+        TRANSCENDING_CRAFTING_RECIPES.builder("draconic_infusion_solvent")
+                .inputItems(GTOItems.WYVERN_CORE)
+                .inputItems(TagPrefix.dust, GTOMaterials.StellarMatterRemnantDust, 1024)
+                .inputFluids(GTOMaterials.WyvernInfusionSolvent, 600000)
+                .inputFluids(GTOMaterials.AwakenedDraconium, 40000)
+                .inputFluids(GTOMaterials.TranscendingMatter, 100000)
+                .outputFluids(GTOMaterials.DraconicInfusionSolvent, 600000)
+                .EUt(16500000)
+                .duration(40)
+                .save();
     }
 }

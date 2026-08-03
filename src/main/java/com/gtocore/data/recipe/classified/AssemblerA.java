@@ -1077,5 +1077,25 @@ final class AssemblerA {
                 .EUt(7680)
                 .duration(768)
                 .save();
+        ASSEMBLER_RECIPES.builder("connecting_rod_hatch")
+                .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.ZPM].asItem())
+                .inputItems(GTOItems.SMD_DIODE_BIOWARE, 4)
+                .inputItems(GTOItems.SMD_CAPACITOR_BIOWARE, 4)
+                .inputItems(TagPrefix.frameGt, GTMaterials.Tritanium, 2)
+                .outputItems(GTOMachines.CONNECTING_ROD_HATCH.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 4000)
+                .EUt(420)
+                .duration(420)
+                .save();
+        ASSEMBLER_RECIPES.builder("tissue_sensor")
+                .inputItems(GTMachines.HULL[GTValues.ZPM].asItem())
+                .inputItems(GTItems.COVER_ACTIVITY_DETECTOR_ADVANCED, 2)
+                .inputItems(GTOItems.ELECTRICALY_WIRED_PETRI_DISH, 4)
+                .inputItems(GTItems.COVER_FLUID_DETECTOR_ADVANCED, 2)
+                .outputItems(GTOMachines.TISSUE_SENSOR.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 4000)
+                .EUt(420)
+                .duration(420)
+                .save();
     }
 }

@@ -4,7 +4,7 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.data.recipe.processing.CompositeMaterialsProcessing.registerFiberExtrusionTemperature;
 
-public class FiberExtruderTempDefinitions {
+public class MaterialPostInit {
 
     public static void init() {
         registerFiberExtrusionTemperature(Quartzite, 3000);

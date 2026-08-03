@@ -413,6 +413,38 @@ final class StellarForge {
                 .duration(128)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
                 .save();
+        STELLAR_FORGE_RECIPES.builder("modified_dragon_heart")
+                .inputItems(Items.DRAGON_EGG, 64)
+                .inputItems(GTOItems.DRAGON_CARDIOMYOCYTE_CLUSTER, 32)
+                .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
+                .outputItems(GTOItems.MODIFIED_DRAGON_HEART)
+                .inputFluids(GTOMaterials.Draconium, 1000)
+                .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
+                .EUt(16000000)
+                .duration(400)
+                .save();
+        STELLAR_FORGE_RECIPES.builder("awakened_dragon_heart")
+                .inputItems(GTOItems.MODIFIED_DRAGON_HEART, 32)
+                .inputItems(GTOItems.DRAGON_HEART, 32)
+                .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
+                .outputItems(GTOItems.AWAKENED_DRAGON_HEART)
+                .inputFluids(GTOMaterials.Draconium, 10000)
+                .inputFluids(GTOMaterials.AwakenedDraconium, 10000)
+                .inputFluids(GTOMaterials.LiquidStarlight, 10000)
+                .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
+                .EUt(16000000)
+                .duration(400)
+                .save();
+        STELLAR_FORGE_RECIPES.builder("soul_infusion_solvent")
+                .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
+                .inputFluids(GTMaterials.EchoShard, 5000)
+                .inputFluids(GTMaterials.EnderEye, 5000)
+                .inputFluids(GTOMaterials.Aether, 5000)
+                .outputFluids(GTOMaterials.SoulInfusionSolvent, 5000)
+                .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
+                .EUt(16777000)
+                .duration(400)
+                .save();
 
         addManaProducingRecipe();
     }

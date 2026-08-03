@@ -5,6 +5,7 @@ import com.gtocore.api.lang.ComponentListSupplier
 import com.gtocore.api.lang.ComponentSupplier
 import com.gtocore.api.lang.toComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
+import com.gtocore.api.lang.translatable
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.common.data.translation.ComponentSlang.AfterModuleInstallation
 import com.gtocore.common.data.translation.ComponentSlang.EfficiencyBonus
@@ -20,6 +21,55 @@ import com.gregtechceu.gtceu.config.ConfigHolder
 import com.gtolib.GTOCore
 
 object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
+
+    @JvmField
+    val ConnectingRodHatchTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("connecting_rod_hatch")
+
+        section(MainFunction)
+        function("用于将附着的生物组织的生物能量转化为可导出的能量" translatedTo "Used to convert the bioenergy of attached biological tissues into exportable energy")
+    }
+
+    @JvmField
+    val BioOscillationGeneratorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("bio_oscillation_generator")
+
+        section(MainFunction)
+        function("将生物组织的生长与培养液转化为电能" translatedTo "Converts biological tissue growth and culture medium into electrical energy")
+        command("生物组织与培养液均需要一次性装入机器；每次装填最多吸收64个组织与1,000,000,000mB培养液" translatedTo "Biological tissue and culture medium must be loaded into the machine at once; each filling accepts up to 64 tissues and 1,000,000,000mB of culture medium")
+        command("组织从0点开始生长，依次经历幼年、成年、壮年和老年阶段；达到老年阶段上限后组织死亡并被清除" translatedTo "Tissue starts growing from 0 points and passes through Juvenile, Adult, Mature, and Elderly stages; it dies and is cleared after exceeding the Elderly stage limit")
+        command("可以通过组织传感器监测组织的生长点数" translatedTo "Tissue growth points can be monitored through the Tissue Sensor")
+
+        section(RunningRequirements)
+        command("运行需要同时放入生物组织、匹配等级的培养液和连接杆；培养液等级与机加工控制模块等级均不得低于组织要求" translatedTo "Running requires biological tissue, culture medium of a matching tier, and a connecting rod; both the medium tier and machining control module tier must meet the tissue requirement")
+        command("组织每5ticks生长一次；培养液营养可用率初始为100%，每秒降低0.1%，低于设定阈值后培养液会被清空并输出对应废液" translatedTo "Tissue grows every 5 ticks; culture medium starts at 100% nutrient availability and decreases by 0.1% per second, then is cleared and converted into its corresponding waste fluid below the configured threshold")
+        command("连接杆每20ticks损耗1点耐久；连接杆材料等级越高，发电倍率越高" translatedTo "The connecting rod loses 1 durability every 20 ticks; higher-tier connecting rod materials provide a higher generation multiplier")
+
+        section(EfficiencyBonus)
+        info("基础发电量 = 组织等级^连接杆等级 × 组织数量 × 培养液数量 × 8EU/t" translatedTo "Base power = tissue tier^connecting rod tier × tissue amount × culture medium amount × 8EU/t")
+        info("组织生长量 = 最大生长速率 × 营养可用率 ÷（饱和因子 + 营养可用率）/5ticks" translatedTo "Tissue growth = maximum growth rate × nutrient availability × (saturation factor + nutrient availability) per 5 ticks")
+        increase("能量控制模块等级为2时发电量×1.2，等级为3时发电量×1.5" translatedTo "An energy control module tier of 2 multiplies power by 1.2, and tier 3 by 1.5")
+        increase("通过电刺激模块对组织进行电刺激，可进一步提升发电量" translatedTo "Electrical stimulation of tissue through the electrical stimulation module can further increase power generation")
+        info("组织阶段决定电刺激增幅；组织数量和培养液数量决定基础发电量，营养可用率主要影响组织生长" translatedTo "The tissue stage determines the stimulation boost; tissue amount and culture medium amount determine base power, while nutrient availability mainly affects tissue growth")
+    }
+
+    @JvmField
+    val BioOscillationElectricStimulatorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("bio_oscillation_electric_stimulator")
+
+        section(MainFunction)
+        function("作为生物振荡发电机的模块，对其中的生物组织进行电刺激" translatedTo "Acts as a module for the Bio Oscillation Generator and electrically stimulates its biological tissue")
+        command(translatable("gtocore.biooscillation.button.set.electrical.stimulation.desc", GTOCore.difficulty * 6))
+        command("运行完成后消耗等量的组织生长点数，并按组织当前阶段的电刺激增幅提供临时发电加成" translatedTo "After completing, the stimulator consumes the corresponding amount of tissue growth points and grants a temporary power boost based on the tissue's current stage")
+
+        section(RunningRequirements)
+        command("模块必须连接至生物振荡发电机，且发电机内必须存在有效的生物组织" translatedTo "The module must be connected to a Bio Oscillation Generator containing valid biological tissue")
+        command("100%强度时，一次电刺激消耗组织1000点；耗电量为组织数据中标注的电刺激能耗，低于100%时按比例减少" translatedTo "At 100% intensity, one stimulation consumes 1,000 tissue points; power consumption equals the tissue's listed stimulation energy cost and scales with lower intensities")
+
+        section(EfficiencyBonus)
+        increase("电刺激增幅取决于组织当前阶段；刺激点数越多，增幅持续时间越长，最多持续60秒" translatedTo "The stimulation boost depends on the tissue's current stage; more stimulation points provide a longer boost, up to 60 seconds")
+        info("新的电刺激会累加剩余持续时间；新的增幅系数会覆盖旧的增幅系数" translatedTo "New stimulations add to the remaining duration; new boost coefficients overwrite old ones")
+    }
 
     @JvmField
     val pulseMachineMaintenancePedestalTooltips: ComponentListSupplier = ComponentListSupplier {

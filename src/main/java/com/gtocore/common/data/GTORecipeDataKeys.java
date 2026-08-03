@@ -72,6 +72,8 @@ public final class GTORecipeDataKeys {
     public static final TierDataKey INTEGRAL_FRAMEWORK_TIER = registerTier(GTOValues.INTEGRAL_FRAMEWORK_TIER);
     public static final TierDataKey COMPUTER_CASING_TIER = registerTier(GTOValues.COMPUTER_CASING_TIER);
     public static final TierDataKey COMPUTER_HEAT_TIER = registerTier(GTOValues.COMPUTER_HEAT_TIER);
+    public static final TierDataKey ENERGY_CONTROL_MODULE_TIER = registerTier(GTOValues.ENERGY_CONTROL_MODULE_TIER);
+    public static final TierDataKey MACHINING_CONTROL_MODULE_TIER = registerTier(GTOValues.MACHINING_CONTROL_MODULE_TIER);
 
     public static TierDataKey registerTier(String name) {
         return (TierDataKey) GTRecipeDataKeys.REGISTRY.register(new TierDataKey(name));
