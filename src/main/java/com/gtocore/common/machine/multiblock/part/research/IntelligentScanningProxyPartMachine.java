@@ -9,7 +9,7 @@ import com.gtolib.api.recipe.lookup.IIngredientConvertible;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -27,6 +27,7 @@ import appeng.api.networking.IStackWatcher;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageWatcherNode;
 import appeng.api.stacks.*;
+import appeng.api.storage.MEStorage;
 
 import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -39,7 +40,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class IntelligentScanningProxyPartMachine extends MultiblockPartMachine implements IMachineLife, IGridConnectedMachine, IStorageWatcherNode {
+public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartMachine implements
+                                                 IMachineLife, IGridConnectedMachine, IStorageWatcherNode {
 
     @SaveToDisk
     private final GridNodeHolder nodeHolder = new GridNodeHolder(this);
@@ -101,6 +103,12 @@ public class IntelligentScanningProxyPartMachine extends MultiblockPartMachine i
         }, 40);
     }
 
+    public MEStorage getMESStorage() {
+        var grid = getMainNode().getGrid();
+        if (grid == null) return null;
+        return grid.getStorageService().getInventory();
+    }
+
     @Override
     public void onUnload() {
         if (tickSubscription != null) {
@@ -117,6 +125,7 @@ public class IntelligentScanningProxyPartMachine extends MultiblockPartMachine i
     @Override
     public void updateWatcher(IStackWatcher iStackWatcher) {
         storageWatcher = iStackWatcher;
+        iStackWatcher.setWatchAll(true);
     }
 
     @Override

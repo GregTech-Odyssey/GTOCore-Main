@@ -1,6 +1,9 @@
 package com.gtocore.mixin.mc;
 
+import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.utils.StxckUtil;
+
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
@@ -16,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,6 +32,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends Entity {
+
+    @Shadow
+    public abstract ItemStack getItem();
 
     @Unique
     private boolean gtocore$discardedTick = false;
@@ -57,6 +64,9 @@ public abstract class ItemEntityMixin extends Entity {
 
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V", shift = At.Shift.AFTER))
     private void tickInject(CallbackInfo ci) {
+        if (ChemicalHelper.getMaterialEntry(getItem().getItem()).material() == GTOMaterials.Amprosium) {
+            setNoGravity(true);
+        }
         gtocore$discardedTick = false;
         StxckUtil.refillItemStack(gtocore$getThis());
     }

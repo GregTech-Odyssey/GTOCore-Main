@@ -2,6 +2,7 @@ package com.gtocore.common.data;
 
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchTag;
+import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 
@@ -25,10 +26,11 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class GTOCodecs {
 
+    public static final DataSyncCodec<ScanningRecipeExtion.AEKeyDataCrystal> AEKEYDATACRYSTAL_CODEC = DataSyncCodec.register(ScanningRecipeExtion.AEKeyDataCrystal.class, ScanningRecipeExtion.DATA_STREAM_CODEc, ScanningRecipeExtion.DATA_CODEc);
+
     public static void init() {
         DataSyncCodec.register(AEItemKey.class, GTOCodecs.AE_ITEM_KEY_STREAM_CODEC, GTOCodecs.AE_ITEM_KEY_DATA_CODEC);
         DataSyncCodec.register(AEFluidKey.class, GTOCodecs.AE_FLUID_KEY_STREAM_CODEC, GTOCodecs.AE_FLUID_KEY_DATA_CODEC);
-        DataSyncCodec.register(AEKey.class, GTOCodecs.AE_KEY_STREAM_CODEC, GTOCodecs.AE_KEY_DATA_CODEC);
         DataSyncCodec.register(GenericStack.class, GTOCodecs.GENERIC_STACK_STREAM_CODEC, GTOCodecs.GENERIC_STACK_DATA_CODEC);
         DataSyncCodec.register(TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
         DataSyncCodec.register(ResearchTag.class, RESEARCH_TAG_STREAM_CODEC, RESEARCH_TAG_DATA_CODEC);
@@ -271,4 +273,5 @@ public class GTOCodecs {
     };
 
     public final DataSyncCodec<ResearchPoints> RESEARCH_POINTS_SYNC_CODEC = DataSyncCodec.register(ResearchPoints.class, RESEARCH_POINTS_STREAM_CODEC, RESEARCH_POINTS_DATA_CODEC);
+    public final DataSyncCodec<AEKey> AE_KEY_SYNC_CODEC = DataSyncCodec.register(AEKey.class, GTOCodecs.AE_KEY_STREAM_CODEC, GTOCodecs.AE_KEY_DATA_CODEC);
 }

@@ -33,6 +33,7 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredActiveMachineRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.*;
@@ -261,6 +262,7 @@ public final class ExResearchMachines {
     public static final MachineDefinition INTELLIGENT_SCANNING_ME_PROXY = machine("intelligent_scanning_me_proxy", "智能扫描ME代理接口", IntelligentScanningProxyPartMachine::new)
             .tier(UV)
             .allRotation()
+            .tooltips(GTOMachineTooltipsA.IntelligentScanningProxyTooltips)
             .notAllowSharedTooltips()
             .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/neutronium_stable_casing"), GTCEu.id("block/machine/part/me_pattern_buffer_proxy"), GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
@@ -627,8 +629,9 @@ public final class ExResearchMachines {
     public static final MultiblockMachineDefinition INTELLIGENT_SCANNING_MANAGEMENT_PLATFORM = multiblock("intelligent_scanning_management_platform", "智能扫描管理平台", IntelligentScanningManagementPlatformMachine::new)
             .nonYAxisRotation()
             .recipeTypes(SCANNER_RECIPES)
-            // .tooltipsSupplier(GTOMachineTooltipsA.IntelligentScanningManagementPlatformMachineTooltips)
+            .tooltipsSupplier(GTOMachineTooltipsA.IntelligentScanningManagementPlatformMachineTooltips)
             .nonYAxisRotation()
+            .recipeModifier(RecipeModifier.overclocking(0.75, 1, 1))
             .block(GTOBlocks.NEUTRONIUM_STABLE_CASING)
             .pattern(definition -> MultiBlockFileReader.start(definition)
                     .where('A', GTOPredicates.frame(GTOMaterials.Photonium))

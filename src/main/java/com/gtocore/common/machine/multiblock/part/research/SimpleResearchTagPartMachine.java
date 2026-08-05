@@ -57,7 +57,6 @@ public abstract class SimpleResearchTagPartMachine extends MultiblockPartMachine
 
     public static Function<MetaMachineBlockEntity, MetaMachine> create(ResearchTag researchTag, long dataCapacity) {
         return (holder) -> new SimpleResearchTagPartMachine(holder) {
-            ;
 
             @Override
             public long getDataCapacity() {

@@ -33,6 +33,11 @@ public final class GTOGuiTextures {
     public static final ResourceTexture HIGH_SPEED_MODE = getTexture("overlay/high_speed_mode");
     public static final ResourceTexture OVERCLOCK_CONFIG = getTexture("overlay/overclock_config");
     public static final ResourceTexture STRUCTURE_CHECK = getTexture("overlay/structure_check");
+    public static final ResourceTexture INTELLIGENT_SCANNER = getTexture("overlay/intelligent_scanner");
+    public static final ResourceTexture INTELLIGENT_SCANNER_1 = INTELLIGENT_SCANNER.getSubTexture(0, 0, 1, 0.25);
+    public static final ResourceTexture INTELLIGENT_SCANNER_2 = INTELLIGENT_SCANNER.getSubTexture(0, 0.25, 1, 0.25);
+    public static final ResourceTexture INTELLIGENT_SCANNER_3 = INTELLIGENT_SCANNER.getSubTexture(0, 0.5, 1, 0.25);
+    public static final ResourceTexture INTELLIGENT_SCANNER_4 = INTELLIGENT_SCANNER.getSubTexture(0, 0.75, 1, 0.25);
     public static final ResourceTexture XP_ORBS = new ResourceTexture(RLUtils.mc("textures/entity/experience_orb.png"));
     public static final ResourceTexture SMALL_XP_ORB = XP_ORBS.getSubTexture(0.25, 0, 0.25, 0.25);
     public static final ResourceTexture LARGE_XP_ORB = XP_ORBS.getSubTexture(0, 0.5, 0.25, 0.25);

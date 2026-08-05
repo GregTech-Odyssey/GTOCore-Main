@@ -1,5 +1,7 @@
-package com.gtocore.api.research;
+package com.gtocore.api.research.recipe;
 
+import com.gtocore.api.research.IResearchPointsOperation;
+import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
 
@@ -68,9 +70,6 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
 
     @Override
     public void setParallel(GTRecipe recipe, long parallel) {}
-
-    private static int c1 = -10;
-    private static int c2 = 30;
 
     @Override
     public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {

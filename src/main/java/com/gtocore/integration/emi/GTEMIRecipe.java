@@ -1,6 +1,6 @@
 package com.gtocore.integration.emi;
 
-import com.gtocore.api.research.ResearchPointsRecipeExtion;
+import com.gtocore.api.research.recipe.ResearchPointsRecipeExtion;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
 
 import com.gtolib.api.recipe.ContentBuilder;

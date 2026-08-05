@@ -160,6 +160,43 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
     }
 
     @JvmField
+    val IntelligentScanningProxyTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("intelligent_scanning_me_proxy")
+
+        section(MainFunction)
+        function("连接ME网络，将其中的物品与流体提供给智能扫描管理平台" translatedTo "Connects to an ME network and provides its items and fluids to the Intelligent Scanning Management Platform")
+        command("数据晶体不会作为扫描目标；带有标签的物品或流体按无标签的基础类型处理" translatedTo "Data crystals are excluded from scan targets; tagged items and fluids are treated as their untagged base types")
+        info("只记录库存中的物品与储量超过1000mB的流体，并每2秒刷新一次" translatedTo "Records items and fluids stored above 1,000mB, refreshing every 2 seconds")
+    }
+
+    @JvmField
+    val IntelligentScanningManagementPlatformMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("intelligent_scanning_management_platform")
+
+        section(MainFunction)
+        function("从ME网络消耗物品或流体进行扫描，并将扫描数据写入数据晶片" translatedTo "Consumes items or fluids from an ME network to scan them and write the scan data to a data crystal")
+        command("扫描目标可以在机器GUI的扫描队列页面管理" translatedTo "Scan targets can be managed on the scan queue page of the machine GUI")
+        section("工作模式：选定物品模式" translatedTo "Working Mode: Selected Item Mode")
+        content("从界面选择多项物品或流体作为扫描目标" translatedTo "Select multiple items or fluids from the interface as scan targets")
+        content("机器会试图重复扫描它们，直到填满数据晶片" translatedTo "The machine will attempt to repeatedly scan them until the data crystal is filled")
+        content("选择多项组成材料相同的物品或流体时，机器只会扫描其中的一项" translatedTo "When selecting multiple items or fluids with the same composition, the machine will only scan one of them")
+        section("工作模式：选定物品单次扫描模式" translatedTo "Working Mode: Selected Item Single Scan Mode")
+        content("从界面选择多项物品或流体作为扫描目标" translatedTo "Select multiple items or fluids from the interface as scan targets")
+        content("机器会试图扫描它们1次，然后停止扫描" translatedTo "The machine will attempt to scan them once, then stop scanning")
+        section("工作模式：未学习物品模式" translatedTo "Working Mode: Unlearned Item Mode")
+        content("扫描所有未学习的物品或流体，每种仅扫描一个目标" translatedTo "Scans all unlearned items or fluids, only one target of each type is scanned")
+        content("机器会持续检测并将新增的未学习物品或流体加入扫描队列" translatedTo "The machine will continuously detect and add newly unlearned items or fluids to the scan queue")
+        section("工作模式：未学习物品单次扫描模式" translatedTo "Working Mode: Unlearned Item Single Scan Mode")
+        content("扫描所有未学习的物品或流体，每种仅扫描一个目标" translatedTo "Scans all unlearned items or fluids, only one target of each type is scanned")
+        content("在未找到新的未学习物品或流体后，机器将停止扫描" translatedTo "The machine will stop scanning after no new unlearned items or fluids are found")
+        section(RunningRequirements)
+        important("扫描使用的晶片必须额外输入到机器中，且每次扫描消耗1个晶片" translatedTo "The data crystal used for scanning must be additionally input into the machine, and each scan consumes one data crystal")
+        command("扫描物品时花费1个物品，扫描流体时花费1,000mB流体" translatedTo "Scanning an item consumes 1 item, scanning a fluid consumes 1,000mB of fluid")
+        info("每次运行持续%s秒，耗能为8×本次扫描的数据字节数+8 EU/t".translatedWithArgs("Each operation lasts %s seconds and uses 8 × scanned data bytes + 8 EU/t", GTOCore.difficulty * 10))
+        info("同一种材料每次运行只扫描一个目标" translatedTo "Only one target of the same material is scanned per operation")
+    }
+
+    @JvmField
     val CatalystDataHolder: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("catalyst_data_holder")
 

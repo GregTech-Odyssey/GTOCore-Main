@@ -27,11 +27,8 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.hooks.IUnique;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import com.hepdd.gtmthings.utils.TeamUtil;
+import it.unimi.dsi.fastutil.objects.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,6 +46,7 @@ public class DataScanningManager {
 
     private static Reference2ObjectMap<AEKey, ResearchPoints> regMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
 
+    private static final Reference2ObjectMap<UUID, Set<AEKey>> teamUnscannedItems = new Reference2ObjectOpenHashMap<>();
     private static boolean frozen = false;
 
     public static synchronized void registerDataScanning(AEKey key, ResearchPoints points) {
@@ -77,6 +75,19 @@ public class DataScanningManager {
     public static synchronized Set<AEKey> getDataScanningSources(ResearchTag tag) {
         var sources = dataScanningSources.get(tag);
         return sources == null ? Set.of() : Set.copyOf(sources);
+    }
+
+    public static boolean isUnscannable(AEKey key, UUID team) {
+        var teamUnscanned = teamUnscannedItems.computeIfAbsent(team, ignored -> new ReferenceOpenHashSet<>());
+        if (teamUnscanned.contains(key)) {
+            return true;
+        }
+        long occupy = DataScanningManager.scanData(key, team, true).countBytes();
+        if (occupy <= 0 && (ResearchRequirements.getEurekaRequirements(key).isEmpty() || hasScanned(key, team))) {
+            teamUnscanned.add(key);
+            return true;
+        }
+        return false;
     }
 
     public static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
@@ -150,6 +161,10 @@ public class DataScanningManager {
 
     public static synchronized void registerDataScanning(Fluid fluid, ResearchPoints points) {
         registerDataScanning(AEFluidKey.of(fluid), points);
+    }
+
+    public static boolean hasScanned(AEKey entry, UUID ownerId) {
+        return TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(ownerId)).hasScanned(entry);
     }
 
     public record DataScanningEntry(AEKey key, ResearchPoints points) {}

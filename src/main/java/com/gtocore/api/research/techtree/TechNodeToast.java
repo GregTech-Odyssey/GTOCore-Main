@@ -7,9 +7,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import appeng.api.stacks.AEItemKey;
 import appeng.client.gui.me.common.ContentToast;
 
 import java.util.List;
@@ -22,7 +24,7 @@ public class TechNodeToast extends ContentToast {
     private final TechNode techNode;
 
     public TechNodeToast(TechNode techNode, TechNodeToast.Type type) {
-        super(techNode.icon);
+        super(techNode.icon == null ? AEItemKey.of(Blocks.DIRT) : techNode.icon);
         this.techNode = techNode;
         this.text = "gtocore.research.eureka.toast.type.desc." + type.name();
         this.title = "gtocore.research.eureka.toast.type.title." + type.name();

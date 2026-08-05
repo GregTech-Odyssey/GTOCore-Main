@@ -73,6 +73,13 @@ class ComponentListSupplier(var list: MutableList<ComponentSupplier> = mutableLi
         }
     }
 
+    fun String.translatedWithArgs(en: String, vararg args: Any?): ComponentSupplier {
+        if (this@translatedWithArgs == en) return this.toLiteralSupplier()
+        val prefix = if (translationPrefix.isNotEmpty()) "${NewDataAttributes.PREFIX}.$translationPrefix.$line" else "${NewDataAttributes.PREFIX}.$line"
+        val translationKey = TranslationKeyProvider.getTranslationKey(this@translatedWithArgs, en, prefix)
+        return Component.translatable(translationKey, *args).toComponentSupplier()
+    }
+
     // ////////////////////////////////
     // ****** 便捷指令 ******//
     // //////////////////////////////

@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.electric;
 
 import com.gtocore.api.research.ResearchRequirements;
+import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
 
@@ -102,6 +103,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
         }
 
         private GTRecipeDefinition buildRecipe() {
+            var input = dataCrystal.copyWithCount(1);
             var output = dataCrystal.copyWithCount(1);
             boolean istem = !item.isEmpty();
             if (istem) {
@@ -109,37 +111,33 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                 if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEItemKey.of(item.getItem())).isEmpty()) {
                     return null;
                 }
-                if (!DataCrystalItem.setDataCrystalData(output, team, c)) {
-                    return null;
-                }
+                DataCrystalItem.setTeamUUID(output, team);
                 var bytesScanned = c.countBytes();
-                DataScanningManager.scanData(item.getItem(), team, false);
-                return recipeBuilder.inputItems(dataCrystal.getItem())
+                return recipeBuilder.inputItems(input)
                         .inputItems(item.copyWithCount(1))
-                        .outputItems(output)
                         .duration(200 * GTOCore.difficulty).EUt(eut(bytesScanned))
+                        .addExtension(ScanningRecipeExtion.INSTANCE)
+                        .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEItemKey.of(item.getItem()), output, team))
                         .build();
             } else {
                 var c = DataScanningManager.scanData(fluidStack.getFluid(), team, true);
                 if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEFluidKey.of(fluidStack.getFluid())).isEmpty()) {
                     return null;
                 }
-                if (!DataCrystalItem.setDataCrystalData(output, team, c)) {
-                    return null;
-                }
+                DataCrystalItem.setTeamUUID(output, team);
                 var bytesScanned = c.countBytes();
-                DataScanningManager.scanData(fluidStack.getFluid(), team, false);
-                return recipeBuilder.inputItems(dataCrystal.getItem())
+                return recipeBuilder.inputItems(input)
                         .inputFluids(fluidStack.getFluid(), 1000)
-                        .outputItems(output)
                         .duration(200 * GTOCore.difficulty).EUt(eut(bytesScanned))
+                        .addExtension(ScanningRecipeExtion.INSTANCE)
+                        .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEFluidKey.of(fluidStack.getFluid()), output, team))
                         .build();
             }
         }
     }
 
-    public static long eut(long bytesScanned) {
-        return 480 * ((long) (Math.cbrt(bytesScanned) + 1)) + 8;
+    private static long eut(long bytesScanned) {
+        return 8 * bytesScanned + 8;
     }
 
     @RegisterLanguage(cn = "待扫描物品", en = "Item to Scan")
