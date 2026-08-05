@@ -79,7 +79,7 @@ public class DataScanningManager {
         return sources == null ? Set.of() : Set.copyOf(sources);
     }
 
-    private static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
+    public static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
         var teamContext = TeamResearchSavedDtat.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
         boolean isMaterial = mat != NULL;
@@ -97,6 +97,27 @@ public class DataScanningManager {
             }
         }
         return scanDataRaw(key, penalty);
+    }
+
+    public static ResearchPoints scanData(AEKey key, UUID team, long times, boolean simulate) {
+        var teamContext = TeamResearchSavedDtat.getOrCreateContext(team);
+        var mat = AEChemicalHelper.getMaterial(key);
+        boolean isMaterial = mat != NULL;
+        boolean hasScanned = (isMaterial && teamContext.getScannedMaterials().contains(mat)) || teamContext.getScannedItems().contains(key);
+        var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
+        var effectiveTimes = hasScanned ? times * penalty : 1f + (times - 1) * penalty;
+        if (!simulate) {
+            if (mat != NULL) {
+                teamContext.addScannedMaterial(mat);
+            }
+            teamContext.addScannedItem(key);
+            if (!hasScanned) {
+                for (var node : ResearchRequirements.getEurekaRequirements(key)) {
+                    Message.sendResearchToast(team, node, false);
+                }
+            }
+        }
+        return scanDataRaw(key, effectiveTimes);
     }
 
     public static ResearchPoints scanDataRaw(AEKey key, float penalty) {
@@ -157,6 +178,7 @@ public class DataScanningManager {
                 putSearch(aeKey, points);
             }
         });
+        regMap = null;
         GTOCore.LOGGER.info("Data scanning freeze took {}ms", (System.nanoTime() - prof) / 1_000_000);
     }
 

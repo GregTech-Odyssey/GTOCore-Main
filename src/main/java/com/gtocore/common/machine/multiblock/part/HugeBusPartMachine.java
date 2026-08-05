@@ -284,75 +284,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
-        public void setStackInSlot(int index, ItemStack stack) {
-            this.stack = stack;
-            count = stack.getCount();
-            onContentsChanged(index);
-        }
-
-        @Override
-        public ItemStack getStackInSlot(int slot) {
-            return stack;
-        }
-
-        @Override
-        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (stack.isEmpty()) return ItemStack.EMPTY;
-            if (count < 1 || this.stack.isEmpty()) {
-                if (!simulate) {
-                    this.stack = stack.copy();
-                    count = stack.getCount();
-                    onContentsChanged(0);
-                }
-                return ItemStack.EMPTY;
-            } else if (this.stack.getItem() == stack.getItem()) {
-                var tag = this.stack.getShareTag();
-                if (tag == null) {
-                    if (stack.getShareTag() == null) {
-                        if (!simulate) {
-                            count += stack.getCount();
-                            this.stack.setCount(MathUtil.saturatedCast(count));
-                            onContentsChanged(0);
-                        }
-                        return ItemStack.EMPTY;
-                    }
-                } else if (tag.equals(stack.getShareTag())) {
-                    if (!simulate) {
-                        count += stack.getCount();
-                        this.stack.setCount(MathUtil.saturatedCast(count));
-                        onContentsChanged(0);
-                    }
-                    return ItemStack.EMPTY;
-                }
-            }
-            return stack;
-        }
-
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (amount == 0 || count < 1 || this.stack.isEmpty()) return ItemStack.EMPTY;
-            if (amount >= count) {
-                if (simulate) {
-                    return stack;
-                } else {
-                    count = 0;
-                    var stack = this.stack;
-                    this.stack = ItemStack.EMPTY;
-                    onContentsChanged(0);
-                    return stack;
-                }
-            } else {
-                if (!simulate) {
-                    count -= amount;
-                    stack.setCount(MathUtil.saturatedCast(count));
-                    onContentsChanged(0);
-                }
-                return this.stack.copyWithCount(amount);
-            }
-        }
-
-        @Override
-        public int extract(int slot, int amount, boolean simulate) {
+        public int extract(int slot, ItemStack s, int amount, boolean simulate) {
             var count = MathUtil.saturatedCast(this.count);
             if (amount == 0 || count < 1 || this.stack.isEmpty()) return 0;
             if (amount >= count) {

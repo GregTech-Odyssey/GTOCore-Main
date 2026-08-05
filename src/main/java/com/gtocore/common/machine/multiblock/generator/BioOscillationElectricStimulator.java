@@ -129,7 +129,7 @@ public class BioOscillationElectricStimulator extends ElectricMultiblockMachine 
     public static final String BUTTON_CLEAR_ALL = "gtocore.biooscillation.button.clear.all";
     @RegisterLanguage(cn = "设置电刺激强度：%s%%", en = "Set electrical stimulation intensity: %s%%")
     public static final String BUTTON_SET_ELECTRICAL_STIMULATION = "gtocore.biooscillation.button.set.electrical.stimulation";
-    @RegisterLanguage(cn = "通过界面调整电刺激强度，范围为0%至100%；每次完整的电刺激过程持续%s秒", en = "Adjust the electrical stimulation intensity through the interface, ranging from 0% to 100%; each complete electrical stimulation process lasts for %s seconds")
+    @RegisterLanguage(cn = "通过界面调整电刺激强度，范围为0%%至100%%；每次完整的电刺激过程持续%s秒", en = "Adjust the electrical stimulation intensity through the interface, ranging from 0% to 100%; each complete electrical stimulation process lasts for %s seconds")
     public static final String BUTTON_SET_ELECTRICAL_STIMULATION_DESC = "gtocore.biooscillation.button.set.electrical.stimulation.desc";
 
     @Override

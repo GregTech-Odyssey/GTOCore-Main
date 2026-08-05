@@ -1,6 +1,5 @@
 package com.gtocore.common.recipe;
 
-import com.gtocore.api.research.scanning.DataCrystalScanningLogic;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeCategories;
 import com.gtocore.common.data.GTORecipeDataKeys;
@@ -170,7 +169,6 @@ public final class RecipeTypeModify {
 
         GTRecipeTypes.FORMING_PRESS_RECIPES.getCustomRecipeLogicRunners().clear();
         GTRecipeTypes.FORMING_PRESS_RECIPES.getCustomRecipeLogicRunners().add(new FormingPressLogic());
-        GTRecipeTypes.SCANNER_RECIPES.getCustomRecipeLogicRunners().add(new DataCrystalScanningLogic());
     }
 
     private static int getEUTierIndex(int euTier) {

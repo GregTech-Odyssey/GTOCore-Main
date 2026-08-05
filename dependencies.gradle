@@ -150,9 +150,9 @@ dependencies {
 
     modCompileOnly("curse.maven:open-parties-and-claims-636608:8230795")
 
-    modImplementation("curse.maven:sophisticated-backpacks-422301:8249823")
-    modImplementation("curse.maven:sophisticated-core-618298:8249804")
-    modImplementation("curse.maven:sophisticated-storage-619320:8249841")
+    modCompileOnly("curse.maven:sophisticated-backpacks-422301:8249823")
+    modCompileOnly("curse.maven:sophisticated-core-618298:8249804")
+    modCompileOnly("curse.maven:sophisticated-storage-619320:8249841")
     modImplementation("curse.maven:construction-wand-399558:4684054")
 
     modImplementation("curse.maven:pipez-443900:6945379")
@@ -229,6 +229,9 @@ dependencies {
             modRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")  // 不能参与runData任务
             modRuntimeOnly("curse.maven:tool-belt-260262:5929061")
 //            modRuntimeOnly("curse.maven:ftb-xmod-compat-forge-889915:6402486")
+            modRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
+            modRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
+            modRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
         }
         if (gradle.startParameter.taskNames.first != "runServer") {
             modRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")

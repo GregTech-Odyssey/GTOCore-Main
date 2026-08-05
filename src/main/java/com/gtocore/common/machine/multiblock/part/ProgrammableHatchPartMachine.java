@@ -267,12 +267,6 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
                 return 0;
             }
 
-            @NotNull
-            @Override
-            public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-                return stack;
-            }
-
             @Override
             public int insert(int slot, @NotNull ItemStack stack, int count, boolean simulate) {
                 return 0;

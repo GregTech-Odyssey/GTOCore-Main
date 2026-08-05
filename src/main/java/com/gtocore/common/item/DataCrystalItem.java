@@ -73,6 +73,14 @@ public class DataCrystalItem extends Item implements IExDataItem {
         return capacity - usedCap;
     }
 
+    public static void addResearchData(ItemStack stack, ResearchPoints researchPoints) {
+        for (var entry : researchPoints.reference2LongEntrySet()) {
+            ResearchTag rt = entry.getKey();
+            long amount = entry.getLongValue();
+            addResearchData(stack, rt, amount);
+        }
+    }
+
     @Override
     public boolean requireDataBank() {
         return false;

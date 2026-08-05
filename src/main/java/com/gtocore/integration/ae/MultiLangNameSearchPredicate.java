@@ -1,6 +1,6 @@
 package com.gtocore.integration.ae;
 
-import com.gtocore.integration.ae.hooks.IMoreLangCache;
+import com.gtocore.integration.ae.hooks.IAEKeyExtension;
 
 import appeng.api.stacks.AEKey;
 import appeng.menu.me.common.GridInventoryEntry;
@@ -47,7 +47,7 @@ public class MultiLangNameSearchPredicate implements Predicate<GridInventoryEntr
 
         // 2. 你的多语言逻辑
         AEKey entryInfo = Objects.requireNonNull(gridInventoryEntry.getWhat());
-        if (entryInfo instanceof IMoreLangCache cache) {
+        if (entryInfo instanceof IAEKeyExtension cache) {
             for (String langCode : MoremorelangConfig.moreLanguages) {
                 String translated = cache.gtocore$getTranslatedLower(langCode);
                 if (translated != null && translated.contains(this.term)) {

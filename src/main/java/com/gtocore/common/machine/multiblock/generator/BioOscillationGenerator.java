@@ -291,7 +291,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (tissue == null) {
-            forEachItems(true, (stack, amount) -> {
+            unit.forEachItems(true, (stack, amount) -> {
                 var data = TISSUE_MATERIALS_TIER.get(stack.getItem());
                 if (data != null) {
                     var casingTier = getCasingTier(MACHINING_CONTROL_MODULE_TIER);
@@ -300,7 +300,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
                         return false;
                     }
                     int amount1 = (int) Math.min(64, amount);
-                    if (inputItem(stack.getItem(), amount1)) {
+                    if (unit.inputItem(stack.getItem(), amount1)) {
                         tissue = stack.getItem();
                         tissuePoints = 0;
                         tissueAmount = amount1;
@@ -311,11 +311,11 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
             });
         }
         if (mediumMaterial == null) {
-            forEachFluids(true, (fluid, amount) -> {
+            unit.forEachFluids(true, (fluid, amount) -> {
                 var material = ChemicalHelper.getMaterial(fluid.getFluid());
                 if (BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.containsKey(material)) {
                     int amount1 = (int) Math.min(MAX_MEDIUM_AMOUNT, amount);
-                    if (inputFluid(fluid.getFluid(), amount1)) {
+                    if (unit.inputFluid(fluid.getFluid(), amount1)) {
                         mediumMaterial = material;
                         mediumAmount = amount1;
                         mediumUsage = 1000;

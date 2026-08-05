@@ -15,7 +15,10 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
     public ResearchPoints copyWithWeight(float weight) {
         ResearchPoints copy = new ResearchPoints();
         for (var entry : this.reference2LongEntrySet()) {
-            copy.put(entry.getKey(), (long) (entry.getLongValue() * weight));
+            long weightedValue = (long) (entry.getLongValue() * weight);
+            if (weightedValue > 0) {
+                copy.put(entry.getKey(), weightedValue);
+            }
         }
         return copy;
     }

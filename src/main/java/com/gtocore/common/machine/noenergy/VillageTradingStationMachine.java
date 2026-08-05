@@ -630,18 +630,6 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             this.machine = machine;
             this.setFilter(i -> i.getItem().equals(VILLAGER_ITEM));
         }
-
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (machine.isLocked(slot)) return ItemStack.EMPTY;
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
-        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (machine.isLocked(slot)) return stack;
-            return super.insertItem(slot, stack, simulate);
-        }
     }
 
     // 村民交易配方类
