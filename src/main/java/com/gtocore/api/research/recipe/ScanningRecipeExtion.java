@@ -57,8 +57,8 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
             ItemStack dataCrystal = aeKeyDataCrystal.dataCystal().copy();
             var aeKeys = aeKeyDataCrystal.aeKeys();
             UUID team = aeKeyDataCrystal.team();
-            for (var aeKey : aeKeys.genericStackSet()) {
-                DataCrystalItem.addResearchData(dataCrystal, DataScanningManager.scanData(aeKey.what(), team, aeKey.amount(), simulate));
+            for (var entry : aeKeys) {
+                DataCrystalItem.addResearchData(dataCrystal, DataScanningManager.scanData(entry.getKey(), team, entry.getLongValue(), simulate));
             }
             if (simulate) {
                 return unit == null ? holder.simulateOutputItem(dataCrystal) : unit.handleItem(io, List.of(new Content<>(ItemIngredient.of(dataCrystal), 1)), true);
@@ -130,8 +130,10 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
             var data = new IntMapData(3);
             var aekeys = obj.aeKeys();
             var aeMapData = new ListData(aekeys.size());
-            for (var entry : aekeys.genericStackSet()) {
-                aeMapData.add(GTOCodecs.GENERIC_STACK_DATA_CODEC.encode(entry));
+            for (var entry : aekeys) {
+                var tag = entry.getKey().toTagGeneric();
+                tag.putLong("#", entry.getLongValue());
+                aeMapData.add(DataCodecs.COMPOUND_TAG_CODEC.encode(tag));
             }
             data.put(0, aeMapData);
             data.put(1, DataCodecs.ITEM_STACK_CODEC.encode(obj.dataCystal()));
@@ -144,8 +146,9 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
         @Override
         public void encode(FriendlyByteBuf buf, AEKeyDataCrystal obj) {
             buf.writeInt(obj.aeKeys().size());
-            for (var entry : obj.aeKeys().genericStackSet()) {
-                GTOCodecs.GENERIC_STACK_STREAM_CODEC.encode(buf, entry);
+            for (var entry : obj.aeKeys()) {
+                AEKey.writeKey(buf, entry.getKey());
+                buf.writeVarLong(entry.getLongValue());
             }
             StreamCodecs.ITEM_STACK_CODEC.encode(buf, obj.dataCystal());
             ByteStreamCodec.UUID_CODEC.encode(buf, obj.team());
