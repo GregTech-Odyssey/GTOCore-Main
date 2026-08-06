@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 
+import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import lombok.Getter;
 
@@ -22,13 +23,23 @@ public final class ResearchTag {
     private final long bytePerPoint;
 
     public static final Map<String, CNEN> LNAG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
-    public static final O2OOpenCacheHashMap<String, ResearchTag> TAGS = new O2OOpenCacheHashMap<>();
+    /**
+     * DataSyncLib 注册器：注册的全部 ResearchTag 以 name 为 key。freeze 后按 name 排序分配稳定整数 id，
+     * 供网络流用紧凑 id 编解码（registry.streamCodec()）；持久化走 name key（registry.dataCodec()）。
+     */
+    public static final Registry<String, ResearchTag> TAGS = createRegistry();
+
+    private static Registry<String, ResearchTag> createRegistry() {
+        var registry = new Registry<String, ResearchTag>("gtocore:research_tag");
+        registry.unfreeze();
+        return registry;
+    }
 
     public ResearchTag(String name, String cn, String en, long bytePerPoint) {
         if (LNAG != null) {
             LNAG.put("gtocore.research.tag." + name, new CNEN(cn, en));
         }
-        TAGS.put(name, this);
+        TAGS.register(name, this);
         this.name = name;
         var ran = RandomSource.create(name.hashCode() * 31L);
         this.color = ColorUtils.getInterpolatedColor(ran.nextInt(0xFFFFFF) | 0xFF000000, 0xFFFFFFFF, 0.5f);
@@ -55,4 +66,8 @@ public final class ResearchTag {
     public static final ResearchTag QUANTUM = new ResearchTag("quantum", "量子", "Quantum", 2L << 20);
     public static final ResearchTag EXOTIC = new ResearchTag("exotic", "奇异", "Exotic", 2L << 25);
     public static final ResearchTag SUPRACAUSAL = new ResearchTag("supracausal", "超因果", "Supracausal", 2L << 30);
+
+    static {
+        TAGS.freeze();
+    }
 }

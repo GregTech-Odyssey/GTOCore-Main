@@ -25,7 +25,6 @@ import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.IntMapData;
 import com.gto.datasynclib.datastream.data.ListData;
 import com.gto.datasynclib.util.DataCodecs;
 import com.gto.datasynclib.util.StreamCodecs;
@@ -35,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @DataGeneratorScanned
@@ -109,25 +107,19 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
 
         @Override
         public AEKeyDataCrystal decode(@NotNull Data data, int dataVersion) {
-            if (!(data instanceof IntMapData d)) {
-                return null;
-            }
-            var ks = d.getList(0);
-            var d2 = DataCodecs.ITEM_STACK_CODEC.decode(Objects.requireNonNull(d.get(1)), dataVersion);
-            var team = DataCodec.UUID_CODEC.decode(Objects.requireNonNull(d.get(2)), dataVersion);
+            var d = data.asListData();
             var keyCounter = new KeyCounter();
-            if (ks instanceof ListData listData) {
-                for (var entry : listData.getList()) {
-                    var gs = GTOCodecs.GENERIC_STACK_DATA_CODEC.decode(entry, dataVersion);
-                    keyCounter.add(gs.what(), gs.amount());
-                }
+            for (var entry : d.getList(0)) {
+                var gs = GTOCodecs.GENERIC_STACK_DATA_CODEC.decode(entry, dataVersion);
+                keyCounter.add(gs.what(), gs.amount());
             }
+            var d2 = DataCodecs.ITEM_STACK_CODEC.decode(d.get(1), dataVersion);
+            var team = DataCodec.UUID_CODEC.decode(d.get(2), dataVersion);
             return new AEKeyDataCrystal(keyCounter, d2, team);
         }
 
         @Override
         public @NotNull Data encode(AEKeyDataCrystal obj) {
-            var data = new IntMapData(3);
             var aekeys = obj.aeKeys();
             var aeMapData = new ListData(aekeys.size());
             for (var entry : aekeys) {
@@ -135,9 +127,10 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
                 tag.putLong("#", entry.getLongValue());
                 aeMapData.add(DataCodecs.COMPOUND_TAG_CODEC.encode(tag));
             }
-            data.put(0, aeMapData);
-            data.put(1, DataCodecs.ITEM_STACK_CODEC.encode(obj.dataCystal()));
-            data.put(2, DataCodec.UUID_CODEC.encode(obj.team()));
+            var data = new ListData(3);
+            data.add(aeMapData);
+            data.add(DataCodecs.ITEM_STACK_CODEC.encode(obj.dataCystal()));
+            data.add(DataCodec.UUID_CODEC.encode(obj.team()));
             return data;
         }
     };

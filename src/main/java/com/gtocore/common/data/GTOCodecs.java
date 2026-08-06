@@ -18,7 +18,6 @@ import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.datastream.data.ListData;
-import com.gto.datasynclib.datastream.data.StringMapData;
 import com.gto.datasynclib.util.DataCodecs;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
@@ -189,47 +188,20 @@ public class GTOCodecs {
         return manager == null ? null : manager.getNode(nodeId);
     }
 
-    public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = new DataCodec<>() {
-
-        @Override
-        public ResearchTag decode(@NotNull Data data, int dataVersion) {
-            if (!(data instanceof StringMapData mapData)) {
-                return null;
-            }
-            return ResearchTag.TAGS.get(mapData.getString("id"));
-        }
-
-        @Override
-        public @NotNull Data encode(ResearchTag obj) {
-            StringMapData mapData = new StringMapData(1);
-            mapData.putString("id", obj.getName());
-            return mapData;
-        }
-    };
-    public final ByteStreamCodec<ResearchTag> RESEARCH_TAG_STREAM_CODEC = new ByteStreamCodec<>() {
-
-        @Override
-        public void encode(FriendlyByteBuf buf, ResearchTag obj) {
-            buf.writeUtf(obj.getName());
-        }
-
-        @Override
-        public ResearchTag decode(FriendlyByteBuf buf) {
-            return ResearchTag.TAGS.get(buf.readUtf());
-        }
-    };
+    /** 网络专用编解码器：按注册整数 id 编码（紧凑）。 */
+    public final ByteStreamCodec<ResearchTag> RESEARCH_TAG_STREAM_CODEC = ResearchTag.TAGS.streamCodec();
+    /** 持久化专用编解码器：按 name key 编码（自描述、跨版本稳定）。 */
+    public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = ResearchTag.TAGS.dataCodec(DataCodec.STRING_CODEC);
     public final DataCodec<ResearchPoints> RESEARCH_POINTS_DATA_CODEC = new DataCodec<>() {
 
         @Override
         public ResearchPoints decode(@NotNull Data data, int dataVersion) {
-            if (!(data instanceof StringMapData mapData)) {
-                return null;
-            }
+            var list = data.asListData();
             ResearchPoints points = new ResearchPoints();
-            for (var entry : mapData.entrySet()) {
-                ResearchTag tag = ResearchTag.TAGS.get(entry.getKey());
+            for (int i = 0; i < list.size(); i += 2) {
+                ResearchTag tag = ResearchTag.TAGS.get(list.getString(i));
                 if (tag != null) {
-                    points.put(tag, entry.getValue().getLong());
+                    points.put(tag, list.getLong(i + 1));
                 }
             }
             return points;
@@ -237,12 +209,13 @@ public class GTOCodecs {
 
         @Override
         public @NotNull Data encode(ResearchPoints obj) {
-            StringMapData mapData = new StringMapData(obj.size());
+            var list = new ListData(obj.size() * 2);
             for (var it = obj.reference2LongEntrySet().fastIterator(); it.hasNext();) {
                 var entry = it.next();
-                mapData.putLong(entry.getKey().getName(), entry.getLongValue());
+                list.addString(entry.getKey().getName());
+                list.addLong(entry.getLongValue());
             }
-            return mapData;
+            return list;
         }
     };
 

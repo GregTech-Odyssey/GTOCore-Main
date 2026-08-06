@@ -411,7 +411,7 @@ final class TechNodeEditorWidget extends DraggableScrollableWidgetGroup {
     }
 
     private static List<String> tagNames() {
-        return ResearchTag.TAGS.keySet().stream().sorted().toList();
+        return ResearchTag.TAGS.keys().stream().sorted().toList();
     }
 
     private static long parseLong(String value, long fallback) {
