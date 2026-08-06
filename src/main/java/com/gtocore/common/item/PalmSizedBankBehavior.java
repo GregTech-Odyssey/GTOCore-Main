@@ -26,6 +26,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import com.gto.fastcollection.O2LOpenCacheHashMap;
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -507,7 +508,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                 ServerLevel serverLevel = player instanceof ServerPlayer serverPlayer ? serverPlayer.serverLevel() : null;
 
                 Object2ObjectMap<UUID, String> WalletPlayers = WalletUtils.getAllWalletPlayers(serverLevel);
-                Set<UUID> shared = new HashSet<>();
+                Set<UUID> shared = new OpenCacheHashSet<>();
 
                 mainGroup.addWidget(new ComponentPanelWidget(10, 16,
                         list -> list.add(ComponentPanelWidget.withHoverTextTranslate(

@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -163,7 +162,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
         private final DraggableScrollableWidgetGroup entryPanel;
         private final WidgetGroup entryContent;
         private final Map<AEKey, AEKeyWidget> entryWidgetCache = new HashMap<>();
-        private final Set<AEKey> mountedEntryKeys = new HashSet<>();
+        private final Set<AEKey> mountedEntryKeys = new ReferenceOpenHashSet<>();
         private final EmptyEntryWidget emptyEntryWidget = new EmptyEntryWidget(
                 2, 2, ENTRY_PANEL_WIDTH - 12, ENTRY_PANEL_HEIGHT - 12, Component.empty());
         private List<AEKey> filteredEntries = Collections.emptyList();
@@ -430,7 +429,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
             int firstIndex = Math.min(filteredEntries.size(), firstRow * ENTRY_COLUMNS);
             int lastIndexExclusive = Math.min(filteredEntries.size(), lastRowExclusive * ENTRY_COLUMNS);
 
-            Set<AEKey> visibleKeys = new HashSet<>();
+            Set<AEKey> visibleKeys = new ReferenceOpenHashSet<>();
             for (int i = firstIndex; i < lastIndexExclusive; i++) {
                 visibleKeys.add(filteredEntries.get(i));
             }

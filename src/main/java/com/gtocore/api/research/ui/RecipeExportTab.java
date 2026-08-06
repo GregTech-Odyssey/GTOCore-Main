@@ -34,6 +34,7 @@ import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEKey;
 import appeng.client.gui.me.common.StackSizeRenderer;
 
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
@@ -51,7 +52,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -399,7 +399,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         private List<EntryState> buildEntries() {
             Player player = getGuiPlayer();
-            Set<String> unlockedNodeNames = new HashSet<>();
+            Set<String> unlockedNodeNames = new OpenCacheHashSet<>();
             TechTree tree = player == null ? null : TechTreeSavedData.findTree(player, techTree);
             if (tree != null && !tree.isEmpty()) {
                 for (TechNode node : tree.getUnlockedNodes()) {

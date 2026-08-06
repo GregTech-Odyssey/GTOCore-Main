@@ -2,6 +2,7 @@ package com.gtocore.api.research.scanning.editor;
 
 import com.gtocore.api.research.ResearchTag;
 
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -39,7 +40,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -173,7 +173,7 @@ final class DataScanningEditorWidget extends DraggableScrollableWidgetGroup {
         if (state.points.isEmpty()) {
             return "at least one ResearchPoint entry is required";
         }
-        var tags = new HashSet<String>();
+        var tags = new OpenCacheHashSet<String>();
         for (PointEntry point : state.points) {
             if (!ResearchTag.TAGS.containsKey(point.tagName)) {
                 return "unknown ResearchTag: " + point.tagName;

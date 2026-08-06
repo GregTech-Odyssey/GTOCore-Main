@@ -8,6 +8,7 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPartInv;
 import com.gtocore.integration.ae.hooks.IExtendedPatternContainer;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.gtolib.api.ae2.IPatterEncodingTermMenu;
 import com.gtolib.api.ae2.pattern.PatternUtils;
 import com.gtolib.utils.ClientUtil;
@@ -240,7 +241,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         var thisPatternDetails = AEPatternDecoder.INSTANCE.decodePattern(stack, getPlayer().level(), false);
         if (thisPatternDetails == null) return Collections.emptyList();
         var primaryOutput = thisPatternDetails.getPrimaryOutput().what();
-        Set<Object> sameCluster = new HashSet<>();
+        Set<Object> sameCluster = new OpenCacheHashSet<>();
 
         machines.removeIf(container -> gto$shouldRemoveContainer(container, stack, primaryOutput, sameCluster));
         var containerComparator = (gto$isCraft ? gto$craftFirst(stack) : gto$recipeFirst(gto$lastRecipeType, recipeLocName, stack)).reversed();
