@@ -13,6 +13,7 @@ plugins {
     alias libs.plugins.kotlin.plugin
     alias libs.plugins.kotlin.lombok
     alias libs.plugins.gtopublishgradleplugin
+    id "org.jetbrains.kotlin.kapt" version '2.3.20'
 }
 
 version = mod_version
@@ -242,4 +243,7 @@ gtoPublish {
     githubRepo        = 'owner/repo-name'      // GitHub 仓库（启用 GitHub 发布时必填）
     curseforgeProjectId   = '123456'    // CurseForge 项目 ID（启用 CurseForge 时必填）
     curseforgeJavaVersion = 'Java 21'   // 运行时最低 Java（GTCEu 等依赖要求 21+；开发机可用 Java 25）
+}
+kapt {
+    keepJavacAnnotationProcessors = true
 }
