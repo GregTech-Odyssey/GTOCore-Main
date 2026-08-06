@@ -248,7 +248,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(trans(52));
                     List1.add(ComponentPanelWidget.withButton(trans(53), "confirm1"));
                     List1.add(Component.literal("-------------------"));
-                    for (Object2ObjectMap.Entry<UUID, String> entry : WalletPlayers.object2ObjectEntrySet()) {
+                    for (var it = WalletPlayers.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
+                        var entry = it.next();
                         List1.add(ComponentPanelWidget.withHoverTextTranslate(
                                 ComponentPanelWidget.withButton(Component.literal("§b" + entry.getValue() + "§r"), entry.getKey().toString()),
                                 Component.literal(entry.getValue())));
@@ -530,7 +531,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(Component.empty());
                     List1.add(Component.empty());
                     List1.add(Component.literal("-------------------"));
-                    for (Object2ObjectMap.Entry<UUID, String> entry : WalletPlayers.object2ObjectEntrySet()) {
+                    for (var it = WalletPlayers.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
+                        var entry = it.next();
                         List1.add(ComponentPanelWidget.withHoverTextTranslate(
                                 ComponentPanelWidget.withButton(Component.literal("§b" + entry.getValue() + "§r"), entry.getKey().toString()), Component.literal(entry.getKey().toString())));
                     }
