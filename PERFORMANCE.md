@@ -20,7 +20,10 @@
 1. **尽量使用原始集合**，尤其是对象作为 `Set` 或 `Map` 的 key 时，优先选原始类型对应的 fastutil 容器。
 2. **根据对象类型选择引用容器。** 属「注册对象/标识稳定」的（如 `Item`、`Fluid`，以及专门的 `AEKeyMap`），用引用容器；**`AEKey` 是引用对象，必须使用专门的 `AEKeyMap`**。
 3. **除非哈希特别轻、计算极快，一律使用哈希缓存容器。** 即便对象本身支持 `equals`，也别用开放寻址的「非哈希缓存容器」裸跑；尤其 `HashSet` 要用 OpenCacheHashSet 替代——速度更快、内存占用更低。
-4. **`MapEntry` 迭代问题**：开放寻址 Map 或精简 Map 的实现在迭代时会为每个元素创建一个对象，元素量大后会造成 GC 压力。**尽量改用 `forEach`（或 `fastForEach`）/ `fastIterator`**，避免产生中间对象。
+4. **`MapEntry` 迭代问题**：开放寻址 Map 或精简 Map（含 fastutil / FastCollection）的实现在**普通迭代**（`for (var e : map.entrySet())`）时会为每个元素创建一个对象，元素量大后会造成 GC 压力。**尽量改用 `forEach`（或 `fastForEach`）/ `fastIterator`**，避免产生中间对象。
+   - **⚠️ `fastIterator()` 每次 `next()` 返回的是同一个被复用的 Entry 对象**（只改变其 key/value 内容）。因此**循环体内绝不能把 `entry` 对象本身收集进集合、列表、数组、map 或任何长生命周期结构**——否则收集到的全是同一引用的最终状态。需要保存时，只能保存 `entry.getKey()` / `entry.getValue()` 返回的真实引用，或立刻 `new` 一个新对象再收集。
+   - 若循环体需要把条目收集起来（如 `.toList()`、`stream().sorted().collect(...)`、`list.add(entry)`），**必须保留普通迭代**，不可替换为 `fastIterator`。
+   - 循环体内的 `break` / `continue` / `return` 直接可用；在同一循环体内多次调用 `it.next()` 需注意每个 `next()` 才推进一次。
 5. **原始容器迭代问题**：如 `IntSet`、原始 `Map` 的 `keyset()` / `values()` 返回的原始容器，用 `for (Type e : set) {}` 增强 for 会调用包装方法，迭代时依然会装箱、分配对象。**应手动使用迭代器或 forEach**，杜绝隐式装箱与分配。
 6. **优先用 EnumMap / EnumSet 处理枚举键。** 本仓大量逻辑围绕枚举状态/类型分发；凡 `Map<Enum,...>` / `Set<Enum>` 一律用 `EnumMap` / `EnumSet`，它们是按序号的数组实现，速度与内存均优于任何哈希容器，且迭代不产生装箱。
 7. **慎用 `Optional`、`stream()`、`.boxed()` 在热路径中。** 热路径（render、tick、机器逻辑高频调用处）**禁止**出现流式链（`stream().map(...).filter(...)`）、`Optional` 链式调用与 `.boxed()`——它们会产生中间对象与装箱。优先用显式 for/while 循环与直接判空。仅在冷路径（配置解析、数据一次性整理）可酌情使用。
