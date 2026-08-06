@@ -39,6 +39,20 @@
 15. **反射仅用于冷路径（注册、扫描、启动一次）。** 禁止在热路径使用 `Class.forName`、`getMethod`/`getDeclaredMethod`、`getField` 等反射调用。需要重复调用时，缓存反射到的 `Method`/`Field`/构造器并 `setAccessible(true)`，优先用 `MethodHandles`/`VarHandle`。
 20. **不要在每帧/每次 tick 内重复计算只依赖静态数据的结果。** 查得到的常量（`Item.EMPTY`、注册表查找、`ResourceLocation`、字符串 key）提到 `static final` 字段或缓存；GTO 的 registry/命名空间高频碰撞时，用编译期已知常量替代字符串查找。
 
+### DataSyncLib 编解码
+
+21. **对称编解码器用 `ListData`，不要用 `IntMapData` / `StringMapData` 等 map 结构。** 凡 encode 与 decode 一一对应、字段不会缺少的对称编解码（如 `DataCodec`），用 `ListData` 按序存储：encode 用 `new ListData(n)` + `add(...)`，decode 用 `data.asListData()` 直接取。**因为对称结构不会缺字段，不需要 map 的 key 索引，也无须类型判断**（去掉 `instanceof XxxMapData` 与 `Objects.requireNonNull`，直接 `asListData()` / `getString(i)` / `getLong(i+1)`）。
+   - **单字段**直接用对应 `Data` 类型（如 `StringData.valueOf(name)` / `data.getString()`），**不要再包一层 `ListData`**。
+   - 仅当**非对称**持久化（需容忍缺失字段、有版本号，如 `save`/`load` 兼容旧存档）才保留 map（`StringMapData` 等按 key 定位）。
+
+22. **网络流与持久化要各自用专用编解码器，不要共用一个字符串格式。** 网络通道用紧凑的原始/整数 id 编码，持久化用自描述、跨版本稳定的 key 编码——两者独立，见下条与「网络同步」。
+23. **注册对象必须用 DataSyncLib 注册器得到网络专用编解码器，不要和保存共用字符串。** 凡"标识稳定、一次性注册"的对象（如 `ResearchTag`、`TechNode`、`AttributeDefinition`），应注册进 DataSyncLib 的 `Registry`（`com.gto.datasynclib.util.Registry`，`GTRegistry` 即继承它）：
+   - `unfreeze()` → 注册所有实例（构造时 `register(name, obj)`）→ **在全部注册完成后** `freeze()`（按 key 排序分配稳定整数 id）。
+   - **网络流**用 `registry.streamCodec()` —— 按**紧凑整数 id** 编码（`writeVarInt(id)` / `readVarInt`）。
+   - **持久化**用 `registry.dataCodec(keyCodec)`（如 `STRING_CODEC`）—— 按 **key 字符串**编码，自描述、跨版本稳定。
+   - **不可共用**：网络与保存各配专用 codec，网络不直接用保存的字符串格式（同 24 条原则）。
+   - **注意**：`freeze()` 的 static 块必须放在所有注册对象的静态字段之后，先注册、后 freeze；id 由排序决定，客户端/服务器注册集合一致即保证 id 一致。
+
 ### 网络同步
 
 24. **网络同步不要简单复用磁盘保存的数据。** 直接序列化 NBT 或复用存盘格式做网络包会带进大量与同步无关的字段与对象分配，造成带宽与 GC 浪费。**应为网络通道单独写一套紧凑的流式编码**（可变长/定长原始字段、按需仅含变更字段），并**优先使用 DataSyncLib 相关的 API** 完成字段级增量同步，而非整包序列化。
