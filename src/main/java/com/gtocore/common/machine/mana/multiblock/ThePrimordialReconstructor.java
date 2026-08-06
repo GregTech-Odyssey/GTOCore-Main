@@ -42,6 +42,7 @@ import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemItem;
 import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemRegistry;
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMaps;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.NotNull;
@@ -424,7 +425,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
             enchantments.clear();
             for (Map.Entry<Enchantment, Int2IntMap> enchantEntry : enchantmentLevelCounts.entrySet()) {
                 Enchantment enchantment = enchantEntry.getKey();
-                for (var it = enchantEntry.getValue().int2IntEntrySet().fastIterator(); it.hasNext();) {
+                for (var it = Int2IntMaps.fastIterator(enchantEntry.getValue()); it.hasNext();) {
                     var levelEntry = it.next();
                     int level = levelEntry.getIntKey();
                     int count = levelEntry.getIntValue();

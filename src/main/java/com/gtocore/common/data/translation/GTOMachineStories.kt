@@ -760,7 +760,7 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
     val WoodDistillationTooltips = ComponentListSupplier {
         setTranslationPrefix("wood_distillation")
         add("绿色化学的工业典范，将木质纤维转化为万千化工原料" translatedTo "Industrial典范 of green chemistry, transforming wood fibers into myriad chemical materials") { green() }
-        add("催化气体精准调控，让木质素和纤维素高效分离重组" translatedTo "Precise catalytic gas control enables efficient separation and重组 of lignin and cellulose") { gray() }
+        add("催化气体精准调控，让木质素和纤维素高效分离重组" translatedTo "Precise catalytic gas control enables efficient separation and recombination of lignin and cellulose") { gray() }
         add("从木材到甲醇、从木屑到化纤，实现可再生资源的最大化利用" translatedTo "From wood to methanol, from sawdust to chemical fibers, maximizing utilization of renewable resources") { yellow() }
         add("生物催化技术与高温裂解的完美结合，零碳排放的绿色工艺" translatedTo "Perfect combination of biocatalysis and pyrolysis, zero-carbon emission green process") { aqua() }
         add("散发着淡淡木质香气的它，仿佛森林在工业中的化身" translatedTo "Wreathed in a faint, woody fragrance, it stands as if the forest itself, incarnate in the realm of industry") { gold() }

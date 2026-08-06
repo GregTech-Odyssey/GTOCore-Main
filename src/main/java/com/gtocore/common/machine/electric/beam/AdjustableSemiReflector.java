@@ -109,7 +109,7 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
 
     private void tick() {
         var manager = BeamManager.get(getLevel());
-        for (var iter = incidents.entrySet().iterator(); iter.hasNext();) {
+        for (var iter = incidents.object2ObjectEntrySet().fastIterator(); iter.hasNext();) {
             var it = iter.next();
             var incident = it.getValue();
             if (incidents.get(it.getKey()) != incident) continue;
@@ -122,7 +122,7 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
         transmittedDirty = false;
 
         var aggregates = collectTransmittedBeams();
-        for (var iter = transmittedBeams.entrySet().iterator(); iter.hasNext();) {
+        for (var iter = transmittedBeams.object2ObjectEntrySet().fastIterator(); iter.hasNext();) {
             var entry = iter.next();
             if (aggregates.containsKey(entry.getKey())) continue;
             if (entry.getValue() == null) {

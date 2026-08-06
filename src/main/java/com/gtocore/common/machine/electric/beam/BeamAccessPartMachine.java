@@ -28,6 +28,7 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -125,7 +126,8 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
 
         long now = level.getGameTime();
         long firstTick = now - AVERAGE_WINDOW_TICKS + 1L;
-        for (var entry : intensityHistories.entrySet()) {
+        for (var iter = intensityHistories.object2ObjectEntrySet().fastIterator(); iter.hasNext();) {
+            var entry = iter.next();
             long[] target = samples.computeIfAbsent(entry.getKey(), ignored -> new long[AVERAGE_WINDOW_TICKS]);
             var history = entry.getValue();
             for (int i = 0; i < AVERAGE_WINDOW_TICKS; i++) {
@@ -153,10 +155,12 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
         }
 
         boolean hadHistories = !intensityHistories.isEmpty();
-        for (var entry : intensityHistories.entrySet()) {
+        for (var iter = intensityHistories.object2ObjectEntrySet().fastIterator(); iter.hasNext();) {
+            var entry = iter.next();
             entry.getValue().set(now, currentIntensities.getOrDefault(entry.getKey(), 0L));
         }
-        for (var entry : currentIntensities.entrySet()) {
+        for (var iter = currentIntensities.object2ObjectEntrySet().fastIterator(); iter.hasNext();) {
+            var entry = iter.next();
             intensityHistories.computeIfAbsent(entry.getKey(), ignored -> new IntensityHistory()).set(now, entry.getValue());
         }
         intensityHistories.values().removeIf(history -> !history.hasRecentSample(now));
@@ -167,19 +171,21 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
         if (hadHistories || !intensityHistories.isEmpty()) notifyControllers();
     }
 
-    private void updateReceivedBeamDisplay(Map<BeamKey, Long> currentIntensities) {
-        var entries = currentIntensities.entrySet().stream()
-                .filter(entry -> entry.getValue() > 0)
-                .sorted(Comparator.comparingInt((Map.Entry<BeamKey, Long> entry) -> entry.getKey().waveLength())
-                        .thenComparingDouble(entry -> entry.getKey().polarization()))
-                .toList();
+    private void updateReceivedBeamDisplay(Object2ObjectOpenHashMap<BeamKey, Long> currentIntensities) {
+        var entries = new ArrayList<DisplayBeam>(currentIntensities.size());
+        for (var iter = currentIntensities.object2ObjectEntrySet().fastIterator(); iter.hasNext();) {
+            var entry = iter.next();
+            if (entry.getValue() > 0) entries.add(new DisplayBeam(entry.getKey(), entry.getValue()));
+        }
+        entries.sort(Comparator.comparingInt((DisplayBeam entry) -> entry.key.waveLength())
+                .thenComparingDouble(entry -> entry.key.polarization()));
         var properties = new int[entries.size() * 2];
         var intensities = new long[entries.size()];
         for (int i = 0; i < entries.size(); i++) {
             var entry = entries.get(i);
-            properties[i * 2] = entry.getKey().waveLength();
-            properties[i * 2 + 1] = Float.floatToIntBits(entry.getKey().polarization());
-            intensities[i] = entry.getValue();
+            properties[i * 2] = entry.key.waveLength();
+            properties[i * 2 + 1] = Float.floatToIntBits(entry.key.polarization());
+            intensities[i] = entry.intensity;
         }
         if (!Arrays.equals(receivedBeamProperties, properties) || !Arrays.equals(receivedBeamIntensities, intensities)) {
             receivedBeamProperties = properties;
@@ -209,6 +215,8 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
             return new BeamKey(properties.waveLength, polarization);
         }
     }
+
+    private record DisplayBeam(BeamKey key, long intensity) {}
 
     private static final class IntensityHistory {
 

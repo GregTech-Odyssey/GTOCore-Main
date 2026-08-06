@@ -55,7 +55,7 @@ public final class ResearchRequirements {
         }
     };
 
-    private static final Reference2ObjectMap<AEKey, Set<TechNode>> EUREKA_REQUIREMENTS = new Reference2ObjectOpenCustomHashMap<>(AE_KEY_STRATEGY);
+    private static final Reference2ObjectOpenCustomHashMap<AEKey, Set<TechNode>> EUREKA_REQUIREMENTS = new Reference2ObjectOpenCustomHashMap<>(AE_KEY_STRATEGY);
 
     private long cwuNeeded;
     private ResearchPoints materialNeeded;

@@ -41,10 +41,10 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 
 public class DataScanningManager {
 
-    private static final Reference2ObjectMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
+    private static final Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
     private static final Reference2ReferenceMap<ResearchTag, Set<AEKey>> dataScanningSources = new Reference2ReferenceOpenHashMap<>();
 
-    private static Reference2ObjectMap<AEKey, ResearchPoints> regMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
+    private static Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> regMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
 
     private static final Reference2ObjectMap<UUID, Set<AEKey>> teamUnscannedItems = new Reference2ObjectOpenHashMap<>();
     private static boolean frozen = false;
