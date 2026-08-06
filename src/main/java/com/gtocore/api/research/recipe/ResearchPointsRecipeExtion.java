@@ -48,7 +48,8 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
         if (io == IO.OUT && !simulate) {
             var points = recipe.data.getData(INSTANCE);
             if (points != null) {
-                for (var entry : points.reference2LongEntrySet()) {
+                for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                    var entry = it.next();
                     var researchTag = entry.getKey();
                     var amount = entry.getLongValue();
                     if (holder instanceof IResearchPointsOperation machine) {
@@ -77,7 +78,8 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
         if (points != null) {
             group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable(RESEARCH_POINTS)));
             yOffset.add(10);
-            for (var entry : points.reference2LongEntrySet()) {
+            for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
                 var researchTag = entry.getKey();
                 var amount = entry.getLongValue();
                 int finalXOffset = 3 - xOffset;

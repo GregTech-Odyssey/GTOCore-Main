@@ -174,7 +174,8 @@ public class TeamResearchContext {
     }
 
     public void addResearchPoints(ResearchPoints researchPoints) {
-        for (var entry : researchPoints.reference2LongEntrySet()) {
+        for (var it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             this.researchPoints.addTo(entry.getKey(), entry.getLongValue());
         }
         TeamResearchSavedDtat.INSTANCE.setDirty(true);

@@ -238,7 +238,8 @@ public class GTOCodecs {
         @Override
         public @NotNull Data encode(ResearchPoints obj) {
             StringMapData mapData = new StringMapData(obj.size());
-            for (var entry : obj.reference2LongEntrySet()) {
+            for (var it = obj.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
                 mapData.putLong(entry.getKey().getName(), entry.getLongValue());
             }
             return mapData;
@@ -250,7 +251,8 @@ public class GTOCodecs {
         @Override
         public void encode(FriendlyByteBuf buf, ResearchPoints obj) {
             buf.writeVarInt(obj.size());
-            for (var entry : obj.reference2LongEntrySet()) {
+            for (var it = obj.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
                 buf.writeUtf(entry.getKey().getName());
                 buf.writeVarLong(entry.getLongValue());
             }

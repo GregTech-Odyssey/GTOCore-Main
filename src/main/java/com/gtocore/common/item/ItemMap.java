@@ -90,7 +90,8 @@ public final class ItemMap {
     static {
         int index = 0;
         int cumulativeProbability = 0;
-        for (var entry : SCRAP_MAP.reference2IntEntrySet()) {
+        for (var it = SCRAP_MAP.reference2IntEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             SCRAP_ITEMS[index] = entry.getKey();
             cumulativeProbability += entry.getIntValue();
             CUMULATIVE_PROBABILITIES[index] = cumulativeProbability;

@@ -56,7 +56,8 @@ public class DataCrystalItem extends Item implements IExDataItem {
             return true;
         }
         var outputTest = output.copy();
-        for (var entry : c.reference2LongEntrySet()) {
+        for (var it = c.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             ResearchTag rt = entry.getKey();
             long amount = entry.getLongValue();
             if (!addResearchData(outputTest, rt, amount)) {
@@ -74,7 +75,8 @@ public class DataCrystalItem extends Item implements IExDataItem {
     }
 
     public static void addResearchData(ItemStack stack, ResearchPoints researchPoints) {
-        for (var entry : researchPoints.reference2LongEntrySet()) {
+        for (var it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             ResearchTag rt = entry.getKey();
             long amount = entry.getLongValue();
             addResearchData(stack, rt, amount);
@@ -97,7 +99,8 @@ public class DataCrystalItem extends Item implements IExDataItem {
         long usedCap = stack.getOrCreateTag().getLong(usedCapTag);
         tooltip.add(Component.translatable(CAPACITY_TAG,
                 Component.literal(String.format("%sB/%sB", FormattingUtil.formatNumberReadable(usedCap), FormattingUtil.formatNumberReadable(dataCapacity))).withStyle(ChatFormatting.GREEN)));
-        for (var entry : getResearchData(stack).reference2LongEntrySet()) {
+        for (var it = getResearchData(stack).reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             ResearchTag rt = entry.getKey();
             long amount = entry.getLongValue();
             tooltip.add(Component.translatable(DATA_TAG, rt.getDisplayName())

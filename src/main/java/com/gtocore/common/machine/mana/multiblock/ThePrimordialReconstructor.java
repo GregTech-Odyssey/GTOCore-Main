@@ -424,7 +424,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
             enchantments.clear();
             for (Map.Entry<Enchantment, Int2IntMap> enchantEntry : enchantmentLevelCounts.entrySet()) {
                 Enchantment enchantment = enchantEntry.getKey();
-                for (Int2IntMap.Entry levelEntry : enchantEntry.getValue().int2IntEntrySet()) {
+                for (var it = enchantEntry.getValue().int2IntEntrySet().fastIterator(); it.hasNext();) {
+                    var levelEntry = it.next();
                     int level = levelEntry.getIntKey();
                     int count = levelEntry.getIntValue();
                     int upgraded = count / 2;
@@ -516,7 +517,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         if (gemCounts.isEmpty()) return null;
 
         boolean hasRecipe = false;
-        for (Object2IntMap.Entry<GemKey> entry : gemCounts.object2IntEntrySet()) {
+        for (var it = gemCounts.object2IntEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             int pairCount = entry.getIntValue() / 2;
             if (pairCount <= 0) continue;
 

@@ -76,7 +76,8 @@ public final class ResearchRequirements {
 
     public static synchronized List<EurekaRequirementEntry> getEurekaRequirementEntries() {
         List<EurekaRequirementEntry> entries = new ArrayList<>(EUREKA_REQUIREMENTS.size());
-        for (var entry : EUREKA_REQUIREMENTS.reference2ObjectEntrySet()) {
+        for (var it = EUREKA_REQUIREMENTS.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             List<TechNode> nodes = entry.getValue().stream()
                     .sorted(Comparator.comparing((TechNode node) -> node.getManager().getId()).thenComparing(node -> node.name))
                     .toList();

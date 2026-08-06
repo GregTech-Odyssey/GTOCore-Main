@@ -273,7 +273,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
         List<MaterialState> materials = new ArrayList<>();
         List<Map.Entry<ResearchTag, Long>> entries = new ArrayList<>();
-        for (var entry : requirements.getMaterialNeeded().reference2LongEntrySet()) {
+        for (var it = requirements.getMaterialNeeded().reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             entries.add(Map.entry(entry.getKey(), entry.getLongValue()));
         }
         entries.sort(Comparator.comparing(entry -> entry.getKey().getName()));

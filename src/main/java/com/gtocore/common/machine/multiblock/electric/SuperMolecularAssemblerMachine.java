@@ -70,7 +70,8 @@ public class SuperMolecularAssemblerMachine extends ElectricMultiblockMachine im
         double d = (double) totalEu / maxEUt;
         int limit = getOverclockLimit();
         RecipeBuilder builder = getRecipeBuilder().EUt(Math.max(1, d >= limit ? maxEUt : (long) (maxEUt * d / limit))).duration((int) Math.max(d, limit));
-        for (var entry : map.object2LongEntrySet()) {
+        for (var it = map.object2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             var item = entry.getKey();
             item.setCount(MathUtil.saturatedCast(entry.getLongValue()));
             builder.outputItems(ItemIngredient.of(entry.getKey(), entry.getLongValue()));

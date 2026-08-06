@@ -259,7 +259,8 @@ public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
         if (recipe.data.containsKey(ResearchPointsRecipeExtion.INSTANCE)) {
             var points = recipe.data.getData(ResearchPointsRecipeExtion.INSTANCE);
             if (points != null) {
-                for (var entry : points.reference2LongEntrySet()) {
+                for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                    var entry = it.next();
                     var researchTag = entry.getKey();
                     var amount = entry.getLongValue();
                     super.outputs.add(new ResearchTagEmiStack(researchTag).setAmount(amount));

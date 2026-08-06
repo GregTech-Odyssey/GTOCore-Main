@@ -6,7 +6,8 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
 
     public ResearchPoints copy() {
         ResearchPoints copy = new ResearchPoints();
-        for (var entry : this.reference2LongEntrySet()) {
+        for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             copy.put(entry.getKey(), entry.getLongValue());
         }
         return copy;
@@ -14,7 +15,8 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
 
     public ResearchPoints copyWithWeight(float weight) {
         ResearchPoints copy = new ResearchPoints();
-        for (var entry : this.reference2LongEntrySet()) {
+        for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             long weightedValue = (long) (entry.getLongValue() * weight);
             if (weightedValue > 0) {
                 copy.put(entry.getKey(), weightedValue);
@@ -25,7 +27,8 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
 
     public long countBytes() {
         long totalBytes = 0;
-        for (var entry : this.reference2LongEntrySet()) {
+        for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             totalBytes += entry.getKey().getBytePerPoint() * entry.getLongValue();
         }
         return totalBytes;

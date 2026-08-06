@@ -137,7 +137,8 @@ public final class GTOPredicates {
         }
         return new TraceabilityPredicate(state -> {
             BlockState blockState = state.getBlockState();
-            for (Int2ObjectMap.Entry<Supplier<?>> entry : map.int2ObjectEntrySet()) {
+            for (var it = map.int2ObjectEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
                 if (blockState.is((Block) entry.getValue().get())) {
                     int tier = entry.getIntKey();
                     int type = state.getMatchContext().getOrPut(tierType, tier);

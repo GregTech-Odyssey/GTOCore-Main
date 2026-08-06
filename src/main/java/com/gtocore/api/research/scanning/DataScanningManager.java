@@ -64,7 +64,8 @@ public class DataScanningManager {
 
     public static synchronized List<DataScanningEntry> getDataScanningEntries() {
         List<DataScanningEntry> entries = new ArrayList<>(dataScanningMap.size());
-        for (var entry : dataScanningMap.reference2ObjectEntrySet()) {
+        for (var it = dataScanningMap.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             entries.add(new DataScanningEntry(entry.getKey(), entry.getValue().copy()));
         }
         entries.sort(Comparator.comparing((DataScanningEntry entry) -> entry.key().getType().getId().toString())
@@ -199,7 +200,8 @@ public class DataScanningManager {
 
     private static void putSearch(AEKey key, ResearchPoints points) {
         dataScanningMap.put(key, points);
-        for (var entry : points.reference2LongEntrySet()) {
+        for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             if (entry.getLongValue() <= 0L) {
                 continue;
             }

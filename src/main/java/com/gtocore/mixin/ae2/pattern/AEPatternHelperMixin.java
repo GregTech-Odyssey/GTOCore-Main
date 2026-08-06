@@ -26,7 +26,8 @@ public class AEPatternHelperMixin {
         }
         GenericStack[] out = new GenericStack[map.size()];
         int i = 0;
-        for (var entry : map.object2LongEntrySet()) {
+        for (var it = map.object2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
             out[i++] = new GenericStack(entry.getKey(), entry.getLongValue());
         }
         return out;

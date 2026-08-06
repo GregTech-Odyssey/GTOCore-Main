@@ -438,7 +438,8 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         textList.add(Component.translatable("gtocore.machine.cwut_modification", ((double) maxCWUtModification / 10000)).withStyle(ChatFormatting.AQUA));
         textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_coolant_required", Component.literal(coolingAmountRequired + " / " + coolingAmountProvided + "  " + coolantAmount).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
         textList.add(Component.translatable("gtocore.machine.components_list").withStyle(ChatFormatting.YELLOW));
-        for (var entries : componentsMap.reference2IntEntrySet()) {
+        for (var it = componentsMap.reference2IntEntrySet().fastIterator(); it.hasNext();) {
+            var entries = it.next();
             textList.add(Component.literal(" - ").append(entries.getKey().gtolib$getReadOnlyStack().getDisplayName()).append(Component.literal(" x" + entries.getIntValue())).withStyle(ChatFormatting.GRAY));
         }
     }

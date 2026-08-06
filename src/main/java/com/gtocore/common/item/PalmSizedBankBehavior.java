@@ -173,7 +173,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(Component.literal("-------------------"));
                     List1.add(trans(11));
                     List1.add(Component.literal("-------------------"));
-                    for (Object2LongMap.Entry<String> entry : syncedCurrencyMap.object2LongEntrySet()) {
+                    for (var it = syncedCurrencyMap.object2LongEntrySet().fastIterator(); it.hasNext();) {
+                        var entry = it.next();
                         List1.add(Component.translatable("gtocore.currency." + entry.getKey()).withStyle(ChatFormatting.AQUA));
                     }
                     List1.add(Component.literal("-------------------"));
@@ -184,7 +185,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List2.add(Component.literal("-------------------"));
                     List2.add(trans(12));
                     List2.add(Component.literal("-------------------"));
-                    for (Object2LongMap.Entry<String> entry : syncedCurrencyMap.object2LongEntrySet()) {
+                    for (var it = syncedCurrencyMap.object2LongEntrySet().fastIterator(); it.hasNext();) {
+                        var entry = it.next();
                         List2.add(Component.literal(Long.toString(entry.getLongValue())));
                     }
                     List2.add(Component.literal("-------------------"));
