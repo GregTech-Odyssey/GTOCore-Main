@@ -69,12 +69,12 @@ public final class ResearchRequirements {
         EUREKA_REQUIREMENTS.computeIfAbsent(key, ignored -> new ReferenceOpenHashSet<>()).add(node);
     }
 
-    public static synchronized Set<TechNode> getEurekaRequirements(AEKey key) {
+    public static Set<TechNode> getEurekaRequirements(AEKey key) {
         var nodes = EUREKA_REQUIREMENTS.get(key);
-        return nodes == null ? Set.of() : Set.copyOf(nodes);
+        return nodes == null ? Set.of() : nodes;
     }
 
-    public static synchronized List<EurekaRequirementEntry> getEurekaRequirementEntries() {
+    public static List<EurekaRequirementEntry> getEurekaRequirementEntries() {
         List<EurekaRequirementEntry> entries = new ArrayList<>(EUREKA_REQUIREMENTS.size());
         for (var it = EUREKA_REQUIREMENTS.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
@@ -85,7 +85,7 @@ public final class ResearchRequirements {
         }
         entries.sort(Comparator.comparing((EurekaRequirementEntry entry) -> entry.key().getType().getId().toString())
                 .thenComparing(entry -> entry.key().getId().toString()));
-        return List.copyOf(entries);
+        return entries;
     }
 
     public ActionResult test(TechNode node, TeamResearchContext teamResource, UUID team, boolean simulate) {

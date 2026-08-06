@@ -62,20 +62,20 @@ public class DataScanningManager {
         }
     }
 
-    public static synchronized List<DataScanningEntry> getDataScanningEntries() {
+    public static List<DataScanningEntry> getDataScanningEntries() {
         List<DataScanningEntry> entries = new ArrayList<>(dataScanningMap.size());
         for (var it = dataScanningMap.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
-            entries.add(new DataScanningEntry(entry.getKey(), entry.getValue().copy()));
+            entries.add(new DataScanningEntry(entry.getKey(), entry.getValue()));
         }
         entries.sort(Comparator.comparing((DataScanningEntry entry) -> entry.key().getType().getId().toString())
                 .thenComparing(entry -> entry.key().getId().toString()));
-        return List.copyOf(entries);
+        return entries;
     }
 
-    public static synchronized Set<AEKey> getDataScanningSources(ResearchTag tag) {
+    public static Set<AEKey> getDataScanningSources(ResearchTag tag) {
         var sources = dataScanningSources.get(tag);
-        return sources == null ? Set.of() : Set.copyOf(sources);
+        return sources == null ? Set.of() : sources;
     }
 
     public static boolean isUnscannable(AEKey key, UUID team) {
