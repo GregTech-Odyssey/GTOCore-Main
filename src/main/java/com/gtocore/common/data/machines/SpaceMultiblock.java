@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.Blocks;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -297,7 +298,7 @@ public class SpaceMultiblock {
             return builder.build();
         }
         machine.requestCheck();
-        return Set.of();
+        return Collections.emptySet();
     }))
             .allRotation()
             .workableInSpace()

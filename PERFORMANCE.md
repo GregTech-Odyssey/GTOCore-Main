@@ -30,19 +30,20 @@
 8. **`hashCode()` 要与 `equals()` 成对且缓存。** 未重写 `equals` 只当 `Map` key/`Set` 元素时，直接用引用语义容器（见术语「引用容器」），别依赖默认 `Object.hashCode()` 走哈希容器形同虚空。自定义哈希对象的 `hashCode()` 若较贵，应在构造后缓存到字段，避免每次寻址重算。
 9. **热路径避免在循环内分配对象。** 高频迭代内禁止 `new`、字符串拼接（用 `StringBuilder`）、创建临时集合。可复用而不复用的局部 `ArrayList`、临时 `Map` 一律提为可复用实例或改用池化/`ThreadLocal`，减少 GC 压力。
 10. **不熟悉/不确定容器行为时，先查 FastCollection 与 fastutil 是否已有更优替代**，再决定用 JDK 原生容器；凡是本仓已确立用法的（如 `AEKeyMap`、OpenCache 系列），跟随既有先例，不要另造轮子。
+11. **空容器直接用专用空单例，禁止用 `X.of()` 工厂的空参。** 返回/赋值/传入空容器时，用 `Collections.emptyList()` / `emptySet()` / `emptyMap()`（或 fastutil 的 `ObjectLists.EMPTY_LIST` / `ObjectSets.EMPTY_SET` 等，视返回类型而定）——它们是**预先创建的共享单例**，每次引用零分配、零内存。而 `List.of()` / `Set.of()` / `Map.of()` 是通用工厂：**非空**时必然 `new` 分配；即使**空参**，语义也非"专用空单例"，应避免。仅当确需 `List.of()` 家族（如 varargs 场景）或指单个元素 `List.of(x)` 时才用它们。**Guava 的 `ImmutableList.of()` 等属于另一套不可变实现，不在此列**，按既定用法保留。
 
 ## 非容器规范
 
-11. **热路径避免使用 `synchronized` / 可重入锁做高频互斥。** 若临界区是纯读或只需原子读写，优先用无锁方案（`LongAdder`、`AtomicLong/AtomicReference` 轻量 CAS、不可变快照 + volatile，或读多写少用 `CopyOnWriteArrayList`）。本仓在大量机器/网络逻辑处有并发读写，慎用粗粒度锁阻塞 tick 线程。
-12. **字符串拼接禁止在热路径用 `+` 或 `String.format`。** 高频处一律用 `StringBuilder`/`StringBuffer` 复用实例，或预构造缓存；渲染、tick、tooltip 生成处必须按此处理。网络/IO 字符串生成尤其注意。
-14. **反射仅用于冷路径（注册、扫描、启动一次）。** 禁止在热路径使用 `Class.forName`、`getMethod`/`getDeclaredMethod`、`getField` 等反射调用。需要重复调用时，缓存反射到的 `Method`/`Field`/构造器并 `setAccessible(true)`，优先用 `MethodHandles`/`VarHandle`。
-19. **不要在每帧/每次 tick 内重复计算只依赖静态数据的结果。** 查得到的常量（`Item.EMPTY`、注册表查找、`ResourceLocation`、字符串 key）提到 `static final` 字段或缓存；GTO 的 registry/命名空间高频碰撞时，用编译期已知常量替代字符串查找。
+12. **热路径避免使用 `synchronized` / 可重入锁做高频互斥。** 若临界区是纯读或只需原子读写，优先用无锁方案（`LongAdder`、`AtomicLong/AtomicReference` 轻量 CAS、不可变快照 + volatile，或读多写少用 `CopyOnWriteArrayList`）。本仓在大量机器/网络逻辑处有并发读写，慎用粗粒度锁阻塞 tick 线程。
+13. **字符串拼接禁止在热路径用 `+` 或 `String.format`。** 高频处一律用 `StringBuilder`/`StringBuffer` 复用实例，或预构造缓存；渲染、tick、tooltip 生成处必须按此处理。网络/IO 字符串生成尤其注意。
+15. **反射仅用于冷路径（注册、扫描、启动一次）。** 禁止在热路径使用 `Class.forName`、`getMethod`/`getDeclaredMethod`、`getField` 等反射调用。需要重复调用时，缓存反射到的 `Method`/`Field`/构造器并 `setAccessible(true)`，优先用 `MethodHandles`/`VarHandle`。
+20. **不要在每帧/每次 tick 内重复计算只依赖静态数据的结果。** 查得到的常量（`Item.EMPTY`、注册表查找、`ResourceLocation`、字符串 key）提到 `static final` 字段或缓存；GTO 的 registry/命名空间高频碰撞时，用编译期已知常量替代字符串查找。
 
 ### 网络同步
 
-23. **网络同步不要简单复用磁盘保存的数据。** 直接序列化 NBT 或复用存盘格式做网络包会带进大量与同步无关的字段与对象分配，造成带宽与 GC 浪费。**应为网络通道单独写一套紧凑的流式编码**（可变长/定长原始字段、按需仅含变更字段），并**优先使用 DataSyncLib 相关的 API** 完成字段级增量同步，而非整包序列化。
+24. **网络同步不要简单复用磁盘保存的数据。** 直接序列化 NBT 或复用存盘格式做网络包会带进大量与同步无关的字段与对象分配，造成带宽与 GC 浪费。**应为网络通道单独写一套紧凑的流式编码**（可变长/定长原始字段、按需仅含变更字段），并**优先使用 DataSyncLib 相关的 API** 完成字段级增量同步，而非整包序列化。
 
 ### DataSyncLib 存盘
 
-24. **非必要不要 `saveNull`。** 只有非默认/非空的值才需要真正写入磁盘；值为空时直接跳过写入，磁盘读写更小、体积更紧凑。
-25. **多用默认值，值为默认值时也不写入。** 对大多数取默认值的字段，设定明确的默认值并跳过序列化；仅当字段偏离默认值时写入，进一步压缩存盘体积、减少 IO。
+25. **非必要不要 `saveNull`。** 只有非默认/非空的值才需要真正写入磁盘；值为空时直接跳过写入，磁盘读写更小、体积更紧凑。
+26. **多用默认值，值为默认值时也不写入。** 对大多数取默认值的字段，设定明确的默认值并跳过序列化；仅当字段偏离默认值时写入，进一步压缩存盘体积、减少 IO。

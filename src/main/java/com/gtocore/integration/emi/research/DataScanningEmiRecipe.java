@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -147,7 +148,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
 
     private static List<EmiStack> createResearchOutputs(@Nullable ResearchPoints points) {
         if (points == null) {
-            return List.of();
+            return Collections.emptyList();
         }
         return points.reference2LongEntrySet().stream()
                 .filter(point -> point.getLongValue() > 0L)

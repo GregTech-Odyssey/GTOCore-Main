@@ -223,14 +223,14 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     private List<IExtendedPatternContainer> gto$getPatternContainers(String recipeLocName) {
         var gridNode = getActionHost().getActionableNode();
         if (gridNode == null) {
-            return List.of();
+            return Collections.emptyList();
         }
         var grid = gridNode.getGrid();
         if (grid == null) {
-            return List.of();
+            return Collections.emptyList();
         }
         var stack = gto$patternStack;
-        if (stack == null) return List.of();
+        if (stack == null) return Collections.emptyList();
         ArrayList<IExtendedPatternContainer> machines = new ArrayList<>(grid.size() / 2 + 1);
         for (var machineClass : grid.getMachineClasses()) {
             if (IExtendedPatternContainer.class.isAssignableFrom(machineClass)) {
@@ -238,7 +238,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
             }
         }
         var thisPatternDetails = AEPatternDecoder.INSTANCE.decodePattern(stack, getPlayer().level(), false);
-        if (thisPatternDetails == null) return List.of();
+        if (thisPatternDetails == null) return Collections.emptyList();
         var primaryOutput = thisPatternDetails.getPrimaryOutput().what();
         Set<Object> sameCluster = new HashSet<>();
 

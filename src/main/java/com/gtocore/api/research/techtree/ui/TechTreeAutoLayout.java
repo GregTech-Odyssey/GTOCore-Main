@@ -4,6 +4,7 @@ import com.gtocore.api.research.techtree.TechNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -23,7 +24,7 @@ public final class TechTreeAutoLayout {
 
     public static TechTreeLayout create(Collection<TechNode> definitions) {
         if (definitions.isEmpty()) {
-            return new TechTreeLayout(List.of(), Map.of(), List.of(), 0, 0, 0, 0);
+            return new TechTreeLayout(Collections.emptyList(), Collections.emptyMap(), Collections.emptyList(), 0, 0, 0, 0);
         }
 
         List<TechNode> nodes = new ArrayList<>(definitions);

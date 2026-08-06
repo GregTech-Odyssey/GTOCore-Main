@@ -31,6 +31,7 @@ import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -75,7 +76,7 @@ public class DataScanningManager {
 
     public static Set<AEKey> getDataScanningSources(ResearchTag tag) {
         var sources = dataScanningSources.get(tag);
-        return sources == null ? Set.of() : sources;
+        return sources == null ? Collections.emptySet() : sources;
     }
 
     public static boolean isUnscannable(AEKey key, UUID team) {

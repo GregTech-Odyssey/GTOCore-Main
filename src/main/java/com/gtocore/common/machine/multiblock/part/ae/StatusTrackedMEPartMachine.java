@@ -25,6 +25,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class StatusTrackedMEPartMachine extends MEPartMachine implements IStatusTracked {
@@ -60,7 +61,7 @@ public abstract class StatusTrackedMEPartMachine extends MEPartMachine implement
             var controller = getControllers().iterator().next();
             title.append(" - ").append(controller.self().getDefinition().get().getName());
         }
-        return new PatternContainerGroup(icon, title, List.of());
+        return new PatternContainerGroup(icon, title, Collections.emptyList());
     }
 
     @Override

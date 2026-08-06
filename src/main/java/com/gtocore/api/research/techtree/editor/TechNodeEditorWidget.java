@@ -40,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -467,7 +468,7 @@ final class TechNodeEditorWidget extends DraggableScrollableWidgetGroup {
         public List<Target> getPhantomTargets(Object ingredient) {
             IngredientValue value = ingredientValue(ingredient, acceptFluids);
             if (value == null) {
-                return List.of();
+                return Collections.emptyList();
             }
             return List.of(new Target() {
 
@@ -510,7 +511,7 @@ final class TechNodeEditorWidget extends DraggableScrollableWidgetGroup {
         @Override
         public List<Target> getPhantomTargets(Object ingredient) {
             if (!(ingredient instanceof TechNodeEmiStack stack)) {
-                return List.of();
+                return Collections.emptyList();
             }
             PrerequisiteEntry prerequisite = new PrerequisiteEntry(stack.data.getManager().getId(), stack.data.name);
             return List.of(new Target() {

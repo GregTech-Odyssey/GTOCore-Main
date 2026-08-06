@@ -166,7 +166,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
         private final Set<AEKey> mountedEntryKeys = new HashSet<>();
         private final EmptyEntryWidget emptyEntryWidget = new EmptyEntryWidget(
                 2, 2, ENTRY_PANEL_WIDTH - 12, ENTRY_PANEL_HEIGHT - 12, Component.empty());
-        private List<AEKey> filteredEntries = List.of();
+        private List<AEKey> filteredEntries = Collections.emptyList();
         private boolean emptyEntryWidgetMounted;
         private String searchText = "";
         private SyncState currentState = SyncState.EMPTY;
@@ -200,9 +200,9 @@ public class ScanningSelectionTab implements IFancyUIProvider {
 
             addWidget(createActionButton(ENTRY_PANEL_Y, CLEAR_TOOLTIP, click -> {
                 if (click.isRemote) {
-                    applyClientSelection(Set.of());
+                    applyClientSelection(Collections.emptySet());
                 } else {
-                    setServerSelection(Set.of());
+                    setServerSelection(Collections.emptySet());
                 }
             }, GuiTextures.CLIPBOARD_BUTTON.getSubTexture(0, 0.75, 1, 0.25)));
             addWidget(createActionButton(ENTRY_PANEL_Y + 20, RELOAD_TOOLTIP, click -> {
@@ -540,7 +540,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
 
     private record SyncState(List<AEKey> entries, Set<AEKey> selected) {
 
-        private static final SyncState EMPTY = new SyncState(List.of(), Set.of());
+        private static final SyncState EMPTY = new SyncState(Collections.emptyList(), Collections.emptySet());
     }
 
     private static final class EmptyEntryWidget extends Widget {

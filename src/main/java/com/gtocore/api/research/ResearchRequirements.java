@@ -27,6 +27,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -71,7 +72,7 @@ public final class ResearchRequirements {
 
     public static Set<TechNode> getEurekaRequirements(AEKey key) {
         var nodes = EUREKA_REQUIREMENTS.get(key);
-        return nodes == null ? Set.of() : nodes;
+        return nodes == null ? Collections.emptySet() : nodes;
     }
 
     public static List<EurekaRequirementEntry> getEurekaRequirementEntries() {

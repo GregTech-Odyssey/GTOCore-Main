@@ -33,6 +33,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class StellarForgeVortexFX extends AbstractFX {
@@ -194,7 +195,7 @@ public class StellarForgeVortexFX extends AbstractFX {
         private final int radialSegments;
         private final int angularSegments;
         private float cachedBandAngle = Float.NaN;
-        private List<TemplateVertex> vertices = List.of();
+        private List<TemplateVertex> vertices = Collections.emptyList();
 
         private VortexMesh(int radialSegments, int angularSegments) {
             this.radialSegments = radialSegments;

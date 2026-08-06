@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public final class StarcoreMinerMachine extends ElectricMultiblockMachine implem
     private Set<Material> getMaterials() {
         if (materials == null) {
             var ores = GTOOres.ALL_ORES.get(Objects.requireNonNull(getLevel()).dimension());
-            if (ores == null || ores.isEmpty()) return Set.of();
+            if (ores == null || ores.isEmpty()) return Collections.emptySet();
             materials = ores.keySet();
         }
         return materials;

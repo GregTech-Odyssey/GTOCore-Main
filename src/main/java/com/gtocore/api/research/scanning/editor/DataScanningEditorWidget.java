@@ -38,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
@@ -257,7 +258,7 @@ final class DataScanningEditorWidget extends DraggableScrollableWidgetGroup {
         public List<Target> getPhantomTargets(Object ingredient) {
             IngredientValue value = ingredientValue(ingredient);
             if (value == null) {
-                return List.of();
+                return Collections.emptyList();
             }
             return List.of(new Target() {
 

@@ -25,6 +25,7 @@ import mythicbotany.register.ModItems;
 import vazkii.botania.common.item.BotaniaItems;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -83,7 +84,7 @@ public class AlfheimEntryRequirements implements EmiRecipe {
 
     @Override
     public List<EmiStack> getOutputs() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override

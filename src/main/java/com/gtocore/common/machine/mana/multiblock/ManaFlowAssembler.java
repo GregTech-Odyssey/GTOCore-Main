@@ -192,7 +192,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
     private List<ItemEntity> getItemEntitiesAbove() {
         var level = getHolder().getLevel();
         if (level == null) {
-            return List.of();
+            return Collections.emptyList();
         }
         var pos = getPos().above(2);
         var aabb = new AABB(pos).inflate(1);

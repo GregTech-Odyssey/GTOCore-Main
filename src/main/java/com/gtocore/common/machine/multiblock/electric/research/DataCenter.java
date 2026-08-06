@@ -151,7 +151,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     private List<NotifiableItemStackHandler> getDataAccessHandlers() {
         if (!isFormed()) {
-            return List.of();
+            return Collections.emptyList();
         }
         return Arrays.stream(getParts())
                 .filter(DataAccessHatchMachine.class::isInstance)

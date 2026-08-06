@@ -513,7 +513,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
     private record SyncState(List<EntryState> entries, @Nullable EntryState selected) {
 
-        private static final SyncState EMPTY = new SyncState(List.of(), null);
+        private static final SyncState EMPTY = new SyncState(Collections.emptyList(), null);
     }
 
     private record ResolvedEntry(TechNode node, GTRecipeDefinition recipe) {}

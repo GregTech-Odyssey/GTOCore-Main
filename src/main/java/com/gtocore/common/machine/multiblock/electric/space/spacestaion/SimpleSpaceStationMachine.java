@@ -160,7 +160,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
 
     @Override
     public Set<CleanroomType> getTypes() {
-        return this.cleanroomType == null ? Set.of() : Set.of(this.cleanroomType);
+        return this.cleanroomType == null ? Collections.emptySet() : Set.of(this.cleanroomType);
     }
 
     @Override

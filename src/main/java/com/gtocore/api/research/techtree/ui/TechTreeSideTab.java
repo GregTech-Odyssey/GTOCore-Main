@@ -103,7 +103,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private @Nullable TechNode selectedNode;
     private @Nullable SyncState cachedRowsState;
     private @Nullable TechNode cachedRowsNode;
-    private List<RowState> cachedRows = List.of();
+    private List<RowState> cachedRows = Collections.emptyList();
 
     private final WidgetGroup innerContent;
 
@@ -263,7 +263,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         TeamResearchContext context = contextFactory.apply(player);
         ResearchRequirements requirements = selectedNode.getRequirements();
         if (requirements == null) {
-            return new SyncState(true, selectedNode.name, false, 0L, 0L, false, false, List.of());
+            return new SyncState(true, selectedNode.name, false, 0L, 0L, false, false, Collections.emptyList());
         }
 
         boolean hasEureka = requirements.getEurekaItem() != null;
@@ -426,7 +426,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                              boolean hasEureka, boolean eurekaScanned, List<MaterialState> materials) {
 
         private static SyncState hidden() {
-            return new SyncState(false, null, false, 0L, 0L, false, false, List.of());
+            return new SyncState(false, null, false, 0L, 0L, false, false, Collections.emptyList());
         }
     }
 
@@ -455,7 +455,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         private int visibleRecipeSlots;
         private @Nullable TechNode cachedDescNode;
         private @Nullable TechNode cachedRecipeNode;
-        private List<EmiStack> cachedRecipeStacks = List.of();
+        private List<EmiStack> cachedRecipeStacks = Collections.emptyList();
 
         private ContentWidget(int x, int y, int width, int height) {
             super(x, y, width, height);
@@ -473,7 +473,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         private List<EmiStack> getUnlockableRecipeStacks() {
             if (cachedRecipeNode != selectedNode) {
                 cachedRecipeNode = selectedNode;
-                cachedRecipeStacks = selectedNode == null ? List.of() : EmiResearchHelper.toEmiStacks(selectedNode.getRecipePrimaryOutputs());
+                cachedRecipeStacks = selectedNode == null ? Collections.emptyList() : EmiResearchHelper.toEmiStacks(selectedNode.getRecipePrimaryOutputs());
                 recipeScrollOffset = 0;
             }
             return cachedRecipeStacks;

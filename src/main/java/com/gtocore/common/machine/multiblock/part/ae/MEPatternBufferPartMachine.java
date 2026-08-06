@@ -346,7 +346,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         if (isFormed()) {
             IMultiController controller = getController();
             Collection<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
-                    Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : List.of();
+                    Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : Collections.emptyList();
             return PatternContainerGroupHelper.forPatternBuffer(
                     controller.self(), this, getCustomName(), recipeType, availableRecipeTypes);
         } else {
@@ -368,7 +368,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         }
         IMultiController controller = getController();
         Collection<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
-                Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : List.of();
+                Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : Collections.emptyList();
         String extraSuffix = getCustomName().startsWith("+") ? getCustomName().substring(1).strip() : "";
         return PatternContainerGroupHelper.getSearchName(controller.self(), extraSuffix, recipeType, availableRecipeTypes);
     }

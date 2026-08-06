@@ -187,7 +187,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
     @Override
     public @NotNull List<IPatternDetails> getAvailablePatterns() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override
