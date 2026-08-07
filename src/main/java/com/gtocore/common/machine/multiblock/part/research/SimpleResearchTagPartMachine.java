@@ -40,7 +40,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public abstract class SimpleResearchTagPartMachine extends MultiblockPartMachine implements IMachineLife {
+public class SimpleResearchTagPartMachine extends MultiblockPartMachine implements IMachineLife {
+
+    @Getter
+    private final long dataCapacity;
+    @Getter
+    private final ResearchTag researchTag;
 
     @SaveToDisk
     private final ScanningHolder heldItems;
@@ -50,24 +55,15 @@ public abstract class SimpleResearchTagPartMachine extends MultiblockPartMachine
     @SyncToClient(notifyUpdate = true)
     private double dataCache;
 
-    SimpleResearchTagPartMachine(MetaMachineBlockEntity holder) {
+    SimpleResearchTagPartMachine(MetaMachineBlockEntity holder, long dataCapacity, ResearchTag researchTag) {
         super(holder);
-        heldItems = new ScanningHolder(this);
+        this.dataCapacity = dataCapacity;
+        this.researchTag = researchTag;
+        this.heldItems = new ScanningHolder(this);
     }
 
     public static Function<MetaMachineBlockEntity, MetaMachine> create(ResearchTag researchTag, long dataCapacity) {
-        return (holder) -> new SimpleResearchTagPartMachine(holder) {
-
-            @Override
-            public long getDataCapacity() {
-                return dataCapacity;
-            }
-
-            @Override
-            public ResearchTag getResearchTag() {
-                return researchTag;
-            }
-        };
+        return (holder) -> new SimpleResearchTagPartMachine(holder, dataCapacity, researchTag);
     }
 
     public NotifiableItemStackHandler getAsHandler() {
@@ -113,10 +109,6 @@ public abstract class SimpleResearchTagPartMachine extends MultiblockPartMachine
         }
         dataCache = Math.min(amount, getDataCapacity());
     }
-
-    public abstract long getDataCapacity();
-
-    public abstract ResearchTag getResearchTag();
 
     @Override
     public boolean canShared() {

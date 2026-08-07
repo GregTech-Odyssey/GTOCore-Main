@@ -1026,6 +1026,16 @@ public final class GTORecipeTypes {
             .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
             .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY_END) ? LocalizationUtils.format("gtocore.recipe.radioactivity_end", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END)) : "");
 
+    public static final RecipeType NEUTRON_IRRADIATION_RECIPES = register("neutron_irradiation", "中子辐照", ELECTRIC)
+            .setMaxIOSize(1, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.MOTOR)
+            .setEUIO(IO.IN)
+            .addDataInfo(data -> {
+                var nFlux = data.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
+                return LocalizationUtils.format(nFlux > 1000 ? "gtocore.recipe.neutron_flux.m" : "gtocore.recipe.neutron_flux.k", FormattingUtil.formatNumber2Places(nFlux > 1000 ? nFlux / 1_000f : nFlux));
+            });
+
     public static final RecipeType SPACE_STATION_CONSTRUCTION_RECIPES = register("space_station_construction", "空间站建造", MULTIBLOCK)
             .setMaxIOSize(9, 0, 0, 0)
             .setProgressBar(GTOGuiTextures.PROGRESS_BAR_MINING_MODULE, UP_TO_DOWN)
