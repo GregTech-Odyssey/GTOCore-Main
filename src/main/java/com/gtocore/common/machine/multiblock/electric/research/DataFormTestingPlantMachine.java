@@ -33,17 +33,17 @@ public class DataFormTestingPlantMachine extends ElectricMultiblockMachine imple
 
     @SaveToDisk
     private final ReferenceOpenHashSet<AEKey> containedKeys = new ReferenceOpenHashSet<>();
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long remainingBytes = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long initialRemainingBytes = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int fragmentation = 0;
     @SaveToDisk
     private AEKey currentKey = null;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long eut = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int points = 0;
 
     @SaveToDisk(defaultValue = "IDLE")
