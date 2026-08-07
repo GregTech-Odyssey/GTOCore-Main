@@ -66,6 +66,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private ItemStack getDefaultResonanceItem() {
         return ItemStack.EMPTY;
     }
+
     private FluidStack getDefaultResonanceFluid() {
         return FluidStack.EMPTY;
     }

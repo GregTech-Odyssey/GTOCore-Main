@@ -8,8 +8,6 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPartInv;
 import com.gtocore.integration.ae.hooks.IExtendedPatternContainer;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 
-import com.gto.fastcollection.OpenCacheHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import com.gtolib.api.ae2.IPatterEncodingTermMenu;
 import com.gtolib.api.ae2.pattern.PatternUtils;
 import com.gtolib.utils.ClientUtil;
@@ -40,6 +38,8 @@ import appeng.util.ConfigInventory;
 import appeng.util.inv.AppEngInternalInventory;
 
 import com.glodblock.github.extendedae.common.tileentities.matrix.TileAssemblerMatrixPattern;
+import com.gto.fastcollection.OpenCacheHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

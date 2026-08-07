@@ -18,6 +18,7 @@ import com.gtocore.data.recipe.misc.ComponentRecipes;
 import com.gtocore.data.recipe.misc.SpaceStationRecipes;
 import com.gtocore.data.recipe.mod.*;
 import com.gtocore.data.recipe.processing.*;
+import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.data.recipe.research.ResearchRecipes;
 import com.gtocore.data.tag.TagsHandler;
 import com.gtocore.data.transaction.data.GTOTrade;
@@ -68,6 +69,7 @@ public final class Data {
     private static Throwable throwable;
 
     public static void init() {
+        AnalyzeData.INSTANCE.init();
         if (GTCEu.isClientSide()) {
             GTOUtils.asyncExecute(Data::clientInit);
         } else {
@@ -186,6 +188,7 @@ public final class Data {
             commonInit();
         } catch (Throwable t) {
             throwable = t;
+            GTOCore.LOGGER.error("Data loading failed", t);
         }
         GTRegistries.RECIPE_TYPES.values().forEach(t -> t.recipes.values().forEach(recipe -> recipe.recipeCategory.addRecipe(recipe)));
         if (GTCEu.Mods.isEMILoaded()) {

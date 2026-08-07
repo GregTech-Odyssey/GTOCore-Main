@@ -37,6 +37,7 @@ import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -248,7 +249,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(trans(52));
                     List1.add(ComponentPanelWidget.withButton(trans(53), "confirm1"));
                     List1.add(Component.literal("-------------------"));
-                    for (var it = WalletPlayers.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
+                    for (var it = Object2ObjectMaps.fastIterator(WalletPlayers); it.hasNext();) {
                         var entry = it.next();
                         List1.add(ComponentPanelWidget.withHoverTextTranslate(
                                 ComponentPanelWidget.withButton(Component.literal("§b" + entry.getValue() + "§r"), entry.getKey().toString()),
@@ -531,7 +532,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(Component.empty());
                     List1.add(Component.empty());
                     List1.add(Component.literal("-------------------"));
-                    for (var it = WalletPlayers.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
+                    for (var it = Object2ObjectMaps.fastIterator(WalletPlayers); it.hasNext();) {
                         var entry = it.next();
                         List1.add(ComponentPanelWidget.withHoverTextTranslate(
                                 ComponentPanelWidget.withButton(Component.literal("§b" + entry.getValue() + "§r"), entry.getKey().toString()), Component.literal(entry.getKey().toString())));

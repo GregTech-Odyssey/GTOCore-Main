@@ -51,7 +51,7 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Integer> PARAM2 = register("param2", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> PARAM3 = register("param3", DataSyncCodec.INT_CODEC);
 
-    public static final DataComponentKey<Integer> DATA_TESTING_LEVEL = register("data_testing_level", DataSyncCodec.INT_CODEC);
+    public static final DataComponentKey<Integer> DATA_TESTING_CAPACITY = register("data_testing_level", DataSyncCodec.INT_CODEC);
 
     public static final DataComponentKey<Integer> RAY_INTENSITY = register("ray_intensity", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> RAY_WAVELENGTH = register("ray_wavelength", DataSyncCodec.INT_CODEC);

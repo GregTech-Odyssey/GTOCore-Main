@@ -62,7 +62,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     val langMap: Map<String, CNEN> = if (GTCEu.isDataGen()) O2OOpenCacheHashMap() else emptyMap()
 
     init {
-        TechTreeManager.REGISTRY.unfreeze()
+        if (!GTCEu.isDataGen()) TechTreeManager.REGISTRY.unfreeze()
     }
 
     @JvmField

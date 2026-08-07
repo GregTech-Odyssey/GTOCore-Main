@@ -40,7 +40,6 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;

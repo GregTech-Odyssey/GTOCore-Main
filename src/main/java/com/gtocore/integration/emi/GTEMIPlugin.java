@@ -134,8 +134,10 @@ public final class GTEMIPlugin implements EmiPlugin {
             }
         }
         GTOApi.EMI_HIDE_ITEM_EVENT.addListener(HiddenItems.class, HiddenItems::registerHiddenItems);
-        GTOApi.EMI_ADD_STACK_EVENT.addListener(TechNodeEmiStack.class, TechNodeEmiStack::registerTechNodeEmiStack);
-        GTOApi.EMI_ADD_STACK_EVENT.addListener(ResearchTagEmiStack.class, ResearchTagEmiStack::registerResearchTagEmiStack);
+        if (GTCEu.isClientSide()) {
+            GTOApi.EMI_ADD_STACK_EVENT.addListener(TechNodeEmiStack.class, TechNodeEmiStack::registerTechNodeEmiStack);
+            GTOApi.EMI_ADD_STACK_EVENT.addListener(ResearchTagEmiStack.class, ResearchTagEmiStack::registerResearchTagEmiStack);
+        }
     }
 
     private static void addJEIPlugin(Consumer<IModPlugin> list) {

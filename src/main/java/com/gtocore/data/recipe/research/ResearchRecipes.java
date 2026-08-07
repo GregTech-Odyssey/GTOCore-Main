@@ -12,22 +12,28 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
+import appeng.core.definitions.AEItems;
+
 import static com.gregtechceu.gtceu.api.GTValues.*;
-import static com.gtocore.common.data.GTORecipeDataKeys.DATA_TESTING_LEVEL;
+import static com.gtocore.common.data.GTORecipeDataKeys.DATA_TESTING_CAPACITY;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 
 public final class ResearchRecipes {
 
     public static void init() {
         ScanningRecipes.init();
-        AnalyzeData.INSTANCE.init();
 
-        DATA_TESTING_RECIPES.builder("tier1").inputItems(GTOItems.CELL_COMPONENT_1M).EUt(VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_LEVEL, 1).save();
-        DATA_TESTING_RECIPES.builder("tier2").inputItems(GTOItems.CELL_COMPONENT_4M).EUt(2L * VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_LEVEL, 5).save();
-        DATA_TESTING_RECIPES.builder("tier3").inputItems(GTOItems.CELL_COMPONENT_16M).EUt(VA[ZPM]).circuitMeta(1).duration(200).addData(DATA_TESTING_LEVEL, 9).save();
-        DATA_TESTING_RECIPES.builder("tier4").inputItems(GTOItems.CELL_COMPONENT_64M).EUt(2L * VA[ZPM]).circuitMeta(1).duration(200).addData(DATA_TESTING_LEVEL, 13).save();
-        DATA_TESTING_RECIPES.builder("tier5").inputItems(GTOItems.CELL_COMPONENT_256M).EUt(2L * VA[UV]).circuitMeta(1).duration(200).addData(DATA_TESTING_LEVEL, 17).save();
-        DATA_TESTING_RECIPES.builder("tier6").inputItems(GTOItems.INFINITE_CELL_COMPONENT).EUt(2L * VA[UHV]).circuitMeta(1).duration(200).addData(DATA_TESTING_LEVEL, 25).save();
+        DATA_TESTING_RECIPES.builder("tier1").inputItems(AEItems.CELL_COMPONENT_1K).EUt(VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 10).save();
+        DATA_TESTING_RECIPES.builder("tier2").inputItems(AEItems.CELL_COMPONENT_4K).EUt(2L * VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 12).save();
+        DATA_TESTING_RECIPES.builder("tier3").inputItems(AEItems.CELL_COMPONENT_16K).EUt(3L * VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 14).save();
+        DATA_TESTING_RECIPES.builder("tier4").inputItems(AEItems.CELL_COMPONENT_64K).EUt(VA[ZPM]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 16).save();
+        DATA_TESTING_RECIPES.builder("tier5").inputItems(AEItems.CELL_COMPONENT_256K).EUt(2L * VA[ZPM]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 18).save();
+        DATA_TESTING_RECIPES.builder("tier6").inputItems(GTOItems.CELL_COMPONENT_1M).EUt(VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 20).save();
+        DATA_TESTING_RECIPES.builder("tier7").inputItems(GTOItems.CELL_COMPONENT_4M).EUt(2L * VA[LuV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 22).save();
+        DATA_TESTING_RECIPES.builder("tier8").inputItems(GTOItems.CELL_COMPONENT_16M).EUt(3L * VA[ZPM]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 24).save();
+        DATA_TESTING_RECIPES.builder("tier9").inputItems(GTOItems.CELL_COMPONENT_64M).EUt(VA[UV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 26).save();
+        DATA_TESTING_RECIPES.builder("tier10").inputItems(GTOItems.CELL_COMPONENT_256M).EUt(2L * VA[UV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 28).save();
+        DATA_TESTING_RECIPES.builder("tier11").inputItems(GTOItems.INFINITE_CELL_COMPONENT).EUt(2L * VA[UHV]).circuitMeta(1).duration(200).addData(DATA_TESTING_CAPACITY, 1 << 31 - 1).save();
 
         BIO_RESEARCH_RECIPES.builder("contaminated_petri_dish1")
                 .inputItems(GTOItems.ELECTRICALY_WIRED_PETRI_DISH)

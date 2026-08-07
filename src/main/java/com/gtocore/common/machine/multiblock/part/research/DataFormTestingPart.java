@@ -65,13 +65,13 @@ public class DataFormTestingPart extends AmountConfigurationPartMachine implemen
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (getController() instanceof DataFormTestingPlantMachine controller) {
-            return controller.insert(what, amount, mode, source);
+            return controller.insert(what, amount, mode);
         }
         return 0;
     }
 
     @Override
     public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return getController() instanceof DataFormTestingPlantMachine controller && controller.isPreferredStorageFor(what, source);
+        return getController() instanceof DataFormTestingPlantMachine controller && controller.isPreferredStorageFor();
     }
 }

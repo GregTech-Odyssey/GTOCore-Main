@@ -1,6 +1,5 @@
 package com.gtocore.api.report;
 
-import com.gto.fastcollection.OpenCacheHashSet;
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.utils.RLUtils;
@@ -41,6 +40,7 @@ import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.google.gson.*;
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;

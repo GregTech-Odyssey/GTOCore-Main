@@ -978,7 +978,7 @@ public final class GTORecipeTypes {
             .setEUIO(IO.IN)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.COMPUTATION)
-            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.data_form_density_testing.density", FormattingUtil.formatNumber2Places(data.data.getInt(GTORecipeDataKeys.DATA_TESTING_LEVEL))));
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.data_form_density_testing.density", FormattingUtil.formatNumbers(data.data.getInt(GTORecipeDataKeys.DATA_TESTING_CAPACITY))));
 
     public static final RecipeType BEAM_GENERATE_RECIPES = register("beam_generate", "射线束生成", ELECTRIC)
             .setMaxIOSize(2, 0, 0, 0)
