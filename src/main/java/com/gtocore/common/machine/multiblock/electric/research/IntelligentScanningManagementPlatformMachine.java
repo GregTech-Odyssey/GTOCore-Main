@@ -50,7 +50,7 @@ import static com.gtocore.api.research.scanning.DataScanningManager.hasScanned;
 
 public class IntelligentScanningManagementPlatformMachine extends ElectricMultiblockMachine implements ScanningInfoProvider, ICustomRecipeLogicHolder {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "SCAN_SELECTED_ONLY")
     @SyncToClient
     @Getter
     private WorkMode workMode = WorkMode.SCAN_SELECTED_ONLY;

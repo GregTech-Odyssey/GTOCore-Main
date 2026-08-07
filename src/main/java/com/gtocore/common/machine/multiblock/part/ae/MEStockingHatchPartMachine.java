@@ -45,7 +45,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class MEStockingHatchPartMachine extends MEInputHatchPartMachine implements IMEStockingPart {
 
     private static final int CONFIG_SIZE = 16;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean autoPull;
 
     public MEStockingHatchPartMachine(MetaMachineBlockEntity holder) {

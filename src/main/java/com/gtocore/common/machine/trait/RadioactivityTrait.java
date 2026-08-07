@@ -22,7 +22,7 @@ import java.util.Set;
 
 public class RadioactivityTrait extends MultiblockTrait {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int recipeRadioactivity;
 
     private final Set<IRadiationHatch> radiationHatchPartMachines = new ReferenceOpenHashSet<>();

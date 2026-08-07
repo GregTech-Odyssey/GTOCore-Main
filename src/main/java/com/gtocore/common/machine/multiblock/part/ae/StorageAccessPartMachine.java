@@ -288,11 +288,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
     private static class IO extends LONG implements IControllable {
 
-        @SaveToDisk
+        @SaveToDisk(defaultValue = "false")
         private boolean isWorkingEnabled;
-        @SaveToDisk
+        @SaveToDisk(defaultValue = "false")
         private boolean export;
-        @SaveToDisk
+        @SaveToDisk(defaultValue = "33554432")
         private long rate = 33554432L;
 
         private final IActionSource mySrc;

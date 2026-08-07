@@ -46,7 +46,7 @@ public abstract class SimpleResearchTagPartMachine extends MultiblockPartMachine
     private final ScanningHolder heldItems;
     @Setter
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient(notifyUpdate = true)
     private double dataCache;
 

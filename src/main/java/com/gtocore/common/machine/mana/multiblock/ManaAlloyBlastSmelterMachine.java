@@ -43,13 +43,13 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
             7, BotaniaItems.runeAutumn,
             8, BotaniaItems.runeWinter);
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int tick;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int time;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int signal;
 
     private int mana;

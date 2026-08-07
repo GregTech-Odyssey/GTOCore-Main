@@ -100,12 +100,12 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             FIELD_GENERATOR_IV.asItem(), FIELD_GENERATOR_LuV.asItem(), FIELD_GENERATOR_ZPM.asItem(), FIELD_GENERATOR_UV.asItem() };
 
     // 补货与交易参数
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "2400")
     private int replenishmentInterval = 2400;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int tradingMultiple = 1;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int tire = 0;
     // 补货时间间隔 -225* 多倍交易 4*
     private static final Map<Item, Integer> ENHANCE_INDEX_MAP = Map.ofEntries(
@@ -742,10 +742,10 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     @SaveToDisk
     @SyncToClient(notifyUpdate = true)
     private Direction outputFacingItems;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient(notifyUpdate = true)
     private boolean autoOutputItems;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean allowInputFromOutputSideItems;
 
     @Override

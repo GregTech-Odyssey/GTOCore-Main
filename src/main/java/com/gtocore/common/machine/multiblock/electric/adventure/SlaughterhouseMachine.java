@@ -75,7 +75,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     private DamageSource damageSource;
     private ItemStack activeWeapon = ItemStack.EMPTY;
     private boolean bossMode = false;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean filterNbt = false;
     private String entityId;
     private long xp = 0;

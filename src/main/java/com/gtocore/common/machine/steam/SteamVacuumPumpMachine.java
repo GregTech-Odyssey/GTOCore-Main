@@ -11,7 +11,7 @@ import lombok.Getter;
 
 public final class SteamVacuumPumpMachine extends SimpleSteamMachine implements IVacuumMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int vacuumTier;
     @Getter
     private TickableSubscription tickSubs;

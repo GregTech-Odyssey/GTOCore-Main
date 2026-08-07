@@ -37,7 +37,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
     @RegisterLanguage(cn = "内部压力：", en = "Internal Pressure: ")
     private static final String PRESSURE = "gtocore.machine.stellar_forge.pressure";
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int pressure;
 
     private final ManaTrait manaTrait;

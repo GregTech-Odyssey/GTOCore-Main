@@ -81,7 +81,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     @SaveToDisk
     protected NotifiableItemStackHandler inventory;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean roundRobin;
 
     @Getter

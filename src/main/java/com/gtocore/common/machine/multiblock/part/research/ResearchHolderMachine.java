@@ -36,7 +36,7 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
     private final ResearchHolder heldItems;
     @Setter
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean isLocked;
 

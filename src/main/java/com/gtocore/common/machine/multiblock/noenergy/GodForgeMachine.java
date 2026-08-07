@@ -47,13 +47,13 @@ import static com.gtocore.common.block.BlockMap.GRAVITONFLOWMAP;
 public final class GodForgeMachine extends NoEnergyMultiblockMachine implements ITierCasingMachine, ICustomRecipeLogicHolder {
 
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     public float color;
     private boolean isRemoved = false;
     public long rotation;
     public int timer;
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     public int tier;
 
     private TickableSubscription rotationSubscription;

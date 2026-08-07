@@ -49,7 +49,7 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
 
     private static final Int2ObjectOpenHashMap<BlockPattern> PATTERNS = new Int2ObjectOpenHashMap<>(3, 0.9F);
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     @SyncToClient
     private int machineTier = 1;
 

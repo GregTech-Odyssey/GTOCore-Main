@@ -43,11 +43,11 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
 
     @SaveToDisk
     private final NotifiableItemStackHandler machineStorage;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "298")
     private float temperature = 298;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private double neutronFluxkeV = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private double recipeHeat = 0;
     private SensorPartMachine sensorMachineTemp;
     private SensorPartMachine sensorNeutronFlux;

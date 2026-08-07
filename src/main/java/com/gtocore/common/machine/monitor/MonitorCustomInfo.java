@@ -25,7 +25,7 @@ public class MonitorCustomInfo extends AbstractInfoProviderMonitor {
     private static final char FORMATTING_CODE = 167;
     private static final int MAX_LENGTH = 100;
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     private String content = "";
 
     public MonitorCustomInfo(MetaMachineBlockEntity holder) {

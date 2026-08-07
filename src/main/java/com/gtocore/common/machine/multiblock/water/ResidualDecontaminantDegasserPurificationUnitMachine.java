@@ -37,13 +37,13 @@ public final class ResidualDecontaminantDegasserPurificationUnitMachine extends 
             GTMaterials.RutheniumTriniumAmericiumNeutronate.getFluid(1000),
             GTMaterials.Neutronium.getFluid(2000));
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean successful;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean failed;
 
     @SaveToDisk

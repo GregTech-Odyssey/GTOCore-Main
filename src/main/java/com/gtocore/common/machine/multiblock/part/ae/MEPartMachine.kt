@@ -67,7 +67,7 @@ abstract class MEPartMachine(holder: MetaMachineBlockEntity, io: IO) :
 
     val actionSourceField: IActionSource = IActionSource.ofMachine { nodeHolder.getMainNode().node }
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     protected var distinctField: Boolean = false
 
     @SaveToDisk(defaultValue = "false")

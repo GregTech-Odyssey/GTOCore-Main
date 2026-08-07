@@ -77,9 +77,9 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     private final int tier;
     private final boolean mega;
     private long energyPerTick;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean highSpeedMode;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private float highSpeedFactor = 1.0f;
     final List<RotorHolderPartMachine> rotorHolderMachines = new ArrayList<>();
     private ItemPartMachine rotorHatchPartMachine;

@@ -30,16 +30,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class SensorPartMachine extends MultiblockPartMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float min;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float max;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean isInverted;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int redstoneSignalOutput;
 
     public SensorPartMachine(MetaMachineBlockEntity holder) {

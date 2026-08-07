@@ -60,7 +60,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @SyncToClient
     protected double high;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     protected int spoolCount;
     protected int moduleCount;

@@ -46,7 +46,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Nullable
     private CleanroomType cleanroomType = null;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "8")
     private int waterAmountPerHatch = 8;
 
     public SimpleSpaceStationMachine(MetaMachineBlockEntity metaMachineBlockEntity) {

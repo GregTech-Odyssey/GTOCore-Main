@@ -30,16 +30,16 @@ public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaD
     private final CelestialHandler celestialHandler;
 
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long solaris = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long lunara = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long voidflux = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long stellarm = 0;
 
     private static final long MAX_CAPACITY = 1000000;

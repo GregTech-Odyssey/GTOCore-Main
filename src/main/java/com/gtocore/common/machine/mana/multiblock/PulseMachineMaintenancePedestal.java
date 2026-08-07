@@ -61,7 +61,7 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
 
     private final Reference2ObjectMap<MetaMachine, Runnable> problems = new Reference2ObjectOpenHashMap<>();
     private PulseMachineMaintenanceCore core;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int totalResolvedProblems = 0;
 
     public PulseMachineMaintenancePedestal(MetaMachineBlockEntity holder) {

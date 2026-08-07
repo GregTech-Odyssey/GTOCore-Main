@@ -39,19 +39,19 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int radioactivity;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int initialRadioactivity;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int count;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int time;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int inhibitionDose;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int initialTime;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean signalPowered;
 
     private TickableSubscription radiationSubs;

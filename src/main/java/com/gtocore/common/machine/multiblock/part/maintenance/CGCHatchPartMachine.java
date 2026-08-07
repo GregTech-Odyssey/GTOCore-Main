@@ -18,7 +18,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class CGCHatchPartMachine extends ACMHatchPartMachine implements IGravityPartMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int currentGravity;
 
     public CGCHatchPartMachine(MetaMachineBlockEntity metaTileEntityId) {

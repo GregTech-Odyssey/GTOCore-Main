@@ -42,7 +42,7 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
 
     private static final Int2ObjectOpenHashMap<BlockPattern> PATTERNS = new Int2ObjectOpenHashMap<>(3, 0.9F);
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean energy;
 

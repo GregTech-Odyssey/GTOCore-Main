@@ -42,9 +42,9 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
     private static final int RUNNING_HEAT = 2000;
     private static final int MAX_HEAT = 10000;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "300")
     private int currentHeat = 300;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int process;
     private final ConditionalSubscriptionHandler heatSubs;
 

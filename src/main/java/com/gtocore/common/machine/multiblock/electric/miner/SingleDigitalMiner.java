@@ -76,17 +76,17 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     // miner property
     @Getter
     @Setter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int minerRadius;
     @Getter
     @Setter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int minHeight;
     @Getter
     @Setter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int maxHeight;
     private int silkLevel;

@@ -80,9 +80,9 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     @Setter
     private ThermalConductorHatchPartMachine ThermalConductorHatchPart;
     private final ConditionalSubscriptionHandler maxCWUtModificationSubs;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int machineTier = 1;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int maxCWUtModification;
     private boolean incompatible;
     private boolean canBridge;

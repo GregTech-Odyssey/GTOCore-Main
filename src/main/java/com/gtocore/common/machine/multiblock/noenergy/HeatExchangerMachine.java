@@ -30,10 +30,10 @@ public final class HeatExchangerMachine extends NoEnergyMultiblockMachine implem
         super(holder);
     }
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long hs;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean water;
 
     @Nullable

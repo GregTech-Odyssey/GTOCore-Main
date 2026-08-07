@@ -43,7 +43,7 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
 
     private static final Int2ObjectOpenHashMap<BlockPattern> PATTERNS = new Int2ObjectOpenHashMap<>(4, 0.9F);
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int machineTier;
 

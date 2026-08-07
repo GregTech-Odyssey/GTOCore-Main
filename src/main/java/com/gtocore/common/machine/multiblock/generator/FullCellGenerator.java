@@ -62,9 +62,9 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
     @SyncToClient
     private boolean isGenerator = false;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double bonusEfficiency = 1.0f;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double accumulatedEfficiencyDecay = 1.0f;
 
     @Nullable

@@ -49,10 +49,10 @@ public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomPa
     private BlockPos pos;
     @SyncToClient
     private int height;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private double duration = 1;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "298")
     private int temperature = 298;
 
     private final ConditionalSubscriptionHandler tickSubs;

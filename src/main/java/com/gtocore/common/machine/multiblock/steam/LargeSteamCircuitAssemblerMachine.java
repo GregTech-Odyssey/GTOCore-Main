@@ -33,7 +33,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblockMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     private boolean isMultiMode = true;
     @DynamicInitialValue(
                          key = "gtceu.machine.multiblock.steam.large_circuit_assembler.max_parallel",
@@ -96,7 +96,7 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
     @SaveToDisk
     private Item item;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int count;
 
     public LargeSteamCircuitAssemblerMachine(MetaMachineBlockEntity holder) {

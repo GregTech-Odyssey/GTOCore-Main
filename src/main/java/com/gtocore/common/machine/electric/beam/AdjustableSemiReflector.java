@@ -27,7 +27,7 @@ import java.util.Map;
 public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IBeamOperator {
 
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0.5")
     @SyncToClient
     private float reflectivity = 0.5F;
 

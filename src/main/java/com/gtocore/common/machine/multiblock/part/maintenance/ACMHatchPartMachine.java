@@ -51,7 +51,7 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
     private static float MIN_DURATION_MULTIPLIER = 1.0F;
     private static final float DURATION_ACTION_AMOUNT = 0.01F;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     @SyncToClient
     private float durationMultiplier = 1.0F;
 

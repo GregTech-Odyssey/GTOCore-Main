@@ -64,7 +64,7 @@ import java.util.List;
 public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine implements IGTOMufflerMachine, IDroneInteractionMachine, IAirScrubberInteractor, IMufflerConduction {
 
     @Unique
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean gtocore$isWorkingEnabled;
     @Shadow(remap = false)
     @Final

@@ -38,7 +38,7 @@ public class DataGenerateHolderMachine extends MultiblockPartMachine implements 
     private final DataGenerateHolder heldItems;
     @Setter
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean isLocked;
 

@@ -26,7 +26,7 @@ import java.util.function.BiPredicate;
 @Getter
 public class BeamPolarizerMachine extends SimpleNoEnergyMachine implements IBeamOperator {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private double polarizationAngleRad;
 

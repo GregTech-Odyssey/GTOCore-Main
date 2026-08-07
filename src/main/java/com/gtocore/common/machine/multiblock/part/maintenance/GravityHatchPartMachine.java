@@ -18,7 +18,7 @@ public final class GravityHatchPartMachine extends AutoMaintenanceHatchPartMachi
         super(blockEntity);
     }
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int currentGravity;
 
     @Override

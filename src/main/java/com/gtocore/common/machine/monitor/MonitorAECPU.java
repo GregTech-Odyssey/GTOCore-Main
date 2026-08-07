@@ -48,7 +48,7 @@ public class MonitorAECPU extends AbstractAEInfoMonitor {
 
     private CraftingStatusMenu.CraftingCpuList cpuList = EMPTY_CPU_LIST;
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "-1")
     private int selectedCpuSerial = -1;
 
     public MonitorAECPU(MetaMachineBlockEntity holder) {

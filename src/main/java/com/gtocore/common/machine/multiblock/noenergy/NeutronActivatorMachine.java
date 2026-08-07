@@ -48,7 +48,7 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
     private static final Item dustGraphite = ChemicalHelper.getItem(TagPrefix.dust, GTMaterials.Graphite);
     int height;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     protected int eV;
     private final ConditionalSubscriptionHandler neutronEnergySubs;
     private SensorPartMachine sensorMachine;

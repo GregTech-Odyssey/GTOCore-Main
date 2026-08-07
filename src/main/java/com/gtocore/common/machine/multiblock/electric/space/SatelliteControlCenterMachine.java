@@ -62,7 +62,7 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
 
     private boolean launch;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int index;
 
     public SatelliteControlCenterMachine(MetaMachineBlockEntity holder) {

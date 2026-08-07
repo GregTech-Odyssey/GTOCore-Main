@@ -29,16 +29,16 @@ public final class ExtremeTemperatureFluctuationPurificationUnitMachine extends 
     private static final Fluid HELIUM_LIQUID = GTMaterials.Helium.getFluid(FluidStorageKeys.LIQUID);
     private static final Fluid HELIUM_PLASMA = GTMaterials.Helium.getFluid(FluidStorageKeys.PLASMA);
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "298")
     private int heat = 298;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int chance = 1;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean cycle;
 
     private final List<SensorPartMachine> sensorMachine = new ArrayList<>();

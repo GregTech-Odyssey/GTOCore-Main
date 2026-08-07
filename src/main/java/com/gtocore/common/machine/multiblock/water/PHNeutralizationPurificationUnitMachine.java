@@ -30,10 +30,10 @@ public final class PHNeutralizationPurificationUnitMachine extends WaterPurifica
     private static final ItemStack SodiumHydroxide = ChemicalHelper.get(TagPrefix.dust, GTMaterials.SodiumHydroxide);
     private static final Fluid HydrochloricAcid = GTMaterials.HydrochloricAcid.getFluid();
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "7")
     private float ph = 7;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
     private final List<SensorPartMachine> sensorPartMachines = new ArrayList<>(2);

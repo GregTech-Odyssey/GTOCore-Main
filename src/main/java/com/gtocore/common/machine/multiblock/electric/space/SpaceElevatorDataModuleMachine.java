@@ -20,7 +20,7 @@ public class SpaceElevatorDataModuleMachine extends SpaceElevatorModuleMachine {
     private static final int WORKS_PER_PRODUCED_DATA = GTOCore.isExpert() ? 75 : 50;
 
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long moduleWorks = 0;
 
     public SpaceElevatorDataModuleMachine(MetaMachineBlockEntity holder, boolean powerModuleTier) {

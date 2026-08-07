@@ -123,46 +123,46 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
 
     // ------------------- 第一步：选择预设 -------------------
     // 是否已完成预设选择
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean presetConfirm = false;
     // 当前查看的预设组索引
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int checkGroup = 0;
     // 显示的预设编号
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int checkId = 0;
     // 保存的预设组编号
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int saveGroup = 0;
     // 保存的预设编号
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int saveId = 0;
     // 是否显示预览
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean preview = false;
     // 是否高亮
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean highlight = false;
 
     // ------------------- 第二步：选择偏移 -------------------
     // X方向区块偏移
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int offsetX = 0;
     // Z方向区块偏移
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int offsetZ = 0;
     // Y方向高度偏移
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "-1")
     private int offsetY = -1;
 
     // X方向区块偏移修改大小
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int adjustX = 0;
     // Z方向区块偏移修改大小
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int adjustZ = 0;
     // Y方向偏移修改大小
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int adjustY = 0;
     // 坐标点
     @SaveToDisk
@@ -175,7 +175,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     @SaveToDisk
     private final int[] materialInventory = new int[] { 0, 0, 0 };
     // 库存是否充足
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean insufficient = false;
     // 原料物品
     private static final List<List<IntObjectHolder<Item>>> ITEM_VALUE_HOLDERS = List.of(
@@ -194,28 +194,28 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
 
     // ------------------- 第四步：运行中 -------------------
     // 任务是否完成
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     private boolean taskCompleted = true;
     // 跳过空气
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     private boolean skipAir = true;
     // 光照更新
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     private boolean updateLight = true;
     // 速度
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "50")
     private int speed = 50;
     // X轴对称
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean xMirror = false;
     // Z轴对称
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean zMirror = false;
     // Y轴旋转
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int rotation = 0;
     // 可导出
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean canExport = false;
 
     private int progress = 0;

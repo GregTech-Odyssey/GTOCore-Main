@@ -42,13 +42,13 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
     private static final Fluid HotSodiumPotassium = GTOMaterials.HotSodiumPotassium.getFluid();
     private static final Fluid SupercriticalSodiumPotassium = GTOMaterials.SupercriticalSodiumPotassium.getFluid();
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "298")
     private int heat = 298;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int damaged;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int parallel;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int recipeHeat;
     private int fuel, cooler, heatAdjacent = 1, coolerAdjacent;
 

@@ -38,7 +38,7 @@ public class AnalyzeHolderMachine extends MultiblockPartMachine implements IMach
     private final AnalyzeHolder heldItems;
     @Setter
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean isLocked;
 

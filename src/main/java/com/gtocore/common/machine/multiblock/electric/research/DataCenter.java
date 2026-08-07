@@ -70,12 +70,12 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                         ITierCasingMachine,
                         IMultiblockTraitHolder {
 
-    @SaveToDisk(saveNull = true)
+    @SaveToDisk
     @SyncToClient
     private TechNode selectedNode;
-    @SaveToDisk(saveNull = true)
-    private UUID researchRequester;
     @SaveToDisk
+    private UUID researchRequester;
+    @SaveToDisk(defaultValue = "0")
     private long cwuBuffer = 0L;
     private final TierCasingTrait tierCasingTrait;
 

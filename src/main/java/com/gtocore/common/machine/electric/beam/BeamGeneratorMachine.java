@@ -27,19 +27,19 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public class BeamGeneratorMachine extends SimpleTieredMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private long currentIntensity;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int currentWaveLength;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int ocLevel;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float thetaRad;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float phiRad;
 

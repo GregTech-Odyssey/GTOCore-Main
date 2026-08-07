@@ -37,7 +37,7 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     @SaveToDisk
     private final Trait radioactivityTrait;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "80")
     private int radioactivity = 80;
 
     public SpaceBioResearchModule(MetaMachineBlockEntity metaMachineBlockEntity) {

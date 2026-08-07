@@ -22,13 +22,13 @@ public final class FlocculationPurificationUnitMachine extends WaterPurification
     private static final Fluid PolyAluminiumChloride = GTOMaterials.PolyAluminiumChloride.getFluid();
     private static final Fluid FlocculationWasteSolution = GTOMaterials.FlocculationWasteSolution.getFluid();
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long chance;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long outputCount;
 
     public FlocculationPurificationUnitMachine(MetaMachineBlockEntity holder) {

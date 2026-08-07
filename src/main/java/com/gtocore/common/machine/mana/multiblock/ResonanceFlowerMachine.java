@@ -38,14 +38,14 @@ import static com.lowdragmc.lowdraglib.LDLib.random;
 public class ResonanceFlowerMachine extends ManaMultiblockMachine implements IStorageMultiblock, IDropSaveMachine {
 
     // 时间消耗波动系数
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double timeFluctuationCoefficient = 1.0D;
     // 元素消耗波动系数
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double elementalFluctuationCoefficient = 1.0D;
 
     // 剩余的锚定时间
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int stableTime = 0;
 
     // TODO 使用Map<GTRecipeDefinition, CompoundTag>重写
@@ -56,12 +56,19 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private static final String NBT_KEY_RECIPE_INCREMENTAL = "RecipeIncremental";
 
     // 额外共鸣输入
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "2147483647")
     private int frequency = Integer.MAX_VALUE;
-    @SaveToDisk
+    @SaveToDisk(defaultValueGetter = "getDefaultResonanceItem")
     private ItemStack resonanceItem = ItemStack.EMPTY;
-    @SaveToDisk
+    @SaveToDisk(defaultValueGetter = "getDefaultResonanceFluid")
     private FluidStack resonanceFluid = FluidStack.EMPTY;
+
+    private ItemStack getDefaultResonanceItem() {
+        return ItemStack.EMPTY;
+    }
+    private FluidStack getDefaultResonanceFluid() {
+        return FluidStack.EMPTY;
+    }
 
     @SaveToDisk
     protected final NotifiableItemStackHandler machineStorage;

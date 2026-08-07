@@ -75,7 +75,7 @@ class MeWirelessConnectMachine(holder: MetaMachineBlockEntity) :
     }
 
     // ==================== WirelessMachine - Persisted State ====================
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     @SyncToClient
     private var _connectedNetworkId: String = ""
 

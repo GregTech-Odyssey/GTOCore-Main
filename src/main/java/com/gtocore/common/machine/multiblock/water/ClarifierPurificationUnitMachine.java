@@ -35,7 +35,7 @@ public final class ClarifierPurificationUnitMachine extends WaterPurificationUni
 
     private static final Fluid AIR = GTMaterials.Air.getFluid();
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int count;
     @Getter
     @SyncToClient(notifyUpdate = true, autoUpdate = false)

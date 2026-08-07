@@ -73,24 +73,24 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
             .build();
     private static final int MAX_BOOST_TICKS = 20 * 60;
     private static final int MAX_MEDIUM_AMOUNT = 1_000_000_000;
-    @SaveToDisk(saveNull = true)
+    @SaveToDisk
     private Material mediumMaterial;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int mediumAmount;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private short mediumUsage;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int remainingBoostTicks;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private float remainingBoostFactor;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private short mediumUsageThreshold;
-    @SaveToDisk(saveNull = true)
+    @SaveToDisk
     private Item tissue;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private float tissuePoints;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int tissueAmount;
 
     private SensorPartMachine sensorPartMachine;

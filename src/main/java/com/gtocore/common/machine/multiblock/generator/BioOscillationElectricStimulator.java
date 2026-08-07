@@ -32,9 +32,9 @@ import java.util.List;
 public class BioOscillationElectricStimulator extends ElectricMultiblockMachine implements IMultiModule<BioOscillationGenerator>, ICustomRecipeLogicHolder {
 
     private BioOscillationGenerator controller;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int stimulationLevel;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int currentStimulation;
 
     public BioOscillationElectricStimulator(MetaMachineBlockEntity holder) {

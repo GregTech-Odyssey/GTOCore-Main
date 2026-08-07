@@ -36,7 +36,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine implements
 
     private ResearchHolderMachine objectHolder;
 
-    @SaveToDisk(saveNull = true)
+    @SaveToDisk
     private ResearchPoints researchPoints;
 
     public ScanningStationMachine(MetaMachineBlockEntity holder) {

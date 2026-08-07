@@ -36,16 +36,16 @@ public class DataFormTestingPlantMachine extends ElectricMultiblockMachine imple
 
     @SaveToDisk
     private final Set<AEKey> containedKeys = new ReferenceOpenHashSet<>();
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long nextTestBytes = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int testLevel = 0;
-    @SaveToDisk(saveNull = true)
-    private AEKey currentKey = null;
     @SaveToDisk
+    private AEKey currentKey = null;
+    @SaveToDisk(defaultValue = "0")
     private long eut = 0;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "IDLE")
     private Mode mode = Mode.IDLE;
 
     public DataFormTestingPlantMachine(MetaMachineBlockEntity holder) {

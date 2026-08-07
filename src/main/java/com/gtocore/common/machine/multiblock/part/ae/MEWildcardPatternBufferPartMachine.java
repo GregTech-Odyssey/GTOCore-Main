@@ -90,13 +90,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private int scannedPatterns = 0;
     @Getter
     @Setter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int patternPriority = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int maxFluidsOutput = 1;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int maxItemsOutput = 1;
     @SaveToDisk
     private final CustomItemStackHandler blacklistedItems;

@@ -44,7 +44,7 @@ public class WorkspaceExtension extends Extension {
 
     private static final Int2ObjectOpenHashMap<BlockPattern> PATTERNS = new Int2ObjectOpenHashMap<>();
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "2")
     @SyncToClient
     private int length = 2;
 

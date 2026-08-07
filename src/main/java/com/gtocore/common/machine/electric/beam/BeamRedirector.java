@@ -18,10 +18,10 @@ import lombok.Getter;
 @Getter
 public class BeamRedirector extends SimpleNoEnergyMachine implements IBeamOperator {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float thetaRad;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float phiRad;
 

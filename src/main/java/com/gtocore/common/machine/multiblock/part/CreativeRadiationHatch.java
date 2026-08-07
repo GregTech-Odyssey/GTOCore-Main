@@ -18,7 +18,7 @@ import lombok.Getter;
 public class CreativeRadiationHatch extends MultiblockPartMachine implements IRadiationHatch {
 
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int radioactivity;
 
     public CreativeRadiationHatch(MetaMachineBlockEntity holder) {

@@ -48,7 +48,7 @@ public final class MEStorageMachine extends NoRecipeLogicMultiblockMachine imple
     private final NotifiableItemStackHandler machineStorage;
     @SaveToDisk
     private UUID uuid;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     private boolean player = true;
     private StorageAccessPartMachine accessPartMachine;
     private final List<Reference2ReferenceMap.Entry<AEKey, BigInteger>> list = new ArrayList<>();

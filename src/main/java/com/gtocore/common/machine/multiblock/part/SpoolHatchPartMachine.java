@@ -36,7 +36,7 @@ public final class SpoolHatchPartMachine extends WorkableItemPartMachine impleme
         SPOOL = spoolBuilder.build();
     }
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean isWorking;
 
     public SpoolHatchPartMachine(MetaMachineBlockEntity holder) {
