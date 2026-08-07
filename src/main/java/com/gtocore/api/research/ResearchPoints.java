@@ -4,17 +4,23 @@ import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 
 public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
 
+    public ResearchPoints() {
+        super();
+    }
+
+    public ResearchPoints(int expected) {
+        super(expected);
+    }
+
     public ResearchPoints copy() {
-        ResearchPoints copy = new ResearchPoints();
-        for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
-            copy.put(entry.getKey(), entry.getLongValue());
-        }
-        return copy;
+        // fastutil clone() 走底层数组批量拷贝（Arrays.copyOf），比逐项迭代 reopen 快得多
+        // 且 super.clone() 保留运行时类型，返回的即 ResearchPoints 实例
+        return (ResearchPoints) clone();
     }
 
     public ResearchPoints copyWithWeight(float weight) {
-        ResearchPoints copy = new ResearchPoints();
+        // 按源条目数预分配，避免默认容量下的多次扩容 rehash；仍须逐项算权重并过滤 <=0 的项
+        ResearchPoints copy = new ResearchPoints(this.size());
         for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             long weightedValue = (long) (entry.getLongValue() * weight);
