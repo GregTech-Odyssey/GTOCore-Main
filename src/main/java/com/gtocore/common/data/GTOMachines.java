@@ -1216,6 +1216,15 @@ public final class GTOMachines {
             .overlayTieredHullRenderer("catalyst_hatch")
             .register();
 
+    public static final MachineDefinition NEUTRON_IRRADIATION_HATCH = machine("neutron_irradiation_hatch", "中子辐照仓", h -> new NeutronIrradiationPartMachine(h, 16))
+            .tier(IV)
+            .tooltips(GTOMachineTooltipsA.NeutronIrradiationPartMachineTooltips)
+            .notAllowSharedTooltips()
+            .allRotation()
+            .recipeTypes(GTORecipeTypes.NEUTRON_IRRADIATION_RECIPES)
+            .overlayTieredHullRenderer("radiation_hatch")
+            .register();
+
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)
             .tooltipBuilder((stack, list) -> GTOMachineTooltips.BasicMonitorTooltips.apply(list))
             .register();

@@ -6,10 +6,12 @@ import com.gtocore.client.renderer.machine.KerrNewmanHomogenizerRenderer;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
+import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.FastNeutronBreederReactor;
 import com.gtocore.common.machine.multiblock.electric.KerrNewmanHomogenizer;
 import com.gtocore.common.machine.multiblock.electric.space.MegaSpaceElevatorModuleMachine;
 import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorModuleMachine;
+import com.gtocore.common.machine.multiblock.noenergy.NeutronIrradiationChamber;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamSolarBoilerMachine;
 
 import com.gtolib.GTOCore;
@@ -363,17 +365,19 @@ public final class MultiBlockH {
             .register();
 
     // 中子辐照室
-    public static final MultiblockMachineDefinition NEUTRON_IRRADIATION_CHAMBER = multiblock("neutron_irradiation_chamber", "中子辐照室", NoRecipeLogicMultiblockMachine::new)
+    public static final MultiblockMachineDefinition NEUTRON_IRRADIATION_CHAMBER = multiblock("neutron_irradiation_chamber", "中子辐照室", NeutronIrradiationChamber::new)
             .nonYAxisRotation()
             .parallelizableTooltips()
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.BORON_CARBIDE_CERAMIC_RADIATION_RESISTANT_MECHANICAL_CUBE)
+            .tooltips(GTOMachineTooltipsA.NeutronIrradiationChamberTooltips)
             .pattern(definition -> MultiBlockFileReader.start(definition)
                     .where('A', blocks(GTOBlocks.HIGH_PRESSURE_PIPE_CASING.get()))
                     .where('B', blocks(GTOBlocks.FISSION_REACTOR_CASING.get()))
                     .where('C', blocks(GTOBlocks.BORON_CARBIDE_CERAMIC_RADIATION_RESISTANT_MECHANICAL_CUBE.get())
                             .or(autoAbilities(definition.getRecipeTypes()))
-                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
+                            .or(blocks(GTOMachines.NEUTRON_IRRADIATION_HATCH.get()))
+                            .or(blocks(GTOMachines.NEUTRON_SENSOR.get()).setMaxGlobalLimited(1).setMinGlobalLimited(0))
                             .or(abilities(MAINTENANCE).setExactLimit(1)))
                     .where('D', blocks(GTOBlocks.BORON_CARBIDE_CERAMIC_RADIATION_RESISTANT_MECHANICAL_CUBE.get()))
                     .where('E', blocks(GTOBlocks.STRONTIUM_CARBONATE_CERAMIC_RAY_ABSORBING_MECHANICAL_CUBE.get()))

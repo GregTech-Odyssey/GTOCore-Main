@@ -123,6 +123,7 @@ public final class $ClassifiedRecipe {
         RarityForge.init();
         LaserWelder.init();
         FastNeutronBreeder.init();
+        NeutronIrradiation.init();
         ElectroPlating.init();
         FuelCell.init();
         BioOscillation.init();

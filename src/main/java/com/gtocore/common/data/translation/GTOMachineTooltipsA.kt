@@ -380,6 +380,29 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         command("分析阶段耗时为(20+碎片化等级)秒，耗能与测试阶段相同" translatedTo "The analysis stage takes (20 + fragmentation level) seconds and uses the same EU/t as the testing stage")
     }
 
+    @JvmField
+    val NeutronIrradiationPartMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("neutron_irradiation_part_machine")
+
+        section(MainFunction)
+        function("中子辐照室的辐照仓，每个部件提供16个独立辐照槽位" translatedTo "An irradiation part for the Neutron Irradiation Chamber; each part provides 16 independent irradiation slots")
+        content("每个槽位只能放置1个物品；放入物品后自动开始中子辐照，辐照完成后在原槽位输出产物" translatedTo "Each slot holds one item stack; inserted items automatically match Neutron Irradiation recipes, and outputs replace them in the same slot when irradiation finishes")
+        content("每个正在辐照的槽位每5tick消耗1eV中子通量，且配方的最低中子通量不满足时暂停辐照" translatedTo "Each irradiating slot consumes 1eV of neutron flux every 5 ticks, and irradiation pauses if the recipe's minimum neutron flux is not met")
+        command("每个辐照仓的中子通量上限为10,000keV（10MeV）" translatedTo "Each irradiation part has a neutron flux limit of 10,000keV (10MeV)")
+    }
+
+    @JvmField
+    val NeutronIrradiationChamberTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("neutron_irradiation_chamber")
+
+        section(MainFunction)
+        function("无需电力，消耗中子源为辐照部件提供中子通量" translatedTo "Requires no power; consumes neutron sources to provide neutron flux to irradiation parts")
+        command("每秒消耗输入中的中子源，并将其转化为中子通量，均分到每个辐照仓中" translatedTo "Consumes neutron sources from input per second and converts them into neutron flux, evenly distributed to each irradiation part")
+        info("反中子源：石墨粉-1000eV，小堆石墨粉-250eV，小撮石墨粉-100eV；" translatedTo "Flux reducers: graphite dust -1,000eV, small pile of graphite dust -250eV, tiny pile of graphite dust -100eV")
+        info("中子源：锑-铍源+10eV，钚-铍源+100eV，锎-252粒子源+1000eV" translatedTo "Neutron sources: antimony-beryllium +10eV, plutonium-beryllium +100eV, californium-252 +1,000eV")
+        command("可安装中子传感器；传感器默认报告所有辐照仓中的最低通量，也可切换为平均通量，单位为MeV" translatedTo "Install at most one Neutron Sensor; it reports the minimum flux among parts by default, or the average flux when switched, in MeV")
+    }
+
     // 合金冶炼炉
     @JvmField
     val AlloySmelterTooltips = ComponentListSupplier {
