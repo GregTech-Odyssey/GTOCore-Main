@@ -191,7 +191,7 @@ public class GTOCodecs {
     /** 网络专用编解码器：按注册整数 id 编码（紧凑）。 */
     public final ByteStreamCodec<ResearchTag> RESEARCH_TAG_STREAM_CODEC = ResearchTag.TAGS.streamCodec();
     /** 持久化专用编解码器：按 name key 编码（自描述、跨版本稳定）。 */
-    public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = ResearchTag.TAGS.dataCodec(DataCodec.STRING_CODEC);
+    public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = ResearchTag.TAGS.dataCodec();
     public final DataCodec<ResearchPoints> RESEARCH_POINTS_DATA_CODEC = new DataCodec<>() {
 
         @Override
@@ -226,7 +226,7 @@ public class GTOCodecs {
             buf.writeVarInt(obj.size());
             for (var it = obj.reference2LongEntrySet().fastIterator(); it.hasNext();) {
                 var entry = it.next();
-                buf.writeUtf(entry.getKey().getName());
+                RESEARCH_TAG_STREAM_CODEC.encode(buf, entry.getKey());
                 buf.writeVarLong(entry.getLongValue());
             }
         }
@@ -236,9 +236,8 @@ public class GTOCodecs {
             int size = buf.readVarInt();
             ResearchPoints points = new ResearchPoints();
             for (int i = 0; i < size; i++) {
-                String tagName = buf.readUtf();
+                ResearchTag tag = RESEARCH_TAG_STREAM_CODEC.decode(buf);
                 long amount = buf.readVarLong();
-                ResearchTag tag = ResearchTag.TAGS.get(tagName);
                 if (tag != null) {
                     points.put(tag, amount);
                 }

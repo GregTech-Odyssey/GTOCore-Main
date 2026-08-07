@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 
+import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public final class ResearchTag {
     public static final Registry<String, ResearchTag> TAGS = createRegistry();
 
     private static Registry<String, ResearchTag> createRegistry() {
-        var registry = new Registry<String, ResearchTag>("gtocore:research_tag");
+        var registry = new Registry<String, ResearchTag>("research_tag", DataCodec.STRING_CODEC, t -> t.name);
         registry.unfreeze();
         return registry;
     }
