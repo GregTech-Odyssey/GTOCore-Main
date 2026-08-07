@@ -35,6 +35,7 @@ import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -131,7 +132,7 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
             return;
         }
 
-        var groups = new LinkedHashSet<PatternContainerGroup>();
+        var groups = new ObjectLinkedOpenHashSet<PatternContainerGroup>();
         for (Direction side : getActiveSides()) {
             var adjacentPos = blockEntity.getBlockPos().relative(side);
             var group = PatternContainerGroupHelper.fromMachine(level, adjacentPos, extraSuffix);

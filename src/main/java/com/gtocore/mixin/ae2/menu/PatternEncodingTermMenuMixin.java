@@ -9,6 +9,7 @@ import com.gtocore.integration.ae.hooks.IExtendedPatternContainer;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 
 import com.gto.fastcollection.OpenCacheHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import com.gtolib.api.ae2.IPatterEncodingTermMenu;
 import com.gtolib.api.ae2.pattern.PatternUtils;
 import com.gtolib.utils.ClientUtil;
@@ -271,7 +272,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
 
     @Unique
     private static boolean gto$matchesRecipeName(IExtendedPatternContainer container, String recipeType) {
-        var recipeNames = new LinkedHashSet<String>();
+        var recipeNames = new ObjectLinkedOpenHashSet<String>();
         recipeNames.add(recipeType.toLowerCase(Locale.ROOT));
         var name = container.gto$getTerminalGroupSearchName().getString().toLowerCase(Locale.ROOT);
         for (var recipeName : recipeNames) {
