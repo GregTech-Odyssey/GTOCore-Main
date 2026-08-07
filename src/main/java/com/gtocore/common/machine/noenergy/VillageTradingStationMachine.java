@@ -42,6 +42,7 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.layout.Layout;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -629,6 +630,18 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             super(10);
             this.machine = machine;
             this.setFilter(i -> i.getItem().equals(VILLAGER_ITEM));
+        }
+
+        @Override
+        public int extract(int slot, ItemStack existing, int amount, boolean simulate) {
+            if (machine.isLocked(slot)) return 0;
+            return super.extract(slot, existing, amount, simulate);
+        }
+
+        @Override
+        public int insert(int slot, @NotNull ItemStack stack, int amount, boolean simulate) {
+            if (machine.isLocked(slot)) return 0;
+            return super.insert(slot, stack, amount, simulate);
         }
     }
 
