@@ -39,6 +39,7 @@ import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.ColorUtils;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
+import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import org.jetbrains.annotations.NotNull;
@@ -49,7 +50,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -486,14 +486,14 @@ public class ScanningSelectionTab implements IFancyUIProvider {
         }
 
         private void applyClientSelection(Collection<AEKey> s) {
-            var selected = new LinkedHashSet<>(s);
+            var selected = new ReferenceLinkedOpenHashSet<>(s);
             selected.removeIf(this::isUnscannable);
             currentState = new SyncState(currentState.entries(), selected);
         }
 
         private void setServerSelection(Collection<AEKey> requested) {
             Set<AEKey> available = new ReferenceOpenHashSet<>(currentState.entries());
-            Set<AEKey> selected = new LinkedHashSet<>(requested);
+            Set<AEKey> selected = new ReferenceLinkedOpenHashSet<>(requested);
             selected.retainAll(available);
             selected.removeIf(this::isUnscannable);
             currentState = new SyncState(currentState.entries(), selected);
@@ -502,7 +502,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
 
         private void toggleClientSelection(AEKey key) {
             if (isUnscannable(key)) return;
-            Set<AEKey> selected = new LinkedHashSet<>(currentState.selected());
+            Set<AEKey> selected = new ReferenceLinkedOpenHashSet<>(currentState.selected());
             if (!selected.add(key)) {
                 selected.remove(key);
             }
@@ -514,7 +514,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
                     currentState.entries().stream().noneMatch(entry -> entry == key)) {
                 return;
             }
-            Set<AEKey> selected = new LinkedHashSet<>(currentState.selected());
+            Set<AEKey> selected = new ReferenceLinkedOpenHashSet<>(currentState.selected());
             if (!selected.add(key)) {
                 selected.remove(key);
             }
