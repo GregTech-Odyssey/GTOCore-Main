@@ -82,6 +82,16 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
     }
 
     @Override
+    public boolean hasAutoOutputFluid() {
+        return false;
+    }
+
+    @Override
+    public boolean hasAutoOutputItem() {
+        return false;
+    }
+
+    @Override
     protected @NotNull InteractionResult onScrewdriverClick(@NotNull Player playerIn, @NotNull InteractionHand hand, @NotNull Direction gridSide, @NotNull BlockHitResult hitResult) {
         if (!isRemote()) {
             isReverted = !isReverted;

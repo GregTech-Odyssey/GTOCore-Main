@@ -1113,5 +1113,16 @@ final class AssemblerA {
                 .EUt(32000)
                 .duration(400)
                 .save();
+        ASSEMBLER_RECIPES.builder("advanced_cooler")
+                .inputItems(GTOMachines.COOLER.asItem())
+                .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.StainlessSteel, 8)
+                .inputItems(GTItems.FLUID_CELL_LARGE_ALUMINIUM, 4)
+                .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.Aluminium, 8)
+                .inputItems(GTItems.ELECTRIC_PUMP_MV, 2)
+                .outputItems(GTOMachines.ADVANCED_COOLER.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 576)
+                .EUt(30)
+                .duration(250)
+                .save();
     }
 }

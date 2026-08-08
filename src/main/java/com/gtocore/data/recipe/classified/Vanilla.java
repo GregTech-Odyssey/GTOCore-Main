@@ -1091,6 +1091,11 @@ final class Vanilla {
                 "CDC",
                 "EFE",
                 'A', CustomTags.UHV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Glowstone), 'C', GTItems.EMITTER_UV.asItem(), 'D', GTMachines.HULL[GTValues.UV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTMaterials.Darmstadtium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("heat_valve"), GTOMachines.HEAT_VALVE.asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Invar), 'B', Items.COMPARATOR, 'C', Items.REPEATER, 'D', GTBlocks.MACHINE_CASING_LV.asItem());
     }
 
     private static void addUpg(Item input, ItemStack output) {
