@@ -14,5 +14,7 @@ public class GTOQuestTypes {
                 () -> Icons.ACCEPT_GRAY);
         ScheduledTask.SCHEDULED = TaskTypes.register(GTOCore.id("scheduled"), ScheduledTask::new,
                 () -> Icons.ACCEPT_GRAY);
+        TechNodeTask.TECHNODE = TaskTypes.register(GTOCore.id("technode"), TechNodeTask::new,
+                () -> Icons.ART);
     }
 }

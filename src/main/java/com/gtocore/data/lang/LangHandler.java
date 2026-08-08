@@ -314,6 +314,8 @@ public final class LangHandler {
 
         addCNEN("gtocore.xaero_waypoint_set", "矿脉", "Ore Vein");
 
+        addCNEN("ftbquests.task.gtocore.technode", "科技节点", "Tech Node");
+        addCNEN("ftbquests.task.gtocore.technode.structure", "设置科技节点", "Set Tech Node");
         addCNEN("ftbquests.task.gtocore.gtodifficulty", "GTO难度", "GTO Difficulty");
         addCNEN("ftbquests.task.gtocore.gtodifficulty.difficulty", "难度设置（0=通用，1=简单，2=普通，3=专家）", "Difficulty Setting (0=Generic, 1=Easy, 2=Normal, 3=Expert)");
         addCNEN("ftbquests.task.gtocore.mod", "模组加载", "Mod Loaded");

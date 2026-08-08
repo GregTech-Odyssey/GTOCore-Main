@@ -6,8 +6,6 @@ import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -29,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-@DataGeneratorScanned
 public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipeLogicHolder {
 
     public ScannerMachine(MetaMachineBlockEntity holder, int tier, Int2IntFunction tankScalingFunction, Object... args) {
@@ -139,7 +136,4 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
     private static long eut(long bytesScanned) {
         return 8 * bytesScanned + 8;
     }
-
-    @RegisterLanguage(cn = "待扫描物品", en = "Item to Scan")
-    public static final String ITEM_TO_SCAN = "gtocore.tooltip.recipe.item_to_scan";
 }

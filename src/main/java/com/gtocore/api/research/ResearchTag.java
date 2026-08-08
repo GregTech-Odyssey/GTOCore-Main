@@ -51,7 +51,7 @@ public final class ResearchTag {
         return Component.translatable("gtocore.research.tag." + name);
     }
 
-    public static final ResearchTag MATERIAL = new ResearchTag("material", "材料", "Material", 32);
+    public static final ResearchTag MATERIAL = new ResearchTag("material", "材料", "Material", 16);
     public static final ResearchTag DATA_STORAGE = new ResearchTag("data_storage", "数据存储", "Data Storage", 64);
     public static final ResearchTag COMPUTATION = new ResearchTag("computation", "计算", "Computation", 128);
     public static final ResearchTag THERMODYNAMICS = new ResearchTag("thermodynamics", "热力学", "Thermodynamics", 128);

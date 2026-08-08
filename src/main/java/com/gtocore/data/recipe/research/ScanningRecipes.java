@@ -66,5 +66,15 @@ public final class ScanningRecipes {
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 150L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 200L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:space_elevator_power_module_5"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 250L));
+
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:data_stick"), ResearchPoints.of(ResearchTag.DATA_STORAGE, 4L, ResearchTag.ASSEMBLY, 4L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:dimension_data"), ResearchPoints.of(ResearchTag.INTERSTELLAR_ENGINEERING, 4L, ResearchTag.DATA_STORAGE, 4L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:data_orb"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.DATA_STORAGE, 8L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtceu:data_module"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.DATA_STORAGE, 8L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:neural_matrix"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.DATA_STORAGE, 8L, ResearchTag.BIOLOGY, 1L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:atomic_archives"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.DATA_STORAGE, 8L, ResearchTag.OPTICS, 1L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:obsidian_matrix"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.DATA_STORAGE, 8L, ResearchTag.EXOTIC, 1L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:closed_timelike_curve_guidance_unit"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.DATA_STORAGE, 8L, ResearchTag.SUPRACAUSAL, 1L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:microcosm"), ResearchPoints.of(ResearchTag.ASSEMBLY, 30L, ResearchTag.DATA_STORAGE, 60L, ResearchTag.SUPRACAUSAL, 1L));
     }
 }

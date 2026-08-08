@@ -5,6 +5,7 @@ import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.Message;
 import com.gtocore.common.data.GTORecipeTypes;
 
@@ -126,6 +127,7 @@ public class DataScanningManager {
             teamContext.addScannedItem(key);
             if (!hasScanned) {
                 for (var node : ResearchRequirements.getEurekaRequirements(key)) {
+                    TechTreeSavedData.unlock(team, node);
                     Message.sendResearchToast(team, node, false);
                 }
             }

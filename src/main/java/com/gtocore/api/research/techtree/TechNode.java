@@ -140,4 +140,9 @@ public final class TechNode {
         lines.addAll(rewardLines);
         return lines;
     }
+
+    @Override
+    public String toString() {
+        return getDisplayName().getString();
+    }
 }

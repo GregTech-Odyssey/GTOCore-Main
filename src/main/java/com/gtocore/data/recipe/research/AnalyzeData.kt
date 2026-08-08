@@ -261,7 +261,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     @JvmField
     val SupercriticalPhaseBasicResearch = TechTree.builder("supercritical_phase_basic_research", "超临界相态基础研究", "Supercritical Phase Basic Research")
         .description("研究物质在极端条件下处于超临界相态的物理特性与应用", "Study the physical properties and applications of matter in a supercritical phase under extreme conditions")
-        .icon(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTOMaterials.SupercriticalSteam)
+        .icon(GTOMaterials.SupercriticalSteam.fluid)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(32 * 20 * 300L)
@@ -346,7 +346,11 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     @JvmField
     val DataCenter = TechTree.builder("data_in_research", "科研数据中心", "Data Center in Research")
         .description("科研数据中心是一个用于存储和处理科研数据的高性能计算平台，相比于数据库，它可以将其中标准化的生产数据与积累的科研数据进行整合，推进基地技术迭代", "The research data center is a high-performance computing platform for storing and processing research data. Compared to databases, it can integrate standardized production data with accumulated research data, promoting base technology iteration")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(20).addMaterialNeeded(DATA_STORAGE, 120).setEurekaItem(GTResearchMachines.DATA_ACCESS_HATCH, 1.0f).build())
+        .requirements(
+            ResearchRequirements.Builder().setCWUNeeded(20)
+                .addMaterialNeeded(DATA_STORAGE, 25)
+                .setEurekaItem(GTResearchMachines.DATA_BANK, 1.0f).build(),
+        )
         .icon(GTResearchMachines.DATA_BANK)
         .prerequisites(DataBase)
         .build()
@@ -373,7 +377,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(32 * 20 * 180L)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:auto_maintenance_hatch"), 1.0F)
-                .addMaterialNeeded(ResearchTag.MECHANICS, 4)
+                .addMaterialNeeded(MECHANICS, 4)
                 .build(),
         )
         .build()

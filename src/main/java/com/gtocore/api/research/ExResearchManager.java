@@ -65,6 +65,6 @@ public final class ExResearchManager {
         var dimTier = GTODimensions.getTier(planet);
         TaskHandler.enqueueTask(ServerUtils.getServer().overworld(), () -> {
             TeamResearchSavedDtat.getOrCreateContext(team).addResearchPoints(ResearchTag.INTERSTELLAR_ENGINEERING, 1L << dimTier);
-        }, 5);
+        }, 1);
     }
 }

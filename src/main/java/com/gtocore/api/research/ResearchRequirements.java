@@ -94,7 +94,7 @@ public final class ResearchRequirements {
             return ActionResult.SUCCESS;
         }
         var eurekaScanned = teamResource.getScannedItems().contains(eurekaItem);
-        var actualCWUNeeded = eurekaScanned ? (long) (cwuNeeded * eurekaProgress) : cwuNeeded;
+        var actualCWUNeeded = eurekaScanned ? (long) (cwuNeeded * (1 - eurekaProgress)) : cwuNeeded;
         if (teamResource.getTechNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {
             return FAILURE_NO_CWU;
         }

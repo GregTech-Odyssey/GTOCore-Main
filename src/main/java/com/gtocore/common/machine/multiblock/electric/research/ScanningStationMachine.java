@@ -136,7 +136,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine implements
             var data = DataCrystalItem.getResearchData(stack);
             if (!data.isEmpty()) {
                 var recipe = RecipeBuilder.ofRaw().inputItems(stack.copyWithCount(1))
-                        .duration(200 * GTOCore.difficulty).EUt(3L << (2 * tier + 11)).CWUt(16L << tier).durationIsTotalCWU(true)
+                        .duration(200 * GTOCore.difficulty).EUt(3L << (4 * tier + 11)).CWUt(4L << (tier * 2)).durationIsTotalCWU(true)
                         .build();
                 researchPoints = data;
                 recipeObjectHolder.set(recipe);
