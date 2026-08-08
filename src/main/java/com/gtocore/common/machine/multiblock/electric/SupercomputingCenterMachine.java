@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import earth.terrarium.adastra.common.registry.ModItems;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,6 +94,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     private final Reference2IntOpenHashMap<IItem> componentsMap = new Reference2IntOpenHashMap<>();
     private int lastTimeStamp;
     private long allocatedCWUt;
+    @Getter
     private long cacheCWUt;
     private long maxEUt;
     private GTRecipeDefinition runRecipe;
@@ -363,7 +365,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         return 0;
     }
 
-    private long getAdjustedMaxCWU() {
+    public long getAdjustedMaxCWU() {
         return (getMaxCWUt() * maxCWUtModification / 10000);
     }
 

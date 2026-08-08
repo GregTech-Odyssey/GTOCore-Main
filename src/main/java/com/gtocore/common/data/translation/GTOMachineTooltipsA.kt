@@ -23,6 +23,15 @@ import com.gtolib.GTOCore
 object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
     @JvmField
+    val ComputationalDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("computational_data_holder")
+
+        section(MainFunction)
+        function("安装在计算机或超算中心等场所，用于读取算力流动的生产数据" translatedTo "Installed in computers or supercomputing centers, used to read production data of computational workload flow")
+        function("每5秒，获得√(最大算力+当前使用中的算力)的计算研究点数，并存储于机器内的晶片中" translatedTo "Every 5 seconds, it generates √(maximum computational workload + currently used computational workload) computational research points, which are stored in the data crystal inside the machine")
+    }
+
+    @JvmField
     val ConnectingRodHatchTooltips: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("connecting_rod_hatch")
 

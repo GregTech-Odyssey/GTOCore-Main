@@ -15,10 +15,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.SupercomputingCenterMachine;
 import com.gtocore.common.machine.multiblock.electric.research.*;
 import com.gtocore.common.machine.multiblock.part.research.*;
-import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchCoolerPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchEmptyPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.*;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.registries.GTOMachineBuilder;
@@ -69,6 +66,17 @@ public final class ExResearchMachines {
     /////////////////////////////////////
     // *********** 算力机器 *********** //
     /////////////////////////////////////
+
+    public static final MachineDefinition COMPUTATIONAL_DATA_HOLDER = machine("computational_data_holder", "计算数据支架", ComputationalDataHolderMachine::new)
+            .tier(LuV)
+            .tooltips(GTOMachineTooltipsA.ComputationalDataHolder)
+            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .abilities(HPCA_COMPONENT)
+            .allRotation()
+            .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/advanced_computer_casing"), GTCEu.id("block/machine/part/object_holder"),
+                    GTCEu.id("block/machine/part/object_holder_active")))
+            .notAllowSharedTooltips()
+            .register();
 
     public static final MultiblockMachineDefinition SUPERCOMPUTING_CENTER = multiblock("supercomputing_center", "运算中心", SupercomputingCenterMachine::new)
             .tooltips(GTOMachineTooltips.SupercomputingTooltips)
@@ -122,6 +130,7 @@ public final class ExResearchMachines {
                             .or(abilities(EXPORT_FLUIDS))
                             .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2))
                             .or(abilities(COMPUTATION_DATA_TRANSMISSION).setMaxGlobalLimited(1))
+                            .or(blocks(COMPUTATIONAL_DATA_HOLDER.get()).setMaxGlobalLimited(1))
                             .or(abilities(MAINTENANCE).setExactLimit(1)))
                     .where('S', GTOPredicates.tierBlock(BlockMap.COMPUTER_HEAT_MAP, GTORecipeDataKeys.COMPUTER_HEAT_TIER))
                     .where('T', abilities(GTOPartAbility.COMPUTING_COMPONENT, HPCA_COMPONENT))

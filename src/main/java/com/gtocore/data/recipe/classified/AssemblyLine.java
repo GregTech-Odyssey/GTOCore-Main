@@ -34,6 +34,7 @@ final class AssemblyLine {
 
     public static void init() {
         AssemblyLineA.init();
+        AssemblyLineDifficultyRelated.init();
         ASSEMBLY_LINE_RECIPES.builder("integrated_vapor_deposition_system")
                 .inputItems(MultiBlockC.CHEMICAL_VAPOR_DEPOSITION.asItem(), 16)
                 .inputItems(MultiBlockC.PHYSICAL_VAPOR_DEPOSITION.asItem(), 16)
@@ -2974,6 +2975,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(MultiBlockA.SPS_CRAFTING.asItem())
                         .CWUt(256)
                         .EUt(125829120))
+                .researchNode(AnalyzeData.TimeDilationTech)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("insanely_max_battery")

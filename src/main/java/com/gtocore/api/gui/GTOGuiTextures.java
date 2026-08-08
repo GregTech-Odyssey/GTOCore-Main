@@ -33,6 +33,7 @@ public final class GTOGuiTextures {
     public static final ResourceTexture HIGH_SPEED_MODE = getTexture("overlay/high_speed_mode");
     public static final ResourceTexture OVERCLOCK_CONFIG = getTexture("overlay/overclock_config");
     public static final ResourceTexture STRUCTURE_CHECK = getTexture("overlay/structure_check");
+    public static final ResourceTexture COMPUTATION_RESEARCH_TAG_COMPONENT = getTexture("overlay/research_tag_component");
     public static final ResourceTexture INTELLIGENT_SCANNER = getTexture("overlay/intelligent_scanner");
     public static final ResourceTexture INTELLIGENT_SCANNER_1 = INTELLIGENT_SCANNER.getSubTexture(0, 0, 1, 0.25);
     public static final ResourceTexture INTELLIGENT_SCANNER_2 = INTELLIGENT_SCANNER.getSubTexture(0, 0.25, 1, 0.25);

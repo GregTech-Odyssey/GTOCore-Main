@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy;
+package com.gtocore.common.machine.noenergy.heat;
 
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.heat.HeatHandler;

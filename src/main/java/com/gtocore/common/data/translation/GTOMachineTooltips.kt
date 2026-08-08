@@ -814,6 +814,27 @@ object GTOMachineTooltips {
         section("通过消耗水对侧面机器冷却" translatedTo "Cooling the side machine by consuming water")
     }
 
+    // 高级冷却器
+    @JvmField
+    val AdvancedCoolerMachineTooltips = ComponentListSupplier {
+        setTranslationPrefix("advanced_cooler_machine")
+
+        section("通过消耗流体对侧面机器冷却" translatedTo "Cooling the side machine by consuming fluid")
+        content("冷却效率取决于流体的温度" translatedTo "Cooling efficiency depends on the temperature of the fluid")
+        command("仅320K以下的流体可以参与冷却" translatedTo "Only fluids below 320K can participate in cooling")
+        info("冷却效率 = min(200, (流体与机器温度差 / 4)) (HU/秒)" translatedTo "Cooling efficiency = min(200, (fluid temperature - machine temperature) / 4) (HU/sec)")
+    }
+
+    // 热阀
+    @JvmField
+    val HeatValveMachineTooltips = ComponentListSupplier {
+        setTranslationPrefix("heat_valve_machine")
+
+        content("当通入红石信号时，阀门关闭，阻止热量流动" translatedTo "When a redstone signal is input, the valve closes, preventing heat flow")
+        content("当红石信号关闭时，阀门打开，允许热量流动" translatedTo "When the redstone signal is off, the valve opens, allowing heat flow")
+        command("使用螺丝刀以反转信号控制逻辑" translatedTo "Use a screwdriver to reverse the signal control logic")
+    }
+
     // 电力加热器
     @JvmField
     val ElectricHeaterMachineTooltips = ComponentListSupplier {

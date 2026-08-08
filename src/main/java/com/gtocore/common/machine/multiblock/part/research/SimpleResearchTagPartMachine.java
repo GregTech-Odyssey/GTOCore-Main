@@ -55,7 +55,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
     @SyncToClient(notifyUpdate = true)
     private double dataCache;
 
-    SimpleResearchTagPartMachine(MetaMachineBlockEntity holder, long dataCapacity, ResearchTag researchTag) {
+    protected SimpleResearchTagPartMachine(MetaMachineBlockEntity holder, long dataCapacity, ResearchTag researchTag) {
         super(holder);
         this.dataCapacity = dataCapacity;
         this.researchTag = researchTag;
@@ -115,7 +115,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
         return false;
     }
 
-    private static final class ScanningHolder extends NotifiableItemStackHandler {
+    protected static final class ScanningHolder extends NotifiableItemStackHandler {
 
         private ScanningHolder(SimpleResearchTagPartMachine machine) {
             super(machine, 3, IO.NONE, IO.BOTH, ScanningHolderStackHandler::new);
@@ -148,7 +148,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
         }
     }
 
-    public static final class ScanningWidget extends Widget implements IIngredientSlot {
+    protected static final class ScanningWidget extends Widget implements IIngredientSlot {
 
         private final SimpleResearchTagPartMachine machine;
 

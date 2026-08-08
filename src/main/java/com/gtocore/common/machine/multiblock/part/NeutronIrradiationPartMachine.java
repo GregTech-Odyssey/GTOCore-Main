@@ -71,8 +71,7 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
     private final int[] initialTime;
     @SaveToDisk
     @SyncToClient
-    private final int[] fluxRequirements; // in keV
-    // private final float[] fluxRequirements; // in keV
+    private final float[] fluxRequirements; // in keV
     @SaveToDisk
     @SyncToClient
     private final ItemStack[] outputStacks;
@@ -86,8 +85,7 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
         this.capacity = capacity;
         Arrays.fill(initialTime = new int[capacity], 0);
         Arrays.fill(time = new int[capacity], 0);
-        // Arrays.fill(fluxRequirements = new float[capacity], 0);
-        Arrays.fill(fluxRequirements = new int[capacity], 0);
+        Arrays.fill(fluxRequirements = new float[capacity], 0);
         Arrays.fill(dirtySlots = new boolean[capacity], true);
         Arrays.fill(outputStacks = new ItemStack[capacity], ItemStack.EMPTY);
         inventory = new StackHandler(this, capacity);

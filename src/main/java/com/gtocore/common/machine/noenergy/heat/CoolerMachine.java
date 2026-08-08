@@ -1,38 +1,42 @@
-package com.gtocore.common.machine.noenergy;
+package com.gtocore.common.machine.noenergy.heat;
 
 import com.gtocore.common.data.GTORecipeTypes;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.heat.HeatHandler;
 import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluids;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-public final class BoilWaterMachine extends SimpleNoEnergyMachine implements IHeatContainerMachine, IExplosionMachine, ICustomRecipeLogicHolder {
+public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatContainerMachine, IExplosionMachine, ICustomRecipeLogicHolder {
+
+    public static final int MaxTemperature = 750;
 
     @Getter
     @SaveToDisk
+    @SyncToClient
     private final HeatHandler heatContainer;
 
-    public BoilWaterMachine(MetaMachineBlockEntity holder) {
-        super(holder, 0, i -> 16000);
-        heatContainer = new HeatHandler(holder, 600, 2, 0.6, 0.01);
-        heatContainer.setSideIOCondition(s -> s == Direction.DOWN);
+    public CoolerMachine(MetaMachineBlockEntity holder) {
+        super(holder, 0, i -> 8000);
+        heatContainer = new HeatHandler(holder, MaxTemperature, 2, 0.2, 0.01);
+        heatContainer.setSideIOCondition(s -> s != Direction.DOWN && s != Direction.UP);
         heatContainer.addChangedListener(getRecipeLogic()::updateTickSubscription);
     }
 
@@ -60,32 +64,27 @@ public final class BoilWaterMachine extends SimpleNoEnergyMachine implements IHe
     }
 
     @Override
-    public boolean handleTickRecipe(GTRecipe recipe) {
-        if (super.handleTickRecipe(recipe)) {
-            if (getOffsetTimer() % 10 == 0) return heatContainer.removeHeatUnrestricted(1, false) == 1;
-            return true;
+    public void onWorking() {
+        super.onWorking();
+        if (getOffsetTimer() % 20 == 0) {
+            if (heatContainer.getCurrentHeat() < 8) {
+                getRecipeLogic().markLastRecipeDirty();
+            } else {
+                heatContainer.removeHeatUnrestricted(8, false);
+            }
         }
-        return false;
     }
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (heatContainer.getTemperature() < 360) {
+        if (heatContainer.getCurrentHeat() < 8) {
             setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE);
             return null;
         }
-        return getRecipeBuilder().duration(20).inputFluids(Fluids.WATER, 6).outputFluids(GTMaterials.Steam, (int) (960 * heatContainer.getTemperature() / 600)).build();
-    }
-
-    @Override
-    public boolean matchRecipeOutput(GTRecipe recipe) {
-        if (super.matchRecipeOutput(recipe)) return true;
-        if (inputFluid(Fluids.WATER, 1)) doExplosion(4);
-        return false;
-    }
-
-    @Override
-    public boolean alwaysSearchRecipe() {
-        return true;
+        if (unit.getFluidAmount(true, Fluids.WATER)[0] < 1000) {
+            setIdleReason(ActionResult.failInsufficientIn(Fluids.WATER.getFluidType().getDescription()));
+            return null;
+        }
+        return getRecipeBuilder().duration(20).inputFluids(Fluids.WATER, 1000).outputFluids(Fluids.WATER, 990).build();
     }
 }

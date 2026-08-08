@@ -5,6 +5,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.common.data.machines.MultiBlockH;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -1096,6 +1097,21 @@ final class AssemblerA {
                 .inputFluids(GTMaterials.SolderingAlloy, 4000)
                 .EUt(420)
                 .duration(420)
+                .save();
+        ASSEMBLER_RECIPES.builder("neutron_irradiation_chamber")
+                .inputItems(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asItem())
+                .inputItems(GTItems.NEUTRON_REFLECTOR, 8)
+                .inputItems(GTItems.EMITTER_LuV, 4)
+                .inputItems(GTOItems.HUI_CIRCUIT_1, 4)
+                .inputItems(TagPrefix.frameGt, GTOMaterials.BabbittAlloy, 4)
+                .inputItems(GTOTagPrefix.TARGET_BASE, GTMaterials.StainlessSteel, 8)
+                .inputItems(GTItems.TOOL_DATA_STICK, 2)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.ReactorSteel, 8)
+                .inputItems(TagPrefix.wireGtQuadruple, GTMaterials.IndiumTinBariumTitaniumCuprate, 8)
+                .outputItems(MultiBlockH.NEUTRON_IRRADIATION_CHAMBER.asItem())
+                .inputFluids(GTMaterials.StainlessSteel, 1296)
+                .EUt(32000)
+                .duration(400)
                 .save();
     }
 }

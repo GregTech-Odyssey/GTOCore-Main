@@ -22,6 +22,7 @@ import com.gtocore.common.machine.multiblock.part.maintenance.*;
 import com.gtocore.common.machine.multiblock.part.voiding.*;
 import com.gtocore.common.machine.noenergy.*;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeploymentMachine;
+import com.gtocore.common.machine.noenergy.heat.*;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
@@ -305,6 +306,29 @@ public final class GTOMachines {
             .tooltips(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01))
             .tooltips(Component.translatable(HeatInterfaceCover.CONSUMPTION_RATE, 0.4))
             .workableTieredHullRenderer(GTOCore.id("block/machines/cooler"))
+            .register();
+
+    public static final MachineDefinition ADVANCED_COOLER = machine("advanced_cooler", "高级冷却器", AdvancedCoolerMachine::new)
+            .tier(MV)
+            .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("advanced_cooler"), GTORecipeTypes.F1A1B))
+            .recipeType(GTRecipeTypes.DUMMY_RECIPES)
+            .noRecipeModifier()
+            .nonYAxisRotation()
+            .tooltips(GTOMachineTooltips.AdvancedCoolerMachineTooltips)
+            .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 3000))
+            .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 2))
+            .tooltips(Component.translatable(HeatInterfaceCover.TRANSFER_RATE, 4))
+            .tooltips(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01))
+            .workableTieredHullRenderer(GTOCore.id("block/machines/cooler"))
+            .register();
+
+    public static final MachineDefinition HEAT_VALVE = machine("heat_valve", "热阀", HeatValveMachine::new)
+            .tier(LV)
+            .recipeType(GTRecipeTypes.DUMMY_RECIPES)
+            .noRecipeModifier()
+            .nonYAxisRotation()
+            .tooltips(GTOMachineTooltips.HeatValveMachineTooltips)
+            .workableTieredHullRenderer(GTOCore.id("block/machines/heat_valve"))
             .register();
 
     public static final MachineDefinition BOILER = machine("boiler", "外置热源锅炉", BoilWaterMachine::new)
