@@ -6,16 +6,12 @@ import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
-import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -26,13 +22,12 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class ScanningStationMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
+public class ScanningStationMachine extends ElectricMultiblockMachine {
 
     private ResearchHolderMachine objectHolder;
 
@@ -115,8 +110,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine implements
 
     @Override
     public boolean handleRecipeOutput(GTRecipe originalRecipe) {
-        var lastRecipe = getRecipeLogic().getLastRecipe();
-        if (lastRecipe != null && researchPoints != null) {
+        if (researchPoints != null) {
             var teamData = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
             teamData.addResearchPoints(researchPoints);
             AnalyzeData.TechTree.triggerAllResearchUnlock(getOwnerUUID());
@@ -127,23 +121,19 @@ public class ScanningStationMachine extends ElectricMultiblockMachine implements
     }
 
     @Override
-    public @Nullable GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        AtomicReference<GTRecipeDefinition> recipeObjectHolder = new AtomicReference<>();
-        unit.forEachItems(false, (stack, amount) -> {
-            var item = stack.getItem();
-            if (!(item instanceof DataCrystalItem item1)) return false;
-            var tier = item1.tier;
-            var data = DataCrystalItem.getResearchData(stack);
-            if (!data.isEmpty()) {
-                var recipe = RecipeBuilder.ofRaw().inputItems(stack.copyWithCount(1))
-                        .duration(200 * GTOCore.difficulty).EUt(3L << (4 * tier + 11)).CWUt(4L << (tier * 2)).durationIsTotalCWU(true)
-                        .build();
-                researchPoints = data;
-                recipeObjectHolder.set(recipe);
-                return true;
-            }
-            return false;
-        });
-        return recipeObjectHolder.get();
+    protected @Nullable GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
+        var crystal = recipe.itemInputs.getFirst().inner.getInnerItemStack().getItem();
+        if (crystal instanceof DataCrystalItem item0) {
+            unit.forEachItems(false, (stack, amount) -> {
+                var item = stack.getItem();
+                if (item != item0) return false;
+                researchPoints = DataCrystalItem.getResearchData(stack);
+                return !researchPoints.isEmpty();
+            });
+        }
+        if (researchPoints == null) {
+            return null;
+        }
+        return super.getRealRecipe(unit, recipe);
     }
 }

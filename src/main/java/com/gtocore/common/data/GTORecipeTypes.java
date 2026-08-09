@@ -72,7 +72,7 @@ public final class GTORecipeTypes {
     public static final RecipeType FURNACE_RECIPES = (RecipeType) GTRecipeTypes.FURNACE_RECIPES;
     public static final RecipeType ALLOY_SMELTER_RECIPES = (RecipeType) GTRecipeTypes.ALLOY_SMELTER_RECIPES;
     public static final RecipeType ARC_FURNACE_RECIPES = (RecipeType) GTRecipeTypes.ARC_FURNACE_RECIPES;
-    public static final RecipeType ASSEMBLER_RECIPES = (RecipeType) GTRecipeTypes.ASSEMBLER_RECIPES;
+    public static final RecipeType ASSEMBLER_RECIPES = (RecipeType) GTRecipeTypes.ASSEMBLER_RECIPES.setHasResearchSlot(true);
     public static final RecipeType AUTOCLAVE_RECIPES = (RecipeType) GTRecipeTypes.AUTOCLAVE_RECIPES;
     public static final RecipeType BENDER_RECIPES = (RecipeType) GTRecipeTypes.BENDER_RECIPES;
     public static final RecipeType BREWING_RECIPES = (RecipeType) GTRecipeTypes.BREWING_RECIPES;
@@ -969,8 +969,9 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.ARC);
 
     public static final RecipeType CRYSTAL_SCAN_RECIPES = register("crystal_scan", "晶片扫描", ELECTRIC)
-            .setMaxIOSize(3, 1, 1, 0)
+            .setMaxIOSize(1, 0, 0, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setEUIO(IO.IN)
             .setSound(GTSoundEntries.COMPUTATION);
 
     public static final RecipeType DATA_TESTING_RECIPES = register("data_form_density_testing", "数据密度测试", ELECTRIC)

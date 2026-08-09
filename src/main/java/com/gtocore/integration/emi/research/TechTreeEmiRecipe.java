@@ -6,6 +6,7 @@ import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.ui.TechTreeSideTab;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.item.TechTreeViewer;
 
 import com.gtolib.GTOCore;
@@ -52,7 +53,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
 
     public static void register(EmiRegistry registry) {
         registry.addCategory(CATEGORY);
-        registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.STOPGAP_MEASURES.asItem()));
+        registry.addWorkstation(CATEGORY, EmiStack.of(ExResearchMachines.DATA_CENTER.asItem()));
         registry.addDeferredRecipes(recipeConsumer -> TechTreeManager.getManagers()
                 .forEach(manager -> manager.getAllNodes().forEach(node -> recipeConsumer.accept(new TechTreeEmiRecipe(node)))));
     }

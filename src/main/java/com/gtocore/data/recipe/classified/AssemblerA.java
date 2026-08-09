@@ -1124,5 +1124,15 @@ final class AssemblerA {
                 .EUt(30)
                 .duration(250)
                 .save();
+        ASSEMBLER_RECIPES.builder("data_export_machine")
+                .inputItems(GTMachines.SCANNER[GTValues.IV].asItem())
+                .inputItems(TagPrefix.plate, GTMaterials.Polyethylene, 32)
+                .inputItems(AEItems.CALCULATION_PROCESSOR_PRINT.asItem())
+                .inputItems(TagPrefix.rod, GTMaterials.Ruridit)
+                .outputItems(GTOMachines.DATA_EXPORT_MACHINE.asItem())
+                .EUt(300)
+                .inputFluids(GTMaterials.Lubricant, 1000)
+                .duration(300)
+                .save();
     }
 }

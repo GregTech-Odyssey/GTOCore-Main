@@ -19,10 +19,9 @@ import net.minecraft.world.level.material.Fluid;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.util.holder.ObjHolder;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implements IHeatContainerMachine, ICustomRecipeLogicHolder {
 
@@ -82,7 +81,7 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
             setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE);
             return null;
         }
-        AtomicReference<Fluid> coolantFluid = new AtomicReference<>();
+        ObjHolder<Fluid> coolantFluid = new ObjHolder<>();
         unit.forEachFluids(true, (f, a) -> {
             if (f.isEmpty() || a < 1000) {
                 return false;

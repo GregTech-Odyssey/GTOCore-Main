@@ -5,8 +5,10 @@ import com.gtocore.api.data.tag.GTOTagPrefix.NANITES
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.api.research.ResearchRequirements
 import com.gtocore.api.research.ResearchTag
+import com.gtocore.api.research.ResearchTag.ASSEMBLY
 import com.gtocore.api.research.ResearchTag.BIOLOGY
 import com.gtocore.api.research.ResearchTag.CATALYSIS
+import com.gtocore.api.research.ResearchTag.COMPUTATION
 import com.gtocore.api.research.ResearchTag.DATA_STORAGE
 import com.gtocore.api.research.ResearchTag.ENERGY
 import com.gtocore.api.research.ResearchTag.EXOTIC
@@ -97,10 +99,10 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     @JvmField
     val ComponentInAssemblyLinezpm = TechTree.builder("component_in_assembly_line1", "装配线进阶部件I", "Advanced components in assembly line I")
         .description("在装配线中组装更加复杂的部件", "Assemble more complex components in the assembly line")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 240L).setEurekaItem(GTItems.FIELD_GENERATOR_LuV, 0.8f).build())
+        .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 240L).setEurekaItem(GTItems.FIELD_GENERATOR_LuV, 1.0f).build())
         .icon(GTItems.FIELD_GENERATOR_ZPM)
         .prerequisites(ComponentInAssemblyLineluv)
-        .tier(1)
+        .tier(0)
         .build()
 
     @JvmField
@@ -109,7 +111,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1200L).setEurekaItem(GTItems.FIELD_GENERATOR_ZPM, 0.8f).build())
         .icon(GTItems.FIELD_GENERATOR_UV)
         .prerequisites(ComponentInAssemblyLinezpm)
-        .tier(2)
+        .tier(1)
         .build()
 
     @JvmField
@@ -183,8 +185,20 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_OPV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_MAX,
     )
     private var lastComponentCasingNode: TechNode? = null
+    private val eurekaProgresses: Array<Float> = arrayOf(
+        0f,
+        0f, 0f, 0f, 0f,
+        0f, 1f, 1f, 0.95f,
+        0.9f, 0.8f, 0.8f, 0.8f,
+        0.7f, 0.6f,
+    )
 
     fun ComponentCasing(tier: Int): TechNode {
+        val req = ResearchRequirements.Builder().setCWUNeeded(32L * (1L shl (tier * 2)))
+            .setEurekaItem(ComponentCasings[tier - 1], eurekaProgresses[tier] - 0.1f)
+        if (tier >= ZPM) {
+            req.addMaterialNeeded(ASSEMBLY, (4L shl (tier - ZPM)))
+        }
         val node = TechTree.builder(
             "component_casing$tier",
             "装配线部件外壳${VN[tier]}",
@@ -196,7 +210,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             )
             .requirements(
                 ResearchRequirements.Builder().setCWUNeeded(32L * (1L shl (tier * 2)))
-                    .setEurekaItem(ComponentCasings[tier - 1], if (tier == LuV) 1f else 0.7f).build(),
+                    .setEurekaItem(ComponentCasings[tier - 1], eurekaProgresses[tier] - 0.1f).build(),
             )
             .icon(ComponentCasings[tier])
             .tier(EnergyIOsTiers[tier])
@@ -214,6 +228,11 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
 
     private var lastEnergyIONode: TechNode? = null
     fun energyIONode(tier: Int): TechNode {
+        val req = ResearchRequirements.Builder().setCWUNeeded(80L * (1 shl (tier * 2)))
+            .setEurekaItem(GTMachines.ENERGY_INPUT_HATCH[tier - 1], eurekaProgresses[tier])
+        if (tier >= UV) {
+            req.addMaterialNeeded(ENERGY, 256L * (1 shl (tier - UV)))
+        }
         val node = TechTree.builder(
             "energy_io$tier",
             "高压能量输入输出${FormattingUtil.toRomanNumeral(tier - IV)}",
@@ -224,8 +243,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 "Safely handle high-voltage energy flows up to ${FormattingUtil.formatNumbers(8L * (1L shl (tier * 2)))} EU/t",
             )
             .requirements(
-                ResearchRequirements.Builder().setCWUNeeded(80L * (1 shl (tier * 2)))
-                    .setEurekaItem(GTMachines.ENERGY_INPUT_HATCH[tier - 1], if (tier == LuV) 1f else 0.7f).build(),
+                req.build(),
             )
             .icon(GTMachines.ENERGY_INPUT_HATCH[tier])
             .tier(EnergyIOsTiers[tier])
@@ -330,6 +348,32 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
+    val ScanStation = TechTree.builder("scan_station", "扫描站", "Scan Station")
+        .description("将晶片中的数据进行扫描与分析，获取其中的科研数据，并积累到团队知识库中", "Scan and analyze the data in the chip, obtain the research data, and accumulate it into the team knowledge base")
+        .icon(GTOItems.DATA_CRYSTAL_MK1)
+        .prerequisites("data_base")
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(32 * 20 * 60L)
+                .setEurekaItem(RegistriesUtils.getItem("gtceu:luv_scanner"), 1.0F)
+                .build(),
+        )
+        .build()
+
+    @JvmField
+    val DataCenter = TechTree.builder("data_in_research", "科研数据中心", "Data Center in Research")
+        .description("科研数据中心是一个用于存储和处理科研数据的高性能计算平台，相比于数据库，它可以将其中标准化的生产数据与积累的科研数据进行整合，推进基地技术迭代", "The research data center is a high-performance computing platform for storing and processing research data. Compared to databases, it can integrate standardized production data with accumulated research data, promoting base technology iteration")
+        .requirements(
+            ResearchRequirements.Builder().setCWUNeeded(20)
+                .addMaterialNeeded(DATA_STORAGE, 14)
+                .addMaterialNeeded(COMPUTATION, 120)
+                .setEurekaItem(GTResearchMachines.DATA_BANK, 1.0f).build(),
+        )
+        .icon(GTResearchMachines.DATA_BANK)
+        .prerequisites(DataBase)
+        .build()
+
+    @JvmField
     val HighDensityEnergyStorage = TechTree.builder("high_density_energy_storage", "高密度能量存储", "High Density Energy Storage")
         .description("优化兰博顿水晶的能量密度与充放电效率，增强能量存储与传输能力", "Optimize the energy density and charge/discharge efficiency of Lambton crystals, enhancing energy storage and transmission capabilities")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.ENERGY_LAPOTRONIC_ORB, 1.0f).build())
@@ -341,31 +385,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .description("掌握化工厂的环境控制技术，实现更大规模的化学产品生产与更高效的资源利用", "Master the environmental control technology of chemical plants, achieving larger-scale chemical product production and more efficient resource utilization")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 40L).setEurekaItem(LARGE_CHEMICAL_REACTOR, 1.0f).build())
         .icon(CHEMICAL_PLANT)
-        .build()
-
-    @JvmField
-    val DataCenter = TechTree.builder("data_in_research", "科研数据中心", "Data Center in Research")
-        .description("科研数据中心是一个用于存储和处理科研数据的高性能计算平台，相比于数据库，它可以将其中标准化的生产数据与积累的科研数据进行整合，推进基地技术迭代", "The research data center is a high-performance computing platform for storing and processing research data. Compared to databases, it can integrate standardized production data with accumulated research data, promoting base technology iteration")
-        .requirements(
-            ResearchRequirements.Builder().setCWUNeeded(20)
-                .addMaterialNeeded(DATA_STORAGE, 25)
-                .setEurekaItem(GTResearchMachines.DATA_BANK, 1.0f).build(),
-        )
-        .icon(GTResearchMachines.DATA_BANK)
-        .prerequisites(DataBase)
-        .build()
-
-    @JvmField
-    val ScanStation = TechTree.builder("scan_station", "扫描站", "Scan Station")
-        .description("将晶片中的数据进行扫描与分析，获取其中的科研数据，并积累到团队知识库中", "Scan and analyze the data in the chip, obtain the research data, and accumulate it into the team knowledge base")
-        .icon(GTOItems.DATA_CRYSTAL_MK1)
-        .prerequisites("data_base")
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(32 * 20 * 60L)
-                .setEurekaItem(RegistriesUtils.getItem("gtceu:luv_scanner"), 1.0F)
-                .build(),
-        )
         .build()
 
     @JvmField
@@ -411,6 +430,21 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
+    val EnergyFluxAnalysis = TechTree.builder("energy_flux_analysis", "能量流分析", "Energy Flux Analysis")
+        .description("分析能量流的传输与分布，实现高效的能量管理与优化", "Analyze the transmission and distribution of energy flux, achieving efficient energy management and optimization")
+        .icon(RegistriesUtils.getItem("gtmthings:wireless_energy_terminal"))
+        .prerequisites(HighDensityEnergyStorage)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(48 * 20 * 300L)
+                .addMaterialNeeded(ENERGY, 20)
+                .setEurekaItem(RegistriesUtils.getItem("gtceu:engraved_lapotron_crystal_chip"), 0.8F)
+                .build(),
+        )
+        .tier(1)
+        .build()
+
+    @JvmField
     val BaseMEMachines = TechTree.builder("base_me_machines", "基础ME机器", "Basic ME Machines")
         .description("在AE网络内高速传输与组装物质信息，并和生产设备深度交互", "High-speed transmission and assembly of matter information within the AE network, and deep interaction with production equipment")
         .icon(RegistriesUtils.getItem("gtocore:super_molecular_assembler"))
@@ -440,7 +474,12 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     val IsaMillingMachine = TechTree.builder("isa_milling_machine", "艾萨研磨处理技术", "Isa Ore Processing Technology")
         .description("掌握艾萨研磨处理矿物这种滚珠暴力碾磨一切再拿泔水泡的技术", "Master the Isa milling process for minerals, a technology that violently grinds everything with ball bearings and soaks it in swill")
         .prerequisites(ComponentInAssemblyLineluv)
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 60L).setEurekaItem(RegistriesUtils.getItem("gtceu:iv_macerator"), 0.8f).build())
+        .requirements(
+            ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 60L)
+                .setEurekaItem(RegistriesUtils.getItem("gtceu:iv_macerator"), 0.8f)
+                .addMaterialNeeded(MATERIAL, 256)
+                .build(),
+        )
         .icon(RegistriesUtils.getItem("gtocore:milled_nickel"))
         .tier(1)
         .build()
@@ -468,6 +507,8 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(64 * 20 * 240L)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:void_miner"), 0.8F)
+                .addMaterialNeeded(MATERIAL, 256)
+                .addMaterialNeeded(MECHANICS, 8)
                 .build(),
         )
         .tier(1)
@@ -482,6 +523,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(64 * 20 * 120L)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:wetware_processor_assembly"), 0.8F)
+                .addMaterialNeeded(BIOLOGY, 25)
                 .build(),
         )
         .tier(1)
@@ -600,7 +642,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 4000)
+                .addMaterialNeeded(MATERIAL, 640)
                 .addMaterialNeeded(CATALYSIS, 128)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_catalyst_hatch"), if (GTOCore.isEasy()) 1f else 0.8F)
                 .build(),
@@ -616,12 +658,28 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(DATA_STORAGE, 128)
-                .addMaterialNeeded(MECHANICS, 64)
+                .addMaterialNeeded(DATA_STORAGE, 25L * GTOCore.difficulty)
+                .addMaterialNeeded(MECHANICS, 12L * GTOCore.difficulty)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), if (GTOCore.isEasy()) 1f else 0.8F)
                 .build(),
         )
         .tier(GTOCore.difficulty)
+        .build()
+
+    @JvmField
+    val MEWasteRecycling = TechTree.builder("me_waste_recycling", "ME废料回收", "ME Waste Recycling")
+        .description("通过回收和再利用生产设备的废料，减少环境污染并提高资源利用率", "By recycling and reusing waste from production equipment, reduce environmental pollution and improve resource utilization")
+        .icon(RegistriesUtils.getItem("gtocore:me_muffler_hatch"))
+        .prerequisites(BaseMEMachines)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(512 * 20 * 4800L)
+                .addMaterialNeeded(MATERIAL, 640)
+                .addMaterialNeeded(CATALYSIS, 128)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:iv_drone"), if (GTOCore.isEasy()) 1f else 0.8F)
+                .build(),
+        )
+        .tier(2)
         .build()
 
     @JvmField
@@ -788,6 +846,22 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         )
         .tier(3)
         .build()
+
+    @JvmField
+    val MagnetoResonaticCircuitUpgrade = TechTree.builder("magneto_resonatic_circuit_upgrade", "磁共振电路升级", "Magneto Resonatic Circuit Upgrade")
+        .description("改进磁共振电路的设计与制造，减少材料消耗并提升产率", "Improve the design and manufacturing of magneto resonatic circuits, reducing material consumption and increasing yield")
+        .icon(RegistriesUtils.getItem("gtocore:magneto_resonatic_circuit_uhv"))
+        .prerequisites(SpaceTimeAssemblyLine)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(512 * 20 * 29900L)
+                .addMaterialNeeded(ASSEMBLY, 32)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:magneto_resonatic_circuit_uhv"), 0.8F)
+                .build(),
+        )
+        .tier(3)
+        .build()
+        .addRewardDescription("所有磁共振电路的产量提升1", "Increase the yield of all magneto resonatic circuits by 1")
 
     @JvmField
     val LaserBatchProduction1 = TechTree.builder("laser_batch_production", "激光能源批量生产初步", "Laser Energy Batch Production Preliminary")
@@ -1694,7 +1768,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         if (langMap is O2OOpenCacheHashMap) {
             langMap[this.name] = CNEN(descriptionCN, descriptionEN)
         } else {
-            rewardLines.add(
+            additionalLines.add(
                 Component.translatable(OTHER_REWARD_LABEL).withStyle(
                     ChatFormatting.DARK_PURPLE,
                 ).append(Component.translatable("gtocore.data.${this.name}").withStyle(ChatFormatting.GRAY)),

@@ -46,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector4f;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @DataGeneratorScanned
@@ -526,16 +527,29 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             rowAreaBottom = rowsBottom;
 
             int innerContentY;
-            if (recipeStacks.isEmpty()) {
+            var hasRecipes = !recipeStacks.isEmpty();
+            var hasAdditionalContent = !node.getAdditionalLines().isEmpty();
+            if (hasRecipes || hasAdditionalContent) {
+                AtomicInteger recipeLabelY = new AtomicInteger(rowsBottom + INNER_CONTENT_SECTION_GAP);
+                graphics.drawString(font, Component.translatable(TechNode.UNLOCKABLE_LABEL), contentX, recipeLabelY.getAndAdd(font.lineHeight + RECIPE_LABEL_GAP), HEADER_DESC_COLOR, false);
+                if (hasRecipes) {
+                    drawRecipeStacks(graphics, font, recipeStacks, contentX, recipeLabelY.getAndAdd(RECIPE_SLOT_SIZE + INNER_CONTENT_SECTION_GAP), contentWidth, partialTicks);
+                } else {
+                    recipeSlotsX = 0;
+                    recipeSlotsY = 0;
+                    visibleRecipeSlots = 0;
+                }
+                if (hasAdditionalContent) {
+                    for (int i = 0; i < node.getAdditionalLines().size(); i++) {
+                        graphics.drawString(font, node.getAdditionalLines().get(i), contentX, recipeLabelY.getAndAdd(font.lineHeight), HEADER_DESC_COLOR, false);
+                    }
+                }
+                innerContentY = recipeLabelY.get() + INNER_CONTENT_SECTION_GAP;
+            } else {
                 recipeSlotsX = 0;
                 recipeSlotsY = 0;
                 visibleRecipeSlots = 0;
                 innerContentY = Math.min(rowsStartY + rowsHeight + INNER_CONTENT_SECTION_GAP, Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT));
-            } else {
-                int recipeLabelY = rowsBottom + INNER_CONTENT_SECTION_GAP;
-                graphics.drawString(font, Component.translatable(TechNode.UNLOCKABLE_LABEL), contentX, recipeLabelY, HEADER_DESC_COLOR, false);
-                drawRecipeStacks(graphics, font, recipeStacks, contentX, recipeLabelY + font.lineHeight + RECIPE_LABEL_GAP, contentWidth, partialTicks);
-                innerContentY = recipeSlotsY + RECIPE_SLOT_SIZE + INNER_CONTENT_SECTION_GAP;
             }
             innerContent.setSelfPosition(contentX - pos.x, innerContentY - pos.y - scrollYOffset);
         }

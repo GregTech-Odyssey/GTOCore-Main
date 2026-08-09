@@ -64,7 +64,9 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
                 @Override
                 public Widget createMainPage(FancyMachineUIWidget widget) {
-                    return new TechTreeWidget(0, 0, 176, 166, manager, TeamResearchSavedDtat::getOrCreateContext);
+                    var t = new TechTreeWidget(0, 0, 176, 166, manager, TeamResearchSavedDtat::getOrCreateContext);
+                    t.setForce(true);
+                    return t;
                 }
 
                 @Override

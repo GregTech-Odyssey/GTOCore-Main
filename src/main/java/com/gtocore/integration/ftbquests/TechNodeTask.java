@@ -9,7 +9,6 @@ import com.gtocore.integration.emi.research.TechNodeEmiStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import com.gto.datasynclib.datastream.data.Data;
 import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.config.NameMap;
 import dev.ftb.mods.ftbquests.quest.Quest;
@@ -42,13 +42,15 @@ public class TechNodeTask extends AbstractBooleanTask {
 
     public void writeData(CompoundTag nbt) {
         super.writeData(nbt);
-        GTOCodecs.TECH_NODE_DATA_CODEC.toCodec(0).encodeStart(NbtOps.INSTANCE, node).result().ifPresent((tag) -> nbt.put("node", tag));
+        nbt.putByteArray("node", GTOCodecs.TECH_NODE_DATA_CODEC.encode(node).writeToBytes());
+        // GTOCodecs.TECH_NODE_DATA_CODEC.toCodec(0).encodeStart(NbtOps.INSTANCE, node).result().ifPresent((tag) ->
+        // nbt.put("node", tag));
     }
 
     public void readData(CompoundTag nbt) {
         super.readData(nbt);
         if (nbt.contains("node")) {
-            GTOCodecs.TECH_NODE_DATA_CODEC.toCodec(0).parse(NbtOps.INSTANCE, nbt.get("node")).result().ifPresent(this::setNode);
+            node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nbt.getByteArray("node")));
         }
     }
 

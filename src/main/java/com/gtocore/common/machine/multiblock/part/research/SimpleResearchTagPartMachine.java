@@ -118,7 +118,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
     protected static final class ScanningHolder extends NotifiableItemStackHandler {
 
         private ScanningHolder(SimpleResearchTagPartMachine machine) {
-            super(machine, 3, IO.NONE, IO.BOTH, ScanningHolderStackHandler::new);
+            super(machine, 1, IO.NONE, IO.BOTH, ScanningHolderStackHandler::new);
         }
 
         // 各槽位容量限制

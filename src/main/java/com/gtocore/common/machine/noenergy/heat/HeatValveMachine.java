@@ -111,8 +111,7 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
         if (open == isOpen) return;
 
         isOpen = open;
-        markAsDirty();
-        markFieldsForSync("isOpen");
+        requestSync();
     }
 
     private final class ValveHeatContainer implements IHeatContainer {

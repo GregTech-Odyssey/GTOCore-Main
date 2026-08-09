@@ -749,7 +749,7 @@ public final class NewResearchSystem {
                     .inputItems(FIELD_GENERATOR_EV)
                     .outputItems(DATA_CRYSTAL_MK1)
                     .inputFluids(SolderingAlloy, L * 8)
-                    .EUt(VA[EV]).duration(16000).save();
+                    .EUt(VA[EV]).duration(1600).save();
 
             CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("assembler_data_crystal_component_mk2")
                     .inputItems(ELITE_CIRCUIT_BOARD, 8)
@@ -764,10 +764,10 @@ public final class NewResearchSystem {
 
             ASSEMBLER_RECIPES.recipeBuilder("assembler_data_crystal_mk2")
                     .inputItems(DATA_CRYSTAL_COMPONENT_MK2, 3)
-                    .inputItems(FIELD_GENERATOR_LuV)
+                    .inputItems(FIELD_GENERATOR_ZPM)
                     .outputItems(DATA_CRYSTAL_MK2)
                     .inputFluids(SolderingAlloy, L * 32)
-                    .EUt(VA[LuV]).duration(16000).save();
+                    .EUt(VA[LuV]).duration(1600).save();
 
             CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("assembler_data_crystal_component_mk3")
                     .inputItems(OPTICAL_PRINTED_CIRCUIT_BOARD, 8)
@@ -785,21 +785,21 @@ public final class NewResearchSystem {
                     .inputItems(FIELD_GENERATOR_UHV)
                     .outputItems(DATA_CRYSTAL_MK3)
                     .inputFluids(MutatedLivingSolder, L * 32)
-                    .EUt(VA[UHV]).duration(16000).save();
+                    .EUt(VA[UHV]).duration(1600).save();
 
             ASSEMBLER_RECIPES.recipeBuilder("assembler_data_crystal_mk4")
                     .inputItems(DATA_CRYSTAL_COMPONENT_MK4, 3)
                     .inputItems(FIELD_GENERATOR_UIV)
                     .outputItems(DATA_CRYSTAL_MK4)
                     .inputFluids(MutatedLivingSolder, L * 128)
-                    .EUt(VA[UIV]).duration(16000).save();
+                    .EUt(VA[UIV]).duration(1600).save();
 
             ASSEMBLER_RECIPES.recipeBuilder("assembler_data_crystal_mk5")
                     .inputItems(DATA_CRYSTAL_COMPONENT_MK5, 3)
                     .inputItems(FIELD_GENERATOR_OpV)
                     .outputItems(DATA_CRYSTAL_MK5)
                     .inputFluids(SuperMutatedLivingSolder, L * 128)
-                    .EUt(VA[OpV]).duration(16000).save();
+                    .EUt(VA[OpV]).duration(1600).save();
         }
     }
 }

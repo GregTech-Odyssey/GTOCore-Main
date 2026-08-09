@@ -100,6 +100,8 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private @Nullable TechNode selectedNode;
     private boolean capturedMouseInteraction;
     @Setter
+    private boolean force;
+    @Setter
     @Nullable
     private Consumer<TechNode> onNodeClicked = this::tryUnlock;
 
@@ -460,8 +462,15 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             return;
         }
 
-        TeamResearchContext unlockContext = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
-        ActionResult result = tree.tryUnlock(node, unlockContext, TeamUtil.getTeamUUID(player.getUUID()));
+        ActionResult result;
+        if (force) {
+            TechTreeSavedData.forceUnlock(TeamUtil.getTeamUUID(player.getUUID()), node);
+            syncNodeStates();
+            return;
+        } else {
+            TeamResearchContext unlockContext = unlockArgumentsFactory == null ? null : unlockArgumentsFactory.apply(player);
+            result = tree.tryUnlock(node, unlockContext, TeamUtil.getTeamUUID(player.getUUID()));
+        }
         if (!result.isSuccess()) {
             if (result.reason() != null) {
                 player.displayClientMessage(result.reason(), true);

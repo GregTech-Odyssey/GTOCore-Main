@@ -1,12 +1,16 @@
 package com.gtocore.common.machine.electric;
 
+import com.gtocore.api.research.ExResearchManager;
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.recipe.RecipeBuilder;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
@@ -14,6 +18,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -82,6 +87,27 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
     }
 
     @Override
+    public void afterWorking() {
+        forEachItems(true, (stack, amount) -> {
+            CompoundTag tag = stack.getTag();
+            if (tag != null) {
+                String planet = tag.getString("planet");
+                if (!planet.isEmpty()) {
+                    UUID uuid = tag.getUUID("uuid");
+                    var dim = GTODimensions.getDimensionKey(RLUtils.parse(planet));
+                    if (PlanetManagement.isUnlocked(uuid, dim)) return false;
+                    PlanetManagement.unlock(uuid, dim);
+                    ExResearchManager.delayedTriggerPlanetaryResearch(uuid, dim);
+                    stack.setCount(0);
+                    return true;
+                }
+            }
+            return false;
+        });
+        super.afterWorking();
+    }
+
+    @Override
     public boolean searchRecipe() {
         return true;
     }
@@ -133,7 +159,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
         }
     }
 
-    private static long eut(long bytesScanned) {
+    public static long eut(long bytesScanned) {
         return 8 * bytesScanned + 8;
     }
 }

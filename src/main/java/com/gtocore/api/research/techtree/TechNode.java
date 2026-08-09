@@ -21,6 +21,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -59,6 +60,9 @@ public final class TechNode {
     private final Set<AEKey> recipePrimaryOutputs = new ReferenceOpenHashSet<>();
     @Getter
     private final List<Component> rewardLines = new ArrayList<>();
+    @Getter
+    @NotNull
+    private final List<Component> additionalLines = new ArrayList<>();
     @Getter
     private static final Reference2ReferenceMap<GTRecipeDefinition, TechNode> RECIPE_NODE = new Reference2ReferenceOpenHashMap<>();
 
@@ -131,13 +135,14 @@ public final class TechNode {
     }
 
     public ArrayList<Component> getRewardLinesWithHeader() {
-        if (rewardLines.isEmpty()) {
+        if (rewardLines.isEmpty() && additionalLines.isEmpty()) {
             return new ArrayList<>();
         }
         var firstLine = Component.translatable(UNLOCKABLE_LABEL).withStyle(net.minecraft.ChatFormatting.GRAY);
         ArrayList<Component> lines = new ArrayList<>();
         lines.add(firstLine);
         lines.addAll(rewardLines);
+        lines.addAll(additionalLines);
         return lines;
     }
 

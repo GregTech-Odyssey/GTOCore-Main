@@ -418,7 +418,7 @@ public final class ExResearchMachines {
     public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("dataunit_scanning_station", "基元扫描站", ScanningStationMachine::new)
             .nonYAxisRotation()
             .tooltipsSupplier(GTOMachineTooltipsA.ScanStationMachineTooltips)
-            .recipeTypes(DUMMY_RECIPES)
+            .recipeTypes(CRYSTAL_SCAN_RECIPES)
             .block(ADVANCED_COMPUTER_CASING)
             .pattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("XXX", "VVV", "PPP", "PPP", "PPP", "VVV", "XXX")

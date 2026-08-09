@@ -17,6 +17,7 @@ import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
+import com.gregtechceu.gtceu.config.ConfigHolder;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -111,5 +112,16 @@ public final class GTMachineUtilsMixin {
     @Overwrite(remap = false)
     public static MultiblockMachineDefinition registerLargeTurbine(String name, int tier, GTRecipeType recipeType, Supplier<? extends Block> casing, Supplier<? extends Block> gear, ResourceLocation casingTexture, ResourceLocation overlayModel, boolean needsMuffler) {
         return MachineRegisterUtils.registerLargeTurbine(GTM, name, null, tier, false, recipeType, casing, gear, casingTexture, overlayModel, true);
+    }
+
+    /**
+     * @author .
+     * @reason .
+     */
+    @Overwrite(remap = false)
+    public static Component explosion() {
+        if (ConfigHolder.INSTANCE.machines.shouldWeatherOrTerrainExplosion)
+            return Component.translatable("gtceu.universal.tooltip.terrain_resist");
+        return Component.empty();
     }
 }

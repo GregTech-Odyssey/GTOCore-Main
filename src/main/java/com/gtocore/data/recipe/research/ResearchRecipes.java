@@ -6,6 +6,8 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.recipe.condition.BeamCondition;
 
+import com.gtolib.GTOCore;
+
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -13,6 +15,8 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import appeng.core.definitions.AEItems;
+
+import com.gto.registrate.util.entry.ItemEntry;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gtocore.common.data.GTORecipeDataKeys.DATA_TESTING_CAPACITY;
@@ -84,5 +88,23 @@ public final class ResearchRecipes {
                 .addCondition(new BeamCondition(6400, 749, 751))
                 .researchPoints(ResearchTag.OPTICS, 12)
                 .save();
+
+        var crystals = new ItemEntry[] {
+                GTOItems.DATA_CRYSTAL_MK1,
+                GTOItems.DATA_CRYSTAL_MK2,
+                GTOItems.DATA_CRYSTAL_MK3,
+                GTOItems.DATA_CRYSTAL_MK4,
+                GTOItems.DATA_CRYSTAL_MK5
+        };
+
+        for (int i = 1; i <= 5; i++) {
+            CRYSTAL_SCAN_RECIPES.builder("crystal_" + i)
+                    .inputItems(crystals[i - 1].get())
+                    .EUt(3L << (4 * i + 8))
+                    .CWUt(4L << (i * 2))
+                    .duration(200 * GTOCore.difficulty)
+                    .durationIsTotalCWU(true)
+                    .save();
+        }
     }
 }

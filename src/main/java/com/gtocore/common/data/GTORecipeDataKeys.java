@@ -57,6 +57,7 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Integer> RAY_WAVELENGTH = register("ray_wavelength", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Double> RAY_POLARIZATION = register("ray_polarization", DataSyncCodec.DOUBLE_CODEC);
 
+    public static final DataComponentKey<Integer> MAGNETORESONANCE = register("magnetoresonance", DataSyncCodec.INT_CODEC);
     @SuppressWarnings("unchecked")
     public static final DataComponentKey<Integer>[] PARAM = (DataComponentKey<Integer>[]) new DataComponentKey<?>[] { PARAM1, PARAM2, PARAM3 };
 

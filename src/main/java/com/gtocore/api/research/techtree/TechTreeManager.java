@@ -31,6 +31,7 @@ import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -228,7 +229,7 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
             });
         }
 
-        public TechNode build() {
+        public @NotNull TechNode build() {
             var t = manager.register(this);
 
             if (requirements instanceof ResearchRequirements r && r.getEurekaItem() != null) {

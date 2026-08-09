@@ -149,9 +149,9 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         section(MainFunction)
         function("用于存储大量数据的多功能数据中心" translatedTo "A multifunctional data center for storing large amounts of data")
         function("同时，可以接受算力输入进行数据处理与研究" translatedTo "At the same time, it can accept computational workload input for data processing and research")
-        command("接受算力的上限为8*4^(玻璃等级-6)CWU/t" translatedTo "The upper limit of computational workload accepted is 8*4^(glass level-6) CWU/t")
-        command("每个数据仓的槽位与每个安装的配方数据分别额外提供1%的算力输入上限（独立乘区）" translatedTo "Each slot of the data hatch and each installed recipe data respectively provide an additional 1% of the computational workload input limit (independent multiplicative)")
-        info("等效上限公式：8*4^(玻璃等级-6)*(1+数据仓槽位数*0.01)*(1+配方数据数*0.01)CWU/t" translatedTo "Equivalent upper limit formula: 8*4^(glass level-6)*(1+data hatch slot count*0.01)*(1+recipe data count*0.01) CWU/t")
+        command("接受算力的上限为16*2^(玻璃等级-6)CWU/t" translatedTo "The upper limit of computational workload accepted is 16*2^(glass level-6) CWU/t")
+        command("每个数据仓的槽位与每个安装的配方数据分别额外提供0.01%和1%的算力输入上限（独立乘区）" translatedTo "Each data hatch slot and each installed recipe data additionally provides 0.01% and 1% of the computational workload input limit (independently multiplied)")
+        info("等效上限公式：16*2^(玻璃等级-6)*(1+数据仓槽位数*0.0001)*(1+配方数据数*0.01)CWU/t" translatedTo "Equivalent upper limit formula: 16*2^(glass level-6)*(1+data hatch slot count*0.0001)*(1+recipe data count*0.01) CWU/t")
         guide("从机器UI的左侧访问科技树与便捷导出功能" translatedTo "Access the tech tree and convenient export functions from the left side of the machine UI")
         section(RunningRequirements)
         command("闲置时，每个数据/光学仓耗能为§f1920 EU/t§7。" translatedTo "When idle, each data/optical hatch consumes §f1920 EU/t§7.")
@@ -165,7 +165,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         function("将存储在晶片中的数据进行解析，转化为团队共享的研究点数" translatedTo "Parse the data stored in the data crystal and convert it into team-shared research points")
-        command("每张晶片需要消耗§f24,576EU/t§r与一定时间进行数据解析，晶片等级每高出I级，耗能翻4倍" translatedTo "Each data crystal requires §f24,576EU/t§r and a certain amount of time for data parsing. For each level above I, the energy consumption quadruples")
+        command("无论内部有多少数据，每张晶片的解析耗时与耗能均为固定值" translatedTo "Regardless of how much data is inside, the parsing time and energy consumption for each data crystal are fixed")
     }
 
     @JvmField

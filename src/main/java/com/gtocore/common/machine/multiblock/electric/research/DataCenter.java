@@ -6,10 +6,12 @@ import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.api.research.ui.ResearchInfoTab;
+import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
 import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.integration.jade.GTOJadePlugin;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -21,6 +23,7 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
@@ -42,6 +45,9 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachi
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -49,26 +55,36 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.datastream.data.Data;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.ITooltip;
+import snownee.jade.api.config.IPluginConfig;
+import snownee.jade.api.ui.BoxStyle;
+import snownee.jade.api.ui.IElementHelper;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.gregtechceu.gtceu.api.GTValues.LuV;
+import static com.gtocore.integration.jade.GTOJadePlugin.getProgress;
 
 @DataGeneratorScanned
 public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder,
                         IEnhancedRecipeLogicMachine,
                         RecipeExportTab.DataItemHolder,
                         ITierCasingMachine,
-                        IMultiblockTraitHolder {
+                        IMultiblockTraitHolder,
+                        IWailaDisplayProvider {
 
     @SaveToDisk
     @SyncToClient
@@ -78,6 +94,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @SaveToDisk(defaultValue = "0")
     private long cwuBuffer = 0L;
     private final TierCasingTrait tierCasingTrait;
+
+    private final ReferenceList<NotifiableItemStackHandler> dataAccessHandlers = new ReferenceArrayList<>();
 
     @SaveToDisk
     private final NotifiableItemStackHandler inpur;
@@ -105,7 +123,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         if (startTier < 0) {
             return 0;
         }
-        return (long) ((1f + getTotalDataSlots() / 100f) * (1f + getExistRecipes().size() / 100f) * (8L << (startTier * 2)));
+        return (long) ((1d + getTotalDataSlots() / 10000d) * (1d + getExistRecipes().size() / 100d) * (16L << (startTier)));
     }
 
     @Override
@@ -153,12 +171,21 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         if (!isFormed()) {
             return Collections.emptyList();
         }
-        return Arrays.stream(getParts())
-                .filter(DataAccessHatchMachine.class::isInstance)
-                .map(DataAccessHatchMachine.class::cast)
-                .sorted(Comparator.comparingLong(hatch -> hatch.getPos().asLong()))
-                .map(hatch -> ((IDataAccessHatchMachineAccessor) hatch).gtocore$getImportItems())
-                .toList();
+        if (dataAccessHandlers.isEmpty()) {
+            Arrays.stream(getParts())
+                    .filter(DataAccessHatchMachine.class::isInstance)
+                    .map(DataAccessHatchMachine.class::cast)
+                    .sorted(Comparator.comparingLong(hatch -> hatch.getPos().asLong()))
+                    .map(hatch -> ((IDataAccessHatchMachineAccessor) hatch).gtocore$getImportItems())
+                    .forEach(dataAccessHandlers::add);
+        }
+        return dataAccessHandlers;
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        dataAccessHandlers.clear();
     }
 
     @Override
@@ -176,6 +203,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public void onStructureInvalid() {
         super.onStructureInvalid();
         tierCasingTrait.onStructureInvalid();
+        dataAccessHandlers.clear();
     }
 
     @Override
@@ -261,6 +289,33 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         return new ArrayList<>();
     }
 
+    @Override
+    public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
+        var nodeBytes = data.getByteArray("node");
+        if (nodeBytes.length == 0) return;
+        var node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nodeBytes));
+        var ctx = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
+        var capacity = node.getRequirements().getCwuNeeded();
+        var storage = ctx.getTechNodeAccCWU().getLong(node);
+        if (ctx.hasScanned(node.getRequirements().getEurekaItem())) {
+            storage = (long) (storage + capacity * node.getRequirements().getEurekaProgress());
+        }
+        IElementHelper helper = iTooltip.getElementHelper();
+        iTooltip.add(Component.translatable(LANG_DATA_ACCESS_RESEARCH_PROGRESS, node.getDisplayName().withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+        iTooltip.add(helper.progress(
+                GTOJadePlugin.getProgress(storage, capacity),
+                Component.literal(FormattingUtil.formatNumberReadable(storage) + " / " + FormattingUtil.formatNumberReadable(capacity) + " CWU"),
+                iTooltip.getElementHelper().progressStyle().color(0xFF006D6A).textColor(-1),
+                Util.make(BoxStyle.DEFAULT, style -> style.borderColor = 0xFF555555), true));
+    }
+
+    @Override
+    public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
+        if (selectedNode != null) {
+            data.putByteArray("node", GTOCodecs.TECH_NODE_DATA_CODEC.encode(selectedNode).writeToBytes());
+        }
+    }
+
     // ========= UI Tabs =========
 
     private static final class DataAccessStorageTab implements IFancyUIProvider {
@@ -306,7 +361,23 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             for (int slot = 0; slot < totalSlots; slot++) {
                 int x = slot % SLOT_COLUMNS;
                 int y = slot / SLOT_COLUMNS;
-                content.addWidget(new SlotWidget(itemHandler, slot, x * 18, SLOT_Y + y * 18, true, true)
+                content.addWidget(new SlotWidget(itemHandler, slot, x * 18, SLOT_Y + y * 18, true, true) {
+
+                    @Override
+                    @OnlyIn(Dist.CLIENT)
+                    public void updateScreen() {
+                        if (getSelfPosition().y > 0 && getSelfPosition().y < contentHeight + getSizeHeight()) {
+                            super.updateScreen();
+                        }
+                    }
+
+                    @Override
+                    public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+                        if (isMouseOver(mainGroup.getPositionX(), mainGroup.getPositionY() - getSizeHeight(), mainGroup.getSizeWidth(), mainGroup.getSizeHeight() + getSizeHeight(), getPositionX(), getPositionY())) {
+                            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                        }
+                    }
+                }
                         .setItemHook(i -> {
                             var recipe = ExResearchManager.getRecipeInDataItem(i);
                             if (recipe != null) {
@@ -485,4 +556,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_MAX_CWU = "gtocore.machine.data_center.data_access.max_cwu";
     @RegisterLanguage(cn = "§6警告：未正常运行§r", en = "§6Warning: Not Running Properly§r")
     private static final String LANG_DATA_ACCESS_WARN_ENERGY = "gtocore.machine.data_center.data_access.warn.energy";
+    @RegisterLanguage(cn = "[%s]研究进度：", en = "[%s] Research Progress:")
+    private static final String LANG_DATA_ACCESS_RESEARCH_PROGRESS = "gtocore.machine.data_center.data_access.research_progress";
 }

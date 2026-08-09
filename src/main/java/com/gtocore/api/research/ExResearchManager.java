@@ -63,8 +63,6 @@ public final class ExResearchManager {
 
     public static void delayedTriggerPlanetaryResearch(UUID team, ResourceKey<Level> planet) {
         var dimTier = GTODimensions.getTier(planet);
-        TaskHandler.enqueueTask(ServerUtils.getServer().overworld(), () -> {
-            TeamResearchSavedDtat.getOrCreateContext(team).addResearchPoints(ResearchTag.INTERSTELLAR_ENGINEERING, 1L << dimTier);
-        }, 1);
+        TaskHandler.enqueueTask(ServerUtils.getServer().overworld(), () -> TeamResearchSavedDtat.getOrCreateContext(team).addResearchPoints(ResearchTag.INTERSTELLAR_ENGINEERING, 1L << dimTier), 1);
     }
 }

@@ -10,8 +10,11 @@ import com.gtocore.common.data.GTOItems;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -22,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import appeng.api.stacks.AEKey;
 
+import com.google.common.base.Strings;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
@@ -185,12 +189,14 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayWidth() {
-        return eurekaOutput == null ? BASE_WIDTH : EUREKA_DISPLAY_WIDTH;
+        var textureWidth = eurekaOutput == null ? BASE_WIDTH : EUREKA_DISPLAY_WIDTH;
+        return Math.max(textureWidth, 20 + Minecraft.getInstance().font.width(Component.translatable(DOMAIN_DATA_NAME, 100000)
+                .append(Strings.repeat("O", 8))));
     }
 
     @Override
     public int getDisplayHeight() {
-        return HEIGHT;
+        return HEIGHT + 14;
     }
 
     @Override
@@ -219,6 +225,28 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
             widgets.addSlot(eurekaOutput, EUREKA_SLOT_X, EUREKA_SLOT_Y).appendTooltip(Component.translatable(EUREKA_NAME).withStyle(ChatFormatting.LIGHT_PURPLE))
                     .drawBack(false).recipeContext(this);
         }
+        var totalEu = EmiResearchHelper.getScannerEUt(key);
+        var tier = GTUtil.getOCTierByVoltage(totalEu);
+        var text = Component.translatable(DOMAIN_DATA_STORAGE_ENERGY, FormattingUtil.formatNumberReadable(totalEu)).withStyle(ChatFormatting.WHITE)
+                .append(Component.literal(String.format(" (%sA",
+                        FormattingUtil.formatNumber2Places(totalEu / (float) GTValues.VEX[tier]))));
+        if (tier < GTValues.TIER_COUNT) {
+            text = text.append(Component.literal(GTValues.VNF[tier])
+                    .withStyle(style -> style.withColor(GTValues.VC[tier])));
+        } else {
+            int speed = tier - 14;
+            text = text.append(Component
+                    .literal("MAX")
+                    .withStyle(style -> style.withColor(TooltipHelper.rainbowColor(speed)))
+                    .append(Component.literal("+")
+                            .withStyle(style -> style.withColor(GTValues.VC[Math.min(14, speed)]))
+                            .append(Component.literal(FormattingUtil.formatNumbers(tier - 14)))
+                            .withStyle(style -> style.withColor(GTValues.VC[Math.min(14, speed)]))));
+
+        }
+        text = text.append(Component.literal(")").withStyle(ChatFormatting.WHITE));
+
+        widgets.addText(text, 4, HEIGHT + 4, 0xFFFFFF, true);
     }
 
     private static int logarithmicFill(long amount) {

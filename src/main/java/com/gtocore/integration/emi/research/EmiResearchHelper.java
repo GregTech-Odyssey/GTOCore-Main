@@ -2,8 +2,10 @@ package com.gtocore.integration.emi.research;
 
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.common.machine.electric.ScannerMachine;
 import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -17,6 +19,7 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.emi.EmiStackHelper;
 
+import com.hepdd.gtmthings.utils.TeamUtil;
 import dev.emi.emi.api.stack.EmiStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 @DataGeneratorScanned
-public class EmiResearchHelper {
+public final class EmiResearchHelper {
 
     @RegisterLanguage(cn = "数据扫描", en = "Data Scanning")
     static final String CATEGORY_NAME = "gtocore.research.data_scanning";
@@ -50,6 +53,8 @@ public class EmiResearchHelper {
     static final String DOMAIN_DATA_STORAGE_REPEAT = "gtocore.research.domain_data.storage.repeat";
     @RegisterLanguage(cn = "这件物品还没有被扫描", en = "This item has not been scanned yet")
     static final String DOMAIN_DATA_STORAGE_NOT_SCANNED = "gtocore.research.domain_data.storage.not_scanned";
+    @RegisterLanguage(cn = "扫描预计耗能：%s EU/t", en = "Scanning expected energy consumption: %s EU/t")
+    static final String DOMAIN_DATA_STORAGE_ENERGY = "gtocore.research.domain_data.storage.energy";
 
     public static Component getResearchTagTeamTotal(ResearchTag tag) {
         var plr = Minecraft.getInstance().player;
@@ -75,6 +80,15 @@ public class EmiResearchHelper {
 
     public static @Nullable EmiStack toEmiStack(AEKey key) {
         return EmiStackHelper.toEmiStack(new GenericStack(key, key.getAmountPerOperation()));
+    }
+
+    public static long getScannerEUt(AEKey key) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) {
+            return 0;
+        }
+        var bytes = DataScanningManager.scanData(key, TeamUtil.getTeamUUID(player.getUUID()), true).countBytes();
+        return ScannerMachine.eut(bytes);
     }
 
     public static List<EmiStack> toEmiStacks(Collection<AEKey> keys) {
