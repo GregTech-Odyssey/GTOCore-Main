@@ -4,12 +4,10 @@ import com.gtocore.api.accelerator.Particles;
 
 import net.minecraft.world.phys.Vec3;
 
+import com.gto.datasynclib.DataSyncCodec;
+import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.datasynclib.datastream.codec.DataCodec;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.ListData;
-import com.gto.datasynclib.datastream.data.NullData;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * 粒子束流在运行时的存在形式，包含粒子束流的类型，能量，聚焦，数量，位置等参数
@@ -29,54 +27,18 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public final class ParticleBeam {
 
-    public static final DataCodec<Vec3> VEC3_DATA_CODEC = new DataCodec<>() {
+    /** ParticleBeam 编解码器：用组合编解码器（CombinedCodec，同时实现 DataCodec/ByteStreamCodec）按字段一次组合。 */
+    public static final DataSyncCodec<ParticleBeam> CODEC = CombinedCodec.composite(
+            Particles.REGISTRY_KEY.combinedCodec(), ParticleBeam::getDefinition,
+            DataSyncCodec.DOUBLE_CODEC, ParticleBeam::getEnergy,
+            DataSyncCodec.DOUBLE_CODEC, ParticleBeam::getFocus,
+            DataSyncCodec.LONG_CODEC,   ParticleBeam::getAmount,
+            DataSyncCodec.VEC3_CODEC,   ParticleBeam::getPosition,
+            DataSyncCodec.VEC3_CODEC,   ParticleBeam::getVelocity,
+            ParticleBeam::new);
 
-        @Override
-        public @NotNull Data encode(Vec3 obj) {
-            return Data.valueOf(new double[] { obj.x, obj.y, obj.z });
-        }
-
-        @Override
-        public Vec3 decode(@NotNull Data data, int dataVersion) {
-            var array = data.getDoubleArray();
-            return new Vec3(array[0], array[1], array[2]);
-        }
-    };
-
-    public static final DataCodec<ParticleBeam> DATA_CODEC = new DataCodec<>() {
-
-        @Override
-        public ParticleBeam decode(@NotNull Data data, int dataVersion) {
-            if (data.isNull()) return empty();
-            var listData = data.asListData();
-            var definition = listData.get(0, Particles.REGISTRY_KEY.dataCodec(), dataVersion);
-            if (definition == null) {
-                definition = Particles.EMPTY;
-            }
-            return new ParticleBeam(
-                    definition,
-                    listData.getDouble(1),
-                    listData.getDouble(2),
-                    listData.getLong(3),
-                    listData.get(4, VEC3_DATA_CODEC, dataVersion),
-                    listData.get(5, VEC3_DATA_CODEC, dataVersion));
-        }
-
-        @Override
-        public @NotNull Data encode(ParticleBeam obj) {
-            if (obj.isEmpty()) {
-                return NullData.INSTANCE;
-            }
-            var listData = new ListData();
-            listData.add(Particles.REGISTRY_KEY.dataCodec(), obj.definition);
-            listData.addDouble(obj.energy);
-            listData.addDouble(obj.focus);
-            listData.addLong(obj.amount);
-            listData.add(VEC3_DATA_CODEC, obj.position);
-            listData.add(VEC3_DATA_CODEC, obj.velocity);
-            return listData;
-        }
-    };
+    /** DataCodec 视图（CombinedCodec 实现了 DataCodec），兼容仅用 Data 持久化的旧引用。 */
+    public static final DataCodec<ParticleBeam> DATA_CODEC = CODEC;
 
     private final ParticleDefinition definition;
     private long amount;
