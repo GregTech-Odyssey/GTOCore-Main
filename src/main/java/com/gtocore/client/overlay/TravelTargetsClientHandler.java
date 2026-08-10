@@ -1,4 +1,4 @@
-package com.gtocore.eio_travel.client;
+package com.gtocore.client.overlay;
 
 import com.gtocore.eio_travel.api.ITravelTarget;
 import com.gtocore.eio_travel.api.TravelRegistry;
@@ -20,7 +20,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.Nullable;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
-public class RenderTravelTargets {
+public class TravelTargetsClientHandler {
 
     @SubscribeEvent
     public static void renderLevel(RenderLevelStageEvent event) {

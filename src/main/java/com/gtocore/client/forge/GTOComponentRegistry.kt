@@ -1,6 +1,8 @@
 package com.gtocore.client.forge
 
 import com.gtocore.api.gui.graphic.impl.GTOComponentTooltipComponent
+import com.gtocore.api.gui.graphic.impl.GTOMultiProgressClientComponent
+import com.gtocore.api.gui.graphic.impl.GTOMultiProgressToolTipComponent
 import com.gtocore.api.gui.graphic.impl.GTOProgressClientComponent
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent
 
@@ -18,6 +20,10 @@ object GTOComponentRegistry {
         event.register(
             GTOProgressToolTipComponent::class.java,
             ::GTOProgressClientComponent,
+        )
+        event.register(
+            GTOMultiProgressToolTipComponent::class.java,
+            ::GTOMultiProgressClientComponent,
         )
         event.register(
             GTOComponentTooltipComponent::class.java,

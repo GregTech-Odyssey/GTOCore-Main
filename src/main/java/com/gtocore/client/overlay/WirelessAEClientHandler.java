@@ -1,9 +1,11 @@
-package com.gtocore.integration.ae.wireless;
+package com.gtocore.client.overlay;
 
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.MEWirelessMachineConfigurator;
 import com.gtocore.common.saved.WirelessNetworkSavedData;
+import com.gtocore.integration.ae.wireless.WirelessMachine;
+import com.gtocore.integration.ae.wireless.WirelessNetwork;
 
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -23,7 +25,7 @@ import static com.gtocore.common.data.GTOMachines.ME_WIRELESS_CONNECTION_MACHINE
 import static com.hepdd.gtmthings.data.CustomMachines.ME_EXPORT_BUFFER;
 
 @OnlyIn(Dist.CLIENT)
-public class WirelessClientHandler {
+public class WirelessAEClientHandler {
 
     public static void highlightMachines(Camera camera, PoseStack poseStack, MultiBufferSource bufferSource) {
         var player = Minecraft.getInstance().player;

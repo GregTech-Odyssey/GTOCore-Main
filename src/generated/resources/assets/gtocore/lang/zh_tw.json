@@ -2546,6 +2546,7 @@
   "gtocore.bar.distillation.1": "產出，消耗水",
   "gtocore.bar.exploration": "爆炸",
   "gtocore.bar.heat": "溫度",
+  "gtocore.bar.occupancy": "佔用率",
   "gtocore.behaviour.grass_harvest.description": "§6極大§r地提升小麥種子掉落機率",
   "gtocore.behaviour.grass_harvest.description2": "右鍵以收割",
   "gtocore.biooscillation.button.clear.all": "清空所有培養液和組織",

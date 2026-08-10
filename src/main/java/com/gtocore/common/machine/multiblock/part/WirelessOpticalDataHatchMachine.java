@@ -1,9 +1,13 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gtolib.api.wireless.ReceiverTransmitterHandler;
+import com.gtolib.api.wireless.ReceiverTransmitterHandler.ConnectionType;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IDataAccessHatch;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.OpticalDataHatchMachine;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -24,15 +28,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public final class WirelessOpticalDataHatchMachine extends OpticalDataHatchMachine implements IDataStickInteractable, IGTMTJadeIF {
+public final class WirelessOpticalDataHatchMachine extends OpticalDataHatchMachine implements IDataStickInteractable, IGTMTJadeIF, IMachineLife {
 
     @SaveToDisk
     private BlockPos transmitterPos;
     @SaveToDisk
     private BlockPos receiverPos;
 
-    private static final String KEY_TRANSMITTER = "wireless_data_transmitter";
-    private static final String KEY_RECEIVER = "wireless_data_receiver";
+    public static final String KEY_TRANSMITTER = "wireless_data_transmitter";
+    public static final String KEY_RECEIVER = "wireless_data_receiver";
 
     private final CleanableReferenceSupplier<MetaMachine> transmitterMachine = new CleanableReferenceSupplier<>(() -> MetaMachine.getMachine(getLevel(), transmitterPos), MetaMachine::isInValid);
 
@@ -62,28 +66,45 @@ public final class WirelessOpticalDataHatchMachine extends OpticalDataHatchMachi
         return new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
     }
 
-    private void setTransmitterPos(BlockPos pos) {
-        if (transmitterPos != null) {
-            var level = getLevel();
-            if (level != null) {
-                if (MetaMachine.getMachine(level, transmitterPos) instanceof WirelessOpticalDataHatchMachine machine) {
-                    machine.receiverPos = null;
-                }
-            }
+    private void setTransmitterPos(@Nullable BlockPos pos) {
+        Level level = getLevel();
+        if (transmitterPos != null && level != null && MetaMachine.getMachine(level, transmitterPos) instanceof WirelessOpticalDataHatchMachine machine) {
+            machine.receiverPos = null;
+            machine.onChanged();
         }
-        transmitterPos = pos;
+        transmitterPos = pos == null ? null : pos.immutable();
+        transmitterMachine.clean();
+        onChanged();
     }
 
-    private void setReceiverPos(BlockPos pos) {
-        if (receiverPos != null) {
-            var level = getLevel();
-            if (level != null) {
-                if (MetaMachine.getMachine(level, receiverPos) instanceof WirelessOpticalDataHatchMachine machine) {
-                    machine.transmitterPos = null;
-                }
-            }
+    private void setReceiverPos(@Nullable BlockPos pos) {
+        Level level = getLevel();
+        if (receiverPos != null && level != null && MetaMachine.getMachine(level, receiverPos) instanceof WirelessOpticalDataHatchMachine machine) {
+            machine.transmitterPos = null;
+            machine.transmitterMachine.clean();
+            machine.onChanged();
         }
-        receiverPos = pos;
+        receiverPos = pos == null ? null : pos.immutable();
+        onChanged();
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        refreshClientHandle();
+    }
+
+    @Override
+    public void onUnload() {
+        ReceiverTransmitterHandler.unregister(getLevel(), ConnectionType.DATA, getPos());
+        super.onUnload();
+    }
+
+    @Override
+    public void onMachineRemoved() {
+        if (isTransmitter()) setReceiverPos(null);
+        else setTransmitterPos(null);
+        ReceiverTransmitterHandler.unregister(getLevel(), ConnectionType.DATA, getPos());
     }
 
     @Override
@@ -150,16 +171,27 @@ public final class WirelessOpticalDataHatchMachine extends OpticalDataHatchMachi
                 return false;
             }
             if (isTransmitter()) {
-                this.setReceiverPos(otherPos);
-                otherWodh.setTransmitterPos(this.getPos());
+                setReceiverPos(otherPos);
+                otherWodh.setTransmitterPos(getPos());
             } else {
-                this.setTransmitterPos(otherPos);
-                otherWodh.setReceiverPos(this.getPos());
+                setTransmitterPos(otherPos);
+                otherWodh.setReceiverPos(getPos());
             }
+            refreshClientHandle();
 
             player.sendSystemMessage(Component.translatable("gtocore.machine.wireless_data_hatch.bind"));
             return true;
         }
         return false;
+    }
+
+    private void refreshClientHandle() {
+        Level level = getLevel();
+        if (level == null || level.isClientSide) return;
+        BlockPos otherPos = isTransmitter() ? receiverPos : transmitterPos;
+        if (otherPos == null) return;
+        BlockPos transmitter = isTransmitter() ? getPos() : otherPos;
+        BlockPos receiver = isTransmitter() ? otherPos : getPos();
+        ReceiverTransmitterHandler.register(level, ConnectionType.DATA, transmitter, receiver);
     }
 }

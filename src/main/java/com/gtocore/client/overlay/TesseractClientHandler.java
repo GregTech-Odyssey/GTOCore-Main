@@ -1,7 +1,10 @@
-package com.gtocore.common.machine.tesseract;
+package com.gtocore.client.overlay;
 
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.common.item.TesseractTargetMarker;
+import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
+import com.gtocore.common.machine.tesseract.DirectedTesseractMachine;
+import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -19,7 +22,7 @@ import java.util.List;
 import static com.gregtechceu.gtceu.utils.GTUtil.getClientLevel;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
-public class ClientHandler {
+public class TesseractClientHandler {
 
     private static final float HUE_RED = 0.0f;
     private static final float HUE_PURPLE = 0.8333f;

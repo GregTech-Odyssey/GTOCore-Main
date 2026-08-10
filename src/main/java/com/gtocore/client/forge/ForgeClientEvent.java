@@ -7,6 +7,8 @@ import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
 import com.gtocore.client.Tooltips;
 import com.gtocore.client.hud.HUDScreen;
+import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
+import com.gtocore.client.overlay.WirelessAEClientHandler;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
 import com.gtocore.common.data.GTOItems;
@@ -15,13 +17,13 @@ import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt;
 import com.gtocore.common.saved.WirelessNetworkSavedData;
-import com.gtocore.integration.ae.wireless.WirelessClientHandler;
 import com.gtocore.integration.emi.HiddenItems;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
+import com.gtolib.api.wireless.ReceiverTransmitterHandler;
 import com.gtolib.utils.ItemUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -150,6 +152,7 @@ public final class ForgeClientEvent {
     public static void onRenderWorldLast(RenderLevelStageEvent event) {
         RenderLevelStageEvent.Stage stage = event.getStage();
         FXManager.dispatchFXs(event);
+        ReceiverTransmitterClientHandler.render(event);
         if (stage == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
             Minecraft mc = Minecraft.getInstance();
             ClientLevel level = mc.level;
@@ -173,8 +176,8 @@ public final class ForgeClientEvent {
             }
             ItemStack itemStack = player.getMainHandItem();
             Item item = itemStack.getItem();
-            if (WirelessClientHandler.shouldHighlight()) {
-                WirelessClientHandler.highlightMachines(camera, poseStack, event.getLevelRenderer().renderBuffers.bufferSource());
+            if (WirelessAEClientHandler.shouldHighlight()) {
+                WirelessAEClientHandler.highlightMachines(camera, poseStack, event.getLevelRenderer().renderBuffers.bufferSource());
             }
             if (item != Items.AIR && itemStack.hasTag()) {
                 if (GTCEu.isDev() && StructureWriteBehavior.isItem(itemStack)) {
@@ -243,6 +246,8 @@ public final class ForgeClientEvent {
         TeamResearchSavedDtat.clearClientInstance();
         TechTreeSavedData.clearClientInstance();
         WirelessNetworkSavedData.setCLIENT_INSTANCE(new WirelessNetworkSavedData());
+        ReceiverTransmitterHandler.unloadClient();
+        ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
     }
 

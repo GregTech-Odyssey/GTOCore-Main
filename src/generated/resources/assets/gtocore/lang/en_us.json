@@ -2418,6 +2418,7 @@
   "gtocore.bar.distillation.1": "Output , Consumption water",
   "gtocore.bar.exploration": "Explosion",
   "gtocore.bar.heat": "Heat",
+  "gtocore.bar.occupancy": "Occupancy",
   "gtocore.behaviour.grass_harvest.description": "§6Greatly§r increase the probability of wheat seed dropping",
   "gtocore.behaviour.grass_harvest.description2": "Right click to harvest",
   "gtocore.biooscillation.button.clear.all": "Clear all culture medium and tissue",

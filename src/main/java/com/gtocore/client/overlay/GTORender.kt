@@ -1,4 +1,6 @@
-package com.gtocore.client.forge
+package com.gtocore.client.overlay
+
+import com.gtocore.client.forge.GTORenderManager
 
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn

@@ -339,6 +339,7 @@ public final class LangHandler {
         addCNEN("gtocore.bar.distillation.1", "产出，消耗水", "Output , Consumption water");
         addCNEN("gtocore.bar.exploration", "爆炸", "Explosion");
         addCNEN("gtocore.bar.heat", "温度", "Heat");
+        addCNEN("gtocore.bar.occupancy", "占用率", "Occupancy");
 
         addCNEN("gtocore.player.organ.info_exclamation", "关于：", "About : ");
         addCNEN("gtocore.player.organ.that_is_your", "这是你的", "That is your ");

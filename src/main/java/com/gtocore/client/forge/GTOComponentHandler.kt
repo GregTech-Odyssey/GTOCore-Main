@@ -2,8 +2,12 @@ package com.gtocore.client.forge
 
 import com.gtocore.api.gui.graphic.GTOToolTipComponent
 import com.gtocore.api.gui.graphic.GTOTooltipComponentItem
+import com.gtocore.api.gui.graphic.impl.GTOMultiProgressToolTipComponent
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent
 import com.gtocore.api.gui.graphic.impl.toPercentageWith
+import com.gtocore.api.gui.helper.MultiProgressData
+import com.gtocore.api.gui.helper.ProgressBarColorStyle
+import com.gtocore.common.item.DataCrystalItem
 
 import net.minecraft.network.chat.Component
 import net.minecraftforge.api.distmarker.Dist
@@ -15,7 +19,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent
 import appeng.api.storage.StorageCells
 import appeng.api.storage.cells.IBasicCellItem
 import appeng.me.cells.BasicCellHandler
+import com.gregtechceu.gtceu.utils.FormattingUtil
 import com.mojang.datafixers.util.Either
+import it.unimi.dsi.fastutil.ints.IntArrayList
+import it.unimi.dsi.fastutil.objects.ObjectArrayList
 
 @OnlyIn(Dist.CLIENT)
 object GTOComponentHandler {
@@ -63,6 +70,29 @@ object GTOComponentHandler {
                         GTOProgressToolTipComponent(
                             percentage = usedBytes toPercentageWith totalBytes,
                             text = "${(progress * 100).toInt()}%",
+                        )
+                        ),
+                )
+            }
+        }
+        run {
+            if (item is DataCrystalItem) {
+                val usedBytes = DataCrystalItem.getResearchData(itemStack)
+                val totalBytes = item.dataCapacity
+                val bytesText = Component.translatable(
+                    "gtocore.bar.occupancy",
+                ).append(" (${FormattingUtil.formatNumber2Places(usedBytes.countBytes().toDouble() / totalBytes * 100)}%)").string
+                val progresses = IntArrayList(usedBytes.size)
+                val styles = ObjectArrayList<ProgressBarColorStyle>(usedBytes.size)
+                usedBytes.forEach {
+                    progresses.add((it.value * it.key.bytePerPoint * 100 / totalBytes).toInt())
+                    styles.add(ProgressBarColorStyle.Solid(it.key.color))
+                }
+                components.add(
+                    (
+                        GTOMultiProgressToolTipComponent(
+                            progresses = MultiProgressData(progresses, styles),
+                            text = bytesText,
                         )
                         ),
                 )

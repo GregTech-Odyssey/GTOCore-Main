@@ -49,7 +49,8 @@ object GTORenderManager {
 }
 
 // 公用：3D加粗线段渲染器（基于相机视向的四边形条带，内部实心，QUADS）
-private object ThickPolylineRenderer {
+object ThickPolylineRenderer {
+    @JvmStatic
     fun drawSegments(poseStack: PoseStack, camera: Camera, colorRGBA: Int, width: Float, segments: List<Pair<Vec3, Vec3>>) {
         if (segments.isEmpty()) return
         val half = width / 2f
@@ -133,7 +134,10 @@ private object ThickPolylineRenderer {
             buffer.vertex(matrix, axEx - offx, ayEy - offy, azEz - offz).color(colorRGBA).endVertex()
         }
 
-        for (p in segments) emitSeg(p.first, p.second)
+        for (i in segments.indices) {
+            val segment = segments[i]
+            emitSeg(segment.first, segment.second)
+        }
 
         tesselator.end()
         RenderSystem.enableDepthTest()
