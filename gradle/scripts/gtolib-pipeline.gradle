@@ -579,6 +579,13 @@ ext.detectGtolibDebugMode = {
 
 ext.isGtolibDebugMode = detectGtolibDebugMode()
 
+// 明文调试时 gtolib 直接位于 main classes，不存在独立的 Seal 包体。
+// 若 Runtime 仍在启动 classpath，它会把这些明文类当作待解密类并因找不到
+// 独立 gtolib 模组而抛出 "GTOLIB init failed"。
+if (isGtolibDebugMode) {
+    configurations.runtimeClasspath.exclude group: 'dev', module: 'gto-seal-runtime'
+}
+
 logger.lifecycle(
         "GTOLib pipeline: sources=${hasGtolibSources}, jarUpToDate=${isGtolibJarUpToDate}, " +
                 "debugMode=${isGtolibDebugMode}, fingerprint=${gtolibFingerprint.take(12)}${gtolibFingerprint ? '…' : ''}, " +
@@ -2420,8 +2427,7 @@ tasks.register('installGtolibIntoModOutput') {
                 duplicatesStrategy = DuplicatesStrategy.INCLUDE
             }
             injectGtolibMixinConfig(null)
-            // 调试模式仍放 seal，保持与生产一致的服务发现路径
-            installSealToRunMods()
+            // 明文类没有 Seal 载荷；调试模式不得加载 Runtime，否则会尝试解密明文类。
             logger.lifecycle("GTOLib: 【未加密】已解压明文 → main classes")
             return
         }
