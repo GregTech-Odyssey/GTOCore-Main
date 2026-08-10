@@ -95,3 +95,10 @@
    - **正确写法**：读输入量用 `u.getItemAmount(...)`、`u.getFluidAmount(...)`、`u.handleRecipeItem(...)` 一类 **unit 方法**；判断当前 unit 的 IO/开关/条件也一律走 `u.xxx`。参考 `RecyclerLogic.createCustomRecipe` 用 `u.getItemAmount(true, item)` 取并行数。
 
 26. **输出一定不要带 `unit.`。** `createCustomRecipe` 传入的 `RecipeHandlerUnit` 是**输入侧**的，拿不到/不该处理输出（输出由 recipe builder 声明）。收集/声明输出一律用 `RecipeBuilder`（如 `builder.outputItems(...)` / `outputFluids(...)` 或对应的 `builder::output*`），**绝不**尝试经这个输入 `unit` 去读/写输出——语义错误且会读到错误数据（输入 unit 没有输出能力）。
+
+### 世界级数据存储（Level capability）
+
+27. **凡需按世界（Level）维度保存/查找、且生命周期应随世界卸载结束的数据（如连接注册表、机器网络、跨坐标索引），一律用 GTModern 的 `ILevel` capability（`DataComponentMap`）存储，禁止放进全局静态 Map 后靠手动 register/unregister 维护。**
+   - **为什么**：`DataComponentMap`（经 `gtceu$getCapabilities()` Mixin 注入）绑定在 `Level` 实例字段上，**随 Level 对象一起被 GC**。用它存储的世界级数据在维度卸载时自动释放，无需（也严禁）依赖 `LevelEvent.Unload` / `ServerStoppedEvent` / 机器 `onUnload` 等回调手动删除——避免漏删、脏数据残留与内存泄露；重复存取的 entry 也不需手工清理。
+   - **做法**：声明 `DataComponentKey<T> KEY = DataComponentKey.createNoCodec("...")`，用 `ILevel.getCapability(level, KEY)` / `ILevel.setCapability(level, KEY, value)` 读写。参考 `BeamManager`：数据对象持有 `Level` 字段，`get(Level)` 里 `getCapability` 若无则 `new` 并 `setCapability`，`getIfPresent(Level)` 只读不创建。
+   - **注意**：capability 需要 `Level` **实例**（非 `ResourceKey<Level>`）才能定位；纯按维度 key 的全局快照（如客户端网络同步缓存、断开时需显式清空的短命数据）不适用此模式，可保留维度 Map，但必须明确其生命周期并在适当回调清理。
