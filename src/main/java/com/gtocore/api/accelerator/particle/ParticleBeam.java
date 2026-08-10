@@ -32,9 +32,9 @@ public final class ParticleBeam {
             Particles.REGISTRY_KEY.combinedCodec(), ParticleBeam::getDefinition,
             DataSyncCodec.DOUBLE_CODEC, ParticleBeam::getEnergy,
             DataSyncCodec.DOUBLE_CODEC, ParticleBeam::getFocus,
-            DataSyncCodec.LONG_CODEC,   ParticleBeam::getAmount,
-            DataSyncCodec.VEC3_CODEC,   ParticleBeam::getPosition,
-            DataSyncCodec.VEC3_CODEC,   ParticleBeam::getVelocity,
+            DataSyncCodec.LONG_CODEC, ParticleBeam::getAmount,
+            DataSyncCodec.VEC3_CODEC, ParticleBeam::getPosition,
+            DataSyncCodec.VEC3_CODEC, ParticleBeam::getVelocity,
             ParticleBeam::new);
 
     /** DataCodec 视图（CombinedCodec 实现了 DataCodec），兼容仅用 Data 持久化的旧引用。 */

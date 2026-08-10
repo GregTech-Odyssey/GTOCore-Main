@@ -63,7 +63,11 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
             if (simulate) {
                 return unit == null ? holder.simulateOutputItem(dataCrystal) : unit.handleItem(io, List.of(new Content<>(ItemIngredient.of(dataCrystal), 1)), true);
             } else {
-                (unit == null ? holder : unit).outputItem(dataCrystal);
+                if (unit == null) {
+                    holder.outputItem(dataCrystal);
+                } else {
+                    unit.outputItem(dataCrystal);
+                }
             }
             return true;
         }
