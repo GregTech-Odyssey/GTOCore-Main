@@ -101,4 +101,4 @@ git ls-tree HEAD GTOLib   # → 160000 commit <sha>	GTOLib
 
 ## 性能规范
 
-> **强制必读。** 本仓所有 AI 生成/修改的代码，提交前必须按 [PERFORMANCE.md](PERFORMANCE.md) 自查。容器与迭代的写法直接决定 GC 压力与帧率，属硬性要求。
+> **强制必读。** 本仓所有 AI 生成/修改的代码，提交前必须按 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 自查。容器与迭代及类型/配方/编解码等的写法直接决定 GC 压力与帧率，属硬性要求。

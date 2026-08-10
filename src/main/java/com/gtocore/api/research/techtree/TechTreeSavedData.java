@@ -17,12 +17,12 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 
 import com.gto.fastcollection.O2OOpenCacheHashMap;
 import com.hepdd.gtmthings.utils.TeamUtil;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -51,7 +51,12 @@ public class TechTreeSavedData extends FastSavedData {
                 }
             });
 
-    private final Map<UUID, Map<String, TechTree>> teamTechTrees = new O2OOpenCacheHashMap<>();
+    /**
+     * 每支队伍 → (注册对象 TechTreeManager → 该队伍的 TechTree)。
+     * 外层 key 是 UUID（值对象），用哈希缓存容器；内层 key 是注册对象 TechTreeManager，
+     * 标识稳定、按引用比较，用引用容器 fastutil Reference2ObjectOpenHashMap。
+     */
+    private final O2OOpenCacheHashMap<UUID, Reference2ObjectOpenHashMap<TechTreeManager, TechTree>> teamTechTrees = new O2OOpenCacheHashMap<>();
 
     public static void init() {}
 
@@ -77,15 +82,15 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static TechTree getOrCreateTree(UUID uuid, TechTreeManager manager) {
         UUID teamUUID = TeamUtil.getTeamUUID(uuid);
-        Map<String, TechTree> teamTrees = get().teamTechTrees.computeIfAbsent(teamUUID, ignored -> new O2OOpenCacheHashMap<>());
-        return teamTrees.computeIfAbsent(manager.getId(), ignored -> new TechTree(manager));
+        Reference2ObjectOpenHashMap<TechTreeManager, TechTree> teamTrees = get().teamTechTrees.computeIfAbsent(teamUUID, ignored -> new Reference2ObjectOpenHashMap<>());
+        return teamTrees.computeIfAbsent(manager, ignored -> new TechTree(manager));
     }
 
     public static TechTree findTree(UUID uuid, TechTreeManager manager) {
         UUID teamUUID = TeamUtil.getTeamUUID(uuid);
-        Map<String, TechTree> teamTrees = get().teamTechTrees.get(teamUUID);
+        Reference2ObjectOpenHashMap<TechTreeManager, TechTree> teamTrees = get().teamTechTrees.get(teamUUID);
         if (teamTrees == null) return null;
-        return teamTrees.get(manager.getId());
+        return teamTrees.get(manager);
     }
 
     public static boolean isUnlocked(ServerPlayer player, TechNode node) {
@@ -134,8 +139,8 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static boolean reset(UUID uuid, TechTreeManager manager) {
         UUID teamUUID = TeamUtil.getTeamUUID(uuid);
-        Map<String, TechTree> teamTrees = INSTANCE.teamTechTrees.get(teamUUID);
-        if (teamTrees == null || teamTrees.remove(manager.getId()) == null) {
+        Reference2ObjectOpenHashMap<TechTreeManager, TechTree> teamTrees = INSTANCE.teamTechTrees.get(teamUUID);
+        if (teamTrees == null || teamTrees.remove(manager) == null) {
             return false;
         }
         if (teamTrees.isEmpty()) {
@@ -178,14 +183,14 @@ public class TechTreeSavedData extends FastSavedData {
             for (int i = 0; i < teamCount; i++) {
                 UUID teamId = stream.readUUID();
                 int treeCount = stream.readVarInt();
-                Map<String, TechTree> trees = new O2OOpenCacheHashMap<>();
+                Reference2ObjectOpenHashMap<TechTreeManager, TechTree> trees = new Reference2ObjectOpenHashMap<>();
                 for (int j = 0; j < treeCount; j++) {
                     String treeId = stream.readUTF();
                     byte[] payload = stream.readByteArray();
                     var manager = TechTreeManager.getManager(treeId);
                     if (manager != null) {
                         try (var payloadStream = DataIOStream.of(new ByteArrayInputStream(payload))) {
-                            trees.put(treeId, manager.decode(payloadStream, dataVersion));
+                            trees.put(manager, manager.decode(payloadStream, dataVersion));
                         }
                     }
                 }
@@ -205,24 +210,18 @@ public class TechTreeSavedData extends FastSavedData {
         for (var teamEntry : teamTechTrees.entrySet()) {
             int treeCount = countNonEmptyTrees(teamEntry.getValue());
             stream.writeUUID(teamEntry.getKey());
-            Map<String, TechTree> trees = teamEntry.getValue();
+            Reference2ObjectOpenHashMap<TechTreeManager, TechTree> trees = teamEntry.getValue();
             stream.writeVarInt(treeCount);
             for (var treeEntry : trees.entrySet()) {
                 if (treeEntry.getValue().isEmpty()) continue;
-                stream.writeUTF(treeEntry.getKey());
-                TechTreeManager manager = TechTreeManager.getManager(treeEntry.getKey());
-                if (manager == null) {
-                    manager = inferManager(treeEntry.getValue());
-                }
-                if (manager == null) {
-                    throw new IOException("Missing TechTreeManager for tree id " + treeEntry.getKey());
-                }
+                TechTreeManager manager = treeEntry.getKey();
+                stream.writeUTF(manager.getId());
                 stream.writeByteArray(encodeTree(manager, treeEntry.getValue()));
             }
         }
     }
 
-    private static int countNonEmptyTrees(Map<String, TechTree> trees) {
+    private static int countNonEmptyTrees(Reference2ObjectOpenHashMap<TechTreeManager, TechTree> trees) {
         int count = 0;
         for (var tree : trees.values()) {
             if (!tree.isEmpty()) {
@@ -239,12 +238,5 @@ public class TechTreeSavedData extends FastSavedData {
             treeStream.flush();
         }
         return baos.toByteArray();
-    }
-
-    private static TechTreeManager inferManager(TechTree tree) {
-        for (var node : tree.getEndNodes()) {
-            return node.getManager();
-        }
-        return null;
     }
 }
