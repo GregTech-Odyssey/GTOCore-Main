@@ -12,28 +12,79 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
+import appeng.api.stacks.KeyCounter;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.datastream.data.ListData;
 import com.gto.datasynclib.util.DataCodecs;
+import com.gto.datasynclib.util.StreamCodecs;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 @UtilityClass
 public class GTOCodecs {
 
-    public static final DataSyncCodec<ScanningRecipeExtion.AEKeyDataCrystal> AEKEYDATACRYSTAL_CODEC = DataSyncCodec.register(ScanningRecipeExtion.AEKeyDataCrystal.class, ScanningRecipeExtion.DATA_STREAM_CODEc, ScanningRecipeExtion.DATA_CODEc);
+    /** KeyCounter（AEKey→long 计数集合）持久化 codec：每项 key tag 内嵌 `#` 存 amount，解码零中间对象分配、预分配容量。 */
+    public final DataCodec<KeyCounter> KEY_COUNTER_DATA_CODEC = new DataCodec<>() {
 
-    public static void init() {
-        DataSyncCodec.register(AEItemKey.class, GTOCodecs.AE_ITEM_KEY_STREAM_CODEC, GTOCodecs.AE_ITEM_KEY_DATA_CODEC);
-        DataSyncCodec.register(AEFluidKey.class, GTOCodecs.AE_FLUID_KEY_STREAM_CODEC, GTOCodecs.AE_FLUID_KEY_DATA_CODEC);
-        DataSyncCodec.register(GenericStack.class, GTOCodecs.GENERIC_STACK_STREAM_CODEC, GTOCodecs.GENERIC_STACK_DATA_CODEC);
-        DataSyncCodec.register(TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
-        DataSyncCodec.register(ResearchTag.class, RESEARCH_TAG_STREAM_CODEC, RESEARCH_TAG_DATA_CODEC);
-    }
+        @Override
+        public KeyCounter decode(@NotNull Data data, int dataVersion) {
+            var list = data.asListData();
+            var keyCounter = new KeyCounter();
+            keyCounter.ensureCapacity(list.size()); // 预分配，避免 add 时多次扩容 rehash
+            for (var entryTag : list) {
+                var tag = DataCodecs.COMPOUND_TAG_CODEC.decode(entryTag, dataVersion);
+                var what = AEKey.fromTagGeneric(tag);
+                long amount = tag.getLong("#");
+                if (what != null) {
+                    keyCounter.add(what, amount);
+                }
+            }
+            return keyCounter;
+        }
+
+        @Override
+        public @NotNull Data encode(KeyCounter obj) {
+            var list = new ListData(obj.size());
+            for (var entry : obj) {
+                var tag = entry.getKey().toTagGeneric();
+                tag.putLong("#", entry.getLongValue());
+                list.add(DataCodecs.COMPOUND_TAG_CODEC.encode(tag));
+            }
+            return list;
+        }
+    };
+    /** KeyCounter（AEKey→long 计数集合）网络 codec：VarInt 数量 + 每项 key/amount（紧凑），解码预分配容量。 */
+    public final ByteStreamCodec<KeyCounter> KEY_COUNTER_STREAM_CODEC = new ByteStreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf buf, KeyCounter obj) {
+            buf.writeVarInt(obj.size());
+            for (var entry : obj) {
+                AEKey.writeKey(buf, entry.getKey());
+                buf.writeVarLong(entry.getLongValue());
+            }
+        }
+
+        @Override
+        public KeyCounter decode(FriendlyByteBuf buf) {
+            int size = buf.readVarInt();
+            var keyCounter = new KeyCounter();
+            keyCounter.ensureCapacity(size); // 预分配，避免 add 时多次扩容 rehash
+            for (int i = 0; i < size; i++) {
+                var what = AEKey.readKey(buf);
+                long amount = buf.readVarLong();
+                if (what != null) {
+                    keyCounter.add(what, amount);
+                }
+            }
+            return keyCounter;
+        }
+    };
 
     public final DataCodec<AEItemKey> AE_ITEM_KEY_DATA_CODEC = new DataCodec<>() {
 
@@ -247,5 +298,18 @@ public class GTOCodecs {
     };
 
     public final DataSyncCodec<ResearchPoints> RESEARCH_POINTS_SYNC_CODEC = DataSyncCodec.register(ResearchPoints.class, RESEARCH_POINTS_STREAM_CODEC, RESEARCH_POINTS_DATA_CODEC);
-    public final DataSyncCodec<AEKey> AE_KEY_SYNC_CODEC = DataSyncCodec.register(AEKey.class, GTOCodecs.AE_KEY_STREAM_CODEC, GTOCodecs.AE_KEY_DATA_CODEC);
+    public final DataSyncCodec<AEKey> AE_KEY_SYNC_CODEC = DataSyncCodec.register(AEKey.class, AE_KEY_STREAM_CODEC, AE_KEY_DATA_CODEC);
+    public final DataSyncCodec<AEItemKey> AE_ITEM_KEY_SYNC_CODEC = DataSyncCodec.register(AEItemKey.class, AE_ITEM_KEY_STREAM_CODEC, AE_ITEM_KEY_DATA_CODEC);
+    public final DataSyncCodec<AEFluidKey> AE_FLUID_KEY_SYNC_CODEC = DataSyncCodec.register(AEFluidKey.class, AE_FLUID_KEY_STREAM_CODEC, AE_FLUID_KEY_DATA_CODEC);
+    public final DataSyncCodec<GenericStack> GENERIC_STACK_SYNC_CODEC = DataSyncCodec.register(GenericStack.class, GENERIC_STACK_STREAM_CODEC, GENERIC_STACK_DATA_CODEC);
+    public final DataSyncCodec<TechNode> TECH_NODE_SYNC_CODEC = DataSyncCodec.register(TechNode.class, TECH_NODE_STREAM_CODEC, TECH_NODE_DATA_CODEC);
+    public final DataSyncCodec<ResearchTag> RESEARCH_TAG_SYNC_CODEC = DataSyncCodec.register(ResearchTag.class, RESEARCH_TAG_STREAM_CODEC, RESEARCH_TAG_DATA_CODEC);
+    /** KeyCounter 的组合 DataSyncCodec（register 一步注册到全局，返回 CombinedCodec 供 composite 组合）。 */
+    public final DataSyncCodec<KeyCounter> KEY_COUNTER_SYNC_CODEC = DataSyncCodec.register(KeyCounter.class, KEY_COUNTER_STREAM_CODEC, KEY_COUNTER_DATA_CODEC);
+
+    public static void init() {
+        // 其余类型均已由字段处 DataSyncCodec.register(...) 一步注册到全局；
+        // 仅 ScanningRecipeExtion.AEKEYDATACRYSTAL 是 CombinedCodec.composite 构建（不注册），在此用实例方法补注册。
+        ScanningRecipeExtion.AEKEYDATACRYSTAL_CODEC.register(ScanningRecipeExtion.AEKeyDataCrystal.class);
+    }
 }

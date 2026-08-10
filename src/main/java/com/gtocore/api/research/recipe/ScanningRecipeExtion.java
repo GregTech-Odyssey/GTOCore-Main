@@ -15,19 +15,14 @@ import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.KeyCounter;
 
 import com.fast.recipesearch.IntLongMap;
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
-import com.gto.datasynclib.datastream.codec.DataCodec;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.ListData;
-import com.gto.datasynclib.util.DataCodecs;
-import com.gto.datasynclib.util.StreamCodecs;
+import com.gto.datasynclib.DataSyncCodec;
+import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
@@ -39,10 +34,17 @@ import java.util.UUID;
 @DataGeneratorScanned
 public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.AEKeyDataCrystal> {
 
+    /** AEKeyDataCrystal 的网络+持久化编解码器（composite 组合，注册在 GTOCodecs.init()）。 */
+    public static final DataSyncCodec<AEKeyDataCrystal> AEKEYDATACRYSTAL_CODEC = CombinedCodec.composite(
+            GTOCodecs.KEY_COUNTER_SYNC_CODEC, AEKeyDataCrystal::aeKeys,
+            DataSyncCodec.ITEM_STACK_CODEC, AEKeyDataCrystal::dataCystal,
+            DataSyncCodec.UUID_CODEC, AEKeyDataCrystal::team,
+            AEKeyDataCrystal::new);
+
     public static final ScanningRecipeExtion INSTANCE = new ScanningRecipeExtion("scanning_recipe");
 
     public ScanningRecipeExtion(String name) {
-        super(name, GTOCodecs.AEKEYDATACRYSTAL_CODEC, false);
+        super(name, AEKEYDATACRYSTAL_CODEC, false);
     }
 
     @Override
@@ -61,11 +63,7 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
             if (simulate) {
                 return unit == null ? holder.simulateOutputItem(dataCrystal) : unit.handleItem(io, List.of(new Content<>(ItemIngredient.of(dataCrystal), 1)), true);
             } else {
-                if (unit == null) {
-                    holder.outputItem(dataCrystal);
-                } else {
-                    unit.outputItem(dataCrystal);
-                }
+                (unit == null ? holder : unit).outputItem(dataCrystal);
             }
             return true;
         }
@@ -102,62 +100,4 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
         keyCounter.add(aeKey, 1);
         return new AEKeyDataCrystal(keyCounter, dataCystal, team);
     }
-
-    public static final DataCodec<AEKeyDataCrystal> DATA_CODEc = new DataCodec<>() {
-
-        @Override
-        public AEKeyDataCrystal decode(@NotNull Data data, int dataVersion) {
-            var d = data.asListData();
-            var keyCounter = new KeyCounter();
-            for (var entry : d.getList(0)) {
-                var gs = GTOCodecs.GENERIC_STACK_DATA_CODEC.decode(entry, dataVersion);
-                keyCounter.add(gs.what(), gs.amount());
-            }
-            var d2 = DataCodecs.ITEM_STACK_CODEC.decode(d.get(1), dataVersion);
-            var team = DataCodec.UUID_CODEC.decode(d.get(2), dataVersion);
-            return new AEKeyDataCrystal(keyCounter, d2, team);
-        }
-
-        @Override
-        public @NotNull Data encode(AEKeyDataCrystal obj) {
-            var aekeys = obj.aeKeys();
-            var aeMapData = new ListData(aekeys.size());
-            for (var entry : aekeys) {
-                var tag = entry.getKey().toTagGeneric();
-                tag.putLong("#", entry.getLongValue());
-                aeMapData.add(DataCodecs.COMPOUND_TAG_CODEC.encode(tag));
-            }
-            var data = new ListData(3);
-            data.add(aeMapData);
-            data.add(DataCodecs.ITEM_STACK_CODEC.encode(obj.dataCystal()));
-            data.add(DataCodec.UUID_CODEC.encode(obj.team()));
-            return data;
-        }
-    };
-    public static final ByteStreamCodec<AEKeyDataCrystal> DATA_STREAM_CODEc = new ByteStreamCodec<>() {
-
-        @Override
-        public void encode(FriendlyByteBuf buf, AEKeyDataCrystal obj) {
-            buf.writeInt(obj.aeKeys().size());
-            for (var entry : obj.aeKeys()) {
-                AEKey.writeKey(buf, entry.getKey());
-                buf.writeVarLong(entry.getLongValue());
-            }
-            StreamCodecs.ITEM_STACK_CODEC.encode(buf, obj.dataCystal());
-            ByteStreamCodec.UUID_CODEC.encode(buf, obj.team());
-        }
-
-        @Override
-        public AEKeyDataCrystal decode(FriendlyByteBuf buf) {
-            var size = buf.readInt();
-            var keyCounter = new KeyCounter();
-            for (int i = 0; i < size; i++) {
-                var entry = GTOCodecs.GENERIC_STACK_STREAM_CODEC.decode(buf);
-                keyCounter.add(entry.what(), entry.amount());
-            }
-            var d = StreamCodecs.ITEM_STACK_CODEC.decode(buf);
-            var team = ByteStreamCodec.UUID_CODEC.decode(buf);
-            return new AEKeyDataCrystal(keyCounter, d, team);
-        }
-    };
 }
