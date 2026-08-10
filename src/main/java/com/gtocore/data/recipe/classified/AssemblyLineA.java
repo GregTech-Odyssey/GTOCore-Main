@@ -750,7 +750,7 @@ final class AssemblyLineA {
                 .inputFluids(GTOMaterials.ReactorSteel, 1296)
                 .EUt(8192)
                 .duration(400)
-                .researchNode(ParticleAccelerators)
+                .researchNode(NuclearPhysics)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("virtual_coin_miner")
@@ -775,6 +775,22 @@ final class AssemblyLineA {
                         .EUt(GTValues.VA[GTValues.IV])
                         .CWUt(16))
                 .researchNode(VirtualCoinCurrency)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("thermodynamic_analysis_platform")
+                .inputItems("gtceu:data_bank")
+                .inputItems(GTOMachines.HEAT_SENSOR.asItem(), 2)
+                .inputItems(GTItems.SENSOR_LuV, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_LuV, 2)
+                .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.Iridium, 16)
+                .inputItems(TagPrefix.plate, GTMaterials.HSLASteel, 8)
+                .inputItems(TagPrefix.plate, GTMaterials.Aluminium, 8)
+                .inputItems(TagPrefix.plate, GTMaterials.RedSteel, 8)
+                .outputItems("gtocore:thermodynamic_analysis_platform")
+                .inputFluids(GTMaterials.PCBCoolant, 1000)
+                .inputFluids(GTMaterials.SolderingAlloy, 9216)
+                .EUt(420)
+                .researchNode(Thermodynamics)
+                .duration(400)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("computational_data_holder")
                 .inputItems("gtocore:research_holder")
@@ -811,10 +827,22 @@ final class AssemblyLineA {
                 .inputItems(GTItems.COVER_ENERGY_DETECTOR_ADVANCED, 4)
                 .inputItems(GTItems.ULTRA_HIGH_POWER_INTEGRATED_CIRCUIT, 4)
                 .outputItems("gtocore:energy_data_holder")
-                .inputFluids(GTMaterials.SolderingAlloy, 9216)
+                .inputFluids(GTMaterials.PCBCoolant, 1000)
                 .EUt(420)
                 .duration(400)
                 .researchNode(EnergyFluxAnalysis)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("thermodynamic_data_holder")
+                .inputItems("gtocore:research_holder")
+                .inputItems(GTOMachines.HEAT_SENSOR.asItem())
+                .inputItems(GTItems.SENSOR_LuV, 4)
+                .inputItems(GTItems.ENGRAVED_LAPOTRON_CHIP, 3)
+                .inputItems(TagPrefix.wireFine, GTMaterials.UraniumRhodiumDinaquadide, 4)
+                .outputItems("gtocore:thermodynamic_data_holder")
+                .inputFluids(GTMaterials.PCBCoolant, 1000)
+                .EUt(420)
+                .duration(400)
+                .researchNode(Thermodynamics)
                 .save();
     }
 }
