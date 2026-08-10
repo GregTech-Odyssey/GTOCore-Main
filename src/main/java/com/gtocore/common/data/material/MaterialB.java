@@ -241,7 +241,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        NitroniumTetrafluoroborate = material("nitronium_tetrafluoroborate", "四氟硝铵")
+        NitroniumTetrafluoroborate = material("nitronium_tetrafluoroborate", "四氟硼酸硝")
                 .dust()
                 .color(0x3c3f40)
                 .components(Nitrogen, 1, Oxygen, 2, Boron, 1, Fluorine, 4)
@@ -249,7 +249,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        NitrosoniumTetrafluoroborate = material("nitrosonium_tetrafluoroborate", "四氟硼酸亚硝铵")
+        NitrosoniumTetrafluoroborate = material("nitrosonium_tetrafluoroborate", "四氟硼酸亚硝")
                 .dust()
                 .color(0x485054)
                 .components(Nitrogen, 1, Oxygen, 1, Boron, 1, Fluorine, 4)
