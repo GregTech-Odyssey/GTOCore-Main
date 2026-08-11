@@ -1,10 +1,9 @@
-package com.gtocore.data.recipe.research
+package com.gtocore.data.techtree
 
 import com.gtocore.api.data.tag.GTOTagPrefix
 import com.gtocore.api.data.tag.GTOTagPrefix.NANITES
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.api.research.ResearchRequirements
-import com.gtocore.api.research.ResearchTag
 import com.gtocore.api.research.ResearchTag.ASSEMBLY
 import com.gtocore.api.research.ResearchTag.BIOLOGY
 import com.gtocore.api.research.ResearchTag.CATALYSIS
@@ -17,6 +16,7 @@ import com.gtocore.api.research.ResearchTag.MATERIAL
 import com.gtocore.api.research.ResearchTag.MECHANICS
 import com.gtocore.api.research.ResearchTag.OPTICS
 import com.gtocore.api.research.ResearchTag.SUPRACAUSAL
+import com.gtocore.api.research.ResearchTag.THERMODYNAMICS
 import com.gtocore.api.research.techtree.TechNode
 import com.gtocore.api.research.techtree.TechNode.OTHER_REWARD_LABEL
 import com.gtocore.api.research.techtree.TechTreeManager
@@ -26,40 +26,36 @@ import com.gtocore.common.data.GTOItems
 import com.gtocore.common.data.GTOMaterials
 import com.gtocore.common.data.machines.MultiBlockA.CHEMICAL_PLANT
 import com.gtocore.common.data.machines.MultiBlockD
+import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineluv
+import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineuhv
+import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineuv
+import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLinezpm
+import com.gtocore.data.techtree.ComponentNodes.EnergyIOs
 
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
-import net.minecraft.world.level.block.Block
 
 import com.google.common.collect.ImmutableList
 import com.gregtechceu.gtceu.GTCEu
-import com.gregtechceu.gtceu.api.GTValues.IV
 import com.gregtechceu.gtceu.api.GTValues.LuV
-import com.gregtechceu.gtceu.api.GTValues.MAX
 import com.gregtechceu.gtceu.api.GTValues.UEV
 import com.gregtechceu.gtceu.api.GTValues.UHV
-import com.gregtechceu.gtceu.api.GTValues.ULV
 import com.gregtechceu.gtceu.api.GTValues.UV
-import com.gregtechceu.gtceu.api.GTValues.VN
 import com.gregtechceu.gtceu.api.GTValues.ZPM
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix
 import com.gregtechceu.gtceu.common.data.GTBlocks
 import com.gregtechceu.gtceu.common.data.GTItems
-import com.gregtechceu.gtceu.common.data.GTMachines
 import com.gregtechceu.gtceu.common.data.GTMaterials
 import com.gregtechceu.gtceu.common.data.GTMaterials.Carbon
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.FUSION_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.LARGE_CHEMICAL_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines
-import com.gregtechceu.gtceu.utils.FormattingUtil
 import com.gto.fastcollection.O2OOpenCacheHashMap
-import com.gto.registrate.util.entry.BlockEntry
-import com.gtolib.GTOCore
 import com.gtolib.api.lang.CNEN
 import com.gtolib.utils.RegistriesUtils
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture
 
-object AnalyzeData : AutoInitialize<AnalyzeData>() {
+object BaseNodes : AutoInitialize<BaseNodes>() {
 
     val langMap: Map<String, CNEN> = if (GTCEu.isDataGen()) O2OOpenCacheHashMap() else emptyMap()
 
@@ -84,177 +80,14 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     )
 
     override fun init() {
-        TechTreeManager.REGISTRY.freeze()
+        ComponentNodes.init()
+        AENodes.init()
+        EnergyNodes.init()
+        SpaceNodes.init()
+        NanitesNodes.init()
+        if (!GTCEu.isDataGen()) TechTreeManager.REGISTRY.freeze()
         TechTree.freeze()
     }
-
-    @JvmField
-    val ComponentInAssemblyLineluv = TechTree.builder("component_in_assembly_line", "装配线基础部件", "Basic components in assembly line")
-        .description("在装配线中组装基础的组件", "Assemble basic components in the assembly line")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.FIELD_GENERATOR_IV, 1.0f).build())
-        .icon(GTItems.FIELD_GENERATOR_LuV)
-        .tier(0)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLinezpm = TechTree.builder("component_in_assembly_line1", "装配线进阶部件I", "Advanced components in assembly line I")
-        .description("在装配线中组装更加复杂的部件", "Assemble more complex components in the assembly line")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 240L).setEurekaItem(GTItems.FIELD_GENERATOR_LuV, 1.0f).build())
-        .icon(GTItems.FIELD_GENERATOR_ZPM)
-        .prerequisites(ComponentInAssemblyLineluv)
-        .tier(0)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLineuv = TechTree.builder("component_in_assembly_line2", "装配线进阶部件II", "Advanced components in assembly line II")
-        .description("利用三钛合金制造成更加强悍的部件", "Use trititanium alloy to manufacture even more powerful components")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1200L).setEurekaItem(GTItems.FIELD_GENERATOR_ZPM, 0.8f).build())
-        .icon(GTItems.FIELD_GENERATOR_UV)
-        .prerequisites(ComponentInAssemblyLinezpm)
-        .tier(1)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLineuhv = TechTree.builder("component_in_assembly_line3", "装配线进阶部件III", "Advanced components in assembly line III")
-        .description("充能下界合金的磁化与山铜为其带来了更强的动力与耐久性", "The magnetization of charged nether alloy and the addition of copper bring it stronger power and durability")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1800L).setEurekaItem(GTItems.FIELD_GENERATOR_UV, 0.7f).build())
-        .icon(GTItems.FIELD_GENERATOR_UHV)
-        .prerequisites(ComponentInAssemblyLineuv)
-        .tier(2)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLineuev = TechTree.builder("component_in_assembly_line4", "装配线进阶部件IV", "Advanced components in assembly line IV")
-        .description("搭载了下一代末影耐造材料与技术", "Equipped with next-generation enderly durable materials and technology")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(325 * 20 * 2400L).setEurekaItem(GTItems.FIELD_GENERATOR_UHV, 0.7f).build())
-        .icon(GTItems.FIELD_GENERATOR_UEV)
-        .prerequisites(ComponentInAssemblyLineuhv)
-        .tier(3)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLineuiv = TechTree.builder("component_in_assembly_line5", "装配线进阶部件V", "Advanced components in assembly line V")
-        .description("制造能抗住微型黑洞的新部件", "Manufacture new components that can withstand micro black holes")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(800 * 20 * 2400L).setEurekaItem(GTItems.FIELD_GENERATOR_UEV, 0.7f).build())
-        .icon(GTItems.FIELD_GENERATOR_UIV)
-        .prerequisites(ComponentInAssemblyLineuev)
-        .tier(3)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLineuxv = TechTree.builder("component_in_assembly_line6", "装配线进阶部件VI", "Advanced components in assembly line VI")
-        .description("制造撕裂宇宙的新部件", "Manufacture new components that can tear the universe apart")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(2000 * 20 * 3600L).setEurekaItem(GTItems.FIELD_GENERATOR_UIV, 0.7f).build())
-        .icon(GTItems.FIELD_GENERATOR_UXV)
-        .prerequisites(ComponentInAssemblyLineuiv)
-        .tier(4)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLineopv = TechTree.builder("component_in_assembly_line7", "装配线进阶部件VII", "Advanced components in assembly line VII")
-        .description("将混沌神龙力量注入到部件中", "Inject the power of the chaotic dragon into the components")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(16000 * 20 * 4000L).setEurekaItem(GTItems.FIELD_GENERATOR_UXV, 0.7f).build())
-        .icon(GTItems.FIELD_GENERATOR_OpV)
-        .prerequisites(ComponentInAssemblyLineuxv)
-        .tier(5)
-        .build()
-
-    @JvmField
-    val ComponentInAssemblyLinemax = TechTree.builder("component_in_assembly_line8", "装配线进阶部件VIII", "Advanced components in assembly line VIII")
-        .description("通过扭曲时空来驱动的永恒之马达", "The eternal motor driven by twisting space-time")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(32000 * 20 * 4800L).setEurekaItem(GTItems.FIELD_GENERATOR_OpV, 0.7f).build())
-        .icon(GTOItems.MAX_FIELD_GENERATOR)
-        .prerequisites(ComponentInAssemblyLineopv)
-        .tier(6)
-        .build()
-
-    private val EnergyIOsTiers: IntArray = intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 4, 5, 6)
-
-    @JvmField
-    val ComponentInAssemblyLines: Array<TechNode?> = arrayOf(
-        null, null, null, null, null, null,
-        ComponentInAssemblyLineluv, ComponentInAssemblyLinezpm, ComponentInAssemblyLineuv, ComponentInAssemblyLineuhv, ComponentInAssemblyLineuev,
-        ComponentInAssemblyLineuiv, ComponentInAssemblyLineuxv, ComponentInAssemblyLineopv, ComponentInAssemblyLinemax,
-    )
-
-    private val ComponentCasings: Array<BlockEntry<Block>?> = arrayOf(
-        null,
-        GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_LV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_MV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_HV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_EV,
-        GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_IV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_LUV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_ZPM, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UV,
-        GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UHV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UEV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UIV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UXV,
-        GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_OPV, GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_MAX,
-    )
-    private var lastComponentCasingNode: TechNode? = null
-    private val eurekaProgresses: Array<Float> = arrayOf(
-        0f,
-        0f, 0f, 0f, 0f,
-        0f, 1f, 1f, 0.95f,
-        0.9f, 0.8f, 0.8f, 0.8f,
-        0.7f, 0.6f,
-    )
-
-    fun ComponentCasing(tier: Int): TechNode {
-        val req = ResearchRequirements.Builder().setCWUNeeded(320L * (tier shl (tier)))
-            .setEurekaItem(ComponentCasings[tier - 1], eurekaProgresses[tier] - 0.1f)
-        if (tier >= ZPM) {
-            req.addMaterialNeeded(ASSEMBLY, (4L shl (tier - ZPM)))
-        }
-        val node = TechTree.builder(
-            "component_casing$tier",
-            "装配线部件外壳${VN[tier]}",
-            "Assembly Line Component Casing ${VN[tier]}",
-        )
-            .description(
-                "精密而坚固的装配线部件外壳，为部件装配线提供${VN[tier]}级的部件装配条件",
-                "Precision and sturdy assembly line component casing, providing ${VN[tier]} level component assembly conditions for the assembly line",
-            )
-            .requirements(
-                req.build(),
-            )
-            .icon(ComponentCasings[tier])
-            .tier(EnergyIOsTiers[tier])
-        if (lastComponentCasingNode != null) {
-            node.prerequisites(lastComponentCasingNode!!, ComponentInAssemblyLines[tier])
-        } else {
-            node.prerequisites(ComponentInAssemblyLines[tier])
-        }
-        lastComponentCasingNode = node.build()
-        return lastComponentCasingNode!!
-    }
-
-    @JvmField
-    val ComponentCasingsNodes: Array<TechNode?> = (ULV..MAX).map { if (it >= LuV) ComponentCasing(it) else null }.toTypedArray()
-
-    private var lastEnergyIONode: TechNode? = null
-    fun energyIONode(tier: Int): TechNode {
-        val req = ResearchRequirements.Builder().setCWUNeeded(320L * (tier shl (tier)))
-            .setEurekaItem(GTMachines.ENERGY_INPUT_HATCH[tier - 1], eurekaProgresses[tier])
-        if (tier >= UV) {
-            req.addMaterialNeeded(ENERGY, 256L * (1 shl (tier - UV)))
-        }
-        val node = TechTree.builder(
-            "energy_io$tier",
-            "高压能量输入输出${FormattingUtil.toRomanNumeral(tier - IV)}",
-            "High Voltage Energy Input/Output${FormattingUtil.toRomanNumeral(tier - IV)}",
-        )
-            .description(
-                "安全处理高达${FormattingUtil.formatNumbers(8L * (1L shl (tier * 2)))}EU/t的高压能量流",
-                "Safely handle high-voltage energy flows up to ${FormattingUtil.formatNumbers(8L * (1L shl (tier * 2)))} EU/t",
-            )
-            .requirements(
-                req.build(),
-            )
-            .icon(GTMachines.ENERGY_INPUT_HATCH[tier])
-            .tier(EnergyIOsTiers[tier])
-        if (lastEnergyIONode != null) {
-            node.prerequisites(lastEnergyIONode!!)
-        }
-        lastEnergyIONode = node.build()
-        return lastEnergyIONode!!
-    }
-
-    @JvmField
-    val EnergyIOs: Array<TechNode?> = (ULV..MAX).map { if (it >= LuV) energyIONode(it) else null }.toTypedArray()
 
     @JvmField
     val IridiumCasingProduction = TechTree.builder("iridium_casing_production", "高性能机器外壳生产", "High-Performance Machine Casing Production")
@@ -281,6 +114,16 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:electric_heater"), 1.0F).build(),
         )
         .icon(RegistriesUtils.getItem("gtocore:electric_heater"))
+        .build()
+
+    @JvmField
+    val LaserFoundations = TechTree.builder("laser_foundations", "激光基础研究", "Laser Foundations Research")
+        .description("研究激光的产生、传播和应用，以及激光技术在科学和工业中的潜力", "Study the generation, propagation, and application of lasers, as well as the potential of laser technology in science and industry")
+        .requirements(
+            ResearchRequirements.Builder().setCWUNeeded(15)
+                .setEurekaItem(RegistriesUtils.getItem("gtceu:normal_laser_pipe"), 1.0F).build(),
+        )
+        .icon(RegistriesUtils.getItem("gtceu:active_transformer"))
         .build()
 
     @JvmField
@@ -393,13 +236,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val HighDensityEnergyStorage = TechTree.builder("high_density_energy_storage", "高密度能量存储", "High Density Energy Storage")
-        .description("优化兰博顿水晶的能量密度与充放电效率，增强能量存储与传输能力", "Optimize the energy density and charge/discharge efficiency of Lambton crystals, enhancing energy storage and transmission capabilities")
-        .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.ENERGY_LAPOTRONIC_ORB, 1.0f).build())
-        .icon(GTItems.ENERGY_LAPOTRONIC_ORB_CLUSTER)
-        .build()
-
-    @JvmField
     val ChemicalPlantEnvironmentControl = TechTree.builder("chemical_plant_environment_control", "化工厂环境控制", "Chemical Plant Environment Control")
         .description("掌握化工厂的环境控制技术，实现更大规模的化学产品生产与更高效的资源利用", "Master the environmental control technology of chemical plants, achieving larger-scale chemical product production and more efficient resource utilization")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 40L).setEurekaItem(LARGE_CHEMICAL_REACTOR, 1.0f).build())
@@ -449,33 +285,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val EnergyFluxAnalysis = TechTree.builder("energy_flux_analysis", "能量流分析", "Energy Flux Analysis")
-        .description("分析能量流的传输与分布，实现高效的能量管理与优化", "Analyze the transmission and distribution of energy flux, achieving efficient energy management and optimization")
-        .icon(RegistriesUtils.getItem("gtmthings:wireless_energy_terminal"))
-        .prerequisites(HighDensityEnergyStorage)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(48 * 20 * 300L)
-                .addMaterialNeeded(ENERGY, 20)
-                .setEurekaItem(RegistriesUtils.getItem("gtceu:engraved_lapotron_crystal_chip"), 0.8F)
-                .build(),
-        )
-        .tier(1)
-        .build()
-
-    @JvmField
-    val BaseMEMachines = TechTree.builder("base_me_machines", "基础ME机器", "Basic ME Machines")
-        .description("在AE网络内高速传输与组装物质信息，并和生产设备深度交互", "High-speed transmission and assembly of matter information within the AE network, and deep interaction with production equipment")
-        .icon(RegistriesUtils.getItem("gtocore:super_molecular_assembler"))
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(32 * 20 * 240L)
-                .setEurekaItem(RegistriesUtils.getItem("expatternprovider:ex_molecular_assembler"), if (GTOCore.isEasy()) 1f else 0.8f)
-                .build(),
-        )
-        .build()
-
-    @JvmField
     val IsaMillingMachine = TechTree.builder("isa_milling_machine", "艾萨研磨处理技术", "Isa Ore Processing Technology")
         .description("掌握艾萨研磨处理矿物这种滚珠暴力碾磨一切再拿泔水泡的技术", "Master the Isa milling process for minerals, a technology that violently grinds everything with ball bearings and soaks it in swill")
         .prerequisites(ComponentInAssemblyLineluv)
@@ -498,6 +307,20 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(128 * 20 * 400L)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:gold_coin"), 0.8F)
+                .build(),
+        )
+        .tier(1)
+        .build()
+
+    @JvmField
+    val DataStorageIteration = TechTree.builder("data_storage_iteration", "数据存储迭代", "Data Storage Iteration")
+        .description("随着数据量的需求爆炸量的增加，数据存储技术也需要不断迭代升级，以满足更高效的数据存储和访问需求", "As the demand for data volume increases explosively, data storage technology also needs to be continuously iterated and upgraded to meet more efficient data storage and access needs")
+        .icon(RegistriesUtils.getItem("gtocore:data_form_testing_me_interface"))
+        .prerequisites(ComputationArray)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(128 * 20 * 600L)
+                .setEurekaItem(RegistriesUtils.getItem("gtceu:data_module"), 0.8F)
                 .build(),
         )
         .tier(1)
@@ -532,21 +355,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .build(),
         )
         .tier(1)
-        .build()
-
-    @JvmField
-    val SuperRocketTech = TechTree.builder("super_rocket_tech", "超级火箭技术", "Super Rocket Technology")
-        .description("掌握超级火箭的设计与制造技术，实现更高效的太空运输与探索", "Master the design and manufacturing technology of super rockets, achieving more efficient space transportation and exploration")
-        .icon(RegistriesUtils.getItem("ad_astra_rocketed:tier_7_rocket"))
-        .prerequisites(ComponentInAssemblyLinezpm)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 120L)
-                .setEurekaFluid(GTOMaterials.StellarEnergyRocketFuel.fluid, 0.8F)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 180)
-                .build(),
-        )
-        .tier(2)
         .build()
 
     @JvmField
@@ -596,118 +404,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val NanitesTech = TechTree.builder("nanites_tech", "纳米蜂群技术", "Nanites Technology")
-        .description("强行融合干细胞和细粒度纳米碳粉，制造出的可复制可模板化的纳米蜂群，实现原子尺度上的物质操控", "Forcibly fusing stem cells and fine-grained nano carbon powder to create replicable and templateable nanite swarms, achieving material manipulation at the atomic scale")
-        .icon(NANITES, Carbon)
-        .prerequisites(ChemicalPlantEnvironmentControl)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(CATALYSIS, 640)
-                .addMaterialNeeded(BIOLOGY, 35)
-                .addMaterialNeeded(MATERIAL, 1024)
-                .addMaterialNeeded(ASSEMBLY, 64)
-                .setEurekaItem(RegistriesUtils.getItem("gtceu:activated_carbon_dust"), 0.8F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val UltimateEnergyStorage = TechTree.builder("ultimate_energy_storage", "终极能量存储", "Ultimate Energy Storage")
-        .description("将至少50倍体积的兰博顿水晶压缩到一个电池中存储的技术", "The technology of compressing at least 50 times the volume of Lambton crystals into a single battery for storage")
-        .icon(GTItems.ULTIMATE_BATTERY)
-        .prerequisites(HighDensityEnergyStorage)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(ENERGY, 128)
-                .setEurekaItem(RegistriesUtils.getItem("gtceu:energy_cluster"), 0.8F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val CircuitAssemblyLine = TechTree.builder("circuit_assembly_line", "电路装配线", "Circuit Assembly Line")
-        .description("让装着纳米蜂群的机器人装配元件，流水线化生产电路板", "Let robots equipped with nanite swarms assemble components, producing circuit boards in an assembly line")
-        .icon(RegistriesUtils.getItem("gtocore:circuit_assembly_line"))
-        .prerequisites(PreciseManufacturingTech, NanitesTech)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(MECHANICS, 32)
-                .addMaterialNeeded(ASSEMBLY, 96)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:precision_circuit_assembly_robot_mk1"), 1.0F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val MECapacityExpansion = TechTree.builder("me_capacity_expansion", "ME设备扩容", "ME Capacity Expansion")
-        .description("扩展ME设备的存储容量，实现更大规模的物质信息存储与管理", "Expand the storage capacity of ME devices, achieving larger-scale matter information storage and management")
-        .icon(GTOItems.PATTERN_BUFFER_UPGRADER1)
-        .prerequisites(BaseMEMachines)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(DATA_STORAGE, 250)
-                .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy"), 0.8F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val MECatalystSupplying = TechTree.builder("me_catalyst_supplying", "ME催化剂供应", "ME Catalyst Supplying")
-        .description("将催化剂的损耗降低到零点，并与ME设备深度交互，使得带有催化剂的生产线被更方便的管理", "Reduce the loss of catalysts to zero and interact deeply with ME devices, making production lines with catalysts easier to manage")
-        .icon(RegistriesUtils.getItem("gtocore:me_catalyst_pattern_buffer"))
-        .prerequisites(BaseMEMachines)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(MATERIAL, 640)
-                .addMaterialNeeded(CATALYSIS, 256)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_catalyst_hatch"), if (GTOCore.isEasy()) 1f else 0.8F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val MESmartGatingClustering = TechTree.builder("me_smart_gating_clustering", "ME智能分流集群", "ME Smart Gating Clustering")
-        .description("将ME设备的物质信息进行智能分流与集群化管理，实现更高效的生产线调度与资源利用", "Intelligently divert and cluster the matter information of ME devices, achieving more efficient production line scheduling and resource utilization")
-        .icon(RegistriesUtils.getItem("gtocore:me_wildcard_pattern_buffer"))
-        .prerequisites(BaseMEMachines)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(DATA_STORAGE, 25L shl (GTOCore.difficulty * 2))
-                .addMaterialNeeded(MECHANICS, 12L * GTOCore.difficulty)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), if (GTOCore.isEasy()) 1f else 0.8F)
-                .build(),
-        )
-        .tier(GTOCore.difficulty)
-        .build()
-
-    @JvmField
-    val MEWasteRecycling = TechTree.builder("me_waste_recycling", "ME废料回收", "ME Waste Recycling")
-        .description("通过回收和再利用生产设备的废料，减少环境污染并提高资源利用率", "By recycling and reusing waste from production equipment, reduce environmental pollution and improve resource utilization")
-        .icon(RegistriesUtils.getItem("gtocore:me_muffler_hatch"))
-        .prerequisites(BaseMEMachines)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(MATERIAL, 640)
-                .addMaterialNeeded(CATALYSIS, 128)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:iv_drone"), if (GTOCore.isEasy()) 1f else 0.8F)
-                .build(),
-        )
-        .tier(if (GTOCore.isEasy()) 1 else 2)
-        .build()
-
-    @JvmField
     val LargeNaquadahReactor = TechTree.builder("large_naquadah_reactor", "大型硅岩反应堆", "Large Naquadah Reactor")
         .description("硅岩这种材料怎么就这么神奇呢？又硬又坚韧，还能用来做反应堆的核心燃料", "How is naquadah such a magical material? It's hard and tough, and can even be used as the core fuel for reactors")
         .icon(RegistriesUtils.getItem("gtocore:large_naquadah_reactor"))
@@ -717,21 +413,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(64 * 20 * 1500L)
                 .addMaterialNeeded(ENERGY, 128)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:zpm_naquadah_reactor"), 0.8F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val SpaceElevator = TechTree.builder("space_elevator", "太空电梯", "Space Elevator")
-        .description("建造一条连接地球与太空的电梯，把手可摘星辰变为现实", "Build an elevator connecting the Earth and space, turning the dream of reaching the stars into reality")
-        .icon(RegistriesUtils.getItem("gtocore:space_elevator"))
-        .prerequisites(SuperRocketTech)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 400)
-                .setEurekaItem(RegistriesUtils.getItem("gtceu:gravitation_engine_unit"), 0.8F)
                 .build(),
         )
         .tier(2)
@@ -756,11 +437,12 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     val BiowareDataStorage = TechTree.builder("bioware_data_storage", "生物件数据存储", "Bioware Data Storage")
         .description("利用生物件的自我复制能力，实现数据的高密度存储与快速访问", "Utilize the self-replication ability of bioware to achieve high-density data storage and fast access")
         .icon(RegistriesUtils.getItem("gtocore:bio_data_access_hatch"))
-        .prerequisites(BiowareTech, DataCenter)
+        .prerequisites(BiowareTech)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(64 * 20 * 2400L)
                 .addMaterialNeeded(BIOLOGY, 128)
+                .addMaterialNeeded(DATA_STORAGE, 576)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:advanced_data_access_hatch"), 0.8F)
                 .build(),
         )
@@ -785,9 +467,9 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
 
     @JvmField
     val LaserBatchProduction0 = TechTree.builder("laser_batch_production_proto", "激光能源原始批量生产", "Laser Energy Batch Production Prototype")
-        .description("原始地利用高功率激光，传输大量能量用于加热炉子", "Primarily use high-power lasers to transmit large amounts of energy for heating furnaces")
+        .description("原始地利用高功率激光，传输大量能量用于加热炉子或者暴力运动机械", "Primarily use high-power lasers to transmit large amounts of energy for heating furnaces or violently moving machinery")
         .icon(RegistriesUtils.getItem("gtocore:energy_control_module_mk2"))
-        .prerequisites(ComponentInAssemblyLineuv, IridiumCasingProduction)
+        .prerequisites(LaserFoundations, IridiumCasingProduction)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(256 * 20 * 2400L)
@@ -799,30 +481,31 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val LaserEngraver = TechTree.builder("laser_engraver", "极细尺度激光导向刻蚀", "Ultra-Fine Scale Laser Guided Etching")
-        .description("利用激光的极细尺度，进行导向刻蚀，制造出高精度的微结构", "Use the ultra-fine scale of lasers for guided etching, creating high-precision microstructures")
-        .icon(RegistriesUtils.getItem("gtocore:non_linear_optical_lens"))
-        .prerequisites(LaserBatchProduction0)
+    val ExcitationCrystalLaser = TechTree.builder("excitation_crystal_laser", "激发晶体光束研究", "Excitation Crystal Beam Research")
+        .description("使用最近发现的光透域材料，创新性与纳米蜂群技术结合制造的奇异晶体，能够将激光的能量集中在极小的空间内，产生全新的高强度的光束形态激光", "Using the recently discovered light-transmissive material, combined with nanobee technology to create a strange crystal, capable of concentrating the energy of the laser in an extremely small space, producing a new high-intensity beam form of laser")
+        .icon(RegistriesUtils.getItem("gtocore:excitation_crystal"))
+        .prerequisites(LaserFoundations)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(256 * 20 * 2400L)
-                .addMaterialNeeded(MECHANICS, 32)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:high_frequency_laser"), 0.8F)
+                .addMaterialNeeded(OPTICS, 2)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:non_linear_optical_lens"), 0.8F)
                 .build(),
         )
         .tier(2)
         .build()
 
     @JvmField
-    val BioEnergyConversion = TechTree.builder("bio_energy_conversion", "生物能量转换技术", "Bio-Energy Conversion Technology")
-        .description("利用生物体的代谢过程，将生物能量转化为可用的电能，实现绿色能源的高效利用", "Utilize the metabolic processes of organisms to convert bio-energy into usable electrical energy, achieving efficient use of green energy")
-        .icon(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"))
-        .prerequisites(BiowareTech)
+    val LaserEngraver = TechTree.builder("laser_engraver", "极细尺度激光导向刻蚀", "Ultra-Fine Scale Laser Guided Etching")
+        .description("利用激光的极细尺度，进行导向刻蚀，制造出高精度的微结构", "Use the ultra-fine scale of lasers for guided etching, creating high-precision microstructures")
+        .icon(RegistriesUtils.getItem("gtocore:non_linear_optical_lens"))
+        .prerequisites(LaserFoundations)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(256 * 20 * 2400L)
-                .addMaterialNeeded(BIOLOGY, 64)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"), 0.7F)
+                .addMaterialNeeded(MECHANICS, 32)
+                .addMaterialNeeded(OPTICS, 2)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:high_frequency_laser"), 0.8F)
                 .build(),
         )
         .tier(2)
@@ -836,7 +519,9 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(256 * 20 * 2400L)
+                .addMaterialNeeded(THERMODYNAMICS, 256)
                 .addMaterialNeeded(MECHANICS, 32)
+                .addMaterialNeeded(ASSEMBLY, 192)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:molecular_casing"), 0.7F)
                 .build(),
         )
@@ -852,6 +537,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
                 .addMaterialNeeded(MECHANICS, 64)
+                .addMaterialNeeded(ASSEMBLY, 384)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_assembly_line_unit"), 0.7F)
                 .build(),
         )
@@ -867,6 +553,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 9900L)
                 .addMaterialNeeded(MECHANICS, 32)
+                .addMaterialNeeded(ASSEMBLY, 384)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:component_assembler"), 0.7F)
                 .build(),
         )
@@ -881,7 +568,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 29900L)
-                .addMaterialNeeded(ASSEMBLY, 32)
+                .addMaterialNeeded(ASSEMBLY, 512)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:magneto_resonatic_circuit_uhv"), 0.8F)
                 .build(),
         )
@@ -899,21 +586,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(512 * 20 * 4800L)
                 .addMaterialNeeded(MECHANICS, 64)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:machining_control_module_mk3"), 0.6F)
-                .build(),
-        )
-        .tier(3)
-        .build()
-
-    @JvmField
-    val UltimateBattery2 = TechTree.builder("ultimate_battery2", "终极电池II", "Ultimate Battery II")
-        .description("换了颜色的终极电池", "A different colored ultimate battery")
-        .icon(GTOItems.REALLY_MAX_BATTERY)
-        .prerequisites(UltimateEnergyStorage)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(ENERGY, 256)
-                .setEurekaItem(GTItems.ULTIMATE_BATTERY, 0.8F)
                 .build(),
         )
         .tier(3)
@@ -944,36 +616,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(512 * 20 * 4800L)
                 .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 64)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:vacuum_freezer"), 0.7F)
-                .build(),
-        )
-        .tier(3)
-        .build()
-
-    @JvmField
-    val SpaceElevator2 = TechTree.builder("space_elevator2", "太空电梯动力改良", "Space Elevator Power Improvement")
-        .description("改良太空电梯的动力系统，实现更高效的能量传输与运输能力", "Improve the power system of the space elevator, achieving more efficient energy transmission and transportation capabilities")
-        .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_2"))
-        .prerequisites(SpaceElevator)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(512 * 20 * 1200L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 96)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_1"), 0.8F)
-                .build(),
-        )
-        .tier(3)
-        .build()
-
-    @JvmField
-    val SpaceElevator3 = TechTree.builder("space_elevator3", "太空电梯动力改良II", "Space Elevator Power Improvement II")
-        .description("升级太空电梯的动力系统，实现更高效的能量传输与运输能力", "Upgrade the power system of the space elevator, achieving more efficient energy transmission and transportation capabilities")
-        .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"))
-        .prerequisites(SpaceElevator2)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(512 * 20 * 2400L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 128)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_2"), 0.8F)
                 .build(),
         )
         .tier(3)
@@ -1013,7 +655,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     val MatterFabricator = TechTree.builder("matter_fabricator", "物质制造机", "Matter Fabricator")
         .description("通过高能物理实验，将能量直接转化为物质，实现物质的直接制造", "Through high-energy physics experiments, directly convert energy into matter, achieving direct matter fabrication")
         .icon(RegistriesUtils.getItem("gtocore:matter_fabricator"))
-        .prerequisites(HighDensityEnergyStorage)
+        .prerequisites(ParticleAccelerators)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
@@ -1044,7 +686,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
     val HighEnergyBioEngineering = TechTree.builder("high_energy_bio_engineering", "高能生物工程", "High Energy Bio Engineering")
         .description("生物技术的巅峰之作", "The pinnacle of biotechnology")
         .icon(RegistriesUtils.getItem("gtocore:microorganism_master"))
-        .prerequisites(NanitesTech, LaserBatchProduction1)
+        .prerequisites(LaserBatchProduction1)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
@@ -1078,7 +720,7 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(DATA_STORAGE, 128)
+                .addMaterialNeeded(DATA_STORAGE, 3072)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:bio_data_access_hatch"), 0.8F)
                 .build(),
         )
@@ -1176,21 +818,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val DysonSphere = TechTree.builder("dyson_sphere", "戴森球建造技术", "Dyson Sphere Construction Technology")
-        .description("掌握戴森球的建造技术，通过发射大量的戴森球组件，最终在恒星周围形成一个完整的戴森球，实现对恒星能量的最大化利用", "Master the construction technology of Dyson spheres, by launching a large number of Dyson sphere components, eventually forming a complete Dyson sphere around the star, achieving maximum utilization of stellar energy")
-        .icon(RegistriesUtils.getItem("gtocore:dyson_sphere_launch_silo"))
-        .prerequisites(DysonSphereSeriesCasing)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(1024 * 20 * 7200L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 256)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:dyson_swarm_module"), 0.8F)
-                .build(),
-        )
-        .tier(4)
-        .build()
-
-    @JvmField
     val CryotheumSupercoductingTech = TechTree.builder("cryotheum_superconducting_tech", "凛冰超导技术", "Cryotheum Superconducting Technology")
         .description("使用凛冰循环浸淋超导材料，进一步提升超导导体性能的稳定性", "Use cryotheum circulation to immerse superconducting materials, further improving the stability of superconducting performance")
         .icon(GTOFluids.GELID_CRYOTHEUM.get())
@@ -1200,51 +827,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(1024 * 20 * 3600L)
                 .addMaterialNeeded(MATERIAL, 8000)
                 .setEurekaFluid(GTOFluids.GELID_CRYOTHEUM.get(), 0.8F)
-                .build(),
-        )
-        .tier(4)
-        .build()
-
-    @JvmField
-    val SpaceElevator4 = TechTree.builder("space_elevator4", "太空电梯动力改良III", "Space Elevator Power Improvement III")
-        .description("我要是能乘坐在上面观光就好了", "I wish I could take a sightseeing ride on it")
-        .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"))
-        .prerequisites(SpaceElevator3)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 160)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"), 0.8F)
-                .build(),
-        )
-        .tier(4)
-        .build()
-
-    @JvmField
-    val UltimateBattery3 = TechTree.builder("ultimate_battery3", "终极电池III", "Ultimate Battery III")
-        .description("换了颜色的终极电池II", "A different colored ultimate battery II")
-        .icon(GTOItems.TRANSCENDENT_MAX_BATTERY)
-        .prerequisites(UltimateBattery2)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(ENERGY, 512)
-                .setEurekaItem(GTOItems.REALLY_MAX_BATTERY, 0.8F)
-                .build(),
-        )
-        .tier(4)
-        .build()
-
-    @JvmField
-    val AdvancedHyperReactor = TechTree.builder("advanced_hyper_reactor", "进阶超高能反应堆", "Advanced Hyper Reactor")
-        .description("用于对更加浓缩的超高能硅岩燃料进行反应的超高能反应堆，能够提供更高的能量输出与更稳定的运行性能", "A hyper reactor used for reacting with more concentrated hyper-silicon fuel, capable of providing higher energy output and more stable operating performance")
-        .icon(RegistriesUtils.getItem("gtocore:advanced_hyper_reactor"))
-        .prerequisites(AtomicEnergyExciting, UltimateBattery3)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(ENERGY, 512)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:hyper_reactor"), 0.8F)
                 .build(),
         )
         .tier(4)
@@ -1275,36 +857,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(1024 * 20 * 4800L)
                 .addMaterialNeeded(MATERIAL, 16000)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:graviton_computer_casing"), 0.8F)
-                .build(),
-        )
-        .tier(4)
-        .build()
-
-    @JvmField
-    val SpaceElevator5 = TechTree.builder("space_elevator5", "太空电梯动力改良IV", "Space Elevator Power Improvement IV")
-        .description("全GTO寰宇重工最快的电梯！", "The fastest elevator in the entire GTO Universal Heavy Industries!")
-        .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_5"))
-        .prerequisites(SpaceElevator4)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(512 * 20 * 9600L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 200)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"), 0.8F)
-                .build(),
-        )
-        .tier(4)
-        .build()
-
-    @JvmField
-    val SpaceProbeSurfaceReception = TechTree.builder("space_probe_surface_reception", "空间探测器表面接收技术", "Space Probe Surface Reception Technology")
-        .description("将空间中杂乱的辐射能量进行收集与转换，转化为可用的资源", "Collect and convert the chaotic radiation energy in space into usable resources")
-        .icon(RegistriesUtils.getItem("gtocore:space_probe_surface_reception"))
-        .prerequisites(SpaceElevator5)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:cosmic_detection_receiver_material_ray_absorbing_array"), 0.8F)
                 .build(),
         )
         .tier(4)
@@ -1461,21 +1013,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val UltimateBattery4 = TechTree.builder("ultimate_battery4", "终极电池IV", "Ultimate Battery IV")
-        .description("颜色更加鲜艳的终极电池III", "An even more colorful ultimate battery III")
-        .icon(GTOItems.EXTREMELY_MAX_BATTERY)
-        .prerequisites(UltimateBattery3)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(4096 * 20 * 8000L)
-                .addMaterialNeeded(ENERGY, 1024)
-                .setEurekaItem(GTOItems.TRANSCENDENT_MAX_BATTERY, 0.8F)
-                .build(),
-        )
-        .tier(5)
-        .build()
-
-    @JvmField
     val VirtualUniverseDataStorage = TechTree.builder("virtual_universe_data_storage", "虚拟宇宙数据存储技术", "Virtual Universe Data Storage Technology")
         .description("通过模拟一个完整的虚拟宇宙，将数据存储在其中，实现超大规模的数据存储与管理", "By simulating a complete virtual universe, data is stored within it, achieving ultra-large-scale data storage and management")
         .icon(RegistriesUtils.getItem("gtocore:virtual_universe_data_access_hatch"))
@@ -1483,23 +1020,8 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(4096 * 20 * 7200L)
-                .addMaterialNeeded(DATA_STORAGE, 256)
+                .addMaterialNeeded(DATA_STORAGE, 16384)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:black_hole_data_access_hatch"), 0.8F)
-                .build(),
-        )
-        .tier(5)
-        .build()
-
-    @JvmField
-    val NanitesMassiveProduction = TechTree.builder("nanites_massive_production", "纳米蜂群批量复制技术", "Nanites Massive Production Technology")
-        .description("通过纳米蜂群的自我复制与协作，实现纳米蜂群的批量生产与应用", "Achieve mass production and application of nanite swarms through self-replication and collaboration of nanite swarms")
-        .icon(RegistriesUtils.getItem("gtocore:swarm_core"))
-        .prerequisites(NanitesTech)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(4096 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 32000)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:nano_forge"), 0.7F)
                 .build(),
         )
         .tier(5)
@@ -1641,21 +1163,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
         .build()
 
     @JvmField
-    val AnnihilationGenerator = TechTree.builder("annihilation_generator", "湮灭发电机", "Annihilation Generator")
-        .description("通过物质与反物质的湮灭反应，产生巨大的能量输出", "Generate enormous energy output through matter-antimatter annihilation reactions")
-        .icon(RegistriesUtils.getItem("gtocore:annihilate_generator"))
-        .prerequisites(AdvancedHyperReactor)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(8192 * 20 * 7200L)
-                .addMaterialNeeded(ENERGY, 1024)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:annihilation_constrainer"), 0.7F)
-                .build(),
-        )
-        .tier(5)
-        .build()
-
-    @JvmField
     val HyperDimensionalForgeCoil = TechTree.builder("hyper_dimensional_forge_coil", "超维锻造线圈改良", "Hyper-Dimensional Forge Coil Improvement")
         .description("用于超维锻造的线圈，汇聚来自高维空间的热量", "A coil used for hyper-dimensional forging, gathering heat from higher-dimensional space")
         .icon(RegistriesUtils.getItem("gtocore:infinity_coil_block"))
@@ -1668,21 +1175,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .build(),
         )
         .tier(5)
-        .build()
-
-    @JvmField
-    val UltimateBattery5 = TechTree.builder("ultimate_battery5", "终极电池V", "Ultimate Battery V")
-        .description("看起来比较疯狂的终极电池IV", "A seemingly insane ultimate battery IV")
-        .icon(GTOItems.INSANELY_MAX_BATTERY)
-        .prerequisites(UltimateBattery4)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(8192 * 20 * 7200L)
-                .addMaterialNeeded(ENERGY, 1024)
-                .setEurekaItem(GTOItems.EXTREMELY_MAX_BATTERY, 0.8F)
-                .build(),
-        )
-        .tier(6)
         .build()
 
     @JvmField
@@ -1710,21 +1202,6 @@ object AnalyzeData : AutoInitialize<AnalyzeData>() {
                 .setCWUNeeded(16384 * 20 * 28800L)
                 .addMaterialNeeded(SUPRACAUSAL, 1)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:wyvern_core"), 0.8F)
-                .build(),
-        )
-        .tier(6)
-        .build()
-
-    @JvmField
-    val UltimateBattery6 = TechTree.builder("ultimate_battery6", "终极电池VI", "Ultimate Battery VI")
-        .description("终极电池的终极形态，看着很帅", "The ultimate form of the ultimate battery, looks very cool")
-        .icon(GTOItems.MEGA_MAX_BATTERY)
-        .prerequisites(UltimateBattery5)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(8192 * 20 * 28800L)
-                .addMaterialNeeded(ENERGY, 1024)
-                .setEurekaItem(GTOItems.INSANELY_MAX_BATTERY, 0.8F)
                 .build(),
         )
         .tier(6)

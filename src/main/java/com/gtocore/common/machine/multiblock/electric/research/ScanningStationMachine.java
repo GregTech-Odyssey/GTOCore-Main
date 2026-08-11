@@ -4,7 +4,7 @@ import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
@@ -113,7 +113,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
         if (researchPoints != null) {
             var teamData = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
             teamData.addResearchPoints(researchPoints);
-            AnalyzeData.TechTree.triggerAllResearchUnlock(getOwnerUUID());
+            BaseNodes.TechTree.triggerAllResearchUnlock(getOwnerUUID());
             researchPoints = null;
         }
         objectHolder.setLocked(false);

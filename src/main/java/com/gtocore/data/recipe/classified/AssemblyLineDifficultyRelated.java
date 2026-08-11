@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import appeng.core.definitions.AEItems;
 
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
-import static com.gtocore.data.recipe.research.AnalyzeData.MESmartGatingClustering;
+import static com.gtocore.data.techtree.AENodes.MESmartGatingClustering;
 
 class AssemblyLineDifficultyRelated {
 

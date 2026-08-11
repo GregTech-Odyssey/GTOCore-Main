@@ -6,7 +6,7 @@ import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.machine.electric.ScannerMachine;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -68,7 +68,7 @@ public final class EmiResearchHelper {
     public static Component getTechNodeState(TechNode tag) {
         var plr = Minecraft.getInstance().player;
         if (plr != null) {
-            var plrTree = TechTreeSavedData.findTree(plr, AnalyzeData.TechTree);
+            var plrTree = TechTreeSavedData.findTree(plr, BaseNodes.TechTree);
             if (plrTree != null) {
                 var ctx = plrTree.getUnlockedNodes().contains(tag);
                 return Component.translatable("gtocore.techtree.widget.status." + (ctx ? "unlocked" : "locked"))

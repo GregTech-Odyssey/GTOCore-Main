@@ -49,6 +49,7 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
     public static ResearchPoints of(ResearchTag tag0, long points0, ResearchTag tag1, long points1) {
         ResearchPoints researchPoints = new ResearchPoints();
         researchPoints.put(tag0, points0);
+        researchPoints.put(tag1, points1);
         return researchPoints;
     }
 

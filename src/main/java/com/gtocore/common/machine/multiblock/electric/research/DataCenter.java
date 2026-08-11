@@ -10,7 +10,7 @@ import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.integration.jade.GTOJadePlugin;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -76,7 +76,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.gregtechceu.gtceu.api.GTValues.LuV;
-import static com.gtocore.integration.jade.GTOJadePlugin.getProgress;
 
 @DataGeneratorScanned
 public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder,
@@ -416,7 +415,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(new ResearchInfoTab(AnalyzeData.TechTree, (uiWidget, sideTab) -> {
+        sideTabs.attachSubTab(new ResearchInfoTab(BaseNodes.TechTree, (uiWidget, sideTab) -> {
             AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
             var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
                 if (clickData.isRemote) {
@@ -462,7 +461,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             return button;
         }).setSelectedNode(selectedNode));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
-        sideTabs.attachSubTab(new RecipeExportTab(this, AnalyzeData.TechTree));
+        sideTabs.attachSubTab(new RecipeExportTab(this, BaseNodes.TechTree));
     }
 
     private record CombinedDataAccessHatchHandler(DataCenter machine) implements ICustomItemStackHandler {

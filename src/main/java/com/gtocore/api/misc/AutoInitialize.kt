@@ -1,7 +1,6 @@
 package com.gtocore.api.misc
 
 import com.gtocore.common.data.translation.*
-import com.gtocore.data.recipe.research.AnalyzeData
 
 import kotlin.reflect.KProperty1
 

@@ -3,7 +3,7 @@ package com.gtocore.api.research;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.data.GTOCodecs;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.utils.AEChemicalHelper;
 import com.gtolib.utils.iostream.DataIOStream;
@@ -132,7 +132,7 @@ public class TeamResearchContext {
         }
         Reference2LongOpenHashMap<TechNode> techNodeAccCWU = new Reference2LongOpenHashMap<>();
         for (int i = 0; i < techNodeCount; i++) {
-            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : AnalyzeData.TechTree;
+            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : BaseNodes.TechTree;
             // todo remove datafix in future
             String nodeName = dataIOStream.readUTF();
             long accCWU = dataIOStream.readLong();

@@ -11,7 +11,7 @@ import com.gtocore.common.data.GTORecipeCategories;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformTemplateStorage;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.data.transaction.data.TradeLang;
 
@@ -80,7 +80,8 @@ public final class LangHandler {
         MultiblockBuilder.LANG.forEach(LangHandler::addCNEN);
         Tooltips.LANG.forEach(LangHandler::addCNEN);
         PlatformTemplateStorage.LANG.forEach((k, v) -> addCNEN("gtocore.platform." + k, v));
-        AnalyzeData.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
+        BaseNodes.INSTANCE.init();
+        BaseNodes.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
         ResearchTag.LNAG.forEach(LangHandler::addCNEN);
         GTOPartAbility.LANG.forEach(LangHandler::addCNEN);
         ScanningClass.LANG.forEach(LangHandler::addCNEN);

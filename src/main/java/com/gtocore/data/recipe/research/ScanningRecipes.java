@@ -92,5 +92,10 @@ public final class ScanningRecipes {
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:microcosm"), ResearchPoints.of(ResearchTag.ASSEMBLY, 30L, ResearchTag.DATA_STORAGE, 60L, ResearchTag.SUPRACAUSAL, 1L));
 
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:highly_concurrent_intensive_optical_computing_channel"), ResearchPoints.of(ResearchTag.ASSEMBLY, 4L, ResearchTag.OPTICS, 6L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:non_linear_optical_lens"), ResearchPoints.of(ResearchTag.OPTICS, 2L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:laser_diode"), ResearchPoints.of(ResearchTag.OPTICS, 2L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:high_energy_laser_emitter"), ResearchPoints.of(ResearchTag.OPTICS, 3L, ResearchTag.ASSEMBLY, 4L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:optical_wafer"), ResearchPoints.of(ResearchTag.OPTICS, 2L));
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:optical_circuit_board"), ResearchPoints.of(ResearchTag.OPTICS, 1L));
     }
 }

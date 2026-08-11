@@ -4,7 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
 import com.gtocore.data.CraftingComponents;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -19,12 +19,18 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.fluids.FluidStack;
 
+import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 
 import com.almostreliable.merequester.Registration;
 
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
-import static com.gtocore.data.recipe.research.AnalyzeData.*;
+import static com.gtocore.data.techtree.AENodes.BaseMEMachines;
+import static com.gtocore.data.techtree.AENodes.MESmartGatingClustering;
+import static com.gtocore.data.techtree.BaseNodes.*;
+import static com.gtocore.data.techtree.EnergyNodes.*;
+import static com.gtocore.data.techtree.SpaceNodes.SpaceElevator;
+import static com.gtocore.data.techtree.SpaceNodes.SpaceElevator5;
 
 final class AssemblyLineA {
 
@@ -50,7 +56,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_PACKER.asItem())
                         .CWUt(256))
-                .researchNode(AnalyzeData.LaserBatchProduction0)
+                .researchNode(BaseNodes.LaserBatchProduction0)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("gravity_bending_device")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -75,7 +81,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GTMachines.BENDER[GTValues.UHV].asItem())
                         .CWUt(256))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("hand_of_arachne")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -96,7 +102,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GTOMachines.LOOM[GTValues.UHV].asItem())
                         .CWUt(256))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("life_furnace")
@@ -147,7 +153,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(MultiBlockG.ISOSTATIC_PRESS.asItem())
                         .CWUt(256))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
         ASSEMBLY_LINE_RECIPES.recipeBuilder("flotation_cell_regulator_mega")
                 .inputItems(GTMachines.HULL[GTValues.UEV].asItem())
@@ -170,7 +176,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(MultiBlockA.INDUSTRIAL_FLOTATION_CELL.asItem())
                         .CWUt(320)
                         .EUt(7680))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("entropy_flux_engine")
@@ -219,7 +225,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(MultiBlockG.LARGE_GREENHOUSE.asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("dissolution_core")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -242,7 +248,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(MultiBlockD.DISSOLVING_TANK.asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("molecular_oscillation_dehydrator")
                 .inputItems(CustomTags.UEV_CIRCUITS, 16)
@@ -266,7 +272,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(GTOMachines.DEHYDRATOR[GTValues.UHV].asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .duration(801)
                 .save();
 
@@ -345,7 +351,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(Items.FURNACE.asItem().getDefaultInstance())
                         .CWUt(576)
                         .EUt(15360))
-                .researchNode(AnalyzeData.LaserBatchProduction0)
+                .researchNode(BaseNodes.LaserBatchProduction0)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("magnetic_energy_reaction_furnace")
                 .inputItems(CustomTags.UIV_CIRCUITS, 32)
@@ -371,7 +377,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(GTMachines.ARC_FURNACE[GTValues.UHV].asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("super_elevator")
                 .inputItems(CustomTags.UXV_CIRCUITS, 64)
@@ -450,7 +456,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(GTMachines.FLUID_HEATER[GTValues.UEV].asItem())
                         .CWUt(512)
                         .EUt(6457280))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("modular_maintenance_hatch")
@@ -469,7 +475,7 @@ final class AssemblyLineA {
                 .inputFluids(GTMaterials.Cupronickel, 576)
                 .inputFluids(GTMaterials.Brass, 576)
                 .outputItems(GTOMachines.MODULAR_CONFIGURATION_MAINTENANCE_HATCH.asItem())
-                .researchNode(AnalyzeData.SelfMaintenanceSystem)
+                .researchNode(BaseNodes.SelfMaintenanceSystem)
                 .EUt(GTValues.VA[GTValues.ZPM])
                 .duration(800)
                 .scanner(b -> b.researchStack(GTOMachines.VACUUM_INTERFACE.asItem()).duration(1200).EUt(GTValues.VA[GTValues.ZPM]))
@@ -502,7 +508,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(AnalyzeData.LaserBatchProduction0)
+                .researchNode(BaseNodes.LaserBatchProduction0)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("sintering_furnace")
@@ -530,7 +536,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(AnalyzeData.LaserBatchProduction0)
+                .researchNode(BaseNodes.LaserBatchProduction0)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("smart_siftering_hub")
@@ -558,7 +564,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(AnalyzeData.LaserBatchProduction0)
+                .researchNode(BaseNodes.LaserBatchProduction0)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("giant_electrochemical_workstation")
@@ -587,7 +593,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(AnalyzeData.LaserBatchProduction1)
+                .researchNode(BaseNodes.LaserBatchProduction1)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("supercritical_steam_input_hatch")
@@ -752,6 +758,66 @@ final class AssemblyLineA {
                 .duration(400)
                 .researchNode(NuclearPhysics)
                 .save();
+        ASSEMBLY_LINE_RECIPES.builder("engineered_data_module")
+                .inputItems("gtceu:data_bank", 8)
+                .inputItems("gtceu:network_switch", 8)
+                .inputItems(GTItems.SENSOR_UV, 8)
+                .inputItems(GTItems.TOOL_DATA_MODULE, 4)
+                .inputItems(GTItems.CONVEYOR_MODULE_UV, 4)
+                .inputItems(CustomTags.UHV_CIRCUITS, 4)
+                .inputItems(TagPrefix.wireGtHex, GTMaterials.EnrichedNaquadahTriniumEuropiumDuranide, 4)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Pikyonium, 8)
+                .outputItems(MultiBlockD.ENGINEERED_DATA_MODULE.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .inputFluids(GTOMaterials.ArtheriumTin, 2880)
+                .EUt(420000)
+                .researchNode(SpaceElevator)
+                .duration(400)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("laser_computation_testing_platform")
+                .inputItems(CustomTags.UEV_CIRCUITS, 4)
+                .inputItems(GTOItems.LASER_DIODE, 16)
+                .inputItems(GTOItems.MAGNETIC_TRAP, 16)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.PhotonicKristallite, 8)
+                .inputItems(GTItems.GRAVI_STAR)
+                .inputItems(GTOBlocks.VACUUM_CHAMBER_BEAM_BLOCK.asItem(), 8)
+                .inputItems(GTItems.SENSOR_UHV, 8)
+                .inputItems(GTItems.SENSOR_UV, 8)
+                .inputItems(GTItems.SENSOR_ZPM, 8)
+                .inputItems(GTOTagPrefix.MXene, GTMaterials.TungstenCarbide, 4)
+                .outputItems("gtocore:laser_computation_testing_platform")
+                .inputFluids(GTOMaterials.SeaborgiumDopedNanotubes, 144)
+                .inputFluids(GTOMaterials.Sunnarium, 10)
+                .EUt(420000)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(400)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("beam_access_hatch")
+                .inputItems(GTBlocks.HERMETIC_CASING_UV.asItem())
+                .inputItems(GTItems.FLUID_REGULATOR_UHV, 4)
+                .inputItems(GTOItems.MAGNETIC_TRAP, 16)
+                .inputItems(TagPrefix.foil, GTOMaterials.PhotonicKristallite, 8)
+                .inputItems(GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem())
+                .outputItems(GTOMachines.BEAM_ACCESS_HATCH.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .EUt(4200)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(400)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("data_form_testing_plant")
+                .inputItems(AEBlocks.CONTROLLER.asItem(), 4)
+                .inputItems("gtceu:advanced_data_access_hatch", 4)
+                .inputItems(AEBlocks.INTERFACE.asItem(), 8)
+                .inputItems(AEItems.FUZZY_CARD.asItem(), 4)
+                .inputItems(GTItems.COVER_FLUID_DETECTOR_ADVANCED, 8)
+                .inputItems(GTItems.COVER_ITEM_DETECTOR_ADVANCED, 8)
+                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 32)
+                .outputItems("gtocore:data_form_testing_plant")
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .researchNode(DataStorageIteration)
+                .EUt(420000)
+                .duration(400)
+                .save();
 
         ASSEMBLY_LINE_RECIPES.builder("virtual_coin_miner")
                 .inputItems("gtceu:high_performance_computation_array")
@@ -843,6 +909,47 @@ final class AssemblyLineA {
                 .EUt(420)
                 .duration(400)
                 .researchNode(Thermodynamics)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("storage_data_holder")
+                .inputItems("gtocore:research_holder")
+                .inputItems(GTOItems.DATA_CRYSTAL_MK1)
+                .inputItems(GTItems.NAND_MEMORY_CHIP, 8)
+                .inputItems(GTItems.ENGRAVED_LAPOTRON_CHIP, 3)
+                .inputItems(TagPrefix.wireFine, GTMaterials.UraniumRhodiumDinaquadide, 4)
+                .inputItems(GTItems.SENSOR_ZPM)
+                .outputItems("gtocore:storage_data_holder")
+                .inputFluids(GTMaterials.PCBCoolant, 1000)
+                .EUt(420)
+                .researchNode(DataStorageIteration)
+                .duration(400)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("interstellar_engineering_data_holder")
+                .inputItems("gtocore:research_holder")
+                .inputItems(GTOBlocks.SPACE_ELEVATOR_POWER_CORE.asItem())
+                .inputItems(GTItems.GRAVI_STAR, 4)
+                .inputItems(GTItems.ENGRAVED_LAPOTRON_CHIP, 3)
+                .inputItems(TagPrefix.wireFine, GTMaterials.UraniumRhodiumDinaquadide, 4)
+                .inputItems(GTItems.SENSOR_UV, 2)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Pikyonium, 8)
+                .outputItems("gtocore:interstellar_engineering_data_holder")
+                .inputFluids(GTMaterials.PCBCoolant, 1000)
+                .EUt(420)
+                .researchNode(SpaceElevator)
+                .duration(400)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("optical_data_holder")
+                .inputItems("gtocore:research_holder")
+                .inputItems(GTOMachines.ADJUSTABLE_SEMI_REFLECTOR.asItem())
+                .inputItems(AEBlocks.LIGHT_DETECTOR.asItem())
+                .inputItems(GTItems.ENGRAVED_LAPOTRON_CHIP, 3)
+                .inputItems(TagPrefix.wireFine, GTMaterials.UraniumRhodiumDinaquadide, 4)
+                .inputItems(GTMachines.AIR_SCRUBBER[GTValues.EV].asItem())
+                .inputItems(GTItems.SENSOR_UHV, 2)
+                .outputItems("gtocore:optical_data_holder")
+                .inputFluids(GTMaterials.PCBCoolant, 1000)
+                .EUt(420)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(400)
                 .save();
     }
 }

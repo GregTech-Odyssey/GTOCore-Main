@@ -566,6 +566,16 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         story("首席工程师激动地宣告：我们正站在解开生命奥秘的门槛之上" translatedTo "The chief engineer excitedly declares we are standing on the threshold of unraveling life's mysteries")
     }
 
+    // 魔法改造模块
+    @JvmField
+    val MagicModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("magic_module")
+        story("在经历了无穷无尽的概率配方与循环产线的折磨后，GTO集团的膜法学家终于受不了了" translatedTo "After endless torment of probabilistic recipes and cyclic production lines, GTO Group's membrane scientists finally couldn't take it anymore")
+        story("他们把目光投向了隔壁的纳米蜂群，试图用物质的方式来改造魔法" translatedTo "They turned their gaze to the neighboring nano-swarms, attempting to transform magic through material means")
+        story("经过无数次的实验，纳米蜂群终于学会了在分子层面上操控魔法能量的流动" translatedTo "After countless experiments, the nano-swarms finally learned to manipulate the flow of magical energy at the molecular level")
+        story("这标志着魔法与科技的融合进入了一个全新的纪元，也标志着魔法学家们终于不用再为配方的概率而头疼了" translatedTo "This marks a new era of magic and technology fusion, and also means that magicians no longer have to worry about recipe probabilities")
+    }
+
     // 太空电梯
     @JvmField
     val SpaceElevatorTooltips = ComponentListSupplier {

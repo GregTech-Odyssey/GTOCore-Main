@@ -18,9 +18,9 @@ import com.gtocore.data.recipe.misc.ComponentRecipes;
 import com.gtocore.data.recipe.misc.SpaceStationRecipes;
 import com.gtocore.data.recipe.mod.*;
 import com.gtocore.data.recipe.processing.*;
-import com.gtocore.data.recipe.research.AnalyzeData;
 import com.gtocore.data.recipe.research.ResearchRecipes;
 import com.gtocore.data.tag.TagsHandler;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.integration.emi.GTEMIRecipe;
 import com.gtocore.integration.emi.NanitesIntegratedProcessingEmiCategory;
@@ -69,7 +69,7 @@ public final class Data {
     private static Throwable throwable;
 
     public static void init() {
-        AnalyzeData.INSTANCE.init();
+        BaseNodes.INSTANCE.init();
         if (GTCEu.isClientSide()) {
             GTOUtils.asyncExecute(Data::clientInit);
         } else {

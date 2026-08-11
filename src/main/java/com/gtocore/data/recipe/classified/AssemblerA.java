@@ -31,6 +31,8 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+import static com.gtocore.data.techtree.BaseNodes.DataStorageIteration;
+import static com.gtocore.data.techtree.BaseNodes.ExcitationCrystalLaser;
 
 final class AssemblerA {
 
@@ -1041,6 +1043,7 @@ final class AssemblerA {
                 .outputItems(GTOMachines.ADJUSTABLE_SEMI_REFLECTOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
         ASSEMBLER_RECIPES.builder("ray_beam_polarizer")
@@ -1053,6 +1056,7 @@ final class AssemblerA {
                 .outputItems(GTOMachines.RAY_BEAM_POLARIZER.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
         ASSEMBLER_RECIPES.builder("beam_redirector")
@@ -1064,6 +1068,7 @@ final class AssemblerA {
                 .outputItems(GTOMachines.BEAM_REDIRECTOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
         ASSEMBLER_RECIPES.builder("excitation_crystal")
@@ -1076,6 +1081,7 @@ final class AssemblerA {
                 .outputItems(GTOMachines.EXCITATION_CRYSTAL.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
         ASSEMBLER_RECIPES.builder("connecting_rod_hatch")
@@ -1132,6 +1138,17 @@ final class AssemblerA {
                 .outputItems(GTOMachines.DATA_EXPORT_MACHINE.asItem())
                 .EUt(300)
                 .inputFluids(GTMaterials.Lubricant, 1000)
+                .duration(300)
+                .save();
+        ASSEMBLER_RECIPES.builder("data_form_testing_me_interface")
+                .inputItems("gtocore:me_storage_access_hatch")
+                .inputItems(GTOBlocks.T4_ME_STORAGE_CORE.asItem(), 4)
+                .inputItems(GTItems.EMITTER_ZPM)
+                .inputItems(TagPrefix.wireGtSingle, GTMaterials.Europium, 4)
+                .outputItems("gtocore:data_form_testing_me_interface")
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .EUt(420)
+                .researchNode(DataStorageIteration)
                 .duration(300)
                 .save();
     }

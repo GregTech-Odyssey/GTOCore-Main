@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.gtocore.data.recipe.research.AnalyzeData.TierItems;
+import static com.gtocore.data.techtree.BaseNodes.TierItems;
 
 @DataGeneratorScanned
 public final class TechNode {
