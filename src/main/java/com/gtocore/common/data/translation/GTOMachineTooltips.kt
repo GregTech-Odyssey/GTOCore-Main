@@ -2259,26 +2259,26 @@ object GTOMachineTooltips {
         highlight("提供一个保护机器正常工作，免受太空辐射等复杂环境影响的空间" translatedTo "Provides a space that protects machines from complex environments such as space radiation")
         highlight("空间站内部自带供玩家呼吸的空气" translatedTo "The interior of the space station comes with air for players to breathe")
         highlight("且自带无线电网中继器的功能，提供的电压根据安装的整体框架的等级而定" translatedTo "And comes with the function of a wireless radio network repeater, providing voltage based on the level of the installed mainframe")
-        highlight("可以向外侧安装拓展舱体以增加内部空间/更多功能" translatedTo "Can install expansion modules on the outside to increase internal space/more functions")
+        highlight("可以向外侧安装拓展舱段以增加内部空间/更多功能" translatedTo "Can install expansion modules on the outside to increase internal space/more functions")
 
         section("建造要求" translatedTo "Construction Requirements")
         command("必须在太空中建造" translatedTo "Must be constructed in space")
         command("必须安装§b核心舱§r，且只能安装一个" translatedTo "Must install §bCore Module§r, and only one can be installed")
-        command("必须在固定位置安装§b拓展舱体§r" translatedTo "Must install §bExpansion Modules§r in fixed positions")
+        command("必须在固定位置安装§b拓展舱§r" translatedTo "Must install §bExpansion Modules§r in fixed positions")
         important("安装的具体位置可在机器GUI内点击左下高亮按钮以在世界中高亮显示" translatedTo "The specific installation position can be highlighted in the world by clicking the highlight button at the bottom left in the GUI")
 
         section(ComponentSlang.RunningRequirements)
         command("运行需要消耗7680EU/t的基础能量" translatedTo "Operation requires a base energy consumption of 7680EU/t")
-        command("会根据安装的拓展舱体数量增加额外能耗以及资源消耗" translatedTo "Will increase additional energy consumption and resource consumption based on the number of expansion modules installed")
+        command("会根据安装的拓展舱数量增加额外能耗以及资源消耗" translatedTo "Will increase additional energy consumption and resource consumption based on the number of expansion modules installed")
         info("每秒固定消耗：" translatedTo "Fixed consumption every second:")
-        important("15mB * (1 + 拓展舱体数量) 蒸馏水" translatedTo "15mB * (1 + number of expansion modules) Distilled Water")
-        important("10mB * (1 + 拓展舱体数量) 火箭燃料" translatedTo "15mB * (1 + number of expansion modules) Rocket Fuel")
-        important("100mB * (1 + 拓展舱体数量) 空气" translatedTo "100mB * (1 + number of expansion modules) Air")
-        info("能耗增加与拓展舱体的具体种类与数量有关" translatedTo "Energy consumption increase is related to the specific types and quantities of expansion modules")
+        important("15mB * (1 + 拓展舱数量) 蒸馏水" translatedTo "15mB * (1 + number of expansion modules) Distilled Water")
+        important("10mB * (1 + 拓展舱数量) 火箭燃料" translatedTo "15mB * (1 + number of expansion modules) Rocket Fuel")
+        important("100mB * (1 + 拓展舱数量) 空气" translatedTo "100mB * (1 + number of expansion modules) Air")
+        info("能耗增加与拓展舱的具体种类与数量有关" translatedTo "Energy consumption increase is related to the specific types and quantities of expansion modules")
 
-        section("拓展舱体" translatedTo "Expansion Modules")
+        section("拓展舱段" translatedTo "Expansion Modules")
         info("§b核心舱§r：大型空间站的核心部分，必须安装且只能安装一个" translatedTo "§bCore Module§r: The core part of the large space station, must be installed and only one can be installed")
-        info("§b衔接舱§r：用于连接核心舱/模块仓与其他拓展舱体" translatedTo "§bConnection Module§r: Used to connect the core module with other expansion modules")
+        info("§b衔接舱§r：用于连接核心舱/模块仓与其他拓展舱" translatedTo "§bConnection Module§r: Used to connect the core module with other expansion modules")
         info("§b模块舱§r：提供额外的空间与功能" translatedTo "§bFunctional Module§r: Provides additional space and functions")
     }
 
@@ -2310,20 +2310,20 @@ object GTOMachineTooltips {
     @JvmField
     val NoExtensionAvailableTooltips = ComponentListSupplier {
         setTranslationPrefix("no_extension_available")
-        error("该种类空间站舱段无法向外侧安装拓展舱体" translatedTo "This type of space station module cannot install expansion modules on the outside")
+        error("该种类空间站舱段无法向外侧安装拓展舱" translatedTo "This type of space station module cannot install expansion modules on the outside")
     }
 
     @JvmField
     val RecipeExtensionTooltips = ComponentListSupplier {
         setTranslationPrefix("recipe_extension")
-        section("配方拓展舱段" translatedTo "Recipe Extension Module")
+        section("配方拓展舱" translatedTo "Recipe Extension Module")
         info("§6被动耗能§r由§b核心舱§r提供，而§6配方耗能§r需由安装在§b此舱§r的§d能源仓§r提供" translatedTo "§6Passive energy consumption§r is provided by the §bCore Module§r, while §6recipe energy consumption§r needs to be provided by the §dEnergy Input Hatch§r installed in the §bthis module§r")
         error("无核心舱连接时，无法运行配方" translatedTo "Cannot run recipes without a linked core module")
         highlight(
             ("当前空间站内如果安装有" translatedTo "If the current space station has installed") +
                 ("空间站高能转换调配舱" translatedTo "Space Station High-Energy Conversion and Dispensing Module").scrollExotic(),
         )
-        highlight("则解锁§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限" translatedTo "The use of advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r will be unlocked")
+        highlight("则解锁§d激光仓§r/§d超频仓§r/§d线程仓§r等高级仓室的使用权限" translatedTo "The use of advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r will be unlocked")
     }
 
     @JvmField
@@ -2375,7 +2375,7 @@ object GTOMachineTooltips {
     val SpaceStationEnergyConversionModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("space_station_energy_conversion_module")
         section(ComponentSlang.MainFunction)
-        highlight("安装后，空间站内的其他拓展舱体将能够使用§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体" translatedTo "When installed, other expansion modules in the space station will be able to use advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r")
+        highlight("安装后，空间站内的其他拓展舱将能够使用§d激光仓§r/§d超频仓§r/§d线程仓§r等高级仓室" translatedTo "When installed, other expansion modules in the space station will be able to use advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r")
     }
 
     @JvmField
