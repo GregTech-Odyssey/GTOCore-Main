@@ -1,6 +1,7 @@
 package com.gtocore.data.techtree
 
 import com.gtocore.api.data.tag.GTOTagPrefix
+import com.gtocore.api.data.tag.GTOTagPrefix.NANITES
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.api.research.ResearchRequirements
 import com.gtocore.api.research.ResearchTag.ASSEMBLY
@@ -40,6 +41,7 @@ import com.gregtechceu.gtceu.api.GTValues.UEV
 import com.gregtechceu.gtceu.api.GTValues.UHV
 import com.gregtechceu.gtceu.api.GTValues.UV
 import com.gregtechceu.gtceu.api.GTValues.ZPM
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix
 import com.gregtechceu.gtceu.common.data.GTBlocks
 import com.gregtechceu.gtceu.common.data.GTItems
@@ -51,6 +53,7 @@ import com.gto.fastcollection.O2OOpenCacheHashMap
 import com.gtolib.api.lang.CNEN
 import com.gtolib.utils.RegistriesUtils
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture
+import earth.terrarium.adastra.common.registry.ModItems
 
 object BaseNodes : AutoInitialize<BaseNodes>() {
 
@@ -62,19 +65,27 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
 
     @JvmField
     val MainTree: TechTreeManager =
-        TechTreeManager("main_tree", "研究树", "Research Tree", ItemStackTexture(GTOItems.BLUE_HALIDE_LAMP.asStack()))
+        TechTreeManager("main_tree", "主研究", "Main Research", ItemStackTexture(GTOItems.BLUE_HALIDE_LAMP.asStack()))
 
     @JvmField
     val AETree: TechTreeManager =
-        TechTreeManager("ae_tree", "AE研究树", "AE Research Tree", ItemStackTexture(AEParts.TERMINAL.asItem()))
+        TechTreeManager("ae_tree", "AE研究", "AE Research", ItemStackTexture(AEParts.TERMINAL.asItem()))
 
     @JvmField
     val EnergyTree: TechTreeManager =
-        TechTreeManager("energy_tree", "能源研究树", "Energy Research Tree", ItemStackTexture(GTOItems.EXTREMELY_MAX_BATTERY.asStack()))
+        TechTreeManager("energy_tree", "能源生产与传输", "Energy Production and Transmission", ItemStackTexture(GTOItems.EXTREMELY_MAX_BATTERY.asStack()))
 
     @JvmField
     val ComponentTree: TechTreeManager =
-        TechTreeManager("component_tree", "组件研究树", "Component Research Tree", ItemStackTexture(GTItems.EMITTER_LuV.asStack()))
+        TechTreeManager("component_tree", "部件装配", "Component Assembly", ItemStackTexture(GTItems.EMITTER_LuV.asStack()))
+
+    @JvmField
+    val NanitesTree: TechTreeManager =
+        TechTreeManager("nanites_tree", "纳米蜂群技术应用", "Nanites Application", ItemStackTexture(ChemicalHelper.get(NANITES, GTMaterials.Copper)))
+
+    @JvmField
+    val SpaceTree: TechTreeManager =
+        TechTreeManager("space_tree", "太空发掘与利用", "Space Exploration and Utilization", ItemStackTexture(ModItems.TIER_4_ROCKET.get()))
 
     @JvmField
     val TierItems = ImmutableList.of(
@@ -99,6 +110,8 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         EnergyTree.freeze()
         AETree.freeze()
         ComponentTree.freeze()
+        SpaceTree.freeze()
+        NanitesTree.freeze()
     }
 
     @JvmField
@@ -410,21 +423,6 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
                 .setCWUNeeded(64 * 20 * 1200L)
                 .addMaterialNeeded(MECHANICS, 32)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:assembly_line"), 0.9F)
-                .build(),
-        )
-        .tier(2)
-        .build()
-
-    @JvmField
-    val LargeNaquadahReactor = MainTree.builder("large_naquadah_reactor", "大型硅岩反应堆", "Large Naquadah Reactor")
-        .description("硅岩这种材料怎么就这么神奇呢？又硬又坚韧，还能用来做反应堆的核心燃料", "How is naquadah such a magical material? It's hard and tough, and can even be used as the core fuel for reactors")
-        .icon(RegistriesUtils.getItem("gtocore:large_naquadah_reactor"))
-        .prerequisites(EnergyIOs[ZPM])
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(64 * 20 * 1500L)
-                .addMaterialNeeded(ENERGY, 128)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:zpm_naquadah_reactor"), 0.8F)
                 .build(),
         )
         .tier(2)
@@ -773,7 +771,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
     val AtomicEnergyExciting = MainTree.builder("atomic_energy_exciting", "原子能激发技术", "Atomic Energy Excitation Technology")
         .description("通过激发原子核的能量，充分压榨原子能的潜力，生产出更高能量密度的燃料", "By exciting the energy of atomic nuclei, fully exploiting the potential of atomic energy, producing fuel with higher energy density")
         .icon(RegistriesUtils.getItem("gtocore:atomic_energy_excitation_plant"))
-        .prerequisites(FuelRefineryComplex, SPSTech, LargeNaquadahReactor)
+        .prerequisites(FuelRefineryComplex, SPSTech)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 7200L)

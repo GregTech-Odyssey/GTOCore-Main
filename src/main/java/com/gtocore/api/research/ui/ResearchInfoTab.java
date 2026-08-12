@@ -48,8 +48,14 @@ public class ResearchInfoTab implements IFancyUIProvider {
             treeWidget.setManager(selectedManager);
             sideTab.setManager(selectedManager);
         });
+        sideTab.setOnNodeNavigate(targetNode -> {
+            treeSelector.setManager(targetNode.getManager());
+            treeWidget.focusNode(targetNode);
+            sideTab.showNode(targetNode);
+        });
         treeWidget.setOnNodeClicked(sideTab::toggleNode);
         if (initialSelectedNode != null) {
+            treeSelector.setManager(initialSelectedNode.getManager());
             treeWidget.focusNode(initialSelectedNode);
             sideTab.showNode(initialSelectedNode);
         }

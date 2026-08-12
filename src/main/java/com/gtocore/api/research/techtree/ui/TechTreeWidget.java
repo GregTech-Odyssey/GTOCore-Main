@@ -251,6 +251,9 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     }
 
     public void setSelectedNode(@Nullable TechNode node) {
+        if (node != null && !nodeIndices.containsKey(node)) {
+            setManager(node.getManager());
+        }
         selectedNode = node != null && nodeIndices.containsKey(node) ? node : null;
     }
 

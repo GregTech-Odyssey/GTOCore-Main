@@ -25,7 +25,7 @@ public final class TechTreeSelectorWidget extends Widget {
 
     public static final int HEIGHT = 22;
 
-    private static final int SWITCH_MANAGER_ACTION = 1;
+    private static final int SWITCH_MANAGER_ACTION = 10;
     private static final int PADDING = 2;
     private static final int SLOT_SIZE = 18;
 
@@ -50,12 +50,16 @@ public final class TechTreeSelectorWidget extends Widget {
             tooltip.add(TechTreeManager.getTreeName(registeredManager));
             managerTooltips.add(tooltip);
         }
-        setBackground(GuiTextures.DISPLAY);
+        setBackground(GuiTextures.BACKGROUND_INVERSE);
     }
 
-    private void setManager(TechTreeManager newManager) {
+    public void setManager(TechTreeManager newManager) {
         if (manager == newManager) {
             return;
+        }
+        if (!isClientSideWidget && isRemote()) {
+            writeClientAction(SWITCH_MANAGER_ACTION,
+                    buffer -> buffer.writeVarInt(TechTreeManager.REGISTRY.getId(newManager)));
         }
         manager = newManager;
         onManagerChanged.accept(newManager);
@@ -65,8 +69,7 @@ public final class TechTreeSelectorWidget extends Widget {
     public void handleClientAction(int id, FriendlyByteBuf buffer) {
         if (id == SWITCH_MANAGER_ACTION) {
             int managerId = buffer.readVarInt();
-            TechTreeManager requestedManager = managerId >= 0 && managerId < TechTreeManager.REGISTRY.values().size() ?
-                    TechTreeManager.REGISTRY.get(managerId) : null;
+            TechTreeManager requestedManager = TechTreeManager.REGISTRY.get(managerId);
             if (requestedManager != null && managers.contains(requestedManager)) {
                 setManager(requestedManager);
             }
@@ -120,10 +123,6 @@ public final class TechTreeSelectorWidget extends Widget {
             TechTreeManager selectedManager = managers.get(managerIndex);
             if (selectedManager != manager) {
                 setManager(selectedManager);
-                if (!isClientSideWidget) {
-                    writeClientAction(SWITCH_MANAGER_ACTION,
-                            buffer -> buffer.writeVarInt(TechTreeManager.REGISTRY.getId(selectedManager)));
-                }
                 playButtonClickSound();
             }
         }

@@ -6,12 +6,13 @@ import com.gtocore.api.research.ResearchTag.INTERSTELLAR_ENGINEERING
 import com.gtocore.api.research.ResearchTag.MECHANICS
 import com.gtocore.common.data.GTOMaterials
 import com.gtocore.data.techtree.BaseNodes.MainTree
+import com.gtocore.data.techtree.BaseNodes.SpaceTree
 
 import com.gtolib.utils.RegistriesUtils
 
 object SpaceNodes : AutoInitialize<SpaceNodes>() {
     @JvmField
-    val SuperRocketTech = MainTree.builder("super_rocket_tech", "超级火箭技术", "Super Rocket Technology")
+    val SuperRocketTech = SpaceTree.builder("super_rocket_tech", "超级火箭技术", "Super Rocket Technology")
         .description("掌握超级火箭的设计与制造技术，实现更高效的太空运输与探索", "Master the design and manufacturing technology of super rockets, achieving more efficient space transportation and exploration")
         .icon(RegistriesUtils.getItem("ad_astra_rocketed:tier_7_rocket"))
         .requirements(
@@ -25,7 +26,7 @@ object SpaceNodes : AutoInitialize<SpaceNodes>() {
         .build()
 
     @JvmField
-    val SpaceElevator = MainTree.builder("space_elevator", "太空电梯", "Space Elevator")
+    val SpaceElevator = SpaceTree.builder("space_elevator", "太空电梯", "Space Elevator")
         .description("建造一条连接地球与太空的电梯，把手可摘星辰变为现实", "Build an elevator connecting the Earth and space, turning the dream of reaching the stars into reality")
         .icon(RegistriesUtils.getItem("gtocore:space_elevator"))
         .prerequisites(SuperRocketTech)
@@ -40,7 +41,7 @@ object SpaceNodes : AutoInitialize<SpaceNodes>() {
         .build()
 
     @JvmField
-    val SpaceElevator2 = MainTree.builder("space_elevator2", "太空电梯动力改良", "Space Elevator Power Improvement")
+    val SpaceElevator2 = SpaceTree.builder("space_elevator2", "太空电梯动力改良", "Space Elevator Power Improvement")
         .description("改良太空电梯的动力系统，实现更高效的能量传输与运输能力", "Improve the power system of the space elevator, achieving more efficient energy transmission and transportation capabilities")
         .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_2"))
         .prerequisites(SpaceElevator)
@@ -55,7 +56,7 @@ object SpaceNodes : AutoInitialize<SpaceNodes>() {
         .build()
 
     @JvmField
-    val SpaceElevator3 = MainTree.builder("space_elevator3", "太空电梯动力改良II", "Space Elevator Power Improvement II")
+    val SpaceElevator3 = SpaceTree.builder("space_elevator3", "太空电梯动力改良II", "Space Elevator Power Improvement II")
         .description("升级太空电梯的动力系统，实现更高效的能量传输与运输能力", "Upgrade the power system of the space elevator, achieving more efficient energy transmission and transportation capabilities")
         .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"))
         .prerequisites(SpaceElevator2)
@@ -70,7 +71,7 @@ object SpaceNodes : AutoInitialize<SpaceNodes>() {
         .build()
 
     @JvmField
-    val SpaceElevator4 = MainTree.builder("space_elevator4", "太空电梯动力改良III", "Space Elevator Power Improvement III")
+    val SpaceElevator4 = SpaceTree.builder("space_elevator4", "太空电梯动力改良III", "Space Elevator Power Improvement III")
         .description("我要是能乘坐在上面观光就好了", "I wish I could take a sightseeing ride on it")
         .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"))
         .prerequisites(SpaceElevator3)
@@ -85,7 +86,7 @@ object SpaceNodes : AutoInitialize<SpaceNodes>() {
         .build()
 
     @JvmField
-    val SpaceElevator5 = MainTree.builder("space_elevator5", "太空电梯动力改良IV", "Space Elevator Power Improvement IV")
+    val SpaceElevator5 = SpaceTree.builder("space_elevator5", "太空电梯动力改良IV", "Space Elevator Power Improvement IV")
         .description("全GTO寰宇重工最快的电梯！", "The fastest elevator in the entire GTO Universal Heavy Industries!")
         .icon(RegistriesUtils.getItem("gtocore:space_elevator_power_module_5"))
         .prerequisites(SpaceElevator4)
@@ -100,7 +101,7 @@ object SpaceNodes : AutoInitialize<SpaceNodes>() {
         .build()
 
     @JvmField
-    val SpaceProbeSurfaceReception = MainTree.builder("space_probe_surface_reception", "空间探测器表面接收技术", "Space Probe Surface Reception Technology")
+    val SpaceProbeSurfaceReception = SpaceTree.builder("space_probe_surface_reception", "空间探测器表面接收技术", "Space Probe Surface Reception Technology")
         .description("将空间中杂乱的辐射能量进行收集与转换，转化为可用的资源", "Collect and convert the chaotic radiation energy in space into usable resources")
         .icon(RegistriesUtils.getItem("gtocore:space_probe_surface_reception"))
         .prerequisites(SpaceElevator5)

@@ -72,6 +72,11 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
             sideTab.setManager(selectedManager);
         });
         treeSelector.setClientSideWidget();
+        sideTab.setOnNodeNavigate(targetNode -> {
+            treeSelector.setManager(targetNode.getManager());
+            treeWidget.focusNode(targetNode);
+            sideTab.showNode(targetNode);
+        });
         treeWidget.setOnNodeClicked(clickedNode -> {
             sideTab.toggleNode(clickedNode);
             treeWidget.setSelectedNode(sideTab.getSelectedNode());

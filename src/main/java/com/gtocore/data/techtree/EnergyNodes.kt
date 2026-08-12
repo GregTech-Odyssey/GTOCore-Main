@@ -14,7 +14,9 @@ import com.gtocore.data.techtree.BaseNodes.BiowareTech
 import com.gtocore.data.techtree.BaseNodes.DysonSphereSeriesCasing
 import com.gtocore.data.techtree.BaseNodes.EnergyTree
 import com.gtocore.data.techtree.BaseNodes.MainTree
+import com.gtocore.data.techtree.ComponentNodes.EnergyIOs
 
+import com.gregtechceu.gtceu.api.GTValues.ZPM
 import com.gregtechceu.gtceu.common.data.GTItems
 import com.gtolib.utils.RegistriesUtils
 
@@ -64,7 +66,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(ENERGY, 256)
+                .addMaterialNeeded(ENERGY, 512)
                 .setEurekaItem(GTItems.ULTIMATE_BATTERY, 0.8F)
                 .build(),
         )
@@ -79,7 +81,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(ENERGY, 512)
+                .addMaterialNeeded(ENERGY, 1024)
                 .setEurekaItem(GTOItems.REALLY_MAX_BATTERY, 0.8F)
                 .build(),
         )
@@ -94,7 +96,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(4096 * 20 * 8000L)
-                .addMaterialNeeded(ENERGY, 1024)
+                .addMaterialNeeded(ENERGY, 4096)
                 .setEurekaItem(GTOItems.TRANSCENDENT_MAX_BATTERY, 0.8F)
                 .build(),
         )
@@ -109,7 +111,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(8192 * 20 * 7200L)
-                .addMaterialNeeded(ENERGY, 1024)
+                .addMaterialNeeded(ENERGY, 12288)
                 .setEurekaItem(GTOItems.EXTREMELY_MAX_BATTERY, 0.8F)
                 .build(),
         )
@@ -124,7 +126,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(8192 * 20 * 28800L)
-                .addMaterialNeeded(ENERGY, 1024)
+                .addMaterialNeeded(ENERGY, 16384)
                 .setEurekaItem(GTOItems.INSANELY_MAX_BATTERY, 0.8F)
                 .build(),
         )
@@ -132,10 +134,24 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
+    val LargeNaquadahReactor = EnergyTree.builder("large_naquadah_reactor", "大型硅岩反应堆", "Large Naquadah Reactor")
+        .description("硅岩这种材料怎么就这么神奇呢？又硬又坚韧，还能用来做反应堆的核心燃料", "How is naquadah such a magical material? It's hard and tough, and can even be used as the core fuel for reactors")
+        .icon(RegistriesUtils.getItem("gtocore:large_naquadah_reactor"))
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(64 * 20 * 1500L)
+                .addMaterialNeeded(ENERGY, 128)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:zpm_naquadah_reactor"), 0.8F)
+                .build(),
+        )
+        .tier(2)
+        .build()
+
+    @JvmField
     val HyperReactor = EnergyTree.builder("hyper_reactor", "超能反应堆", "Hyper Reactor")
         .description("用于对超高能硅岩燃料进行反应的超高能反应堆，能够提供极高的能量输出与出色的运行性能", "A hyper reactor used for reacting with hyper-silicon fuel, capable of providing extremely high energy output and excellent operating performance")
         .icon(RegistriesUtils.getItem("gtocore:hyper_reactor"))
-        .prerequisites(AtomicEnergyExciting)
+        .prerequisites(AtomicEnergyExciting, LargeNaquadahReactor)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)

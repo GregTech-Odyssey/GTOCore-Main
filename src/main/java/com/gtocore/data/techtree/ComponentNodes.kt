@@ -169,7 +169,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         val req = ResearchRequirements.Builder().setCWUNeeded(320L * (tier shl (tier)))
             .setEurekaItem(GTMachines.ENERGY_INPUT_HATCH[tier - 1], eurekaProgresses[tier])
         if (tier >= UV) {
-            req.addMaterialNeeded(ENERGY, 256L * (1 shl (tier - UV)))
+            req.addMaterialNeeded(ENERGY, 32L * (tier shl (tier - UV)))
         }
         val node = EnergyTree.builder(
             "energy_io$tier",

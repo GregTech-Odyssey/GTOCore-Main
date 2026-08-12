@@ -5,6 +5,7 @@ import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.integration.emi.research.EmiResearchHelper;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
@@ -48,6 +49,7 @@ import org.joml.Vector4f;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @DataGeneratorScanned
@@ -67,8 +69,13 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private static final String TIER_DESC = "gtocore.research.side_tab.tier_desc";
     @RegisterLanguage(cn = "解锁需求：", en = "Unlock Requirements:")
     private static final String REQUIREMENTS_LABEL = "gtocore.research.side_tab.requirements";
+    @RegisterLanguage(cn = "前置节点：", en = "Prerequisites:")
+    private static final String PREREQUISITES_LABEL = "gtocore.research.side_tab.prerequisites";
+    @RegisterLanguage(cn = "点击跳转", en = "Click to navigate")
+    private static final String NAVIGATE_LABEL = "gtocore.research.side_tab.navigate";
 
     private static final int UPDATE_SYNC_STATE = 100;
+    private static final int ACTION_SET_NODE = 947;
 
     private static final int OUTER_PADDING = 4;
     private static final int CONTENT_PADDING = 5;
@@ -78,6 +85,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private static final int HEADER_SECTION_GAP = 8;
     private static final int ROW_HEIGHT = 12;
     private static final int ROW_GAP = 4;
+    private static final int MAX_VISIBLE_REQUIREMENT_ROWS = 3;
     private static final int INNER_CONTENT_SECTION_GAP = 8;
     private static final int INNER_CONTENT_MIN_HEIGHT = 28;
     private static final int VALUE_WIDTH = 42;
@@ -86,6 +94,9 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private static final int RECIPE_SLOT_SIZE = 18;
     private static final int RECIPE_SLOT_GAP = 2;
     private static final int RECIPE_LABEL_GAP = 2;
+    private static final int PREREQUISITE_SLOT_SIZE = 18;
+    private static final int PREREQUISITE_SLOT_GAP = 2;
+    private static final int PREREQUISITE_LABEL_GAP = 4;
 
     private static final int NODE_BOX_FILL = 0xFF2F2F34;
     private static final int NODE_BOX_BORDER = 0xFF8C8C93;
@@ -100,6 +111,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
     private TechTreeManager manager;
     private final Function<Player, TeamResearchContext> contextFactory;
+    private Consumer<TechNode> onNodeNavigate = this::navigateToNode;
     private SyncState currentState = SyncState.hidden();
     private SyncState lastSentState = SyncState.hidden();
     private @Nullable TechNode selectedNode;
@@ -107,6 +119,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private @Nullable TechNode cachedRowsNode;
     private List<RowState> cachedRows = Collections.emptyList();
 
+    private final ContentWidget contentWidget;
     private final WidgetGroup innerContent;
 
     public TechTreeSideTab(int x, int y, int width, int height,
@@ -122,18 +135,29 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         super(x, y, width, height);
         this.manager = manager;
         this.contextFactory = contextFactory;
+        this.contentWidget = new ContentWidget(OUTER_PADDING, OUTER_PADDING,
+                width - OUTER_PADDING * 2, height - OUTER_PADDING * 2);
         this.innerContent = new WidgetGroup(0, 0, 0, 0);
         setYScrollBarWidth(2);
         setYBarStyle(GuiTextures.BACKGROUND_INVERSE, GuiTextures.BUTTON);
         setInnerContent(contentWidget);
         setBackground(GuiTextures.BACKGROUND_INVERSE, GuiTextures.DISPLAY);
-        addWidget(new ContentWidget(OUTER_PADDING, OUTER_PADDING, width - OUTER_PADDING * 2, height - OUTER_PADDING * 2));
+        addWidget(this.contentWidget);
         addWidget(innerContent);
         setVisible(false).setActive(false);
     }
 
     public void toggleNode(TechNode node) {
         showNode(selectedNode == node ? null : node);
+    }
+
+    public void setOnNodeNavigate(Consumer<TechNode> onNodeNavigate) {
+        this.onNodeNavigate = Objects.requireNonNull(onNodeNavigate, "onNodeNavigate");
+    }
+
+    private void navigateToNode(TechNode node) {
+        setManager(node.getManager());
+        showNode(node);
     }
 
     public void setManager(TechTreeManager manager) {
@@ -147,6 +171,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         cachedRowsState = null;
         cachedRowsNode = null;
         cachedRows = Collections.emptyList();
+        contentWidget.updateNodeLayout(null);
+        setScrollYOffset(0);
         setVisible(false).setActive(false);
     }
 
@@ -190,14 +216,27 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
     public void showNode(@Nullable TechNode node) {
         selectedNode = node;
+        contentWidget.updateNodeLayout(node);
+        setScrollYOffset(0);
         setVisible(node != null).setActive(node != null);
         if (isClientSideWidget) {
             if (getGuiPlayer() != null) {
                 applyState(buildState());
             }
             return;
+        } else if (isRemote()) {
+            writeClientAction(ACTION_SET_NODE, buffer -> GTOCodecs.TECH_NODE_STREAM_CODEC.encode(buffer, node));
         }
         syncState();
+    }
+
+    @Override
+    public void handleClientAction(int id, FriendlyByteBuf buffer) {
+        if (id == ACTION_SET_NODE) {
+            showNode(GTOCodecs.TECH_NODE_STREAM_CODEC.decode(buffer));
+        } else {
+            super.handleClientAction(id, buffer);
+        }
     }
 
     public @Nullable TechNode getSelectedNode() {
@@ -304,6 +343,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private void applyState(SyncState state) {
         currentState = state;
         selectedNode = state.nodeName() == null ? null : manager.getNode(state.nodeName());
+        contentWidget.updateNodeLayout(selectedNode);
         boolean visible = state.visible() && selectedNode != null;
         setVisible(visible).setActive(visible);
     }
@@ -455,6 +495,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         private int scrollOffset = 0;
         private int descTextOffset = 0;
         private int recipeScrollOffset = 0;
+        private int prerequisiteScrollOffset = 0;
         private int descTextX;
         private int descTextY;
         private int descTextWidth;
@@ -467,12 +508,29 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         private int recipeSlotsX;
         private int recipeSlotsY;
         private int visibleRecipeSlots;
+        private int prerequisiteAreaX;
+        private int prerequisiteAreaY;
+        private int prerequisiteAreaWidth;
+        private int prerequisiteSlotsX;
+        private int visiblePrerequisiteSlots;
         private @Nullable TechNode cachedDescNode;
         private @Nullable TechNode cachedRecipeNode;
         private List<EmiStack> cachedRecipeStacks = Collections.emptyList();
+        private final int baseHeight;
 
         private ContentWidget(int x, int y, int width, int height) {
             super(x, y, width, height);
+            baseHeight = height;
+        }
+
+        private void updateNodeLayout(@Nullable TechNode node) {
+            int prerequisiteHeight = node != null && !node.prerequisites.isEmpty() ?
+                    PREREQUISITE_SLOT_SIZE + HEADER_SECTION_GAP : 0;
+            int contentHeight = baseHeight + prerequisiteHeight;
+            if (getSizeHeight() != contentHeight) {
+                setSizeHeight(contentHeight);
+                TechTreeSideTab.this.computeMax();
+            }
         }
 
         @Override
@@ -480,6 +538,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             scrollOffset = 0;
             descTextOffset = 0;
             recipeScrollOffset = 0;
+            prerequisiteScrollOffset = 0;
             return super.setVisible(isVisible);
         }
 
@@ -504,7 +563,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         @SuppressWarnings("MathClampMigration")
         @Override
         @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
             var node = selectedNode;
             if (node == null || !currentState.visible()) {
@@ -522,15 +581,34 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             int contentBottom = contentY + contentHeight;
             int reqLabelTextY = contentY + HEADER_HEIGHT;
             Component requirementsLabel = Component.translatable(REQUIREMENTS_LABEL);
-            int rowsStartY = reqLabelTextY + font.lineHeight + HEADER_SECTION_GAP;
 
             drawHeader(graphics, font, node, contentX, contentY, contentWidth, mouseX, mouseY);
+            if (!node.prerequisites.isEmpty()) {
+                Component prerequisitesLabel = Component.translatable(PREREQUISITES_LABEL);
+                int labelY = reqLabelTextY + Math.max(0, (PREREQUISITE_SLOT_SIZE - font.lineHeight) / 2);
+                graphics.drawString(font, prerequisitesLabel, contentX, labelY, HEADER_DESC_COLOR, false);
+                int areaX = contentX + font.width(prerequisitesLabel) + PREREQUISITE_LABEL_GAP;
+                drawPrerequisiteNodes(graphics, font, node.prerequisites, areaX, reqLabelTextY,
+                        Math.max(PREREQUISITE_SLOT_SIZE, contentX + contentWidth - areaX), mouseX, mouseY);
+                reqLabelTextY += PREREQUISITE_SLOT_SIZE + HEADER_SECTION_GAP;
+            } else {
+                prerequisiteAreaX = 0;
+                prerequisiteAreaY = 0;
+                prerequisiteAreaWidth = 0;
+                prerequisiteSlotsX = 0;
+                visiblePrerequisiteSlots = 0;
+                prerequisiteScrollOffset = 0;
+            }
             graphics.drawString(font, requirementsLabel, contentX, reqLabelTextY, HEADER_DESC_COLOR, false);
+            int rowsStartY = reqLabelTextY + font.lineHeight + HEADER_SECTION_GAP;
 
             List<RowState> rows = buildRows();
             List<EmiStack> recipeStacks = getUnlockableRecipeStacks();
             int rowsHeight = rows.isEmpty() ? 0 : rows.size() * ROW_HEIGHT + (rows.size() - 1) * ROW_GAP;
-            int maxRowsBottom = Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT);
+            int maximumRowsHeight = MAX_VISIBLE_REQUIREMENT_ROWS * ROW_HEIGHT +
+                    (MAX_VISIBLE_REQUIREMENT_ROWS - 1) * ROW_GAP;
+            int maxRowsBottom = Math.min(rowsStartY + maximumRowsHeight,
+                    Math.max(rowsStartY, contentBottom - INNER_CONTENT_MIN_HEIGHT));
             int rowsBottom = Math.min(rowsStartY + rowsHeight, maxRowsBottom);
             drawRows(graphics, font, rows, contentX, rowsStartY, contentWidth, rowsBottom, mouseX, mouseY);
 
@@ -588,6 +666,13 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             var headerTooltip = createTierTooltip(node);
             if (Widget.isMouseOver(textX, contentY + 1, textWidth, font.lineHeight, i, j) && headerTooltip != null) {
                 return List.of(headerTooltip);
+            }
+
+            TechNode prerequisite = getHoveredPrerequisite(i, j);
+            if (prerequisite != null) {
+                return List.of(TechTreeManager.getNodeName(prerequisite),
+                        TechTreeManager.getTreeName(prerequisite.getManager()).withStyle(ChatFormatting.GRAY),
+                        Component.translatable(NAVIGATE_LABEL).withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN, ChatFormatting.UNDERLINE));
             }
 
             EmiStack recipeStack = getXEIIngredientOverMouse(i, j);
@@ -719,6 +804,64 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         }
 
         @OnlyIn(Dist.CLIENT)
+        private void drawPrerequisiteNodes(GuiGraphics graphics, Font font, List<TechNode> prerequisites,
+                                           int x, int y, int width, int mouseX, int mouseY) {
+            prerequisiteAreaX = x;
+            prerequisiteAreaY = y;
+            prerequisiteAreaWidth = width;
+            boolean overflowing = prerequisites.size() * PREREQUISITE_SLOT_SIZE +
+                    Math.max(0, prerequisites.size() - 1) * PREREQUISITE_SLOT_GAP > width;
+            int arrowWidth = overflowing ? font.width(">") + 3 : 0;
+            int slotsWidth = Math.max(PREREQUISITE_SLOT_SIZE, width - arrowWidth * 2);
+            int maxVisible = Math.max(1, (slotsWidth + PREREQUISITE_SLOT_GAP) /
+                    (PREREQUISITE_SLOT_SIZE + PREREQUISITE_SLOT_GAP));
+            visiblePrerequisiteSlots = Math.min(maxVisible, prerequisites.size());
+            prerequisiteScrollOffset = Mth.clamp(prerequisiteScrollOffset, 0,
+                    Math.max(0, prerequisites.size() - visiblePrerequisiteSlots));
+            int stripWidth = visiblePrerequisiteSlots * PREREQUISITE_SLOT_SIZE +
+                    Math.max(0, visiblePrerequisiteSlots - 1) * PREREQUISITE_SLOT_GAP;
+            prerequisiteSlotsX = x + arrowWidth + Math.max(0, (slotsWidth - stripWidth) / 2);
+
+            for (int i = 0; i < visiblePrerequisiteSlots; i++) {
+                int slotX = prerequisiteSlotsX + i * (PREREQUISITE_SLOT_SIZE + PREREQUISITE_SLOT_GAP);
+                TechNode prerequisite = prerequisites.get(prerequisiteScrollOffset + i);
+                GuiTextures.SLOT.draw(graphics, mouseX, mouseY, slotX, y,
+                        PREREQUISITE_SLOT_SIZE, PREREQUISITE_SLOT_SIZE);
+                drawNodeIcon(graphics, slotX + 1, y + 1, 16, prerequisite);
+                if (Widget.isMouseOver(slotX, y, PREREQUISITE_SLOT_SIZE, PREREQUISITE_SLOT_SIZE, mouseX, mouseY)) {
+                    DrawerHelper.drawBorder(graphics, slotX, y, PREREQUISITE_SLOT_SIZE,
+                            PREREQUISITE_SLOT_SIZE, 0xFF39C5BB, 1);
+                }
+            }
+            if (prerequisiteScrollOffset > 0) {
+                graphics.drawString(font, "<", x + 1, y + 5, ROW_TEXT_COLOR, false);
+            }
+            if (prerequisiteScrollOffset + visiblePrerequisiteSlots < prerequisites.size()) {
+                graphics.drawString(font, ">", x + width - font.width(">") - 1, y + 5, ROW_TEXT_COLOR, false);
+            }
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private @Nullable TechNode getHoveredPrerequisite(double mouseX, double mouseY) {
+            if (selectedNode == null || visiblePrerequisiteSlots <= 0 || !Widget.isMouseOver(
+                    prerequisiteSlotsX, prerequisiteAreaY,
+                    visiblePrerequisiteSlots * PREREQUISITE_SLOT_SIZE +
+                            Math.max(0, visiblePrerequisiteSlots - 1) * PREREQUISITE_SLOT_GAP,
+                    PREREQUISITE_SLOT_SIZE, mouseX, mouseY)) {
+                return null;
+            }
+            int localX = (int) mouseX - prerequisiteSlotsX;
+            int index = localX / (PREREQUISITE_SLOT_SIZE + PREREQUISITE_SLOT_GAP);
+            if (index >= visiblePrerequisiteSlots ||
+                    localX % (PREREQUISITE_SLOT_SIZE + PREREQUISITE_SLOT_GAP) >= PREREQUISITE_SLOT_SIZE) {
+                return null;
+            }
+            int prerequisiteIndex = prerequisiteScrollOffset + index;
+            return prerequisiteIndex < selectedNode.prerequisites.size() ?
+                    selectedNode.prerequisites.get(prerequisiteIndex) : null;
+        }
+
+        @OnlyIn(Dist.CLIENT)
         private void drawRows(GuiGraphics graphics, Font font, List<RowState> rows, int x, int y, int width, int maxBottomY, int mouseX, int mouseY) {
             int currentY = y;
             int progressWidth = Math.max(20, width - VALUE_WIDTH - 6);
@@ -744,6 +887,29 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         @OnlyIn(Dist.CLIENT)
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             if (!TechTreeSideTab.this.isMouseOver()) return super.mouseClicked(mouseX, mouseY, button);
+            if (button == 0 && visiblePrerequisiteSlots > 0 && Widget.isMouseOver(
+                    prerequisiteAreaX, prerequisiteAreaY, prerequisiteAreaWidth,
+                    PREREQUISITE_SLOT_SIZE, mouseX, mouseY)) {
+                TechNode prerequisite = getHoveredPrerequisite(mouseX, mouseY);
+                if (prerequisite != null) {
+                    onNodeNavigate.accept(prerequisite);
+                    playButtonClickSound();
+                    return true;
+                }
+                if (mouseX < prerequisiteSlotsX && prerequisiteScrollOffset > 0) {
+                    prerequisiteScrollOffset--;
+                    playButtonClickSound();
+                    return true;
+                }
+                if (selectedNode != null &&
+                        mouseX >= prerequisiteSlotsX + visiblePrerequisiteSlots *
+                                (PREREQUISITE_SLOT_SIZE + PREREQUISITE_SLOT_GAP) - PREREQUISITE_SLOT_GAP &&
+                        prerequisiteScrollOffset + visiblePrerequisiteSlots < selectedNode.prerequisites.size()) {
+                    prerequisiteScrollOffset++;
+                    playButtonClickSound();
+                    return true;
+                }
+            }
             if (visibleRecipeSlots > 0 && Widget.isMouseOver(rowAreaX, recipeSlotsY, rowAreaWidth, RECIPE_SLOT_SIZE, mouseX, mouseY)) {
                 EmiStack stack = getXEIIngredientOverMouse(mouseX, mouseY);
                 if (stack != null && (button == 0 || button == 1)) {
@@ -786,6 +952,19 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                     descTextX, descTextY, descTextWidth, descTextHeight, mouseX, mouseY)) {
                 descTextOffset = Mth.clamp(descTextOffset + (wheelDelta > 0 ? -1 : 1), 0, maxDescTextOffset);
                 return true;
+            }
+            if (selectedNode != null && visiblePrerequisiteSlots > 0 && wheelDelta != 0 && Widget.isMouseOver(
+                    prerequisiteAreaX, prerequisiteAreaY, prerequisiteAreaWidth,
+                    PREREQUISITE_SLOT_SIZE, mouseX, mouseY)) {
+                int maxPrerequisiteScrollOffset = Math.max(0,
+                        selectedNode.prerequisites.size() - visiblePrerequisiteSlots);
+                if (wheelDelta > 0 && prerequisiteScrollOffset > 0) {
+                    prerequisiteScrollOffset--;
+                    return true;
+                } else if (wheelDelta < 0 && prerequisiteScrollOffset < maxPrerequisiteScrollOffset) {
+                    prerequisiteScrollOffset++;
+                    return true;
+                }
             }
             if (visibleRecipeSlots > 0 && Widget.isMouseOver(rowAreaX, recipeSlotsY, rowAreaWidth, RECIPE_SLOT_SIZE, mouseX, mouseY)) {
                 List<EmiStack> stacks = getUnlockableRecipeStacks();
