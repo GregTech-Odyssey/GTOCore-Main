@@ -268,9 +268,9 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         }
 
         boolean hasEureka = requirements.getEurekaItem() != null;
-        boolean eurekaScanned = hasEureka && context.getScannedItems().contains(requirements.getEurekaItem());
+        boolean eurekaScanned = hasEureka && context.scannedItems().contains(requirements.getEurekaItem());
         long cwuNeeded = requirements.getCwuNeeded();
-        long cwuCurrent = context.getTechNodeAccCWU().getOrDefault(selectedNode, 0L);
+        long cwuCurrent = context.techNodeAccCWU().getOrDefault(selectedNode, 0L);
 
         List<MaterialState> materials = new ArrayList<>();
         List<Map.Entry<ResearchTag, Long>> entries = new ArrayList<>();
@@ -281,7 +281,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         entries.sort(Comparator.comparing(entry -> entry.getKey().getName()));
         for (var entry : entries) {
             ResearchTag tag = entry.getKey();
-            materials.add(new MaterialState(tag.getName(), context.getResearchPoints().getOrDefault(tag, 0L), entry.getValue()));
+            materials.add(new MaterialState(tag.getName(), context.researchPoints().getOrDefault(tag, 0L), entry.getValue()));
         }
 
         return new SyncState(true, selectedNode.name, true, cwuCurrent, cwuNeeded, hasEureka, eurekaScanned, List.copyOf(materials));

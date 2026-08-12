@@ -53,9 +53,9 @@ public class ScanningCommands {
         var teamContext = TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
         if (mat != NULL) {
-            teamContext.getScannedMaterials().add(mat);
+            teamContext.scannedMaterials().add(mat);
         }
-        teamContext.getScannedItems().add(key);
+        teamContext.scannedItems().add(key);
         TeamResearchSavedDtat.INSTANCE.setDirty(true);
         return 1;
     }
@@ -68,9 +68,9 @@ public class ScanningCommands {
         var teamContext = TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
         if (mat != NULL) {
-            teamContext.getScannedMaterials().remove(mat);
+            teamContext.scannedMaterials().remove(mat);
         }
-        teamContext.getScannedItems().remove(key);
+        teamContext.scannedItems().remove(key);
         TeamResearchSavedDtat.INSTANCE.setDirty(true);
         return 1;
     }
@@ -78,8 +78,8 @@ public class ScanningCommands {
     private static int getSelfScannedItems(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var player = context.getSource().getPlayerOrException();
         var teamContext = TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
-        var scannedItems = teamContext.getScannedItems();
-        var scannedMaterials = teamContext.getScannedMaterials();
+        var scannedItems = teamContext.scannedItems();
+        var scannedMaterials = teamContext.scannedMaterials();
         player.sendSystemMessage(Component.literal("Scanned Items: " + scannedItems.size()));
         for (var item : scannedItems) {
             player.sendSystemMessage(Component.literal(" - " + item.toString()));

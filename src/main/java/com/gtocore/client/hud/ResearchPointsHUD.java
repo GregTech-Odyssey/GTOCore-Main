@@ -202,7 +202,7 @@ public class ResearchPointsHUD implements IMoveableHUD {
             return rows;
         }
 
-        var researchPoints = TeamResearchSavedDtat.getOrCreateContext(mc.player).getResearchPoints();
+        var researchPoints = TeamResearchSavedDtat.getOrCreateContext(mc.player).researchPoints();
         for (var it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             if (entry.getLongValue() == 0) continue;

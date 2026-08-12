@@ -97,7 +97,7 @@ public class DataScanningManager {
         var teamContext = TeamResearchSavedDtat.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
         boolean isMaterial = mat != NULL;
-        boolean hasScanned = (isMaterial && teamContext.getScannedMaterials().contains(mat)) || teamContext.getScannedItems().contains(key);
+        boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
         var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
         if (!simulate) {
             if (mat != NULL) {
@@ -117,7 +117,7 @@ public class DataScanningManager {
         var teamContext = TeamResearchSavedDtat.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
         boolean isMaterial = mat != NULL;
-        boolean hasScanned = (isMaterial && teamContext.getScannedMaterials().contains(mat)) || teamContext.getScannedItems().contains(key);
+        boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
         var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
         var effectiveTimes = hasScanned ? times * penalty : 1f + (times - 1) * penalty;
         if (!simulate) {

@@ -28,10 +28,10 @@ public class ResearchInfoTab implements IFancyUIProvider {
     private static final int SIDE_TAB_WIDTH = 166;
 
     private final @NotNull TechTreeManager manager;
-    private final BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory;
+    private final InnerContentFactory innerContentFactory;
     private TechNode initialSelectedNode;
 
-    public ResearchInfoTab(@NotNull TechTreeManager manager, @Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
+    public ResearchInfoTab(@NotNull TechTreeManager manager, @Nullable InnerContentFactory innerContentFactory) {
         this.manager = manager;
         this.innerContentFactory = innerContentFactory == null ? (uiWidget, sideTab) -> new WidgetGroup() : innerContentFactory;
     }
@@ -70,5 +70,11 @@ public class ResearchInfoTab implements IFancyUIProvider {
     public IFancyUIProvider setSelectedNode(TechNode selectedNode) {
         initialSelectedNode = selectedNode;
         return this;
+    }
+
+    public interface InnerContentFactory extends BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> {
+
+        @Override
+        Widget apply(FancyMachineUIWidget widget, TechTreeSideTab sideTab);
     }
 }

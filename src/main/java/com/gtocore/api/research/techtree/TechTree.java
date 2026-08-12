@@ -88,6 +88,6 @@ public class TechTree {
     public boolean hasNodeMetCWURequirements(TechNode node, TeamResearchContext context) {
         var req = node.getRequirements();
         var hasBoost = req.getEurekaItem() != null && context.hasScanned(req.getEurekaItem());
-        return req.getCwuNeeded() * (1 - (hasBoost ? req.getEurekaProgress() : 0L)) <= context.getTechNodeAccCWU().getOrDefault(node, 0L);
+        return req.getCwuNeeded() * (1 - (hasBoost ? req.getEurekaProgress() : 0L)) <= context.techNodeAccCWU().getOrDefault(node, 0L);
     }
 }

@@ -295,7 +295,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         var node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nodeBytes));
         var ctx = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
         var capacity = node.getRequirements().getCwuNeeded();
-        var storage = ctx.getTechNodeAccCWU().getLong(node);
+        var storage = ctx.techNodeAccCWU().getLong(node);
         if (ctx.hasScanned(node.getRequirements().getEurekaItem())) {
             storage = (long) (storage + capacity * node.getRequirements().getEurekaProgress());
         }
@@ -415,7 +415,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(new ResearchInfoTab(BaseNodes.TechTree, (uiWidget, sideTab) -> {
+        sideTabs.attachSubTab(new ResearchInfoTab(BaseNodes.MainTree, (uiWidget, sideTab) -> {
             AtomicReference<ButtonWidget> btnRef = new AtomicReference<>(null);
             var button = new ButtonWidget(4, 4, 64, 20, clickData -> {
                 if (clickData.isRemote) {
@@ -461,7 +461,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             return button;
         }).setSelectedNode(selectedNode));
         sideTabs.attachSubTab(new DataAccessStorageTab(this));
-        sideTabs.attachSubTab(new RecipeExportTab(this, BaseNodes.TechTree));
+        sideTabs.attachSubTab(new RecipeExportTab(this));
     }
 
     private record CombinedDataAccessHatchHandler(DataCenter machine) implements ICustomItemStackHandler {

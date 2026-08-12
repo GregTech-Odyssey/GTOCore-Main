@@ -93,16 +93,16 @@ public final class ResearchRequirements {
         if (this == NO_REQUIREMENTS) {
             return ActionResult.SUCCESS;
         }
-        var eurekaScanned = teamResource.getScannedItems().contains(eurekaItem);
+        var eurekaScanned = teamResource.scannedItems().contains(eurekaItem);
         var actualCWUNeeded = eurekaScanned ? (long) (cwuNeeded * (1 - eurekaProgress)) : cwuNeeded;
-        if (teamResource.getTechNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {
+        if (teamResource.techNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {
             return FAILURE_NO_CWU;
         }
         for (var it = materialNeeded.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             var tag = entry.getKey();
             var amount = entry.getLongValue();
-            if (teamResource.getResearchPoints().getOrDefault(tag, 0L) < amount) {
+            if (teamResource.researchPoints().getOrDefault(tag, 0L) < amount) {
                 return FAILURE_NO_MATERIAL;
             }
         }

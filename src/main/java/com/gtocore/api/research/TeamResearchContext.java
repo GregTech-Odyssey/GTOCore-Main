@@ -15,41 +15,24 @@ import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.datastream.data.Data;
 import it.unimi.dsi.fastutil.objects.*;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.util.Set;
 
-@Getter
-public class TeamResearchContext {
+public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scannedItems,
+                                  Set<Material> scannedMaterials, Reference2LongOpenHashMap<TechNode> techNodeAccCWU) {
 
     private static final int TECH_NODE_MANAGER_ID_FORMAT_MARKER = -1;
-
-    private final ResearchPoints researchPoints;
-    private final Set<AEKey> scannedItems;
-    private final Set<Material> scannedMaterials;
-    private final Reference2LongOpenHashMap<TechNode> techNodeAccCWU;
 
     public TeamResearchContext() {
         this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>());
     }
 
-    public TeamResearchContext(
-                               ResearchPoints researchPoints,
-                               Set<AEKey> scannedItems,
-                               Set<Material> scannedMaterials,
-                               Reference2LongOpenHashMap<TechNode> techNodeAccCWU) {
-        this.researchPoints = researchPoints;
-        this.scannedItems = scannedItems;
-        this.scannedMaterials = scannedMaterials;
-        this.techNodeAccCWU = techNodeAccCWU;
-    }
-
     static void writeContext(DataIOStream dataIOStream, TeamResearchContext context) throws IOException {
-        writeResearchPoints(dataIOStream, context.getResearchPoints());
-        writeScannedItems(dataIOStream, context.getScannedItems());
-        writeScannedMaterials(dataIOStream, context.getScannedMaterials());
-        writeTechNodeAccCWU(dataIOStream, context.getTechNodeAccCWU());
+        writeResearchPoints(dataIOStream, context.researchPoints());
+        writeScannedItems(dataIOStream, context.scannedItems());
+        writeScannedMaterials(dataIOStream, context.scannedMaterials());
+        writeTechNodeAccCWU(dataIOStream, context.techNodeAccCWU());
     }
 
     static TeamResearchContext readContext(DataIOStream dataIOStream, int dataVersion) throws IOException {
@@ -132,7 +115,7 @@ public class TeamResearchContext {
         }
         Reference2LongOpenHashMap<TechNode> techNodeAccCWU = new Reference2LongOpenHashMap<>();
         for (int i = 0; i < techNodeCount; i++) {
-            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : BaseNodes.TechTree;
+            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : BaseNodes.MainTree;
             // todo remove datafix in future
             String nodeName = dataIOStream.readUTF();
             long accCWU = dataIOStream.readLong();

@@ -1,12 +1,10 @@
 package com.gtocore.data.techtree
 
 import com.gtocore.api.data.tag.GTOTagPrefix
-import com.gtocore.api.data.tag.GTOTagPrefix.NANITES
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.api.research.ResearchRequirements
 import com.gtocore.api.research.ResearchTag.ASSEMBLY
 import com.gtocore.api.research.ResearchTag.BIOLOGY
-import com.gtocore.api.research.ResearchTag.CATALYSIS
 import com.gtocore.api.research.ResearchTag.COMPUTATION
 import com.gtocore.api.research.ResearchTag.DATA_STORAGE
 import com.gtocore.api.research.ResearchTag.ENERGY
@@ -28,13 +26,13 @@ import com.gtocore.common.data.machines.MultiBlockA.CHEMICAL_PLANT
 import com.gtocore.common.data.machines.MultiBlockD
 import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineluv
 import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineuhv
-import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineuv
-import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLinezpm
 import com.gtocore.data.techtree.ComponentNodes.EnergyIOs
 
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 
+import appeng.core.definitions.AEItems
+import appeng.core.definitions.AEParts
 import com.google.common.collect.ImmutableList
 import com.gregtechceu.gtceu.GTCEu
 import com.gregtechceu.gtceu.api.GTValues.LuV
@@ -46,7 +44,6 @@ import com.gregtechceu.gtceu.api.data.tag.TagPrefix
 import com.gregtechceu.gtceu.common.data.GTBlocks
 import com.gregtechceu.gtceu.common.data.GTItems
 import com.gregtechceu.gtceu.common.data.GTMaterials
-import com.gregtechceu.gtceu.common.data.GTMaterials.Carbon
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.FUSION_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.LARGE_CHEMICAL_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines
@@ -64,8 +61,12 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
     }
 
     @JvmField
-    val TechTree: TechTreeManager =
+    val MainTree: TechTreeManager =
         TechTreeManager("main_tree", "研究树", "Research Tree", ItemStackTexture(GTOItems.BLUE_HALIDE_LAMP.asStack()))
+
+    @JvmField
+    val AETree: TechTreeManager =
+        TechTreeManager("ae_tree", "AE研究树", "AE Research Tree", ItemStackTexture(AEParts.TERMINAL.asItem()))
 
     @JvmField
     val TierItems = ImmutableList.of(
@@ -86,18 +87,19 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         SpaceNodes.init()
         NanitesNodes.init()
         if (!GTCEu.isDataGen()) TechTreeManager.REGISTRY.freeze()
-        TechTree.freeze()
+        MainTree.freeze()
+        AETree.freeze()
     }
 
     @JvmField
-    val IridiumCasingProduction = TechTree.builder("iridium_casing_production", "高性能机器外壳生产", "High-Performance Machine Casing Production")
+    val IridiumCasingProduction = MainTree.builder("iridium_casing_production", "高性能机器外壳生产", "High-Performance Machine Casing Production")
         .description("生产铱强化机械方块的外壳，这种外壳有着强大的耐久性和抗辐射能力", "Produce the casing for iridium-reinforced machine blocks, which has strong durability and radiation resistance")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(15).setEurekaItem(TagPrefix.block, GTMaterials.Osmiridium, 1.0f).build())
         .icon(GTOBlocks.IRIDIUM_CASING)
         .build()
 
     @JvmField
-    val NuclearPhysics = TechTree.builder("nuclear_physics", "核物理研究", "Nuclear Physics Research")
+    val NuclearPhysics = MainTree.builder("nuclear_physics", "核物理研究", "Nuclear Physics Research")
         .description("研究原子核的结构和行为，以及核反应的机制和应用", "Study the structure and behavior of atomic nuclei, as well as the mechanisms and applications of nuclear reactions")
         .requirements(
             ResearchRequirements.Builder().setCWUNeeded(15)
@@ -107,7 +109,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val Thermodynamics = TechTree.builder("thermodynamics", "热力学研究", "Thermodynamics Research")
+    val Thermodynamics = MainTree.builder("thermodynamics", "热力学研究", "Thermodynamics Research")
         .description("研究能量传递和转化的规律，以及热力学系统的行为和性能", "Study the laws of energy transfer and transformation, as well as the behavior and performance of thermodynamic systems")
         .requirements(
             ResearchRequirements.Builder().setCWUNeeded(15)
@@ -117,7 +119,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LaserFoundations = TechTree.builder("laser_foundations", "激光基础研究", "Laser Foundations Research")
+    val LaserFoundations = MainTree.builder("laser_foundations", "激光基础研究", "Laser Foundations Research")
         .description("研究激光的产生、传播和应用，以及激光技术在科学和工业中的潜力", "Study the generation, propagation, and application of lasers, as well as the potential of laser technology in science and industry")
         .requirements(
             ResearchRequirements.Builder().setCWUNeeded(15)
@@ -127,7 +129,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SuperConductingMaterialResearch = TechTree.builder("super_conducting_material_research", "超导材料研究", "Superconducting Material Research")
+    val SuperConductingMaterialResearch = MainTree.builder("super_conducting_material_research", "超导材料研究", "Superconducting Material Research")
         .description("将具有超导特性的材料封装并维持在环境中，实现电压传输的零线损", "Encapsulate materials with superconducting properties and maintain them in the environment to achieve zero-loss voltage transmission")
         .icon(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.UraniumRhodiumDinaquadide)
         .requirements(
@@ -139,7 +141,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SupercriticalPhaseBasicResearch = TechTree.builder("supercritical_phase_basic_research", "超临界相态基础研究", "Supercritical Phase Basic Research")
+    val SupercriticalPhaseBasicResearch = MainTree.builder("supercritical_phase_basic_research", "超临界相态基础研究", "Supercritical Phase Basic Research")
         .description("研究物质在极端条件下处于超临界相态的物理特性与应用", "Study the physical properties and applications of matter in a supercritical phase under extreme conditions")
         .icon(GTOMaterials.SupercriticalSteam.fluid)
         .requirements(
@@ -151,7 +153,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TokamakFusionReactor = TechTree.builder("tokamak_fusion_reactor", "托卡马克聚变反应堆", "Tokamak Fusion Reactor")
+    val TokamakFusionReactor = MainTree.builder("tokamak_fusion_reactor", "托卡马克聚变反应堆", "Tokamak Fusion Reactor")
         .description("掌握可控的托卡马克聚变反应堆技术，实现元素的聚变与等离子体的生产", "Master the technology of controllable Tokamak fusion reactors, achieving element fusion and plasma production")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTBlocks.SUPERCONDUCTING_COIL, 1.0f).build())
         .icon(FUSION_REACTOR[LuV].asStack())
@@ -159,7 +161,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TokamakFusionReactor2 = TechTree.builder("tokamak_fusion_reactor2", "托卡马克聚变反应堆II", "Tokamak Fusion Reactor II")
+    val TokamakFusionReactor2 = MainTree.builder("tokamak_fusion_reactor2", "托卡马克聚变反应堆II", "Tokamak Fusion Reactor II")
         .description("更甜的甜甜圈，更高的温度，更强的磁场，更快的聚变", "Sweeter donut, higher temperature, stronger magnetic field, faster fusion")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 240L).setEurekaItem(FUSION_REACTOR[LuV], 0.8f).build())
         .icon(FUSION_REACTOR[ZPM].asStack())
@@ -168,7 +170,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TokamakFusionReactor3 = TechTree.builder("tokamak_fusion_reactor3", "托卡马克聚变反应堆III", "Tokamak Fusion Reactor III")
+    val TokamakFusionReactor3 = MainTree.builder("tokamak_fusion_reactor3", "托卡马克聚变反应堆III", "Tokamak Fusion Reactor III")
         .description("甜甜圈3号，甜度超标！", "Donut No. 3, sweetness overload!")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(128 * 20 * 1200L).setEurekaItem(FUSION_REACTOR[ZPM], 0.8f).build())
         .icon(FUSION_REACTOR[UV].asStack())
@@ -177,7 +179,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TokamakFusionReactor4 = TechTree.builder("tokamak_fusion_reactor4", "托卡马克聚变反应堆IV", "Tokamak Fusion Reactor IV")
+    val TokamakFusionReactor4 = MainTree.builder("tokamak_fusion_reactor4", "托卡马克聚变反应堆IV", "Tokamak Fusion Reactor IV")
         .description("甜甜圈4号，想造什么元素自己填", "Donut No. 4, fill in whatever element you want to make")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(256 * 20 * 2400L).setEurekaItem(FUSION_REACTOR[UV], 0.8f).build())
         .icon(MultiBlockD.FUSION_REACTOR[UHV].asStack())
@@ -186,7 +188,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TokamakFusionReactor5 = TechTree.builder("tokamak_fusion_reactor5", "托卡马克聚变反应堆V", "Tokamak Fusion Reactor V")
+    val TokamakFusionReactor5 = MainTree.builder("tokamak_fusion_reactor5", "托卡马克聚变反应堆V", "Tokamak Fusion Reactor V")
         .description("最后一个甜甜圈，最极致的点瓶子", "The last donut, the ultimate time-twister overclocking")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(512 * 20 * 4800L).setEurekaItem(MultiBlockD.FUSION_REACTOR[UHV], 0.8f).build())
         .icon(MultiBlockD.FUSION_REACTOR[UEV].asStack())
@@ -195,14 +197,14 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val DataBase = TechTree.builder("data_base", "数据库", "Data Base")
+    val DataBase = MainTree.builder("data_base", "数据库", "Data Base")
         .description("数据库是一个用于存储和管理数据的系统，安装数据仓与光学传输仓实现生产线数据的存储和路由", "The database is a system for storing and managing data, installing data warehouses and optical transmission warehouses to achieve storage and routing of production line data")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTResearchMachines.DATA_ACCESS_HATCH, 1.0f).build())
         .icon(GTResearchMachines.DATA_BANK)
         .build()
 
     @JvmField
-    val ComputationArray = TechTree.builder("computation_array", "算力供应传输基础", "Computation Supply and Transmission Foundation")
+    val ComputationArray = MainTree.builder("computation_array", "算力供应传输基础", "Computation Supply and Transmission Foundation")
         .description("搭建基础算力供应与多源算力分配逻辑", "Build a basic computation supply and multi-source computation distribution logic")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.COVER_SCREEN, 1.0f).build())
         .icon(GTResearchMachines.HIGH_PERFORMANCE_COMPUTING_ARRAY)
@@ -210,7 +212,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ScanStation = TechTree.builder("scan_station", "扫描站", "Scan Station")
+    val ScanStation = MainTree.builder("scan_station", "扫描站", "Scan Station")
         .description("将晶片中的数据进行扫描与分析，获取其中的科研数据，并积累到团队知识库中", "Scan and analyze the data in the chip, obtain the research data, and accumulate it into the team knowledge base")
         .icon(GTOItems.DATA_CRYSTAL_MK1)
         .prerequisites("data_base")
@@ -223,7 +225,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val DataCenter = TechTree.builder("data_in_research", "科研数据中心", "Data Center in Research")
+    val DataCenter = MainTree.builder("data_in_research", "科研数据中心", "Data Center in Research")
         .description("科研数据中心是一个用于存储和处理科研数据的高性能计算平台，相比于数据库，它可以将其中标准化的生产数据与积累的科研数据进行整合，推进基地技术迭代", "The research data center is a high-performance computing platform for storing and processing research data. Compared to databases, it can integrate standardized production data with accumulated research data, promoting base technology iteration")
         .requirements(
             ResearchRequirements.Builder().setCWUNeeded(20)
@@ -236,14 +238,14 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ChemicalPlantEnvironmentControl = TechTree.builder("chemical_plant_environment_control", "化工厂环境控制", "Chemical Plant Environment Control")
+    val ChemicalPlantEnvironmentControl = MainTree.builder("chemical_plant_environment_control", "化工厂环境控制", "Chemical Plant Environment Control")
         .description("掌握化工厂的环境控制技术，实现更大规模的化学产品生产与更高效的资源利用", "Master the environmental control technology of chemical plants, achieving larger-scale chemical product production and more efficient resource utilization")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 40L).setEurekaItem(LARGE_CHEMICAL_REACTOR, 1.0f).build())
         .icon(CHEMICAL_PLANT)
         .build()
 
     @JvmField
-    val SelfMaintenanceSystem = TechTree.builder("self_maintenance_system", "自维护系统", "Self-Maintenance System")
+    val SelfMaintenanceSystem = MainTree.builder("self_maintenance_system", "自维护系统", "Self-Maintenance System")
         .description("开发自维护系统，实现设备的自动检测与修复，减少人工干预", "Develop a self-maintenance system to achieve automatic detection and repair of equipment, reducing manual intervention")
         .icon(RegistriesUtils.getItem("ad_astra:wrench"))
         .prerequisites(ComponentInAssemblyLineluv)
@@ -257,7 +259,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val CrystalTechMainframe = TechTree.builder("crystal_tech_mainframe", "晶体技术主机", "Crystal Technology Mainframe")
+    val CrystalTechMainframe = MainTree.builder("crystal_tech_mainframe", "晶体技术主机", "Crystal Technology Mainframe")
         .description("合成大晶片", "Synthesize large crystal chips")
         .icon(GTItems.CRYSTAL_MAINFRAME_UV)
         .prerequisites(ComponentInAssemblyLineluv)
@@ -271,7 +273,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val PreciseManufacturingTech = TechTree.builder("precise_manufacturing_tech", "精密制造技术", "Precision Manufacturing Technology")
+    val PreciseManufacturingTech = MainTree.builder("precise_manufacturing_tech", "精密制造技术", "Precision Manufacturing Technology")
         .description("掌握精密制造技术，实现高精度零件的生产与组装", "Master precision manufacturing technology to achieve the production and assembly of high-precision parts")
         .icon(RegistriesUtils.getItem("gtocore:precision_assembler"))
         .prerequisites(ComponentInAssemblyLineluv)
@@ -285,7 +287,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val IsaMillingMachine = TechTree.builder("isa_milling_machine", "艾萨研磨处理技术", "Isa Ore Processing Technology")
+    val IsaMillingMachine = MainTree.builder("isa_milling_machine", "艾萨研磨处理技术", "Isa Ore Processing Technology")
         .description("掌握艾萨研磨处理矿物这种滚珠暴力碾磨一切再拿泔水泡的技术", "Master the Isa milling process for minerals, a technology that violently grinds everything with ball bearings and soaks it in swill")
         .prerequisites(ComponentInAssemblyLineluv)
         .requirements(
@@ -299,7 +301,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val VirtualCoinCurrency = TechTree.builder("virtual_coin_currency", "虚拟货币", "Virtual Coin Currency")
+    val VirtualCoinCurrency = MainTree.builder("virtual_coin_currency", "虚拟货币", "Virtual Coin Currency")
         .description("给了冰冷的溢出算力一种独特的用法，通过帮别人计算一串随机的数字，换成温暖的虚拟（？）货币", "Give the cold and lifeless overflow computing power a unique use, by calculating a string of random numbers for others, in exchange for warm virtual (?) currency")
         .icon(RegistriesUtils.getItem("gtocore:infinity_coin"))
         .prerequisites(ComputationArray)
@@ -313,7 +315,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val DataStorageIteration = TechTree.builder("data_storage_iteration", "数据存储迭代", "Data Storage Iteration")
+    val DataStorageIteration = MainTree.builder("data_storage_iteration", "数据存储迭代", "Data Storage Iteration")
         .description("随着数据量的需求爆炸量的增加，数据存储技术也需要不断迭代升级，以满足更高效的数据存储和访问需求", "As the demand for data volume increases explosively, data storage technology also needs to be continuously iterated and upgraded to meet more efficient data storage and access needs")
         .icon(RegistriesUtils.getItem("gtocore:data_form_testing_me_interface"))
         .prerequisites(ComputationArray)
@@ -327,7 +329,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val VoidMiner = TechTree.builder("void_miner", "虚空矿脉采掘技术", "Void Vein Mining Technology")
+    val VoidMiner = MainTree.builder("void_miner", "虚空矿脉采掘技术", "Void Vein Mining Technology")
         .description("从一无所有的虚空中定向寻找并采掘出各种矿脉", "From the void of nothingness, directionally search for and mine various veins")
         .icon(RegistriesUtils.getItem("gtocore:void_miner"))
         .prerequisites(PreciseManufacturingTech)
@@ -343,7 +345,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val WetwareTech = TechTree.builder("wetware_tech", "湿件技术", "Wetware Technology")
+    val WetwareTech = MainTree.builder("wetware_tech", "湿件技术", "Wetware Technology")
         .description("把湿件着你的几团肉拼在一起，组合它们的湿件能力的技术", "The technology of putting your wetware together and combining their wetware capabilities")
         .icon(RegistriesUtils.getItem("gtceu:wetware_processor_mainframe"))
         .prerequisites(PreciseManufacturingTech)
@@ -358,7 +360,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ParticleAccelerators = TechTree.builder("particle_accelerator", "高能粒子实验", "High-Energy Particle Experiments")
+    val ParticleAccelerators = MainTree.builder("particle_accelerator", "高能粒子实验", "High-Energy Particle Experiments")
         .description("利用粒子加速器进行高能物理实验，探索微观世界的奥秘", "Use particle accelerators for high-energy physics experiments, exploring the mysteries of the microscopic world")
         .icon(RegistriesUtils.getItem("gtocore:alpha_particle_particle_source"))
         .requirements(
@@ -373,7 +375,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val FuelRefineryComplex = TechTree.builder("fuel_refinery_complex", "燃料精炼综合管理", "Fuel Refinery Complex")
+    val FuelRefineryComplex = MainTree.builder("fuel_refinery_complex", "燃料精炼综合管理", "Fuel Refinery Complex")
         .description("将能烧的东西处理成更能烧的东西的技术", "The technology of processing burnable things into more burnable things")
         .icon(RegistriesUtils.getItem("gtocore:fuel_refining_complex"))
         .prerequisites(ChemicalPlantEnvironmentControl)
@@ -389,7 +391,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val AdvancedAssemblyLineMachine = TechTree.builder("advanced_assembly_line_machine", "进阶装配线", "Advanced Assembly Line")
+    val AdvancedAssemblyLineMachine = MainTree.builder("advanced_assembly_line_machine", "进阶装配线", "Advanced Assembly Line")
         .description("集成GTO公司机械组搭的框架，电子组布置的线路和物流组搞的配送，打造出一条虽然很费电但高通量的装配线", "Integrating the framework built by GTO's mechanical team, the circuits laid out by the electronics team, and the logistics team's distribution, creating an assembly line that is very power-hungry but high-throughput")
         .icon(RegistriesUtils.getItem("gtocore:advanced_assembly_line_unit"))
         .prerequisites(PreciseManufacturingTech)
@@ -404,7 +406,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LargeNaquadahReactor = TechTree.builder("large_naquadah_reactor", "大型硅岩反应堆", "Large Naquadah Reactor")
+    val LargeNaquadahReactor = MainTree.builder("large_naquadah_reactor", "大型硅岩反应堆", "Large Naquadah Reactor")
         .description("硅岩这种材料怎么就这么神奇呢？又硬又坚韧，还能用来做反应堆的核心燃料", "How is naquadah such a magical material? It's hard and tough, and can even be used as the core fuel for reactors")
         .icon(RegistriesUtils.getItem("gtocore:large_naquadah_reactor"))
         .prerequisites(EnergyIOs[ZPM])
@@ -419,7 +421,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val BiowareTech = TechTree.builder("bioware_tech", "生物件技术", "Bioware Technology")
+    val BiowareTech = MainTree.builder("bioware_tech", "生物件技术", "Bioware Technology")
         .description("这年头，蘑菇也会算数了", "These days, even mushrooms can do math")
         .icon(RegistriesUtils.getItem("gtocore:bioware_mainframe"))
         .prerequisites(WetwareTech)
@@ -434,7 +436,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val BiowareDataStorage = TechTree.builder("bioware_data_storage", "生物件数据存储", "Bioware Data Storage")
+    val BiowareDataStorage = MainTree.builder("bioware_data_storage", "生物件数据存储", "Bioware Data Storage")
         .description("利用生物件的自我复制能力，实现数据的高密度存储与快速访问", "Utilize the self-replication ability of bioware to achieve high-density data storage and fast access")
         .icon(RegistriesUtils.getItem("gtocore:bio_data_access_hatch"))
         .prerequisites(BiowareTech)
@@ -450,7 +452,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SupercomputingTech = TechTree.builder("super_computing_tech", "超算集群", "Supercomputing Cluster")
+    val SupercomputingTech = MainTree.builder("super_computing_tech", "超算集群", "Supercomputing Cluster")
         .description("掌握超级计算机的设计与制造技术，供应更强大的算力与数据处理能力", "Master the design and manufacturing technology of supercomputers, providing more powerful computing power and data processing capabilities")
         .icon(RegistriesUtils.getItem("gtocore:supercomputing_center"))
         .prerequisites(ComputationArray)
@@ -466,7 +468,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LaserBatchProduction0 = TechTree.builder("laser_batch_production_proto", "激光能源原始批量生产", "Laser Energy Batch Production Prototype")
+    val LaserBatchProduction0 = MainTree.builder("laser_batch_production_proto", "激光能源原始批量生产", "Laser Energy Batch Production Prototype")
         .description("原始地利用高功率激光，传输大量能量用于加热炉子或者暴力运动机械", "Primarily use high-power lasers to transmit large amounts of energy for heating furnaces or violently moving machinery")
         .icon(RegistriesUtils.getItem("gtocore:energy_control_module_mk2"))
         .prerequisites(LaserFoundations, IridiumCasingProduction)
@@ -481,7 +483,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ExcitationCrystalLaser = TechTree.builder("excitation_crystal_laser", "激发晶体光束研究", "Excitation Crystal Beam Research")
+    val ExcitationCrystalLaser = MainTree.builder("excitation_crystal_laser", "激发晶体光束研究", "Excitation Crystal Beam Research")
         .description("使用最近发现的光透域材料，创新性与纳米蜂群技术结合制造的奇异晶体，能够将激光的能量集中在极小的空间内，产生全新的高强度的光束形态激光", "Using the recently discovered light-transmissive material, combined with nanobee technology to create a strange crystal, capable of concentrating the energy of the laser in an extremely small space, producing a new high-intensity beam form of laser")
         .icon(RegistriesUtils.getItem("gtocore:excitation_crystal"))
         .prerequisites(LaserFoundations)
@@ -496,7 +498,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LaserEngraver = TechTree.builder("laser_engraver", "极细尺度激光导向刻蚀", "Ultra-Fine Scale Laser Guided Etching")
+    val LaserEngraver = MainTree.builder("laser_engraver", "极细尺度激光导向刻蚀", "Ultra-Fine Scale Laser Guided Etching")
         .description("利用激光的极细尺度，进行导向刻蚀，制造出高精度的微结构", "Use the ultra-fine scale of lasers for guided etching, creating high-precision microstructures")
         .icon(RegistriesUtils.getItem("gtocore:non_linear_optical_lens"))
         .prerequisites(LaserFoundations)
@@ -512,7 +514,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val MolecularSeriesCasings = TechTree.builder("molecular_series_casings", "分子级系列外壳", "Molecular Series Casings")
+    val MolecularSeriesCasings = MainTree.builder("molecular_series_casings", "分子级系列外壳", "Molecular Series Casings")
         .description("一种看上去流淌着恐怖级能量的外壳，能够承受极端的能量流动", "A casing that appears to flow with terrifying levels of energy, capable of withstanding extreme energy flows")
         .icon(RegistriesUtils.getItem("gtocore:molecular_casing"))
         .prerequisites(IridiumCasingProduction)
@@ -529,7 +531,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SpaceTimeAssemblyLine = TechTree.builder("space_time_assembly_line", "时空装配技术", "Space-Time Assembly Technology")
+    val SpaceTimeAssemblyLine = MainTree.builder("space_time_assembly_line", "时空装配技术", "Space-Time Assembly Technology")
         .description("通过时空压缩技术，让产品在装配线中以更快的速度完成组装，同时减少能量与物质的消耗", "Through space-time compression technology, products can be assembled at a faster speed on the assembly line, while reducing energy and material consumption")
         .icon(RegistriesUtils.getItem("gtocore:spacetime_assembly_line_unit"))
         .prerequisites(AdvancedAssemblyLineMachine)
@@ -545,7 +547,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentProductionEnhancement = TechTree.builder("component_production_enhancement", "组件生产强化", "Component Production Enhancement")
+    val ComponentProductionEnhancement = MainTree.builder("component_production_enhancement", "组件生产强化", "Component Production Enhancement")
         .description("通过优化生产线和改进组件设计，实现大批量组件的高效节省生产", "Achieve efficient and cost-effective production of large quantities of components through optimized production lines and improved component design")
         .icon(RegistriesUtils.getItem("gtocore:component_assembly_line"))
         .prerequisites(LaserBatchProduction0, SpaceTimeAssemblyLine)
@@ -561,7 +563,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val MagnetoResonaticCircuitUpgrade = TechTree.builder("magneto_resonatic_circuit_upgrade", "磁共振电路升级", "Magneto Resonatic Circuit Upgrade")
+    val MagnetoResonaticCircuitUpgrade = MainTree.builder("magneto_resonatic_circuit_upgrade", "磁共振电路升级", "Magneto Resonatic Circuit Upgrade")
         .description("改进磁共振电路的设计与制造，减少材料消耗并提升产率", "Improve the design and manufacturing of magneto resonatic circuits, reducing material consumption and increasing yield")
         .icon(RegistriesUtils.getItem("gtocore:magneto_resonatic_circuit_uhv"))
         .prerequisites(SpaceTimeAssemblyLine)
@@ -577,7 +579,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .addRewardDescription("所有磁共振电路的产量提升1", "Increase the yield of all magneto resonatic circuits by 1")
 
     @JvmField
-    val LaserBatchProduction1 = TechTree.builder("laser_batch_production", "激光能源批量生产初步", "Laser Energy Batch Production Preliminary")
+    val LaserBatchProduction1 = MainTree.builder("laser_batch_production", "激光能源批量生产初步", "Laser Energy Batch Production Preliminary")
         .description("利用高功率激光，传输大量能量用于超大批量的生产加工", "Use high-power lasers to transmit large amounts of energy for ultra-large-scale production and processing")
         .icon(RegistriesUtils.getItem("gtocore:machining_control_module_mk2"))
         .prerequisites(ComponentInAssemblyLineuhv, LaserBatchProduction0, MolecularSeriesCasings)
@@ -592,7 +594,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LaserPlasmaCondenser = TechTree.builder("laser_plasma_condenser", "激光等离子体冷凝器", "Laser Plasma Condenser")
+    val LaserPlasmaCondenser = MainTree.builder("laser_plasma_condenser", "激光等离子体冷凝器", "Laser Plasma Condenser")
         .description("俺寻思热的东西不是因为它的热运动很强吗？那就用激光把它的热运动给定住不就好了", "I think the hot thing is that its thermal motion is very strong, right? Then just use a laser to fix its thermal motion, isn't it?")
         .icon(RegistriesUtils.getItem("gtocore:plasma_condenser"))
         .prerequisites(LaserBatchProduction1)
@@ -607,7 +609,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComplexPlasmaCondenser = TechTree.builder("compound_extreme_plasma_condenser", "复杂激光等离子体冷凝器", "Complex Laser Plasma Condenser")
+    val ComplexPlasmaCondenser = MainTree.builder("compound_extreme_plasma_condenser", "复杂激光等离子体冷凝器", "Complex Laser Plasma Condenser")
         .description("GTO寰宇重工集团里最大的冰箱", "The largest refrigerator in GTO Universal Heavy Industries Group")
         .icon(RegistriesUtils.getItem("gtocore:compound_extreme_cooling_unit"))
         .prerequisites(LaserPlasmaCondenser)
@@ -622,7 +624,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val DimensionSeriesCasings = TechTree.builder("dimension_series_casings", "维度级系列外壳", "Dimension Series Casings")
+    val DimensionSeriesCasings = MainTree.builder("dimension_series_casings", "维度级系列外壳", "Dimension Series Casings")
         .description("能够承载维度级别能量与力场的外壳，适用于极端环境下的设备保护与建造", "A casing capable of withstanding dimension-level energy and force fields, suitable for equipment protection and construction in extreme environments")
         .icon(RegistriesUtils.getItem("gtocore:dimensional_bridge_casing"))
         .prerequisites(MolecularSeriesCasings)
@@ -637,7 +639,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val BedrockMining = TechTree.builder("bedrock_production", "基岩开采与加工", "Bedrock Mining and Processing")
+    val BedrockMining = MainTree.builder("bedrock_production", "基岩开采与加工", "Bedrock Mining and Processing")
         .description("你就不好奇MC里最坚不可摧的方块里面的物质组成吗？", "Aren't you curious about the material composition of the most indestructible block in Minecraft?")
         .icon(RegistriesUtils.getItem("gtocore:bedrock_drill"))
         .prerequisites(VoidMiner)
@@ -652,7 +654,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val MatterFabricator = TechTree.builder("matter_fabricator", "物质制造机", "Matter Fabricator")
+    val MatterFabricator = MainTree.builder("matter_fabricator", "物质制造机", "Matter Fabricator")
         .description("通过高能物理实验，将能量直接转化为物质，实现物质的直接制造", "Through high-energy physics experiments, directly convert energy into matter, achieving direct matter fabrication")
         .icon(RegistriesUtils.getItem("gtocore:matter_fabricator"))
         .prerequisites(ParticleAccelerators)
@@ -668,7 +670,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val OpticalTech = TechTree.builder("optical_tech", "光学计算技术", "Optical Computing Technology")
+    val OpticalTech = MainTree.builder("optical_tech", "光学计算技术", "Optical Computing Technology")
         .description("直接利用光子进行计算，摆脱电子的限制，实现更高效的计算与数据处理", "Directly use photons for computing, breaking free from the limitations of electrons, achieving more efficient computing and data processing")
         .icon(RegistriesUtils.getItem("gtocore:optical_processing_core"))
         .prerequisites(BiowareTech)
@@ -683,7 +685,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val HighEnergyBioEngineering = TechTree.builder("high_energy_bio_engineering", "高能生物工程", "High Energy Bio Engineering")
+    val HighEnergyBioEngineering = MainTree.builder("high_energy_bio_engineering", "高能生物工程", "High Energy Bio Engineering")
         .description("生物技术的巅峰之作", "The pinnacle of biotechnology")
         .icon(RegistriesUtils.getItem("gtocore:microorganism_master"))
         .prerequisites(LaserBatchProduction1)
@@ -698,7 +700,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val StellarForge = TechTree.builder("stellar_forge", "恒星锻造技术", "Stellar Forge Technology")
+    val StellarForge = MainTree.builder("stellar_forge", "恒星锻造技术", "Stellar Forge Technology")
         .description("将恒星级别的能量用于物质加工，制造出超高性能的材料。祈祷它别爆炸吧", "Use stellar-level energy for material processing, creating ultra-high-performance materials. Pray it doesn't explode")
         .icon(RegistriesUtils.getItem("gtocore:stellar_forge"))
         .prerequisites(MolecularSeriesCasings)
@@ -713,7 +715,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val BlockholeDataStorage = TechTree.builder("blockhole_data_storage", "黑洞数据存储技术", "Black Hole Data Storage Technology")
+    val BlockholeDataStorage = MainTree.builder("blockhole_data_storage", "黑洞数据存储技术", "Black Hole Data Storage Technology")
         .description("利用黑洞的极端引力场，将数据压缩存储在黑洞中，实现超大规模的数据存储与管理", "Use the extreme gravitational field of black holes to compress and store data in black holes, achieving ultra-large-scale data storage and management")
         .icon(RegistriesUtils.getItem("gtocore:black_hole_data_access_hatch"))
         .prerequisites(BiowareDataStorage)
@@ -728,7 +730,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LaserEngraver2 = TechTree.builder("laser_engraver2", "维度聚焦激光蚀刻技术", "Dimensional Focusing Laser Etching Technology")
+    val LaserEngraver2 = MainTree.builder("laser_engraver2", "维度聚焦激光蚀刻技术", "Dimensional Focusing Laser Etching Technology")
         .description("从不同维度给它打光，让它在不同维度的光线下进行蚀刻，制造出更高精度的微结构", "Illuminate it from different dimensions, allowing it to etch under light from different dimensions, creating higher precision microstructures")
         .icon(RegistriesUtils.getItem("gtocore:dimensional_focus_engraving_array"))
         .prerequisites(LaserEngraver, LaserBatchProduction1)
@@ -743,7 +745,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SPSTech = TechTree.builder("sps_tech", "超临界移相技术", "Supercritical Phase Shift Technology")
+    val SPSTech = MainTree.builder("sps_tech", "超临界移相技术", "Supercritical Phase Shift Technology")
         .description("偷偷告诉你实际上它的工作原理是哭泣黑曜石在一边嘬超然物质一边看煽情片", "I'll tell you a secret, its working principle is actually crying obsidian sucking transcending matter on one side while watching a tear-jerking movie on the other side")
         .icon(RegistriesUtils.getFluid("gtocore:transcending_matter"))
         .prerequisites(TokamakFusionReactor4)
@@ -758,7 +760,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val AtomicEnergyExciting = TechTree.builder("atomic_energy_exciting", "原子能激发技术", "Atomic Energy Excitation Technology")
+    val AtomicEnergyExciting = MainTree.builder("atomic_energy_exciting", "原子能激发技术", "Atomic Energy Excitation Technology")
         .description("通过激发原子核的能量，充分压榨原子能的潜力，生产出更高能量密度的燃料", "By exciting the energy of atomic nuclei, fully exploiting the potential of atomic energy, producing fuel with higher energy density")
         .icon(RegistriesUtils.getItem("gtocore:atomic_energy_excitation_plant"))
         .prerequisites(FuelRefineryComplex, SPSTech, LargeNaquadahReactor)
@@ -773,7 +775,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val RareEarthProcessing = TechTree.builder("rare_earth_processing", "稀土直接分离技术", "Rare Earth Direct Separation Technology")
+    val RareEarthProcessing = MainTree.builder("rare_earth_processing", "稀土直接分离技术", "Rare Earth Direct Separation Technology")
         .description("直接分离稀土矿产中的所有元素，无需经过复杂的化学处理过程，实现高效的稀土资源利用", "Directly separate all elements in rare earth minerals without complex chemical processing, achieving efficient utilization of rare earth resources")
         .icon(RegistriesUtils.getItem("gtocore:comprehensive_tombarthite_processing_facility"))
         .prerequisites(VoidMiner)
@@ -788,7 +790,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val PlanetCoreExtraction = TechTree.builder("planet_core_extraction", "行星核心提取技术", "Planet Core Extraction Technology")
+    val PlanetCoreExtraction = MainTree.builder("planet_core_extraction", "行星核心提取技术", "Planet Core Extraction Technology")
         .description("使用抽空星球级别的矿机，将行星的每个角落都挖空，提取出极其大量的矿产资源", "Using planet-emptying level mining machines, excavate every corner of the planet to extract an extremely large amount of mineral resources")
         .icon(RegistriesUtils.getItem("gtocore:planet_core_drilling"))
         .prerequisites(VoidMiner)
@@ -803,7 +805,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val DysonSphereSeriesCasing = TechTree.builder("dyson_sphere_series_casing", "戴森球系列外壳", "Dyson Sphere Series Casing")
+    val DysonSphereSeriesCasing = MainTree.builder("dyson_sphere_series_casing", "戴森球系列外壳", "Dyson Sphere Series Casing")
         .description("能够长时间耐受恒星辐射的外壳，适用于戴森球的建造与维护", "A casing that can withstand stellar radiation for a long time, suitable for the construction and maintenance of Dyson spheres")
         .icon(RegistriesUtils.getItem("gtocore:dyson_deployment_core"))
         .prerequisites(DimensionSeriesCasings)
@@ -818,7 +820,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val CryotheumSupercoductingTech = TechTree.builder("cryotheum_superconducting_tech", "凛冰超导技术", "Cryotheum Superconducting Technology")
+    val CryotheumSupercoductingTech = MainTree.builder("cryotheum_superconducting_tech", "凛冰超导技术", "Cryotheum Superconducting Technology")
         .description("使用凛冰循环浸淋超导材料，进一步提升超导导体性能的稳定性", "Use cryotheum circulation to immerse superconducting materials, further improving the stability of superconducting performance")
         .icon(GTOFluids.GELID_CRYOTHEUM.get())
         .prerequisites(SuperConductingMaterialResearch, SPSTech)
@@ -833,7 +835,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SuprachronalAssemblyLine = TechTree.builder("suprachronal_assembly_line", "超时空装配线", "Suprachronal Assembly Line")
+    val SuprachronalAssemblyLine = MainTree.builder("suprachronal_assembly_line", "超时空装配线", "Suprachronal Assembly Line")
         .description("装配线已经是极限了？不，GTO寰宇重工的工程师们已经突破了时空的限制，让装配线在不同的时空中同时运作，实现了超时空的装配生产", "The assembly line has reached its limit? No, the engineers of GTO Universal Heavy Industries have broken the limits of space-time, allowing the assembly line to operate simultaneously in different space-times, achieving suprachronal assembly production")
         .icon(RegistriesUtils.getItem("gtocore:nyarlathoteps_tentacle"))
         .prerequisites(LaserBatchProduction1, SpaceTimeAssemblyLine)
@@ -848,7 +850,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val GWCAComputingTech = TechTree.builder("gwca_computing_tech", "GWCA计算技术", "GWCA Computing Technology")
+    val GWCAComputingTech = MainTree.builder("gwca_computing_tech", "GWCA计算技术", "GWCA Computing Technology")
         .description("通过操纵引力波的传播与干涉，实现对信息的传输与处理，能够实现超越传统计算机的运算能力", "By manipulating the propagation and interference of gravitational waves, achieve information transmission and processing, capable of achieving computational power beyond traditional computers")
         .icon(RegistriesUtils.getItem("gtocore:gwca_empty_component"))
         .prerequisites(SupercomputingTech)
@@ -863,7 +865,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val MassEnergyConversionTech = TechTree.builder("mass_energy_conversion_tech", "质能转换技术", "Mass-Energy Conversion Technology")
+    val MassEnergyConversionTech = MainTree.builder("mass_energy_conversion_tech", "质能转换技术", "Mass-Energy Conversion Technology")
         .description("掌握质能转换的核心技术，实现物质与能量的(不太高效)的互换", "Master the core technology of mass-energy conversion, achieving (not very efficient) interchange between matter and energy")
         .icon(RegistriesUtils.getItem("gtocore:mass_fabricator"))
         .prerequisites(SPSTech)
@@ -878,7 +880,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val EnergyInjectedFissionTech = TechTree.builder("energy_injected_fission_tech", "能量注入裂变技术", "Energy-Injected Fission Technology")
+    val EnergyInjectedFissionTech = MainTree.builder("energy_injected_fission_tech", "能量注入裂变技术", "Energy-Injected Fission Technology")
         .description("通过向裂变反应堆注入高能粒子，提升裂变反应的效率与能量输出", "By injecting high-energy particles into the fission reactor, improve the efficiency and energy output of the fission reaction")
         .icon(RegistriesUtils.getItem("gtocore:entropy_flux_engine"))
         .prerequisites(ParticleAccelerators, LaserBatchProduction1)
@@ -893,7 +895,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TimeDilationTech = TechTree.builder("time_dilation_tech", "时间膨胀技术", "Time Dilation Technology")
+    val TimeDilationTech = MainTree.builder("time_dilation_tech", "时间膨胀技术", "Time Dilation Technology")
         .description("利用相对论效应，控制时间流速，能够在现实时间尺度上完成时间条件苛刻的实验", "Use relativistic effects to control the flow of time, allowing experiments with stringent time conditions to be completed on a real-time scale")
         .icon(RegistriesUtils.getItem("gtocore:temporal_matter"))
         .prerequisites(SPSTech)
@@ -908,7 +910,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ExoticTech = TechTree.builder("exotic_technology", "奇异处理器技术", "Exotic Processor Technology")
+    val ExoticTech = MainTree.builder("exotic_technology", "奇异处理器技术", "Exotic Processor Technology")
         .description("操纵时空与物理定律用于计算的技术，能够实现超越传统计算机的运算能力", "Technology that manipulates spacetime and physical laws for computation, capable of achieving computational power beyond traditional computers")
         .icon(RegistriesUtils.getItem("gtocore:exotic_processing_core"))
         .prerequisites(OpticalTech, TimeDilationTech)
@@ -923,7 +925,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val LeptonicCharge = TechTree.builder("leptonic_charge", "轻子爆弹", "Leptonic Charge")
+    val LeptonicCharge = MainTree.builder("leptonic_charge", "轻子爆弹", "Leptonic Charge")
         .description("威力极其强大的爆弹，几乎是万亿亿级的TNT当量", "An extremely powerful explosive, almost equivalent to a trillion trillion TNT")
         .icon(RegistriesUtils.getItem("gtocore:leptonic_charge"))
         .prerequisites(StellarForge)
@@ -938,7 +940,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val CosmicTech = TechTree.builder("cosmic_technology", "寰宇处理器技术", "Cosmic Processor Technology")
+    val CosmicTech = MainTree.builder("cosmic_technology", "寰宇处理器技术", "Cosmic Processor Technology")
         .description("通过预设条件模拟宇宙演变，进行计算的处理器架构", "A processor architecture that simulates the evolution of the universe under preset conditions for computation")
         .icon(RegistriesUtils.getItem("gtocore:cosmic_processing_core"))
         .prerequisites(ExoticTech)
@@ -953,7 +955,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ExDurablePlasmaContainer = TechTree.builder("ex_durable_plasma_container", "高耐久等离子体容器", "Ex-Durable Plasma Container")
+    val ExDurablePlasmaContainer = MainTree.builder("ex_durable_plasma_container", "高耐久等离子体容器", "Ex-Durable Plasma Container")
         .description("用于存储高能等离子体的容器，能够承受极端的温度和压力", "A container for storing high-energy plasma, capable of withstanding extreme temperatures and pressures")
         .icon(RegistriesUtils.getItem("gtocore:extremely_durable_plasma_cell"))
         .prerequisites(LaserPlasmaCondenser)
@@ -968,7 +970,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val MagneticConfinementDimensionallyShockProcess = TechTree.builder("magnetic_confinement_dimensionally_shock_process", "磁约束维度冲击工艺", "Magnetic Confinement Dimensionally Shock Process")
+    val MagneticConfinementDimensionallyShockProcess = MainTree.builder("magnetic_confinement_dimensionally_shock_process", "磁约束维度冲击工艺", "Magnetic Confinement Dimensionally Shock Process")
         .description("通过磁约束技术，将物质在不同维度下进行冲击处理，实现物质的维度级融合", "Through magnetic confinement technology, subject matter to shock processing in different dimensions, achieving dimensional-level fusion of matter")
         .icon(RegistriesUtils.getItem("gtocore:magnetic_confinement_dimensionality_shock_device"))
         .prerequisites(DimensionSeriesCasings)
@@ -983,7 +985,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val QuantumChromodynamicCharge = TechTree.builder("quantum_chromodynamic_charge", "量子色动力学爆弹", "Quantum Chromodynamic Charge")
+    val QuantumChromodynamicCharge = MainTree.builder("quantum_chromodynamic_charge", "量子色动力学爆弹", "Quantum Chromodynamic Charge")
         .description("别把它点了...至少别在你面前点了它", "Don't light it... at least don't light it in front of you")
         .icon(RegistriesUtils.getItem("gtocore:quantum_chromodynamic_charge"))
         .prerequisites(LeptonicCharge)
@@ -998,7 +1000,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ManifoldOscillatory = TechTree.builder("manifold_oscillatory", "多维流形振荡技术", "Manifold Oscillatory Technology")
+    val ManifoldOscillatory = MainTree.builder("manifold_oscillatory", "多维流形振荡技术", "Manifold Oscillatory Technology")
         .description("通过多维流形的振荡，实现对时空的微观调控，能够在实验室中模拟宇宙级别的物理现象", "Achieve microscopic control of spacetime through oscillations of multi-dimensional manifolds, capable of simulating cosmic-level physical phenomena in the laboratory")
         .icon(RegistriesUtils.getItem("gtocore:manifold_oscillatory_power_cell"))
         .prerequisites(ExoticTech)
@@ -1013,7 +1015,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val VirtualUniverseDataStorage = TechTree.builder("virtual_universe_data_storage", "虚拟宇宙数据存储技术", "Virtual Universe Data Storage Technology")
+    val VirtualUniverseDataStorage = MainTree.builder("virtual_universe_data_storage", "虚拟宇宙数据存储技术", "Virtual Universe Data Storage Technology")
         .description("通过模拟一个完整的虚拟宇宙，将数据存储在其中，实现超大规模的数据存储与管理", "By simulating a complete virtual universe, data is stored within it, achieving ultra-large-scale data storage and management")
         .icon(RegistriesUtils.getItem("gtocore:virtual_universe_data_access_hatch"))
         .prerequisites(BlockholeDataStorage)
@@ -1028,7 +1030,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val AdvancedMassFabricationTech = TechTree.builder("advanced_mass_fabrication_tech", "进阶质能制造技术", "Advanced Mass Fabrication Technology")
+    val AdvancedMassFabricationTech = MainTree.builder("advanced_mass_fabrication_tech", "进阶质能制造技术", "Advanced Mass Fabrication Technology")
         .description("比最初研究的那版质能制造技术省电", "More energy-efficient than the original mass fabrication technology")
         .icon(RegistriesUtils.getItem("gtocore:advanced_mass_fabricator"))
         .prerequisites(MassEnergyConversionTech)
@@ -1043,7 +1045,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ElementFabricationTech = TechTree.builder("element_fabrication_tech", "元素制造技术", "Element Fabrication Technology")
+    val ElementFabricationTech = MainTree.builder("element_fabrication_tech", "元素制造技术", "Element Fabrication Technology")
         .description("操纵物质的基本构成，实现对元素的直接制造与转换", "Manipulate the fundamental composition of matter, achieving direct fabrication and conversion of elements")
         .icon(RegistriesUtils.getItem("gtocore:element_copying"))
         .prerequisites(MassEnergyConversionTech)
@@ -1058,7 +1060,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SupracausalTech = TechTree.builder("supracausal_tech", "超因果技术", "Supracausal Technology")
+    val SupracausalTech = MainTree.builder("supracausal_tech", "超因果技术", "Supracausal Technology")
         .description("掌握超越因果律的技术，能够在问题提出之前就得到答案，实现对未来的预测与控制", "Master technology that transcends causality, allowing answers to be obtained before questions are even asked, achieving prediction and control of the future")
         .icon(RegistriesUtils.getItem("gtocore:supracausal_processing_core"))
         .prerequisites(CosmicTech)
@@ -1073,7 +1075,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val StellarUltimateForge = TechTree.builder("stellar_ultimate_forge", "恒星终极锻造技术", "Stellar Ultimate Forge Technology")
+    val StellarUltimateForge = MainTree.builder("stellar_ultimate_forge", "恒星终极锻造技术", "Stellar Ultimate Forge Technology")
         .description("制造出只在恒星中心才能存在的材料的技术，能够制造出超越已知物理极限的材料", "Technology that creates materials that can only exist at the center of stars, capable of producing materials that surpass known physical limits")
         .icon(RegistriesUtils.getItem("gtocore:proto_matter"))
         .prerequisites(StellarForge)
@@ -1088,7 +1090,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val HyperDimensionalForge = TechTree.builder("hyper_dimensional_forge", "超维锻造技术", "Hyper-Dimensional Forge Technology")
+    val HyperDimensionalForge = MainTree.builder("hyper_dimensional_forge", "超维锻造技术", "Hyper-Dimensional Forge Technology")
         .description("通过操纵高维空间的物理规律，实现对物质的超维度锻造，制造出超越三维空间极限的材料", "By manipulating the physical laws of higher-dimensional space, achieve hyper-dimensional forging of matter, producing materials that surpass the limits of three-dimensional space")
         .icon(RegistriesUtils.getItem("gtocore:hyperdimensional_plasma_fusion_core"))
         .prerequisites(StellarForge)
@@ -1103,7 +1105,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val QFTSeriesCasing = TechTree.builder("qft_series_casing", "量子场论级系列外壳", "Quantum Field Theory Series Casings")
+    val QFTSeriesCasing = MainTree.builder("qft_series_casing", "量子场论级系列外壳", "Quantum Field Theory Series Casings")
         .description("能够可控扭曲时空的外壳，适用于相关机器的建造", "A casing capable of controllably warping spacetime, suitable for the construction of related machines")
         .icon(RegistriesUtils.getItem("gtocore:spacetime_bending_core"))
         .prerequisites(DimensionSeriesCasings)
@@ -1118,7 +1120,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val QFTManipulator = TechTree.builder("qft_manipulator", "量子场论操纵器", "Quantum Field Theory Manipulator")
+    val QFTManipulator = MainTree.builder("qft_manipulator", "量子场论操纵器", "Quantum Field Theory Manipulator")
         .description("通过操纵量子场的波动，实现对物质与能量的精确控制", "By manipulating the fluctuations of quantum fields, achieve precise control over matter and energy")
         .icon(RegistriesUtils.getItem("gtocore:quantum_force_transformer"))
         .prerequisites(QFTSeriesCasing)
@@ -1133,7 +1135,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val DragonCore = TechTree.builder("dragon_core", "龙之能量核心", "Dragon Energy Core")
+    val DragonCore = MainTree.builder("dragon_core", "龙之能量核心", "Dragon Energy Core")
         .description("通过操纵龙之能量的流动，实现对能量的极致掌控", "By manipulating the flow of dragon energy, achieve ultimate control over energy")
         .icon(RegistriesUtils.getItem("gtocore:wyvern_core"))
         .prerequisites(SupracausalTech)
@@ -1148,7 +1150,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val TimeDilationDimensionSeriesCasing = TechTree.builder("time_dilation_dimension_series_casing", "时间膨胀维度级系列外壳", "Time Dilation Dimension Series Casings")
+    val TimeDilationDimensionSeriesCasing = MainTree.builder("time_dilation_dimension_series_casing", "时间膨胀维度级系列外壳", "Time Dilation Dimension Series Casings")
         .description("能够在不同时间流速下稳定运作的外壳，适用于相关机器的建造", "A casing capable of stable operation under different time flow rates, suitable for the construction of related machines")
         .icon(RegistriesUtils.getItem("gtocore:dimensional_stability_casing"))
         .prerequisites(DimensionSeriesCasings)
@@ -1163,7 +1165,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val HyperDimensionalForgeCoil = TechTree.builder("hyper_dimensional_forge_coil", "超维锻造线圈改良", "Hyper-Dimensional Forge Coil Improvement")
+    val HyperDimensionalForgeCoil = MainTree.builder("hyper_dimensional_forge_coil", "超维锻造线圈改良", "Hyper-Dimensional Forge Coil Improvement")
         .description("用于超维锻造的线圈，汇聚来自高维空间的热量", "A coil used for hyper-dimensional forging, gathering heat from higher-dimensional space")
         .icon(RegistriesUtils.getItem("gtocore:infinity_coil_block"))
         .prerequisites(HyperDimensionalForge)
@@ -1178,7 +1180,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val UniverseSimulation = TechTree.builder("universe_simulation", "宇宙模拟技术", "Universe Simulation Technology")
+    val UniverseSimulation = MainTree.builder("universe_simulation", "宇宙模拟技术", "Universe Simulation Technology")
         .description("宇宙冷漠，这张牌我是非常了解的", "The universe is indifferent, and I am very familiar with this card")
         .icon(RegistriesUtils.getItem("gtocore:eye_of_harmony"))
         .prerequisites(VirtualUniverseDataStorage)
@@ -1193,7 +1195,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val AwakenedCore = TechTree.builder("awakened_core", "觉醒核心", "Awakened Core")
+    val AwakenedCore = MainTree.builder("awakened_core", "觉醒核心", "Awakened Core")
         .description("觉醒你内在的神龙之力", "Awaken your inner dragon power")
         .icon(RegistriesUtils.getItem("gtocore:awakened_core"))
         .prerequisites(DragonCore)
@@ -1208,7 +1210,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ChaosCore = TechTree.builder("chaos_core", "混沌核心", "Chaos Core")
+    val ChaosCore = MainTree.builder("chaos_core", "混沌核心", "Chaos Core")
         .description("§k混沌混沌混沌混沌混沌§r", "§kChaos C haos Ch aosCha osChaos§r")
         .icon(RegistriesUtils.getItem("gtocore:chaotic_core"))
         .prerequisites(AwakenedCore)
@@ -1223,7 +1225,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SuprachronalDrone = TechTree.builder("suprachronal_drone", "超时空无人机", "Suprachronal Drone")
+    val SuprachronalDrone = MainTree.builder("suprachronal_drone", "超时空无人机", "Suprachronal Drone")
         .description("在维度之外工作，随意的穿梭于不同的时空中", "Working outside of dimensions, freely shuttling through different space-times")
         .icon(RegistriesUtils.getItem("gtocore:hyperdimensional_drone"))
         .prerequisites(SuprachronalAssemblyLine)
@@ -1238,7 +1240,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val SuprachronalCircuits = TechTree.builder("suprachronal_circuits", "超时空电路", "Suprachronal Circuits")
+    val SuprachronalCircuits = MainTree.builder("suprachronal_circuits", "超时空电路", "Suprachronal Circuits")
         .description("随意的提供任意级别的计算能力", "Freely provide any level of computing power")
         .icon(RegistriesUtils.getItem("gtocore:suprachronal_circuit_max"))
         .prerequisites(SuprachronalDrone)
@@ -1253,7 +1255,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val Create = TechTree.builder("create", "创造", "Create")
+    val Create = MainTree.builder("create", "创造", "Create")
         .description("创造一切", "Create everything")
         .icon(RegistriesUtils.getItem("minecraft:command_block"))
         .prerequisites(ChaosCore)

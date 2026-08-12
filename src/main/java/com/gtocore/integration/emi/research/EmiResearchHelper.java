@@ -6,7 +6,6 @@ import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.machine.electric.ScannerMachine;
-import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -60,17 +59,17 @@ public final class EmiResearchHelper {
         var plr = Minecraft.getInstance().player;
         if (plr != null) {
             var ctx = TeamResearchSavedDtat.getOrCreateContext(plr);
-            return Component.translatable(TEAM_TOTAL_NAME, ctx.getResearchPoints().getLong(tag)).withStyle(ChatFormatting.GRAY);
+            return Component.translatable(TEAM_TOTAL_NAME, ctx.researchPoints().getLong(tag)).withStyle(ChatFormatting.GRAY);
         }
         return Component.translatable(TEAM_TOTAL_NAME, 0L).withStyle(ChatFormatting.GRAY);
     }
 
-    public static Component getTechNodeState(TechNode tag) {
+    public static Component getTechNodeState(TechNode node) {
         var plr = Minecraft.getInstance().player;
         if (plr != null) {
-            var plrTree = TechTreeSavedData.findTree(plr, BaseNodes.TechTree);
+            var plrTree = TechTreeSavedData.findTree(plr, node.getManager());
             if (plrTree != null) {
-                var ctx = plrTree.getUnlockedNodes().contains(tag);
+                var ctx = plrTree.getUnlockedNodes().contains(node);
                 return Component.translatable("gtocore.techtree.widget.status." + (ctx ? "unlocked" : "locked"))
                         .withStyle(ctx ? ChatFormatting.GREEN : ChatFormatting.GOLD);
             }
