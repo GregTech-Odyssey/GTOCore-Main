@@ -181,7 +181,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         return MultiBlockFileReader.start(definition)
                 .where('~', Predicates.controller(definition))
                 .where(' ', Predicates.any())
-                .where('A', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()).or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMaxGlobalLimited(1)))
+                .wherePart('A', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()).or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMaxGlobalLimited(1)))
                 .where('B', Predicates.blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get()))
                 .where('C', Predicates.blocks(GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get()))
                 .where('D', Predicates.blocks(GTOBlocks.BOUNDLESS_GRAVITATIONALLY_SEVERED_STRUCTURE_CASING.get()))

@@ -64,7 +64,7 @@ public final class GTMachineModify {
                 .aisle("XXX", "XSX", "XXX")
                 .where('S', Predicates.controller(definition))
                 .where('#', air())
-                .where('X', blocks(CASING_BRONZE_BRICKS.get())
+                .wherePart('X', blocks(CASING_BRONZE_BRICKS.get())
                         .or(abilities(PartAbility.STEAM_IMPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1))
                         .or(abilities(PartAbility.STEAM_EXPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1))
                         .or(abilities(PartAbility.STEAM).setExactLimit(1))
@@ -78,7 +78,7 @@ public final class GTMachineModify {
                 .where('S', controller(definition))
                 .where('#', air())
                 .where(' ', any())
-                .where('X', blocks(CASING_BRONZE_BRICKS.get())
+                .wherePart('X', blocks(CASING_BRONZE_BRICKS.get())
                         .or(Predicates.abilities(PartAbility.STEAM_IMPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1))
                         .or(Predicates.abilities(PartAbility.STEAM_EXPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1)))
                 .where('F', blocks(FIREBOX_BRONZE.get())
@@ -90,7 +90,7 @@ public final class GTMachineModify {
                 .aisle("XXX", "XXX", "XXX", "XXX")
                 .aisle("XXX", "X#X", "X#X", "X#X")
                 .aisle("XXX", "XYX", "XXX", "XXX")
-                .where('X', blocks(CASING_PRIMITIVE_BRICKS.get()).or(blocks(PRIMITIVE_BLAST_FURNACE_HATCH.get()).setMaxGlobalLimited(5)))
+                .wherePart('X', blocks(CASING_PRIMITIVE_BRICKS.get()).or(blocks(PRIMITIVE_BLAST_FURNACE_HATCH.get()).setMaxGlobalLimited(5)))
                 .where('#', air())
                 .where('Y', controller(definition))
                 .build()));
@@ -104,7 +104,7 @@ public final class GTMachineModify {
                 .where('X', blocks(FIREBOX_BRONZE.get()).setMinGlobalLimited(5)
                         .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMinGlobalLimited(1).setPreviewCount(1))
                         .or(Predicates.abilities(PartAbility.IMPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1)))
-                .where('C', blocks(CASING_BRONZE_BRICKS.get()).setMinGlobalLimited(20).or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setMinGlobalLimited(1).setPreviewCount(1)))
+                .wherePart('C', blocks(CASING_BRONZE_BRICKS.get()).setMinGlobalLimited(20).or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setMinGlobalLimited(1).setPreviewCount(1)))
                 .build()));
 
         GTMultiMachines.DISTILLATION_TOWER.setPatternFactory(List.of(definition -> {
@@ -116,7 +116,7 @@ public final class GTMachineModify {
                     .aisle("XXX", "X#X", "XXX").setRepeatable(0, 10)
                     .aisle("XXX", "XXX", "XXX")
                     .where('S', Predicates.controller(definition))
-                    .where('Y', blocks(CASING_STAINLESS_CLEAN.get())
+                    .wherePart('Y', blocks(CASING_STAINLESS_CLEAN.get())
                             .or(Predicates.abilities(PartAbility.EXPORT_ITEMS).setMaxGlobalLimited(1))
                             .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(2))
                             .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setExactLimit(1))

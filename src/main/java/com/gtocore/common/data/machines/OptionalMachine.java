@@ -51,7 +51,7 @@ public final class OptionalMachine {
             .recipeModifier(GTORecipeModifiers.PARALLEL)
             .block(GTBlocks.CASING_STEEL_SOLID)
             .pattern(definition -> MultiBlockFileReader.start(definition)
-                    .where('A', blocks(GTBlocks.CASING_STEEL_SOLID.get())
+                    .wherePart('A', blocks(GTBlocks.CASING_STEEL_SOLID.get())
                             .or(abilities(IMPORT_ITEMS).setMaxGlobalLimited(4))
                             .or(abilities(EXPORT_ITEMS).setMaxGlobalLimited(1))
                             .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2))
