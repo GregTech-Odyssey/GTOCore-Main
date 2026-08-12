@@ -2,6 +2,9 @@ package com.gtocore.api.research.techtree.ui;
 
 import com.gtocore.api.research.techtree.TechNode;
 
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,8 +33,8 @@ public final class TechTreeAutoLayout {
         List<TechNode> nodes = new ArrayList<>(definitions);
         nodes.sort(nameOrder);
 
-        Map<TechNode, List<TechNode>> children = new IdentityHashMap<>();
-        Map<TechNode, Integer> indegrees = new IdentityHashMap<>();
+        Reference2ObjectOpenHashMap<TechNode, List<TechNode>> children = new Reference2ObjectOpenHashMap<>();
+        Reference2IntOpenHashMap<TechNode> indegrees = new Reference2IntOpenHashMap<>();
         for (var node : nodes) {
             children.put(node, new ArrayList<>());
             indegrees.put(node, 0);
@@ -46,7 +49,7 @@ public final class TechTreeAutoLayout {
                     throw new IllegalStateException("Tech node " + node.name + " references unknown prerequisite " + prerequisite.name);
                 }
                 dependentNodes.add(node);
-                indegrees.put(node, indegrees.get(node) + 1);
+                indegrees.addTo(node, 1);
             }
         }
         for (var dependentNodes : children.values()) {
@@ -86,11 +89,11 @@ public final class TechTreeAutoLayout {
     }
 
     private static List<TechNode> topologicalSort(List<TechNode> nodes,
-                                                  Map<TechNode, Integer> indegrees,
-                                                  Map<TechNode, List<TechNode>> children) {
+                                                  Reference2IntOpenHashMap<TechNode> indegrees,
+                                                  Reference2ObjectOpenHashMap<TechNode, List<TechNode>> children) {
         PriorityQueue<TechNode> queue = new PriorityQueue<>(nameOrder);
         for (var node : nodes) {
-            if (indegrees.get(node) == 0) {
+            if (indegrees.getInt(node) == 0) {
                 queue.add(node);
             }
         }
@@ -100,7 +103,7 @@ public final class TechTreeAutoLayout {
             TechNode node = queue.remove();
             ordered.add(node);
             for (var child : children.get(node)) {
-                int remaining = indegrees.get(child) - 1;
+                int remaining = indegrees.getInt(child) - 1;
                 indegrees.put(child, remaining);
                 if (remaining == 0) {
                     queue.add(child);
@@ -111,7 +114,7 @@ public final class TechTreeAutoLayout {
         if (ordered.size() != nodes.size()) {
             List<String> cycleNodes = new ArrayList<>();
             for (var node : nodes) {
-                if (indegrees.get(node) > 0) {
+                if (indegrees.getInt(node) > 0) {
                     cycleNodes.add(node.name);
                 }
             }
