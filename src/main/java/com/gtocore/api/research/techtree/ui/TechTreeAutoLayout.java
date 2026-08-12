@@ -34,15 +34,19 @@ public final class TechTreeAutoLayout {
         Map<TechNode, Integer> indegrees = new IdentityHashMap<>();
         for (var node : nodes) {
             children.put(node, new ArrayList<>());
-            indegrees.put(node, node.prerequisites.size());
+            indegrees.put(node, 0);
         }
         for (var node : nodes) {
             for (var prerequisite : node.prerequisites) {
+                if (prerequisite.getManager() != node.getManager()) {
+                    continue;
+                }
                 List<TechNode> dependentNodes = children.get(prerequisite);
                 if (dependentNodes == null) {
                     throw new IllegalStateException("Tech node " + node.name + " references unknown prerequisite " + prerequisite.name);
                 }
                 dependentNodes.add(node);
+                indegrees.put(node, indegrees.get(node) + 1);
             }
         }
         for (var dependentNodes : children.values()) {
@@ -122,7 +126,13 @@ public final class TechTreeAutoLayout {
         for (var node : topoOrder) {
             int depth = 0;
             for (var prerequisite : node.prerequisites) {
-                depth = Math.max(depth, depths.get(prerequisite) + 1);
+                if (prerequisite.getManager() != node.getManager()) {
+                    continue;
+                }
+                Integer prerequisiteDepth = depths.get(prerequisite);
+                if (prerequisiteDepth != null) {
+                    depth = Math.max(depth, prerequisiteDepth + 1);
+                }
             }
             depths.put(node, depth);
         }
@@ -202,14 +212,35 @@ public final class TechTreeAutoLayout {
 
         Map<TechNode, Double> barycenters = new IdentityHashMap<>();
         for (var node : columnNodes) {
-            List<TechNode> neighbors = usePrerequisites ? node.prerequisites : children.get(node);
-            barycenters.put(node, averageNeighborRow(neighbors, rowIndices, rowIndices.getOrDefault(node, 0)));
+            int fallback = rowIndices.getOrDefault(node, 0);
+            double barycenter = usePrerequisites ?
+                    averagePrerequisiteRow(node, rowIndices, fallback) :
+                    averageNeighborRow(children.get(node), rowIndices, fallback);
+            barycenters.put(node, barycenter);
         }
 
         columnNodes.sort(Comparator
                 .comparingDouble((TechNode node) -> barycenters.get(node))
                 .thenComparingInt(node -> rowIndices.getOrDefault(node, 0))
                 .thenComparing(node -> node.name));
+    }
+
+    private static double averagePrerequisiteRow(TechNode node,
+                                                 Map<TechNode, Integer> rowIndices,
+                                                 int fallback) {
+        double sum = 0;
+        int count = 0;
+        for (var prerequisite : node.prerequisites) {
+            if (prerequisite.getManager() != node.getManager()) {
+                continue;
+            }
+            Integer row = rowIndices.get(prerequisite);
+            if (row != null) {
+                sum += row;
+                count++;
+            }
+        }
+        return count == 0 ? fallback : sum / count;
     }
 
     private static double averageNeighborRow(List<TechNode> neighbors,

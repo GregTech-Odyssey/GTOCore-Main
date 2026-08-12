@@ -8,6 +8,7 @@ import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.integration.emi.research.EmiResearchHelper;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -97,7 +98,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private static final int CWU_BAR_COLOR = 0xFF39C5BB;
     private static final int CWU_BAR_BORDER = 0xFF8BE7DE;
 
-    private final TechTreeManager manager;
+    private TechTreeManager manager;
     private final Function<Player, TeamResearchContext> contextFactory;
     private SyncState currentState = SyncState.hidden();
     private SyncState lastSentState = SyncState.hidden();
@@ -135,12 +136,25 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         showNode(selectedNode == node ? null : node);
     }
 
+    public void setManager(TechTreeManager manager) {
+        if (this.manager == manager) {
+            return;
+        }
+        this.manager = manager;
+        selectedNode = null;
+        currentState = SyncState.hidden();
+        lastSentState = SyncState.hidden();
+        cachedRowsState = null;
+        cachedRowsNode = null;
+        cachedRows = Collections.emptyList();
+        setVisible(false).setActive(false);
+    }
+
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        var mc = Minecraft.getInstance();
-        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        var mouseX = GuiHelper.getRealMouseX();
+        var mouseY = GuiHelper.getRealMouseY();
         if (isMouseOver()) {
             var ing = getXEIIngredientOverMouse(mouseX, mouseY);
             if (ing != null) {
@@ -337,9 +351,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
     @OnlyIn(Dist.CLIENT)
     private boolean isMouseOver() {
-        var mc = Minecraft.getInstance();
-        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        var mouseX = GuiHelper.getRealMouseX();
+        var mouseY = GuiHelper.getRealMouseY();
         return isMouseOverElement(mouseX, mouseY);
     }
 
@@ -565,8 +578,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             var size = getSize();
             var minecraft = Minecraft.getInstance();
             Font font = minecraft.font;
-            int i = (int) (minecraft.mouseHandler.xpos() * (double) minecraft.getWindow().getGuiScaledWidth() / (double) minecraft.getWindow().getScreenWidth());
-            int j = (int) (minecraft.mouseHandler.ypos() * (double) minecraft.getWindow().getGuiScaledHeight() / (double) minecraft.getWindow().getScreenHeight());
+            int i = (int) GuiHelper.getRealMouseX();
+            int j = (int) GuiHelper.getRealMouseY();
             int contentX = pos.x + CONTENT_PADDING;
             int contentY = pos.y + CONTENT_PADDING;
             int contentWidth = size.width - CONTENT_PADDING * 2;

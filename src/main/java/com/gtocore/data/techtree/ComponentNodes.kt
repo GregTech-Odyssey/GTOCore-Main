@@ -7,6 +7,8 @@ import com.gtocore.api.research.ResearchTag.ENERGY
 import com.gtocore.api.research.techtree.TechNode
 import com.gtocore.common.data.GTOBlocks
 import com.gtocore.common.data.GTOItems
+import com.gtocore.data.techtree.BaseNodes.ComponentTree
+import com.gtocore.data.techtree.BaseNodes.EnergyTree
 import com.gtocore.data.techtree.BaseNodes.MainTree
 
 import net.minecraft.world.level.block.Block
@@ -27,7 +29,7 @@ import kotlin.collections.map
 
 object ComponentNodes : AutoInitialize<BaseNodes>() {
     @JvmField
-    val ComponentInAssemblyLineluv = MainTree.builder("component_in_assembly_line", "装配线基础部件", "Basic components in assembly line")
+    val ComponentInAssemblyLineluv = ComponentTree.builder("component_in_assembly_line", "装配线基础部件", "Basic components in assembly line")
         .description("在装配线中组装基础的组件", "Assemble basic components in the assembly line")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.FIELD_GENERATOR_IV, 1.0f).build())
         .icon(GTItems.FIELD_GENERATOR_LuV)
@@ -35,7 +37,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLinezpm = MainTree.builder("component_in_assembly_line1", "装配线进阶部件I", "Advanced components in assembly line I")
+    val ComponentInAssemblyLinezpm = ComponentTree.builder("component_in_assembly_line1", "装配线进阶部件I", "Advanced components in assembly line I")
         .description("在装配线中组装更加复杂的部件", "Assemble more complex components in the assembly line")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 240L).setEurekaItem(GTItems.FIELD_GENERATOR_LuV, 1.0f).build())
         .icon(GTItems.FIELD_GENERATOR_ZPM)
@@ -44,7 +46,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLineuv = MainTree.builder("component_in_assembly_line2", "装配线进阶部件II", "Advanced components in assembly line II")
+    val ComponentInAssemblyLineuv = ComponentTree.builder("component_in_assembly_line2", "装配线进阶部件II", "Advanced components in assembly line II")
         .description("利用三钛合金制造成更加强悍的部件", "Use trititanium alloy to manufacture even more powerful components")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1200L).setEurekaItem(GTItems.FIELD_GENERATOR_ZPM, 0.8f).build())
         .icon(GTItems.FIELD_GENERATOR_UV)
@@ -53,7 +55,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLineuhv = MainTree.builder("component_in_assembly_line3", "装配线进阶部件III", "Advanced components in assembly line III")
+    val ComponentInAssemblyLineuhv = ComponentTree.builder("component_in_assembly_line3", "装配线进阶部件III", "Advanced components in assembly line III")
         .description("充能下界合金的磁化与山铜为其带来了更强的动力与耐久性", "The magnetization of charged nether alloy and the addition of copper bring it stronger power and durability")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1800L).setEurekaItem(GTItems.FIELD_GENERATOR_UV, 0.7f).build())
         .icon(GTItems.FIELD_GENERATOR_UHV)
@@ -62,7 +64,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLineuev = MainTree.builder("component_in_assembly_line4", "装配线进阶部件IV", "Advanced components in assembly line IV")
+    val ComponentInAssemblyLineuev = ComponentTree.builder("component_in_assembly_line4", "装配线进阶部件IV", "Advanced components in assembly line IV")
         .description("搭载了下一代末影耐造材料与技术", "Equipped with next-generation enderly durable materials and technology")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(325 * 20 * 2400L).setEurekaItem(GTItems.FIELD_GENERATOR_UHV, 0.7f).build())
         .icon(GTItems.FIELD_GENERATOR_UEV)
@@ -71,7 +73,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLineuiv = MainTree.builder("component_in_assembly_line5", "装配线进阶部件V", "Advanced components in assembly line V")
+    val ComponentInAssemblyLineuiv = ComponentTree.builder("component_in_assembly_line5", "装配线进阶部件V", "Advanced components in assembly line V")
         .description("制造能抗住微型黑洞的新部件", "Manufacture new components that can withstand micro black holes")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(800 * 20 * 2400L).setEurekaItem(GTItems.FIELD_GENERATOR_UEV, 0.7f).build())
         .icon(GTItems.FIELD_GENERATOR_UIV)
@@ -80,7 +82,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLineuxv = MainTree.builder("component_in_assembly_line6", "装配线进阶部件VI", "Advanced components in assembly line VI")
+    val ComponentInAssemblyLineuxv = ComponentTree.builder("component_in_assembly_line6", "装配线进阶部件VI", "Advanced components in assembly line VI")
         .description("制造撕裂宇宙的新部件", "Manufacture new components that can tear the universe apart")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(2000 * 20 * 3600L).setEurekaItem(GTItems.FIELD_GENERATOR_UIV, 0.7f).build())
         .icon(GTItems.FIELD_GENERATOR_UXV)
@@ -89,7 +91,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLineopv = MainTree.builder("component_in_assembly_line7", "装配线进阶部件VII", "Advanced components in assembly line VII")
+    val ComponentInAssemblyLineopv = ComponentTree.builder("component_in_assembly_line7", "装配线进阶部件VII", "Advanced components in assembly line VII")
         .description("将混沌神龙力量注入到部件中", "Inject the power of the chaotic dragon into the components")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(16000 * 20 * 4000L).setEurekaItem(GTItems.FIELD_GENERATOR_UXV, 0.7f).build())
         .icon(GTItems.FIELD_GENERATOR_OpV)
@@ -98,7 +100,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val ComponentInAssemblyLinemax = MainTree.builder("component_in_assembly_line8", "装配线进阶部件VIII", "Advanced components in assembly line VIII")
+    val ComponentInAssemblyLinemax = ComponentTree.builder("component_in_assembly_line8", "装配线进阶部件VIII", "Advanced components in assembly line VIII")
         .description("通过扭曲时空来驱动的永恒之马达", "The eternal motor driven by twisting space-time")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32000 * 20 * 4800L).setEurekaItem(GTItems.FIELD_GENERATOR_OpV, 0.7f).build())
         .icon(GTOItems.MAX_FIELD_GENERATOR)
@@ -136,7 +138,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         if (tier >= ZPM) {
             req.addMaterialNeeded(ASSEMBLY, (64L shl (tier - ZPM)))
         }
-        val node = MainTree.builder(
+        val node = ComponentTree.builder(
             "component_casing$tier",
             "装配线部件外壳${VN[tier]}",
             "Assembly Line Component Casing ${VN[tier]}",
@@ -169,7 +171,7 @@ object ComponentNodes : AutoInitialize<BaseNodes>() {
         if (tier >= UV) {
             req.addMaterialNeeded(ENERGY, 256L * (1 shl (tier - UV)))
         }
-        val node = MainTree.builder(
+        val node = EnergyTree.builder(
             "energy_io$tier",
             "高压能量输入输出${FormattingUtil.toRomanNumeral(tier - IV)}",
             "High Voltage Energy Input/Output${FormattingUtil.toRomanNumeral(tier - IV)}",

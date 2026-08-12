@@ -12,6 +12,7 @@ import com.gtocore.data.techtree.BaseNodes.AdvancedMassFabricationTech
 import com.gtocore.data.techtree.BaseNodes.AtomicEnergyExciting
 import com.gtocore.data.techtree.BaseNodes.BiowareTech
 import com.gtocore.data.techtree.BaseNodes.DysonSphereSeriesCasing
+import com.gtocore.data.techtree.BaseNodes.EnergyTree
 import com.gtocore.data.techtree.BaseNodes.MainTree
 
 import com.gregtechceu.gtceu.common.data.GTItems
@@ -19,14 +20,14 @@ import com.gtolib.utils.RegistriesUtils
 
 object EnergyNodes : AutoInitialize<EnergyNodes>() {
     @JvmField
-    val LapotronEnergeStorge = MainTree.builder("high_density_energy_storage", "兰博顿水晶能量存储", "Lapotron Crystal Energy Storage")
+    val LapotronEnergeStorge = EnergyTree.builder("high_density_energy_storage", "兰博顿水晶能量存储", "Lapotron Crystal Energy Storage")
         .description("利用高能量密度的兰博顿水晶，通过不断的压缩与优化，实现高效的能量存储与释放", "Utilize high energy density Lapotron crystals, through continuous compression and optimization, to achieve efficient energy storage and release")
         .requirements(ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.ENERGY_LAPOTRONIC_ORB, 1.0f).build())
         .icon(GTItems.ENERGY_LAPOTRONIC_ORB_CLUSTER)
         .build()
 
     @JvmField
-    val EnergyFluxAnalysis = MainTree.builder("energy_flux_analysis", "能量流分析", "Energy Flux Analysis")
+    val EnergyFluxAnalysis = EnergyTree.builder("energy_flux_analysis", "能量流分析", "Energy Flux Analysis")
         .description("分析能量流的传输与分布，实现高效的能量管理与优化", "Analyze the transmission and distribution of energy flux, achieving efficient energy management and optimization")
         .icon(RegistriesUtils.getItem("gtmthings:wireless_energy_terminal"))
         .prerequisites(LapotronEnergeStorge)
@@ -41,7 +42,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val UltimateEnergyStorage = MainTree.builder("ultimate_energy_storage", "终极能量存储", "Ultimate Energy Storage")
+    val UltimateEnergyStorage = EnergyTree.builder("ultimate_energy_storage", "终极能量存储", "Ultimate Energy Storage")
         .description("将至少500倍体积的兰博顿水晶压缩到一个电池中存储的技术", "The technology of compressing at least 500 times the volume of Lapotron crystals into a single battery for storage")
         .icon(GTItems.ULTIMATE_BATTERY)
         .prerequisites(LapotronEnergeStorge)
@@ -56,7 +57,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val UltimateBattery2 = MainTree.builder("ultimate_battery2", "终极电池II", "Ultimate Battery II")
+    val UltimateBattery2 = EnergyTree.builder("ultimate_battery2", "终极电池II", "Ultimate Battery II")
         .description("换了颜色的终极电池", "A different colored ultimate battery")
         .icon(GTOItems.REALLY_MAX_BATTERY)
         .prerequisites(UltimateEnergyStorage)
@@ -71,7 +72,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val UltimateBattery3 = MainTree.builder("ultimate_battery3", "终极电池III", "Ultimate Battery III")
+    val UltimateBattery3 = EnergyTree.builder("ultimate_battery3", "终极电池III", "Ultimate Battery III")
         .description("换了颜色的终极电池II", "A different colored ultimate battery II")
         .icon(GTOItems.TRANSCENDENT_MAX_BATTERY)
         .prerequisites(UltimateBattery2)
@@ -86,7 +87,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val UltimateBattery4 = MainTree.builder("ultimate_battery4", "终极电池IV", "Ultimate Battery IV")
+    val UltimateBattery4 = EnergyTree.builder("ultimate_battery4", "终极电池IV", "Ultimate Battery IV")
         .description("颜色更加鲜艳的终极电池III", "An even more colorful ultimate battery III")
         .icon(GTOItems.EXTREMELY_MAX_BATTERY)
         .prerequisites(UltimateBattery3)
@@ -101,7 +102,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val UltimateBattery5 = MainTree.builder("ultimate_battery5", "终极电池V", "Ultimate Battery V")
+    val UltimateBattery5 = EnergyTree.builder("ultimate_battery5", "终极电池V", "Ultimate Battery V")
         .description("看起来比较疯狂的终极电池IV", "A seemingly insane ultimate battery IV")
         .icon(GTOItems.INSANELY_MAX_BATTERY)
         .prerequisites(UltimateBattery4)
@@ -116,7 +117,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val UltimateBattery6 = MainTree.builder("ultimate_battery6", "终极电池VI", "Ultimate Battery VI")
+    val UltimateBattery6 = EnergyTree.builder("ultimate_battery6", "终极电池VI", "Ultimate Battery VI")
         .description("终极电池的终极形态，看着很帅", "The ultimate form of the ultimate battery, looks very cool")
         .icon(GTOItems.MEGA_MAX_BATTERY)
         .prerequisites(UltimateBattery5)
@@ -131,7 +132,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val HyperReactor = MainTree.builder("hyper_reactor", "超能反应堆", "Hyper Reactor")
+    val HyperReactor = EnergyTree.builder("hyper_reactor", "超能反应堆", "Hyper Reactor")
         .description("用于对超高能硅岩燃料进行反应的超高能反应堆，能够提供极高的能量输出与出色的运行性能", "A hyper reactor used for reacting with hyper-silicon fuel, capable of providing extremely high energy output and excellent operating performance")
         .icon(RegistriesUtils.getItem("gtocore:hyper_reactor"))
         .prerequisites(AtomicEnergyExciting)
@@ -146,7 +147,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val AdvancedHyperReactor = MainTree.builder("advanced_hyper_reactor", "进阶超高能反应堆", "Advanced Hyper Reactor")
+    val AdvancedHyperReactor = EnergyTree.builder("advanced_hyper_reactor", "进阶超高能反应堆", "Advanced Hyper Reactor")
         .description("用于对更加浓缩的超高能硅岩燃料进行反应的超高能反应堆，能够提供更高的能量输出与更稳定的运行性能", "A hyper reactor used for reacting with more concentrated hyper-silicon fuel, capable of providing higher energy output and more stable operating performance")
         .icon(RegistriesUtils.getItem("gtocore:advanced_hyper_reactor"))
         .prerequisites(HyperReactor)
@@ -161,7 +162,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val DysonSphere = MainTree.builder("dyson_sphere", "戴森球建造技术", "Dyson Sphere Construction Technology")
+    val DysonSphere = EnergyTree.builder("dyson_sphere", "戴森球建造技术", "Dyson Sphere Construction Technology")
         .description("掌握戴森球的建造技术，通过发射大量的戴森球组件，最终在恒星周围形成一个完整的戴森球，实现对恒星能量的最大化利用", "Master the construction technology of Dyson spheres, by launching a large number of Dyson sphere components, eventually forming a complete Dyson sphere around the star, achieving maximum utilization of stellar energy")
         .icon(RegistriesUtils.getItem("gtocore:dyson_sphere_launch_silo"))
         .prerequisites(DysonSphereSeriesCasing)
@@ -176,7 +177,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val BioEnergyConversion = MainTree.builder("bio_energy_conversion", "生物能量转换技术", "Bio-Energy Conversion Technology")
+    val BioEnergyConversion = EnergyTree.builder("bio_energy_conversion", "生物能量转换技术", "Bio-Energy Conversion Technology")
         .description("利用生物体的代谢过程，将生物能量转化为可用的电能，实现绿色能源的高效利用", "Utilize the metabolic processes of organisms to convert bio-energy into usable electrical energy, achieving efficient use of green energy")
         .icon(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"))
         .prerequisites(BiowareTech)
@@ -192,7 +193,7 @@ object EnergyNodes : AutoInitialize<EnergyNodes>() {
         .build()
 
     @JvmField
-    val AnnihilationGenerator = MainTree.builder("annihilation_generator", "湮灭发电机", "Annihilation Generator")
+    val AnnihilationGenerator = EnergyTree.builder("annihilation_generator", "湮灭发电机", "Annihilation Generator")
         .description("通过物质与反物质的湮灭反应，产生巨大的能量输出", "Generate enormous energy output through matter-antimatter annihilation reactions")
         .icon(RegistriesUtils.getItem("gtocore:annihilate_generator"))
         .prerequisites(AdvancedMassFabricationTech)

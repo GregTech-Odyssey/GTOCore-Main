@@ -6,6 +6,7 @@ import com.gtocore.api.research.techtree.TechTree;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -36,13 +37,14 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.screen.EmiScreenManager;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -69,6 +71,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private static final int ICON_SIZE = 16;
     private static final int ICON_OFFSET = 5;
     private static final int CONTENT_PADDING = 24;
+    private static final int CONTENT_TOP_PADDING = 2;
     private static final int SCROLL_BAR_SIZE = 4;
     private static final int LINE_THICKNESS = 2;
     private static final int TIER_SEPARATOR_DASH_LENGTH = 6;
@@ -81,20 +84,20 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private static final double ZOOM_STEP = 1.15D;
     private static final double CLICK_DRAG_THRESHOLD = 3.0D;
 
-    private final TechTreeManager manager;
+    private TechTreeManager manager;
     private final @Nullable Function<Player, TeamResearchContext> unlockArgumentsFactory;
-    private final TechTreeLayout layout;
-    private final List<TechNode> orderedNodes;
-    private final Map<TechNode, Integer> nodeIndices;
+    private TechTreeLayout layout;
+    private List<TechNode> orderedNodes;
+    private final IdentityHashMap<TechNode, Integer> nodeIndices;
     private byte[] nodeStates;
     private int contentOffsetX;
     private int contentOffsetY;
     private int contentWidth;
     private int contentHeight;
-    private final int minNodeX;
-    private final int minNodeY;
-    private final int maxNodeX;
-    private final int maxNodeY;
+    private int minNodeX;
+    private int minNodeY;
+    private int maxNodeX;
+    private int maxNodeY;
     private double zoom = 1.0D;
     private @Nullable TechNode highlightedNode;
     private @Nullable TechNode selectedNode;
@@ -112,25 +115,47 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     public TechTreeWidget(int x, int y, int width, int height, TechTreeManager manager,
                           @Nullable Function<Player, TeamResearchContext> unlockArgumentsFactory) {
         super(x, y, width, height);
-        this.manager = manager;
         this.unlockArgumentsFactory = unlockArgumentsFactory;
-        this.layout = manager.getLayout();
-        this.orderedNodes = layout.orderedNodes();
         this.nodeIndices = new IdentityHashMap<>();
-        for (int i = 0; i < orderedNodes.size(); i++) {
-            nodeIndices.put(orderedNodes.get(i), i);
-        }
-        this.nodeStates = new byte[orderedNodes.size()];
-        this.minNodeX = layout.minX();
-        this.minNodeY = layout.minY();
-        this.maxNodeX = layout.maxX();
-        this.maxNodeY = layout.maxY();
+        loadManager(manager);
 
         setBackground(GuiTextures.DISPLAY);
         setDraggable(true);
         setYBarStyle(GuiTextures.BACKGROUND_INVERSE, GuiTextures.BUTTON);
         setXBarStyle(GuiTextures.BACKGROUND_INVERSE, GuiTextures.BUTTON);
         rebuildWidgets();
+    }
+
+    private void loadManager(TechTreeManager manager) {
+        this.manager = manager;
+        this.layout = manager.getLayout();
+        this.orderedNodes = layout.orderedNodes();
+        nodeIndices.clear();
+        for (int i = 0; i < orderedNodes.size(); i++) {
+            nodeIndices.put(orderedNodes.get(i), i);
+        }
+        nodeStates = new byte[orderedNodes.size()];
+        minNodeX = layout.minX();
+        minNodeY = layout.minY();
+        maxNodeX = layout.maxX();
+        maxNodeY = layout.maxY();
+    }
+
+    public void setManager(TechTreeManager newManager) {
+        if (manager == newManager) {
+            return;
+        }
+        loadManager(newManager);
+        zoom = 1.0D;
+        highlightedNode = null;
+        selectedNode = null;
+        capturedMouseInteraction = false;
+        rebuildWidgets();
+        if (isClientSideWidget) {
+            nodeStates = collectNodeStates(getGuiPlayer());
+        } else {
+            syncNodeStates();
+        }
     }
 
     private void rebuildWidgets() {
@@ -148,17 +173,18 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         if (orderedNodes.isEmpty()) {
             int padding = getScaledPadding();
             contentOffsetX = padding;
-            contentOffsetY = padding;
+            contentOffsetY = getScaledTopPadding();
             contentWidth = Math.max(getSize().width, padding * 2);
-            contentHeight = Math.max(getSize().height, padding * 2);
+            contentHeight = Math.max(getSize().height, contentOffsetY + padding);
             return;
         }
 
         int padding = getScaledPadding();
+        int topPadding = getScaledTopPadding();
         contentOffsetX = padding - scaleValue(minNodeX);
-        contentOffsetY = padding - scaleValue(minNodeY);
+        contentOffsetY = topPadding - scaleValue(minNodeY);
         contentWidth = scaleValue(maxNodeX - minNodeX) + getScaledNodeSize() + padding * 2;
-        contentHeight = scaleValue(maxNodeY - minNodeY) + getScaledNodeSize() + padding * 2;
+        contentHeight = scaleValue(maxNodeY - minNodeY) + getScaledNodeSize() + topPadding + padding;
     }
 
     private void refreshScrollState() {
@@ -189,6 +215,10 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
     private int getScaledPadding() {
         return Math.max(2, scaleValue(CONTENT_PADDING));
+    }
+
+    private int getScaledTopPadding() {
+        return Math.max(1, scaleValue(CONTENT_TOP_PADDING));
     }
 
     private int getScaledNodeSize() {
@@ -237,19 +267,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
     @OnlyIn(Dist.CLIENT)
     private boolean isMouseWithinBounds() {
-        return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, getRealMouseX(), getRealMouseY());
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private double getRealMouseX() {
-        var mc = Minecraft.getInstance();
-        return mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private double getRealMouseY() {
-        var mc = Minecraft.getInstance();
-        return mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, GuiHelper.getRealMouseX(), GuiHelper.getRealMouseY());
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -262,15 +280,17 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         int localMouseX = Mth.floor(mouseX - getPosition().x);
         int localMouseY = Mth.floor(mouseY - getPosition().y);
         int oldPadding = getScaledPadding();
+        int oldTopPadding = getScaledTopPadding();
         double logicalX = minNodeX + (scrollXOffset + localMouseX - oldPadding) / zoom;
-        double logicalY = minNodeY + (scrollYOffset + localMouseY - oldPadding) / zoom;
+        double logicalY = minNodeY + (scrollYOffset + localMouseY - oldTopPadding) / zoom;
 
         zoom = clampedZoom;
         rebuildWidgets();
 
         int newPadding = getScaledPadding();
+        int newTopPadding = getScaledTopPadding();
         int targetScrollX = Mth.floor(newPadding + (logicalX - minNodeX) * zoom - localMouseX);
-        int targetScrollY = Mth.floor(newPadding + (logicalY - minNodeY) * zoom - localMouseY);
+        int targetScrollY = Mth.floor(newTopPadding + (logicalY - minNodeY) * zoom - localMouseY);
         setScrollXOffset(Mth.clamp(targetScrollX, 0, getHorizontalScrollLimit()));
         setScrollYOffset(Mth.clamp(targetScrollY, 0, getVerticalScrollLimit()));
     }
@@ -282,11 +302,12 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         }
 
         TechTree tree = TechTreeSavedData.getOrCreateTree(player, manager);
+        UUID team = TechTreeSavedData.getTeamUUID(player);
         for (int i = 0; i < orderedNodes.size(); i++) {
             var node = orderedNodes.get(i);
             if (tree.isUnlocked(node)) {
                 states[i] = STATE_UNLOCKED_VALUE;
-            } else if (tree.isAllPrerequisitesUnlocked(node)) {
+            } else if (tree.isAllPrerequisitesUnlocked(node, team)) {
                 states[i] = STATE_AVAILABLE;
             }
         }
@@ -313,9 +334,8 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        var mc = Minecraft.getInstance();
-        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        var mouseX = GuiHelper.getRealMouseX();
+        var mouseY = GuiHelper.getRealMouseY();
         var ing = getXEIIngredientOverMouse(mouseX, mouseY);
         if (ing != null) {
             return EmiScreenManager.stackInteraction(new EmiStackInteraction((EmiIngredient) ing, null, true),
@@ -369,8 +389,16 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
         return index == null ? STATE_LOCKED : getNodeState(index);
     }
 
+    private boolean isPrerequisiteUnlocked(TechNode prerequisite) {
+        if (prerequisite.getManager() == manager) {
+            return getNodeState(prerequisite) == STATE_UNLOCKED_VALUE;
+        }
+        Player player = getGuiPlayer();
+        return player != null && TechTreeSavedData.isUnlocked(player.getUUID(), prerequisite);
+    }
+
     private List<Component> createTooltip(TechNode node, byte state) {
-        List<Component> tooltips = new ArrayList<>();
+        List<Component> tooltips = new ArrayList<>(4 + node.prerequisites.size());
         tooltips.add(TechTreeManager.getNodeName(node).copy().withStyle(getFormattingForState(state)));
         var desc = node.desc();
         if (desc != null) {
@@ -385,10 +413,15 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             tooltips.add(Component.empty());
             tooltips.add(Component.translatable(PREREQUISITES).withStyle(ChatFormatting.YELLOW));
             for (var prerequisite : node.prerequisites) {
-                boolean unlocked = getNodeState(prerequisite) == STATE_UNLOCKED_VALUE;
-                tooltips.add(Component.literal(unlocked ? " - " : " x ")
-                        .append(TechTreeManager.getNodeName(prerequisite))
-                        .withStyle(unlocked ? ChatFormatting.GREEN : ChatFormatting.RED));
+                boolean unlocked = isPrerequisiteUnlocked(prerequisite);
+                var line = Component.literal(unlocked ? " - " : " x ")
+                        .append(TechTreeManager.getNodeName(prerequisite));
+                if (prerequisite.getManager() != manager) {
+                    line.append(" (")
+                            .append(TechTreeManager.getTreeName(prerequisite.getManager()))
+                            .append(")");
+                }
+                tooltips.add(line.withStyle(unlocked ? ChatFormatting.GREEN : ChatFormatting.RED));
             }
         }
         return tooltips;
@@ -567,7 +600,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
             Position pos = getPosition();
             int nodeSize = getScaledNodeSize();
@@ -611,6 +644,9 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             int endX = pos.x + toCanvasX(node) + nodeSize / 2;
             int endY = pos.y + toCanvasY(node) + nodeSize / 2;
             for (var prerequisite : node.prerequisites) {
+                if (prerequisite.getManager() != manager) {
+                    continue;
+                }
                 int startX = pos.x + toCanvasX(prerequisite) + nodeSize / 2;
                 int startY = pos.y + toCanvasY(prerequisite) + nodeSize / 2;
                 int middleX = (startX + endX) / 2;
@@ -688,7 +724,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
             Position pos = getPosition();
             int nodeSize = getSize().width;
@@ -727,7 +763,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
         @Override
         @OnlyIn(Dist.CLIENT)
-        public void drawInForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
             if (!isMouseOverNode()) {
                 return;
@@ -784,7 +820,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
                 return false;
             }
             Position position = getPosition();
-            return isMouseOver(position.x, position.y, getSize().width, getSize().height, getRealMouseX(), getRealMouseY());
+            return isMouseOver(position.x, position.y, getSize().width, getSize().height, GuiHelper.getRealMouseX(), GuiHelper.getRealMouseY());
         }
 
         @Override

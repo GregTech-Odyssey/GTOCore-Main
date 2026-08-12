@@ -69,6 +69,14 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         TechTreeManager("ae_tree", "AE研究树", "AE Research Tree", ItemStackTexture(AEParts.TERMINAL.asItem()))
 
     @JvmField
+    val EnergyTree: TechTreeManager =
+        TechTreeManager("energy_tree", "能源研究树", "Energy Research Tree", ItemStackTexture(GTOItems.EXTREMELY_MAX_BATTERY.asStack()))
+
+    @JvmField
+    val ComponentTree: TechTreeManager =
+        TechTreeManager("component_tree", "组件研究树", "Component Research Tree", ItemStackTexture(GTItems.EMITTER_LuV.asStack()))
+
+    @JvmField
     val TierItems = ImmutableList.of(
         GTItems.TOOL_DATA_STICK,
         GTItems.TOOL_DATA_ORB,
@@ -88,7 +96,9 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         NanitesNodes.init()
         if (!GTCEu.isDataGen()) TechTreeManager.REGISTRY.freeze()
         MainTree.freeze()
+        EnergyTree.freeze()
         AETree.freeze()
+        ComponentTree.freeze()
     }
 
     @JvmField

@@ -4,6 +4,7 @@ import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.scanning.editor.DataScanningEditor;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.editor.TechNodeEditor;
+import com.gtocore.api.research.techtree.ui.TechTreeSelectorWidget;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 import com.gtocore.config.GTOConfig;
 
@@ -64,9 +65,13 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
                 @Override
                 public Widget createMainPage(FancyMachineUIWidget widget) {
-                    var t = new TechTreeWidget(0, 0, 176, 166, manager, TeamResearchSavedDtat::getOrCreateContext);
-                    t.setForce(true);
-                    return t;
+                    var root = new WidgetGroup(0, 0, 176, 166);
+                    var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, 176,
+                            166 - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+                    treeWidget.setForce(true);
+                    root.addWidget(new TechTreeSelectorWidget(0, 0, 176, manager, treeWidget::setManager));
+                    root.addWidget(treeWidget);
+                    return root;
                 }
 
                 @Override

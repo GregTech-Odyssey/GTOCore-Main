@@ -2,11 +2,13 @@ package com.gtocore.data.techtree
 
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.api.research.ResearchRequirements
+import com.gtocore.api.research.ResearchTag.ASSEMBLY
 import com.gtocore.api.research.ResearchTag.CATALYSIS
 import com.gtocore.api.research.ResearchTag.DATA_STORAGE
 import com.gtocore.api.research.ResearchTag.MATERIAL
 import com.gtocore.api.research.ResearchTag.MECHANICS
 import com.gtocore.common.data.GTOItems
+import com.gtocore.common.data.machines.MultiBlockG
 import com.gtocore.data.techtree.BaseNodes.AETree
 import com.gtocore.data.techtree.BaseNodes.MainTree
 
@@ -36,6 +38,22 @@ object AENodes : AutoInitialize<AENodes>() {
                 .setCWUNeeded(64 * 20 * 1200L)
                 .addMaterialNeeded(DATA_STORAGE, 250)
                 .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy"), 0.8F)
+                .build(),
+        )
+        .tier(2)
+        .build()
+
+    @JvmField
+    val MEAdvancedAssembly = AETree.builder("me_advanced_assembly", "ME高级组装", "ME Advanced Assembly")
+        .description("在ME网络中实现更高效的物质信息组装，扩充生产线的跨产品处理能力", "Achieve more efficient matter information assembly in the ME network, expanding the cross-product processing capabilities of production lines")
+        .icon(MultiBlockG.SUPER_MOLECULAR_ASSEMBLER.asStack())
+        .prerequisites(BaseMEMachines)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(64 * 20 * 1200L)
+                .addMaterialNeeded(DATA_STORAGE, 150)
+                .addMaterialNeeded(ASSEMBLY, 150)
+                .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer"), 0.9F)
                 .build(),
         )
         .tier(2)

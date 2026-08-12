@@ -37,6 +37,7 @@ import static com.gtocore.data.techtree.SpaceNodes.*;
 
 final class AssemblyLine {
 
+    @SuppressWarnings("DataFlowIssue")
     public static void init() {
         AssemblyLineA.init();
         AssemblyLineDifficultyRelated.init();
@@ -4328,7 +4329,7 @@ final class AssemblyLine {
                 .researchStation(b -> b.researchStack(AEItems.CRAFTING_PATTERN)
                         .CWUt(32)
                         .EUt(122880))
-                .researchNode(BaseMEMachines)
+                .researchNode(MEAdvancedAssembly)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("super_molecular_assembler")
@@ -4348,7 +4349,7 @@ final class AssemblyLine {
                         .EUt(122880))
                 .EUt(122880)
                 .duration(600)
-                .researchNode(BaseMEMachines)
+                .researchNode(MEAdvancedAssembly)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("uranium_rhodium_dinaquadide_single_wire")
