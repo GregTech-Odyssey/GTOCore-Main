@@ -427,6 +427,23 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
+    val ScannerInnovation = MainTree.builder("scanner_innovation", "扫描仪革新", "Scanner Innovation")
+        .description("将扫描仪接入先进的AE物质存储系统，想扫什么就扫什么，想扫多大就扫多大", "Connect the scanner to the advanced AE matter storage system, scan whatever you want, and scan as big as you want")
+        .icon(RegistriesUtils.getItem("gtocore:intelligent_scanning_management_platform"))
+        .prerequisites(ScanStation)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(512 * 20 * 14400L)
+                .addMaterialNeeded(OPTICS, 384)
+                .addMaterialNeeded(DATA_STORAGE, 1024)
+                .addMaterialNeeded(COMPUTATION, 4096)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:uhv_world_data_scanner"), 0.75F)
+                .build(),
+        )
+        .tier(3)
+        .build()
+
+    @JvmField
     val BedrockMining = MainTree.builder("bedrock_production", "基岩开采与加工", "Bedrock Mining and Processing")
         .description("你就不好奇MC里最坚不可摧的方块里面的物质组成吗？", "Aren't you curious about the material composition of the most indestructible block in Minecraft?")
         .icon(RegistriesUtils.getItem("gtocore:bedrock_drill"))

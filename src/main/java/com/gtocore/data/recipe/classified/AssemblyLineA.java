@@ -951,5 +951,26 @@ final class AssemblyLineA {
                 .researchNode(ExcitationCrystalLaser)
                 .duration(400)
                 .save();
+        ASSEMBLY_LINE_RECIPES.builder("intelligent_scanning_management_platform")
+                .inputItems("gtceu:hpca_bridge_component")
+                .inputItems(GTOItems.NEURAL_MATRIX, 32)
+                .inputItems("gtocore:bio_data_access_hatch", 4)
+                .inputItems(CustomTags.UEV_CIRCUITS, 8)
+                .inputItems("gtceu:normal_optical_pipe", 32)
+                .inputItems(GTMachines.SCANNER[GTValues.UHV].asItem(), 32)
+                .inputItems(GTOBlocks.T5_ME_STORAGE_CORE.asItem(), 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.TitaniumSteelComposite, 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.CFCSIC1500CarbonFiberReinforcedComposite, 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.GermaniumTungstenNitride, 32)
+                .inputItems(TagPrefix.foil, GTMaterials.Mendelevium, 64)
+                .outputItems("gtocore:intelligent_scanning_management_platform")
+                .inputFluids(GTMaterials.YttriumBariumCuprate, 9216)
+                .inputFluids(GTMaterials.Europium, 9216)
+                .inputFluids(GTOMaterials.PlatinumManganeseAntimonyHeuslerAlloy, 9216)
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 2880)
+                .EUt(1048576)
+                .researchNode(ScannerInnovation)
+                .duration(700)
+                .save();
     }
 }
