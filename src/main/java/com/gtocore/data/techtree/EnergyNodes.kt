@@ -11,10 +11,10 @@ import com.gtocore.common.data.machines.GeneratorMultiblock
 import com.gtocore.data.techtree.BaseNodes.AdvancedMassFabricationTech
 import com.gtocore.data.techtree.BaseNodes.AtomicEnergyExciting
 import com.gtocore.data.techtree.BaseNodes.BiowareTech
-import com.gtocore.data.techtree.BaseNodes.DysonSphereSeriesCasing
 import com.gtocore.data.techtree.BaseNodes.EnergyTree
 import com.gtocore.data.techtree.BaseNodes.MainTree
 import com.gtocore.data.techtree.ComponentNodes.EnergyIOs
+import com.gtocore.data.techtree.MachinesNode.DysonSphereSeriesCasing
 
 import com.gregtechceu.gtceu.api.GTValues.ZPM
 import com.gregtechceu.gtceu.common.data.GTItems

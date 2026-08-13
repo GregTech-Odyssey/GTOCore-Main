@@ -6,6 +6,7 @@ import com.gtocore.api.research.techtree.TechTree;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.integration.jech.PinYinUtils;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -235,6 +236,11 @@ public class RecipeExportTab implements IFancyUIProvider {
         public void detectAndSendChanges() {
             super.detectAndSendChanges();
             syncState();
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private boolean isMouseWithinBounds() {
+            return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, GuiHelper.getRealMouseX(), GuiHelper.getRealMouseY());
         }
 
         @Override
@@ -646,9 +652,10 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         @OnlyIn(Dist.CLIENT)
         private boolean isMouseOver(double mouseX, double mouseY) {
-            return Widget.isMouseOver(parentWidget.recipeContent.getPosition().x, parentWidget.recipeContent.getPosition().y,
-                    parentWidget.recipeContent.getSize().width, parentWidget.recipeContent.getSize().height, mouseX, mouseY) &&
-                    Widget.isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
+            return Widget.isMouseOver(parentWidget.recipePanel.getPosition().x, parentWidget.recipePanel.getPosition().y,
+                    parentWidget.recipePanel.getSize().width, parentWidget.recipePanel.getSize().height, mouseX, mouseY) &&
+                    Widget.isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY) &&
+                    getHoverElement(mouseX, mouseY) == this;
         }
     }
 

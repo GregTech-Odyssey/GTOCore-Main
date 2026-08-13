@@ -4,7 +4,6 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
 import com.gtocore.data.CraftingComponents;
-import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -29,6 +28,7 @@ import static com.gtocore.data.techtree.AENodes.BaseMEMachines;
 import static com.gtocore.data.techtree.AENodes.MESmartGatingClustering;
 import static com.gtocore.data.techtree.BaseNodes.*;
 import static com.gtocore.data.techtree.EnergyNodes.*;
+import static com.gtocore.data.techtree.MachinesNode.*;
 import static com.gtocore.data.techtree.SpaceNodes.SpaceElevator;
 import static com.gtocore.data.techtree.SpaceNodes.SpaceElevator5;
 
@@ -56,7 +56,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GCYMMachines.LARGE_PACKER.asItem())
                         .CWUt(256))
-                .researchNode(BaseNodes.LaserBatchProduction0)
+                .researchNode(LaserSortingPackaging)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("gravity_bending_device")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -81,7 +81,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GTMachines.BENDER[GTValues.UHV].asItem())
                         .CWUt(256))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserRollingPressing)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("hand_of_arachne")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -102,7 +102,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(GTOMachines.LOOM[GTValues.UHV].asItem())
                         .CWUt(256))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserAssemblyProcessing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("life_furnace")
@@ -131,7 +131,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(MultiBlockC.BIOCHEMICAL_EXTRACTION.asItem())
                         .CWUt(256))
-                .researchNode(HighEnergyBioEngineering)
+                .researchNode(LaserBioEngineering)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("neutron_forging_anvil")
@@ -153,7 +153,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b
                         .researchStack(MultiBlockG.ISOSTATIC_PRESS.asItem())
                         .CWUt(256))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserRollingPressing)
                 .save();
         ASSEMBLY_LINE_RECIPES.recipeBuilder("flotation_cell_regulator_mega")
                 .inputItems(GTMachines.HULL[GTValues.UEV].asItem())
@@ -176,7 +176,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(MultiBlockA.INDUSTRIAL_FLOTATION_CELL.asItem())
                         .CWUt(320)
                         .EUt(7680))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserConditionControlling)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("entropy_flux_engine")
@@ -225,7 +225,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(MultiBlockG.LARGE_GREENHOUSE.asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserBioEngineering)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("dissolution_core")
                 .inputItems(CustomTags.UIV_CIRCUITS, 16)
@@ -248,7 +248,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(MultiBlockD.DISSOLVING_TANK.asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserConditionControlling)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("molecular_oscillation_dehydrator")
                 .inputItems(CustomTags.UEV_CIRCUITS, 16)
@@ -272,7 +272,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(GTOMachines.DEHYDRATOR[GTValues.UHV].asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserCrushingRotating)
                 .duration(801)
                 .save();
 
@@ -351,7 +351,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(Items.FURNACE.asItem().getDefaultInstance())
                         .CWUt(576)
                         .EUt(15360))
-                .researchNode(BaseNodes.LaserBatchProduction0)
+                .researchNode(LaserHiTempThermalProcessing)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("magnetic_energy_reaction_furnace")
                 .inputItems(CustomTags.UIV_CIRCUITS, 32)
@@ -377,7 +377,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(GTMachines.ARC_FURNACE[GTValues.UHV].asItem())
                         .CWUt(288)
                         .EUt(7680))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserElectroMagneticProcessing)
                 .save();
         ASSEMBLY_LINE_RECIPES.builder("super_elevator")
                 .inputItems(CustomTags.UXV_CIRCUITS, 64)
@@ -456,7 +456,7 @@ final class AssemblyLineA {
                 .researchStation(b -> b.researchStack(GTMachines.FLUID_HEATER[GTValues.UEV].asItem())
                         .CWUt(512)
                         .EUt(6457280))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserHiTempThermalProcessing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("modular_maintenance_hatch")
@@ -475,7 +475,7 @@ final class AssemblyLineA {
                 .inputFluids(GTMaterials.Cupronickel, 576)
                 .inputFluids(GTMaterials.Brass, 576)
                 .outputItems(GTOMachines.MODULAR_CONFIGURATION_MAINTENANCE_HATCH.asItem())
-                .researchNode(BaseNodes.SelfMaintenanceSystem)
+                .researchNode(SelfMaintenanceSystem)
                 .EUt(GTValues.VA[GTValues.ZPM])
                 .duration(800)
                 .scanner(b -> b.researchStack(GTOMachines.VACUUM_INTERFACE.asItem()).duration(1200).EUt(GTValues.VA[GTValues.ZPM]))
@@ -508,7 +508,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(BaseNodes.LaserBatchProduction0)
+                .researchNode(LaserCrushingRotating)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("sintering_furnace")
@@ -536,7 +536,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(BaseNodes.LaserBatchProduction0)
+                .researchNode(LaserHiTempThermalProcessing)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("smart_siftering_hub")
@@ -564,7 +564,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(BaseNodes.LaserBatchProduction0)
+                .researchNode(LaserSortingPackaging)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("giant_electrochemical_workstation")
@@ -593,7 +593,7 @@ final class AssemblyLineA {
                         .duration(1200)
                         .EUt(GTValues.VA[GTValues.ZPM])
                         .CWUt(512))
-                .researchNode(BaseNodes.LaserBatchProduction1)
+                .researchNode(LaserConditionControlling)
                 .save();
 
         ASSEMBLY_LINE_RECIPES.builder("supercritical_steam_input_hatch")

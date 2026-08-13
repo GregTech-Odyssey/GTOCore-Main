@@ -9,9 +9,8 @@ import com.gtocore.api.research.ResearchTag.CATALYSIS
 import com.gtocore.api.research.ResearchTag.MATERIAL
 import com.gtocore.api.research.ResearchTag.MECHANICS
 import com.gtocore.common.data.machines.MultiBlockC
-import com.gtocore.data.techtree.BaseNodes.ChemicalPlantEnvironmentControl
-import com.gtocore.data.techtree.BaseNodes.MainTree
 import com.gtocore.data.techtree.BaseNodes.NanitesTree
+import com.gtocore.data.techtree.MachinesNode.ChemicalPlantEnvironmentControl
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix
 import com.gregtechceu.gtceu.common.data.GTMaterials

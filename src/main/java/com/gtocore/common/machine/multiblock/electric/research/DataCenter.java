@@ -103,8 +103,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     public DataCenter(MetaMachineBlockEntity holder) {
         super(holder);
-        inpur = new NotifiableItemStackHandler(this, 4, IO.NONE, IO.BOTH);
-        output = new NotifiableItemStackHandler(this, 4, IO.NONE, IO.BOTH);
+        inpur = new NotifiableItemStackHandler(this, 9, IO.NONE, IO.BOTH);
+        output = new NotifiableItemStackHandler(this, 9, IO.NONE, IO.BOTH);
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.GLASS_TIER);
     }
 

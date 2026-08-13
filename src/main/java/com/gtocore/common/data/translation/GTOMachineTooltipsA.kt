@@ -327,12 +327,16 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         command("与当前星球的太空电梯连接" translatedTo "Connects to the space elevator of the current planet")
         increase(
-            "连接后，空间站各运行模块（如轨道冶炼舱等）可获得(0.8^n)×的耗时减免，n为太空电梯的动力模块等级" translatedTo
-                "After connecting, each operating module of the space station (such as orbital smelting chamber, etc.) can get a time reduction of (0.8^n)×, where n is the power module level of the space elevator",
+            "连接后，空间站各运行模块（如轨道冶炼舱等）可获得(0.9^n)×的耗时减免，n为太空电梯的动力模块等级" translatedTo
+                "After connecting, each operating module of the space station (such as orbital smelting chamber, etc.) can get a time reduction of (0.9^n)×, where n is the power module level of the space elevator",
         )
         increase(
-            "太空电梯安装的模块也将获得额外(0.8^(n/2))×的耗时减免" translatedTo
-                "Modules installed on the space elevator will also receive a time reduction of (0.8^(n/2))×",
+            "太空电梯安装的模块也将获得额外(0.9^(n/2))×的耗时减免" translatedTo
+                "Modules installed on the space elevator will also receive a time reduction of (0.9^(n/2))×",
+        )
+        increase(
+            "如果安装了高能转换调配舱，则底数0.9将变为0.8" translatedTo
+                "If a high-energy conversion and allocation chamber is installed, the base 0.9 will become 0.8",
         )
         decrease(
             Component.translatable(

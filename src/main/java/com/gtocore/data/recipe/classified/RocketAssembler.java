@@ -19,6 +19,7 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import net.minecraftforge.fluids.FluidStack;
 
 import static com.gtocore.common.data.GTORecipeTypes.ROCKET_ASSEMBLER_RECIPES;
+import static com.gtocore.data.techtree.MachinesNode.LaserSpaceEngineering;
 
 final class RocketAssembler {
 
@@ -325,6 +326,7 @@ final class RocketAssembler {
                 .inputFluids(GTOMaterials.Enderite, 64000)
                 .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 64000)
                 .EUt(8388608)
+                .researchNode(LaserSpaceEngineering)
                 .duration(1000)
                 .save();
 
@@ -378,6 +380,7 @@ final class RocketAssembler {
                 .inputFluids(GTMaterials.Naquadria, 576)
                 .EUt(4190000)
                 .duration(1800)
+                .researchNode(LaserSpaceEngineering)
                 .save();
     }
 }

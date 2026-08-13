@@ -2,8 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
-import static com.gregtechceu.gtceu.api.GTValues.UIV;
-import static com.gregtechceu.gtceu.api.GTValues.VA;
+import static com.gregtechceu.gtceu.api.GTValues.*;
 
 public class SpaceStationEnergyConversionModule extends Extension implements ISpaceServiceMachine {
 
@@ -13,6 +12,6 @@ public class SpaceStationEnergyConversionModule extends Extension implements ISp
 
     @Override
     public long getEUt() {
-        return VA[UIV];
+        return VA[UXV];
     }
 }

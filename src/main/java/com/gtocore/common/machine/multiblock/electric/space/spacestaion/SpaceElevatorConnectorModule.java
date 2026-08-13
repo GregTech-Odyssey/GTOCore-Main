@@ -80,7 +80,8 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
         if (maxTier <= 0) {
             return 1.0;
         }
-        return Math.pow(0.8f, maxTier);
+        var factor = core.getServiceMachineMap().get(SpaceStationEnergyConversionModule.class) == null ? 0.9 : 0.8;
+        return Math.pow(factor, maxTier);
     }
 
     @Override
