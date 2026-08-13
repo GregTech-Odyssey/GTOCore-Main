@@ -1388,7 +1388,10 @@ object GTOMachineTooltips {
     val SatelliteControlCenterTooltips = ComponentListSupplier {
         setTranslationPrefix("satellite_control_center")
 
-        highlight("发射卫星，带回星球数据" translatedTo "Launch a satellite and bring back planet data")
+        section(ComponentSlang.MainFunction)
+        function("发射卫星，带回星球数据" translatedTo "Launch a satellite and bring back planet data")
+        important("无法超频，每次发射固定耗时§e300§r秒" translatedTo "Cannot be overclocked; each launch takes a fixed §e300§r seconds")
+        content("发射完成后返还火箭与星球数据芯片" translatedTo "Returns the rocket and planet data chip after launch")
     }
 
     // 原木拟生场
@@ -1436,6 +1439,21 @@ object GTOMachineTooltips {
 
         section("范围增产" translatedTo "Area Yield Boost")
         increase("电压等级每高出IV一级，16m内钻机产量×1.5" translatedTo "Each tier above IV → ×1.5 output for fluid drills within 16M")
+    }
+
+    // 无人机控制中心
+    @JvmField
+    val DroneControlCenterTooltips = ComponentListSupplier {
+        setTranslationPrefix("drone_control_center")
+
+        section(ComponentSlang.MainFunction)
+        function("范围内的维护仓出现故障时，派出无人机自动维修" translatedTo "Dispatches drones to automatically repair malfunctioning Maintenance Hatches within range")
+        function("范围内的消声仓将满时，派出无人机自动清灰" translatedTo "Dispatches drones to automatically clean Silencer Hatches when full within range")
+        info("主机GUI内可查看无人机工作范围" translatedTo "Drone working range can be viewed in the controller GUI")
+
+        section(ComponentSlang.RunningRequirements)
+        command("需在无人机仓内放入有电的无人机" translatedTo "Requires charged drones in the Drone Hatch")
+        info("无人机等级决定工作范围与工作速度" translatedTo "Drone tier determines operating range and work speed")
     }
 
     // 无线能源塔
@@ -1897,10 +1915,12 @@ object GTOMachineTooltips {
     val WaterPurificationPlantTooltips = ComponentListSupplier {
         setTranslationPrefix("water_purification_plant")
         section(ComponentSlang.MainFunction)
+        highlight("净水系统的总控中枢" translatedTo "The central control hub of the water purification system")
         function("链接净化单元，同步所有净化单元的控制器的处理周期并供电" translatedTo "Link purification units, synchronize the processing cycles of all controllers, and provide power")
 
         section("处理单元链接系统" translatedTo "Processing Unit Link System")
-        function("可在§e32§r个方块半径内自由放置净化单元的控制器" translatedTo "Purification unit controllers can be placed freely within a §e32§r block radius")
+        function("自动链接§e32§r个方块半径内的净化单元控制器" translatedTo "Automatically link purification unit controllers within a §e32§r-blocks radius")
+        info("主机GUI中可查看链接范围" translatedTo "The linking range can be viewed in the controller GUI")
         function("为链接的单元控制器提供电力" translatedTo "Provide power to linked unit controllers")
         info("默认耗能 = 输出水量 × 2^(净化水等级 - 2)" translatedTo "Default energy = output water × 2^(purification tier - 2)")
 

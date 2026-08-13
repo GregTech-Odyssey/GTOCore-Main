@@ -85,6 +85,26 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         story("或许是魔法？总之没有别的合理解释了" translatedTo "Perhaps magic? There's no other reasonable explanation")
     }
 
+    // 火箭装配机
+    @JvmField
+    val RocketAssemblerTooltips = ComponentListSupplier {
+        setTranslationPrefix("rocket_assembler")
+
+        story("箭体、推进器与导航系统在这里完成组装，一枚火箭由此成形" translatedTo "The airframe, engines, and guidance systems come together here, taking shape as a rocket")
+        story("组装完成后，火箭还要依次接受气密、结构与控制系统测试" translatedTo "After assembly, the rocket must undergo leak, structural, and control system tests")
+        story("只有通过道道测试的火箭，才会被送上发射台" translatedTo "Only rockets that pass every test are sent to the launch pad")
+    }
+
+    // 卫星控制中心
+    @JvmField
+    val SatelliteControlCenterTooltips = ComponentListSupplier {
+        setTranslationPrefix("satellite_control_center")
+
+        story("在踏上陌生星球之前，工程师们决定先让卫星替他们看看那里有什么" translatedTo "Before setting foot on an unfamiliar planet, the engineers decided to let a satellite take the first look")
+        story("探测卫星随火箭飞往目标星球，将观测结果记录在芯片中" translatedTo "The survey satellite travels aboard the rocket to its target planet, recording its observations on a chip")
+        story("火箭返回发射场时，也带回了一张通往新世界的地图" translatedTo "When the rocket returns to the launch site, it brings back a map to a new world")
+    }
+
     // 空间站
     @JvmField
     val SpaceStationTooltips = ComponentListSupplier {
@@ -582,8 +602,10 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
     val WaterPurificationPlantTooltips = ComponentListSupplier {
         setTranslationPrefix("water_purification_plant")
 
-        story("水中的污染物和离子颗粒会在硅片和芯片切割和雕刻的精密过程中造成显著的缺陷" translatedTo "Pollutants and ionic particles in water can cause significant defects during the precise processes of wafer and chip cutting and engraving")
-        story("通过一系列越来越精确和复杂的净化过程系统地净化水是至关重要的，而这个多方块结构是操作的核心" translatedTo "It is crucial to systematically purify the water through a series of increasingly precise and complex processes, and this multi-block structure is the core of the operation")
+        story("水中的污染物和离子颗粒会在硅片和芯片切割和雕刻的精密过程中造成显著的缺陷" translatedTo "Pollutants and ionic particles in water can cause significant defects during the precision cutting and etching of wafers and chips")
+        story("通过一系列越来越精密和复杂的净化工序系统地处理水，已经成为先进制造业不可缺少的一环" translatedTo "Systematically treating water through an increasingly precise and complex series of purification processes has become indispensable to advanced manufacturing")
+        story("为此，集团的工程师们设计了一套完整的净水流程，由处理厂统一控制时序与供能，再由八级净化单元层层接力" translatedTo "To this end, the Group's engineers designed a complete purification process, with the plant coordinating timing and power while eight purification stages work in succession")
+        story("从肉眼可见的悬浮物，到离子、分子乃至重子内部的细微缺陷，没有任何杂质能逃过这条漫长的净化链" translatedTo "From visible suspended matter to ions, molecules, and even minute imperfections within baryons, no impurity can escape this long purification chain")
     }
 
     // 澄清器净化装置
@@ -660,6 +682,16 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         story("净化水的最后阶段超越了亚原子粒子，识别出重子内最小的可能缺陷" translatedTo "The final stage of purification transcends subatomic particles, identifying the smallest possible defects within baryons.")
         story("通过正确识别需要的夸克释放催化剂，装置将激活催化剂，稳定偏离的粒子" translatedTo "By correctly identifying the required Quark Releasing Catalysts, the device will activate the catalysts and stabilize off-kilter particles.")
         story("这最终不仅会创造出稳定的重子物质，而且最重要的是，创造出绝对完美净化的水" translatedTo "This ultimately creates not just stable baryonic matter, but most importantly, absolutely purified water.")
+    }
+
+    // 无人机控制中心
+    @JvmField
+    val DroneControlCenterTooltips = ComponentListSupplier {
+        setTranslationPrefix("drone_control_center")
+
+        story("工厂规模越来越大，维护人员不得不在厂区各处来回奔波" translatedTo "As the factory grew, maintenance crews had to travel back and forth across the facility")
+        story("因此，工程师们开发了用于机器维护的无人机，并交由控制中心统一调度" translatedTo "The engineers therefore developed drones for machine maintenance and placed them under the control center's coordination")
+        story("从修复故障到清理消声仓积灰，过去需要人工处理的琐事如今都有无人机代劳" translatedTo "From repairing faults to clearing ash from Silencer Hatches, drones now handle the routine work once done by hand")
     }
 
     /*************************************************
