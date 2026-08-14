@@ -851,33 +851,27 @@ object GTOMachineTooltips {
     val FissionReactorTooltips = ComponentListSupplier {
         setTranslationPrefix("fission_reactor")
 
-        section("反应堆结构组成" translatedTo "Reactor structure components")
-        function("通过燃料组件和冷却组件协同工作产生能量" translatedTo "Generates energy through fuel and cooling components working together")
-        command("燃料组件: 提供最大并行数量" translatedTo "Fuel component: Provides maximum parallel number")
-        content("升温系数 = 燃料组件相邻数 + 1" translatedTo "Heating coefficient = adjacent fuel components + 1")
-        command("冷却组件: 提供最大冷却能力" translatedTo "Cooling component: Provides maximum cooling capability")
-        content("冷却组件必须与燃料组件相邻才有效" translatedTo "Cooling components must be adjacent to fuel components to be effective")
+        section(ComponentSlang.RunningRequirements)
+        command("运行前需在反应堆内部放置燃料组件和冷却组件" translatedTo "Fuel components and cooling components must be placed inside the reactor before operation")
+        function("燃料组件：提供最大并行，相邻的燃料组件越多，反应堆产热越高" translatedTo "Fuel components: provide maximum parallelism; the more adjacent fuel components there are, the more heat the reactor generates")
+        function("冷却组件：必须与燃料组件相邻，决定反应堆的冷却上限" translatedTo "Cooling components: must be adjacent to fuel components and determine the reactor's cooling limit")
 
-        section("温度管理系统" translatedTo "Temperature management system")
-        command("初始温度: 298K" translatedTo "Initial temperature: 298K")
-        command("温度上限: 1500K" translatedTo "Temperature limit: 1500K")
-        info("升温速率: 配方产热 × 升温系数/秒" translatedTo "Heating rate: recipe heat × heating coefficient/sec")
-        info("自然降温: 停止工作时1K/秒" translatedTo "Natural cooling: 1K/sec when stopped")
-        error(("超过温度上限机器开始损坏，完全损坏时" translatedTo "Exceeding temperature limit damages machine, when fully damaged ") + ComponentSlang.Explosion)
+        section("温度管理系统" translatedTo "Temperature Management System")
+        content("初始温度为 298K；停机时每秒降低 1K" translatedTo "Initial temperature is 298K; temperature decreases by 1K per second while idle")
+        command("冷却不生效时，每秒升温 = 配方基础产热 × (相邻燃料组件数量 + 1)" translatedTo "When cooling has no effect, heat gained per second = base recipe heat × (adjacent fuel components + 1)")
+        info("每种燃料配方拥有不同的基础产热，可在配方页面查看" translatedTo "Each fuel recipe has a different base heat value, shown on its recipe page")
+        danger(("温度超过 1500K 后反应堆将持续损坏，完全损坏时" translatedTo "Above 1500K, the reactor continuously takes damage and, when fully damaged, ") + ComponentSlang.Explosion)
 
-        section("冷却系统" translatedTo "Cooling system")
-        content(
-            "冷却液 (系数): 蒸馏水 (800) 钠钾合金 (20)" translatedTo "Cooling liquid (coefficients): Distilled Water (800) Sodium Potassium (20)",
-            { green() },
-        )
-        info("冷却条件: 供给量 ≥ 需求量" translatedTo "Cooling condition: Supply ≥ demand")
-        info("需求量 = 配方产热 × 实际并行 × 当前温度 / 1500" translatedTo "Demand = recipe heat × actual parallel × current temp / 1500")
-        info("供给量 = (冷却组件 - 相邻数/3) × 8" translatedTo "Supply = (cooling components - adjacent/3) × 8")
-        info("消耗量 = 需求量 × 冷却液系数" translatedTo "Consumption = Demand × cooling liquid coefficient")
+        section("冷却系统" translatedTo "Cooling System")
+        command("启动冷却需要冷却液输入量大于冷却需求；冷却上限决定每次最多能消耗多少冷却液" translatedTo "Cooling starts only when the coolant input exceeds the cooling demand; the cooling limit determines the maximum amount of coolant that can be consumed each time")
+        content("每 800 mB 蒸馏水或 20 mB 钠钾合金可满足 1 单位冷却需求" translatedTo "Every 800 mB of Distilled Water or 20 mB of Sodium Potassium can satisfy 1 unit of cooling demand", { green() })
+        info("冷却需求 = 配方基础产热 × 实际并行 × 当前温度 / 1500" translatedTo "Cooling demand = base recipe heat × actual parallel × current temperature / 1500")
+        info("冷却上限 = (冷却组件数量 - 相邻数 / 3) × 8" translatedTo "Cooling limit = (cooling components - adjacency / 3) × 8")
+        decrease("若冷却液输入量低于冷却需求，本次冷却不生效" translatedTo "If the coolant input is below the cooling demand, cooling has no effect this time")
 
         section("超频机制" translatedTo "Overclocking mechanism")
-        info("触发条件: 供给量 ≥ n × 需求量 (n>1)" translatedTo "Trigger condition: Supply ≥ n × demand (n>1)")
-        info("超频效果: 运行速度提升至 n 倍" translatedTo "Overclocking effect: Operation speed increased to n times")
+        command("触发条件: 冷却液输入量 ≥ n × 冷却需求" translatedTo "Trigger condition: Coolant input ≥ n × cooling demand")
+        increase("超频效果: 额外增加 n 倍基础运行速度" translatedTo "Effect: Adds n times the base processing speed")
 
         section("冷却液产出" translatedTo "Cooling liquid output")
         content("蒸馏水冷却: " translatedTo "Distilled Water cooling: ", { green() })
