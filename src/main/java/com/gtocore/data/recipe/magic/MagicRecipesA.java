@@ -219,7 +219,7 @@ public final class MagicRecipesA {
                     .inputItems(dust, Blaze, 4)
                     .outputItems(rod, Blaze, 2)
                     .inputFluids(Salamander, GAS, 5)
-                    .blastFurnaceTemp(400)
+                    .temperature(400)
                     .duration(200)
                     .MANAt(1)
                     .save();
