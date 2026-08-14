@@ -1011,8 +1011,26 @@ ext.ensureProguardDictionaries = {
     }
 }
 
-/** 生成 ProGuard 附加配置：libraryjars + 字典 + mapping 输出（按链取不同 mapping 文件名） */
-ext.writeProguardExtraFile = { File target, String mappingName ->
+/** SRG 输入必须配 SRG Minecraft/Forge library，否则 ProGuard 会把 m_xxx_ override 当成普通方法再次改名。 */
+ext.resolveForgeSrgLibraryJar = {
+    def version = "1.20.1-${forge_version}"
+    def dir = new File(
+            gradle.gradleUserHomeDir,
+            "caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/${version}"
+    )
+    def exact = new File(dir, "forge-${version}-srg.jar")
+    if (exact.exists() && exact.length() > 1024) return exact
+    def fallback = dir.listFiles()?.find { it.name.endsWith('-srg.jar') && it.length() > 1024 }
+    if (fallback != null) return fallback
+    throw new GradleException(
+            "GTOLib ProGuard: 找不到 SRG Minecraft/Forge library jar。\n" +
+                    "  期望: ${exact}\n" +
+                    "请先运行 createMinecraftArtifacts，且勿用 named library 处理 SRG 输入。"
+    )
+}
+
+/** 生成 ProGuard 附加配置：SRG libraryjars + 字典 + mapping 输出（按链取不同 mapping 文件名） */
+ext.writeProguardExtraFile = { File target, String mappingName, boolean srgInput ->
     def libArgs = new StringBuilder()
     def javaHome = System.getProperty('java.home')
     def jmod = new File("${javaHome}/jmods/java.base.jmod")
@@ -1023,10 +1041,19 @@ ext.writeProguardExtraFile = { File target, String mappingName ->
         libArgs.append("-libraryjars '${jmod.absolutePath.replace('\\', '/')}'\n")
     }
     def seen = new HashSet<String>()
+    def namedForgeJarName = "forge-1.20.1-${forge_version}.jar"
+    if (srgInput) {
+        def forgeSrg = resolveForgeSrgLibraryJar()
+        seen.add(forgeSrg.canonicalPath)
+        libArgs.append("-libraryjars '${forgeSrg.absolutePath.replace('\\', '/')}'\n")
+    }
     project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
         try {
             config.resolve().each { f ->
-                if (f.name.endsWith('.jar') && seen.add(f.absolutePath)) {
+                // createMinecraftArtifacts 的主 Forge jar 是 named；与 SRG jar 同时加入会让
+                // ProGuard 随 classpath 顺序解析到错误的父类方法名。
+                if (srgInput && f.name == namedForgeJarName) return
+                if (f.name.endsWith('.jar') && seen.add(f.canonicalPath)) {
                     libArgs.append("-libraryjars '${f.absolutePath.replace('\\', '/')}'\n")
                 }
             }
@@ -1039,6 +1066,34 @@ ext.writeProguardExtraFile = { File target, String mappingName ->
     libArgs.append("-obfuscationdictionary '${abs('my_dict_names_shuffled.txt')}'\n")
     libArgs.append("-printmapping '${abs(mappingName)}'\n")
     target.text = libArgs.toString()
+}
+
+ext.verifyReleaseSrgMethodMappings = { File mappingFile ->
+    if (mappingFile == null || !mappingFile.exists()) {
+        throw new GradleException("GTOLib release ProGuard mapping 缺失: ${mappingFile}")
+    }
+    def checked = 0
+    def renamed = []
+    def pattern = java.util.regex.Pattern.compile(/\b(m_\d+_)\([^)]*\)\s+->\s+(\S+)\s*$/)
+    mappingFile.eachLine('UTF-8') { line ->
+        def matcher = pattern.matcher(line)
+        if (!matcher.find()) return
+        checked++
+        if (matcher.group(1) != matcher.group(2) && renamed.size() < 12) {
+            renamed << "${matcher.group(1)} → ${matcher.group(2)}"
+        }
+    }
+    if (checked == 0) {
+        throw new GradleException("GTOLib release mapping 中没有 SRG 方法，无法验证继承契约")
+    }
+    if (!renamed.isEmpty()) {
+        throw new GradleException(
+                "GTOLib release ProGuard 错误重命名了 Minecraft override。\n" +
+                        "SRG 输入必须使用 SRG libraryjars；否则运行时会 AbstractMethodError。\n  " +
+                        renamed.join('\n  ')
+        )
+    }
+    logger.lifecycle("GTOLib release ProGuard: ${checked} 个 SRG 方法保持原名")
 }
 
 /**
@@ -1118,7 +1173,7 @@ tasks.register('proguardGtolib', JavaExec) {
     doFirst {
         file("${buildDir}/gtolib").mkdirs()
         ensureProguardDictionaries()
-        writeProguardExtraFile(file("${buildDir}/gtolib/proguard-extra.pro"), 'gtolib-mapping.txt')
+        writeProguardExtraFile(file("${buildDir}/gtolib/proguard-extra.pro"), 'gtolib-mapping.txt', true)
 
         def inJar = gtolibRawJar.get().asFile.absolutePath.replace('\\', '/')
         def outJar = gtolibPgJar.get().asFile.absolutePath.replace('\\', '/')
@@ -1152,7 +1207,7 @@ tasks.register('proguardGtolibRelease', JavaExec) {
         ensureProguardDictionaries()
         def extraFile = file("${buildDir}/gtolib/proguard-release-extra.pro")
         // mapping 留在 build/gtolib（gitignored）：崩溃反混淆用，发版时自行归档，勿公开
-        writeProguardExtraFile(extraFile, 'gtolib-release-mapping.txt')
+        writeProguardExtraFile(extraFile, 'gtolib-release-mapping.txt', true)
         def keepFile = file("${buildDir}/gtolib/proguard-release-keep.pro")
         writeReleaseKeepFromGtocoreRefs(keepFile)
 
@@ -1172,6 +1227,7 @@ tasks.register('proguardGtolibRelease', JavaExec) {
         if (!out.exists() || out.length() < 1024) {
             throw new GradleException("proguardGtolibRelease: 未产出 ${out}")
         }
+        verifyReleaseSrgMethodMappings(file("${buildDir}/gtolib/gtolib-release-mapping.txt"))
         // 混淆必须真的发生：与 named unprotected 对比 class 路径集合
         def unprot = gtolibUnprotectedJar.get().asFile
         if (unprot.exists() && unprot.length() > 0) {
@@ -1503,7 +1559,7 @@ tasks.register('proguardGtolibDevNamed', JavaExec) {
         ensureProguardDictionaries()
         writeProguardExtraFile(
                 file("${buildDir}/gtolib/proguard-extra-dev-named.pro"),
-                'gtolib-dev-named-mapping.txt')
+                'gtolib-dev-named-mapping.txt', false)
 
         // resolveGtolibRaw 在 reobfGtolibRaw 之前留下的 named 副本
         def src = gtolibUnprotectedJar.get().asFile
