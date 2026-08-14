@@ -197,7 +197,10 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
         if (side == null) return;
         var host = getHost().getBlockEntity();
         var adjacent = IDirectionCacheBlockEntity.getBlockEntityDirectionCache(host).getAdjacentBlockEntity(host.getLevel(), host.getBlockPos(), side);
-        if (adjacent == null) return;
+        if (adjacent == null) {
+            this.handler.setDelegate(NullInventory.of());
+            return;
+        }
         var newInventory = GTCapabilityHelper.getBlockEntityCapability(Capabilities.STORAGE, adjacent, side.getOpposite());
         if (newInventory == null) {
             var foundExternalApi = new Reference2ReferenceOpenHashMap<AEKeyType, MEStorage>(2);
