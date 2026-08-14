@@ -2,10 +2,12 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
+import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.common.data.machines.MultiBlockH;
+import com.gtocore.common.pipe.muffler.MufflerPipeType;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -998,7 +1000,7 @@ final class AssemblerA {
                 .inputItems(GTOTagPrefix.NANITES, GTMaterials.Naquadah)
                 .inputItems(GTItems.EMITTER_UHV)
                 .inputItems(GTItems.SENSOR_UHV)
-                .outputItems("gtocore:intelligent_scanning_me_proxy")
+                .outputItems(ExResearchMachines.INTELLIGENT_SCANNING_ME_PROXY)
                 .inputFluids(GTMaterials.SolderingAlloy, 2880)
                 .EUt(24576)
                 .researchNode(ScannerInnovation)
@@ -1008,7 +1010,7 @@ final class AssemblerA {
         ASSEMBLER_RECIPES.builder("normal_muffler_pipe")
                 .inputItems(TagPrefix.plate, GTMaterials.Steel, 6)
                 .inputItems(TagPrefix.rotor, GTMaterials.Steel)
-                .outputItems("gtocore:normal_muffler_pipe", 2)
+                .outputItems(GTOBlocks.MUFFLER_PIPES[MufflerPipeType.NORMAL.ordinal()], 2)
                 .circuitMeta(18)
                 .EUt(30)
                 .duration(200)
@@ -1166,11 +1168,11 @@ final class AssemblerA {
                 .save();
 
         ASSEMBLER_RECIPES.builder("data_form_testing_me_interface")
-                .inputItems("gtocore:me_storage_access_hatch")
+                .inputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH)
                 .inputItems(GTOBlocks.T4_ME_STORAGE_CORE.asItem(), 4)
                 .inputItems(GTItems.EMITTER_ZPM)
                 .inputItems(TagPrefix.wireGtSingle, GTMaterials.Europium, 4)
-                .outputItems("gtocore:data_form_testing_me_interface")
+                .outputItems(ExResearchMachines.DATA_FORM_TESTING_ME_INTERFACE)
                 .inputFluids(GTMaterials.SolderingAlloy, 2880)
                 .EUt(420)
                 .researchNode(DataStorageIteration)

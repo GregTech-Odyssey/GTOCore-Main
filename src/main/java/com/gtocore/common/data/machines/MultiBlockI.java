@@ -30,7 +30,7 @@ import static com.gtocore.api.pattern.GTOPredicates.glass;
 import static com.gtocore.api.pattern.GTOPredicates.recordPosition;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
 
-public class MultiblockI {
+public class MultiBlockI {
 
     public static void init() {}
 

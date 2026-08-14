@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.GTAEMachines;
 
 import com.gtolib.GTOCore;
 
@@ -24,7 +25,7 @@ class AssemblyLineDifficultyRelated {
         if (GTOCore.isExpert() || GTOCore.isNormal()) {
             ASSEMBLY_LINE_RECIPES.builder("me_wildcard_pattern_buffer_uhv")
                     .inputItems(GTOMachines.HUGE_ITEM_IMPORT_BUS.asItem())
-                    .inputItems("gtocore:me_extend_pattern_buffer_ultra")
+                    .inputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER_ULTRA)
                     .inputItems(AEItems.FUZZY_CARD.asItem(), 4)
                     .inputItems(AEItems.EQUAL_DISTRIBUTION_CARD.asItem(), 2)
                     .inputItems(GTOAEParts.INSTANCE.getPattern_Content_Access_Terminal().get().asItem(), 4)
@@ -37,7 +38,7 @@ class AssemblyLineDifficultyRelated {
                     .inputItems(TagPrefix.foil, GTOMaterials.Quicksilver, 64)
                     .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
                     .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                    .outputItems("gtocore:me_wildcard_pattern_buffer")
+                    .outputItems(GTAEMachines.ME_WILDCARD_PATTERN_BUFFER)
                     .inputFluids(GTOMaterials.EnergySolidifier, 2000)
                     .inputFluids(GTMaterials.Lubricant, 1000)
                     .EUt(152000)
@@ -53,7 +54,7 @@ class AssemblyLineDifficultyRelated {
             ASSEMBLY_LINE_RECIPES.builder("me_wildcard_pattern_buffer_orichalcos")
                     .inputItems(GTOMachines.HUGE_ITEM_IMPORT_BUS.asItem())
                     .inputItems(CustomTags.UEV_CIRCUITS, 4)
-                    .inputItems("gtocore:me_extend_pattern_buffer")
+                    .inputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER)
                     .inputItems(GTOAEParts.INSTANCE.getPattern_Content_Access_Terminal().get().asItem(), 4)
                     .inputItems(AEItems.FUZZY_CARD.asItem(), 4)
                     .inputItems(AEItems.EQUAL_DISTRIBUTION_CARD.asItem(), 2)
@@ -66,7 +67,7 @@ class AssemblyLineDifficultyRelated {
                     .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
                     .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
                     .inputItems(TagPrefix.foil, GTOMaterials.Quicksilver, 64)
-                    .outputItems("gtocore:me_wildcard_pattern_buffer")
+                    .outputItems(GTAEMachines.ME_WILDCARD_PATTERN_BUFFER)
                     .inputFluids(GTOMaterials.EnergySolidifier, 2000)
                     .inputFluids(GTMaterials.Lubricant, 1000)
                     .EUt(152000)
@@ -95,7 +96,7 @@ class AssemblyLineDifficultyRelated {
                     .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
                     .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
                     .inputItems(TagPrefix.foil, GTOMaterials.Aerialite, 64)
-                    .outputItems("gtocore:me_wildcard_pattern_buffer")
+                    .outputItems(GTAEMachines.ME_WILDCARD_PATTERN_BUFFER)
                     .inputFluids(GTMaterials.SolderingAlloy, 2000)
                     .inputFluids(GTMaterials.Lubricant, 1000)
                     .EUt(152000 / 16)

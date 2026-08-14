@@ -93,7 +93,7 @@ public final class GTOMachines {
         MultiBlockF.init();
         MultiBlockG.init();
         MultiBlockH.init();
-        MultiblockI.init();
+        MultiBlockI.init();
         SpaceMultiblock.init();
 
         OptionalMachine.init(); // 限制模式不注册会出现多方块预览错误

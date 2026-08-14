@@ -264,7 +264,7 @@ public final class MagicRecipesB {
             CHEMICAL_BATH_RECIPES.builder("enchantment_essence_recovery")
                     .inputItems(Tags.ENCHANTMENT_ESSENCE)
                     .inputFluids(TheWaterFromTheWellOfWisdom, 5)
-                    .outputItems("gtocore:enchantment_essence_original")
+                    .outputItems(ENCHANTMENT_ESSENCE.get("original"))
                     .duration(20)
                     .EUt(8)
                     .save();
@@ -272,7 +272,7 @@ public final class MagicRecipesB {
             CHEMICAL_BATH_RECIPES.builder("affix_essence_recovery")
                     .inputItems(Tags.AFFIX_ESSENCE)
                     .inputFluids(TheWaterFromTheWellOfWisdom, 5)
-                    .outputItems("gtocore:affix_essence_original")
+                    .outputItems(AFFIX_ESSENCE.get("original"))
                     .duration(20)
                     .EUt(8)
                     .save();
