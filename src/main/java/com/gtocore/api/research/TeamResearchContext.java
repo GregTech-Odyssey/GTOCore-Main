@@ -5,27 +5,32 @@ import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.techtree.BaseNodes;
 
+import com.gtolib.api.data.GTODimensions;
 import com.gtolib.utils.AEChemicalHelper;
 import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+
 import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.datastream.data.Data;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.*;
 
 import java.io.IOException;
 import java.util.Set;
 
 public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scannedItems,
-                                  Set<Material> scannedMaterials, Reference2LongOpenHashMap<TechNode> techNodeAccCWU) {
+                                  Set<Material> scannedMaterials, Reference2LongOpenHashMap<TechNode> techNodeAccCWU, IntOpenHashSet unlockedDimensions) {
 
     private static final int TECH_NODE_MANAGER_ID_FORMAT_MARKER = -1;
 
     public TeamResearchContext() {
-        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>());
+        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>(), new IntOpenHashSet());
     }
 
     static void writeContext(DataIOStream dataIOStream, TeamResearchContext context) throws IOException {
@@ -33,23 +38,21 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         writeScannedItems(dataIOStream, context.scannedItems());
         writeScannedMaterials(dataIOStream, context.scannedMaterials());
         writeTechNodeAccCWU(dataIOStream, context.techNodeAccCWU());
+        writeUnlockedDimensions(dataIOStream, context.unlockedDimensions());
     }
 
-    static TeamResearchContext readContext(DataIOStream dataIOStream, int dataVersion) throws IOException {
+    @SuppressWarnings("unused")
+    static TeamResearchContext readContext(DataIOStream dataIOStream, int dataVersion) {
         try {
-            if (dataVersion == 2) return new TeamResearchContext(
-                    readResearchPoints(dataIOStream),
-                    readScannedItems(dataIOStream),
-                    new ReferenceOpenHashSet<>(),
-                    readTechNodeAccCWU(dataIOStream));
             return new TeamResearchContext(
                     readResearchPoints(dataIOStream),
                     readScannedItems(dataIOStream),
                     readScannedMaterials(dataIOStream),
-                    readTechNodeAccCWU(dataIOStream));
+                    readTechNodeAccCWU(dataIOStream),
+                    readUnlockedDimensions(dataIOStream));
         } catch (Exception e) {
-            // return new TeamResearchContext();
-            throw new IllegalStateException("Failed to read TeamResearchContext", e);
+            return new TeamResearchContext();
+            // throw new IllegalStateException("Failed to read TeamResearchContext", e);
         }
     }
 
@@ -147,6 +150,23 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return scannedMaterials;
     }
 
+    static void writeUnlockedDimensions(DataIOStream dataIOStream, IntOpenHashSet unlockedDimensions) throws IOException {
+        dataIOStream.writeInt(unlockedDimensions.size());
+        for (int dimensionId : unlockedDimensions) {
+            dataIOStream.writeInt(dimensionId);
+        }
+    }
+
+    static IntOpenHashSet readUnlockedDimensions(DataIOStream dataIOStream) throws IOException {
+        int unlockedDimensionCount = dataIOStream.readInt();
+        IntOpenHashSet unlockedDimensions = new IntOpenHashSet();
+        for (int i = 0; i < unlockedDimensionCount; i++) {
+            int dimensionId = dataIOStream.readInt();
+            unlockedDimensions.add(dimensionId);
+        }
+        return unlockedDimensions;
+    }
+
     public boolean isEmpty() {
         return researchPoints.isEmpty() && scannedItems.isEmpty() && techNodeAccCWU.isEmpty();
     }
@@ -181,5 +201,15 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
 
     public boolean hasScanned(AEKey key) {
         return scannedItems.contains(key) || scannedMaterials.contains(AEChemicalHelper.getMaterial(key));
+    }
+
+    public boolean addUnlockedDimension(ResourceKey<Level> dimensionId) {
+        var r = unlockedDimensions.add(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
+        if (r) TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        return r;
+    }
+
+    public boolean hasUnlockedDimension(ResourceKey<Level> dimensionId) {
+        return unlockedDimensions.contains(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
     }
 }
