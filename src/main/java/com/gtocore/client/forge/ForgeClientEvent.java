@@ -3,6 +3,7 @@ package com.gtocore.client.forge;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
+import com.gtocore.client.DynamicVisualManager;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
 import com.gtocore.client.Tooltips;
@@ -49,6 +50,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -158,6 +160,7 @@ public final class ForgeClientEvent {
             ClientLevel level = mc.level;
             LocalPlayer player = mc.player;
             if (level == null || player == null) return;
+            DynamicVisualManager.renderDynamicHighlight(event);
             PoseStack poseStack = event.getPoseStack();
             Camera camera = event.getCamera();
             BlockPos[] poses;
@@ -211,6 +214,12 @@ public final class ForgeClientEvent {
                 });
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onRenderHighlight(RenderHighlightEvent.Block event) {
+        var hit = DynamicVisualManager.findDynamicHit();
+        if (DynamicVisualManager.isDynamicTarget(hit)) event.setCanceled(true);
     }
 
     @SubscribeEvent

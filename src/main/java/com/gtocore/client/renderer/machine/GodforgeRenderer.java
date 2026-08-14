@@ -1,7 +1,7 @@
 package com.gtocore.client.renderer.machine;
 
+import com.gtocore.api.machine.dynamic.DynamicPartDefinition;
 import com.gtocore.client.renderer.RenderHelper;
-import com.gtocore.client.renderer.StructurePattern;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.client.renderer.TextureUpdateRequester;
 import com.gtocore.common.data.GTOBlocks;
@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -54,11 +55,11 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void render(BlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-        if (!initialized) {
-            initRings();
+        if (!initialized && blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.getMetaMachine() instanceof GodForgeMachine machine) {
+            initRings(machine.getDynamicPart(GodForgeMachine.OUTER_RING));
             initialized = true;
         }
-        if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.getMetaMachine() instanceof GodForgeMachine machine && machine.isFormed() && (machine.isActive() || blockEntity.getLevel() instanceof TrackedDummyWorld)) {
+        if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.getMetaMachine() instanceof GodForgeMachine machine && machine.isFormed() && ((machine.isActive() && machine.isDynamicRenderEnabled()) || blockEntity.getLevel() instanceof TrackedDummyWorld)) {
             float tick = machine.getOffsetTimer() + partialTicks;
             if (GTCEu.Mods.isShimmerLoaded() && !(blockEntity.getLevel() instanceof TrackedDummyWorld)) {
                 PoseStack finalStack = RenderUtils.copyPoseStack(poseStack);
@@ -68,34 +69,33 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
             }
         }
         if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.getMetaMachine() instanceof GodForgeMachine machine && machine.rotation > 0 && !(blockEntity.getLevel() instanceof TrackedDummyWorld)) {
-            if (machine.isActive() || machine.timer > machine.rotation) {
-                RenderRing(machine, poseStack, partialTicks);
-            } else {
-                RenderRing(machine, poseStack, -partialTicks);
-            }
+            RenderRing(machine, poseStack, partialTicks);
         }
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void initRings() {
-        StructureVBO ringStructure = (new StructureVBO()).addMapping('B', GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get())
+    private void initRings(DynamicPartDefinition part) {
+        String[][] structure = part.getStructure();
+        StructureVBO ringStructure = createRingStructure(GTOBlocks.REMOTE_GRAVITON_FLOW_MODULATOR.get());
+        ringOne = ringStructure.assignStructure(structure).build();
+        ringTwo = createRingStructure(GTOBlocks.MEDIAL_GRAVITON_FLOW_MODULATOR.get()).assignStructure(structure).build();
+        ringThree = createRingStructure(GTOBlocks.CENTRAL_GRAVITON_FLOW_MODULATOR.get()).assignStructure(structure).build();
+        textureUpdateRequester = ringStructure.getTextureUpdateRequestor();
+        textureUpdateRequester.add(GTOBlocks.MEDIAL_GRAVITON_FLOW_MODULATOR.get());
+        textureUpdateRequester.add(GTOBlocks.CENTRAL_GRAVITON_FLOW_MODULATOR.get());
+    }
+
+    private StructureVBO createRingStructure(Block gravitonFlowModulator) {
+        return (new StructureVBO()).addMapping('B', GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get())
                 .addMapping('C', GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get())
                 .addMapping('D', GTOBlocks.BOUNDLESS_GRAVITATIONALLY_SEVERED_STRUCTURE_CASING.get())
                 .addMapping('E', GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get())
                 .addMapping('F', GTOBlocks.STELLAR_ENERGY_SIPHON_CASING.get())
-                .addMapping('1', GTOBlocks.REMOTE_GRAVITON_FLOW_MODULATOR.get())
-                .addMapping('2', GTOBlocks.MEDIAL_GRAVITON_FLOW_MODULATOR.get())
-                .addMapping('3', GTOBlocks.CENTRAL_GRAVITON_FLOW_MODULATOR.get())
+                .addMapping('G', gravitonFlowModulator)
+                .addMapping('1', gravitonFlowModulator)
+                .addMapping('2', gravitonFlowModulator)
+                .addMapping('3', gravitonFlowModulator)
                 .addMapping('H', GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get());
-
-        ringOne = ringStructure.assignStructure(StructurePattern.ringOne)
-                .build();
-        ringTwo = ringStructure.assignStructure(StructurePattern.ringTwo)
-                .build();
-        ringThree = ringStructure.assignStructure(StructurePattern.ringThree)
-                .build();
-
-        textureUpdateRequester = ringStructure.getTextureUpdateRequestor();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -117,27 +117,7 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
         Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
         textureUpdateRequester.requestUpdate();
         poseStack.pushPose();
-        // move the model to correct pos and rotate model to face machine
-        switch (machine.getFrontFacing()) {
-            case NORTH -> {
-                poseStack.translate(.5f, .5f, 121.5f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(270));
-            }
-            case SOUTH -> {
-                poseStack.translate(.5f, .5f, -120.5f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(90));
-            }
-            case WEST -> {
-                poseStack.translate(121.5f, .5f, 0.5f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(0));
-            }
-            case EAST -> {
-                poseStack.translate(-120.5f, .5f, 0.5f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
-            }
-        }
-        // rotate
-        poseStack.mulPose(new Quaternionf().fromAxisAngleDeg(1.0f, 0.0f, 0.0f, (machine.rotation + partialTicks) % 360.0F));
+        poseStack.mulPoseMatrix(machine.getDynamicTransform(GodForgeMachine.OUTER_RING, partialTicks));
         ring.bind();
         ring.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
         VertexBuffer.unbind();
@@ -214,6 +194,6 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
     @Override
     @OnlyIn(Dist.CLIENT)
     public int getViewDistance() {
-        return 256;
+        return 320;
     }
 }
