@@ -863,7 +863,7 @@ object GTOMachineTooltips {
         danger(("温度超过 1500K 后反应堆将持续损坏，完全损坏时" translatedTo "Above 1500K, the reactor continuously takes damage and, when fully damaged, ") + ComponentSlang.Explosion)
 
         section("冷却系统" translatedTo "Cooling System")
-        command("启动冷却需要冷却液输入量大于冷却需求；冷却上限决定每次最多能消耗多少冷却液" translatedTo "Cooling starts only when the coolant input exceeds the cooling demand; the cooling limit determines the maximum amount of coolant that can be consumed each time")
+        command("冷却液输入量大于冷却需求时触发冷却；每秒冷却液消耗量受冷却上限限制" translatedTo "Cooling activates when the coolant input exceeds the cooling demand; coolant consumption per second is limited by the cooling limit")
         content("每 800 mB 蒸馏水或 20 mB 钠钾合金可满足 1 单位冷却需求" translatedTo "Every 800 mB of Distilled Water or 20 mB of Sodium Potassium can satisfy 1 unit of cooling demand", { green() })
         info("冷却需求 = 配方基础产热 × 实际并行 × 当前温度 / 1500" translatedTo "Cooling demand = base recipe heat × actual parallel × current temperature / 1500")
         info("冷却上限 = (冷却组件数量 - 相邻数 / 3) × 8" translatedTo "Cooling limit = (cooling components - adjacency / 3) × 8")
