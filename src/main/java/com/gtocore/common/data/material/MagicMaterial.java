@@ -21,8 +21,7 @@ import static com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIcon
 import static com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty.GasTier.HIGHEST;
 import static com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty.GasTier.LOW;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Silver;
-import static com.gtocore.api.data.material.GTOMaterialFlags.CAN_BE_COOLED_DOWN_BY_BATHING;
-import static com.gtocore.api.data.material.GTOMaterialFlags.GENERATE_CRYSTAL_SEED;
+import static com.gtocore.api.data.material.GTOMaterialFlags.*;
 import static com.gtocore.api.data.material.GTOMaterialIconSet.LIMPID;
 import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtolib.utils.register.MaterialsRegisterUtils.material;
@@ -267,7 +266,7 @@ public final class MagicMaterial {
 
         Runerock = magicMaterial("runerock", "符文石")
                 .dust()
-                .flags(FORCE_GENERATE_BLOCK, GENERATE_PLATE)
+                .flags(FORCE_GENERATE_BLOCK, GENERATE_PLATE, GENERATE_NANITES)
                 .color(0xbcf7e5)
                 .iconSet(FINE)
                 .toolStats(ToolProperty.Builder.of(3.0F, 2, 18000, 0, new GTToolType[] { GTToolType.MORTAR }).build())
@@ -324,7 +323,7 @@ public final class MagicMaterial {
                 .color(0x8153a9)
                 .iconSet(DULL)
                 .blastTemp(1000, LOW, GTValues.VA[GTValues.LV], 100)
-                .flags(DISABLE_DECOMPOSITION, GENERATE_FRAME, GENERATE_PLATE, GENERATE_ROD)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_FRAME, GENERATE_PLATE, GENERATE_ROD, GENERATE_NANITES)
                 .buildAndRegister();
 
         AstralSilver = magicMaterial("astral_silver", "星辰银")
@@ -333,7 +332,7 @@ public final class MagicMaterial {
                 .components(Silver, 2, Thaumium, 1)
                 .color(0xd9d9f1)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_NANITES)
                 .buildAndRegister();
 
         Livingsteel = magicMaterial("livingsteel", "活铁")
@@ -360,7 +359,7 @@ public final class MagicMaterial {
                 .color(0xe6ffef)
                 .blastTemp(1450, LOW)
                 .components(GTMaterials.Steel, 1)
-                .flags(DISABLE_DECOMPOSITION, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW, GENERATE_NANITES)
                 .iconSet(METALLIC)
                 .buildAndRegister()
                 .setFormula("*Gn*3*Sy*3*Un*3*Sa*3*Ma*4?");
@@ -433,7 +432,7 @@ public final class MagicMaterial {
                 .radioactiveHazard(1)
                 .element(GTOElements.GAIASTEEL)
                 .blastTemp(4300, LOW)
-                .flags(GTOMaterialFlags.GENERATE_CURVED_PLATE, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW)
+                .flags(GTOMaterialFlags.GENERATE_CURVED_PLATE, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW, GENERATE_NANITES)
                 .color(0x660404)
                 .iconSet(BRIGHT)
                 .toolStats(ToolProperty.Builder.of(16.0F, 12, 32000, 6, GTToolType.SWORD, GTToolType.PICKAXE, GTToolType.SHOVEL, GTToolType.AXE, GTToolType.HOE, GTToolType.MINING_HAMMER, GTToolType.SPADE, GTToolType.SAW, GTToolType.HARD_HAMMER, GTToolType.WRENCH, GTToolType.FILE, GTToolType.CROWBAR, GTToolType.SCREWDRIVER, GTToolType.WIRE_CUTTER, GTToolType.SCYTHE, GTToolType.KNIFE, GTToolType.BUTCHERY_KNIFE, GTToolType.DRILL_LV, GTToolType.DRILL_MV, GTToolType.DRILL_HV, GTToolType.DRILL_EV, GTToolType.DRILL_IV, GTToolType.CHAINSAW_LV, GTToolType.WRENCH_LV, GTToolType.WRENCH_HV, GTToolType.WRENCH_IV, GTToolType.BUZZSAW, GTToolType.SCREWDRIVER_LV, GTToolType.WIRE_CUTTER_LV, GTToolType.WIRE_CUTTER_HV, GTToolType.WIRE_CUTTER_IV).build())
@@ -463,7 +462,7 @@ public final class MagicMaterial {
                 .element(GTOElements.OHRICHALOS)
                 .color(0x590aa9)
                 .iconSet(METALLIC)
-                .flags(GTOMaterialFlags.GENERATE_CURVED_PLATE, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW)
+                .flags(GTOMaterialFlags.GENERATE_CURVED_PLATE, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW, GENERATE_NANITES)
                 .toolStats(ToolProperty.Builder.of(24.0F, 16, 128000, 6, GTToolType.SWORD, GTToolType.PICKAXE, GTToolType.SHOVEL, GTToolType.AXE, GTToolType.HOE, GTToolType.MINING_HAMMER, GTToolType.SPADE, GTToolType.SAW, GTToolType.HARD_HAMMER, GTToolType.WRENCH, GTToolType.FILE, GTToolType.CROWBAR, GTToolType.SCREWDRIVER, GTToolType.WIRE_CUTTER, GTToolType.SCYTHE, GTToolType.KNIFE, GTToolType.BUTCHERY_KNIFE, GTToolType.DRILL_LV, GTToolType.DRILL_MV, GTToolType.DRILL_HV, GTToolType.DRILL_EV, GTToolType.DRILL_IV, GTToolType.CHAINSAW_LV, GTToolType.WRENCH_LV, GTToolType.WRENCH_HV, GTToolType.WRENCH_IV, GTToolType.BUZZSAW, GTToolType.SCREWDRIVER_LV, GTToolType.WIRE_CUTTER_LV, GTToolType.WIRE_CUTTER_HV, GTToolType.WIRE_CUTTER_IV).build())
                 .rotorStats(300, 220, 12.0f, 20000)
                 .buildAndRegister();
@@ -515,7 +514,7 @@ public final class MagicMaterial {
                 .ingot()
                 .fluid()
                 .blastTemp(10100, HIGHEST)
-                .flags(DISABLE_DECOMPOSITION, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_FRAME, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_GEAR, GENERATE_BOLT_SCREW, GENERATE_NANITES)
                 .element(GTElements.Ag)
                 .color(0x58C8B6)
                 .iconSet(METALLIC)

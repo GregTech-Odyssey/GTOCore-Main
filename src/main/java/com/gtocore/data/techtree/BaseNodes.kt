@@ -670,6 +670,21 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
+    val VirtualUniverseDataStorage = MainTree.builder("virtual_universe_data_storage", "虚拟宇宙数据存储技术", "Virtual Universe Data Storage Technology")
+        .description("通过模拟一个完整的虚拟宇宙，将数据存储在其中，实现超大规模的数据存储与管理", "By simulating a complete virtual universe, data is stored within it, achieving ultra-large-scale data storage and management")
+        .icon(RegistriesUtils.getItem("gtocore:virtual_universe_data_access_hatch"))
+        .prerequisites(BlockholeDataStorage)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(1024 * 20 * 7200L)
+                .addMaterialNeeded(DATA_STORAGE, 16384)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:black_hole_data_access_hatch"), 0.8F)
+                .build(),
+        )
+        .tier(4)
+        .build()
+
+    @JvmField
     val LeptonicCharge = MainTree.builder("leptonic_charge", "轻子爆弹", "Leptonic Charge")
         .description("威力极其强大的爆弹，几乎是万亿亿级的TNT当量", "An extremely powerful explosive, almost equivalent to a trillion trillion TNT")
         .icon(RegistriesUtils.getItem("gtocore:leptonic_charge"))
@@ -739,21 +754,6 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
                 .setCWUNeeded(1024 * 20 * 7200L)
                 .addMaterialNeeded(MATERIAL, 32000)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:exotic_processing_core"), 0.8F)
-                .build(),
-        )
-        .tier(5)
-        .build()
-
-    @JvmField
-    val VirtualUniverseDataStorage = MainTree.builder("virtual_universe_data_storage", "虚拟宇宙数据存储技术", "Virtual Universe Data Storage Technology")
-        .description("通过模拟一个完整的虚拟宇宙，将数据存储在其中，实现超大规模的数据存储与管理", "By simulating a complete virtual universe, data is stored within it, achieving ultra-large-scale data storage and management")
-        .icon(RegistriesUtils.getItem("gtocore:virtual_universe_data_access_hatch"))
-        .prerequisites(BlockholeDataStorage)
-        .requirements(
-            ResearchRequirements.Builder()
-                .setCWUNeeded(1024 * 20 * 7200L)
-                .addMaterialNeeded(DATA_STORAGE, 16384)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:black_hole_data_access_hatch"), 0.8F)
                 .build(),
         )
         .tier(5)

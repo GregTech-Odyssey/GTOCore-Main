@@ -42,6 +42,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         MODULE_MAP.put(1, MultiBlockC.ORE_EXTRACTION_MODULE);
         MODULE_MAP.put(2, MultiBlockC.BIOENGINEERING_MODULE);
         MODULE_MAP.put(3, MultiBlockC.POLYMER_TWISTING_MODULE);
+        MODULE_MAP.put(4, MultiBlockC.MAGICA_MODULE);
     }
 
     private static final Map<Material, Float> MATERIAL_MAP = Map.of(

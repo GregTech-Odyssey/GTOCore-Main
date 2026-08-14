@@ -95,7 +95,7 @@ object MachinesNode : AutoInitialize<MachinesNode>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(2048 * 20 * 7200L)
-                .addMaterialNeeded(MECHANICS, 512)
+                .addMaterialNeeded(MECHANICS, 256)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:manipulator"), 0.8F)
                 .build(),
         )
@@ -110,7 +110,7 @@ object MachinesNode : AutoInitialize<MachinesNode>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(2048 * 20 * 7200L)
-                .addMaterialNeeded(MECHANICS, 512)
+                .addMaterialNeeded(MECHANICS, 256)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:dimensional_bridge_casing"), 0.8F)
                 .build(),
         )
@@ -499,7 +499,7 @@ object MachinesNode : AutoInitialize<MachinesNode>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(2048 * 20 * 7200L)
-                .addMaterialNeeded(MECHANICS, 512)
+                .addMaterialNeeded(MECHANICS, 256)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:quantum_force_transformer_coil"), 0.7F)
                 .build(),
         )
