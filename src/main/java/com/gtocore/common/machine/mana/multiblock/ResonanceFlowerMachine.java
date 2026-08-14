@@ -176,9 +176,9 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         textList.add(Component.translatable("gtocore.machine.resonance_flower.stable_operation_times",
                 Component.literal(Integer.toString(stableTime)).withStyle(ChatFormatting.AQUA)));
         textList.add(Component.translatable("gtocore.machine.resonance_flower.time_fluctuation_coefficient",
-                Component.literal(String.format("%.6f", timeFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
+                Component.literal(String.format("%.3f", timeFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
         textList.add(Component.translatable("gtocore.machine.resonance_flower.elemental_fluctuation_coefficient",
-                Component.literal(String.format("%.6f", elementalFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
+                Component.literal(String.format("%.3f", elementalFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
     }
 
     private Component getLastRecipeName() {
