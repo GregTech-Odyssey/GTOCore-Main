@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
-import com.gtocore.common.data.machines.SpaceMultiblock;
+import com.gtocore.data.techtree.MachinesNode;
 
 import com.gtolib.api.machine.feature.multiblock.ICrossRecipeElectricMachine;
 import com.gtolib.api.machine.trait.CrossRecipeTrait;
@@ -40,12 +40,12 @@ public class RecipeExtension extends Extension implements ICrossRecipeElectricMa
 
     public RecipeExtension(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
-        crossRecipeTrait = new CrossRecipeTrait(this, false, true, machine -> parallel.applyAsLong((RecipeExtension) machine));
+        crossRecipeTrait = createCrossRecipeTrait();
     }
 
     public RecipeExtension(MetaMachineBlockEntity metaMachineBlockEntity, @Nullable Function<AbstractSpaceStation, Set<BlockPos>> positionFunction) {
         super(metaMachineBlockEntity, positionFunction);
-        crossRecipeTrait = new CrossRecipeTrait(this, false, true, machine -> parallel.applyAsLong((RecipeExtension) machine));
+        crossRecipeTrait = createCrossRecipeTrait();
     }
 
     @Override
@@ -96,16 +96,31 @@ public class RecipeExtension extends Extension implements ICrossRecipeElectricMa
             setIdleReason(IdleReason.CANNOT_WORK_IN_SPACE);
             return null;
         }
-        if (hasLaserInput && !core.canUseLaser()) {
-            setIdleReason(Component.translatable("gtocore.machine.spacestation.require_module", Component.translatable(SpaceMultiblock.SPACE_STATION_ENERGY_CONVERSION_MODULE.getDescriptionId())));
+        if (hasLaserInput && !core.hasLaserBoost()) {
+            setIdleReason(Component.translatable("gtocore.recipe.require_technode", MachinesNode.LaserSpaceEngineering.getDisplayName()));
             return null;
         }
 
-        return ICrossRecipeElectricMachine.super.getRealRecipe(unit, RecipeModifier.multiplier(recipe, 1, core.getDurationMultiplierFromSpaceElevator()));
+        return ICrossRecipeElectricMachine.super.getRealRecipe(unit, RecipeModifier.multiplier(recipe, 1, core.getDurationMultiplier()));
     }
 
     @Override
     public CrossRecipeTrait getCrossRecipeTrait() {
         return crossRecipeTrait;
+    }
+
+    private CrossRecipeTrait createCrossRecipeTrait() {
+        return new CrossRecipeTrait(this, false, true, machine -> parallel.applyAsLong((RecipeExtension) machine)) {
+
+            @Override
+            public double getOverclockFactor() {
+                if (overclockHatchPartMachine == null) return 0.55;
+                var mul = overclockHatchPartMachine.getCurrentMultiplier();
+                if (isWorkspaceReady() && core.getServiceMachineMap().get(SpaceStationEnergyConversionModule.class) != null) {
+                    return mul / (mul + 1.0);
+                }
+                return mul;
+            }
+        };
     }
 }

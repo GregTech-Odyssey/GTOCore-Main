@@ -1,7 +1,7 @@
 package com.gtocore.data.recipe.gtm.misc;
 
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.GTOCore;
 
@@ -20,7 +20,7 @@ import static com.gregtechceu.gtceu.common.data.GTItems.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTOMaterials.TitaniumDioxideNanotubes;
 import static com.gtocore.common.data.GTORecipeTypes.*;
-import static com.gtocore.data.recipe.research.AnalyzeData.CrystalTechMainframe;
+import static com.gtocore.data.techtree.BaseNodes.CrystalTechMainframe;
 
 public final class CircuitRecipes {
 
@@ -1178,7 +1178,7 @@ public final class CircuitRecipes {
                 .researchStation(b -> b
                         .researchStack(WETWARE_PROCESSOR_ASSEMBLY_ZPM.asItem())
                         .CWUt(16))
-                .researchNode(AnalyzeData.WetwareTech)
+                .researchNode(BaseNodes.WetwareTech)
                 .save();
 
         // UHV
@@ -1203,7 +1203,7 @@ public final class CircuitRecipes {
                         .researchStack(WETWARE_SUPER_COMPUTER_UV.asItem())
                         .CWUt(96)
                         .EUt(VA[UV]))
-                .researchNode(AnalyzeData.WetwareTech)
+                .researchNode(BaseNodes.WetwareTech)
                 .EUt(300000).duration(2000).save();
 
         // Misc ========================================================================================================

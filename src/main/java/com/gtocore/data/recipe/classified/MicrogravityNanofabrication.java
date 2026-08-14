@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.MultiBlockD;
 import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.common.data.machines.MultiBlockI;
 
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -80,7 +81,7 @@ public class MicrogravityNanofabrication {
                 .inputItems(GTOItems.SMD_DIODE_OPTICAL, 8)
                 .inputItems(GTOItems.SMD_INDUCTOR_OPTICAL, 16)
                 .inputItems(GTOTagPrefix.wireFine, GTOMaterials.AbyssalAlloy, 16)
-                .outputItems("gtocore:large_algae_farm")
+                .outputItems(MultiBlockI.LARGE_ALGAE_FARM)
                 .inputFluids(GTOMaterials.MutatedLivingSolder, 6000)
                 .inputFluids(GTOFluids.DEW_OF_THE_VOID.getSource(), 10000)
                 .EUt(VA[UHV])

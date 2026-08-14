@@ -24,6 +24,10 @@ public final class NanitesIntegratedProcessingEmiCategory extends EmiRecipeCateg
             "polymer_twisting_module",
             EmiStack.of(MultiBlockC.POLYMER_TWISTING_MODULE.asStack()),
             Component.translatable(MultiBlockC.POLYMER_TWISTING_MODULE.getDescriptionId()));
+    public static final NanitesIntegratedProcessingEmiCategory MAGICA_MODULE = new NanitesIntegratedProcessingEmiCategory(
+            "magica_module",
+            EmiStack.of(MultiBlockC.MAGICA_MODULE.asStack()),
+            Component.translatable(MultiBlockC.MAGICA_MODULE.getDescriptionId()));
 
     private final Component name;
 
@@ -40,6 +44,7 @@ public final class NanitesIntegratedProcessingEmiCategory extends EmiRecipeCateg
             case 1 -> ORE_EXTRACTION_MODULE;
             case 2 -> BIOENGINEERING_MODULE;
             case 3 -> POLYMER_TWISTING_MODULE;
+            case 4 -> MAGICA_MODULE;
             default -> null;
         };
     }
@@ -52,6 +57,8 @@ public final class NanitesIntegratedProcessingEmiCategory extends EmiRecipeCateg
         registry.addWorkstation(BIOENGINEERING_MODULE, EmiStack.of(MultiBlockC.BIOENGINEERING_MODULE.asStack()));
         registry.addWorkstation(POLYMER_TWISTING_MODULE, controller);
         registry.addWorkstation(POLYMER_TWISTING_MODULE, EmiStack.of(MultiBlockC.POLYMER_TWISTING_MODULE.asStack()));
+        registry.addWorkstation(MAGICA_MODULE, controller);
+        registry.addWorkstation(MAGICA_MODULE, EmiStack.of(MultiBlockC.MAGICA_MODULE.asStack()));
     }
 
     @Override

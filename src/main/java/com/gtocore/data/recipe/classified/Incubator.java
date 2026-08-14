@@ -1,6 +1,7 @@
 package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.*;
+import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
 import com.gtolib.GTOCore;
@@ -763,7 +764,7 @@ final class Incubator {
         INCUBATOR_RECIPES.builder("bio_cardiomyocyte_cluster")
                 .inputItems(GTItems.STEM_CELLS, 16)
                 .inputItems(GTOItems.BIOLOGICAL_CELLS, 4)
-                .inputItems("gtocore:tier_0_heart", 1024)
+                .inputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst(), 1024)
                 .chancedOutput(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.asItem(), 300, 300)
                 .inputFluids(GTMaterials.Mutagen, 1000)
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)

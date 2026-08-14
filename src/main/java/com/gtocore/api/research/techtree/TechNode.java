@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.gtocore.data.recipe.research.AnalyzeData.TierItems;
+import static com.gtocore.data.techtree.BaseNodes.TierItems;
 
 @DataGeneratorScanned
 public final class TechNode {
@@ -75,9 +75,11 @@ public final class TechNode {
         this.tier = tier;
     }
 
-    ActionResult tryUnlock(Set<TechNode> unlockedNodes, TeamResearchContext context, UUID team, boolean simulate) {
+    ActionResult tryUnlock(TeamResearchContext context, UUID team, boolean simulate) {
         for (var prereq : prerequisites) {
-            if (!unlockedNodes.contains(prereq)) return ActionResult.fail(Component.translatable(UNLOCKED, TechTreeManager.getNodeName(prereq)));
+            if (!TechTreeSavedData.isUnlocked(team, prereq)) {
+                return ActionResult.fail(Component.translatable(UNLOCKED, TechTreeManager.getNodeName(prereq)));
+            }
         }
         return requirements.test(this, context, team, simulate);
     }

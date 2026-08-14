@@ -4,6 +4,7 @@ import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.scanning.editor.DataScanningEditor;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.editor.TechNodeEditor;
+import com.gtocore.api.research.techtree.ui.TechTreeSelectorWidget;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 import com.gtocore.config.GTOConfig;
 
@@ -28,6 +29,8 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.util.List;
+
+import static com.gtocore.data.techtree.BaseNodes.MainTree;
 
 @DataGeneratorScanned
 public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
@@ -59,36 +62,39 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
     @Override
     public void attachSideTabs(TabsWidget tabs) {
         IFancyUIProvider page;
-        for (var manager : TechTreeManager.getManagers()) {
-            page = new IFancyUIProvider() {
+        var manager = MainTree;
+        page = new IFancyUIProvider() {
 
-                @Override
-                public Widget createMainPage(FancyMachineUIWidget widget) {
-                    var t = new TechTreeWidget(0, 0, 176, 166, manager, TeamResearchSavedDtat::getOrCreateContext);
-                    t.setForce(true);
-                    return t;
-                }
-
-                @Override
-                public IGuiTexture getTabIcon() {
-                    return manager.getIcon();
-                }
-
-                @Override
-                public List<Component> getTabTooltips() {
-                    return List.of(TechTreeManager.getTreeName(manager));
-                }
-
-                @Override
-                public Component getTitle() {
-                    return TechTreeManager.getTreeName(manager);
-                }
-            };
-            if (tabs.getMainTab() == null) {
-                tabs.setMainTab(page);
-            } else {
-                tabs.attachSubTab(page);
+            @Override
+            public Widget createMainPage(FancyMachineUIWidget widget) {
+                var root = new WidgetGroup(0, 0, 176, 166);
+                var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, 176,
+                        166 - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+                treeWidget.setForce(true);
+                root.addWidget(new TechTreeSelectorWidget(0, 0, 176, manager, treeWidget::setManager));
+                root.addWidget(treeWidget);
+                return root;
             }
+
+            @Override
+            public IGuiTexture getTabIcon() {
+                return manager.getIcon();
+            }
+
+            @Override
+            public List<Component> getTabTooltips() {
+                return List.of(TechTreeManager.getTreeName(manager));
+            }
+
+            @Override
+            public Component getTitle() {
+                return TechTreeManager.getTreeName(manager);
+            }
+        };
+        if (tabs.getMainTab() == null) {
+            tabs.setMainTab(page);
+        } else {
+            tabs.attachSubTab(page);
         }
         if (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes) {
             if (tabs.getMainTab() == null) {

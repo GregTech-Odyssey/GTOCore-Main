@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.ae2;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.ManaMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
@@ -272,7 +273,7 @@ public final class AE2 {
                 .save();
 
         ASSEMBLER_RECIPES.builder("interface_lv")
-                .inputItems("gtocore:lv_mana_machine_hull")
+                .inputItems(ManaMachine.MANA_HULL[GTValues.LV])
                 .inputItems(AEItems.FORMATION_CORE.asItem())
                 .inputItems(AEItems.ANNIHILATION_CORE.asItem())
                 .inputItems(GTItems.CONVEYOR_MODULE_LV)
@@ -518,7 +519,7 @@ public final class AE2 {
                     .save();
 
             ASSEMBLER_RECIPES.builder("pattern_provider_magic")
-                    .inputItems("gtocore:ev_mana_machine_hull")
+                    .inputItems(ManaMachine.MANA_HULL[GTValues.EV])
                     .inputItems(AEItems.FORMATION_CORE.asItem(), 2)
                     .inputItems(AEItems.ANNIHILATION_CORE.asItem(), 2)
                     .inputItems(GTItems.ROBOT_ARM_HV, 2)
@@ -560,7 +561,7 @@ public final class AE2 {
                     .save();
 
             ASSEMBLER_RECIPES.builder("pattern_provider_better_magic")
-                    .inputItems("gtocore:iv_mana_machine_hull")
+                    .inputItems(ManaMachine.MANA_HULL[GTValues.IV])
                     .inputItems(AEItems.FORMATION_CORE.asItem(), 4)
                     .inputItems(AEItems.ANNIHILATION_CORE.asItem(), 4)
                     .inputItems(GTItems.ROBOT_ARM_EV, 2)
@@ -586,7 +587,7 @@ public final class AE2 {
                     .save();
 
             ASSEMBLER_RECIPES.builder("crafting_unit_magic")
-                    .inputItems("gtocore:ev_mana_machine_hull")
+                    .inputItems(ManaMachine.MANA_HULL[GTValues.EV])
                     .inputItems(AEItems.LOGIC_PROCESSOR.asItem(), 8)
                     .inputItems(AEItems.CALCULATION_PROCESSOR.asItem(), 8)
                     .inputItems(CustomTags.IV_CIRCUITS)
@@ -674,7 +675,7 @@ public final class AE2 {
                     .save();
 
             ASSEMBLER_RECIPES.builder("pattern_provider_magic")
-                    .inputItems("gtocore:hv_mana_machine_hull")
+                    .inputItems(ManaMachine.MANA_HULL[GTValues.HV])
                     .inputItems(AEItems.FORMATION_CORE.asItem(), 2)
                     .inputItems(AEItems.ANNIHILATION_CORE.asItem(), 2)
                     .inputItems(GTItems.ROBOT_ARM_HV, 2)
@@ -716,7 +717,7 @@ public final class AE2 {
                     .save();
 
             ASSEMBLER_RECIPES.builder("pattern_provider_better_magic")
-                    .inputItems("gtocore:ev_mana_machine_hull")
+                    .inputItems(ManaMachine.MANA_HULL[GTValues.EV])
                     .inputItems(AEItems.FORMATION_CORE.asItem(), 4)
                     .inputItems(AEItems.ANNIHILATION_CORE.asItem(), 4)
                     .inputItems(GTItems.ROBOT_ARM_EV, 2)

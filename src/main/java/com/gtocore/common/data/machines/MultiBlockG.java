@@ -592,6 +592,7 @@ public final class MultiBlockG {
                     .where('I', blocks(GTBlocks.CASING_STEEL_PIPE.get()))
                     .where('J', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get())
                             .or(autoAbilities(definition.getRecipeTypes()))
+                            .or(abilities(OPTICAL_DATA_RECEPTION).setMaxGlobalLimited(1))
                             .or(abilities(MAINTENANCE).setExactLimit(1)))
                     .where('K', controller(definition))
                     .where(' ', any())

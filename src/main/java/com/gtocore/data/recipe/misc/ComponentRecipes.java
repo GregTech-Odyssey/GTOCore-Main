@@ -5,7 +5,6 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.data.CraftingComponents;
-import com.gtocore.data.recipe.research.AnalyzeData;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -30,6 +29,7 @@ import static com.gregtechceu.gtceu.data.recipe.GTCraftingComponents.*;
 import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.common.data.GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER;
 import static com.gtocore.common.data.GTORecipeTypes.*;
+import static com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLines;
 
 public final class ComponentRecipes {
 
@@ -599,7 +599,7 @@ public final class ComponentRecipes {
                             .duration(900)
                             .EUt(VA[EV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_motor.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_motor.researchNode(ComponentInAssemblyLines[tier]);
         builder_motor.inputItems(cableGtSingle, material[2], 2).save();
 
         // UV 有特判，线缆两倍但是其他流体遵循正常倍率
@@ -646,7 +646,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_conveyor.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_conveyor.researchNode(ComponentInAssemblyLines[tier]);
         builder_conveyor.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("conveyor_%s", VN[tier].toLowerCase()))
@@ -692,7 +692,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_pump.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_pump.researchNode(ComponentInAssemblyLines[tier]);
         builder_pump.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("pump_%s", VN[tier].toLowerCase()))
@@ -751,7 +751,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_piston.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_piston.researchNode(ComponentInAssemblyLines[tier]);
         builder_piston.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("piston_%s", VN[tier].toLowerCase()))
@@ -798,7 +798,7 @@ public final class ComponentRecipes {
                     .duration(900)
                     .EUt(VA[EV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_arm.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_arm.researchNode(ComponentInAssemblyLines[tier]);
         builder_arm.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("arm_%s", VN[tier].toLowerCase()))
@@ -848,7 +848,7 @@ public final class ComponentRecipes {
                     .duration(600)
                     .EUt(VA[IV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_emitter.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_emitter.researchNode(ComponentInAssemblyLines[tier]);
         builder_emitter.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("emitter_%s", VN[tier].toLowerCase()))
@@ -898,7 +898,7 @@ public final class ComponentRecipes {
                     .duration(600)
                     .EUt(VA[IV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_sensor.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_sensor.researchNode(ComponentInAssemblyLines[tier]);
         builder_sensor.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("sensor_%s", VN[tier].toLowerCase()))
@@ -947,7 +947,7 @@ public final class ComponentRecipes {
                     .duration(600)
                     .EUt(VA[IV]));
         }
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) builder_field_generator.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) builder_field_generator.researchNode(ComponentInAssemblyLines[tier]);
         builder_field_generator.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("field_generator_%s", VN[tier].toLowerCase()))
@@ -1025,7 +1025,7 @@ public final class ComponentRecipes {
                         .EUt(VA[tier - 1]))
                 .duration(1200).EUt(VA[tier]);
 
-        if (AnalyzeData.ComponentInAssemblyLines[tier] != null) rb.researchNode(AnalyzeData.ComponentInAssemblyLines[tier]);
+        if (ComponentInAssemblyLines[tier] != null) rb.researchNode(ComponentInAssemblyLines[tier]);
         rb.save();
 
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("integrated_control_core_%s", VN[tier].toLowerCase()))

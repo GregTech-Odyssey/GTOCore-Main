@@ -19,6 +19,7 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import net.minecraftforge.fluids.FluidStack;
 
 import static com.gtocore.common.data.GTORecipeTypes.ROCKET_ASSEMBLER_RECIPES;
+import static com.gtocore.data.techtree.MachinesNode.LaserSpaceEngineering;
 
 final class RocketAssembler {
 
@@ -267,7 +268,7 @@ final class RocketAssembler {
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.CarbonFiberPolyimideComposite, 32)
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.SiliconCarbideFiberReinforcedTitaniumMatrixComposite, 32)
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.BerylliumAluminumF, 32)
-                .outputItems("gtocore:orbital_fine_materials_factory")
+                .outputItems(SpaceMultiblock.ORBITAL_FINE_MATERIALS_FACTORY)
                 .inputFluids(new FluidStack(RegistriesUtils.getFluid("ad_astra:cryo_fuel"), 16000))
                 .inputFluids(GTOMaterials.Titanium5553, 7200)
                 .inputFluids(GTMaterials.Lubricant, 16000)
@@ -285,7 +286,7 @@ final class RocketAssembler {
                 .inputItems(GTOTagPrefix.plateDouble, GTMaterials.Naquadria, 32)
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.BerylliumAluminumZ, 32)
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.PlatinumRhodiumAlloy, 32)
-                .outputItems("gtocore:orbital_nanoprecision_processing_chamber")
+                .outputItems(SpaceMultiblock.ORBITAL_NANOPRECISION_PROCESSING_CHAMBER)
                 .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 16000)
                 .inputFluids(GTOMaterials.UltraLightweightCompositeSteel, 7200)
                 .inputFluids(GTMaterials.Lubricant, 16000)
@@ -303,7 +304,7 @@ final class RocketAssembler {
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.CarbonFiberPhenolicResinComposite, 32)
                 .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.SiliconCarbideFiberReinforcedTitaniumMatrixComposite, 32)
                 .inputItems(GTOTagPrefix.rod, GTOMaterials.SiliconCarbideFiberReinforcedTitaniumMatrixComposite, 64)
-                .outputItems("gtocore:space_drone_dock")
+                .outputItems(SpaceMultiblock.SPACE_DRONE_DOCK)
                 .inputFluids(GTOMaterials.RocketFuelH8n4c2o4, 16000)
                 .inputFluids(GTOMaterials.BerylliumAluminumF, 2880)
                 .inputFluids(GTMaterials.Lubricant, 16000)
@@ -325,6 +326,7 @@ final class RocketAssembler {
                 .inputFluids(GTOMaterials.Enderite, 64000)
                 .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 64000)
                 .EUt(8388608)
+                .researchNode(LaserSpaceEngineering)
                 .duration(1000)
                 .save();
 
@@ -338,7 +340,7 @@ final class RocketAssembler {
                 .inputItems(GTItems.SENSOR_UV, 16)
                 .inputItems(TagPrefix.plate, GTOMaterials.ZirconiaNickelBaseGradedComposite, 32)
                 .inputItems(TagPrefix.plate, GTOMaterials.CFCSIC1500CarbonFiberReinforcedComposite, 32)
-                .outputItems("gtocore:space_elevator_connector_module")
+                .outputItems(SpaceMultiblock.SPACE_ELEVATOR_CONNECTOR_MODULE)
                 .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 16000)
                 .inputFluids(GTOMaterials.BerylliumAluminumF, 2880)
                 .inputFluids(GTOMaterials.HighDurabilityCompoundSteel, 1296)
@@ -355,7 +357,7 @@ final class RocketAssembler {
                 .inputItems(GTOTagPrefix.FLAKES, GTOMaterials.TellurateCeramics, 16)
                 .inputItems(GTOTagPrefix.FLAKES, GTOMaterials.Titanium3Carbide, 16)
                 .inputItems(GTOTagPrefix.FLAKES, GTOMaterials.SilicaCeramic, 16)
-                .outputItems("gtocore:space_bio_research_module")
+                .outputItems(SpaceMultiblock.SPACE_BIO_RESEARCH_MODULE)
                 .inputFluids(RegistriesUtils.getFluid("ad_astra:cryo_fuel"), 16000)
                 .inputFluids(GTMaterials.Polytetrafluoroethylene, 1440)
                 .inputFluids(GTMaterials.Tritanium, 1152)
@@ -372,12 +374,13 @@ final class RocketAssembler {
                 .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UEV, 4)
                 .inputItems(GTMachines.GAS_COLLECTOR[GTValues.UHV].asItem(), 4)
                 .inputItems(MultiBlockA.LARGE_GAS_COLLECTOR.asItem(), 4)
-                .outputItems("gtocore:planetary_gas_collector")
+                .outputItems(SpaceMultiblock.PLANETARY_GAS_COLLECTOR)
                 .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 16000)
                 .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 1296)
                 .inputFluids(GTMaterials.Naquadria, 576)
                 .EUt(4190000)
                 .duration(1800)
+                .researchNode(LaserSpaceEngineering)
                 .save();
     }
 }

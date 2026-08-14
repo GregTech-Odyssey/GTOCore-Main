@@ -3,7 +3,7 @@ package com.gtocore.integration.ftbquests;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.GTOCodecs;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.ComponentNodes;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import net.minecraft.ChatFormatting;
@@ -33,7 +33,7 @@ public class TechNodeTask extends AbstractBooleanTask {
 
     public TechNodeTask(long id, Quest quest) {
         super(id, quest);
-        node = AnalyzeData.ComponentInAssemblyLineluv;
+        node = ComponentNodes.ComponentInAssemblyLineluv;
     }
 
     public TaskType getType() {
@@ -69,7 +69,7 @@ public class TechNodeTask extends AbstractBooleanTask {
         super.fillConfigGroup(config);
         var manager = node.getManager();
         config.addEnum("structure", node, this::setNode,
-                NameMap.of(AnalyzeData.ComponentInAssemblyLineluv, manager.getAllNodes().toArray(new TechNode[0])).create());
+                NameMap.of(ComponentNodes.ComponentInAssemblyLineluv, manager.getAllNodes().toArray(new TechNode[0])).create());
     }
 
     @OnlyIn(Dist.CLIENT)

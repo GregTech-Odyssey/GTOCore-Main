@@ -3,13 +3,13 @@ package com.gtocore.mixin.ae2.eae;
 import com.gtocore.integration.ae.PatternEncoderStats;
 import com.gtocore.integration.ae.client.PatternEncoderStatsButton;
 import com.gtocore.integration.ae.client.PatternEncoderStatsScreen;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.ae2.gui.hooks.IExtendedGuiEx;
 import com.gtolib.api.ae2.me2in1.Me2in1Menu;
 import com.gtolib.api.ae2.me2in1.Me2in1Screen;
 
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -199,11 +199,8 @@ public abstract class GuiExPatternTerminalMixin<T extends ContainerExPatternTerm
 
     @Unique
     private boolean gto$isGroupRowHovered(int visibleRow) {
-        Minecraft minecraft = Minecraft.getInstance();
-        double mouseX = minecraft.mouseHandler.xpos() * minecraft.getWindow().getGuiScaledWidth() /
-                minecraft.getWindow().getScreenWidth();
-        double mouseY = minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight() /
-                minecraft.getWindow().getScreenHeight();
+        double mouseX = GuiHelper.getRealMouseX();
+        double mouseY = GuiHelper.getRealMouseY();
         return mouseX >= leftPos + 22 && mouseX < leftPos + 22 + gto$COLUMNS * ROW_HEIGHT &&
                 mouseY >= topPos + 51 + visibleRow * ROW_HEIGHT &&
                 mouseY < topPos + 51 + (visibleRow + 1) * ROW_HEIGHT;

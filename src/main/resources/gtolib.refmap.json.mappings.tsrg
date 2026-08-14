@@ -45,6 +45,7 @@ com/gtocore/mixin/mc/client/ClientPacketListenerMixin getLevel ()Lnet/minecraft/
 com/gtocore/mixin/mc/GameRendererMixin getNightVisionScale (Lnet/minecraft/world/entity/LivingEntity;F)F m_109108_
 com/gtocore/mixin/mc/GuiGraphicsMixin renderItem (Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V m_280405_
 com/gtocore/mixin/mc/GuiGraphicsMixin renderItemDecorations (Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V m_280302_
+com/gtocore/mixin/mc/ItemEntityMixin getItem ()Lnet/minecraft/world/item/ItemStack; m_32055_
 com/gtocore/mixin/mc/mob/LivingEntityMixin dropCustomDeathLoot (Lnet/minecraft/world/damagesource/DamageSource;IZ)V m_7472_
 com/gtocore/mixin/mc/mob/LivingEntityMixin dropEquipment ()V m_5907_
 com/gtocore/mixin/mc/mob/LivingEntityMixin getRandom ()Lnet/minecraft/util/RandomSource; m_217043_

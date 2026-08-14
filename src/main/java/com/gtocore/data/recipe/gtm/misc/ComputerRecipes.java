@@ -2,7 +2,7 @@ package com.gtocore.data.recipe.gtm.misc;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.ExResearchMachines;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
@@ -18,6 +18,7 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gregtechceu.gtceu.common.data.machines.GTResearchMachines.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
+import static com.gtocore.data.techtree.BaseNodes.LaserFoundations;
 
 final class ComputerRecipes {
 
@@ -93,7 +94,7 @@ final class ComputerRecipes {
                         .researchStack(DATA_ACCESS_HATCH.asItem())
                         .duration(2400)
                         .EUt(VA[EV]))
-                .researchNode(AnalyzeData.DataBase)
+                .researchNode(BaseNodes.DataBase)
                 .duration(1200).EUt(6000)
                 .save();
 
@@ -113,7 +114,7 @@ final class ComputerRecipes {
                         .researchStack(SCANNER[LuV].asItem())
                         .duration(2400)
                         .EUt(VA[IV]))
-                .researchNode(AnalyzeData.ScanStation)
+                .researchNode(BaseNodes.ScanStation)
                 .duration(1200).EUt(100000)
                 .save();
         ASSEMBLY_LINE_RECIPES.recipeBuilder("scan__station")
@@ -128,7 +129,7 @@ final class ComputerRecipes {
                 .inputFluids(SolderingAlloy, L << 3)
                 .inputFluids(VanadiumGallium, L << 3)
                 .outputItems(ExResearchMachines.PRIMORDIAL_SCANNING_STATION)
-                .researchNode(AnalyzeData.ScanStation)
+                .researchNode(BaseNodes.ScanStation)
                 .duration(1200).EUt(100000)
                 .save();
 
@@ -246,6 +247,7 @@ final class ComputerRecipes {
                 .inputFluids(PCBCoolant, 1000)
                 .outputItems(GTMultiMachines.ACTIVE_TRANSFORMER)
                 .duration(300).EUt(VA[LuV])
+                .researchNode(LaserFoundations)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("laser_cable")

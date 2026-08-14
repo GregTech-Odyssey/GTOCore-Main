@@ -168,7 +168,14 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
             colSize = 2;
         }
         var group = new WidgetGroup(0, 0, (18 + 6) * rowSize + 16, 18 * colSize + 16);
-        var container = new WidgetGroup(4, 4, (18 + 6) * rowSize + 8, 18 * colSize + 8);
+        var container = new WidgetGroup(4, 4, (18 + 6) * rowSize + 8, 18 * colSize + 8) {
+
+            @Override
+            public void detectAndSendChanges() {
+                super.detectAndSendChanges();
+                if (getOffsetTimer() % 10 == 0) requestSync();
+            }
+        };
         int index = 0;
         for (int y = 0; y < colSize; y++) {
             for (int x = 0; x < rowSize; x++) {

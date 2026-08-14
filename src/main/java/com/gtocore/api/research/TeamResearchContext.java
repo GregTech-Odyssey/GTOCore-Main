@@ -3,70 +3,56 @@ package com.gtocore.api.research;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.data.GTOCodecs;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 
+import com.gtolib.api.data.GTODimensions;
 import com.gtolib.utils.AEChemicalHelper;
 import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+
 import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.datastream.data.Data;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.*;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.util.Set;
 
-@Getter
-public class TeamResearchContext {
+public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scannedItems,
+                                  Set<Material> scannedMaterials, Reference2LongOpenHashMap<TechNode> techNodeAccCWU, IntOpenHashSet unlockedDimensions) {
 
     private static final int TECH_NODE_MANAGER_ID_FORMAT_MARKER = -1;
 
-    private final ResearchPoints researchPoints;
-    private final Set<AEKey> scannedItems;
-    private final Set<Material> scannedMaterials;
-    private final Reference2LongOpenHashMap<TechNode> techNodeAccCWU;
-
     public TeamResearchContext() {
-        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>());
-    }
-
-    public TeamResearchContext(
-                               ResearchPoints researchPoints,
-                               Set<AEKey> scannedItems,
-                               Set<Material> scannedMaterials,
-                               Reference2LongOpenHashMap<TechNode> techNodeAccCWU) {
-        this.researchPoints = researchPoints;
-        this.scannedItems = scannedItems;
-        this.scannedMaterials = scannedMaterials;
-        this.techNodeAccCWU = techNodeAccCWU;
+        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>(), new IntOpenHashSet());
     }
 
     static void writeContext(DataIOStream dataIOStream, TeamResearchContext context) throws IOException {
-        writeResearchPoints(dataIOStream, context.getResearchPoints());
-        writeScannedItems(dataIOStream, context.getScannedItems());
-        writeScannedMaterials(dataIOStream, context.getScannedMaterials());
-        writeTechNodeAccCWU(dataIOStream, context.getTechNodeAccCWU());
+        writeResearchPoints(dataIOStream, context.researchPoints());
+        writeScannedItems(dataIOStream, context.scannedItems());
+        writeScannedMaterials(dataIOStream, context.scannedMaterials());
+        writeTechNodeAccCWU(dataIOStream, context.techNodeAccCWU());
+        writeUnlockedDimensions(dataIOStream, context.unlockedDimensions());
     }
 
-    static TeamResearchContext readContext(DataIOStream dataIOStream, int dataVersion) throws IOException {
+    @SuppressWarnings("unused")
+    static TeamResearchContext readContext(DataIOStream dataIOStream, int dataVersion) {
         try {
-            if (dataVersion == 2) return new TeamResearchContext(
-                    readResearchPoints(dataIOStream),
-                    readScannedItems(dataIOStream),
-                    new ReferenceOpenHashSet<>(),
-                    readTechNodeAccCWU(dataIOStream));
             return new TeamResearchContext(
                     readResearchPoints(dataIOStream),
                     readScannedItems(dataIOStream),
                     readScannedMaterials(dataIOStream),
-                    readTechNodeAccCWU(dataIOStream));
+                    readTechNodeAccCWU(dataIOStream),
+                    readUnlockedDimensions(dataIOStream));
         } catch (Exception e) {
-            // return new TeamResearchContext();
-            throw new IllegalStateException("Failed to read TeamResearchContext", e);
+            return new TeamResearchContext();
+            // throw new IllegalStateException("Failed to read TeamResearchContext", e);
         }
     }
 
@@ -132,7 +118,7 @@ public class TeamResearchContext {
         }
         Reference2LongOpenHashMap<TechNode> techNodeAccCWU = new Reference2LongOpenHashMap<>();
         for (int i = 0; i < techNodeCount; i++) {
-            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : AnalyzeData.TechTree;
+            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : BaseNodes.MainTree;
             // todo remove datafix in future
             String nodeName = dataIOStream.readUTF();
             long accCWU = dataIOStream.readLong();
@@ -162,6 +148,23 @@ public class TeamResearchContext {
             }
         }
         return scannedMaterials;
+    }
+
+    static void writeUnlockedDimensions(DataIOStream dataIOStream, IntOpenHashSet unlockedDimensions) throws IOException {
+        dataIOStream.writeInt(unlockedDimensions.size());
+        for (int dimensionId : unlockedDimensions) {
+            dataIOStream.writeInt(dimensionId);
+        }
+    }
+
+    static IntOpenHashSet readUnlockedDimensions(DataIOStream dataIOStream) throws IOException {
+        int unlockedDimensionCount = dataIOStream.readInt();
+        IntOpenHashSet unlockedDimensions = new IntOpenHashSet();
+        for (int i = 0; i < unlockedDimensionCount; i++) {
+            int dimensionId = dataIOStream.readInt();
+            unlockedDimensions.add(dimensionId);
+        }
+        return unlockedDimensions;
     }
 
     public boolean isEmpty() {
@@ -198,5 +201,15 @@ public class TeamResearchContext {
 
     public boolean hasScanned(AEKey key) {
         return scannedItems.contains(key) || scannedMaterials.contains(AEChemicalHelper.getMaterial(key));
+    }
+
+    public boolean addUnlockedDimension(ResourceKey<Level> dimensionId) {
+        var r = unlockedDimensions.add(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
+        if (r) TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        return r;
+    }
+
+    public boolean hasUnlockedDimension(ResourceKey<Level> dimensionId) {
+        return unlockedDimensions.contains(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
     }
 }

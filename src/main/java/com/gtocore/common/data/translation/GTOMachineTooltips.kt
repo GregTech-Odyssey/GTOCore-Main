@@ -2362,8 +2362,7 @@ object GTOMachineTooltips {
         info("§6被动耗能§r由§b核心舱§r提供，而§6配方耗能§r需由安装在§b此舱§r的§d能源仓§r提供" translatedTo "§6Passive energy consumption§r is provided by the §bCore Module§r, while §6recipe energy consumption§r needs to be provided by the §dEnergy Input Hatch§r installed in the §bthis module§r")
         error("无核心舱连接时，无法运行配方" translatedTo "Cannot run recipes without a linked core module")
         highlight(
-            ("当前空间站内如果安装有" translatedTo "If the current space station has installed") +
-                ("空间站高能转换调配舱" translatedTo "Space Station High-Energy Conversion and Dispensing Module").scrollExotic(),
+            "如果解锁了[激光太空工程]科技节点" translatedTo "If the [Laser Space Engineering] Node is unlocked",
         )
         highlight("则解锁§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限" translatedTo "The use of advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r will be unlocked")
     }
@@ -2417,7 +2416,9 @@ object GTOMachineTooltips {
     val SpaceStationEnergyConversionModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("space_station_energy_conversion_module")
         section(ComponentSlang.MainFunction)
-        highlight("安装后，空间站内的其他拓展舱体将能够使用§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体" translatedTo "When installed, other expansion modules in the space station will be able to use advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r")
+        highlight("安装后，为空间站内的其他拓展舱体的超频仓提供1点增幅" translatedTo "After installation, provides 1 point of amplification for the Overclocking Chamber in other expansion modules within the space station")
+        highlight("并为已安装太空电梯连接仓提供额外增幅" translatedTo "And provides additional amplification for the installed Space Elevator Connection Chamber")
+        command("多个高能转换调配舱仅生效一个" translatedTo "Only one of multiple High-Energy Conversion Chambers will take effect")
     }
 
     @JvmField

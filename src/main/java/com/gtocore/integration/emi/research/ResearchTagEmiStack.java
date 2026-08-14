@@ -2,6 +2,7 @@ package com.gtocore.integration.emi.research;
 
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.client.renderer.GTORenderTypes;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.GTOCore;
 
@@ -142,8 +143,8 @@ public class ResearchTagEmiStack extends EmiStack {
         shader.safeGetUniform("time").set((float) (System.currentTimeMillis() % 100000L) / 1000.0F);
         shader.safeGetUniform("resolution").set((float) minecraft.getWindow().getScreenWidth(), (float) minecraft.getWindow().getScreenHeight());
         shader.safeGetUniform("mousePos").set(
-                (float) (minecraft.mouseHandler.xpos() * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth()),
-                (float) (minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight()));
+                (float) GuiHelper.getRealMouseX(),
+                (float) GuiHelper.getRealMouseY());
         shader.safeGetUniform("maskTextureSize").set(maskWidth, maskHeight);
         shader.safeGetUniform("maskViewportOrigin").set(0.0F, 0.0F);
         shader.safeGetUniform("useLocalMaskUv").set(1.0F);

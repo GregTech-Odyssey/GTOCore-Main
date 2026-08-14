@@ -19,6 +19,7 @@ import com.gto.fastcollection.O2OOpenCacheHashMap;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -97,7 +98,8 @@ public class TechTreeSavedData extends FastSavedData {
         return isUnlocked(player.getUUID(), node);
     }
 
-    public static boolean isUnlocked(UUID uuid, TechNode node) {
+    public static boolean isUnlocked(@Nullable UUID uuid, TechNode node) {
+        if (uuid == null) return false;
         TechTree tree = findTree(TeamUtil.getTeamUUID(uuid), node.getManager());
         return tree != null && tree.isUnlocked(node);
     }

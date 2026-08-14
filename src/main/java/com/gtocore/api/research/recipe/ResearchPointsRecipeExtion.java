@@ -4,6 +4,7 @@ import com.gtocore.api.research.IResearchPointsOperation;
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -16,7 +17,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -119,9 +119,8 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
                     @Override
                     @OnlyIn(Dist.CLIENT)
                     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                        var mc = Minecraft.getInstance();
-                        var mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-                        var mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+                        var mouseX = GuiHelper.getRealMouseX();
+                        var mouseY = GuiHelper.getRealMouseY();
                         if (isMouseOverElement(mouseX, mouseY)) {
                             return EmiScreenManager.stackInteraction(new EmiStackInteraction(tag, null, true),
                                     bind -> bind.matchesKey(keyCode, scanCode));

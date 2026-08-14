@@ -2,6 +2,7 @@ package com.gtocore.client.model;
 
 import com.gtocore.client.model.ShaderItemModelLoader.UniformValue;
 import com.gtocore.client.renderer.GTORenderTypes;
+import com.gtocore.utils.GuiHelper;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -98,13 +99,11 @@ public class ShaderItemBakedModel extends WrappedItemModel {
             applyParam(entry.getKey(), shader, entry.getValue());
         }
         var minecraft = Minecraft.getInstance();
-        float guiWidth = minecraft.getWindow().getGuiScaledWidth();
-        float guiHeight = minecraft.getWindow().getGuiScaledHeight();
         float screenWidth = minecraft.getWindow().getScreenWidth();
         float screenHeight = minecraft.getWindow().getScreenHeight();
         applyParam("time", shader, new UniformValue(new float[] { (float) (System.currentTimeMillis() % 100000L) / 1000.0F }));
-        float mouseX = (float) (minecraft.mouseHandler.xpos() * guiWidth / screenWidth);
-        float mouseY = (float) (minecraft.mouseHandler.ypos() * guiHeight / screenHeight);
+        float mouseX = (float) GuiHelper.getRealMouseX();
+        float mouseY = (float) GuiHelper.getRealMouseY();
         applyParam("mousePos", shader, new UniformValue(new float[] { mouseX, mouseY }));
         applyParam("resolution", shader, new UniformValue(new float[] { screenWidth, screenHeight }));
         applyParam("maskTextureSize", shader, new UniformValue(new float[] { runtimeMask.textureWidth(), runtimeMask.textureHeight() }));

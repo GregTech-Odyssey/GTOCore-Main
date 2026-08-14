@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.part.ae.widget.slot;
 
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAESlot;
 import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
+import com.gtocore.utils.GuiHelper;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.misc.IGhostItemTarget;
@@ -137,8 +138,8 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
             if (parentWidget.isStocking()) {
                 return false;
             }
-            var mouseX = minecraft.mouseHandler.xpos() * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
-            var mouseY = minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
+            var mouseX = GuiHelper.getRealMouseX();
+            var mouseY = GuiHelper.getRealMouseY();
 
             if (isMouseOverElement(mouseX, mouseY) && mouseOverStock(mouseX, mouseY)) {
                 writeClientAction(SLOT_DROP_ID, buf -> buf.writeBoolean(isCtrlDown()));

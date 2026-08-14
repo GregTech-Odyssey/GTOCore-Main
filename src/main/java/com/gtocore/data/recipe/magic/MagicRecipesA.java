@@ -1300,22 +1300,22 @@ public final class MagicRecipesA {
                     .save();
 
             ASSEMBLER_RECIPES.builder("me_mana_amplifier_hatch")
-                    .inputItems("gtocore:mana_amplifier_hatch")
+                    .inputItems(ManaMachine.MANA_AMPLIFIER_HATCH)
                     .inputItems(AEItems.SPEED_CARD.asItem())
                     .inputItems("appbot:fluix_mana_pool")
                     .inputItems(TagPrefix.gemExquisite, GTOMaterials.Fluix, 4)
-                    .outputItems("gtocore:me_mana_amplifier_hatch")
+                    .outputItems(ManaMachine.ME_MANA_AMPLIFIER_HATCH)
                     .duration(200)
                     .MANAt(1280)
                     .save();
 
             ASSEMBLER_RECIPES.builder("me_mana_interface")
-                    .inputItems("gtocore:zpm_mana_machine_hull")
+                    .inputItems(ManaMachine.MANA_HULL[GTValues.ZPM])
                     .inputItems("arseng:me_source_jar")
                     .inputItems("appbot:fluix_mana_pool")
-                    .inputItems("gtocore:advanced_mana_distributor", 32)
+                    .inputItems(ManaMultiBlock.ADVANCED_MANA_DISTRIBUTOR, 32)
                     .inputItems(GTOItems.SOURCE_ENERGY_CATALYST_CRYSTAL)
-                    .outputItems("gtocore:me_mana_interface")
+                    .outputItems(ManaMachine.AE_MANA_INTERFACE)
                     .inputFluids(GTOMaterials.StarVeinCatalyst, 1000)
                     .duration(450)
                     .MANAt(5240)

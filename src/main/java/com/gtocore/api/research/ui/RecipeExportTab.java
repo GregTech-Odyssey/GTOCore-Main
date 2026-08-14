@@ -6,6 +6,7 @@ import com.gtocore.api.research.techtree.TechTree;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.integration.jech.PinYinUtils;
+import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -96,11 +97,9 @@ public class RecipeExportTab implements IFancyUIProvider {
     private static final String INCLUDED_TOOLTIP_DETAIL = "gtocore.research.recipe_export_tab.included.detail";
 
     private final DataItemHolder holder;
-    private final TechTreeManager techTree;
 
-    public RecipeExportTab(DataItemHolder holder, TechTreeManager techTree) {
+    public RecipeExportTab(DataItemHolder holder) {
         this.holder = holder;
-        this.techTree = techTree;
     }
 
     @Override
@@ -110,7 +109,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget fancyMachineUIWidget) {
-        return new RecipeExportWidget(holder, techTree);
+        return new RecipeExportWidget(holder);
     }
 
     @Override
@@ -154,7 +153,6 @@ public class RecipeExportTab implements IFancyUIProvider {
         private static final int SLOT_COLUMNS = 9;
 
         private final DataItemHolder holder;
-        private final TechTreeManager techTree;
         private final DraggableScrollableWidgetGroup recipePanel;
         private final WidgetGroup recipeContent;
         private final DraggableScrollableWidgetGroup slotPanel;
@@ -165,10 +163,9 @@ public class RecipeExportTab implements IFancyUIProvider {
         private SyncState currentState = SyncState.EMPTY;
         private SyncState lastSentState = SyncState.EMPTY;
 
-        private RecipeExportWidget(DataItemHolder holder, TechTreeManager techTree) {
+        private RecipeExportWidget(DataItemHolder holder) {
             super(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
             this.holder = holder;
-            this.techTree = techTree;
             setBackground(GuiTextures.BACKGROUND_INVERSE);
 
             TextFieldWidget searchField = new TextFieldWidget(4, 4, SEARCH_FIELD_WIDTH, SEARCH_FIELD_HEIGHT, () -> searchText, this::setSearchText);
@@ -239,6 +236,11 @@ public class RecipeExportTab implements IFancyUIProvider {
         public void detectAndSendChanges() {
             super.detectAndSendChanges();
             syncState();
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private boolean isMouseWithinBounds() {
+            return isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, GuiHelper.getRealMouseX(), GuiHelper.getRealMouseY());
         }
 
         @Override
@@ -399,30 +401,31 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         private List<EntryState> buildEntries() {
             Player player = getGuiPlayer();
-            Set<String> unlockedNodeNames = new OpenCacheHashSet<>();
-            TechTree tree = player == null ? null : TechTreeSavedData.findTree(player, techTree);
-            if (tree != null && !tree.isEmpty()) {
-                for (TechNode node : tree.getUnlockedNodes()) {
-                    unlockedNodeNames.add(node.name);
-                }
-            }
-
             List<EntryState> entries = new ArrayList<>();
-            for (TechNode node : techTree.getLayout().orderedNodes()) {
-                var recipes = node.getRecipes();
-                if (recipes.isEmpty()) {
-                    continue;
+            OpenCacheHashSet<String> unlockedNodeNames = new OpenCacheHashSet<>();
+            for (var m : TechTreeManager.getManagers()) {
+                TechTree tree = player == null ? null : TechTreeSavedData.findTree(player, m);
+                if (tree != null && !tree.isEmpty()) {
+                    for (TechNode node : tree.getUnlockedNodes()) {
+                        unlockedNodeNames.add(node.name);
+                    }
                 }
 
-                boolean unlocked = unlockedNodeNames.contains(node.name);
-                for (GTRecipeDefinition recipe : recipes) {
-                    boolean included = holder.getExistRecipes().contains(recipe);
-                    if (ExResearchManager.hasRenderableMainOutput(recipe)) {
-                        entries.add(new EntryState(node.name, recipe.id.toString(), ExResearchManager.getMainOutputDisplayName(recipe).getString(), unlocked, included));
+                for (TechNode node : m.getLayout().orderedNodes()) {
+                    var recipes = node.getRecipes();
+                    if (recipes.isEmpty()) {
+                        continue;
+                    }
+
+                    boolean unlocked = unlockedNodeNames.contains(node.name);
+                    for (GTRecipeDefinition recipe : recipes) {
+                        boolean included = holder.getExistRecipes().contains(recipe);
+                        if (ExResearchManager.hasRenderableMainOutput(recipe)) {
+                            entries.add(new EntryState(node.name, recipe.id.toString(), ExResearchManager.getMainOutputDisplayName(recipe).getString(), unlocked, included, m.getId()));
+                        }
                     }
                 }
             }
-
             entries.sort(Comparator
                     .comparingInt((EntryState entry) -> entry.unlocked() ? 0 : 1)
                     .thenComparing(entryState -> entryState.included ? 1 : 0));
@@ -468,7 +471,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
 
         private @Nullable ResolvedEntry resolveEntry(EntryState entry) {
-            TechNode node = techTree.getNode(entry.nodeName());
+            TechNode node = TechTreeManager.getManager(entry.treeName()).getNode(entry.nodeName());
             if (node == null) {
                 return null;
             }
@@ -509,7 +512,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
     }
 
-    private record EntryState(String nodeName, String recipeId, String searchName, boolean unlocked, boolean included) {}
+    private record EntryState(String nodeName, String recipeId, String searchName, boolean unlocked, boolean included, String treeName) {}
 
     private record SyncState(List<EntryState> entries, @Nullable EntryState selected) {
 
@@ -524,10 +527,11 @@ public class RecipeExportTab implements IFancyUIProvider {
         buffer.writeUtf(entry.searchName());
         buffer.writeBoolean(entry.unlocked());
         buffer.writeBoolean(entry.included());
+        buffer.writeUtf(entry.treeName());
     }
 
     private static EntryState readEntry(FriendlyByteBuf buffer) {
-        return new EntryState(buffer.readUtf(), buffer.readUtf(), buffer.readUtf(), buffer.readBoolean(), buffer.readBoolean());
+        return new EntryState(buffer.readUtf(), buffer.readUtf(), buffer.readUtf(), buffer.readBoolean(), buffer.readBoolean(), buffer.readUtf());
     }
 
     private static final class SlotSectionLabelWidget extends WidgetGroup {
@@ -648,9 +652,10 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         @OnlyIn(Dist.CLIENT)
         private boolean isMouseOver(double mouseX, double mouseY) {
-            return Widget.isMouseOver(parentWidget.recipeContent.getPosition().x, parentWidget.recipeContent.getPosition().y,
-                    parentWidget.recipeContent.getSize().width, parentWidget.recipeContent.getSize().height, mouseX, mouseY) &&
-                    Widget.isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY);
+            return Widget.isMouseOver(parentWidget.recipePanel.getPosition().x, parentWidget.recipePanel.getPosition().y,
+                    parentWidget.recipePanel.getSize().width, parentWidget.recipePanel.getSize().height, mouseX, mouseY) &&
+                    Widget.isMouseOver(getPosition().x, getPosition().y, getSize().width, getSize().height, mouseX, mouseY) &&
+                    getHoverElement(mouseX, mouseY) == this;
         }
     }
 

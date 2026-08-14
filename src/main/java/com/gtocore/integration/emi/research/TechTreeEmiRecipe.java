@@ -3,6 +3,7 @@ package com.gtocore.integration.emi.research;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.ui.TechTreeSelectorWidget;
 import com.gtocore.api.research.techtree.ui.TechTreeSideTab;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 import com.gtocore.common.data.GTOItems;
@@ -61,16 +62,28 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<WidgetGroup> {
     private static WidgetGroup createWidget(TechNode node) {
         TechTreeManager manager = node.getManager();
         var root = new WidgetGroup(0, 0, TREE_WIDTH + SIDE_TAB_GAP + SIDE_TAB_WIDTH, CONTENT_HEIGHT);
-        var treeWidget = new TechTreeWidget(0, 0, TREE_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+        var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, TREE_WIDTH,
+                CONTENT_HEIGHT - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
         treeWidget.setClientSideWidget();
         var sideTab = new TechTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
         sideTab.setClientSideWidget();
+        var treeSelector = new TechTreeSelectorWidget(0, 0, TREE_WIDTH, manager, selectedManager -> {
+            treeWidget.setManager(selectedManager);
+            sideTab.setManager(selectedManager);
+        });
+        treeSelector.setClientSideWidget();
+        sideTab.setOnNodeNavigate(targetNode -> {
+            treeSelector.setManager(targetNode.getManager());
+            treeWidget.focusNode(targetNode);
+            sideTab.showNode(targetNode);
+        });
         treeWidget.setOnNodeClicked(clickedNode -> {
             sideTab.toggleNode(clickedNode);
             treeWidget.setSelectedNode(sideTab.getSelectedNode());
         });
         sideTab.showNode(node);
         treeWidget.focusNode(node);
+        root.addWidget(treeSelector);
         root.addWidget(treeWidget);
         root.addWidget(sideTab);
         return root;

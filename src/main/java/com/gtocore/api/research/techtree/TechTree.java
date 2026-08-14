@@ -23,21 +23,21 @@ public class TechTree {
     }
 
     public ActionResult unlock(TechNode definition, TeamResearchContext context, UUID team) {
-        var result = definition.tryUnlock(nodes, context, team, true);
+        var result = definition.tryUnlock(context, team, true);
         if (result.isSuccess()) {
-            definition.tryUnlock(nodes, context, team, false);
+            definition.tryUnlock(context, team, false);
             addUnlockedNode(definition);
         }
         return result;
     }
 
     public ActionResult tryUnlock(TechNode definition, TeamResearchContext context, UUID team) {
-        return definition.tryUnlock(nodes, context, team, true);
+        return definition.tryUnlock(context, team, true);
     }
 
-    public boolean isAllPrerequisitesUnlocked(TechNode definition) {
+    public boolean isAllPrerequisitesUnlocked(TechNode definition, UUID team) {
         for (var prerequisite : definition.prerequisites) {
-            if (!nodes.contains(prerequisite)) {
+            if (!TechTreeSavedData.isUnlocked(team, prerequisite)) {
                 return false;
             }
         }
@@ -81,13 +81,15 @@ public class TechTree {
     void addUnlockedNode(TechNode node) {
         if (!nodes.add(node)) return;
         for (var prerequisite : node.prerequisites) {
-            addUnlockedNode(prerequisite);
+            if (prerequisite.getManager() == manager) {
+                addUnlockedNode(prerequisite);
+            }
         }
     }
 
     public boolean hasNodeMetCWURequirements(TechNode node, TeamResearchContext context) {
         var req = node.getRequirements();
         var hasBoost = req.getEurekaItem() != null && context.hasScanned(req.getEurekaItem());
-        return req.getCwuNeeded() * (1 - (hasBoost ? req.getEurekaProgress() : 0L)) <= context.getTechNodeAccCWU().getOrDefault(node, 0L);
+        return req.getCwuNeeded() * (1 - (hasBoost ? req.getEurekaProgress() : 0L)) <= context.techNodeAccCWU().getOrDefault(node, 0L);
     }
 }

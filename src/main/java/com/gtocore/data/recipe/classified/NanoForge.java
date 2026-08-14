@@ -366,5 +366,20 @@ final class NanoForge {
                 .addData(GTORecipeDataKeys.NANO_FORGE_TIER, 1)
                 .duration(6000)
                 .save();
+        NANO_FORGE_RECIPES.builder("runerock_nanites")
+                .inputItems(TagPrefix.lens, GTOMaterials.ManaGlass)
+                .inputItems(TagPrefix.block, GTOMaterials.Runerock, 64)
+                .inputItems(GTOTagPrefix.NANITES, GTMaterials.Glowstone, 64)
+                .inputItems(GTOItems.REMNANT_EROSION_CATALYST_EMBRYO, 10)
+                .inputItems(GTOItems.SOUL_THOUGHT_CATALYST_CORE, 10)
+                .inputItems(GTOItems.SOURCE_ENERGY_CATALYST_CRYSTAL, 10)
+                .outputItems(GTOTagPrefix.NANITES, GTOMaterials.Runerock, 10)
+                .inputFluids(GTOMaterials.StarVeinCatalyst, 30000)
+                .inputFluids(GTMaterials.SolderingAlloy, 20000)
+                .inputFluids(GTOMaterials.PhantomicElectrolyteBuffer, 10000)
+                .EUt(122800)
+                .addData(GTORecipeDataKeys.NANO_FORGE_TIER, 1)
+                .duration(1200)
+                .save();
     }
 }

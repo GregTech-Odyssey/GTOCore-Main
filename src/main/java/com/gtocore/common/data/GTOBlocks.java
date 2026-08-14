@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.common.block.CoilBlock;
+import com.gregtechceu.gtceu.common.data.GTModels;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.client.renderer.RenderType;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 
@@ -47,7 +49,15 @@ public final class GTOBlocks {
 
     public static void init() {
         GTO.removeDefaultCreativeTab();
-        REACTOR_CORE = createStoneBlock("reactor_core", "远古反应核", GTOCore.id("block/multiblock/ancient_reactor_core/overlay_front"));
+        REACTOR_CORE = block("reactor_core", "远古反应核", Block::new)
+                .initialProperties(() -> Blocks.STONE)
+                .properties(BlockBehaviour.Properties::noLootTable)
+                .addLayer(() -> RenderType::solid)
+                .blockstate(GTModels.cubeAllModel("reactor_core", GTOCore.id("block/multiblock/ancient_reactor_core/overlay_front")))
+                .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .item(BlockItem::new)
+                .build()
+                .register();
         GTO.defaultCreativeTab(GTOCreativeModeTabs.GTO_MATERIAL_PIPE);
         registerPipeBlocks();
         GTOBlockEntities.init();

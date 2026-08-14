@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gtolib.api.capability.IIWirelessInteractor;
@@ -40,6 +41,7 @@ import static com.gregtechceu.gtceu.api.GTValues.IV;
 import static com.gregtechceu.gtceu.api.GTValues.VA;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.DistilledWater;
 import static com.gtocore.common.data.GTOMaterials.FlocculationWasteSolution;
+import static com.gtocore.data.techtree.MachinesNode.LaserSpaceEngineering;
 
 public class Core extends AbstractSpaceStation implements ILargeSpaceStationMachine, IWirelessDimensionProvider {
 
@@ -246,11 +248,11 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
         return provider.getTypes();
     }
 
-    public boolean canUseLaser() {
-        return serviceMachineMap.get(SpaceStationEnergyConversionModule.class) != null;
+    public boolean hasLaserBoost() {
+        return TechTreeSavedData.isUnlocked(getOwnerUUID(), LaserSpaceEngineering);
     }
 
-    public double getDurationMultiplierFromSpaceElevator() {
+    public double getDurationMultiplier() {
         SpaceElevatorConnectorModule provider = (SpaceElevatorConnectorModule) serviceMachineMap.get(SpaceElevatorConnectorModule.class);
         if (provider == null) {
             return 1.0;

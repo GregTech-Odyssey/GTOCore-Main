@@ -2,6 +2,9 @@ package com.gtocore.api.research.techtree.ui;
 
 import com.gtocore.api.research.techtree.TechNode;
 
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,19 +33,23 @@ public final class TechTreeAutoLayout {
         List<TechNode> nodes = new ArrayList<>(definitions);
         nodes.sort(nameOrder);
 
-        Map<TechNode, List<TechNode>> children = new IdentityHashMap<>();
-        Map<TechNode, Integer> indegrees = new IdentityHashMap<>();
+        Reference2ObjectOpenHashMap<TechNode, List<TechNode>> children = new Reference2ObjectOpenHashMap<>();
+        Reference2IntOpenHashMap<TechNode> indegrees = new Reference2IntOpenHashMap<>();
         for (var node : nodes) {
             children.put(node, new ArrayList<>());
-            indegrees.put(node, node.prerequisites.size());
+            indegrees.put(node, 0);
         }
         for (var node : nodes) {
             for (var prerequisite : node.prerequisites) {
+                if (prerequisite.getManager() != node.getManager()) {
+                    continue;
+                }
                 List<TechNode> dependentNodes = children.get(prerequisite);
                 if (dependentNodes == null) {
                     throw new IllegalStateException("Tech node " + node.name + " references unknown prerequisite " + prerequisite.name);
                 }
                 dependentNodes.add(node);
+                indegrees.addTo(node, 1);
             }
         }
         for (var dependentNodes : children.values()) {
@@ -82,11 +89,11 @@ public final class TechTreeAutoLayout {
     }
 
     private static List<TechNode> topologicalSort(List<TechNode> nodes,
-                                                  Map<TechNode, Integer> indegrees,
-                                                  Map<TechNode, List<TechNode>> children) {
+                                                  Reference2IntOpenHashMap<TechNode> indegrees,
+                                                  Reference2ObjectOpenHashMap<TechNode, List<TechNode>> children) {
         PriorityQueue<TechNode> queue = new PriorityQueue<>(nameOrder);
         for (var node : nodes) {
-            if (indegrees.get(node) == 0) {
+            if (indegrees.getInt(node) == 0) {
                 queue.add(node);
             }
         }
@@ -96,7 +103,7 @@ public final class TechTreeAutoLayout {
             TechNode node = queue.remove();
             ordered.add(node);
             for (var child : children.get(node)) {
-                int remaining = indegrees.get(child) - 1;
+                int remaining = indegrees.getInt(child) - 1;
                 indegrees.put(child, remaining);
                 if (remaining == 0) {
                     queue.add(child);
@@ -107,7 +114,7 @@ public final class TechTreeAutoLayout {
         if (ordered.size() != nodes.size()) {
             List<String> cycleNodes = new ArrayList<>();
             for (var node : nodes) {
-                if (indegrees.get(node) > 0) {
+                if (indegrees.getInt(node) > 0) {
                     cycleNodes.add(node.name);
                 }
             }
@@ -122,7 +129,13 @@ public final class TechTreeAutoLayout {
         for (var node : topoOrder) {
             int depth = 0;
             for (var prerequisite : node.prerequisites) {
-                depth = Math.max(depth, depths.get(prerequisite) + 1);
+                if (prerequisite.getManager() != node.getManager()) {
+                    continue;
+                }
+                Integer prerequisiteDepth = depths.get(prerequisite);
+                if (prerequisiteDepth != null) {
+                    depth = Math.max(depth, prerequisiteDepth + 1);
+                }
             }
             depths.put(node, depth);
         }
@@ -202,14 +215,35 @@ public final class TechTreeAutoLayout {
 
         Map<TechNode, Double> barycenters = new IdentityHashMap<>();
         for (var node : columnNodes) {
-            List<TechNode> neighbors = usePrerequisites ? node.prerequisites : children.get(node);
-            barycenters.put(node, averageNeighborRow(neighbors, rowIndices, rowIndices.getOrDefault(node, 0)));
+            int fallback = rowIndices.getOrDefault(node, 0);
+            double barycenter = usePrerequisites ?
+                    averagePrerequisiteRow(node, rowIndices, fallback) :
+                    averageNeighborRow(children.get(node), rowIndices, fallback);
+            barycenters.put(node, barycenter);
         }
 
         columnNodes.sort(Comparator
                 .comparingDouble((TechNode node) -> barycenters.get(node))
                 .thenComparingInt(node -> rowIndices.getOrDefault(node, 0))
                 .thenComparing(node -> node.name));
+    }
+
+    private static double averagePrerequisiteRow(TechNode node,
+                                                 Map<TechNode, Integer> rowIndices,
+                                                 int fallback) {
+        double sum = 0;
+        int count = 0;
+        for (var prerequisite : node.prerequisites) {
+            if (prerequisite.getManager() != node.getManager()) {
+                continue;
+            }
+            Integer row = rowIndices.get(prerequisite);
+            if (row != null) {
+                sum += row;
+                count++;
+            }
+        }
+        return count == 0 ? fallback : sum / count;
     }
 
     private static double averageNeighborRow(List<TechNode> neighbors,

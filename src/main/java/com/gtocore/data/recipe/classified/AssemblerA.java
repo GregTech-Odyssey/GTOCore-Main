@@ -2,10 +2,12 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
+import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.common.data.machines.MultiBlockH;
+import com.gtocore.common.pipe.muffler.MufflerPipeType;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -31,6 +33,7 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+import static com.gtocore.data.techtree.BaseNodes.*;
 
 final class AssemblerA {
 
@@ -991,14 +994,28 @@ final class AssemblerA {
                 .EUt(480)
                 .duration(200)
                 .save();
+
+        ASSEMBLER_RECIPES.builder("intelligent_scanning_me_proxy")
+                .inputItems("gtceu:me_pattern_buffer_proxy")
+                .inputItems(GTOTagPrefix.NANITES, GTMaterials.Naquadah)
+                .inputItems(GTItems.EMITTER_UHV)
+                .inputItems(GTItems.SENSOR_UHV)
+                .outputItems(ExResearchMachines.INTELLIGENT_SCANNING_ME_PROXY)
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .EUt(24576)
+                .researchNode(ScannerInnovation)
+                .duration(700)
+                .save();
+
         ASSEMBLER_RECIPES.builder("normal_muffler_pipe")
                 .inputItems(TagPrefix.plate, GTMaterials.Steel, 6)
                 .inputItems(TagPrefix.rotor, GTMaterials.Steel)
-                .outputItems("gtocore:normal_muffler_pipe", 2)
+                .outputItems(GTOBlocks.MUFFLER_PIPES[MufflerPipeType.NORMAL.ordinal()], 2)
                 .circuitMeta(18)
                 .EUt(30)
                 .duration(200)
                 .save();
+
         ASSEMBLER_RECIPES.builder("exhaust_fan")
                 .inputItems(GTBlocks.MACHINE_CASING_ULV.asItem())
                 .inputItems(TagPrefix.rotor, GTMaterials.Steel, 4)
@@ -1008,6 +1025,7 @@ final class AssemblerA {
                 .EUt(30)
                 .duration(200)
                 .save();
+
         ASSEMBLER_RECIPES.builder("fermi_energy_gap_transition_glass")
                 .inputItems(GTOBlocks.PLASMA_FIELD_GLASS.asItem())
                 .inputItems(GTOBlocks.QUANTUM_GLASS.asItem())
@@ -1019,6 +1037,7 @@ final class AssemblerA {
                 .EUt(4100000)
                 .duration(400)
                 .save();
+
         ASSEMBLER_RECIPES.builder("coprocessor_computing_casing")
                 .inputItems(GTBlocks.ADVANCED_COMPUTER_CASING.asItem())
                 .inputItems("gtceu:high_performance_computation_array")
@@ -1031,6 +1050,7 @@ final class AssemblerA {
                 .EUt(30720)
                 .duration(400)
                 .save();
+
         ASSEMBLER_RECIPES.builder("adjustable_semi_reflector")
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
                 .inputItems(TagPrefix.plate, GTMaterials.Germanium, 6)
@@ -1041,8 +1061,10 @@ final class AssemblerA {
                 .outputItems(GTOMachines.ADJUSTABLE_SEMI_REFLECTOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
+
         ASSEMBLER_RECIPES.builder("ray_beam_polarizer")
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
                 .inputItems(GTItems.FLUID_CELL, 2)
@@ -1053,8 +1075,10 @@ final class AssemblerA {
                 .outputItems(GTOMachines.RAY_BEAM_POLARIZER.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
+
         ASSEMBLER_RECIPES.builder("beam_redirector")
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
                 .inputItems(GTItems.ELECTRIC_MOTOR_UHV, 2)
@@ -1064,8 +1088,10 @@ final class AssemblerA {
                 .outputItems(GTOMachines.BEAM_REDIRECTOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
+
         ASSEMBLER_RECIPES.builder("excitation_crystal")
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
                 .inputItems(GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem(), 2)
@@ -1076,8 +1102,10 @@ final class AssemblerA {
                 .outputItems(GTOMachines.EXCITATION_CRYSTAL.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
                 .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
                 .duration(768)
                 .save();
+
         ASSEMBLER_RECIPES.builder("connecting_rod_hatch")
                 .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.ZPM].asItem())
                 .inputItems(GTOItems.SMD_DIODE_BIOWARE, 4)
@@ -1088,6 +1116,7 @@ final class AssemblerA {
                 .EUt(420)
                 .duration(420)
                 .save();
+
         ASSEMBLER_RECIPES.builder("tissue_sensor")
                 .inputItems(GTMachines.HULL[GTValues.ZPM].asItem())
                 .inputItems(GTItems.COVER_ACTIVITY_DETECTOR_ADVANCED, 2)
@@ -1098,6 +1127,7 @@ final class AssemblerA {
                 .EUt(420)
                 .duration(420)
                 .save();
+
         ASSEMBLER_RECIPES.builder("neutron_irradiation_chamber")
                 .inputItems(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asItem())
                 .inputItems(GTItems.NEUTRON_REFLECTOR, 8)
@@ -1113,6 +1143,7 @@ final class AssemblerA {
                 .EUt(32000)
                 .duration(400)
                 .save();
+
         ASSEMBLER_RECIPES.builder("advanced_cooler")
                 .inputItems(GTOMachines.COOLER.asItem())
                 .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.StainlessSteel, 8)
@@ -1124,6 +1155,7 @@ final class AssemblerA {
                 .EUt(30)
                 .duration(250)
                 .save();
+
         ASSEMBLER_RECIPES.builder("data_export_machine")
                 .inputItems(GTMachines.SCANNER[GTValues.IV].asItem())
                 .inputItems(TagPrefix.plate, GTMaterials.Polyethylene, 32)
@@ -1133,6 +1165,26 @@ final class AssemblerA {
                 .EUt(300)
                 .inputFluids(GTMaterials.Lubricant, 1000)
                 .duration(300)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("data_form_testing_me_interface")
+                .inputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH)
+                .inputItems(GTOBlocks.T4_ME_STORAGE_CORE.asItem(), 4)
+                .inputItems(GTItems.EMITTER_ZPM)
+                .inputItems(TagPrefix.wireGtSingle, GTMaterials.Europium, 4)
+                .outputItems(ExResearchMachines.DATA_FORM_TESTING_ME_INTERFACE)
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .EUt(420)
+                .researchNode(DataStorageIteration)
+                .duration(300)
+                .save();
+        ASSEMBLER_RECIPES.builder("virtual_fluid_provider")
+                .inputItems(CustomTags.MV_CIRCUITS)
+                .inputItems(GTOBlocks.CHEMICAL_GRADE_GLASS.asItem())
+                .inputItems(TagPrefix.foil, GTMaterials.Polytetrafluoroethylene, 8)
+                .outputItems("gtmthings:virtual_fluid_provider")
+                .EUt(480)
+                .duration(200)
                 .save();
     }
 }

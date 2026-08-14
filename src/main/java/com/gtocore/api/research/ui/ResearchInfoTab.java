@@ -3,6 +3,7 @@ package com.gtocore.api.research.ui;
 import com.gtocore.api.research.TeamResearchSavedDtat;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.ui.TechTreeSelectorWidget;
 import com.gtocore.api.research.techtree.ui.TechTreeSideTab;
 import com.gtocore.api.research.techtree.ui.TechTreeWidget;
 
@@ -28,10 +29,10 @@ public class ResearchInfoTab implements IFancyUIProvider {
     private static final int SIDE_TAB_WIDTH = 166;
 
     private final @NotNull TechTreeManager manager;
-    private final BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory;
+    private final InnerContentFactory innerContentFactory;
     private TechNode initialSelectedNode;
 
-    public ResearchInfoTab(@NotNull TechTreeManager manager, @Nullable BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> innerContentFactory) {
+    public ResearchInfoTab(@NotNull TechTreeManager manager, @Nullable InnerContentFactory innerContentFactory) {
         this.manager = manager;
         this.innerContentFactory = innerContentFactory == null ? (uiWidget, sideTab) -> new WidgetGroup() : innerContentFactory;
     }
@@ -39,14 +40,26 @@ public class ResearchInfoTab implements IFancyUIProvider {
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
         var root = new WidgetGroup(0, 0, TREE_WIDTH + SIDE_TAB_GAP + SIDE_TAB_WIDTH, CONTENT_HEIGHT);
-        var treeWidget = new TechTreeWidget(0, 0, TREE_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+        var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, TREE_WIDTH,
+                CONTENT_HEIGHT - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
         var sideTab = new TechTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
         sideTab.setInnerContent(innerContentFactory.apply(widget, sideTab));
+        var treeSelector = new TechTreeSelectorWidget(0, 0, TREE_WIDTH, manager, selectedManager -> {
+            treeWidget.setManager(selectedManager);
+            sideTab.setManager(selectedManager);
+        });
+        sideTab.setOnNodeNavigate(targetNode -> {
+            treeSelector.setManager(targetNode.getManager());
+            treeWidget.focusNode(targetNode);
+            sideTab.showNode(targetNode);
+        });
         treeWidget.setOnNodeClicked(sideTab::toggleNode);
         if (initialSelectedNode != null) {
+            treeSelector.setManager(initialSelectedNode.getManager());
             treeWidget.focusNode(initialSelectedNode);
             sideTab.showNode(initialSelectedNode);
         }
+        root.addWidget(treeSelector);
         root.addWidget(treeWidget);
         root.addWidget(sideTab);
         return root;
@@ -70,5 +83,11 @@ public class ResearchInfoTab implements IFancyUIProvider {
     public IFancyUIProvider setSelectedNode(TechNode selectedNode) {
         initialSelectedNode = selectedNode;
         return this;
+    }
+
+    public interface InnerContentFactory extends BiFunction<FancyMachineUIWidget, TechTreeSideTab, Widget> {
+
+        @Override
+        Widget apply(FancyMachineUIWidget widget, TechTreeSideTab sideTab);
     }
 }

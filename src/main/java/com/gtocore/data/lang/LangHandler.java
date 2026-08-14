@@ -11,7 +11,7 @@ import com.gtocore.common.data.GTORecipeCategories;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformTemplateStorage;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.data.transaction.data.TradeLang;
 
@@ -80,7 +80,8 @@ public final class LangHandler {
         MultiblockBuilder.LANG.forEach(LangHandler::addCNEN);
         Tooltips.LANG.forEach(LangHandler::addCNEN);
         PlatformTemplateStorage.LANG.forEach((k, v) -> addCNEN("gtocore.platform." + k, v));
-        AnalyzeData.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
+        BaseNodes.INSTANCE.init();
+        BaseNodes.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
         ResearchTag.LNAG.forEach(LangHandler::addCNEN);
         GTOPartAbility.LANG.forEach(LangHandler::addCNEN);
         ScanningClass.LANG.forEach(LangHandler::addCNEN);
@@ -501,7 +502,7 @@ public final class LangHandler {
 
         addCNEN("gtocore.recipe.recycler.random_output", "随机物品", "Random Item");
         addCNEN("gtocore.recipe.coil.uruium", "超级热熔", "Uruium");
-        addCNEN("gtocore.recipe.require_technode", "可通过科技节点解锁", "Unlockable through Tech Node");
+        addCNEN("gtocore.recipe.require_technode", "可通过科技节点[%s]解锁", "Unlockable through [%s]");
         addCNEN("gtocore.recipe.data_form_density_testing.density", "数据密度容量: %s字节", "Data Density Capacity: %s bytes");
 
         addCNEN("gtocore.emi.search_text", "已保存的搜索: %s", "Saved Search: %s");
