@@ -128,7 +128,7 @@ public final class ForgeClientEvent {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);
             if (tooltips != null) event.getToolTip().addAll(tooltips);
         }
-        if (HiddenItems.isItemHidden(item)) {
+        if (HiddenItems.isItemDeprecated(item)) {
             event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());
         }
     }

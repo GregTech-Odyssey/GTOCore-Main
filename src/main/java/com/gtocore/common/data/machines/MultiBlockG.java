@@ -215,6 +215,7 @@ public final class MultiBlockG {
 
     public static final MultiblockMachineDefinition SATELLITE_CONTROL_CENTER = multiblock("satellite_control_center", "卫星控制中心", SatelliteControlCenterMachine::new)
             .nonYAxisRotation()
+            .tooltips(GTOMachineStories.SatelliteControlCenterTooltips)
             .tooltips(GTOMachineTooltips.SatelliteControlCenterTooltips)
             .recipeTypes(DUMMY_RECIPES)
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
@@ -395,6 +396,8 @@ public final class MultiBlockG {
 
     public static final MultiblockMachineDefinition DRONE_CONTROL_CENTER = multiblock("drone_control_center", "无人机控制中心", DroneControlCenterMachine::new)
             .nonYAxisRotation()
+            .tooltips(GTOMachineStories.DroneControlCenterTooltips)
+            .tooltips(GTOMachineTooltips.DroneControlCenterTooltips)
             .recipeTypes(DUMMY_RECIPES)
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
             .pattern(definition -> MultiBlockFileReader.start(definition)
@@ -573,6 +576,7 @@ public final class MultiBlockG {
 
     public static final MultiblockMachineDefinition ROCKET_ASSEMBLER = multiblock("rocket_assembler", "火箭装配机", ElectricMultiblockMachine::new)
             .nonYAxisRotation()
+            .tooltips(GTOMachineStories.RocketAssemblerTooltips)
             .recipeTypes(GTORecipeTypes.ROCKET_ASSEMBLER_RECIPES)
             .overclock()
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
