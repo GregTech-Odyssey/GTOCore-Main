@@ -8,12 +8,10 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -26,9 +24,7 @@ import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.UUID;
 
 @DataGeneratorScanned
@@ -48,7 +44,7 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
     }
 
     @Override
-    public boolean handle(IO io, @NotNull IRecipeHandlerHolder holder, @Nullable RecipeHandlerUnit unit, @NotNull GTRecipe recipe, boolean simulate) {
+    public boolean handle(IO io, @NotNull IRecipeHandlerHolder holder, RecipeHandlerUnit unit, @NotNull GTRecipe recipe, boolean simulate) {
         var aeKeyDataCrystal = recipe.data.getData(INSTANCE);
         if (aeKeyDataCrystal == null) {
             return false;
@@ -61,13 +57,9 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
                 DataCrystalItem.addResearchData(dataCrystal, DataScanningManager.scanData(entry.getKey(), team, entry.getLongValue(), simulate));
             }
             if (simulate) {
-                return unit == null ? holder.simulateOutputItem(dataCrystal) : unit.handleItem(io, List.of(new Content<>(ItemIngredient.of(dataCrystal), 1)), true);
+                return unit.simulateOutputItem(dataCrystal);
             } else {
-                if (unit == null) {
-                    holder.outputItem(dataCrystal);
-                } else {
-                    unit.outputItem(dataCrystal);
-                }
+                unit.outputItem(dataCrystal);
             }
             return true;
         }

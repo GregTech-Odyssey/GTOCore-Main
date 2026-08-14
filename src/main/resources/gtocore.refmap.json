@@ -257,7 +257,8 @@
       "net.minecraft.nbt.CompoundTag$1": "net/minecraft/nbt/CompoundTag$1"
     },
     "com/gtolib/mixin/mc/world/LevelMixin": {
-      "<init>": "Lnet/minecraft/world/level/Level;<init>(Lnet/minecraft/world/level/storage/WritableLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/core/Holder;Ljava/util/function/Supplier;ZZJI)V"
+      "<init>": "Lnet/minecraft/world/level/Level;<init>(Lnet/minecraft/world/level/storage/WritableLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/core/Holder;Ljava/util/function/Supplier;ZZJI)V",
+      "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z": "Lnet/minecraft/world/level/Level;m_6933_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z"
     },
     "com/gtocore/mixin/ae2/blockentity/ChestBlockEntityMixin": {
       "saveAdditional": "Lappeng/blockentity/storage/ChestBlockEntity;m_183515_(Lnet/minecraft/nbt/CompoundTag;)V",
@@ -636,7 +637,8 @@
         "net.minecraft.nbt.CompoundTag$1": "net/minecraft/nbt/CompoundTag$1"
       },
       "com/gtolib/mixin/mc/world/LevelMixin": {
-        "<init>": "Lnet/minecraft/world/level/Level;<init>(Lnet/minecraft/world/level/storage/WritableLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/core/Holder;Ljava/util/function/Supplier;ZZJI)V"
+        "<init>": "Lnet/minecraft/world/level/Level;<init>(Lnet/minecraft/world/level/storage/WritableLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/core/Holder;Ljava/util/function/Supplier;ZZJI)V",
+        "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z": "Lnet/minecraft/world/level/Level;m_6933_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z"
       },
       "com/gtocore/mixin/ae2/blockentity/ChestBlockEntityMixin": {
         "saveAdditional": "Lappeng/blockentity/storage/ChestBlockEntity;m_183515_(Lnet/minecraft/nbt/CompoundTag;)V",

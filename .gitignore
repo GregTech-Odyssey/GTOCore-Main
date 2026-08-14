@@ -36,3 +36,4 @@ build/gtolib/
 
 # 旧 Runtime 文件名（已统一为 gto-seal-runtime-1.0.jar）
 libs/gtonativelib*.jar
+/.env

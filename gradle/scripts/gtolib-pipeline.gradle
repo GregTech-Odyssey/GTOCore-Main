@@ -2,8 +2,8 @@
  * GTOLib 流水线（路线 A：dev 双轨 + 发行单轨 两种加密产物）
  *
  * 1) 加密（默认）产出两份，均由 buildGtolibProtected 同步到 libs/：
- *    a. dev 预构建 libs/gtolib-protected.jar（双轨 keepnames：hollow + .prod.bin + .dev.bin）
- *       —— 无权限开发者编译 + userdev 运行的唯一入口，类名保留（.dev.bin 路径键约定）
+ *    a. dev 预构建 libs/gtolib-protected.jar（双轨 keepnames：named hollow + .prod.bin + .dev.bin）
+ *       —— 无权限开发者编译 + userdev 运行的唯一入口，hollow API 与 .dev.bin 均为 named
  *    b. 发行单轨 libs/gtolib-release.jar（proguard-release-rules.pro：内部类名/包名混淆，
  *       -repackageclasses；Seal 以混淆 jar 自洽打包后剥除全部 .dev.bin）
  *       —— 玩家发行 jar 的唯一包体来源；named 字节码不进发行包
@@ -850,6 +850,7 @@ tasks.register('copyPrebuiltGtolib') {
         // 无源码开发者拿到的就是这一个包：明文 mixin 必须是 named，
         // 否则 runClient 才炸（m_91294_ 事故），这里提前在构建期报清楚。
         verifyGtolibMixinNamespace(gtolibProtectedLibsJar, true, 'GTOLib 无源码 dev 预构建')
+        verifyGtolibDevCompileNamespace(gtolibProtectedLibsJar, 'GTOLib 无源码 dev 预构建')
         file("${buildDir}/gtolib").mkdirs()
         [gtolibRawJar, gtolibUnprotectedJar, gtolibProtectedJar].each { p ->
             Files.copy(gtolibProtectedLibsJar.toPath(), p.get().asFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
@@ -1393,8 +1394,81 @@ ext.overlayNamedGtolibMixins = { File targetJar, File namedJar ->
     logger.lifecycle("GTOLib dev 预构建：${replaced} 个明文 mixin 类已换成 named")
 }
 
+/**
+ * dev protected jar 也承担无源码环境的编译 classpath；其中普通 hollow shell 必须是 named。
+ * 只覆盖 Seal 已抽空的非 mixin class，绝不从 unprotected/proguard 明文 jar 取字节码。
+ */
+ext.overlayNamedGtolibHollowClasses = { File targetJar, File namedSealedJar ->
+    if (targetJar == null || !targetJar.exists() || targetJar.length() == 0) {
+        throw new GradleException("named hollow 覆盖目标缺失: ${targetJar}")
+    }
+    if (namedSealedJar == null || !namedSealedJar.exists() || namedSealedJar.length() == 0) {
+        throw new GradleException("named hollow 覆盖来源缺失: ${namedSealedJar}")
+    }
+    def overlay = new TreeMap<String, byte[]>()
+    new java.util.zip.ZipFile(namedSealedJar).withCloseable { zf ->
+        zf.entries().each { entry ->
+            if (entry.isDirectory()) return
+            if (entry.name.startsWith('com/gtolib/') &&
+                    !entry.name.startsWith('com/gtolib/mixin/') &&
+                    entry.name.endsWith('.class')) {
+                overlay[entry.name] = zf.getInputStream(entry).bytes
+            }
+        }
+    }
+    if (overlay.isEmpty()) {
+        throw new GradleException("named Seal 产物里没有非 mixin hollow class: ${namedSealedJar}")
+    }
+    def temp = new File(targetJar.parentFile, targetJar.name + '.hollow-overlay.tmp')
+    if (temp.exists()) temp.delete()
+    def replaced = 0
+    new java.util.zip.ZipInputStream(new FileInputStream(targetJar)).withCloseable { zis ->
+        new java.util.zip.ZipOutputStream(new FileOutputStream(temp)).withCloseable { zos ->
+            java.util.zip.ZipEntry entry
+            while ((entry = zis.nextEntry) != null) {
+                zos.putNextEntry(new java.util.zip.ZipEntry(entry.name))
+                def named = overlay.remove(entry.name)
+                if (named != null) {
+                    zos.write(named)
+                    replaced++
+                } else {
+                    zis.transferTo(zos)
+                }
+                zos.closeEntry()
+                zis.closeEntry()
+            }
+        }
+    }
+    if (!overlay.isEmpty()) {
+        temp.delete()
+        throw new GradleException(
+                "named hollow 覆盖不完整：dev protected jar 缺 ${overlay.size()} 个 class → " +
+                        overlay.keySet().take(8).join(', '))
+    }
+    Files.move(temp.toPath(), targetJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    logger.lifecycle("GTOLib dev 预构建：${replaced} 个普通 hollow class 已换成 named（无源码编译兼容）")
+}
+
+ext.verifyGtolibDevCompileNamespace = { File jarFile, String label ->
+    new java.util.zip.ZipFile(jarFile).withCloseable { zf ->
+        def entry = zf.getEntry('com/gtolib/api/misc/FastSavedData.class')
+        if (entry == null) {
+            throw new GradleException("${label}: 缺少 FastSavedData hollow class")
+        }
+        def text = new String(zf.getInputStream(entry).bytes, 'ISO-8859-1')
+        if (text.contains('m_7176_') || text.contains('m_77757_') || !text.contains('save')) {
+            throw new GradleException(
+                    "${label}: FastSavedData hollow API 不是 named，无法供无源码 javac 使用 " +
+                            "(save=${text.contains('save')} m_7176_=${text.contains('m_7176_')} " +
+                            "m_77757_=${text.contains('m_77757_')})")
+        }
+    }
+    logger.info("${label}: dev 编译 API 命名空间 OK（FastSavedData.save）")
+}
+
 /** dev 轨 ProGuard 的 named 产物；只取其中的 mixin 类做覆盖。 */
 ext.gtolibDevNamedJar = layout.buildDirectory.file('gtolib/gtolib-proguard-named.jar')
+ext.gtolibSealedDevNamedJar = layout.buildDirectory.file('gtolib/gtolib-sealed-dev-named.jar')
 
 /**
  * dev 预构建的明文 mixin 必须同时满足两件事：
@@ -1504,7 +1578,11 @@ tasks.register('sealPackGtolib', Exec) {
     // 链条从这里断掉：libs/ 同步被跳过，构建照样绿，预构建却停在旧字节码。
     inputs.files(gtolibPgJar, gtolibRawJar, gtolibUnprotectedJar)
     inputs.property('gtoSealMinVersion', gtoSealMinVersion)
-    outputs.file(file("${buildDir}/gtolib/gtolib-sealed.jar"))
+    outputs.files(
+            file("${buildDir}/gtolib/gtolib-sealed.jar"),
+            file("${buildDir}/gtolib/gtolib-seal-input.jar"),
+            file("${buildDir}/gtolib/gtolib-seal-dev.jar"),
+    )
     // -PgtolibRebuild=true 只作用于 isGtolibJarUpToDate，接不到 Gradle 任务级判定，须显式打通
     outputs.upToDateWhen { findProperty('gtolibRebuild') != 'true' }
 
@@ -1581,6 +1659,46 @@ tasks.register('sealPackGtolib', Exec) {
         } finally {
             zf.close()
         }
+    }
+}
+
+/**
+ * 生成仅供 dev protected jar 覆盖使用的 named hollow shell。
+ * 输入沿用 sealPackGtolib 已盖同一 Salt 的 named dev jar；输出中的加密 bins 不会进入成品。
+ */
+tasks.register('sealPackGtolibDevNamedShells', Exec) {
+    group = 'gtolib'
+    description = 'Seal named 输入，生成无源码编译所需的 named hollow shell'
+    onlyIf {
+        hasGtolibSources && !isGtolibJarUpToDate && canSealPack && !detectGtolibDebugMode()
+    }
+    dependsOn 'sealPackGtolib'
+    inputs.file(sealPackagerJar)
+    inputs.file(file("${buildDir}/gtolib/gtolib-seal-dev.jar"))
+    inputs.property('gtoSealMinVersion', gtoSealMinVersion)
+    outputs.file(gtolibSealedDevNamedJar)
+    outputs.upToDateWhen { findProperty('gtolibRebuild') != 'true' }
+
+    doFirst {
+        def named = file("${buildDir}/gtolib/gtolib-seal-dev.jar")
+        def out = gtolibSealedDevNamedJar.get().asFile
+        if (!named.exists() || named.length() == 0) {
+            throw new GradleException("sealPackGtolibDevNamedShells: named Seal 输入无效: ${named}")
+        }
+        out.parentFile.mkdirs()
+        if (out.exists()) out.delete()
+        executable 'java'
+        args '-jar', sealPackagerJar.absolutePath,
+                named.absolutePath, named.absolutePath, out.absolutePath
+    }
+
+    doLast {
+        def out = gtolibSealedDevNamedJar.get().asFile
+        if (!out.exists() || out.length() < 1024) {
+            throw new GradleException("sealPackGtolibDevNamedShells: 未生成有效 named Seal 产物")
+        }
+        verifyGtolibDevCompileNamespace(out, 'GTOLib named hollow 中间产物')
+        logger.lifecycle("GTO Seal(named hollow) OK → ${out.name} (${out.length()} bytes)")
     }
 }
 
@@ -1715,6 +1833,7 @@ tasks.register('buildGtolibProtected') {
         }
         if (canSealPack) {
             steps << 'sealPackGtolib'
+            steps << 'sealPackGtolibDevNamedShells'
             if (canProguardRelease) {
                 steps << 'sealPackGtolibRelease'
             }
@@ -1731,6 +1850,7 @@ tasks.register('buildGtolibProtected') {
     // libs/ 是否同源由 isGtolibJarUpToDate 负责把关。
     inputs.files(
             file("${buildDir}/gtolib/gtolib-sealed.jar"),
+            gtolibSealedDevNamedJar,
             gtolibSealedReleaseJar,
             gtolibPgJar,
             gtolibDevNamedJar,
@@ -1763,6 +1883,7 @@ tasks.register('buildGtolibProtected') {
             verifyGtolibSkipConsistency(protectedFile, true)
             // stamp 命中不代表内容对：缓存里可能是换 named 覆盖之前的旧产物
             verifyGtolibMixinNamespace(protectedFile, true, 'GTOLib dev 预构建（stamp 命中）')
+            verifyGtolibDevCompileNamespace(protectedFile, 'GTOLib dev 预构建（stamp 命中）')
             // 路线 A：发行单轨预构建对也必须同源有效
             if (canProguardRelease && canSealPack) {
                 verifyGtolibReleasePair()
@@ -1826,6 +1947,9 @@ tasks.register('buildGtolibProtected') {
         protectedFile.parentFile.mkdirs()
         Files.copy(src.toPath(), protectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         if (hasGtolibSources) {
+            if (sealed.exists() && sealed.length() > 0) {
+                overlayNamedGtolibHollowClasses(protectedFile, gtolibSealedDevNamedJar.get().asFile)
+            }
             // Seal 输出的明文 mixin 来自 prod 侧（reobf 过，SRG）。这份给 userdev，
             // 必须换回 named，否则 @Shadow 找不到目标。来源用 proguardGtolibDevNamed
             // 产出的「dev 轨 ProGuard 的 named 产物」—— 明文档
@@ -1836,6 +1960,7 @@ tasks.register('buildGtolibProtected') {
         // Seal/ProGuard 后 jar 内往往没有 refmap：有源码重建时注入完整 refmap
         publishAndInjectGtolibRefmaps(protectedFile, hasGtolibSources)
         verifyGtolibMixinNamespace(protectedFile, true, 'GTOLib dev 预构建')
+        verifyGtolibDevCompileNamespace(protectedFile, 'GTOLib dev 预构建')
         def jarSha = computeFileSha256(protectedFile)
 
         // 有源码 + 加密：同步公开预构建 libs/（无权限消费方唯一入口）
@@ -2033,6 +2158,14 @@ ext.resourceLocationMixnTsrgLines = {
     ]
 }
 
+/** Mixin AP 未为带完整描述符的 @Inject selector 生成 refmap，生产环境必须显式补成 SRG。 */
+ext.levelMixinCriticalRefmap = {
+    [
+            'setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z':
+                    'Lnet/minecraft/world/level/Level;m_6933_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z',
+    ]
+}
+
 ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
     if (refmapFile == null || !refmapFile.exists()) return
     def slurper = new groovy.json.JsonSlurper()
@@ -2049,6 +2182,7 @@ ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
         root.data.searge = [:]
         searge = root.data.searge
     }
+    def changed = false
     def key = 'com/gtolib/mixin/mc/ResourceLocationMixn'
     def named = resourceLocationMixnRefmapNamed()
     def cur = mappings[key]
@@ -2061,8 +2195,58 @@ ext.patchCriticalGtolibRefmapEntries = { File refmapFile ->
     if (need) {
         mappings[key] = named
         searge[key] = named
-        refmapFile.text = groovy.json.JsonOutput.toJson(root)
+        changed = true
         logger.lifecycle("GTOLib refmap: 已写入 ${key} 字段+Overwrite 全量映射（对齐官方 gtolib）")
+    }
+
+    def levelKey = 'com/gtolib/mixin/mc/world/LevelMixin'
+    def levelCritical = levelMixinCriticalRefmap()
+    def levelChanged = false
+    [mappings, searge].each { namespace ->
+        def entries = namespace[levelKey]
+        if (!(entries instanceof Map)) {
+            entries = [:]
+            namespace[levelKey] = entries
+        }
+        levelCritical.each { selector, target ->
+            if (entries[selector] != target) {
+                entries[selector] = target
+                changed = true
+                levelChanged = true
+            }
+        }
+    }
+    def pretty = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(root))
+    def json = pretty.readLines().collect { line ->
+        int indent = 0
+        while (indent < line.length() && line.charAt(indent) == ' ') indent++
+        (' ' * (indent.intdiv(2))) + line.substring(indent)
+    }.join('\n') + '\n'
+    def currentText = refmapFile.getText('UTF-8').replace('\r\n', '\n')
+    if (changed || currentText != json) {
+        refmapFile.setText(json, 'UTF-8')
+    }
+    if (levelChanged) {
+        logger.lifecycle("GTOLib refmap: 已补全 LevelMixin setBlock → m_6933_ 注入映射")
+    }
+}
+
+ext.verifyCriticalGtolibRefmapEntries = { File refmapFile, String label ->
+    if (refmapFile == null || !refmapFile.exists()) {
+        throw new GradleException("${label}: gtolib.refmap.json 缺失")
+    }
+    def root = new groovy.json.JsonSlurper().parse(refmapFile)
+    def levelKey = 'com/gtolib/mixin/mc/world/LevelMixin'
+    def expected = levelMixinCriticalRefmap()
+    [mappings: root.mappings, searge: root.data?.searge].each { namespace, allEntries ->
+        def entries = allEntries instanceof Map ? allEntries[levelKey] : null
+        expected.each { selector, target ->
+            if (!(entries instanceof Map) || entries[selector] != target) {
+                throw new GradleException(
+                        "${label}: ${namespace}.${levelKey} 缺少生产 SRG 映射\n" +
+                                "  ${selector} → ${target}")
+            }
+        }
     }
 }
 
@@ -2096,6 +2280,7 @@ ext.publishAndInjectGtolibRefmaps = { File jarFile, boolean writeToRepoResources
         return false
     }
     patchCriticalGtolibRefmapEntries(src)
+    verifyCriticalGtolibRefmapEntries(src, 'GTOLib refmap')
     def mixinDir = file("${buildDir}/mixin")
     mixinDir.mkdirs()
     def mixinGtolib = new File(mixinDir, 'gtolib.refmap.json')
@@ -2578,12 +2763,15 @@ afterEvaluate {
                 if (e == null) return ''
                 zf.getInputStream(e).getText('UTF-8')
             }
-            if (!text.contains('ResourceLocationMixn')) {
+            def levelTarget = levelMixinCriticalRefmap().values().first()
+            if (!text.contains('ResourceLocationMixn') || !text.contains(levelTarget)) {
                 throw new GradleException(
-                        "发行 jar 内 gtolib.refmap.json 仍缺 ResourceLocationMixn"
+                        "发行 jar 内 gtolib.refmap.json 缺少关键 SRG 映射 " +
+                                "(ResourceLocationMixn=${text.contains('ResourceLocationMixn')}, " +
+                                "LevelMixin.setBlock=${text.contains(levelTarget)})"
                 )
             }
-            logger.lifecycle("GTO jar: Seal 独立; refmap 已注入且含 ResourceLocationMixn")
+            logger.lifecycle("GTO jar: Seal 独立; refmap 已注入且含关键 SRG 映射")
         }
     }
 

@@ -18,6 +18,40 @@ plugins {
 
 version = mod_version
 
+// Local secrets may live in the ignored .env file; process environment always wins.
+def dotenv = new LinkedHashMap<String, String>()
+def dotenvFile = file('.env')
+if (dotenvFile.isFile()) {
+    dotenvFile.eachLine('UTF-8') { String rawLine ->
+        def line = rawLine.trim()
+        if (!line || line.startsWith('#')) {
+            return
+        }
+        if (line.startsWith('export ')) {
+            line = line.substring('export '.length()).trim()
+        }
+
+        int separator = line.indexOf('=')
+        if (separator <= 0) {
+            return
+        }
+        def key = line.substring(0, separator).trim()
+        if (!(key ==~ /[A-Za-z_][A-Za-z0-9_]*/)) {
+            return
+        }
+        def value = line.substring(separator + 1).trim()
+        if (value.length() >= 2 && ((value.startsWith('"') && value.endsWith('"')) ||
+                (value.startsWith("'") && value.endsWith("'")))) {
+            value = value.substring(1, value.length() - 1)
+        }
+        dotenv.put(key, value)
+    }
+}
+def processEnv = System.getenv()
+def localEnv = { String name ->
+    return processEnv.containsKey(name) ? processEnv.get(name) : dotenv.get(name)
+}
+
 // 模组字节码目标 21（GTCEu/gtmthings/datasynclib 等依赖要求 JVM 21+；Java 17 无法运行）。
 // 开发可用 Java 25 跑 Gradle；CI 使用 Java 21 runner。
 // Java 25 字节码 (major 69) 无法被当前 reobf/ART 处理。
@@ -153,8 +187,8 @@ afterEvaluate {
                     alias: "gtokey",
                     storetype: "jks",
                     keystore: "keystore.jks",
-                    storepass: System.getenv('GTO_STOREPASS'),
-                    keypass: System.getenv('GTO_KEYPASS'),
+                    storepass: localEnv('GTO_STOREPASS'),
+                    keypass: localEnv('GTO_KEYPASS'),
                     preservelastmodified: "true",
                     tsaurl: "http://timestamp.sectigo.com?td=sha256",
             )
@@ -178,8 +212,8 @@ afterEvaluate {
                         alias: "gtokey",
                         storetype: "jks",
                         keystore: "keystore.jks",
-                        storepass: System.getenv('GTO_STOREPASS'),
-                        keypass: System.getenv('GTO_KEYPASS'),
+                        storepass: localEnv('GTO_STOREPASS'),
+                        keypass: localEnv('GTO_KEYPASS'),
                         preservelastmodified: "true",
                         tsaurl: "http://timestamp.sectigo.com?td=sha256",
                 )
