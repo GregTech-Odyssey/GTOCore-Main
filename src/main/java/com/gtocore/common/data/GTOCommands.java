@@ -1,6 +1,6 @@
 package com.gtocore.common.data;
 
-import com.gtocore.api.research.scanning.ScanningCommands;
+import com.gtocore.api.research.ResarchTagCommands;
 import com.gtocore.api.research.techtree.TechTreeCommands;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
@@ -113,7 +113,8 @@ public final class GTOCommands {
                             return 1;
                         })))
                 .then(TechTreeCommands.register())
-                .then(ScanningCommands.register()));
+                .then(ResarchTagCommands.register())
+                .then(ResarchTagCommands.registerScan()));
     }
 
     private static int toggleVoidWorldTime(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {

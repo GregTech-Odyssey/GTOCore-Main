@@ -35,6 +35,16 @@ import static com.gtocore.data.techtree.BaseNodes.MainTree;
 @DataGeneratorScanned
 public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
+    private final boolean editorTabsEnabled;
+
+    public TechTreeViewer() {
+        this(true);
+    }
+
+    public TechTreeViewer(boolean editorTabsEnabled) {
+        this.editorTabsEnabled = editorTabsEnabled;
+    }
+
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
         return new ModularUI(176, 166, heldItemHolder, player)
@@ -96,7 +106,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
         } else {
             tabs.attachSubTab(page);
         }
-        if (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes) {
+        if (editorTabsEnabled && (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes)) {
             if (tabs.getMainTab() == null) {
                 tabs.setMainTab(TechNodeEditor.INSTANCE);
             } else {
