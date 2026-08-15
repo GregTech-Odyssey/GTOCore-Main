@@ -29,9 +29,10 @@ public class DataAccessHatchMachineMixin extends TieredPartMachine implements ID
 
     @Unique
     private static final Map<Item, Integer> gtolib$DATA = Map.of(
-            GTOItems.NEURAL_MATRIX.asItem(), GTValues.UHV,
-            GTOItems.ATOMIC_ARCHIVES.asItem(), GTValues.UIV,
-            GTOItems.OBSIDIAN_MATRIX.asItem(), GTValues.UXV,
+            GTOItems.NEURAL_MATRIX.asItem(), GTValues.UV,
+            GTOItems.ATOMIC_ARCHIVES.asItem(), GTValues.UHV,
+            GTOItems.OBSIDIAN_MATRIX.asItem(), GTValues.UIV,
+            GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem(), GTValues.UXV,
             GTOItems.MICROCOSM.asItem(), GTValues.OpV);
 
     @Shadow(remap = false)

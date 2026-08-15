@@ -97,5 +97,7 @@ public final class ScanningRecipes {
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:high_energy_laser_emitter"), ResearchPoints.of(ResearchTag.OPTICS, 3L, ResearchTag.ASSEMBLY, 4L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:optical_wafer"), ResearchPoints.of(ResearchTag.OPTICS, 2L));
         DataScanningManager.registerDataScanning(RegistriesUtils.getItem("gtocore:optical_circuit_board"), ResearchPoints.of(ResearchTag.OPTICS, 1L));
+
+        DataScanningManager.registerDataScanning(RegistriesUtils.getItem("minecraft:bedrock"), ResearchPoints.of(ResearchTag.MATERIAL, 60L));
     }
 }

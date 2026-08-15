@@ -103,7 +103,6 @@ public final class ResearchRecipes {
                     .EUt(3L << (4 * i + 8))
                     .CWUt(4L << (i * 2))
                     .duration(200 * GTOCore.difficulty)
-                    .durationIsTotalCWU(true)
                     .save();
         }
     }

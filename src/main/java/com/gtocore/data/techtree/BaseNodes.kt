@@ -14,6 +14,7 @@ import com.gtocore.api.research.ResearchTag.INTERSTELLAR_ENGINEERING
 import com.gtocore.api.research.ResearchTag.MATERIAL
 import com.gtocore.api.research.ResearchTag.MECHANICS
 import com.gtocore.api.research.ResearchTag.OPTICS
+import com.gtocore.api.research.ResearchTag.QUANTUM
 import com.gtocore.api.research.ResearchTag.SUPRACAUSAL
 import com.gtocore.api.research.ResearchTag.THERMODYNAMICS
 import com.gtocore.api.research.techtree.TechNode
@@ -23,6 +24,7 @@ import com.gtocore.common.data.GTOBlocks
 import com.gtocore.common.data.GTOFluids
 import com.gtocore.common.data.GTOItems
 import com.gtocore.common.data.GTOMaterials
+import com.gtocore.common.data.machines.ExResearchMachines
 import com.gtocore.common.data.machines.MultiBlockA.CHEMICAL_PLANT
 import com.gtocore.common.data.machines.MultiBlockD
 import com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineluv
@@ -444,6 +446,38 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
+    val BiowareSupercomputing = MainTree.builder("bioware_supercomputing", "生物件超算", "Bioware Supercomputing")
+        .description("利用生物组织的复杂性和高效性，构建出能够进行复杂且高通用性计算的生物计算机", "Utilize the complexity and efficiency of biological tissues to construct a biocomputer capable of performing complex and highly general-purpose computations")
+        .icon(RegistriesUtils.getItem("gtocore:biocomputer_casing"))
+        .prerequisites(BiowareTech)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(512 * 20 * 14400L)
+                .addMaterialNeeded(BIOLOGY, 384)
+                .addMaterialNeeded(COMPUTATION, 2048)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:biocomputer_casing"), 0.9F)
+                .build(),
+        )
+        .tier(3)
+        .build()
+
+    @JvmField
+    val DataCenterOverclocking = MainTree.builder("data_center_overclocking", "数据中心超频", "Data Center Overclocking")
+        .description("用更高的算力来推动数据中心的研究进度，实现更快的数据处理和科研成果的产出", "Use higher computing power to accelerate the research progress of the data center, achieving faster data processing and output of scientific research results")
+        .icon(ExResearchMachines.DATA_CENTER.asStack())
+        .prerequisites(BiowareSupercomputing)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(512 * 20 * 14400L)
+                .addMaterialNeeded(COMPUTATION, 2048)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:highly_concurrent_intensive_optical_computing_channel"), 0.9F)
+                .build(),
+        )
+        .tier(3)
+        .build()
+        .addRewardDescription("数据中心每使用3倍于最大算力的算力处理节点时，速度提升至2倍", "When the data center uses 3 times the maximum computing power of the computing node, the speed is increased to 2 times")
+
+    @JvmField
     val BedrockMining = MainTree.builder("bedrock_production", "基岩开采与加工", "Bedrock Mining and Processing")
         .description("你就不好奇MC里最坚不可摧的方块里面的物质组成吗？", "Aren't you curious about the material composition of the most indestructible block in Minecraft?")
         .icon(RegistriesUtils.getItem("gtocore:bedrock_drill"))
@@ -497,7 +531,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(512 * 20 * 4800L)
-                .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 128)
+                .addMaterialNeeded(MATERIAL, 1800)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:stellar_containment_casing"), 0.8F)
                 .build(),
         )
@@ -542,7 +576,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 2560)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:pellet_antimatter"), 0.8F)
                 .build(),
         )
@@ -556,7 +590,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .prerequisites(SPSTech)
         .requirements(
             ResearchRequirements.Builder()
-                .setCWUNeeded(512 * 20 * 7200L)
+                .setCWUNeeded(1024 * 20 * 7200L)
                 .addMaterialNeeded(ENERGY, 128)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:large_naquadah_reactor"), 0.8F)
                 .build(),
@@ -587,7 +621,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 3600L)
-                .addMaterialNeeded(MATERIAL, 8000)
+                .addMaterialNeeded(MATERIAL, 2800)
                 .setEurekaFluid(GTOFluids.GELID_CRYOTHEUM.get(), 0.8F)
                 .build(),
         )
@@ -602,7 +636,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 3300)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:graviton_computer_casing"), 0.8F)
                 .build(),
         )
@@ -617,7 +651,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 3300)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:matter_fabricator"), 0.8F)
                 .build(),
         )
@@ -632,7 +666,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 3300)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:graviton_field_constraint_casing"), 0.8F)
                 .build(),
         )
@@ -647,7 +681,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 3300)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:empty_laser_cooling_container"), 0.8F)
                 .build(),
         )
@@ -692,7 +726,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 4000)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:naquadria_charge"), 0.8F)
                 .build(),
         )
@@ -722,7 +756,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 5400)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:plasma_containment_cell"), 0.8F)
                 .build(),
         )
@@ -737,7 +771,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 5400)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:leptonic_charge"), 0.8F)
                 .build(),
         )
@@ -752,7 +786,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 32000)
+                .addMaterialNeeded(MATERIAL, 5400)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:exotic_processing_core"), 0.8F)
                 .build(),
         )
@@ -767,7 +801,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 32000)
+                .addMaterialNeeded(MATERIAL, 6400)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:mass_fabricator"), 0.8F)
                 .build(),
         )
@@ -782,7 +816,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 32000)
+                .addMaterialNeeded(MATERIAL, 6400)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:star_ultimate_material_forge_factory"), 0.8F)
                 .build(),
         )
@@ -812,7 +846,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(2048 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 32000)
+                .addMaterialNeeded(MATERIAL, 8000)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:ultimate_stellar_containment_casing"), 0.8F)
                 .build(),
         )
@@ -827,7 +861,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(2048 * 20 * 8000L)
-                .addMaterialNeeded(MATERIAL, 32000)
+                .addMaterialNeeded(MATERIAL, 8000)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:stellar_forge"), 0.8F)
                 .build(),
         )
@@ -865,14 +899,19 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
-    val UniverseSimulation = MainTree.builder("universe_simulation", "宇宙模拟技术", "Universe Simulation Technology")
+    val UniverseSimulation = MainTree.builder("universe_simulation", "宇宙创造与湮灭技术", "Universe Creation And Annihilation Technology")
         .description("宇宙冷漠，这张牌我是非常了解的", "The universe is indifferent, and I am very familiar with this card")
         .icon(RegistriesUtils.getItem("gtocore:eye_of_harmony"))
         .prerequisites(VirtualUniverseDataStorage)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(4096 * 20 * 28800L)
-                .addMaterialNeeded(DATA_STORAGE, 512)
+                .addMaterialNeeded(DATA_STORAGE, 65536)
+                .addMaterialNeeded(ENERGY, 65536)
+                .addMaterialNeeded(BIOLOGY, 16536)
+                .addMaterialNeeded(OPTICS, 6536)
+                .addMaterialNeeded(QUANTUM, 100)
+                .addMaterialNeeded(EXOTIC, 40)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:recursively_folded_negative_space"), 0.7F)
                 .build(),
         )

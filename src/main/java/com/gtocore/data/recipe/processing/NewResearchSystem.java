@@ -29,6 +29,7 @@ import static com.gtocore.common.data.GTOItems.*;
 import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 import static com.gtocore.common.data.machines.ExResearchMachines.*;
+import static com.gtocore.data.techtree.BaseNodes.BiowareSupercomputing;
 
 public final class NewResearchSystem {
 
@@ -694,6 +695,7 @@ public final class NewResearchSystem {
                     .cleanroom(CleanroomType.CLEANROOM)
                     .duration(200)
                     .EUt(VA[UHV])
+                    .researchNode(BiowareSupercomputing)
                     .save();
 
             ASSEMBLER_RECIPES.recipeBuilder("make_nich_computing_components")
@@ -705,6 +707,7 @@ public final class NewResearchSystem {
                     .cleanroom(CleanroomType.CLEANROOM)
                     .duration(200)
                     .EUt(VA[UHV])
+                    .researchNode(BiowareSupercomputing)
                     .save();
 
             ASSEMBLER_RECIPES.recipeBuilder("make_nich_cooling_components")
@@ -716,6 +719,7 @@ public final class NewResearchSystem {
                     .cleanroom(CleanroomType.CLEANROOM)
                     .duration(200)
                     .EUt(VA[UHV])
+                    .researchNode(BiowareSupercomputing)
                     .save();
 
             ASSEMBLER_RECIPES.recipeBuilder("make_nich_bridge_component")
@@ -727,6 +731,7 @@ public final class NewResearchSystem {
                     .outputItems(NICH_BRIDGE_COMPONENT)
                     .cleanroom(CleanroomType.CLEANROOM)
                     .duration(200)
+                    .researchNode(BiowareSupercomputing)
                     .EUt(VA[UHV])
                     .save();
         }
