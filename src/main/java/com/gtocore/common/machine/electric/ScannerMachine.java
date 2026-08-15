@@ -97,7 +97,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                     var dim = GTODimensions.getDimensionKey(RLUtils.parse(planet));
                     if (PlanetManagement.isUnlocked(uuid, dim)) return false;
                     PlanetManagement.unlock(uuid, dim);
-                    ExResearchManager.delayedTriggerPlanetaryResearch(uuid, dim);
+                    ExResearchManager.triggerPlanetaryResearch(uuid, dim);
                     stack.setCount(0);
                     return true;
                 }
