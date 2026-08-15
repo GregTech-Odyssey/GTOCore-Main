@@ -50,6 +50,10 @@ public final class DynamicPartDefinition {
     }
 
     public Matrix4f transform(Direction facing, float value) {
+        return transform(facing, value, 0);
+    }
+
+    public Matrix4f transform(Direction facing, float value, float returnProgress) {
         float rotation = switch (facing) {
             case NORTH -> 270;
             case SOUTH -> 90;
@@ -60,6 +64,6 @@ public final class DynamicPartDefinition {
                 .translate(.5F, .5F, .5F)
                 .rotateY((float) Math.toRadians(rotation))
                 .translate(pivotX - .5F, pivotY - .5F, pivotZ - .5F);
-        return motion.apply(transform, value).translate(modelOffsetX, modelOffsetY, modelOffsetZ);
+        return motion.apply(transform, value, returnProgress).translate(modelOffsetX, modelOffsetY, modelOffsetZ);
     }
 }

@@ -8,6 +8,7 @@ import com.gtocore.common.machine.multiblock.electric.nano.NanoPhagocytosisPlant
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.client.renderer.machine.WorkableCasingMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
@@ -16,6 +17,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -28,10 +31,8 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 
 public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRenderer {
 
-    private VertexBuffer innerVerticalRing;
-    private VertexBuffer outerVerticalRing;
-    private VertexBuffer horizontalRing;
-    private TextureUpdateRequester textureUpdateRequester;
+    private RingBuffers activeRings;
+    private RingBuffers inactiveRings;
 
     public NanoPhagocytosisPlantRenderer() {
         super(GTOCore.id("block/casings/naquadah_reinforced_plant_casing"), GTCEu.id("block/multiblock/fusion_reactor"));
@@ -44,7 +45,7 @@ public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRe
                 !(machineBlockEntity.getMetaMachine() instanceof NanoPhagocytosisPlantMachine machine) ||
                 !machine.isDynamicPartVisible(NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING) ||
                 blockEntity.getLevel() instanceof TrackedDummyWorld) return;
-        if (innerVerticalRing == null) initRings(machine);
+        RingBuffers rings = getRings(machine, machine.isActive());
 
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
@@ -52,10 +53,10 @@ public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRe
         RenderSystem.setShader(GameRenderer::getRendertypeSolidShader);
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
         Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-        textureUpdateRequester.requestUpdate();
-        renderRing(machine, NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING, innerVerticalRing, partialTicks, poseStack);
-        renderRing(machine, NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING, outerVerticalRing, partialTicks, poseStack);
-        renderRing(machine, NanoPhagocytosisPlantMachine.HORIZONTAL_RING, horizontalRing, partialTicks, poseStack);
+        rings.textureUpdateRequester().requestUpdate();
+        renderRing(machine, NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING, rings.innerVerticalRing(), partialTicks, poseStack);
+        renderRing(machine, NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING, rings.outerVerticalRing(), partialTicks, poseStack);
+        renderRing(machine, NanoPhagocytosisPlantMachine.HORIZONTAL_RING, rings.horizontalRing(), partialTicks, poseStack);
         RenderSystem.disableDepthTest();
         RenderSystem.disableBlend();
     }
@@ -71,31 +72,48 @@ public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRe
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void initRings(NanoPhagocytosisPlantMachine machine) {
-        StructureVBO structure = createRingStructure();
-        innerVerticalRing = structure.assignStructure(machine.getDynamicStructure(NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING)).build();
-        outerVerticalRing = createRingStructure().assignStructure(machine.getDynamicStructure(NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING)).build();
-        horizontalRing = createRingStructure().assignStructure(machine.getDynamicStructure(NanoPhagocytosisPlantMachine.HORIZONTAL_RING)).build();
-        textureUpdateRequester = structure.getTextureUpdateRequestor();
+    private RingBuffers getRings(NanoPhagocytosisPlantMachine machine, boolean active) {
+        if (active) {
+            if (activeRings == null) activeRings = createRings(machine, true);
+            return activeRings;
+        }
+        if (inactiveRings == null) inactiveRings = createRings(machine, false);
+        return inactiveRings;
     }
 
-    private static StructureVBO createRingStructure() {
-        return new StructureVBO()
-                .addMapping('B', GTBlocks.HIGH_POWER_CASING.get())
-                .addMapping('C', GTOBlocks.NAQUADAH_REINFORCED_PLANT_CASING.get())
-                .addMapping('E', GTOBlocks.HYPER_MECHANICAL_CASING.get())
-                .addMapping('F', GTOBlocks.NEUTRONIUM_STABLE_CASING.get())
-                .addMapping('G', GTBlocks.FUSION_COIL.get())
-                .addMapping('H', GTOBlocks.IRIDIUM_CASING.get())
-                .addMapping('I', GTOBlocks.FUSION_COIL_MK2.get())
-                .addMapping('J', GTOBlocks.AMPROSIUM_ACTIVE_CASING.get())
-                .addMapping('L', GTOBlocks.AMPROSIUM_PIPE_CASING.get())
-                .addMapping('M', GTOBlocks.CONTAINMENT_FIELD_GENERATOR.get())
-                .addMapping('N', GTOBlocks.IMPROVED_SUPERCONDUCTOR_COIL.get())
-                .addMapping('Q', GTOBlocks.PRESSURE_CONTAINMENT_CASING.get())
-                .addMapping('U', GTOBlocks.HYPER_CORE.get())
-                .addMapping('V', GTOBlocks.QUANTUM_GLASS.get());
+    private static RingBuffers createRings(NanoPhagocytosisPlantMachine machine, boolean active) {
+        StructureVBO structure = createRingStructure(active);
+        VertexBuffer innerVerticalRing = structure.assignStructure(machine.getDynamicStructure(NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING)).build();
+        VertexBuffer outerVerticalRing = createRingStructure(active).assignStructure(machine.getDynamicStructure(NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING)).build();
+        VertexBuffer horizontalRing = createRingStructure(active).assignStructure(machine.getDynamicStructure(NanoPhagocytosisPlantMachine.HORIZONTAL_RING)).build();
+        return new RingBuffers(innerVerticalRing, outerVerticalRing, horizontalRing, structure.getTextureUpdateRequestor());
     }
+
+    private static StructureVBO createRingStructure(boolean active) {
+        return new StructureVBO()
+                .addMapping('B', state(GTBlocks.HIGH_POWER_CASING.get(), active))
+                .addMapping('C', state(GTOBlocks.NAQUADAH_REINFORCED_PLANT_CASING.get(), active))
+                .addMapping('E', state(GTOBlocks.HYPER_MECHANICAL_CASING.get(), active))
+                .addMapping('F', state(GTOBlocks.NEUTRONIUM_STABLE_CASING.get(), active))
+                .addMapping('G', state(GTBlocks.FUSION_COIL.get(), active))
+                .addMapping('H', state(GTOBlocks.IRIDIUM_CASING.get(), active))
+                .addMapping('I', state(GTOBlocks.FUSION_COIL_MK2.get(), active))
+                .addMapping('J', state(GTOBlocks.AMPROSIUM_ACTIVE_CASING.get(), active))
+                .addMapping('L', state(GTOBlocks.AMPROSIUM_PIPE_CASING.get(), active))
+                .addMapping('M', state(GTOBlocks.CONTAINMENT_FIELD_GENERATOR.get(), active))
+                .addMapping('N', state(GTOBlocks.IMPROVED_SUPERCONDUCTOR_COIL.get(), active))
+                .addMapping('Q', state(GTOBlocks.PRESSURE_CONTAINMENT_CASING.get(), active))
+                .addMapping('U', state(GTOBlocks.HYPER_CORE.get(), active))
+                .addMapping('V', state(GTOBlocks.QUANTUM_GLASS.get(), active));
+    }
+
+    private static BlockState state(Block block, boolean active) {
+        BlockState state = block.defaultBlockState();
+        return state.hasProperty(ActiveBlock.ACTIVE) ? state.setValue(ActiveBlock.ACTIVE, active) : state;
+    }
+
+    private record RingBuffers(VertexBuffer innerVerticalRing, VertexBuffer outerVerticalRing, VertexBuffer horizontalRing,
+                               TextureUpdateRequester textureUpdateRequester) {}
 
     @Override
     @OnlyIn(Dist.CLIENT)

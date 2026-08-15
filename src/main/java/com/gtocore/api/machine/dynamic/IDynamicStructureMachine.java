@@ -5,8 +5,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import org.joml.Matrix4f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -33,6 +33,10 @@ public interface IDynamicStructureMachine {
 
     float getDynamicMotionValue(String partName, float partialTicks);
 
+    default float getDynamicReturnProgress(String partName, float partialTicks) {
+        return 0;
+    }
+
     default Map<String, DynamicPartDefinition> getDynamicParts() {
         return getDynamicPattern().getDynamicParts();
     }
@@ -50,7 +54,8 @@ public interface IDynamicStructureMachine {
     }
 
     default Matrix4f getDynamicTransform(String partName, float partialTicks) {
-        return getDynamicPart(partName).transform(getFrontFacing(), getDynamicMotionValue(partName, partialTicks));
+        return getDynamicPart(partName).transform(getFrontFacing(), getDynamicMotionValue(partName, partialTicks),
+                getDynamicReturnProgress(partName, partialTicks));
     }
 
     default boolean visitDynamicBlocks(String partName, BiPredicate<Character, BlockPos> visitor) {

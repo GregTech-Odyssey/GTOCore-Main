@@ -626,15 +626,15 @@ public final class MultiBlockB {
                     .dynamicPart(NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING, part -> part
                             .selectSymbols(22, 35, 8, 21, 9, 12, 'E', 'N')
                             .pivot(9.5F, 13.5F, .5F)
-                            .motion(RotationMotion.aroundZ()))
-                    .dynamicPart(NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING, part -> part
-                            .selectSymbols(19, 38, 5, 24, 9, 12, 'F', 'G')
-                            .pivot(9.5F, 13.5F, .5F)
-                            .motion(RotationMotion.aroundZ()))
+                            .motion(RotationMotion.aroundAxes(25, 0, 0)))
                     .dynamicPart(NanoPhagocytosisPlantMachine.HORIZONTAL_RING, part -> part
                             .selectSymbols(20, 37, 13, 16, 2, 19, 'C', 'I')
                             .pivot(9.5F, 13.5F, .5F)
-                            .motion(RotationMotion.aroundY()))
+                            .motion(RotationMotion.aroundAxes(0, 0, 25)))
+                    .dynamicPart(NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING, part -> part
+                            .selectSymbols(19, 38, 5, 24, 9, 12, 'F', 'G')
+                            .pivot(9.5F, 13.5F, .5F)
+                            .motion(RotationMotion.aroundAxes(-28, 0, 31)))
                     .build())
             .addSubPattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("BBBBBBBBBBBBBBB BBBBBBBBBBBBBBB", "B      B      B B      B      B", "BG GG GBG GG GB BG GG GBG GG GB", "BG GG GBG GG GB BG GG GBG GG GB", "B      B      B B      B      B", "BBBBBBBBBBBBBBB BBBBBBBBBBBBBBB", "B      B      B B      B      B", "BG GG GBG GG GB BG GG GBG GG GB", "BG GG GBG GG GB BG GG GBG GG GB", "B      B      B B      B      B", "BBBBBBBBBBBBBBB BBBBBBBBBBBBBBB")

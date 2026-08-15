@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.nano;
 
 import com.gtocore.api.machine.dynamic.DynamicBlockPattern;
 import com.gtocore.api.machine.dynamic.DynamicCollisionManager;
+import com.gtocore.api.machine.dynamic.DynamicRotationState;
 import com.gtocore.api.machine.dynamic.IDynamicStructureMachine;
 import com.gtocore.client.DynamicVisualManager;
 import com.gtocore.common.data.GTOBlocks;
@@ -29,12 +30,15 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     public static final String OUTER_VERTICAL_RING = "outer_vertical_ring";
     public static final String HORIZONTAL_RING = "horizontal_ring";
     private static final String[] RINGS = { INNER_VERTICAL_RING, OUTER_VERTICAL_RING, HORIZONTAL_RING };
-    private static final int SPIN_SPEED = 2;
-    private static final int RETURN_SPEED = 4;
+    private static final float INNER_VERTICAL_SPEED = -.1F;
+    private static final float OUTER_VERTICAL_SPEED = .07F;
+    private static final float HORIZONTAL_SPEED = -.13F;
 
     private TickableSubscription dynamicSubscription;
     private DynamicBlockPattern dynamicPattern;
-    private long rotation;
+    private final DynamicRotationState innerVerticalRotation = new DynamicRotationState(40);
+    private final DynamicRotationState outerVerticalRotation = new DynamicRotationState(40);
+    private final DynamicRotationState horizontalRotation = new DynamicRotationState(40);
     private boolean blocksHidden;
     private boolean collisionHidden;
 
@@ -65,15 +69,14 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
                 if (!hideDynamicParts()) return;
                 blocksHidden = true;
             }
-            rotation += SPIN_SPEED;
+            tickRotations(true);
             if (!isRemote() && !collisionHidden) {
                 for (String partName : RINGS) DynamicCollisionManager.hidePart(this, partName);
                 collisionHidden = true;
             }
         } else {
-            rotation %= 360;
-            rotation = Math.max(0, rotation - RETURN_SPEED);
-            if (rotation == 0) restoreDynamicPart();
+            tickRotations(false);
+            if (!hasRotation()) restoreDynamicPart();
         }
     }
 
@@ -132,7 +135,9 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
             dynamicSubscription.unsubscribe();
             dynamicSubscription = null;
         }
-        rotation = 0;
+        innerVerticalRotation.reset();
+        outerVerticalRotation.reset();
+        horizontalRotation.reset();
     }
 
     @Override
@@ -156,7 +161,7 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
 
     @Override
     public boolean isDynamicPartVisible(String partName) {
-        return isRing(partName) && isFormed() && rotation > 0;
+        return isRing(partName) && isFormed() && hasRotation();
     }
 
     @Override
@@ -185,9 +190,32 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
 
     @Override
     public float getDynamicMotionValue(String partName, float partialTicks) {
-        if (!isRing(partName)) return 0;
-        float value = isActive() ? rotation + partialTicks * SPIN_SPEED : rotation - partialTicks * RETURN_SPEED;
-        return value % 360;
+        DynamicRotationState rotation = getRotation(partName);
+        return rotation == null ? 0 : rotation.getValue(partialTicks);
+    }
+
+    @Override
+    public float getDynamicReturnProgress(String partName, float partialTicks) {
+        DynamicRotationState rotation = getRotation(partName);
+        return rotation == null ? 0 : rotation.getReturnProgress(partialTicks);
+    }
+
+    @Nullable
+    private DynamicRotationState getRotation(String partName) {
+        if (INNER_VERTICAL_RING.equals(partName)) return innerVerticalRotation;
+        if (OUTER_VERTICAL_RING.equals(partName)) return outerVerticalRotation;
+        if (HORIZONTAL_RING.equals(partName)) return horizontalRotation;
+        return null;
+    }
+
+    private void tickRotations(boolean active) {
+        innerVerticalRotation.tick(active, INNER_VERTICAL_SPEED);
+        outerVerticalRotation.tick(active, OUTER_VERTICAL_SPEED);
+        horizontalRotation.tick(active, HORIZONTAL_SPEED);
+    }
+
+    private boolean hasRotation() {
+        return !innerVerticalRotation.isAtOrigin() || !outerVerticalRotation.isAtOrigin() || !horizontalRotation.isAtOrigin();
     }
 
     private static boolean isRing(String partName) {
