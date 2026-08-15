@@ -2259,7 +2259,7 @@ object GTOMachineTooltips {
         highlight("提供一个保护机器正常工作，免受太空辐射等复杂环境影响的空间" translatedTo "Provides a space that protects machines from complex environments such as space radiation")
         highlight("空间站内部自带供玩家呼吸的空气" translatedTo "The interior of the space station comes with air for players to breathe")
         highlight("且自带无线电网中继器的功能，提供的电压根据安装的整体框架的等级而定" translatedTo "And comes with the function of a wireless radio network repeater, providing voltage based on the level of the installed mainframe")
-        highlight("可以向外侧安装拓展舱段以增加内部空间/更多功能" translatedTo "Can install expansion modules on the outside to increase internal space/more functions")
+        highlight("可以向外侧安装拓展舱以增加内部空间/更多功能" translatedTo "Can install expansion modules on the outside to increase internal space/more functions")
 
         section("建造要求" translatedTo "Construction Requirements")
         command("必须在太空中建造" translatedTo "Must be constructed in space")
@@ -2310,7 +2310,7 @@ object GTOMachineTooltips {
     @JvmField
     val NoExtensionAvailableTooltips = ComponentListSupplier {
         setTranslationPrefix("no_extension_available")
-        error("该种类空间站舱段无法向外侧安装拓展舱" translatedTo "This type of space station module cannot install expansion modules on the outside")
+        error("该种类空间站舱无法向外侧安装拓展舱" translatedTo "This type of space station module cannot install expansion modules on the outside")
     }
 
     @JvmField
