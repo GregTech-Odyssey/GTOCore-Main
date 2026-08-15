@@ -103,7 +103,7 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         setTranslationPrefix("large_space_station")
         story("GTO寰宇集团的太空站已经成功运营多年" translatedTo "GTO Universe Group's space station has been successfully operating for many years")
         story("为了满足更多更大的机器需求，GTO寰宇集团决定建造更大的空间站" translatedTo "To meet the needs of more and larger machines, GTO Universe Group decided to build a larger space station")
-        story("大型空间站不仅拥有更大的内部空间，还支持连接扩展舱以扩展更多的功能" translatedTo "The large space station not only has a larger internal space but also supports connecting extension modules to expand more functions")
+        story("大型空间站不仅拥有更大的内部空间，还支持连接拓展舱以拓展更多的功能" translatedTo "The large space station not only has a larger internal space but also supports connecting extension modules to expand more functions")
         story("无论是工业生产还是科研实验，大型空间站都能为你提供一个理想的工作环境" translatedTo "Whether for industrial production or scientific research, the large space station can provide you with an ideal working environment")
     }
 
