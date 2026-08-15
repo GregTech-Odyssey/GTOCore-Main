@@ -223,6 +223,12 @@ public final class GTOConfig {
         public boolean disableMufflerPart = false;
 
         @Configurable
+        @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+        @Configurable.Comment({ "启用多方块机器的动态结构渲染、命中和碰撞，修改后需要重启游戏，多人游戏中客户端与服务端必须保持一致", "Enable dynamic structure rendering, targeting, and collision for multiblock machines. Requires a game restart; clients and servers must use the same value" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Enable Dynamic Structures", cn = "启用动态结构")
+        public boolean enableDynamicStructures = true;
+
+        @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Default Value for Rename Pattern", cn = "重命名样板的默认值")
         @Configurable.Comment({ "在装配线模式编码带有重命名物品的样板时使用的默认名字", "The default name used when encoding patterns with renamed items in assembly line mode" })
         public String renamePatternDefaultString = "";

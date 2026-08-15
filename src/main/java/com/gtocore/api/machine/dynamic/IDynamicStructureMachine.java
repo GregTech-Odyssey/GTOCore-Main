@@ -1,5 +1,7 @@
 package com.gtocore.api.machine.dynamic;
 
+import com.gtocore.config.GTOConfig;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -12,6 +14,10 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 
 public interface IDynamicStructureMachine {
+
+    default boolean isDynamicStructureEnabled() {
+        return GTOConfig.INSTANCE.gamePlay.enableDynamicStructures;
+    }
 
     @Nullable
     Level getDynamicLevel();

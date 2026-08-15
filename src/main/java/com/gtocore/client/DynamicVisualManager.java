@@ -40,6 +40,7 @@ public final class DynamicVisualManager {
     private DynamicVisualManager() {}
 
     public static boolean hidePart(IDynamicStructureMachine machine, String partName) {
+        if (!machine.isDynamicStructureEnabled()) return false;
         if (!(machine.getDynamicLevel() instanceof ClientLevel level)) return false;
         if (!machine.visitDynamicBlocks(partName, (symbol, pos) -> level.isLoaded(pos))) return false;
         return machine.visitDynamicBlocks(partName, (symbol, pos) -> {
@@ -65,6 +66,7 @@ public final class DynamicVisualManager {
     }
 
     public static void register(IDynamicStructureMachine machine) {
+        if (!machine.isDynamicStructureEnabled()) return;
         if (!(machine.getDynamicLevel() instanceof ClientLevel level)) return;
         get(level).machines.put(machine.getDynamicOrigin().asLong(), machine);
     }

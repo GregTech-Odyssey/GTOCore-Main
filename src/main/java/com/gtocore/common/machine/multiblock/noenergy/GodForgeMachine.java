@@ -84,6 +84,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     public void onStructureFormedClient() {
         super.onStructureFormedClient();
         dynamicRenderEnabled = true;
+        if (!isDynamicStructureEnabled()) return;
         DynamicVisualManager.register(this);
         DynamicCollisionManager.register(this);
         rotationSubscription = subscribeClientTick(rotationSubscription, this::rotation);
@@ -141,6 +142,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         super.onStructureFormed();
         color = 1 - 0.1F * getCasingTier(GTORecipeDataKeys.GRAVITON_FLOW_TIER);
         tier = getCasingTier(GTORecipeDataKeys.GRAVITON_FLOW_TIER);
+        if (!isDynamicStructureEnabled()) return;
         if (!isRemote()) {
             DynamicCollisionManager.register(this);
             rotationSubscription = subscribeServerTick(rotationSubscription, this::rotation);
@@ -223,7 +225,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
 
     @Override
     public boolean isDynamicPartVisible(String partName) {
-        return OUTER_RING.equals(partName) && isFormed() && rotation > 0;
+        return isDynamicStructureEnabled() && OUTER_RING.equals(partName) && isFormed() && rotation > 0;
     }
 
     @Nullable

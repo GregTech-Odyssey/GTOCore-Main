@@ -49,6 +49,7 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
+        if (!isDynamicStructureEnabled()) return;
         if (!isRemote()) {
             DynamicCollisionManager.register(this);
             dynamicSubscription = subscribeServerTick(dynamicSubscription, this::tickDynamicPart);
@@ -58,6 +59,7 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     @Override
     public void onStructureFormedClient() {
         super.onStructureFormedClient();
+        if (!isDynamicStructureEnabled()) return;
         DynamicVisualManager.register(this);
         DynamicCollisionManager.register(this);
         dynamicSubscription = subscribeClientTick(dynamicSubscription, this::tickDynamicPart);
@@ -161,7 +163,7 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
 
     @Override
     public boolean isDynamicPartVisible(String partName) {
-        return isRing(partName) && isFormed() && hasRotation();
+        return isDynamicStructureEnabled() && isRing(partName) && isFormed() && hasRotation();
     }
 
     @Override

@@ -36,6 +36,7 @@ public final class DynamicCollisionManager {
     private DynamicCollisionManager() {}
 
     public static void hidePart(IDynamicStructureMachine machine, String partName) {
+        if (!machine.isDynamicStructureEnabled()) return;
         var level = machine.getDynamicLevel();
         if (level != null) machine.visitDynamicBlocks(partName, (symbol, pos) -> {
             hide(level, pos);
@@ -52,6 +53,7 @@ public final class DynamicCollisionManager {
     }
 
     public static void register(IDynamicStructureMachine machine) {
+        if (!machine.isDynamicStructureEnabled()) return;
         var level = machine.getDynamicLevel();
         if (level == null) return;
         get(level).machines.put(machine.getDynamicOrigin().asLong(), machine);
