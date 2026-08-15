@@ -382,5 +382,23 @@ final class RocketAssembler {
                 .duration(1800)
                 .researchNode(LaserSpaceEngineering)
                 .save();
+        ROCKET_ASSEMBLER_RECIPES.builder("space_3d_printer")
+                .inputItems("ad_astra_rocketed:tier_5_rocket")
+                .inputItems(MultiBlockC.THREE_DIMENSIONAL_PRINTER.asItem(), 16)
+                .inputItems(GTMachines.FLUID_HEATER[GTValues.UHV].asItem(), 16)
+                .inputItems(TagPrefix.pipeNormalFluid, GTOMaterials.Enderium, 32)
+                .inputItems(TagPrefix.pipeTinyFluid, GTOMaterials.Enderium, 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UHV, 4)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.NickelTitaniumTinHeuslerAlloy, 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Nitinol50ShapeMemoryAlloy, 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Calorite, 32)
+                .outputItems(SpaceMultiblock.SPACE_3D_PRINTER.asItem())
+                .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 16000)
+                .inputFluids(GTOMaterials.Titanium5553, 7200)
+                .inputFluids(GTMaterials.Lubricant, 16000)
+                .EUt(880000)
+                .duration(900)
+                .researchNode(LaserSpaceEngineering)
+                .save();
     }
 }

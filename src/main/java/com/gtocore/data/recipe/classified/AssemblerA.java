@@ -1186,5 +1186,29 @@ final class AssemblerA {
                 .EUt(480)
                 .duration(200)
                 .save();
+        ASSEMBLER_RECIPES.builder("anti_entropy_computer_condensation_matrix")
+                .inputItems(GTOBlocks.GRAVITON_COMPUTER_CASING.asItem())
+                .inputItems(GTOItems.GRAVITON_TRANSDUCER)
+                .inputItems(GTItems.ELECTRIC_MOTOR_UXV, 4)
+                .inputItems(GTOItems.CONTAINED_EXOTIC_MATTER, 64)
+                .inputItems(GTOItems.RECURSIVELY_FOLDED_NEGATIVE_SPACE)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.BlackDwarfMatter, 4)
+                .inputItems(TagPrefix.pipeTinyFluid, GTOMaterials.HeavyQuarkDegenerateMatter, 16)
+                .outputItems(GTOBlocks.ANTI_ENTROPY_COMPUTER_CONDENSATION_MATRIX.asItem())
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1440)
+                .EUt(16000000)
+                .duration(600)
+                .save();
+        ASSEMBLER_RECIPES.builder("antimatter_containment_casing")
+                .inputItems(GTOBlocks.DRACONIUM_BOROSILICATE_GLASS.asItem())
+                .inputItems(TagPrefix.frameGt, GTOMaterials.BlackTitanium)
+                .inputItems(GTOItems.VOID_MATTER)
+                .inputItems(GTOItems.PELLET_ANTIMATTER)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.Adamantine, 8)
+                .outputItems(GTOBlocks.ANTIMATTER_CONTAINMENT_CASING.asItem())
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 14000)
+                .EUt(16000000)
+                .duration(600)
+                .save();
     }
 }
