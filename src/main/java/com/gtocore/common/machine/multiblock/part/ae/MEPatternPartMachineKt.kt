@@ -124,10 +124,10 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
     private val internalInventory: Array<AbstractInternalSlot> = createInternalSlotArray()
 
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     var customName: String = ""
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     var showInTravelNetwork: Boolean = defaultShowInTravel()
 
     // ==================== 运行时属性 ====================

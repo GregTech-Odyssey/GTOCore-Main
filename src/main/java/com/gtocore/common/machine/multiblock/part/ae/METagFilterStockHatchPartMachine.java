@@ -20,9 +20,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class METagFilterStockHatchPartMachine extends MEStockingHatchPartMachine implements ITagFilterMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     private String tagWhite = "";
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     private String tagBlack = "";
 
     private IPartitionList filter;

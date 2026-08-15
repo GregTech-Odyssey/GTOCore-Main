@@ -45,7 +45,6 @@ import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -202,11 +201,6 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
-        public ItemStack getStackInSlot(int i) {
-            return ((HugeCustomItemStackHandler) storage).stack;
-        }
-
-        @Override
         public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
             var amount = ((HugeCustomItemStackHandler) storage).count;
             if (amount > 0) {
@@ -225,7 +219,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
         @Override
         public boolean updateEmpty() {
-            return ((HugeCustomItemStackHandler) storage).stack.isEmpty();
+            return storage.stacks[0].isEmpty();
         }
 
         @Override
@@ -270,8 +264,6 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
     private static final class HugeCustomItemStackHandler extends CustomItemStackHandler {
 
-        @NotNull
-        private ItemStack stack = ItemStack.EMPTY;
         private long count;
 
         private HugeCustomItemStackHandler() {
@@ -284,89 +276,27 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
-        public void setStackInSlot(int index, ItemStack stack) {
-            this.stack = stack;
-            count = stack.getCount();
-            onContentsChanged(index);
+        public void onContentsChanged(int index) {
+            count = stacks[0].getCount();
+            super.onContentsChanged(index);
         }
 
         @Override
-        public ItemStack getStackInSlot(int slot) {
-            return stack;
-        }
-
-        @Override
-        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (stack.isEmpty()) return ItemStack.EMPTY;
-            if (count < 1 || this.stack.isEmpty()) {
-                if (!simulate) {
-                    this.stack = stack.copy();
-                    count = stack.getCount();
-                    onContentsChanged(0);
-                }
-                return ItemStack.EMPTY;
-            } else if (this.stack.getItem() == stack.getItem()) {
-                var tag = this.stack.getShareTag();
-                if (tag == null) {
-                    if (stack.getShareTag() == null) {
-                        if (!simulate) {
-                            count += stack.getCount();
-                            this.stack.setCount(MathUtil.saturatedCast(count));
-                            onContentsChanged(0);
-                        }
-                        return ItemStack.EMPTY;
-                    }
-                } else if (tag.equals(stack.getShareTag())) {
-                    if (!simulate) {
-                        count += stack.getCount();
-                        this.stack.setCount(MathUtil.saturatedCast(count));
-                        onContentsChanged(0);
-                    }
-                    return ItemStack.EMPTY;
-                }
-            }
-            return stack;
-        }
-
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (amount == 0 || count < 1 || this.stack.isEmpty()) return ItemStack.EMPTY;
-            if (amount >= count) {
-                if (simulate) {
-                    return stack;
-                } else {
-                    count = 0;
-                    var stack = this.stack;
-                    this.stack = ItemStack.EMPTY;
-                    onContentsChanged(0);
-                    return stack;
-                }
-            } else {
-                if (!simulate) {
-                    count -= amount;
-                    stack.setCount(MathUtil.saturatedCast(count));
-                    onContentsChanged(0);
-                }
-                return this.stack.copyWithCount(amount);
-            }
-        }
-
-        @Override
-        public int extract(int slot, int amount, boolean simulate) {
+        public int extract(int slot, ItemStack s, int amount, boolean simulate) {
             var count = MathUtil.saturatedCast(this.count);
-            if (amount == 0 || count < 1 || this.stack.isEmpty()) return 0;
+            if (amount == 0 || count < 1 || this.stacks[0].isEmpty()) return 0;
             if (amount >= count) {
                 if (!simulate) {
                     this.count = 0;
-                    this.stack = ItemStack.EMPTY;
-                    onContentsChanged(0);
+                    this.stacks[0] = ItemStack.EMPTY;
+                    super.onContentsChanged(0);
                 }
                 return count;
             } else {
                 if (!simulate) {
                     this.count -= amount;
-                    stack.setCount(MathUtil.saturatedCast(count));
-                    onContentsChanged(0);
+                    stacks[0].setCount(MathUtil.saturatedCast(count));
+                    super.onContentsChanged(0);
                 }
                 return amount;
             }
@@ -375,29 +305,29 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         @Override
         public int insert(int slot, ItemStack stack, int amount, boolean simulate) {
             if (amount == 0 || stack.isEmpty()) return 0;
-            if (count < 1 || this.stack.isEmpty()) {
+            if (count < 1 || this.stacks[0].isEmpty()) {
                 if (!simulate) {
-                    this.stack = stack.copy();
+                    this.stacks[0] = stack.copy();
                     this.count = amount;
-                    onContentsChanged(0);
+                    super.onContentsChanged(0);
                 }
                 return amount;
-            } else if (this.stack.getItem() == stack.getItem()) {
-                var tag = this.stack.getShareTag();
+            } else if (this.stacks[0].getItem() == stack.getItem()) {
+                var tag = this.stacks[0].getTag();
                 if (tag == null) {
-                    if (stack.getShareTag() == null) {
+                    if (stack.getTag() == null) {
                         if (!simulate) {
                             this.count += amount;
-                            this.stack.setCount(MathUtil.saturatedCast(this.count));
-                            onContentsChanged(0);
+                            this.stacks[0].setCount(MathUtil.saturatedCast(this.count));
+                            super.onContentsChanged(0);
                         }
                         return amount;
                     }
-                } else if (tag.equals(stack.getShareTag())) {
+                } else if (tag.equals(stack.getTag())) {
                     if (!simulate) {
                         this.count += amount;
-                        this.stack.setCount(MathUtil.saturatedCast(this.count));
-                        onContentsChanged(0);
+                        this.stacks[0].setCount(MathUtil.saturatedCast(this.count));
+                        super.onContentsChanged(0);
                     }
                     return amount;
                 }
@@ -419,7 +349,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         @Override
         public Data writeData() {
             CompoundTag nbt = new CompoundTag();
-            nbt.put("stack", stack.serializeNBT());
+            nbt.put("stack", stacks[0].serializeNBT());
             nbt.putLong("count", count);
             return DataCodecs.COMPOUND_TAG_CODEC.encode(nbt);
         }
@@ -429,10 +359,10 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
             var nbt = DataCodecs.COMPOUND_TAG_CODEC.decode(data);
             var stack = nbt.get("stack");
             if (stack instanceof CompoundTag tag) {
-                this.stack = ItemStack.of(tag);
+                this.stacks[0] = ItemStack.of(tag);
             }
             count = nbt.getLong("count");
-            this.stack.setCount(MathUtil.saturatedCast(count));
+            this.stacks[0].setCount(MathUtil.saturatedCast(count));
         }
     }
 

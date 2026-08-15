@@ -91,7 +91,7 @@ public final class VoidTransporterMachine extends ElectricMultiblockMachine impl
     @SaveToDisk
     private final EnergyContainerTrait energyContainer;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean setup = false;
     private final BiConsumer<VoidTransporterMachine, Player> consumer;
 

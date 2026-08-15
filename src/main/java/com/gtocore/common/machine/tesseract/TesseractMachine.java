@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -177,7 +178,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     @Override
     public List<TesseractDirectedTarget> getMarkerTargets() {
-        if (pos == null) return List.of();
+        if (pos == null) return Collections.emptyList();
         var exposedInAirFace = Direction.NORTH;
         for (var face : Direction.values()) {
             var offsetPos = pos.relative(face);

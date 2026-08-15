@@ -245,5 +245,16 @@ final class DimensionallytranscendentPlasmaForge {
                 .duration(4800)
                 .blastFurnaceTemp(56000)
                 .save();
+        DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_RECIPES.builder("chaos_infinity_alloy")
+                .inputItems(GTOItems.INFINITY_SINGULARITY)
+                .inputItems(GTOItems.CHAOS_SHARD)
+                .inputFluids(GTOMaterials.Infinity, 1000)
+                .inputFluids(GTOMaterials.Chaos, 1000)
+                .outputFluids(GTOMaterials.ChaosInfinityAlloy, 1000)
+                .outputFluids(GTOMaterials.DimensionallyTranscendentResidue, 100)
+                .EUt(2222222222L)
+                .blastFurnaceTemp(66666)
+                .duration(4444)
+                .save();
     }
 }

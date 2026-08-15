@@ -5,10 +5,7 @@ import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOMachines;
 
 import com.gtolib.api.annotation.NewDataAttributes;
-import com.gtolib.api.data.GTODimensions;
-import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.recipe.GTORecipeModifiers;
-import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -32,7 +29,6 @@ import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMac
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -40,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
@@ -133,7 +128,6 @@ public final class GTMachineModify {
                     .where('#', Predicates.air())
                     .build();
         }));
-        // GTMultiMachines.DISTILLATION_TOWER.setRecoveryItems(GTMachineModify::tinydustFromDustOutput);
 
         GTMultiMachines.ELECTRIC_BLAST_FURNACE.setSubPatternFactory(List.of(definition -> FactoryBlockPattern.start(definition)
                 .aisle("AAAAA", " DBD ", " DBD ", " CCC ")
@@ -156,25 +150,6 @@ public final class GTMachineModify {
         for (int tier : GTMachineUtils.ELECTRIC_TIERS) {
             GTMachines.MACERATOR[tier].setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
             GTMachines.ROCK_CRUSHER[tier].setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
-            if (tier > GTValues.LV) {
-                GTMachines.SCANNER[tier].setOnWorking(machine -> {
-                    if (machine.getProgress() == machine.getMaxProgress() - 1) {
-                        machine.forEachItems(true, (stack, amount) -> {
-                            CompoundTag tag = stack.getTag();
-                            if (tag != null) {
-                                String planet = tag.getString("planet");
-                                if (!planet.isEmpty()) {
-                                    UUID uuid = tag.getUUID("uuid");
-                                    PlanetManagement.unlock(uuid, GTODimensions.getDimensionKey(RLUtils.parse(planet)));
-                                    stack.setCount(0);
-                                    return true;
-                                }
-                            }
-                            return false;
-                        });
-                    }
-                });
-            }
         }
 
         for (int tier : GTMachineUtils.LOW_TIERS) {

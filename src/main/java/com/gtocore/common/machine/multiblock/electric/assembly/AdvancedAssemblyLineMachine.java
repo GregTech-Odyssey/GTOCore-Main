@@ -179,7 +179,7 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
                 var stack = inputSlot.getStackInSlot(j);
                 if (stack.isEmpty() || (!tested && !recipeInput.inner.test(stack))) continue;
                 tested = true;
-                recipeInput.shrink(inputSlot.extract(j, recipeInput.getIntAmount(), false));
+                recipeInput.shrink(inputSlot.extract(j, stack, recipeInput.getIntAmount(), false));
                 if (recipeInput.amount <= 0) break;
             }
             if (recipeInput.amount > 0) return false;

@@ -71,6 +71,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -89,13 +90,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private int scannedPatterns = 0;
     @Getter
     @Setter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int patternPriority = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int maxFluidsOutput = 1;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int maxItemsOutput = 1;
     @SaveToDisk
     private final CustomItemStackHandler blacklistedItems;
@@ -364,7 +365,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private @NotNull List<@NotNull IPatternDetails> readInv() {
         var pattern = getPatternInventory().getStackInSlot(0);
         var details = decodePattern(pattern, 0);
-        return details == null ? List.of() : List.of(details);
+        return details == null ? Collections.emptyList() : List.of(details);
     }
 
     public static void onMultiblockRecipeTypeChange(@NotNull MultiblockControllerMachine machine) {

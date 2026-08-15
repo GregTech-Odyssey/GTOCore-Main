@@ -43,7 +43,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class MEStockingBusPartMachine extends MEInputBusPartMachine implements IMEStockingPart {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean autoPull;
 
     public MEStockingBusPartMachine(MetaMachineBlockEntity holder) {

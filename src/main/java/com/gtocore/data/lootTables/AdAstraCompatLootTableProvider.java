@@ -17,16 +17,16 @@ import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import earth.terrarium.adastra.common.blocks.FlagBlock;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AdAstraCompatLootTableProvider extends LootTableProvider {
 
     public AdAstraCompatLootTableProvider(PackOutput output) {
-        super(output, Set.of(), List.of(new SubProviderEntry(BlockLootTables::new, LootContextParamSets.BLOCK)));
+        super(output, Collections.emptySet(), List.of(new SubProviderEntry(BlockLootTables::new, LootContextParamSets.BLOCK)));
     }
 
     @Override
@@ -35,7 +35,7 @@ public class AdAstraCompatLootTableProvider extends LootTableProvider {
     public static class BlockLootTables extends BlockLootSubProvider {
 
         public BlockLootTables() {
-            super(Set.of(), FeatureFlags.REGISTRY.allFlags());
+            super(Collections.emptySet(), FeatureFlags.REGISTRY.allFlags());
         }
 
         @Override

@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public final class PatternContainerGroupHelper {
@@ -116,7 +117,7 @@ public final class PatternContainerGroupHelper {
         IRecipeLogicMachine recipeMachine = machine instanceof IRecipeLogicMachine logicMachine ? logicMachine : null;
         GTRecipeType selectedRecipeType = getCurrentRecipeType(recipeMachine);
         boolean showAllRecipeTypes = false;
-        List<Component> tooltip = List.of();
+        List<Component> tooltip = Collections.emptyList();
 
         if (machine instanceof IMultiPart partMachine) {
             IMultiController controller = partMachine.getController();
@@ -138,7 +139,7 @@ public final class PatternContainerGroupHelper {
     }
 
     private static Collection<GTRecipeType> getAvailableRecipeTypes(@Nullable IRecipeLogicMachine recipeMachine) {
-        return recipeMachine == null ? List.of() : Arrays.asList(recipeMachine.getAvailableRecipeTypes());
+        return recipeMachine == null ? Collections.emptyList() : Arrays.asList(recipeMachine.getAvailableRecipeTypes());
     }
 
     private static NameParts getNameParts(MetaMachine displayMachine, String extraSuffix,

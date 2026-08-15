@@ -85,6 +85,26 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         story("或许是魔法？总之没有别的合理解释了" translatedTo "Perhaps magic? There's no other reasonable explanation")
     }
 
+    // 火箭装配机
+    @JvmField
+    val RocketAssemblerTooltips = ComponentListSupplier {
+        setTranslationPrefix("rocket_assembler")
+
+        story("箭体、推进器与导航系统在这里完成组装，一枚火箭由此成形" translatedTo "The airframe, engines, and guidance systems come together here, taking shape as a rocket")
+        story("组装完成后，火箭还要依次接受气密、结构与控制系统测试" translatedTo "After assembly, the rocket must undergo leak, structural, and control system tests")
+        story("只有通过道道测试的火箭，才会被送上发射台" translatedTo "Only rockets that pass every test are sent to the launch pad")
+    }
+
+    // 卫星控制中心
+    @JvmField
+    val SatelliteControlCenterTooltips = ComponentListSupplier {
+        setTranslationPrefix("satellite_control_center")
+
+        story("在踏上陌生星球之前，工程师们决定先让卫星替他们看看那里有什么" translatedTo "Before setting foot on an unfamiliar planet, the engineers decided to let a satellite take the first look")
+        story("探测卫星随火箭飞往目标星球，将观测结果记录在芯片中" translatedTo "The survey satellite travels aboard the rocket to its target planet, recording its observations on a chip")
+        story("火箭返回发射场时，也带回了一张通往新世界的地图" translatedTo "When the rocket returns to the launch site, it brings back a map to a new world")
+    }
+
     // 空间站
     @JvmField
     val SpaceStationTooltips = ComponentListSupplier {
@@ -366,8 +386,8 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         setTranslationPrefix("fission_reactor")
         story("刚来的员工是从通用机械集团转来的，带来了这么个家伙" translatedTo "A new employee transferred from Mekanism brought this thing along")
         story("虽然不知道是否构成了知识产权侵权，但总之用着确实效果不错" translatedTo "Not sure if it's intellectual property infringement, but after all it works well")
-        story("据他所说，GT这边先进的化工技术可以产出钠钾冷却液，能更充分发挥这台机器的性能" translatedTo "He claims GT's advanced chemical tech can produce NaK coolant to fully unleash this machine's potential")
-        story("没有人知道真假，毕竟从一个跳槽的人嘴里又能得到多少实话呢" translatedTo "No one knows the truth, after all how much honesty can you expect from a job-hopper")
+        // story("据他所说，GT这边先进的化工技术可以产出钠钾冷却液，能更充分发挥这台机器的性能" translatedTo "He claims GT's advanced chemical tech can produce NaK coolant to fully unleash this machine's potential")
+        // story("没有人知道真假，毕竟从一个跳槽的人嘴里又能得到多少实话呢" translatedTo "No one knows the truth, after all how much honesty can you expect from a job-hopper")
     }
 
     // 工业屠宰场
@@ -566,6 +586,16 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         story("首席工程师激动地宣告：我们正站在解开生命奥秘的门槛之上" translatedTo "The chief engineer excitedly declares we are standing on the threshold of unraveling life's mysteries")
     }
 
+    // 魔法改造模块
+    @JvmField
+    val MagicModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("magic_module")
+        story("在经历了无穷无尽的概率配方与循环产线的折磨后，GTO集团的膜法学家终于受不了了" translatedTo "After endless torment of probabilistic recipes and cyclic production lines, GTO Group's membrane scientists finally couldn't take it anymore")
+        story("他们把目光投向了隔壁的纳米蜂群，试图用物质的方式来改造魔法" translatedTo "They turned their gaze to the neighboring nano-swarms, attempting to transform magic through material means")
+        story("经过无数次的实验，纳米蜂群终于学会了在分子层面上操控魔法能量的流动" translatedTo "After countless experiments, the nano-swarms finally learned to manipulate the flow of magical energy at the molecular level")
+        story("这标志着魔法与科技的融合进入了一个全新的纪元，也标志着魔法学家们终于不用再为配方的概率而头疼了" translatedTo "This marks a new era of magic and technology fusion, and also means that magicians no longer have to worry about recipe probabilities")
+    }
+
     // 太空电梯
     @JvmField
     val SpaceElevatorTooltips = ComponentListSupplier {
@@ -582,8 +612,10 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
     val WaterPurificationPlantTooltips = ComponentListSupplier {
         setTranslationPrefix("water_purification_plant")
 
-        story("水中的污染物和离子颗粒会在硅片和芯片切割和雕刻的精密过程中造成显著的缺陷" translatedTo "Pollutants and ionic particles in water can cause significant defects during the precise processes of wafer and chip cutting and engraving")
-        story("通过一系列越来越精确和复杂的净化过程系统地净化水是至关重要的，而这个多方块结构是操作的核心" translatedTo "It is crucial to systematically purify the water through a series of increasingly precise and complex processes, and this multi-block structure is the core of the operation")
+        story("水中的污染物和离子颗粒会在硅片和芯片切割和雕刻的精密过程中造成显著的缺陷" translatedTo "Pollutants and ionic particles in water can cause significant defects during the precision cutting and etching of wafers and chips")
+        story("通过一系列越来越精密和复杂的净化工序系统地处理水，已经成为先进制造业不可缺少的一环" translatedTo "Systematically treating water through an increasingly precise and complex series of purification processes has become indispensable to advanced manufacturing")
+        story("为此，集团的工程师们设计了一套完整的净水流程，由处理厂统一控制时序与供能，再由八级净化单元层层接力" translatedTo "To this end, the Group's engineers designed a complete purification process, with the plant coordinating timing and power while eight purification stages work in succession")
+        story("从肉眼可见的悬浮物，到离子、分子乃至重子内部的细微缺陷，没有任何杂质能逃过这条漫长的净化链" translatedTo "From visible suspended matter to ions, molecules, and even minute imperfections within baryons, no impurity can escape this long purification chain")
     }
 
     // 澄清器净化装置
@@ -662,6 +694,16 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         story("这最终不仅会创造出稳定的重子物质，而且最重要的是，创造出绝对完美净化的水" translatedTo "This ultimately creates not just stable baryonic matter, but most importantly, absolutely purified water.")
     }
 
+    // 无人机控制中心
+    @JvmField
+    val DroneControlCenterTooltips = ComponentListSupplier {
+        setTranslationPrefix("drone_control_center")
+
+        story("工厂规模越来越大，维护人员不得不在厂区各处来回奔波" translatedTo "As the factory grew, maintenance crews had to travel back and forth across the facility")
+        story("因此，工程师们开发了用于机器维护的无人机，并交由控制中心统一调度" translatedTo "The engineers therefore developed drones for machine maintenance and placed them under the control center's coordination")
+        story("从修复故障到清理消声仓积灰，过去需要人工处理的琐事如今都有无人机代劳" translatedTo "From repairing faults to clearing ash from Silencer Hatches, drones now handle the routine work once done by hand")
+    }
+
     /*************************************************
      *              巨构(通常跨并/激光)                *
      **************************************************/
@@ -704,7 +746,7 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         add("虽然建造成本惊人，但带来的效率提升让投资物超所值" translatedTo "Though construction costs are staggering, the efficiency gains make it worth every penny") { yellow() }
         add("从螺丝到芯片，所有基础部件都能在这里高效产出" translatedTo "From screws to chips, all basic components can be efficiently produced here") { green() }
         add("董事长曾说：这是凡间最接近神之造物的工业奇迹" translatedTo "The chairman once said: This is industry's closest approximation to divine creation") { gold() }
-        add("维护成本同样高昂，但为了未来必须承受的重量" translatedTo "Maintenance costs are equally high, but a necessary burden for the future") { red() }
+        add("维护成本同样高昂，但为了未来必须承受重量" translatedTo "Maintenance costs are equally high, but a necessary burden for the future") { red() }
         highlight("让基础部件制造进入全新时代" translatedTo "Ushering in a new era of basic component manufacturing")
     }
 
@@ -760,7 +802,7 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
     val WoodDistillationTooltips = ComponentListSupplier {
         setTranslationPrefix("wood_distillation")
         add("绿色化学的工业典范，将木质纤维转化为万千化工原料" translatedTo "Industrial典范 of green chemistry, transforming wood fibers into myriad chemical materials") { green() }
-        add("催化气体精准调控，让木质素和纤维素高效分离重组" translatedTo "Precise catalytic gas control enables efficient separation and重组 of lignin and cellulose") { gray() }
+        add("催化气体精准调控，让木质素和纤维素高效分离重组" translatedTo "Precise catalytic gas control enables efficient separation and recombination of lignin and cellulose") { gray() }
         add("从木材到甲醇、从木屑到化纤，实现可再生资源的最大化利用" translatedTo "From wood to methanol, from sawdust to chemical fibers, maximizing utilization of renewable resources") { yellow() }
         add("生物催化技术与高温裂解的完美结合，零碳排放的绿色工艺" translatedTo "Perfect combination of biocatalysis and pyrolysis, zero-carbon emission green process") { aqua() }
         add("散发着淡淡木质香气的它，仿佛森林在工业中的化身" translatedTo "Wreathed in a faint, woody fragrance, it stands as if the forest itself, incarnate in the realm of industry") { gold() }

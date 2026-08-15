@@ -25,6 +25,7 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Float> EFFICIENCY = register("efficiency", DataSyncCodec.FLOAT_CODEC);
 
     public static final DataComponentKey<Integer> RADIOACTIVITY = register("radioactivity", DataSyncCodec.INT_CODEC);
+    public static final DataComponentKey<Integer> RADIOACTIVITY_END = register("radioactivity_end", DataSyncCodec.INT_CODEC);
 
     public static final DataComponentKey<Integer> FILTER_CASING = register("filter_casing", DataSyncCodec.INT_CODEC);
 
@@ -49,6 +50,12 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Integer> PARAM1 = register("param1", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> PARAM2 = register("param2", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> PARAM3 = register("param3", DataSyncCodec.INT_CODEC);
+
+    public static final DataComponentKey<Integer> DATA_TESTING_CAPACITY = register("data_testing_level", DataSyncCodec.INT_CODEC);
+
+    public static final DataComponentKey<Integer> RAY_INTENSITY = register("ray_intensity", DataSyncCodec.INT_CODEC);
+    public static final DataComponentKey<Integer> RAY_WAVELENGTH = register("ray_wavelength", DataSyncCodec.INT_CODEC);
+    public static final DataComponentKey<Double> RAY_POLARIZATION = register("ray_polarization", DataSyncCodec.DOUBLE_CODEC);
     @SuppressWarnings("unchecked")
     public static final DataComponentKey<Integer>[] PARAM = (DataComponentKey<Integer>[]) new DataComponentKey<?>[] { PARAM1, PARAM2, PARAM3 };
 
@@ -65,6 +72,8 @@ public final class GTORecipeDataKeys {
     public static final TierDataKey INTEGRAL_FRAMEWORK_TIER = registerTier(GTOValues.INTEGRAL_FRAMEWORK_TIER);
     public static final TierDataKey COMPUTER_CASING_TIER = registerTier(GTOValues.COMPUTER_CASING_TIER);
     public static final TierDataKey COMPUTER_HEAT_TIER = registerTier(GTOValues.COMPUTER_HEAT_TIER);
+    public static final TierDataKey ENERGY_CONTROL_MODULE_TIER = registerTier(GTOValues.ENERGY_CONTROL_MODULE_TIER);
+    public static final TierDataKey MACHINING_CONTROL_MODULE_TIER = registerTier(GTOValues.MACHINING_CONTROL_MODULE_TIER);
 
     public static TierDataKey registerTier(String name) {
         return (TierDataKey) GTRecipeDataKeys.REGISTRY.register(new TierDataKey(name));

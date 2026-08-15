@@ -22,10 +22,10 @@ import java.util.function.Predicate;
 public final class TagFilterVoidOutputHatchPartMachine extends VoidOutputHatchPartMachine implements ITagFilterMachine, Predicate<FluidStack> {
 
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     private String tagWhite = "";
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     private String tagBlack = "";
 
     private IPartitionList filter;

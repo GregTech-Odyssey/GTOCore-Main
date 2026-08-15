@@ -61,7 +61,7 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private float spinSpeed;
     @Getter

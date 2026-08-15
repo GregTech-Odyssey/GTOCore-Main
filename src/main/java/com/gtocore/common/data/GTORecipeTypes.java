@@ -13,7 +13,6 @@ import com.gtocore.data.recipe.generated.GenerateDisassembly;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.trait.TierCasingTrait;
-import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.RecipeType;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
@@ -66,14 +65,14 @@ public final class GTORecipeTypes {
         RecipeTypeModify.init();
     }
 
-    private static final Consumer<GTRecipeBuilder> addFuelProperties = b -> PowerlessJetpack.FUELS.putIfAbsent(((RecipeBuilder) b).getFluidInputs().getFirst().inner, (int) (b.getDuration() * Math.abs(b.EUt())));
+    private static final Consumer<GTRecipeBuilder> addFuelProperties = b -> PowerlessJetpack.FUELS.putIfAbsent(b.getFluidInputs().getFirst().inner, (int) (b.getDuration() * Math.abs(b.EUt())));
     public static final GTRecipeType HATCH_COMBINED = register("hatch_combined", "Combined / Machine", "组合模式/机器模式", DUMMY).setXEIVisible(false);
     public static final RecipeType ALLOY_BLAST_RECIPES = (RecipeType) GCYMRecipeTypes.ALLOY_BLAST_RECIPES;
     public static final RecipeType STEAM_BOILER_RECIPES = (RecipeType) GTRecipeTypes.STEAM_BOILER_RECIPES;
     public static final RecipeType FURNACE_RECIPES = (RecipeType) GTRecipeTypes.FURNACE_RECIPES;
     public static final RecipeType ALLOY_SMELTER_RECIPES = (RecipeType) GTRecipeTypes.ALLOY_SMELTER_RECIPES;
     public static final RecipeType ARC_FURNACE_RECIPES = (RecipeType) GTRecipeTypes.ARC_FURNACE_RECIPES;
-    public static final RecipeType ASSEMBLER_RECIPES = (RecipeType) GTRecipeTypes.ASSEMBLER_RECIPES;
+    public static final RecipeType ASSEMBLER_RECIPES = (RecipeType) GTRecipeTypes.ASSEMBLER_RECIPES.setHasResearchSlot(true);
     public static final RecipeType AUTOCLAVE_RECIPES = (RecipeType) GTRecipeTypes.AUTOCLAVE_RECIPES;
     public static final RecipeType BENDER_RECIPES = (RecipeType) GTRecipeTypes.BENDER_RECIPES;
     public static final RecipeType BREWING_RECIPES = (RecipeType) GTRecipeTypes.BREWING_RECIPES;
@@ -856,6 +855,7 @@ public final class GTORecipeTypes {
             .setEUIO(IO.IN)
             .setMaxIOSize(9, 1, 3, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setHasResearchSlot(true)
             .setSound(GTSoundEntries.ASSEMBLER);
 
     public static final RecipeType POLYMERIZATION_REACTOR_RECIPES = register("polymerization_reactor", "聚合反应", MULTIBLOCK)
@@ -970,29 +970,73 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.ARC);
 
     public static final RecipeType CRYSTAL_SCAN_RECIPES = register("crystal_scan", "晶片扫描", ELECTRIC)
-            .setMaxIOSize(3, 1, 1, 0)
+            .setMaxIOSize(1, 0, 0, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setEUIO(IO.IN)
             .setSound(GTSoundEntries.COMPUTATION);
 
-    public static final RecipeType DATA_ANALYSIS_RECIPES = register("data_analysis", "数据分析", ELECTRIC)
-            .setMaxIOSize(3, 6, 0, 0)
+    public static final RecipeType DATA_TESTING_RECIPES = register("data_form_density_testing", "数据密度测试", ELECTRIC)
+            .setMaxIOSize(2, 0, 0, 0)
+            .setEUIO(IO.IN)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.COMPUTATION);
+            .setSound(GTSoundEntries.COMPUTATION)
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.data_form_density_testing.density", FormattingUtil.formatNumbers(data.data.getInt(GTORecipeDataKeys.DATA_TESTING_CAPACITY))));
 
-    public static final RecipeType DATA_INTEGRATION_RECIPES = register("data_integration", "数据统合", ELECTRIC)
-            .setMaxIOSize(13, 2, 0, 0)
+    public static final RecipeType BEAM_GENERATE_RECIPES = register("beam_generate", "射线束生成", ELECTRIC)
+            .setMaxIOSize(2, 0, 0, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.COMPUTATION);
+            .addDataInfo(data -> {
+                int au = data.data.getInt(GTORecipeDataKeys.RAY_INTENSITY);
+                if (au > 0) {
+                    return I18n.get("gtocore.recipe.ray_intensity", FormattingUtil.formatNumbers(au));
+                }
+                return "";
+            })
+            .addDataInfo(data -> {
+                int au = data.data.getInt(GTORecipeDataKeys.RAY_WAVELENGTH);
+                if (au > 0) {
+                    return I18n.get("gtocore.recipe.ray_wavelength", FormattingUtil.formatNumbers(au));
+                }
+                return "";
+            })
+            .setEUIO(IO.IN)
+            .setSound(GTSoundEntries.MOTOR);
 
-    public static final RecipeType RECIPES_DATA_GENERATE_RECIPES = register("recipes_data_generate", "配方数据生成", ELECTRIC)
-            .setMaxIOSize(11, 1, 0, 0)
+    public static final RecipeType BEAM_POLARIZE_RECIPES = register("beam_polarize", "射线束偏转", DUMMY)
+            .setMaxIOSize(0, 0, 1, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .addDataInfo(data -> {
+                var rad = data.data.getDouble(GTORecipeDataKeys.RAY_POLARIZATION);
+                if (rad != 0) {
+                    return I18n.get("gtocore.recipe.ray_polarization", FormattingUtil.formatNumber2Places(Math.toDegrees(rad)));
+                }
+                return "";
+            })
+            .setSound(GTSoundEntries.MOTOR);
+
+    public static final RecipeType BEAM_GUIDED_COMPUTATION_TESTING_RECIPES = register("beam_guided_computation_testing", "射线束引导计算测试", ELECTRIC)
+            .setMaxIOSize(2, 1, 2, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setEUIO(IO.IN)
             .setSound(GTSoundEntries.COMPUTATION);
 
     public static final RecipeType BIO_RESEARCH_RECIPES = register("bio_research", "生物研究", ELECTRIC)
-            .setMaxIOSize(4, 4, 0, 0)
+            .setMaxIOSize(4, 1, 2, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.COMPUTATION);
+            .setSound(GTSoundEntries.COMPUTATION)
+            .setEUIO(IO.IN)
+            .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
+            .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY_END) ? LocalizationUtils.format("gtocore.recipe.radioactivity_end", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END)) : "");
+
+    public static final RecipeType NEUTRON_IRRADIATION_RECIPES = register("neutron_irradiation", "中子辐照", ELECTRIC)
+            .setMaxIOSize(1, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.MOTOR)
+            .setEUIO(IO.IN)
+            .addDataInfo(data -> {
+                var nFlux = data.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
+                return LocalizationUtils.format(nFlux > 1000 ? "gtocore.recipe.neutron_flux.m" : "gtocore.recipe.neutron_flux.k", FormattingUtil.formatNumber2Places(nFlux > 1000 ? nFlux / 1_000f : nFlux));
+            });
 
     public static final RecipeType SPACE_STATION_CONSTRUCTION_RECIPES = register("space_station_construction", "空间站建造", MULTIBLOCK)
             .setMaxIOSize(9, 0, 0, 0)

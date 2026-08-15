@@ -13,16 +13,59 @@ plugins {
     alias libs.plugins.kotlin.plugin
     alias libs.plugins.kotlin.lombok
     alias libs.plugins.gtopublishgradleplugin
+    id "org.jetbrains.kotlin.kapt" version '2.3.20'
 }
 
 version = mod_version
+
+// Local secrets may live in the ignored .env file; process environment always wins.
+def dotenv = new LinkedHashMap<String, String>()
+def dotenvFile = file('.env')
+if (dotenvFile.isFile()) {
+    dotenvFile.eachLine('UTF-8') { String rawLine ->
+        def line = rawLine.trim()
+        if (!line || line.startsWith('#')) {
+            return
+        }
+        if (line.startsWith('export ')) {
+            line = line.substring('export '.length()).trim()
+        }
+
+        int separator = line.indexOf('=')
+        if (separator <= 0) {
+            return
+        }
+        def key = line.substring(0, separator).trim()
+        if (!(key ==~ /[A-Za-z_][A-Za-z0-9_]*/)) {
+            return
+        }
+        def value = line.substring(separator + 1).trim()
+        if (value.length() >= 2 && ((value.startsWith('"') && value.endsWith('"')) ||
+                (value.startsWith("'") && value.endsWith("'")))) {
+            value = value.substring(1, value.length() - 1)
+        }
+        dotenv.put(key, value)
+    }
+}
+def processEnv = System.getenv()
+def localEnv = { String name ->
+    return processEnv.containsKey(name) ? processEnv.get(name) : dotenv.get(name)
+}
 
 // 模组字节码目标 21（GTCEu/gtmthings/datasynclib 等依赖要求 JVM 21+；Java 17 无法运行）。
 // 开发可用 Java 25 跑 Gradle；CI 使用 Java 21 runner。
 // Java 25 字节码 (major 69) 无法被当前 reobf/ART 处理。
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
 
 apply from: "$rootDir/gradle/scripts/moddevgradle.gradle"
 apply from: "$rootDir/gradle/scripts/repositories.gradle"
@@ -72,10 +115,16 @@ generateModMetadata.doFirst {
     mkdir('run/client')
     mkdir('run/server')
     mkdir('run/data')
+    if (file('run/client/gtocore/cache').isDirectory()) {
+        delete fileTree('run/client/gtocore/cache')
+    }
 }
 
+tasks.named('prepareClientRun') {
+    outputs.upToDateWhen { false }
+}
 
-def configureLegacyWriter = { taskName , preferredConfigName, outFileName ->
+def configureLegacyWriter = { String taskName, String preferredConfigName, String outFileName ->
     tasks.named(taskName) {
         doLast {
             def cfg = configurations.findByName(preferredConfigName) ?: configurations.getByName("runtimeClasspath")
@@ -108,6 +157,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 }
 
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
 // Ensure Java compilation depends on Kotlin and can resolve Kotlin classes
 tasks.named('compileJava', JavaCompile) {
     dependsOn tasks.named('compileKotlin')
@@ -134,8 +187,8 @@ afterEvaluate {
                     alias: "gtokey",
                     storetype: "jks",
                     keystore: "keystore.jks",
-                    storepass: System.getenv('GTO_STOREPASS'),
-                    keypass: System.getenv('GTO_KEYPASS'),
+                    storepass: localEnv('GTO_STOREPASS'),
+                    keypass: localEnv('GTO_KEYPASS'),
                     preservelastmodified: "true",
                     tsaurl: "http://timestamp.sectigo.com?td=sha256",
             )
@@ -159,8 +212,8 @@ afterEvaluate {
                         alias: "gtokey",
                         storetype: "jks",
                         keystore: "keystore.jks",
-                        storepass: System.getenv('GTO_STOREPASS'),
-                        keypass: System.getenv('GTO_KEYPASS'),
+                        storepass: localEnv('GTO_STOREPASS'),
+                        keypass: localEnv('GTO_KEYPASS'),
                         preservelastmodified: "true",
                         tsaurl: "http://timestamp.sectigo.com?td=sha256",
                 )
@@ -224,4 +277,7 @@ gtoPublish {
     githubRepo        = 'owner/repo-name'      // GitHub 仓库（启用 GitHub 发布时必填）
     curseforgeProjectId   = '123456'    // CurseForge 项目 ID（启用 CurseForge 时必填）
     curseforgeJavaVersion = 'Java 21'   // 运行时最低 Java（GTCEu 等依赖要求 21+；开发机可用 Java 25）
+}
+kapt {
+    keepJavacAnnotationProcessors = true
 }

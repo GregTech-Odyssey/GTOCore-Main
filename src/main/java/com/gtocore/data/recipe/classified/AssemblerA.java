@@ -2,9 +2,12 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
+import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.common.data.machines.MultiBlockH;
+import com.gtocore.common.pipe.muffler.MufflerPipeType;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -30,6 +33,7 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+import static com.gtocore.data.techtree.BaseNodes.*;
 
 final class AssemblerA {
 
@@ -989,6 +993,222 @@ final class AssemblerA {
                 .inputFluids(GTMaterials.DistilledWater, 1000)
                 .EUt(480)
                 .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("intelligent_scanning_me_proxy")
+                .inputItems("gtceu:me_pattern_buffer_proxy")
+                .inputItems(GTOTagPrefix.NANITES, GTMaterials.Naquadah)
+                .inputItems(GTItems.EMITTER_UHV)
+                .inputItems(GTItems.SENSOR_UHV)
+                .outputItems(ExResearchMachines.INTELLIGENT_SCANNING_ME_PROXY)
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .EUt(24576)
+                .researchNode(ScannerInnovation)
+                .duration(700)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("normal_muffler_pipe")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel, 6)
+                .inputItems(TagPrefix.rotor, GTMaterials.Steel)
+                .outputItems(GTOBlocks.MUFFLER_PIPES[MufflerPipeType.NORMAL.ordinal()], 2)
+                .circuitMeta(18)
+                .EUt(30)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("exhaust_fan")
+                .inputItems(GTBlocks.MACHINE_CASING_ULV.asItem())
+                .inputItems(TagPrefix.rotor, GTMaterials.Steel, 4)
+                .inputItems(GTOItems.AIR_VENT, 4)
+                .outputItems(GTOMachines.EXHAUST_FAN.asItem())
+                .circuitMeta(18)
+                .EUt(30)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("fermi_energy_gap_transition_glass")
+                .inputItems(GTOBlocks.PLASMA_FIELD_GLASS.asItem())
+                .inputItems(GTOBlocks.QUANTUM_GLASS.asItem())
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Astrium, 4)
+                .inputItems(GTOTagPrefix.MXene, GTOMaterials.SiliconNitrideCeramic, 4)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.Enderite, 16)
+                .outputItems(GTOBlocks.FERMI_ENERGY_GAP_TRANSITION_GLASS.asItem())
+                .inputFluids(GTOMaterials.UltraHighPuritySilicon, 1000)
+                .EUt(4100000)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("coprocessor_computing_casing")
+                .inputItems(GTBlocks.ADVANCED_COMPUTER_CASING.asItem())
+                .inputItems("gtceu:high_performance_computation_array")
+                .inputItems(GTOItems.OPTICAL_PROCESSING_CORE, 16)
+                .inputItems(GTOItems.MACHINING_CONTROL_MODULE_MK3, 8)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UHV, 2)
+                .inputItems(GTItems.COVER_SCREEN, 8)
+                .outputItems(GTOBlocks.COPROCESSOR_COMPUTING_CASING.asItem())
+                .inputFluids(GTMaterials.Indium, 5760)
+                .EUt(30720)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("adjustable_semi_reflector")
+                .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
+                .inputItems(TagPrefix.plate, GTMaterials.Germanium, 6)
+                .inputItems(TagPrefix.plate, GTOMaterials.QuartzFiberReinforcedSilica, 6)
+                .inputItems(GTOItems.NON_LINEAR_OPTICAL_LENS, 8)
+                .inputItems(GTOTagPrefix.FIBER_MESH, GTOMaterials.NanoScaleSiliconCarbide, 8)
+                .inputItems(TagPrefix.wireFine, GTMaterials.Iridium, 32)
+                .outputItems(GTOMachines.ADJUSTABLE_SEMI_REFLECTOR.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 1152)
+                .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(768)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("ray_beam_polarizer")
+                .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
+                .inputItems(GTItems.FLUID_CELL, 2)
+                .inputItems(GTBlocks.FUSION_GLASS.asItem(), 4)
+                .inputItems(TagPrefix.rotor, GTMaterials.Darmstadtium, 2)
+                .inputItems(TagPrefix.rotor, GTMaterials.Neutronium, 2)
+                .inputItems(GTItems.COVER_FLUID_DETECTOR_ADVANCED, 4)
+                .outputItems(GTOMachines.RAY_BEAM_POLARIZER.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 1152)
+                .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(768)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("beam_redirector")
+                .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
+                .inputItems(GTItems.ELECTRIC_MOTOR_UHV, 2)
+                .inputItems(TagPrefix.spring, GTMaterials.Neutronium)
+                .inputItems(GTItems.SENSOR_UV, 2)
+                .inputItems(GTOItems.HIGHLY_REFLECTIVE_MIRROR, 8)
+                .outputItems(GTOMachines.BEAM_REDIRECTOR.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 1152)
+                .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(768)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("excitation_crystal")
+                .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
+                .inputItems(GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem(), 2)
+                .inputItems(TagPrefix.gemExquisite, GTMaterials.Amethyst, 64)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.PhotonicKristallite)
+                .inputItems(GTOTagPrefix.MXene, GTOMaterials.TungstenTetraborideCeramics, 16)
+                .inputItems(GTOItems.HIGHLY_REFLECTIVE_MIRROR, 8)
+                .outputItems(GTOMachines.EXCITATION_CRYSTAL.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 1152)
+                .EUt(7680)
+                .researchNode(ExcitationCrystalLaser)
+                .duration(768)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("connecting_rod_hatch")
+                .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.ZPM].asItem())
+                .inputItems(GTOItems.SMD_DIODE_BIOWARE, 4)
+                .inputItems(GTOItems.SMD_CAPACITOR_BIOWARE, 4)
+                .inputItems(TagPrefix.frameGt, GTMaterials.Tritanium, 2)
+                .outputItems(GTOMachines.CONNECTING_ROD_HATCH.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 4000)
+                .EUt(420)
+                .duration(420)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("tissue_sensor")
+                .inputItems(GTMachines.HULL[GTValues.ZPM].asItem())
+                .inputItems(GTItems.COVER_ACTIVITY_DETECTOR_ADVANCED, 2)
+                .inputItems(GTOItems.ELECTRICALY_WIRED_PETRI_DISH, 4)
+                .inputItems(GTItems.COVER_FLUID_DETECTOR_ADVANCED, 2)
+                .outputItems(GTOMachines.TISSUE_SENSOR.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 4000)
+                .EUt(420)
+                .duration(420)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("neutron_irradiation_chamber")
+                .inputItems(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asItem())
+                .inputItems(GTItems.NEUTRON_REFLECTOR, 8)
+                .inputItems(GTItems.EMITTER_LuV, 4)
+                .inputItems(GTOItems.HUI_CIRCUIT_1, 4)
+                .inputItems(TagPrefix.frameGt, GTOMaterials.BabbittAlloy, 4)
+                .inputItems(GTOTagPrefix.TARGET_BASE, GTMaterials.StainlessSteel, 8)
+                .inputItems(GTItems.TOOL_DATA_STICK, 2)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.ReactorSteel, 8)
+                .inputItems(TagPrefix.wireGtQuadruple, GTMaterials.IndiumTinBariumTitaniumCuprate, 8)
+                .outputItems(MultiBlockH.NEUTRON_IRRADIATION_CHAMBER.asItem())
+                .inputFluids(GTMaterials.StainlessSteel, 1296)
+                .EUt(32000)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("advanced_cooler")
+                .inputItems(GTOMachines.COOLER.asItem())
+                .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.StainlessSteel, 8)
+                .inputItems(GTItems.FLUID_CELL_LARGE_ALUMINIUM, 4)
+                .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.Aluminium, 8)
+                .inputItems(GTItems.ELECTRIC_PUMP_MV, 2)
+                .outputItems(GTOMachines.ADVANCED_COOLER.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 576)
+                .EUt(30)
+                .duration(250)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("data_export_machine")
+                .inputItems(GTMachines.SCANNER[GTValues.IV].asItem())
+                .inputItems(TagPrefix.plate, GTMaterials.Polyethylene, 32)
+                .inputItems(AEItems.CALCULATION_PROCESSOR_PRINT.asItem())
+                .inputItems(TagPrefix.rod, GTMaterials.Ruridit)
+                .outputItems(GTOMachines.DATA_EXPORT_MACHINE.asItem())
+                .EUt(300)
+                .inputFluids(GTMaterials.Lubricant, 1000)
+                .duration(300)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("data_form_testing_me_interface")
+                .inputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH)
+                .inputItems(GTOBlocks.T4_ME_STORAGE_CORE.asItem(), 4)
+                .inputItems(GTItems.EMITTER_ZPM)
+                .inputItems(TagPrefix.wireGtSingle, GTMaterials.Europium, 4)
+                .outputItems(ExResearchMachines.DATA_FORM_TESTING_ME_INTERFACE)
+                .inputFluids(GTMaterials.SolderingAlloy, 2880)
+                .EUt(420)
+                .researchNode(DataStorageIteration)
+                .duration(300)
+                .save();
+        ASSEMBLER_RECIPES.builder("virtual_fluid_provider")
+                .inputItems(CustomTags.MV_CIRCUITS)
+                .inputItems(GTOBlocks.CHEMICAL_GRADE_GLASS.asItem())
+                .inputItems(TagPrefix.foil, GTMaterials.Polytetrafluoroethylene, 8)
+                .outputItems("gtmthings:virtual_fluid_provider")
+                .EUt(480)
+                .duration(200)
+                .save();
+        ASSEMBLER_RECIPES.builder("anti_entropy_computer_condensation_matrix")
+                .inputItems(GTOBlocks.GRAVITON_COMPUTER_CASING.asItem())
+                .inputItems(GTOItems.GRAVITON_TRANSDUCER)
+                .inputItems(GTItems.ELECTRIC_MOTOR_UXV, 4)
+                .inputItems(GTOItems.CONTAINED_EXOTIC_MATTER, 64)
+                .inputItems(GTOItems.RECURSIVELY_FOLDED_NEGATIVE_SPACE)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.BlackDwarfMatter, 4)
+                .inputItems(TagPrefix.pipeTinyFluid, GTOMaterials.HeavyQuarkDegenerateMatter, 16)
+                .outputItems(GTOBlocks.ANTI_ENTROPY_COMPUTER_CONDENSATION_MATRIX.asItem())
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1440)
+                .EUt(16000000)
+                .duration(600)
+                .save();
+        ASSEMBLER_RECIPES.builder("antimatter_containment_casing")
+                .inputItems(GTOBlocks.DRACONIUM_BOROSILICATE_GLASS.asItem())
+                .inputItems(TagPrefix.frameGt, GTOMaterials.BlackTitanium)
+                .inputItems(GTOItems.VOID_MATTER)
+                .inputItems(GTOItems.PELLET_ANTIMATTER)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.Adamantine, 8)
+                .outputItems(GTOBlocks.ANTIMATTER_CONTAINMENT_CASING.asItem())
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 14000)
+                .EUt(16000000)
+                .duration(600)
                 .save();
     }
 }

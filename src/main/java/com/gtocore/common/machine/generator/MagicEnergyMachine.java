@@ -31,7 +31,7 @@ public final class MagicEnergyMachine extends TieredEnergyMachine implements IMa
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean enabled;
 
     private final long tierMana;

@@ -58,7 +58,7 @@ public final class MEManaInterface extends MetaMachine implements
     @Getter
     @Setter
     private boolean isOnline;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @Getter
     private int priority = 0;
 

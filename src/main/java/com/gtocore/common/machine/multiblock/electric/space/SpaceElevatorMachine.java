@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.SpaceElevatorConnectorModule;
 import com.gtocore.data.IdleReason;
 
+import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.data.GTODimensions;
@@ -37,12 +38,14 @@ import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import earth.terrarium.adastra.common.menus.base.PlanetsMenuProvider;
 import earth.terrarium.botarium.common.menu.MenuHooks;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @DataGeneratorScanned
 public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder {
@@ -57,7 +60,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @SyncToClient
     protected double high;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     protected int spoolCount;
     protected int moduleCount;
@@ -65,6 +68,8 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Getter
     @Setter
     SpaceElevatorConnectorModule netMachineCache;
+
+    final Set<SpaceElevatorDataModuleMachine> dataModules = new ReferenceOpenHashSet<>();
 
     protected void update() {
         if (getOffsetTimer() % 80 == 0) {
@@ -114,12 +119,25 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     public void onStructureInvalid() {
         super.onStructureInvalid();
         removeNetMachineCache();
+        dataModules.clear();
+    }
+
+    @Override
+    public boolean hasBatchConfig() {
+        return false;
     }
 
     @Override
     public void onUnload() {
         super.onUnload();
         removeNetMachineCache();
+        dataModules.clear();
+    }
+
+    void addModuleWorks(long works) {
+        for (var module : dataModules) {
+            module.addModuleWorks(works);
+        }
     }
 
     @Override
@@ -226,7 +244,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (getTier() > GTValues.ZPM) {
-            var exCWUt = netMachineCache == null ? 1.0 : 1.5;
+            var exCWUt = netMachineCache == null ? 1.0 : 1.5 * GTOCore.difficulty;
             return getRecipeBuilder().duration(400).CWUt((int) (128 * (getTier() - GTValues.ZPM) * exCWUt)).EUt(GTValues.VA[getTier()]).build();
         } else {
             setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES);

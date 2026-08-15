@@ -45,7 +45,7 @@ public final class BallHatchPartMachine extends WorkableItemPartMachine implemen
         GRINDBALL = grindball.build();
     }
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient(notifyUpdate = true)
     private boolean isWorking;
 

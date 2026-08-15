@@ -38,6 +38,8 @@ import appeng.util.ConfigInventory;
 import appeng.util.inv.AppEngInternalInventory;
 
 import com.glodblock.github.extendedae.common.tileentities.matrix.TileAssemblerMatrixPattern;
+import com.gto.fastcollection.OpenCacheHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -223,14 +225,14 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     private List<IExtendedPatternContainer> gto$getPatternContainers(String recipeLocName) {
         var gridNode = getActionHost().getActionableNode();
         if (gridNode == null) {
-            return List.of();
+            return Collections.emptyList();
         }
         var grid = gridNode.getGrid();
         if (grid == null) {
-            return List.of();
+            return Collections.emptyList();
         }
         var stack = gto$patternStack;
-        if (stack == null) return List.of();
+        if (stack == null) return Collections.emptyList();
         ArrayList<IExtendedPatternContainer> machines = new ArrayList<>(grid.size() / 2 + 1);
         for (var machineClass : grid.getMachineClasses()) {
             if (IExtendedPatternContainer.class.isAssignableFrom(machineClass)) {
@@ -238,9 +240,9 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
             }
         }
         var thisPatternDetails = AEPatternDecoder.INSTANCE.decodePattern(stack, getPlayer().level(), false);
-        if (thisPatternDetails == null) return List.of();
+        if (thisPatternDetails == null) return Collections.emptyList();
         var primaryOutput = thisPatternDetails.getPrimaryOutput().what();
-        Set<Object> sameCluster = new HashSet<>();
+        Set<Object> sameCluster = new OpenCacheHashSet<>();
 
         machines.removeIf(container -> gto$shouldRemoveContainer(container, stack, primaryOutput, sameCluster));
         var containerComparator = (gto$isCraft ? gto$craftFirst(stack) : gto$recipeFirst(gto$lastRecipeType, recipeLocName, stack)).reversed();
@@ -270,7 +272,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
 
     @Unique
     private static boolean gto$matchesRecipeName(IExtendedPatternContainer container, String recipeType) {
-        var recipeNames = new LinkedHashSet<String>();
+        var recipeNames = new ObjectLinkedOpenHashSet<String>();
         recipeNames.add(recipeType.toLowerCase(Locale.ROOT));
         var name = container.gto$getTerminalGroupSearchName().getString().toLowerCase(Locale.ROOT);
         for (var recipeName : recipeNames) {

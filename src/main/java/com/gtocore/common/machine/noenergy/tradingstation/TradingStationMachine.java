@@ -114,7 +114,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private UUID teamUUID;
 
     /** 交易信息 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int groupSelected = 0;
     private int shopSelected = -1;
@@ -802,16 +802,16 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     // ********* 自动输出实现 ********* //
     /////////////////////////////////////
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "DOWN")
     @SyncToClient(notifyUpdate = true)
     private Direction outputFacingItems = Direction.DOWN;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "DOWN")
     @SyncToClient(notifyUpdate = true)
     private Direction outputFacingFluids = Direction.DOWN;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient(notifyUpdate = true)
     private boolean autoOutputItems = false;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient(notifyUpdate = true)
     private boolean autoOutputFluids = false;
     @Nullable
@@ -941,7 +941,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     // ********** 是否运行中 ********** //
     /////////////////////////////////////
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean working = false;
 
     @Override

@@ -48,10 +48,10 @@ public final class AbsoluteBaryonicPerfectionPurificationUnitMachine extends Wat
     @SyncToClient
     private Item catalyst2;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean successful;
 
     @SaveToDisk

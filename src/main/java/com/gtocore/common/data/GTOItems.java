@@ -104,6 +104,11 @@ public final class GTOItems {
                     .onRegister(attach(new TesterBehaviour()))
                     .model(NonNullBiConsumer.noop())
                     .register();
+            item("techtree_debugger", "科技树调试器", ComponentItem::create)
+                    .toolTips(ComponentBuilder.create().addLines("§7在写了~~§r", "§7On working~~§r").build().getArray())
+                    .onRegister(attach(new TechTreeViewer()))
+                    .model((a, b) -> b.generated(a, GTOCore.id("item/stopgap_measures")))
+                    .register();
         }
     }
 
@@ -444,11 +449,11 @@ public final class GTOItems {
     public static final ItemEntry<Item> DATA_CRYSTAL_COMPONENT_MK4 = registerLang("data_crystal_component_mk4", "Data Crystal Component MK IV", "数据晶片组件 MK IV");
     public static final ItemEntry<Item> DATA_CRYSTAL_COMPONENT_MK5 = registerLang("data_crystal_component_mk5", "Data Crystal Component MK V", "数据晶片组件 MK V");
 
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK1 = item("data_crystal_mk1", "数据晶片 MK I", DataCrystalItem::new).lang("Data Crystal MK I").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK2 = item("data_crystal_mk2", "数据晶片 MK II", DataCrystalItem::new).lang("Data Crystal MK II").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK3 = item("data_crystal_mk3", "数据晶片 MK III", DataCrystalItem::new).lang("Data Crystal MK III").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK4 = item("data_crystal_mk4", "数据晶片 MK IV", DataCrystalItem::new).lang("Data Crystal MK IV").register();
-    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK5 = item("data_crystal_mk5", "数据晶片 MK V", DataCrystalItem::new).lang("Data Crystal MK V").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK1 = item("data_crystal_mk1", "数据晶片 MK I", p -> new DataCrystalItem(p, 1)).lang("Data Crystal MK I").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK2 = item("data_crystal_mk2", "数据晶片 MK II", p -> new DataCrystalItem(p, 2)).lang("Data Crystal MK II").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK3 = item("data_crystal_mk3", "数据晶片 MK III", p -> new DataCrystalItem(p, 3)).lang("Data Crystal MK III").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK4 = item("data_crystal_mk4", "数据晶片 MK IV", p -> new DataCrystalItem(p, 4)).lang("Data Crystal MK IV").register();
+    public static final ItemEntry<DataCrystalItem> DATA_CRYSTAL_MK5 = item("data_crystal_mk5", "数据晶片 MK V", p -> new DataCrystalItem(p, 5)).lang("Data Crystal MK V").register();
 
     public static final ItemEntry<KineticRotorItem> WOOD_ROTOR = registerRotor("wood_kinetic_rotor", "木", 2400, 4, 10, 0);
     public static final ItemEntry<KineticRotorItem> IRON_ROTOR = registerRotor("iron_kinetic_rotor", "铁", 14000, 10, 20, 1);
@@ -942,6 +947,17 @@ public final class GTOItems {
     public static final ItemEntry<Item> SPOOLS_LARGE = register("spools_large", "大型线轴");
     public static final ItemEntry<Item> SPOOLS_JUMBO = register("spools_jumbo", "巨型线轴");
 
+    // 生物心肌细胞簇
+    public static final ItemEntry<Item> BIO_CARDIOMYOCYTE_CLUSTER = register("bio_cardiomyocyte_cluster", "生物心肌细胞簇");
+    // 突变心肌细胞簇
+    public static final ItemEntry<Item> MUTANT_CARDIOMYOCYTE_CLUSTER = register("mutant_cardiomyocyte_cluster", "突变心肌细胞簇");
+    // 龙心肌细胞簇
+    public static final ItemEntry<Item> DRAGON_CARDIOMYOCYTE_CLUSTER = register("dragon_cardiomyocyte_cluster", "龙心肌细胞簇");
+    // 改造龙心
+    public static final ItemEntry<Item> MODIFIED_DRAGON_HEART = register("modified_dragon_heart", "改造龙心");
+    // 觉醒龙心
+    public static final ItemEntry<Item> AWAKENED_DRAGON_HEART = register("awakened_dragon_heart", "觉醒龙心");
+
     public static final ItemEntry<Item> COLORFUL_MYSTICAL_FLOWER = register("colorful_mystical_flower", "多彩神秘花瓣");
     public static final ItemEntry<Item> GAIA_CORE = register("gaia_core", "§e盖亚之核");
     public static final ItemEntry<Item> UNSTABLE_GAIA_SOUL = item("unstable_gaia_soul", "不稳定的盖亚之魂").properties(p -> p.rarity(Rarity.UNCOMMON)).register();
@@ -1375,7 +1391,7 @@ public final class GTOItems {
             .register();
 
     // TODO 所有带有此物品的配方都是临时配方，后续会随时被删除
-    public static final ItemEntry<Item> STOPGAP_MEASURES = item("stopgap_measures", "权宜之计")
+    public static final ItemEntry<ComponentItem> STOPGAP_MEASURES = item("stopgap_measures", "权宜之计", ComponentItem::create)
             .toolTips(ComponentBuilder.create().addLines("§7在写了~~§r", "§7On working~~§r").build().getArray())
             .register();
 

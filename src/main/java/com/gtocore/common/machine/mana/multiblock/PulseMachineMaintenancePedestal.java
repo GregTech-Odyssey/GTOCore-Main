@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -60,7 +61,7 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
 
     private final Reference2ObjectMap<MetaMachine, Runnable> problems = new Reference2ObjectOpenHashMap<>();
     private PulseMachineMaintenanceCore core;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int totalResolvedProblems = 0;
 
     public PulseMachineMaintenancePedestal(MetaMachineBlockEntity holder) {
@@ -69,7 +70,7 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
 
     @Override
     public List<DroneHatchPartMachine> getDroneHatchPartMachine() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override

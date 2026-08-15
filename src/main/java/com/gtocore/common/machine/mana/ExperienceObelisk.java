@@ -61,14 +61,14 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
 
     @SaveToDisk
     private final NotifiableFluidTank experienceTank;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @Getter
     private int currentConfigAmount = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @Getter
     private boolean isConfiguringLevels = false;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @Getter
     private boolean vacuumHopperMode = false;
     private final ConditionalSubscriptionHandler tickSubs;

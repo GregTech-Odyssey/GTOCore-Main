@@ -9,7 +9,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import com.gto.fastcollection.O2IOpenCacheHashMap;
 import com.gto.fastcollection.O2OOpenCacheHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +52,8 @@ public class RecipeRunLimitSavaedData extends SavedData {
         ListTag uuid = new ListTag();
         for (Map.Entry<UUID, Object2IntOpenHashMap<ResourceLocation>> uuidEntry : recipeRunLimit.entrySet()) {
             ListTag list = new ListTag();
-            for (Object2IntMap.Entry<ResourceLocation> recipeEntry : uuidEntry.getValue().object2IntEntrySet()) {
+            for (var it = uuidEntry.getValue().object2IntEntrySet().fastIterator(); it.hasNext();) {
+                var recipeEntry = it.next();
                 CompoundTag id = new CompoundTag();
                 id.putString("i", recipeEntry.getKey().toString());
                 id.putInt("c", recipeEntry.getIntValue());

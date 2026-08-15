@@ -1,9 +1,8 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.api.data.NeutronSeries;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
-import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
@@ -13,9 +12,6 @@ import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
@@ -27,27 +23,23 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.material.Fluid;
 
-import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 
 public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine implements IStorageMultiblock, IExplosionMachine {
 
     @SaveToDisk
     private final NotifiableItemStackHandler machineStorage;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "298")
     private float temperature = 298;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private double neutronFluxkeV = 0;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private double recipeHeat = 0;
     private SensorPartMachine sensorMachineTemp;
     private SensorPartMachine sensorNeutronFlux;
@@ -188,7 +180,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
         if (isFormed()) {
 
             fastForEachItems(true, (stack, amount) -> {
-                var neutron_sources = Wrapper.NEUTRON_SOURCES.get(stack.getItem());
+                var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(stack.getItem());
                 if (neutron_sources != null) {
                     neutronFluxkeV += (long) neutron_sources * amount;
                     inputItem(stack.getItem(), amount);
@@ -203,7 +195,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
             temperature += (float) recipeHeat;
             fastForEachFluids(true, (stack, amount) -> {
                 var fluid = stack.getFluid();
-                var coolants = Wrapper.COOLANTS.get(fluid);
+                var coolants = NeutronSeries.COOLANTS.get(fluid);
                 if (coolants != null && temperature > 298) {
                     long processAmount = Math.min((long) Math.ceil((temperature - 298f) / coolants), amount);
                     temperature -= processAmount * coolants;
@@ -212,7 +204,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
                     if (fluid == GTMaterials.DistilledWater.getFluid()) {
                         outputAmount = outputAmount * 160L;
                     }
-                    outputFluid(Wrapper.COOLANT_OUTPUTS.get(fluid), outputAmount);
+                    outputFluid(NeutronSeries.COOLANT_OUTPUTS.get(fluid), outputAmount);
                 }
             });
             temperature = Math.max(298, temperature);
@@ -244,33 +236,6 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
             }
             GTOUtils.fastRemoveBlock(level, machine.getPos(), false, false);
             doExplosion(20);
-        }
-    }
-
-    private static class Wrapper {
-
-        private static final Map<Item, Integer> NEUTRON_SOURCES;
-        private static final Map<Fluid, Integer> COOLANTS;
-        private static final Map<Fluid, Fluid> COOLANT_OUTPUTS;
-        static {
-            ImmutableMap.Builder<Item, Integer> builder = ImmutableMap.builder();
-            builder.put(ChemicalHelper.get(TagPrefix.dust, GTMaterials.Graphite).getItem(), -1000);
-            builder.put(ChemicalHelper.get(TagPrefix.dustSmall, GTMaterials.Graphite).getItem(), -250);
-            builder.put(ChemicalHelper.get(TagPrefix.dustTiny, GTMaterials.Graphite).getItem(), -100);
-            builder.put(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.AntinomyBerylliumSource).getItem(), 10);
-            builder.put(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.PlutoniumBerylliumSource).getItem(), 100);
-            builder.put(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.Californium252Source).getItem(), 1000);
-            NEUTRON_SOURCES = builder.build();
-            ImmutableMap.Builder<Fluid, Integer> builder1 = ImmutableMap.builder();
-            builder1.put(GTMaterials.Helium.getFluid(FluidStorageKeys.LIQUID), 80);
-            builder1.put(GTOMaterials.LiquidNitrogen.getFluid(), 4);
-            builder1.put(GTMaterials.DistilledWater.getFluid(), 1);
-            COOLANTS = builder1.build();
-            ImmutableMap.Builder<Fluid, Fluid> builder2 = ImmutableMap.builder();
-            builder2.put(GTMaterials.Helium.getFluid(FluidStorageKeys.LIQUID), GTMaterials.Helium.getFluid(FluidStorageKeys.GAS));
-            builder2.put(GTOMaterials.LiquidNitrogen.getFluid(), GTMaterials.Nitrogen.getFluid());
-            builder2.put(GTMaterials.DistilledWater.getFluid(), GTMaterials.Steam.getFluid());
-            COOLANT_OUTPUTS = builder2.build();
         }
     }
 }

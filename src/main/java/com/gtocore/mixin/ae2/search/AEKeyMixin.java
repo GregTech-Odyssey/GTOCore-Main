@@ -1,6 +1,9 @@
 package com.gtocore.mixin.ae2.search;
 
-import com.gtocore.integration.ae.hooks.IMoreLangCache;
+import com.gtocore.integration.ae.hooks.IAEKeyExtension;
+
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.network.chat.Component;
 
@@ -15,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Mixin(value = AEKey.class, remap = false)
-public abstract class AEKeyMixin implements IMoreLangCache {
+public abstract class AEKeyMixin implements IAEKeyExtension {
 
     @Shadow
     public abstract Component getDisplayName();
@@ -30,5 +33,10 @@ public abstract class AEKeyMixin implements IMoreLangCache {
             Component base = this.getDisplayName();
             return ComponentTranslator.translateComponent(base, code).getString().toLowerCase();
         });
+    }
+
+    @Override
+    public Material getGtocore$material() {
+        return GTMaterials.NULL;
     }
 }

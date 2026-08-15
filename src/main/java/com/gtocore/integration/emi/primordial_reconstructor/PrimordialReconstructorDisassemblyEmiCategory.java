@@ -39,6 +39,7 @@ import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemRegistry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -118,7 +119,7 @@ public final class PrimordialReconstructorDisassemblyEmiCategory extends EmiReci
 
         @Override
         public List<EmiIngredient> getCatalysts() {
-            return List.of();
+            return Collections.emptyList();
         }
 
         @Override

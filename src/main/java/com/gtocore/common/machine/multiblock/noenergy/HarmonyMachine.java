@@ -37,15 +37,15 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     private static final Fluid HYDROGEN = GTMaterials.Hydrogen.getFluid();
     private static final Fluid HELIUM = GTMaterials.Helium.getFluid();
     private WirelessEnergyContainer WirelessEnergyContainerCache;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int tier = 1;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int count;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int oc;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long hydrogen;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long helium;
     private final ConditionalSubscriptionHandler tickSubs;
 

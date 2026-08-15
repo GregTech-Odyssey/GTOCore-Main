@@ -714,5 +714,31 @@ public final class MaterialC {
                 .color(0x8B00FF)
                 .iconSet(FLUID)
                 .buildAndRegister();
+
+        EssenceMediumRaw = material("essence_medium_raw", "精华培养基原液")
+                .fluid()
+                .color(0x35b9a6)
+                .iconSet(FLUID)
+                .buildAndRegister();
+        DragonSoulMediumRaw = material("dragon_soul_medium_raw", "龙魂培养基原液")
+                .fluid()
+                .color(0xdf3cd0)
+                .iconSet(FLUID)
+                .buildAndRegister();
+        SoulInfusionSolvent = material("soul_infusion_solvent", "灵魂灌注溶剂")
+                .fluid()
+                .color(0x7c3c7f)
+                .iconSet(FLUID)
+                .buildAndRegister();
+        WyvernInfusionSolvent = material("wyvern_infusion_solvent", "飞龙灌注溶剂")
+                .fluid()
+                .color(0xef9cf0)
+                .iconSet(FLUID)
+                .buildAndRegister();
+        DraconicInfusionSolvent = material("draconic_infusion_solvent", "神龙灌注溶剂")
+                .fluid()
+                .color(0xefcf9c)
+                .iconSet(FLUID)
+                .buildAndRegister();
     }
 }

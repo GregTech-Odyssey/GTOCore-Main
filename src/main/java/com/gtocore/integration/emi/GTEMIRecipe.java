@@ -1,5 +1,8 @@
 package com.gtocore.integration.emi;
 
+import com.gtocore.api.research.recipe.ResearchPointsRecipeExtion;
+import com.gtocore.integration.emi.research.ResearchTagEmiStack;
+
 import com.gtolib.api.recipe.ContentBuilder;
 
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -250,6 +253,17 @@ public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
                             super.outputs.add((EmiStack) getEmiIngredient(ingredient, false));
                         }
                     }
+                }
+            }
+        }
+        if (recipe.data.containsKey(ResearchPointsRecipeExtion.INSTANCE)) {
+            var points = recipe.data.getData(ResearchPointsRecipeExtion.INSTANCE);
+            if (points != null) {
+                for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                    var entry = it.next();
+                    var researchTag = entry.getKey();
+                    var amount = entry.getLongValue();
+                    super.outputs.add(new ResearchTagEmiStack(researchTag).setAmount(amount));
                 }
             }
         }

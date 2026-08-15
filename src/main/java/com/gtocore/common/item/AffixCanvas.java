@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -72,10 +73,10 @@ public class AffixCanvas extends ComponentItem {
      */
     public static List<ResourceLocation> readAffixes(ItemStack stack) {
         CompoundTag tag = stack.getTag();
-        if (tag == null || !tag.contains(AFFIX_LIST_KEY, Tag.TAG_LIST)) return List.of();
+        if (tag == null || !tag.contains(AFFIX_LIST_KEY, Tag.TAG_LIST)) return Collections.emptyList();
 
         ListTag affixList = tag.getList(AFFIX_LIST_KEY, Tag.TAG_COMPOUND);
-        if (affixList.isEmpty()) return List.of();
+        if (affixList.isEmpty()) return Collections.emptyList();
 
         List<ResourceLocation> affixes = new ArrayList<>(affixList.size());
         for (int i = 0; i < affixList.size(); i++) {

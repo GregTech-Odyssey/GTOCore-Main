@@ -26,7 +26,7 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
 
     private ResourceKey<Level> dimension;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean use;
 
     public SpaceProbeSurfaceReceptionMachine(MetaMachineBlockEntity holder) {

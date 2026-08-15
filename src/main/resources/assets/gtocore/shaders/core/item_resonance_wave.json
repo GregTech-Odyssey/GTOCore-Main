@@ -40,6 +40,12 @@
       "count": 2,
       "values": [0.0, 0.0]
     },
+    {
+      "name": "useLocalMaskUv",
+      "type": "float",
+      "count": 1,
+      "values": [0.0]
+    },
     { "name": "time", "type": "float", "count": 1, "values": [0.0] },
     {
       "name": "resolution",

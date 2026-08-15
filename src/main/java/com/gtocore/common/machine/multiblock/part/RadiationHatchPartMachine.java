@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gtocore.api.machine.part.IRadiationHatch;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gtolib.api.recipe.RecipeHelper;
@@ -16,8 +17,11 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
@@ -30,23 +34,25 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class RadiationHatchPartMachine extends MultiblockPartMachine implements IMachineLife {
+public final class RadiationHatchPartMachine extends MultiblockPartMachine implements IMachineLife, IRadiationHatch {
 
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int radioactivity;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int initialRadioactivity;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int count;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int time;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int inhibitionDose;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int initialTime;
+    @SaveToDisk(defaultValue = "false")
+    private boolean signalPowered;
 
     private TickableSubscription radiationSubs;
     private final RecipeHandlerUnit handlerList;
@@ -129,5 +135,23 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     @Override
     public boolean canShared() {
         return false;
+    }
+
+    @Override
+    public boolean canConnectRedstone(Direction side) {
+        return true;
+    }
+
+    @Override
+    public void onNeighborChanged(Block block, BlockPos fromPos, boolean isMoving) {
+        super.onNeighborChanged(block, fromPos, isMoving);
+        if (getLevel().hasNeighborSignal(fromPos) && !signalPowered) {
+            initialRadioactivity = 0;
+            time = 0;
+            radioactivity = 0;
+            signalPowered = true;
+        } else if (!getLevel().hasNeighborSignal(fromPos)) {
+            signalPowered = false;
+        }
     }
 }

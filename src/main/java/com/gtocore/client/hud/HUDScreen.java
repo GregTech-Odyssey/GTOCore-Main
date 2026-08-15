@@ -1,5 +1,7 @@
 package com.gtocore.client.hud;
 
+import com.gtocore.utils.GuiHelper;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -313,7 +315,7 @@ public class HUDScreen extends Screen {
         if (mc == null || mc.getWindow().getScreenWidth() == 0) {
             return 0;
         }
-        return mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+        return GuiHelper.getRealMouseX();
     }
 
     private double getGuiMouseY() {
@@ -321,7 +323,7 @@ public class HUDScreen extends Screen {
         if (mc == null || mc.getWindow().getScreenHeight() == 0) {
             return 0;
         }
-        return mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+        return GuiHelper.getRealMouseY();
     }
 
     private record HudAnchor(int x, int y) {}

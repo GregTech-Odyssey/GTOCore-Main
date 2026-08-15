@@ -1,7 +1,6 @@
 package com.gtocore.api.misc
 
 import com.gtocore.common.data.translation.*
-import com.gtocore.data.recipe.research.AnalyzeData
 
 import kotlin.reflect.KProperty1
 
@@ -14,7 +13,6 @@ open class AutoInitialize<T> {
         MachineSlang.init()
         MultiblockSlang.init()
         GTOTarotArcanumTooltips.init()
-        AnalyzeData.init()
     }
     open fun init() {}
     init {

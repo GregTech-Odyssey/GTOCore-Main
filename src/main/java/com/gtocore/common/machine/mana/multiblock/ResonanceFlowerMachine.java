@@ -10,9 +10,12 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -38,14 +41,14 @@ import static com.lowdragmc.lowdraglib.LDLib.random;
 public class ResonanceFlowerMachine extends ManaMultiblockMachine implements IStorageMultiblock, IDropSaveMachine {
 
     // 时间消耗波动系数
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double timeFluctuationCoefficient = 1.0D;
     // 元素消耗波动系数
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double elementalFluctuationCoefficient = 1.0D;
 
     // 剩余的锚定时间
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int stableTime = 0;
 
     // TODO 使用Map<GTRecipeDefinition, CompoundTag>重写
@@ -54,14 +57,26 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private final List<CompoundTag> recipeIncremental = new ArrayList<>();
     private static final int MAX_SIZE = 10;
     private static final String NBT_KEY_RECIPE_INCREMENTAL = "RecipeIncremental";
+    private static final String NBT_KEY_LAST_RECIPE = "LastRecipe";
+
+    @SaveToDisk(defaultValue = "")
+    private String lastRecipeId = "";
 
     // 额外共鸣输入
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "2147483647")
     private int frequency = Integer.MAX_VALUE;
-    @SaveToDisk
+    @SaveToDisk(defaultValueGetter = "getDefaultResonanceItem")
     private ItemStack resonanceItem = ItemStack.EMPTY;
-    @SaveToDisk
+    @SaveToDisk(defaultValueGetter = "getDefaultResonanceFluid")
     private FluidStack resonanceFluid = FluidStack.EMPTY;
+
+    private ItemStack getDefaultResonanceItem() {
+        return ItemStack.EMPTY;
+    }
+
+    private FluidStack getDefaultResonanceFluid() {
+        return FluidStack.EMPTY;
+    }
 
     @SaveToDisk
     protected final NotifiableItemStackHandler machineStorage;
@@ -86,7 +101,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         resetResonance();
 
         String id = recipe.definition.id.getPath();
-        Object[] tierEffect = getTierEffect("");
+        Object[] tierEffect = getTierEffect(id);
 
         if (recipe.data.containsKey(GTORecipeDataKeys.RESONANCE)) {
             Object[] resonance = fromResonanceTag(recipe.data.getData(GTORecipeDataKeys.RESONANCE));
@@ -106,6 +121,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
 
         addEntry(id, maxContentParallel);
         upgradeEntry(id);
+        lastRecipeId = id;
         updateStableTime();
 
         return ParallelLogic.accurateParallel(this, unit, recipe, maxContentParallel);
@@ -139,9 +155,41 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.resonance_flower.stable_operation_times", stableTime));
-        textList.add(Component.translatable("gtocore.machine.resonance_flower.time_fluctuation_coefficient", String.format("%.6f", timeFluctuationCoefficient)));
-        textList.add(Component.translatable("gtocore.machine.resonance_flower.elemental_fluctuation_coefficient", String.format("%.6f", elementalFluctuationCoefficient)));
+        CompoundTag recipeEntry = getEntryById(lastRecipeId);
+        if (recipeEntry != null) {
+            short tier = recipeEntry.getShort("tier");
+            textList.add(Component.translatable("gtocore.machine.resonance_flower.current_recipe",
+                    getLastRecipeName().copy().withStyle(ChatFormatting.GREEN)));
+            if (tier >= 256) {
+                textList.add(Component.translatable("gtocore.machine.resonance_flower.tier_max",
+                        Component.literal(Short.toString(tier)).withStyle(ChatFormatting.GREEN)));
+            } else {
+                textList.add(Component.translatable("gtocore.machine.resonance_flower.tier_progress",
+                        Component.literal(Short.toString(tier)).withStyle(ChatFormatting.GREEN),
+                        Component.literal(FormattingUtil.formatNumbers(recipeEntry.getLong(KEY_FREQUENCY))).withStyle(ChatFormatting.GREEN),
+                        Component.literal(FormattingUtil.formatNumbers(calculateUpgradeRequirement(tier))).withStyle(ChatFormatting.GREEN)));
+            }
+            textList.add(Component.translatable("gtocore.machine.resonance_flower.tier_effect",
+                    Component.literal(FormattingUtil.formatNumbers(getTimeMultiplier(tier) * 100.0F)).withStyle(ChatFormatting.GREEN),
+                    Component.literal(FormattingUtil.formatNumbers(getMaxParallel(tier))).withStyle(ChatFormatting.GREEN)));
+        }
+        textList.add(Component.translatable("gtocore.machine.resonance_flower.stable_operation_times",
+                Component.literal(Integer.toString(stableTime)).withStyle(ChatFormatting.AQUA)));
+        textList.add(Component.translatable("gtocore.machine.resonance_flower.time_fluctuation_coefficient",
+                Component.literal(String.format("%.3f", timeFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
+        textList.add(Component.translatable("gtocore.machine.resonance_flower.elemental_fluctuation_coefficient",
+                Component.literal(String.format("%.3f", elementalFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
+    }
+
+    private Component getLastRecipeName() {
+        for (GTRecipeDefinition definition : getRecipeType().recipes.values()) {
+            if (lastRecipeId.equals(definition.id.getPath())) {
+                if (!definition.itemOutputs.isEmpty()) return definition.itemOutputs.getFirst().inner.getName();
+                if (!definition.fluidOutputs.isEmpty()) return definition.fluidOutputs.getFirst().inner.getName();
+                break;
+            }
+        }
+        return Component.literal(lastRecipeId);
     }
 
     @Override
@@ -149,6 +197,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         ListTag tagList = new ListTag();
         tagList.addAll(this.recipeIncremental);
         tag.put(NBT_KEY_RECIPE_INCREMENTAL, tagList);
+        if (!lastRecipeId.isEmpty()) tag.putString(NBT_KEY_LAST_RECIPE, lastRecipeId);
     }
 
     @Override
@@ -156,6 +205,9 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         if (tag.contains(NBT_KEY_RECIPE_INCREMENTAL, Tag.TAG_LIST)) {
             ListTag tagList = tag.getList(NBT_KEY_RECIPE_INCREMENTAL, Tag.TAG_COMPOUND);
             tagList.forEach(itemTag -> this.recipeIncremental.add((CompoundTag) itemTag));
+        }
+        if (tag.contains(NBT_KEY_LAST_RECIPE, Tag.TAG_STRING)) {
+            lastRecipeId = tag.getString(NBT_KEY_LAST_RECIPE);
         }
     }
 

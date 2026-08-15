@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.generator;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gtolib.api.machine.impl.part.VoidEnergyHatch;
 import com.gtolib.api.machine.impl.part.WirelessEnergyHatchPartMachine;
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
 
@@ -40,6 +41,9 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
             laser = true;
         } else if (part instanceof EnergyHatchPartMachine || part instanceof WirelessEnergyHatchPartMachine) {
             outputTier = ((ITieredMachine) part).getTier();
+        } else if (part instanceof VoidEnergyHatch voidEnergyHatch) {
+            outputTier = voidEnergyHatch.getSimTier();
+            laser = voidEnergyHatch.isSimLaser();
         }
     }
 

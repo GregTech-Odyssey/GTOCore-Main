@@ -1030,6 +1030,72 @@ final class Vanilla {
         addUpg(GTAEMachines.ME_STORAGE_ACCESS_HATCH.asItem(), GTOItems.STORAGE_ACCESSOR_REPLACER0.asStack());
         addUpg(GTAEMachines.ME_BIG_STORAGE_ACCESS_HATCH.asItem(), GTOItems.STORAGE_ACCESSOR_REPLACER1.asStack());
         addUpg(GTAEMachines.ME_IO_STORAGE_ACCESS_HATCH.asItem(), GTOItems.STORAGE_ACCESSOR_REPLACER2.asStack());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uv_crystal_exciter"), GTOMachines.CRYSTAL_EXCITER[GTValues.UV].asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', CustomTags.UHV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Glowstone), 'C', GTItems.EMITTER_UV.asItem(), 'D', GTMachines.HULL[GTValues.UV].asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uhv_crystal_exciter"), GTOMachines.CRYSTAL_EXCITER[GTValues.UHV].asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', CustomTags.UEV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Iridium), 'C', GTItems.EMITTER_UHV.asItem(), 'D', GTMachines.HULL[GTValues.UHV].asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uev_crystal_exciter"), GTOMachines.CRYSTAL_EXCITER[GTValues.UEV].asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', CustomTags.UIV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Neutronium), 'C', GTItems.EMITTER_UEV.asItem(), 'D', GTMachines.HULL[GTValues.UEV].asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uiv_crystal_exciter"), GTOMachines.CRYSTAL_EXCITER[GTValues.UIV].asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', CustomTags.UXV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTOMaterials.Enderium), 'C', GTItems.EMITTER_UEV.asItem(), 'D', GTMachines.HULL[GTValues.UIV].asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uxv_crystal_exciter"), GTOMachines.CRYSTAL_EXCITER[GTValues.UXV].asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', CustomTags.OpV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTOMaterials.Vibranium), 'C', GTItems.EMITTER_UXV.asItem(), 'D', GTMachines.HULL[GTValues.UXV].asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("opv_crystal_exciter"), GTOMachines.CRYSTAL_EXCITER[GTValues.OpV].asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', CustomTags.MAX_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTOMaterials.Starmetal), 'C', GTItems.EMITTER_OpV.asItem(), 'D', GTMachines.HULL[GTValues.OpV].asItem());
+
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("opv_raybeam_generator"), GTOMachines.BEAM_GENERATOR[GTValues.OpV].asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', CustomTags.MAX_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTOMaterials.Starmetal), 'C', GTItems.EMITTER_OpV.asItem(), 'D', GTMachines.HULL[GTValues.OpV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTOMaterials.Draconium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uxv_raybeam_generator"), GTOMachines.BEAM_GENERATOR[GTValues.UXV].asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', CustomTags.OpV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTOMaterials.Vibranium), 'C', GTItems.EMITTER_UXV.asItem(), 'D', GTMachines.HULL[GTValues.UXV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTOMaterials.Vibranium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uiv_raybeam_generator"), GTOMachines.BEAM_GENERATOR[GTValues.UIV].asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', CustomTags.UXV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTOMaterials.Enderium), 'C', GTItems.EMITTER_UIV.asItem(), 'D', GTMachines.HULL[GTValues.UIV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTOMaterials.Adamantium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uev_raybeam_generator"), GTOMachines.BEAM_GENERATOR[GTValues.UEV].asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', CustomTags.UIV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Neutronium), 'C', GTItems.EMITTER_UEV.asItem(), 'D', GTMachines.HULL[GTValues.UEV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTOMaterials.Quantanium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uhv_raybeam_generator"), GTOMachines.BEAM_GENERATOR[GTValues.UHV].asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', CustomTags.UEV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Iridium), 'C', GTItems.EMITTER_UHV.asItem(), 'D', GTMachines.HULL[GTValues.UHV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTMaterials.Neutronium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("uv_raybeam_generator"), GTOMachines.BEAM_GENERATOR[GTValues.UV].asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', CustomTags.UHV_CIRCUITS, 'B', new MaterialEntry(GTOTagPrefix.NANITES, GTMaterials.Glowstone), 'C', GTItems.EMITTER_UV.asItem(), 'D', GTMachines.HULL[GTValues.UV].asItem(), 'E', new MaterialEntry(TagPrefix.plate, GTMaterials.Darmstadtium), 'F', GTOBlocks.OPTICAL_RESONANCE_CHAMBER.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("heat_valve"), GTOMachines.HEAT_VALVE.asItem(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Invar), 'B', Items.COMPARATOR, 'C', Items.REPEATER, 'D', GTBlocks.MACHINE_CASING_LV.asItem());
     }
 
     private static void addUpg(Item input, ItemStack output) {

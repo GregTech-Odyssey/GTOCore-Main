@@ -73,34 +73,34 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
     // ===================== 构造与初始化 =====================
     protected ButtonWidget fluidModeButton;
     protected DraggableScrollableWidgetGroup mapArea;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int xRadialLength;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int zRadialLength;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int xOffset;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int zOffset;
     @Setter
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int minHeight;
     @Setter
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int maxHeight;
 
     // ===================== 逻辑相关方法 =====================
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int silkLevel;
     @SyncToClient
     private long energyPerTickBase = 0L;
@@ -110,12 +110,12 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
     @SyncToClient
     private int prospectorRadius;
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int maxRadius = 1;
     // ===================== Getter/Setter =====================
     @Getter
     @SyncToClient
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean showRange = false;
     @Getter
     private long energyPerTick;

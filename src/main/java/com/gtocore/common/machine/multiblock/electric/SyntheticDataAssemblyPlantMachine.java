@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gtocore.common.machine.multiblock.part.DataGenerateHolderMachine;
+import com.gtocore.common.machine.multiblock.part.research.DataGenerateHolderMachine;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 

@@ -98,3 +98,7 @@ git ls-tree HEAD GTOLib   # → 160000 commit <sha>	GTOLib
 | `GTOLib/` | gtocore-gtolib submodule（需权限才 init） |
 | `libs/gtolib-protected.jar` + `.PROTECTED` | 预构建 gtolib 及一致性记录（成对提交） |
 | `gradle/scripts/gtolib-pipeline.gradle` | 有/无源码流水线、reobf/Seal 与校验逻辑 |
+
+## 性能规范
+
+> **强制必读。** 本仓所有 AI 生成/修改的代码，提交前必须按 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 自查。容器与迭代及类型/配方/编解码等的写法直接决定 GC 压力与帧率，属硬性要求。

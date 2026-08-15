@@ -145,15 +145,6 @@ public final class Temporary {
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 2)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("wyvern_core")
-                .inputItems(GTOBlocks.UIV_WIRELESS_ENERGY_UNIT.asItem(), 1024)
-                .inputItems(GTOBlocks.COMPONENT_ASSEMBLY_LINE_CASING_UIV.asItem(), 1024)
-                .inputItems(CustomTags.UXV_CIRCUITS, 8192)
-                .outputItems(GTOItems.WYVERN_CORE)
-                .duration(200)
-                .EUt(33554432)
-                .save();
-
         ASSEMBLER_RECIPES.builder("ACCELERATOR_MAGNETIC_CONSTRAINED_RAIL_CASING".toLowerCase(Locale.ROOT))
                 .inputItems(TagPrefix.frameGt, GTMaterials.NaquadahEnriched)
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_LUV.asItem())

@@ -450,7 +450,7 @@ object GTOMachineTooltips {
     }
 
     @JvmField
-    var spaceShieldHatchTooltips: ComponentListSupplier = ComponentListSupplier {
+    val spaceShieldHatchTooltips: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("space_shield_hatch")
 
         content("在GTO寰宇重工的空间站技术还没完全完善的时候科研人员紧急开发出的小型防护罩" translatedTo "A small protective shield urgently developed by researchers when GTO Universal Heavy Industries' space station technology was not fully developed")
@@ -479,6 +479,7 @@ object GTOMachineTooltips {
         content("仓中的辐射遵循以下规则：" translatedTo "The radiation in the hatch follows the following rules:")
         info("初始辐射=(配方辐射-抑制量)x(1+放射材料数量/64)" translatedTo "Initial radiation = (Recipe radiation - inhibition) * (1 + count of radiation materials / 64)")
         decrease("当仓中没有放射性材料时辐射随时间逐渐衰减" translatedTo "When there are no radiation materials in the barn, the radioactivity gradually decreases over time")
+        command("通入红石脉冲以清除残余辐射" translatedTo "Input a redstone pulse to clear residual radiation")
     }
 
     // 模块化可配置维护仓
@@ -813,6 +814,27 @@ object GTOMachineTooltips {
         section("通过消耗水对侧面机器冷却" translatedTo "Cooling the side machine by consuming water")
     }
 
+    // 高级冷却器
+    @JvmField
+    val AdvancedCoolerMachineTooltips = ComponentListSupplier {
+        setTranslationPrefix("advanced_cooler_machine")
+
+        section("通过消耗流体对侧面机器冷却" translatedTo "Cooling the side machine by consuming fluid")
+        content("冷却效率取决于流体的温度" translatedTo "Cooling efficiency depends on the temperature of the fluid")
+        command("仅320K以下的流体可以参与冷却" translatedTo "Only fluids below 320K can participate in cooling")
+        info("冷却效率 = min(200, (流体与机器温度差 / 4)) (HU/秒)" translatedTo "Cooling efficiency = min(200, (fluid temperature - machine temperature) / 4) (HU/sec)")
+    }
+
+    // 热阀
+    @JvmField
+    val HeatValveMachineTooltips = ComponentListSupplier {
+        setTranslationPrefix("heat_valve_machine")
+
+        content("当通入红石信号时，阀门关闭，阻止热量流动" translatedTo "When a redstone signal is input, the valve closes, preventing heat flow")
+        content("当红石信号关闭时，阀门打开，允许热量流动" translatedTo "When the redstone signal is off, the valve opens, allowing heat flow")
+        command("使用螺丝刀以反转信号控制逻辑" translatedTo "Use a screwdriver to reverse the signal control logic")
+    }
+
     // 电力加热器
     @JvmField
     val ElectricHeaterMachineTooltips = ComponentListSupplier {
@@ -829,33 +851,27 @@ object GTOMachineTooltips {
     val FissionReactorTooltips = ComponentListSupplier {
         setTranslationPrefix("fission_reactor")
 
-        section("反应堆结构组成" translatedTo "Reactor structure components")
-        function("通过燃料组件和冷却组件协同工作产生能量" translatedTo "Generates energy through fuel and cooling components working together")
-        command("燃料组件: 提供最大并行数量" translatedTo "Fuel component: Provides maximum parallel number")
-        content("升温系数 = 燃料组件相邻数 + 1" translatedTo "Heating coefficient = adjacent fuel components + 1")
-        command("冷却组件: 提供最大冷却能力" translatedTo "Cooling component: Provides maximum cooling capability")
-        content("冷却组件必须与燃料组件相邻才有效" translatedTo "Cooling components must be adjacent to fuel components to be effective")
+        section(ComponentSlang.RunningRequirements)
+        command("运行前需在反应堆内部放置燃料组件和冷却组件" translatedTo "Fuel components and cooling components must be placed inside the reactor before operation")
+        function("燃料组件：提供最大并行，相邻的燃料组件越多，反应堆产热越高" translatedTo "Fuel components: provide maximum parallelism; the more adjacent fuel components there are, the more heat the reactor generates")
+        function("冷却组件：必须与燃料组件相邻，决定反应堆的冷却上限" translatedTo "Cooling components: must be adjacent to fuel components and determine the reactor's cooling limit")
 
-        section("温度管理系统" translatedTo "Temperature management system")
-        command("初始温度: 298K" translatedTo "Initial temperature: 298K")
-        command("温度上限: 1500K" translatedTo "Temperature limit: 1500K")
-        info("升温速率: 配方产热 × 升温系数/秒" translatedTo "Heating rate: recipe heat × heating coefficient/sec")
-        info("自然降温: 停止工作时1K/秒" translatedTo "Natural cooling: 1K/sec when stopped")
-        error(("超过温度上限机器开始损坏，完全损坏时" translatedTo "Exceeding temperature limit damages machine, when fully damaged ") + ComponentSlang.Explosion)
+        section("温度管理系统" translatedTo "Temperature Management System")
+        content("初始温度为 298K；停机时每秒降低 1K" translatedTo "Initial temperature is 298K; temperature decreases by 1K per second while idle")
+        command("冷却不生效时，每秒升温 = 配方基础产热 × (相邻燃料组件数量 + 1)" translatedTo "When cooling has no effect, heat gained per second = base recipe heat × (adjacent fuel components + 1)")
+        info("每种燃料配方拥有不同的基础产热，可在配方页面查看" translatedTo "Each fuel recipe has a different base heat value, shown on its recipe page")
+        danger(("温度超过 1500K 后反应堆将持续损坏，完全损坏时" translatedTo "Above 1500K, the reactor continuously takes damage and, when fully damaged, ") + ComponentSlang.Explosion)
 
-        section("冷却系统" translatedTo "Cooling system")
-        content(
-            "冷却液 (系数): 蒸馏水 (800) 钠钾合金 (20)" translatedTo "Cooling liquid (coefficients): Distilled Water (800) Sodium Potassium (20)",
-            { green() },
-        )
-        info("冷却条件: 供给量 ≥ 需求量" translatedTo "Cooling condition: Supply ≥ demand")
-        info("需求量 = 配方产热 × 实际并行 × 当前温度 / 1500" translatedTo "Demand = recipe heat × actual parallel × current temp / 1500")
-        info("供给量 = (冷却组件 - 相邻数/3) × 8" translatedTo "Supply = (cooling components - adjacent/3) × 8")
-        info("消耗量 = 需求量 × 冷却液系数" translatedTo "Consumption = Demand × cooling liquid coefficient")
+        section("冷却系统" translatedTo "Cooling System")
+        command("冷却液输入量大于冷却需求时触发冷却；每秒冷却液消耗量受冷却上限限制" translatedTo "Cooling activates when the coolant input exceeds the cooling demand; coolant consumption per second is limited by the cooling limit")
+        content("每 800 mB 蒸馏水或 20 mB 钠钾合金可满足 1 单位冷却需求" translatedTo "Every 800 mB of Distilled Water or 20 mB of Sodium Potassium can satisfy 1 unit of cooling demand", { green() })
+        info("冷却需求 = 配方基础产热 × 实际并行 × 当前温度 / 1500" translatedTo "Cooling demand = base recipe heat × actual parallel × current temperature / 1500")
+        info("冷却上限 = (冷却组件数量 - 相邻数 / 3) × 8" translatedTo "Cooling limit = (cooling components - adjacency / 3) × 8")
+        decrease("若冷却液输入量低于冷却需求，本次冷却不生效" translatedTo "If the coolant input is below the cooling demand, cooling has no effect this time")
 
         section("超频机制" translatedTo "Overclocking mechanism")
-        info("触发条件: 供给量 ≥ n × 需求量 (n>1)" translatedTo "Trigger condition: Supply ≥ n × demand (n>1)")
-        info("超频效果: 运行速度提升至 n 倍" translatedTo "Overclocking effect: Operation speed increased to n times")
+        command("触发条件: 冷却液输入量 ≥ n × 冷却需求" translatedTo "Trigger condition: Coolant input ≥ n × cooling demand")
+        increase("超频效果: 额外增加 n 倍基础运行速度" translatedTo "Effect: Adds n times the base processing speed")
 
         section("冷却液产出" translatedTo "Cooling liquid output")
         content("蒸馏水冷却: " translatedTo "Distilled Water cooling: ", { green() })
@@ -1366,7 +1382,10 @@ object GTOMachineTooltips {
     val SatelliteControlCenterTooltips = ComponentListSupplier {
         setTranslationPrefix("satellite_control_center")
 
-        highlight("发射卫星，带回星球数据" translatedTo "Launch a satellite and bring back planet data")
+        section(ComponentSlang.MainFunction)
+        function("发射卫星，带回星球数据" translatedTo "Launch a satellite and bring back planet data")
+        important("无法超频，每次发射固定耗时§e300§r秒" translatedTo "Cannot be overclocked; each launch takes a fixed §e300§r seconds")
+        content("发射完成后返还火箭与星球数据芯片" translatedTo "Returns the rocket and planet data chip after launch")
     }
 
     // 原木拟生场
@@ -1414,6 +1433,21 @@ object GTOMachineTooltips {
 
         section("范围增产" translatedTo "Area Yield Boost")
         increase("电压等级每高出IV一级，16m内钻机产量×1.5" translatedTo "Each tier above IV → ×1.5 output for fluid drills within 16M")
+    }
+
+    // 无人机控制中心
+    @JvmField
+    val DroneControlCenterTooltips = ComponentListSupplier {
+        setTranslationPrefix("drone_control_center")
+
+        section(ComponentSlang.MainFunction)
+        function("范围内的维护仓出现故障时，派出无人机自动维修" translatedTo "Dispatches drones to automatically repair malfunctioning Maintenance Hatches within range")
+        function("范围内的消声仓将满时，派出无人机自动清灰" translatedTo "Dispatches drones to automatically clean Silencer Hatches when full within range")
+        info("主机GUI内可查看无人机工作范围" translatedTo "Drone working range can be viewed in the controller GUI")
+
+        section(ComponentSlang.RunningRequirements)
+        command("需在无人机仓内放入有电的无人机" translatedTo "Requires charged drones in the Drone Hatch")
+        info("无人机等级决定工作范围与工作速度" translatedTo "Drone tier determines operating range and work speed")
     }
 
     // 无线能源塔
@@ -1875,10 +1909,12 @@ object GTOMachineTooltips {
     val WaterPurificationPlantTooltips = ComponentListSupplier {
         setTranslationPrefix("water_purification_plant")
         section(ComponentSlang.MainFunction)
+        highlight("净水系统的总控中枢" translatedTo "The central control hub of the water purification system")
         function("链接净化单元，同步所有净化单元的控制器的处理周期并供电" translatedTo "Link purification units, synchronize the processing cycles of all controllers, and provide power")
 
         section("处理单元链接系统" translatedTo "Processing Unit Link System")
-        function("可在§e32§r个方块半径内自由放置净化单元的控制器" translatedTo "Purification unit controllers can be placed freely within a §e32§r block radius")
+        function("自动链接§e32§r个方块半径内的净化单元控制器" translatedTo "Automatically link purification unit controllers within a §e32§r-blocks radius")
+        info("主机GUI中可查看链接范围" translatedTo "The linking range can be viewed in the controller GUI")
         function("为链接的单元控制器提供电力" translatedTo "Provide power to linked unit controllers")
         info("默认耗能 = 输出水量 × 2^(净化水等级 - 2)" translatedTo "Default energy = output water × 2^(purification tier - 2)")
 
@@ -2320,8 +2356,7 @@ object GTOMachineTooltips {
         info("§6被动耗能§r由§b核心舱§r提供，而§6配方耗能§r需由安装在§b此舱§r的§d能源仓§r提供" translatedTo "§6Passive energy consumption§r is provided by the §bCore Module§r, while §6recipe energy consumption§r needs to be provided by the §dEnergy Input Hatch§r installed in the §bthis module§r")
         error("无核心舱连接时，无法运行配方" translatedTo "Cannot run recipes without a linked core module")
         highlight(
-            ("当前空间站内如果安装有" translatedTo "If the current space station has installed") +
-                ("空间站高能转换调配舱" translatedTo "Space Station High-Energy Conversion and Dispensing Module").scrollExotic(),
+            "如果解锁了[激光太空工程]科技节点" translatedTo "If the [Laser Space Engineering] Node is unlocked",
         )
         highlight("则解锁§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限" translatedTo "The use of advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r will be unlocked")
     }
@@ -2375,7 +2410,9 @@ object GTOMachineTooltips {
     val SpaceStationEnergyConversionModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("space_station_energy_conversion_module")
         section(ComponentSlang.MainFunction)
-        highlight("安装后，空间站内的其他拓展舱体将能够使用§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体" translatedTo "When installed, other expansion modules in the space station will be able to use advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r")
+        highlight("安装后，为空间站内的其他拓展舱体的超频仓提供1点增幅" translatedTo "After installation, provides 1 point of amplification for the Overclocking Chamber in other expansion modules within the space station")
+        highlight("并为已安装太空电梯连接仓提供额外增幅" translatedTo "And provides additional amplification for the installed Space Elevator Connection Chamber")
+        command("多个高能转换调配舱仅生效一个" translatedTo "Only one of multiple High-Energy Conversion Chambers will take effect")
     }
 
     @JvmField

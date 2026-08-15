@@ -45,6 +45,7 @@ import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.fastcollection.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
@@ -102,16 +103,29 @@ public final class GTOPredicates {
                 predicate = predicate.or(Predicates.abilities(PartAbility.OUTPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(0)).or(Predicates.abilities(PartAbility.OUTPUT_LASER).setMaxGlobalLimited(2).setPreviewCount(1));
                 break;
             }
+            if (type.isHasResearchSlot()) predicate = predicate.or(Predicates.abilities(PartAbility.OPTICAL_DATA_RECEPTION).setMaxGlobalLimited(1));
         }
         return predicate;
     }
 
     public static TraceabilityPredicate autoGCYMAbilities(GTRecipeType... recipeType) {
-        return Predicates.autoAbilities(recipeType, false, false, true, true, true, true).or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(8).setPreviewCount(1)).or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1)).or(Predicates.blocks(ManaMachine.MANA_AMPLIFIER_HATCH.get(), ManaMachine.ME_MANA_AMPLIFIER_HATCH.get()).setMaxGlobalLimited(1));
+        var p = Predicates.autoAbilities(recipeType, false, false, true, true, true, true)
+                .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(8).setPreviewCount(1))
+                .or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1))
+                .or(Predicates.blocks(ManaMachine.MANA_AMPLIFIER_HATCH.get(), ManaMachine.ME_MANA_AMPLIFIER_HATCH.get())
+                        .setMaxGlobalLimited(1));
+        for (GTRecipeType type : recipeType) {
+            if (type.isHasResearchSlot()) p = p.or(Predicates.abilities(PartAbility.OPTICAL_DATA_RECEPTION).setMaxGlobalLimited(1));
+        }
+        return p;
     }
 
     public static TraceabilityPredicate autoAccelerateAbilities(GTRecipeType... recipeType) {
-        return Predicates.autoAbilities(recipeType).or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1));
+        var p = Predicates.autoAbilities(recipeType).or(Predicates.abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1));
+        for (GTRecipeType type : recipeType) {
+            if (type.isHasResearchSlot()) p = p.or(Predicates.abilities(PartAbility.OPTICAL_DATA_RECEPTION).setMaxGlobalLimited(1));
+        }
+        return p;
     }
 
     public static TraceabilityPredicate autoThreadLaserAbilities(GTRecipeType... recipeType) {
@@ -137,7 +151,8 @@ public final class GTOPredicates {
         }
         return new TraceabilityPredicate(state -> {
             BlockState blockState = state.getBlockState();
-            for (Int2ObjectMap.Entry<Supplier<?>> entry : map.int2ObjectEntrySet()) {
+            for (var it = Int2ObjectMaps.fastIterator(map); it.hasNext();) {
+                var entry = it.next();
                 if (blockState.is((Block) entry.getValue().get())) {
                     int tier = entry.getIntKey();
                     int type = state.getMatchContext().getOrPut(tierType, tier);
@@ -368,5 +383,7 @@ public final class GTOPredicates {
         public static final DataComponentKey<Set<BlockPos>> A = DataComponentKey.create("a", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
         public static final DataComponentKey<Set<BlockPos>> B = DataComponentKey.create("b", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
         public static final DataComponentKey<Set<BlockPos>> C = DataComponentKey.create("c", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> HIGH_TEMP_INTERFACE = DataComponentKey.create("highTempInterface", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
+        public static final DataComponentKey<Set<BlockPos>> LOW_TEMP_INTERFACE = DataComponentKey.create("lowTempInterface", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
     }
 }

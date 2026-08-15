@@ -59,7 +59,7 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
     }
 
     private Set<AEKey> getCraftableKeys(T menu) {
-        return menu.getClientRepo() != null ? menu.getClientRepo().getCraftableKeys() : Set.of();
+        return menu.getClientRepo() != null ? menu.getClientRepo().getCraftableKeys() : Collections.emptySet();
     }
 
     @Override

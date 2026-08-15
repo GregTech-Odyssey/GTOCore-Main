@@ -16,7 +16,7 @@ import java.util.List;
 
 public final class IntegratedOreProcessor extends CrossRecipeMultiblockMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "true")
     private boolean repeatedRecipes = true;
 
     public IntegratedOreProcessor(MetaMachineBlockEntity holder) {

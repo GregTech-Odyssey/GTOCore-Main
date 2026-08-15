@@ -187,7 +187,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
     @Override
     public @NotNull List<IPatternDetails> getAvailablePatterns() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override
@@ -355,13 +355,13 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         public AEKey reportingKey = null;
         @Getter
         @Setter
-        @SaveToDisk
+        @SaveToDisk(defaultValue = "-1")
         public long minThreshold = -1;
         @Setter
         public long multiplier = 1;
-        @SaveToDisk
+        @SaveToDisk(defaultValue = "false")
         private boolean isEmitterMode = false;
-        @SaveToDisk
+        @SaveToDisk(defaultValue = "false")
         public boolean useRequest = false;
         @Setter
         public GTRecipeDefinition recipe;

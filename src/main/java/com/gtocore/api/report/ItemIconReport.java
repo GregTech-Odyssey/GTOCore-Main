@@ -40,6 +40,7 @@ import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.google.gson.*;
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
@@ -310,7 +311,7 @@ public class ItemIconReport {
         JsonArray emiStacksArray = new JsonArray();
 
         // Track exported IDs to avoid duplicates in supplementary registry pass
-        Set<ResourceLocation> exportedIds = new HashSet<>();
+        Set<ResourceLocation> exportedIds = new OpenCacheHashSet<>();
 
         java.util.List<EmiStack> allStacks = EmiApi.getIndexStacks();
         GTOCore.LOGGER.info("[Icons] Found {} EMI stacks to export", allStacks.size());

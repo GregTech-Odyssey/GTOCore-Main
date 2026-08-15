@@ -736,7 +736,7 @@ public final class MultiBlockB {
                     .where('h', blocks(GTOBlocks.ANTIFREEZE_HEATPROOF_MACHINE_CASING.get()))
                     .where('i', blocks(GTOBlocks.SPEEDING_PIPE.get()))
                     .where('j', blocks(GCYMBlocks.ELECTROLYTIC_CELL.get()))
-                    .where('k', GTOPredicates.module(MultiBlockD.ASSEMBLER_MODULE, MultiBlockD.RESOURCE_COLLECTION_MODULE))
+                    .where('k', GTOPredicates.module(MultiBlockD.ASSEMBLER_MODULE, MultiBlockD.RESOURCE_COLLECTION_MODULE, MultiBlockD.ENGINEERED_DATA_MODULE))
                     .where('l', GTOPredicates.frame(GTOMaterials.HastelloyN))
                     .where('m', blocks(GTOBlocks.NEUTRONIUM_STABLE_CASING.get()))
                     .where('n', blocks(GTOBlocks.BORON_CARBIDE_CERAMIC_RADIATION_RESISTANT_MECHANICAL_CUBE.get()))

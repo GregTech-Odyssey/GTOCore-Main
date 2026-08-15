@@ -26,7 +26,7 @@ import java.util.List;
 
 public abstract class AbstractInfoProviderMonitor extends BasicMonitor implements IInformationProvider {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private long priority = 0;
 

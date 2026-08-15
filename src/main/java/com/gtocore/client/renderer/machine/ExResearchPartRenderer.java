@@ -1,6 +1,6 @@
 package com.gtocore.client.renderer.machine;
 
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBasePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBasePartMachine;
 
 import com.gtolib.GTOCore;
 

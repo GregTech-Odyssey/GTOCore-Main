@@ -1,6 +1,7 @@
 package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.*;
+import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
 import com.gtolib.GTOCore;
@@ -759,6 +760,37 @@ final class Incubator {
                 .EUt(495000)
                 .duration(1280)
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)
+                .save();
+        INCUBATOR_RECIPES.builder("bio_cardiomyocyte_cluster")
+                .inputItems(GTItems.STEM_CELLS, 16)
+                .inputItems(GTOItems.BIOLOGICAL_CELLS, 4)
+                .inputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst(), 1024)
+                .chancedOutput(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.asItem(), 300, 300)
+                .inputFluids(GTMaterials.Mutagen, 1000)
+                .addData(GTORecipeDataKeys.FILTER_CASING, 2)
+                .EUt(32768)
+                .duration(600)
+                .save();
+
+        INCUBATOR_RECIPES.builder("mutant_cardiomyocyte_cluster")
+                .inputItems(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER)
+                .inputItems(GTOItems.SPACE_ESSENCE, 512)
+                .inputItems(GTOItems.DRACONIUM_DIRT, 16)
+                .chancedOutput(GTOItems.MUTANT_CARDIOMYOCYTE_CLUSTER.asItem(), 2500, 500)
+                .inputFluids(GTMaterials.Mutagen, 10000)
+                .inputFluids(GTOMaterials.RapidlyReplicatingAnimalCells, 10000)
+                .addData(GTORecipeDataKeys.FILTER_CASING, 2)
+                .EUt(32768)
+                .duration(600)
+                .save();
+
+        INCUBATOR_RECIPES.builder("dragon_cardiomyocyte_cluster")
+                .inputItems(GTOItems.MUTANT_CARDIOMYOCYTE_CLUSTER)
+                .inputItems(GTOItems.DRAGON_STEM_CELLS, 16)
+                .inputItems(GTOBlocks.MAGIC_CORE.asItem())
+                .chancedOutput(GTOItems.DRAGON_CARDIOMYOCYTE_CLUSTER.asItem(), 1500, 500)
+                .EUt(32768)
+                .duration(600)
                 .save();
     }
 }

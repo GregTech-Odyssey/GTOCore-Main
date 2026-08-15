@@ -28,7 +28,7 @@ public class ManaHeaterMachine extends SimpleManaMachine implements IHeatContain
 
     /// an indicator used to determine if the salamander input is present
     /// **used by client renderer**
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient(notifyUpdate = true)
     private boolean salamanderInput = false;
 

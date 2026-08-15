@@ -38,22 +38,22 @@ public final class HighEnergyLaserPurificationUnitMachine extends WaterPurificat
             ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Magenta),
             ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Pink));
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int index;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int time;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int await;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int working;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int chance;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
     private IndicatorHatchPartMachine indicatorHatchPartMachine;

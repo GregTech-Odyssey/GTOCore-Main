@@ -81,7 +81,7 @@ public final class GTOMaterialFlags {
     public static final MaterialFlag NEED_BLAST_IN_SPACE = new MaterialFlag.Builder("need_blast_in_space")
             .build();
 
-    public static final MaterialFlag HAS_NANOSCALE_FORM = new MaterialFlag.Builder("need_blast_in_space")
+    public static final MaterialFlag HAS_NANOSCALE_FORM = new MaterialFlag.Builder("has_nanoscale_form")
             .build();
 
     public static final MaterialFlag DISABLE_GEM_RECIPES = new MaterialFlag.Builder("disable_gem_recipes")

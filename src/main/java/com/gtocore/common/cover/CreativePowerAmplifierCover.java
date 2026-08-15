@@ -32,9 +32,9 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
     public static final double MIN_ENERGY_MULTIPLIER = 0.01D;
     public static final double MAX_MULTIPLIER = 100D;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0.01")
     private double durationMultiplier = DEFAULT_DURATION_MULTIPLIER;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1.0")
     private double energyMultiplier = DEFAULT_ENERGY_MULTIPLIER;
 
     public CreativePowerAmplifierCover(CoverDefinition definition, ICoverable coverHolder, Direction attachedSide) {

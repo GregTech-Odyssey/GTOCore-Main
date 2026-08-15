@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -354,7 +355,7 @@ public interface WirelessMachine extends IGridConnectedMachine, ISync, IBindable
         getUnassignedOutputCount().markAsChanged();
         // Only sync topology for connected network
         if (syncConnId.isEmpty()) {
-            getTopologyCache().set(List.of());
+            getTopologyCache().set(Collections.emptyList());
         } else {
             getTopologyCache().set(
                     WirelessNetworkSavedData.Companion.getTopologySummaries(getRequesterUUID())

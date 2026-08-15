@@ -207,6 +207,7 @@
     "gtm.registry.GTOresMixin",
     "gtm.registry.GTRecipeTypesMixin",
     "gtm.registry.GTRegistrationMixin",
+    "gtmthings.WirelessOpticalComputationHatchMachineMixin",
     "guideme.GuideMEMixin",
     "jade.CommonProxyMixin",
     "jade.JadeForgeUtilsMixin",

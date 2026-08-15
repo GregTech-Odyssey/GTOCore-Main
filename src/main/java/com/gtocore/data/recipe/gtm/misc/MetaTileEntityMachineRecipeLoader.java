@@ -29,6 +29,7 @@ import static com.gregtechceu.gtceu.common.data.GTMachines.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 import static com.gtocore.common.data.machines.GTAEMachines.MUFFLER_HATCH_ME;
+import static com.gtocore.data.techtree.AENodes.MEWasteRecycling;
 
 public final class MetaTileEntityMachineRecipeLoader {
 
@@ -486,6 +487,7 @@ public final class MetaTileEntityMachineRecipeLoader {
                 .outputItems(MUFFLER_HATCH_ME)
                 .inputFluids(GTMaterials.SolderingAlloy, 9216)
                 .EUt(GTValues.VA[LuV])
+                .researchNode(MEWasteRecycling)
                 .duration(400)
                 .save();
     }

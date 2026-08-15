@@ -55,23 +55,23 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     private final NotifiableItemStackHandler vacuumModuleInv;
     @SaveToDisk
     private final NotifiableItemStackHandler cleanroomModuleInv;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "293")
     private int activeTemperature = 293;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int currentGravity = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean vacuumMode = false;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean gravityMode = false;
     /// indicates whether player could set temperature
     /// notice that even if temperatureMode is false, the temperature could be set passively by other machines
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
     private boolean temperatureMode = false;
 

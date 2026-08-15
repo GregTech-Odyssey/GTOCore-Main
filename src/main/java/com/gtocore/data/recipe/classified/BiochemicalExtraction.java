@@ -2,6 +2,8 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.GTOOrganItems;
+import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.data.tag.Tags;
 
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -103,6 +105,18 @@ final class BiochemicalExtraction {
                 .outputItems(Items.FEATHER.asItem(), 4)
                 .EUt(30)
                 .duration(200)
+                .save();
+        BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart")
+                .inputItems(Items.GOAT_SPAWN_EGG)
+                .outputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst())
+                .EUt(1920)
+                .duration(400)
+                .save();
+        BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart1")
+                .inputItems(Items.SHEEP_SPAWN_EGG)
+                .outputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst())
+                .EUt(1920)
+                .duration(400)
                 .save();
     }
 }

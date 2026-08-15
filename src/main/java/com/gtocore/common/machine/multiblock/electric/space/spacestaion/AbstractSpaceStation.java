@@ -34,7 +34,7 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     private final Set<BlockPos> lastDistributedBlocks = new ObjectOpenHashSet<>();
     private final @Nullable Function<AbstractSpaceStation, Set<BlockPos>> positionFunction;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     protected int ready;
     @Nullable
     private TickableSubscription tickSubscription = null;

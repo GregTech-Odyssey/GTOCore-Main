@@ -1,5 +1,6 @@
 package com.gtocore.data;
 
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.data.*;
 import com.gtocore.data.recipe.*;
 import com.gtocore.data.recipe.ae2.AE2;
@@ -19,6 +20,7 @@ import com.gtocore.data.recipe.mod.*;
 import com.gtocore.data.recipe.processing.*;
 import com.gtocore.data.recipe.research.ResearchRecipes;
 import com.gtocore.data.tag.TagsHandler;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.integration.emi.GTEMIRecipe;
 import com.gtocore.integration.emi.NanitesIntegratedProcessingEmiCategory;
@@ -67,6 +69,7 @@ public final class Data {
     private static Throwable throwable;
 
     public static void init() {
+        BaseNodes.INSTANCE.init();
         if (GTCEu.isClientSide()) {
             GTOUtils.asyncExecute(Data::clientInit);
         } else {
@@ -88,6 +91,7 @@ public final class Data {
         RecipeBuilder.initialization();
         RecipeFilter.init();
 
+        OpticalRecipe.init();
         ResearchRecipes.init();
 
         ComponentRecipes.init();
@@ -173,6 +177,7 @@ public final class Data {
         TagsHandler.initBlock();
         TagsHandler.initFluid();
 
+        DataScanningManager.freeze();
         GTOTrade.init();
 
         GTOCore.LOGGER.info("Data loading took {}ms", System.currentTimeMillis() - time);
@@ -183,6 +188,7 @@ public final class Data {
             commonInit();
         } catch (Throwable t) {
             throwable = t;
+            GTOCore.LOGGER.error("Data loading failed", t);
         }
         GTRegistries.RECIPE_TYPES.values().forEach(t -> t.recipes.values().forEach(recipe -> recipe.recipeCategory.addRecipe(recipe)));
         if (GTCEu.Mods.isEMILoaded()) {

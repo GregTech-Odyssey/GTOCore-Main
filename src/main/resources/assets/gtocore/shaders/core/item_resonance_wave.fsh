@@ -5,6 +5,7 @@ uniform vec4 ColorModulator;
 uniform float time;
 uniform vec2 maskTextureSize;
 uniform vec2 maskViewportOrigin;
+uniform float useLocalMaskUv;
 uniform vec4 outlineColor;
 uniform vec4 waveColor;
 uniform float outlineWidth;
@@ -79,7 +80,7 @@ float findOuterDistance(vec2 uv, vec2 texelSize, float cutoff, float limitPx) {
 
 void main() {
     float cutoff = clamp(alphaCutoff, 0.001, 0.999);
-    vec2 maskUv = screenMaskUv();
+    vec2 maskUv = mix(screenMaskUv(), texCoord0, step(0.5, useLocalMaskUv));
     float centerAlpha = sampleMaskAlpha(maskUv, cutoff);
     if (centerAlpha >= cutoff) {
         discard;

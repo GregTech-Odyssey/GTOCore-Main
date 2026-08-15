@@ -26,6 +26,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import com.gto.fastcollection.O2LOpenCacheHashMap;
+import com.gto.fastcollection.OpenCacheHashSet;
 import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -34,7 +35,9 @@ import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -173,7 +176,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(Component.literal("-------------------"));
                     List1.add(trans(11));
                     List1.add(Component.literal("-------------------"));
-                    for (Object2LongMap.Entry<String> entry : syncedCurrencyMap.object2LongEntrySet()) {
+                    for (var it = Object2LongMaps.fastIterator(syncedCurrencyMap); it.hasNext();) {
+                        var entry = it.next();
                         List1.add(Component.translatable("gtocore.currency." + entry.getKey()).withStyle(ChatFormatting.AQUA));
                     }
                     List1.add(Component.literal("-------------------"));
@@ -184,7 +188,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List2.add(Component.literal("-------------------"));
                     List2.add(trans(12));
                     List2.add(Component.literal("-------------------"));
-                    for (Object2LongMap.Entry<String> entry : syncedCurrencyMap.object2LongEntrySet()) {
+                    for (var it = Object2LongMaps.fastIterator(syncedCurrencyMap); it.hasNext();) {
+                        var entry = it.next();
                         List2.add(Component.literal(Long.toString(entry.getLongValue())));
                     }
                     List2.add(Component.literal("-------------------"));
@@ -244,7 +249,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(trans(52));
                     List1.add(ComponentPanelWidget.withButton(trans(53), "confirm1"));
                     List1.add(Component.literal("-------------------"));
-                    for (Object2ObjectMap.Entry<UUID, String> entry : WalletPlayers.object2ObjectEntrySet()) {
+                    for (var it = Object2ObjectMaps.fastIterator(WalletPlayers); it.hasNext();) {
+                        var entry = it.next();
                         List1.add(ComponentPanelWidget.withHoverTextTranslate(
                                 ComponentPanelWidget.withButton(Component.literal("§b" + entry.getValue() + "§r"), entry.getKey().toString()),
                                 Component.literal(entry.getValue())));
@@ -504,7 +510,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                 ServerLevel serverLevel = player instanceof ServerPlayer serverPlayer ? serverPlayer.serverLevel() : null;
 
                 Object2ObjectMap<UUID, String> WalletPlayers = WalletUtils.getAllWalletPlayers(serverLevel);
-                Set<UUID> shared = new HashSet<>();
+                Set<UUID> shared = new OpenCacheHashSet<>();
 
                 mainGroup.addWidget(new ComponentPanelWidget(10, 16,
                         list -> list.add(ComponentPanelWidget.withHoverTextTranslate(
@@ -526,7 +532,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     List1.add(Component.empty());
                     List1.add(Component.empty());
                     List1.add(Component.literal("-------------------"));
-                    for (Object2ObjectMap.Entry<UUID, String> entry : WalletPlayers.object2ObjectEntrySet()) {
+                    for (var it = Object2ObjectMaps.fastIterator(WalletPlayers); it.hasNext();) {
+                        var entry = it.next();
                         List1.add(ComponentPanelWidget.withHoverTextTranslate(
                                 ComponentPanelWidget.withButton(Component.literal("§b" + entry.getValue() + "§r"), entry.getKey().toString()), Component.literal(entry.getKey().toString())));
                     }

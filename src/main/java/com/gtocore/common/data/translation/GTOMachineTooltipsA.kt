@@ -3,20 +3,82 @@ package com.gtocore.common.data.translation
 import com.gtocore.api.data.Algae
 import com.gtocore.api.lang.ComponentListSupplier
 import com.gtocore.api.lang.ComponentSupplier
+import com.gtocore.api.lang.toComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
+import com.gtocore.api.lang.translatable
 import com.gtocore.api.misc.AutoInitialize
 import com.gtocore.common.data.translation.ComponentSlang.AfterModuleInstallation
 import com.gtocore.common.data.translation.ComponentSlang.EfficiencyBonus
 import com.gtocore.common.data.translation.ComponentSlang.MainFunction
 import com.gtocore.common.data.translation.ComponentSlang.RunningRequirements
+import com.gtocore.common.machine.multiblock.electric.research.DataFormTestingPlantMachine
 
 import net.minecraft.network.chat.Component
 
 import appeng.api.config.PowerUnits
 import com.gregtechceu.gtceu.api.GTValues
 import com.gregtechceu.gtceu.config.ConfigHolder
+import com.gtolib.GTOCore
 
 object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
+
+    @JvmField
+    val ComputationalDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("computational_data_holder")
+
+        section(MainFunction)
+        function("安装在计算机或超算中心等场所，用于读取算力流动的生产数据" translatedTo "Installed in computers or supercomputing centers, used to read production data of computational workload flow")
+        function("每5秒，获得√(最大算力+当前使用中的算力)的计算研究点数，并存储于机器内的晶片中" translatedTo "Every 5 seconds, it generates √(maximum computational workload + currently used computational workload) computational research points, which are stored in the data crystal inside the machine")
+    }
+
+    @JvmField
+    val ConnectingRodHatchTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("connecting_rod_hatch")
+
+        section(MainFunction)
+        function("用于将附着的生物组织的生物能量转化为可导出的能量" translatedTo "Used to convert the bioenergy of attached biological tissues into exportable energy")
+    }
+
+    @JvmField
+    val BioOscillationGeneratorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("bio_oscillation_generator")
+
+        section(MainFunction)
+        function("将生物组织的生长与培养液转化为电能" translatedTo "Converts biological tissue growth and culture medium into electrical energy")
+        command("生物组织与培养液均需要一次性装入机器；每次装填最多吸收64个组织与1,000,000,000mB培养液" translatedTo "Biological tissue and culture medium must be loaded into the machine at once; each filling accepts up to 64 tissues and 1,000,000,000mB of culture medium")
+        command("组织从0点开始生长，依次经历幼年、成年、壮年和老年阶段；达到老年阶段上限后组织死亡并被清除" translatedTo "Tissue starts growing from 0 points and passes through Juvenile, Adult, Mature, and Elderly stages; it dies and is cleared after exceeding the Elderly stage limit")
+        command("可以通过组织传感器监测组织的生长点数" translatedTo "Tissue growth points can be monitored through the Tissue Sensor")
+
+        section(RunningRequirements)
+        command("运行需要同时放入生物组织、匹配等级的培养液和连接杆；培养液等级与机加工控制模块等级均不得低于组织要求" translatedTo "Running requires biological tissue, culture medium of a matching tier, and a connecting rod; both the medium tier and machining control module tier must meet the tissue requirement")
+        command("组织每5ticks生长一次；培养液营养可用率初始为100%，每秒降低0.1%，低于设定阈值后培养液会被清空并输出对应废液" translatedTo "Tissue grows every 5 ticks; culture medium starts at 100% nutrient availability and decreases by 0.1% per second, then is cleared and converted into its corresponding waste fluid below the configured threshold")
+        command("连接杆每20ticks损耗1点耐久；连接杆材料等级越高，发电倍率越高" translatedTo "The connecting rod loses 1 durability every 20 ticks; higher-tier connecting rod materials provide a higher generation multiplier")
+
+        section(EfficiencyBonus)
+        info("基础发电量 = 组织等级^连接杆等级 × 组织数量 × 培养液数量 × 8EU/t" translatedTo "Base power = tissue tier^connecting rod tier × tissue amount × culture medium amount × 8EU/t")
+        info("组织生长量 = 最大生长速率 × 营养可用率 ÷（饱和因子 + 营养可用率）/5ticks" translatedTo "Tissue growth = maximum growth rate × nutrient availability × (saturation factor + nutrient availability) per 5 ticks")
+        increase("能量控制模块等级为2时发电量×1.2，等级为3时发电量×1.5" translatedTo "An energy control module tier of 2 multiplies power by 1.2, and tier 3 by 1.5")
+        increase("通过电刺激模块对组织进行电刺激，可进一步提升发电量" translatedTo "Electrical stimulation of tissue through the electrical stimulation module can further increase power generation")
+        info("组织阶段决定电刺激增幅；组织数量和培养液数量决定基础发电量，营养可用率主要影响组织生长" translatedTo "The tissue stage determines the stimulation boost; tissue amount and culture medium amount determine base power, while nutrient availability mainly affects tissue growth")
+    }
+
+    @JvmField
+    val BioOscillationElectricStimulatorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("bio_oscillation_electric_stimulator")
+
+        section(MainFunction)
+        function("作为生物振荡发电机的模块，对其中的生物组织进行电刺激" translatedTo "Acts as a module for the Bio Oscillation Generator and electrically stimulates its biological tissue")
+        command(translatable("gtocore.biooscillation.button.set.electrical.stimulation.desc", GTOCore.difficulty * 6))
+        command("运行完成后消耗等量的组织生长点数，并按组织当前阶段的电刺激增幅提供临时发电加成" translatedTo "After completing, the stimulator consumes the corresponding amount of tissue growth points and grants a temporary power boost based on the tissue's current stage")
+
+        section(RunningRequirements)
+        command("模块必须连接至生物振荡发电机，且发电机内必须存在有效的生物组织" translatedTo "The module must be connected to a Bio Oscillation Generator containing valid biological tissue")
+        command("100%强度时，一次电刺激消耗组织1000点；耗电量为组织数据中标注的电刺激能耗，低于100%时按比例减少" translatedTo "At 100% intensity, one stimulation consumes 1,000 tissue points; power consumption equals the tissue's listed stimulation energy cost and scales with lower intensities")
+
+        section(EfficiencyBonus)
+        increase("电刺激增幅取决于组织当前阶段；刺激点数越多，增幅持续时间越长，最多持续60秒" translatedTo "The stimulation boost depends on the tissue's current stage; more stimulation points provide a longer boost, up to 60 seconds")
+        info("新的电刺激会累加剩余持续时间；新的增幅系数会覆盖旧的增幅系数" translatedTo "New stimulations add to the remaining duration; new boost coefficients overwrite old ones")
+    }
 
     @JvmField
     val pulseMachineMaintenancePedestalTooltips: ComponentListSupplier = ComponentListSupplier {
@@ -64,6 +126,158 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
     }
 
     @JvmField
+    val space3DPrinterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("space_3d_printer")
+
+        story("GTO的工程师们想到，只要在重力微乎其微的空间站中进行3D打印，就不用像在地球上那样，还要打印支架" translatedTo "GTO engineers thought that as long as 3D printing is done in a space station with minimal gravity, there is no need to print supports like on Earth")
+        story("于是，空间站3D打印机诞生了" translatedTo "Thus, the space station 3D printer was born")
+    }
+
+    @JvmField
+    val DataExportMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_export_machine")
+
+        section(MainFunction)
+        command("用于将科技树解锁的数据导出到闪存等存储设备中" translatedTo "Used to export data unlocked in the tech tree to flash drives and other storage devices")
+        command("导出需要消耗7680EU/t与一定时间进行数据拷贝" translatedTo "Exporting requires consuming 7680 EU/t and a certain amount of time for data copying")
+    }
+
+    @JvmField
+    val DataCenterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_center")
+
+        section(MainFunction)
+        function("用于存储大量数据的多功能数据中心" translatedTo "A multifunctional data center for storing large amounts of data")
+        function("同时，可以接受算力输入进行数据处理与研究" translatedTo "At the same time, it can accept computational workload input for data processing and research")
+        command("接受算力的上限为16*2^(玻璃等级-6)CWU/t" translatedTo "The upper limit of computational workload accepted is 16*2^(glass level-6) CWU/t")
+        command("每个数据仓的槽位与每个安装的配方数据分别额外提供0.01%和1%的算力输入上限（独立乘区）" translatedTo "Each data hatch slot and each installed recipe data additionally provides 0.01% and 1% of the computational workload input limit (independently multiplied)")
+        info("等效上限公式：16*2^(玻璃等级-6)*(1+数据仓槽位数*0.0001)*(1+配方数据数*0.01)CWU/t" translatedTo "Equivalent upper limit formula: 16*2^(glass level-6)*(1+data hatch slot count*0.0001)*(1+recipe data count*0.01) CWU/t")
+        guide("从机器UI的左侧访问科技树与便捷导出功能" translatedTo "Access the tech tree and convenient export functions from the left side of the machine UI")
+        section(RunningRequirements)
+        command("闲置时，每个数据/光学仓耗能为§f1920 EU/t§7。" translatedTo "When idle, each data/optical hatch consumes §f1920 EU/t§7.")
+        command("连接时，每个已连接的数据/光学仓耗能为§f30,720 EU/t§7。" translatedTo "When connected, each connected data/optical hatch consumes §f30,720 EU/t§7.")
+        command("处于研究状态时，电力消耗翻倍，并需要100mB/秒的多氯联苯冷却剂" translatedTo "When in research state, power consumption is doubled and requires 100mB/s of PCB coolant")
+    }
+
+    @JvmField
+    val ScanStationMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("scan_station_machine")
+
+        section(MainFunction)
+        function("将存储在晶片中的数据进行解析，转化为团队共享的研究点数" translatedTo "Parse the data stored in the data crystal and convert it into team-shared research points")
+        command("无论内部有多少数据，每张晶片的解析耗时与耗能均为固定值" translatedTo "Regardless of how much data is inside, the parsing time and energy consumption for each data crystal are fixed")
+    }
+
+    @JvmField
+    val IntelligentScanningProxyTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("intelligent_scanning_me_proxy")
+
+        section(MainFunction)
+        function("连接ME网络，将其中的物品与流体提供给智能扫描管理平台" translatedTo "Connects to an ME network and provides its items and fluids to the Intelligent Scanning Management Platform")
+        command("数据晶体不会作为扫描目标；带有标签的物品或流体按无标签的基础类型处理" translatedTo "Data crystals are excluded from scan targets; tagged items and fluids are treated as their untagged base types")
+        info("只记录库存中的物品与储量超过1000mB的流体，并每2秒刷新一次" translatedTo "Records items and fluids stored above 1,000mB, refreshing every 2 seconds")
+    }
+
+    @JvmField
+    val IntelligentScanningManagementPlatformMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("intelligent_scanning_management_platform")
+
+        section(MainFunction)
+        function("从ME网络消耗物品或流体进行扫描，并将扫描数据写入数据晶片" translatedTo "Consumes items or fluids from an ME network to scan them and write the scan data to a data crystal")
+        command("扫描目标可以在机器GUI的扫描队列页面管理" translatedTo "Scan targets can be managed on the scan queue page of the machine GUI")
+        section("工作模式：选定物品模式" translatedTo "Working Mode: Selected Item Mode")
+        content("从界面选择多项物品或流体作为扫描目标" translatedTo "Select multiple items or fluids from the interface as scan targets")
+        content("机器会试图重复扫描它们，直到填满数据晶片" translatedTo "The machine will attempt to repeatedly scan them until the data crystal is filled")
+        content("选择多项组成材料相同的物品或流体时，机器只会扫描其中的一项" translatedTo "When selecting multiple items or fluids with the same composition, the machine will only scan one of them")
+        section("工作模式：选定物品单次扫描模式" translatedTo "Working Mode: Selected Item Single Scan Mode")
+        content("从界面选择多项物品或流体作为扫描目标" translatedTo "Select multiple items or fluids from the interface as scan targets")
+        content("机器会试图扫描它们1次，然后停止扫描" translatedTo "The machine will attempt to scan them once, then stop scanning")
+        section("工作模式：未学习物品模式" translatedTo "Working Mode: Unlearned Item Mode")
+        content("扫描所有未学习的物品或流体，每种仅扫描一个目标" translatedTo "Scans all unlearned items or fluids, only one target of each type is scanned")
+        content("机器会持续检测并将新增的未学习物品或流体加入扫描队列" translatedTo "The machine will continuously detect and add newly unlearned items or fluids to the scan queue")
+        section("工作模式：未学习物品单次扫描模式" translatedTo "Working Mode: Unlearned Item Single Scan Mode")
+        content("扫描所有未学习的物品或流体，每种仅扫描一个目标" translatedTo "Scans all unlearned items or fluids, only one target of each type is scanned")
+        content("在未找到新的未学习物品或流体后，机器将停止扫描" translatedTo "The machine will stop scanning after no new unlearned items or fluids are found")
+        section(RunningRequirements)
+        important("扫描使用的晶片必须额外输入到机器中，且每次扫描消耗1个晶片" translatedTo "The data crystal used for scanning must be additionally input into the machine, and each scan consumes one data crystal")
+        command("扫描物品时花费1个物品，扫描流体时花费1,000mB流体" translatedTo "Scanning an item consumes 1 item, scanning a fluid consumes 1,000mB of fluid")
+        info("每次运行持续%s秒，耗能为8×本次扫描的数据字节数+8 EU/t".translatedWithArgs("Each operation lasts %s seconds and uses 8 × scanned data bytes + 8 EU/t", GTOCore.difficulty * 10))
+        info("同一种材料每次运行只扫描一个目标" translatedTo "Only one target of the same material is scanned per operation")
+    }
+
+    @JvmField
+    val CatalystDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("catalyst_data_holder")
+
+        section(MainFunction)
+        function("安装在化工厂等场所，用于监测使用催化剂的反应" translatedTo "Installed in chemical plants and other places, used to monitor reactions that use catalysts")
+        function("每次机器运行包含催化剂的反应时，催化剂数据仓将记录该次配方的总效率" translatedTo "Each time the machine runs a reaction that contains a catalyst, the catalyst data hatch will record the total efficiency of that recipe")
+        info("总效率为配方时间乘以能耗与标准配方时间与能耗的比值" translatedTo "Total efficiency is the product of recipe time and energy consumption divided by the standard recipe time and energy consumption")
+        command("配方完成后，记录并产生(总效率×配方并行数×原始配方等级)的催化研究点数，并存储于机器内的晶片中" translatedTo "After the recipe is completed, the catalyst data hatch will record and generate (total efficiency × recipe parallelism × original recipe level) catalyst research points, which will be stored in the data crystal inside the machine")
+    }
+
+    @JvmField
+    val EnergyDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("energy_data_holder")
+
+        section(MainFunction)
+        function("安装在能源产生相关的机器上，对能源稳定性与功率进行监测" translatedTo "Installed on energy generation-related machines to monitor energy stability and power")
+        command(
+            Component.translatable("gtocore.lang.energy_data_holder.2", 15 + 15 * GTOCore.difficulty)
+                .toComponentSupplier(),
+        )
+        command("此后每次机器完成输出UEV级及以上功率的配方时，能源数据仓将转化(功率等级 - 10)²的能源研究点数，并存储于机器内的晶片中" translatedTo "Thereafter, each time the machine finishes recipes that output UEV-level or higher power, the energy data hatch will convert (power level - 9)² energy research points and store them in the data crystal inside the machine")
+    }
+
+    @JvmField
+    val ThermaldynamicsDataHolder: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("thermodynamic_data_holder")
+
+        section(MainFunction)
+        function("配合热力学分析平台使用，用于热力学相关的研究" translatedTo "Used in conjunction with the thermodynamic analysis platform for thermodynamics-related research")
+    }
+
+    @JvmField
+    val ThermodynamicAnalysisPlatformMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("thermodynamic_analysis_platform_machine")
+
+        story("一名热力膨胀的前员工阐述到，他之前发现，热力膨胀公司的业务领域涉及到机械，材料，装备等方方面面，但在热力学研究方面却投入甚少" translatedTo "A former employee of Thermal Expansion stated that he previously found that Thermal Expansion's business areas involved machinery, materials, equipment, and many other aspects, but invested very little in thermodynamics research")
+        story("(而且热力膨胀公司近几年好像还在深耕神秘学领域，并且进展甚微)" translatedTo "(Moreover, Thermal Expansion seems to have been delving into the field of thaumaturgy in recent years, with little progress)")
+        story("于是他带着他自己研发的热力学分析平台从热力膨胀公司跳槽到GTO，并在GTO的支持下，成立了热力学研究所" translatedTo "So he left Thermal Expansion with his own developed thermodynamic analysis platform and, with GTO's support, established the Thermodynamics Research Institute")
+        section(MainFunction)
+        function("用于监测热力学相关的实验" translatedTo "Used to monitor thermodynamics-related experiments")
+        info("机器结构中，可见有两个热力学封闭体系，分别为§b低温体系§r与§c高温体系§r" translatedTo "In the machine structure, there are two independent thermodynamic closed systems, namely §blow-temperature system§r and §chigh-temperature system§r")
+        info("当两边体系温差达到热平衡时（温差不超过10K即可计入），热力学分析平台将开始进行热力学分析" translatedTo "When the temperature difference between the two systems reaches thermal equilibrium(<10K), the thermodynamic analysis platform will begin thermodynamic analysis")
+        info("分析持续30秒，期间可以通过对应的热传导仓向两边体系输入热量以调节温差" translatedTo "The analysis lasts for 30 seconds, during which heat can be input to both systems through the corresponding thermal conduction hatches to adjust the temperature difference")
+        command("分析结束时，两侧体系的温差越大，产生的热力学研究点数越多" translatedTo "At the end of the analysis, the greater the temperature difference between the two systems, the more thermodynamic research points are generated")
+        command("每次分析产生的热力学研究点数 = (温差/250K)" translatedTo "The thermodynamic research points generated by each analysis = (temperature difference / 250K)")
+
+        section(RunningRequirements)
+        command("分析期间，热力学分析平台每秒消耗§f30,720 EU/t§r" translatedTo "During the analysis, the thermodynamic analysis platform consumes §f30,720 EU/t§r per second")
+    }
+
+    @JvmField
+    val LaserComputationTestingPlatformMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("laser_computation_testing_platform_machine")
+
+        story("光子计算是GTO集团近年重点研究的方向之一" translatedTo "Photon computation is one of the key research directions of GTO Group in recent years")
+        story("攻克了它，便能使设备的计算与处理能力达到前所未有的高度" translatedTo "Overcoming it will enable the computing and processing capabilities of devices to reach unprecedented heights")
+        story("还能让各种杂碎的产线也能得到驾驭超高能的能力，生产力获得史诗级的飞跃" translatedTo "It can also allow various miscellaneous production lines to gain the ability to harness ultra-high energy, resulting in an epic leap in productivity")
+
+        section(MainFunction)
+        content("机制施工中..." translatedTo "Mechanism under construction...")
+    }
+
+    @JvmField
+    val DataHolderUniversal: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_holder_universal")
+
+        section("数据支架仓" translatedTo "About Data Holder")
+        info("这种仓室可以收集不同来源的数据，并转化为研究点数存储于晶片中" translatedTo "This hatch can collect data from different sources and convert it into research points stored in the data crystal")
+        info("安装到对应的机器上以生效" translatedTo "Install it on the corresponding machine to take effect")
+    }
+
+    @JvmField
     val directedHyperCubeMachineTooltips: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("directed_hyper_cube_machine")
 
@@ -85,7 +299,8 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         ok("为ME网络提供额外的能量供应" translatedTo "Provides additional energy supply for the ME network")
         command(
             ("每一点EU可以转换成 " translatedTo "Each point of EU can be converted into ") +
-                PowerUnits.FE.convertTo(PowerUnits.AE, ConfigHolder.INSTANCE.compat.energy.euToFeRatio.toDouble()).toLiteralSupplier() +
+                PowerUnits.FE.convertTo(PowerUnits.AE, ConfigHolder.INSTANCE.compat.energy.euToFeRatio.toDouble())
+                    .toLiteralSupplier() +
                 (" 点AE能量" translatedTo " points of AE energy"),
         )
         info("使用ME能量访问仓导出能量到ME网络" translatedTo "Use the ME Energy Access Hatch to export energy to the ME network")
@@ -100,8 +315,10 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         command("用于在空间站内进行生物研究" translatedTo "Used for biological research in the space station")
+        important("生物研究的运行结束时辐射剂量指的是，配方的最后一刻时，机器需要满足的辐射剂量要求" translatedTo "The radiation dose at the end of biological research refers to the radiation dose requirement that the machine needs to meet at the last moment of the recipe")
+        error("生物研究配方仅采用常规超频模式运行" translatedTo "Biological research recipes only run in normal overclocking mode")
         command("超净间环境等级由环境维护舱决定" translatedTo "The cleanroom environment level is determined by the Environmental Maintenance Module")
-        info("当运行培养缸或生化反应室配方时，提供可调节的0~80Sv背景辐射环境" translatedTo "Provides an adjustable 0~80Sv background radiation environment when running bioreactor or biochemical reaction chamber recipes")
+        info("机器本体可以为各种配方提供可调节的0~80Sv背景辐射环境" translatedTo "The machine body can provide an adjustable 0~80Sv background radiation environment for various recipes")
     }
 
     @JvmField
@@ -110,16 +327,93 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         command("与当前星球的太空电梯连接" translatedTo "Connects to the space elevator of the current planet")
         increase(
-            "连接后，空间站各运行模块（如轨道冶炼舱等）可获得(0.8^n)×的耗时减免，n为太空电梯的动力模块等级" translatedTo
-                "After connecting, each operating module of the space station (such as orbital smelting chamber, etc.) can get a time reduction of (0.8^n)×, where n is the power module level of the space elevator",
+            "连接后，空间站各运行模块（如轨道冶炼舱等）可获得(0.9^n)×的耗时减免，n为太空电梯的动力模块等级" translatedTo
+                "After connecting, each operating module of the space station (such as orbital smelting chamber, etc.) can get a time reduction of (0.9^n)×, where n is the power module level of the space elevator",
         )
         increase(
-            "太空电梯安装的模块也将获得额外(0.8^(n/2))×的耗时减免" translatedTo
-                "Modules installed on the space elevator will also receive a time reduction of (0.8^(n/2))×",
+            "太空电梯安装的模块也将获得额外(0.9^(n/2))×的耗时减免" translatedTo
+                "Modules installed on the space elevator will also receive a time reduction of (0.9^(n/2))×",
         )
-        decrease("会增加太空电梯50%的算力消耗" translatedTo "Increases the space elevator's Computational Workload consumption by 50%")
+        increase(
+            "如果安装了高能转换调配舱，则底数0.9将变为0.8" translatedTo
+                "If a high-energy conversion and allocation chamber is installed, the base 0.9 will become 0.8",
+        )
+        decrease(
+            Component.translatable(
+                "gtocore.lang.space_elevator_connector_module.3",
+                50.0 + 150.0 * GTOCore.difficulty,
+            ).toComponentSupplier(),
+        )
 
         command("该模块仅能连接在其他模块的下方" translatedTo "This module can only connect below other modules")
+    }
+
+    @JvmField
+    val SpaceElevatorEngineeringDataModule: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("space_elevator_engineering_data_module")
+
+        section(MainFunction)
+        command("收集太空电梯其他模块的运行数据" translatedTo "Collects operational data from other modules of the space elevator")
+        command(
+            Component.translatable(
+                "gtocore.lang.space_elevator_engineering_data_module.2",
+                if (GTOCore.isExpert()) 75 else 50,
+            ).toComponentSupplier(),
+        )
+        command("转化为的研究点数将存储于通用数据仓的晶片中" translatedTo "The converted research points will be stored in the data crystal of the universal data hatch")
+        increase("太空电梯动力模块等级为n时，每次收集需要的运行次数乘以(4/(3+n))" translatedTo "When the power module level of the space elevator is n, the number of runs needed for each collection is multiplied by (4/(3+n))")
+        increase("连接到空间站时，转化为的研究点数翻倍" translatedTo "When connected to the space station, the converted research points are doubled")
+    }
+
+    @JvmField
+    val DataFormTestingPlantMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("data_form_testing_plant_machine")
+
+        story("为什么有时，大量的数据就能够被极其密集的存储，而有时这些数据却形成了物质球/奇点这样的不可逆的物质形态？" translatedTo "Why is it that sometimes a large amount of data can be stored extremely densely, while other times this data forms irreversible material forms such as matter balls/singularities?")
+        story("为什么有时，数据的压缩率可以达到极限，而有时却无法被压缩？" translatedTo "Why is it that sometimes the compression rate of data can reach its limit, while at other times it cannot be compressed?")
+        story("欢迎收看这一期的我爱发明《数据形态测试工厂》" translatedTo "Welcome to this episode of I Love Invention: 'Data Form Testing Plant'")
+        section(MainFunction)
+        function("用于测试数据存储形态与压缩能力的数据形态测试工厂" translatedTo "A data form testing plant used to test data storage forms and compression capabilities")
+        info("根据配方输入物品，选择1号电路即可开始测试" translatedTo "Select circuit 1 to start testing based on the recipe input items")
+        info("运行共分为两个阶段：测试阶段与分析阶段" translatedTo "The operation is divided into two stages: the testing stage and the analysis stage")
+        section("测试阶段" translatedTo "Testing Stage")
+        content("测试阶段通过数据形式测试机ME接口向机器提供任意AE物质" translatedTo "During this stage, provide any AE material to the machine through the Data Form Testing ME Interface")
+        content("提供的AE物质将被消耗；每次提供都会重置测试进度并增加碎片化等级" translatedTo "Provided AE materials are consumed; each insertion resets testing progress and increases fragmentation")
+        command("配方的数据密度容量决定测试阶段最多可接受的AE物质数据量" translatedTo "The recipe's Data Density Capacity determines the maximum amount of AE material data accepted during testing")
+        command("碎片化等级决定分析阶段的耗时" translatedTo "Fragmentation level determines the time consumption of the analysis stage")
+        info("每次写入时，碎片化等级将增加：类型增量+min(ceil(初始数据密度容量/本次实际写入字节)-1,60)" translatedTo "Each time data is written, the fragmentation level will increase: type increase + min(ceil(initial capacity / bytes written this insertion) - 1, 60)")
+        info("本次实际写入不足1字节时，数量项固定为60" translatedTo "If less than one byte is written, the amount term is fixed at 60")
+        info("若当前输入与上次输入相同，则类型增量为0" translatedTo "If the current input is the same as the previous input, the type increase is 0")
+        info("若当前输入与之前所有的输入都不同，则类型增量为2；若当前输入与之前的输入中有相同的，则类型增量为15" translatedTo "If the current input is different from all previous inputs, the type increase is 2; if the current input matches any previous input, the type increase is 15")
+        guide("中断输入或是填满所有数据密度容量后，机器会自动进入分析阶段" translatedTo "The machine automatically enters the analysis stage when input is interrupted or all data density capacity is filled")
+        section("分析阶段" translatedTo "Analysis Stage")
+        command("根据测试结果，可以转化为数据存储研究点数，并写入存储数据支架中的数据晶体" translatedTo "Based on the test results, it can be converted into data storage research points and written to the data crystal in the Storage Data Holder")
+        info("研究点数=floor(0.1×log₂(初始容量)²×已记录输入项目数×填充比例²)" translatedTo "Data Storage research points = floor(0.1 × log₂(initial capacity)² × recorded input entries × fill ratio²)")
+        info("其中，填充比例=已写入字节/初始容量；已记录输入项目数以测试阶段机器记录为准" translatedTo "Fill ratio = bytes written / initial capacity; recorded input entries are those tracked by the machine during testing")
+        command("分析阶段耗时为(20+碎片化等级)秒，耗能与测试阶段相同" translatedTo "The analysis stage takes (20 + fragmentation level) seconds and uses the same EU/t as the testing stage")
+    }
+
+    @JvmField
+    val NeutronIrradiationPartMachineTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("neutron_irradiation_part_machine")
+
+        section(MainFunction)
+        function("中子辐照室的辐照仓，每个部件提供16个独立辐照槽位" translatedTo "An irradiation part for the Neutron Irradiation Chamber; each part provides 16 independent irradiation slots")
+        content("每个槽位只能放置1个物品；放入物品后自动开始中子辐照，辐照完成后在原槽位输出产物" translatedTo "Each slot holds one item stack; inserted items automatically match Neutron Irradiation recipes, and outputs replace them in the same slot when irradiation finishes")
+        content("每个正在辐照的槽位每5tick消耗1eV中子通量，且配方的最低中子通量不满足时暂停辐照" translatedTo "Each irradiating slot consumes 1eV of neutron flux every 5 ticks, and irradiation pauses if the recipe's minimum neutron flux is not met")
+        command("每个辐照仓的中子通量上限为10,000keV（10MeV）" translatedTo "Each irradiation part has a neutron flux limit of 10,000keV (10MeV)")
+    }
+
+    @JvmField
+    val NeutronIrradiationChamberTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("neutron_irradiation_chamber")
+
+        section(MainFunction)
+        function("无需电力，消耗中子源为辐照部件提供中子通量" translatedTo "Requires no power; consumes neutron sources to provide neutron flux to irradiation parts")
+        command("每秒消耗输入中的中子源，并将其转化为中子通量，均分到每个辐照仓中" translatedTo "Consumes neutron sources from input per second and converts them into neutron flux, evenly distributed to each irradiation part")
+        info("反中子源：石墨粉-1000eV，小堆石墨粉-250eV，小撮石墨粉-100eV；" translatedTo "Flux reducers: graphite dust -1,000eV, small pile of graphite dust -250eV, tiny pile of graphite dust -100eV")
+        info("中子源：锑-铍源+10eV，钚-铍源+100eV，锎-252粒子源+1000eV" translatedTo "Neutron sources: antimony-beryllium +10eV, plutonium-beryllium +100eV, californium-252 +1,000eV")
+        command("可安装中子传感器；传感器默认报告所有辐照仓中的最低通量，也可切换为平均通量，单位为MeV" translatedTo "Install at most one Neutron Sensor; it reports the minimum flux among parts by default, or the average flux when switched, in MeV")
     }
 
     // 合金冶炼炉
@@ -339,5 +633,70 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         function("为ME网络提供虚拟物品" translatedTo "Provides virtual items for the ME network")
         increase("虚拟物品可用于替代样板中不消耗的物品" translatedTo "Virtual items can be used to replace items in the blueprint that do not consume resources")
         content("将任何物品放入供应机中均可转换为虚拟物品" translatedTo "Place any item into the supply machine to convert it into a virtual item")
+    }
+
+    @JvmField
+    val BeamGeneratorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_generator")
+
+        section(MainFunction)
+        function("根据运行的配方发射高能光束射线" translatedTo "Emits high-energy beam rays based on the running recipe")
+        command("超频规则：每提升4倍电压，光强等级提升2倍" translatedTo "Overclocking rule: For every 4 times increase in voltage, the light intensity level increases by 2 times")
+        content("在机器gui中调节射线的水平角与俯仰角" translatedTo "Adjust the horizontal and pitch angles of the beam in the machine GUI")
+
+        important("光束射线在非超净间的环境中，光强会受到每方块0.95倍系数的衰减" translatedTo "In a non-cleanroom environment, the light intensity of the beam will be attenuated by a factor of 0.95 per block")
+    }
+
+    @JvmField
+    val BeamRedirectorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_redirector")
+
+        section(MainFunction)
+        function("用于改变高能光束射线的方向" translatedTo "Used to change the direction of high-energy beam rays")
+        command("在机器GUI中调节射线的水平角与俯仰角" translatedTo "Adjust the horizontal and pitch angles of the beam in the machine GUI")
+    }
+
+    @JvmField
+    val ExcitationCrystalTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("excitation_crystal")
+
+        section(MainFunction)
+        function("如果它周围有晶体激发器，它将会被激发并使穿过的高能光束射线的光强翻倍" translatedTo "If there are crystal exciters around it, it will be excited and double the light intensity of the high-energy beam rays passing through it")
+        command("该过程需要(光强 * 4096EU/t)的能量" translatedTo "This process requires (light intensity * 4096 EU/t) of energy")
+        command("并且激发功率受到晶体激发器的等级限制（至多2A*机器等级）" translatedTo "And the excitation power is limited by the level of the crystal exciter (up to 2A * machine level)")
+    }
+
+    @JvmField
+    val CrystalExciterTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("crystal_exciter")
+        section(MainFunction)
+        function("用于激发周围的晶体" translatedTo "Used to excite the surrounding crystals")
+        command("需要消耗能量来激发晶体" translatedTo "Requires energy consumption to excite the crystals")
+    }
+
+    @JvmField
+    val BeamSemiReflectorTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_semi_reflector")
+
+        section(MainFunction)
+        function("将穿过的高能光束射线分为两路，一路继续前进，一路被反射" translatedTo "Splits the high-energy beam rays passing through into two paths, one continues forward, and the other is reflected")
+        command("在机器GUI中调节射线的反射率" translatedTo "Adjust the reflectivity of the beam in the machine GUI")
+    }
+
+    @JvmField
+    val BeamPolarizerTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_polarizer")
+
+        section(MainFunction)
+        function("改变穿过的高能光束射线的振动方向" translatedTo "Changes the vibration direction of the high-energy beam rays passing through")
+        command("旋光角度由机器内的流体决定" translatedTo "The angle of rotation is determined by the fluid inside the machine")
+    }
+
+    @JvmField
+    val BeamAccessHatchTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("beam_access_hatch")
+
+        section(MainFunction)
+        function("为机器提供导入精确的高能光束射线" translatedTo "Provides precise high-energy beam rays for the machine")
     }
 }

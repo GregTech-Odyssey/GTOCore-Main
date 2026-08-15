@@ -26,11 +26,11 @@ import java.util.List;
 
 public final class VacuumPumpMachine extends SimpleTieredMachine implements IVacuumMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int vacuumTier;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int totalEU;
     @Getter
     private TickableSubscription tickSubs;

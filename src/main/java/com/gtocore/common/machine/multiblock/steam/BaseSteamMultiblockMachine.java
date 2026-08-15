@@ -42,7 +42,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
     private int euMultiplier;
     private double conversionRate;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int amountOC;
 
     private final long eut;

@@ -40,21 +40,21 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
     private final CelestialHandler celestialHandler;
 
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long solaris = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long lunara = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long voidflux = 0;
     @Getter
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long stellarm = 0;
 
     private CelestialHandler.Mode mode = CelestialHandler.Mode.OVERWORLD;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private short accelerate = 0;
 
     private int timing;

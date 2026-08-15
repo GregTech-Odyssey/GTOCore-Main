@@ -3,10 +3,10 @@ package com.gtocore.common.machine.multiblock.electric;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.ThermalConductorHatchPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBasePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchBridgePartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchComputationPartMachine;
-import com.gtocore.common.machine.multiblock.part.research.ExResearchCoolerPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBasePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
+import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchCoolerPartMachine;
 
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import earth.terrarium.adastra.common.registry.ModItems;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,9 +81,9 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     @Setter
     private ThermalConductorHatchPartMachine ThermalConductorHatchPart;
     private final ConditionalSubscriptionHandler maxCWUtModificationSubs;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int machineTier = 1;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int maxCWUtModification;
     private boolean incompatible;
     private boolean canBridge;
@@ -93,6 +94,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     private final Reference2IntOpenHashMap<IItem> componentsMap = new Reference2IntOpenHashMap<>();
     private int lastTimeStamp;
     private long allocatedCWUt;
+    @Getter
     private long cacheCWUt;
     private long maxEUt;
     private GTRecipeDefinition runRecipe;
@@ -363,7 +365,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         return 0;
     }
 
-    private long getAdjustedMaxCWU() {
+    public long getAdjustedMaxCWU() {
         return (getMaxCWUt() * maxCWUtModification / 10000);
     }
 
@@ -438,7 +440,8 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         textList.add(Component.translatable("gtocore.machine.cwut_modification", ((double) maxCWUtModification / 10000)).withStyle(ChatFormatting.AQUA));
         textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_coolant_required", Component.literal(coolingAmountRequired + " / " + coolingAmountProvided + "  " + coolantAmount).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
         textList.add(Component.translatable("gtocore.machine.components_list").withStyle(ChatFormatting.YELLOW));
-        for (var entries : componentsMap.reference2IntEntrySet()) {
+        for (var it = componentsMap.reference2IntEntrySet().fastIterator(); it.hasNext();) {
+            var entries = it.next();
             textList.add(Component.literal(" - ").append(entries.getKey().gtolib$getReadOnlyStack().getDisplayName()).append(Component.literal(" x" + entries.getIntValue())).withStyle(ChatFormatting.GRAY));
         }
     }

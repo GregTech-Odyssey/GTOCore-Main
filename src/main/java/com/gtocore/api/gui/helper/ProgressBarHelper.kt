@@ -25,9 +25,23 @@ object ProgressBarHelper {
      * @return 实际绘制尺寸 (width, height)
      */
     @OnlyIn(Dist.CLIENT)
-    fun drawProgressBarWithText(graphics: GuiGraphics, progress: Int, totalWidth: Int, totalHeight: Int = 7, text: String, borderWidth: Int = 1, progressColorStyle: ProgressBarColorStyle = ProgressBarColorStyle.DEFAULT_GREEN, backgroundColor: Int = 0xFF404040.toInt(), borderColor: Int = 0xFF000000.toInt(), textColor: Int = 0xFFFFFFFF.toInt()): Pair<Int, Int> {
-        val safeProgress = progress.coerceIn(0, 100)
-        val progressFloat = safeProgress / 100f
+    fun drawProgressBarWithText(graphics: GuiGraphics, progress: Int, totalWidth: Int, totalHeight: Int = 7, text: String, borderWidth: Int = 1, progressColorStyle: ProgressBarColorStyle = ProgressBarColorStyle.DEFAULT_GREEN, backgroundColor: Int = 0xFF404040.toInt(), borderColor: Int = 0xFF000000.toInt(), textColor: Int = 0xFFFFFFFF.toInt()): Pair<Int, Int> = drawProgressBarWithText(
+        graphics = graphics,
+        progresses = MultiProgressData(
+            progressPercentages = listOf(progress),
+            progressColorStyles = listOf(progressColorStyle),
+        ),
+        totalWidth = totalWidth,
+        totalHeight = totalHeight,
+        text = text,
+        borderWidth = borderWidth,
+        backgroundColor = backgroundColor,
+        borderColor = borderColor,
+        textColor = textColor,
+    )
+
+    @OnlyIn(Dist.CLIENT)
+    fun drawProgressBarWithText(graphics: GuiGraphics, progresses: MultiProgressData, totalWidth: Int, totalHeight: Int = 7, text: String, borderWidth: Int = 1, backgroundColor: Int = 0xFF404040.toInt(), borderColor: Int = 0xFF000000.toInt(), textColor: Int = 0xFFFFFFFF.toInt()): Pair<Int, Int> {
         val innerWidth = totalWidth - borderWidth * 2
         val innerHeight = totalHeight - borderWidth * 2
         val atomicZOrder = AtomicInteger(0)
@@ -64,21 +78,49 @@ object ProgressBarHelper {
                 zOrder = atomicZOrder,
             )
         }
-        val progressWidth = (innerWidth * progressFloat).roundToInt()
-        if (progressWidth > 0 && innerHeight > 0) {
-            val color = when (progressColorStyle) {
-                is ProgressBarColorStyle.Solid -> progressColorStyle.color
-                is ProgressBarColorStyle.Segmented -> getSegmentedColor(progressFloat, progressColorStyle.segments)
-                is ProgressBarColorStyle.Gradient -> interpolateColor(progressColorStyle.startColor, progressColorStyle.endColor, progressFloat)
-                is ProgressBarColorStyle.MultiGradient -> getMultiGradientColor(progressFloat, progressColorStyle.colors)
+        var bx = borderWidth
+        for (i in progresses.progressPercentages.indices) {
+            val progress = progresses.progressPercentages[i]
+            val progressColorStyle = progresses.progressColorStyles.getOrElse(i) { ProgressBarColorStyle.DEFAULT_GREEN }
+            val safeProgress = progress.coerceIn(0, 100)
+            val progressFloat = safeProgress / 100f
+            val progressWidth = (innerWidth * progressFloat).roundToInt()
+            if (progressWidth > 0 && innerHeight > 0) {
+                val color = when (progressColorStyle) {
+                    is ProgressBarColorStyle.Solid -> progressColorStyle.color
+
+                    is ProgressBarColorStyle.Segmented -> getSegmentedColor(
+                        progressFloat,
+                        progressColorStyle.segments,
+                    )
+
+                    is ProgressBarColorStyle.Gradient -> interpolateColor(
+                        progressColorStyle.startColor,
+                        progressColorStyle.endColor,
+                        progressFloat,
+                    )
+
+                    is ProgressBarColorStyle.MultiGradient -> getMultiGradientColor(
+                        progressFloat,
+                        progressColorStyle.colors,
+                    )
+                }
+                renderAndAddZOrder(
+                    graphics,
+                    {
+                        DrawerHelper.drawSolidRect(
+                            graphics,
+                            bx,
+                            borderWidth,
+                            progressWidth,
+                            innerHeight,
+                            color,
+                        )
+                    },
+                    zOrder = atomicZOrder,
+                )
+                bx += progressWidth
             }
-            renderAndAddZOrder(
-                graphics,
-                {
-                    DrawerHelper.drawSolidRect(graphics, borderWidth, borderWidth, progressWidth, innerHeight, color)
-                },
-                zOrder = atomicZOrder,
-            )
         }
         if (text.isNotEmpty()) {
             val font = Minecraft.getInstance().font
@@ -146,6 +188,8 @@ object ProgressBarHelper {
     }
     // endregion
 }
+
+data class MultiProgressData(val progressPercentages: List<Int>, val progressColorStyles: List<ProgressBarColorStyle>)
 
 /**
  * 进度条颜色样式

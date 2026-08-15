@@ -20,6 +20,7 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -51,9 +52,9 @@ public record TradeEntry(
     public TradeEntry {
         texture = texture != null ? texture : GuiTextures.GREGTECH_LOGO;
         unlockCondition = unlockCondition != null ? unlockCondition : UNLOCK_BASE;
-        description = ImmutableList.copyOf(description != null ? description : List.of());
-        inputGroup = inputGroup != null ? inputGroup : new TradeGroup(List.of(), List.of(), new O2LOpenCacheHashMap<>(), BigInteger.ZERO, BigInteger.ZERO);
-        outputGroup = outputGroup != null ? outputGroup : new TradeGroup(List.of(), List.of(), new O2LOpenCacheHashMap<>(), BigInteger.ZERO, BigInteger.ZERO);
+        description = ImmutableList.copyOf(description != null ? description : Collections.emptyList());
+        inputGroup = inputGroup != null ? inputGroup : new TradeGroup(Collections.emptyList(), Collections.emptyList(), new O2LOpenCacheHashMap<>(), BigInteger.ZERO, BigInteger.ZERO);
+        outputGroup = outputGroup != null ? outputGroup : new TradeGroup(Collections.emptyList(), Collections.emptyList(), new O2LOpenCacheHashMap<>(), BigInteger.ZERO, BigInteger.ZERO);
     }
 
     // ------------------- 核心业务方法 -------------------

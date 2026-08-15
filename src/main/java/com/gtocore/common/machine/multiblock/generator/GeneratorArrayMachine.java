@@ -72,9 +72,9 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     private static int generatorLimit = 16;
     private WirelessEnergyContainer WirelessEnergyContainerCache;
     private MachineDefinition machineDefinitionCache;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean isw;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long eut;
 
     private static boolean isEligibleRecipeType(GTRecipeType type) {

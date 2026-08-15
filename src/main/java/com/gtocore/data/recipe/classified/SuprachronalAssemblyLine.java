@@ -12,6 +12,9 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import static com.gtocore.common.data.GTORecipeTypes.SUPRACHRONAL_ASSEMBLY_LINE_RECIPES;
+import static com.gtocore.data.techtree.BaseNodes.Create;
+import static com.gtocore.data.techtree.BaseNodes.SuprachronalCircuits;
+import static com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLinemax;
 
 final class SuprachronalAssemblyLine {
 
@@ -44,6 +47,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(16384)
                         .EUt(2013265920))
+                .researchNode(Create)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_robot_arm")
@@ -67,6 +71,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(4096)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_conveyor_module")
@@ -89,6 +94,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(4096)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_ev")
@@ -106,6 +112,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_lv")
@@ -123,6 +130,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_iv")
@@ -140,6 +148,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_hv")
@@ -157,6 +166,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_mv")
@@ -174,6 +184,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_uv")
@@ -191,6 +202,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_luv")
@@ -208,6 +220,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_max")
@@ -225,6 +238,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_opv")
@@ -242,6 +256,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_uev")
@@ -259,6 +274,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_uhv")
@@ -276,6 +292,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_uiv")
@@ -293,6 +310,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_field_generator")
@@ -316,6 +334,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(6114)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_ulv")
@@ -333,6 +352,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_uxv")
@@ -350,6 +370,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("suprachronal_circuit_zpm")
@@ -367,6 +388,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(8192)
                         .EUt(2013265920))
+                .researchNode(SuprachronalCircuits)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_electric_piston")
@@ -389,6 +411,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(4096)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_electric_pump")
@@ -411,6 +434,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(4096)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_emitter")
@@ -434,6 +458,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(6114)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_electric_motor")
@@ -458,6 +483,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(4096)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_sensor")
@@ -481,6 +507,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(6114)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
 
         SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("max_integrated_control_core")
@@ -505,6 +532,7 @@ final class SuprachronalAssemblyLine {
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(6114)
                         .EUt(2013265920))
+                .researchNode(ComponentInAssemblyLinemax)
                 .save();
     }
 }

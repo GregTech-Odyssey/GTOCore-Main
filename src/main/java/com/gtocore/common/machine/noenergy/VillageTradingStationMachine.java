@@ -42,6 +42,7 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.layout.Layout;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -100,12 +101,12 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             FIELD_GENERATOR_IV.asItem(), FIELD_GENERATOR_LuV.asItem(), FIELD_GENERATOR_ZPM.asItem(), FIELD_GENERATOR_UV.asItem() };
 
     // 补货与交易参数
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "2400")
     private int replenishmentInterval = 2400;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int tradingMultiple = 1;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int tire = 0;
     // 补货时间间隔 -225* 多倍交易 4*
     private static final Map<Item, Integer> ENHANCE_INDEX_MAP = Map.ofEntries(
@@ -632,15 +633,15 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         }
 
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (machine.isLocked(slot)) return ItemStack.EMPTY;
-            return super.extractItem(slot, amount, simulate);
+        public int extract(int slot, ItemStack existing, int amount, boolean simulate) {
+            if (machine.isLocked(slot)) return 0;
+            return super.extract(slot, existing, amount, simulate);
         }
 
         @Override
-        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (machine.isLocked(slot)) return stack;
-            return super.insertItem(slot, stack, simulate);
+        public int insert(int slot, @NotNull ItemStack stack, int amount, boolean simulate) {
+            if (machine.isLocked(slot)) return 0;
+            return super.insert(slot, stack, amount, simulate);
         }
     }
 
@@ -754,10 +755,10 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     @SaveToDisk
     @SyncToClient(notifyUpdate = true)
     private Direction outputFacingItems;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient(notifyUpdate = true)
     private boolean autoOutputItems;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean allowInputFromOutputSideItems;
 
     @Override

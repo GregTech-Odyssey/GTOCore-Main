@@ -2,6 +2,7 @@ package com.gtocore.api.gui.graphic.impl
 
 import com.gtocore.api.gui.graphic.GTOClientTooltipComponent
 import com.gtocore.api.gui.graphic.GTOToolTipComponent
+import com.gtocore.api.gui.helper.MultiProgressData
 import com.gtocore.api.gui.helper.ProgressBarColorStyle
 import com.gtocore.api.gui.helper.ProgressBarHelper
 
@@ -24,6 +25,25 @@ class GTOProgressClientComponent(data: GTOProgressToolTipComponent) : GTOClientT
             backgroundColor = 0xFF404040.toInt(),
             borderColor = 0xFF000000.toInt(),
             progressColorStyle = data.progressColorStyle,
+        )
+        guiGraphics.pose().popPose()
+    }
+}
+
+class GTOMultiProgressToolTipComponent(var text: String = "", val progresses: MultiProgressData) : GTOToolTipComponent(height = 15, width = 150)
+class GTOMultiProgressClientComponent(data: GTOMultiProgressToolTipComponent) : GTOClientTooltipComponent<GTOMultiProgressToolTipComponent>(data) {
+    override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
+        guiGraphics.pose().pushPose()
+        guiGraphics.pose().translate(x.toDouble(), y.toDouble(), 0.0)
+        ProgressBarHelper.drawProgressBarWithText(
+            graphics = guiGraphics,
+            progresses = data.progresses,
+            totalWidth = data.width,
+            totalHeight = data.height,
+            text = data.text,
+            borderWidth = 1,
+            backgroundColor = 0xFF404040.toInt(),
+            borderColor = 0xFF000000.toInt(),
         )
         guiGraphics.pose().popPose()
     }

@@ -4,7 +4,8 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gregtechceu.gtceu.api.GTValues;
+import com.gtolib.api.recipe.GTORecipeModifiers;
+
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -28,10 +29,11 @@ final class CircuitAssembler {
                 .inputItems(GTOItems.SMD_TRANSISTOR_SUPRACAUSAL, 16)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 8)
                 .inputItems(TagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UEV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UEV].get())
                 .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 432)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UIV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UIV].asStack(outputAmount << 1))
                 .EUt(125829120)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(790)
                 .save();
 
@@ -41,10 +43,11 @@ final class CircuitAssembler {
                 .inputItems(GTOItems.SMD_TRANSISTOR_EXOTIC, 16)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 8)
                 .inputItems(TagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UV].get())
                 .inputFluids(GTOMaterials.MutatedLivingSolder, 432)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UHV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UHV].asStack(outputAmount << 1))
                 .EUt(7864320)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(750)
                 .save();
 
@@ -56,8 +59,9 @@ final class CircuitAssembler {
                 .inputItems(TagPrefix.gem, GTOMaterials.MagnetoResonatic)
                 .inputItems(GTItems.VACUUM_TUBE)
                 .inputFluids(GTMaterials.Tin, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.ULV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[ULV].asStack(outputAmount << 1))
                 .EUt(30)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(50)
                 .save();
 
@@ -67,10 +71,11 @@ final class CircuitAssembler {
                 .inputItems(GTOItems.SMD_TRANSISTOR_COSMIC, 16)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 8)
                 .inputItems(TagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UHV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UHV].get())
                 .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 288)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UEV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UEV].asStack(outputAmount << 1))
                 .EUt(31457280)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(770)
                 .save();
 
@@ -80,10 +85,11 @@ final class CircuitAssembler {
                 .inputItems(GTOItems.SMD_TRANSISTOR_BIOWARE, 16)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 8)
                 .inputItems(TagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.LuV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[LuV].get())
                 .inputFluids(GTOMaterials.MutatedLivingSolder, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.ZPM].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[ZPM].asStack(outputAmount << 1))
                 .EUt(491520)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(710)
                 .save();
 
@@ -121,10 +127,11 @@ final class CircuitAssembler {
                 .inputItems(GTItems.ADVANCED_SMD_TRANSISTOR, 8)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 4)
                 .inputItems(TagPrefix.gemFlawless, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.IV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[IV].get())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.LuV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[LuV].asStack(outputAmount << 1))
                 .EUt(122880)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(570)
                 .save();
 
@@ -148,10 +155,11 @@ final class CircuitAssembler {
                 .inputItems(GTItems.TRANSISTOR, 8)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD)
                 .inputItems(TagPrefix.gem, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.LV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[LV].get())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.MV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[MV].asStack(outputAmount << 1))
                 .EUt(480)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(150)
                 .save();
 
@@ -161,10 +169,11 @@ final class CircuitAssembler {
                 .inputItems(GTItems.TRANSISTOR, 4)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD)
                 .inputItems(TagPrefix.gem, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.ULV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[ULV].get())
                 .inputFluids(GTMaterials.Tin, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.LV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[LV].asStack(outputAmount << 1))
                 .EUt(120)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(90)
                 .save();
 
@@ -174,10 +183,11 @@ final class CircuitAssembler {
                 .inputItems(GTOItems.SMD_TRANSISTOR_OPTICAL, 16)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 8)
                 .inputItems(TagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.ZPM].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[ZPM].get())
                 .inputFluids(GTOMaterials.MutatedLivingSolder, 288)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.UV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[UV].asStack(outputAmount << 1))
                 .EUt(1966080)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .duration(730)
                 .save();
 
@@ -187,11 +197,12 @@ final class CircuitAssembler {
                 .inputItems(GTItems.SMD_TRANSISTOR, 8)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 4)
                 .inputItems(TagPrefix.gemFlawless, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.HV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[HV].get())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.EV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[EV].asStack(outputAmount << 1))
                 .EUt(7680)
                 .duration(330)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("magneto_resonatic_circuit_iv")
@@ -200,11 +211,12 @@ final class CircuitAssembler {
                 .inputItems(GTItems.ADVANCED_SMD_TRANSISTOR, 4)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 4)
                 .inputItems(TagPrefix.gemFlawless, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.EV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[EV].get())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.IV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[IV].asStack(outputAmount << 1))
                 .EUt(30720)
                 .duration(450)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("magneto_resonatic_circuit_hv")
@@ -213,11 +225,12 @@ final class CircuitAssembler {
                 .inputItems(GTItems.SMD_TRANSISTOR, 4)
                 .inputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD, 2)
                 .inputItems(TagPrefix.gemFlawless, GTOMaterials.MagnetoResonatic)
-                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.MV].get())
+                .inputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[MV].get())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
-                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[GTValues.HV].asStack(outputAmount << 1))
+                .outputItems(GTOItems.MAGNETO_RESONATIC_CIRCUIT[HV].asStack(outputAmount << 1))
                 .EUt(1920)
                 .duration(230)
+                .addModifier(GTORecipeModifiers.MAGNETO_RESONANCE_BOOST_MODIFIER)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("hui_circuit_1")

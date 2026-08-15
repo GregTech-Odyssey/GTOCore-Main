@@ -3,6 +3,9 @@ package com.gtocore.common;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.research.TeamResearchSavedData;
+import com.gtocore.api.research.techtree.TechTreeCommands;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.KeyMessage;
 import com.gtocore.client.Message;
 import com.gtocore.common.block.BlockMap;
@@ -109,6 +112,7 @@ public class CommonProxy {
         GTOCreativeModeTabs.init();
         GTOEntityTypes.init();
         IPushResultsHandler.init();
+        TechTreeCommands.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();
         }
@@ -159,6 +163,8 @@ public class CommonProxy {
             KeyMessage.init();
         }
         Message.init();
+        TeamResearchSavedData.init();
+        TechTreeSavedData.init();
         GTOItemTooltips.INSTANCE.initLanguage();
         DataSyncCodec.register(TesseractDirectedTarget.class, TesseractDirectedTarget.STREAM_CODEC, TesseractDirectedTarget.CODEC);
     }

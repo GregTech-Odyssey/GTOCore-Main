@@ -27,7 +27,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class SteamVentHatchMachine extends WorkableMultiblockPartMachine implements IExhaustVentMachine {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean needsVenting;
 
     public SteamVentHatchMachine(MetaMachineBlockEntity holder) {

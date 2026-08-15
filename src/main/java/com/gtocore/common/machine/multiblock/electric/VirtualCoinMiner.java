@@ -41,12 +41,12 @@ import static com.gregtechceu.gtceu.api.GTValues.VA;
 @DataGeneratorScanned
 public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICustomElectricMachine, ICustomRecipeLogicHolder {
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "256")
     @Getter
     private long cwuLimitConfig = 256L;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long cwuBuffer = 0L;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long coinBuffer = 0L;
     private long eut = 0L;
 

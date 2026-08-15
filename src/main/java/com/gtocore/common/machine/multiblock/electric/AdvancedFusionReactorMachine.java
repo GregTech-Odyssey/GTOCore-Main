@@ -37,7 +37,7 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @SyncToClient
     private int color = -1;
     private static final int tier = LuV;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long heat = 0;
     @SaveToDisk
     private final EnergyContainerTrait energyContainer;

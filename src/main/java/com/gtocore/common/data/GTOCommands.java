@@ -1,5 +1,7 @@
 package com.gtocore.common.data;
 
+import com.gtocore.api.research.ResarchTagCommands;
+import com.gtocore.api.research.techtree.TechTreeCommands;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.common.saved.DysonSphereSavaedData;
@@ -109,7 +111,10 @@ public final class GTOCommands {
                             ctx.getSource().sendSuccess(() -> Component.literal("Reloaded server language: " + lang), false);
                             ServerLangHook.set(ctx.getSource().getServer(), lang);
                             return 1;
-                        }))));
+                        })))
+                .then(TechTreeCommands.register())
+                .then(ResarchTagCommands.register())
+                .then(ResarchTagCommands.registerScan()));
     }
 
     private static int toggleVoidWorldTime(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {

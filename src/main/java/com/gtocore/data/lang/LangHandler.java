@@ -1,6 +1,8 @@
 package com.gtocore.data.lang;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.research.ResearchTag;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
 import com.gtocore.common.data.GTOBedrockFluids;
 import com.gtocore.common.data.GTOFluidStorageKey;
@@ -9,7 +11,7 @@ import com.gtocore.common.data.GTORecipeCategories;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformTemplateStorage;
-import com.gtocore.data.recipe.research.AnalyzeData;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.data.transaction.data.TradeLang;
 
@@ -78,7 +80,9 @@ public final class LangHandler {
         MultiblockBuilder.LANG.forEach(LangHandler::addCNEN);
         Tooltips.LANG.forEach(LangHandler::addCNEN);
         PlatformTemplateStorage.LANG.forEach((k, v) -> addCNEN("gtocore.platform." + k, v));
-        AnalyzeData.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
+        BaseNodes.INSTANCE.init();
+        BaseNodes.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
+        ResearchTag.LNAG.forEach(LangHandler::addCNEN);
         GTOPartAbility.LANG.forEach(LangHandler::addCNEN);
         ScanningClass.LANG.forEach(LangHandler::addCNEN);
         DynamicInitialData.LANG.forEach(LangHandler::addCNEN);
@@ -86,6 +90,8 @@ public final class LangHandler {
         PlayerAttributes.NAMES.forEach((k, v) -> addCNEN(k.getLangKey(), v));
         GTOTrade.init();
         TradeLang.LANG.forEach(LangHandler::addCNEN);
+        TechTreeManager.NODE_LANG.forEach(LangHandler::addCNEN);
+        TechTreeManager.TREE_LANG.forEach(LangHandler::addCNEN);
         for (var reasons : IdleReason.values()) {
             if (reasons.getEn() == null) continue;
             addCNEN(reasons.getKey(), reasons.getCn(), reasons.getEn());
@@ -212,18 +218,27 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.ev_max", "最大中子动能：%s MeV", "Maximum Neutron Energy: %s MeV");
         addCNEN("gtocore.recipe.ev_min", "最小中子动能：%s MeV", "Minimum Neutron Energy: %s MeV");
         addCNEN("gtocore.recipe.evt", "每刻中子动能消耗：%s KeV", "Energy Consumption per Tick: %s KeV");
-        addCNEN("gtocore.recipe.frheat", "每秒升温：%s K", "Heating per Second: %s K");
+        addCNEN("gtocore.recipe.frheat", "配方基础产热：%s K/s", "Base Recipe Heat: %s K/s");
         addCNEN("gtocore.recipe.grindball", "研磨球材质：%s", "macerator Ball Material: %s");
         addCNEN("gtocore.recipe.spool", "线轴类型：%s", "Spool Type: %s");
         addCNEN("gtocore.recipe.law_cleanroom.display_name", "绝对超净间", "Absolute Clean");
         addCNEN("gtocore.recipe.nano_forge_tier", "纳米锻炉等级：%s", "Nano Forge Tier: %s");
         addCNEN("gtocore.recipe.radioactivity", "辐射剂量：%s Sv", "Radiation Dose: %s Sv");
+        addCNEN("gtocore.recipe.radioactivity_end", "运行结束时辐射剂量：%s Sv", "Radiation Dose at the End of Operation: %s Sv");
+        addCNEN("gtocore.recipe.ray_requirement.1", "需要%snm~%snm波长,%sa.u.以上强度,%s°偏振的光束", "Requires a beam with wavelength %snm~%snm, intensity above %sa.u., and polarization of %s°");
+        addCNEN("gtocore.recipe.ray_requirement.2", "需要%snm~%snm波长,%sa.u.以上强度的光束", "Requires a beam with wavelength %snm~%snm and intensity above %sa.u.");
+        addCNEN("gtocore.recipe.ray_requirement.wavelength", "光束波长：%s nm~%s nm", "Ray Wavelength: %s nm~%s nm");
+        addCNEN("gtocore.recipe.ray_requirement.intensity", "光束强度：>%s a.u.", "Ray Intensity: >%s a.u.");
+        addCNEN("gtocore.recipe.ray_requirement.polarization", "光束偏振：%s°", "Ray Polarization: %s°");
         addCNEN("gtocore.recipe.vacuum.tier", "真空等级：%s", "Vacuum Tier: %s");
         addCNEN("gtocore.recipe.restricted_machine", "只能运行在：%s", "Only runnable on: %s");
         addCNEN("gtocore.recipe.heat.temperature", "需要外部热源：%s K", "External heat source is required: %s K");
         addCNEN("gtocore.recipe.runlimit.count", "运行次数限制：%s", "Run Limit: %s times");
         addCNEN("gtocore.recipe.mana_consumption", "魔力消耗", "Mana Consumption");
         addCNEN("gtocore.recipe.mana_production", "魔力产出", "Mana Production");
+        addCNEN("gtocore.recipe.ray_intensity", "光束强度：%s a.u.", "Ray Intensity: %s a.u.");
+        addCNEN("gtocore.recipe.ray_wavelength", "光束波长：%s nm", "Ray Wavelength: %s nm");
+        addCNEN("gtocore.recipe.ray_polarization", "光束偏振：%s°", "Ray Polarization: %s°");
         addCNEN("gtocore.recipe.efficiency", "总耗能倍率：%s", "Total Energy Cost Multiplier: %s");
         addCNEN("gtocore.recipe.efficiency.o", "总产能倍率：%s", "Total Energy Cost Multiplier: %s");
         addCNEN("gtocore.recipe.mana_efficiency", "总耗魔倍率：%s", "Total Mana Cost Multiplier: %s");
@@ -300,6 +315,8 @@ public final class LangHandler {
 
         addCNEN("gtocore.xaero_waypoint_set", "矿脉", "Ore Vein");
 
+        addCNEN("ftbquests.task.gtocore.technode", "科技节点", "Tech Node");
+        addCNEN("ftbquests.task.gtocore.technode.structure", "设置科技节点", "Set Tech Node");
         addCNEN("ftbquests.task.gtocore.gtodifficulty", "GTO难度", "GTO Difficulty");
         addCNEN("ftbquests.task.gtocore.gtodifficulty.difficulty", "难度设置（0=通用，1=简单，2=普通，3=专家）", "Difficulty Setting (0=Generic, 1=Easy, 2=Normal, 3=Expert)");
         addCNEN("ftbquests.task.gtocore.mod", "模组加载", "Mod Loaded");
@@ -323,6 +340,7 @@ public final class LangHandler {
         addCNEN("gtocore.bar.distillation.1", "产出，消耗水", "Output , Consumption water");
         addCNEN("gtocore.bar.exploration", "爆炸", "Explosion");
         addCNEN("gtocore.bar.heat", "温度", "Heat");
+        addCNEN("gtocore.bar.occupancy", "占用率", "Occupancy");
 
         addCNEN("gtocore.player.organ.info_exclamation", "关于：", "About : ");
         addCNEN("gtocore.player.organ.that_is_your", "这是你的", "That is your ");
@@ -484,6 +502,8 @@ public final class LangHandler {
 
         addCNEN("gtocore.recipe.recycler.random_output", "随机物品", "Random Item");
         addCNEN("gtocore.recipe.coil.uruium", "超级热熔", "Uruium");
+        addCNEN("gtocore.recipe.require_technode", "可通过科技节点[%s]解锁", "Unlockable through [%s]");
+        addCNEN("gtocore.recipe.data_form_density_testing.density", "数据密度容量: %s字节", "Data Density Capacity: %s bytes");
 
         addCNEN("gtocore.emi.search_text", "已保存的搜索: %s", "Saved Search: %s");
         addCNEN("gtocore.emi.search_text.how_to_use", "将它拖拽至文本框以快速填入搜索栏", "Drag it to the text box to quickly fill in the search bar");

@@ -8,10 +8,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import com.fast.recipesearch.IntLongMap;
-import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datastream.codec.DataCodec;
-import com.gto.datasynclib.datastream.codec.DataDecoder;
-import com.gto.datasynclib.datastream.codec.DataEncoder;
+import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +21,7 @@ public final class ParticleRecipeExtension extends RecipeExtension<List<Particle
     public static final ParticleRecipeExtension INSTANCE = new ParticleRecipeExtension();
 
     private ParticleRecipeExtension() {
-        super("particle", DataSyncCodec.of(DataCodec.of(DataEncoder.collection(ParticleBeam.DATA_CODEC), DataDecoder.list(ParticleBeam.DATA_CODEC))), false);
+        super("particle", CombinedCodec.list(ParticleBeam.CODEC), false);
     }
 
     @Override

@@ -75,6 +75,7 @@ final class ItemLang {
         addCNEN("tagprefix.mborene", "%s二维纳米层", "%s MBorene");
         addCNEN("tagprefix.aluminium_contained_mxene_precursor", "MAXene%s二维纳米层前驱体", "A-Contained %s MXene Precursor");
         addCNEN("tagprefix.carbon_fiber", "%s纤维", "%s Fiber");
+        addCNEN("tagprefix.connecting_rod", "%s连接杆", "%s Connecting Rod");
         addCNEN("tagprefix.carbon_fibres", "%s纤维原丝", "%s Fiber Tow");
         addCNEN("tagprefix.carbon_fiber_mesh", "%s纤维网", "%s Fiber Mesh");
         addCNEN("tagprefix.nano", "纳米质%s", "Nano %s");
@@ -137,6 +138,7 @@ final class ItemLang {
         addCNEN("gtocore.tooltip.item.charge_bomb.disabled", "服务器配置已禁用爆弹的爆炸效果", "The explosive effect of the charge bomb has been disabled by server configuration");
         addCNEN("gtocore.tooltip.item.muffler.disabled", "消声仓已被服务器配置禁用，无法产生灰烬", "The muffler has been disabled by server configuration and cannot produce ash");
         addCNEN("gtocore.tooltip.item.muffler.enabled", "使用机器GUI左下方按钮以暂停/恢复灰烬回收功能", "Use the button at the bottom left of the machine GUI to pause/resume ash recovery function");
+        addCNEN("gtocore.tooltip.item.muffler_pipe.desc", "将消声仓仓口连接到消声仓排气口时，消声仓排气口将代理该消声仓排放废气", "When the muffler hatch is connected to the muffler exhaust port, the muffler exhaust port will proxy the discharge of waste gas from that muffler");
 
         addCNEN("item.gtocore.structure_detect.tooltip.0", "潜行右键主方块以检测多方块结构", "Sneak right-click the main block to detect multiblock structure.");
         addCNEN("item.gtocore.structure_detect.tooltip.1", "检测大型结构时可能会有延迟", "There may be lag when detecting large structures.");
@@ -147,7 +149,6 @@ final class ItemLang {
         addCNEN("item.gtocore.pattern.wildcard", "含通配符处理样板", "With Wildcard Processing Pattern");
 
         addCNEN("item.gtocore.data_item.type.title", "§n%s配方数据：", "§n%s Recipes Data:");
-        addCNEN("gtocore.tooltip.item.empty_data", "§n空数据：", "§nEmpty Data:");
         addCNEN("gtocore.tooltip.item.empty_serial", "- §a编号：%s", "- §aNumber: %s");
         addCNEN("gtocore.tooltip.item.scanning_data", "§n扫描数据：", "§nScan Data:");
         addCNEN("gtocore.tooltip.item.scanned_things", "- %d× %s", "- %d× %s");
