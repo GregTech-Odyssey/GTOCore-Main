@@ -61,9 +61,9 @@ public final class ExResearchManager {
 
     public static void triggerPlanetaryResearch(UUID team, ResourceKey<Level> planet) {
         var dimTier = GTODimensions.getTier(planet);
-        var context = TeamResearchSavedDtat.getOrCreateContext(team);
+        var context = TeamResearchSavedData.getOrCreateContext(team);
         if (context.addUnlockedDimension(planet)) {
-            TeamResearchSavedDtat.getOrCreateContext(team).addResearchPoints(ResearchTag.INTERSTELLAR_ENGINEERING, 1L << dimTier);
+            TeamResearchSavedData.getOrCreateContext(team).addResearchPoints(ResearchTag.INTERSTELLAR_ENGINEERING, 1L << dimTier);
         }
     }
 }

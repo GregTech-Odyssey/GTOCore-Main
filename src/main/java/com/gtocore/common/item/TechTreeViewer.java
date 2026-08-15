@@ -1,6 +1,6 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.editor.DataScanningEditor;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.editor.TechNodeEditor;
@@ -34,6 +34,16 @@ import static com.gtocore.data.techtree.BaseNodes.MainTree;
 
 @DataGeneratorScanned
 public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
+
+    private final boolean editorTabsEnabled;
+
+    public TechTreeViewer() {
+        this(true);
+    }
+
+    public TechTreeViewer(boolean editorTabsEnabled) {
+        this.editorTabsEnabled = editorTabsEnabled;
+    }
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
@@ -69,7 +79,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
             public Widget createMainPage(FancyMachineUIWidget widget) {
                 var root = new WidgetGroup(0, 0, 176, 166);
                 var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, 176,
-                        166 - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+                        166 - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedData::getOrCreateContext);
                 treeWidget.setForce(true);
                 root.addWidget(new TechTreeSelectorWidget(0, 0, 176, manager, treeWidget::setManager));
                 root.addWidget(treeWidget);
@@ -96,7 +106,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
         } else {
             tabs.attachSubTab(page);
         }
-        if (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes) {
+        if (editorTabsEnabled && (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes)) {
             if (tabs.getMainTab() == null) {
                 tabs.setMainTab(TechNodeEditor.INSTANCE);
             } else {

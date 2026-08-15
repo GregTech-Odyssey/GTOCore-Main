@@ -11,10 +11,12 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.config.Actionable;
 import appeng.api.config.IncludeExclude;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyMap;
 import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.KeyCounter;
+import appeng.api.storage.StorageCells;
 import appeng.api.storage.cells.IBasicCellItem;
 import appeng.api.storage.cells.ISaveProvider;
 import appeng.api.storage.cells.StorageCell;
@@ -305,6 +307,11 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
      */
     @Overwrite(remap = false)
     private long innerInsert(AEKey what, long amount, Actionable mode) {
+        if (what instanceof AEItemKey itemKey) {
+            if (itemKey.matches(i)) return 0;
+            var cellInv = StorageCells.getCellInventory(itemKey.toStack(), null);
+            if (cellInv != null && !cellInv.canFitInsideCell()) return 0;
+        }
         if (gtolib$getUUID() == null) {
             UUID uuid = UUID.randomUUID();
             i.getOrCreateTag().putUUID(CELL_UUID, uuid);

@@ -1,6 +1,6 @@
 package com.gtocore.api.research.ui;
 
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.ui.TechTreeSelectorWidget;
@@ -41,8 +41,8 @@ public class ResearchInfoTab implements IFancyUIProvider {
     public Widget createMainPage(FancyMachineUIWidget widget) {
         var root = new WidgetGroup(0, 0, TREE_WIDTH + SIDE_TAB_GAP + SIDE_TAB_WIDTH, CONTENT_HEIGHT);
         var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, TREE_WIDTH,
-                CONTENT_HEIGHT - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
-        var sideTab = new TechTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedDtat::getOrCreateContext);
+                CONTENT_HEIGHT - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedData::getOrCreateContext);
+        var sideTab = new TechTreeSideTab(TREE_WIDTH + SIDE_TAB_GAP, 0, SIDE_TAB_WIDTH, CONTENT_HEIGHT, manager, TeamResearchSavedData::getOrCreateContext);
         sideTab.setInnerContent(innerContentFactory.apply(widget, sideTab));
         var treeSelector = new TechTreeSelectorWidget(0, 0, TREE_WIDTH, manager, selectedManager -> {
             treeWidget.setManager(selectedManager);

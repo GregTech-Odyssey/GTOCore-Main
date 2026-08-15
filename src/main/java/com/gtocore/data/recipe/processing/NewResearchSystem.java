@@ -796,7 +796,7 @@ public final class NewResearchSystem {
 
             ASSEMBLER_RECIPES.recipeBuilder("assembler_data_crystal_mk5")
                     .inputItems(DATA_CRYSTAL_COMPONENT_MK5, 3)
-                    .inputItems(FIELD_GENERATOR_OpV)
+                    .inputItems(FIELD_GENERATOR_UXV)
                     .outputItems(DATA_CRYSTAL_MK5)
                     .inputFluids(SuperMutatedLivingSolder, L * 128)
                     .EUt(VA[OpV]).duration(1600).save();

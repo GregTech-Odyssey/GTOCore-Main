@@ -386,8 +386,8 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         setTranslationPrefix("fission_reactor")
         story("刚来的员工是从通用机械集团转来的，带来了这么个家伙" translatedTo "A new employee transferred from Mekanism brought this thing along")
         story("虽然不知道是否构成了知识产权侵权，但总之用着确实效果不错" translatedTo "Not sure if it's intellectual property infringement, but after all it works well")
-        story("据他所说，GT这边先进的化工技术可以产出钠钾冷却液，能更充分发挥这台机器的性能" translatedTo "He claims GT's advanced chemical tech can produce NaK coolant to fully unleash this machine's potential")
-        story("没有人知道真假，毕竟从一个跳槽的人嘴里又能得到多少实话呢" translatedTo "No one knows the truth, after all how much honesty can you expect from a job-hopper")
+        // story("据他所说，GT这边先进的化工技术可以产出钠钾冷却液，能更充分发挥这台机器的性能" translatedTo "He claims GT's advanced chemical tech can produce NaK coolant to fully unleash this machine's potential")
+        // story("没有人知道真假，毕竟从一个跳槽的人嘴里又能得到多少实话呢" translatedTo "No one knows the truth, after all how much honesty can you expect from a job-hopper")
     }
 
     // 工业屠宰场

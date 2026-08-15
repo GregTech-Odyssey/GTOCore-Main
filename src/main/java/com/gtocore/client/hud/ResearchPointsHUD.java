@@ -1,7 +1,7 @@
 package com.gtocore.client.hud;
 
 import com.gtocore.api.research.ResearchTag;
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -202,7 +202,7 @@ public class ResearchPointsHUD implements IMoveableHUD {
             return rows;
         }
 
-        var researchPoints = TeamResearchSavedDtat.getOrCreateContext(mc.player).researchPoints();
+        var researchPoints = TeamResearchSavedData.getOrCreateContext(mc.player).researchPoints();
         for (var it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             if (entry.getLongValue() == 0) continue;

@@ -1,14 +1,25 @@
 package com.gtocore.api.research.techtree;
 
 import com.gtocore.api.research.techtree.ui.TechTreeLayout;
+import com.gtocore.common.item.TechTreeViewer;
+
+import com.gtolib.GTOCore;
+
+import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
+import com.lowdragmc.lowdraglib.gui.factory.UIFactory;
+import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -42,15 +53,25 @@ public final class TechTreeCommands {
         }
         return SharedSuggestionProvider.suggest(manager.keys().stream().sorted(), builder);
     };
+    private static final TechTreeCommandUIFactory UI_FACTORY = new TechTreeCommandUIFactory();
 
     private TechTreeCommands() {}
+
+    public static void init() {
+        UIFactory.register(UI_FACTORY);
+    }
 
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return Commands.literal("techtree")
                 .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("ui").executes(TechTreeCommands::executeUI))
                 .then(unlock())
                 .then(reset())
                 .then(list());
+    }
+
+    private static int executeUI(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        return UI_FACTORY.openUI(UI_FACTORY, context.getSource().getPlayerOrException()) ? 1 : 0;
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> unlock() {
@@ -185,4 +206,45 @@ public final class TechTreeCommands {
     }
 
     private record TeamTarget(UUID teamUUID, String label) {}
+
+    private static final class TechTreeCommandUIFactory extends UIFactory<TechTreeCommandUIFactory> implements IUIHolder {
+
+        private static final TechTreeViewer VIEWER = new TechTreeViewer(false);
+
+        private TechTreeCommandUIFactory() {
+            super(GTOCore.id("tech_tree_command"));
+        }
+
+        @Override
+        protected ModularUI createUITemplate(TechTreeCommandUIFactory holder, Player player) {
+            return createUI(player);
+        }
+
+        @Override
+        protected TechTreeCommandUIFactory readHolderFromSyncData(FriendlyByteBuf syncData) {
+            return this;
+        }
+
+        @Override
+        protected void writeHolderToSyncData(FriendlyByteBuf syncData, TechTreeCommandUIFactory holder) {}
+
+        @Override
+        public ModularUI createUI(Player player) {
+            return new ModularUI(176, 166, this, player)
+                    .widget(new FancyMachineUIWidget(VIEWER, 176, 166));
+        }
+
+        @Override
+        public boolean isInvalid() {
+            return false;
+        }
+
+        @Override
+        public boolean isRemote() {
+            return GTCEu.isClientThread();
+        }
+
+        @Override
+        public void markAsDirty() {}
+    }
 }

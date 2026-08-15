@@ -39,6 +39,7 @@ public final class DysonSphereLaunchSiloMachine extends ElectricMultiblockMachin
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!GTODimensions.isPlanet(getDimension())) return null;
+        if (DysonSphereSavaedData.getDimensionData(getDimension()).leftInt() >= 100000) return null;
         int integer = GTODimensions.getPlanetDistances(getDimension());
         if (integer > 0) recipe.duration = recipe.duration * integer / 4;
         return RecipeModifier.overclocking(this, unit, recipe, false, 1, 1, 0.85);
@@ -47,14 +48,19 @@ public final class DysonSphereLaunchSiloMachine extends ElectricMultiblockMachin
     @Override
     public void afterWorking() {
         super.afterWorking();
+        var recipe = getRecipeLogic().getLastRecipe();
+        if (recipe == null) return;
         IntIntImmutablePair pair = DysonSphereSavaedData.getDimensionData(getDimension());
-        if (pair.leftInt() < 100000) {
-            if (pair.rightInt() > 60) {
-                DysonSphereSavaedData.setDysonData(getDimension(), pair.leftInt(), 0);
-            } else {
-                DysonSphereSavaedData.setDysonData(getDimension(), pair.leftInt() + 1, pair.rightInt());
-            }
+        if (pair.leftInt() >= 100000) return;
+        long launches = recipe.parallels;
+        int damage = pair.rightInt();
+        if (damage > 60) {
+            damage = 0;
+            launches--;
         }
+        int count = pair.leftInt();
+        if (launches > 0) count = (int) Math.min(100000L, count + (long) launches);
+        DysonSphereSavaedData.setDysonData(getDimension(), count, damage);
     }
 
     @Override

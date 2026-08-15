@@ -4,7 +4,7 @@ import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.Message;
 import com.gtocore.common.data.GTORecipeTypes;
@@ -94,7 +94,7 @@ public class DataScanningManager {
     }
 
     public static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
-        var teamContext = TeamResearchSavedDtat.getOrCreateContext(team);
+        var teamContext = TeamResearchSavedData.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
         boolean isMaterial = mat != NULL;
         boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
@@ -114,7 +114,7 @@ public class DataScanningManager {
     }
 
     public static ResearchPoints scanData(AEKey key, UUID team, long times, boolean simulate) {
-        var teamContext = TeamResearchSavedDtat.getOrCreateContext(team);
+        var teamContext = TeamResearchSavedData.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
         boolean isMaterial = mat != NULL;
         boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
@@ -168,7 +168,7 @@ public class DataScanningManager {
     }
 
     public static boolean hasScanned(AEKey entry, UUID ownerId) {
-        return TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(ownerId)).hasScanned(entry);
+        return TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(ownerId)).hasScanned(entry);
     }
 
     public record DataScanningEntry(AEKey key, ResearchPoints points) {}

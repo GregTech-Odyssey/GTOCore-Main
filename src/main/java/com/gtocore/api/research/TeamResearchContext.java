@@ -173,7 +173,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
 
     public void addTechNodeAccCWU(TechNode selectedNode, long cwuBuffer) {
         techNodeAccCWU.merge(selectedNode, cwuBuffer, Long::sum);
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
     }
 
     public void addResearchPoints(ResearchPoints researchPoints) {
@@ -181,22 +181,22 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
             var entry = it.next();
             this.researchPoints.addTo(entry.getKey(), entry.getLongValue());
         }
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
     }
 
     public void addResearchPoints(ResearchTag tag, long points) {
         this.researchPoints.addTo(tag, points);
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
     }
 
     public void addScannedItem(AEKey item) {
         scannedItems.add(item);
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
     }
 
     public void addScannedMaterial(Material material) {
         scannedMaterials.add(material);
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
     }
 
     public boolean hasScanned(AEKey key) {
@@ -205,7 +205,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
 
     public boolean addUnlockedDimension(ResourceKey<Level> dimensionId) {
         var r = unlockedDimensions.add(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
-        if (r) TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        if (r) TeamResearchSavedData.INSTANCE.setDirty(true);
         return r;
     }
 
