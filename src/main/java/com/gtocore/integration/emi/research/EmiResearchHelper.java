@@ -1,7 +1,7 @@
 package com.gtocore.integration.emi.research;
 
 import com.gtocore.api.research.ResearchTag;
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
@@ -58,7 +58,7 @@ public final class EmiResearchHelper {
     public static Component getResearchTagTeamTotal(ResearchTag tag) {
         var plr = Minecraft.getInstance().player;
         if (plr != null) {
-            var ctx = TeamResearchSavedDtat.getOrCreateContext(plr);
+            var ctx = TeamResearchSavedData.getOrCreateContext(plr);
             return Component.translatable(TEAM_TOTAL_NAME, ctx.researchPoints().getLong(tag)).withStyle(ChatFormatting.GRAY);
         }
         return Component.translatable(TEAM_TOTAL_NAME, 0L).withStyle(ChatFormatting.GRAY);

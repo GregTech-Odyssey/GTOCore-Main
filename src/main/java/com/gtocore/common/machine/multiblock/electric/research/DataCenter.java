@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
 import com.gtocore.api.research.ExResearchManager;
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.ui.RecipeExportTab;
@@ -227,7 +227,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     @Override
-    public void addDisplayText(List<Component> textList) {
+    public void addDisplayText(@NotNull List<Component> textList) {
         MultiblockDisplayText.builder(textList, isFormed())
                 .setWorkingStatus(true, isActive())
                 .setWorkingStatusKeys(LANG_DATA_ACCESS_WARN_ENERGY, LANG_DATA_ACCESS_WARN_ENERGY, "gtceu.multiblock.data_bank.providing")
@@ -257,7 +257,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             return;
         }
 
-        var unlockContext = TeamResearchSavedDtat.getOrCreateContext(researchRequester);
+        var unlockContext = TeamResearchSavedData.getOrCreateContext(researchRequester);
         unlockContext.addTechNodeAccCWU(selectedNode, cwuBuffer);
         if (TechTreeSavedData.hasNodeMetCWURequirements(researchRequester, selectedNode)) {
             TechTreeSavedData.unlock(researchRequester, selectedNode);
@@ -293,7 +293,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         var nodeBytes = data.getByteArray("node");
         if (nodeBytes.length == 0) return;
         var node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nodeBytes));
-        var ctx = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
+        var ctx = TeamResearchSavedData.getOrCreateContext(getOwnerUUID());
         var capacity = node.getRequirements().getCwuNeeded();
         var storage = ctx.techNodeAccCWU().getLong(node);
         if (ctx.hasScanned(node.getRequirements().getEurekaItem())) {

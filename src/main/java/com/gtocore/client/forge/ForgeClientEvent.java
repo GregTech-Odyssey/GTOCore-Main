@@ -1,6 +1,6 @@
 package com.gtocore.client.forge;
 
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.GTOClientCommands;
@@ -243,7 +243,7 @@ public final class ForgeClientEvent {
 
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
-        TeamResearchSavedDtat.clearClientInstance();
+        TeamResearchSavedData.clearClientInstance();
         TechTreeSavedData.clearClientInstance();
         WirelessNetworkSavedData.setCLIENT_INSTANCE(new WirelessNetworkSavedData());
         ReceiverTransmitterHandler.unloadClient();

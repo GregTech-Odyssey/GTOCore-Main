@@ -1,6 +1,6 @@
 package com.gtocore.common.forge;
 
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
@@ -318,7 +318,7 @@ public final class ForgeCommonEvent {
             showVoidTimeHint(player);
             syncPlayerTime(player);
             WirelessNetworkSavedData.write(player);
-            TeamResearchSavedDtat.sync(player);
+            TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
         }
     }
@@ -326,7 +326,7 @@ public final class ForgeCommonEvent {
     @SubscribeEvent
     public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            TeamResearchSavedDtat.syncIfNeeded(event.getServer());
+            TeamResearchSavedData.syncIfNeeded(event.getServer());
             TechTreeSavedData.syncIfNeeded(event.getServer());
         }
     }
@@ -348,14 +348,14 @@ public final class ForgeCommonEvent {
             if (serverLevel == null) return;
             var dataStorage = serverLevel.getDataStorage();
             TechTreeSavedData.INSTANCE = FastSavedData.getFromFile(TechTreeSavedData.DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData.DATA_VERSION);
-            TeamResearchSavedDtat.INSTANCE = FastSavedData.getFromFile(TeamResearchSavedDtat.DATA_NAME, dataStorage, TeamResearchSavedDtat::load, TeamResearchSavedDtat.DATA_VERSION);
+            TeamResearchSavedData.INSTANCE = FastSavedData.getFromFile(TeamResearchSavedData.DATA_NAME, dataStorage, TeamResearchSavedData::load, TeamResearchSavedData.DATA_VERSION);
             if (TechTreeSavedData.INSTANCE == null) {
                 TechTreeSavedData.INSTANCE = new TechTreeSavedData();
                 dataStorage.cache.put(TechTreeSavedData.DATA_NAME, TechTreeSavedData.INSTANCE);
             }
-            if (TeamResearchSavedDtat.INSTANCE == null) {
-                TeamResearchSavedDtat.INSTANCE = new TeamResearchSavedDtat();
-                dataStorage.cache.put(TeamResearchSavedDtat.DATA_NAME, TeamResearchSavedDtat.INSTANCE);
+            if (TeamResearchSavedData.INSTANCE == null) {
+                TeamResearchSavedData.INSTANCE = new TeamResearchSavedData();
+                dataStorage.cache.put(TeamResearchSavedData.DATA_NAME, TeamResearchSavedData.INSTANCE);
             }
             DysonSphereSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(DysonSphereSavaedData::new, DysonSphereSavaedData::new, "dyson_sphere_data");
             RecipeRunLimitSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(RecipeRunLimitSavaedData::new, RecipeRunLimitSavaedData::new, "recipe_run_limit_data");

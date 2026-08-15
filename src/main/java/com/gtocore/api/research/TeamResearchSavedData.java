@@ -19,12 +19,12 @@ import java.util.UUID;
 
 import static com.hepdd.gtmthings.utils.TeamUtil.getTeamUUID;
 
-public class TeamResearchSavedDtat extends FastSavedData {
+public class TeamResearchSavedData extends FastSavedData {
 
     public static final String DATA_NAME = "team_research_data";
     public static final int DATA_VERSION = 4;
-    public static TeamResearchSavedDtat INSTANCE = new TeamResearchSavedDtat();
-    public static TeamResearchSavedDtat CLIENT_INSTANCE = new TeamResearchSavedDtat();
+    public static TeamResearchSavedData INSTANCE = new TeamResearchSavedData();
+    public static TeamResearchSavedData CLIENT_INSTANCE = new TeamResearchSavedData();
 
     private static boolean syncPending;
 
@@ -48,7 +48,7 @@ public class TeamResearchSavedDtat extends FastSavedData {
 
     public static void init() {}
 
-    public static TeamResearchSavedDtat get() {
+    public static TeamResearchSavedData get() {
         return GTCEu.isClientThread() ? CLIENT_INSTANCE : INSTANCE;
     }
 
@@ -61,8 +61,8 @@ public class TeamResearchSavedDtat extends FastSavedData {
         }
     }
 
-    public static TeamResearchSavedDtat load(DataIOStream dataIOStream, int dataVersion) throws IOException {
-        TeamResearchSavedDtat savedData = new TeamResearchSavedDtat();
+    public static TeamResearchSavedData load(DataIOStream dataIOStream, int dataVersion) throws IOException {
+        TeamResearchSavedData savedData = new TeamResearchSavedData();
         int teamCount = dataIOStream.readInt();
         for (int i = 0; i < teamCount; i++) {
             UUID teamUUID = dataIOStream.readUUID();
@@ -90,7 +90,7 @@ public class TeamResearchSavedDtat extends FastSavedData {
     }
 
     public static void clearClientInstance() {
-        CLIENT_INSTANCE = new TeamResearchSavedDtat();
+        CLIENT_INSTANCE = new TeamResearchSavedData();
     }
 
     @Override

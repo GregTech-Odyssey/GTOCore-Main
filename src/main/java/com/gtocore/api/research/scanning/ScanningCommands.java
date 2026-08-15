@@ -1,6 +1,6 @@
 package com.gtocore.api.research.scanning;
 
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 
 import com.gtolib.utils.AEChemicalHelper;
 
@@ -50,13 +50,13 @@ public class ScanningCommands {
         var key = getHandHeldAEKey(player);
         var mat = AEChemicalHelper.getMaterial(key);
 
-        var teamContext = TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
+        var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
         if (mat != NULL) {
             teamContext.scannedMaterials().add(mat);
         }
         teamContext.scannedItems().add(key);
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
         return 1;
     }
 
@@ -65,19 +65,19 @@ public class ScanningCommands {
         var key = getHandHeldAEKey(player);
         var mat = AEChemicalHelper.getMaterial(key);
 
-        var teamContext = TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
+        var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
         if (mat != NULL) {
             teamContext.scannedMaterials().remove(mat);
         }
         teamContext.scannedItems().remove(key);
-        TeamResearchSavedDtat.INSTANCE.setDirty(true);
+        TeamResearchSavedData.INSTANCE.setDirty(true);
         return 1;
     }
 
     private static int getSelfScannedItems(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var player = context.getSource().getPlayerOrException();
-        var teamContext = TeamResearchSavedDtat.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
+        var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
         var scannedItems = teamContext.scannedItems();
         var scannedMaterials = teamContext.scannedMaterials();
         player.sendSystemMessage(Component.literal("Scanned Items: " + scannedItems.size()));

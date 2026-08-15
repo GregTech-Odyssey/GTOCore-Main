@@ -2,7 +2,7 @@ package com.gtocore.integration.emi.research;
 
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.client.renderer.RenderUtil;
@@ -207,12 +207,12 @@ public final class DataScanningEmiRecipe implements EmiRecipe {
             @Override
             public void drawOverlay(GuiGraphics draw, int mouseX, int mouseY, float delta) {
                 super.drawOverlay(draw, mouseX, mouseY, delta);
-                if (TeamResearchSavedDtat.getOrCreateContext(Minecraft.getInstance().player).hasScanned(key)) {
+                if (TeamResearchSavedData.getOrCreateContext(Minecraft.getInstance().player).hasScanned(key)) {
                     RenderUtil.drawRainbowBorder(draw, x, y, 18, 18, 300, 1F);
                 }
             }
         }).drawBack(false).appendTooltip(
-                () -> ClientTooltipComponent.create((TeamResearchSavedDtat.getOrCreateContext(Minecraft.getInstance().player).hasScanned(key) ?
+                () -> ClientTooltipComponent.create((TeamResearchSavedData.getOrCreateContext(Minecraft.getInstance().player).hasScanned(key) ?
                         Component.translatable(DOMAIN_DATA_STORAGE_REPEAT, FormattingUtil.formatNumber2Places(DataScanningManager.getRepeatedScanPenalty() * 100)).withStyle(ChatFormatting.RED) :
                         Component.translatable(DOMAIN_DATA_STORAGE_NOT_SCANNED).withStyle(ChatFormatting.GREEN)).getVisualOrderText()));
         for (int i = 0; i < Math.min(researchOutputs.size(), BAR_X.length); i++) {

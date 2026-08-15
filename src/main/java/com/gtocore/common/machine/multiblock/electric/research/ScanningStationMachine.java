@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
 import com.gtocore.api.research.ResearchPoints;
-import com.gtocore.api.research.TeamResearchSavedDtat;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
@@ -111,7 +111,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
     @Override
     public boolean handleRecipeOutput(GTRecipe originalRecipe) {
         if (researchPoints != null) {
-            var teamData = TeamResearchSavedDtat.getOrCreateContext(getOwnerUUID());
+            var teamData = TeamResearchSavedData.getOrCreateContext(getOwnerUUID());
             teamData.addResearchPoints(researchPoints);
             for (TechTreeManager manager : TechTreeManager.getManagers()) {
                 manager.triggerAllResearchUnlock(getOwnerUUID());
