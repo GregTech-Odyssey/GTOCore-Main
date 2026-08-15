@@ -291,6 +291,10 @@ final class MachineLang {
         addCNEN("gtocore.machine.resonance_flower.stable_operation_times", "剩余稳定运行次数: %s", "Remaining stable operation times: %s");
         addCNEN("gtocore.machine.resonance_flower.time_fluctuation_coefficient", "时间波动系数: %s", "Time fluctuation coefficient: %s");
         addCNEN("gtocore.machine.resonance_flower.elemental_fluctuation_coefficient", "元素波动系数: %s", "Elemental fluctuation coefficient: %s");
+        addCNEN("gtocore.machine.resonance_flower.current_recipe", "当前配方：%s", "Current recipe: %s");
+        addCNEN("gtocore.machine.resonance_flower.tier_progress", "等级：Lv.%s  %s / %s", "Tier: Lv.%s  %s / %s");
+        addCNEN("gtocore.machine.resonance_flower.tier_max", "等级：Lv.%s  §a§lMAX§r", "Tier: Lv.%s  §a§lMAX§r");
+        addCNEN("gtocore.machine.resonance_flower.tier_effect", "耗时：%s%% 并行：%s", "Duration: %s%% Parallel: %s");
 
         addSingleMachineTooltips();
 

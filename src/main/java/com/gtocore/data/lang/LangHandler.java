@@ -218,7 +218,7 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.ev_max", "最大中子动能：%s MeV", "Maximum Neutron Energy: %s MeV");
         addCNEN("gtocore.recipe.ev_min", "最小中子动能：%s MeV", "Minimum Neutron Energy: %s MeV");
         addCNEN("gtocore.recipe.evt", "每刻中子动能消耗：%s KeV", "Energy Consumption per Tick: %s KeV");
-        addCNEN("gtocore.recipe.frheat", "每秒升温：%s K", "Heating per Second: %s K");
+        addCNEN("gtocore.recipe.frheat", "配方基础产热：%s K/s", "Base Recipe Heat: %s K/s");
         addCNEN("gtocore.recipe.grindball", "研磨球材质：%s", "macerator Ball Material: %s");
         addCNEN("gtocore.recipe.spool", "线轴类型：%s", "Spool Type: %s");
         addCNEN("gtocore.recipe.law_cleanroom.display_name", "绝对超净间", "Absolute Clean");
