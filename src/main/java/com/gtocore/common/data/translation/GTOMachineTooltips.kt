@@ -2316,7 +2316,7 @@ object GTOMachineTooltips {
     @JvmField
     val RecipeExtensionTooltips = ComponentListSupplier {
         setTranslationPrefix("recipe_extension")
-        section("配方拓展舱" translatedTo "Recipe Extension Module")
+        section("配方拓展舱室" translatedTo "Recipe Extension Module")
         info("§6被动耗能§r由§b核心舱§r提供，而§6配方耗能§r需由安装在§b此舱§r的§d能源仓§r提供" translatedTo "§6Passive energy consumption§r is provided by the §bCore Module§r, while §6recipe energy consumption§r needs to be provided by the §dEnergy Input Hatch§r installed in the §bthis module§r")
         error("无核心舱连接时，无法运行配方" translatedTo "Cannot run recipes without a linked core module")
         highlight(
