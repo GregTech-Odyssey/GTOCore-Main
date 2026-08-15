@@ -2278,7 +2278,7 @@ object GTOMachineTooltips {
 
         section("拓展舱" translatedTo "Expansion Modules")
         info("§b核心舱§r：大型空间站的核心部分，必须安装且只能安装一个" translatedTo "§bCore Module§r: The core part of the large space station, must be installed and only one can be installed")
-        info("§b衔接舱§r：用于连接核心舱/模块仓与其他拓展舱" translatedTo "§bConnection Module§r: Used to connect the core module with other expansion modules")
+        info("§b衔接舱§r：用于连接核心舱/模块舱，自身也可相互连接" translatedTo "§bConnection Module§r: Used to connect the core module with other expansion modules, and can also connect to other connection modules")
         info("§b模块舱§r：提供额外的空间与功能" translatedTo "§bFunctional Module§r: Provides additional space and functions")
     }
 
