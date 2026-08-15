@@ -196,6 +196,11 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     }
 
     @Override
+    public int getPriority() {
+        return 1 << 30;
+    }
+
+    @Override
     public double extractAEPower(double amt, Actionable mode, PowerMultiplier multiplier) {
         return multiplier.divide(this.extractAEPower(multiplier.multiply(amt), mode));
     }
