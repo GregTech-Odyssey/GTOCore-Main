@@ -178,7 +178,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
     @JvmField
     val SpaceStationDockingModule = ComponentListSupplier {
         setTranslationPrefix("space_station_docking_module")
-        important("使用高级终端的模块搭建功能来选择该舱段的不同形态" translatedTo "Use the module building function of the advanced terminal to select different forms of this chamber")
+        important("使用高级终端的模块搭建功能来选择该舱的不同形态" translatedTo "Use the module building function of the advanced terminal to select different forms of this chamber")
         important("仅在成型任意一个形态后，该模块才可正常工作" translatedTo "This module can only function properly after forming any shape")
         error("无法同时成型多个形态" translatedTo "Cannot form multiple shapes at the same time")
     }
