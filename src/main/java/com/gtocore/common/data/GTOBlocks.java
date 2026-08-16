@@ -445,7 +445,7 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> OXIDATION_RESISTANT_HASTELLOY_N_MECHANICAL_CASING = createCasingBlock("oxidation_resistant_hastelloy_n_mechanical_casing", "抗氧化哈斯特洛伊合金-N机械方块", GTOCore.id("block/casings/oxidation_resistant_hastelloy_n_mechanical_casing"));
     public static final BlockEntry<Block> PIKYONIUM_MACHINE_CASING = createCasingBlock("pikyonium_machine_casing", "皮卡优机械方块", GTOCore.id("block/casings/pikyonium_machine_casing"));
     public static final BlockEntry<Block> SPS_CASING = createCasingBlock("sps_casing", "超临界外壳", GTOCore.id("block/casings/sps_casing"));
-    public static final BlockEntry<Block> NAQUADAH_ALLOY_CASING = createCasingBlock("naquadah_alloy_casing", "硅岩合金机械外壳", GTOCore.id("block/casings/hyper_mechanical_casing"));
+    public static final BlockEntry<Block> NAQUADAH_ALLOY_CASING = createCasingBlock("naquadah_alloy_casing", "硅岩合金机械外壳", GTOCore.id("block/casings/naquadah_alloy_casing"));
     public static final BlockEntry<Block> PROCESS_MACHINE_CASING = createCasingBlock("process_machine_casing", "处理机械方块", GTOCore.id("block/casings/process_machine_casing"));
     public static final BlockEntry<Block> FISSION_REACTOR_CASING = createCasingBlock("fission_reactor_casing", "裂变反应堆外壳", GTOCore.id("block/casings/fission_reactor_casing"));
     public static final BlockEntry<Block> DEGENERATE_RHENIUM_CONSTRAINED_CASING = createCasingBlock("degenerate_rhenium_constrained_casing", "简并态铼约束外壳", GTOCore.id("block/casings/degenerate_rhenium_constrained_casing"));
