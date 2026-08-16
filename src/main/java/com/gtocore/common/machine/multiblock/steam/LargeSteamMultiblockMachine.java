@@ -15,7 +15,7 @@ public final class LargeSteamMultiblockMachine extends BaseSteamMultiblockMachin
                          easyValue = "1.0D",
                          normalValue = "1.2D",
                          expertValue = "1.5D",
-                         cn = "蒸汽耗时为普通的 : %s 倍",
+                         cn = "蒸汽耗时乘数 : %s",
                          cnComment = "蒸汽时代，多方块并行机器的配方处理受技术限制，时间被迫延长",
                          en = "Recipe using time: Duration Multiplier x %s",
                          enComment = "In the steam era, the processing time of parallel machines is limited by technology, and the time is forced to be extended")

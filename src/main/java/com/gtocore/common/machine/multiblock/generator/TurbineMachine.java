@@ -66,11 +66,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Scanned
 public class TurbineMachine extends ElectricMultiblockMachine {
 
-    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_output_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4.0F", normalValue = "3.0F", expertValue = "2.5F", cn = "高速模式输出倍率 : %s 倍", en = "High Speed Mode Output Multiplier : %s Multiplier")
+    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_output_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4.0F", normalValue = "3.0F", expertValue = "2.5F", cn = "高速模式输出乘数 : %s", en = "High Speed Mode Output Multiplier : %s Multiplier")
     private static float highSpeedModeOutputMultiplier = 3.0F;
-    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_rotor_damage_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4", normalValue = "10", expertValue = "12", cn = "高速模式转子损坏倍率 : %s 倍", en = "High Speed Mode Rotor Damage Multiplier : %s Multiplier")
+    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_rotor_damage_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4", normalValue = "10", expertValue = "12", cn = "高速模式转子损坏乘数 : %s", en = "High Speed Mode Rotor Damage Multiplier : %s Multiplier")
     private static int highSpeedModeRotorDamageMultiplier = 10;
-    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_machine_fault", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4F", normalValue = "8F", expertValue = "10F", cn = "高速模式机器故障倍率 : %s 倍", en = "High Speed Mode Machine Fault Multiplier : %s Multiplier")
+    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_machine_fault", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4F", normalValue = "8F", expertValue = "10F", cn = "高速模式机器故障乘数 : %s", en = "High Speed Mode Machine Fault Multiplier : %s Multiplier")
     private static float highSpeedModeMachineFault = 8.0F;
 
     private final long baseEUOutput;
@@ -447,9 +447,9 @@ public class TurbineMachine extends ElectricMultiblockMachine {
 
     @RegisterLanguage(cn = "线圈等级: %s，转子启动增速 %s%%", en = "Coil Tier: %s, Rotor Launch Speed Bonus %s%%")
     public static final String COIL_BONUS = "gtocore.machine.mega_turbine.coil_tier";
-    @RegisterLanguage(cn = "玻璃等级: %s，转子损坏倍率乘数：%s", en = "Glass Tier: %s, Rotor Damage Multiplier Bonus: %s")
+    @RegisterLanguage(cn = "玻璃等级: %s，转子损坏乘数加成：%s", en = "Glass Tier: %s, Rotor Damage Multiplier Bonus: %s")
     public static final String GLASS_BONUS = "gtocore.machine.mega_turbine.glass_tier";
-    @RegisterLanguage(cn = "高速模式倍率调节：", en = "High Speed Mode Multiplier Adjustment:")
+    @RegisterLanguage(cn = "高速模式乘数调节：", en = "High Speed Mode Multiplier Adjustment:")
     public static final String ADJUSTMENT1 = "gtocore.machine.mega_turbine.expert.adjustment.1";
     @RegisterLanguage(cn = "输出：%sx", en = "Output EU: %sx")
     public static final String ADJUSTMENT2 = "gtocore.machine.mega_turbine.expert.adjustment.2";
@@ -457,15 +457,15 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     public static final String ADJUSTMENT3 = "gtocore.machine.mega_turbine.expert.adjustment.3";
     @RegisterLanguage(cn = "预计最大输出：%s EU/t", en = "Estimated Max Output: %s EU/t")
     public static final String ESTIMATED_MAX_OUTPUT = "gtocore.machine.mega_turbine.expert.estimated_max_output";
-    @RegisterLanguage(cn = "专家模式下，允许调节高速模式下的输出倍率。", en = "In Expert Mode, allows adjustment of the output multiplier in High Speed Mode.")
+    @RegisterLanguage(cn = "专家模式下，允许调节高速模式下的输出乘数。", en = "In Expert Mode, allows adjustment of the output multiplier in High Speed Mode.")
     public static final String DESC1 = "gtocore.machine.mega_turbine.expert.desc.1";
-    @RegisterLanguage(cn = "不过，调节输出倍率会同时大幅牺牲转子寿命。", en = "However, adjusting the output multiplier will also significantly sacrifice rotor durability.")
+    @RegisterLanguage(cn = "不过，调节输出乘数会同时大幅牺牲转子寿命。", en = "However, adjusting the output multiplier will also significantly sacrifice rotor durability.")
     public static final String DESC2 = "gtocore.machine.mega_turbine.expert.desc.2";
-    @RegisterLanguage(cn = "调节范围：0.1 倍 - 5 倍。", en = "Adjustment Range: 0.1x - 5x.")
+    @RegisterLanguage(cn = "乘数调节范围：0.1 - 5。", en = "Adjustment Range: 0.1x - 5x.")
     public static final String DESC3 = "gtocore.machine.mega_turbine.expert.desc.3";
-    @RegisterLanguage(cn = "公式：输出倍率 = 基础倍率 x 调节倍率", en = "Formula: Output Multiplier = Base Multiplier x Adjustment Multiplier")
+    @RegisterLanguage(cn = "公式：输出乘数 = 基础乘数 × 调节乘数", en = "Formula: Output Multiplier = Base Multiplier x Adjustment Multiplier")
     public static final String DESC4 = "gtocore.machine.mega_turbine.expert.desc.4";
-    @RegisterLanguage(cn = "转子损坏倍率 = 基础倍率 x max(2.2 - 0.08 * 玻璃等级, 1.2) ^ (调节倍率 - 1)", en = "Rotor Damage Multiplier = Base Multiplier x max(2.2 - 0.08 * Glass Tier, 1.2) ^ (Adjustment Multiplier - 1)")
+    @RegisterLanguage(cn = "转子损坏乘数 = 基础乘数 × max(2.2 - 0.08 × 玻璃等级, 1.2) ^ (调节乘数 - 1)", en = "Rotor Damage Multiplier = Base Multiplier x max(2.2 - 0.08 * Glass Tier, 1.2) ^ (Adjustment Multiplier - 1)")
     public static final String DESC5 = "gtocore.machine.mega_turbine.expert.desc.5";
     @RegisterLanguage(cn = "调节：", en = "Adjustment: ")
     public static final String ADJUST = "gtocore.machine.mega_turbine.expert.adjust";

@@ -139,9 +139,9 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
 
     @RegisterLanguage(cn = "已连接到太空电梯，动力模块最高等级: %s", en = "Connected to Space Elevator, Max Power Module Tier: %s")
     public static final String SPACE_ELEVATOR_CONNECTED_TEXT = "spacestation.space_elevator.connected";
-    @RegisterLanguage(cn = "已连接到当前星球的空间站，可使用耗时倍率: x%s", en = "Connected to Space Station of Current Planet, Usable Time Cost Multiplier: x%s")
+    @RegisterLanguage(cn = "已连接到当前星球的空间站，可使用耗时乘数: ×%s", en = "Connected to Space Station of Current Planet, Usable Time Cost Multiplier: x%s")
     public static final String SPACE_ELEVATOR_CONNECTED_CURRENT_PLANET_TEXT = "spacestation.space_elevator.connected_current_planet";
-    @RegisterLanguage(cn = "可获得的耗时倍率增益: x%s", en = "Time Cost Multiplier Gain: x%s")
+    @RegisterLanguage(cn = "可获得的耗时乘数增益: ×%s", en = "Time Cost Multiplier Gain: x%s")
     public static final String SPACE_ELEVATOR_TIME_COST_MULTIPLIER_TEXT = "spacestation.space_elevator.time_cost_multiplier";
     @RegisterLanguage(cn = "未连接到太空电梯", en = "Not Connected to Space Elevator")
     public static final String SPACE_ELEVATOR_NOT_CONNECTED_TEXT = "spacestation.space_elevator.not_connected";

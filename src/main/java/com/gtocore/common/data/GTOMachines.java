@@ -399,8 +399,8 @@ public final class GTOMachines {
                             v -> v.addLines("让机器超频", "accelerate machine"),
                             p -> p.addCommentLines(
                                     """
-                                            §m不安装本仓时，每使用4倍功率，机器耗时×55%%§r
-                                            §a安装本仓后，超频效果最高提升为每使用4倍功率，机器耗时×%s%%§r
+                                            §m不安装本仓时，功率每乘以4，机器耗时×55%%§r
+                                            §a安装本仓后，超频效果最高提升为功率每乘以4，机器耗时×%s%%§r
                                             更激进的超频策略，更强悍的机器性能，更极限的处理速度！""".formatted(FormattingUtil.formatNumber2Places(100D / (tier - 6))),
                                     """
                                             §mWhen this hatch is not installed, for every 4 times power used, machine duration ×55%%§r

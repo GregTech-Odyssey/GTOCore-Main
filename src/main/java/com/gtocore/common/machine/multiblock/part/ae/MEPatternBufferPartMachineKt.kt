@@ -94,7 +94,7 @@ open class MEPatternBufferPartMachineKt(holder: MetaMachineBlockEntity, maxPatte
         const val PASSIVE_INPUT_MULTIPLIER: String = "gtceu.ae.pattern_part_machine.PASSIVE_INPUT_MULTIPLIER"
 
         @RegisterLanguage(
-            cn = "按照设定的倍数调整被动输入的数量。例如，设定为10时，按样板配置的数量x10进行被动输入。",
+            cn = "按照设定的乘数调整被动输入的数量。例如，设定为10时，按样板配置的数量×10进行被动输入。",
             en = "Adjust the quantity of passive input according to the set multiplier. For example, when set to 10, passive input will be performed according to the quantity configured in the pattern x10.",
         )
         const val PASSIVE_INPUT_MULTIPLIER_TOOLTIP: String = "gtceu.ae.pattern_part_machine.PASSIVE_INPUT_MULTIPLIER_TOOLTIP"

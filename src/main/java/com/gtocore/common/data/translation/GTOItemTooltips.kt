@@ -144,7 +144,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         section("能量消耗" translatedTo "Energy consumption:")
         command("使用无线能量系统作为能量来源" translatedTo "Use wireless energy system as energy source")
         command("不同操作消耗不同数量的EU" translatedTo "Different operations consume different amounts of EU")
-        command("加速GT机器时，根据难度模式消耗相应倍数EU能量" translatedTo "When accelerating GT machines, consume EU energy according to the difficulty mode")
+        command("加速GT机器时，EU能量消耗会乘以难度模式对应的数值" translatedTo "When accelerating GT machines, consume EU energy according to the difficulty mode")
     }
 
     // 泛银河系格雷科技掌上银行

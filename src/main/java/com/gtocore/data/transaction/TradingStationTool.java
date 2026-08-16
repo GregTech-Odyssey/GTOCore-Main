@@ -20,15 +20,15 @@ public class TradingStationTool {
     /////////////////////////////////////
 
     /**
-     * 计算库存对输入物品列表的最大支持倍数（即库存最多能满足多少倍的输入列表消耗）
+     * 计算库存对输入物品列表的最大支持乘数（即库存最多能满足多少组输入列表消耗）
      *
      * @param handler       物品库存处理器
-     * @param requiredItems 需求物品列表（每个ItemStack的count为单倍需求数量）
-     * @return 最大支持倍数（若列表为空或无需求则返回Integer.MAX_VALUE，否则取最小限制倍数）
+     * @param requiredItems 需求物品列表（每个ItemStack的count为每组需求数量）
+     * @return 最大支持乘数（若列表为空或无需求则返回Integer.MAX_VALUE，否则取最小限制乘数）
      */
     public static int checkMaxMultiplier(ICustomItemStackHandler handler, List<ItemStack> requiredItems) {
         if (requiredItems.isEmpty()) {
-            return Integer.MAX_VALUE; // 无需求则支持无限倍
+            return Integer.MAX_VALUE; // 无需求则支持无限大乘数
         }
 
         int maxMultiplier = Integer.MAX_VALUE;
@@ -40,7 +40,7 @@ public class TradingStationTool {
 
             int requiredPerMulti = required.getCount();
             if (requiredPerMulti <= 0) {
-                continue; // 单倍需求为0，视为不限制该物品
+                continue; // 每组需求为0，视为不限制该物品
             }
 
             // 统计库存中该物品的总数量
@@ -52,12 +52,12 @@ public class TradingStationTool {
                 }
             }
 
-            // 计算该物品支持的最大倍数（总库存 / 单倍需求）
+            // 计算该物品支持的最大乘数（总库存 / 每组需求）
             int itemMaxMulti = totalInStock / requiredPerMulti;
             maxMultiplier = Math.min(maxMultiplier, itemMaxMulti);
 
             if (maxMultiplier == 0) {
-                break; // 已无法支持1倍，提前退出
+                break; // 已无法支持1组，提前退出
             }
         }
 
@@ -65,15 +65,15 @@ public class TradingStationTool {
     }
 
     /**
-     * 从库存中扣除 x倍的输入物品列表（每个物品扣除数量 = 列表中物品数量 * x）
+     * 从库存中扣除 x 组输入物品列表（每个物品扣除数量 = 列表中物品数量 × x）
      *
      * @param handler    物品库存处理器
-     * @param items      待扣除的物品列表（倍数）
-     * @param multiplier 倍数x（必须>0，否则不执行）
+     * @param items      待扣除的物品列表（每组数量）
+     * @param multiplier 乘数 x（必须>0，否则不执行）
      */
     public static void deductMultipliedItems(ICustomItemStackHandler handler, List<ItemStack> items, int multiplier) {
         if (multiplier <= 0 || items.isEmpty()) {
-            return; // 倍数无效或无物品，不执行
+            return; // 乘数无效或无物品，不执行
         }
 
         for (ItemStack item : items) {
@@ -83,10 +83,10 @@ public class TradingStationTool {
 
             int perItemCount = item.getCount();
             if (perItemCount <= 0) {
-                continue; // 单倍数量为0，无需扣除
+                continue; // 每组数量为0，无需扣除
             }
 
-            // 计算总扣除数量 = 单倍数量 * 倍数
+            // 计算总扣除数量 = 每组数量 × 乘数
             int totalToDeduct = perItemCount * multiplier;
             if (totalToDeduct <= 0) {
                 continue;
@@ -109,26 +109,26 @@ public class TradingStationTool {
     }
 
     /**
-     * 向库存中添加x倍的输入物品列表，库存不足时将剩余物品掷出掉落
+     * 向库存中添加 x 组输入物品列表，库存不足时将剩余物品掷出掉落
      *
      * @param handler    物品库存处理器
-     * @param items      待添加的物品列表（单倍数量）
-     * @param multiplier 倍数x（必须>0，否则不执行）
+     * @param items      待添加的物品列表（每组数量）
+     * @param multiplier 乘数 x（必须>0，否则不执行）
      */
     public static void addMultipliedItems(ICustomItemStackHandler handler, List<ItemStack> items, int multiplier, Level level, BlockPos pos) {
-        // 边界校验：倍数无效、无物品、世界或坐标为空时直接返回
+        // 边界校验：乘数无效、无物品、世界或坐标为空时直接返回
         if (multiplier <= 0 || items.isEmpty()) {
             return;
         }
 
-        // 遍历物品列表，处理每个物品的倍数添加
+        // 遍历物品列表，按乘数添加每个物品
         for (ItemStack item : items) {
-            // 跳过空物品或单倍数量为0的物品
+            // 跳过空物品或每组数量为0的物品
             if (item.isEmpty() || item.getCount() <= 0) {
                 continue;
             }
 
-            // 计算总添加数量 = 单倍数量 × 倍数
+            // 计算总添加数量 = 每组数量 × 乘数
             int totalToAdd = item.getCount() * multiplier;
             if (totalToAdd <= 0) {
                 continue;
@@ -194,22 +194,22 @@ public class TradingStationTool {
     }
 
     /**
-     * 计算库存中流体总量能支持多少倍的输入流体列表消耗（单倍为列表中各流体的量）
+     * 计算库存中流体总量能支持多少组输入流体列表消耗（每组量为列表中各流体的量）
      *
      * @param tank           流体库存槽
-     * @param requiredFluids 需求流体列表（每个FluidStack的amount为单倍需求）
-     * @return 最大支持倍数（若列表为空返回Integer.MAX_VALUE，若某流体不足则返回0）
+     * @param requiredFluids 需求流体列表（每个FluidStack的amount为每组需求）
+     * @return 最大支持乘数（若列表为空返回Integer.MAX_VALUE，若某流体不足则返回0）
      */
     public static int checkMaxConsumeMultiplier(ICustomFluidStackHandler tank, List<FluidStack> requiredFluids) {
         if (requiredFluids.isEmpty()) {
-            return Integer.MAX_VALUE; // 无需求则支持无限倍
+            return Integer.MAX_VALUE; // 无需求则支持无限大乘数
         }
 
         int maxMultiplier = Integer.MAX_VALUE;
 
         for (FluidStack required : requiredFluids) {
             if (required.isEmpty() || required.getAmount() <= 0) {
-                continue; // 跳过空流体或单倍需求为0的项
+                continue; // 跳过空流体或每组需求为0的项
             }
 
             // 统计库存中该流体的总存量（遍历所有槽，累加相同流体的量）
@@ -221,12 +221,12 @@ public class TradingStationTool {
                 }
             }
 
-            // 计算该流体支持的最大倍数（总存量 ÷ 单倍需求）
+            // 计算该流体支持的最大乘数（总存量 ÷ 每组需求）
             int fluidMaxMulti = totalInTank / required.getAmount();
             maxMultiplier = Math.min(maxMultiplier, fluidMaxMulti);
 
             if (maxMultiplier == 0) {
-                break; // 已无法支持1倍，提前退出
+                break; // 已无法支持1组，提前退出
             }
         }
 
@@ -234,22 +234,22 @@ public class TradingStationTool {
     }
 
     /**
-     * 计算库存剩余容量能容纳多少倍的输入流体列表（单倍为列表中各流体的量）
+     * 计算库存剩余容量能容纳多少组输入流体列表（每组量为列表中各流体的量）
      *
      * @param tank        流体库存槽
-     * @param inputFluids 待添加的流体列表（每个FluidStack的amount为单倍量）
-     * @return 最大可容纳倍数（若列表为空返回Integer.MAX_VALUE，若某流体无容量则返回0）
+     * @param inputFluids 待添加的流体列表（每个FluidStack的amount为每组量）
+     * @return 最大可容纳乘数（若列表为空返回Integer.MAX_VALUE，若某流体无容量则返回0）
      */
     public static int checkMaxCapacityMultiplier(ICustomFluidStackHandler tank, List<FluidStack> inputFluids) {
         if (inputFluids.isEmpty()) {
-            return Integer.MAX_VALUE; // 无输入则支持无限倍
+            return Integer.MAX_VALUE; // 无输入则支持无限大乘数
         }
 
         int maxMultiplier = Integer.MAX_VALUE;
 
         for (FluidStack input : inputFluids) {
             if (input.isEmpty() || input.getAmount() <= 0) {
-                continue; // 跳过空流体或单倍量为0的项
+                continue; // 跳过空流体或每组量为0的项
             }
 
             // 计算库存中该流体的剩余总容量（总容量 - 现有量）
@@ -266,12 +266,12 @@ public class TradingStationTool {
                 }
             }
 
-            // 计算该流体可容纳的最大倍数（剩余容量 ÷ 单倍量）
+            // 计算该流体可容纳的最大乘数（剩余容量 ÷ 每组量）
             int fluidMaxMulti = totalRemainingCapacity / input.getAmount();
             maxMultiplier = Math.min(maxMultiplier, fluidMaxMulti);
 
             if (maxMultiplier == 0) {
-                break; // 已无法容纳1倍，提前退出
+                break; // 已无法容纳1组，提前退出
             }
         }
 
@@ -279,19 +279,19 @@ public class TradingStationTool {
     }
 
     /**
-     * 从流体库存中扣除x倍的输入流体列表（每个流体扣除量 = 单倍量 × x）
+     * 从流体库存中扣除 x 组输入流体列表（每个流体扣除量 = 每组量 × x）
      *
      * @param tank       流体库存槽
-     * @param fluids     待扣除的流体列表（单倍量）
-     * @param multiplier 倍数x（必须>0，否则不执行）
-     * @return 实际扣除的倍数（若库存不足，可能小于x；完全成功则返回x）
+     * @param fluids     待扣除的流体列表（每组量）
+     * @param multiplier 乘数 x（必须>0，否则不执行）
+     * @return 实际扣除的乘数（若库存不足，可能小于x；完全成功则返回x）
      */
     public static int deductMultipliedFluids(ICustomFluidStackHandler tank, List<FluidStack> fluids, int multiplier) {
         if (multiplier <= 0 || fluids.isEmpty()) {
             return 0; // 无效参数，不执行
         }
 
-        // 按实际倍数扣除每个流体
+        // 按实际乘数扣除每个流体
         for (FluidStack fluid : fluids) {
             if (fluid.isEmpty() || fluid.getAmount() <= 0) {
                 continue;
@@ -312,19 +312,19 @@ public class TradingStationTool {
     }
 
     /**
-     * 向流体库存中添加x倍的输入流体列表（每个流体添加量 = 单倍量 × x）
+     * 向流体库存中添加 x 组输入流体列表（每个流体添加量 = 每组量 × x）
      *
      * @param tank       流体库存槽
-     * @param fluids     待添加的流体列表（单倍量）
-     * @param multiplier 倍数x（必须>0，否则不执行）
-     * @return 实际添加的倍数（若容量不足，可能小于x；完全成功则返回x）
+     * @param fluids     待添加的流体列表（每组量）
+     * @param multiplier 乘数 x（必须>0，否则不执行）
+     * @return 实际添加的乘数（若容量不足，可能小于x；完全成功则返回x）
      */
     public static int addMultipliedFluids(ICustomFluidStackHandler tank, List<FluidStack> fluids, int multiplier) {
         if (multiplier <= 0 || fluids.isEmpty()) {
             return 0; // 无效参数，不执行
         }
 
-        // 按实际倍数添加每个流体
+        // 按实际乘数添加每个流体
         for (FluidStack fluid : fluids) {
             if (fluid.isEmpty() || fluid.getAmount() <= 0) {
                 continue;

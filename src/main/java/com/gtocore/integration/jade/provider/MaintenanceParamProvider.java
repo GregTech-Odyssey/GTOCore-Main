@@ -31,7 +31,7 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
     private static final String KEY_DAMAGE_MULTIPLIER = "damageMultiplier";
     private static final String KEY_DAMAGE_CHANCE = "damageChance";
 
-    @RegisterLanguage(cn = "损坏倍率: %s", en = "Damage Multiplier: %s")
+    @RegisterLanguage(cn = "损坏乘数: %s", en = "Damage Multiplier: %s")
     private static final String DAMAGE_MULTIPLIER = "gtocore.machine.maintenance_damage_multiplier.tooltip";
     @RegisterLanguage(cn = "损坏概率: %s", en = "Damage Chance: %s")
     private static final String DAMAGE_CHANCE = "gtocore.machine.maintenance_damage_chance.tooltip";

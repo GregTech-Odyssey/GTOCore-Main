@@ -43,11 +43,11 @@ import static com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes.KEY_MUL
 public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IMaintenanceMachine, IMachineLife {
 
     @Getter
-    @DynamicInitialValue(key = "maintenance.configurable_duration.max", typeKey = KEY_MULTIPLY, easyValue = "1.3F", normalValue = "1.2F", expertValue = "1.1F", cn = "配方处理速度调节上限 : %s 倍", cnComment = "不计超频，配方处理速度为正常速度的最高倍率", en = "Configurable Recipe Speed Multiplier Maximum : %s Multiplier", enComment = "Ignore overclocking, the recipe processing speed is the highest multiplier for normal speed")
+    @DynamicInitialValue(key = "maintenance.configurable_duration.max", typeKey = KEY_MULTIPLY, easyValue = "1.3F", normalValue = "1.2F", expertValue = "1.1F", cn = "配方处理速度乘数上限 : %s", cnComment = "不计超频，配方处理速度乘数的最高值", en = "Configurable Recipe Speed Multiplier Maximum : %s Multiplier", enComment = "Ignore overclocking, the recipe processing speed is the highest multiplier for normal speed")
     private static float MAX_DURATION_MULTIPLIER = 1.0F;
 
     @Getter
-    @DynamicInitialValue(key = "maintenance.configurable_duration.min", typeKey = KEY_MULTIPLY, easyValue = "0.7F", normalValue = "0.8F", expertValue = "0.9F", cn = "配方处理速度调节下限 : %s 倍", cnComment = "不计超频，配方处理速度为正常速度的最低倍率", en = "Configurable Recipe Speed Multiplier Minimum : %s Multiplier", enComment = "Ignore overclocking, the recipe processing speed is the lowest multiplier for normal speed")
+    @DynamicInitialValue(key = "maintenance.configurable_duration.min", typeKey = KEY_MULTIPLY, easyValue = "0.7F", normalValue = "0.8F", expertValue = "0.9F", cn = "配方处理速度乘数下限 : %s", cnComment = "不计超频，配方处理速度乘数的最低值", en = "Configurable Recipe Speed Multiplier Minimum : %s Multiplier", enComment = "Ignore overclocking, the recipe processing speed is the lowest multiplier for normal speed")
     private static float MIN_DURATION_MULTIPLIER = 1.0F;
     private static final float DURATION_ACTION_AMOUNT = 0.01F;
 

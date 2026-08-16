@@ -187,8 +187,8 @@ public final class LangHandler {
 
         addCNEN("item.gtocore.pattern_modifier_pro.name", "样板修改器 Pro", "Pattern Modifier Pro");
         addCNEN("gtocore.patternModifierPro.0", "设置完成后，潜行右击样板供应器以应用", "After setup,shift + right-click template provider to apply");
-        addCNEN("gtocore.patternModifierPro.1", "模板乘数：所有物品和流体乘以指定倍数", "Set Item and Fluid Multiplier");
-        addCNEN("gtocore.patternModifierPro.2", "模板除数：所有物品和流体除以指定倍数", "Set Item and Fluid Divider");
+        addCNEN("gtocore.patternModifierPro.1", "模板乘数：所有物品和流体乘以该数值", "Set Item and Fluid Multiplier");
+        addCNEN("gtocore.patternModifierPro.2", "模板除数：所有物品和流体除以该数值", "Set Item and Fluid Divider");
         addCNEN("gtocore.patternModifierPro.3", "最大物品数：所有物品不会超过此数量", "Set Maximum Item Count");
         addCNEN("gtocore.patternModifierPro.4", "最大流体数：所有流体不会超过此桶数", "Set Maximum Fluid Amount / Bucket");
         addCNEN("gtocore.patternModifierPro.5", "应用次数为：循环上述操作次数，最大为16", "Set Application Cycles , Up to 16");
@@ -239,11 +239,11 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.ray_intensity", "光束强度：%s a.u.", "Ray Intensity: %s a.u.");
         addCNEN("gtocore.recipe.ray_wavelength", "光束波长：%s nm", "Ray Wavelength: %s nm");
         addCNEN("gtocore.recipe.ray_polarization", "光束偏振：%s°", "Ray Polarization: %s°");
-        addCNEN("gtocore.recipe.efficiency", "总耗能倍率：%s", "Total Energy Cost Multiplier: %s");
-        addCNEN("gtocore.recipe.efficiency.o", "总产能倍率：%s", "Total Energy Cost Multiplier: %s");
-        addCNEN("gtocore.recipe.mana_efficiency", "总耗魔倍率：%s", "Total Mana Cost Multiplier: %s");
-        addCNEN("gtocore.recipe.mana_efficiency.o", "总产魔倍率：%s", "Total Mana Cost Multiplier: %s");
-        addCNEN("gtocore.recipe.time_cost_multiplier", "总耗时倍率：%s", "Total Time Cost Multiplier: %s");
+        addCNEN("gtocore.recipe.efficiency", "总耗能乘数：%s", "Total Energy Cost Multiplier: %s");
+        addCNEN("gtocore.recipe.efficiency.o", "总产能乘数：%s", "Total Energy Cost Multiplier: %s");
+        addCNEN("gtocore.recipe.mana_efficiency", "总耗魔乘数：%s", "Total Mana Cost Multiplier: %s");
+        addCNEN("gtocore.recipe.mana_efficiency.o", "总产魔乘数：%s", "Total Mana Cost Multiplier: %s");
+        addCNEN("gtocore.recipe.time_cost_multiplier", "总耗时乘数：%s", "Total Time Cost Multiplier: %s");
         addCNEN("gtceu.multiblock.batch_parallel_multiplier", "(批处理/超频补偿 %s)", "(Batch/OC Compensation %s)");
         addCNEN("gtocore.condition.gravity", "需要强重力环境", "Requires Strong Gravity Environment");
         addCNEN("gtocore.condition.zero_gravity", "需要无重力环境", "Requires Zero Gravity Environment");

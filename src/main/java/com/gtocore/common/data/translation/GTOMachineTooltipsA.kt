@@ -52,7 +52,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         section(RunningRequirements)
         command("运行需要同时放入生物组织、匹配等级的培养液和连接杆；培养液等级与机加工控制模块等级均不得低于组织要求" translatedTo "Running requires biological tissue, culture medium of a matching tier, and a connecting rod; both the medium tier and machining control module tier must meet the tissue requirement")
         command("组织每5ticks生长一次；培养液营养可用率初始为100%，每秒降低0.1%，低于设定阈值后培养液会被清空并输出对应废液" translatedTo "Tissue grows every 5 ticks; culture medium starts at 100% nutrient availability and decreases by 0.1% per second, then is cleared and converted into its corresponding waste fluid below the configured threshold")
-        command("连接杆每20ticks损耗1点耐久；连接杆材料等级越高，发电倍率越高" translatedTo "The connecting rod loses 1 durability every 20 ticks; higher-tier connecting rod materials provide a higher generation multiplier")
+        command("连接杆每20ticks损耗1点耐久；连接杆材料等级越高，发电乘数越高" translatedTo "The connecting rod loses 1 durability every 20 ticks; higher-tier connecting rod materials provide a higher generation multiplier")
 
         section(EfficiencyBonus)
         info("基础发电量 = 组织等级^连接杆等级 × 组织数量 × 培养液数量 × 8EU/t" translatedTo "Base power = tissue tier^connecting rod tier × tissue amount × culture medium amount × 8EU/t")
@@ -641,10 +641,10 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         function("根据运行的配方发射高能光束射线" translatedTo "Emits high-energy beam rays based on the running recipe")
-        command("超频规则：每提升4倍电压，光强等级提升2倍" translatedTo "Overclocking rule: For every 4 times increase in voltage, the light intensity level increases by 2 times")
+        command("超频规则：电压每乘以4，光强等级乘以2" translatedTo "Overclocking rule: For every 4 times increase in voltage, the light intensity level increases by 2 times")
         content("在机器gui中调节射线的水平角与俯仰角" translatedTo "Adjust the horizontal and pitch angles of the beam in the machine GUI")
 
-        important("光束射线在非超净间的环境中，光强会受到每方块0.95倍系数的衰减" translatedTo "In a non-cleanroom environment, the light intensity of the beam will be attenuated by a factor of 0.95 per block")
+        important("光束射线在非超净间的环境中，每经过一格，光强都会乘以0.95" translatedTo "In a non-cleanroom environment, the light intensity of the beam will be attenuated by a factor of 0.95 per block")
     }
 
     @JvmField
