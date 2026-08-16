@@ -50,6 +50,24 @@ public class StxckUtil {
         refillItemStack(entity);
     }
 
+    public void shrink(ItemEntity entity, int count) {
+        if (count <= 0) return;
+        var extraItemCount = getExtraItemCount(entity);
+        var extraToShrink = Math.min(count, extraItemCount);
+        if (extraToShrink > 0) {
+            setExtraItemCount(entity, extraItemCount - extraToShrink);
+            count -= extraToShrink;
+        }
+        if (count <= 0) return;
+        var stack = entity.getItem();
+        if (count >= stack.getCount()) {
+            entity.discard();
+        } else {
+            stack.shrink(count);
+            entity.setItem(stack.copy());
+        }
+    }
+
     public boolean isMergable(ItemEntity entity) {
         var pickupDelay = entity.pickupDelay;
         var age = entity.age;

@@ -582,7 +582,11 @@ public final class ManaMultiBlock {
                     .where('A', blocks(RegistriesUtils.getBlock("ars_nouveau:blue_archwood_log")))
                     .where('B', blocks(RegistriesUtils.getBlock("botania:livingrock_wall")))
                     .where('C', blocks(RegistriesUtils.getBlock("ars_nouveau:purple_archwood_log")))
-                    .where('D', ManaFlowAssembler.MANA_POOL.get())
+                    .where('D', ManaFlowAssembler.manaPool(
+                            BotaniaBlocks.manaPool,
+                            BotaniaBlocks.dilutedPool,
+                            BotaniaBlocks.fabulousPool,
+                            BotaniaBlocks.creativePool))
                     .where('E', ManaFlowAssembler.MANA_PYLON.get())
                     .where('F', blocks(GTOBlocks.MANASTEEL_CASING.get())
                             .or(abilities(IMPORT_FLUIDS_1X).setMaxGlobalLimited(1)))

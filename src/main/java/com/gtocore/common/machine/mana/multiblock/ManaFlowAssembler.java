@@ -2,6 +2,7 @@ package com.gtocore.common.machine.mana.multiblock;
 
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.integration.botania.IClientPylon;
+import com.gtocore.utils.StxckUtil;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -32,9 +33,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 
 import com.fast.recipesearch.IntLongMap;
@@ -46,6 +47,7 @@ import org.jetbrains.annotations.Nullable;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.PylonBlock;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
+import vazkii.botania.common.block.mana.ManaPoolBlock;
 import vazkii.botania.common.handler.BotaniaSounds;
 
 import java.lang.ref.WeakReference;
@@ -67,7 +69,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
     private int maxRate = 0;
     private final List<WeakReference<ManaPoolBlockEntity>> manaPools = new ArrayList<>();
     private final InWorldManaContainer inWorldManaContainer = new InWorldManaContainer();
-    private final ManaContainerList manaContainerList = new ManaContainerList(inWorldManaContainer);
+    private ManaContainerList manaContainerList = ManaContainerList.EMPTY;
     private TickableSubscription tickSubscription;
     private TickableSubscription clientTickSubscription;
     private final EnumMap<Direction, Integer> colors = new EnumMap<>(Direction.class);
@@ -99,6 +101,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                 }
             }
         }
+        manaContainerList = new ManaContainerList(inWorldManaContainer);
     }
 
     @Override
@@ -115,6 +118,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         super.onStructureInvalid();
         maxRate = 0;
         manaPools.clear();
+        manaContainerList = ManaContainerList.EMPTY;
         colors.clear();
     }
 
@@ -153,6 +157,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         super.onUnload();
         maxRate = 0;
         manaPools.clear();
+        manaContainerList = ManaContainerList.EMPTY;
         colors.clear();
         if (tickSubscription != null) {
             tickSubscription.unsubscribe();
@@ -166,9 +171,18 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
     @Override
     public void customText(List<Component> textList) {
-        getMultiblockTraits().stream().filter(t -> !(t instanceof ManaTrait)).forEach(trait -> trait.customText(textList));
-        textList.add(Component.translatable("gtocore.machine.mana_stored", FormattingUtil.formatNumbers(inWorldManaContainer.getCurrentMana()) + " / " + FormattingUtil.formatNumbers(inWorldManaContainer.getMaxMana())));
-        textList.add(Component.translatable("gtocore.machine.mana_consumption", FormattingUtil.formatNumbers(inWorldManaContainer.getMaxIORate()) + " /t"));
+        for (var trait : getMultiblockTraits()) {
+            if (!(trait instanceof ManaTrait)) trait.customText(textList);
+        }
+        var manaText = Component.literal("∞");
+        if (!inWorldManaContainer.hasCreativePool()) {
+            manaText = Component.literal(FormattingUtil.formatNumbers(manaContainerList.getCurrentMana()))
+                    .append(" / ")
+                    .append(FormattingUtil.formatNumbers(manaContainerList.getMaxMana()));
+        }
+        textList.add(Component.translatable("gtocore.machine.mana_stored", manaText));
+        var consumptionText = Component.literal(FormattingUtil.formatNumbers(manaContainerList.getMaxIORate())).append(" /t");
+        textList.add(Component.translatable("gtocore.machine.mana_consumption", consumptionText));
     }
 
     @Override
@@ -235,21 +249,22 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                         continue;
                     }
                     var itemStack = itemEntity.getItem();
-                    itemStack = simulate ? itemStack.copy() : itemStack;
+                    var itemCount = StxckUtil.getTotalCount(itemEntity);
+                    var originalItemCount = itemCount;
                     var leftConsuming = items.iterator();
-                    while (itemStack.getCount() > 0 && leftConsuming.hasNext()) {
+                    while (itemCount > 0 && leftConsuming.hasNext()) {
                         var ingredient = leftConsuming.next();
                         if (ingredient.inner.testItem(itemStack.getItem())) {
-                            var toExtract = (int) Math.min(ingredient.amount, itemStack.getCount());
+                            var toExtract = (int) Math.min(ingredient.amount, itemCount);
                             ingredient.shrink(toExtract);
-                            itemStack.shrink(toExtract);
+                            itemCount -= toExtract;
                             if (ingredient.amount <= 0) {
                                 leftConsuming.remove();
                             }
-                            if (!simulate && itemStack.isEmpty()) {
-                                itemEntity.discard();
-                            }
                         }
+                    }
+                    if (!simulate) {
+                        StxckUtil.shrink(itemEntity, originalItemCount - itemCount);
                     }
                 }
                 return items.isEmpty();
@@ -258,27 +273,26 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
-            return getItemEntitiesAbove().stream()
-                    .filter(ItemEntity::isAlive)
-                    .anyMatch(ie -> {
-                        var r = function.test(ie.getItem(), ie.getItem().getCount());
-                        if (ie.getItem().isEmpty()) {
-                            ie.discard();
-                        }
-                        return r;
-                    });
+            for (var itemEntity : getItemEntitiesAbove()) {
+                if (!itemEntity.isAlive()) continue;
+                var interrupted = function.test(itemEntity.getItem(), StxckUtil.getTotalCount(itemEntity));
+                if (itemEntity.getItem().isEmpty()) {
+                    itemEntity.discard();
+                }
+                if (interrupted) return true;
+            }
+            return false;
         }
 
         @Override
         public void fastForEachItems(ObjLongConsumer<ItemStack> function) {
-            getItemEntitiesAbove().stream()
-                    .filter(ItemEntity::isAlive)
-                    .forEach(ie -> {
-                        function.accept(ie.getItem(), ie.getItem().getCount());
-                        if (ie.getItem().isEmpty()) {
-                            ie.discard();
-                        }
-                    });
+            for (var itemEntity : getItemEntitiesAbove()) {
+                if (!itemEntity.isAlive()) continue;
+                function.accept(itemEntity.getItem(), StxckUtil.getTotalCount(itemEntity));
+                if (itemEntity.getItem().isEmpty()) {
+                    itemEntity.discard();
+                }
+            }
         }
 
         @Override
@@ -288,9 +302,9 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
             for (var i : getItemEntitiesAbove()) {
                 if (!i.isAlive()) continue;
                 if (specialConverter) {
-                    type.convertItem(i.getItem(), i.getItem().getCount(), intIngredientMap);
+                    type.convertItem(i.getItem(), StxckUtil.getTotalCount(i), intIngredientMap);
                 } else {
-                    ITEM_CONVERTER.convert(i.getItem(), i.getItem().getCount(), intIngredientMap);
+                    ITEM_CONVERTER.convert(i.getItem(), StxckUtil.getTotalCount(i), intIngredientMap);
                 }
             }
             return intIngredientMap;
@@ -311,29 +325,76 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public long getMaxMana() {
-            return manaPools.stream().map(WeakReference::get).filter(Objects::nonNull).filter(m -> !m.isRemoved()).mapToInt(ManaPoolBlockEntity::getMaxMana).asLongStream().sum();
+            long maxMana = 0;
+            for (var poolRef : manaPools) {
+                var pool = poolRef.get();
+                if (pool == null || pool.isRemoved()) continue;
+                maxMana += Math.max(0, Math.max(pool.getMaxMana(), pool.getCurrentMana()));
+            }
+            return maxMana;
         }
 
         @Override
         public long getCurrentMana() {
-            return manaPools.stream().map(WeakReference::get).filter(Objects::nonNull).filter(m -> !m.isRemoved()).mapToInt(ManaPoolBlockEntity::getCurrentMana).asLongStream().sum();
+            long currentMana = 0;
+            for (var poolRef : manaPools) {
+                var pool = poolRef.get();
+                if (pool == null || pool.isRemoved()) continue;
+                currentMana += Math.max(0, pool.getCurrentMana());
+            }
+            return currentMana;
         }
 
         @Override
         public void setCurrentMana(long mana) {
-            var manaToSet = Mth.clamp(mana, 0, getMaxMana());
-            for (var poolRef : manaPools) {
-                if (manaToSet <= 0) {
-                    break;
-                }
-                var pool = poolRef.get();
-                if (pool != null) {
-                    var toSet = Mth.clamp(manaToSet, 0, pool.getMaxMana());
-                    var delta = toSet - pool.getCurrentMana();
-                    manaToSet -= toSet;
-                    pool.receiveMana((int) delta);
-                }
+            var currentMana = getCurrentMana();
+            var manaToSet = Math.clamp(mana, 0, getMaxMana());
+            if (manaToSet == currentMana) return;
+            if (manaToSet < currentMana) {
+                if (hasCreativePool()) return;
+                removeMana(currentMana - manaToSet);
+                return;
             }
+            addMana(manaToSet - currentMana);
+        }
+
+        private void removeMana(long mana) {
+            for (var poolRef : manaPools) {
+                if (mana <= 0) break;
+                var pool = poolRef.get();
+                if (pool == null || pool.isRemoved()) continue;
+                var currentMana = Math.max(0, pool.getCurrentMana());
+                var toRemove = (int) Math.min(mana, currentMana);
+                if (toRemove == 0) continue;
+                pool.receiveMana(-toRemove);
+                mana -= Math.max(0, currentMana - pool.getCurrentMana());
+            }
+        }
+
+        private void addMana(long mana) {
+            for (var poolRef : manaPools) {
+                if (mana <= 0) break;
+                var pool = poolRef.get();
+                if (pool == null || pool.isRemoved()) continue;
+                var currentMana = Math.max(0, pool.getCurrentMana());
+                var availableSpace = Math.max(0, pool.getMaxMana() - currentMana);
+                var toAdd = (int) Math.min(mana, availableSpace);
+                if (toAdd == 0) continue;
+                pool.receiveMana(toAdd);
+                mana -= Math.max(0, pool.getCurrentMana() - currentMana);
+            }
+        }
+
+        private boolean isCreativePool(ManaPoolBlockEntity pool) {
+            return pool.getBlockState().getBlock() instanceof ManaPoolBlock poolBlock && poolBlock.variant == ManaPoolBlock.Variant.CREATIVE;
+        }
+
+        private boolean hasCreativePool() {
+            for (var poolRef : manaPools) {
+                var pool = poolRef.get();
+                if (pool != null && !pool.isRemoved() && isCreativePool(pool)) return true;
+            }
+            return false;
         }
 
         @Override
@@ -365,11 +426,12 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                 return data;
             }, BotaniaBlocks.manaPylon, BotaniaBlocks.naturaPylon, BotaniaBlocks.gaiaPylon, ModBlocks.alfsteelPylon));
 
-    public static Supplier<TraceabilityPredicate> MANA_POOL = GTMemoizer.memoize(
-            () -> GTOPredicates.dataBlock(POOL, ArrayList::new, (data, state) -> {
-                data.add(state.getPos());
-                return data;
-            }, BotaniaBlocks.manaPool));
+    public static TraceabilityPredicate manaPool(Block... blocks) {
+        return GTOPredicates.dataBlock(POOL, ArrayList::new, (data, state) -> {
+            data.add(state.getPos());
+            return data;
+        }, blocks);
+    }
 
     @RegisterLanguage(cn = "魔力流太弱了", en = "Mana flow is too weak")
     public static final String MANA_FLOW_TOO_WEAK = "gtocore.machine.mana_flow_assembler.mana_flow_too_weak";
