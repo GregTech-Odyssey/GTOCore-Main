@@ -224,9 +224,15 @@ public final class GTOConfig {
 
         @Configurable
         @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
-        @Configurable.Comment({ "启用多方块机器的动态结构渲染、命中和碰撞，修改后需要重启游戏，多人游戏中客户端与服务端必须保持一致", "Enable dynamic structure rendering, targeting, and collision for multiblock machines. Requires a game restart; clients and servers must use the same value" })
+        @Configurable.Comment({ "启用多方块机器的动态结构渲染和命中；关闭时也会禁用动态结构碰撞。修改后需要重启游戏，多人游戏中客户端与服务端必须保持一致", "Enable dynamic structure rendering and targeting for multiblock machines; disabling this also disables dynamic structure collision. Requires a game restart; clients and servers must use the same value" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Enable Dynamic Structures", cn = "启用动态结构")
         public boolean enableDynamicStructures = true;
+
+        @Configurable
+        @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+        @Configurable.Comment({ "启用动态结构在服务端对实体的阻挡、承载和推动碰撞。关闭后动态结构仍会渲染，但动态部件不会产生碰撞。修改后需要重启游戏或服务器，多人游戏中客户端与服务端必须保持一致", "Enable server-side blocking, carrying, and pushing collisions between dynamic structures and entities. When disabled, dynamic structures are still rendered, but dynamic parts do not collide with entities. Requires a game or server restart; clients and servers must use the same value" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Enable Dynamic Structure Collision", cn = "启用动态结构碰撞")
+        public boolean enableDynamicStructureCollision = false;
 
         @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Default Value for Rename Pattern", cn = "重命名样板的默认值")

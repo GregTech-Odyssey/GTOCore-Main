@@ -1,13 +1,14 @@
 package com.gtocore.common.machine.multiblock.electric.nano;
 
-import com.gtocore.api.machine.dynamic.DynamicBlockPattern;
-import com.gtocore.api.machine.dynamic.DynamicCollisionManager;
-import com.gtocore.api.machine.dynamic.DynamicRotationState;
-import com.gtocore.api.machine.dynamic.IDynamicStructureMachine;
-import com.gtocore.client.DynamicVisualManager;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.config.GTOConfig;
 
+import com.gtolib.api.machine.dynamic.DynamicBlockPattern;
+import com.gtolib.api.machine.dynamic.DynamicCollisionManager;
+import com.gtolib.api.machine.dynamic.DynamicRotationState;
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
+import com.gtolib.api.machine.dynamic.IDynamicStructureMachine;
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
@@ -23,6 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMachine implements IDynamicStructureMachine {
 
@@ -47,12 +49,21 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     }
 
     @Override
+    public boolean isDynamicStructureEnabled() {
+        return GTOConfig.INSTANCE.gamePlay.enableDynamicStructures;
+    }
+
+    @Override
     public void onStructureFormed() {
         super.onStructureFormed();
         if (!isDynamicStructureEnabled()) return;
         if (!isRemote()) {
-            DynamicCollisionManager.register(this);
-            dynamicSubscription = subscribeServerTick(dynamicSubscription, this::tickDynamicPart);
+            if (DynamicCollisionManager.isEntityCollisionEnabled()) {
+                DynamicCollisionManager.register(this);
+                dynamicSubscription = subscribeServerTick(dynamicSubscription, this::tickDynamicPart);
+            } else {
+                hideCollision();
+            }
         }
     }
 
@@ -61,38 +72,35 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
         super.onStructureFormedClient();
         if (!isDynamicStructureEnabled()) return;
         DynamicVisualManager.register(this);
-        DynamicCollisionManager.register(this);
+        if (!DynamicCollisionManager.isEntityCollisionEnabled() && hideDynamicParts()) blocksHidden = true;
         dynamicSubscription = subscribeClientTick(dynamicSubscription, this::tickDynamicPart);
     }
 
     private void tickDynamicPart() {
+        boolean collisionEnabled = DynamicCollisionManager.isEntityCollisionEnabled();
+        if (isRemote() && !blocksHidden && (isActive() || !collisionEnabled)) {
+            if (!hideDynamicParts()) return;
+            blocksHidden = true;
+        }
         if (isActive()) {
-            if (isRemote() && !blocksHidden) {
-                if (!hideDynamicParts()) return;
-                blocksHidden = true;
-            }
             tickRotations(true);
-            if (!isRemote() && !collisionHidden) {
-                for (String partName : RINGS) DynamicCollisionManager.hidePart(this, partName);
-                collisionHidden = true;
-            }
+            if (!isRemote()) hideCollision();
         } else {
             tickRotations(false);
-            if (!hasRotation()) restoreDynamicPart();
+            if (!hasRotation() && (!isRemote() || collisionEnabled)) restoreDynamicPart();
         }
     }
 
     private void restoreDynamicPart() {
         if (isRemote()) {
             if (blocksHidden) {
-                for (String partName : RINGS) DynamicVisualManager.showPart(this, partName);
+                for (int index = 0; index < RINGS.length; index++) {
+                    DynamicVisualManager.showPart(this, RINGS[index]);
+                }
             }
             blocksHidden = false;
         } else {
-            if (collisionHidden) {
-                for (String partName : RINGS) DynamicCollisionManager.showPart(this, partName);
-            }
-            collisionHidden = false;
+            restoreCollision();
         }
     }
 
@@ -130,8 +138,11 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     }
 
     private void clearDynamicPart() {
-        if (isRemote()) DynamicVisualManager.unregister(this);
-        DynamicCollisionManager.unregister(this);
+        if (isRemote()) {
+            DynamicVisualManager.unregister(this);
+        } else {
+            DynamicCollisionManager.unregister(this);
+        }
         restoreDynamicPart();
         if (dynamicSubscription != null) {
             dynamicSubscription.unsubscribe();
@@ -140,6 +151,22 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
         innerVerticalRotation.reset();
         outerVerticalRotation.reset();
         horizontalRotation.reset();
+    }
+
+    private void hideCollision() {
+        if (collisionHidden) return;
+        for (int index = 0; index < RINGS.length; index++) {
+            DynamicCollisionManager.hidePart(this, RINGS[index]);
+        }
+        collisionHidden = true;
+    }
+
+    private void restoreCollision() {
+        if (!collisionHidden) return;
+        for (int index = 0; index < RINGS.length; index++) {
+            DynamicCollisionManager.showPart(this, RINGS[index]);
+        }
+        collisionHidden = false;
     }
 
     @Override
@@ -163,7 +190,8 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
 
     @Override
     public boolean isDynamicPartVisible(String partName) {
-        return isDynamicStructureEnabled() && isRing(partName) && isFormed() && hasRotation();
+        return isDynamicStructureEnabled() && isRing(partName) && isFormed() &&
+                (!DynamicCollisionManager.isEntityCollisionEnabled() || hasRotation());
     }
 
     @Override
@@ -191,6 +219,11 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     }
 
     @Override
+    public double getDynamicCollisionShapeMargin(String partName) {
+        return 0;
+    }
+
+    @Override
     public float getDynamicMotionValue(String partName, float partialTicks) {
         DynamicRotationState rotation = getRotation(partName);
         return rotation == null ? 0 : rotation.getValue(partialTicks);
@@ -200,6 +233,12 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
     public float getDynamicReturnProgress(String partName, float partialTicks) {
         DynamicRotationState rotation = getRotation(partName);
         return rotation == null ? 0 : rotation.getReturnProgress(partialTicks);
+    }
+
+    @Override
+    public Matrix4f getDynamicTransform(String partName, float partialTicks, Matrix4f result) {
+        return getDynamicPart(partName).transform(result, getFrontFacing(), getDynamicMotionValue(partName, partialTicks),
+                getDynamicReturnProgress(partName, partialTicks));
     }
 
     @Nullable

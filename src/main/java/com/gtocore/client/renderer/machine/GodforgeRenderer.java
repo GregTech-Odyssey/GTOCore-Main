@@ -1,6 +1,5 @@
 package com.gtocore.client.renderer.machine;
 
-import com.gtocore.api.machine.dynamic.DynamicPartDefinition;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.client.renderer.TextureUpdateRequester;
@@ -8,6 +7,7 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.machine.multiblock.noenergy.GodForgeMachine;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.machine.dynamic.DynamicPartDefinition;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -37,6 +37,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.math.Axis;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
@@ -47,6 +48,7 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
     private static boolean initialized = false;
     private VertexBuffer ringOne, ringTwo, ringThree;
     private TextureUpdateRequester textureUpdateRequester;
+    private final Matrix4f dynamicTransform = new Matrix4f();
 
     public GodforgeRenderer() {
         super(GTOCore.id("block/transcendentally_amplified_magnetic_confinement_casing"), GTCEu.id("block/multiblock/fusion_reactor"));
@@ -68,7 +70,8 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
                 renderAll(machine, tick, poseStack, buffer);
             }
         }
-        if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.getMetaMachine() instanceof GodForgeMachine machine && machine.rotation > 0 && !(blockEntity.getLevel() instanceof TrackedDummyWorld)) {
+        if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.getMetaMachine() instanceof GodForgeMachine machine &&
+                machine.isDynamicPartVisible(GodForgeMachine.OUTER_RING) && !(blockEntity.getLevel() instanceof TrackedDummyWorld)) {
             RenderRing(machine, poseStack, partialTicks);
         }
     }
@@ -117,7 +120,7 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
         Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
         textureUpdateRequester.requestUpdate();
         poseStack.pushPose();
-        poseStack.mulPoseMatrix(machine.getDynamicTransform(GodForgeMachine.OUTER_RING, partialTicks));
+        poseStack.mulPoseMatrix(machine.getDynamicTransform(GodForgeMachine.OUTER_RING, partialTicks, dynamicTransform));
         ring.bind();
         ring.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
         VertexBuffer.unbind();

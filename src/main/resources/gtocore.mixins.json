@@ -217,8 +217,6 @@
     "jumbofurnace.JumboFurnaceCoreBlockEntityMixin",
     "map.BlockStateShortShapeCacheMixin",
     "mc.BlockBehaviourMixin",
-    "mc.BlockCollisionsMixin",
-    "mc.EntityMixin",
     "mc.ItemEntityMixin",
     "mc.LanguageMixin",
     "mc.MinecraftServerMixin",

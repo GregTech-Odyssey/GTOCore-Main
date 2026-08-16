@@ -1,18 +1,19 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
-import com.gtocore.api.machine.dynamic.DynamicBlockPattern;
-import com.gtocore.api.machine.dynamic.DynamicCollisionManager;
-import com.gtocore.api.machine.dynamic.IDynamicStructureMachine;
-import com.gtocore.api.machine.dynamic.RotationMotion;
-import com.gtocore.api.pattern.GTOFactoryBlockPattern;
 import com.gtocore.api.pattern.GTOPredicates;
-import com.gtocore.client.DynamicVisualManager;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.config.GTOConfig;
 
+import com.gtolib.api.machine.dynamic.DynamicBlockPattern;
+import com.gtolib.api.machine.dynamic.DynamicCollisionManager;
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
+import com.gtolib.api.machine.dynamic.IDynamicStructureMachine;
+import com.gtolib.api.machine.dynamic.RotationMotion;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
+import com.gtolib.api.pattern.GTOFactoryBlockPattern;
 import com.gtolib.api.recipe.TierDataKey;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -37,6 +38,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
 
@@ -76,6 +78,11 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     }
 
     @Override
+    public boolean isDynamicStructureEnabled() {
+        return GTOConfig.INSTANCE.gamePlay.enableDynamicStructures;
+    }
+
+    @Override
     public Reference2IntMap<TierDataKey> getCasingTiers() {
         return tierCasingTrait.getCasingTiers();
     }
@@ -86,13 +93,20 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         dynamicRenderEnabled = true;
         if (!isDynamicStructureEnabled()) return;
         DynamicVisualManager.register(this);
-        DynamicCollisionManager.register(this);
+        if (!DynamicCollisionManager.isEntityCollisionEnabled() && removeBlockFromWorld()) isRemoved = true;
         rotationSubscription = subscribeClientTick(rotationSubscription, this::rotation);
     }
 
     private void rotation() {
+        boolean collisionEnabled = DynamicCollisionManager.isEntityCollisionEnabled();
         boolean active = isActive();
-        if (isRemote()) active = updateDynamicRenderState();
+        if (isRemote()) {
+            updateDynamicRenderState();
+            if (!collisionEnabled && !isRemoved) {
+                if (!removeBlockFromWorld()) return;
+                isRemoved = true;
+            }
+        }
         boolean keepStarting = timer > rotation && (!isRemote() || !isActive());
         if (active || keepStarting) {
             if (isRemote() && !isRemoved) {
@@ -109,11 +123,11 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
             this.timer = 0;
             if (this.rotation > 0) {
                 this.rotation %= 180;
-                this.rotation = Math.max(0, this.rotation - getDynamicReturnSpeed());
+                this.rotation = Math.max(0, this.rotation - 1);
             }
             if (this.rotation == 0) {
                 if (isRemote()) {
-                    if (isRemoved && addBlockToWorld()) isRemoved = false;
+                    if (collisionEnabled && isRemoved && addBlockToWorld()) isRemoved = false;
                 } else if (collisionRemoved) {
                     updateCollision(false);
                     collisionRemoved = false;
@@ -122,7 +136,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         }
     }
 
-    private boolean updateDynamicRenderState() {
+    private void updateDynamicRenderState() {
         if (!isActive()) {
             dynamicRenderEnabled = false;
         } else if (dynamicRenderEnabled) {
@@ -130,11 +144,6 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         } else {
             dynamicRenderEnabled = DynamicVisualManager.isInRange(getPos(), DYNAMIC_RESTART_DISTANCE);
         }
-        return dynamicRenderEnabled;
-    }
-
-    public int getDynamicReturnSpeed() {
-        return isRemote() && isActive() && !dynamicRenderEnabled ? 4 : 1;
     }
 
     @Override
@@ -144,16 +153,23 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         tier = getCasingTier(GTORecipeDataKeys.GRAVITON_FLOW_TIER);
         if (!isDynamicStructureEnabled()) return;
         if (!isRemote()) {
-            DynamicCollisionManager.register(this);
-            rotationSubscription = subscribeServerTick(rotationSubscription, this::rotation);
+            if (DynamicCollisionManager.isEntityCollisionEnabled()) {
+                DynamicCollisionManager.register(this);
+                rotationSubscription = subscribeServerTick(rotationSubscription, this::rotation);
+            } else if (!collisionRemoved) {
+                updateCollision(true);
+                collisionRemoved = true;
+            }
         }
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        DynamicCollisionManager.unregister(this);
-        clearCollision();
+        if (!isRemote()) {
+            DynamicCollisionManager.unregister(this);
+            clearCollision();
+        }
         unsubscribeRotation();
         rotation = 0;
         timer = 0;
@@ -163,7 +179,6 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     public void onStructureInvalidClient() {
         super.onStructureInvalidClient();
         DynamicVisualManager.unregister(this);
-        DynamicCollisionManager.unregister(this);
         unsubscribeRotation();
         if (isRemoved && addBlockToWorld()) isRemoved = false;
         dynamicRenderEnabled = false;
@@ -174,12 +189,12 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     @Override
     public void onUnload() {
         super.onUnload();
-        DynamicCollisionManager.unregister(this);
         if (isRemote()) {
             DynamicVisualManager.unregister(this);
             if (isRemoved && addBlockToWorld()) isRemoved = false;
             dynamicRenderEnabled = false;
         } else {
+            DynamicCollisionManager.unregister(this);
             clearCollision();
         }
         unsubscribeRotation();
@@ -225,7 +240,9 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
 
     @Override
     public boolean isDynamicPartVisible(String partName) {
-        return isDynamicStructureEnabled() && OUTER_RING.equals(partName) && isFormed() && rotation > 0;
+        return isDynamicStructureEnabled() && OUTER_RING.equals(partName) && isFormed() &&
+                (!isRemote() || !isActive() || dynamicRenderEnabled) &&
+                (!DynamicCollisionManager.isEntityCollisionEnabled() || rotation > 0);
     }
 
     @Nullable
@@ -257,10 +274,22 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     }
 
     @Override
+    public double getDynamicCollisionShapeMargin(String partName) {
+        return 0;
+    }
+
+    @Override
     public float getDynamicMotionValue(String partName, float partialTicks) {
-        if (!OUTER_RING.equals(partName)) return 0;
-        float angle = dynamicRenderEnabled || (!isActive() && timer > rotation) ? rotation + partialTicks : rotation - partialTicks * getDynamicReturnSpeed();
+        if (!OUTER_RING.equals(partName) || rotation == 0) return 0;
+        float currentRotation = rotation % 360;
+        float angle = isActive() || timer >= rotation ? currentRotation + partialTicks : currentRotation - partialTicks;
         return angle % 360;
+    }
+
+    @Override
+    public Matrix4f getDynamicTransform(String partName, float partialTicks, Matrix4f result) {
+        return getDynamicPart(partName).transform(result, getFrontFacing(), getDynamicMotionValue(partName, partialTicks),
+                getDynamicReturnProgress(partName, partialTicks));
     }
 
     private boolean removeBlockFromWorld() {

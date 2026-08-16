@@ -1,12 +1,13 @@
 package com.gtocore.mixin.mc.client;
 
-import com.gtocore.client.DynamicVisualManager;
 import com.gtocore.utils.StxckUtil;
+
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.protocol.game.ClientboundLightUpdatePacketData;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.network.protocol.game.ClientboundLightUpdatePacketData;
 import net.minecraft.world.entity.Entity;
 
 import org.spongepowered.asm.mixin.Mixin;

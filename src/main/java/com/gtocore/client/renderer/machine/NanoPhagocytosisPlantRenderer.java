@@ -18,8 +18,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -28,11 +28,13 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
+import org.joml.Matrix4f;
 
 public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRenderer {
 
     private RingBuffers activeRings;
     private RingBuffers inactiveRings;
+    private final Matrix4f dynamicTransform = new Matrix4f();
 
     public NanoPhagocytosisPlantRenderer() {
         super(GTOCore.id("block/casings/naquadah_reinforced_plant_casing"), GTCEu.id("block/multiblock/fusion_reactor"));
@@ -44,7 +46,8 @@ public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRe
         if (!(blockEntity instanceof MetaMachineBlockEntity machineBlockEntity) ||
                 !(machineBlockEntity.getMetaMachine() instanceof NanoPhagocytosisPlantMachine machine) ||
                 !machine.isDynamicPartVisible(NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING) ||
-                blockEntity.getLevel() instanceof TrackedDummyWorld) return;
+                blockEntity.getLevel() instanceof TrackedDummyWorld)
+            return;
         RingBuffers rings = getRings(machine, machine.isActive());
 
         RenderSystem.enableBlend();
@@ -62,9 +65,9 @@ public final class NanoPhagocytosisPlantRenderer extends WorkableCasingMachineRe
     }
 
     @OnlyIn(Dist.CLIENT)
-    private static void renderRing(NanoPhagocytosisPlantMachine machine, String partName, VertexBuffer ring, float partialTicks, PoseStack poseStack) {
+    private void renderRing(NanoPhagocytosisPlantMachine machine, String partName, VertexBuffer ring, float partialTicks, PoseStack poseStack) {
         poseStack.pushPose();
-        poseStack.mulPoseMatrix(machine.getDynamicTransform(partName, partialTicks));
+        poseStack.mulPoseMatrix(machine.getDynamicTransform(partName, partialTicks, dynamicTransform));
         ring.bind();
         ring.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
         VertexBuffer.unbind();

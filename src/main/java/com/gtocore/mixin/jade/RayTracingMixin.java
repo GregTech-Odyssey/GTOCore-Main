@@ -1,6 +1,6 @@
 package com.gtocore.mixin.jade;
 
-import com.gtocore.client.DynamicVisualManager;
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.HitResult;

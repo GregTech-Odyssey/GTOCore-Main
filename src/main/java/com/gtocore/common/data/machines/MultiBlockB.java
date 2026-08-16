@@ -1,8 +1,6 @@
 package com.gtocore.common.data.machines;
 
-import com.gtocore.api.machine.dynamic.RotationMotion;
 import com.gtocore.api.machine.part.GTOPartAbility;
-import com.gtocore.api.pattern.GTOFactoryBlockPattern;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.renderer.machine.FluidRenderer;
 import com.gtocore.client.renderer.machine.NanoPhagocytosisPlantRenderer;
@@ -20,10 +18,12 @@ import com.gtocore.common.machine.multiblock.water.*;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.machine.dynamic.RotationMotion;
 import com.gtolib.api.machine.multiblock.CoilCrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.multiblock.CoilMultiblockMachine;
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.multiblock.TierCasingCrossRecipeMultiblockMachine;
+import com.gtolib.api.pattern.GTOFactoryBlockPattern;
 import com.gtolib.utils.MachineUtils;
 import com.gtolib.utils.MultiBlockFileReader;
 

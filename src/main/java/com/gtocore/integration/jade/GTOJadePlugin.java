@@ -8,8 +8,7 @@ import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 import com.gtocore.integration.jade.provider.RecipeOutputProvider;
 
 import com.gtolib.api.blockentity.ManaMachineBlockEntity;
-
-import com.gtocore.client.DynamicVisualManager;
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -26,11 +25,11 @@ import com.gto.registrate.util.entry.ItemProviderEntry;
 import com.hepdd.gtmthings.integration.jade.provider.WirelessEnergyHatchProvider;
 import snownee.jade.addon.harvest.HarvestToolProvider;
 import snownee.jade.addon.harvest.SimpleToolHandler;
+import snownee.jade.api.Accessor;
+import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
-import snownee.jade.api.Accessor;
-import snownee.jade.api.BlockAccessor;
 import snownee.jade.impl.WailaClientRegistration;
 
 import java.util.Objects;
