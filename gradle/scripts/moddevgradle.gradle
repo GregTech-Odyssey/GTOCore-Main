@@ -52,3 +52,22 @@ legacyForge {
 
     accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 }
+
+// IDEA launches net.neoforged.devlaunch.Main directly, so task-name checks cannot
+// distinguish Client/Data/Server during Gradle sync. Keep incompatible runtime mods
+// off the main module classpath and let each generated run consume its own remapped set.
+def registerRunScopedModRuntime = { String configurationName, List<String> runNames ->
+    def runtimeConfiguration = configurations.create(configurationName) {
+        canBeConsumed = false
+        canBeResolved = false
+    }
+    obfuscation.createRemappingConfiguration(runtimeConfiguration)
+    runNames.each { runName ->
+        configurations.named("${runName}AdditionalRuntimeClasspath") {
+            extendsFrom(runtimeConfiguration)
+        }
+    }
+}
+
+registerRunScopedModRuntime('nonDataRuntimeOnly', ['client', 'server'])
+registerRunScopedModRuntime('nonServerRuntimeOnly', ['client', 'data'])
