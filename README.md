@@ -45,6 +45,10 @@ GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和
 
 ## 外部贡献指南
 
+### 临时注释 26/8/14
+
+由于datasynclib 26.7.3 从maven仓库中删除，main分支目前暂时无法跑通，请移步26.8分支或者techtree2分支
+
 ### 可贡献范围
 
 欢迎提交以下改动：
