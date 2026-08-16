@@ -29,7 +29,7 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     private int baseParallel = 64;
 
     public MagneticFluidGeneratorMachine(MetaMachineBlockEntity holder) {
-        super(holder, GTORecipeDataKeys.GLASS_TIER);
+        super(holder, GTORecipeDataKeys.GLASS_TIER, GTORecipeDataKeys.HERMETIC_CASING_TIER);
     }
 
     @Override
@@ -50,8 +50,8 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        double hermeticCasingTier = getCasingTier(GTORecipeDataKeys.HERMETIC_CASING_TIER);
-        if (hermeticCasingTier > GTValues.LuV) efficiency = hermeticCasingTier / 4;
+        int hermeticCasingTier = getCasingTier(GTORecipeDataKeys.HERMETIC_CASING_TIER);
+        efficiency = hermeticCasingTier > GTValues.LuV ? hermeticCasingTier / 4.0 : 1.0;
         int tier = getCasingTier(GTORecipeDataKeys.GLASS_TIER);
         if (tier < outputTier) outputTier = 0;
         if (getSubFormedAmount() > 0) {
