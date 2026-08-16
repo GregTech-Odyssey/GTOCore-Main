@@ -8,6 +8,7 @@ import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 import com.gtocore.integration.jade.provider.RecipeOutputProvider;
 
 import com.gtolib.api.blockentity.ManaMachineBlockEntity;
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -16,6 +17,7 @@ import com.gregtechceu.gtceu.integration.jade.provider.*;
 
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -23,9 +25,12 @@ import com.gto.registrate.util.entry.ItemProviderEntry;
 import com.hepdd.gtmthings.integration.jade.provider.WirelessEnergyHatchProvider;
 import snownee.jade.addon.harvest.HarvestToolProvider;
 import snownee.jade.addon.harvest.SimpleToolHandler;
+import snownee.jade.api.Accessor;
+import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
+import snownee.jade.impl.WailaClientRegistration;
 
 import java.util.Objects;
 
@@ -71,6 +76,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
+        registration.addRayTraceCallback(10000, GTOJadePlugin::onRayTrace);
         registration.registerBlockComponent(new DestroyTimeProvider(), Block.class);
         registration.registerBlockComponent(new UpgradeModuleProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new WirelessInteractorMachineProvider(), MetaMachineBlock.class);
@@ -105,6 +111,23 @@ public final class GTOJadePlugin implements IWailaPlugin {
 
         registration.registerBlockComponent(AEItemAmountProvider.INSTANCE, Block.class);
         registration.registerEntityComponent(AEItemAmountProvider.INSTANCE, ItemEntity.class);
+    }
+
+    private static Accessor<?> onRayTrace(net.minecraft.world.phys.HitResult hitResult, Accessor<?> current, Accessor<?> alternate) {
+        var hit = DynamicVisualManager.findDynamicHit();
+        if (hit == null || !DynamicVisualManager.isDynamicTarget(hit)) return current;
+        if (hitResult != null && hitResult.getType() != net.minecraft.world.phys.HitResult.Type.MISS && hitResult.getLocation().distanceTo(net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()) + 1.0E-4 < hit.distance()) return current;
+        ItemStack fakeBlock = hit.state().getBlock().asItem().getDefaultInstance();
+        if (fakeBlock.isEmpty()) return current;
+        fakeBlock.setHoverName(hit.state().getBlock().getName().copy().append(net.minecraft.network.chat.Component.literal(" (动态)")));
+        BlockAccessor accessor = WailaClientRegistration.INSTANCE.blockAccessor()
+                .serverData(new net.minecraft.nbt.CompoundTag())
+                .serverConnected(false)
+                .hit(hit.target())
+                .blockState(hit.state())
+                .fakeBlock(fakeBlock)
+                .build();
+        return accessor;
     }
 
     static {

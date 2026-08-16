@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import com.mojang.blaze3d.vertex.*;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
@@ -23,7 +24,7 @@ public class StructureVBO {
     private String[][] structure;
     private float offsetX = 0f, offsetY = 0f, offsetZ = 0f;
 
-    public final Char2ObjectOpenHashMap<Block> mapper = new Char2ObjectOpenHashMap<>();
+    public final Char2ObjectOpenHashMap<BlockState> mapper = new Char2ObjectOpenHashMap<>();
 
     public StructureVBO assignStructure(String[][] structure) {
         this.structure = structure;
@@ -31,7 +32,11 @@ public class StructureVBO {
     }
 
     public StructureVBO addMapping(char letter, Block block) {
-        mapper.put(letter, block);
+        return addMapping(letter, block.defaultBlockState());
+    }
+
+    public StructureVBO addMapping(char letter, BlockState state) {
+        mapper.put(letter, state);
         return this;
     }
 
@@ -44,8 +49,8 @@ public class StructureVBO {
 
     public TextureUpdateRequester getTextureUpdateRequestor() {
         TextureUpdateRequester textureUpdateRequester = new TextureUpdateRequester();
-        for (Block block : mapper.values()) {
-            textureUpdateRequester.add(block);
+        for (BlockState state : mapper.values()) {
+            textureUpdateRequester.add(state);
         }
         return textureUpdateRequester;
     }
@@ -53,10 +58,9 @@ public class StructureVBO {
     private boolean isOpaqueAt(int x, int y, int z) {
         char letter = structure[x][y].charAt(z);
         if (letter == ' ') return false;
-        Block block = mapper.get(letter);
-        if (block == null) return false;
-        if (block == Blocks.AIR) return false;
-        return block.defaultBlockState().isSolidRender(Minecraft.getInstance().level, BlockPos.ZERO);
+        BlockState state = mapper.get(letter);
+        if (state == null || state.is(Blocks.AIR)) return false;
+        return state.isSolidRender(Minecraft.getInstance().level, BlockPos.ZERO);
     }
 
     private List<Direction> getVisibleFaces(int x, int y, int z) {
@@ -88,17 +92,17 @@ public class StructureVBO {
                 for (int z = 0; z < row.length(); z++) {
                     char letter = row.charAt(z);
                     if (letter == ' ') continue;
-                    Block block = mapper.get(letter);
-                    if (block == null) {
+                    BlockState state = mapper.get(letter);
+                    if (state == null) {
                         continue;
                     }
-                    if (block == Blocks.AIR) continue;
+                    if (state.is(Blocks.AIR)) continue;
 
                     List<Direction> faceInfo = getVisibleFaces(x, y, z);
 
                     if (faceInfo.isEmpty()) continue;
 
-                    BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(block.defaultBlockState());
+                    BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
                     renderer.setDirections(faceInfo);
 
                     poseStack.pushPose();
@@ -108,7 +112,8 @@ public class StructureVBO {
                             -row.length() / 2f + z);
                     poseStack.translate(offsetX, offsetY, offsetZ);
 
-                    int light = block.getLightEmission(block.defaultBlockState(), EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                    Block block = state.getBlock();
+                    int light = block.getLightEmission(state, EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
                     renderer.renderModelLists(model, block.asItem().getDefaultInstance(), LightTexture.pack(light, 13), OverlayTexture.NO_OVERLAY, poseStack, bufferBuilder);
                     poseStack.popPose();
                 }

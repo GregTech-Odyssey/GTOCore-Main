@@ -3,6 +3,7 @@ package com.gtocore.common.data.machines;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.renderer.machine.FluidRenderer;
+import com.gtocore.client.renderer.machine.NanoPhagocytosisPlantRenderer;
 import com.gtocore.client.renderer.machine.SpaceElevatorRenderer;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMachines;
@@ -17,10 +18,12 @@ import com.gtocore.common.machine.multiblock.water.*;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.machine.dynamic.RotationMotion;
 import com.gtolib.api.machine.multiblock.CoilCrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.multiblock.CoilMultiblockMachine;
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.multiblock.TierCasingCrossRecipeMultiblockMachine;
+import com.gtolib.api.pattern.GTOFactoryBlockPattern;
 import com.gtolib.utils.MachineUtils;
 import com.gtolib.utils.MultiBlockFileReader;
 
@@ -588,7 +591,7 @@ public final class MultiBlockB {
             .laserTooltips()
             .multipleRecipesTooltips()
             .block(GTOBlocks.NAQUADAH_REINFORCED_PLANT_CASING)
-            .pattern(definition -> MultiBlockFileReader.start(definition)
+            .pattern(definition -> GTOFactoryBlockPattern.fromFile(definition)
                     .where('~', controller(definition))
                     .where('A', blocks(GCYMBlocks.CASING_NONCONDUCTING.get()))
                     .where('B', blocks(GTBlocks.HIGH_POWER_CASING.get()))
@@ -620,6 +623,18 @@ public final class MultiBlockB {
                             .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
                             .or(abilities(MAINTENANCE).setExactLimit(1)))
                     .where(' ', any())
+                    .dynamicPart(NanoPhagocytosisPlantMachine.INNER_VERTICAL_RING, part -> part
+                            .selectSymbols(22, 35, 8, 21, 9, 12, 'E', 'N')
+                            .pivot(9.5F, 13.5F, .5F)
+                            .motion(RotationMotion.aroundAxes(25, 0, 0)))
+                    .dynamicPart(NanoPhagocytosisPlantMachine.HORIZONTAL_RING, part -> part
+                            .selectSymbols(20, 37, 13, 16, 2, 19, 'C', 'I')
+                            .pivot(9.5F, 13.5F, .5F)
+                            .motion(RotationMotion.aroundAxes(0, 0, 25)))
+                    .dynamicPart(NanoPhagocytosisPlantMachine.OUTER_VERTICAL_RING, part -> part
+                            .selectSymbols(19, 38, 5, 24, 9, 12, 'F', 'G')
+                            .pivot(9.5F, 13.5F, .5F)
+                            .motion(RotationMotion.aroundAxes(-28, 0, 31)))
                     .build())
             .addSubPattern(definition -> FactoryBlockPattern.start(definition)
                     .aisle("BBBBBBBBBBBBBBB BBBBBBBBBBBBBBB", "B      B      B B      B      B", "BG GG GBG GG GB BG GG GBG GG GB", "BG GG GBG GG GB BG GG GBG GG GB", "B      B      B B      B      B", "BBBBBBBBBBBBBBB BBBBBBBBBBBBBBB", "B      B      B B      B      B", "BG GG GBG GG GB BG GG GBG GG GB", "BG GG GBG GG GB BG GG GBG GG GB", "B      B      B B      B      B", "BBBBBBBBBBBBBBB BBBBBBBBBBBBBBB")
@@ -684,7 +699,8 @@ public final class MultiBlockB {
                     .where('N', controller(definition))
                     .where(' ', any())
                     .build())
-            .workableCasingRenderer(GTOCore.id("block/casings/naquadah_reinforced_plant_casing"), GTCEu.id("block/multiblock/fusion_reactor"))
+            .renderer(NanoPhagocytosisPlantRenderer::new)
+            .hasTESR(true)
             .register();
 
     public static final MultiblockMachineDefinition ROAD_OF_HEAVEN = multiblock("road_of_heaven", "通天之路", SuperSpaceElevatorMachine::new)

@@ -21,6 +21,7 @@ import com.gtocore.integration.emi.HiddenItems;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.item.IItem;
+import com.gtolib.api.machine.dynamic.DynamicVisualManager;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
@@ -48,6 +49,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent;
@@ -158,6 +160,7 @@ public final class ForgeClientEvent {
             ClientLevel level = mc.level;
             LocalPlayer player = mc.player;
             if (level == null || player == null) return;
+            DynamicVisualManager.renderDynamicHighlight(event);
             PoseStack poseStack = event.getPoseStack();
             Camera camera = event.getCamera();
             BlockPos[] poses;
@@ -211,6 +214,12 @@ public final class ForgeClientEvent {
                 });
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onRenderHighlight(RenderHighlightEvent.Block event) {
+        var hit = DynamicVisualManager.findDynamicHit();
+        if (DynamicVisualManager.isDynamicTarget(hit)) event.setCanceled(true);
     }
 
     @SubscribeEvent

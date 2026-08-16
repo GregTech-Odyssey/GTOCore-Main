@@ -8,6 +8,7 @@ com/gtocore/mixin/mc/LanguageMixin instance f_128104_
 com/gtolib/mixin/mc/client/LevelSummaryMixin settings f_78344_
 com/gtolib/mixin/mc/client/MinecraftMixin singleplayerServer f_91007_
 com/gtolib/mixin/mc/client/WorldSelectionListMixin screen f_101654_
+com/gtolib/mixin/mc/collision/BlockCollisionsMixin pos f_186395_
 com/gtolib/mixin/mc/DependencySorterMixin contents f_283882_
 com/gtolib/mixin/mc/entity/EntityMixin tickCount f_19797_
 com/gtolib/mixin/mc/entity/PlayerMixin abilities f_36077_

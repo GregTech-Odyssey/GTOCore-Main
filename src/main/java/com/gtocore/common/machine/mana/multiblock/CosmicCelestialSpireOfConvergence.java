@@ -231,7 +231,7 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
                     if (letter == ' ') continue;
                     BlockPos realPos = getRealPos(x, y, z);
                     if (!getLevel().isLoaded(realPos)) return false;
-                    BlockState blockState = ringStructure.mapper.get(letter).defaultBlockState();
+                    BlockState blockState = ringStructure.mapper.get(letter);
                     ClientUtil.getPreventUpdate(getLevel()).remove(realPos.asLong());
                     getLevel().setBlock(realPos, blockState, Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_KNOWN_SHAPE);
                 }

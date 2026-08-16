@@ -31,6 +31,7 @@
     "ftbxmodcompat.WrappedQuestMixin",
     "gtm.renderer.TagPrefixItemRendererMixin",
     "inventoryessentials.ClientOnlyInventoryControlsMixin",
+    "jade.RayTracingMixin",
     "mc.GameRendererMixin",
     "mc.GuiGraphicsMixin",
     "mc.ItemRendererMixin",
