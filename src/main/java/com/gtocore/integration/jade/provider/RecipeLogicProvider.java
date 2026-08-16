@@ -158,10 +158,10 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
     @Override
     public void appendServerData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
         if (blockAccessor.getBlockEntity() instanceof MetaMachineBlockEntity machineBlock) {
-            if (machineBlock.getLevel() instanceof ServerLevel serverLevel && !serverLevel.getChunkSource().chunkMap.getDistanceManager().shouldForceTicks(PosUtils.getChunkLong(machineBlock.getBlockPos()))) {
-                compoundTag.putBoolean("notLoaded", true);
-            }
             if (machineBlock.metaMachine instanceof IRecipeLogicMachine recipeLogicMachine) {
+                if (machineBlock.getLevel() instanceof ServerLevel serverLevel && !serverLevel.getChunkSource().chunkMap.getDistanceManager().shouldForceTicks(PosUtils.getChunkLong(machineBlock.getBlockPos()))) {
+                    compoundTag.putBoolean("notLoaded", true);
+                }
                 var capability = recipeLogicMachine.getRecipeLogic();
                 if (capability.isIdle() && capability.getIdleReason() != null) {
                     compoundTag.putString("reason", Component.Serializer.toJson(capability.getIdleReason()));
