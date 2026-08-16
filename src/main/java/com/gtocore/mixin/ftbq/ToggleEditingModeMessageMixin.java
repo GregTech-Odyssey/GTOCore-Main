@@ -2,6 +2,7 @@ package com.gtocore.mixin.ftbq;
 
 import com.gtocore.integration.ftbquests.EMIRecipeModHelper;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import com.llamalad7.mixinextras.sugar.Local;
@@ -15,6 +16,12 @@ public class ToggleEditingModeMessageMixin {
 
     @ModifyArg(method = "handle", at = @At(value = "INVOKE", target = "Ldev/ftb/mods/ftbquests/quest/TeamData;setCanEdit(Lnet/minecraft/world/entity/player/Player;Z)Z"), index = 1, remap = false)
     private boolean setCanEdit(boolean newCanEdit, @Local(name = "player") ServerPlayer player) {
-        return newCanEdit && EMIRecipeModHelper.canEdit();
+        if (!EMIRecipeModHelper.canEdit()) {
+            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode"), true);
+            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode.1"), true);
+            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode.2"), true);
+            return false;
+        }
+        return newCanEdit;
     }
 }
