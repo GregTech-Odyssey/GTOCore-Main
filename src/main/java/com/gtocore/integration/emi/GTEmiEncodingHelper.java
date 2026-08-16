@@ -17,6 +17,11 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
+import appeng.integration.modules.jeirei.EncodingHelper;
+import appeng.menu.me.common.GridInventoryEntry;
+import appeng.menu.me.items.PatternEncodingTermMenu;
+import appeng.menu.slot.FakeSlot;
+import appeng.parts.encoding.EncodingMode;
 
 import com.hepdd.gtmthings.api.misc.Hatch;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
@@ -31,11 +36,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class GTEmiEncodingHelper {
+
+    /**
+     * 与 {@code EncodingHelper.ENTRY_COMPARATOR} 一致，用于挑选网络中最合适的那个候选物品。
+     */
+    private static final Comparator<GridInventoryEntry> ENTRY_COMPARATOR = Comparator
+            .comparing(GridInventoryEntry::isCraftable)
+            .thenComparing(GTEmiEncodingHelper::isUndamaged)
+            .thenComparingLong(GridInventoryEntry::getStoredAmount);
 
     @Nullable
     private static GenericStack ofVirtual(EmiStack stack, long amount) {
@@ -163,5 +178,38 @@ public class GTEmiEncodingHelper {
             return !(stack.getKey() instanceof MetaMachineItem meta) || !Hatch.Set.contains(meta.getBlock());
         }
         return false;
+    }
+
+    /**
+     * 等价于 {@link EncodingHelper#encodeProcessingRecipe}，但不会把配方里相同的物品合并到同一个槽位，
+     * 配方的每一项输入（输出）各占一个槽位，超出槽位数量的部分会被丢弃。
+     */
+    public static void encodeProcessingRecipeWithoutMerging(PatternEncodingTermMenu menu,
+                                                            List<List<GenericStack>> genericIngredients,
+                                                            List<GenericStack> genericResults) {
+        menu.setMode(EncodingMode.PROCESSING);
+        Map<AEKey, Integer> ingredientPriorities = EncodingHelper.getIngredientPriorities(menu, ENTRY_COMPARATOR);
+        encodeIntoSlots(genericIngredients, ingredientPriorities, menu.getProcessingInputSlots());
+        encodeIntoSlots(genericResults.stream().map(List::of).toList(), ingredientPriorities, menu.getProcessingOutputSlots());
+    }
+
+    private static void encodeIntoSlots(List<List<GenericStack>> possibleStacksBySlot, Map<AEKey, Integer> ingredientPriorities, FakeSlot[] slots) {
+        List<GenericStack> encoded = possibleStacksBySlot.stream()
+                .filter(stacks -> !stacks.isEmpty())
+                .map(stacks -> findBestIngredient(ingredientPriorities, stacks))
+                .toList();
+        for (int i = 0; i < slots.length; i++) {
+            slots[i].setFilterTo(i < encoded.size() ? GenericStack.wrapInItemStack(encoded.get(i)) : ItemStack.EMPTY);
+        }
+    }
+
+    private static GenericStack findBestIngredient(Map<AEKey, Integer> ingredientPriorities, List<GenericStack> possibleIngredients) {
+        return possibleIngredients.stream()
+                .max(Comparator.comparingInt((GenericStack stack) -> ingredientPriorities.getOrDefault(stack.what(), Integer.MIN_VALUE)))
+                .orElseThrow();
+    }
+
+    private static Boolean isUndamaged(GridInventoryEntry entry) {
+        return !(entry.getWhat() instanceof AEItemKey itemKey) || !itemKey.isDamaged();
     }
 }

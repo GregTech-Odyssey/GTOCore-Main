@@ -2457,6 +2457,7 @@
   "gtocore.ae.appeng.me2in1.emi.gt_batch_encode.1": "替換失敗的材料（如該材料不存在這種物品）將在編碼時保持原樣板的狀態",
   "gtocore.ae.appeng.me2in1.emi.multiblock.sub": "Shift + 左擊：編碼基礎結構和當前模塊",
   "gtocore.ae.appeng.me2in1.emi.multiblock.sub.all": "Ctrl + 左擊：編碼到當前模塊為止的全部結構",
+  "gtocore.ae.appeng.me2in1.emi.no_merge": "Alt + 左擊：配方中相同的物品不合併，每項各佔一個槽位",
   "gtocore.ae.appeng.me2in1.encode_to.accessor": "直接編碼到當前頁面中的空白部分",
   "gtocore.ae.appeng.me2in1.encode_to.accessor.title": "編碼到樣板管理終端",
   "gtocore.ae.appeng.me2in1.material_slot": "材料槽",
