@@ -5,8 +5,37 @@ mixin {
     config "gtolib.mixins.json"
 }
 
+// IDEA can only attach one Gradle source-set classpath to an Application run.
+// Give each run its own (source-less) source set so run-only mods stay on the
+// actual launch classpath, where Forge can discover them as mods.
+['client', 'data', 'server'].each { runName ->
+    sourceSets.create(runName) {
+        java.setSrcDirs([])
+        resources.setSrcDirs([])
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+
+    configurations.named("${runName}Implementation") {
+        extendsFrom(configurations.implementation)
+    }
+    configurations.named("${runName}CompileOnly") {
+        extendsFrom(configurations.compileOnly)
+    }
+    configurations.named("${runName}RuntimeOnly") {
+        extendsFrom(configurations.runtimeOnly)
+    }
+}
+
 legacyForge {
     version = "${minecraft_version}-${forge_version}"
+
+    // Custom run source sets do not receive Minecraft/Forge runtime artifacts
+    // automatically. Without these, Forge starts from the legacy classpath and
+    // dependency AT/SRG remapping is skipped for runtime mods.
+    ['client', 'data', 'server'].each { runName ->
+        addModdingDependenciesTo(sourceSets[runName])
+    }
 
     parchment {
         minecraftVersion = parchment_minecraft_version
@@ -16,12 +45,14 @@ legacyForge {
     runs {
         client {
             client()
+            sourceSet = sourceSets.client
             gameDirectory.set(file('run/client'))
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         server {
             server()
+            sourceSet = sourceSets.server
             programArgument '--nogui'
             gameDirectory.set(file('run/server'))
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -29,6 +60,7 @@ legacyForge {
 
         data {
             data()
+            sourceSet = sourceSets.data
             ideName = "Data"
             gameDirectory.set(file('run/data'))
             programArguments.addAll('--mod', project.mod_id)
@@ -52,3 +84,22 @@ legacyForge {
 
     accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 }
+
+// IDEA launches net.neoforged.devlaunch.Main directly, so task-name checks cannot
+// distinguish Client/Data/Server during Gradle sync. Keep incompatible runtime mods
+// off the main module classpath and put them on the matching run source-set classpath.
+def registerRunScopedModRuntime = { String configurationName, List<String> runNames ->
+    def runtimeConfiguration = configurations.create(configurationName) {
+        canBeConsumed = false
+        canBeResolved = false
+    }
+    obfuscation.createRemappingConfiguration(runtimeConfiguration)
+    runNames.each { runName ->
+        configurations.named("${runName}RuntimeOnly") {
+            extendsFrom(runtimeConfiguration)
+        }
+    }
+}
+
+registerRunScopedModRuntime('nonDataRuntimeOnly', ['client', 'server'])
+registerRunScopedModRuntime('nonServerRuntimeOnly', ['client', 'data'])

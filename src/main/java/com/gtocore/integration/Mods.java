@@ -19,6 +19,7 @@ public enum Mods {
     BIOMESWEVEGONE("biomeswevegone"),
     PIPEZ("pipez"),
     FTBQUESTS("ftbquests"),
+    FTBTEAMS("ftbteams"),
     CONSTRUCTION_WAND("constructionwand"),
     JECHARACTERS("jecharacters"),
     LANG("moremorelang"),

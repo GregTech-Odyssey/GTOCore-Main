@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.implementations.blockentities.PatternContainerGroup;
-import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.block.AEBaseEntityBlock;
@@ -141,9 +140,8 @@ public final class Message {
             ORDER_ITEM_C2S.send(b -> {
                 b.writeInt(Minecraft.getInstance().player.containerMenu.containerId);
                 b.writeVarInt(whatToCraft.size());
-                for (var entry : whatToCraft) {
-                    AEKey.writeKey(b, entry.getKey());
-                    b.writeVarLong(entry.getLongValue());
+                for (var entry : whatToCraft.genericStackSet()) {
+                    GenericStack.writeBuffer(entry, b);
                 }
                 b.writeLong(initialAmount);
             });

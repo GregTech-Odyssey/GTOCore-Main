@@ -76,6 +76,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.gregtechceu.gtceu.api.GTValues.LuV;
+import static com.gtocore.data.techtree.BaseNodes.DataCenterOverclocking;
 
 @DataGeneratorScanned
 public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHolder,
@@ -92,6 +93,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private UUID researchRequester;
     @SaveToDisk(defaultValue = "0")
     private long cwuBuffer = 0L;
+    @SaveToDisk(defaultValue = "0")
+    private long cwutCache = 0L;
     private final TierCasingTrait tierCasingTrait;
 
     private final ReferenceList<NotifiableItemStackHandler> dataAccessHandlers = new ReferenceArrayList<>();
@@ -142,8 +145,9 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     return false;
                 }
             }
-            var cwuAvailable = requestCWU(getCWUInputLimit(), true);
-            cwuBuffer += requestCWU(cwuAvailable, false);
+            if (cwutCache > 0) {
+                cwuBuffer += requestCWU(cwutCache, false);
+            }
         }
         return true;
     }
@@ -213,6 +217,21 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (researchRequester == null || selectedNode == null) return null;
+        var cwuAvailable = requestCWU(getCWUInputLimit(), true);
+        if (TechTreeSavedData.isUnlocked(getOwnerUUID(), DataCenterOverclocking)) {
+            var cwuTotalAvailable = requestCWU(Long.MAX_VALUE, true);
+            var oc = 0;
+            var cwuOC = cwuAvailable;
+            while (true) {
+                cwuOC *= 3L;
+                if (cwuOC > cwuTotalAvailable) {
+                    break;
+                }
+                oc++;
+            }
+            cwuAvailable <<= oc;
+        }
+        cwutCache = cwuAvailable;
         return getRecipeBuilder().EUt(energyUsage * 2L).duration(20).inputFluids(GTMaterials.PCBCoolant, 100).build();
     }
 

@@ -124,10 +124,8 @@ dependencies {
 
     modCompileOnly("curse.maven:ftb-quests-forge-289412:7909594")
     modCompileOnly("curse.maven:ftb-teams-forge-404468:7499810")
-    modRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
 
     modCompileOnly("curse.maven:ftb-xmod-compat-889915:6402486")
-    modRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
 
     modImplementation("curse.maven:ftb-ultimine-forge-386134:7880472")
 
@@ -225,18 +223,14 @@ dependencies {
     // 牢模组
 //    modRuntimeOnly("curse.maven:re-avaritia-623969:7229795")
 //    modCompileOnly("curse.maven:ender-io-64578:7183516")
-    try {
-        if (gradle.startParameter.taskNames.first != "runData") {
-            modRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")  // 不能参与runData任务
-            modRuntimeOnly("curse.maven:tool-belt-260262:5929061")
-//            modRuntimeOnly("curse.maven:ftb-xmod-compat-forge-889915:6402486")
-            modRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
-            modRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
-            modRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
-        }
-        if (gradle.startParameter.taskNames.first != "runServer") {
-            modRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
-            modRuntimeOnly("curse.maven:imblocker-483760:6922546") // 不能参与runServer任务
-        }
-    } catch (Exception ignored) {}
+    modNonDataRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
+    modNonDataRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
+    modNonDataRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
+    modNonDataRuntimeOnly("curse.maven:tool-belt-260262:5929061")
+    modNonDataRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
+    modNonDataRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
+    modNonDataRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
+
+    modNonServerRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
+    modNonServerRuntimeOnly("curse.maven:imblocker-483760:6922546")
 }

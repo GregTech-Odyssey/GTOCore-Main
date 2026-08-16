@@ -13,6 +13,7 @@ import com.gtocore.data.techtree.BaseNodes.AtomicEnergyExciting
 import com.gtocore.data.techtree.BaseNodes.BiowareTech
 import com.gtocore.data.techtree.BaseNodes.EnergyTree
 import com.gtocore.data.techtree.BaseNodes.MainTree
+import com.gtocore.data.techtree.BaseNodes.addRewardDescription
 import com.gtocore.data.techtree.ComponentNodes.EnergyIOs
 import com.gtocore.data.techtree.MachinesNode.DysonSphereSeriesCasing
 

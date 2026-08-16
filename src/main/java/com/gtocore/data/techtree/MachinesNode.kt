@@ -484,7 +484,7 @@ object MachinesNode : AutoInitialize<MachinesNode>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(1024 * 20 * 4800L)
-                .addMaterialNeeded(MATERIAL, 16000)
+                .addMaterialNeeded(MATERIAL, 2560)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:kerr_newman_homogenizer"), 0.8F)
                 .build(),
         )

@@ -31,6 +31,7 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+import static com.gtocore.data.techtree.BaseNodes.GWCAComputingTech;
 
 final class Assembler {
 
@@ -4026,6 +4027,7 @@ final class Assembler {
                 .outputItems(ExResearchMachines.GWCA_COMPUTING_COMPONENTS)
                 .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 2000)
                 .EUt(VA[UIV])
+                .researchNode(GWCAComputingTech)
                 .duration(300)
                 .save();
         ASSEMBLER_RECIPES.builder("gwca_cooling_components")
@@ -4036,6 +4038,7 @@ final class Assembler {
                 .outputItems(ExResearchMachines.GWCA_COOLING_COMPONENTS)
                 .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 2000)
                 .EUt(VA[UIV])
+                .researchNode(GWCAComputingTech)
                 .duration(300)
                 .save();
     }

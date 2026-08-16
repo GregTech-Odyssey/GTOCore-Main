@@ -60,7 +60,7 @@ object NanitesNodes : AutoInitialize<NanitesNodes>() {
                 .setCWUNeeded(64 * 20 * 1200L)
                 .addMaterialNeeded(MECHANICS, 32)
                 .addMaterialNeeded(ASSEMBLY, 96)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:precision_circuit_assembly_robot_mk1"), 1.0F)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:precision_circuit_assembly_robot_mk1"), 0.75F)
                 .build(),
         )
         .tier(2)
@@ -74,7 +74,7 @@ object NanitesNodes : AutoInitialize<NanitesNodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(4096 * 20 * 7200L)
-                .addMaterialNeeded(MATERIAL, 32000)
+                .addMaterialNeeded(MATERIAL, 3840)
                 .setEurekaItem(RegistriesUtils.getItem("gtocore:nano_forge"), 0.7F)
                 .build(),
         )
