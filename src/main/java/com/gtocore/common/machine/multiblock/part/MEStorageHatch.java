@@ -21,6 +21,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import appeng.api.storage.MEStorage;
 import appeng.capabilities.Capabilities;
 
+import com.gto.datasynclib.annotations.SyncToClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
@@ -43,14 +44,36 @@ public final class MEStorageHatch extends MultiblockPartMachine {
     private LazyOptional<MEStorage> capabilityStorage = LazyOptional.empty();
     @NotNull
     private LazyOptional<ManaReceiver> capabilityMana = LazyOptional.empty();
+    @SyncToClient(listener = "onStorageCapabilityAvailabilityChanged")
+    private boolean storageCapabilityAvailable;
 
     public MEStorageHatch(MetaMachineBlockEntity holder) {
         super(holder);
         this.item = new ItemHandlerProxyTrait(this, IO.BOTH);
         this.fluid = new FluidTankProxyTrait(this, IO.BOTH);
         this.manaHandler = new AEManaKeyHandler();
-        this.item.setCapabilityValidator(d -> capabilityStorage.isPresent());
-        this.fluid.setCapabilityValidator(d -> capabilityStorage.isPresent());
+        this.item.setCapabilityValidator(d -> isStorageCapabilityAvailable());
+        this.fluid.setCapabilityValidator(d -> isStorageCapabilityAvailable());
+    }
+
+    private boolean isStorageCapabilityAvailable() {
+        return isRemote() ? storageCapabilityAvailable : capabilityStorage.isPresent();
+    }
+
+    private void updateStorageCapabilityAvailability() {
+        boolean available = capabilityStorage.isPresent();
+        if (storageCapabilityAvailable != available) {
+            storageCapabilityAvailable = available;
+            clearDirectionCache();
+            requestSync();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void onStorageCapabilityAvailabilityChanged(boolean newValue, boolean oldValue) {
+        if (newValue != oldValue) {
+            clearDirectionCache();
+        }
     }
 
     @Override
@@ -87,6 +110,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         capabilityStorage = LazyOptional.empty();
         capabilityMana.invalidate();
         capabilityMana = LazyOptional.empty();
+        storageCapabilityAvailable = false;
     }
 
     @Override
@@ -106,6 +130,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
                 capabilityMana = LazyOptional.of(() -> manaHandler);
             }
             capabilityStorage = LazyOptional.of(() -> machine);
+            updateStorageCapabilityAvailability();
             this.notifyNeighborsUpdate();
         }
     }
@@ -123,6 +148,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         capabilityStorage = LazyOptional.empty();
         capabilityMana.invalidate();
         capabilityMana = LazyOptional.empty();
+        updateStorageCapabilityAvailability();
         this.notifyNeighborsUpdate();
     }
 

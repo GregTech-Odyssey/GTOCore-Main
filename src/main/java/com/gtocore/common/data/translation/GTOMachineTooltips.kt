@@ -170,7 +170,7 @@ object GTOMachineTooltips {
         section("企业与村庄友好协作的智能交易枢纽" translatedTo "Intelligent trading hub for friendly enterprise-village collaboration")
         section("支持9名村民同步对接，配备256槽大容量共享输入输出仓库" translatedTo "Supports 9 simultaneous villagers with 256-slot high-capacity shared input/output warehouses")
         section("无需工作方块匹配，放入村民并锁定信息即可启动运行" translatedTo "No work block matching required—starts by placing villagers and locking their information")
-        section("交易站系统自动协调补货，通过增强模块可优化补货间隔与交易倍数" translatedTo "Trading station system auto-coordinates restocks; enhancement modules optimize restock intervals and trade multiples")
+        section("交易站系统自动协调补货，通过增强模块可优化补货间隔与交易乘数" translatedTo "Trading station system auto-coordinates restocks; enhancement modules optimize restock intervals and trade multiples")
 
         highlight("政企村协同发展的核心装备" translatedTo "Core equipment for enterprise-village collaborative development") { gold() }
         highlight("泛银河格雷科技研发部匠心研发" translatedTo "Crafted with precision by Pan-Galaxy Greg Technology R&D") { gold() }
@@ -209,7 +209,7 @@ object GTOMachineTooltips {
                 "2. Trade Control Page - Core interface with 9 villager slots, supporting key operations like villager placement/locking, recipe switching, and trade activation/deactivation.",
         )
         content(
-            "三：升级控制页 - 包含增强槽与升级槽：增强槽调控全局补货间隔与交易倍数，升级槽可提升村民单次交易上限" translatedTo
+            "三：升级控制页 - 包含增强槽与升级槽：增强槽调控全局补货间隔与交易乘数，升级槽可提升村民单次交易上限" translatedTo
                 "3. Upgrade Control Page - Features enhancement and upgrade slots: enhancement slots adjust global restock intervals and trade multiples; upgrade slots increase villagers' single-trade limits.",
         )
         content(
@@ -269,7 +269,7 @@ object GTOMachineTooltips {
                 "Corresponding trades will automatically pause when the output warehouse is full. Enabling auto-output reduces this issue; after clearing, ensure trades are active to resume operation.",
         )
         content(
-            "多倍交易系数会等比例增加输入物品消耗与输出物品数量（如2倍交易需消耗2倍输入，获得2倍输出）" translatedTo
+            "交易乘数会等比例增加输入物品消耗与输出物品数量（如乘数为2时，消耗2倍输入并获得2倍输出）" translatedTo
                 "Bulk trade coefficients proportionally increase input consumption and output quantity (e.g., 2x trading requires 2x input and yields 2x output).",
         )
 
@@ -399,7 +399,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.RunningRequirements)
         command("使用魔力加热，热量仅从顶面输出" translatedTo "Uses mana to heat, heat only outputs from the top side")
-        increase("如果输入§c火元素蒸汽§r，则加热速度翻5倍" translatedTo "If §cSalamander Vapor§r is input, the heating speed will be 5 times faster")
+        increase("如果输入§c火元素蒸汽§r，则加热速度乘以5" translatedTo "If §cSalamander Vapor§r is input, the heating speed will be 5 times faster")
     }
 
     @JvmField
@@ -436,7 +436,7 @@ object GTOMachineTooltips {
 
         content("凝聚群星之中的能量" translatedTo "Condense the power of the gathered stars")
         command("可消耗魔力超频" translatedTo "Consumable Mana Overclocking")
-        increase("每次消耗 2^(超频等级*4+10) 点魔力，使凝聚效率翻 2^(超频等级*5) 倍" translatedTo "Consumes 2^(overclockingLevel * 4 + 10) mana points each time, boosts condensation efficiency by 2^(overclockingLevel * 5)")
+        increase("每次消耗 2^(超频等级*4+10) 点魔力，使凝聚效率乘以 2^(超频等级*5)" translatedTo "Consumes 2^(overclockingLevel * 4 + 10) mana points each time, boosts condensation efficiency by 2^(overclockingLevel * 5)")
         section(ComponentSlang.RunningRequirements)
         command("暴露于天空之下，不可有遮挡" translatedTo "Must be directly exposed to the open sky with no obstructions")
         increase("在白天可以凝聚 - 曦煌" translatedTo "Can condense Solaris during daytime")
@@ -871,7 +871,7 @@ object GTOMachineTooltips {
 
         section("超频机制" translatedTo "Overclocking mechanism")
         command("触发条件: 冷却液输入量 ≥ n × 冷却需求" translatedTo "Trigger condition: Coolant input ≥ n × cooling demand")
-        increase("超频效果: 额外增加 n 倍基础运行速度" translatedTo "Effect: Adds n times the base processing speed")
+        increase("超频效果: 额外增加基础运行速度×n" translatedTo "Effect: Adds n times the base processing speed")
 
         section("冷却液产出" translatedTo "Cooling liquid output")
         content("蒸馏水冷却: " translatedTo "Distilled Water cooling: ", { green() })
@@ -943,7 +943,7 @@ object GTOMachineTooltips {
         section("机器电压等级每高出一级：" translatedTo "For each increase in machine voltage level:", { aqua() })
         increase("可采掘最大范围翻倍(最高256)" translatedTo "Maximum mining range is doubled (up to 256)")
         increase("每次采掘的方块数量翻倍(最高4096)" translatedTo "The number of blocks mined each time is doubled (up to 4096)")
-        decrease("耗电量翻4倍" translatedTo "Power consumption is quadrupled")
+        decrease("耗电量乘以4" translatedTo "Power consumption is quadrupled")
         function("通入红石信号以重新计算采掘区域并执行" translatedTo "Input a redstone signal to recalculate the mining area and execute mining")
     }
 
@@ -997,7 +997,7 @@ object GTOMachineTooltips {
 
                 section(ComponentSlang.AfterModuleInstallation)
                 increase("并行能力提升至 §e4§r" translatedTo "Parallelism increases to §e4x§r")
-                increase("空气进气速度变为 §e4§r 倍" translatedTo "Air intake speed becomes §e4x§r faster")
+                increase("空气进气速度乘以 §e4§r" translatedTo "Air intake speed becomes §e4x§r faster")
             }
         }
 
@@ -1020,9 +1020,9 @@ object GTOMachineTooltips {
             increase(ComponentSlang.RotorEfficiency(rotorTier))
 
             section(ComponentSlang.AfterModuleInstallation)
-            increase("获得2倍速度" translatedTo "Gains 2x speed")
+            increase("运行速度乘以2" translatedTo "Gains 2x speed")
             increase("获得额外20%涡轮效率" translatedTo "Gains additional 20% turbine efficiency")
-            decrease("转子损耗速度变为2倍" translatedTo "Rotor wear rate becomes 2x")
+            decrease("转子损耗速度乘以2" translatedTo "Rotor wear rate becomes 2x")
         }
     }
 
@@ -1041,16 +1041,16 @@ object GTOMachineTooltips {
             increase("可安装转子仓，从中自动取出转子安装到空转子支架" translatedTo "Rotors can be installed in the rotor chamber, automatically extracting rotor for installation onto empty rotor brackets")
 
             section(ComponentSlang.AfterModuleInstallation)
-            increase("获得3倍速度" translatedTo "Gains 3x speed")
+            increase("运行速度乘以3" translatedTo "Gains 3x speed")
             increase("获得额外30%涡轮效率" translatedTo "Gains additional 30% turbine efficiency")
-            decrease("转子损耗速度变为3倍" translatedTo "Rotor wear rate becomes 3x")
+            decrease("转子损耗速度乘以3" translatedTo "Rotor wear rate becomes 3x")
 
             section(ComponentSlang.CoilEfficiencyBonus)
             increase("线圈等级每高出白铜一级，转子启动速度增加20%" translatedTo "Each coil tier above Cupronickel increases rotor startup speed by 20%")
 
             val cs1 = ("高速模式调节器(专家模式专属)" translatedTo "High-Speed Mode Regulator (Expert Mode Exclusive)")
-            val cf1 = ("允许调节涡轮的高速倍率以换取转子寿命" translatedTo "Allows adjustment of turbine high-speed multiplier in exchange for rotor lifespan")
-            val ci1 = ("高速倍率范围为0.1x到5.0x，并将乘数自动与原涡轮乘数相乘" translatedTo "The high-speed multiplier ranges from 0.1x to 5.0x, and the multiplier is automatically multiplied by the original turbine multiplier")
+            val cf1 = ("允许调节涡轮的高速乘数以换取转子寿命" translatedTo "Allows adjustment of turbine high-speed multiplier in exchange for rotor lifespan")
+            val ci1 = ("高速乘数范围为0.1到5.0，并自动与原涡轮乘数相乘" translatedTo "The high-speed multiplier ranges from 0.1x to 5.0x, and the multiplier is automatically multiplied by the original turbine multiplier")
 
             val cs2 = ("玻璃等级加成(专家模式专属)" translatedTo "Glass Tier Bonus (Expert Mode Exclusive)")
             val ci2 = ("专家模式下，玻璃等级每一级，高速调节器的损坏基数-0.08" translatedTo "In expert mode, each glass tier reduces the damage base of the high-speed regulator by 0.08")
@@ -1323,7 +1323,7 @@ object GTOMachineTooltips {
         info("具体数值可在GUI内查看" translatedTo "Specific values can be viewed in the GUI")
 
         section("特殊超频" translatedTo "Special Overclocking")
-        increase("每次超频提升16倍功率提升2倍速度" translatedTo "Speed increases 2x for every 16x power increase")
+        increase("每次超频使功率乘以16、速度乘以2" translatedTo "Speed increases 2x for every 16x power increase")
         command("超频由编程电路调节" translatedTo "Overclocking must be adjusted via programmed circuits")
         info("电路1: 不执行超频" translatedTo "Circuit 1: No overclocking")
         info("电路2-4: 分别执行1-3次超频" translatedTo "Circuits 2-4: Execute 1-3 stages of overclocking")
@@ -1352,7 +1352,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         important("能够运行任意等级的纳米锻炉配方" translatedTo "Can run nano forge recipes of any tier")
-        increase("处理速度固定为20倍" translatedTo "Processing speed fixed at 20x")
+        increase("处理速度固定为基础速度×20" translatedTo "Processing speed fixed at 20x")
     }
 
     // 藻类农场
@@ -1485,7 +1485,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("drawing_tower")
 
         section(ComponentSlang.EfficiencyBonus)
-        info("时间倍率 = 2 / 1.2^[(高度/8)×(温度-5000)/900] ≥ 0.00001" translatedTo "Time Multiplier = 2 / 1.2^[(height/8)×(temp−5000)/900] ≥ 0.00001")
+        info("时间乘数 = 2 / 1.2^[(高度/8)×(温度-5000)/900] ≥ 0.00001" translatedTo "Time Multiplier = 2 / 1.2^[(height/8)×(temp−5000)/900] ≥ 0.00001")
         info("并行数 = log₁.₀₈(温度−9600) − 84 ≥ 1" translatedTo "Parallel = log₁.₀₈(temp−9600) − 84 ≥ 1")
     }
 
@@ -1533,7 +1533,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.EfficiencyBonus)
         content("线圈温度越高，运行速度越快" translatedTo "Higher coil temperature → faster operation")
-        info("时间倍率: 0.8x0.4^((线圈温度-5400)/9000)" translatedTo "Time Multiplier: 0.8x0.4^((Temperature-5400)/9000)")
+        info("时间乘数: 0.8×0.4^((线圈温度-5400)/9000)" translatedTo "Time Multiplier: 0.8x0.4^((Temperature-5400)/9000)")
         section(ComponentSlang.ParallelBonus)
         content("由电压等级决定" translatedTo "Determined by Voltage Tier")
         info("公式 : 4^(电压等级 - 1)" translatedTo "Formula: 4^(Voltage Tier - 1)")
@@ -1546,7 +1546,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.EfficiencyBonus)
         content("玻璃等级越高，运行速度越快" translatedTo "Higher glass tier → faster operation")
-        info("时间倍率: √(1 / 玻璃等级)" translatedTo "Time Multiplier: √(1 / Glass Tier)")
+        info("时间乘数: √(1 / 玻璃等级)" translatedTo "Time Multiplier: √(1 / Glass Tier)")
         section(ComponentSlang.ParallelBonus)
         content("由电压等级决定" translatedTo "Determined by Voltage Tier")
         info("公式 : 4^(电压等级 - 1)" translatedTo "Formula: 4^(Voltage Tier - 1)")
@@ -1797,10 +1797,10 @@ object GTOMachineTooltips {
         section(ComponentSlang.ParallelBonus)
         content("结构的高度决定了基础并行数量" translatedTo "The height of the structure determines the base parallel count")
         increase("每层提供 2 并行" translatedTo "Each layer of Steel Frames provides 2 parallels")
-        increase("每 500K 温度为配方提供 1x 并行倍率" translatedTo "Provides a 1x parallel multiplier for recipes every 500K of temperature")
+        increase("每 500K 温度为配方提供 1× 并行乘数" translatedTo "Provides a 1x parallel multiplier for recipes every 500K of temperature")
         section(ComponentSlang.EfficiencyBonus)
         content("随着配方运行，温度升高，空闲时则会降低" translatedTo "As the recipe operates, the temperature increases, and it will decrease when idle")
-        increase("下次配方获得 (400 / 温度) 的时间倍率减免" translatedTo "The next recipe gains a duration multiplier reduction of (400 / temperature)")
+        increase("下次配方的耗时乘以 (400 / 温度)" translatedTo "The next recipe gains a duration multiplier reduction of (400 / temperature)")
 
         // 危险提示
         danger("运行时，烟囱内部会对生物造成致命高温伤害！" translatedTo "When running, the inside of the chimney will cause fatal high-temperature damage to living beings!")
@@ -1901,7 +1901,7 @@ object GTOMachineTooltips {
         increase("提升电压等级可为模块提供大幅耗时减免" translatedTo "Increasing voltage tier can provide large Duration reductions for modules")
         increase("额外提升为模块提供的并行数" translatedTo " Additional increase in the parallelism provided by the module")
         command("运行前需提供128*(电压等级-7)的算力" translatedTo "Before starting, it is necessary to provide 128 * (voltage tier - 7) computation power")
-        increase("连接的模块将获得0.707倍耗时的速度加成" translatedTo "Connected modules will receive a 0.707x Duration speed bonus")
+        increase("连接的模块将获得耗时×0.707的速度加成" translatedTo "Connected modules will receive a 0.707x Duration speed bonus")
     }
 
     // 净化处理厂
@@ -2131,7 +2131,7 @@ object GTOMachineTooltips {
 
         section("魔力工业的核心转化枢纽" translatedTo "Core Conversion Hub of Mana Industry")
         highlight("虚空能量的工业驯服者" translatedTo "Industrial Tamer of Void Energy") { rainbowSlow() }
-        section("累计配方次数解锁等级，提升转化效率与并行倍率" translatedTo "Accumulate recipe runs to unlock tiers, boosting conversion efficiency and parallel multipliers")
+        section("累计配方次数解锁等级，提升转化效率与并行乘数" translatedTo "Accumulate recipe runs to unlock tiers, boosting conversion efficiency and parallel multipliers")
         danger("波动效应失控会加剧消耗！！！" translatedTo "Uncontrolled fluctuation effects will exacerbate consumption!!!")
         section("需补充稳定资源抑制波动" translatedTo "Requires stability resources to suppress fluctuations. ")
         highlight("泛银河魔力工业体系核心装备" translatedTo "Core Equipment of the Pan-Galactic Mana Industrial System") { rainbowSlow() }
@@ -2139,7 +2139,7 @@ object GTOMachineTooltips {
         // 核心机制
         section("核心机制" translatedTo "Core Mechanism")
         function("配方运行次数累计解锁等级" translatedTo "Accumulate recipe runs to unlock tiers")
-        command("等级越高，耗时减免越多，并行处理倍率越高（每台机器最多10条记录）" translatedTo "Higher tiers grant more duration reduction and higher parallel multiplier (max 10 records per Machine)")
+        command("等级越高，耗时减免越多，并行处理乘数越高（每台机器最多10条记录）" translatedTo "Higher tiers grant more duration reduction and higher parallel multiplier (max 10 records per Machine)")
         function("机器消耗系数随机跳变" translatedTo "Random jump of machine consumption coefficient")
         command("时间消耗波动系数[0.05 ~ 20] · 元素消耗波动系数[0.1 ~ 16]" translatedTo "Time consumption fluctuation coefficient [0.05~20] · Element consumption fluctuation coefficient [0.1~16]")
         command("向主机存储放入物品延长稳定次数" translatedTo "Add items to host storage to extend stable time")
@@ -2152,7 +2152,7 @@ object GTOMachineTooltips {
 
         section("等级加成" translatedTo "Tier Bonuses")
         increase("耗时减免 - 1-8级每级减2.5% | 9-64级每级额外减1.25% | ≥64级固定减90%" translatedTo "Duration Reduction - Tier1-8: -2.5% per tier | Tier9-64: Extra -1.25% per tier | ≥Tier64: Fixed -90%")
-        increase("并行倍率 - 1-64级线性递增 | 65-255级倍率陡增 | ≥256级Long.MAX_VALUE" translatedTo "Parallel Multiplier - Tier1-64: Linear increase | Tier65-255: Sharp multiplier increase | ≥Tier256: Long.MAX_VALUE")
+        increase("并行乘数 - 1-64级线性递增 | 65-255级乘数陡增 | ≥256级Long.MAX_VALUE" translatedTo "Parallel Multiplier - Tier1-64: Linear increase | Tier65-255: Sharp multiplier increase | ≥Tier256: Long.MAX_VALUE")
     }
 
     // 炼金装置

@@ -32,11 +32,11 @@ final class MachineLang {
         addCNEN("gtocore.machine.block_conversion_room.am", "每次转化数量: %s", "Amount converted each time: %s");
         addCNEN("gtocore.machine.vacuum_pump.tooltip.0", "仅向水平相邻方块提供真空", "Only provides vacuum to horizontally adjacent blocks");
         addCNEN("gtocore.machine.dimensionally_transcendent_plasma_forge.coil", "当前配方模式无法使用该线圈", "Current recipe mode cannot use this coil");
-        addCNEN("gtocore.machine.duration_multiplier.tooltip", "耗时倍数: %s", "Duration Multiplication: %s");
+        addCNEN("gtocore.machine.duration_multiplier.tooltip", "耗时乘数: %s", "Duration Multiplication: %s");
         addCNEN("gtocore.machine.dyson_sphere.amount", "该星系发射次数: %s / 100000", "Launch Times: %s / 100000");
         addCNEN("gtocore.machine.dyson_sphere.voltage", "最大能量输出: %s EU/t", "Maximum Energy Output: %s EU/t");
         addCNEN("gtocore.machine.efficiency.tooltip", "§7效率: §r%s", "§7Efficiency: §r%s");
-        addCNEN("gtocore.machine.eut_multiplier.tooltip", "耗能倍数: %s", "Energy Consumption Multiplier: %s");
+        addCNEN("gtocore.machine.eut_multiplier.tooltip", "耗能乘数: %s", "Energy Consumption Multiplier: %s");
         addCNEN("gtocore.machine.eye_of_harmony.eu", "启动耗能: %s EU", "Startup Energy Consumption: %s EU");
         addCNEN("gtocore.machine.eye_of_harmony.helium", "氦储量: %smB", "Helium Storage: %smB");
         addCNEN("gtocore.machine.eye_of_harmony.hydrogen", "氢储量: %smB", "Hydrogen Storage: %smB");
@@ -62,7 +62,7 @@ final class MachineLang {
         addCNEN("gtocore.machine.module.have", "该模块已成功安装", "This module has been successfully installed");
         addCNEN("gtocore.machine.module.null", "该模块未成功安装", "This module has not been successfully installed");
         addCNEN("gtocore.machine.multiple_recipes.tooltip", "支持跨配方并行", "Supports cross recipe parallel processing");
-        addCNEN("gtocore.machine.neutron_activator.efficiency", "动能消耗倍速: %s", "Kinetic Energy Consumption Multiplier: %s");
+        addCNEN("gtocore.machine.neutron_activator.efficiency", "动能消耗乘数: %s", "Kinetic Energy Consumption Multiplier: %s");
         addCNEN("gtocore.machine.neutron_activator.ev", "当前中子动能: %seV", "Current Neutron Kinetic Energy: %seV");
         addCNEN("gtocore.machine.height", "高度: %s", "Height: %s");
         addCNEN("gtocore.machine.sensor.invert.disabled", "红石输出: 普通", "Redstone Output: Normal");
@@ -286,7 +286,7 @@ final class MachineLang {
         addCNEN("gtocore.machine.village_trading_station.enhance", "使用 %s 升级", "Upgrade using %s");
         addCNEN("gtocore.machine.village_trading_station.upper_limit", "已达到提升上限", "The upgrade limit has been reached");
         addCNEN("gtocore.machine.village_trading_station.replenishment_interval", "补货间隔: %s tick", "Replenishment Interval: %s tick");
-        addCNEN("gtocore.machine.village_trading_station.trading_multiple", "交易倍数: %s", "Trading Multiple: %s");
+        addCNEN("gtocore.machine.village_trading_station.trading_multiple", "交易乘数: %s", "Trading Multiple: %s");
 
         addCNEN("gtocore.machine.resonance_flower.stable_operation_times", "剩余稳定运行次数: %s", "Remaining stable operation times: %s");
         addCNEN("gtocore.machine.resonance_flower.time_fluctuation_coefficient", "时间波动系数: %s", "Time fluctuation coefficient: %s");

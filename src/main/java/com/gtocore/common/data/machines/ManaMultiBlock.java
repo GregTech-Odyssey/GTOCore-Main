@@ -59,7 +59,7 @@ public final class ManaMultiBlock {
             .durationMultiplierTooltips(0.5)
             .tooltipsText("机器需要提供魔力来维持运行", "Machines need to provide mana to maintain working")
             .tooltipsText("每tick消耗的基础量为2^机器等级", "The base consumption per tick is 2^(machine tier)")
-            .tooltipsText("机器每运行60秒，需要在10秒内输入一个指定的符文来抑制魔力，否则魔力消耗翻4倍", "Machines need to provide a specified rune in 10 seconds to suppress mana consumption every 60 seconds, otherwise the mana consumption will be multiplied by 4")
+            .tooltipsText("机器每运行60秒，需要在10秒内输入一个指定的符文来抑制魔力，否则魔力消耗乘以4", "Machines need to provide a specified rune in 10 seconds to suppress mana consumption every 60 seconds, otherwise the mana consumption will be multiplied by 4")
             .tooltipsText("需要输入符文时机器会产生对应的红石信号", "Machines will produce corresponding redstone signals when rune is needed")
             .tooltipsText("符文编号：", "Rune number:")
             .tooltipsSupplier(() -> Collections.singletonList(ManaAlloyBlastSmelterMachine.getRunes()))

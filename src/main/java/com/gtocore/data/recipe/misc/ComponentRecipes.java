@@ -602,7 +602,7 @@ public final class ComponentRecipes {
         if (ComponentInAssemblyLines[tier] != null) builder_motor.researchNode(ComponentInAssemblyLines[tier]);
         builder_motor.inputItems(cableGtSingle, material[2], 2).save();
 
-        // UV 有特判，线缆两倍但是其他流体遵循正常倍率
+        // UV 有特判，线缆为两倍，但其他流体遵循正常乘数
         COMPONENT_ASSEMBLY_RECIPES.recipeBuilder(String.format("motor_%s", VN[tier].toLowerCase()))
                 .circuitMeta(1)
                 .inputItems(magnetic, 12)

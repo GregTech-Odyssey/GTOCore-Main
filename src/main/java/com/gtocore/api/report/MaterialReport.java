@@ -43,7 +43,7 @@ public class MaterialReport {
         StringBuilder report_table = new StringBuilder();
 
         // 表头
-        report_table.append("中文名,英文名,符号,主颜色,次颜色,图标集,基础类型,质量,流体管道吞吐量,物品管道优先级,物品管道传输速率,是否为导线材料,导线最大安培数,导线电压,导线每米损耗,是否为工具材料,工具挖掘速度,工具耐久度,工具挖掘等级,工具附魔性,是否为无尽耐久工具,工具耐久度倍率,是否为转子材料,转子耐久度,转子功率,转子效率,爆炸温度,是否有害物质\n");
+        report_table.append("中文名,英文名,符号,主颜色,次颜色,图标集,基础类型,质量,流体管道吞吐量,物品管道优先级,物品管道传输速率,是否为导线材料,导线最大安培数,导线电压,导线每米损耗,是否为工具材料,工具挖掘速度,工具耐久度,工具挖掘等级,工具附魔性,是否为无尽耐久工具,工具耐久度乘数,是否为转子材料,转子耐久度,转子功率,转子效率,爆炸温度,是否有害物质\n");
 
         for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
             Entry entry = Entry.fromMaterial(material);

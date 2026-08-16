@@ -1535,7 +1535,7 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         highlight("非遗技艺的工业化传承" translatedTo "Industrial inheritance of intangible cultural heritage")
         section(ComponentSlang.EfficiencyBonus)
         content("线圈温度越高，运行速度越快" translatedTo "Higher coil temperature → faster operation")
-        info("速度倍率: log(900) / log(温度)" translatedTo "Speed Multiplier: log(900) / log(Temperature)")
+        info("速度乘数: log(900) / log(温度)" translatedTo "Speed Multiplier: log(900) / log(Temperature)")
     }
 
     @JvmField

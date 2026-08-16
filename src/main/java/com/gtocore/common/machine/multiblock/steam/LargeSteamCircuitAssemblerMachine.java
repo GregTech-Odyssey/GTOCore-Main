@@ -50,7 +50,7 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
                          easyValue = "2",
                          normalValue = "4",
                          expertValue = "6",
-                         cn = "增产模式耗时为普通的 : %s 倍",
+                         cn = "增产模式耗时乘数 : %s",
                          cnComment = "更多的时间，更高的产出，一报换一报这很合理",
                          en = "Multiply Mode, Recipe Duration: x %s",
                          enComment = "More time, higher output, this is reasonable")
@@ -61,7 +61,7 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
                          easyValue = "2",
                          normalValue = "4",
                          expertValue = "6",
-                         cn = "增产模式蒸汽消耗为普通的 : %s 倍",
+                         cn = "增产模式蒸汽消耗乘数 : %s",
                          en = "Multiply Mode Steam Cost: x %s")
     private static int COST_STEAM_MULTIPLY = 4;
     @DynamicInitialValue(
@@ -70,7 +70,7 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
                          easyValue = "4",
                          normalValue = "2",
                          expertValue = "2",
-                         cn = "增产模式倍率为普通的 : %s 倍",
+                         cn = "增产模式产出乘数 : %s",
                          en = "Multiply Mode Multiply Output: x %s")
     private static int PRODUCT_MULTIPLY = 4;
     @DynamicInitialValue(

@@ -90,10 +90,10 @@ public final class AdvancedInfiniteDrillLogic extends RecipeLogic implements IFl
     }
 
     /**
-     * 温度倍率计算
+     * 温度乘数计算
      *
      * @param heat 当前温度
-     * @return 倍率
+     * @return 乘数
      */
     private static int efficiency(int heat) {
         if (heat < 6000) {

@@ -108,7 +108,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
 
     @SaveToDisk(defaultValue = "0")
     private int tire = 0;
-    // 补货时间间隔 -225* 多倍交易 4*
+    // 补货时间间隔 -225×，交易乘数 4×
     private static final Map<Item, Integer> ENHANCE_INDEX_MAP = Map.ofEntries(
             Map.entry(GTMachines.WORLD_ACCELERATOR[LV].asItem(), 1),
             Map.entry(GTMachines.WORLD_ACCELERATOR[MV].asItem(), 2),

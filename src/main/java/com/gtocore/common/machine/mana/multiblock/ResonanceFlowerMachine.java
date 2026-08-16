@@ -285,10 +285,10 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
 
     /** 波动系数系统 */
     public void triggerFluctuation() {
-        // 1. 时间消耗波动：每次跳变倍数范围 0.2 ~ 2.6，最终倍数范围 0.05 ~ 20
+        // 1. 时间消耗波动：每次跳变乘数范围 0.2 ~ 2.6，最终乘数范围 0.05 ~ 20
         double newTimeMultiplier = timeFluctuationCoefficient * (0.2D + random.nextDouble() * 2.4D);
         timeFluctuationCoefficient = Mth.clamp(newTimeMultiplier, 0.05D, 20.0D);
-        // 2. 元素消耗波动：每次跳变倍数范围 0.5 ~ 1.8，最终倍数范围 0.1 ~ 16
+        // 2. 元素消耗波动：每次跳变乘数范围 0.5 ~ 1.8，最终乘数范围 0.1 ~ 16
         double newElemMultiplier = elementalFluctuationCoefficient * (0.5D + random.nextDouble() * 1.3D);
         elementalFluctuationCoefficient = Mth.clamp(newElemMultiplier, 0.1D, 16.0D);
     }
