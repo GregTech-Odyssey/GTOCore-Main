@@ -14,8 +14,7 @@ dependencies {
     implementation("dev:gto-seal-runtime:1.0")
 
     implementation("dev:RecipeSearch-1.3")
-    implementation("com.github.houbb:opencc4j:1.14.0")//用来datagen繁中的
-
+    implementation("com.github.houbb:opencc4j:1.14.0") // 用来 datagen 繁中
 
     // gtolib 由 gradle/scripts/gtolib-pipeline.gradle 负责：打包 → 保护 → jarJar 嵌入
 
@@ -105,16 +104,13 @@ dependencies {
     modImplementation("curse.maven:modernfix-790626:7928686")
 
     modCompileOnly("curse.maven:moremorelang-1444917:7565351")
-//    modRuntimeOnly("curse.maven:moremorelang-1444917:7565351")
 
-    modImplementation("curse.maven:render-blender-1346485:7035162")
+    modCompileOnly("curse.maven:render-blender-1346485:7035162")
 
     modImplementation("curse.maven:farmers-delight-398521:8083474")
     modImplementation("curse.maven:farmers-respite-551453:5543547")
 
     modImplementation("curse.maven:endremastered-404183:5598990")
-
-    modImplementation("curse.maven:spark-361579:4738952")
 
     modImplementation("curse.maven:libx-412525:5207625")
 
@@ -124,7 +120,6 @@ dependencies {
 
     modCompileOnly("curse.maven:ftb-quests-forge-289412:7909594")
     modCompileOnly("curse.maven:ftb-teams-forge-404468:7499810")
-    modRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
 
     modCompileOnly("curse.maven:ftb-xmod-compat-889915:6402486")
 
@@ -157,7 +152,6 @@ dependencies {
     modImplementation("curse.maven:construction-wand-399558:4684054")
 
     modImplementation("curse.maven:pipez-443900:6945379")
-    modRuntimeOnly("curse.maven:laserio-uel-1168178:6773950")
 
     modCompileOnly("xaero.lib:xaerolib-forge-1.20.1:1.1.15")
     modCompileOnly("xaero.map:xaeroworldmap-forge-1.20.1:1.41.2")
@@ -167,7 +161,6 @@ dependencies {
 
     modRuntimeOnly("curse.maven:cloth-config-348521:5729105")
 
-    modRuntimeOnly("curse.maven:redstone-pen-461710:5242883")
     modRuntimeOnly("curse.maven:more-red-387638:4691333")
 
 
@@ -175,16 +168,11 @@ dependencies {
 
     modRuntimeOnly("curse.maven:torchmaster-254268:5849456")
 
-    modImplementation("curse.maven:embeddium-908741:5681725")
-
-    modRuntimeOnly("curse.maven:modern-ui-352491:5977000")
-
+    modCompileOnly("curse.maven:embeddium-908741:5681725")
 
     modImplementation("dev:Jade-1.20.1-Forge-11.13.1")
 
     modCompileOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
-
-    modRuntimeOnly("curse.maven:huge-structure-blocks-474114:4803547")
 
 //    modRuntimeOnly("curse.maven:mouse-tweaks-60089:4581240")
 //    modRuntimeOnly("curse.maven:inventory-essentials-368825:6977231")
@@ -193,8 +181,6 @@ dependencies {
     modCompileOnly("curse.maven:inventory-essentials-368825:6977231")
     modCompileOnly("curse.maven:balm-531761:6978679")
 
-    modRuntimeOnly("curse.maven:fzzy-config-1005914:7085017")
-    modRuntimeOnly("curse.maven:emi-loot-681783:6449092")
     modCompileOnly("curse.maven:emi-loot-681783:6449092")
 
     modCompileOnly("dev:gtoepp:1.0.1")
@@ -208,29 +194,63 @@ dependencies {
     modImplementation("curse.maven:easy-villagers-400514:6831415")
 
     modCompileOnly("dev:calculatoroverlay:1.0.2")
-//    modRuntimeOnly("curse.maven:super-factory-manager-306935:7021189")
+
     modRuntimeOnly("curse.maven:modular-routers-250294:5056687")
     modCompileOnly("curse.maven:modular-routers-250294:5056687")
-    modRuntimeOnly("xaero.lib:xaerolib-forge-1.20.1:1.1.15")
-    modRuntimeOnly("xaero.map:xaeroworldmap-forge-1.20.1:1.41.2")
-    modRuntimeOnly("xaero.minimap:xaerominimap-forge-1.20.1:26.1.0")
-    modRuntimeOnly("curse.maven:ae2-network-analyser-961856:5107131")
+    modRuntimeOnly("curse.maven:open-parties-and-claims-636608:8230795")
+
+    // 额外模组
+//    modRuntimeOnly("curse.maven:super-factory-manager-306935:7021189")
+//    modRuntimeOnly("curse.maven:worldedit-225608:4586218")
 //    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
 //    modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
 //    modRuntimeOnly("curse.maven:ftb-chunks-forge-314906:7880858") // 有个人存档有
 //    modRuntimeOnly("curse.maven:effortless-building-302113:6330928")
-//    modRuntimeOnly("curse.maven:worldedit-225608:4586218")
 
     // 牢模组
 //    modRuntimeOnly("curse.maven:re-avaritia-623969:7229795")
 //    modCompileOnly("curse.maven:ender-io-64578:7183516")
-    modNonDataRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
-    modNonDataRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
-    modNonDataRuntimeOnly("curse.maven:tool-belt-260262:5929061")
-    modNonDataRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
-    modNonDataRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
-    modNonDataRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
 
-    modNonServerRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
-    modNonServerRuntimeOnly("curse.maven:imblocker-483760:6922546")
+//    modRuntimeOnly("curse.maven:laserio-uel-1168178:6773950")
+//    modRuntimeOnly("curse.maven:redstone-pen-461710:5242883")
+//    modRuntimeOnly("curse.maven:huge-structure-blocks-474114:4803547")
+
+    // Client + Server；Data 不加载
+    modClientRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
+    modServerRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
+
+    modClientRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
+    modServerRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
+
+    modClientRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
+    modServerRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
+
+    modClientRuntimeOnly("curse.maven:tool-belt-260262:5929061")
+    modServerRuntimeOnly("curse.maven:tool-belt-260262:5929061")
+
+    modClientRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
+    modServerRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
+
+    modClientRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
+    modServerRuntimeOnly("curse.maven:sophisticated-core-618298:8249804")
+
+    modClientRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
+    modServerRuntimeOnly("curse.maven:sophisticated-storage-619320:8249841")
+
+    modClientRuntimeOnly("curse.maven:spark-361579:4738952")
+    modServerRuntimeOnly("curse.maven:spark-361579:4738952")
+
+    // 纯客户端运行模组
+    modClientRuntimeOnly("curse.maven:modern-ui-352491:5977000")
+    modClientRuntimeOnly("curse.maven:fzzy-config-1005914:7085017")
+    modClientRuntimeOnly("curse.maven:emi-loot-681783:6449092")
+    modClientRuntimeOnly("xaero.lib:xaerolib-forge-1.20.1:1.1.15")
+    modClientRuntimeOnly("xaero.map:xaeroworldmap-forge-1.20.1:1.41.2")
+    modClientRuntimeOnly("xaero.minimap:xaerominimap-forge-1.20.1:26.1.0")
+    modClientRuntimeOnly("curse.maven:ae2-network-analyser-961856:5107131")
+    modClientRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
+    modClientRuntimeOnly("curse.maven:imblocker-483760:6922546")
+    modClientRuntimeOnly("curse.maven:render-blender-1346485:7035162")
+    modClientRuntimeOnly("curse.maven:embeddium-908741:5681725")
+    modClientRuntimeOnly("curse.maven:moremorelang-1444917:7565351")
 }

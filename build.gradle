@@ -242,6 +242,10 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+        // 仅供 IDEA 索引/跳转
+        if (hasGtolibSources) {
+            sourceDirs += file('GTOLib/src/main/java')
+        }
     }
 }
 

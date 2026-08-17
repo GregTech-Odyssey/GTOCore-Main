@@ -50,26 +50,26 @@ public final class GTOMaterialIconSet extends MaterialIconSet {
         this.modelProvider = modelProvider;
     }
 
-    public static final GTOMaterialIconSet AMPROSIUM = new GTOMaterialIconSet("amprosium", METALLIC, false, HaloItemRenderer.WHITE_HALO);
+    public static final GTOMaterialIconSet AMPROSIUM = new GTOMaterialIconSet("amprosium", METALLIC, false, () -> HaloItemRenderer.WHITE_HALO);
     public static final GTOMaterialIconSet TRANSCENDENT = new GTOMaterialIconSet("transcendent", METALLIC, false, () -> StereoscopicItemRenderer.INSTANCE);
-    public static final GTOMaterialIconSet QUANTUM_CHROMO_DYNAMICALLY = new GTOMaterialIconSet("quantum_chromo_dynamically", METALLIC, false, HaloItemRenderer.QUANTUM_CHROMO_DYNAMICALLY_HALO);
-    public static final GTOMaterialIconSet COSMIC = new GTOMaterialIconSet("cosmic", METALLIC, false, HaloItemRenderer.COSMIC_HALO);
-    public static final GTOMaterialIconSet CHAOS = new GTOMaterialIconSet("chaos", METALLIC, false, HaloItemRenderer.CHAOS_HALO);
-    public static final GTOMaterialIconSet CHAOS_INFINITY = new GTOMaterialIconSet("chaos_infinity_old", METALLIC, false, HaloItemRenderer.CHAOS_INFINITY_HALO);
-    public static final GTOMaterialIconSet NEUTRONIUM = new GTOMaterialIconSet("neutronium", METALLIC, false, HaloItemRenderer.NEUTRONIUM_HALO);
-    public static final GTOMaterialIconSet COSMIC_NEUTRONIUM = new GTOMaterialIconSet("cosmic_neutronium", METALLIC, false, HaloItemRenderer.COSMIC_NEUTRONIUM_HALO);
-    public static final GTOMaterialIconSet MAGNETOHYDRODYNAMICALLY_CONSTRAINED_STAR_MATTER = new GTOMaterialIconSet("magnetohydrodynamically_constrained_star_matter", null, true, HaloItemRenderer.MAGNETOHYDRODYNAMICALLY_CONSTRAINED_STAR_MATTER_HALO);
-    public static final GTOMaterialIconSet INFINITY = new GTOMaterialIconSet("infinity", null, true, HaloItemRenderer.INFINITY_HALO);
-    public static final GTOMaterialIconSet ETERNITY = new GTOMaterialIconSet("eternity", null, true, HaloItemRenderer.ETERNITY_HALO);
-    public static final GTOMaterialIconSet MAGMATTER = new GTOMaterialIconSet("magmatter", null, true, HaloItemRenderer.MAGMATTER_HALO);
+    public static final GTOMaterialIconSet QUANTUM_CHROMO_DYNAMICALLY = new GTOMaterialIconSet("quantum_chromo_dynamically", METALLIC, false, () -> HaloItemRenderer.QUANTUM_CHROMO_DYNAMICALLY_HALO);
+    public static final GTOMaterialIconSet COSMIC = new GTOMaterialIconSet("cosmic", METALLIC, false, () -> HaloItemRenderer.COSMIC_HALO);
+    public static final GTOMaterialIconSet CHAOS = new GTOMaterialIconSet("chaos", METALLIC, false, () -> HaloItemRenderer.CHAOS_HALO);
+    public static final GTOMaterialIconSet CHAOS_INFINITY = new GTOMaterialIconSet("chaos_infinity_old", METALLIC, false, () -> HaloItemRenderer.CHAOS_INFINITY_HALO);
+    public static final GTOMaterialIconSet NEUTRONIUM = new GTOMaterialIconSet("neutronium", METALLIC, false, () -> HaloItemRenderer.NEUTRONIUM_HALO);
+    public static final GTOMaterialIconSet COSMIC_NEUTRONIUM = new GTOMaterialIconSet("cosmic_neutronium", METALLIC, false, () -> HaloItemRenderer.COSMIC_NEUTRONIUM_HALO);
+    public static final GTOMaterialIconSet MAGNETOHYDRODYNAMICALLY_CONSTRAINED_STAR_MATTER = new GTOMaterialIconSet("magnetohydrodynamically_constrained_star_matter", null, true, () -> HaloItemRenderer.MAGNETOHYDRODYNAMICALLY_CONSTRAINED_STAR_MATTER_HALO);
+    public static final GTOMaterialIconSet INFINITY = new GTOMaterialIconSet("infinity", null, true, () -> HaloItemRenderer.INFINITY_HALO);
+    public static final GTOMaterialIconSet ETERNITY = new GTOMaterialIconSet("eternity", null, true, () -> HaloItemRenderer.ETERNITY_HALO);
+    public static final GTOMaterialIconSet MAGMATTER = new GTOMaterialIconSet("magmatter", null, true, () -> HaloItemRenderer.MAGMATTER_HALO);
     public static final MaterialIconSet WHITE_DWARF_MATTER = new MaterialIconSet("white_dwarf_mtter", null, true);
     public static final MaterialIconSet BLACK_DWARF_MATTER = new MaterialIconSet("black_dwarf_mtter", null, true);
     public static final MaterialIconSet WROUGHT_IRON = new MaterialIconSet("wrought_iron", METALLIC);
     public static final MaterialIconSet PARTICLE_EMITTER = new MaterialIconSet("particle_emitter", null, true);
     public static final MaterialIconSet LIMPID = new MaterialIconSet("limpid", DULL);
-    public static final GTOMaterialIconSet INFINITY_CHAOS = new GTOMaterialIconSet("chaos_infinity", METALLIC, false, SpinTransformRenderer.INSTANCE);
-    public static final GTOMaterialIconSet TRANSLUCENT = new GTOMaterialIconSet("translucent", SHINY, false, TranslucentRenderer.INSTANCE);
-    public static final GTOMaterialIconSet ASTRAL = new GTOMaterialIconSet("cosmic_translucent", BRIGHT, false, HaloItemRenderer.ASTRIUM);
+    public static final GTOMaterialIconSet INFINITY_CHAOS = new GTOMaterialIconSet("chaos_infinity", METALLIC, false, () -> SpinTransformRenderer.INSTANCE);
+    public static final GTOMaterialIconSet TRANSLUCENT = new GTOMaterialIconSet("translucent", SHINY, false, () -> TranslucentRenderer.INSTANCE);
+    public static final GTOMaterialIconSet ASTRAL = new GTOMaterialIconSet("cosmic_translucent", BRIGHT, false, () -> HaloItemRenderer.ASTRIUM);
 
     public static final MaterialIconSet CRUPTIX = new GTOMaterialIconSet("cruptix", DULL, false, null,
             (t, m) -> (ctx, provider) -> {
