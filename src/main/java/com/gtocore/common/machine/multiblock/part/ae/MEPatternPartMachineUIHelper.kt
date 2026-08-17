@@ -7,6 +7,7 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineK
 import com.gtocore.eio_travel.logic.TravelUtils
 
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.chat.Component
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures
@@ -18,6 +19,7 @@ import com.gtolib.api.gui.ktflexible.blank
 import com.gtolib.api.gui.ktflexible.field
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper
 import com.lowdragmc.lowdraglib.gui.widget.Widget
+import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup
 import com.lowdragmc.lowdraglib.jei.IngredientIO
 import net.minecraftforge.fluids.capability.IFluidHandler
 
@@ -83,14 +85,13 @@ fun createPatternPageWidget(container: VBoxBuilder, machine: MEPatternPartMachin
     }
 }
 
-fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<out IFluidHandler>) {
+fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<out IFluidHandler>, slotDecorator: ((Int, Widget) -> Widget)? = null) {
     with(container) {
         textBlock(maxWidth = width, textSupplier = { Component.translatable(FLUID_SPECIAL) })
         fluidHandler.indices.chunked(9).forEach { indices ->
             hBox(height = 18) {
                 indices.forEach { index ->
-                    widget(
-                        TankWidget(
+                    val tankWidget = TankWidget(
                             fluidHandler[index],
                             0,
                             0,
@@ -98,11 +99,75 @@ fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<ou
                             18,
                             true,
                             true,
-                        ).setBackground(GuiTextures.FLUID_SLOT),
-                    )
+                        ).setBackground(GuiTextures.FLUID_SLOT)
+                    widget(slotDecorator?.invoke(index, tankWidget) ?: tankWidget)
                 }
             }
         }
+    }
+}
+
+fun missingVirtualInputOverlay(child: Widget, missingSupplier: () -> Boolean): Widget =
+    MissingVirtualInputOverlay(child, missingSupplier)
+
+private class MissingVirtualInputOverlay(
+    child: Widget,
+    private val missingSupplier: () -> Boolean,
+) : WidgetGroup(0, 0, 18, 18) {
+
+    private companion object {
+        const val MISSING_UPDATE_ID = 1
+        const val MISSING_FILL = 0x66FF0000
+        const val MISSING_BORDER = -0x10000
+    }
+
+    private var missing = false
+
+    init {
+        addWidget(child)
+    }
+
+    override fun writeInitialData(buffer: FriendlyByteBuf?) {
+        super.writeInitialData(buffer)
+        if (!isClientSideWidget) {
+            missing = missingSupplier()
+            buffer?.writeBoolean(missing)
+        }
+    }
+
+    override fun readInitialData(buffer: FriendlyByteBuf?) {
+        super.readInitialData(buffer)
+        if (isClientSideWidget && buffer != null) {
+            missing = buffer.readBoolean()
+        }
+    }
+
+    override fun detectAndSendChanges() {
+        super.detectAndSendChanges()
+        if (isClientSideWidget) return
+        val current = missingSupplier()
+        if (current != missing) {
+            missing = current
+            writeUpdateInfo(MISSING_UPDATE_ID) { it.writeBoolean(current) }
+        }
+    }
+
+    override fun readUpdateInfo(id: Int, buffer: FriendlyByteBuf) {
+        if (id == MISSING_UPDATE_ID) {
+            missing = buffer.readBoolean()
+        } else {
+            super.readUpdateInfo(id, buffer)
+        }
+    }
+
+    override fun drawInBackground(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTicks: Float) {
+        super.drawInBackground(graphics, mouseX, mouseY, partialTicks)
+        if (!missing) return
+        DrawerHelper.drawSolidRect(graphics, positionX, positionY, sizeWidth, sizeHeight, MISSING_FILL)
+        DrawerHelper.drawSolidRect(graphics, positionX, positionY, sizeWidth, 1, MISSING_BORDER)
+        DrawerHelper.drawSolidRect(graphics, positionX, positionY + sizeHeight - 1, sizeWidth, 1, MISSING_BORDER)
+        DrawerHelper.drawSolidRect(graphics, positionX, positionY, 1, sizeHeight, MISSING_BORDER)
+        DrawerHelper.drawSolidRect(graphics, positionX + sizeWidth - 1, positionY, 1, sizeHeight, MISSING_BORDER)
     }
 }
 

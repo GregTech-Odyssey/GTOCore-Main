@@ -54,7 +54,22 @@ final class MEPatternVirtualInputHelper {
                                                    CustomFluidTank[] fluidStorage,
                                                    @Nullable MEVirtualInputState virtualInputState,
                                                    BooleanSupplier lockOnce) {
+        return convertPattern(pattern, gridGetter, actionSourceGetter, circuitInventory, itemStorage, fluidStorage,
+                virtualInputState, null, lockOnce);
+    }
+
+    static @NotNull IPatternDetails convertPattern(
+                                                   @NotNull IPatternDetails pattern,
+                                                   Supplier<IGrid> gridGetter,
+                                                   Supplier<IActionSource> actionSourceGetter,
+                                                   NotifiableItemStackHandler circuitInventory,
+                                                   CustomItemStackHandler itemStorage,
+                                                   CustomFluidTank[] fluidStorage,
+                                                   @Nullable MEVirtualInputState virtualInputState,
+                                                   @Nullable MEVirtualInputAvailability availability,
+                                                   BooleanSupplier lockOnce) {
         if (virtualInputState != null) virtualInputState.clearVirtualInputs();
+        if (availability != null) availability.clear();
         if (!(pattern instanceof AEProcessingPattern processingPattern)) {
             return pattern;
         }
@@ -69,6 +84,7 @@ final class MEPatternVirtualInputHelper {
             if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
                 ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
                 if (virtualItem.isEmpty()) continue;
+                boolean missingProvider = availability != null && !isProviderAvailable(what, gridGetter, actionSourceGetter);
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
@@ -78,6 +94,7 @@ final class MEPatternVirtualInputHelper {
                     } else {
                         virtualInputState.setVirtualCircuit(virtualItem.copyWithCount(1));
                     }
+                    if (availability != null) availability.setCircuitMissing(missingProvider);
                     continue;
                 }
 
@@ -93,10 +110,12 @@ final class MEPatternVirtualInputHelper {
                 } else {
                     virtualInputState.setVirtualItem(targetItemSlot, virtualItem);
                 }
+                if (availability != null) availability.setItemMissing(targetItemSlot, missingProvider);
                 targetItemSlot++;
             } else {
                 FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
                 if (virtualFluid.isEmpty()) continue;
+                boolean missingProvider = availability != null && !isProviderAvailable(what, gridGetter, actionSourceGetter);
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
@@ -112,6 +131,7 @@ final class MEPatternVirtualInputHelper {
                 } else {
                     virtualInputState.setVirtualFluid(targetFluidSlot, virtualFluid);
                 }
+                if (availability != null) availability.setFluidMissing(targetFluidSlot, missingProvider);
                 targetFluidSlot++;
             }
         }
@@ -123,6 +143,15 @@ final class MEPatternVirtualInputHelper {
         var item = key.getItem();
         return item == CustomItems.VIRTUAL_ITEM_PROVIDER.get() ||
                 item == CustomItems.VIRTUAL_FLUID_PROVIDER.get();
+    }
+
+    private static boolean isProviderAvailable(AEItemKey key, Supplier<IGrid> gridGetter,
+                                               Supplier<IActionSource> actionSourceGetter) {
+        IGrid grid = gridGetter.get();
+        if (grid == null) return false;
+        IActionSource source = actionSourceGetter.get();
+        if (source == null) return false;
+        return grid.getStorageService().getInventory().extract(key, 1, Actionable.SIMULATE, source) == 1;
     }
 
     private static boolean refund(AEKey key, long amount, Supplier<IGrid> gridGetter,

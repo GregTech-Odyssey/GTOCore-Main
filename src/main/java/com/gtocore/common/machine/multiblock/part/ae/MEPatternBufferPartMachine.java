@@ -310,7 +310,8 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     public IPatternDetails convertPattern(IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.shareInventory.storage, slot.shareTank.getStorages(), null, () -> {
+                slot.circuitInventory, slot.shareInventory.storage, slot.shareTank.getStorages(), null,
+                slot.virtualInputAvailability, () -> {
                     slot.setLock(true);
                     return true;
                 });
@@ -529,6 +530,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         public final NotifiableNotConsumableFluidHandler shareTank;
         public final NotifiableItemStackHandler circuitInventory;
         final LockableItemStackHandler lockableInventory;
+        private final MEVirtualInputAvailability virtualInputAvailability = new MEVirtualInputAvailability();
         @Getter
         private boolean lock;
         @Setter
@@ -560,8 +562,21 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
                     tank.setFluid(FluidStack.EMPTY);
                 }
             }
+            if (!lock) virtualInputAvailability.clear();
             this.lock = lock;
             lockableInventory.setLock(lock);
+        }
+
+        public boolean isMissingVirtualItemSlot(int slot) {
+            return virtualInputAvailability.isItemMissing(slot);
+        }
+
+        public boolean isMissingVirtualFluidSlot(int slot) {
+            return virtualInputAvailability.isFluidMissing(slot);
+        }
+
+        public boolean isMissingVirtualCircuit() {
+            return virtualInputAvailability.isCircuitMissing();
         }
 
         public void setRecipe(@Nullable GTRecipeDefinition recipe) {
