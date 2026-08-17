@@ -172,6 +172,21 @@ final class Assembler {
                 .duration(400)
                 .save();
 
+        // Infinite spray can — unique recipe id / output; no other assembler recipe yields this item.
+        ASSEMBLER_RECIPES.recipeBuilder("infinite_spray_can")
+                .inputItems(GTItems.SPRAY_EMPTY.asItem())
+                .inputItems(AEItems.CELL_COMPONENT_16K.asItem())
+                .inputItems(AEBlocks.DENSE_ENERGY_CELL.block().asItem())
+                .inputItems(GTMachines.BATTERY_BUFFER_4[HV].asItem())
+                .inputItems(GTItems.ELECTRIC_MOTOR_HV.asItem())
+                .inputItems(GTItems.ELECTRIC_PUMP_HV.asItem())
+                .inputItems(GTBlocks.CASING_TEMPERED_GLASS.asItem())
+                .inputFluids(GTOMaterials.BifrostPerm, 144)
+                .outputItems(GTItems.INFINITE_SPRAY_CAN.asItem())
+                .EUt(VA[HV]) // 480 EU/t
+                .duration(300) // 15 s
+                .save();
+
         ASSEMBLER_RECIPES.recipeBuilder("wireless_data_transmitter_hatch")
                 .inputItems("gtceu:data_transmitter_hatch")
                 .inputItems(GTItems.EMITTER_UHV)

@@ -12,9 +12,13 @@ import com.gtocore.utils.setTooltips
 
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
+
+import net.minecraftforge.registries.ForgeRegistries
 
 import appeng.core.definitions.AEBlocks
 import appeng.core.definitions.AEItems
@@ -93,6 +97,16 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         info("前期大量获取种子去种地的好帮手" translatedTo "A good helper for obtaining seeds in large quantities in the early game")
     }
 
+    // 无尽喷漆罐（GTM）——字面量，避免未 runData 时 gtocore.lang 哈希键炸显示
+    // 样式与 miraculousTools 一致：★ + 静态金色
+    @JvmField
+    val InfiniteSprayCanTooltips = ComponentListSupplier {
+        highlight("妙妙工具: 无尽喷漆罐".toLiteralSupplier()) { gold() }
+        guide("对方块右键：喷涂".toLiteralSupplier())
+        guide("对空气右键：打开调色板".toLiteralSupplier())
+        guide("潜行+滚轮：切换颜色".toLiteralSupplier())
+    }
+
     // 旅行手杖
     @JvmField
     val TravelStaffTooltips = ComponentListSupplier {
@@ -142,7 +156,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         command("加速GT机器时，根据难度模式消耗相应倍数EU能量" translatedTo "When accelerating GT machines, consume EU energy according to the difficulty mode")
     }
 
-    // 泛银河系格雷科技掌上银行
+    // 泛银河系格雷科技掌上银行（无故事文案）
     @JvmField
     val PalmSizedBankTooltips = ComponentListSupplier {
         setTranslationPrefix("item.palm_sized_bank")
@@ -152,12 +166,19 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         section("采用量子加密技术，账户信息无法被破解或篡改，安全等级达到星系标准。" translatedTo "Uses quantum encryption technology; account information cannot be hacked or tampered with, meeting galactic security standards.")
         section("内置能量核心，无需额外供电，可持续运行 730 标准日。" translatedTo "Built-in energy core, no external power required, can operate continuously for 730 standard days.")
         guide("右键打开银行界面，支持存款、取款及向其他认证账户转账。" translatedTo "Right-click to open the bank interface, supporting deposit, withdrawal, and transfer to other certified accounts.")
-        story("最初为格雷科技员工专属金融工具，后因需求扩大面向全星系公民开放。" translatedTo "Initially an exclusive financial tool for Grey Technology employees, later opened to all galactic citizens due to high demand.")
         highlight("请勿向未认证账户转账，星际金融法对跨境诈骗有严格处罚。" translatedTo "Do not transfer to uncertified accounts; interstellar financial laws have strict penalties for cross-border fraud.") { color(0xFF5555) }
     }
 
     // Modification
     fun initLanguage() {
+        // GTM 无尽喷漆罐（按 ID 挂载，未合并 PR 的 GTM 上静默跳过）
+        ForgeRegistries.ITEMS.getValue(ResourceLocation("gtceu", "infinite_spray_can"))?.let { item ->
+            if (item !== Items.AIR) {
+                // 不加 editionByGTONormal，避免多余的「经 GTOCore 修改」行
+                item.setTooltips(InfiniteSprayCanTooltips)
+            }
+        }
+
         listOf(AEParts.STORAGE_BUS.asItem()).forEach {
             it.setTooltips(
                 ComponentListSupplier {

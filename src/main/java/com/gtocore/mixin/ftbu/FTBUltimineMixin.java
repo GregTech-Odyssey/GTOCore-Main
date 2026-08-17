@@ -1,5 +1,7 @@
 package com.gtocore.mixin.ftbu;
 
+import com.gregtechceu.gtceu.common.data.GTItems;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -33,12 +35,26 @@ public class FTBUltimineMixin {
     }
 
     @Unique
+    private static boolean gtolib$isSprayCan(ItemStack stack) {
+        return !stack.isEmpty() && stack.is(GTItems.INFINITE_SPRAY_CAN.get());
+    }
+
+    @Unique
     private static boolean gtolib$notDiggerItem(Player player) {
-        return !player.isCreative() && !(player.getMainHandItem().getItem() instanceof DiggerItem) && !(player.getMainHandItem().getItem() instanceof SpellBook);
+        if (player.isCreative()) {
+            return false;
+        }
+        ItemStack main = player.getMainHandItem();
+        if (main.getItem() instanceof DiggerItem || main.getItem() instanceof SpellBook || gtolib$isSprayCan(main)) {
+            return false;
+        }
+        return true;
     }
 
     @Inject(method = "isValidTool", at = @At("HEAD"), remap = false, cancellable = true)
     private static void isValidTool(ItemStack mainHand, ItemStack offHand, CallbackInfoReturnable<Boolean> cir) {
-        if (mainHand.getItem() instanceof SpellBook) cir.setReturnValue(true);
+        if (mainHand.getItem() instanceof SpellBook || gtolib$isSprayCan(mainHand)) {
+            cir.setReturnValue(true);
+        }
     }
 }

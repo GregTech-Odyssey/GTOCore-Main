@@ -6,6 +6,8 @@ import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.block.OreBlock;
 import com.gregtechceu.gtceu.api.item.IGTTool;
+import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.config.ConfigHolder;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.DiggerItem;
@@ -65,7 +67,14 @@ public class ShapeContextMixin {
                 ret = Math.min(base, maxBlocks);
             }
             case DiggerItem ignored -> ret = Math.min(64 >> GTOCore.difficulty, maxBlocks);
-            default -> ret = 1;
+            default -> {
+                // Infinite spray can: chain paint preview uses sprayCanChainLength
+                if (stack.is(GTItems.INFINITE_SPRAY_CAN.get())) {
+                    ret = Math.min(Math.max(1, ConfigHolder.INSTANCE.tools.sprayCanChainLength), maxBlocks);
+                } else {
+                    ret = 1;
+                }
+            }
         }
 
         AtomicReference<Float> affixBonus = new AtomicReference<>(1.0f);
