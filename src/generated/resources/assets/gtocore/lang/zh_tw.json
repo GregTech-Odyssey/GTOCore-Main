@@ -1959,7 +1959,7 @@
   "gtceu.ae.pattern_part_machine.clear_recipe": "解除當前機器的配方鎖定",
   "gtceu.ae.pattern_part_machine.clear_recipe_msg": "當前機器的配方鎖定已清除",
   "gtceu.ae.pattern_part_machine.clear_recipe_msg2": "打開emi頁面後，選擇一個配方，用“+”按鈕將其添加到樣板中。",
-  "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode": "已鎖定，由樣板內的配方自動拉取虛擬物品進行合成",
+  "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode": "已鎖定，由樣板內的配方自動拉取虛擬成分進行合成",
   "gtceu.ae.pattern_part_machine.not_show_in_travel": "不在旅行網路中顯示",
   "gtceu.ae.pattern_part_machine.not_simple": "僅在簡單遊戲難度下啟用",
   "gtceu.ae.pattern_part_machine.show_in_travel": "在旅行網路中顯示",

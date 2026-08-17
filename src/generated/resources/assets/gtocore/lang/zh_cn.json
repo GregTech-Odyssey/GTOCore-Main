@@ -1959,7 +1959,7 @@
   "gtceu.ae.pattern_part_machine.clear_recipe": "解除当前机器的配方锁定",
   "gtceu.ae.pattern_part_machine.clear_recipe_msg": "当前机器的配方锁定已清除",
   "gtceu.ae.pattern_part_machine.clear_recipe_msg2": "打开emi页面后，选择一个配方，用“+”按钮将其添加到样板中。",
-  "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode": "已锁定，由样板内的配方自动拉取虚拟物品进行合成",
+  "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode": "已锁定，由样板内的配方自动拉取虚拟成分进行合成",
   "gtceu.ae.pattern_part_machine.not_show_in_travel": "不在旅行网络中显示",
   "gtceu.ae.pattern_part_machine.not_simple": "仅在简单游戏难度下启用",
   "gtceu.ae.pattern_part_machine.show_in_travel": "在旅行网络中显示",

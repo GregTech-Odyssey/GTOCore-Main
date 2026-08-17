@@ -68,7 +68,7 @@ open class MEPatternBufferPartMachineKt(holder: MetaMachineBlockEntity, maxPatte
         @RegisterLanguage(cn = "物品不够时请求合成", en = "Request crafting when items are insufficient")
         const val REQUEST_CRAFTING_WHEN_INSUFFICIENT: String = "gtceu.ae.pattern_part_machine.REQUEST_CRAFTING_WHEN_INSUFFICIENT"
 
-        @RegisterLanguage(cn = "已锁定，由样板内的配方自动拉取虚拟物品进行合成", en = "Locked, automatically pull virtual items for crafting according to the recipe in the pattern")
+        @RegisterLanguage(cn = "已锁定，由样板内的配方自动拉取虚拟成分进行合成", en = "Locked, automatically pull virtual ingredients for crafting according to the recipe in the pattern")
         const val ITEM_LOCKED: String = "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode"
 
         @RegisterLanguage(

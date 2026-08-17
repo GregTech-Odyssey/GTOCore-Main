@@ -233,7 +233,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
     public @NotNull IPatternDetails convertPattern(@NotNull IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.notConsumableItem.storage, () -> true);
+                slot.circuitInventory, slot.notConsumableItem.storage, slot.notConsumableFluid.getStorages(), () -> true);
     }
 
     @Override
@@ -490,6 +490,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
                 int itemIdx = 0, fluidIdx = 0;
                 for (var ingredient : aeProcessingPattern.getSparseInputs()) {
                     var key = ingredient.what();
+                    if (key instanceof AEItemKey itemKey && MEPatternVirtualInputHelper.isVirtualProvider(itemKey)) continue;
                     var amount = ingredient.amount();
                     var configStack = new GenericStack(key, amount * multiplier);
                     if (key instanceof AEItemKey) {

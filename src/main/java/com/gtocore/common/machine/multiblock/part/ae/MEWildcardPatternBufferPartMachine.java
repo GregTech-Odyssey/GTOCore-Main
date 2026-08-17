@@ -52,8 +52,8 @@ import appeng.hooks.IUnique;
 import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.ObjHolder;
+import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
-import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.widget.*;
@@ -464,14 +464,14 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private static @Nullable Object normalizeSearchKey(AEKey key) {
-        if (key instanceof AEItemKey what &&
-                what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get() &&
-                VirtualProviderData.hasData(what.getReadOnlyStack())) {
-            ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
-            if (virtualItem.isEmpty()) {
-                return null;
+        if (key instanceof AEItemKey what && MEPatternVirtualInputHelper.isVirtualProvider(what)) {
+            if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
+                ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
+                return virtualItem.isEmpty() ? null : AEItemKey.of(virtualItem);
+            } else if (what.getItem() == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
+                FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
+                return virtualFluid.isEmpty() ? null : AEFluidKey.of(virtualFluid);
             }
-            return AEItemKey.of(virtualItem);
         }
         return key;
     }

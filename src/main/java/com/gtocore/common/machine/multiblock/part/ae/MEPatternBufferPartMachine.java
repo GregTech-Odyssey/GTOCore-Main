@@ -51,6 +51,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.implementations.blockentities.PatternContainerGroup;
@@ -309,7 +310,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     public IPatternDetails convertPattern(IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.shareInventory.storage, () -> {
+                slot.circuitInventory, slot.shareInventory.storage, slot.shareTank.getStorages(), () -> {
                     slot.setLock(true);
                     return true;
                 });
@@ -555,6 +556,9 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
                 for (int i = 0; i < 9; i++) {
                     shareInventory.setStackInSlot(i, ItemStack.EMPTY);
                 }
+                for (var tank : shareTank.getStorages()) {
+                    tank.setFluid(FluidStack.EMPTY);
+                }
             }
             this.lock = lock;
             lockableInventory.setLock(lock);
@@ -719,7 +723,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             }
             if (!fluidsTag.isEmpty()) tag.put("fluidInventory", fluidsTag);
             if (!lock && !shareInventory.isEmpty()) tag.put("inv", shareInventory.storage.serializeNBT());
-            if (!shareTank.isEmpty()) {
+            if (!lock && !shareTank.isEmpty()) {
                 ListTag tanks = new ListTag();
                 for (var tank : shareTank.getStorages()) {
                     if (tank.isEmpty()) {
@@ -781,6 +785,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         public void pushInput(AEKey key, long amount) {
             if (amount < 1) return;
             if (key instanceof AEItemKey itemKey) {
+                if (MEPatternVirtualInputHelper.isVirtualProvider(itemKey)) return;
                 slot.itemInventory.insert(itemKey, amount);
             } else if (key instanceof AEFluidKey fluidKey) {
                 slot.fluidInventory.insert(fluidKey, amount);

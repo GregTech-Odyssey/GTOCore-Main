@@ -1831,7 +1831,7 @@
   "gtceu.ae.pattern_part_machine.clear_recipe": "Clear the recipe lock of this machine",
   "gtceu.ae.pattern_part_machine.clear_recipe_msg": "The recipe lock of this machine has been cleared",
   "gtceu.ae.pattern_part_machine.clear_recipe_msg2": "After opening the emi page, select a recipe and use the \"+\" button to add it to the pattern.",
-  "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode": "Locked, automatically pull virtual items for crafting according to the recipe in the pattern",
+  "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode": "Locked, automatically pull virtual ingredients for crafting according to the recipe in the pattern",
   "gtceu.ae.pattern_part_machine.not_show_in_travel": "Do not show in Travel Network",
   "gtceu.ae.pattern_part_machine.not_simple": "Enable only in Easy Game Mode",
   "gtceu.ae.pattern_part_machine.show_in_travel": "Show in Travel Network",
