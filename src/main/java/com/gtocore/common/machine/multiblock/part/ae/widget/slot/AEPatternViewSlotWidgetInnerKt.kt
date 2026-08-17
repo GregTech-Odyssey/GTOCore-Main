@@ -38,7 +38,7 @@ open class AEPatternViewSlotWidgetKt(x: Int, y: Int, val slotIndex: Int, val app
         addWidget(inner)
         inner.setOccupiedTexture(GuiTextures.SLOT)
         inner.setItemHook { stack ->
-            when (val item = stack.item) {
+            when (val item = stack.getItem()) {
                 is EncodedPatternItem -> {
                     val output = item.getOutput(stack)
                     if (!output.isEmpty) output else stack
