@@ -4,7 +4,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.part.ae.*;
-import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
+import com.gtocore.common.machine.noenergy.VirtualIngredientProviderMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.impl.part.CraftingInterfacePartMachine;
@@ -24,7 +24,7 @@ public final class GTAEMachines {
 
     public static void init() {}
 
-    public static final MachineDefinition VIRTUAL_ITEM_SUPPLY_MACHINE = machine("virtual_item_supply_machine", "虚拟物品供应机", VirtualItemProviderMachine::new)
+    public static final MachineDefinition VIRTUAL_INGREDIENT_PROVIDER = machine("virtual_ingredient_provider", "虚拟成分提供机", VirtualIngredientProviderMachine::new)
             .tier(MV)
             .allRotation()
             .tooltips(GTOMachineTooltipsA.virtualItemSupplyMachineTooltips)

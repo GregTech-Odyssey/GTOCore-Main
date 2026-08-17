@@ -49,7 +49,7 @@ import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.util.stream.Stream;
 
-public final class VirtualItemProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
+public final class VirtualIngredientProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
 
     private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
     static private final AEKey EMPTY_STACK;
@@ -69,7 +69,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     @SyncToClient
     private boolean isOnline;
 
-    public VirtualItemProviderMachine(MetaMachineBlockEntity holder) {
+    public VirtualIngredientProviderMachine(MetaMachineBlockEntity holder) {
         super(holder);
         this.inventory = new NotifiableItemStackHandler(this, 288, IO.NONE, IO.BOTH);
         this.nodeHolder = new GridNodeHolder(this);

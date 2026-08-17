@@ -2452,7 +2452,7 @@
   "gtocore.ae.appeng.me2in1.draggable_mark.tooltip.1": "拖动到屏幕顶部以自动隐藏",
   "gtocore.ae.appeng.me2in1.emi.catalyst": "编码默认不填充催化剂",
   "gtocore.ae.appeng.me2in1.emi.catalyst.fill": "Shift + 左击：将催化剂填充至样板",
-  "gtocore.ae.appeng.me2in1.emi.catalyst.virtual": "Ctrl + 左击：将催化剂（虚拟物品）填充至样板",
+  "gtocore.ae.appeng.me2in1.emi.catalyst.virtual": "Ctrl + 左击：将催化剂编码为虚拟成分",
   "gtocore.ae.appeng.me2in1.emi.gt_batch_encode": "Alt + 左击：批量编码，试图替换的材料用黄色标记",
   "gtocore.ae.appeng.me2in1.emi.gt_batch_encode.1": "替换失败的材料（如该材料不存在这种物品）将在编码时保持原样板的状态",
   "gtocore.ae.appeng.me2in1.emi.multiblock.sub": "Shift + 左击：编码基础结构和当前模块",
