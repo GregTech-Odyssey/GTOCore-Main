@@ -37,8 +37,8 @@ import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.util.DataCodecs;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
+import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
@@ -51,13 +51,13 @@ import java.util.stream.Stream;
 
 public final class VirtualIngredientProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
 
+    private static final String INVENTORY_TAG = "inventory";
     private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
     static private final AEKey EMPTY_STACK;
 
     static {
-        var es = VirtualItemProviderBehavior.setVirtualItem(new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem()), ItemStack.EMPTY);
-        es = es.copyWithCount(1);
-        es.getOrCreateTag().putBoolean("marked", true);
+        var es = new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem());
+        VirtualProviderData.setLocked(es, true);
         EMPTY_STACK = AEItemKey.of(es);
     }
 
@@ -82,15 +82,16 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
             for (var i = 0; i < inventory.storage.size; i++) {
                 var stack = inventory.storage.stacks[i];
                 if (stack.isEmpty()) continue;
-                if (stack.getItem() == VIRTUAL_ITEM_PROVIDER.asItem() && stack.hasTag()) {
+                if (stack.getItem() == VIRTUAL_ITEM_PROVIDER.asItem()) {
+                    if (VirtualItemProviderBehavior.getVirtualItem(stack).isEmpty()) continue;
                     stack = stack.copyWithCount(1);
-                    stack.getOrCreateTag().putBoolean("marked", true);
+                    VirtualProviderData.setLocked(stack, true);
                     storage.getStoredMap().insert(AEItemKey.of(stack), IParallelMachine.MAX_PARALLEL);
                 } else {
                     int count = stack.getCount();
                     stack = VirtualItemProviderBehavior.setVirtualItem(new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem()), stack);
                     stack = stack.copyWithCount(1);
-                    stack.getOrCreateTag().putBoolean("marked", true);
+                    VirtualProviderData.setLocked(stack, true);
                     storage.getStoredMap().insert(AEItemKey.of(stack), IParallelMachine.MAX_PARALLEL * count);
                 }
 
@@ -142,12 +143,12 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
 
     @Override
     public void loadFromItem(CompoundTag tag) {
-        inventory.storage.readData(DataCodecs.COMPOUND_TAG_CODEC.encode(tag.getCompound("inventory")), 0);
+        inventory.storage.deserializeNBT(tag.get(INVENTORY_TAG));
     }
 
     @Override
     public void saveToItem(CompoundTag tag) {
-        tag.put("inventory", DataCodecs.COMPOUND_TAG_CODEC.decode(inventory.storage.writeData()));
+        tag.put(INVENTORY_TAG, inventory.storage.serializeNBT());
     }
 
     @Override
@@ -177,19 +178,18 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
 
     @Override
     public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return what instanceof AEItemKey itemKey && itemKey.getItem() == VIRTUAL_ITEM_PROVIDER && itemKey.hasTag();
+        return what instanceof AEItemKey itemKey && itemKey.getItem() == VIRTUAL_ITEM_PROVIDER &&
+                VirtualProviderData.hasData(itemKey.getReadOnlyStack());
     }
 
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount > 0 && what instanceof AEItemKey itemKey && itemKey.getItem() == VIRTUAL_ITEM_PROVIDER) {
             var stack = itemKey.getReadOnlyStack();
-            var tag = stack.getTag();
-            if (tag != null && tag.tags.containsKey("n")) {
-                if (tag.getBoolean("marked")) return amount;
-                if (ItemHandlerHelper.insertItem(inventory.storage, stack, mode.isSimulate()).getCount() < amount) {
-                    return amount;
-                }
+            if (VirtualProviderData.isLocked(stack)) return amount;
+            if (!VirtualItemProviderBehavior.getVirtualItem(stack).isEmpty() &&
+                    ItemHandlerHelper.insertItem(inventory.storage, stack, mode.isSimulate()).getCount() < amount) {
+                return amount;
             }
         }
         return 0;

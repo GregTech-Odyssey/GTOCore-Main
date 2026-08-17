@@ -53,6 +53,7 @@ import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
+import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.widget.*;
@@ -465,8 +466,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private static @Nullable Object normalizeSearchKey(AEKey key) {
         if (key instanceof AEItemKey what &&
                 what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get() &&
-                what.getTag() != null &&
-                what.getTag().tags.containsKey("n")) {
+                VirtualProviderData.hasData(what.getReadOnlyStack())) {
             ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
             if (virtualItem.isEmpty()) {
                 return null;

@@ -22,6 +22,7 @@ import appeng.api.stacks.GenericStack;
 import appeng.crafting.pattern.AEProcessingPattern;
 
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
+import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import org.jetbrains.annotations.NotNull;
 
@@ -97,7 +98,6 @@ final class MEPatternVirtualInputHelper {
         return stack != null &&
                 stack.what() instanceof AEItemKey what &&
                 what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get() &&
-                what.getTag() != null &&
-                what.getTag().tags.containsKey("n");
+                VirtualProviderData.hasData(what.getReadOnlyStack());
     }
 }
