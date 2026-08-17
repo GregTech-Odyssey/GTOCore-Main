@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import net.minecraft.nbt.CompoundTag;
 
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
-import com.hepdd.gtmthings.data.CustomItems;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +61,8 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
 
     @Override
     protected @NotNull NotifiableItemStackHandler createImportItemHandler(Object @NotNull... args) {
-        var handler = new NotifiableItemStackHandler(this, getRecipeType().getMaxInputs(ItemRecipeInfo.INSTANCE), IO.IN).setFilter(i -> !(i.hasTag() && i.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get())));
+        var handler = new NotifiableItemStackHandler(this, getRecipeType().getMaxInputs(ItemRecipeInfo.INSTANCE), IO.IN)
+                .setFilter(i -> !ProgrammableHatchPartMachine.isConfiguredVirtualProvider(i));
         if (handler.storage.size == 0) handler.setAvailable(false);
         return handler;
     }

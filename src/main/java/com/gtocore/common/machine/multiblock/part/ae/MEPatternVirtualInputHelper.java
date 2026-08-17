@@ -27,6 +27,7 @@ import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -51,7 +52,9 @@ final class MEPatternVirtualInputHelper {
                                                    NotifiableItemStackHandler circuitInventory,
                                                    CustomItemStackHandler itemStorage,
                                                    CustomFluidTank[] fluidStorage,
+                                                   @Nullable MEVirtualInputState virtualInputState,
                                                    BooleanSupplier lockOnce) {
+        if (virtualInputState != null) virtualInputState.clearVirtualInputs();
         if (!(pattern instanceof AEProcessingPattern processingPattern)) {
             return pattern;
         }
@@ -70,7 +73,11 @@ final class MEPatternVirtualInputHelper {
                     locked = lockOnce.getAsBoolean();
                 }
                 if (GTItems.PROGRAMMED_CIRCUIT.isIn(virtualItem)) {
-                    circuitInventory.storage.setStackInSlot(0, virtualItem.copyWithCount(1));
+                    if (virtualInputState == null) {
+                        circuitInventory.storage.setStackInSlot(0, virtualItem.copyWithCount(1));
+                    } else {
+                        virtualInputState.setVirtualCircuit(virtualItem.copyWithCount(1));
+                    }
                     continue;
                 }
 
@@ -81,21 +88,31 @@ final class MEPatternVirtualInputHelper {
                 }
                 if (targetItemSlot >= itemStorage.getSlots()) continue;
                 virtualItem.setCount((int) Math.clamp(stack.amount(), 1L, VIRTUAL_ITEM_MAX_AMOUNT));
-                itemStorage.setStackInSlot(targetItemSlot++, virtualItem);
+                if (virtualInputState == null) {
+                    itemStorage.setStackInSlot(targetItemSlot, virtualItem);
+                } else {
+                    virtualInputState.setVirtualItem(targetItemSlot, virtualItem);
+                }
+                targetItemSlot++;
             } else {
                 FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
                 if (virtualFluid.isEmpty()) continue;
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
+                virtualFluid.setAmount((int) Math.clamp(stack.amount(), 1L, Integer.MAX_VALUE));
                 while (targetFluidSlot < fluidStorage.length) {
                     FluidStack previous = fluidStorage[targetFluidSlot].getFluid();
                     if (previous.isEmpty() || refund(AEFluidKey.of(previous), previous.getAmount(), gridGetter, actionSourceGetter)) break;
                     targetFluidSlot++;
                 }
                 if (targetFluidSlot >= fluidStorage.length) continue;
-                virtualFluid.setAmount((int) Math.clamp(stack.amount(), 1L, Integer.MAX_VALUE));
-                fluidStorage[targetFluidSlot++].setFluid(virtualFluid);
+                if (virtualInputState == null) {
+                    fluidStorage[targetFluidSlot].setFluid(virtualFluid);
+                } else {
+                    virtualInputState.setVirtualFluid(targetFluidSlot, virtualFluid);
+                }
+                targetFluidSlot++;
             }
         }
         return pattern;

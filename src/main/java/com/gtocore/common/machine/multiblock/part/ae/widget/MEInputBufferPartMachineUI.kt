@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack
 import com.gregtechceu.gtceu.api.gui.GuiTextures
 import com.gregtechceu.gtceu.api.gui.widget.LongInputWidget
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour
 import com.gtolib.api.gui.ktflexible.VBoxBuilder
 import com.gtolib.api.gui.ktflexible.blank
@@ -59,24 +58,23 @@ fun VBoxBuilder.buildToolBoxContentFor(machine: MEInputBufferPartMachine): Unit 
             vBox(width = availableWidth, alwaysHorizonCenter = true, style = { spacing = 2 }) {
                 val width = this@vBox.availableWidth
                 val inv = getInternalInventory()[configuratorField.get()]
-                val itemHandler = inv.lockableInventory
+                val itemHandlers = inv.itemUiHandlers
 
                 buildSectionDivider(this)
 
                 textBlock(maxWidth = width, textSupplier = { Component.translatable(ITEM_SPECIAL) })
-                (0 until itemHandler.slots).chunked(9).forEach { indices ->
+                itemHandlers.indices.chunked(9).forEach { indices ->
                     hBox(height = 18) {
                         indices.forEach { index ->
                             widget(
-                                SlotWidget(itemHandler, index, 0, 0, true, true).apply {
+                                SlotWidget(itemHandlers[index], index, 0, 0, true, true).apply {
                                     setBackgroundTexture(GuiTextures.SLOT)
                                 },
                             )
                         }
                     }
                 }
-                val fluidHandler: Array<CustomFluidTank> = inv.notConsumableFluid.storages
-                buildFluidSection(this, width, fluidHandler)
+                buildFluidSection(this, width, inv.fluidUiHandlers)
                 val circuitHandler = inv.circuitInventory.storage
                 buildCircuitSection(
                     container = this,
@@ -88,7 +86,7 @@ fun VBoxBuilder.buildToolBoxContentFor(machine: MEInputBufferPartMachine): Unit 
                             it.toIntOrNull() == null -> 0
                             else -> it.toInt().coerceAtMost(32).coerceAtLeast(0)
                         }
-                        inv.circuitInventory.storage.setStackInSlot(0, if (circuit == 0) ItemStack.EMPTY else IntCircuitBehaviour.stack(circuit))
+                        inv.setCircuitConfiguration(if (circuit == 0) ItemStack.EMPTY else IntCircuitBehaviour.stack(circuit))
                     },
                 )
                 blank(height = 4)

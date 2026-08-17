@@ -12,7 +12,6 @@ import net.minecraft.network.chat.Component
 import com.gregtechceu.gtceu.api.gui.GuiTextures
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget
 import com.gregtechceu.gtceu.api.gui.widget.TankWidget
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler
 import com.gtolib.api.gui.ktflexible.VBoxBuilder
 import com.gtolib.api.gui.ktflexible.blank
@@ -20,6 +19,7 @@ import com.gtolib.api.gui.ktflexible.field
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper
 import com.lowdragmc.lowdraglib.gui.widget.Widget
 import com.lowdragmc.lowdraglib.jei.IngredientIO
+import net.minecraftforge.fluids.capability.IFluidHandler
 
 fun buildHeader(container: VBoxBuilder, machine: MEPatternPartMachineKt<*>) {
     val width = container.availableWidth
@@ -83,7 +83,7 @@ fun createPatternPageWidget(container: VBoxBuilder, machine: MEPatternPartMachin
     }
 }
 
-fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<CustomFluidTank>) {
+fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<out IFluidHandler>) {
     with(container) {
         textBlock(maxWidth = width, textSupplier = { Component.translatable(FLUID_SPECIAL) })
         fluidHandler.indices.chunked(9).forEach { indices ->

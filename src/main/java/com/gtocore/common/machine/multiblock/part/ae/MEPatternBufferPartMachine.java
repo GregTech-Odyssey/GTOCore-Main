@@ -310,7 +310,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     public IPatternDetails convertPattern(IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.shareInventory.storage, slot.shareTank.getStorages(), () -> {
+                slot.circuitInventory, slot.shareInventory.storage, slot.shareTank.getStorages(), null, () -> {
                     slot.setLock(true);
                     return true;
                 });
