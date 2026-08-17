@@ -197,7 +197,6 @@ dependencies {
 
     modRuntimeOnly("curse.maven:modular-routers-250294:5056687")
     modCompileOnly("curse.maven:modular-routers-250294:5056687")
-    modRuntimeOnly("curse.maven:open-parties-and-claims-636608:8230795")
 
     // 额外模组
 //    modRuntimeOnly("curse.maven:super-factory-manager-306935:7021189")
