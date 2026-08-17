@@ -37,7 +37,6 @@ import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.util.DataCodecs;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -49,6 +48,7 @@ import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.util.stream.Stream;
 
+@Deprecated
 public final class VirtualItemProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
 
     private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
@@ -142,12 +142,13 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
 
     @Override
     public void loadFromItem(CompoundTag tag) {
-        inventory.storage.readData(DataCodecs.COMPOUND_TAG_CODEC.encode(tag.getCompound("inventory")), 0);
+        inventory.storage.deserializeNBT(tag.get("inventory"));
+        inventory.notifyListeners();
     }
 
     @Override
     public void saveToItem(CompoundTag tag) {
-        tag.put("inventory", DataCodecs.COMPOUND_TAG_CODEC.decode(inventory.storage.writeData()));
+        tag.put("inventory", inventory.storage.serializeNBT());
     }
 
     @Override
