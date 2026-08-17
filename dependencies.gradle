@@ -251,5 +251,6 @@ dependencies {
     modClientRuntimeOnly("curse.maven:imblocker-483760:6922546")
     modClientRuntimeOnly("curse.maven:render-blender-1346485:7035162")
     modClientRuntimeOnly("curse.maven:embeddium-908741:5681725")
-    modClientRuntimeOnly("curse.maven:moremorelang-1444917:7565351")
+    // 等待moremorelang更新
+//    modClientRuntimeOnly("curse.maven:moremorelang-1444917:7565351")
 }
