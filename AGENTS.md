@@ -28,6 +28,78 @@
 - **PR 状态反馈**：构建开始时会在 PR 下发一条 bot 评论（⏳ 正在构建 + Actions 链接）；完成/失败/取消后会**原地更新**同一条评论。`issue_comment` 触发的 run **不会**出现在 PR Checks 页，请看这条评论或 [Actions](https://github.com/GregTech-Odyssey/GTOCore-Main/actions)。
 - **安全**：`pull_request_target` 会执行 PR 侧代码（`build.gradle` 等）并注入签名 secrets。成员评论 `/build` 即表示已审阅并愿意签名；勿对未审代码轻易触发。
 
+## 子模块日常操作
+
+`GTOLib/` 与 `GTOSeal/` 都是独立 Git 仓库。主仓只记录它们应处于哪个 commit（gitlink，模式 `160000`），不会直接记录子模块内的文件；`.gitmodules` 只保存路径与远端地址。`git submodule update` 后出现 detached HEAD 是正常现象，因为主仓锁定的是 commit，不是子模块分支。
+
+### 初始化与切换主仓分支
+
+首次克隆应递归初始化：
+
+```bash
+git clone --recurse-submodules <repo-url>
+# 已经克隆主仓时：
+git submodule update --init --recursive
+```
+
+每个本地 clone 建议启用递归操作，并在切换主仓分支时显式带上子模块：
+
+```bash
+git config submodule.recurse true
+git switch --recurse-submodules <main-branch>
+```
+
+如果主仓分支已经切换、子模块仍停在旧 commit，先确认子模块没有要保留的改动，再按主仓 gitlink 对齐：
+
+```bash
+git -C GTOLib status --short --branch
+git submodule update --init --recursive --checkout GTOLib
+```
+
+`submodule.recurse=true` 只让支持递归的 Git 命令同步处理子模块；它不会替你提交、推送子模块，也不会自动保证 main 与 GTOLib 分支同名。
+
+### 诊断 `M GTOLib`
+
+主仓中的 `M GTOLib` 可能表示“子模块 HEAD 与 gitlink 不同”，也可能表示“子模块内部有未提交文件”。用下面几条命令区分：
+
+```bash
+git status --short
+git submodule status --recursive
+git diff --submodule=log -- GTOLib
+git ls-tree HEAD GTOLib
+git -C GTOLib rev-parse HEAD
+git -C GTOLib status --short --branch
+```
+
+如果只是误切子模块、且确认不保留由错误 GTOLib commit 生成的预构建，可精确恢复相关目标：
+
+```bash
+git submodule update --init --recursive --checkout GTOLib
+git restore --source=HEAD -- \
+  libs/gtolib-protected.jar libs/gtolib-protected.PROTECTED \
+  libs/gtolib-release.jar libs/gtolib-release.PROTECTED
+```
+
+清理这种错位时只恢复已确认的子模块与生成物，**不要使用 `git clean -fd`**，避免删除 `doc/` 等无关的未跟踪文件。也不要随意使用 `git submodule update --remote`；它会尝试推进到子模块远端分支，而不是恢复主仓记录的 gitlink。
+
+### 有意修改 GTOLib
+
+子模块与主仓需要分别提交。先在 GTOLib 的同名分支提交并推送，再让主仓记录新 gitlink：
+
+```bash
+git -C GTOLib switch <same-name-branch>
+# 修改后：
+git -C GTOLib add <paths>
+git -C GTOLib commit -m "<message>"
+git -C GTOLib push
+git -C GTOLib status --porcelain  # 必须为空
+
+./gradlew buildGtolibProtected
+git add GTOLib libs/gtolib-protected.jar libs/gtolib-protected.PROTECTED
+```
+
+必须先推送子模块 commit，避免主仓指向其他人无法取得的 SHA。主仓中的 `git add GTOLib` 只暂存 gitlink；若流水线同时刷新 release jar 与侧车，也须按 `git status` 将二者成对处理。完整生成物规则见下文。
+
 ## 分支与 gtolib 预构建
 
 | 改动范围 | 要求 |
