@@ -84,7 +84,7 @@ public abstract class ChunkProtectionMixin<CM extends IServerClaimsManager<?, ?,
      * @reason .
      */
     @Overwrite(remap = false)
-    private boolean onMobGrief(IServerData<CM, ?> serverData, Entity entity, boolean blocks, boolean entities, boolean items) {
+    private boolean onMobGrief(IServerData<CM, ?> serverData, Entity entity, boolean blocks, boolean entities, boolean players, boolean items) {
         return false;
     }
 

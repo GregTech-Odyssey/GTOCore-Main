@@ -93,7 +93,7 @@ dependencies {
     modImplementation("curse.maven:ars-meteorites-1278083:7125271")
 
     modImplementation("curse.maven:glodium-957920:5006780")
-    modImplementation("curse.maven:ex-pattern-provider-892005:8291632")
+    modImplementation("curse.maven:ex-pattern-provider-892005:8615273")
 
     modImplementation("curse.maven:merequester-688367:5689932")
 
@@ -124,6 +124,7 @@ dependencies {
 
     modCompileOnly("curse.maven:ftb-quests-forge-289412:7909594")
     modCompileOnly("curse.maven:ftb-teams-forge-404468:7499810")
+    modRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
 
     modCompileOnly("curse.maven:ftb-xmod-compat-889915:6402486")
 
@@ -147,7 +148,7 @@ dependencies {
 
     modCompileOnly("curse.maven:emi-trades-villager-trading-emi-plugin-735523:4901194")
 
-    modCompileOnly("curse.maven:open-parties-and-claims-636608:8230795")
+    modCompileOnly("curse.maven:open-parties-and-claims-636608:8501621")
 
     modCompileOnly("curse.maven:sophisticated-backpacks-422301:8249823")
     modCompileOnly("curse.maven:sophisticated-core-618298:8249804")
@@ -224,7 +225,6 @@ dependencies {
 //    modRuntimeOnly("curse.maven:re-avaritia-623969:7229795")
 //    modCompileOnly("curse.maven:ender-io-64578:7183516")
     modNonDataRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
-    modNonDataRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")
     modNonDataRuntimeOnly("curse.maven:ftb-xmod-compat-889915:6402486")
     modNonDataRuntimeOnly("curse.maven:tool-belt-260262:5929061")
     modNonDataRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8249823")
