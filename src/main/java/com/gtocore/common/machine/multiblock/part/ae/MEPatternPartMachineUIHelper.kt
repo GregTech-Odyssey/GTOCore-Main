@@ -9,6 +9,7 @@ import com.gtocore.eio_travel.logic.TravelUtils
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.chat.Component
+import net.minecraftforge.fluids.capability.IFluidHandler
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget
@@ -21,7 +22,6 @@ import com.lowdragmc.lowdraglib.gui.util.DrawerHelper
 import com.lowdragmc.lowdraglib.gui.widget.Widget
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup
 import com.lowdragmc.lowdraglib.jei.IngredientIO
-import net.minecraftforge.fluids.capability.IFluidHandler
 
 fun buildHeader(container: VBoxBuilder, machine: MEPatternPartMachineKt<*>) {
     val width = container.availableWidth
@@ -92,14 +92,14 @@ fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<ou
             hBox(height = 18) {
                 indices.forEach { index ->
                     val tankWidget = TankWidget(
-                            fluidHandler[index],
-                            0,
-                            0,
-                            18,
-                            18,
-                            true,
-                            true,
-                        ).setBackground(GuiTextures.FLUID_SLOT)
+                        fluidHandler[index],
+                        0,
+                        0,
+                        18,
+                        18,
+                        true,
+                        true,
+                    ).setBackground(GuiTextures.FLUID_SLOT)
                     widget(slotDecorator?.invoke(index, tankWidget) ?: tankWidget)
                 }
             }
@@ -107,13 +107,9 @@ fun buildFluidSection(container: VBoxBuilder, width: Int, fluidHandler: Array<ou
     }
 }
 
-fun missingVirtualInputOverlay(child: Widget, missingSupplier: () -> Boolean): Widget =
-    MissingVirtualInputOverlay(child, missingSupplier)
+fun missingVirtualInputOverlay(child: Widget, missingSupplier: () -> Boolean): Widget = MissingVirtualInputOverlay(child, missingSupplier)
 
-private class MissingVirtualInputOverlay(
-    child: Widget,
-    private val missingSupplier: () -> Boolean,
-) : WidgetGroup(0, 0, 18, 18) {
+private class MissingVirtualInputOverlay(child: Widget, private val missingSupplier: () -> Boolean) : WidgetGroup(0, 0, 18, 18) {
 
     private companion object {
         const val MISSING_UPDATE_ID = 1

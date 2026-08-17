@@ -71,7 +71,8 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
     public static boolean isConfiguredVirtualProvider(ItemStack stack) {
         if (!stack.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get()) &&
-                !stack.is(CustomItems.VIRTUAL_FLUID_PROVIDER.get())) return false;
+                !stack.is(CustomItems.VIRTUAL_FLUID_PROVIDER.get()))
+            return false;
         return VirtualProviderData.hasData(stack);
     }
 

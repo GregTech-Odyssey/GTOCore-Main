@@ -1611,6 +1611,7 @@
   "block.gtocore.village_trading_station": "Village Trading Station",
   "block.gtocore.virtual_coin_miner": "Virtual Coin Miner",
   "block.gtocore.virtual_ingredient_provider": "Virtual Ingredient Provider",
+  "block.gtocore.virtual_item_supply_machine": "Virtual Item Supply Machine",
   "block.gtocore.virtual_universe_data_access_hatch": "Virtual Universe Data Access Hatch",
   "block.gtocore.void_energy_hatch": "Void Energy Hatch",
   "block.gtocore.void_fluid_drilling_rig": "Void Fluid Drilling Rig",

@@ -4,8 +4,10 @@ package com.gtocore.common.machine.multiblock.part.ae;
  * Transient availability flags for virtual inputs projected into a pattern
  * buffer's configuration view.
  *
- * <p>The flags are deliberately not persisted: they describe the current ME
- * network and are recomputed whenever the pattern is decoded.</p>
+ * <p>
+ * The flags are deliberately not persisted: they describe the current ME
+ * network and are recomputed whenever the pattern is decoded.
+ * </p>
  */
 final class MEVirtualInputAvailability {
 

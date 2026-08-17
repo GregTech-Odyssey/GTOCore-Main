@@ -5,6 +5,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.part.ae.*;
 import com.gtocore.common.machine.noenergy.VirtualIngredientProviderMachine;
+import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.impl.part.CraftingInterfacePartMachine;
@@ -23,6 +24,14 @@ import static com.gtolib.api.registries.GTORegistration.GTM;
 public final class GTAEMachines {
 
     public static void init() {}
+
+    @Deprecated
+    public static final MachineDefinition VIRTUAL_ITEM_SUPPLY_MACHINE = machine("virtual_item_supply_machine", "虚拟物品供应机", VirtualItemProviderMachine::new)
+            .tier(MV)
+            .allRotation()
+            .tooltips(Component.translatable("gtocore.item.deprecated"))
+            .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
 
     public static final MachineDefinition VIRTUAL_INGREDIENT_PROVIDER = machine("virtual_ingredient_provider", "虚拟成分提供机", VirtualIngredientProviderMachine::new)
             .tier(MV)
