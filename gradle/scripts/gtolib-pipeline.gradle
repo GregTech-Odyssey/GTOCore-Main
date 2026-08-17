@@ -64,12 +64,13 @@ ext.canSealPack = sealPackagerJar != null && sealPackagerJar.exists()
 // 写入 Manifest 的最低 Runtime 版本（gto_seal_min）
 ext.gtoSealMinVersion = (project.findProperty('gto_seal_min') ?: '0').toString()
 
-// ---------- 快速指纹（不读文件全文）+ jar 内容哈希 ----------
+// ---------- 稳定源码指纹（路径 + 长度 + 文件内容）+ jar 内容哈希 ----------
 ext.computeGtolibFingerprint = {
     if (!hasGtolibSources) {
         return ''
     }
     def md = MessageDigest.getInstance('SHA-256')
+    byte[] buf = new byte[64 * 1024]
     def files = []
     [file('GTOLib/src'), file('GTOLib/protect')].each { root ->
         if (!root.exists()) return
@@ -89,7 +90,12 @@ ext.computeGtolibFingerprint = {
         md.update((byte) 0)
         md.update(Long.toString(f.length()).getBytes('UTF-8'))
         md.update((byte) 0)
-        md.update(Long.toString(f.lastModified()).getBytes('UTF-8'))
+        f.withInputStream { is ->
+            int n
+            while ((n = is.read(buf)) > 0) {
+                md.update(buf, 0, n)
+            }
+        }
         md.update((byte) 0)
     }
     md.digest().collect { String.format('%02x', it) }.join('')
@@ -478,81 +484,6 @@ ext.resolveGtolibReleaseEmbedJar = {
     return null
 }
 
-ext.gtolibFingerprint = computeGtolibFingerprint()
-
-ext.isGtolibJarUpToDate = {
-    if (!hasGtolibSources) {
-        return false
-    }
-    if (findProperty('gtolibRebuild') == 'true') {
-        return false
-    }
-    def rebuild = { String reason ->
-        logger.lifecycle("GTOLib: ${reason} -> 自动重建保护产物")
-        return false
-    }
-    def stamp = readGtolibStamp()
-    def prot = gtolibProtectedJar.get().asFile
-    def unprot = gtolibUnprotectedJar.get().asFile
-    if (!stamp.fingerprint || gtolibFingerprint.isEmpty()) {
-        return rebuild('缺少源码指纹记录')
-    }
-    if (!prot.exists() || prot.length() == 0) {
-        return rebuild('build/gtolib/gtolib-protected.jar 缺失')
-    }
-    if (!unprot.exists() || unprot.length() == 0) {
-        return rebuild('build/gtolib/gtolib-unprotected.jar 缺失')
-    }
-    if (stamp.fingerprint != gtolibFingerprint) {
-        return rebuild('源码指纹已变化')
-    }
-    if (!stamp.jarSha256) {
-        return rebuild('stamp 缺少 protected jar 哈希')
-    }
-    def protectedSha = computeFileSha256(prot)
-    if (protectedSha != stamp.jarSha256) {
-        return rebuild(
-                "build protected jar 哈希不一致 " +
-                        "(actual=${protectedSha.take(16)}... expected=${stamp.jarSha256.take(16)}...)"
-        )
-    }
-    // libs/ 的 protected 对同样是提交物（此前只校验了下面的发行对，这里是缺口）：
-    // 被外部还原/删除、与侧车不同源、或来自旧流水线（无 gtolibCommit）时都不许跳过，
-    // 否则会走「跳过打包/保护」分支，libs/ 永远同步不到新产物而构建照样 BUILD SUCCESSFUL。
-    def protMeta = readProtectedMeta()
-    if (!gtolibProtectedLibsJar.exists() || !protMeta.jarSha256 ||
-            protMeta.fingerprint != gtolibFingerprint ||
-            computeFileSha256(gtolibProtectedLibsJar) != protMeta.jarSha256) {
-        return rebuild('libs/gtolib-protected.jar 与 sidecar 不一致')
-    }
-    if (protMeta.gtolibCommit != gtolibCommitSha()) {
-        return rebuild('libs protected 的 gtolibCommit 与当前工作区不一致')
-    }
-    if (protMeta.jarSha256 != protectedSha) {
-        return rebuild(
-                "build/libs protected jar 不一致 " +
-                        "(build=${protectedSha.take(16)}... libs=${protMeta.jarSha256.take(16)}...)"
-        )
-    }
-    // 路线 A：能构建发行单轨时，libs 发行对也必须在场且同源，否则不许跳过
-    if (canProguardRelease && canSealPack) {
-        def relMeta = readSidecarMeta(gtolibReleaseSidecarFile)
-        if (!relMeta.jarSha256 || relMeta.fingerprint != gtolibFingerprint) {
-            return rebuild('libs/gtolib-release.PROTECTED 与当前源码不一致')
-        }
-        if (!gtolibReleaseLibsJar.exists() || computeFileSha256(gtolibReleaseLibsJar) != relMeta.jarSha256) {
-            return rebuild('libs/gtolib-release.jar 与 sidecar 哈希不一致')
-        }
-        if (relMeta.gtolibCommit != gtolibCommitSha()) {
-            return rebuild('libs release 的 gtolibCommit 与当前工作区不一致')
-        }
-        def release = gtolibReleaseJar.get().asFile
-        if (release.exists() && computeFileSha256(release) != relMeta.jarSha256) {
-            return rebuild('build/libs release jar 不一致')
-        }
-    }
-    return true
-}()
 /**
  * 是否显式要求未保护（明文）gtolib。
  * 默认永远加密；无 GTOLib 源码时恒 false（只能用 libs 加密预构建）。
@@ -578,6 +509,97 @@ ext.detectGtolibDebugMode = {
 }
 
 ext.isGtolibDebugMode = detectGtolibDebugMode()
+ext.gtolibFingerprint = computeGtolibFingerprint()
+
+/**
+ * 检查已提交的 libs 预构建是否与当前 GTOLib 内容、commit 和侧车完全一致。
+ * build/ 只是可丢弃缓存；只要该预构建有效，就应回填缓存而不是重新随机加密。
+ */
+ext.inspectGtolibPrebuiltPair = {
+    if (!hasGtolibSources || gtolibFingerprint.isEmpty()) {
+        return [valid: false, reason: '缺少 GTOLib 源码指纹']
+    }
+    def currentCommit = gtolibCommitSha()
+    def protMeta = readProtectedMeta()
+    if (!gtolibProtectedLibsJar.exists() || gtolibProtectedLibsJar.length() == 0) {
+        return [valid: false, reason: 'libs/gtolib-protected.jar 缺失']
+    }
+    if (!protMeta.jarSha256 || protMeta.fingerprint != gtolibFingerprint) {
+        return [valid: false, reason: 'libs/gtolib-protected.PROTECTED 与当前源码不一致']
+    }
+    if (protMeta.gtolibCommit != currentCommit) {
+        return [valid: false, reason: 'libs protected 的 gtolibCommit 与当前工作区不一致']
+    }
+    def protectedSha = computeFileSha256(gtolibProtectedLibsJar)
+    if (protectedSha != protMeta.jarSha256) {
+        return [valid: false, reason: 'libs/gtolib-protected.jar 与 sidecar 哈希不一致']
+    }
+
+    def releaseSha = ''
+    if (canProguardRelease && canSealPack) {
+        def relMeta = readSidecarMeta(gtolibReleaseSidecarFile)
+        if (!relMeta.jarSha256 || relMeta.fingerprint != gtolibFingerprint) {
+            return [valid: false, reason: 'libs/gtolib-release.PROTECTED 与当前源码不一致']
+        }
+        if (relMeta.gtolibCommit != currentCommit) {
+            return [valid: false, reason: 'libs release 的 gtolibCommit 与当前工作区不一致']
+        }
+        if (!gtolibReleaseLibsJar.exists() || gtolibReleaseLibsJar.length() == 0) {
+            return [valid: false, reason: 'libs/gtolib-release.jar 缺失']
+        }
+        releaseSha = computeFileSha256(gtolibReleaseLibsJar)
+        if (releaseSha != relMeta.jarSha256) {
+            return [valid: false, reason: 'libs/gtolib-release.jar 与 sidecar 哈希不一致']
+        }
+    }
+    return [valid: true, protectedSha: protectedSha, releaseSha: releaseSha]
+}
+
+ext.shouldHydrateGtolibPrebuilt = false
+ext.isGtolibJarUpToDate = {
+    if (!hasGtolibSources) {
+        return false
+    }
+    // 明文调试必须从源码生成 raw/unprotected；不能复用或回填 protected 别名。
+    if (isGtolibDebugMode) {
+        return false
+    }
+    if (findProperty('gtolibRebuild') == 'true') {
+        return false
+    }
+    def rebuild = { String reason ->
+        logger.lifecycle("GTOLib: ${reason} -> 自动重建保护产物")
+        return false
+    }
+    def prebuilt = inspectGtolibPrebuiltPair()
+    if (!prebuilt.valid) {
+        return rebuild(prebuilt.reason as String)
+    }
+
+    def stamp = readGtolibStamp()
+    def prot = gtolibProtectedJar.get().asFile
+    def raw = gtolibRawJar.get().asFile
+    def unprot = gtolibUnprotectedJar.get().asFile
+    def release = gtolibReleaseJar.get().asFile
+    def cacheReason = null
+    if (!stamp.fingerprint || stamp.fingerprint != gtolibFingerprint) {
+        cacheReason = 'build stamp 源码指纹缺失或过期'
+    } else if (stamp.jarSha256 != prebuilt.protectedSha) {
+        cacheReason = 'build stamp 的 protected jar 哈希过期'
+    } else if (!prot.exists() || computeFileSha256(prot) != prebuilt.protectedSha) {
+        cacheReason = 'build/gtolib/gtolib-protected.jar 缺失或过期'
+    } else if (!raw.exists() || raw.length() == 0 || !unprot.exists() || unprot.length() == 0) {
+        cacheReason = 'build/gtolib 的辅助 jar 缺失'
+    } else if (prebuilt.releaseSha &&
+            (!release.exists() || computeFileSha256(release) != prebuilt.releaseSha)) {
+        cacheReason = 'build/gtolib/gtolib-release.jar 缺失或过期'
+    }
+    if (cacheReason != null) {
+        project.ext.shouldHydrateGtolibPrebuilt = true
+        logger.lifecycle("GTOLib: ${cacheReason}；libs 预构建有效 -> 仅回填 build 缓存")
+    }
+    return true
+}()
 // 只有显式明文调试，或保护产物确实需要重建时，才把私有源码交给 main 编译。
 // 保护产物命中时（以及无源码环境）统一像外部贡献者一样消费 protected jar。
 ext.compileGtolibSources = hasGtolibSources && (isGtolibDebugMode || !isGtolibJarUpToDate)
@@ -864,6 +886,70 @@ tasks.register('copyPrebuiltGtolib') {
             Files.copy(gtolibProtectedLibsJar.toPath(), p.get().asFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
         logger.lifecycle("GTOLib: 【无源码】使用 protected 成品 ${gtolibProtectedLibsJar.name}")
+    }
+}
+
+tasks.register('hydrateGtolibPrebuilt') {
+    group = 'gtolib'
+    description = '当前源码与 libs 预构建一致时，仅回填可丢弃的 build/gtolib 缓存'
+    onlyIf {
+        hasGtolibSources && isGtolibJarUpToDate && !detectGtolibDebugMode()
+    }
+    inputs.files(
+            gtolibProtectedLibsJar,
+            file('libs/gtolib-protected.PROTECTED')
+    ).withPropertyName('protectedPrebuiltPair')
+    inputs.files(
+            gtolibReleaseLibsJar,
+            gtolibReleaseSidecarFile
+    ).withPropertyName('releasePrebuiltPair').optional()
+    outputs.files(
+            gtolibRawJar,
+            gtolibUnprotectedJar,
+            gtolibProtectedJar,
+            gtolibReleaseJar,
+            gtolibStampFile
+    )
+    // 配置阶段已发现缓存不可信时强制回填；否则交给 Gradle 的输入/输出快照。
+    // 这样 `clean buildGtolibProtected` 在同一 invocation 中也会因输出被 clean 删除而自动回填。
+    outputs.upToDateWhen { !shouldHydrateGtolibPrebuilt }
+
+    doLast {
+        def state = inspectGtolibPrebuiltPair()
+        if (!state.valid) {
+            throw new GradleException("GTOLib 预构建回填失败：${state.reason}")
+        }
+        def buildDir = gtolibBuildDir.get().asFile
+        buildDir.mkdirs()
+        // 非明文模式不会消费 raw/unprotected 的主体；同步同一份 protected 可避免旧缓存
+        // 被 prepareGtolibModJar 当作 named mixin overlay 再覆盖回新预构建。
+        [gtolibRawJar, gtolibUnprotectedJar, gtolibProtectedJar].each { p ->
+            Files.copy(
+                    gtolibProtectedLibsJar.toPath(),
+                    p.get().asFile.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            )
+        }
+        if (state.releaseSha) {
+            Files.copy(
+                    gtolibReleaseLibsJar.toPath(),
+                    gtolibReleaseJar.get().asFile.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            )
+        }
+        writeGtolibStamp(gtolibFingerprint, state.protectedSha as String)
+
+        def protectedFile = gtolibProtectedJar.get().asFile
+        verifyGtolibSkipConsistency(protectedFile, true)
+        verifyGtolibMixinNamespace(protectedFile, true, 'GTOLib dev 预构建（缓存回填）')
+        verifyGtolibDevCompileNamespace(protectedFile, 'GTOLib dev 预构建（缓存回填）')
+        if (state.releaseSha) {
+            verifyGtolibReleasePair()
+        }
+        logger.lifecycle(
+                "GTOLib: 已从 libs 回填 build/gtolib，未执行 ProGuard/Seal；" +
+                        "jarSha=${(state.protectedSha as String).take(16)}…"
+        )
     }
 }
 
@@ -1939,7 +2025,9 @@ tasks.register('buildGtolibProtected') {
             return ['resolveGtolibRaw']
         }
         if (isGtolibJarUpToDate) {
-            return []
+            // 即使配置阶段缓存完整，也要把回填任务放进图中：同一 invocation 里的 clean
+            // 可能随后删除 build/；Gradle 会在执行阶段按输入/输出快照决定是否真正复制。
+            return ['hydrateGtolibPrebuilt']
         }
         def steps = ['resolveGtolibRaw', 'proguardGtolib', 'proguardGtolibDevNamed']
         if (canProguardRelease) {
@@ -2774,6 +2862,12 @@ ext.wireGtolibInstallTo = { Task t ->
     if (isIdeaGradleSync) return
     if (!isGtolibLaunchTask(t)) return
     if (!__gtolibLaunchWired.add(t.path)) return
+    // IDEA 的临时 JavaExec 直接引用 build/moddev/clientRun{Vm,Program}Args.txt，
+    // 但 init script 本身没有依赖 ModDevGradle 的 prepareClientRun。clean 后这两个
+    // 文件会消失，因此必须在启动进程前重新生成，而不是依赖上一次运行的残留缓存。
+    if (t.name == 'net.neoforged.devlaunch.Main.main()') {
+        t.dependsOn 'prepareClientRun'
+    }
     // install 任务可能尚未 register：用路径字符串依赖
     t.dependsOn 'installGtolibIntoModOutput'
     t.doFirst {
