@@ -27,7 +27,7 @@ public final class GTAEMachines {
     public static final MachineDefinition VIRTUAL_INGREDIENT_PROVIDER = machine("virtual_ingredient_provider", "虚拟成分提供机", VirtualIngredientProviderMachine::new)
             .tier(MV)
             .allRotation()
-            .tooltips(GTOMachineTooltipsA.virtualItemSupplyMachineTooltips)
+            .tooltips(GTOMachineTooltipsA.virtualIngredientProviderTooltips)
             .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 

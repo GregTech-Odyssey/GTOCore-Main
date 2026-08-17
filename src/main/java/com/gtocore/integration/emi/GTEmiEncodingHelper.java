@@ -12,6 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
@@ -19,6 +20,7 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 
 import com.hepdd.gtmthings.api.misc.Hatch;
+import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
@@ -45,6 +47,12 @@ public class GTEmiEncodingHelper {
             VirtualItemProviderBehavior.setVirtualItem(item, stack.getItemStack());
             VirtualProviderData.setLocked(item, true);
             return new GenericStack(AEItemKey.of(item), amount);
+        } else if (stack.getKey() instanceof Fluid fluid) {
+            var item = CustomItems.VIRTUAL_FLUID_PROVIDER.asStack();
+            VirtualFluidProviderBehavior.setVirtualFluid(item,
+                    new FluidStack(fluid, 1, stack.getNbt()));
+            VirtualProviderData.setLocked(item, true);
+            return new GenericStack(AEItemKey.of(item), amount);
         }
         return null;
     }
@@ -66,7 +74,10 @@ public class GTEmiEncodingHelper {
             }
             return new GenericStack(AEItemKey.of(stack.getItemStack()), amount);
         } else if (stack.getKey() instanceof Fluid fluid) {
-            return new GenericStack(AEFluidKey.of(fluid), amount);
+            if (virtual) {
+                return ofVirtual(stack, amount);
+            }
+            return new GenericStack(AEFluidKey.of(fluid, stack.getNbt()), amount);
         }
         return new GenericStack(AEItemKey.of(Items.STICK), 0);
     }
@@ -114,6 +125,9 @@ public class GTEmiEncodingHelper {
                 ItemStack itemProvider = CustomItems.VIRTUAL_ITEM_PROVIDER.asStack();
                 VirtualProviderData.setLocked(itemProvider, true);
                 list.add(List.of(new GenericStack(AEItemKey.of(itemProvider), 1)));
+                ItemStack fluidProvider = CustomItems.VIRTUAL_FLUID_PROVIDER.asStack();
+                VirtualProviderData.setLocked(fluidProvider, true);
+                list.add(List.of(new GenericStack(AEItemKey.of(fluidProvider), 1)));
             }
         }
         emiRecipe.getInputs()
