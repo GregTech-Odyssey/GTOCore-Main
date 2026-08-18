@@ -231,6 +231,13 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
                         parallelValue = parallel;
                         tmp_details = parallelPatternDetails;
                     }
+                } else {
+                    // parallel == 1：库存恰好只够一轮。此时不需要并行副本，按单轮取料，
+                    // parallelValue 保持 1，与下方非并行分支语义一致。
+                    // 缺少此分支时 craftingContainer.value 会保持 null，被下面的
+                    // `if (craftingContainer.value == null) continue;` 每 tick 静默跳过，
+                    // 导致「材料齐备但永不推送」的死锁。
+                    craftingContainer.value = extractPatternInputs(tmp_details, inventory, job.expectedOutputs);
                 }
             } else {
                 craftingContainer.value = extractPatternInputs(tmp_details, inventory, job.expectedOutputs);
