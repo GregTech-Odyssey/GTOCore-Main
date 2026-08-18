@@ -36,8 +36,8 @@ public class DistillationTowerMachine extends ElectricMultiblockMachine implemen
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        if (addOutputs()) return;
-        onStructureInvalid();
+        fluidOutputs.clear();
+        addOutputs();
     }
 
     @Override

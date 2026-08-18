@@ -85,6 +85,18 @@ public final class GTOPredicates {
         return Predicates.blocks(LIGHT);
     }
 
+    /** Combines an ability's registered blocks and additional blocks into one counted predicate. */
+    public static TraceabilityPredicate abilityBlocks(PartAbility ability, Block... additionalBlocks) {
+        var registeredBlocks = ability.getAllBlocks();
+        var blocks = new Block[registeredBlocks.size() + additionalBlocks.length];
+        int index = 0;
+        for (Block block : registeredBlocks) {
+            blocks[index++] = block;
+        }
+        System.arraycopy(additionalBlocks, 0, blocks, index, additionalBlocks.length);
+        return Predicates.blocks(blocks);
+    }
+
     public static TraceabilityPredicate hermeticCasing() {
         return tierBlock(HERMETIC_CASING, GTORecipeDataKeys.HERMETIC_CASING_TIER);
     }

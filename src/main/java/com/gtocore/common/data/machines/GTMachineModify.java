@@ -108,12 +108,11 @@ public final class GTMachineModify {
                 .build()));
 
         GTMultiMachines.DISTILLATION_TOWER.setPatternFactory(List.of(definition -> {
-            TraceabilityPredicate exportPredicate = abilities(PartAbility.EXPORT_FLUIDS_1X).or(blocks(GTAEMachines.FLUID_EXPORT_HATCH_ME.get())).setMaxLayerLimited(1);
+            TraceabilityPredicate exportPredicate = GTOPredicates.abilityBlocks(PartAbility.EXPORT_FLUIDS_1X, GTAEMachines.FLUID_EXPORT_HATCH_ME.get()).setMaxLayerLimited(1);
             TraceabilityPredicate maint = autoAbilities(true, false, false).setMaxGlobalLimited(1);
             return FactoryBlockPattern.start(definition, RIGHT, BACK, UP)
                     .aisle("YSY", "YYY", "YYY")
-                    .aisle("ZZZ", "Z#Z", "ZZZ")
-                    .aisle("XXX", "X#X", "XXX").setRepeatable(0, 10)
+                    .aisle("XXX", "X#X", "XXX").setRepeatable(1, 11)
                     .aisle("XXX", "XXX", "XXX")
                     .where('S', Predicates.controller(definition))
                     .where('Y', blocks(CASING_STAINLESS_CLEAN.get())
@@ -121,10 +120,8 @@ public final class GTMachineModify {
                             .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(2))
                             .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setExactLimit(1))
                             .or(maint))
-                    .where('Z', blocks(CASING_STAINLESS_CLEAN.get())
-                            .or(exportPredicate)
-                            .or(maint))
-                    .where('X', blocks(CASING_STAINLESS_CLEAN.get()).or(exportPredicate))
+                    .where('X', blocks(CASING_STAINLESS_CLEAN.get())
+                            .or(exportPredicate))
                     .where('#', Predicates.air())
                     .build();
         }));
