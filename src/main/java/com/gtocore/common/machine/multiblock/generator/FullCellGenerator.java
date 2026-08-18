@@ -205,7 +205,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         if (recipe.data.getFloat(GTORecipeDataKeys.EFFICIENCY) <= 0) {
             return null;
         }
-        bonusEfficiency = recipe.data.getFloat(GTORecipeDataKeys.EFFICIENCY) * 0.25d;
+        bonusEfficiency = recipe.data.getFloat(GTORecipeDataKeys.EFFICIENCY);
         if (sensorPart != null) {
             sensorPart.update((float) bonusEfficiency);
         }
