@@ -10,6 +10,13 @@
 - **安全提示**：构建产出的 `gtolib-unprotected*.jar`（明文 gtolib）**始终不要上传到 git、不要 `git add`、不要打包进其他文件**（已被 gitignore，勿绕过），防止明文字节码被错误分发。
 - **给 agent 的留言**：当用户在调试 gtocore 构建产物、或某次 push 触发了云端构建（见下节）时，用 `gh` CLI 找到对应的 workflow run 并把构建页面直接给用户打开（如 `gh run list --repo GregTech-Odyssey/GTOCore-Main`、`gh run view <run-id> --web`，页面形如 <https://github.com/GregTech-Odyssey/GTOCore-Main/actions/runs/29621547406>），然后引导用户在页面的 Artifacts 区下载签名产物。
 
+## 语言数据生成
+
+- `src/generated/resources/assets/gtocore/lang/en_us.json`、`zh_cn.json`、`zh_tw.json` 均为 data generator 的输出，**禁止直接编辑或用脚本改写**。需要调整文案时，应修改 Java/Kotlin 中对应的翻译源，再运行 `./gradlew runData` 生成并检查 JSON；若生成结果不符合预期，继续修正翻译源，不以手改 JSON 作为最终结果。
+- 注册入口是 `src/main/java/com/gtocore/data/Datagen.java`，语言数据由 `src/main/java/com/gtocore/data/lang/LangHandler.java` 聚合。其中 GTOLib 注解与动态翻译分别经 `ScanningClass.LANG`、`DynamicInitialData.LANG`、`TranslationKeyProvider.LANG` 汇入。
+- provider 按 `enInitialize()` → `cnInitialize()` → `twInitialize()` 的注册顺序运行：`enInitialize()` 负责初始化完整的共享语言表并输出英文，`cnInitialize()` 输出简体中文，`twInitialize()` 使用 `ChineseConverter` 将同一份简体中文源转换为繁体中文。因此新增或修改中文文案时只维护翻译源中的简体中文，不单独维护 `zh_tw.json`。
+- `runData --rerun-tasks` 只强制 Gradle 任务重跑，**不会绕过 Minecraft `HashCache`**。HashCache 比较本次生成哈希与 `src/generated/resources/.cache` 的清单，不校验磁盘上生成文件的实际内容；如果语言 JSON 曾被 `git restore`、合并或外部工具改写，缓存仍可能误判为无需写入。需要强制回写时，只删除首行包含 `Registrate Provider for gtocore` 的那一个缓存清单，再运行 `./gradlew runData --rerun-tasks`；不要清空整个 `.cache`，也不要删除其他 provider 的清单。
+
 ## 云端构建与签名（进整合包的唯一途径）
 
 触发 **Build and Sign** 云端工作流：
