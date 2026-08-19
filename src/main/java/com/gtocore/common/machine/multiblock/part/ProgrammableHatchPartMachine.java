@@ -207,6 +207,11 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             return fluids.isEmpty();
         }
 
+        @Override
+        public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
+            target.setAll(getSearchMap(type));
+        }
+
         private static final class FluidTank extends CustomFluidTank {
 
             private FluidTank() {
@@ -236,6 +241,11 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         public ProgrammableCircuitHandler(MetaMachine machine) {
             super(machine, IO.IN, s -> new ProgrammableHandler(machine));
+        }
+
+        @Override
+        public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
+            target.setAll(getSearchMap(type));
         }
 
         private static class ProgrammableHandler extends ItemStackHandler {
