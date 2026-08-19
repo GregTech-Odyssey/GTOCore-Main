@@ -209,7 +209,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
-            target.setAll(getSearchMap(type));
+            getSearchMap(type).setTo(target);
         }
 
         private static final class FluidTank extends CustomFluidTank {
@@ -245,7 +245,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
-            target.setAll(getSearchMap(type));
+            getSearchMap(type).setTo(target);
         }
 
         private static class ProgrammableHandler extends ItemStackHandler {
