@@ -5990,7 +5990,6 @@
   "gtocore.palm_sized_bank.textList.8": "建立錢包",
   "gtocore.palm_sized_bank.textList.9": "錢包不存在",
   "gtocore.part.extendae.tag_filter.blacklist.tooltip": "可放入目標，選擇黑名單的標籤過濾器",
-  "gtocore.part.extendae.tag_filter.tooltip": "左鍵將標籤添加到過濾器中，右鍵複製標籤到剪貼板",
   "gtocore.part.extendae.tag_filter.whitelist.tooltip": "可放入目標，選擇白名單的標籤過濾器",
   "gtocore.part_ability.accelerate_hatch": "加速倉",
   "gtocore.part_ability.catalyst_hatch": "催化劑倉",
