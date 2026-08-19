@@ -120,6 +120,9 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
                     it.remove();
                     continue;
                 }
+                if (ingredient.chance <= 0) {
+                    continue; // only consumable (chance > 0) contents are handled here
+                }
                 for (var i : inventory) {
                     GenericStack stored = i.stock;
                     if (stored == null) continue;
