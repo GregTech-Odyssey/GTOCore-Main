@@ -3,7 +3,6 @@ package com.gtocore.api.accelerator.particle;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -11,8 +10,6 @@ import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -22,11 +19,6 @@ public final class ParticleRecipeExtension extends RecipeExtension<List<Particle
 
     private ParticleRecipeExtension() {
         super("particle", CombinedCodec.list(ParticleBeam.CODEC), false);
-    }
-
-    @Override
-    public boolean handle(IO io, @NotNull IRecipeHandlerHolder holder, @Nullable RecipeHandlerUnit unit, @NotNull GTRecipe recipe, boolean simulate) {
-        return false;
     }
 
     @Override

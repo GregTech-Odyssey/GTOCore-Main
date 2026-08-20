@@ -13,7 +13,6 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -32,7 +31,6 @@ import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.screen.EmiScreenManager;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @DataGeneratorScanned
 public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> {
@@ -44,8 +42,8 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
     }
 
     @Override
-    public boolean handle(IO io, @NotNull IRecipeHandlerHolder holder, @Nullable RecipeHandlerUnit unit, @NotNull GTRecipe recipe, boolean simulate) {
-        if (io == IO.OUT && !simulate) {
+    public boolean handleOutput(@NotNull IRecipeHandlerHolder holder, @NotNull GTRecipe recipe, boolean simulate) {
+        if (!simulate) {
             var points = recipe.data.getData(INSTANCE);
             if (points != null) {
                 for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
