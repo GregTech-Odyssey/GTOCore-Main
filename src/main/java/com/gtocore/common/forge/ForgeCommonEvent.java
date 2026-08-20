@@ -347,8 +347,8 @@ public final class ForgeCommonEvent {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
             if (serverLevel == null) return;
             var dataStorage = serverLevel.getDataStorage();
-            TechTreeSavedData.INSTANCE = FastSavedData.getFromFile(TechTreeSavedData.DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData.DATA_VERSION);
-            TeamResearchSavedData.INSTANCE = FastSavedData.getFromFile(TeamResearchSavedData.DATA_NAME, dataStorage, TeamResearchSavedData::load, TeamResearchSavedData.DATA_VERSION);
+            TechTreeSavedData.INSTANCE = FastSavedData.getFromFile(TechTreeSavedData.DATA_NAME, dataStorage, TechTreeSavedData::load);
+            TeamResearchSavedData.INSTANCE = FastSavedData.getFromFile(TeamResearchSavedData.DATA_NAME, dataStorage, TeamResearchSavedData::load);
             if (TechTreeSavedData.INSTANCE == null) {
                 TechTreeSavedData.INSTANCE = new TechTreeSavedData();
                 dataStorage.cache.put(TechTreeSavedData.DATA_NAME, TechTreeSavedData.INSTANCE);

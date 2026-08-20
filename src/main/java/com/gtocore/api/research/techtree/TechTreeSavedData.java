@@ -45,7 +45,7 @@ public class TechTreeSavedData extends FastSavedData {
                 }
             }, (player, buffer) -> {
                 try {
-                    TechTreeSavedData data = load(DataIOStream.of(buffer), DATA_VERSION);
+                    TechTreeSavedData data = load(DataIOStream.of(buffer));
                     CLIENT_INSTANCE = data == null ? new TechTreeSavedData() : data;
                 } catch (RuntimeException exception) {
                     GTOCore.LOGGER.error("Failed to synchronize tech tree data", exception);
@@ -66,7 +66,7 @@ public class TechTreeSavedData extends FastSavedData {
     }
 
     public static TechTreeSavedData get(DimensionDataStorage dataStorage) {
-        return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData::new, DATA_VERSION);
+        return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData::new);
     }
 
     public static UUID getTeamUUID(Player player) {
@@ -178,7 +178,7 @@ public class TechTreeSavedData extends FastSavedData {
         CLIENT_INSTANCE_SYNC.send(recipient);
     }
 
-    public static TechTreeSavedData load(DataIOStream stream, int dataVersion) {
+    public static TechTreeSavedData load(DataIOStream stream) {
         var data = new TechTreeSavedData();
         try {
             int teamCount = stream.readVarInt();
@@ -192,7 +192,7 @@ public class TechTreeSavedData extends FastSavedData {
                     var manager = TechTreeManager.getManager(treeId);
                     if (manager != null) {
                         try (var payloadStream = DataIOStream.of(new ByteArrayInputStream(payload))) {
-                            trees.put(manager, manager.decode(payloadStream, dataVersion));
+                            trees.put(manager, manager.decode(payloadStream));
                         }
                     }
                 }

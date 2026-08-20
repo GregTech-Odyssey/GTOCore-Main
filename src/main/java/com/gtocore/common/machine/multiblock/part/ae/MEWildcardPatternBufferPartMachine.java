@@ -508,12 +508,12 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
             var cachedInput = sharedInputCache.get(type);
             if (cachedInput == null) {
                 var cached = new IntLongMap();
-                sharedSearchHandlers.getSearchMap(type).copyTo(cached);
+                sharedSearchHandlers.getSearchMap(type).addTo(cached);
                 sharedInputCache.put(type, cached);
                 cachedInput = cached;
             }
-            cachedInput.copyTo(workingInput);
-            wildcardInput.copyTo(workingInput);
+            cachedInput.addTo(workingInput);
+            wildcardInput.addTo(workingInput);
             return workingInput;
         }
     }

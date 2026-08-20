@@ -31,7 +31,7 @@ dependencies {
     jarJar(modImplementation("appeng:appliedenergistics2-forge-1.20.1:${project.ae2_version}"))
     jarJar(modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$project.gtceu_version"))
     jarJar(modImplementation("com.hepdd.gtmthings:gtmthings-forge-1.20.1:$project.gtmt_version"))
-    jarJar(modImplementation("com.gto.recipesearch:RecipeSearch-forge-1.20.1:$project.recipeSearch_version"))
+    jarJar(modImplementation("com.gto.recipesearch:RecipeSearch:$project.recipeSearch_version"))
 
     /* -------------------- 全局运行范围 -------------------- */
     modImplementation("com.gto:datasynclib-forge-1.20.1:$project.datasynclib_version")

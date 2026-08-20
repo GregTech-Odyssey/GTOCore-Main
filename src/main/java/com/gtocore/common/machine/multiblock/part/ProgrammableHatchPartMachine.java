@@ -209,7 +209,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         }
 
         @Override
-        public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
+        public void addToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
             getSearchMap(type).setTo(target);
         }
 
@@ -245,7 +245,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         }
 
         @Override
-        public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
+        public void addToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
             getSearchMap(type).setTo(target);
         }
 

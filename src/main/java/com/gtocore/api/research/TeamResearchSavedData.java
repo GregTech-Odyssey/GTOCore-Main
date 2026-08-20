@@ -38,7 +38,7 @@ public class TeamResearchSavedData extends FastSavedData {
             },
             (player, buffer) -> {
                 try {
-                    CLIENT_INSTANCE = load(DataIOStream.of(buffer), DATA_VERSION);
+                    CLIENT_INSTANCE = load(DataIOStream.of(buffer));
                 } catch (IOException | RuntimeException exception) {
                     GTOCore.LOGGER.error("Failed to synchronize team research data", exception);
                 }
@@ -61,12 +61,12 @@ public class TeamResearchSavedData extends FastSavedData {
         }
     }
 
-    public static TeamResearchSavedData load(DataIOStream dataIOStream, int dataVersion) throws IOException {
+    public static TeamResearchSavedData load(DataIOStream dataIOStream) throws IOException {
         TeamResearchSavedData savedData = new TeamResearchSavedData();
         int teamCount = dataIOStream.readInt();
         for (int i = 0; i < teamCount; i++) {
             UUID teamUUID = dataIOStream.readUUID();
-            savedData.teamResearchContexts.put(teamUUID, TeamResearchContext.readContext(dataIOStream, dataVersion));
+            savedData.teamResearchContexts.put(teamUUID, TeamResearchContext.readContext(dataIOStream));
         }
         return savedData;
     }

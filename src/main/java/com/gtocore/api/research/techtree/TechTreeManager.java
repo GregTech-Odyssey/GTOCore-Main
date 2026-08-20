@@ -111,7 +111,7 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
     }
 
     @Override
-    public TechTree decode(DataIOStream dis, int dataVersion) throws IOException {
+    public TechTree decode(DataIOStream dis) throws IOException {
         var tree = new TechTree(this);
         var n = dis.readVarInt();
         for (int i = 0; i < n; i++) {

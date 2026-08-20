@@ -63,7 +63,7 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> {
         Consumer<Collection<Item>> action = p -> inputs.add(EmiIngredient.of(p.stream().filter(Objects::nonNull).map(EmiStack::of).toList(), 1));
         var file = new File(GTOCore.getFile(), "cache/multiblock/" + definition.getName() + "_parts");
         if (FMLLoader.isProduction() && file.exists() && file.canRead()) {
-            FileUtils.loadFromFile(file, IOStreamDecoder.list(IOStreamDecoder.list(ItemUtils.IO_CODEC)), 0).forEach(action);
+            FileUtils.loadFromFile(file, IOStreamDecoder.list(IOStreamDecoder.list(ItemUtils.IO_CODEC))).forEach(action);
         } else {
             Collection<Collection<Item>> parts = new ObjectOpenHashSet<>();
             var patterns = definition.getPatternFactory();

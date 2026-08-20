@@ -42,7 +42,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     }
 
     @SuppressWarnings("unused")
-    static TeamResearchContext readContext(DataIOStream dataIOStream, int dataVersion) {
+    static TeamResearchContext readContext(DataIOStream dataIOStream) {
         try {
             return new TeamResearchContext(
                     readResearchPoints(dataIOStream),
