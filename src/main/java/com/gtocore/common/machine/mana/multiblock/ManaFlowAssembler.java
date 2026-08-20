@@ -38,8 +38,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.datastream.DataComponentKey;
+import com.gto.recipesearch.IntLongMap;
 import mythicbotany.pylon.BlockAlfsteelPylon;
 import mythicbotany.register.ModBlocks;
 import org.jetbrains.annotations.NotNull;

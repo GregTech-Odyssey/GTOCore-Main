@@ -34,9 +34,9 @@ import net.minecraftforge.fluids.FluidStack;
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
 import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
@@ -210,8 +210,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
-            target.clear();
-            getSearchMap(type).copyTo(target);
+            getSearchMap(type).setTo(target);
         }
 
         private static final class FluidTank extends CustomFluidTank {
@@ -247,8 +246,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public void copyToSearchMap(IntLongMap target, @NotNull GTRecipeType type) {
-            target.clear();
-            getSearchMap(type).copyTo(target);
+            getSearchMap(type).setTo(target);
         }
 
         private static class ProgrammableHandler extends ItemStackHandler {

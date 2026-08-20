@@ -17,9 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.KeyCounter;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
+import com.gto.recipesearch.IntLongMap;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;

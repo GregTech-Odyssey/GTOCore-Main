@@ -29,9 +29,9 @@ import appeng.api.networking.storage.IStorageWatcherNode;
 import appeng.api.stacks.*;
 import appeng.api.storage.MEStorage;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;

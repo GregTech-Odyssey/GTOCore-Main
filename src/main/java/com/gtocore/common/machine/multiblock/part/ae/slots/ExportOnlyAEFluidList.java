@@ -20,8 +20,8 @@ import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 

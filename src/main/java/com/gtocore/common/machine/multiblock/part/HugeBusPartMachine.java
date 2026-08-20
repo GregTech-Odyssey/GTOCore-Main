@@ -31,11 +31,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.util.DataCodecs;
+import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.hepdd.gtmthings.api.transfer.UnlimitItemTransferHelper;
 import com.lowdragmc.lowdraglib.gui.editor.Icons;

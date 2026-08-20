@@ -22,7 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.fast.recipesearch.IntLongMap;
+import com.gto.recipesearch.IntLongMap;
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;

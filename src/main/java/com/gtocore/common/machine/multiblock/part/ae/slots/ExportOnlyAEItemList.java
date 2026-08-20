@@ -21,8 +21,8 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.GenericStack;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 

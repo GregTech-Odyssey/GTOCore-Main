@@ -49,9 +49,9 @@ import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.ProcessingPatternItem;
 import appeng.hooks.IUnique;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.ObjHolder;
+import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;

@@ -21,7 +21,7 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyMap;
 import appeng.api.stacks.GenericStack;
 
-import com.fast.recipesearch.IntLongMap;
+import com.gto.recipesearch.IntLongMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

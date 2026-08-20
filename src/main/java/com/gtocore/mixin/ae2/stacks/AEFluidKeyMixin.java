@@ -13,7 +13,7 @@ import net.minecraft.world.level.material.Fluid;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKey;
 
-import com.fast.recipesearch.IntLongMap;
+import com.gto.recipesearch.IntLongMap;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

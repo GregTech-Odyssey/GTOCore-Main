@@ -61,13 +61,13 @@ import appeng.api.storage.StorageHelper;
 import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.annotations.SyncToServer;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.recipesearch.IntLongMap;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;

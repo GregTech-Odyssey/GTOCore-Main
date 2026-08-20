@@ -6,8 +6,8 @@ import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
-import com.fast.recipesearch.IntLongMap;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
+import com.gto.recipesearch.IntLongMap;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.apache.commons.lang3.mutable.MutableInt;
 
