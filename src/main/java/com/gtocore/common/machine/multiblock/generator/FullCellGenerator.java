@@ -64,13 +64,10 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
             """)
     public static double chanceConsumeMembraneOnDischarge = 0.035d;
 
-    @SyncToClient
     private boolean isGenerator = false;
     @SaveToDisk(defaultValue = "1.0")
-    @SyncToClient
     private double bonusEfficiency = 1.0f;
     @SaveToDisk(defaultValue = "1.0")
-    @SyncToClient
     private double accumulatedEfficiencyDecay = 1.0f;
     @SaveToDisk(defaultValue = "-1")
     private int absorptionMembraneTier = -1;
@@ -120,7 +117,6 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         } else {
             updateDisplayedEfficiency(1.0d);
         }
-        requestSync();
     }
 
     @Override
@@ -128,7 +124,6 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         super.onStructureInvalid();
         bonusEfficiency = 1.0d;
         sensorPart = null;
-        requestSync();
     }
 
     @Override
@@ -250,20 +245,15 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         double normalizedDecay = GTOCore.isEasy() ? 1.0d : Math.clamp(decay, 0.0d, 1.0d);
         double efficiencyBonus = GTOCore.isExpert() ? membraneInfo.efficiencyBonusExpertMode : membraneInfo.efficiencyBonus;
         double newEfficiency = efficiencyBonus * normalizedDecay;
-        boolean changed = Double.compare(accumulatedEfficiencyDecay, normalizedDecay) != 0 ||
-                Double.compare(bonusEfficiency, newEfficiency) != 0 || absorptionMembraneTier != membraneInfo.tier;
         accumulatedEfficiencyDecay = normalizedDecay;
         absorptionMembraneTier = membraneInfo.tier;
         bonusEfficiency = newEfficiency;
         if (sensorPart != null) sensorPart.update((float) newEfficiency);
-        if (changed) requestSync();
     }
 
     private void updateDisplayedEfficiency(double efficiency) {
-        boolean changed = Double.compare(bonusEfficiency, efficiency) != 0;
         bonusEfficiency = efficiency;
         if (sensorPart != null) sensorPart.update((float) efficiency);
-        if (changed) requestSync();
     }
 
     private static double getEfficiencyDecayFactor(MembraneBonusInfo membraneInfo) {
