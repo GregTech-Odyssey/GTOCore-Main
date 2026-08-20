@@ -10,13 +10,13 @@ import com.gtolib.api.player.PlayerData
 import kotlin.math.min
 
 fun PlayerData.ktGetOrganStack(): Map<OrganType, List<ItemStack>> = this.organItemStacks
-    .filter { it.item is OrganItemBase }
-    .groupBy { (it.item as OrganItemBase).organType }
+    .filter { it.getItem() is OrganItemBase }
+    .groupBy { (it.getItem() as OrganItemBase).organType }
 fun PlayerData.ktMatchOrganTier(tier: Int, type: OrganType): Boolean {
     val mapValues: Map<OrganType, Int> = ktGetOrganStack()
-        .mapValues { entry -> entry.value.filter { stack -> stack.item is OrganItemBase.TierOrganItem } }
+        .mapValues { entry -> entry.value.filter { stack -> stack.getItem() is OrganItemBase.TierOrganItem } }
         .filter { entry -> entry.value.isNotEmpty() }
-        .mapValues { entry -> entry.value.maxOf { stack -> (stack.item as OrganItemBase.TierOrganItem).tier } }
+        .mapValues { entry -> entry.value.maxOf { stack -> (stack.getItem() as OrganItemBase.TierOrganItem).tier } }
     return (mapValues[type] ?: -1) >= tier
 }
 

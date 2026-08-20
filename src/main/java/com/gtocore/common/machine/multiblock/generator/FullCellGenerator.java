@@ -40,11 +40,11 @@ import com.gto.datasynclib.util.holder.BooleanHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 
@@ -52,6 +52,10 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 public class FullCellGenerator extends ElectricMultiblockMachine {
 
     private static final int MaxCanReleaseParallel = 50;
+    private static final long WATER_RECOVERY_AMOUNT = 600;
+    private static final double WATER_RECOVERY_RATE = 0.15d;
+    private static final BigInteger BIG_INTEGER_LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
+    private static final BigInteger BIG_INTEGER_MAX_PARALLEL = BigInteger.valueOf(ParallelLogic.MAX_PARALLEL);
 
     @DynamicInitialValue(key = "fuelcell.chance_consume", easyValue = "0.0d", normalValue = "0.035d", expertValue = "0.055d", typeKey = DynamicInitialValueTypes.KEY_PROBABILITY, cn = "放电时膜损坏概率", cnComment = """
             放电时使用的膜材料的损坏概率。
@@ -63,9 +67,13 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     @SyncToClient
     private boolean isGenerator = false;
     @SaveToDisk(defaultValue = "1.0")
+    @SyncToClient
     private double bonusEfficiency = 1.0f;
     @SaveToDisk(defaultValue = "1.0")
+    @SyncToClient
     private double accumulatedEfficiencyDecay = 1.0f;
+    @SaveToDisk(defaultValue = "-1")
+    private int absorptionMembraneTier = -1;
 
     @Nullable
     private SensorPartMachine sensorPart;
@@ -80,11 +88,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     public void onLoad() {
         super.onLoad();
         updateGeneratorState();
-        subscribeServerTick(updateSubs, () -> {
-            if ((getRecipeLogic().isIdle()) && inputFluid(GTMaterials.DistilledWater.getFluid(600))) {
-                accumulatedEfficiencyDecay += (1.0d - accumulatedEfficiencyDecay) * 0.15d;
-            }
-        });
+        updateSubs = subscribeServerTick(updateSubs, this::recoverEfficiency);
     }
 
     @Override
@@ -92,6 +96,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         super.onPartScan(part);
         if (sensorPart == null && part instanceof SensorPartMachine sensor) {
             this.sensorPart = sensor;
+            sensor.update((float) bonusEfficiency);
         }
     }
 
@@ -105,7 +110,16 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     private void updateGeneratorState() {
-        isGenerator = getRecipeType() == GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES;
+        var recipeType = getRecipeType();
+        isGenerator = recipeType == GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES;
+        if (recipeType == GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES) {
+            var membraneInfo = getStoredAbsorptionMembraneInfo();
+            if (membraneInfo != null) {
+                updateAbsorptionEfficiency(membraneInfo, accumulatedEfficiencyDecay);
+            }
+        } else {
+            updateDisplayedEfficiency(1.0d);
+        }
         requestSync();
     }
 
@@ -114,6 +128,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         super.onStructureInvalid();
         bonusEfficiency = 1.0d;
         sensorPart = null;
+        requestSync();
     }
 
     @Override
@@ -137,42 +152,22 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     private GTRecipe getAbsorptionRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         var fuelEnergyPerUnit = recipe.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY);
         // membrane bonus
-        MembraneBonusInfo membraneInfo = null;
-        for (int membraneTier = Wrapper.MEMBRANE_MATS.length - 1; membraneTier >= 0; membraneTier--) {
-            if (unit.matchItem(ChemicalHelper.get(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane))) {
-                membraneInfo = Wrapper.MEMBRANE_MATS[membraneTier];
-                break;
-            }
-        }
+        var membraneInfo = findMembraneInfo(unit);
         if (membraneInfo == null) {
             setIdleReason(IdleReason.INVALID_INPUT);
             return null;
         }
-        if (GTOCore.isEasy()) {
-            bonusEfficiency = membraneInfo.efficiencyBonus;
-        } else {
-            var efficiencyBonusDecayFactor = GTOCore.isExpert() ? membraneInfo.efficiencyBonusDecayFactorExpertMode : membraneInfo.efficiencyBonusDecayFactor;
-            var efficiencyBonus = GTOCore.isExpert() ? membraneInfo.efficiencyBonusExpertMode : membraneInfo.efficiencyBonus;
-            bonusEfficiency = efficiencyBonus * accumulatedEfficiencyDecay;
-            accumulatedEfficiencyDecay *= efficiencyBonusDecayFactor;
-        }
+        updateAbsorptionEfficiency(membraneInfo, accumulatedEfficiencyDecay);
         fuelEnergyPerUnit = (long) (fuelEnergyPerUnit * bonusEfficiency);
-        if (fuelEnergyPerUnit == 0) return null;
-        if (sensorPart != null) {
-            sensorPart.update((float) bonusEfficiency);
-        }
+        if (fuelEnergyPerUnit <= 0) return null;
 
         // find existing electrolytes
         Material electrolytesExisting = null;
         long amountExisting = 0;
 
-        Material[] electrolyteMaterials = Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.keySet().toArray(new Material[0]);
-        long[] cElectrolytesAmounts = unit.getFluidAmount(true,
-                Stream.of(electrolyteMaterials)
-                        .map(m -> m.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE)).toArray(Fluid[]::new));
-        long[] aElectrolytesAmounts = unit.getFluidAmount(true,
-                Stream.of(electrolyteMaterials)
-                        .map(m -> m.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE)).toArray(Fluid[]::new));
+        Material[] electrolyteMaterials = Wrapper.ELECTROLYTE_MATERIALS;
+        long[] cElectrolytesAmounts = unit.getFluidAmount(true, Wrapper.ENERGY_RELEASE_CATHODE_FLUIDS);
+        long[] aElectrolytesAmounts = unit.getFluidAmount(true, Wrapper.ENERGY_RELEASE_ANODE_FLUIDS);
         for (int i = 0; i < cElectrolytesAmounts.length; i++) {
             if (cElectrolytesAmounts[i] > 0 && aElectrolytesAmounts[i] > 0) {
                 electrolytesExisting = electrolyteMaterials[i];
@@ -184,16 +179,19 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
         // parallel calculation
         long euPermB = Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.get(electrolytesExisting);
-        long maxCanAbsorbParallel = amountExisting * euPermB / fuelEnergyPerUnit;
+        if (euPermB <= 0) return null;
+        long maxCanAbsorbParallel = floorMultiplyDivideForParallel(amountExisting, euPermB, fuelEnergyPerUnit);
+        if (maxCanAbsorbParallel <= 0) return null;
         var result = ParallelLogic.accurateParallel(this, unit, recipe, maxCanAbsorbParallel);
         if (result == null) return null;
 
         // electrolyte consumption adjustment
-        long actuallyConsumedmB = result.parallels * fuelEnergyPerUnit / euPermB;
+        long actuallyConsumedmB = ceilMultiplyDivide(result.parallels, fuelEnergyPerUnit, euPermB);
+        if (actuallyConsumedmB <= 0 || actuallyConsumedmB > amountExisting) return null;
         var input = new ArrayList<>(result.fluidInputs);
         input.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE), actuallyConsumedmB), 10000, 0));
         input.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE), actuallyConsumedmB), 10000, 0));
-        var output = new ArrayList<Content<FluidIngredient>>();
+        var output = new ArrayList<Content<FluidIngredient>>(2);
         output.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_CATHODE), actuallyConsumedmB), 10000, 0));
         output.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_ANODE), actuallyConsumedmB), 10000, 0));
         result.fluidInputs = input;
@@ -205,10 +203,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         if (recipe.data.getFloat(GTORecipeDataKeys.EFFICIENCY) <= 0) {
             return null;
         }
-        bonusEfficiency = recipe.data.getFloat(GTORecipeDataKeys.EFFICIENCY) * 0.25d;
-        if (sensorPart != null) {
-            sensorPart.update((float) bonusEfficiency);
-        }
+        updateDisplayedEfficiency(recipe.data.getFloat(GTORecipeDataKeys.EFFICIENCY));
         return ParallelLogic.accurateParallel(this, unit, recipe, Long.MAX_VALUE);
     }
 
@@ -226,7 +221,100 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     @Override
     public void afterWorking() {
         super.afterWorking();
-        bonusEfficiency = 1.0d;
+        var completedRecipe = getRecipeLogic().getLastRecipe();
+        if (completedRecipe != null && completedRecipe.definition.recipeType == GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES) {
+            var membraneInfo = getStoredAbsorptionMembraneInfo();
+            if (membraneInfo != null) {
+                updateAbsorptionEfficiency(membraneInfo, accumulatedEfficiencyDecay * getEfficiencyDecayFactor(membraneInfo));
+                return;
+            }
+        }
+        updateDisplayedEfficiency(1.0d);
+    }
+
+    private void recoverEfficiency() {
+        if (GTOCore.isEasy() || getRecipeType() != GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES ||
+                !getRecipeLogic().isIdle() || accumulatedEfficiencyDecay >= 1.0d) {
+            return;
+        }
+        var membraneInfo = findMembraneInfo();
+        if (membraneInfo == null) membraneInfo = getStoredAbsorptionMembraneInfo();
+        if (membraneInfo != null && inputFluid(GTMaterials.DistilledWater.getFluid(), WATER_RECOVERY_AMOUNT)) {
+            double recoveredDecay = accumulatedEfficiencyDecay + (1.0d - accumulatedEfficiencyDecay) * WATER_RECOVERY_RATE;
+            if (Double.compare(recoveredDecay, accumulatedEfficiencyDecay) == 0) recoveredDecay = 1.0d;
+            updateAbsorptionEfficiency(membraneInfo, recoveredDecay);
+        }
+    }
+
+    private void updateAbsorptionEfficiency(MembraneBonusInfo membraneInfo, double decay) {
+        double normalizedDecay = GTOCore.isEasy() ? 1.0d : Math.clamp(decay, 0.0d, 1.0d);
+        double efficiencyBonus = GTOCore.isExpert() ? membraneInfo.efficiencyBonusExpertMode : membraneInfo.efficiencyBonus;
+        double newEfficiency = efficiencyBonus * normalizedDecay;
+        boolean changed = Double.compare(accumulatedEfficiencyDecay, normalizedDecay) != 0 ||
+                Double.compare(bonusEfficiency, newEfficiency) != 0 || absorptionMembraneTier != membraneInfo.tier;
+        accumulatedEfficiencyDecay = normalizedDecay;
+        absorptionMembraneTier = membraneInfo.tier;
+        bonusEfficiency = newEfficiency;
+        if (sensorPart != null) sensorPart.update((float) newEfficiency);
+        if (changed) requestSync();
+    }
+
+    private void updateDisplayedEfficiency(double efficiency) {
+        boolean changed = Double.compare(bonusEfficiency, efficiency) != 0;
+        bonusEfficiency = efficiency;
+        if (sensorPart != null) sensorPart.update((float) efficiency);
+        if (changed) requestSync();
+    }
+
+    private static double getEfficiencyDecayFactor(MembraneBonusInfo membraneInfo) {
+        if (GTOCore.isEasy()) return 1.0d;
+        return GTOCore.isExpert() ? membraneInfo.efficiencyBonusDecayFactorExpertMode : membraneInfo.efficiencyBonusDecayFactor;
+    }
+
+    @Nullable
+    private MembraneBonusInfo findMembraneInfo() {
+        for (int membraneTier = Wrapper.MEMBRANE_MATS.length - 1; membraneTier >= 0; membraneTier--) {
+            var membrane = ChemicalHelper.get(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane);
+            for (var unit : getInputUnits()) {
+                if (unit.matchItem(membrane)) return Wrapper.MEMBRANE_MATS[membraneTier];
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static MembraneBonusInfo findMembraneInfo(RecipeHandlerUnit unit) {
+        for (int membraneTier = Wrapper.MEMBRANE_MATS.length - 1; membraneTier >= 0; membraneTier--) {
+            if (unit.matchItem(ChemicalHelper.get(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane))) {
+                return Wrapper.MEMBRANE_MATS[membraneTier];
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private MembraneBonusInfo getStoredAbsorptionMembraneInfo() {
+        if (absorptionMembraneTier < 0 || absorptionMembraneTier >= Wrapper.MEMBRANE_MATS.length) return null;
+        return Wrapper.MEMBRANE_MATS[absorptionMembraneTier];
+    }
+
+    private static long floorMultiplyDivideForParallel(long first, long second, long divisor) {
+        if (first <= 0 || second <= 0 || divisor <= 0) return 0;
+        if (first <= Long.MAX_VALUE / second) {
+            return Math.min(first * second / divisor, ParallelLogic.MAX_PARALLEL);
+        }
+        var quotient = BigInteger.valueOf(first).multiply(BigInteger.valueOf(second)).divide(BigInteger.valueOf(divisor));
+        return quotient.compareTo(BIG_INTEGER_MAX_PARALLEL) >= 0 ? ParallelLogic.MAX_PARALLEL : quotient.longValue();
+    }
+
+    private static long ceilMultiplyDivide(long first, long second, long divisor) {
+        if (first <= 0 || second <= 0 || divisor <= 0) return 0;
+        if (first <= Long.MAX_VALUE / second) {
+            return Math.ceilDiv(first * second, divisor);
+        }
+        var bigDivisor = BigInteger.valueOf(divisor);
+        var quotient = BigInteger.valueOf(first).multiply(BigInteger.valueOf(second)).add(bigDivisor).subtract(BigInteger.ONE).divide(bigDivisor);
+        return quotient.compareTo(BIG_INTEGER_LONG_MAX) >= 0 ? Long.MAX_VALUE : quotient.longValue();
     }
 
     private GTRecipe getReleaseRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
@@ -266,6 +354,17 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
                 .put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 16 / 1000)
                 .put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 160 / 1000)
                 .build();
+        private static final Material[] ELECTROLYTE_MATERIALS = ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.keySet().toArray(Material[]::new);
+        private static final Fluid[] ENERGY_RELEASE_CATHODE_FLUIDS = new Fluid[ELECTROLYTE_MATERIALS.length];
+        private static final Fluid[] ENERGY_RELEASE_ANODE_FLUIDS = new Fluid[ELECTROLYTE_MATERIALS.length];
+
+        static {
+            for (int i = 0; i < ELECTROLYTE_MATERIALS.length; i++) {
+                ENERGY_RELEASE_CATHODE_FLUIDS[i] = ELECTROLYTE_MATERIALS[i].getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE);
+                ENERGY_RELEASE_ANODE_FLUIDS[i] = ELECTROLYTE_MATERIALS[i].getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE);
+            }
+        }
+
         public static final MembraneBonusInfo[] MEMBRANE_MATS = new MembraneBonusInfo[] {
                 new MembraneBonusInfo(
                         0, GTMaterials.Polytetrafluoroethylene,

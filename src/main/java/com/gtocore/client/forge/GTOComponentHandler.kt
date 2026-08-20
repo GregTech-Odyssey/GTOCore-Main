@@ -31,7 +31,7 @@ object GTOComponentHandler {
     fun onGatherTooltipComponents(event: RenderTooltipEvent.GatherComponents) {
         val itemStack = event.itemStack
         val components = mutableListOf<GTOToolTipComponent>()
-        val item = itemStack.item
+        val item = itemStack.getItem()
         // 附着在Item上的处理器
         run {
             if (item is GTOTooltipComponentItem) {

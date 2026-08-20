@@ -222,7 +222,7 @@ object AnimalsRevengeEvent {
         repeat(32) {
             GTOLoots.modifyLoot = false
             for (stack in table.getRandomItems(params)) {
-                if (!stack.isEmpty) result.add(stack.item)
+                if (!stack.isEmpty) result.add(stack.getItem())
             }
             GTOLoots.modifyLoot = true
         }
@@ -279,7 +279,7 @@ object AnimalsRevengeEvent {
                 val usesBase = r.ingredients.any { ing -> ingredientMatchesAny(ing, base) }
                 if (usesBase) {
                     val out = r.getResultItem(access)
-                    if (!out.isEmpty) derived.add(out.item)
+                    if (!out.isEmpty) derived.add(out.getItem())
                 }
             }
         }
@@ -295,7 +295,7 @@ object AnimalsRevengeEvent {
                     break
                 }
             }
-            if (hit) derived.add(out.item)
+            if (hit) derived.add(out.getItem())
         }
     }
     private fun ingredientMatchesAny(ing: net.minecraft.world.item.crafting.Ingredient, items: ObjectOpenHashSet<Item>): Boolean {

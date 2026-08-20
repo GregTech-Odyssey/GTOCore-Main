@@ -5862,7 +5862,6 @@
   "gtocore.palm_sized_bank.textList.8": "Create a wallet",
   "gtocore.palm_sized_bank.textList.9": "Wallet does not exist",
   "gtocore.part.extendae.tag_filter.blacklist.tooltip": "Can place target, select blacklist tag filter",
-  "gtocore.part.extendae.tag_filter.tooltip": "Left-click to add tags to the filter, right-click to copy tags to the clipboard",
   "gtocore.part.extendae.tag_filter.whitelist.tooltip": "Can place target, select whitelist tag filter",
   "gtocore.part_ability.accelerate_hatch": "Accelerate Hatch",
   "gtocore.part_ability.catalyst_hatch": "Catalyst Hatch",

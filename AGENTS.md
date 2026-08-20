@@ -4,11 +4,39 @@
 
 ## 构建与测试
 
+- **Windows agent 运行 Gradle 时，第一次调用就必须显式设置有效的 JDK 21**：先从现有环境、工作区依赖配置或本机已安装运行时中确定 JDK 21，再执行 `$env:JAVA_HOME='<JDK_21_HOME>'; .\gradlew.bat <task>`；调用前应确认 `$env:JAVA_HOME\bin\java.exe` 存在。禁止先裸跑 `gradlew.bat` 等待 `JAVA_HOME` 报错后再重试；主仓、子模块和同级 GTM 仓库均遵守。仓库文档与命令示例中禁止写入具体用户名或用户目录绝对路径。
+- **Gradle 会写入用户级缓存**（`GRADLE_USER_HOME`；未显式设置时通常位于 `$HOME\.gradle`，包括 wrapper 的 `.lck` 文件）。若当前沙箱权限不包含实际缓存路径，且任务已明确要求执行 Gradle，应在第一次调用时直接申请所需权限并运行上述完整命令；禁止先执行一个已知会因缓存写权限而失败的沙箱内试跑。
 - **构建不跑单测**。`build` / `assemble` 只构建；单测须显式运行：`./gradlew test` 或 `./gradlew testCrafting`。**禁止添加凑数的、明显正确的、无意义的单元测试。**
 - 单测（`src/test/`，全部在 `com.gtolib.*`）需要**明文 gtolib** 字节码（本地编译类或 `gtolib-unprotected.jar`）。CI prebuild（无 GTOLib 源码）只有 Seal 抽空的 hollow class，测试任务会自动跳过。
 - dev 运行（runClient/runData/runServer）用的 gtolib mixin 类必须是 **named**（官方名）；生产链（ProGuard/Seal/maven）必须是 **SRG**（`m_/f_`）。流水线已自动处理，勿把 reobf 产物覆盖到 `gtolib-unprotected.jar`。
 - **安全提示**：构建产出的 `gtolib-unprotected*.jar`（明文 gtolib）**始终不要上传到 git、不要 `git add`、不要打包进其他文件**（已被 gitignore，勿绕过），防止明文字节码被错误分发。
 - **给 agent 的留言**：当用户在调试 gtocore 构建产物、或某次 push 触发了云端构建（见下节）时，用 `gh` CLI 找到对应的 workflow run 并把构建页面直接给用户打开（如 `gh run list --repo GregTech-Odyssey/GTOCore-Main`、`gh run view <run-id> --web`，页面形如 <https://github.com/GregTech-Odyssey/GTOCore-Main/actions/runs/29621547406>），然后引导用户在页面的 Artifacts 区下载签名产物。
+
+## 使用本地最新 GTM 联调
+
+- 主仓不会直接读取同级的 GTM 工作区，而是通过 `dependencies.gradle` 中的 Maven 坐标 `com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:${gtceu_version}` 使用 GTM。联调前确认 GTM `gradle.properties` 的 `mod_version` 与主仓 `gradle.properties` 的 `gtceu_version` 完全一致；主仓的 `gradle/scripts/repositories.gradle` 已将 `mavenLocal()` 放在远端仓库之前，无须复制 jar 到 `libs/` 或改成文件依赖。
+- 在同级 GTM 仓库用 JDK 21 发布到本机 Maven，再回到主仓刷新同版本依赖并执行需要的任务：
+
+```powershell
+Set-Location ..\GregTech-Modern
+$env:JAVA_HOME='<JDK_21_HOME>'
+.\gradlew.bat publishToMavenLocal
+
+Set-Location ..\GTOCore-Main
+$env:JAVA_HOME='<JDK_21_HOME>'
+.\gradlew.bat --refresh-dependencies <task>
+```
+
+- `publishToMavenLocal` 成功后，应能在 `$HOME\.m2\repository\com\gregtechceu\gtceu\gtceu-1.20.1-forge-1.20.1\<version>\` 找到 jar、sources jar、POM 与 Gradle module metadata。同一版本反复本地发布时，主仓第一次解析必须带 `--refresh-dependencies`，不要靠删除整个 Gradle 缓存解决。
+- 验证任务按改动范围选择：只需确认主仓编译可用时运行 `compileJava`；需要实际联调时运行 `runClient`；若 GTM 的 API、映射或 mixin 目标变化会影响 GTOLib，则按本文 GTOLib 规则在收尾时执行一次 `-PgtolibRebuild=true buildGtolibProtected`，再运行主仓任务。
+- 本地 Maven 只对当前机器生效。主仓代码若依赖尚未公开发布的 GTM 改动，只能用于本地联调；推送给 CI 或其他开发者前，必须先推送 GTM commit，并把对应版本发布到共享 Maven，再更新主仓的 `gtceu_version`。不得把本地 Maven 产物、Gradle 缓存或临时 GTM jar 提交进主仓。
+
+## 语言数据生成
+
+- `src/generated/resources/assets/gtocore/lang/en_us.json`、`zh_cn.json`、`zh_tw.json` 均为 data generator 的输出，**禁止直接编辑或用脚本改写**。需要调整文案时，应修改 Java/Kotlin 中对应的翻译源，再运行 `./gradlew runData` 生成并检查 JSON；若生成结果不符合预期，继续修正翻译源，不以手改 JSON 作为最终结果。
+- 注册入口是 `src/main/java/com/gtocore/data/Datagen.java`，语言数据由 `src/main/java/com/gtocore/data/lang/LangHandler.java` 聚合。其中 GTOLib 注解与动态翻译分别经 `ScanningClass.LANG`、`DynamicInitialData.LANG`、`TranslationKeyProvider.LANG` 汇入。
+- provider 按 `enInitialize()` → `cnInitialize()` → `twInitialize()` 的注册顺序运行：`enInitialize()` 负责初始化完整的共享语言表并输出英文，`cnInitialize()` 输出简体中文，`twInitialize()` 使用 `ChineseConverter` 将同一份简体中文源转换为繁体中文。因此新增或修改中文文案时只维护翻译源中的简体中文，不单独维护 `zh_tw.json`。
+- `runData --rerun-tasks` 只强制 Gradle 任务重跑，**不会绕过 Minecraft `HashCache`**。HashCache 比较本次生成哈希与 `src/generated/resources/.cache` 的清单，不校验磁盘上生成文件的实际内容；如果语言 JSON 曾被 `git restore`、合并或外部工具改写，缓存仍可能误判为无需写入。需要强制回写时，只删除首行包含 `Registrate Provider for gtocore` 的那一个缓存清单，再运行 `./gradlew runData --rerun-tasks`；不要清空整个 `.cache`，也不要删除其他 provider 的清单。
 
 ## 云端构建与签名（进整合包的唯一途径）
 
