@@ -105,8 +105,8 @@ dependencies {
     modImplementation("curse.maven:ars-meteorites-1278083:7125271")
 
     // Open Parties and Claims
-    modCompileOnly("curse.maven:open-parties-and-claims-636608:8501621")
-    modRuntimeOnly("curse.maven:open-parties-and-claims-636608:8501621")
+    modCompileOnly("curse.maven:open-parties-and-claims-636608:8690609")
+    modRuntimeOnly("curse.maven:open-parties-and-claims-636608:8690609")
 
     // Modular Routers
     modCompileOnly("curse.maven:modular-routers-250294:5056687")

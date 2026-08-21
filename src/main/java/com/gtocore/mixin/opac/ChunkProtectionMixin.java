@@ -2,7 +2,7 @@ package com.gtocore.mixin.opac;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -48,7 +48,7 @@ public abstract class ChunkProtectionMixin<CM extends IServerClaimsManager<?, ?,
      * @reason .
      */
     @Overwrite(remap = false)
-    public boolean hasChunkAccess(IPlayerConfigAPI claimConfig, Entity accessor, UUID accessorId) {
+    public boolean hasChunkAccess(IPlayerConfigAPI claimConfig, Entity accessor, UUID accessorId, ResourceLocation dim, int chunkX, int chunkZ) {
         return true;
     }
 
@@ -66,7 +66,7 @@ public abstract class ChunkProtectionMixin<CM extends IServerClaimsManager<?, ?,
      * @reason .
      */
     @Overwrite(remap = false)
-    public boolean onEntityPlaceBlock(IServerData<CM, ?> serverData, Entity entity, ServerLevel world, BlockPos pos, xaero.pac.common.server.player.config.api.v2.IPlayerConfigOptionSpecAPI<String> option) {
+    public boolean onEntityPlaceBlock(IServerData<CM, ?> serverData, BlockState blockState, Entity entity, ServerLevel world, BlockPos pos, xaero.pac.common.server.player.config.api.v2.IPlayerConfigOptionSpecAPI<String> option) {
         return false;
     }
 
@@ -111,7 +111,7 @@ public abstract class ChunkProtectionMixin<CM extends IServerClaimsManager<?, ?,
      * @reason .
      */
     @Overwrite(remap = false)
-    public void onEntityEnterChunk(IServerData<?, ?> serverData, Entity entity, double goodX, double goodZ, SectionPos newSection, SectionPos oldSection) {}
+    public void onEntityEnterChunk(IServerData<CM, ?> serverData, Entity entity, double goodX, double goodZ, ChunkPos newChunk, ChunkPos oldChunk) {}
 
     /**
      * @author .

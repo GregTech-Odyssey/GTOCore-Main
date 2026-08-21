@@ -17,9 +17,9 @@ public class ToggleEditingModeMessageMixin {
     @ModifyArg(method = "handle", at = @At(value = "INVOKE", target = "Ldev/ftb/mods/ftbquests/quest/TeamData;setCanEdit(Lnet/minecraft/world/entity/player/Player;Z)Z"), index = 1, remap = false)
     private boolean setCanEdit(boolean newCanEdit, @Local(name = "player") ServerPlayer player) {
         if (!EMIRecipeModHelper.canEdit()) {
-            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode"), true);
-            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode.1"), true);
-            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode.2"), true);
+            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode"));
+            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode.1"));
+            player.sendSystemMessage(Component.translatable("message.gtocore.ftbq_editmode.2"));
             return false;
         }
         return newCanEdit;
