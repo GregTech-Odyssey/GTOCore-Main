@@ -21,8 +21,8 @@ import com.gtocore.integration.emi.space.SatelliteEmiCategory;
 import com.gtocore.integration.misc.CalculatorOverlay;
 
 import com.gtolib.api.GTOApi;
+import com.gtolib.api.ae2.me2in1.ME2in1Helper;
 import com.gtolib.api.ae2.me2in1.Me2in1Menu;
-import com.gtolib.api.ae2.me2in1.UtilsMiscs;
 import com.gtolib.api.ae2.me2in1.Wireless;
 import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
 import com.gtolib.api.data.Dimension;
@@ -213,8 +213,8 @@ public final class GTEMIPlugin implements EmiPlugin {
             }
         }
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
-        registry.addRecipeHandler(Me2in1Menu.TYPE, UtilsMiscs.createEMI2in1());
-        registry.addRecipeHandler(Wireless.TYPE, UtilsMiscs.createEMIWireless());
+        registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
+        registry.addRecipeHandler(Wireless.TYPE, ME2in1Helper.createEMIWireless());
         registry.addRecipeHandler(CategoryMappingSubMenu.TYPE, new CategoryMappingSubMenu.EmiHandler());
         registry.addRecipeHandler(PatternEncodingTermMenu.TYPE, new GTAe2PatternTerminalHandler<>());
         registry.addRecipeHandler(WETMenu.TYPE, new GTAe2PatternTerminalHandler<>());

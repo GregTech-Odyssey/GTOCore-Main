@@ -196,10 +196,6 @@ public final class LangHandler {
         addCNEN("gtocore.patternModifierPro.4", "最大流体数：所有流体不会超过此桶数", "Set Maximum Fluid Amount / Bucket");
         addCNEN("gtocore.patternModifierPro.5", "应用次数为：循环上述操作次数，最大为16", "Set Application Cycles , Up to 16");
 
-        addCNEN("gtocore.emi.tagprefix.tooltip", "材料标签类型", "Material Tag Prefix");
-        addCNEN("gtocore.emi.tagprefix.tooltip.1", "在编码样板时将它们拖入终端，可以制作通配符样板", "When encoding patterns, drag them into the terminal to create wildcard patterns.");
-        addCNEN("gtocore.emi.tagprefix.tooltip.2", "在通配符样板总成中，将自动匹配所有符合标签的物品或流体", "In wildcard pattern assemblies, all items or fluids that match the tag will be automatically matched.");
-
         addCNEN("gtceu.jei.ore_vein.bauxite_vein", "铝土矿脉", "Bauxite Vein");
         addCNEN("gtceu.jei.ore_vein.chromite_vein", "铬铁矿脉", "Chromite Vein");
         addCNEN("gtceu.jei.ore_vein.pitchblende_vein", "沥青铀矿脉", "Pitchblende Vein");
@@ -524,6 +520,14 @@ public final class LangHandler {
         addCNEN("gtocore.emi.primordial_reconstructor.disassembly.enchantment", "附魔", "Enchant.");
         addCNEN("gtocore.emi.primordial_reconstructor.disassembly.affix", "刻印", "Affix");
         addCNEN("gtocore.emi.primordial_reconstructor.disassembly.gem", "宝石", "Gem");
+        addCNEN("gtocore.emi.tagprefix.tooltip", "材料标签类型", "Material Tag Prefix");
+        addCNEN("gtocore.emi.tagprefix.tooltip.1", "在编码样板时将它们拖入终端，可以制作通配符样板", "When encoding patterns, drag them into the terminal to create wildcard patterns.");
+        addCNEN("gtocore.emi.tagprefix.tooltip.2", "在通配符样板总成中，将自动匹配所有符合标签的物品或流体", "In wildcard pattern assemblies, all items or fluids that match the tag will be automatically matched.");
+        addCNEN("gtocore.emi.space_elevator.min_drone_tier", "最低无人机等级: %s", "Minimum Drone Tier: %s");
+        addCNEN("gtocore.emi.space_elevator.next_drone", "查看下一级无人机配方", "View next tier drone recipe");
+        addCNEN("gtocore.emi.space_elevator.prev_drone", "查看上一级无人机配方", "View previous tier drone recipe");
+        addCNEN("gtocore.emi.space_elevator.next_fuel", "查看下一级燃料配方", "View next tier fuel recipe");
+        addCNEN("gtocore.emi.space_elevator.prev_fuel", "查看上一级燃料配方", "View previous tier fuel recipe");
 
         addCNEN("emi.category.gtocore.alfheim_entry_requirements", "亚尔夫海姆准入条件", "Alfheim Access Requirements");
         addCNEN("gtocore.entry_alfheim.0.c", "§a你已完全满足进入亚尔夫海姆的条件", "§aYou have fully met the requirements to enter Alfheim");

@@ -1,9 +1,12 @@
 package com.hepdd.gtmthings.common.block.machine.multiblock.part.computation;
 
+import com.gtolib.api.wireless.ReceiverTransmitterHandler;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IOpticalComputationHatch;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -29,7 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Getter
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPartMachine implements IOpticalComputationHatch, IDataStickInteractable, IGTMTJadeIF {
+public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPartMachine implements IOpticalComputationHatch, IDataStickInteractable, IGTMTJadeIF, IMachineLife {
 
     private final boolean transmitter;
 
@@ -70,6 +73,29 @@ public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPa
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        gto$registerConnection();
+    }
+
+    @Override
+    public void onUnload() {
+        ReceiverTransmitterHandler.unregister(getLevel(), ReceiverTransmitterHandler.ConnectionType.COMPUTATION, getPos());
+        super.onUnload();
+    }
+
+    @Override
+    public void onMachineRemoved() {
+        Level level = getLevel();
+        if (level == null || level.isClientSide) return;
+        WirelessOpticalComputationHatchMachine self = this;
+        if (self.isTransmitter()) setReceiverPos(null);
+        else setTransmitterPos(null);
+        onChanged();
+        ReceiverTransmitterHandler.unregister(level, ReceiverTransmitterHandler.ConnectionType.COMPUTATION, getPos());
+    }
+
+    @Override
     public String getBindPos() {
         if (this.isTransmitter() && this.receiverPos != null) {
             return this.receiverPos.toShortString();
@@ -92,7 +118,7 @@ public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPa
     private static final String KEY_TRANSMITTER = "wireless_computation_transmitter";
     private static final String KEY_RECEIVER = "wireless_computation_receiver";
 
-    private void setTransmitterPos(BlockPos pos) {
+    private void setTransmitterPos(@Nullable BlockPos pos) {
         if (transmitterPos != null) {
             var level = getLevel();
             if (level != null) {
@@ -104,7 +130,7 @@ public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPa
         transmitterPos = pos;
     }
 
-    private void setReceiverPos(BlockPos pos) {
+    private void setReceiverPos(@Nullable BlockPos pos) {
         if (receiverPos != null) {
             var level = getLevel();
             if (level != null) {
@@ -185,6 +211,7 @@ public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPa
             }
 
             player.sendSystemMessage(Component.translatable("gtmthings.machine.wireless_computation_hatch.binded"));
+            gto$registerConnection();
             return true;
         }
         return false;
@@ -193,5 +220,16 @@ public class WirelessOpticalComputationHatchMachine extends WorkableMultiblockPa
     @Override
     public boolean testCapability(@org.jetbrains.annotations.Nullable Direction side) {
         return false;
+    }
+
+    private void gto$registerConnection() {
+        Level level = getLevel();
+        if (level == null || level.isClientSide) return;
+        WirelessOpticalComputationHatchMachine self = this;
+        boolean transmitter = self.isTransmitter();
+        BlockPos ownPos = getPos();
+        BlockPos otherPos = transmitter ? self.getReceiverPos() : self.getTransmitterPos();
+        ReceiverTransmitterHandler.register(level, ReceiverTransmitterHandler.ConnectionType.COMPUTATION,
+                transmitter ? ownPos : otherPos, transmitter ? otherPos : ownPos);
     }
 }

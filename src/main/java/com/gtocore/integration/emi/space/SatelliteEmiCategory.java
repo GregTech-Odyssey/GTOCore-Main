@@ -1,8 +1,8 @@
 package com.gtocore.integration.emi.space;
 
+import com.gtocore.api.data.RocketFuels;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.MultiBlockG;
-import com.gtocore.common.machine.multiblock.electric.space.SatelliteControlCenterMachine;
 
 import com.gtolib.GTOCore;
 
@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTDimensionMarkers;
 
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.fluids.FluidStack;
 
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
@@ -31,13 +32,13 @@ public class SatelliteEmiCategory extends EmiRecipeCategory {
     public static void register(EmiRegistry registry) {
         registry.addCategory(CATEGORY);
         registry.addWorkstation(CATEGORY, EmiStack.of(MultiBlockG.SATELLITE_CONTROL_CENTER.asStack()));
-        for (var entry : SatelliteControlCenterMachine.getPlanets()) {
-            if (SatelliteControlCenterMachine.getRocket(entry.getTier()) == null) {
+        for (var entry : RocketFuels.PLANETS) {
+            if (entry.getTier() == 0 || entry.getTier() >= RocketFuels.ROCKET.length || RocketFuels.ROCKET[entry.getTier() - 1] == null) {
                 continue; // Skip if no rocket is defined for this tier
             }
             var dimMarker = GTRegistries.DIMENSION_MARKERS.getOrDefault(entry.getLocation(), GTDimensionMarkers.OVERWORLD);
-            registry.addRecipe(SatelliteEmiRecipe.fromInputOutput(GTOCore.id("satellite/launch_satellite/" + entry.getKey()), b -> b.inputItems(SatelliteControlCenterMachine.getRocket(entry.getTier()))
-                    .inputFluids(SatelliteControlCenterMachine.getFuel(entry.getTier()))
+            registry.addRecipe(SatelliteEmiRecipe.fromInputOutput(GTOCore.id("satellite/launch_satellite/" + entry.getKey()), b -> b.inputItems(RocketFuels.ROCKET[entry.getTier() - 1])
+                    .inputFluids(new FluidStack(RocketFuels.FUEL[entry.getTier() - 1], 16000))
                     .outputItems(dimMarker.getIcon())));
         }
     }

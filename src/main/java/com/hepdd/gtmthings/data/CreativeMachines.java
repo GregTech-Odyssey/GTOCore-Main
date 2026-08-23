@@ -57,6 +57,7 @@ public class CreativeMachines {
     // energy input hatch
     public static final MachineDefinition CREATIVE_ENERGY_INPUT_HATCH = GTMTHINGS_REGISTRATE.machine(
             "creative_energy_hatch", CreativeEnergyHatchPartMachine::new)
+            .langValue(null)
             .rotationState(RotationState.ALL)
             .tooltips(Component.translatable("gtmthings.creative_tooltip"))
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/energy_hatch.input")))
@@ -67,6 +68,7 @@ public class CreativeMachines {
     // laser input hatch
     public static final MachineDefinition CREATIVE_LASER_INPUT_HATCH = GTMTHINGS_REGISTRATE.machine(
             "creative_laser_hatch", CreativeLaserHatchPartMachine::new)
+            .langValue(null)
             .rotationState(RotationState.ALL)
             .tooltips(Component.translatable("gtmthings.creative_tooltip"))
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/laser_hatch.target")))

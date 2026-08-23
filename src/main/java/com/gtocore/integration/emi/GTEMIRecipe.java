@@ -47,12 +47,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.IntSupplier;
 
-public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
+public class GTEMIRecipe extends ModularEmiRecipe<Widget> {
 
     private static final Map<GTRecipeType, Widget> EMI_RECIPE_WIDGETS = new Reference2ReferenceOpenHashMap<>();
 
     private final EmiRecipeCategory category;
-    private final GTRecipeDefinition recipe;
+    protected final GTRecipeDefinition recipe;
     public final IntSupplier displayPriority;
 
     public GTEMIRecipe(GTRecipeDefinition recipe, EmiRecipeCategory category) {
@@ -74,7 +74,7 @@ public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
     }
 
     @SuppressWarnings("all")
-    private static EmiIngredient getEmiIngredient(ItemIngredient ingredient, boolean input) {
+    protected static EmiIngredient getEmiIngredient(ItemIngredient ingredient, boolean input) {
         Ingredient inner = ingredient.inner;
         ItemStack[] itemStacks = inner.getItems();
         if (itemStacks.length == 0) return EmiStack.EMPTY;
@@ -149,6 +149,7 @@ public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
                     // noinspection unchecked
                     var ingredients = EmiIngredient
                             .of((List<? extends EmiIngredient>) (List<?>) slot.getXEIIngredients());
+                    ingredients = resolveSlotIngredient(slot, ingredients);
 
                     SlotWidget slotWidget = null;
                     // Clear the LDLib slots & add EMI slots based on them.
@@ -158,7 +159,7 @@ public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
                     } else if (slot instanceof com.gregtechceu.gtceu.api.gui.widget.TankWidget tankW) {
                         tankW.setFluidTank(EmptyFluidHandler.INSTANCE);
                         tankW.setDrawHoverOverlay(false).setDrawHoverTips(false);
-                        long capacity = Math.max(1, ingredients.getAmount());
+                        long capacity = getTankCapacity(slot, ingredients);
                         slotWidget = new TankWidget(ingredients, w.getPosition().x, w.getPosition().y,
                                 w.getSize().width, w.getSize().height, capacity);
                     }
@@ -185,6 +186,14 @@ public final class GTEMIRecipe extends ModularEmiRecipe<Widget> {
         widgets.add(new ModularWrapperWidget(modular, slots));
         slots.forEach(widgets::add);
         widgets.add(new ModularForegroundRenderWidget(modular));
+    }
+
+    protected EmiIngredient resolveSlotIngredient(IRecipeIngredientSlot slot, EmiIngredient ingredient) {
+        return ingredient;
+    }
+
+    protected long getTankCapacity(IRecipeIngredientSlot slot, EmiIngredient ingredient) {
+        return Math.max(1, ingredient.getAmount());
     }
 
     private void initRecipe() {

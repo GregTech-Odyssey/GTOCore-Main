@@ -468,12 +468,14 @@ public final class GTORecipeTypes {
             .setEUIO(IO.IN)
             .setMaxIOSize(2, 6, 1, 0)
             .setProgressBar(GTOGuiTextures.PROGRESS_BAR_MINING_MODULE, UP_TO_DOWN)
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.emi.space_elevator.min_drone_tier", data.data.getInt(GTORecipeDataKeys.TIER)))
             .setSound(GTSoundEntries.MINER);
 
     public static final RecipeType DRILLING_MODULE_RECIPES = register("drilling_module", "Space Drilling", "太空钻井", MULTIBLOCK)
             .setEUIO(IO.IN)
             .setMaxIOSize(2, 0, 1, 1)
             .setProgressBar(GTOGuiTextures.PROGRESS_BAR_DRILLING_MODULE, UP_TO_DOWN)
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.emi.space_elevator.min_drone_tier", data.data.getInt(GTORecipeDataKeys.TIER)))
             .setSound(GTSoundEntries.MINER);
 
     public static final RecipeType FISHING_GROUND_RECIPES = register("fishing_ground", "渔场", MULTIBLOCK)

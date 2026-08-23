@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -41,6 +42,7 @@ final class DrillingModule {
                         .inputFluids(fuels[minDroneTire - 1][j])
                         .outputFluids(fluidStack)
                         .EUt(VA[8 + i])
+                        .addData(GTORecipeDataKeys.TIER, minDroneTire)
                         .duration(baseTime[j] >> i)
                         .save();
             }
@@ -83,6 +85,7 @@ final class DrillingModule {
                 .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 10000)
                 .outputFluids(GTOMaterials.WhiteDwarfMatter, 100000)
                 .EUt(503316480)
+                .addData(GTORecipeDataKeys.TIER, 6)
                 .duration(750)
                 .save();
 
@@ -92,6 +95,7 @@ final class DrillingModule {
                 .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 10000)
                 .outputFluids(GTOMaterials.BlackDwarfMatter, 100000)
                 .EUt(503316480)
+                .addData(GTORecipeDataKeys.TIER, 6)
                 .duration(750)
                 .save();
     }

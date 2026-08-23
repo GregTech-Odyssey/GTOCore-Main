@@ -24,6 +24,7 @@ import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.integration.emi.GTEMIRecipe;
 import com.gtocore.integration.emi.NanitesIntegratedProcessingEmiCategory;
+import com.gtocore.integration.emi.SpaceModuleGTEMIRecipe;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
 import com.gtolib.GTOCore;
@@ -207,6 +208,11 @@ public final class Data {
                     continue;
                 }
                 EmiRecipeCategory emiCategory = GTRecipeEMICategory.CATEGORIES.apply(category);
+                if (type == com.gtocore.common.data.GTORecipeTypes.MINER_MODULE_RECIPES ||
+                        type == com.gtocore.common.data.GTORecipeTypes.DRILLING_MODULE_RECIPES) {
+                    SpaceModuleGTEMIRecipe.addGroupedRecipes(type.getRecipesInCategory(category), emiCategory, recipes::add);
+                    continue;
+                }
                 type.getRecipesInCategory(category).stream().map(recipe -> new GTEMIRecipe(recipe, emiCategory)).forEach(recipes::add);
             }
             for (MachineDefinition machine : GTRegistries.MACHINES.values()) {
