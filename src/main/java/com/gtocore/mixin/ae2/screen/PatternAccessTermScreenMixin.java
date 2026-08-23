@@ -13,6 +13,7 @@ import appeng.client.gui.me.patternaccess.PatternContainerRecord;
 import appeng.client.gui.style.ScreenStyle;
 import appeng.menu.implementations.PatternAccessTermMenu;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,14 +21,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.HashMap;
-
 @Mixin(PatternAccessTermScreen.class)
 public abstract class PatternAccessTermScreenMixin<C extends PatternAccessTermMenu> extends AEBaseScreen<C> {
 
     @Shadow(remap = false)
     @Final
-    private HashMap<Long, PatternContainerRecord> byId;
+    private Long2ObjectOpenHashMap<PatternContainerRecord> byId;
 
     protected PatternAccessTermScreenMixin(C menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);

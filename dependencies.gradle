@@ -26,11 +26,10 @@ dependencies {
 
     /* -------------------- jarJar 内嵌依赖 -------------------- */
     // gtolib 由 gradle/scripts/gtolib-pipeline.gradle 负责：打包 → 保护 → jarJar 嵌入
-    jarJar(implementation("dev:fastcollection:1.2"))
+    jarJar(implementation("com.gto.fastcollection:FastCollection:26.8.5"))
     jarJar(implementation("org.apache.commons:commons-math3:3.6.1"))
     jarJar(modImplementation("appeng:appliedenergistics2-forge-1.20.1:${project.ae2_version}"))
     jarJar(modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$project.gtceu_version"))
-    jarJar(modImplementation("com.hepdd.gtmthings:gtmthings-forge-1.20.1:$project.gtmt_version"))
     jarJar(modImplementation("com.gto.recipesearch:RecipeSearch:$project.recipeSearch_version"))
 
     /* -------------------- 全局运行范围 -------------------- */

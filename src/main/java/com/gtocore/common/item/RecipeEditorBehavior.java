@@ -64,8 +64,8 @@ import net.minecraftforge.fluids.FluidStack;
 
 import com.google.common.collect.Tables;
 import com.gto.datasynclib.datastream.DataComponentMap;
-import com.gto.fastcollection.O2OOpenCacheHashMap;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;

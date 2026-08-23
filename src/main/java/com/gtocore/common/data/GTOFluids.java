@@ -24,7 +24,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.versions.forge.ForgeVersion;
 
-import com.gto.fastcollection.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.registrate.Registrate;
 import com.gto.registrate.builders.FluidBuilder;
 import com.gto.registrate.providers.DataGenContext;

@@ -17,7 +17,7 @@ import com.gregtechceu.gtceu.data.recipe.configurable.RecipeRemoval;
 
 import net.minecraft.resources.ResourceLocation;
 
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.kyanite.deeperdarker.DeeperDarker;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 

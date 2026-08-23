@@ -54,7 +54,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.FUSION_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.LARGE_CHEMICAL_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines
-import com.gto.fastcollection.O2OOpenCacheHashMap
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap
 import com.gtolib.api.lang.CNEN
 import com.gtolib.utils.RegistriesUtils
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture

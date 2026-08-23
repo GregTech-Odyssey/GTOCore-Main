@@ -45,7 +45,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.hepdd.gtmthings.utils.FormatUtil;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;

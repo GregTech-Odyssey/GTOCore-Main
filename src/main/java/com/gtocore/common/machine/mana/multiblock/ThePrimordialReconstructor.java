@@ -25,7 +25,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import com.gto.datasynclib.util.holder.IntHolder;
 import com.gto.datasynclib.util.holder.LongHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
-import com.gto.fastcollection.O2IOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import com.gto.registrate.util.entry.ItemEntry;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
 import dev.shadowsoffire.apotheosis.adventure.affix.Affix;

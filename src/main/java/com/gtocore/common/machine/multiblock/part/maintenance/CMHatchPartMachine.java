@@ -13,7 +13,7 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.AutoMaintenanceHatch
 import net.minecraft.MethodsReturnNonnullByDefault;
 
 import com.google.common.collect.ImmutableSet;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import java.util.Set;
 

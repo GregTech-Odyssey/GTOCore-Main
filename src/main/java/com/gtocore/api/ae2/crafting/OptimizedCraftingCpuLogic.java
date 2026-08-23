@@ -44,7 +44,7 @@ import com.google.common.collect.SetMultimap;
 import com.gto.datasynclib.util.holder.IntHolder;
 import com.gto.datasynclib.util.holder.LongHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 

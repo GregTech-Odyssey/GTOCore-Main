@@ -9,7 +9,7 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import net.minecraft.core.BlockPos;
 
 import com.gto.datasynclib.datastream.DataComponentKey;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import java.util.Collections;
 import java.util.Set;

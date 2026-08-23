@@ -25,8 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-import com.gto.fastcollection.O2LOpenCacheHashMap;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.O2LOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;

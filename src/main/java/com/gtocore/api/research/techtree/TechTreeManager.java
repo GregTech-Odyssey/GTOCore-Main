@@ -28,7 +28,7 @@ import appeng.api.stacks.AEKey;
 
 import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.util.Registry;
-import com.gto.fastcollection.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

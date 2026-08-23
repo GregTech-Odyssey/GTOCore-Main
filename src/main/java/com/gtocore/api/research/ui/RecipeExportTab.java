@@ -35,7 +35,7 @@ import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEKey;
 import appeng.client.gui.me.common.StackSizeRenderer;
 
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;

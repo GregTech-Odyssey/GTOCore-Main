@@ -12,7 +12,7 @@ import net.minecraft.tags.TagLoader;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.gto.fastcollection.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import lombok.experimental.UtilityClass;

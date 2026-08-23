@@ -24,7 +24,7 @@ import com.gto.datasynclib.datastream.codec.ByteStreamCodec
 import com.gto.datasynclib.datastream.codec.ByteStreamDecoder
 import com.gto.datasynclib.datastream.codec.ByteStreamEncoder
 import com.gto.datasynclib.listener.ObjNotifiableHolder
-import com.gto.fastcollection.O2OOpenCacheHashMap
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap
 import com.gtolib.api.network.NetworkPack
 import com.hepdd.gtmthings.utils.TeamUtil
 import com.lowdragmc.lowdraglib.LDLib

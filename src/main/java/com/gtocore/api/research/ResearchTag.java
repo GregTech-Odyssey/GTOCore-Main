@@ -11,7 +11,7 @@ import net.minecraft.util.RandomSource;
 
 import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.util.Registry;
-import com.gto.fastcollection.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import lombok.Getter;
 
 import java.util.Map;

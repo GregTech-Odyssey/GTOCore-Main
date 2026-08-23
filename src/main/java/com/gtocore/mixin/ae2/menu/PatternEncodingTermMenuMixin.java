@@ -38,7 +38,7 @@ import appeng.util.ConfigInventory;
 import appeng.util.inv.AppEngInternalInventory;
 
 import com.glodblock.github.extendedae.common.tileentities.matrix.TileAssemblerMatrixPattern;
-import com.gto.fastcollection.OpenCacheHashSet;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;

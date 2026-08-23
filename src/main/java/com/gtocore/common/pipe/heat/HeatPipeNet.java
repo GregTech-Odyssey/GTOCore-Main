@@ -3,11 +3,11 @@ package com.gtocore.common.pipe.heat;
 import com.gregtechceu.gtceu.api.pipenet.LevelPipeNet;
 import com.gregtechceu.gtceu.api.pipenet.Node;
 import com.gregtechceu.gtceu.api.pipenet.PipeNet;
-import com.gregtechceu.gtceu.utils.collection.LoopIterator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 
+import com.gto.fastcollection.LoopIterator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
