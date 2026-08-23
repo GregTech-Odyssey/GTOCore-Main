@@ -112,6 +112,18 @@ public class DirectedTesseractMachine extends MetaMachine implements
     }
 
     @Override
+    public void onUnload() {
+        super.onUnload();
+        task.unsubscribe();
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        task.initialize(getLevel());
+    }
+
+    @Override
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         IFancyUIMachine.super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(
