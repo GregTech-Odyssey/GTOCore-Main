@@ -1003,7 +1003,8 @@ public final class GTOMachines {
             .allowCoverOnFront(true)
             .register();
 
-    public static final MachineDefinition INFINITE_PARALLEL_HATCH = machine("infinite_parallel_hatch", "无限并行仓", h -> new ParallelHatchPartMachine(h, -1))
+    public static final MachineDefinition INFINITE_PARALLEL_HATCH = machine("infinite_parallel_hatch", "无限并行控制仓", h -> new ParallelHatchPartMachine(h, -1))
+            .langValue("Infinite Parallel Control Hatch")
             .tier(MAX)
             .allRotation()
             .abilities(PARALLEL_HATCH)

@@ -488,7 +488,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("modular_configuration_maintenance_hatch")
 
         section(ComponentSlang.MainFunction)
-        function("插入不同的自动维护仓以启用不同的功能" translatedTo "Insert different auto-maintenance hatches to enable different functions.")
+        function("插入不同的可配置维护仓以启用不同的功能" translatedTo "Insert different configuration maintenance hatches to enable different functions.")
     }
 
     // 温度接口
