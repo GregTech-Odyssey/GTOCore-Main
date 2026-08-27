@@ -137,7 +137,7 @@ public final class RecipeTypeModify {
         STEAM_BOILER_RECIPES.onRecipeBuild((builder) -> {
             THERMAL_GENERATOR_FUELS.copyFrom(builder)
                     .EUt(-8)
-                    .duration((int) Math.sqrt(builder.getDuration()))
+                    .duration(builder.getDuration() / 16)
                     .save();
 
             MANA_GARDEN_FUEL.copyFrom(builder)
