@@ -49,9 +49,6 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
-import com.lowdragmc.lowdraglib.syncdata.IManaged;
-import com.lowdragmc.lowdraglib.syncdata.field.FieldManagedStorage;
-import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -82,8 +79,12 @@ public class DirectedTesseractMachine extends MetaMachine implements
     @SyncToClient
     @Getter
     public final List<TesseractDirectedTarget> targets;
+
     @SaveToDisk
-    private final UnfinishedPushList unfinishedPushLists;
+    private final List<TesseractDirectedTarget> unfinishedPushes = new ArrayList<>();
+    @SaveToDisk
+    private final List<GenericStack> unfinishedStacks = new ArrayList<>();
+
     private WeakReference<BlockEntity>[] blockEntityReference;
     private final ConditionalSubscriptionHandler task;
 
@@ -94,9 +95,8 @@ public class DirectedTesseractMachine extends MetaMachine implements
 
     public DirectedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        this.unfinishedPushLists = new UnfinishedPushList(this);
         targets = new ArrayList<>();
-        task = new ConditionalSubscriptionHandler(this, unfinishedPushLists::push, 20, unfinishedPushLists::hasWorkToDo);
+        task = new ConditionalSubscriptionHandler(this, this::push, 20, this::hasWorkToDo);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
             return IPatternProviderLogic.PushResult.REJECTED;
         var sparseInputs = processingPattern.getSparseInputs();
 
-        if (unfinishedPushLists.hasWorkToDo() ||
+        if (hasWorkToDo() ||
                 targets.isEmpty() ||
                 sparseInputs.length > targets.size()) {
             return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
@@ -199,9 +199,9 @@ public class DirectedTesseractMachine extends MetaMachine implements
             readyToPushStacks.put(toPush, subPushStack);
         }
 
-        remainingStacks.forEach(unfinishedPushLists::addTask);
+        remainingStacks.forEach(this::addTask);
         readyToPushStacks.forEach((toPush, stack) -> toPush.insert(stack.what(), stack.amount(), Actionable.MODULATE));
-        unfinishedPushLists.push();
+        this.push();
         return pushPatternSuccess.get();
     }
 
@@ -235,7 +235,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
 
     @Override
     public void onMachineRemoved() {
-        unfinishedPushLists.unfinishedStacks.forEach(stack -> {
+        this.unfinishedStacks.forEach(stack -> {
             if (getLevel() != null && stack.what() instanceof AEItemKey item) {
                 Block.popResource(getLevel(), getHolder().getBlockPos(), item.toStack(Math.toIntExact(stack.amount())));
             }
@@ -261,65 +261,36 @@ public class DirectedTesseractMachine extends MetaMachine implements
         return fluid;
     }
 
-    private static class UnfinishedPushList implements IManaged {
-
-        final DirectedTesseractMachine machine;
-
-        @SaveToDisk
-        final List<TesseractDirectedTarget> unfinishedPushes = new ArrayList<>();
-        @SaveToDisk
-        final List<GenericStack> unfinishedStacks = new ArrayList<>();
-
-        public static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(UnfinishedPushList.class);
-        @Getter
-        private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
-
-        private UnfinishedPushList(DirectedTesseractMachine machine) {
-            this.machine = machine;
-        }
-
-        @Override
-        public ManagedFieldHolder getFieldHolder() {
-            return MANAGED_FIELD_HOLDER;
-        }
-
-        @Override
-        public void onChanged() {
-            machine.onChanged();
-            machine.task.updateSubscription();
-        }
-
-        void push() {
-            if (machine.getLevel() instanceof ServerLevel level) {
-                machine.task.updateSubscription();
-                var server = level.getServer();
-                for (int i = 0; i < unfinishedPushes.size(); i++) {
-                    var target = unfinishedPushes.get(i);
-                    var stack = unfinishedStacks.get(i);
-                    var meStorage = getMEStorage(target, server);
-                    if (meStorage != null) {
-                        var inserted = meStorage.insert(stack.what(), stack.amount(), Actionable.MODULATE, IActionSource.empty());
-                        if (inserted == stack.amount()) {
-                            unfinishedPushes.remove(i);
-                            unfinishedStacks.remove(i);
-                            i--;
-                        } else {
-                            unfinishedStacks.set(i, new GenericStack(stack.what(), stack.amount() - inserted));
-                        }
+    void push() {
+        if (getLevel() instanceof ServerLevel level) {
+            task.updateSubscription();
+            var server = level.getServer();
+            for (int i = 0; i < unfinishedPushes.size(); i++) {
+                var target = unfinishedPushes.get(i);
+                var stack = unfinishedStacks.get(i);
+                var meStorage = getMEStorage(target, server);
+                if (meStorage != null) {
+                    var inserted = meStorage.insert(stack.what(), stack.amount(), Actionable.MODULATE, IActionSource.empty());
+                    if (inserted == stack.amount()) {
+                        unfinishedPushes.remove(i);
+                        unfinishedStacks.remove(i);
+                        i--;
+                    } else {
+                        unfinishedStacks.set(i, new GenericStack(stack.what(), stack.amount() - inserted));
                     }
                 }
             }
         }
+    }
 
-        boolean hasWorkToDo() {
-            return !unfinishedPushes.isEmpty();
-        }
+    boolean hasWorkToDo() {
+        return !unfinishedPushes.isEmpty();
+    }
 
-        void addTask(TesseractDirectedTarget target, GenericStack stack) {
-            unfinishedPushes.add(target);
-            unfinishedStacks.add(stack);
-            machine.onChanged();
-            machine.task.updateSubscription();
-        }
+    void addTask(TesseractDirectedTarget target, GenericStack stack) {
+        unfinishedPushes.add(target);
+        unfinishedStacks.add(stack);
+        onChanged();
+        task.updateSubscription();
     }
 }

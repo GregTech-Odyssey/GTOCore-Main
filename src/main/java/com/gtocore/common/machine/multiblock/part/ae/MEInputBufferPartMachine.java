@@ -57,7 +57,6 @@ import appeng.helpers.MultiCraftingTracker;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.annotations.SyncToServer;
 import com.gto.datasynclib.datastream.data.Data;
@@ -339,13 +338,9 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         public final MEInputBufferPartMachine machine;
         public final int index;
 
-        @SaveToDisk
         public final NotifiableNotConsumableItemHandler notConsumableItem;
-        @SaveToDisk
         public final NotifiableNotConsumableFluidHandler notConsumableFluid;
-        @SaveToDisk
         public final ExportOnlyAEItemList exportOnlyItemList;
-        @SaveToDisk
         public final ExportOnlyAEFluidList exportOnlyFluidList;
         public final NotifiableItemStackHandler circuitInventory;
 
@@ -355,13 +350,10 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         public AEKey reportingKey = null;
         @Getter
         @Setter
-        @SaveToDisk(defaultValue = "-1")
         public long minThreshold = -1;
         @Setter
         public long multiplier = 1;
-        @SaveToDisk(defaultValue = "false")
         private boolean isEmitterMode = false;
-        @SaveToDisk(defaultValue = "false")
         public boolean useRequest = false;
         @Setter
         public GTRecipeDefinition recipe;

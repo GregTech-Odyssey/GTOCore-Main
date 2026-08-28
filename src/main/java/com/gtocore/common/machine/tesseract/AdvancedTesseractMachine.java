@@ -75,7 +75,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     }
 
     @SaveToDisk
-    @SyncToClient
+    @SyncToClient(autoUpdate = false)
     public final List<BlockPos> poss = new ArrayList<>(20);
 
     @SaveToDisk
@@ -113,6 +113,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                     poss.add(pos);
                 }
             }
+            markFieldsForSync("poss");
         });
     }
 

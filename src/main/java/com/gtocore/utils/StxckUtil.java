@@ -1,13 +1,12 @@
 package com.gtocore.utils;
 
-import com.gregtechceu.gtceu.utils.ItemStackHashStrategy;
-
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
+import com.gto.datasynclib.util.ItemStackHashStrategy;
 import lombok.experimental.UtilityClass;
 
 import java.util.Objects;

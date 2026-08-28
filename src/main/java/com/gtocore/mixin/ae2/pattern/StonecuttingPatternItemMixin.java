@@ -6,7 +6,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.crafting.pattern.AEStonecuttingPattern;
 import appeng.crafting.pattern.StonecuttingPatternItem;
 
-import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import com.gto.fastcollection.cache.WeakValueIdentityHashCache;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Unique;
 public class StonecuttingPatternItemMixin {
 
     @Unique
-    private static final O2OOpenCacheHashMap<AEItemKey, AEStonecuttingPattern> gtolib$CACHE = new O2OOpenCacheHashMap<>();
+    private static final WeakValueIdentityHashCache<AEItemKey, AEStonecuttingPattern> gtolib$CACHE = new WeakValueIdentityHashCache<>();
 
     /**
      * @author .
@@ -28,9 +28,7 @@ public class StonecuttingPatternItemMixin {
         }
 
         try {
-            synchronized (gtolib$CACHE) {
-                return gtolib$CACHE.computeIfAbsent(what, k -> new AEStonecuttingPattern(what, level));
-            }
+            return gtolib$CACHE.getCache(what, k -> new AEStonecuttingPattern(k, level));
         } catch (Exception e) {
             return null;
         }

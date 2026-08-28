@@ -6,7 +6,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.crafting.pattern.AESmithingTablePattern;
 import appeng.crafting.pattern.SmithingTablePatternItem;
 
-import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import com.gto.fastcollection.cache.WeakValueIdentityHashCache;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Unique;
 public class SmithingTablePatternItemMixin {
 
     @Unique
-    private static final O2OOpenCacheHashMap<AEItemKey, AESmithingTablePattern> gtolib$CACHE = new O2OOpenCacheHashMap<>();
+    private static final WeakValueIdentityHashCache<AEItemKey, AESmithingTablePattern> gtolib$CACHE = new WeakValueIdentityHashCache<>();
 
     /**
      * @author .
@@ -28,9 +28,7 @@ public class SmithingTablePatternItemMixin {
         }
 
         try {
-            synchronized (gtolib$CACHE) {
-                return gtolib$CACHE.computeIfAbsent(what, k -> new AESmithingTablePattern(what, level));
-            }
+            return gtolib$CACHE.getCache(what, k -> new AESmithingTablePattern(k, level));
         } catch (Exception e) {
             return null;
         }
