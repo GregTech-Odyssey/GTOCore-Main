@@ -64,6 +64,7 @@ import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -348,17 +349,18 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
         public AEKey reportingKey = null;
         @Getter
-        private long minThreshold = -1;
-        @Getter
-        private long multiplier = 1;
+        @Setter
+        public long minThreshold = -1;
+        @Setter
+        public long multiplier = 1;
         private boolean isEmitterMode = false;
-        private boolean useRequest = false;
+        public boolean useRequest = false;
+        @Setter
         public GTRecipeDefinition recipe;
 
         /// used to prevent frequent disconnect and reconnect when the pattern is being crafted and the output
         /// fluctuates around the threshold
         private boolean disconnected = false;
-        private boolean suppressNestedChanges;
 
         MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, 32);
 
@@ -369,12 +371,6 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             this.notConsumableFluid = new NotifiableNotConsumableFluidHandler(machine, 9, 64000);
 
             this.exportOnlyItemList = new ExportOnlyAEItemList(machine, 16) {
-
-                @Override
-                public void onContentsChanged() {
-                    super.onContentsChanged();
-                    InternalSlot.this.markNestedContentsChanged();
-                }
 
                 @Override
                 public boolean isStocking() {
@@ -389,12 +385,6 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             this.exportOnlyFluidList = new ExportOnlyAEFluidList(machine, 16) {
 
                 @Override
-                public void onContentsChanged() {
-                    super.onContentsChanged();
-                    InternalSlot.this.markNestedContentsChanged();
-                }
-
-                @Override
                 public boolean isStocking() {
                     return true;
                 }
@@ -407,24 +397,6 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
             this.circuitInventory = CircuitHandler.create(machine);
             this.lockableInventory = new LockableItemStackHandler(notConsumableItem.storage);
-
-            var itemContentsChanged = notConsumableItem.storage.getOnContentsChanged();
-            notConsumableItem.storage.setOnContentsChanged(() -> onNestedContentsChanged(itemContentsChanged));
-            for (var tank : notConsumableFluid.getStorages()) {
-                var fluidContentsChanged = tank.getOnContentsChanged();
-                tank.setOnContentsChanged(() -> onNestedContentsChanged(fluidContentsChanged));
-            }
-            var circuitContentsChanged = circuitInventory.storage.getOnContentsChanged();
-            circuitInventory.storage.setOnContentsChanged(() -> onNestedContentsChanged(circuitContentsChanged));
-        }
-
-        private void onNestedContentsChanged(Runnable originalListener) {
-            originalListener.run();
-            markNestedContentsChanged();
-        }
-
-        private void markNestedContentsChanged() {
-            if (!suppressNestedChanges) markAsChanged();
         }
 
         private NotifiableNotConsumableItemHandler createShareInventory() {
@@ -474,39 +446,9 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             return isEmitterMode;
         }
 
-        public boolean getUseRequest() {
-            return useRequest;
-        }
-
-        public void setMinThreshold(long minThreshold) {
-            if (this.minThreshold == minThreshold) return;
-            this.minThreshold = minThreshold;
-            markAsChanged();
-        }
-
-        public void setMultiplier(long multiplier) {
-            if (this.multiplier == multiplier) return;
-            this.multiplier = multiplier;
-            markAsChanged();
-        }
-
         public void setEmitterMode(boolean emitterMode) {
-            if (isEmitterMode == emitterMode) return;
             isEmitterMode = emitterMode;
-            markAsChanged();
             ICraftingProvider.requestUpdate(machine.getMainNode());
-        }
-
-        public void setUseRequest(boolean useRequest) {
-            if (this.useRequest == useRequest) return;
-            this.useRequest = useRequest;
-            markAsChanged();
-        }
-
-        public void setRecipe(GTRecipeDefinition recipe) {
-            if (this.recipe == recipe) return;
-            this.recipe = recipe;
-            markAsChanged();
         }
 
         public void reloadConfig() {
@@ -682,50 +624,44 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
-            boolean oldSuppressNestedChanges = suppressNestedChanges;
-            suppressNestedChanges = true;
-            try {
-                if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) recipe = GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray()));
-                notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
-                if (tag.tags.get("tank") instanceof ListTag tanks) {
-                    for (int i = 0; i < tanks.size(); i++) {
-                        var t = tanks.getCompound(i);
-                        if (t.isEmpty()) continue;
-                        var tank = notConsumableFluid.getStorages()[i];
-                        tank.deserializeNBT(t);
-                    }
+            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
+            notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
+            if (tag.tags.get("tank") instanceof ListTag tanks) {
+                for (int i = 0; i < tanks.size(); i++) {
+                    var t = tanks.getCompound(i);
+                    if (t.isEmpty()) continue;
+                    var tank = notConsumableFluid.getStorages()[i];
+                    tank.deserializeNBT(t);
                 }
-                if (tag.tags.get("exI") instanceof ListTag exportItems) {
-                    var slots = exportOnlyItemList.getInventory();
-                    for (int i = 0; i < exportItems.size() && i < slots.length; i++) {
-                        var t = exportItems.getCompound(i);
-                        slots[i].deserializeNBT(t);
-                    }
-                }
-                if (tag.tags.get("exF") instanceof ListTag exportFluids) {
-                    var slots = exportOnlyFluidList.getInventory();
-                    for (int i = 0; i < exportFluids.size() && i < slots.length; i++) {
-                        var t = exportFluids.getCompound(i);
-                        slots[i].deserializeNBT(t);
-                    }
-                }
-                if (tag.tags.get("emitterMode") instanceof ByteTag emitterMode) {
-                    isEmitterMode = emitterMode.getAsByte() != 0;
-                }
-                if (tag.tags.get("useRequest") instanceof ByteTag useReq) {
-                    this.useRequest = useReq.getAsByte() != 0;
-                }
-                if (tag.tags.get("minThreshold") instanceof LongTag minThres) {
-                    this.minThreshold = minThres.getAsLong();
-                }
-                if (tag.tags.get("multiplier") instanceof LongTag mul) {
-                    this.multiplier = mul.getAsLong();
-                }
-                var c = tag.getInt("c");
-                if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
-            } finally {
-                suppressNestedChanges = oldSuppressNestedChanges;
             }
+            if (tag.tags.get("exI") instanceof ListTag exportItems) {
+                var slots = exportOnlyItemList.getInventory();
+                for (int i = 0; i < exportItems.size() && i < slots.length; i++) {
+                    var t = exportItems.getCompound(i);
+                    slots[i].deserializeNBT(t);
+                }
+            }
+            if (tag.tags.get("exF") instanceof ListTag exportFluids) {
+                var slots = exportOnlyFluidList.getInventory();
+                for (int i = 0; i < exportFluids.size() && i < slots.length; i++) {
+                    var t = exportFluids.getCompound(i);
+                    slots[i].deserializeNBT(t);
+                }
+            }
+            if (tag.tags.get("emitterMode") instanceof ByteTag emitterMode) {
+                isEmitterMode = emitterMode.getAsByte() != 0;
+            }
+            if (tag.tags.get("useRequest") instanceof ByteTag useReq) {
+                this.useRequest = useReq.getAsByte() != 0;
+            }
+            if (tag.tags.get("minThreshold") instanceof LongTag minThres) {
+                this.minThreshold = minThres.getAsLong();
+            }
+            if (tag.tags.get("multiplier") instanceof LongTag mul) {
+                this.multiplier = mul.getAsLong();
+            }
+            var c = tag.getInt("c");
+            if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
         }
 
         @Override

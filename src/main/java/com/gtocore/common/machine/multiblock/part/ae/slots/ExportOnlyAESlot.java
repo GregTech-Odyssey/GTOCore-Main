@@ -16,8 +16,6 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 public abstract class ExportOnlyAESlot extends AbstractDataSerializable implements IConfigurableSlot {
 
     private static final String CONFIG_TAG = "config";
@@ -44,7 +42,6 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
     public GenericStack requestStack() {
         if (this.stock != null && this.stock.amount() <= 0) {
             this.stock = null;
-            onContentsChanged();
         }
         if (this.config == null || (this.stock != null && !this.config.what().matches(this.stock))) {
             return null;
@@ -62,7 +59,6 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
     public GenericStack exceedStack() {
         if (this.stock != null && this.stock.amount() <= 0) {
             this.stock = null;
-            onContentsChanged();
         }
         if (this.config == null && this.stock != null) {
             return copy(this.stock);
@@ -79,7 +75,6 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
     }
 
     final void onContentsChanged() {
-        markAsChanged();
         if (handler != null) handler.onContentsChanged();
     }
 
@@ -123,9 +118,7 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
 
     @Override
     public void setConfig(@Nullable final GenericStack config) {
-        if (Objects.equals(this.config, config)) return;
         this.config = config;
-        onContentsChanged();
     }
 
     @Override

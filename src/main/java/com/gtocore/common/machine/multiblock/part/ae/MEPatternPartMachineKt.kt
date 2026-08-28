@@ -13,7 +13,6 @@ import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
-import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionHand
@@ -50,14 +49,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler
 import com.gregtechceu.gtceu.utils.TaskHandler
 import com.gregtechceu.gtceu.utils.asm.EmptyMethodChecker
-import com.gto.datasynclib.AbstractDataSerializable
-import com.gto.datasynclib.DataSyncCodec
-import com.gto.datasynclib.LogicalSide
 import com.gto.datasynclib.annotations.SaveToDisk
 import com.gto.datasynclib.annotations.SyncToClient
-import com.gto.datasynclib.datastream.data.Data
 import com.gto.datasynclib.listener.IntNotifiableHolder
-import com.gto.datasynclib.util.DataCodecs
 import com.gtolib.api.ae2.MyPatternDetailsHelper
 import com.gtolib.api.ae2.pattern.IParallelPatternDetails
 import com.gtolib.api.annotation.DataGeneratorScanned
@@ -68,6 +62,7 @@ import com.lowdragmc.lowdraglib.gui.util.ClickData
 import com.lowdragmc.lowdraglib.gui.widget.Widget
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup
 import com.lowdragmc.lowdraglib.syncdata.IContentChangeAware
+import com.lowdragmc.lowdraglib.syncdata.ITagSerializable
 
 import java.util.function.IntSupplier
 import javax.annotation.ParametersAreNonnullByDefault
@@ -179,7 +174,6 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
 
         oldPatternDetails.takeIf { it != newPatternDetails }.let {
             internalInv.onPatternChange()
-            internalInv.markAsChanged()
         }
 
         updatePatterns()
@@ -496,26 +490,11 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
 
     // ==================== 内部类 ====================
     abstract class AbstractInternalSlot :
-        AbstractDataSerializable(),
+        ITagSerializable<CompoundTag>,
         IContentChangeAware {
         abstract fun pushPattern(patternDetails: IPatternDetails, inputHolder: Array<KeyCounter>): Boolean
         abstract fun onPatternChange()
-        open fun serializeNBT(): CompoundTag = CompoundTag()
-        abstract fun deserializeNBT(nbt: CompoundTag)
-
-        override fun writeBuffer(side: LogicalSide, data: FriendlyByteBuf) {
-            DataSyncCodec.COMPOUND_TAG_CODEC.encode(data, serializeNBT())
-        }
-
-        override fun readBuffer(side: LogicalSide, data: FriendlyByteBuf) {
-            deserializeNBT(DataSyncCodec.COMPOUND_TAG_CODEC.decode(data))
-        }
-
-        override fun writeData(): Data = DataCodecs.COMPOUND_TAG_CODEC.encode(serializeNBT())
-
-        override fun readData(data: Data, dataVersion: Int) {
-            deserializeNBT(DataCodecs.COMPOUND_TAG_CODEC.decode(data, dataVersion))
-        }
+        override fun serializeNBT(): CompoundTag = CompoundTag()
     }
 }
 

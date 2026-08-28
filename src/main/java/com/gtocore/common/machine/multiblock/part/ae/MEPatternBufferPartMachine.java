@@ -550,7 +550,6 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         }
 
         public void setLock(boolean lock) {
-            boolean changed = this.lock != lock;
             if (this.lock) {
                 circuitInventory.storage.setStackInSlot(0, ItemStack.EMPTY);
                 for (int i = 0; i < 9; i++) {
@@ -559,16 +558,9 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             }
             this.lock = lock;
             lockableInventory.setLock(lock);
-            if (changed) markAsChanged();
         }
 
         public void setRecipe(@Nullable GTRecipeDefinition recipe) {
-            var oldRecipe = this.recipe;
-            loadRecipe(recipe);
-            if (oldRecipe != this.recipe) markAsChanged();
-        }
-
-        private void loadRecipe(@Nullable GTRecipeDefinition recipe) {
             if (!shouldLockRecipe) return;
             if (recipe != null && recipe.registered) {
                 this.recipe = recipe;
@@ -747,7 +739,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
-            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) loadRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
+            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
             ListTag items = tag.getList("inventory", Tag.TAG_COMPOUND);
             for (Tag t : items) {
                 if (!(t instanceof CompoundTag ct)) continue;
@@ -779,8 +771,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             }
             var c = tag.getInt("c");
             if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
-            lock = tag.getBoolean("l");
-            lockableInventory.setLock(lock);
+            setLock(tag.getBoolean("l"));
         }
     }
 
