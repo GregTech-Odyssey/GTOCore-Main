@@ -69,6 +69,7 @@ public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPat
             if (patternDetails instanceof IMolecularAssemblerSupportedPattern pattern && pattern.getOutputs().length == 1 && pattern.getOutputs()[0].what() instanceof AEItemKey itemKey) {
                 if (output == null) output = itemKey.toStack();
                 amount += pattern.getOutputs()[0].amount();
+                markAsChanged();
                 machine.onContentsChanged.run();
                 return true;
             }
