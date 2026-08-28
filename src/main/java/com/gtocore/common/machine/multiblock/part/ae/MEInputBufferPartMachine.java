@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.part.ae;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
+import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemSlot;
 import com.gtocore.common.machine.multiblock.part.ae.widget.MEInputBufferPartMachineUIKt;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt;
 import com.gtocore.common.machine.trait.InternalSlotRecipeHandler;
@@ -10,24 +11,17 @@ import com.gtocore.common.machine.trait.InternalSlotRecipeHandler;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.gui.ktflexible.VBoxBuilder;
-import com.gtolib.api.machine.trait.NotifiableNotConsumableFluidHandler;
-import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
-import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
-import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.client.Minecraft;
@@ -45,12 +39,12 @@ import appeng.api.networking.IStackWatcher;
 import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.crafting.ICraftingRequester;
+import appeng.api.networking.crafting.ICraftingService;
 import appeng.api.networking.crafting.ICraftingWatcherNode;
 import appeng.api.stacks.*;
 import appeng.api.storage.MEStorage;
 import appeng.client.gui.me.common.StackSizeRenderer;
 import appeng.crafting.pattern.AEProcessingPattern;
-import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
 import appeng.helpers.MultiCraftingTracker;
 
@@ -59,7 +53,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.annotations.SyncToServer;
-import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.*;
@@ -232,7 +225,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
     public @NotNull IPatternDetails convertPattern(@NotNull IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.notConsumableItem.storage, () -> true);
+                slot.circuitInventory, slot.shareInventory.storage, () -> true);
     }
 
     @Override
@@ -333,19 +326,11 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         };
     }
 
-    public static final class InternalSlot extends AbstractRecipeInternalSlot implements ICraftingRequester {
+    public static final class InternalSlot extends MEPatternBufferPartMachine.InternalSlot implements ICraftingRequester {
 
-        public final MEInputBufferPartMachine machine;
-        public final int index;
-
-        public final NotifiableNotConsumableItemHandler notConsumableItem;
-        public final NotifiableNotConsumableFluidHandler notConsumableFluid;
-        public final ExportOnlyAEItemList exportOnlyItemList;
-        public final ExportOnlyAEFluidList exportOnlyFluidList;
-        public final NotifiableItemStackHandler circuitInventory;
-
-        @Getter
-        public final LockableItemStackHandler lockableInventory;
+        public final MEInputBufferPartMachine inputBuffer;
+        public final AEKeyMap<AEItemKey> itemRequest = new AEKeyMap<>();
+        public final AEKeyMap<AEFluidKey> fluidRequest = new AEKeyMap<>();
 
         public AEKey reportingKey = null;
         @Getter
@@ -355,80 +340,17 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         public long multiplier = 1;
         private boolean isEmitterMode = false;
         public boolean useRequest = false;
-        @Setter
-        public GTRecipeDefinition recipe;
-
         /// used to prevent frequent disconnect and reconnect when the pattern is being crafted and the output
         /// fluctuates around the threshold
         private boolean disconnected = false;
 
-        MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, 32);
+        private MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, 0);
+        private int craftingSlotCount;
+        private long requestVersion;
 
         private InternalSlot(MEInputBufferPartMachine machine, int index) {
-            this.machine = machine;
-            this.index = index;
-            this.notConsumableItem = createShareInventory();
-            this.notConsumableFluid = new NotifiableNotConsumableFluidHandler(machine, 9, 64000);
-
-            this.exportOnlyItemList = new ExportOnlyAEItemList(machine, 16) {
-
-                @Override
-                public boolean isStocking() {
-                    return true;
-                }
-
-                @Override
-                public boolean isAutoPull() {
-                    return true;
-                }
-            };
-            this.exportOnlyFluidList = new ExportOnlyAEFluidList(machine, 16) {
-
-                @Override
-                public boolean isStocking() {
-                    return true;
-                }
-
-                @Override
-                public boolean isAutoPull() {
-                    return true;
-                }
-            };
-
-            this.circuitInventory = CircuitHandler.create(machine);
-            this.lockableInventory = new LockableItemStackHandler(notConsumableItem.storage);
-        }
-
-        private NotifiableNotConsumableItemHandler createShareInventory() {
-            var h = new NotifiableNotConsumableItemHandler(machine, 9, IO.NONE);
-            h.setFilter(stack -> !(stack.getItem() instanceof EncodedPatternItem));
-            return h;
-        }
-
-        public boolean isEmpty() {
-            return exportOnlyItemList.isEmpty() && exportOnlyFluidList.isEmpty();
-        }
-
-        private void refund() {
-            var network = machine.getMainNode().getGrid();
-            if (network != null) {
-                MEStorage networkInv = network.getStorageService().getInventory();
-                for (var aeSlot : exportOnlyItemList.getInventory()) {
-                    GenericStack stock = aeSlot.getStock();
-                    if (stock != null) {
-                        networkInv.insert(stock.what(), stock.amount(), Actionable.MODULATE,
-                                machine.getActionSourceField());
-                    }
-                }
-                for (var aeTank : exportOnlyFluidList.getInventory()) {
-                    GenericStack stock = aeTank.getStock();
-                    if (stock != null) {
-                        networkInv.insert(stock.what(), stock.amount(), Actionable.MODULATE,
-                                machine.getActionSourceField());
-                    }
-                }
-                markContentsChanged();
-            }
+            super(machine, index);
+            this.inputBuffer = machine;
         }
 
         @Override
@@ -438,7 +360,13 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             for (var job : craftingTracker.getRequestedJobs()) {
                 job.cancel();
             }
+            craftingSlotCount = -1;
             reloadConfig();
+        }
+
+        @Override
+        public void setRecipe(@Nullable GTRecipeDefinition recipe) {
+            this.recipe = recipe;
         }
 
         public boolean isEmitterMode() {
@@ -448,59 +376,213 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
         public void setEmitterMode(boolean emitterMode) {
             isEmitterMode = emitterMode;
-            ICraftingProvider.requestUpdate(machine.getMainNode());
+            ICraftingProvider.requestUpdate(inputBuffer.getMainNode());
         }
 
         public void reloadConfig() {
             final var oldWatcher = reportingKey;
             if (oldWatcher != null) {
-                machine.watcher2SlotMap.remove(oldWatcher, this);
-                machine.slot2WatcherMap.remove(this);
+                inputBuffer.watcher2SlotMap.remove(oldWatcher, this);
+                inputBuffer.slot2WatcherMap.remove(this);
             }
-            var newPattern = machine.getInternalPatternInventory().getStackInSlot(index);
-            var details = machine.decodePattern(newPattern, index);
+            clearConfig();
+            var newPattern = inputBuffer.getInternalPatternInventory().getStackInSlot(index);
+            var details = inputBuffer.decodePattern(newPattern, index);
             if (details == null) {
                 reportingKey = null;
-                for (var slot : exportOnlyItemList.getInventory()) {
-                    slot.setConfig(null);
-                }
-                for (var slot : exportOnlyFluidList.getInventory()) {
-                    slot.setConfig(null);
-                }
+                resizeCraftingTracker();
                 return;
             }
             if (details instanceof AEProcessingPattern aeProcessingPattern) {
                 reportingKey = aeProcessingPattern.getPrimaryOutput().what();
-                machine.watcher2SlotMap.put(reportingKey, this);
-                machine.slot2WatcherMap.put(this, reportingKey);
+                inputBuffer.watcher2SlotMap.put(reportingKey, this);
+                inputBuffer.slot2WatcherMap.put(this, reportingKey);
 
                 if (newPattern.getOrCreateTag().tags.get("recipe") instanceof StringTag stringTag) {
                     var recipe = RecipeBuilder.get(RLUtils.parse(stringTag.getAsString()));
                     setRecipe(recipe);
                 }
 
-                int itemIdx = 0, fluidIdx = 0;
-                for (var ingredient : aeProcessingPattern.getSparseInputs()) {
-                    var key = ingredient.what();
-                    var amount = ingredient.amount();
-                    var configStack = new GenericStack(key, amount * multiplier);
-                    if (key instanceof AEItemKey) {
-                        if (itemIdx >= exportOnlyItemList.getInventory().length) continue;
-                        exportOnlyItemList.getInventory()[itemIdx++].setConfig(configStack);
-                    } else if (key instanceof AEFluidKey) {
-                        if (fluidIdx >= exportOnlyFluidList.getInventory().length) continue;
-                        exportOnlyFluidList.getInventory()[fluidIdx++].setConfig(configStack);
+                var inputs = aeProcessingPattern.getSparseInputs();
+                int itemInputCount = 0;
+                int fluidInputCount = 0;
+                for (var ingredient : inputs) {
+                    if (ingredient.what() instanceof AEItemKey) {
+                        itemInputCount++;
+                    } else if (ingredient.what() instanceof AEFluidKey) {
+                        fluidInputCount++;
                     }
                 }
+                itemRequest.ensureCapacity(itemInputCount);
+                fluidRequest.ensureCapacity(fluidInputCount);
+                for (var ingredient : inputs) {
+                    var key = ingredient.what();
+                    var amount = ingredient.amount() * multiplier;
+                    if (key instanceof AEItemKey itemKey) {
+                        itemRequest.insert(itemKey, amount);
+                    } else if (key instanceof AEFluidKey fluidKey) {
+                        fluidRequest.insert(fluidKey, amount);
+                    }
+                }
+                itemInventory.ensureCapacity(itemRequest.size());
+                fluidInventory.ensureCapacity(fluidRequest.size());
+                resizeCraftingTracker();
             }
         }
 
         private void clearConfig() {
-            for (var slot : exportOnlyItemList.getInventory()) {
-                slot.setConfig(null);
+            itemRequest.clear();
+            fluidRequest.clear();
+            requestVersion++;
+        }
+
+        private void resizeCraftingTracker() {
+            int size = itemRequest.size() + fluidRequest.size();
+            if (size != craftingSlotCount) {
+                craftingTracker = new MultiCraftingTracker(this, size);
+                craftingSlotCount = size;
             }
-            for (var slot : exportOnlyFluidList.getInventory()) {
-                slot.setConfig(null);
+        }
+
+        public ExportOnlyAEItemList createItemRequestView() {
+            int[] index = { 0 };
+            return new ExportOnlyAEItemList(inputBuffer, 16, () -> new ItemRequestViewSlot(this, index[0]++)) {
+
+                @Override
+                public boolean isStocking() {
+                    return true;
+                }
+
+                @Override
+                public boolean isAutoPull() {
+                    return true;
+                }
+            };
+        }
+
+        public ExportOnlyAEFluidList createFluidRequestView() {
+            int[] index = { 0 };
+            return new ExportOnlyAEFluidList(inputBuffer, 16, () -> new FluidRequestViewSlot(this, index[0]++)) {
+
+                @Override
+                public boolean isStocking() {
+                    return true;
+                }
+
+                @Override
+                public boolean isAutoPull() {
+                    return true;
+                }
+            };
+        }
+
+        private static final class ItemRequestViewSlot extends ExportOnlyAEItemSlot {
+
+            private final InternalSlot owner;
+            private final int index;
+            private GenericStack cachedConfig;
+            private GenericStack cachedStock;
+            private long cachedRequestVersion = Long.MIN_VALUE;
+            private AEItemKey cachedKey;
+
+            private ItemRequestViewSlot(InternalSlot owner, int index) {
+                this.owner = owner;
+                this.index = index;
+            }
+
+            @Override
+            public @Nullable GenericStack getConfig() {
+                AEItemKey key = getKey();
+                long amount = key == null ? 0 : owner.itemRequest.getLong(key);
+                if (key == null || amount <= 0) return cachedConfig = null;
+                if (cachedConfig == null || cachedConfig.what() != key || cachedConfig.amount() != amount) {
+                    cachedConfig = new GenericStack(key, amount);
+                }
+                return cachedConfig;
+            }
+
+            @Override
+            public @Nullable GenericStack getStock() {
+                AEItemKey key = getKey();
+                long amount = key == null ? 0 : owner.itemInventory.getLong(key);
+                if (key == null || amount <= 0) return cachedStock = null;
+                if (cachedStock == null || cachedStock.what() != key || cachedStock.amount() != amount) {
+                    cachedStock = new GenericStack(key, amount);
+                }
+                return cachedStock;
+            }
+
+            @Override
+            public ExportOnlyAEItemSlot copy() {
+                var copy = new ExportOnlyAEItemSlot();
+                copy.setConfig(getConfig());
+                copy.setStock(getStock());
+                return copy;
+            }
+
+            private @Nullable AEItemKey getKey() {
+                if (cachedRequestVersion == owner.requestVersion) return cachedKey;
+                cachedRequestVersion = owner.requestVersion;
+                int current = 0;
+                for (var entry : owner.itemRequest) {
+                    if (current++ == index) return cachedKey = entry.getKey();
+                }
+                return cachedKey = null;
+            }
+        }
+
+        private static final class FluidRequestViewSlot extends ExportOnlyAEFluidSlot {
+
+            private final InternalSlot owner;
+            private final int index;
+            private GenericStack cachedConfig;
+            private GenericStack cachedStock;
+            private long cachedRequestVersion = Long.MIN_VALUE;
+            private AEFluidKey cachedKey;
+
+            private FluidRequestViewSlot(InternalSlot owner, int index) {
+                this.owner = owner;
+                this.index = index;
+            }
+
+            @Override
+            public @Nullable GenericStack getConfig() {
+                AEFluidKey key = getKey();
+                long amount = key == null ? 0 : owner.fluidRequest.getLong(key);
+                if (key == null || amount <= 0) return cachedConfig = null;
+                if (cachedConfig == null || cachedConfig.what() != key || cachedConfig.amount() != amount) {
+                    cachedConfig = new GenericStack(key, amount);
+                }
+                return cachedConfig;
+            }
+
+            @Override
+            public @Nullable GenericStack getStock() {
+                AEFluidKey key = getKey();
+                long amount = key == null ? 0 : owner.fluidInventory.getLong(key);
+                if (key == null || amount <= 0) return cachedStock = null;
+                if (cachedStock == null || cachedStock.what() != key || cachedStock.amount() != amount) {
+                    cachedStock = new GenericStack(key, amount);
+                }
+                return cachedStock;
+            }
+
+            @Override
+            public ExportOnlyAEFluidSlot copy() {
+                var copy = new ExportOnlyAEFluidSlot();
+                copy.setConfig(getConfig());
+                copy.setStock(getStock());
+                return copy;
+            }
+
+            private @Nullable AEFluidKey getKey() {
+                if (cachedRequestVersion == owner.requestVersion) return cachedKey;
+                cachedRequestVersion = owner.requestVersion;
+                int current = 0;
+                for (var entry : owner.fluidRequest) {
+                    if (current++ == index) return cachedKey = entry.getKey();
+                }
+                return cachedKey = null;
             }
         }
 
@@ -524,130 +606,77 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
                     return;
                 }
                 disconnected = true;
-                machine.disconnectStates[index] = true;
+                inputBuffer.disconnectStates[index] = true;
                 clearConfig();
             } else {
                 if (disconnected) {
                     reloadConfig();
                 }
                 disconnected = false;
-                machine.disconnectStates[index] = false;
+                inputBuffer.disconnectStates[index] = false;
             }
-            var cg = grid.getCraftingService();
             MEStorage networkInv = grid.getStorageService().getInventory();
-            for (int i = 0; i < exportOnlyItemList.getConfigurableSlots(); i++) {
-                var aeSlot = exportOnlyItemList.getInventory()[i];
-                GenericStack exceedItem = aeSlot.exceedStack();
-                if (exceedItem != null) {
-                    long total = exceedItem.amount();
-                    long inserted = networkInv.insert(exceedItem.what(), exceedItem.amount(), Actionable.MODULATE, machine.getActionSourceField());
-                    if (inserted > 0) {
-                        aeSlot.extract(inserted, false, true);
-                        continue;
-                    } else {
-                        aeSlot.extract(total, false, true);
-                    }
+            ICraftingService craftingService = grid.getCraftingService();
+            int craftingSlot = syncInventory(itemRequest, itemInventory, networkInv, craftingService, 0);
+            syncInventory(fluidRequest, fluidInventory, networkInv, craftingService, craftingSlot);
+        }
+
+        private <K extends AEKey> int syncInventory(AEKeyMap<K> requests, AEKeyMap<K> inventory,
+                                                    MEStorage networkInv, ICraftingService craftingService,
+                                                    int craftingSlot) {
+            boolean changed = false;
+            for (var it = inventory.iterator(); it.hasNext();) {
+                var entry = it.next();
+                long stored = entry.getLongValue();
+                long requested = requests.getLong(entry.getKey());
+                long excess = stored - requested;
+                if (excess <= 0) continue;
+                long inserted = networkInv.insert(entry.getKey(), excess, Actionable.MODULATE,
+                        inputBuffer.getActionSourceField());
+                long remaining = stored - (inserted > 0 ? inserted : excess);
+                if (remaining > 0) {
+                    entry.setValue(remaining);
+                } else {
+                    it.remove();
                 }
-                GenericStack reqItem = aeSlot.requestStack();
-                if (reqItem != null) {
-                    long extracted = networkInv.extract(reqItem.what(), reqItem.amount(), Actionable.MODULATE, machine.getActionSourceField());
-                    if (useRequest && extracted < reqItem.amount()) {
-                        craftingTracker.handleCrafting(i, reqItem.what(), reqItem.amount() - extracted,
-                                machine.getLevel(), cg, machine.getActionSourceField());
-                    }
-                    if (extracted != 0) {
-                        aeSlot.addStack(new GenericStack(reqItem.what(), extracted));
-                    }
+                changed = true;
+            }
+            for (var it = requests.iterator(); it.hasNext(); craftingSlot++) {
+                var entry = it.next();
+                long missing = entry.getLongValue() - inventory.getLong(entry.getKey());
+                if (missing <= 0) continue;
+                long extracted = networkInv.extract(entry.getKey(), missing, Actionable.MODULATE,
+                        inputBuffer.getActionSourceField());
+                if (useRequest && extracted < missing) {
+                    craftingTracker.handleCrafting(craftingSlot, entry.getKey(), missing - extracted,
+                            inputBuffer.getLevel(), craftingService, inputBuffer.getActionSourceField());
+                }
+                if (extracted > 0) {
+                    inventory.insert(entry.getKey(), extracted);
+                    changed = true;
                 }
             }
-            for (int i = 0; i < exportOnlyFluidList.getTanks(); i++) {
-                ExportOnlyAEFluidSlot aeTank = exportOnlyFluidList.getInventory()[i];
-                GenericStack exceedFluid = aeTank.exceedStack();
-                if (exceedFluid != null) {
-                    long total = exceedFluid.amount();
-                    long inserted = networkInv.insert(exceedFluid.what(), exceedFluid.amount(), Actionable.MODULATE, machine.getActionSourceField());
-                    if (inserted > 0) {
-                        aeTank.extract(inserted, false, true);
-                        continue;
-                    } else {
-                        aeTank.extract(total, false, true);
-                    }
-                }
-                GenericStack reqFluid = aeTank.requestStack();
-                if (reqFluid != null) {
-                    long extracted = networkInv.extract(reqFluid.what(), reqFluid.amount(), Actionable.MODULATE, machine.getActionSourceField());
-                    if (useRequest && extracted < reqFluid.amount()) {
-                        craftingTracker.handleCrafting(i + exportOnlyItemList.getConfigurableSlots(), reqFluid.what(), reqFluid.amount() - extracted,
-                                machine.getLevel(), cg, machine.getActionSourceField());
-                    }
-                    if (extracted > 0) {
-                        aeTank.addStack(new GenericStack(reqFluid.what(), extracted));
-                    }
-                }
+            if (changed) {
+                markContentsChanged();
             }
+            return craftingSlot;
         }
 
         @Override
         public @NotNull CompoundTag serializeNBT() {
             CompoundTag tag = super.serializeNBT();
-            if (recipe != null) {
-                tag.putByteArray("recipe", GTRecipeDefinition.DATA_CODEC.encode(recipe).writeToBytes());
-            }
-            if (!notConsumableItem.isEmpty()) tag.put("inv", notConsumableItem.storage.serializeNBT());
-            if (!notConsumableFluid.isEmpty()) {
-                ListTag tanks = new ListTag();
-                for (var tank : notConsumableFluid.getStorages()) {
-                    if (tank.isEmpty()) {
-                        tanks.add(new CompoundTag());
-                    } else tanks.add(tank.serializeNBT());
-                }
-                tag.put("tank", tanks);
-            }
-            ListTag exportItems = new ListTag();
-            for (var slot : exportOnlyItemList.getInventory()) {
-                exportItems.add(slot.serializeNBT());
-            }
-            tag.put("exI", exportItems);
-            ListTag exportFluids = new ListTag();
-            for (var slot : exportOnlyFluidList.getInventory()) {
-                exportFluids.add(slot.serializeNBT());
-            }
-            tag.put("exF", exportFluids);
             tag.putBoolean("emitterMode", isEmitterMode);
             tag.putBoolean("useRequest", useRequest);
             tag.putLong("minThreshold", minThreshold);
             tag.putLong("multiplier", multiplier);
-            var c = IntCircuitBehaviour.getCircuitConfiguration(circuitInventory.storage.getStackInSlot(0));
-            if (c > 0) tag.putInt("c", c);
             return tag;
         }
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
-            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
-            notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
-            if (tag.tags.get("tank") instanceof ListTag tanks) {
-                for (int i = 0; i < tanks.size(); i++) {
-                    var t = tanks.getCompound(i);
-                    if (t.isEmpty()) continue;
-                    var tank = notConsumableFluid.getStorages()[i];
-                    tank.deserializeNBT(t);
-                }
-            }
-            if (tag.tags.get("exI") instanceof ListTag exportItems) {
-                var slots = exportOnlyItemList.getInventory();
-                for (int i = 0; i < exportItems.size() && i < slots.length; i++) {
-                    var t = exportItems.getCompound(i);
-                    slots[i].deserializeNBT(t);
-                }
-            }
-            if (tag.tags.get("exF") instanceof ListTag exportFluids) {
-                var slots = exportOnlyFluidList.getInventory();
-                for (int i = 0; i < exportFluids.size() && i < slots.length; i++) {
-                    var t = exportFluids.getCompound(i);
-                    slots[i].deserializeNBT(t);
-                }
-            }
+            super.deserializeNBT(tag);
+            migrateLegacyInventory(tag.getList("exI", Tag.TAG_COMPOUND), itemInventory, AEItemKey.class);
+            migrateLegacyInventory(tag.getList("exF", Tag.TAG_COMPOUND), fluidInventory, AEFluidKey.class);
             if (tag.tags.get("emitterMode") instanceof ByteTag emitterMode) {
                 isEmitterMode = emitterMode.getAsByte() != 0;
             }
@@ -660,8 +689,17 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             if (tag.tags.get("multiplier") instanceof LongTag mul) {
                 this.multiplier = mul.getAsLong();
             }
-            var c = tag.getInt("c");
-            if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
+        }
+
+        private static <K extends AEKey> void migrateLegacyInventory(ListTag legacySlots, AEKeyMap<K> inventory,
+                                                                     Class<K> keyType) {
+            if (!inventory.isEmpty()) return;
+            for (Tag legacySlot : legacySlots) {
+                if (!(legacySlot instanceof CompoundTag slotTag)) continue;
+                GenericStack stock = GenericStack.readTag(slotTag.getCompound("stock"));
+                if (stock == null || !keyType.isInstance(stock.what()) || stock.amount() <= 0) continue;
+                inventory.insert(keyType.cast(stock.what()), stock.amount());
+            }
         }
 
         @Override
@@ -676,25 +714,45 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
         @Override
         public long insertCraftedItems(ICraftingLink link, AEKey what, long amount, Actionable mode) {
+            if (inputBuffer.getMainNode().getGrid() == null) return 0;
+            if (what instanceof AEItemKey itemKey) {
+                return insertCrafted(itemKey, amount, mode, itemRequest, itemInventory);
+            }
+            if (what instanceof AEFluidKey fluidKey) {
+                return insertCrafted(fluidKey, amount, mode, fluidRequest, fluidInventory);
+            }
             return 0;
+        }
+
+        private <K extends AEKey> long insertCrafted(K what, long amount, Actionable mode,
+                                                     AEKeyMap<K> requests, AEKeyMap<K> inventory) {
+            long remainingRequest = requests.getLong(what) - inventory.getLong(what);
+            long inserted = Math.min(amount, remainingRequest);
+            if (inserted <= 0) return 0;
+            if (mode == Actionable.MODULATE) {
+                inventory.insert(what, inserted);
+                markContentsChanged();
+            }
+            return inserted;
         }
 
         @Override
         public void jobStateChange(ICraftingLink link) {
             craftingTracker.jobStateChange(link);
-            machine.updateSubscription();
+            inputBuffer.updateSubscription();
         }
 
         @Override
         public @Nullable IGridNode getActionableNode() {
-            return machine.getActionableNode();
+            return inputBuffer.getActionableNode();
         }
     }
 
     private static final class SlotRHL extends InternalSlotRecipeHandler.AbstractRHL<InternalSlot> {
 
         SlotRHL(InternalSlot slot, MEInputBufferPartMachine part) {
-            super(slot, part, slot.notConsumableItem, slot.notConsumableFluid, slot.circuitInventory, slot.exportOnlyItemList, slot.exportOnlyFluidList);
+            super(slot, part, slot.shareInventory, slot.shareTank, slot.circuitInventory,
+                    new InternalSlotRecipeHandler.SlotRecipeHandler(part, slot));
         }
 
         private SlotRHL(InternalSlot slot, IRecipeHandler... handlers) {

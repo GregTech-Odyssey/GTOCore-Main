@@ -5,6 +5,7 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 
 import com.gtolib.api.recipe.lookup.IIngredientConvertible;
 
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableRecipeHandlerTrait;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -141,7 +142,7 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         protected GTRecipeType getEffectiveRecipeType(GTRecipeType recipeType) {
-            final var type = slot.machine.recipeType;
+            final var type = ((MEPatternBufferPartMachine) slot.machine).recipeType;
             if (type != null && type != recipeType) {
                 return type;
             }
@@ -173,12 +174,12 @@ public final class InternalSlotRecipeHandler {
         }
     }
 
-    final static class SlotRecipeHandler extends NotifiableRecipeHandlerTrait {
+    public final static class SlotRecipeHandler extends NotifiableRecipeHandlerTrait {
 
         final MEPatternBufferPartMachine.InternalSlot slot;
 
-        private SlotRecipeHandler(MEPatternBufferPartMachine buffer, MEPatternBufferPartMachine.InternalSlot slot) {
-            super(buffer);
+        public SlotRecipeHandler(MetaMachine machine, MEPatternBufferPartMachine.InternalSlot slot) {
+            super(machine);
             this.slot = slot;
             slot.setOnContentsChanged(this::notifyListeners);
         }
