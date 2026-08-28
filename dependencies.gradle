@@ -63,7 +63,7 @@ dependencies {
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:${project.curiosVersion}+${project.minecraft_version}")
-    modImplementation("vazkii.botania:Botania:${project.minecraft_version}-452-FORGE")
+    modImplementation("vazkii.botania:Botania:${project.minecraft_version}-455-FORGE")
     modImplementation("vazkii.patchouli:Patchouli:${project.minecraft_version}-84.1-FORGE")
     modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
     modImplementation("curse.maven:event-wrapper-1256971:7182179")
