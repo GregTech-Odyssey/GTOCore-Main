@@ -60,45 +60,57 @@
 17. **反射仅用于冷路径（注册、扫描、启动一次）。** 禁止在热路径使用 `Class.forName`、`getMethod`/`getDeclaredMethod`、`getField` 等反射调用。需要重复调用时，缓存反射到的 `Method`/`Field`/构造器并 `setAccessible(true)`，优先用 `MethodHandles`/`VarHandle`。
 18. **不要在每帧/每次 tick 内重复计算只依赖静态数据的结果。** 查得到的常量（`Item.EMPTY`、注册表查找、`ResourceLocation`、字符串 key）提到 `static final` 字段或缓存；GTO 的 registry/命名空间高频碰撞时，用编译期已知常量替代字符串查找。
 
+### 物品库存 IO
+
+19. **`CustomItemStackHandler` 的内部/批量 IO 优先使用返回数量的 `insert` / `extract`，避免通过 Forge `insertItem` / `extractItem` 的返回 `ItemStack` 反推数量。** 在已知具体实现为 `CustomItemStackHandler`（或其子类）的代码中，用 `insert(slot, stack, amount, simulate)` / `extract(slot, existing, amount, simulate)` 直接取得实际插入/提取量，再累计或扣减剩余数量；这两个数量接口基本都在原有栈上操作，能减少 `ItemStack` 复制，批量循环也更直接。
+   - **插入参数可以复用。** `insert` 不会修改传入的 `stack`，可以安全传入只读栈或共享模板（如 `AEItemKey.getReadOnlyStack()`）；目标槽为空且实际插入时，handler 才为自己的存储创建所需副本，已有同类栈则直接增长内部栈。
+   - **提取参数必须来自目标槽。** 调用 `extract` 时，`existing` 应传 `handler.getStackInSlot(slot)` 取得的当前内部栈；非模拟的部分提取会原地缩减这个存储栈，不能把任意外部共享栈当作 `existing` 传入。
+   - **减少构造本身就是优化。** Forge 下 `ItemStack` 构造除对象分配外，还会取得物品注册表的 holder delegate（`ForgeRegistries.ITEMS.getDelegateOrThrow`），并经 `forgeInit()` 建立 capability 的延迟初始化状态；复制还可能携带 capability 数据。因此在热路径和批量 IO 中应避免无意义的 `new ItemStack`、`copy()`、`copyWithCount()`。
+   - **只在具体实现边界使用。** 面向任意 Forge `IItemHandler` / `IItemHandlerModifiable` 或其他未知实现时，仍须遵守其 `insertItem` / `extractItem` 接口契约，不得为了调用数量接口而强制向下转型；也不得直接钻进上层 wrapper 的内部 storage，从而绕过其 IO 方向、权限或通知约束。
+
 ### DataSyncLib 编解码
 
-19. **对称编解码器用 `ListData`，不要用 `IntMapData` / `StringMapData` 等 map 结构。** 凡 encode 与 decode 一一对应、字段不会缺少的对称编解码（如 `DataCodec`），用 `ListData` 按序存储：encode 用 `new ListData(n)` + `add(...)`，decode 用 `data.asListData()` 直接取。**因为对称结构不会缺字段，不需要 map 的 key 索引，也无须类型判断**（去掉 `instanceof XxxMapData` 与 `Objects.requireNonNull`，直接 `asListData()` / `getString(i)` / `getLong(i+1)`）。
+20. **对称编解码器用 `ListData`，不要用 `IntMapData` / `StringMapData` 等 map 结构。** 凡 encode 与 decode 一一对应、字段不会缺少的对称编解码（如 `DataCodec`），用 `ListData` 按序存储：encode 用 `new ListData(n)` + `add(...)`，decode 用 `data.asListData()` 直接取。**因为对称结构不会缺字段，不需要 map 的 key 索引，也无须类型判断**（去掉 `instanceof XxxMapData` 与 `Objects.requireNonNull`，直接 `asListData()` / `getString(i)` / `getLong(i+1)`）。
    - **单字段**直接用对应 `Data` 类型（如 `StringData.valueOf(name)` / `data.getString()`），**不要再包一层 `ListData`**。
    - 仅当**非对称**持久化（需容忍缺失字段、有版本号，如 `save`/`load` 兼容旧存档）才保留 map（`StringMapData` 等按 key 定位）。
 
-20. **网络流与持久化要各自用专用编解码器，不要共用一个字符串格式。** 网络通道用紧凑的原始/整数 id 编码，持久化用自描述、跨版本稳定的 key 编码——两者独立，见下条与「网络同步」。
-21. **注册对象必须用 DataSyncLib 注册器得到网络专用编解码器，不要和保存共用字符串。** 凡"标识稳定、一次性注册"的对象（如 `ResearchTag`、`TechNode`、`AttributeDefinition`），应注册进 DataSyncLib 的 `Registry`（`com.gto.datasynclib.util.Registry`，`GTRegistry` 即继承它）：
+21. **网络流与持久化要各自用专用编解码器，不要共用一个字符串格式。** 网络通道用紧凑的原始/整数 id 编码，持久化用自描述、跨版本稳定的 key 编码——两者独立，见下条与「网络同步」。
+22. **注册对象必须用 DataSyncLib 注册器得到网络专用编解码器，不要和保存共用字符串。** 凡"标识稳定、一次性注册"的对象（如 `ResearchTag`、`TechNode`、`AttributeDefinition`），应注册进 DataSyncLib 的 `Registry`（`com.gto.datasynclib.util.Registry`，`GTRegistry` 即继承它）：
    - `unfreeze()` → 注册所有实例（构造时 `register(name, obj)`）→ **在全部注册完成后** `freeze()`（按 key 排序分配稳定整数 id）。
    - **网络流**用 `registry.streamCodec()` —— 按**紧凑整数 id** 编码（`writeVarInt(id)` / `readVarInt`）。
    - **持久化**用 `registry.dataCodec(keyCodec)`（如 `STRING_CODEC`）—— 按 **key 字符串**编码，自描述、跨版本稳定。
-   - **不可共用**：网络与保存各配专用 codec，网络不直接用保存的字符串格式（同 22 条原则）。
+   - **不可共用**：网络与保存各配专用 codec，网络不直接用保存的字符串格式（同 23 条原则）。
    - **注意**：`freeze()` 的 static 块必须放在所有注册对象的静态字段之后，先注册、后 freeze；id 由排序决定，客户端/服务器注册集合一致即保证 id 一致。
 
 ### 网络同步
 
-22. **网络同步不要简单复用磁盘保存的数据。** 直接序列化 NBT 或复用存盘格式做网络包会带进大量与同步无关的字段与对象分配，造成带宽与 GC 浪费。**应为网络通道单独写一套紧凑的流式编码**（可变长/定长原始字段、按需仅含变更字段），并**优先使用 DataSyncLib 相关的 API** 完成字段级增量同步，而非整包序列化。
+23. **网络同步不要简单复用磁盘保存的数据。** 直接序列化 NBT 或复用存盘格式做网络包会带进大量与同步无关的字段与对象分配，造成带宽与 GC 浪费。**应为网络通道单独写一套紧凑的流式编码**（可变长/定长原始字段、按需仅含变更字段），并**优先使用 DataSyncLib 相关的 API** 完成字段级增量同步，而非整包序列化。
 
 ### DataSyncLib 存盘
 
-23. **非必要不要 `saveNull`。** 只有非默认/非空的值才需要真正写入磁盘；值为空时直接跳过写入，磁盘读写更小、体积更紧凑。
-24. **多用默认值，值为默认值时也不写入。** 对大多数取默认值的字段，设定明确的默认值并跳过序列化；仅当字段偏离默认值时写入，进一步压缩存盘体积、减少 IO。
+24. **非必要不要 `saveNull`。** 只有非默认/非空的值才需要真正写入磁盘；值为空时直接跳过写入，磁盘读写更小、体积更紧凑。
+25. **多用默认值，值为默认值时也不写入。** 对大多数取默认值的字段，设定明确的默认值并跳过序列化；仅当字段偏离默认值时写入，进一步压缩存盘体积、减少 IO。
+26. **持久化/同步注解只能用于 `FieldDataManager` 能扫描到的字段。** 不在 holder 扫描路径上的 `@SaveToDisk` 等注解不会生效，禁止把注解当作普通字段标记使用。
+27. **嵌套 holder 必须从父字段接入。** 需要扫描嵌套对象中的注解字段时，在父 holder 的对应字段上使用 `@AdditionalHolder`；不要让嵌套对象通过旧接口自行维护另一套字段管理器。
+28. **同一份数据只能有一套持久化路径。** 已由手写 `serializeNBT` / `writeData`（及对应读取逻辑）持久化的字段，内部不得再加 `@SaveToDisk` 重复保存；迁移前先确认读写边界和旧存档兼容格式。
+29. **可变 `IDataSerializable` 元素修改后必须调用 `markAsChanged()`。** 尤其是数组/集合中的元素，仅修改其内部字段不会自动让所属字段产生变更；所有会改变持久化或同步结果的入口都必须正确标脏。
 
 ### 配方逻辑（createCustomRecipe / RecipeHandlerUnit）
 
 > 涉及 GTModern（gtm）的 `RecipeHandlerUnit` / `IRecipeHandlerHolder`。相关代码在 gtm 仓库（`com.gregtechceu.gtceu.api.recipe.handler`）。
 
-25. **`createCustomRecipe`（及任何带 `RecipeHandlerUnit` 参数的配方收集/处理逻辑）里，收集或处理输入时一定要用 `unit.` 来操作（`RecipeHandlerUnit` 实参，通常命名 `u`），不要用机器级句柄去操作。**
+30. **`createCustomRecipe`（及任何带 `RecipeHandlerUnit` 参数的配方收集/处理逻辑）里，收集或处理输入时一定要用 `unit.` 来操作（`RecipeHandlerUnit` 实参，通常命名 `u`），不要用机器级句柄去操作。**
    - **不带 `unit.` 的后果**：调用的是**机器级**（整个 `IRecipeHandlerHolder`）的输入收集，会遍历该机器的**全部** `RecipeHandlerUnit` 再合并。于是——
      - **重复遍历/性能损失**：本应只处理当前这一个 unit，却把每个 unit 都扫一遍；
      - **拿到数量过多/错误**：数量来自所有 unit 之和，而非当前 unit 该有的量；
      - **隔离失效**：无法针对单个 unit 做 distinct / 过滤 / 条件判断（见 gtm 的 `RecipeHandlerUnit` 字段 `isDistinct`、`handlerIO` / `IO` 等），机器粒度调用会破坏按 unit 隔离的语义。
    - **正确写法**：读输入量用 `u.getItemAmount(...)`、`u.getFluidAmount(...)`、`u.handleRecipeItem(...)` 一类 **unit 方法**；判断当前 unit 的 IO/开关/条件也一律走 `u.xxx`。参考 `RecyclerLogic.createCustomRecipe` 用 `u.getItemAmount(true, item)` 取并行数。
 
-26. **输出一定不要带 `unit.`。** `createCustomRecipe` 传入的 `RecipeHandlerUnit` 是**输入侧**的，拿不到/不该处理输出（输出由 recipe builder 声明）。收集/声明输出一律用 `RecipeBuilder`（如 `builder.outputItems(...)` / `outputFluids(...)` 或对应的 `builder::output*`），**绝不**尝试经这个输入 `unit` 去读/写输出——语义错误且会读到错误数据（输入 unit 没有输出能力）。
+31. **输出一定不要带 `unit.`。** `createCustomRecipe` 传入的 `RecipeHandlerUnit` 是**输入侧**的，拿不到/不该处理输出（输出由 recipe builder 声明）。收集/声明输出一律用 `RecipeBuilder`（如 `builder.outputItems(...)` / `outputFluids(...)` 或对应的 `builder::output*`），**绝不**尝试经这个输入 `unit` 去读/写输出——语义错误且会读到错误数据（输入 unit 没有输出能力）。
 
 ### 世界级数据存储（Level capability）
 
-27. **凡需按世界（Level）维度保存/查找、且生命周期应随世界卸载结束的数据（如连接注册表、机器网络、跨坐标索引），一律用 GTModern 的 `ILevel` capability（`DataComponentMap`）存储，禁止放进全局静态 Map 后靠手动 register/unregister 维护。**
+32. **凡需按世界（Level）维度保存/查找、且生命周期应随世界卸载结束的数据（如连接注册表、机器网络、跨坐标索引），一律用 GTModern 的 `ILevel` capability（`DataComponentMap`）存储，禁止放进全局静态 Map 后靠手动 register/unregister 维护。**
    - **为什么**：`DataComponentMap`（经 `gtceu$getCapabilities()` Mixin 注入）绑定在 `Level` 实例字段上，**随 Level 对象一起被 GC**。用它存储的世界级数据在维度卸载时自动释放，无需（也严禁）依赖 `LevelEvent.Unload` / `ServerStoppedEvent` / 机器 `onUnload` 等回调手动删除——避免漏删、脏数据残留与内存泄露；重复存取的 entry 也不需手工清理。
    - **做法**：声明 `DataComponentKey<T> KEY = DataComponentKey.createNoCodec("...")`，用 `ILevel.getCapability(level, KEY)` / `ILevel.setCapability(level, KEY, value)` 读写。参考 `BeamManager`：数据对象持有 `Level` 字段，`get(Level)` 里 `getCapability` 若无则 `new` 并 `setCapability`，`getIfPresent(Level)` 只读不创建。
    - **注意**：capability 需要 `Level` **实例**（非 `ResourceKey<Level>`）才能定位；纯按维度 key 的全局快照（如客户端网络同步缓存、断开时需显式清空的短命数据）不适用此模式，可保留维度 Map，但必须明确其生命周期并在适当回调清理。

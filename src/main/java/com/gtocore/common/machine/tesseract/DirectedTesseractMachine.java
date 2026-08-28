@@ -265,6 +265,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
         if (getLevel() instanceof ServerLevel level) {
             task.updateSubscription();
             var server = level.getServer();
+            boolean changed = false;
             for (int i = 0; i < unfinishedPushes.size(); i++) {
                 var target = unfinishedPushes.get(i);
                 var stack = unfinishedStacks.get(i);
@@ -275,10 +276,16 @@ public class DirectedTesseractMachine extends MetaMachine implements
                         unfinishedPushes.remove(i);
                         unfinishedStacks.remove(i);
                         i--;
-                    } else {
+                        changed = true;
+                    } else if (inserted > 0) {
                         unfinishedStacks.set(i, new GenericStack(stack.what(), stack.amount() - inserted));
+                        changed = true;
                     }
                 }
+            }
+            if (changed) {
+                onChanged();
+                task.updateSubscription();
             }
         }
     }

@@ -9,6 +9,7 @@ public abstract class AbstractRecipeInternalSlot extends MEPatternPartMachineKt.
 
     public final void markContentsChanged() {
         isContentsChanged = true;
+        markAsChanged();
         onContentsChanged.run();
     }
 
