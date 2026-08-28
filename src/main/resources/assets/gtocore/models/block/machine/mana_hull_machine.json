@@ -1,7 +1,7 @@
 {
   "parent": "block/block",
   "textures": {
-    "side": "gtocore:block/casings/voltage/lv"
+    "side": "gtocore:block/casings/mana_voltage/lv"
   },
   "elements": [
     {

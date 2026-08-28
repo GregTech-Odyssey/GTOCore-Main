@@ -190,6 +190,7 @@ public final class ClientProxy extends CommonProxy {
 
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional evt) {
         for (TagPrefix tagPrefix : TagPrefix.values()) {
+            if (tagPrefix.materialIconType() == null || (!tagPrefix.doGenerateItem() && !tagPrefix.doGenerateBlock())) continue;
             evt.register(GTOCore.id("item/" + tagPrefix.getLowerCaseName()));
         }
     }

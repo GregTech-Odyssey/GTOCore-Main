@@ -34,6 +34,7 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
         deprecate(GTMultiMachines.CHARCOAL_PILE_IGNITER.asItem());
         deprecate(GTBlocks.BRITTLE_CHARCOAL.asItem());
+        deprecate(RegistriesUtils.getItem("guideme:guide"));
 
         if (Mods.EFFORTLESS.isLoaded()) {
             deprecate(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));
