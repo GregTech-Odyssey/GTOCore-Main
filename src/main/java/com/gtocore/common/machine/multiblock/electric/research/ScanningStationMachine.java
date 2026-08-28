@@ -43,7 +43,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
         super.onStructureFormed();
         for (IMultiPart part : getParts()) {
             if (part instanceof ResearchHolderMachine scanningHolder) {
-                if (scanningHolder.getFrontFacing() != getFrontFacing().getOpposite()) {
+                if (scanningHolder.getFrontFacing() != getFrontFacing()) {
                     onStructureInvalid();
                     return;
                 }
@@ -62,7 +62,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
     @Override
     public boolean checkPattern() {
         boolean isFormed = super.checkPattern();
-        if (isFormed && objectHolder != null && objectHolder.getFrontFacing() != getFrontFacing().getOpposite()) {
+        if (isFormed && objectHolder != null && objectHolder.getFrontFacing() != getFrontFacing()) {
             onStructureInvalid();
         }
         return isFormed;
