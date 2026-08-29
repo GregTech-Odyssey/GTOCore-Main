@@ -18,7 +18,6 @@ import com.gtolib.utils.ColorUtils;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -97,17 +96,6 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
     private static final int PREREQUISITE_SLOT_SIZE = 18;
     private static final int PREREQUISITE_SLOT_GAP = 2;
     private static final int PREREQUISITE_LABEL_GAP = 4;
-
-    private static final int NODE_BOX_FILL = 0xFF2F2F34;
-    private static final int NODE_BOX_BORDER = 0xFF8C8C93;
-    private static final int HEADER_NAME_COLOR = 0xFFF3F3F3;
-    private static final int HEADER_DESC_COLOR = 0xFFB9B9C0;
-    private static final int ROW_BACKGROUND = 0xFF232328;
-    private static final int ROW_TEXT_COLOR = 0xFFF3F3F3;
-    private static final int ROW_VALUE_COLOR = 0xFFD4D4DB;
-    private static final int ROW_COMPLETE_VALUE_COLOR = 0xFF6CDA84;
-    private static final int CWU_BAR_COLOR = 0xFF39C5BB;
-    private static final int CWU_BAR_BORDER = 0xFF8BE7DE;
 
     private TechTreeManager manager;
     private final Function<Player, TeamResearchContext> contextFactory;
@@ -410,7 +398,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 var requirements = selectedNode.getRequirements();
                 if (requirements != null) {
                     rows.add(new RowState(label, currentState.cwuCurrent(), currentState.cwuNeeded(), eureka ? requirements.getEurekaProgress() : 0f,
-                            CWU_BAR_COLOR, CWU_BAR_BORDER, createCwuTooltip(), null));
+                            TechTreeStyle.get().cwuBarFill, TechTreeStyle.get().cwuBarBorder, createCwuTooltip(), null));
                 }
             }
         }
@@ -418,7 +406,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             var tag = ResearchTag.TAGS.get(material.tagid());
             rows.add(new RowState(tag.getDisplayName(), material.current(), material.needed(), 0f,
                     tag.getColor(),
-                    ColorUtils.getInterpolatedColor(0xffffffff, tag.getColor(), 0.5f),
+                    ColorUtils.getInterpolatedColor(TechTreeStyle.get().materialHighlightStart, tag.getColor(), 0.5f),
                     null, tag));
         }
         cachedRowsState = currentState;
@@ -452,7 +440,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         if (tierItem == null) {
             return null;
         }
-        return Component.translatable(TIER_DESC, tierItem.getHoverName().copy().withStyle(ChatFormatting.AQUA));
+        return Component.translatable(TIER_DESC, tierItem.getHoverName().copy().withStyle(style -> style.withColor(TechTreeStyle.get().sideTabTierItemText)));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -472,7 +460,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
         graphics.pose().translate(x, y, 0);
         float scale = Math.max(size / 8.0F, 1.0F);
         graphics.pose().scale(scale, scale, 1.0F);
-        graphics.drawString(font, "?", 1, 0, 0xFFFFFFFF, false);
+        graphics.drawString(font, "?", 1, 0, TechTreeStyle.get().nodeIconFallback, false);
         graphics.pose().popPose();
     }
 
@@ -586,7 +574,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             if (!node.prerequisites.isEmpty()) {
                 Component prerequisitesLabel = Component.translatable(PREREQUISITES_LABEL);
                 int labelY = reqLabelTextY + Math.max(0, (PREREQUISITE_SLOT_SIZE - font.lineHeight) / 2);
-                graphics.drawString(font, prerequisitesLabel, contentX, labelY, HEADER_DESC_COLOR, false);
+                graphics.drawString(font, prerequisitesLabel, contentX, labelY, TechTreeStyle.get().headerDescription, false);
                 int areaX = contentX + font.width(prerequisitesLabel) + PREREQUISITE_LABEL_GAP;
                 drawPrerequisiteNodes(graphics, font, node.prerequisites, areaX, reqLabelTextY,
                         Math.max(PREREQUISITE_SLOT_SIZE, contentX + contentWidth - areaX), mouseX, mouseY);
@@ -599,7 +587,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 visiblePrerequisiteSlots = 0;
                 prerequisiteScrollOffset = 0;
             }
-            graphics.drawString(font, requirementsLabel, contentX, reqLabelTextY, HEADER_DESC_COLOR, false);
+            graphics.drawString(font, requirementsLabel, contentX, reqLabelTextY, TechTreeStyle.get().headerDescription, false);
             int rowsStartY = reqLabelTextY + font.lineHeight + HEADER_SECTION_GAP;
 
             List<RowState> rows = buildRows();
@@ -622,7 +610,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             var hasAdditionalContent = !node.getAdditionalLines().isEmpty();
             if (hasRecipes || hasAdditionalContent) {
                 AtomicInteger recipeLabelY = new AtomicInteger(rowsBottom + INNER_CONTENT_SECTION_GAP);
-                graphics.drawString(font, Component.translatable(TechNode.UNLOCKABLE_LABEL), contentX, recipeLabelY.getAndAdd(font.lineHeight + RECIPE_LABEL_GAP), HEADER_DESC_COLOR, false);
+                graphics.drawString(font, Component.translatable(TechNode.UNLOCKABLE_LABEL), contentX, recipeLabelY.getAndAdd(font.lineHeight + RECIPE_LABEL_GAP), TechTreeStyle.get().headerDescription, false);
                 if (hasRecipes) {
                     drawRecipeStacks(graphics, font, recipeStacks, contentX, recipeLabelY.getAndAdd(RECIPE_SLOT_SIZE + INNER_CONTENT_SECTION_GAP), contentWidth, partialTicks);
                 } else {
@@ -632,7 +620,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 }
                 if (hasAdditionalContent) {
                     for (int i = 0; i < node.getAdditionalLines().size(); i++) {
-                        graphics.drawString(font, node.getAdditionalLines().get(i), contentX, recipeLabelY.getAndAdd(font.lineHeight), HEADER_DESC_COLOR, false);
+                        graphics.drawString(font, node.getAdditionalLines().get(i), contentX, recipeLabelY.getAndAdd(font.lineHeight), TechTreeStyle.get().headerDescription, false);
                     }
                 }
                 innerContentY = recipeLabelY.get() + INNER_CONTENT_SECTION_GAP;
@@ -671,8 +659,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             TechNode prerequisite = getHoveredPrerequisite(i, j);
             if (prerequisite != null) {
                 return List.of(TechTreeManager.getNodeName(prerequisite),
-                        TechTreeManager.getTreeName(prerequisite.getManager()).withStyle(ChatFormatting.GRAY),
-                        Component.translatable(NAVIGATE_LABEL).withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN, ChatFormatting.UNDERLINE));
+                        TechTreeManager.getTreeName(prerequisite.getManager()).withStyle(style -> style.withColor(TechTreeStyle.get().sideTabManagerText)),
+                        Component.translatable(NAVIGATE_LABEL).withStyle(style -> style.withColor(TechTreeStyle.get().sideTabNavigateText).withItalic(true).withUnderlined(true)));
             }
 
             EmiStack recipeStack = getXEIIngredientOverMouse(i, j);
@@ -685,8 +673,8 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
         @OnlyIn(Dist.CLIENT)
         private void drawHeader(GuiGraphics graphics, Font font, TechNode node, int x, int y, int width, int mouseX, int mouseY) {
-            DrawerHelper.drawSolidRect(graphics, x, y, HEADER_ICON_SIZE, HEADER_ICON_SIZE, NODE_BOX_FILL);
-            DrawerHelper.drawBorder(graphics, x, y, HEADER_ICON_SIZE, HEADER_ICON_SIZE, NODE_BOX_BORDER, 1);
+            DrawerHelper.drawSolidRect(graphics, x, y, HEADER_ICON_SIZE, HEADER_ICON_SIZE, TechTreeStyle.get().nodeBoxFill);
+            DrawerHelper.drawBorder(graphics, x, y, HEADER_ICON_SIZE, HEADER_ICON_SIZE, TechTreeStyle.get().nodeBoxBorder, 1);
             drawNodeIcon(graphics, x + 8, y + 8, 16, node);
 
             int textX = x + HEADER_ICON_SIZE + HEADER_TEXT_GAP;
@@ -696,12 +684,12 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 descTextOffset = 0;
             }
 
-            var text = node.getDisplayName().append(Component.translatable(TIER_LABEL, node.getTier()).withStyle(ChatFormatting.BLUE));
+            var text = node.getDisplayName().append(Component.translatable(TIER_LABEL, node.getTier()).withStyle(style -> style.withColor(TechTreeStyle.get().sideTabTierText)));
             List<FormattedCharSequence> texts = font.split(text, textWidth);
             if (Widget.isMouseOver(textX, y + 1, textWidth, font.lineHeight, mouseX, mouseY) && texts.size() > 1) {
                 drawRollTextLine(graphics, textX, y + 1, textWidth, font.lineHeight, font, font.lineHeight, text);
             } else {
-                graphics.drawString(font, texts.getFirst(), textX, y + 1, HEADER_NAME_COLOR, false);
+                graphics.drawString(font, texts.getFirst(), textX, y + 1, TechTreeStyle.get().headerName, false);
             }
             var desc = node.desc();
             if (desc == null) {
@@ -720,7 +708,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             descTextOffset = Mth.clamp(descTextOffset, 0, maxDescTextOffset);
             int endLine = Math.min(descTextOffset + maxLines, descLines.size());
             for (int i = descTextOffset; i < endLine; i++) {
-                graphics.drawString(font, descLines.get(i), textX, descTextY + (i - descTextOffset) * font.lineHeight, HEADER_DESC_COLOR, false);
+                graphics.drawString(font, descLines.get(i), textX, descTextY + (i - descTextOffset) * font.lineHeight, TechTreeStyle.get().headerDescription, false);
             }
         }
 
@@ -735,7 +723,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             var realPos2 = trans.transform(new Vector4f(x + width, y + height, 0, 1));
             graphics.enableScissor((int) realPos.x, (int) realPos.y, (int) realPos2.x, (int) realPos2.y);
             var t = 0.1 * Math.abs((int) (System.currentTimeMillis() % 1000000)) / 10 % totalW / totalW;
-            graphics.drawString(fontRenderer, line, (int) (from - t * totalW), (int) _y, HEADER_NAME_COLOR, false);
+            graphics.drawString(fontRenderer, line, (int) (from - t * totalW), (int) _y, TechTreeStyle.get().headerName, false);
             graphics.disableScissor();
         }
 
@@ -796,10 +784,10 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 stacks.get(recipeScrollOffset + i).render(graphics, slotX + 1, y + 1, partialTicks, EmiIngredient.RENDER_ICON);
             }
             if (recipeScrollOffset > 0) {
-                graphics.drawString(font, "<", x + 1, y + 5, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, "<", x + 1, y + 5, TechTreeStyle.get().rowText, false);
             }
             if (recipeScrollOffset + visibleRecipeSlots < stacks.size()) {
-                graphics.drawString(font, ">", x + width - font.width(">") - 1, y + 5, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, ">", x + width - font.width(">") - 1, y + 5, TechTreeStyle.get().rowText, false);
             }
         }
 
@@ -830,14 +818,14 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
                 drawNodeIcon(graphics, slotX + 1, y + 1, 16, prerequisite);
                 if (Widget.isMouseOver(slotX, y, PREREQUISITE_SLOT_SIZE, PREREQUISITE_SLOT_SIZE, mouseX, mouseY)) {
                     DrawerHelper.drawBorder(graphics, slotX, y, PREREQUISITE_SLOT_SIZE,
-                            PREREQUISITE_SLOT_SIZE, 0xFF39C5BB, 1);
+                            PREREQUISITE_SLOT_SIZE, TechTreeStyle.get().prerequisiteHoverBorder, 1);
                 }
             }
             if (prerequisiteScrollOffset > 0) {
-                graphics.drawString(font, "<", x + 1, y + 5, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, "<", x + 1, y + 5, TechTreeStyle.get().rowText, false);
             }
             if (prerequisiteScrollOffset + visiblePrerequisiteSlots < prerequisites.size()) {
-                graphics.drawString(font, ">", x + width - font.width(">") - 1, y + 5, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, ">", x + width - font.width(">") - 1, y + 5, TechTreeStyle.get().rowText, false);
             }
         }
 
@@ -876,10 +864,10 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             }
             // △▼▷▾▷▽▵▿
             if (scrollOffset + rowCount < rows.size()) {
-                graphics.drawString(font, "▽", x + progressWidth / 2 - font.width("△") / 2, currentY - 7, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, "▽", x + progressWidth / 2 - font.width("△") / 2, currentY - 7, TechTreeStyle.get().rowText, false);
             }
             if (scrollOffset > 0) {
-                graphics.drawString(font, "△", x + progressWidth / 2 - font.width("▽") / 2, y - 7, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, "△", x + progressWidth / 2 - font.width("▽") / 2, y - 7, TechTreeStyle.get().rowText, false);
             }
         }
 
@@ -994,7 +982,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
 
         @OnlyIn(Dist.CLIENT)
         private void drawRow(GuiGraphics graphics, Font font, RowState row, int x, int y, int progressWidth, int valueWidth, int mouseX, int mouseY) {
-            DrawerHelper.drawSolidRect(graphics, x, y, progressWidth, ROW_HEIGHT, ROW_BACKGROUND);
+            DrawerHelper.drawSolidRect(graphics, x, y, progressWidth, ROW_HEIGHT, TechTreeStyle.get().rowBackground);
             DrawerHelper.drawBorder(graphics, x, y, progressWidth, ROW_HEIGHT, row.borderColor(), 1);
 
             float ratio = row.total() <= 0L ? 1.0F : Mth.clamp((float) row.current() / (float) row.total(), 0.0F, 1.0F);
@@ -1007,7 +995,7 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             var hilightStartX = x + PROGRESS_INSET + fillWidth;
             if (highlightWidth > 0 && hilightStartX < x + progressWidth - PROGRESS_INSET) {
                 DrawerHelper.drawSolidRect(graphics, hilightStartX, y + PROGRESS_INSET, highlightWidth, ROW_HEIGHT - PROGRESS_INSET * 2,
-                        ColorUtils.getInterpolatedColor(0x00e2e2e2, row.fillColor(), (float) (0.5 + 0.25 * Math.sin(System.currentTimeMillis() / 1000.0))));
+                        ColorUtils.getInterpolatedColor(TechTreeStyle.get().progressHighlightStart, row.fillColor(), (float) (0.5 + 0.25 * Math.sin(System.currentTimeMillis() / 1000.0))));
             }
 
             var text = row.label();
@@ -1016,11 +1004,11 @@ public class TechTreeSideTab extends DraggableScrollableWidgetGroup {
             if (Widget.isMouseOver(x, y, width, font.lineHeight, mouseX, mouseY) && texts.size() > 1) {
                 drawRollTextLine(graphics, x, y, width, font.lineHeight, font, font.lineHeight, text);
             } else {
-                graphics.drawString(font, texts.getFirst(), x + PROGRESS_TEXT_X, y + 2, ROW_TEXT_COLOR, false);
+                graphics.drawString(font, texts.getFirst(), x + PROGRESS_TEXT_X, y + 2, TechTreeStyle.get().rowText, false);
             }
 
             String valueText = FormattingUtil.formatNumberReadable((long) (row.current() + row.total() * eurekaPercent)) + "/" + FormattingUtil.formatNumberReadable(row.total());
-            int valueColor = row.total() > 0L && row.current() >= row.total() ? ROW_COMPLETE_VALUE_COLOR : ROW_VALUE_COLOR;
+            int valueColor = row.total() > 0L && row.current() >= row.total() ? TechTreeStyle.get().rowCompletedValue : TechTreeStyle.get().rowValue;
             graphics.drawString(font, valueText, x + progressWidth + 6 + Math.max(0, valueWidth - font.width(valueText)), y + 2, valueColor, false);
         }
     }

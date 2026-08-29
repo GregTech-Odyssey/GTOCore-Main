@@ -24,10 +24,10 @@ public class WrappedQuestMixin {
     public List<List<ItemStack>> input;
 
     @Inject(method = "<init>", at = @At("TAIL"), remap = false)
-    private void gtocore$expandItemTaskFilters(Quest quest, List<Reward> rewards, CallbackInfo ci) {
-        int inputIndex = quest.getTasks().size() == 1 ? 4 : 0;
+    private void gtocore$expandItemTaskFilters(Quest q, List<Reward> rewards, CallbackInfo ci) {
+        int inputIndex = q.getTasks().size() == 1 ? 4 : 0;
 
-        for (var task : quest.getTasks()) {
+        for (var task : q.getTasks()) {
             if (task instanceof ItemTask itemTask && ItemMatchingSystem.INSTANCE.isItemFilter(itemTask.getItemStack())) {
                 input.set(inputIndex, List.copyOf(itemTask.getValidDisplayItems()));
             }

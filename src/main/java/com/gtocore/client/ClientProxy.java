@@ -1,5 +1,6 @@
 package com.gtocore.client;
 
+import com.gtocore.api.research.techtree.ui.TechTreeStyle;
 import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.client.forge.GTOComponentHandler;
 import com.gtocore.client.forge.GTOComponentRegistry;
@@ -48,6 +49,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
@@ -89,6 +91,7 @@ public final class ClientProxy extends CommonProxy {
         eventBus.addListener(ClientProxy::registerMenuScreen);
         eventBus.addListener(ClientProxy::registerItemColors);
         eventBus.addListener(ClientProxy::registerShaders);
+        eventBus.addListener(ClientProxy::registerReloadListeners);
         eventBus.register(GTOComponentRegistry.class);
         MinecraftForge.EVENT_BUS.register(ForgeClientEvent.class);
         MinecraftForge.EVENT_BUS.register(GTOComponentHandler.class);
@@ -186,6 +189,10 @@ public final class ClientProxy extends CommonProxy {
 
     private static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register(new StaticItemColor(AEColor.TRANSPARENT), GTOAEParts.INSTANCE.getEXCHANGE_STORAGE_MONITOR().get(), GTOAEParts.INSTANCE.getME_2IN1_TERMINAL().get(), GTOAEParts.INSTANCE.getPattern_Content_Access_Terminal().get());
+    }
+
+    private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(TechTreeStyle.RELOAD_LISTENER);
     }
 
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional evt) {

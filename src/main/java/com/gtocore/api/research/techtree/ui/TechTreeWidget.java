@@ -15,7 +15,6 @@ import com.gtolib.utils.ColorUtils;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
@@ -76,9 +75,6 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     private static final int LINE_THICKNESS = 2;
     private static final int TIER_SEPARATOR_DASH_LENGTH = 6;
     private static final int TIER_SEPARATOR_GAP = 4;
-    private static final int TIER_SEPARATOR_COLOR = 0x66FFFFFF;
-    private static final int HOVERED_DEPENDENCY_LINE_COLOR = 0xFF4DE3E3;
-    private static final int SELECTED_NODE_BORDER_COLOR = 0xFF8BE7DE;
     private static final double MIN_ZOOM = 0.05D;
     private static final double MAX_ZOOM = 5.0D;
     private static final double ZOOM_STEP = 1.15D;
@@ -402,19 +398,20 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
 
     private List<Component> createTooltip(TechNode node, byte state) {
         List<Component> tooltips = new ArrayList<>(4 + node.prerequisites.size());
-        tooltips.add(TechTreeManager.getNodeName(node).copy().withStyle(getFormattingForState(state)));
+        int stateColor = getTooltipColorForState(state);
+        tooltips.add(TechTreeManager.getNodeName(node).copy().withStyle(style -> style.withColor(stateColor)));
         var desc = node.desc();
         if (desc != null) {
-            tooltips.add(desc.withStyle(ChatFormatting.GRAY));
+            tooltips.add(desc.withStyle(style -> style.withColor(TechTreeStyle.get().widgetTooltipDescription)));
         }
         tooltips.add(Component.translatable(switch (state) {
             case STATE_UNLOCKED_VALUE -> STATUS_UNLOCKED;
             case STATE_AVAILABLE -> STATUS_AVAILABLE;
             default -> STATUS_LOCKED;
-        }).withStyle(getFormattingForState(state)));
+        }).withStyle(style -> style.withColor(stateColor)));
         if (!node.prerequisites.isEmpty()) {
             tooltips.add(Component.empty());
-            tooltips.add(Component.translatable(PREREQUISITES).withStyle(ChatFormatting.YELLOW));
+            tooltips.add(Component.translatable(PREREQUISITES).withStyle(style -> style.withColor(TechTreeStyle.get().widgetTooltipPrerequisites)));
             for (var prerequisite : node.prerequisites) {
                 boolean unlocked = isPrerequisiteUnlocked(prerequisite);
                 var line = Component.literal(unlocked ? " - " : " x ")
@@ -424,39 +421,39 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
                             .append(TechTreeManager.getTreeName(prerequisite.getManager()))
                             .append(")");
                 }
-                tooltips.add(line.withStyle(unlocked ? ChatFormatting.GREEN : ChatFormatting.RED));
+                tooltips.add(line.withStyle(style -> style.withColor(unlocked ? TechTreeStyle.get().widgetTooltipUnlocked : TechTreeStyle.get().widgetTooltipLocked)));
             }
         }
         return tooltips;
     }
 
-    private ChatFormatting getFormattingForState(byte state) {
+    private int getTooltipColorForState(byte state) {
         return switch (state) {
-            case STATE_UNLOCKED_VALUE -> ChatFormatting.GREEN;
-            case STATE_AVAILABLE -> ChatFormatting.GOLD;
-            default -> ChatFormatting.RED;
+            case STATE_UNLOCKED_VALUE -> TechTreeStyle.get().widgetTooltipUnlocked;
+            case STATE_AVAILABLE -> TechTreeStyle.get().widgetTooltipAvailable;
+            default -> TechTreeStyle.get().widgetTooltipLocked;
         };
     }
 
     private int getNodeFillColor(byte state) {
         return switch (state) {
-            case STATE_UNLOCKED_VALUE -> 0xFF1E4D2B;
-            case STATE_AVAILABLE -> ColorUtils.getInterpolatedColor(0xFF2F2F34, 0xFF4C4C50, 0.5F + (float) Math.sin(System.currentTimeMillis() / 200.0D) * 0.5F);
-            default -> 0xFF2F2F34;
+            case STATE_UNLOCKED_VALUE -> TechTreeStyle.get().unlockedNodeFill;
+            case STATE_AVAILABLE -> ColorUtils.getInterpolatedColor(TechTreeStyle.get().availableNodeFillLow, TechTreeStyle.get().availableNodeFillHigh, 0.5F + (float) Math.sin(System.currentTimeMillis() / 200.0D) * 0.5F);
+            default -> TechTreeStyle.get().lockedNodeFill;
         };
     }
 
     private int getNodeBorderColor(byte state) {
         return switch (state) {
-            case STATE_UNLOCKED_VALUE -> 0xFF6CDA84;
-            case STATE_AVAILABLE -> ColorUtils.getInterpolatedColor(0xFF8C8C93, 0xFF9999a2, 0.5F + (float) Math.sin(System.currentTimeMillis() / 200.0D) * 0.5F);
-            default -> 0xFF8C8C93;
+            case STATE_UNLOCKED_VALUE -> TechTreeStyle.get().unlockedNodeBorder;
+            case STATE_AVAILABLE -> ColorUtils.getInterpolatedColor(TechTreeStyle.get().availableNodeBorderLow, TechTreeStyle.get().availableNodeBorderHigh, 0.5F + (float) Math.sin(System.currentTimeMillis() / 200.0D) * 0.5F);
+            default -> TechTreeStyle.get().lockedNodeBorder;
         };
     }
 
     @OnlyIn(Dist.CLIENT)
     private int getPulsingHighlightColor(int baseColor) {
-        return ColorUtils.getInterpolatedColor(HOVERED_DEPENDENCY_LINE_COLOR, baseColor, (float) (0.5 - Math.sin(System.currentTimeMillis() / 200.0D) * 0.5));
+        return ColorUtils.getInterpolatedColor(TechTreeStyle.get().hoveredDependencyLineColor, baseColor, (float) (0.5 - Math.sin(System.currentTimeMillis() / 200.0D) * 0.5));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -469,17 +466,17 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
     }
 
     private int getLineColor(TechNode prerequisite, TechNode node, @Nullable TechNode hoveredNode) {
-        int value = 0xFF4F4F57;
+        int value = TechTreeStyle.get().defaultDependencyLine;
         byte prerequisiteState = getNodeState(prerequisite);
         byte nodeState = getNodeState(node);
         if (nodeState == STATE_UNLOCKED_VALUE) {
-            value = 0xFF5CC978;
+            value = TechTreeStyle.get().unlockedDependencyLine;
         }
         if (nodeState == STATE_AVAILABLE && prerequisiteState == STATE_UNLOCKED_VALUE) {
-            value = 0xFFE3C45D;
+            value = TechTreeStyle.get().availableDependencyLine;
         }
         if (prerequisiteState == STATE_UNLOCKED_VALUE) {
-            value = 0xFF7A7A82;
+            value = TechTreeStyle.get().prerequisiteUnlockedDependencyLine;
         }
         if (hoveredNode == node) {
             return getPulsingHighlightColor(value);
@@ -638,7 +635,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
                 int leftRegionRight = pos.x + scaleValue(left.maxX()) + contentOffsetX + nodeSize;
                 int rightRegionLeft = pos.x + scaleValue(right.minX()) + contentOffsetX;
                 int separatorX = (leftRegionRight + rightRegionLeft) / 2 + offsetHorizontal;
-                drawVerticalDashedLine(graphics, separatorX, startY, endY, TIER_SEPARATOR_COLOR);
+                drawVerticalDashedLine(graphics, separatorX, startY, endY, TechTreeStyle.get().tierSeparatorColor);
             }
         }
 
@@ -735,10 +732,10 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             DrawerHelper.drawSolidRect(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeFillColor(state));
             DrawerHelper.drawBorder(graphics, pos.x, pos.y, nodeSize, nodeSize, getNodeBorderColor(node, state), 1);
             if (node == selectedNode) {
-                DrawerHelper.drawBorder(graphics, pos.x - 1, pos.y - 1, nodeSize + 2, nodeSize + 2, SELECTED_NODE_BORDER_COLOR, 1);
+                DrawerHelper.drawBorder(graphics, pos.x - 1, pos.y - 1, nodeSize + 2, nodeSize + 2, TechTreeStyle.get().selectedNodeBorderColor, 1);
             }
             if (state == STATE_LOCKED) {
-                DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, nodeSize - 2, nodeSize - 2, 0x55000000);
+                DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, nodeSize - 2, nodeSize - 2, TechTreeStyle.get().lockedNodeOverlay);
             }
 
             drawNodeIcon(graphics, pos.x + getScaledIconOffset(), pos.y + getScaledIconOffset());
@@ -759,7 +756,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
                 graphics.pose().pushPose();
                 graphics.pose().translate(x, y, 0);
                 graphics.pose().scale(textScale, textScale, 1.0F);
-                graphics.drawString(Minecraft.getInstance().font, "?", 1, 0, 0xFFFFFFFF, false);
+                graphics.drawString(Minecraft.getInstance().font, "?", 1, 0, TechTreeStyle.get().nodeIconFallback, false);
                 graphics.pose().popPose();
             }
         }
@@ -773,7 +770,7 @@ public class TechTreeWidget extends DraggableScrollableWidgetGroup {
             }
 
             Position pos = getPosition();
-            DrawerHelper.drawBorder(graphics, pos.x - 1, pos.y - 1, getSize().width + 2, getSize().height + 2, 0xFFFFFFFF, 1);
+            DrawerHelper.drawBorder(graphics, pos.x - 1, pos.y - 1, getSize().width + 2, getSize().height + 2, TechTreeStyle.get().nodeHoverBorder, 1);
             setHoverTooltips(createTooltip(node, getNodeState(index)));
         }
 

@@ -1,0 +1,55 @@
+{
+  "tier_separator_color": "#66FFFFFF",
+  "hovered_dependency_line_color": "#FF4DE3E3",
+  "selected_node_border_color": "#FF8BE7DE",
+  "node": {
+    "locked_fill": "#FF2F2F34",
+    "available_fill_low": "#FF2F2F34",
+    "available_fill_high": "#FF4C4C50",
+    "unlocked_fill": "#FF1E4D2B",
+    "locked_border": "#FF8C8C93",
+    "available_border_low": "#FF8C8C93",
+    "available_border_high": "#FF9999A2",
+    "unlocked_border": "#FF6CDA84",
+    "locked_overlay": "#55000000",
+    "icon_fallback": "#FFFFFFFF",
+    "hover_border": "#FFFFFFFF"
+  },
+  "dependency_lines": {
+    "default": "#FF4F4F57",
+    "node_unlocked": "#FF5CC978",
+    "node_available": "#FFE3C45D",
+    "prerequisite_unlocked": "#FF7A7A82"
+  },
+  "side_tab": {
+    "node_box_fill": "#FF2F2F34",
+    "node_box_border": "#FF8C8C93",
+    "header_name": "#FFF3F3F3",
+    "header_description": "#FFB9B9C0",
+    "row_background": "#FF232328",
+    "row_text": "#FFF3F3F3",
+    "row_value": "#FFD4D4DB",
+    "row_completed_value": "#FF6CDA84",
+    "cwu_bar_fill": "#FF39C5BB",
+    "cwu_bar_border": "#FF8BE7DE",
+    "prerequisite_hover_border": "#FF39C5BB",
+    "progress_highlight_start": "#00E2E2E2",
+    "material_highlight_start": "#FFFFFFFF"
+  },
+  "text": {
+    "widget_tooltip_description": "#FFAAAAAA",
+    "widget_tooltip_prerequisites": "#FFFFFF55",
+    "widget_tooltip_unlocked": "#FF55FF55",
+    "widget_tooltip_available": "#FFFFAA00",
+    "widget_tooltip_locked": "#FFFF5555",
+    "side_tab_tier": "#FF5555FF",
+    "side_tab_manager": "#FFAAAAAA",
+    "side_tab_navigate": "#FF55FF55",
+    "side_tab_tier_item": "#FF55FFFF"
+  },
+  "selector": {
+    "selected_fill": "#5539C5BB",
+    "selected_border": "#FF39C5BB",
+    "hover_border": "#FFF3F3F3"
+  }
+}

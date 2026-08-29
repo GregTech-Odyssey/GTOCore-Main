@@ -16,9 +16,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+
 import com.gto.datasynclib.datastream.data.Data;
+import dev.architectury.fluid.FluidStack;
+import dev.emi.emi.api.EmiApi;
 import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.config.NameMap;
+import dev.ftb.mods.ftblibrary.icon.Color4I;
+import dev.ftb.mods.ftblibrary.icon.Icon;
+import dev.ftb.mods.ftblibrary.icon.ItemIcon;
+import dev.ftb.mods.ftblibrary.ui.Button;
+import dev.ftb.mods.ftblibrary.util.client.ClientUtils;
 import dev.ftb.mods.ftbquests.quest.Quest;
 import dev.ftb.mods.ftbquests.quest.TeamData;
 import dev.ftb.mods.ftbquests.quest.task.AbstractBooleanTask;
@@ -93,5 +103,25 @@ public class TechNodeTask extends AbstractBooleanTask {
     @Override
     public void drawGUI(TeamData teamData, GuiGraphics graphics, int x, int y, int w, int h) {
         new TechNodeEmiStack(node).render(graphics, x, y, 0, TechNodeEmiStack.RENDER_ICON);
+    }
+
+    @Override
+    public Icon getAltIcon() {
+        return switch (node.icon) {
+            case AEItemKey itemIcon -> ItemIcon.getItemIcon(itemIcon.item);
+            case AEFluidKey itemIcon -> {
+                var f = FluidStack.create(itemIcon.fluid, 1000);
+                yield Icon.getIcon(ClientUtils.getStillTexture(f)).withTint(Color4I.rgb(ClientUtils.getFluidColor(f)));
+            }
+            case null, default -> super.getAltIcon();
+        };
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void onButtonClicked(Button button, boolean canClick) {
+        button.playClickSound();
+
+        EmiApi.displayUses(new TechNodeEmiStack(node));
     }
 }

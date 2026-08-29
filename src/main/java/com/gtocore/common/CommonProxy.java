@@ -148,10 +148,8 @@ public class CommonProxy {
         TravelRegistry.addTravelEntry(AnchorTravelTarget.SERIALIZED_NAME, AnchorTravelTarget::load, () -> TravelAnchorRenderers::getRenderer);
         TravelRegistry.addTravelEntry(PatternTravelTarget.SERIALIZED_NAME, PatternTravelTarget::loadClientTarget, () -> TravelAnchorRenderers::getRenderer);
 
-        if (GTCEu.isProd()) {
-            AreaShape.register();
-            EMIRecipeModHelper.setRecipeModHelper();
-        }
+        AreaShape.register();
+        EMIRecipeModHelper.setRecipeModHelper();
 
         if (GTCEu.isClientSide()) {
             Supplier<Component> tooltip = () -> Component.translatable(GTOTagPrefix.PIPE_TOOLTIP);

@@ -91,13 +91,13 @@ public final class TechTreeSelectorWidget extends Widget {
             GuiTextures.SLOT.draw(graphics, mouseX, mouseY, slotX, pos.y + PADDING, SLOT_SIZE, SLOT_SIZE);
             TechTreeManager buttonManager = managers.get(i);
             if (buttonManager == manager) {
-                DrawerHelper.drawSolidRect(graphics, slotX + 1, pos.y + PADDING + 1, SLOT_SIZE - 2, SLOT_SIZE - 2, 0x5539C5BB);
+                DrawerHelper.drawSolidRect(graphics, slotX + 1, pos.y + PADDING + 1, SLOT_SIZE - 2, SLOT_SIZE - 2, TechTreeStyle.get().selectorSelectedFill);
             }
             buttonManager.getIcon().draw(graphics, mouseX, mouseY, slotX + 1, pos.y + PADDING + 1, 16, 16);
             if (buttonManager == manager) {
-                DrawerHelper.drawBorder(graphics, slotX, pos.y + PADDING, SLOT_SIZE, SLOT_SIZE, 0xFF39C5BB, 1);
+                DrawerHelper.drawBorder(graphics, slotX, pos.y + PADDING, SLOT_SIZE, SLOT_SIZE, TechTreeStyle.get().selectorSelectedBorder, 1);
             } else if (isMouseOver(slotX, pos.y + PADDING, SLOT_SIZE, SLOT_SIZE, mouseX, mouseY)) {
-                DrawerHelper.drawBorder(graphics, slotX, pos.y + PADDING, SLOT_SIZE, SLOT_SIZE, 0xFFF3F3F3, 1);
+                DrawerHelper.drawBorder(graphics, slotX, pos.y + PADDING, SLOT_SIZE, SLOT_SIZE, TechTreeStyle.get().selectorHoverBorder, 1);
             }
         }
     }
