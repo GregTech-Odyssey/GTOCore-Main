@@ -39,7 +39,7 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
         this(machine, slots, ExportOnlyAEFluidSlot::new);
     }
 
-    ExportOnlyAEFluidList(MetaMachine machine, int slots, Supplier<ExportOnlyAEFluidSlot> slotFactory) {
+    protected ExportOnlyAEFluidList(MetaMachine machine, int slots, Supplier<ExportOnlyAEFluidSlot> slotFactory) {
         super(machine, IO.IN);
         this.inventory = new ExportOnlyAEFluidSlot[slots];
         for (int i = 0; i < slots; i++) {

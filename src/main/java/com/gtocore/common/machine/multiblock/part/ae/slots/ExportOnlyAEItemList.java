@@ -40,7 +40,7 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
         this(holder, slots, ExportOnlyAEItemSlot::new);
     }
 
-    ExportOnlyAEItemList(MetaMachine holder, int slots, Supplier<ExportOnlyAEItemSlot> slotFactory) {
+    protected ExportOnlyAEItemList(MetaMachine holder, int slots, Supplier<ExportOnlyAEItemSlot> slotFactory) {
         super(holder, IO.IN);
         this.inventory = new ExportOnlyAEItemSlot[slots];
         for (int i = 0; i < slots; i++) {

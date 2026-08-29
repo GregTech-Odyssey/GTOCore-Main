@@ -514,10 +514,10 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         }
     }
 
-    public static final class InternalSlot extends AbstractRecipeInternalSlot {
+    public static class InternalSlot extends AbstractRecipeInternalSlot {
 
         public GTRecipeDefinition recipe;
-        public final MEPatternBufferPartMachine machine;
+        public final MEPatternPartMachineKt<?> machine;
         public final int index;
         private final InputSink inputSink;
         public final IntLongMap ingredientMap = new IntLongMap();
@@ -527,16 +527,18 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         public final NotifiableNotConsumableItemHandler shareInventory;
         public final NotifiableNotConsumableFluidHandler shareTank;
         public final NotifiableItemStackHandler circuitInventory;
+        @Getter
         final LockableItemStackHandler lockableInventory;
         @Getter
         private boolean lock;
         @Setter
         private boolean shouldLockRecipe = true;
 
-        private InternalSlot(MEPatternBufferPartMachine machine, int index) {
+        protected InternalSlot(MEPatternPartMachineKt<?> machine, int index) {
             this.machine = machine;
             this.index = index;
-            this.shareInventory = machine.createShareInventory();
+            this.shareInventory = new NotifiableNotConsumableItemHandler(machine, 9, IO.NONE);
+            this.shareInventory.setFilter(stack -> !(stack.getItem() instanceof EncodedPatternItem));
             this.shareTank = new NotifiableNotConsumableFluidHandler(machine, 9, 64000);
             this.circuitInventory = CircuitHandler.create(machine);
             this.inputSink = new InputSink(this);
@@ -564,10 +566,14 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             if (!shouldLockRecipe) return;
             if (recipe != null && recipe.registered) {
                 this.recipe = recipe;
-                machine.caches[index] = true;
+                if (machine instanceof MEPatternBufferPartMachine buffer) {
+                    buffer.caches[index] = true;
+                }
             } else {
                 this.recipe = null;
-                machine.caches[index] = false;
+                if (machine instanceof MEPatternBufferPartMachine buffer) {
+                    buffer.caches[index] = false;
+                }
             }
         }
 
@@ -575,7 +581,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             return itemInventory.isEmpty() && fluidInventory.isEmpty();
         }
 
-        private void refund() {
+        protected void refund() {
             var network = machine.getMainNode().getGrid();
             if (network != null) {
                 MEStorage networkInv = network.getStorageService().getInventory();

@@ -75,7 +75,7 @@ fun VBoxBuilder.buildToolBoxContentFor(machine: MEInputBufferPartMachine): Unit 
                         }
                     }
                 }
-                val fluidHandler: Array<CustomFluidTank> = inv.notConsumableFluid.storages
+                val fluidHandler: Array<CustomFluidTank> = inv.shareTank.storages
                 buildFluidSection(this, width, fluidHandler)
                 val circuitHandler = inv.circuitInventory.storage
                 buildCircuitSection(
@@ -145,12 +145,12 @@ fun VBoxBuilder.buildToolBoxContentFor(machine: MEInputBufferPartMachine): Unit 
                 blank(height = 4)
                 textBlock(maxWidth = width, textSupplier = { Component.translatable(PATTERN_CONFIGURATION) })
                 hBox(height = 36, style = { spacing = 4 }) {
-                    val c = AEItemConfigWidget(0, 0, inv.exportOnlyItemList)
+                    val c = AEItemConfigWidget(0, 0, inv.createItemRequestView())
                     c.setShowAmount(true)
                     widget(c)
                 }
                 hBox(height = 36, style = { spacing = 4 }) {
-                    val c = AEFluidConfigWidget(3, 51, inv.exportOnlyFluidList)
+                    val c = AEFluidConfigWidget(3, 51, inv.createFluidRequestView())
                     c.setShowAmount(true)
                     widget(c)
                 }

@@ -7,6 +7,7 @@ import appeng.api.networking.IGrid;
 import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.crafting.ICraftingRequester;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyMap;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 import appeng.helpers.MultiCraftingTracker;
@@ -16,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 public class MERequestableInputBusMachine extends MEInputBusPartMachine implements ICraftingRequester {
 
     MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, aeItemHandler.getConfigurableSlots());
+    private final AEKeyMap<AEKey> requestedKeys = new AEKeyMap<>();
 
     public MERequestableInputBusMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -29,6 +31,7 @@ public class MERequestableInputBusMachine extends MEInputBusPartMachine implemen
         }
         var cg = grid.getCraftingService();
         MEStorage networkInv = grid.getStorageService().getInventory();
+        requestedKeys.clear();
         for (int i = 0; i < this.aeItemHandler.getConfigurableSlots(); i++) {
             var aeTank = this.aeItemHandler.getInventory()[i];
             GenericStack exceedFluid = aeTank.exceedStack();
@@ -45,6 +48,7 @@ public class MERequestableInputBusMachine extends MEInputBusPartMachine implemen
             }
             GenericStack reqFluid = aeTank.requestStack();
             if (reqFluid != null) {
+                requestedKeys.set(reqFluid.what(), 1);
                 long extracted = networkInv.extract(reqFluid.what(), reqFluid.amount(), Actionable.MODULATE, this.getActionSourceField());
                 if (extracted < reqFluid.amount()) {
                     craftingTracker.handleCrafting(i, reqFluid.what(), reqFluid.amount() - extracted,
@@ -60,6 +64,9 @@ public class MERequestableInputBusMachine extends MEInputBusPartMachine implemen
 
     @Override
     public long insertCraftedItems(ICraftingLink link, AEKey what, long amount, Actionable mode) {
+        if (!requestedKeys.contains(what)) {
+            return 0;
+        }
         IGrid grid = this.getMainNode().getGrid();
         if (grid == null) {
             return 0;
