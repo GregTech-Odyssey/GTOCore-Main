@@ -68,7 +68,7 @@ open class MEPatternBufferPartMachineKt(holder: MetaMachineBlockEntity, maxPatte
         @RegisterLanguage(cn = "物品不够时请求合成", en = "Request crafting when items are insufficient")
         const val REQUEST_CRAFTING_WHEN_INSUFFICIENT: String = "gtceu.ae.pattern_part_machine.REQUEST_CRAFTING_WHEN_INSUFFICIENT"
 
-        @RegisterLanguage(cn = "已锁定，由样板内的配方自动拉取虚拟物品进行合成", en = "Locked, automatically pull virtual items for crafting according to the recipe in the pattern")
+        @RegisterLanguage(cn = "已锁定，由样板内的配方自动拉取虚拟成分进行合成", en = "Locked, automatically pull virtual ingredients for crafting according to the recipe in the pattern")
         const val ITEM_LOCKED: String = "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode"
 
         @RegisterLanguage(
@@ -162,47 +162,48 @@ open class MEPatternBufferPartMachineKt(holder: MetaMachineBlockEntity, maxPatte
             configuratorField.get() in 0..<maxPatternCount -> {
                 vBox(width = availableWidth, alwaysHorizonCenter = true, style = { spacing = 2 }) {
                     val width = this@vBox.availableWidth
-                    val itemHandler = getInternalInventory()[configuratorField.get()].lockableInventory
+                    val internalSlot = getInternalInventory()[configuratorField.get()]
+                    val itemHandler = internalSlot.lockableInventory
                     textBlock(maxWidth = width, textSupplier = { Component.translatable(ITEM_SPECIAL) })
                     (0 until itemHandler.slots).chunked(9).forEach { indices ->
                         hBox(height = 18) {
                             indices.forEach { index ->
                                 widget(
-                                    object : SlotWidget(itemHandler, index, 0, 0, true, true) {
-                                        override fun drawInBackground(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTicks: Float) {
-                                            super.drawInBackground(graphics, mouseX, mouseY, partialTicks)
-                                            if (configuratorField.get() < 0) return
-                                            if (getInternalInventory()[configuratorField.get()].isLock) {
-                                                DrawerHelper.drawSolidRect(graphics, positionX, positionY, sizeWidth, sizeHeight, 0x80000000.toInt())
-                                            }
-                                        }
-
-                                        override fun getFullTooltipTexts(): List<Component> {
-                                            var superList = super.getFullTooltipTexts()
-                                            superList = superList.toMutableList()
-                                            run {
-                                                if (configuratorField.get() < 0) return@run
-                                                if (getInternalInventory()[configuratorField.get()].isLock) {
-                                                    superList.add(Component.translatable(ITEM_LOCKED))
+                                    missingVirtualInputOverlay(
+                                        object : SlotWidget(itemHandler, index, 0, 0, true, true) {
+                                            override fun drawInBackground(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTicks: Float) {
+                                                super.drawInBackground(graphics, mouseX, mouseY, partialTicks)
+                                                if (internalSlot.isLock) {
+                                                    DrawerHelper.drawSolidRect(graphics, positionX, positionY, sizeWidth, sizeHeight, 0x80000000.toInt())
                                                 }
                                             }
-                                            return superList
-                                        }
-                                    }.apply {
-                                        setBackgroundTexture(GuiTextures.SLOT)
-                                    },
+
+                                            override fun getFullTooltipTexts(): List<Component> {
+                                                var superList = super.getFullTooltipTexts()
+                                                superList = superList.toMutableList()
+                                                if (internalSlot.isLock) {
+                                                    superList.add(Component.translatable(ITEM_LOCKED))
+                                                }
+                                                return superList
+                                            }
+                                        }.apply {
+                                            setBackgroundTexture(GuiTextures.SLOT)
+                                        },
+                                    ) { internalSlot.isMissingVirtualItemSlot(index) },
                                 )
                             }
                         }
                     }
-                    val fluidHandler: Array<CustomFluidTank> = getInternalInventory()[configuratorField.get()].shareTank.storages
-                    buildFluidSection(this, width, fluidHandler)
-                    val circuitHandler = getInternalInventory()[configuratorField.get()].circuitInventory.storage
+                    val fluidHandler: Array<CustomFluidTank> = internalSlot.shareTank.storages
+                    buildFluidSection(this, width, fluidHandler) { index, widget ->
+                        missingVirtualInputOverlay(widget) { internalSlot.isMissingVirtualFluidSlot(index) }
+                    }
+                    val circuitHandler = internalSlot.circuitInventory.storage
                     buildCircuitSection(
                         container = this,
                         width = width,
-                        circuitSlot = createReadOnlyCircuitSlot(circuitHandler),
-                        getter = { IntCircuitBehaviour.getCircuitConfiguration(getInternalInventory()[configuratorField.get()].circuitInventory.storage.getStackInSlot(0)).toString() },
+                        circuitSlot = missingVirtualInputOverlay(createReadOnlyCircuitSlot(circuitHandler)) { internalSlot.isMissingVirtualCircuit() },
+                        getter = { IntCircuitBehaviour.getCircuitConfiguration(internalSlot.circuitInventory.storage.getStackInSlot(0)).toString() },
                         setter = {
                             val circuit = when {
                                 it.toIntOrNull() == null -> 0

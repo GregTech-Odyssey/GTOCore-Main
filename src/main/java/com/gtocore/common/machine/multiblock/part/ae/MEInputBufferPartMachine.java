@@ -26,6 +26,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.transfer.fluid.LockableIFluidHandler;
 import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.utils.TaskHandler;
@@ -213,6 +214,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
     public void onMachineRemoved() {
         super.onMachineRemoved();
         for (InternalSlot slot : getInternalInventory()) {
+            slot.clearVirtualInputs();
             slot.refund();
             for (var job : slot.craftingTracker.getRequestedJobs()) {
                 job.cancel();
@@ -232,7 +234,8 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
     public @NotNull IPatternDetails convertPattern(@NotNull IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.notConsumableItem.storage, () -> true);
+                slot.circuitInventory, slot.notConsumableItem.storage, slot.notConsumableFluid.getStorages(), slot.virtualInputState,
+                () -> true);
     }
 
     @Override
@@ -246,6 +249,9 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
     @Override
     public void onPatternChange(int index) {
+        if (!isRemote()) {
+            getInternalInventory()[index].clearVirtualInputs();
+        }
         super.onPatternChange(index);
     }
 
@@ -345,7 +351,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         public final NotifiableItemStackHandler circuitInventory;
 
         @Getter
-        public final LockableItemStackHandler lockableInventory;
+        public final LockableItemStackHandler[] itemUiHandlers;
 
         public AEKey reportingKey = null;
         @Getter
@@ -363,6 +369,8 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
         private boolean disconnected = false;
 
         MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, 32);
+
+        private final MEVirtualInputState virtualInputState;
 
         private InternalSlot(MEInputBufferPartMachine machine, int index) {
             this.machine = machine;
@@ -396,13 +404,28 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             };
 
             this.circuitInventory = CircuitHandler.create(machine);
-            this.lockableInventory = new LockableItemStackHandler(notConsumableItem.storage);
+            this.virtualInputState = new MEVirtualInputState(notConsumableItem.storage, notConsumableFluid.getStorages(), circuitInventory.storage);
+            this.itemUiHandlers = virtualInputState.getItemUiHandlers();
         }
 
         private NotifiableNotConsumableItemHandler createShareInventory() {
             var h = new NotifiableNotConsumableItemHandler(machine, 9, IO.NONE);
             h.setFilter(stack -> !(stack.getItem() instanceof EncodedPatternItem));
             return h;
+        }
+
+        void clearVirtualInputs() {
+            virtualInputState.clearVirtualInputs();
+        }
+
+        public LockableIFluidHandler[] getFluidUiHandlers() {
+            return virtualInputState.getFluidUiHandlers();
+        }
+
+        public void setCircuitConfiguration(ItemStack circuit) {
+            if (!virtualInputState.isVirtualCircuit()) {
+                virtualInputState.setManualCircuit(circuit);
+            }
         }
 
         public boolean isEmpty() {
@@ -482,6 +505,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
                 int itemIdx = 0, fluidIdx = 0;
                 for (var ingredient : aeProcessingPattern.getSparseInputs()) {
                     var key = ingredient.what();
+                    if (key instanceof AEItemKey itemKey && MEPatternVirtualInputHelper.isVirtualProvider(itemKey)) continue;
                     var amount = ingredient.amount();
                     var configStack = new GenericStack(key, amount * multiplier);
                     if (key instanceof AEItemKey) {
@@ -593,15 +617,22 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             if (recipe != null) {
                 tag.putByteArray("recipe", GTRecipeDefinition.DATA_CODEC.encode(recipe).writeToBytes());
             }
-            if (!notConsumableItem.isEmpty()) tag.put("inv", notConsumableItem.storage.serializeNBT());
+            var persistentItems = virtualInputState.createPersistentItemStorage();
+            if (persistentItems != null) tag.put("inv", persistentItems.serializeNBT());
             if (!notConsumableFluid.isEmpty()) {
                 ListTag tanks = new ListTag();
-                for (var tank : notConsumableFluid.getStorages()) {
-                    if (tank.isEmpty()) {
+                boolean hasPersistentFluid = false;
+                var fluidStorages = notConsumableFluid.getStorages();
+                for (int slot = 0; slot < fluidStorages.length; slot++) {
+                    var tank = fluidStorages[slot];
+                    if (virtualInputState.isVirtualFluidSlot(slot) || tank.isEmpty()) {
                         tanks.add(new CompoundTag());
-                    } else tanks.add(tank.serializeNBT());
+                    } else {
+                        tanks.add(tank.serializeNBT());
+                        hasPersistentFluid = true;
+                    }
                 }
-                tag.put("tank", tanks);
+                if (hasPersistentFluid) tag.put("tank", tanks);
             }
             ListTag exportItems = new ListTag();
             for (var slot : exportOnlyItemList.getInventory()) {
@@ -618,12 +649,13 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             tag.putLong("minThreshold", minThreshold);
             tag.putLong("multiplier", multiplier);
             var c = IntCircuitBehaviour.getCircuitConfiguration(circuitInventory.storage.getStackInSlot(0));
-            if (c > 0) tag.putInt("c", c);
+            if (c > 0 && !virtualInputState.isVirtualCircuit()) tag.putInt("c", c);
             return tag;
         }
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
+            virtualInputState.resetForDeserialize();
             if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
             notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
             if (tag.tags.get("tank") instanceof ListTag tanks) {

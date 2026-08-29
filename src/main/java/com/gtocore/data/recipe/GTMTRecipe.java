@@ -1,6 +1,7 @@
 package com.gtocore.data.recipe;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
@@ -35,12 +36,13 @@ import static com.gtocore.common.data.GTORecipeTypes.SCANNER_RECIPES;
 public final class GTMTRecipe {
 
     public static void init() {
-        ASSEMBLER_RECIPES.builder("virtual_item_supply_machine")
+        ASSEMBLER_RECIPES.recipeBuilder("virtual_ingredient_provider")
                 .inputItems(GTOMachines.PROGRAMMABLEC_HATCH[2].asItem())
                 .inputItems(CustomItems.PROGRAMMABLE_COVER.get(), GTOCore.isEasy() ? 4 : 16)
-                .inputItems("gtmthings:virtual_item_provider", 4)
+                .inputItems(CustomItems.VIRTUAL_ITEM_PROVIDER.asItem(), 2)
+                .inputItems(CustomItems.VIRTUAL_FLUID_PROVIDER.asItem(), 2)
                 .inputItems(GTItems.ROBOT_ARM_MV, GTOCore.isEasy() ? 4 : 16)
-                .outputItems(GTAEMachines.VIRTUAL_ITEM_SUPPLY_MACHINE.asItem())
+                .outputItems(GTAEMachines.VIRTUAL_INGREDIENT_PROVIDER.asItem())
                 .EUt(120)
                 .duration(400)
                 .save();
@@ -60,6 +62,15 @@ public final class GTMTRecipe {
                 .inputItems(AEBlocks.QUARTZ_VIBRANT_GLASS.block().asItem())
                 .inputItems(TagPrefix.foil, GTMaterials.PolyvinylChloride, 8)
                 .outputItems(CustomItems.VIRTUAL_ITEM_PROVIDER.asItem())
+                .EUt(GTOCore.isEasy() ? 120 : 480)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("virtual_fluid_provider")
+                .inputItems(CustomTags.LV_CIRCUITS)
+                .inputItems(GTOBlocks.CHEMICAL_GRADE_GLASS.asItem())
+                .inputItems(TagPrefix.foil, GTMaterials.Polytetrafluoroethylene, 8)
+                .outputItems(CustomItems.VIRTUAL_FLUID_PROVIDER.asItem())
                 .EUt(GTOCore.isEasy() ? 120 : 480)
                 .duration(200)
                 .save();

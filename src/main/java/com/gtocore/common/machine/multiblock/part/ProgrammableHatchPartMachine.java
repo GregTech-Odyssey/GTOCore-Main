@@ -38,8 +38,8 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
-import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
+import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,7 +66,15 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
     @Override
     protected @NotNull NotifiableItemStackHandler createInventory(Object @NotNull... args) {
-        return new NotifiableItemStackHandler(this, getInventorySize(), io).setFilter(itemStack -> !(itemStack.hasTag() && itemStack.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get())));
+        return new NotifiableItemStackHandler(this, getInventorySize(), io)
+                .setFilter(itemStack -> !isConfiguredVirtualProvider(itemStack));
+    }
+
+    public static boolean isConfiguredVirtualProvider(ItemStack stack) {
+        if (!stack.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get()) &&
+                !stack.is(CustomItems.VIRTUAL_FLUID_PROVIDER.get()))
+            return false;
+        return VirtualProviderData.hasData(stack);
     }
 
     @Override
@@ -252,28 +260,20 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         private static class ProgrammableHandler extends ItemStackHandler {
 
             private final IProgrammableMachine machine;
-            private final ProgrammableFluidHandler fluidTank;
 
             private ProgrammableHandler(Object machine) {
                 super(1);
                 this.machine = (IProgrammableMachine) machine;
-                if (machine instanceof ProgrammableHatchPartMachine partMachine) {
-                    this.fluidTank = partMachine.fluidTank;
-                } else {
-                    this.fluidTank = null;
-                }
             }
 
             @Override
             public int insertExternal(AEItemKey itemKey, int amount, Actionable mode) {
-                if (machine.isProgrammable() && itemKey.hasTag()) {
-                    if (itemKey.item == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
+                if (machine.isProgrammable() && itemKey.item == CustomItems.VIRTUAL_ITEM_PROVIDER.get() &&
+                        VirtualProviderData.hasData(itemKey.getReadOnlyStack())) {
+                    if (!mode.isSimulate()) {
                         setStackInSlot(0, VirtualItemProviderBehavior.getVirtualItem(itemKey.getReadOnlyStack()));
-                        return amount;
-                    } else if (fluidTank != null && itemKey.item == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
-                        fluidTank.setFluidInTank(0, VirtualFluidProviderBehavior.getVirtualFluid(itemKey.getReadOnlyStack()));
-                        return amount;
                     }
+                    return amount;
                 }
                 return 0;
             }

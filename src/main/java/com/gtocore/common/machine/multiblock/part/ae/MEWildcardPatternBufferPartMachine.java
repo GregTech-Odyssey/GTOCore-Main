@@ -31,6 +31,7 @@ import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
@@ -52,6 +53,7 @@ import appeng.hooks.IUnique;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.gto.recipesearch.IntLongMap;
+import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
@@ -463,15 +465,14 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private static @Nullable Object normalizeSearchKey(AEKey key) {
-        if (key instanceof AEItemKey what &&
-                what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get() &&
-                what.getTag() != null &&
-                what.getTag().tags.containsKey("n")) {
-            ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
-            if (virtualItem.isEmpty()) {
-                return null;
+        if (key instanceof AEItemKey what && MEPatternVirtualInputHelper.isVirtualProvider(what)) {
+            if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
+                ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
+                return virtualItem.isEmpty() ? null : AEItemKey.of(virtualItem);
+            } else if (what.getItem() == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
+                FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
+                return virtualFluid.isEmpty() ? null : AEFluidKey.of(virtualFluid);
             }
-            return AEItemKey.of(virtualItem);
         }
         return key;
     }

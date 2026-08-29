@@ -624,15 +624,15 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         info("在损坏值高于60%时发射不会增加发射次数，但会重置损坏值" translatedTo "When damage value is above 60%, launching will not increase the launch count but will reset the damage value")
     }
 
-    // 虚拟物品供应机
+    // 虚拟成分提供机
     @JvmField
-    val virtualItemSupplyMachineTooltips: ComponentListSupplier = ComponentListSupplier {
-        setTranslationPrefix("virtual_item_supply_machine")
+    val virtualIngredientProviderTooltips: ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("virtual_ingredient_provider")
 
         section(MainFunction)
-        function("为ME网络提供虚拟物品" translatedTo "Provides virtual items for the ME network")
-        increase("虚拟物品可用于替代样板中不消耗的物品" translatedTo "Virtual items can be used to replace items in the blueprint that do not consume resources")
-        content("将任何物品放入供应机中均可转换为虚拟物品" translatedTo "Place any item into the supply machine to convert it into a virtual item")
+        function("为ME网络提供虚拟成分" translatedTo "Provides virtual ingredients for the ME network")
+        increase("虚拟成分可用于替代样板中不消耗的物品与流体" translatedTo "Virtual ingredients can replace non-consumable items and fluids in patterns")
+        content("放入物品、流体或已配置的虚拟提供器，即可向ME网络供应对应的虚拟成分" translatedTo "Place items, fluids, or configured virtual providers into the machine to supply virtual ingredients")
     }
 
     @JvmField

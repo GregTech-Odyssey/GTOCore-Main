@@ -1178,14 +1178,6 @@ final class AssemblerA {
                 .researchNode(DataStorageIteration)
                 .duration(300)
                 .save();
-        ASSEMBLER_RECIPES.builder("virtual_fluid_provider")
-                .inputItems(CustomTags.MV_CIRCUITS)
-                .inputItems(GTOBlocks.CHEMICAL_GRADE_GLASS.asItem())
-                .inputItems(TagPrefix.foil, GTMaterials.Polytetrafluoroethylene, 8)
-                .outputItems("gtmthings:virtual_fluid_provider")
-                .EUt(480)
-                .duration(200)
-                .save();
         ASSEMBLER_RECIPES.builder("anti_entropy_computer_condensation_matrix")
                 .inputItems(GTOBlocks.GRAVITON_COMPUTER_CASING.asItem())
                 .inputItems(GTOItems.GRAVITON_TRANSDUCER)
