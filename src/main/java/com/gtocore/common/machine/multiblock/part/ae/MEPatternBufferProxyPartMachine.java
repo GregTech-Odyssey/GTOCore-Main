@@ -123,7 +123,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     }
 
     @Override
-    public ModularUI createUI(Player entityPlayer) {
+    public @Nullable ModularUI createUI(Player entityPlayer) {
         assert getBuffer() != null;
         return getBuffer().createUI(entityPlayer);
     }

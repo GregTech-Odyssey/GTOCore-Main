@@ -26,7 +26,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.api.misc.UnlimitedItemStackTransfer;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
@@ -66,7 +65,6 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
 
     @Getter
     @SaveToDisk
-    @SyncToClient
     private boolean isDistinct = false;
 
     public CreativeInputBusPartMachine(MetaMachineBlockEntity holder, Function<Integer, CustomItemStackHandler> transferFactory) {

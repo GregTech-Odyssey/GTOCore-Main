@@ -17,7 +17,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +26,6 @@ import java.util.function.BiPredicate;
 public class BeamPolarizerMachine extends SimpleNoEnergyMachine implements IBeamOperator {
 
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private double polarizationAngleRad;
 
     public BeamPolarizerMachine(MetaMachineBlockEntity holder) {

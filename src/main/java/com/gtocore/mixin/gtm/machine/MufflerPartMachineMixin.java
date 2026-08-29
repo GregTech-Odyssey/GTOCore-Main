@@ -237,6 +237,7 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
                     gtolib$lastFrontFaceFree = true;
                     gtolib$pollutionPos = output.self().getPos();
                     gtolib$pollutionFacing = output.self().getFrontFacing();
+                    requestSync();
                 }
             }
             gtocore$refresh = time + 100;

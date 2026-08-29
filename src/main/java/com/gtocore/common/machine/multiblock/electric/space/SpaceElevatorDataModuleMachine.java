@@ -9,7 +9,6 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +18,6 @@ public class SpaceElevatorDataModuleMachine extends SpaceElevatorModuleMachine {
 
     private static final int WORKS_PER_PRODUCED_DATA = GTOCore.isExpert() ? 75 : 50;
 
-    @SyncToClient
     @SaveToDisk(defaultValue = "0")
     private long moduleWorks = 0;
 

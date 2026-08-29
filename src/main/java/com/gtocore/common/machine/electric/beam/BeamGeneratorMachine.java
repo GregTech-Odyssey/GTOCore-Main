@@ -20,7 +20,6 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,19 +27,14 @@ import org.jetbrains.annotations.NotNull;
 public class BeamGeneratorMachine extends SimpleTieredMachine {
 
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private long currentIntensity;
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private int currentWaveLength;
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private int ocLevel;
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private float thetaRad;
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private float phiRad;
 
     private TickableSubscription tickSubscription;

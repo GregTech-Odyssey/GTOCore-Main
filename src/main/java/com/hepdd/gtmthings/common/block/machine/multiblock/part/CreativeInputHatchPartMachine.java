@@ -19,7 +19,6 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -47,7 +46,6 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
 
     @Getter
     @SaveToDisk
-    @SyncToClient
     private boolean isDistinct = false;
 
     // The `Object... args` parameter is necessary in case a superclass needs to pass any args along to createTank().
