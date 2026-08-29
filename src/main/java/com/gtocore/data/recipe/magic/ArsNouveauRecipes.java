@@ -193,10 +193,10 @@ public final class ArsNouveauRecipes {
                     new Ingredient[] { Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "ring_of_lesser_discount", Ingredient.of(ItemsRegistry.RING_OF_POTENTIAL), new ItemStack(ItemsRegistry.RING_OF_LESSER_DISCOUNT), 10000,
-                    new Ingredient[] { Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
+                    new Ingredient[] { Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "ring_of_greater_discount", Ingredient.of(ItemsRegistry.RING_OF_LESSER_DISCOUNT), new ItemStack(ItemsRegistry.RING_OF_GREATER_DISCOUNT), 10000,
-                    new Ingredient[] { Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
+                    new Ingredient[] { Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "starbuncle_charm", Ingredient.of(ItemsRegistry.STARBUNCLE_SHARD), new ItemStack(ItemsRegistry.STARBUNCLE_CHARM), 10000,
                     new Ingredient[] { Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT) },
@@ -208,22 +208,22 @@ public final class ArsNouveauRecipes {
                     new Ingredient[] { Ingredient.of(Items.DIAMOND), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "whirlisprig_charm", Ingredient.of(ItemsRegistry.WHIRLISPRIG_SHARDS), new ItemStack(ItemsRegistry.WHIRLISPRIG_CHARM), 10000,
-                    new Ingredient[] { Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(BlockRegistry.MAGE_BLOOM_CROP), Ingredient.of(ItemsRegistry.MAGE_BLOOM), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.OAK_SAPLING), Ingredient.of(Items.SPRUCE_SAPLING), Ingredient.of(Items.BIRCH_SAPLING), Ingredient.of(net.minecraftforge.common.Tags.Items.SEEDS_WHEAT) },
+                    new Ingredient[] { Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(BlockRegistry.MAGE_BLOOM_CROP), Ingredient.of(ItemsRegistry.MAGE_BLOOM), Ingredient.of(Items.DIAMOND), Ingredient.of(Items.OAK_SAPLING), Ingredient.of(Items.SPRUCE_SAPLING), Ingredient.of(Items.BIRCH_SAPLING), Ingredient.of(Items.WHEAT_SEEDS) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "void_jar", Ingredient.of(Items.GLASS_BOTTLE), new ItemStack(ItemsRegistry.VOID_JAR), 10000,
-                    new Ingredient[] { Ingredient.of(Items.BUCKET), Ingredient.of(ItemsRegistry.ALLOW_ITEM_SCROLL), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS) },
+                    new Ingredient[] { Ingredient.of(Items.BUCKET), Ingredient.of(ItemsRegistry.ALLOW_ITEM_SCROLL), Ingredient.of(Items.ENDER_PEARL) },
                     new FluidStack[] { new FluidStack(Fluids.LAVA, 1000) });
             MultiblockImbuementRecipe(5, true, "dominion_rod", Ingredient.of(Items.STICK), new ItemStack(ItemsRegistry.DOMINION_ROD), 10000,
                     new Ingredient[] { Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(Items.GOLD_INGOT) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "wixie_charm", Ingredient.of(ItemsRegistry.WIXIE_SHARD), new ItemStack(ItemsRegistry.WIXIE_CHARM), 10000,
-                    new Ingredient[] { Ingredient.of(ItemTags.SAPLINGS), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_EMERALD), Ingredient.of(Items.CRAFTING_TABLE), Ingredient.of(Items.BREWING_STAND) },
+                    new Ingredient[] { Ingredient.of(ItemTags.SAPLINGS), Ingredient.of(Items.EMERALD), Ingredient.of(Items.CRAFTING_TABLE), Ingredient.of(Items.BREWING_STAND) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "wand", RecipeDatagen.ARCHWOOD_LOG, new ItemStack(ItemsRegistry.WAND), 10000,
                     new Ingredient[] { Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(ItemsRegistry.AIR_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "potion_flask", Ingredient.of(Items.GLASS_BOTTLE), new ItemStack(ItemsRegistry.POTION_FLASK), 10000,
-                    new Ingredient[] { Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), RecipeDatagen.SOURCE_GEM_BLOCK, Ingredient.of(net.minecraftforge.common.Tags.Items.STORAGE_BLOCKS_GOLD) },
+                    new Ingredient[] { Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(BlockRegistry.SOURCE_GEM_BLOCK), Ingredient.of(Items.GOLD_BLOCK) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "potion_flask_extend_time", Ingredient.of(ItemsRegistry.POTION_FLASK), new ItemStack(ItemsRegistry.POTION_FLASK_EXTEND_TIME.get()), 10000,
                     new Ingredient[] { Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE) },
@@ -232,7 +232,7 @@ public final class ArsNouveauRecipes {
                     new Ingredient[] { Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "potion_melder", Ingredient.of(BlockRegistry.POTION_JAR), new ItemStack(BlockRegistry.POTION_MELDER), 10000,
-                    new Ingredient[] { Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(net.minecraftforge.common.Tags.Items.STORAGE_BLOCKS_GOLD), Ingredient.of(net.minecraftforge.common.Tags.Items.STORAGE_BLOCKS_GOLD), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE) },
+                    new Ingredient[] { Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(ItemsRegistry.ABJURATION_ESSENCE), Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.BLAZE_ROD) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "drygmy_charm", Ingredient.of(ItemsRegistry.DRYGMY_SHARD), new ItemStack(ItemsRegistry.DRYGMY_CHARM), 10000,
                     new Ingredient[] { Ingredient.of(ItemTags.FISHES), Ingredient.of(Items.WHEAT), Ingredient.of(Items.APPLE), Ingredient.of(Items.CARROT), Ingredient.of(net.minecraftforge.common.Tags.Items.SEEDS), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ItemsRegistry.SOURCE_GEM) },
@@ -241,10 +241,10 @@ public final class ArsNouveauRecipes {
                     new Ingredient[] { Ingredient.of(ItemsRegistry.WILDEN_HORN), Ingredient.of(ItemsRegistry.WILDEN_SPIKE), Ingredient.of(ItemsRegistry.WILDEN_WING), Ingredient.of(ItemsRegistry.WILDEN_TRIBUTE), Ingredient.of(Items.GOLD_INGOT) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "relay_splitter", Ingredient.of(BlockRegistry.RELAY), new ItemStack(BlockRegistry.RELAY_SPLITTER), 10000,
-                    new Ingredient[] { Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_LAPIS), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_LAPIS), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_LAPIS), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_LAPIS) },
+                    new Ingredient[] { Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(net.minecraftforge.common.Tags.Items.GEMS_QUARTZ), Ingredient.of(Items.LAPIS_LAZULI), Ingredient.of(Items.LAPIS_LAZULI), Ingredient.of(Items.LAPIS_LAZULI), Ingredient.of(Items.LAPIS_LAZULI) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "relay_warp", Ingredient.of(BlockRegistry.RELAY), new ItemStack(BlockRegistry.RELAY_WARP), 10000,
-                    new Ingredient[] { Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(Items.POPPED_CHORUS_FRUIT), Ingredient.of(Items.POPPED_CHORUS_FRUIT), Ingredient.of(Items.POPPED_CHORUS_FRUIT), Ingredient.of(Items.POPPED_CHORUS_FRUIT) },
+                    new Ingredient[] { Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.POPPED_CHORUS_FRUIT), Ingredient.of(Items.POPPED_CHORUS_FRUIT), Ingredient.of(Items.POPPED_CHORUS_FRUIT), Ingredient.of(Items.POPPED_CHORUS_FRUIT) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "relay_deposit", Ingredient.of(BlockRegistry.RELAY), new ItemStack(BlockRegistry.RELAY_DEPOSIT), 10000,
                     new Ingredient[] { Ingredient.of(Items.HOPPER), Ingredient.of(Items.HOPPER), Ingredient.of(Items.HOPPER), Ingredient.of(Items.HOPPER) },
@@ -256,7 +256,7 @@ public final class ArsNouveauRecipes {
                     new Ingredient[] { Ingredient.of(Items.CLOCK) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "enchanted_spell_turret", Ingredient.of(BlockRegistry.BASIC_SPELL_TURRET), new ItemStack(BlockRegistry.ENCHANTED_SPELL_TURRET), 10000,
-                    new Ingredient[] { Ingredient.of(BlockRegistry.SOURCE_GEM_BLOCK), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE) },
+                    new Ingredient[] { Ingredient.of(BlockRegistry.SOURCE_GEM_BLOCK), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.BLAZE_ROD) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "relay_collector", Ingredient.of(BlockRegistry.RELAY), new ItemStack(BlockRegistry.RELAY_COLLECTOR), 10000,
                     new Ingredient[] { Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS), Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS), Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS), Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS) },
@@ -274,22 +274,22 @@ public final class ArsNouveauRecipes {
                     new Ingredient[] { Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(BlockRegistry.ARCHWOOD_PLANK), Ingredient.of(BlockRegistry.ARCHWOOD_PLANK), Ingredient.of(BlockRegistry.ARCHWOOD_PLANK) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "splash_launcher", Ingredient.of(Items.DISPENSER), new ItemStack(ItemsRegistry.SPLASH_LAUNCHER), 10000,
-                    new Ingredient[] { Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.RODS_BLAZE), Ingredient.of(net.minecraftforge.common.Tags.Items.GUNPOWDER), Ingredient.of(net.minecraftforge.common.Tags.Items.GUNPOWDER), Ingredient.of(net.minecraftforge.common.Tags.Items.GUNPOWDER), Ingredient.of(net.minecraftforge.common.Tags.Items.GUNPOWDER) },
+                    new Ingredient[] { Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.BLAZE_ROD), Ingredient.of(Items.GUNPOWDER), Ingredient.of(Items.GUNPOWDER), Ingredient.of(Items.GUNPOWDER), Ingredient.of(Items.GUNPOWDER) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "lingering_launcher", Ingredient.of(ItemsRegistry.SPLASH_LAUNCHER), new ItemStack(ItemsRegistry.LINGERING_LAUNCHER), 10000,
                     new Ingredient[] { Ingredient.of(Items.DRAGON_BREATH), Ingredient.of(ItemsRegistry.AIR_ESSENCE), Ingredient.of(ItemsRegistry.AIR_ESSENCE) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "spell_crossbow", Ingredient.of(Items.CROSSBOW), new ItemStack(ItemsRegistry.SPELL_CROSSBOW), 10000,
-                    new Ingredient[] { Ingredient.of(net.minecraftforge.common.Tags.Items.STORAGE_BLOCKS_GOLD), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), RecipeDatagen.SOURCE_GEM_BLOCK },
+                    new Ingredient[] { Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(BlockRegistry.SOURCE_GEM_BLOCK) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "brazier_relay", Ingredient.of(BlockRegistry.RITUAL_BLOCK), new ItemStack(BlockRegistry.BRAZIER_RELAY), 10000,
                     new Ingredient[] { Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "stable_warp_scroll", Ingredient.of(ItemsRegistry.WARP_SCROLL), new ItemStack(ItemsRegistry.STABLE_WARP_SCROLL), 10000,
-                    new Ingredient[] { Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS) },
+                    new Ingredient[] { Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "scry_caster", Ingredient.of(BlockRegistry.SCRYERS_CRYSTAL), new ItemStack(ItemsRegistry.SCRY_CASTER), 10000,
-                    new Ingredient[] { Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS), Ingredient.of(net.minecraftforge.common.Tags.Items.ENDER_PEARLS) },
+                    new Ingredient[] { Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.BLAZE_POWDER), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL), Ingredient.of(Items.ENDER_PEARL) },
                     new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "crafting_lectern", Ingredient.of(Blocks.LECTERN), new ItemStack(BlockRegistry.CRAFTING_LECTERN), 10000,
                     new Ingredient[] { Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS), Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS), Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS), Ingredient.of(net.minecraftforge.common.Tags.Items.CHESTS) },
