@@ -1052,6 +1052,8 @@ public final class WoodRecipes {
                 .fence(BlockRegistry.ARCHWOOD_FENCE.asItem(), "archwood_fence")
                 .fenceGate(BlockRegistry.ARCHWOOD_FENCE_GATE.asItem(), "archwood_fence_gate")
                 .stairs(BlockRegistry.ARCHWOOD_STAIRS.asItem(), "archwood_stairs")
+                .button(BlockRegistry.ARCHWOOD_BUTTON.asItem(), "archwood_button")
+                .pressurePlate(BlockRegistry.ARCHWOOD_PPlate.asItem(), "archwood_pressure_plate")
                 .build());
         return entries;
     }
