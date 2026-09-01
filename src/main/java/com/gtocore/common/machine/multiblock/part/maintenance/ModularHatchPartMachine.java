@@ -35,6 +35,7 @@ import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import earth.terrarium.adastra.api.systems.GravityApi;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -124,7 +125,9 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
 
     @Override
     public int getCurrentGravity() {
-        return gravityMode ? currentGravity : 1;
+        if (gravityMode) return currentGravity;
+        var level = getLevel();
+        return level == null ? MAX_GRAVITY : Mth.clamp(Math.round(GravityApi.API.getGravity(level) * MAX_GRAVITY), MIN_GRAVITY, MAX_GRAVITY);
     }
 
     @Override
