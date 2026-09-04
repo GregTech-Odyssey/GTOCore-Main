@@ -57,19 +57,19 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     public static final ImmutableMap<Item, TissueData> TISSUE_MATERIALS_TIER = ImmutableMap.<Item, TissueData>builder()
             .put(BIO_CARDIOMYOCYTE_CLUSTER.get(),
                     new TissueData(new int[] { 100, 200, 300, 100 }, 1, 0.01f,
-                            new float[] { 1.5f, 4.1f, 3.2f, 1.5f }, 1L << 23, 1, UV))
+                            new float[] { 1.5f, 12.1f, 8.2f, 2.5f }, 1L << 23, 1, UV))
             .put(MUTANT_CARDIOMYOCYTE_CLUSTER.get(),
                     new TissueData(new int[] { 150, 300, 450, 150 }, 2, 0.2f,
-                            new float[] { 1.5f, 5.4f, 5.2f, 1.6f }, 1L << 25, 2, UHV))
+                            new float[] { 1.8f, 18f, 17.2f, 1.6f }, 1L << 25, 2, UHV))
             .put(DRAGON_CARDIOMYOCYTE_CLUSTER.get(),
                     new TissueData(new int[] { 250, 500, 750, 250 }, 4, 0.5f,
-                            new float[] { 1.5f, 7.2f, 10.4f, 1.3f }, 1L << 27, 3, UEV))
+                            new float[] { 2.5f, 17.2f, 20.4f, 1.3f }, 1L << 27, 3, UEV))
             .put(MODIFIED_DRAGON_HEART.get(),
                     new TissueData(new int[] { 400, 800, 1200, 400 }, 8, 1f,
-                            new float[] { 1.8f, 10.25f, 16.5f, 1.34f }, 1L << 29, 4, UIV))
+                            new float[] { 3.8f, 18.25f, 22.5f, 1.2f }, 1L << 29, 4, UIV))
             .put(AWAKENED_DRAGON_HEART.get(),
                     new TissueData(new int[] { 600, 1200, 1800, 600 }, 16, 0.5f,
-                            new float[] { 2.25f, 10.25f, 22.6f, 1.35f }, 1L << 31, 5, UXV))
+                            new float[] { 5.1f, 10.25f, 32.6f, 1.2f }, 1L << 31, 5, UXV))
             .build();
     private static final int MAX_BOOST_TICKS = 20 * 60;
     private static final int MAX_MEDIUM_AMOUNT = 1_000_000_000;
