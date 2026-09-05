@@ -250,4 +250,9 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
         }
         return null;
     }
+
+    @Override
+    public boolean keepSubscribing() {
+        return true;
+    }
 }

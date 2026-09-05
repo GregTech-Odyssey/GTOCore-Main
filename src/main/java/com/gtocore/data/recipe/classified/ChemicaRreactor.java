@@ -760,7 +760,7 @@ final class ChemicaRreactor {
                 .save();
         CHEMICAL_RECIPES.recipeBuilder("diethyleneglycol")
                 .circuitMeta(2)
-                .inputFluids(GTOMaterials.EthyleneGlycol, 1000)
+                .inputFluids(GTOMaterials.EthyleneGlycol, 2000)
                 .inputFluids(GTMaterials.Water, 1000)
                 .outputFluids(GTOMaterials.DiethyleneGlycol, 1000)
                 .EUt(480)
