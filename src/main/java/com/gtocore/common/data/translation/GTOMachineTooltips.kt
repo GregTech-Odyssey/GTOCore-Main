@@ -891,6 +891,9 @@ object GTOMachineTooltips {
             { lightPurple() },
         )
 
+        section(ComponentSlang.RunningRequirements)
+        important("结构内部空间必须全部填满，可用对应等级的空组件替代" translatedTo "The interior must be completely filled; empty components of the matching tier can be used instead")
+
         section("等级系统" translatedTo "Level System")
         content("通过在主机内放置特定物品切换等级" translatedTo "Switch tiers by placing specific items in the mainframe")
         command("结构方块等级必须与机器等级匹配" translatedTo "Structure block tiers must match machine tier")
@@ -963,7 +966,12 @@ object GTOMachineTooltips {
     // ME 超算核心
     @JvmField
     val MECPUTooltips = ComponentListSupplier {
+        setTranslationPrefix("me_cpu")
+
         highlight("ME 网络超级 CPU" translatedTo "Super CPU in ME Network") { rainbowSlow() }
+
+        section(ComponentSlang.RunningRequirements)
+        important("结构内部空间必须全部填满，可使用合成单元替代" translatedTo "The interior must be completely filled; Crafting Units can be used instead")
 
         section("CPU 性能" translatedTo "CPU Performance")
         function("容量：决定CPU可以处理的总任务大小" translatedTo "Capacity: Determines the total task size the CPU can handle")
@@ -1459,6 +1467,7 @@ object GTOMachineTooltips {
 
         section("电网容量" translatedTo "Electricity Capacity")
         content("可在内部安装任意无线能量单元来提高容量上限" translatedTo "Install wireless energy units inside to increase capacity limit")
+        ok("内部空间无需全部填满" translatedTo "The interior does not need to be completely filled")
         command("实际起作用的单元受玻璃等级限制" translatedTo "Effective units are limited by glass tier")
         info("容量奖励乘数 = （单元数 / 2）≥ 1" translatedTo "Capacity Bonus Multiplier = (Units Count / 2) ≥ 1")
         info("总损耗 = 单元损耗平均值" translatedTo "Total Loss = Average of Unit Losses")
@@ -1665,6 +1674,12 @@ object GTOMachineTooltips {
                     ("[${MATERIAL_TIER_MAP[material]}]: -$reduction%").toLiteralSupplier(),
             )
         }
+    }
+
+    @JvmField
+    val NanitesModuleTooltips = ComponentListSupplier {
+        setTranslationPrefix("nanites_module")
+        error("不建议在此模块上运行配方，请在主机上运行配方" translatedTo "Running recipes in this module is not recommended; run them in the controller instead", 1)
     }
 
     // 虚空采矿机

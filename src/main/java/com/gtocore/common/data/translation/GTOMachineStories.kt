@@ -580,7 +580,7 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
     @JvmField
     val BioengineeringModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("bioengineering_module")
-        story("生物工程是三个模块中最神秘的存在" translatedTo "The bioengineering module is the most mysterious of the three modules")
+        story("生物工程是四个模块中最神秘的存在" translatedTo "The bioengineering module is the most mysterious of the four modules")
         story("无菌室的灯光亮起时，纳米蜂群开始在分子层面编织生命的经纬" translatedTo "When the sterile chamber lights up, nano-swarms begin weaving the fabric of life at molecular level")
         story("生物学家们屏息凝神，见证着有机化合物在精准操控下悄然成型" translatedTo "Biologists hold their breath, witnessing organic compounds taking shape under precise manipulation")
         story("首席工程师激动地宣告：我们正站在解开生命奥秘的门槛之上" translatedTo "The chief engineer excitedly declares we are standing on the threshold of unraveling life's mysteries")
