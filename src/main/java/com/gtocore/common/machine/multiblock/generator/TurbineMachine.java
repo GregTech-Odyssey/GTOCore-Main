@@ -174,8 +174,10 @@ public class TurbineMachine extends ElectricMultiblockMachine {
 
     @Override
     public void onWorking() {
-        if (highSpeedMode && getOffsetTimer() % 20 == 0) {
-            accumulatedDamage += getHighSpeedModeDamageMultiplier();
+        if (getOffsetTimer() % 20 == 0) {
+            float damageMultiplier = highSpeedMode ? getHighSpeedModeDamageMultiplier() : 1;
+            // RotorHolderPartMachine applies the base damage in super.onWorking().
+            accumulatedDamage += (float) (damageMultiplier * extraDamage) - 1;
             if (accumulatedDamage >= 1) {
                 int damageToApply = (int) accumulatedDamage;
                 accumulatedDamage -= damageToApply;
