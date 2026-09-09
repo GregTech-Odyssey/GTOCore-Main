@@ -27,6 +27,8 @@ libs/gtolib-unprotected.jar
 keystore.jks
 tmp_gtolib/
 /.codex_tmp/
+changelog/
+.agents/
 build/gtolib/
 # 保护链只允许出现在私有 submodule；误放在 Main 根目录时忽略
 /protect/
