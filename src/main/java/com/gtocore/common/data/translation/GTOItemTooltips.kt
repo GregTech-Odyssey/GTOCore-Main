@@ -53,7 +53,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         setTranslationPrefix("upgrade_module")
         highlight("提升机器运作速度" translatedTo "Speed up machine operation")
         info("倍率公式：首次升级为 max(0.5, R)，后续升级为 max(0.5, 当前速度倍率 × √R)" translatedTo "Multiplier formula: max(0.5, R) for the first upgrade; max(0.5, current speed multiplier × √R) for subsequent upgrades")
-        info("随机系数 R = 1 - random[0,1) × min(10, floor(经验等级 / 10)) / 20" translatedTo "Random factor R = 1 - random[0,1) × min(10, floor(experience level / 10)) / 20")
+        info("随机系数 R = 1 - random[0,1) × min(0.5, 经验等级 / 200)" translatedTo "Random factor R = 1 - random[0,1) × min(0.5, experience level / 200)")
     }
 
     // 升级模块 - 能量
@@ -61,8 +61,8 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
     val EnergyUpgradeModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("upgrade_module")
         highlight("降低机器功耗" translatedTo "Reduce machine power consumption")
-        info("倍率公式：首次升级为 max(0.5, R)，后续升级为 max(0.5, R × √当前功耗倍率)" translatedTo "Multiplier formula: max(0.5, R) for the first upgrade; max(0.5, R × √current power multiplier) for subsequent upgrades")
-        info("随机系数 R = 1 - random[0,1) × min(10, floor(经验等级 / 10)) / 20" translatedTo "Random factor R = 1 - random[0,1) × min(10, floor(experience level / 10)) / 20")
+        info("倍率公式：首次升级为 max(0.5, R)，后续升级为 max(0.5, 当前功耗倍率 × √R)" translatedTo "Multiplier formula: max(0.5, R) for the first upgrade; max(0.5, R × √current power multiplier) for subsequent upgrades")
+        info("随机系数 R = 1 - random[0,1) × min(0.5, 经验等级 / 200)" translatedTo "Random factor R = 1 - random[0,1) × min(0.5, experience level / 200)")
     }
 
     // 样板修改器
@@ -410,9 +410,8 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         GTMultiMachines.POWER_SUBSTATION.setTooltipBuilder { _, components ->
             components.addAll(
                 ComponentListSupplier {
-                    setTranslationPrefix("power_substation")
-                    add("用于确定无线EU单个仓室或者设备的传输上限的设施。" translatedTo "A facility used to determine the transfer limit of a single wireless EU hatch or device.")
-                    add("安装电容可以提升传输上限。" translatedTo "Installing capacitors increases the transfer limit.")
+                    addTranslatable("gtocore.lang.power_substation.tooltip.0")
+                    addTranslatable("gtocore.lang.power_substation.tooltip.1")
                 }.editionByGTONormal().get(),
             )
         }

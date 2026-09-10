@@ -57,7 +57,7 @@ public final class UpgradeModuleItem extends Item {
                     } else {
                         double energy = upgradeMachine.gtolib$getEnergy();
                         if (energy < 1) {
-                            energy = randomMultiple * Math.sqrt(energy);
+                            energy = energy * Math.sqrt(randomMultiple);
                         } else {
                             energy = randomMultiple;
                         }

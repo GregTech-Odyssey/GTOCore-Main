@@ -305,6 +305,9 @@ public final class LangHandler {
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density", "§d电解液能量密度：§r%s EU/mB", "§dElectrolyte Energy Density:§r %s EU/mB");
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density.va", "§d相当于：§r%s @ §b%s§rA/mB", "§dEquivalent to§r %s @ §b%sA§r/mB");
 
+        addCNEN("gtocore.lang.power_substation.tooltip.0", "用于确定无线EU单个仓室或者设备的传输上限的设施。", "A facility used to determine the transfer limit of a single wireless EU hatch or device.");
+        addCNEN("gtocore.lang.power_substation.tooltip.1", "安装电容可以提升传输上限。", "Installing capacitors increases the transfer limit.");
+
         addCNEN("key.ae2.me2in1_wireless_locating_service", "打开ME2合1无线终端", "Open ME2in1 Wireless Terminal");
 
         addCNEN("gtocore.player_exp_status.mysterious_boost_potion.success", "你似乎被赋予了某种神秘能力...", "You seem to be granted with some mysterious ability ......");
