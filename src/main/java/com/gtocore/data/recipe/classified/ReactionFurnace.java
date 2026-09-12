@@ -314,10 +314,10 @@ final class ReactionFurnace {
                 .save();
 
         REACTION_FURNACE_RECIPES.recipeBuilder("calcium_carbide_dust")
-                .inputItems(TagPrefix.dust, GTMaterials.Carbon, 2)
+                .inputItems(TagPrefix.dust, GTMaterials.Carbon, 3)
                 .inputItems(TagPrefix.dust, GTMaterials.Quicklime, 2)
-                .outputItems(TagPrefix.dust, GTOMaterials.CalciumCarbide)
-                .outputFluids(GTMaterials.Oxygen, 1000)
+                .outputItems(TagPrefix.dust, GTOMaterials.CalciumCarbide, 3)
+                .outputFluids(GTMaterials.CarbonMonoxide, 1000)
                 .EUt(120)
                 .duration(100)
                 .blastFurnaceTemp(800)

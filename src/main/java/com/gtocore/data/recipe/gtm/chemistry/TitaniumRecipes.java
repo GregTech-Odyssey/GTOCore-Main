@@ -70,11 +70,11 @@ final class TitaniumRecipes {
 
         // NaCl(H2O) + CO2 + NH3 -> NH4Cl + NaHCO3
         CHEMICAL_RECIPES.recipeBuilder("sodium_bicarbonate_from_salt")
-                .inputItems(dust, Salt, 4)
+                .inputItems(dust, Salt, 2)
                 .inputFluids(CarbonDioxide, 1000)
                 .inputFluids(Ammonia, 1000)
                 .inputFluids(Water, 1000)
-                .outputItems(dust, AmmoniumChloride, 2)
+                .outputItems(dust, AmmoniumChloride, 6)
                 .outputItems(dust, SodiumBicarbonate, 6)
                 .duration(400).EUt(VA[MV]).save();
 
