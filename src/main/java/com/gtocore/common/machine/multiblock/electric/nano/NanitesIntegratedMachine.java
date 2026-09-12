@@ -120,8 +120,12 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
         textList.add(Component.translatable("tooltip.emi.chance.consume", Math.max(100 - chance, 0)));
-        textList.add(Component.translatable("gui.ae2.AttachedTo", ""));
-        module.forEach(i -> textList.add(Component.translatable(MODULE_MAP.get(i).getDescriptionId())));
+        if (module.isEmpty()) {
+            textList.add(Component.translatable("gtocore.machine.nanites_integrated_processing_center.not_connected"));
+        } else {
+            textList.add(Component.translatable("gui.ae2.AttachedTo", ""));
+            module.forEach(i -> textList.add(Component.translatable(MODULE_MAP.get(i).getDescriptionId())));
+        }
     }
 
     @Override

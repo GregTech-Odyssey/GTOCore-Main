@@ -1128,7 +1128,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.RunningRequirements)
         command("小机器电压应与能源仓匹配，§b双仓升压§r时能源仓电压+1级" translatedTo "The small machine tier must match that of the Energy Hatch; §bDual Hatch Boost§r increases its tier by one")
-        error("无法通过超净维护仓获得洁净环境" translatedTo "Cannot obtain clean environment through clean maintenance")
+        error("无法通过超净维护仓获得洁净环境，仅能通过超净间获得" translatedTo "Cannot obtain a clean environment through a Clean Maintenance Hatch; it can only be obtained through a Cleanroom")
 
         section("配方等级" translatedTo "Recipe Tier")
         command("最终配方等级 = min(小机器, 整体框架)" translatedTo "Final recipe tier = min(small machine, whole structure)")
@@ -1679,7 +1679,9 @@ object GTOMachineTooltips {
     @JvmField
     val NanitesModuleTooltips = ComponentListSupplier {
         setTranslationPrefix("nanites_module")
-        error("不建议在此模块上运行配方，请在主机上运行配方" translatedTo "Running recipes in this module is not recommended; run them in the controller instead", 1)
+
+        section(ComponentSlang.RunningRequirements)
+        command("需要安装到纳米集成加工中心上才能工作" translatedTo "Needs to be installed on a Nanites Integrated Processing Center to work")
     }
 
     // 虚空采矿机

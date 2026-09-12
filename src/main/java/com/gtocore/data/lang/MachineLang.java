@@ -61,6 +61,9 @@ final class MachineLang {
         addCNEN("gtocore.machine.module.am", "已安装的模块数: %s", "Amount of Installed Modules: %s");
         addCNEN("gtocore.machine.module.have", "该模块已成功安装", "This module has been successfully installed");
         addCNEN("gtocore.machine.module.null", "该模块未成功安装", "This module has not been successfully installed");
+        addCNEN("gtocore.machine.nanites_integrated_processing_center.not_connected", "未连接到任何模块", "Not connected to any module");
+        addCNEN("gtocore.machine.nanites_module.connected", "已连接到纳米集成加工中心", "Connected to Nanites Integrated Processing Center");
+        addCNEN("gtocore.machine.nanites_module.not_connected", "未连接到纳米集成加工中心", "Not connected to Nanites Integrated Processing Center");
         addCNEN("gtocore.machine.multiple_recipes.tooltip", "支持跨配方并行", "Supports cross recipe parallel processing");
         addCNEN("gtocore.machine.neutron_activator.efficiency", "动能消耗乘数: %s", "Kinetic Energy Consumption Multiplier: %s");
         addCNEN("gtocore.machine.neutron_activator.ev", "当前中子动能: %seV", "Current Neutron Kinetic Energy: %seV");

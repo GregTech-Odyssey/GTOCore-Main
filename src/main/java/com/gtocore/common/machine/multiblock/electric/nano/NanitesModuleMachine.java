@@ -70,8 +70,11 @@ public final class NanitesModuleMachine extends ElectricMultiblockMachine implem
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
         if (controller != null) {
+            textList.add(Component.translatable("gtocore.machine.nanites_module.connected"));
             textList.add(Component.translatable("tooltip.emi.chance.consume", 100 - controller.chance));
             textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.translatable(FormattingUtil.formatNumbers(controller.getTemperature()) + "K").setStyle(Style.EMPTY.withColor(ChatFormatting.RED))));
+        } else {
+            textList.add(Component.translatable("gtocore.machine.nanites_module.not_connected"));
         }
     }
 
