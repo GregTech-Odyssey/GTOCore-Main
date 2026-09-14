@@ -29,7 +29,6 @@ import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.construction_wand.ConstructionWandRegistrar;
 import com.gtocore.integration.emi.GTEMIPlugin;
-import com.gtocore.integration.ftbquests.EMIRecipeModHelper;
 import com.gtocore.integration.ftbquests.GTOQuestTypes;
 import com.gtocore.integration.ftbu.AreaShape;
 
@@ -149,7 +148,6 @@ public class CommonProxy {
         TravelRegistry.addTravelEntry(PatternTravelTarget.SERIALIZED_NAME, PatternTravelTarget::loadClientTarget, () -> TravelAnchorRenderers::getRenderer);
 
         AreaShape.register();
-        EMIRecipeModHelper.setRecipeModHelper();
 
         if (GTCEu.isClientSide()) {
             Supplier<Component> tooltip = () -> Component.translatable(GTOTagPrefix.PIPE_TOOLTIP);

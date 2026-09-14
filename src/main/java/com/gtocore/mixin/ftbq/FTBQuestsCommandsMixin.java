@@ -1,6 +1,6 @@
 package com.gtocore.mixin.ftbq;
 
-import com.gtocore.integration.ftbquests.EMIRecipeModHelper;
+import com.gtocore.integration.ftbquests.QuestEditProtection;
 
 import net.minecraft.commands.CommandSourceStack;
 
@@ -16,6 +16,6 @@ public class FTBQuestsCommandsMixin {
 
     @Inject(method = "register", at = @At("HEAD"), remap = false, cancellable = true)
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher, CallbackInfo ci) {
-        if (!EMIRecipeModHelper.canEdit()) ci.cancel();
+        if (!QuestEditProtection.canEdit()) ci.cancel();
     }
 }
