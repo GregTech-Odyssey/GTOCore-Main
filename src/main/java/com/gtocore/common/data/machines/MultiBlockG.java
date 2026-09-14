@@ -443,7 +443,6 @@ public final class MultiBlockG {
                     .where('D', blocks(Blocks.SEA_LANTERN))
                     .where('E', blocks(Blocks.CRYING_OBSIDIAN))
                     .where('F', blocks(RegistriesUtils.getBlock("ae2:quantum_ring")))
-                    .where('G', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get()))
                     .where('H', controller(definition))
                     .where(' ', any())
                     .build())
