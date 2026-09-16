@@ -1096,6 +1096,12 @@ final class Vanilla {
                 "CDC",
                 "ABA",
                 'A', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Invar), 'B', Items.COMPARATOR, 'C', Items.REPEATER, 'D', GTBlocks.MACHINE_CASING_LV.asItem());
+
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("laureril_source_jar"), GTOBlocks.LAURERIL_JAR.asItem(),
+                "ABA",
+                "C C",
+                "ABA",
+                'A', RegistriesUtils.getItem("ars_nouveau:archwood_planks"), 'B', new MaterialEntry(TagPrefix.plateDouble, GTOMaterials.Laureril), 'C', new MaterialEntry(TagPrefix.block, GTOMaterials.BifrostPerm));
     }
 
     private static void addUpg(Item input, ItemStack output) {

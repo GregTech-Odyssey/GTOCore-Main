@@ -3,6 +3,7 @@ package com.gtocore.common.data;
 import com.gtocore.common.blockentity.HeatPipeBlockEntity;
 import com.gtocore.common.blockentity.ManaPipeBlockEntity;
 import com.gtocore.common.blockentity.MufflerPipeBlockEntity;
+import com.gtocore.common.blockentity.SourceJarBE;
 
 import com.gto.registrate.util.entry.BlockEntityEntry;
 
@@ -25,5 +26,10 @@ public class GTOBlockEntities {
     public static final BlockEntityEntry<MufflerPipeBlockEntity> MUFFLER_PIPE = GTO
             .blockEntity("muffler_pipe", MufflerPipeBlockEntity::new)
             .validBlocks(GTOBlocks.MUFFLER_PIPES)
+            .register();
+
+    public static final BlockEntityEntry<SourceJarBE> SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY = GTO
+            .<SourceJarBE>blockEntity("laureril_source_jar", SourceJarBE::new)
+            .validBlocks(GTOBlocks.LAURERIL_JAR)
             .register();
 }

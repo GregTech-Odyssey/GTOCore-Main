@@ -296,6 +296,13 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 content("能存一千普通池子的魔力" translatedTo "Can hold the mana of one thousand regular pools")
             }.editionByGTONormal(),
         )
+        GTOBlocks.LAURERIL_JAR.asItem().setTooltips(
+            ComponentListSupplier {
+                setTranslationPrefix("laureril_jar")
+
+                content("能存一千普通罐子的魔源" translatedTo "Can hold the source of one thousand regular jars")
+            }.editionByGTONormal(),
+        )
 
         listOf(AEItems.CERTUS_QUARTZ_KNIFE.asItem(), AEItems.NETHER_QUARTZ_KNIFE.asItem()).forEach {
             it.setTooltips(

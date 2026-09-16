@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.common.block.*;
+import com.gtocore.common.blockentity.SourceJarBE;
 import com.gtocore.common.item.HeatPipeBlockItem;
 import com.gtocore.common.item.ManaPipeBlockItem;
 import com.gtocore.common.item.MufflerPipeBlockItem;
@@ -18,20 +19,31 @@ import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.common.data.GTModels;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RotatedPillarBlock;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraftforge.client.model.generators.ConfiguredModel;
 
 import com.gto.registrate.util.entry.BlockEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+import com.hollingsworth.arsnouveau.common.block.SourceJar;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import static com.gtocore.common.block.BlockMap.*;
 import static com.gtocore.common.block.GlowingBlock.createStarStone;
@@ -678,6 +690,42 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> CHAOS_TUNING_CASING = createCasingBlock("chaos_tuning_casing", "混沌调谐外壳", GTOCore.id("block/casings/chaos_tuning_casing"));
     // 相空间稳定外壳 phase_space_stabilization_casing
     public static final BlockEntry<Block> PHASE_SPACE_STABILIZATION_CASING = createCasingBlock("phase_space_stabilization_casing", "相空间稳定外壳", GTOCore.id("block/casings/phase_space_stabilization_casing"));
+    // 激光阱外壳 laser_trap_casing
+    public static final BlockEntry<Block> LASER_TRAP_CASING = createCasingBlock("laser_trap_casing", "激光阱外壳", GTOCore.id("block/casings/laser_trap_casing"));
+
+    public static final BlockEntry<Block> LAURERIL_JAR = block("laureril_source_jar", "秘金魔源罐", p -> (Block) new SourceJar(p, "laureril_source_jar") {
+
+        @Override
+        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+            return new SourceJarBE(pos, state);
+        }
+
+        @Override
+        public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+            if (stack.getTag() == null)
+                return;
+            int mana = stack.getTag().getCompound("BlockEntityTag").getInt("source");
+            tooltip.add(Component.translatable("ars_nouveau.source_jar.fullness", FormattingUtil.formatNumber2Places((mana * 100) / 1e7)));
+        }
+    })
+            .properties(props -> props
+                    .sound(SoundType.STONE)
+                    .strength(50, 2000)
+                    .requiresCorrectToolForDrops()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .instrument(NoteBlockInstrument.BASEDRUM))
+            .blockstate((ctx, prov) -> {
+                prov.getVariantBuilder(ctx.get()).forAllStates((state) -> {
+                    int fill = Math.min(state.getValue(SourceJar.fill) * 10, 100);
+                    return ConfiguredModel.builder().modelFile(prov.models().singleTexture("laureril_source_jar" + fill, RLUtils.ars("block/source_jar/source_jar" + fill), "2", GTOCore.id("block/laureril_source_jar"))).build();
+                });
+                prov.models().singleTexture("laureril_source_jar", RLUtils.ars("block/source_jar/source_jar0"), "2", GTOCore.id("block/laureril_source_jar"));
+            })
+            .tag(CustomTags.MINEABLE_WITH_WRENCH)
+            .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+            .item()
+            .build()
+            .register();
 
     private static void registerPipeBlocks() {
         for (int i = 0; i < HeatPipeType.values().length; ++i) {
