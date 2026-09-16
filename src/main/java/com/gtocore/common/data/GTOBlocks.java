@@ -692,6 +692,36 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> PHASE_SPACE_STABILIZATION_CASING = createCasingBlock("phase_space_stabilization_casing", "相空间稳定外壳", GTOCore.id("block/casings/phase_space_stabilization_casing"));
     // 激光阱外壳 laser_trap_casing
     public static final BlockEntry<Block> LASER_TRAP_CASING = createCasingBlock("laser_trap_casing", "激光阱外壳", GTOCore.id("block/casings/laser_trap_casing"));
+    // 定相稳压机械方块 phase_stabilization_casing
+    public static final BlockEntry<Block> PHASE_STABILIZATION_CASING = createCustomModelCasingBlock("phase_stabilization_casing", "Phase Stabilization Casing", "定相稳压机械方块",
+            (ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                    prov.models()
+                            .cubeAll("phase_stabilization_casing", GTOCore.id("block/casings/phase_block/phase_stabilization_casing"))
+                            .customLoader(YLayeredModelBuilder::begin)
+                            .layer("all", GTOCore.id("block/casings/phase_block/phase_stabilization_casing_layer"))
+                            .grid(5, 1)
+                            .replace(true)
+                            .end()
+                            .layer("all", GTOCore.id("block/casings/phase_block/phase_stabilization_casing"))
+                            .replace(false)
+                            .end()
+                            .end()),
+            () -> RenderType::cutoutMipped);
+    // 分频锁相机械方块 frequency_division_phase_locking_casing
+    public static final BlockEntry<Block> FREQUENCY_DIVISION_PHASE_LOCKING_CASING = createCustomModelCasingBlock("frequency_division_phase_locking_casing", "Frequency Division Phase Locking Casing", "分频锁相机械方块",
+            (ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                    prov.models()
+                            .cubeAll("frequency_division_phase_locking_casing", GTOCore.id("block/casings/phase_block/phase_stabilization_casing"))
+                            .customLoader(YLayeredModelBuilder::begin)
+                            .layer("all", GTOCore.id("block/casings/phase_block/frequency_division_phase_locking_casing_layer"))
+                            .grid(5, 1)
+                            .replace(true)
+                            .end()
+                            .layer("all", GTOCore.id("block/casings/phase_block/phase_stabilization_casing"))
+                            .replace(false)
+                            .end()
+                            .end()),
+            () -> RenderType::cutoutMipped);
 
     public static final BlockEntry<Block> LAURERIL_JAR = block("laureril_source_jar", "秘金魔源罐", p -> (Block) new SourceJar(p, "laureril_source_jar") {
 

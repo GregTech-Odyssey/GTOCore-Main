@@ -370,6 +370,8 @@
     "gtocore:chaos_tuning_casing",
     "gtocore:phase_space_stabilization_casing",
     "gtocore:laser_trap_casing",
+    "gtocore:phase_stabilization_casing",
+    "gtocore:frequency_division_phase_locking_casing",
     "gtocore:laureril_source_jar",
     "gtocore:normal_heat_pipe",
     "gtocore:normal_mana_pipe",

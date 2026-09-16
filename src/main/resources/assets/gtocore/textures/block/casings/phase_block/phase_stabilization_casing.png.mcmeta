@@ -1,0 +1,5 @@
+{
+  "ldlib": {
+    "connection": "gtocore:block/casings/phase_block/phase_stabilization_casing_ctm"
+  }
+}

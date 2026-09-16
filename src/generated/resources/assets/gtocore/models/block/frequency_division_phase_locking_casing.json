@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "loader": "gtocore:y_layered",
+  "textures": {
+    "all": "gtocore:block/casings/phase_block/phase_stabilization_casing"
+  },
+  "y_layered": {
+    "layers": [
+      {
+        "columns": 5,
+        "source": "all",
+        "texture": "gtocore:block/casings/phase_block/frequency_division_phase_locking_casing_layer"
+      },
+      {
+        "replace": false,
+        "source": "all",
+        "texture": "gtocore:block/casings/phase_block/phase_stabilization_casing"
+      }
+    ]
+  }
+}
