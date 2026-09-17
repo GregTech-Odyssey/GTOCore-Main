@@ -1,6 +1,7 @@
 package com.gtocore.integration.ftbquests;
 
 import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.techtree.ComponentNodes;
@@ -53,8 +54,6 @@ public class TechNodeTask extends AbstractBooleanTask {
     public void writeData(CompoundTag nbt) {
         super.writeData(nbt);
         nbt.putByteArray("node", GTOCodecs.TECH_NODE_DATA_CODEC.encode(node).writeToBytes());
-        // GTOCodecs.TECH_NODE_DATA_CODEC.toCodec(0).encodeStart(NbtOps.INSTANCE, node).result().ifPresent((tag) ->
-        // nbt.put("node", tag));
     }
 
     public void readData(CompoundTag nbt) {
@@ -77,9 +76,8 @@ public class TechNodeTask extends AbstractBooleanTask {
     @OnlyIn(Dist.CLIENT)
     public void fillConfigGroup(ConfigGroup config) {
         super.fillConfigGroup(config);
-        var manager = node.getManager();
         config.addEnum("structure", node, this::setNode,
-                NameMap.of(ComponentNodes.ComponentInAssemblyLineluv, manager.getAllNodes().toArray(new TechNode[0])).create());
+                NameMap.of(ComponentNodes.ComponentInAssemblyLineluv, TechTreeManager.getManagers().stream().flatMap(t -> t.getAllNodes().stream()).toArray(TechNode[]::new)).create());
     }
 
     @OnlyIn(Dist.CLIENT)

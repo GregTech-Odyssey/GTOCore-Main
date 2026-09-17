@@ -260,4 +260,9 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
             TechTreeSavedData.unlock(team, node);
         }
     }
+
+    @Override
+    public String toString() {
+        return getTreeName(this).getString();
+    }
 }
