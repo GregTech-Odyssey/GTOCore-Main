@@ -9,7 +9,6 @@ import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -36,19 +35,11 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
     public static final VirtualFluidProviderBehavior INSTANCE = new VirtualFluidProviderBehavior();
 
     public static ItemStack setVirtualFluid(ItemStack stack, FluidStack virtualFluid) {
-        if (virtualFluid.isEmpty()) {
-            VirtualProviderData.clearContent(stack);
-            return stack;
-        }
-        FluidStack storedFluid = ICustomFluidStackHandler.copy(virtualFluid, 1000);
-        VirtualProviderData.setContent(stack, storedFluid.writeToNBT(new CompoundTag()));
-        return stack;
+        return VirtualProviderData.setVirtualFluid(stack, virtualFluid);
     }
 
     public static FluidStack getVirtualFluid(final ItemStack stack) {
-        CompoundTag fluidTag = VirtualProviderData.getContent(stack);
-        if (fluidTag == null) return FluidStack.EMPTY;
-        return FluidStack.loadFluidStackFromNBT(fluidTag);
+        return VirtualProviderData.getVirtualFluid(stack);
     }
 
     @Override

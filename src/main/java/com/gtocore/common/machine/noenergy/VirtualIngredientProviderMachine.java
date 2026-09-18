@@ -236,15 +236,14 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
 
     @Override
     public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return what instanceof AEItemKey itemKey && isVirtualProvider(itemKey) &&
-                hasValidData(itemKey.getReadOnlyStack());
+        return what instanceof AEItemKey itemKey && isVirtualProvider(itemKey);
     }
 
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount > 0 && what instanceof AEItemKey itemKey && isVirtualProvider(itemKey)) {
             ItemStack stack = itemKey.getReadOnlyStack();
-            if (!hasValidData(stack)) return 0;
+            if (!hasValidContent(stack)) return 0;
             if (VirtualProviderData.isLocked(stack)) return amount;
             int offeredAmount = (int) Math.min(amount, Integer.MAX_VALUE);
             ItemStack offered = stack.copyWithCount(offeredAmount);
@@ -266,11 +265,6 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     private static boolean isVirtualProvider(AEItemKey key) {
         Item item = key.getItem();
         return item == VIRTUAL_ITEM_PROVIDER || item == VIRTUAL_FLUID_PROVIDER;
-    }
-
-    private static boolean hasValidData(ItemStack stack) {
-        return hasValidContent(stack) ||
-                (VirtualProviderData.isLocked(stack) && !VirtualProviderData.hasContent(stack));
     }
 
     private static boolean hasValidContent(ItemStack stack) {

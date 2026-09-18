@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.part.ae
 
 import com.gtocore.common.data.machines.GTAEMachines
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt
+import com.gtocore.data.Data
 import com.gtocore.eio_travel.logic.TravelSavedData
 import com.gtocore.eio_travel.logic.TravelUtils
 import com.gtocore.integration.ae.PatternContainerGroupHelper
@@ -10,6 +11,7 @@ import com.gtocore.integration.ae.wireless.WirelessMachine
 
 import net.minecraft.MethodsReturnNonnullByDefault
 import net.minecraft.core.BlockPos
+import net.minecraft.nbt.ByteArrayTag
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
@@ -47,8 +49,10 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController
 import com.gregtechceu.gtceu.api.recipe.handler.IO
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler
+import com.gregtechceu.gtceu.datasynclib.GTDataFixer
 import com.gregtechceu.gtceu.utils.TaskHandler
 import com.gregtechceu.gtceu.utils.asm.EmptyMethodChecker
+import com.gto.datasynclib.AbstractDataSerializable
 import com.gto.datasynclib.annotations.SaveToDisk
 import com.gto.datasynclib.annotations.SyncToClient
 import com.gto.datasynclib.listener.IntNotifiableHolder
@@ -63,6 +67,7 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup
 import com.lowdragmc.lowdraglib.syncdata.IContentChangeAware
 import com.lowdragmc.lowdraglib.syncdata.ITagSerializable
+import io.netty.util.internal.OutOfDirectMemoryError
 
 import java.util.function.IntSupplier
 import javax.annotation.ParametersAreNonnullByDefault
@@ -145,6 +150,7 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
 
     // ==================== 初始化 ====================
     init {
+        if (maxPatternCount > 500) throw OutOfMemoryError()
         patternInventory.setFilter(::patternFilter)
         internalInventory.indices.forEach { i ->
             internalInventory[i] = createInternalSlot(i)
@@ -474,7 +480,7 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
         tag.putString("n", customName)
         val list = ListTag()
         for (element in internalInventory) {
-            list.add(element.serializeNBT())
+            list.add(ByteArrayTag(element.writeData().writeToBytes()))
         }
         tag.put("i", list)
     }
@@ -484,17 +490,20 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
         customName = tag.getString("n")
         val list = tag.getList("i", Tag.TAG_COMPOUND.toInt())
         for ((i, element) in internalInventory.withIndex()) {
-            element.deserializeNBT(list.getCompound(i))
+            val elementTag = list[i]
+            if (elementTag is ByteArrayTag) {
+                element.readData(com.gto.datasynclib.datastream.data.Data.readData(elementTag.asByteArray), GTDataFixer.VERSION)
+            } else {
+                element.deserializeNBT(list.getCompound(i))
+            }
         }
     }
 
     // ==================== 内部类 ====================
-    abstract class AbstractInternalSlot :
-        ITagSerializable<CompoundTag>,
-        IContentChangeAware {
+    abstract class AbstractInternalSlot : AbstractDataSerializable() {
         abstract fun pushPattern(patternDetails: IPatternDetails, inputHolder: Array<KeyCounter>): Boolean
         abstract fun onPatternChange()
-        override fun serializeNBT(): CompoundTag = CompoundTag()
+        abstract fun deserializeNBT(compoundTag: CompoundTag)
     }
 }
 

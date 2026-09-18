@@ -28,6 +28,7 @@ import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DualHatchPartMachine;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -38,7 +39,6 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
-import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import org.jetbrains.annotations.NotNull;
@@ -185,7 +185,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     private static final class ProgrammableFluidHandler extends NotifiableFluidTank {
 
         public ProgrammableFluidHandler(MetaMachine machine) {
-            super(machine, Collections.singletonList(new FluidTank()), IO.IN, IO.IN);
+            super(machine, Collections.singletonList(new FluidTank()), IO.IN, IO.NONE);
         }
 
         @Override
@@ -235,13 +235,13 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             @Override
             public FluidStack drain(FluidStack resource, FluidAction action) {
                 setFluid(FluidStack.EMPTY);
-                return FluidStack.EMPTY;
+                return action.execute() ? FluidStack.EMPTY : resource;
             }
 
             @Override
             public FluidStack drain(int maxDrain, FluidAction action) {
                 setFluid(FluidStack.EMPTY);
-                return FluidStack.EMPTY;
+                return action.execute() ? FluidStack.EMPTY : new FluidStack(fluid, maxDrain);
             }
         }
     }
@@ -259,21 +259,35 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         private static class ProgrammableHandler extends ItemStackHandler {
 
+            private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
+            private static final Item VIRTUAL_FLUID_PROVIDER = CustomItems.VIRTUAL_FLUID_PROVIDER.asItem();
             private final IProgrammableMachine machine;
+            private final ProgrammableHatchPartMachine part;
 
             private ProgrammableHandler(Object machine) {
                 super(1);
                 this.machine = (IProgrammableMachine) machine;
+                if (machine instanceof ProgrammableHatchPartMachine partMachine) {
+                    this.part = partMachine;
+                } else {
+                    this.part = null;
+                }
             }
 
             @Override
             public int insertExternal(AEItemKey itemKey, int amount, Actionable mode) {
-                if (machine.isProgrammable() && itemKey.item == CustomItems.VIRTUAL_ITEM_PROVIDER.get() &&
-                        VirtualProviderData.hasData(itemKey.getReadOnlyStack())) {
-                    if (!mode.isSimulate()) {
-                        setStackInSlot(0, VirtualItemProviderBehavior.getVirtualItem(itemKey.getReadOnlyStack()));
+                if (machine.isProgrammable()) {
+                    if (itemKey.item == VIRTUAL_ITEM_PROVIDER && VirtualProviderData.hasData(itemKey.getReadOnlyStack())) {
+                        if (!mode.isSimulate()) {
+                            setStackInSlot(0, VirtualProviderData.getVirtualItem(itemKey.getReadOnlyStack()));
+                        }
+                        return amount;
+                    } else if (part != null && itemKey.item == VIRTUAL_FLUID_PROVIDER && VirtualProviderData.hasData(itemKey.getReadOnlyStack())) {
+                        if (!mode.isSimulate()) {
+                            part.fluidTank.setFluidInTank(0, VirtualProviderData.getVirtualFluid(itemKey.getReadOnlyStack()));
+                        }
+                        return amount;
                     }
-                    return amount;
                 }
                 return 0;
             }

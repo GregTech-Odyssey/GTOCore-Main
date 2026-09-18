@@ -341,10 +341,14 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
-        public void writeBuffer(LogicalSide side, FriendlyByteBuf data) {}
+        public void writeBuffer(LogicalSide side, FriendlyByteBuf data) {
+            // 无同步，不实现
+        }
 
         @Override
-        public void readBuffer(LogicalSide side, FriendlyByteBuf data) {}
+        public void readBuffer(LogicalSide side, FriendlyByteBuf data) {
+            // 无同步，不实现
+        }
 
         @Override
         public Data writeData() {

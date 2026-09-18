@@ -9,7 +9,6 @@ import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -35,18 +34,11 @@ public final class VirtualItemProviderBehavior implements IAddInformation, IItem
     public static final VirtualItemProviderBehavior INSTANCE = new VirtualItemProviderBehavior();
 
     public static ItemStack setVirtualItem(ItemStack stack, ItemStack virtualItem) {
-        if (virtualItem.isEmpty()) {
-            VirtualProviderData.clearContent(stack);
-            return stack;
-        }
-        VirtualProviderData.setContent(stack, virtualItem.copyWithCount(1).save(new CompoundTag()));
-        return stack;
+        return VirtualProviderData.setVirtualItem(stack, virtualItem);
     }
 
     public static ItemStack getVirtualItem(ItemStack stack) {
-        CompoundTag itemTag = VirtualProviderData.getContent(stack);
-        if (itemTag == null) return ItemStack.EMPTY;
-        return ItemStack.of(itemTag);
+        return VirtualProviderData.getVirtualItem(stack);
     }
 
     @Override

@@ -20,13 +20,7 @@ public abstract class AbstractRecipeInternalSlot extends MEPatternPartMachineKt.
         return false;
     }
 
-    @Override
     public final void setOnContentsChanged(final Runnable onContentsChanged) {
         this.onContentsChanged = onContentsChanged;
-    }
-
-    @Override
-    public final Runnable getOnContentsChanged() {
-        return this.onContentsChanged;
     }
 }

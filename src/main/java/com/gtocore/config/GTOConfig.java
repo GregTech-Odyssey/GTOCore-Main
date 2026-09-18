@@ -252,6 +252,12 @@ public final class GTOConfig {
         public int defaultMinOverclockDuration = 20;
 
         @Configurable
+        @Configurable.DecimalRange(min = 0.0001, max = 100)
+        @Configurable.Gui.Slider
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Recipe Duration Multiplier", cn = "配方时间乘数")
+        public double recipeDurationMultiplier = 1;
+
+        @Configurable
         @Configurable.Comment({ "连锁挖掘（不连续模式）时，检查相邻方块的范围", "The range to check adjacent blocks during chain mining (non-continuous mode)" })
         @Configurable.Range(min = 1, max = 20)
         @Configurable.Gui.Slider

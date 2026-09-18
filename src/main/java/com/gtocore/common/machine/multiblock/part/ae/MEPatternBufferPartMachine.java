@@ -47,6 +47,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -62,11 +63,16 @@ import appeng.api.storage.StorageHelper;
 import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
+import com.gto.datasynclib.FieldDataManager;
+import com.gto.datasynclib.IFieldDataHolder;
+import com.gto.datasynclib.LazyFieldDataManager;
+import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.annotations.SyncToServer;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.listener.IntNotifiableHolder;
+import com.gto.datasynclib.util.DataCodecs;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.gto.recipesearch.IntLongMap;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
@@ -516,25 +522,33 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         }
     }
 
-    public static final class InternalSlot extends AbstractRecipeInternalSlot {
+    public static final class InternalSlot extends AbstractRecipeInternalSlot implements IFieldDataHolder {
 
+        @SaveToDisk
         public GTRecipeDefinition recipe;
         public final MEPatternBufferPartMachine machine;
         public final int index;
         private final InputSink inputSink;
         public final IntLongMap ingredientMap = new IntLongMap();
+        @SaveToDisk
         public final AEKeyMap<AEItemKey> itemInventory = new AEKeyMap<>();
+        @SaveToDisk
         public final AEKeyMap<AEFluidKey> fluidInventory = new AEKeyMap<>();
 
+        @SaveToDisk(condition = "noLock")
         public final NotifiableNotConsumableItemHandler shareInventory;
+        @SaveToDisk(condition = "noLock")
         public final NotifiableNotConsumableFluidHandler shareTank;
+        @SaveToDisk(condition = "noLock")
         public final NotifiableItemStackHandler circuitInventory;
         final LockableItemStackHandler lockableInventory;
         private final MEVirtualInputAvailability virtualInputAvailability = new MEVirtualInputAvailability();
         @Getter
+        @SaveToDisk(defaultValue = "false")
         private boolean lock;
         @Setter
         private boolean shouldLockRecipe = true;
+        private final LazyFieldDataManager fieldDataManager = new LazyFieldDataManager(this);
 
         private InternalSlot(MEPatternBufferPartMachine machine, int index) {
             this.machine = machine;
@@ -544,6 +558,18 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             this.circuitInventory = CircuitHandler.create(machine);
             this.inputSink = new InputSink(this);
             this.lockableInventory = new LockableItemStackHandler(shareInventory.storage);
+        }
+
+        private boolean noLock(NotifiableItemStackHandler circuitInventory) {
+            return !lock;
+        }
+
+        private boolean noLock(NotifiableNotConsumableFluidHandler shareTank) {
+            return !lock;
+        }
+
+        private boolean noLock(NotifiableNotConsumableItemHandler shareInventory) {
+            return !lock;
         }
 
         public void verify(Collection<GTRecipeType> recipeTypes) {
@@ -718,45 +744,6 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         }
 
         @Override
-        public CompoundTag serializeNBT() {
-            CompoundTag tag = super.serializeNBT();
-            if (recipe != null) {
-                tag.putByteArray("recipe", GTRecipeDefinition.DATA_CODEC.encode(recipe).writeToBytes());
-            }
-            ListTag itemsTag = new ListTag();
-            for (var entry : itemInventory) {
-                var ct = entry.getKey().toTag();
-                ct.putLong("real", entry.getLongValue());
-                itemsTag.add(ct);
-            }
-            if (!itemsTag.isEmpty()) tag.put("inventory", itemsTag);
-            ListTag fluidsTag = new ListTag();
-            for (var entry : fluidInventory) {
-                var ct = entry.getKey().toTag();
-                ct.putLong("real", entry.getLongValue());
-                fluidsTag.add(ct);
-            }
-            if (!fluidsTag.isEmpty()) tag.put("fluidInventory", fluidsTag);
-            if (!lock && !shareInventory.isEmpty()) tag.put("inv", shareInventory.storage.serializeNBT());
-            if (!lock && !shareTank.isEmpty()) {
-                ListTag tanks = new ListTag();
-                for (var tank : shareTank.getStorages()) {
-                    if (tank.isEmpty()) {
-                        tanks.add(new CompoundTag());
-                    } else tanks.add(tank.serializeNBT());
-                }
-                tag.put("tank", tanks);
-
-            }
-            if (!lock) {
-                var c = IntCircuitBehaviour.getCircuitConfiguration(circuitInventory.storage.getStackInSlot(0));
-                if (c > 0) tag.putInt("c", c);
-            }
-            tag.putBoolean("l", lock);
-            return tag;
-        }
-
-        @Override
         public void deserializeNBT(CompoundTag tag) {
             if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
             ListTag items = tag.getList("inventory", Tag.TAG_COMPOUND);
@@ -791,6 +778,39 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             var c = tag.getInt("c");
             if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
             setLock(tag.getBoolean("l"));
+        }
+
+        @Override
+        public void writeBuffer(LogicalSide logicalSide, FriendlyByteBuf friendlyByteBuf) {
+            // 无同步，不实现
+        }
+
+        @Override
+        public void readBuffer(LogicalSide logicalSide, FriendlyByteBuf friendlyByteBuf) {
+            // 无同步，不实现
+        }
+
+        @Override
+        public Data writeData() {
+            return fieldDataManager.get().writeToData();
+        }
+
+        @Override
+        public void readData(Data data, int dataVersion) {
+            if (data.isNull()) return;
+            if (dataVersion < 2) {
+                var nbt = DataCodecs.TAG_CODEC.decode(data, dataVersion);
+                if (nbt instanceof CompoundTag compoundTag) {
+                    deserializeNBT(compoundTag);
+                    return;
+                }
+            }
+            fieldDataManager.get().readFromData(data, dataVersion);
+        }
+
+        @Override
+        public FieldDataManager getFieldDataManager() {
+            return fieldDataManager.get();
         }
     }
 

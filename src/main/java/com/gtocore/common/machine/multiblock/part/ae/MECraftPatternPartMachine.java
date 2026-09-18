@@ -4,6 +4,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
 import appeng.api.crafting.IPatternDetails;
@@ -13,6 +14,11 @@ import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
+import com.gto.datasynclib.LogicalSide;
+import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.data.ListData;
+import com.gto.datasynclib.datastream.data.NullData;
+import com.gto.datasynclib.util.DataCodecs;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -82,13 +88,13 @@ public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPat
         }
 
         @Override
-        public CompoundTag serializeNBT() {
-            CompoundTag tag = super.serializeNBT();
-            if (output != null) {
-                tag.put("output", output.serializeNBT());
-                tag.putLong("amount", amount);
-            }
-            return tag;
+        public void writeBuffer(LogicalSide logicalSide, FriendlyByteBuf friendlyByteBuf) {
+            // 无同步，不实现
+        }
+
+        @Override
+        public void readBuffer(LogicalSide logicalSide, FriendlyByteBuf friendlyByteBuf) {
+            // 无同步，不实现
         }
 
         @Override
@@ -100,11 +106,28 @@ public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPat
         }
 
         @Override
-        public void setOnContentsChanged(Runnable onContentChanged) {}
+        public Data writeData() {
+            if (output != null) {
+                var list = new ListData(2);
+                list.addLong(amount);
+                list.add(DataCodecs.ITEM_STACK_CODEC.encode(output));
+            }
+            return NullData.INSTANCE;
+        }
 
         @Override
-        public Runnable getOnContentsChanged() {
-            return machine.onContentsChanged;
+        public void readData(Data data, int dataVersion) {
+            if (data.isNull()) return;
+            if (dataVersion < 2) {
+                var nbt = DataCodecs.TAG_CODEC.decode(data, dataVersion);
+                if (nbt instanceof CompoundTag compoundTag) {
+                    deserializeNBT(compoundTag);
+                    return;
+                }
+            }
+            var list = data.asListData();
+            amount = list.getLong(0);
+            output = DataCodecs.ITEM_STACK_CODEC.decode(list.get(1), dataVersion);
         }
     }
 

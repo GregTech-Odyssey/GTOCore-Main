@@ -3,12 +3,15 @@ package com.gtocore.common.machine.multiblock.part;
 import com.gtolib.api.machine.trait.WirelessComputationContainerTrait;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.IOpticalComputationProvider;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.Util;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -25,12 +28,9 @@ import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
-import snownee.jade.api.ui.BoxStyle;
-import snownee.jade.api.ui.IElementHelper;
 
 import java.util.UUID;
 
-import static com.gtocore.integration.jade.GTOJadePlugin.getProgress;
 import static com.hepdd.gtmthings.utils.TeamUtil.GetName;
 
 public final class WirelessNetworkComputationHatchMachine extends WorkableMultiblockPartMachine implements IInteractedMachine, IBindable, IWailaDisplayProvider {
@@ -83,19 +83,46 @@ public final class WirelessNetworkComputationHatchMachine extends WorkableMultib
     }
 
     @Override
+    public void onUnload() {
+        if (trait.isTransmitter) {
+            var c = trait.getWirelessComputationContainer();
+            if (c == null) return;
+            for (var controller : getControllers()) {
+                if (controller instanceof IOpticalComputationProvider provider) c.removeProvider(provider);
+            }
+        }
+        super.onUnload();
+    }
+
+    @Override
+    public void removedFromController(IMultiController controller) {
+        if (trait.isTransmitter) {
+            var c = trait.getWirelessComputationContainer();
+            if (c == null) return;
+            if (controller instanceof IOpticalComputationProvider provider) c.removeProvider(provider);
+        }
+        super.removedFromController(controller);
+    }
+
+    @Override
+    public void addedToController(IMultiController controller) {
+        super.addedToController(controller);
+        if (trait.isTransmitter) {
+            var c = trait.getWirelessComputationContainer();
+            if (c == null) return;
+            if (controller instanceof IOpticalComputationProvider provider) c.addProvider(provider);
+        }
+    }
+
+    @Override
     public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
-        long capacity = data.getLong("capacity");
-        if (capacity == 0) return;
-        long storage = data.getLong("storage");
-        IElementHelper helper = iTooltip.getElementHelper();
-        iTooltip.add(helper.progress(getProgress(storage, capacity), Component.literal(storage + " / " + capacity + " CWU"), iTooltip.getElementHelper().progressStyle().color(0xFF006D6A).textColor(-1), Util.make(BoxStyle.DEFAULT, style -> style.borderColor = 0xFF555555), true));
+        iTooltip.add(Component.translatable("gtceu.multiblock.computation.usable", Component.literal(FormattingUtil.formatNumbers(data.getLong("cwu"))).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
     }
 
     @Override
     public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
         var c = trait.getWirelessComputationContainer();
         if (c == null) return;
-        data.putLong("capacity", c.getCapacity());
-        data.putLong("storage", c.getStorage());
+        data.putLong("cwu", trait.requestCWU(Long.MAX_VALUE, true));
     }
 }
