@@ -958,9 +958,9 @@ public final class GTOItems {
     // 觉醒龙心
     public static final ItemEntry<Item> AWAKENED_DRAGON_HEART = register("awakened_dragon_heart", "觉醒龙心");
     // pygro皮肤组织
-    public static final ItemEntry<Item> PYGRO_SKIN_TISSUE = register("pygro_skin_tissue", "金星猪灵皮肤组织");
+    public static final ItemEntry<Item> PYGRO_SKIN_TISSUE = register("pygroskin", "金星猪灵皮肤组织");
     // 火星迅猛龙肝脏
-    public static final ItemEntry<Item> MARS_TYRANNOSAURUS_LIVER = register("mars_tyrannosaurus_liver", "火星迅猛龙肝脏");
+    public static final ItemEntry<Item> MARS_TYRANNOSAURUS_LIVER = register("martian_raptor_liver", "火星迅猛龙肝脏");
     // 水星岩浆怪激发腺体
     public static final ItemEntry<Item> MERCURY_MAGMA_MONSTER_EXCITATION_GLAND = register("mercury_magma_monster_excitation_gland", "水星岩浆怪激发腺体");
 

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "gtocore:item/pygro_skin_tissue"
+    "layer0": "gtocore:item/pygroskin"
   }
 }
