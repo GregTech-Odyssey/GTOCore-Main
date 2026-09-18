@@ -8,6 +8,9 @@ version="${version}"
 displayName="${mod_name}"
 description='''${mod_description}'''
 
+[modproperties.${mod_id}]
+pack_version = "${pack_version}"
+
 [[dependencies.${mod_id}]]
 modId = "minecraft"
 mandatory = true

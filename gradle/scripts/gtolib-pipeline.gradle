@@ -1043,7 +1043,8 @@ tasks.register('reobfGtolibRaw', JavaExec) {
         configurations.runtimeClasspath.files.findAll { f ->
             def n = f.name.toLowerCase()
             (n.contains('gtceu') || n.contains('gtmthings') || n.contains('datasynclib') ||
-                    n.contains('ae2') || n.contains('appliedenergistics')) && n.endsWith('.jar')
+                    n.contains('ae2') || n.contains('appliedenergistics') ||
+                    n.contains('ex-pattern-provider')) && n.endsWith('.jar')
         }.each { libs << it }
         libs.unique().each { args += ['--lib', it.absolutePath] }
         logger.lifecycle(
@@ -1069,6 +1070,19 @@ tasks.register('reobfGtolibRaw', JavaExec) {
                                 "(f_135804_=${text.contains('f_135804_')} m_245413_=${text.contains('m_245413_')} " +
                                 "assertValidNamespace=${text.contains('assertValidNamespace')})"
                 )
+            }
+            // Me2in1Menu inherits getType() through ex-pattern-provider. ART
+            // needs that inheritance library to propagate the Minecraft SRG
+            // name; otherwise production sees the named Me2in1Menu.getType.
+            def encodingEntry = zf.getEntry('com/gtolib/api/ae2/me2in1/ExtendedEncodingMenu.class')
+            if (encodingEntry != null) {
+                def encodingText = new String(zf.getInputStream(encodingEntry).bytes, 'ISO-8859-1')
+                if (encodingText.contains('Me2in1Menu.getType')) {
+                    throw new GradleException(
+                            'reobfGtolibRaw: ExtendedEncodingMenu still references named Me2in1Menu.getType; ' +
+                                    'ensure ex-pattern-provider is passed as an ART inheritance library'
+                    )
+                }
             }
         } finally {
             zf.close()
@@ -3011,6 +3025,7 @@ afterEvaluate {
                         .replace('${version}', "${project.version}")
                         .replace('${mod_name}', "${project.findProperty('mod_name') ?: project.name}")
                         .replace('${mod_description}', "${project.findProperty('mod_description') ?: ''}")
+                        .replace('${pack_version}', "${project.findProperty('pack_version') ?: 'unknown'}")
             }
             if (baseText == null || baseText.trim().isEmpty()) {
                 throw new GradleException("writeDualModsToml: 找不到 mods.toml 模板/展开结果")

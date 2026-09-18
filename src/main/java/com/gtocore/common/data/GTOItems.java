@@ -957,6 +957,12 @@ public final class GTOItems {
     public static final ItemEntry<Item> MODIFIED_DRAGON_HEART = register("modified_dragon_heart", "改造龙心");
     // 觉醒龙心
     public static final ItemEntry<Item> AWAKENED_DRAGON_HEART = register("awakened_dragon_heart", "觉醒龙心");
+    // pygro皮肤组织
+    public static final ItemEntry<Item> PYGRO_SKIN_TISSUE = register("pygro_skin_tissue", "金星猪灵皮肤组织");
+    // 火星迅猛龙肝脏
+    public static final ItemEntry<Item> MARS_TYRANNOSAURUS_LIVER = register("mars_tyrannosaurus_liver", "火星迅猛龙肝脏");
+    // 水星岩浆怪激发腺体
+    public static final ItemEntry<Item> MERCURY_MAGMA_MONSTER_EXCITATION_GLAND = register("mercury_magma_monster_excitation_gland", "水星岩浆怪激发腺体");
 
     public static final ItemEntry<Item> COLORFUL_MYSTICAL_FLOWER = register("colorful_mystical_flower", "多彩神秘花瓣");
     public static final ItemEntry<Item> GAIA_CORE = register("gaia_core", "§e盖亚之核");

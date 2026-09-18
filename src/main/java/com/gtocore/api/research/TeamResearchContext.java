@@ -204,12 +204,16 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     }
 
     public boolean addUnlockedDimension(ResourceKey<Level> dimensionId) {
-        var r = unlockedDimensions.add(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
+        var dim = GTODimensions.getDimensionIncludingOrbits(dimensionId);
+        if (dim == null) return false;
+        var r = unlockedDimensions.add(dim.ordinal());
         if (r) TeamResearchSavedData.INSTANCE.setDirty(true);
         return r;
     }
 
     public boolean hasUnlockedDimension(ResourceKey<Level> dimensionId) {
-        return unlockedDimensions.contains(GTODimensions.getDimensionIncludingOrbits(dimensionId).ordinal());
+        var dim = GTODimensions.getDimensionIncludingOrbits(dimensionId);
+        if (dim == null) return false;
+        return unlockedDimensions.contains(dim.ordinal());
     }
 }
