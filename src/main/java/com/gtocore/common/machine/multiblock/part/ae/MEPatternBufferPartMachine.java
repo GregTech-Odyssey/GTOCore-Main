@@ -544,7 +544,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         final LockableItemStackHandler lockableInventory;
         private final MEVirtualInputAvailability virtualInputAvailability = new MEVirtualInputAvailability();
         @Getter
-        @SaveToDisk(defaultValue = "false")
+        @SaveToDisk(defaultValue = "false", listener = "setLock")
         private boolean lock;
         @Setter
         private boolean shouldLockRecipe = true;
