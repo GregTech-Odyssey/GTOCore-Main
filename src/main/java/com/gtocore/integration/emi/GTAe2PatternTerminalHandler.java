@@ -6,6 +6,8 @@ import com.gtolib.api.ae2.IPatterEncodingTermMenu;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.ClientUtil;
 
+import com.gregtechceu.gtceu.utils.GTUtil;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -69,6 +71,9 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
                 .anyMatch(ing -> isCraftable(craftableKeys, ing));
         var gatheredTooltip = anyCraftable ? TransferHelper.createEncodingTooltip(true) : new ArrayList<Component>();
         gatheredTooltip.addAll(getCatalystTooltip(recipe));
+        if (!isCrafting(recipe)) {
+            gatheredTooltip.add(Component.translatable("gtocore.ae.appeng.me2in1.emi.no_merge").withStyle(ChatFormatting.YELLOW));
+        }
         return gatheredTooltip.stream()
                 .map(Component::getVisualOrderText)
                 .map(ClientTooltipComponent::create)
@@ -142,9 +147,15 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
             } else {
                 ((IPatterEncodingTermMenu) menu).gtolib$addRecipe("");
             }
-            EncodingHelper.encodeProcessingRecipe(menu,
-                    GTEmiEncodingHelper.ofInputs(recipe),
-                    ofOutputs(recipe));
+            if (GTUtil.isAltDown()) {
+                GTEmiEncodingHelper.encodeProcessingRecipeWithoutMerging(menu,
+                        GTEmiEncodingHelper.ofInputs(recipe),
+                        ofOutputs(recipe));
+            } else {
+                EncodingHelper.encodeProcessingRecipe(menu,
+                        GTEmiEncodingHelper.ofInputs(recipe),
+                        ofOutputs(recipe));
+            }
         }
         if (Minecraft.getInstance().screen instanceof RecipeScreen e) {
             e.onClose();
