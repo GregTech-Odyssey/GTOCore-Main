@@ -25,7 +25,7 @@ public class ComputationalDataHolderMachine extends SimpleResearchTagPartMachine
     @Getter
     @Setter
     @SaveToDisk
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean damaged;
 
     private TickableSubscription subscription;

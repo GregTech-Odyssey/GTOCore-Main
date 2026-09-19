@@ -46,7 +46,7 @@ public final class BallHatchPartMachine extends WorkableItemPartMachine implemen
     }
 
     @SaveToDisk(defaultValue = "false")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean isWorking;
 
     public BallHatchPartMachine(MetaMachineBlockEntity holder) {

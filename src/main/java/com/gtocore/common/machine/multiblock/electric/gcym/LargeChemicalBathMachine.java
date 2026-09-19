@@ -20,7 +20,7 @@ import java.util.Set;
 public final class LargeChemicalBathMachine extends GCYMMultiblockMachine implements IFluidRendererMachine {
 
     @Getter
-    @SyncToClient(notifyUpdate = true, autoUpdate = false)
+    @SyncToClient(scheduleUpdate = true, autoDetect = false)
     private final Set<BlockPos> fluidBlockOffsets = FluidRenderUtils.emptyFluidBlockOffsets();
     @Getter
     @SyncToClient

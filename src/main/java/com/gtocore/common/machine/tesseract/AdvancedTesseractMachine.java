@@ -75,7 +75,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     }
 
     @SaveToDisk
-    @SyncToClient(autoUpdate = false)
+    @SyncToClient(autoDetect = false)
     public final List<BlockPos> poss = new ArrayList<>(20);
 
     @SaveToDisk

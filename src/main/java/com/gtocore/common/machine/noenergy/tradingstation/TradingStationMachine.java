@@ -803,16 +803,16 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     /////////////////////////////////////
 
     @SaveToDisk(defaultValue = "DOWN")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private Direction outputFacingItems = Direction.DOWN;
     @SaveToDisk(defaultValue = "DOWN")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private Direction outputFacingFluids = Direction.DOWN;
     @SaveToDisk(defaultValue = "false")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean autoOutputItems = false;
     @SaveToDisk(defaultValue = "false")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean autoOutputFluids = false;
     @Nullable
     private TickableSubscription autoOutputSubs;

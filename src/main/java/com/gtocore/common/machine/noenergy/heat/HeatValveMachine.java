@@ -35,7 +35,7 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
 
     /// Whether the valve is open.
     @Getter
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean isOpen = true;
     /// Whether the redstone signal is inverted.
     @Getter

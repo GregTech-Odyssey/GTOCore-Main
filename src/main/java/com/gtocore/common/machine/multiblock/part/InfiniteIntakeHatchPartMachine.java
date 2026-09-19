@@ -46,7 +46,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
     @SaveToDisk
     private final NotifiableFluidTank tank;
 
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean isWorking;
 
     private TickableSubscription particleSubscription;

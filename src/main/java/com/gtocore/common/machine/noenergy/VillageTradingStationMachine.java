@@ -753,10 +753,10 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     /////////////////////////////////////
 
     @SaveToDisk
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private Direction outputFacingItems;
     @SaveToDisk(defaultValue = "false")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private boolean autoOutputItems;
     @SaveToDisk(defaultValue = "false")
     private boolean allowInputFromOutputSideItems;

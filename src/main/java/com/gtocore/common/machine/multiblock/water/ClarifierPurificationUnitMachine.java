@@ -38,7 +38,7 @@ public final class ClarifierPurificationUnitMachine extends WaterPurificationUni
     @SaveToDisk(defaultValue = "0")
     private int count;
     @Getter
-    @SyncToClient(notifyUpdate = true, autoUpdate = false)
+    @SyncToClient(scheduleUpdate = true, autoDetect = false)
     private final Set<BlockPos> fluidBlockOffsets = FluidRenderUtils.emptyFluidBlockOffsets();
     @Getter
     @SyncToClient

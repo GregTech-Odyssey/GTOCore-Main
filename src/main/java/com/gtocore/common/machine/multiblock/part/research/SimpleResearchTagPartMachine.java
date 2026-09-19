@@ -52,7 +52,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
     @Setter
     @Getter
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient(notifyUpdate = true)
+    @SyncToClient(scheduleUpdate = true)
     private double dataCache;
 
     protected SimpleResearchTagPartMachine(MetaMachineBlockEntity holder, long dataCapacity, ResearchTag researchTag) {

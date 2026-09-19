@@ -21,7 +21,7 @@ import java.util.Set;
 public final class DigestionTankMachine extends CoilMultiblockMachine implements IFluidRendererMachine {
 
     @Getter
-    @SyncToClient(notifyUpdate = true, autoUpdate = false)
+    @SyncToClient(scheduleUpdate = true, autoDetect = false)
     private final Set<BlockPos> fluidBlockOffsets = FluidRenderUtils.emptyFluidBlockOffsets();
     @Getter
     @SyncToClient

@@ -23,15 +23,15 @@ import java.util.Set;
 
 public class PigmentMixer extends ElectricMultiblockMachine implements IMultiFluidRendererMachine {
 
-    @SyncToClient(autoUpdate = false)
+    @SyncToClient(autoDetect = false)
     final Set<BlockPos> cachedYellowOffsets = new OpenCacheHashSet<>();
-    @SyncToClient(autoUpdate = false)
+    @SyncToClient(autoDetect = false)
     final Set<BlockPos> cachedCyanOffsets = new OpenCacheHashSet<>();
-    @SyncToClient(autoUpdate = false)
+    @SyncToClient(autoDetect = false)
     final Set<BlockPos> cachedMagentaOffsets = new OpenCacheHashSet<>();
-    @SyncToClient(autoUpdate = false)
+    @SyncToClient(autoDetect = false)
     final Set<BlockPos> cachedBlackOffsets = new OpenCacheHashSet<>();
-    @SyncToClient(autoUpdate = false)
+    @SyncToClient(autoDetect = false)
     final Set<BlockPos> cachedWhiteOffsets = new OpenCacheHashSet<>();
 
     public PigmentMixer(MetaMachineBlockEntity metaMachineBlockEntity) {
