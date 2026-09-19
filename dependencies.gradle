@@ -43,7 +43,7 @@ dependencies {
     modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
     modImplementation("curse.maven:applied-botanics-addon-610632:7024180")
     modImplementation("curse.maven:ars-energistique-905641:5504444")
-    modImplementation("curse.maven:ex-pattern-provider-892005:8615273")
+    modImplementation("curse.maven:ex-pattern-provider-892005:8918777")
     modImplementation("curse.maven:merequester-688367:5689932")
 
     // Ad Astra

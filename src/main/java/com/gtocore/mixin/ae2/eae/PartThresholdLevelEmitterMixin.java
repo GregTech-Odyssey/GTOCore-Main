@@ -2,7 +2,7 @@ package com.gtocore.mixin.ae2.eae;
 
 import appeng.api.config.FuzzyMode;
 import appeng.api.config.Settings;
-import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
 import appeng.api.parts.IPartItem;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.KeyCounter;
@@ -34,8 +34,11 @@ public abstract class PartThresholdLevelEmitterMixin extends AbstractLevelEmitte
      * @reason
      */
     @Overwrite
-    private void updateReportingValue(IGrid grid) {
-        KeyCounter stacks = grid.getStorageService().getCachedInventory();
+    private void updateReportingValue() {
+        IGridNode node = this.getGridNode();
+        if (node == null || !node.isActive()) return;
+
+        KeyCounter stacks = node.getGrid().getStorageService().getCachedInventory();
         AEKey myStack = this.getConfiguredKey();
         if (myStack == null) {
             this.lastReportedValue = 0L;
