@@ -1,7 +1,6 @@
 package com.gtocore.common.data.translation
 
 import com.gtocore.api.lang.ComponentListSupplier
-import com.gtocore.api.lang.ComponentSupplier
 import com.gtocore.api.lang.toComponentSupplier
 import com.gtocore.api.lang.toLiteralSupplier
 import com.gtocore.api.lang.translatable
@@ -259,23 +258,10 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                     setTranslationPrefix("charge_bomb")
 
                     if (GTCEu.isDataGen() || !GTOConfig.INSTANCE.gamePlay.disableChargeBomb) {
-                        info(
-                            ComponentSupplier(
-                                Component.translatable(
-                                    "gtocore.tooltip.item.activate_by",
-                                    activateItem.description,
-                                ),
-                            ),
-                        )
+                        info(translatable("gtocore.tooltip.item.activate_by", activateItem.description))
                         info("也可以把它喂给热爆花..." translatedTo "It can also be fed to entropinnyum flowers...")
                     } else {
-                        error(
-                            ComponentSupplier(
-                                Component.translatable(
-                                    "gtocore.tooltip.item.charge_bomb.disabled",
-                                ),
-                            ),
-                        )
+                        error(translatable("gtocore.tooltip.item.charge_bomb.disabled"))
                     }
                 },
             )
@@ -309,7 +295,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 setTranslationPrefix("laureril_jar")
 
                 content("能存一千普通罐子的魔源" translatedTo "Can hold the source of one thousand regular jars")
-            }.editionByGTONormal(),
+            },
         )
 
         listOf(AEItems.CERTUS_QUARTZ_KNIFE.asItem(), AEItems.NETHER_QUARTZ_KNIFE.asItem()).forEach {
@@ -363,21 +349,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                     setTranslationPrefix("muffler_hatch")
 
                     if (GTOConfig.INSTANCE.gamePlay.disableMufflerPart) {
-                        info(
-                            ComponentSupplier(
-                                Component.translatable(
-                                    "gtocore.tooltip.item.muffler.disabled",
-                                ),
-                            ),
-                        )
+                        info(translatable("gtocore.tooltip.item.muffler.disabled"))
                     } else {
-                        info(
-                            ComponentSupplier(
-                                Component.translatable(
-                                    "gtocore.tooltip.item.muffler.enabled",
-                                ),
-                            ),
-                        )
+                        info(translatable("gtocore.tooltip.item.muffler.enabled"))
                     }
                 }.editionByGTONormal(),
             )
@@ -419,6 +393,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 ComponentListSupplier {
                     addTranslatable("gtocore.lang.power_substation.tooltip.0")
                     addTranslatable("gtocore.lang.power_substation.tooltip.1")
+                    addTranslatable("gtocore.lang.power_substation.tooltip.2")
                 }.editionByGTONormal().get(),
             )
         }
@@ -449,99 +424,38 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 ComponentListSupplier {
                     setTranslationPrefix("cardiomyocyte_cluster")
                     section("生物振荡发电组织信息" translatedTo "Bio Oscillation Generator Tissue Information")
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_TIER, data.tier))
                     info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_TIER,
-                                data.tier,
-                            ),
+                        translatable(
+                            BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS,
+                            Component.literal(data.stage1Points().toString()).withStyle(ChatFormatting.GREEN),
+                            Component.literal(data.stage2Points().toString()).withStyle(ChatFormatting.YELLOW),
+                            Component.literal(data.stage3Points().toString()).withStyle(ChatFormatting.GOLD),
+                            Component.literal(data.stage4Points().toString()).withStyle(ChatFormatting.DARK_GRAY),
                         ),
                     )
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS_DESC))
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_MAX_GROW_RATE, data.maxGrowRate))
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_SATURATION_FACTOR, data.saturationFactor))
                     info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS,
-                                Component.literal(data.stage1Points().toString()).withStyle(ChatFormatting.GREEN),
-                                Component.literal(data.stage2Points().toString()).withStyle(ChatFormatting.YELLOW),
-                                Component.literal(data.stage3Points().toString()).withStyle(ChatFormatting.GOLD),
-                                Component.literal(data.stage4Points().toString()).withStyle(ChatFormatting.DARK_GRAY),
-                            ),
+                        translatable(
+                            BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS,
+                            Component.literal(data.electrodeStimulationFactors()[0].toString()).withStyle(ChatFormatting.AQUA),
+                            Component.literal(data.electrodeStimulationFactors()[1].toString()).withStyle(ChatFormatting.GREEN),
+                            Component.literal(data.electrodeStimulationFactors()[2].toString()).withStyle(ChatFormatting.YELLOW),
+                            Component.literal(data.electrodeStimulationFactors()[3].toString()).withStyle(ChatFormatting.GOLD),
                         ),
                     )
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC))
                     info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS_DESC,
-                            ),
+                        translatable(
+                            BioOscillationElectricStimulator.TISSUE_ELECTRODE_ENERGY_CONSUMPTION,
+                            data.energyConsumption(),
+                            data.vTier,
                         ),
                     )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_MAX_GROW_RATE,
-                                data.maxGrowRate,
-                            ),
-                        ),
-                    )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_SATURATION_FACTOR,
-                                data.saturationFactor,
-                            ),
-                        ),
-                    )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS,
-                                Component.literal(data.electrodeStimulationFactors()[0].toString()).withStyle(
-                                    ChatFormatting.AQUA,
-                                ),
-                                Component.literal(data.electrodeStimulationFactors()[1].toString()).withStyle(
-                                    ChatFormatting.GREEN,
-                                ),
-                                Component.literal(data.electrodeStimulationFactors()[2].toString()).withStyle(
-                                    ChatFormatting.YELLOW,
-                                ),
-                                Component.literal(data.electrodeStimulationFactors()[3].toString()).withStyle(
-                                    ChatFormatting.GOLD,
-                                ),
-                            ),
-                        ),
-                    )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC,
-                            ),
-                        ),
-                    )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_ELECTRODE_ENERGY_CONSUMPTION,
-                                data.energyConsumption(),
-                                data.vTier,
-                            ),
-                        ),
-                    )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_MEDIUM_REQUIREMENT,
-                                medium.get(),
-                            ),
-                        ),
-                    )
-                    info(
-                        ComponentSupplier(
-                            Component.translatable(
-                                BioOscillationElectricStimulator.TISSUE_RUNNING_CONTROL_BLOCK_TIER,
-                                min(data.tier, 3),
-                            ),
-                        ),
-                    )
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_MEDIUM_REQUIREMENT, medium.get()))
+                    info(translatable(BioOscillationElectricStimulator.TISSUE_RUNNING_CONTROL_BLOCK_TIER, min(data.tier, 3)))
                 },
             )
         }
