@@ -535,11 +535,11 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         @SaveToDisk
         public final AEKeyMap<AEFluidKey> fluidInventory = new AEKeyMap<>();
 
-        @SaveToDisk(condition = "noLock")
+        @SaveToDisk(condition = "isLock")
         public final NotifiableNotConsumableItemHandler shareInventory;
-        @SaveToDisk(condition = "noLock")
+        @SaveToDisk(condition = "isLock")
         public final NotifiableNotConsumableFluidHandler shareTank;
-        @SaveToDisk(condition = "noLock")
+        @SaveToDisk(condition = "isLock")
         public final NotifiableItemStackHandler circuitInventory;
         final LockableItemStackHandler lockableInventory;
         private final MEVirtualInputAvailability virtualInputAvailability = new MEVirtualInputAvailability();
@@ -560,16 +560,16 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             this.lockableInventory = new LockableItemStackHandler(shareInventory.storage);
         }
 
-        private boolean noLock(NotifiableItemStackHandler circuitInventory) {
-            return !lock;
+        private boolean isLock(NotifiableItemStackHandler circuitInventory) {
+            return lock;
         }
 
-        private boolean noLock(NotifiableNotConsumableFluidHandler shareTank) {
-            return !lock;
+        private boolean isLock(NotifiableNotConsumableFluidHandler shareTank) {
+            return lock;
         }
 
-        private boolean noLock(NotifiableNotConsumableItemHandler shareInventory) {
-            return !lock;
+        private boolean isLock(NotifiableNotConsumableItemHandler shareInventory) {
+            return lock;
         }
 
         public void verify(Collection<GTRecipeType> recipeTypes) {
