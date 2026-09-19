@@ -315,19 +315,9 @@ public final class GTOConfig {
     public static class Client {
 
         @Configurable
-        @Configurable.Comment({ "引雷针在工作时是否生成闪电特效", "Whether the lightning rod generates lightning effects when working" })
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Lightning Rod Effect", cn = "引雷针特效")
-        public boolean lightningRodEffect = true;
-
-        @Configurable
         @Configurable.Comment({ "AE 终端在切换页面时使用选择器替代循环顺序切换", "AE Terminals use a selector instead of cycling through pages when switching pages" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "AE Terminal Page Switch Style Rework", cn = "AE 终端页面切换样式重做")
         public boolean aeTerminalPageSwitchStyleSelector = false;
-
-        @Configurable
-        @Configurable.Comment({ "禁用后将渲染视角外，且渲染器被标记为Global的机器，一些高级特效机器需要开启此选项才能正常渲染", "When turned disable, machines that are outside the field of view and whose renderer is marked as Global will be rendered. Some advanced effect machines need to turn on this option to render properly" })
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disable Embeddium Global BE Culling", cn = "禁用Embbedium Global方块实体剔除")
-        public boolean disableEmbeddiumBECulling = true;
 
         @Configurable
         @Configurable.Comment({ "启用后，机器功率显示方式将类似于 GTM 最新版的样式，显示为(电流 @ 电压等级 - 运行电压)",
@@ -341,12 +331,35 @@ public final class GTOConfig {
         public boolean craftingJobFinishedNotification = true;
 
         @Configurable
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Rendering Settings", cn = "渲染设置")
+        public RenderingConfig renderingConfig = new RenderingConfig();
+
+        @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "HUD Settings", cn = "HUD 设置")
         public HUDConfig hud = new HUDConfig();
 
         @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Minimap Settings", cn = "小地图设置")
         public MinimapConfig minimap = new MinimapConfig();
+
+        @DataGeneratorScanned
+        public static class RenderingConfig {
+
+            @Configurable
+            @Configurable.Comment({ "禁用后将渲染视角外，且渲染器被标记为Global的机器，一些高级特效机器需要开启此选项才能正常渲染", "When turned disable, machines that are outside the field of view and whose renderer is marked as Global will be rendered. Some advanced effect machines need to turn on this option to render properly" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disable Embeddium Global BE Culling", cn = "禁用Embbedium Global方块实体剔除")
+            public boolean disableEmbeddiumBECulling = true;
+
+            @Configurable
+            @Configurable.Comment({ "引雷针在工作时是否生成闪电特效", "Whether the lightning rod generates lightning effects when working" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Lightning Rod Effect", cn = "引雷针特效")
+            public boolean lightningRodEffect = true;
+
+            @Configurable
+            @Configurable.Comment({ "是否启用使用大范围着色器的特效（如：恒星炎炀锻炉，克尔纽曼黑洞等）", "Whether to enable special effects that use large range shaders (e.g.: Stellar Forge, Kerr-Newman Black Hole, etc.)" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Large Range Shader Effects", cn = "大范围着色器特效")
+            public boolean enableLargeRangeShaderEffects = true;
+        }
 
         @DataGeneratorScanned
         public static class MinimapConfig {

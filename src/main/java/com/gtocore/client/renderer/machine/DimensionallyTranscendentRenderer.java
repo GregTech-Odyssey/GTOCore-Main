@@ -3,6 +3,7 @@ package com.gtocore.client.renderer.machine;
 import com.gtocore.client.renderer.fx.DimensionallyTranscendentFieldFX;
 import com.gtocore.client.renderer.fx.FXManager;
 import com.gtocore.common.machine.multiblock.electric.smelter.DimensionallyTranscendentPlasmaForgeMachine;
+import com.gtocore.config.GTOConfig;
 
 import com.gtolib.GTOCore;
 
@@ -70,6 +71,9 @@ public class DimensionallyTranscendentRenderer extends WorkableCasingMachineRend
 
     @Override
     public boolean shouldRender(BlockEntity blockEntity, Vec3 cameraPos) {
+        if (!GTOConfig.INSTANCE.client.renderingConfig.enableLargeRangeShaderEffects) {
+            return false;
+        }
         if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity) {
             MetaMachine metaMachine = machineBlockEntity.getMetaMachine();
             return (metaMachine instanceof DimensionallyTranscendentPlasmaForgeMachine machine && machine.isFormed() ||

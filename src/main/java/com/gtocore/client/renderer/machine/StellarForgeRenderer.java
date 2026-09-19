@@ -3,6 +3,7 @@ package com.gtocore.client.renderer.machine;
 import com.gtocore.client.renderer.fx.FXManager;
 import com.gtocore.client.renderer.fx.StellarForgeVortexFX;
 import com.gtocore.common.machine.multiblock.electric.StellarForgeMachine;
+import com.gtocore.config.GTOConfig;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -72,6 +73,9 @@ public class StellarForgeRenderer extends WorkableCasingMachineRenderer {
 
     @Override
     public boolean shouldRender(BlockEntity blockEntity, Vec3 cameraPos) {
+        if (!GTOConfig.INSTANCE.client.renderingConfig.enableLargeRangeShaderEffects) {
+            return false;
+        }
         if (blockEntity instanceof MetaMachineBlockEntity machineBlockEntity) {
             MetaMachine metaMachine = machineBlockEntity.getMetaMachine();
             return (metaMachine instanceof StellarForgeMachine machine && machine.isFormed() ||

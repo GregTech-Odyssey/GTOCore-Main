@@ -1,8 +1,19 @@
 
+def spotlessJavaTargets = ['src/main/java/**/*.java']
+def spotlessKotlinTargets = ['src/main/java/**/*.kt']
+def spotlessJsonTargets = ['src/*/resources/**/*.json', 'src/*/resources/**/*.mcmeta']
+
+if (hasGtolibSources) {
+    spotlessJavaTargets << 'GTOLib/src/main/java/**/*.java'
+    spotlessKotlinTargets << 'GTOLib/src/main/java/**/*.kt'
+    spotlessJsonTargets << 'GTOLib/src/main/resources/**/*.json'
+    spotlessJsonTargets << 'GTOLib/src/main/resources/**/*.mcmeta'
+}
+
 spotless {
     encoding 'UTF-8'
     java {
-        target 'src/main/java/**/*.java'
+        target(*spotlessJavaTargets)
         toggleOffOn()
         importOrderFile(file("$rootDir/gradle/spotless/spotless.importorder"))
         removeUnusedImports('cleanthat-javaparser-unnecessaryimport')
@@ -10,13 +21,13 @@ spotless {
         eclipse('4.31').configFile(file("$rootDir/gradle/spotless/spotless.eclipseformat.xml"))
     }
     kotlin {
-        target 'src/main/java/**/*.kt'
+        target(*spotlessKotlinTargets)
         ktlint().setEditorConfigPath("$rootDir/gradle/spotless/spotless.ktlint")
         trimTrailingWhitespace()
         endWithNewline()
     }
     json {
-        target('src/*/resources/**/*.json', 'src/*/resources/**/*.mcmeta')
+        target(*spotlessJsonTargets)
         targetExclude 'src/generated/resources/**'
         biome()
         trimTrailingWhitespace()

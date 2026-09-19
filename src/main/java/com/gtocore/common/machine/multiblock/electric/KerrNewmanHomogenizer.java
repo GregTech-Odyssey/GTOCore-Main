@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.client.renderer.fx.BlackHole;
 import com.gtocore.client.renderer.fx.FXManager;
+import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
@@ -43,6 +44,10 @@ public final class KerrNewmanHomogenizer extends CrossRecipeMultiblockMachine {
     }
 
     private void tickClient() {
+        if (!GTOConfig.INSTANCE.client.renderingConfig.enableLargeRangeShaderEffects) {
+            clientTicker.unsubscribe();
+            return;
+        }
         if (isActive()) {
             KerrNewmanFX.addFX(this);
         } else if (fxActive) {
