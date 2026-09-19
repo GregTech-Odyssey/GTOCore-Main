@@ -800,7 +800,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("heater_machine")
 
         section(ComponentSlang.RunningRequirements)
-        command("使用燃料加热" translatedTo "Uses fuel to heat")
+        command("使用燃料加热，热量从顶面和侧面输出" translatedTo "Uses fuel to heat, heat outputs from the top and sides")
         content("前方被阻挡后停止加热" translatedTo "Stop heating after front side is blocked.")
         error(("机器过热会" translatedTo "When machine is too hot, it will ") + ComponentSlang.Explosion)
         danger(ComponentSlang.BeAwareOfBurn)

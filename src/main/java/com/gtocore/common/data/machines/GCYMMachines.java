@@ -1077,6 +1077,7 @@ public final class GCYMMachines {
                     .where('F', controller(definition))
                     .where('a', blocks(GCYMBlocks.CASING_NONCONDUCTING.get())
                             .or(GTOPredicates.autoGCYMAbilities(definition.getRecipeTypes()))
+                            .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1))
                             .or(autoAbilities(true, false, true)))
                     .where(' ', any())
                     .where('b', GTOPredicates.integralFramework())

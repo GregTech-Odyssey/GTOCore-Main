@@ -307,6 +307,7 @@ public final class LangHandler {
 
         addCNEN("gtocore.lang.power_substation.tooltip.0", "用于确定无线EU单个仓室或者设备的传输上限的设施。", "A facility used to determine the transfer limit of a single wireless EU hatch or device.");
         addCNEN("gtocore.lang.power_substation.tooltip.1", "安装电容可以提升传输上限。", "Installing capacitors increases the transfer limit.");
+        addCNEN("gtocore.lang.power_substation.tooltip.2", "内部必须填满电容，可用空电容填补空隙。", "All internal slots must be filled with capacitors; empty capacitors can be used to fill any gaps.");
 
         addCNEN("key.ae2.me2in1_wireless_locating_service", "打开ME2合1无线终端", "Open ME2in1 Wireless Terminal");
 
