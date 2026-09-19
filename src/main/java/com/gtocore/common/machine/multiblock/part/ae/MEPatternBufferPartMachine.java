@@ -524,7 +524,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
 
     public static final class InternalSlot extends AbstractRecipeInternalSlot implements IFieldDataHolder {
 
-        @SaveToDisk
+        @SaveToDisk(listener = "setRecipe")
         public GTRecipeDefinition recipe;
         public final MEPatternBufferPartMachine machine;
         public final int index;
