@@ -25,7 +25,7 @@ public final class VirtualProviderData {
             tag.remove(MOD_TAG);
             tag.remove(NAME_TAG);
             tag.remove(NBT_TAG);
-            if (tag.isEmpty()){
+            if (tag.isEmpty()) {
                 stack.setTag(null);
             }
         } else {
@@ -60,7 +60,7 @@ public final class VirtualProviderData {
             tag.remove(MOD_TAG);
             tag.remove(NAME_TAG);
             tag.remove(NBT_TAG);
-            if (tag.isEmpty()){
+            if (tag.isEmpty()) {
                 stack.setTag(null);
             }
         } else {
