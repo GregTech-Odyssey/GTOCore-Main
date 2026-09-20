@@ -53,13 +53,19 @@ public class TechNodeTask extends AbstractBooleanTask {
 
     public void writeData(CompoundTag nbt) {
         super.writeData(nbt);
-        nbt.putByteArray("node", GTOCodecs.TECH_NODE_DATA_CODEC.encode(node).writeToBytes());
+        nbt.putString("nodeName", node.name);
+        nbt.putString("treeId", node.getManager().getId());
     }
 
     public void readData(CompoundTag nbt) {
         super.readData(nbt);
         if (nbt.contains("node")) {
             node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nbt.getByteArray("node")));
+        } else {
+            var tree = TechTreeManager.getManager(nbt.getString("treeId"));
+            if (tree != null) {
+                node = tree.getNode(nbt.getString("nodeName"));
+            }
         }
     }
 
