@@ -25,6 +25,9 @@ public final class VirtualProviderData {
             tag.remove(MOD_TAG);
             tag.remove(NAME_TAG);
             tag.remove(NBT_TAG);
+            if (tag.isEmpty()){
+                stack.setTag(null);
+            }
         } else {
             var id = ForgeRegistries.ITEMS.getKey(virtualItem.getItem());
             tag.putString(MOD_TAG, id.getNamespace());
@@ -57,6 +60,9 @@ public final class VirtualProviderData {
             tag.remove(MOD_TAG);
             tag.remove(NAME_TAG);
             tag.remove(NBT_TAG);
+            if (tag.isEmpty()){
+                stack.setTag(null);
+            }
         } else {
             ResourceLocation id = ForgeRegistries.FLUIDS.getKey(virtualFluid.getFluid());
             tag.putString(MOD_TAG, id.getNamespace());
