@@ -83,6 +83,8 @@ public final class GTOPartAbility extends PartAbility {
             LANG.put("gtocore.part_ability.optical_data_transmission", new CNEN("光学数据源仓", "Optical Data Transmission"));
             LANG.put("gtocore.part_ability.data_access", new CNEN("数据访问仓", "Data Access"));
             LANG.put("gtocore.part_ability.hpca_component", new CNEN("高性能计算组件", "HPCA Component"));
+            LANG.put("gtocore.part_ability.utility", new CNEN("通用仓", "Utility Hatch"));
+            LANG.put("gtocore.part_ability.machine_control", new CNEN("机器控制仓", "Machine Control Hatch"));
 
         }
     }

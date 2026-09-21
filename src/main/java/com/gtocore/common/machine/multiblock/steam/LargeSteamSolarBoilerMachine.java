@@ -142,7 +142,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
                     .aisle(boundaryRow)
                     .aisle(middleRow).setRepeatable(safeBDist)
                     .aisle(controllerRow)
-                    .where('a', blocks(GTBlocks.STEEL_HULL.get()).or(abilities(EXPORT_FLUIDS)).or(abilities(IMPORT_FLUIDS)))
+                    .wherePart('a', blocks(GTBlocks.STEEL_HULL.get()).or(abilities(EXPORT_FLUIDS)).or(abilities(IMPORT_FLUIDS)))
                     .where('b', blocks(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get()))
                     .where('~', controller(this.getDefinition()))
                     .build() };

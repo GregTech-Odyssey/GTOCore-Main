@@ -32,7 +32,6 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
-import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -43,7 +42,6 @@ import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRendere
 import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
-import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.LaserHatchPartMachine;
@@ -314,7 +312,7 @@ public final class MachineRegisterUtils {
                         .aisle("AAA", "AYA", "AAA")
                         .where('X', blocks(casing.get()))
                         .where('G', blocks(gear.get()))
-                        .where('C', blocks(casing.get()).setMinGlobalLimited(3).or(autoAbilities(definition.getRecipeTypes(), false, false, true, true, true, true)).or(autoAbilities(true, true, false)))
+                        .wherePart('C', blocks(casing.get()).setMinGlobalLimited(3).or(autoAbilities(definition.getRecipeTypes(), false, false, true, true, true, true)).or(autoAbilities(true, true, false)))
                         .where('D', ability(PartAbility.OUTPUT_ENERGY,
                                 tier == EV ? Stream.of(HV, EV, IV, LuV, ZPM, UV, UHV).mapToInt(Integer::intValue).toArray() : Stream.of(EV, IV, LuV, ZPM, UV, UHV).filter(t -> t >= tier).mapToInt(Integer::intValue).toArray())
                                 .addTooltips(Component.translatable("gtceu.machine.large_combustion_engine.tooltip.boost_regular", V[tier] * 6)))
@@ -415,7 +413,7 @@ public final class MachineRegisterUtils {
                         .where('C', blocks(casing.get()))
                         .where('R', GTOPredicates.RotorBlockFacingOutwards(tier).setExactLimit(1)
                                 .or(abilities(PartAbility.OUTPUT_ENERGY)).setExactLimit(1))
-                        .where('H', blocks(casing.get()).or(autoAbilities(definition.getRecipeTypes(), false, false, true, true, true, true).or(autoAbilities(true, true, false))))
+                        .wherePart('H', blocks(casing.get()).or(autoAbilities(definition.getRecipeTypes(), false, false, true, true, true, true).or(autoAbilities(true, true, false))))
                         .build())
                 .workableCasingRenderer(casingTexture, overlayModel);
         if (recipeType == GTORecipeTypes.STEAM_TURBINE_FUELS) {
@@ -545,8 +543,7 @@ public final class MachineRegisterUtils {
                         .aisle("           ", "           ", "   AAAAA   ", "   ABBBA   ", "   BCCCB   ", "   BCDCB   ", "   BCCCB   ", "   ABBBA   ", "   AAAAA   ", "           ", "           ")
                         .where('A', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get()))
                         .where('B', blocks(casing.get()))
-                        .where('C', blocks(casing.get())
-                                .or(Predicates.blocks(GTMachines.CONTROL_HATCH.get()).setMaxGlobalLimited(1).setPreviewCount(0))
+                        .wherePart('C', blocks(casing.get())
                                 .or(abilities(MAINTENANCE).setExactLimit(1))
                                 .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(8))
                                 .or(abilities(EXPORT_FLUIDS).setMaxGlobalLimited(2))

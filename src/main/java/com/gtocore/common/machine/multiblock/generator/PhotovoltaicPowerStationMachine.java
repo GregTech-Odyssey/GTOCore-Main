@@ -22,7 +22,6 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
-import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -185,8 +184,7 @@ public final class PhotovoltaicPowerStationMachine extends StorageMultiblockMach
                 .where('A', frames(GTMaterials.Aluminium))
                 .where('B', blocks(photovoltaicBlock.get()))
                 .where('C', blocks(casing.get()))
-                .where('D', blocks(casing.get())
-                        .or(Predicates.blocks(CONTROL_HATCH.get()).setMaxGlobalLimited(1).setPreviewCount(0))
+                .wherePart('D', blocks(casing.get())
                         .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
                         .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(1))
                         .or(abilities(GTOPartAbility.OUTPUT_MANA).setMaxGlobalLimited(4))
@@ -243,8 +241,7 @@ public final class PhotovoltaicPowerStationMachine extends StorageMultiblockMach
                 .aisle("AAAAA")
                 .where('A', GTOPredicates.frame(GTMaterials.Aluminium))
                 .where('B', blocks(photovoltaicBlock.get()))
-                .where('C', blocks(casing.get())
-                        .or(Predicates.blocks(CONTROL_HATCH.get()).setMaxGlobalLimited(1).setPreviewCount(0))
+                .wherePart('C', blocks(casing.get())
                         .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
                         .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(1))
                         .or(abilities(GTOPartAbility.OUTPUT_MANA).setMaxGlobalLimited(4))
