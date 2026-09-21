@@ -690,7 +690,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition HEAT_HATCH = machine("heat_hatch", "导热仓", h -> new HeatHatchPartMachine(h, 850, 1, 1))
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, HEAT_CONDUCTION)
+            .abilities(PartAbility.UTILITY, HEAT_CONDUCTION)
             .tooltips(GTOMachineTooltips.TempInterfaceTooltips)
             .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 850))
             .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 1))
@@ -702,7 +702,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition ADVANCED_HEAT_HATCH = machine("advanced_heat_hatch", "高级导热仓", h -> new HeatHatchPartMachine(h, 3600, 2, 4))
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, HEAT_CONDUCTION)
+            .abilities(PartAbility.UTILITY, HEAT_CONDUCTION)
             .tooltips(GTOMachineTooltips.TempInterfaceTooltips)
             .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 3600))
             .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 2))
@@ -714,7 +714,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition VACUUM_INTERFACE = machine("vacuum_interface", "真空接口", VacuumInterfacePartMachine::new)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS)
+            .abilities(PartAbility.UTILITY)
             .tooltips(GTOMachineTooltips.VacuumInterfaceTooltips)
             .tier(LV)
             .overlayTieredHullRenderer("neutron_sensor")
@@ -722,7 +722,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition SPACE_SHIELD_HATCH = machine("space_shield_hatch", "太空屏障仓", SpaceShieldHatch::new)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS)
+            .abilities(PartAbility.UTILITY)
             .notAllowSharedTooltips()
             .tooltips(GTOMachineTooltips.spaceShieldHatchTooltips)
             .renderer(() -> new OverlayTieredMachineRenderer(UEV, GTCEu.id("block/machine/part/optical_data_hatch")))

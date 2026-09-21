@@ -186,7 +186,7 @@ public class WorkspaceExtension extends Extension {
                     .where('G', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
                     .where('H', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
                     .where('I', GTOPredicates.light())
-                    .where('J', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
+                    .wherePart('J', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
                     .where('K', blocks(GTOBlocks.ALUMINUM_ALLOY_8090_SKIN_MECHANICAL_BLOCK.get()))
                     .where('L', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .where('M', blocks(GTOBlocks.SPACE_ENGINE_NOZZLE.get()))
