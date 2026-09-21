@@ -787,7 +787,7 @@ public final class MultiBlockC {
             .block(GTOBlocks.SOURCE_FIBER_MECHANICAL_CASING)
             .pattern(definition -> MultiBlockFileReader.start(definition)
                     .where('A', blocks(GTBlocks.CASING_ASSEMBLY_LINE.get()))
-                    .where('B', blocks(GTOBlocks.SOURCE_FIBER_MECHANICAL_CASING.get())
+                    .wherePart('B', blocks(GTOBlocks.SOURCE_FIBER_MECHANICAL_CASING.get())
                             .or(GTOPredicates.autoLaserAbilities(definition.getRecipeTypes()))
                             .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
                             .or(abilities(ACCELERATE_HATCH).setMaxGlobalLimited(1)))
