@@ -312,7 +312,9 @@ public final class MachineRegisterUtils {
                         .aisle("AAA", "AYA", "AAA")
                         .where('X', blocks(casing.get()))
                         .where('G', blocks(gear.get()))
-                        .wherePart('C', blocks(casing.get()).setMinGlobalLimited(3).or(autoAbilities(definition.getRecipeTypes(), false, false, true, true, true, true)).or(autoAbilities(true, true, false)))
+                        .wherePart('C', blocks(casing.get()).setMinGlobalLimited(3)
+                                .or(autoAbilities(definition.getRecipeTypes(), false, false, true, true, true, true))
+                                .or(autoAbilities(true, true, false)))
                         .where('D', ability(PartAbility.OUTPUT_ENERGY,
                                 tier == EV ? Stream.of(HV, EV, IV, LuV, ZPM, UV, UHV).mapToInt(Integer::intValue).toArray() : Stream.of(EV, IV, LuV, ZPM, UV, UHV).filter(t -> t >= tier).mapToInt(Integer::intValue).toArray())
                                 .addTooltips(Component.translatable("gtceu.machine.large_combustion_engine.tooltip.boost_regular", V[tier] * 6)))
