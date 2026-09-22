@@ -72,7 +72,9 @@ public abstract class CraftAmountMenuMixin extends AEBaseMenu implements ICraftA
     private boolean onConfirm(CraftConfirmMenu instance, AEKey what, long amount, CalculationStrategy strategy, Operation<Boolean> original) {
         check:
         if (this.gto$whatToCraft != null) {
-            var gridNode = getActionHost().getActionableNode();
+            var actionHost = getActionHost();
+            if (actionHost == null) break check;
+            var gridNode = actionHost.getActionableNode();
             if (gridNode == null) break check;
             var grid = gridNode.getGrid();
             var service = ((ITemporaryCraftableService) grid.getCraftingService());
