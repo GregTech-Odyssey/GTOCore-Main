@@ -23,6 +23,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
@@ -31,6 +33,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -132,6 +135,14 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
             return LazyOptional.of(() -> experienceTank).cast();
         }
         return null;
+    }
+
+    @Override
+    protected InteractionResult onWrenchClick(Player playerIn, InteractionHand hand, Direction gridSide, BlockHitResult hitResult) {
+        // 该机器没有自动输出面，非潜行扳手点击不会改变任何状态，却会消耗扳手耐久并拦截 UI 打开，
+        // 导致手持 GT 工具时无法进入界面使用经验修补。此处放行，仅保留潜行扳手改变朝向的行为。
+        if (!playerIn.isShiftKeyDown()) return InteractionResult.PASS;
+        return super.onWrenchClick(playerIn, hand, gridSide, hitResult);
     }
 
     @Override
