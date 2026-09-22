@@ -5814,6 +5814,7 @@
   "gtocore.machine.wind_mill_turbine.tooltip.1": "Wind Speed Bonus: x1.5 for rainy days, x2 for thunderstorms, the wind speed determines the maximum rotation speed",
   "gtocore.machine.wind_mill_turbine.wind": "Current Wind Speed: %s",
   "gtocore.machine.wireless_data_hatch.bind": "Wireless data hatch binding completed",
+  "gtocore.machine.wireless_laser_hatch.no_laser_bonus": "§cOccupies laser hatch slot, but does not receive laser hatch bonus",
   "gtocore.machine.wireless_data_receiver_hatch.bind": "Bound wireless optical data source hatch (%s)",
   "gtocore.machine.wireless_data_receiver_hatch.to_bind": "Target hatch data reading completed, please right-click the source hatch to bind",
   "gtocore.machine.wireless_data_receiver_hatch.tooltip.0": "Use the flash drive to right-click and bind the wireless optical data target hatch and the wireless optical data source hatch",

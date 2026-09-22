@@ -39,11 +39,7 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
         if (part instanceof LaserHatchPartMachine laserHatchPartMachine) {
             outputTier = laserHatchPartMachine.getTier();
             laser = true;
-        } else if (part instanceof WirelessEnergyHatchPartMachine wirelessEnergyHatchPartMachine) {
-            outputTier = wirelessEnergyHatchPartMachine.getTier();
-            // 256A 及以上的无线动力仓注册为激光仓（OUTPUT_LASER），同样享受激光仓加成
-            laser = wirelessEnergyHatchPartMachine.getEnergyContainer().getOutputAmperage() > 64;
-        } else if (part instanceof EnergyHatchPartMachine) {
+        } else if (part instanceof EnergyHatchPartMachine || part instanceof WirelessEnergyHatchPartMachine) {
             outputTier = ((ITieredMachine) part).getTier();
         } else if (part instanceof VoidEnergyHatch voidEnergyHatch) {
             outputTier = voidEnergyHatch.getSimTier();

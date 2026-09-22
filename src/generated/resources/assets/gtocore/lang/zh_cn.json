@@ -5942,6 +5942,7 @@
   "gtocore.machine.wind_mill_turbine.tooltip.1": "风速加成: 雨天x1.5，雷雨天x2，风速决定最高转速",
   "gtocore.machine.wind_mill_turbine.wind": "当前风力: %s",
   "gtocore.machine.wireless_data_hatch.bind": "无线数据仓绑定完成",
+  "gtocore.machine.wireless_laser_hatch.no_laser_bonus": "§c占用激光仓位置，但不享受激光仓加成",
   "gtocore.machine.wireless_data_receiver_hatch.bind": "已绑定无线光学数据源仓(%s)",
   "gtocore.machine.wireless_data_receiver_hatch.to_bind": "靶仓数据读取完成，请右键源仓进行绑定",
   "gtocore.machine.wireless_data_receiver_hatch.tooltip.0": "需要使用闪存右键无线光学数据靶仓和无线光学数据源仓进行绑定",

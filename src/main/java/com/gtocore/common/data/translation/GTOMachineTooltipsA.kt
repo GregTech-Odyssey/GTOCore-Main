@@ -599,11 +599,13 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         section(EfficiencyBonus)
         increase("如果密封外壳等级大于LuV，则提升效率 x 密封外壳等级/4" translatedTo "If the hermetic casing tier is greater than LuV, the efficiency is increased by x (hermetic casing tier) / 4")
         increase("如果使用激光仓，则提升发电量 x 2^等级" translatedTo "If a laser hatch is used, power generation is increased by x 2^tier")
+        important("无线动力仓不算激光仓，不享受此加成" translatedTo "Wireless dynamo hatches do not count as laser hatches and do not receive this bonus")
 
         section(AfterModuleInstallation)
         increase("提升效率 x 2" translatedTo "Efficiency is increased by x 2")
         increase("基础并行 x 4" translatedTo "Basic parallel x 4")
         increase("如果使用激光仓，则提升发电量 x 4^等级" translatedTo "If a laser hatch is used, power generation is increased by x 4^tier")
+        important("无线动力仓不算激光仓，不享受此加成" translatedTo "Wireless dynamo hatches do not count as laser hatches and do not receive this bonus")
     }
 
     // 戴森球接收站
