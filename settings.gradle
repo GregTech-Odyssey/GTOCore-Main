@@ -2,7 +2,7 @@ pluginManagement {
     repositories {
         mavenLocal()
         gradlePluginPortal()
-        maven { url = 'https://maven.gtodyssey.com/releases' }
+        maven { url = 'https://gtodyssey.com/maven/releases' }
         maven { url = "https://maven.neoforged.net/releases"}
         maven { url = "https://maven.minecraftforge.net/" }
     }

@@ -264,7 +264,7 @@ publishing {
     repositories {
         maven {
             name = 'gtodysseyRepository'
-            url = 'https://maven.gtodyssey.com/releases'
+            url = 'https://gtodyssey.com/maven/releases'
             credentials {
                 username = findProperty('gtodysseyRepositoryUsername') ?: ''
                 password = findProperty('gtodysseyRepositoryPassword') ?: ''
