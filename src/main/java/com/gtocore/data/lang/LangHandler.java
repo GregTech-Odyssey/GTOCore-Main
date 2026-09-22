@@ -528,6 +528,23 @@ public final class LangHandler {
         addCNEN("gtocore.emi.tagprefix.tooltip", "材料标签类型", "Material Tag Prefix");
         addCNEN("gtocore.emi.tagprefix.tooltip.1", "在编码样板时将它们拖入终端，可以制作通配符样板", "When encoding patterns, drag them into the terminal to create wildcard patterns.");
         addCNEN("gtocore.emi.tagprefix.tooltip.2", "在通配符样板总成中，将自动匹配所有符合标签的物品或流体", "In wildcard pattern assemblies, all items or fluids that match the tag will be automatically matched.");
+        addCNEN("gtocore.tooltip.space_resource.type.mining", "太空采矿", "Space Mining");
+        addCNEN("gtocore.tooltip.space_resource.type.drilling", "太空钻井", "Space Drilling");
+        addCNEN("gtocore.tooltip.space_resource.type.debris", "太空浮游物质收集", "Space Debris Collection");
+        addCNEN("gtocore.tooltip.space_resource.type.planetary_gas", "行星气体抽取", "Planetary Gas Extraction");
+        addCNEN("gtocore.tooltip.space_resource.type.void_gas", "虚空集气", "Void Gas Collection");
+        addCNEN("gtocore.tooltip.space_resource.hold_ctrl", "按 CTRL 查看%s", "Hold CTRL for %s");
+        addCNEN("gtocore.tooltip.space_resource.title", "%s：", "%s:");
+        addCNEN("gtocore.tooltip.space_resource.title_secondary", "其原矿可通过%s获得：", "Its ore can be obtained via %s:");
+        addCNEN("gtocore.tooltip.space_resource.drone", " · %s 及以上 + 电路 [%s]", " · %s or higher + Circuit [%s]");
+        addCNEN("gtocore.tooltip.space_resource.circuit", " · 电路 [%s]", " · Circuit [%s]");
+        addCNEN("gtocore.tooltip.space_resource.no_circuit", " · 无需电路", " · No circuit needed");
+        addCNEN("gtocore.tooltip.space_resource.fuel", "     燃料：%s", "     Fuel: %s");
+        addCNEN("gtocore.tooltip.space_resource.galaxy", "     星系：%s", "     Galaxy: %s");
+        addCNEN("gtocore.tooltip.space_resource.dimension", "     维度：%s", "     Dimension: %s");
+        addCNEN("gtocore.tooltip.space_resource.chance", "     概率：%s%%", "     Chance: %s%%");
+        addCNEN("gtocore.tooltip.space_resource.chance_boost", "     概率：%s%%（每超一级电压 +%s%%）", "     Chance: %s%% (+%s%% per voltage tier)");
+
         addCNEN("gtocore.emi.space_elevator.min_drone_tier", "最低无人机等级: %s", "Minimum Drone Tier: %s");
         addCNEN("gtocore.emi.space_elevator.next_drone", "查看下一级无人机配方", "View next tier drone recipe");
         addCNEN("gtocore.emi.space_elevator.prev_drone", "查看上一级无人机配方", "View previous tier drone recipe");

@@ -1,5 +1,6 @@
 package com.gtocore.data.recipe.classified;
 
+import com.gtocore.api.data.SpaceResourceIndex;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.recipe.condition.GalaxyCondition;
@@ -75,6 +76,9 @@ final class SpaceDebrisCollection {
                     GTOItems.SPACE_DRONE_MK5.asItem(),
                     GTOItems.SPACE_DRONE_MK6.asItem()
             };
+        }
+        for (CosmicPileOutput output : outputs) {
+            SpaceResourceIndex.addDebris(circuitMeta, drones[0], galaxy, output.item, output.chancePer100Milli, output.chanceBoostPer100Milli);
         }
         for (int i = 0; i < drones.length; i++) {
             var builder = SPACE_DEBRIS_COLLECTION_RECIPES.builder("cosmic_pile_" + galaxy.name().toLowerCase() + "_drone_mk" + i)

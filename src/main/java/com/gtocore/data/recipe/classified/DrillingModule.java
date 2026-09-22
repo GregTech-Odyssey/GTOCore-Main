@@ -1,5 +1,6 @@
 package com.gtocore.data.recipe.classified;
 
+import com.gtocore.api.data.SpaceResourceIndex;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
@@ -31,9 +32,11 @@ final class DrillingModule {
             {},
             {}
     };
+    private static final FluidStack[] stellarFuel = { GTOMaterials.StellarEnergyRocketFuel.getFluid(10000) };
     private static final int[] baseTime = { 600, 400 };
 
     private static void buildDrillingModule(int circuit, int minDroneTire, FluidStack fluidStack) {
+        SpaceResourceIndex.addDrilling(circuit, drones[minDroneTire - 1], fuels[minDroneTire - 1], fluidStack);
         for (int i = minDroneTire - 1; i < 6; i++) {
             for (int j = 0; j < fuels[minDroneTire - 1].length; j++) {
                 DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_" + circuit + "_" + i + "_" + j)
@@ -79,6 +82,7 @@ final class DrillingModule {
         buildDrillingModule(27, 3, Bromine.getFluid(1000000));
         buildDrillingModule(28, 3, BarnardaAir.getFluid(1000000));
 
+        SpaceResourceIndex.addDrilling(29, drones[5], stellarFuel, GTOMaterials.WhiteDwarfMatter.getFluid(100000));
         DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_29")
                 .notConsumable(GTOItems.SPACE_DRONE_MK6.asItem(), 64)
                 .circuitMeta(29)
@@ -89,6 +93,7 @@ final class DrillingModule {
                 .duration(750)
                 .save();
 
+        SpaceResourceIndex.addDrilling(30, drones[5], stellarFuel, GTOMaterials.BlackDwarfMatter.getFluid(100000));
         DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_30")
                 .notConsumable(GTOItems.SPACE_DRONE_MK6.asItem(), 64)
                 .circuitMeta(30)

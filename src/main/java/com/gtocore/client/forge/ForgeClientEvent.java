@@ -5,6 +5,7 @@ import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
+import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
 import com.gtocore.client.hud.HUDScreen;
 import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
@@ -131,6 +132,7 @@ public final class ForgeClientEvent {
         if (HiddenItems.isItemDeprecated(item)) {
             event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());
         }
+        SpaceResourceTooltips.append(item, event.getToolTip());
     }
 
     @SubscribeEvent

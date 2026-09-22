@@ -76,6 +76,8 @@ public final class Tooltips {
                         FormatUtil.voltageName(BigDecimal.valueOf(euPerMb)),
                         FormatUtil.voltageAmperage(BigDecimal.valueOf(euPerMb)).toEngineeringString()));
             }
+
+            SpaceResourceTooltips.append(fluid, tooltips);
         });
 
         ImmutableMap.Builder<Item, List<Component>> toolTipsKey = ImmutableMap.builder();

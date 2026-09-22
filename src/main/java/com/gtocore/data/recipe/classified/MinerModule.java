@@ -1,6 +1,7 @@
 package com.gtocore.data.recipe.classified;
 
 import com.gtocore.api.data.RocketFuels;
+import com.gtocore.api.data.SpaceResourceIndex;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -34,6 +35,7 @@ final class MinerModule {
     }
 
     private static void buildMinerModule(int circuit, int minDroneTire, ItemStack[] blocks) {
+        SpaceResourceIndex.addMining(circuit, RocketFuels.drones[minDroneTire - 1], RocketFuels.fuels[minDroneTire - 1], blocks);
         for (int i = minDroneTire - 1; i < 6; i++) {
             for (int j = 0; j < RocketFuels.fuels[minDroneTire - 1].length; j++) {
                 var build = MINER_MODULE_RECIPES.recipeBuilder("space_ore_" + circuit + "_" + i + "_" + j)
