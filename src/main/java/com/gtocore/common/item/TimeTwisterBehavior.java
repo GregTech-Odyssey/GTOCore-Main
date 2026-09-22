@@ -10,6 +10,7 @@ import com.gtolib.api.machine.mana.feature.IManaContainerMachine;
 import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 import com.gtolib.api.wireless.ExtendWirelessEnergyContainer;
 import com.gtolib.api.wireless.WirelessManaContainer;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -22,8 +23,10 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -45,6 +48,7 @@ import snownee.jade.api.config.IPluginConfig;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -66,11 +70,21 @@ public final class TimeTwisterBehavior implements IInteractionItem {
     private static final String HUD_IS_MANA_KEY = "time_twister_is_mana";
     private static final String HUD_CONSUMPTION_KEY = "time_twister_consumption";
 
+    /**
+     * 被加速后会刷物品的方块。时间扭曲者对它们完全不生效：不消耗能量，也不做任何提示。
+     */
+    private static final Set<ResourceLocation> BLACKLIST = Set.of(
+            RLUtils.ars("spell_turret"),
+            RLUtils.ars("basic_spell_turret"),
+            RLUtils.ars("timer_spell_turret"),
+            RLUtils.ars("rotating_spell_turret"));
+
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         if (context.getLevel().isClientSide()) return InteractionResult.PASS;
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
+        if (isBlackListed(context.getLevel().getBlockState(context.getClickedPos()).getBlock())) return InteractionResult.PASS;
         ExtendWirelessEnergyContainer euContainer = (ExtendWirelessEnergyContainer) WirelessEnergyContainer.getOrCreateContainer(context.getPlayer().getUUID());
         WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(context.getPlayer().getUUID());
         if (player.isShiftKeyDown() && euContainer.removeEnergy(819200, null) == 819200) {
@@ -95,6 +109,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         var player = blockAccessor.getPlayer();
         var item = player.getMainHandItem();
         if (item.getItem() != GTOItems.TIME_TWISTER.asItem()) return;
+        if (isBlackListed(blockAccessor.getBlock())) return;
         ExtendWirelessEnergyContainer euContainer = (ExtendWirelessEnergyContainer) WirelessEnergyContainer.getOrCreateContainer(player.getUUID());
         WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(player.getUUID());
 
@@ -280,6 +295,10 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         }
 
         return null;
+    }
+
+    private static boolean isBlackListed(Block block) {
+        return BLACKLIST.contains(BuiltInRegistries.BLOCK.getKey(block));
     }
 
     private static boolean isBlockEntity(UseOnContext context) {
