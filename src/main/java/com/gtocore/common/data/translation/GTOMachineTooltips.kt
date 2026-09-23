@@ -1249,7 +1249,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("blaze_blast_furnace")
 
         section(ComponentSlang.RunningRequirements)
-        command("需提供§b 2^( 电压等级 - 2 ) * 10mb/s§r的§6液态烈焰§r" translatedTo "Requires to provide §b 2^(Voltage tier - 2 ) * 10mb/s§r of §6Liquid  Blaze§r")
+        command("需提供§b 2^( 电压等级 - 2 ) * 10mb/s§r（最低§b 10mb/s§r）的§6液态烈焰§r" translatedTo "Requires to provide §b 2^(Voltage tier - 2 ) * 10mb/s§r (at least §b10mb/s§r) of §6Liquid Blaze§r")
         info("配方开始工作时立刻消耗一次液态烈焰" translatedTo "Consumes Liquid Blaze once immediately when the recipe starts")
     }
 
