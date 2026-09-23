@@ -43,7 +43,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
 
     @Nullable
     private TickableSubscription meHoldSubs;
-    private long meHoldUntil;
+    private int meHoldUntil;
 
     public BiologicalExtractionMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true, MachineUtils::getHatchParallel);
@@ -52,10 +52,8 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        if (getLevel() != null) {
-            meHoldUntil = getLevel().getGameTime() + ME_HOLD_TICKS;
-            meHoldSubs = subscribeServerTick(meHoldSubs, this::checkMeHold, 5);
-        }
+        meHoldUntil = getOffsetTimer() + ME_HOLD_TICKS;
+        meHoldSubs = subscribeServerTick(meHoldSubs, this::checkMeHold, 5);
     }
 
     @Override
@@ -71,7 +69,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
 
     private boolean isNotMeHolding() {
         if (meHoldUntil == 0) return true;
-        if (getLevel() != null && getLevel().getGameTime() < meHoldUntil) {
+        if (getOffsetTimer() < meHoldUntil) {
             for (var part : getParts()) {
                 if (part instanceof IGridConnectedMachine me && !me.isOnline()) return false;
             }
