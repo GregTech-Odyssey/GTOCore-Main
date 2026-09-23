@@ -60,6 +60,10 @@ public final class InternalSlotRecipeHandler {
 
         protected abstract void clearCachedRecipe();
 
+        protected boolean isCachedRecipeAvailable(GTRecipeDefinition recipe) {
+            return false;
+        }
+
         protected abstract @Nullable GTRecipeType getEffectiveRecipeType(GTRecipeType recipeType);
 
         protected abstract void onRecipeHandled(GTRecipe recipe);
@@ -74,6 +78,9 @@ public final class InternalSlotRecipeHandler {
             if (cachedRecipe != null) {
                 if (canHandle.test(this, cachedRecipe)) {
                     return true;
+                } else if (isCachedRecipeAvailable(cachedRecipe)) {
+                    // 缺电/输出满等暂时失败时保留缓存，也不按当前机器模式重搜，否则会串到别的配方
+                    return false;
                 } else {
                     clearCachedRecipe();
                 }
@@ -137,6 +144,11 @@ public final class InternalSlotRecipeHandler {
         @Override
         protected void clearCachedRecipe() {
             slot.setRecipe(null);
+        }
+
+        @Override
+        protected boolean isCachedRecipeAvailable(GTRecipeDefinition recipe) {
+            return slot.machine.isRecipeTypeUsable(recipe.recipeType);
         }
 
         @Override

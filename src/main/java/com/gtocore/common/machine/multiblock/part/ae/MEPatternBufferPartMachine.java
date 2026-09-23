@@ -222,6 +222,25 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         proxyMachines.remove(proxy);
     }
 
+    /// 镜像所在区块卸载：保留绑定位置，只是暂时拿不到它那台机器
+    void unloadProxy(MEPatternBufferProxyPartMachine proxy) {
+        proxyMachines.remove(proxy);
+    }
+
+    /// 缓存配方的类型是否还有机器能跑（主机器或任一镜像的机器）；有镜像未加载或未成型时无法判断，视为能跑
+    public boolean isRecipeTypeUsable(GTRecipeType type) {
+        if (recipeTypes.isEmpty() || recipeTypes.contains(type)) return true;
+        if (proxyMachines.size() < proxies.size()) return true;
+        for (var proxy : proxyMachines) {
+            var controllers = proxy.getControllers();
+            if (controllers.isEmpty()) return true;
+            for (var controller : controllers) {
+                if (controller instanceof IRecipeLogicMachine machine && GTRecipeType.available(type, machine.getAvailableRecipeTypes())) return true;
+            }
+        }
+        return false;
+    }
+
     private Set<MEPatternBufferProxyPartMachine> getProxies() {
         return proxyMachines;
     }
@@ -258,7 +277,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         this.recipeTypes.addAll(MultiMachineModeFancyConfigurator.extractRecipeTypes(this.getController()));
         MultiMachineModeFancyConfigurator.verify(recipeTypes, recipeType, () -> recipeType = null);
         for (InternalSlot internalSlot : getInternalInventory()) {
-            internalSlot.verify(recipeTypes);
+            internalSlot.verify();
         }
     }
 
@@ -278,6 +297,14 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     public void setRecipeType(GTRecipeType type) {
         if (type != recipeType) {
             recipeType = type;
+            if (!isRemote()) {
+                // 总成模式覆盖机器模式：丢掉与新模式不符的槽位缓存，再按新模式重读样板配方
+                var slots = getInternalInventory();
+                for (int i = 0; i < slots.length; i++) {
+                    slots[i].setRecipe(slots[i].recipe);
+                    if (slots[i].recipe == null) reloadPatternRecipe(i);
+                }
+            }
             for (var c : getControllers()) {
                 if (c instanceof IRecipeLogicMachine machine) {
                     machine.getRecipeLogic().markLastRecipeDirty();
@@ -291,6 +318,13 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     public void onPatternChange(int index) {
         getInternalInventory()[index].setLock(false);
         super.onPatternChange(index);
+        // super 里 decodePattern 读到的样板配方会被随后的 InternalSlot.onPatternChange 清掉，这里补读
+        if (!isRemote()) reloadPatternRecipe(index);
+    }
+
+    private void reloadPatternRecipe(int index) {
+        var stack = getInternalPatternInventory().getStackInSlot(index);
+        if (!stack.isEmpty()) MEPatternVirtualInputHelper.readRecipeTag(stack, getInternalInventory()[index]::setRecipe);
     }
 
     @Override
@@ -442,8 +476,10 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
 
     @Override
     public void clearMachineRecipeCache() {
-        for (InternalSlot slot : getInternalInventory()) {
-            slot.setRecipe(null);
+        var slots = getInternalInventory();
+        for (int i = 0; i < slots.length; i++) {
+            slots[i].setRecipe(null);
+            reloadPatternRecipe(i);
         }
         getControllers().forEach(controller -> {
             if (controller instanceof IRecipeLogicMachine rlm) {
@@ -572,8 +608,8 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
             return lock;
         }
 
-        public void verify(Collection<GTRecipeType> recipeTypes) {
-            if (recipe != null && !recipeTypes.contains(recipe.recipeType)) {
+        public void verify() {
+            if (recipe != null && !machine.isRecipeTypeUsable(recipe.recipeType)) {
                 setRecipe(null);
             }
         }
@@ -607,7 +643,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
 
         public void setRecipe(@Nullable GTRecipeDefinition recipe) {
             if (!shouldLockRecipe) return;
-            if (recipe != null && recipe.registered) {
+            if (recipe != null && recipe.registered && (machine.recipeType == null || GTRecipeType.available(recipe.recipeType, machine.recipeType))) {
                 this.recipe = recipe;
                 machine.caches[index] = true;
             } else {

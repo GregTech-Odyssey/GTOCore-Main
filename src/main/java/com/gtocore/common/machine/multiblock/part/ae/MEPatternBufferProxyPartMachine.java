@@ -78,7 +78,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         super.onUnload();
         var buf = getBuffer();
         if (buf != null) {
-            buf.removeProxy(this);
+            buf.unloadProxy(this);
             proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
             bufferResolved = false;
         }
