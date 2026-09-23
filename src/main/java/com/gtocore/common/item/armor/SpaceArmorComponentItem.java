@@ -118,26 +118,26 @@ public final class SpaceArmorComponentItem extends ArmorComponentItem implements
         boolean hasOxygen = getFluidContainer(stack).getFirstFluid().getFluidAmount() > FluidConstants.fromMillibuckets(1);
         boolean worn = ArmorTooltips.isWorn(stack);
         List<Component> space = new ArrayList<>(8);
-        space.add(ArmorTooltips.section("space"));
+        space.add(ArmorTooltips.section("metaarmor.gto.section.space"));
         // 与 IEnhancedPlayer.spaceTick 一致：有氧，且四个部位都是纳米肌体 / 夸克高科装备
         Component protection;
         if (!hasOxygen) protection = ArmorTooltips.oxygen(false, worn);
         else if (ArmorTooltips.isWornInSet(stack, SpaceArmorComponentItem::isSpaceSetPiece)) protection = ArmorTooltips.oxygen(true, true);
-        else protection = ArmorTooltips.state("need_set", ChatFormatting.YELLOW);
+        else protection = ArmorTooltips.state("metaarmor.gto.state.need_set", ChatFormatting.YELLOW);
         // 无氧环境下每秒扣 2 mB，水下再扣 2 mB
-        Component oxygenCost = ArmorTooltips.tr("cost.oxygen", 2).withStyle(ChatFormatting.GRAY);
-        ArmorTooltips.addFeature(space, "space_protection", protection, oxygenCost);
-        ArmorTooltips.addDetail(space, "detail.space_protection");
-        ArmorTooltips.addFeature(space, "underwater_breath", ArmorTooltips.oxygen(hasOxygen, worn), oxygenCost);
-        ArmorTooltips.addDetail(space, "detail.underwater_breath");
+        Component oxygenCost = Component.translatable("metaarmor.gto.cost.oxygen", 2).withStyle(ChatFormatting.GRAY);
+        ArmorTooltips.addFeature(space, "metaarmor.gto.feature.space_protection", protection, oxygenCost);
+        ArmorTooltips.addDetail(space, "metaarmor.gto.detail.space_protection");
+        ArmorTooltips.addFeature(space, "metaarmor.gto.feature.underwater_breath", ArmorTooltips.oxygen(hasOxygen, worn), oxygenCost);
+        ArmorTooltips.addDetail(space, "metaarmor.gto.detail.underwater_breath");
         // 夸克胸甲本身已列出免疫冰冻；纳米胸甲的免疫冰冻来自太空胸甲
         if (!(getArmorLogic() instanceof QuarkTechSuite)) {
-            ArmorTooltips.addFeature(space, "freeze_immune", ArmorTooltips.piecePassive(), null);
+            ArmorTooltips.addFeature(space, "metaarmor.gto.feature.freeze_immune", ArmorTooltips.piecePassive(), null);
         }
         // 太空胸甲都带 PPE 标签；逻辑本身不是 PPE 的（纳米胸甲 I）在这里补一行
         if (!getArmorLogic().isPPE()) {
-            ArmorTooltips.addFeature(space, "ppe", ArmorTooltips.setPassive(stack, ArmorTooltips::isPPE), null);
-            ArmorTooltips.addDetail(space, "detail.ppe");
+            ArmorTooltips.addFeature(space, "metaarmor.gto.feature.ppe", ArmorTooltips.setPassive(stack, ArmorTooltips::isPPE), null);
+            ArmorTooltips.addDetail(space, "metaarmor.gto.detail.ppe");
         }
         // 放在"按住 Shift 查看说明"之前
         int hint = lines.indexOf(ArmorTooltips.SHIFT_HINT);
