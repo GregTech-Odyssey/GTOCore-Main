@@ -6,8 +6,10 @@ import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -30,10 +32,68 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
 
     private static final Set<Fluid> FLUIDS = Set.of(CLOUD_SEED_CONCENTRATED.getFluid(), FIRE_WATER.getFluid(), VAPOR_OF_LEVITY.getFluid());
 
+    /**
+     * Experimental ME startup delay: after the structure forms, the recipe logic does not tick while any ME part is
+     * still offline, for at most this many ticks. Nothing is consumed or advanced meanwhile, so the continuous
+     * running time survives the AE grid booting after a world load.
+     */
+    private static final int ME_HOLD_TICKS = 100;
+
     private int redstoneSignalOutput;
+
+    @Nullable
+    private TickableSubscription meHoldSubs;
+    private long meHoldUntil;
 
     public BiologicalExtractionMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true, MachineUtils::getHatchParallel);
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        if (getLevel() != null) {
+            meHoldUntil = getLevel().getGameTime() + ME_HOLD_TICKS;
+            meHoldSubs = subscribeServerTick(meHoldSubs, this::checkMeHold, 5);
+        }
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        stopMeHold();
+        super.onStructureInvalid();
+    }
+
+    @Override
+    public boolean isRecipeLogicAvailable() {
+        return super.isRecipeLogicAvailable() && isNotMeHolding();
+    }
+
+    private boolean isNotMeHolding() {
+        if (meHoldUntil == 0) return true;
+        if (getLevel() != null && getLevel().getGameTime() < meHoldUntil) {
+            for (var part : getParts()) {
+                if (part instanceof IGridConnectedMachine me && !me.isOnline()) return false;
+            }
+        }
+        // released once per formation, so a later ME hiccup falls back to the normal rules
+        meHoldUntil = 0;
+        return true;
+    }
+
+    private void checkMeHold() {
+        if (isNotMeHolding()) {
+            stopMeHold();
+            getRecipeLogic().updateTickSubscription();
+        }
+    }
+
+    private void stopMeHold() {
+        meHoldUntil = 0;
+        if (meHoldSubs != null) {
+            meHoldSubs.unsubscribe();
+            meHoldSubs = null;
+        }
     }
 
     @Override

@@ -1584,6 +1584,10 @@ object GTOMachineTooltips {
         error("如果连续运行要求输入的流体不符合要求，则中断配方" translatedTo "If the required fluids for continuous operation do not meet the requirements, the recipe is interrupted")
         content("营养精华可无视限制与其他流体同时输入" translatedTo "Nutrient distillation can be input simultaneously with other fluids, ignoring the restrictions")
         content("20秒后配方开始输出，此后只需提供1B/s的营养精华" translatedTo "After 20 seconds, the recipe begins outputting, and from then on it only requires 1B/s of nutrient distillation")
+
+        section("ME延缓机制（实验性）" translatedTo "ME Startup Delay (Experimental)")
+        content("结构成型后，若有ME部件尚未上线，则暂不开始运行，直到全部上线" translatedTo "After the structure forms, the machine holds off running while any ME part is still offline, until all are online")
+        content("最多暂缓5秒，期间不消耗原料、不推进进度，连续运行时间保持不变" translatedTo "The hold lasts at most 5 seconds; nothing is consumed or advanced meanwhile, and the continuous running time is kept")
     }
 
     // 星核钻机
