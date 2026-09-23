@@ -20,12 +20,13 @@ public class Pipez {
     public static void init() {
         if (GTOCore.isEasy()) return;
         if (!Mods.PIPEZ.isLoaded()) return;
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("item_pipe"), RegistriesUtils.getItemStack("pipez:item_pipe", 12),
+        int pipeAmount = 18 * (GTOCore.isExpert() ? 1 : 2);
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("item_pipe"), RegistriesUtils.getItemStack("pipez:item_pipe", pipeAmount),
                 "AAA",
                 "BBB",
                 "AAA",
                 'A', new MaterialEntry(TagPrefix.ingot, GTMaterials.Iron), 'B', new MaterialEntry(TagPrefix.pipeSmallItem, GTMaterials.Cobalt));
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("fluid_pipe"), RegistriesUtils.getItemStack("pipez:fluid_pipe", 12),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("fluid_pipe"), RegistriesUtils.getItemStack("pipez:fluid_pipe", pipeAmount),
                 "AAA",
                 "BBB",
                 "AAA",

@@ -344,14 +344,14 @@ public final class GTOOreRecipeHandler {
                 if (material.hasProperty(PropertyKey.GEM)) {
                     AUTOCLAVE_RECIPES.builder("ore2_" + material.getName())
                             .inputItems(crushedPurified.getItemTags(material)[0])
-                            .outputItems(ingotStack)
+                            .outputItems(ingotStack.getItem(), 5 - GTOCore.difficulty)
                             .inputFluids(GTMaterials.DistilledWater, GTOCore.isExpert() ? 20 : 10)
                             .EUt(GTOCore.isExpert() ? 8 : 2)
                             .duration(100)
                             .save();
                     AUTOCLAVE_RECIPES.builder("ore1_" + material.getName())
                             .inputItems(crushedPurified.getItemTags(material)[0])
-                            .outputItems(ingotStack)
+                            .outputItems(ingotStack.getItem(), 5 - GTOCore.difficulty)
                             .inputFluids(Water, 500)
                             .EUt(GTOCore.isExpert() ? 16 : 8)
                             .duration(400)
