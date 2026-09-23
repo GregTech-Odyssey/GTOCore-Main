@@ -494,8 +494,10 @@ public final class LangHandler {
 
         addCNEN("tooltip.gtocore.hold_for_more", "§1按住 %s 显示更多信息。§r", "§1Hold %s for more info.§r");
 
-        addCNEN("gtocore.pattern.recipe", "配方已缓存", "Recipe cached");
+        addCNEN("gtocore.pattern.recipe", "样板配方已识别", "Pattern recipe recognized");
         addCNEN("gtocore.pattern.type", "机器模式：%s", "Machine recipe type:%s");
+        addCNEN("gtocore.pattern.machine", "机器：%s", "Machine: %s");
+        addCNEN("gtocore.pattern.voltage", "电压：%s · %s EU/t", "Voltage: %s · %s EU/t");
 
         // 配方信息按钮翻译
         addCNEN("gtocore.pattern.recipeInfoButton.title.enabled", "配方信息已启用", "Recipe Info Recording");

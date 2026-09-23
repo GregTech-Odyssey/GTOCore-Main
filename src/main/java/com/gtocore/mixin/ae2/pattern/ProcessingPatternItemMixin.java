@@ -3,8 +3,14 @@ package com.gtocore.mixin.ae2.pattern;
 import com.gtocore.utils.PlayerNameUtils;
 
 import com.gtolib.api.ae2.MyPatternDetailsHelper;
+import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.RLUtils;
 
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.GTUtil;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -59,12 +65,18 @@ public abstract class ProcessingPatternItemMixin extends EncodedPatternItem {
                 level = net.minecraft.client.Minecraft.getInstance().level;
             }
             UUID uuid = NbtUtils.loadUUID(arrayTag);
-            lines.add(Component.translatable("tooltip.item.pattern.uuid", PlayerNameUtils.getLastKnownName(level, uuid)));
+            lines.add(Component.translatable("tooltip.item.pattern.uuid", Component.literal(PlayerNameUtils.getLastKnownName(level, uuid)).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }
-        if (tag.tags.containsKey("recipe") && !tag.getString("recipe").isEmpty()) {
-            lines.add(Component.translatable("gtocore.pattern.recipe"));
-            var key = RLUtils.parse(tag.getString("recipe").split("/")[0]).toLanguageKey();
-            lines.add(Component.translatable("gtocore.pattern.type", Component.translatable(key)));
+        var recipeId = tag.getString("recipe");
+        if (!recipeId.isEmpty()) {
+            var key = RLUtils.parse(recipeId.split("/")[0]).toLanguageKey();
+            lines.add(Component.translatable("gtocore.pattern.recipe").withStyle(ChatFormatting.GRAY));
+            lines.add(Component.literal("  ").append(Component.translatable("gtocore.pattern.machine", Component.translatable(key).withStyle(ChatFormatting.WHITE))).withStyle(ChatFormatting.GRAY));
+            var recipe = RecipeBuilder.get(RLUtils.parse(recipeId));
+            if (recipe != null && recipe.getInputEUt() > 0) {
+                long eut = recipe.getInputEUt();
+                lines.add(Component.literal("  ").append(Component.translatable("gtocore.pattern.voltage", GTValues.VNF[GTUtil.getTierByVoltage(eut)], Component.literal(FormattingUtil.formatNumbers(eut)).withStyle(ChatFormatting.WHITE))).withStyle(ChatFormatting.GRAY));
+            }
         }
         super.appendHoverText(stack, level, lines, advancedTooltips);
     }
