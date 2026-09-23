@@ -4,6 +4,7 @@ import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidContainerIngredient;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
@@ -12,6 +13,7 @@ import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.Tags;
 
 import com.gto.registrate.util.entry.ItemEntry;
+import org.jetbrains.annotations.Nullable;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
@@ -189,73 +192,19 @@ public final class MiscRecipeLoader {
                 .inputItems(cableGtSingle, Gold, 2)
                 .outputItems(POWER_THRUSTER_ADVANCED).save();
 
-        // QuarkTech Suite
-        ASSEMBLER_RECIPES.recipeBuilder("quantum_helmet").duration(1500).EUt(VA[IV])
-                .inputItems(CustomTags.LuV_CIRCUITS, 2)
-                .inputItems(wireGtQuadruple, Tungsten, 5)
-                .inputItems(ENERGY_LAPOTRONIC_ORB)
-                .inputItems(SENSOR_IV)
-                .inputItems(FIELD_GENERATOR_IV)
-                .inputItems(screw, TungstenSteel, 4)
-                .inputItems(plate, Iridium, 5)
-                .inputItems(foil, Ruthenium, 20)
-                .inputItems(wireFine, Rhodium, 32)
-                .inputFluids(Titanium.getFluid(L * 10))
-                .outputItems(QUANTUM_HELMET).save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("quantum_chestplate").duration(1500).EUt(VA[IV])
-                .inputItems(CustomTags.LuV_CIRCUITS, 2)
-                .inputItems(wireGtQuadruple, Tungsten, 8)
-                .inputItems(ENERGY_LAPOTRONIC_ORB)
-                .inputItems(EMITTER_IV.asItem(), 2)
-                .inputItems(FIELD_GENERATOR_IV)
-                .inputItems(screw, TungstenSteel, 4)
-                .inputItems(plate, Iridium, 8)
-                .inputItems(foil, Ruthenium, 32)
-                .inputItems(wireFine, Rhodium, 48)
-                .inputFluids(Titanium.getFluid(L << 4))
-                .outputItems(QUANTUM_CHESTPLATE).save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("quantum_leggings").duration(1500).EUt(VA[IV])
-                .inputItems(CustomTags.LuV_CIRCUITS, 2)
-                .inputItems(wireGtQuadruple, Tungsten, 7)
-                .inputItems(ENERGY_LAPOTRONIC_ORB)
-                .inputItems(ELECTRIC_MOTOR_IV, 4)
-                .inputItems(FIELD_GENERATOR_IV)
-                .inputItems(screw, TungstenSteel, 4)
-                .inputItems(plate, Iridium, 7)
-                .inputItems(foil, Ruthenium, 28)
-                .inputItems(wireFine, Rhodium, 40)
-                .inputFluids(Titanium.getFluid(L * 14))
-                .outputItems(QUANTUM_LEGGINGS).save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("quantum_boots").duration(1500).EUt(VA[IV])
-                .inputItems(CustomTags.LuV_CIRCUITS, 2)
-                .inputItems(wireGtQuadruple, Tungsten, 4)
-                .inputItems(ENERGY_LAPOTRONIC_ORB)
-                .inputItems(ELECTRIC_PISTON_IV, 2)
-                .inputItems(FIELD_GENERATOR_IV)
-                .inputItems(screw, TungstenSteel, 4)
-                .inputItems(plate, Iridium, 4)
-                .inputItems(foil, Ruthenium, 16)
-                .inputItems(wireFine, Rhodium, 16)
-                .inputFluids(Titanium.getFluid(L << 3))
-                .outputItems(QUANTUM_BOOTS).save();
-
-        ASSEMBLY_LINE_RECIPES.recipeBuilder("quantum_chestplate_advanced").duration(1000).EUt(VA[LuV])
-                .inputItems(QUANTUM_CHESTPLATE.asItem())
-                .inputItems(HIGH_POWER_INTEGRATED_CIRCUIT, 2)
-                .inputItems(wireFine, NiobiumTitanium, 64)
-                .inputItems(wireGtQuadruple, Osmium, 6)
-                .inputItems(plateDouble, Iridium, 4)
-                .inputItems(GRAVITATION_ENGINE, 2)
-                .inputItems(CustomTags.ZPM_CIRCUITS)
-                .inputItems(plateDense, RhodiumPlatedPalladium, 2)
-                .inputItems(ENERGY_LAPOTRONIC_ORB_CLUSTER)
-                .inputItems(FIELD_GENERATOR_LuV, 2)
-                .inputItems(ELECTRIC_MOTOR_LuV, 2)
-                .inputItems(screw, HSSS, 8)
-                .outputItems(QUANTUM_CHESTPLATE_ADVANCED).save();
+        // 电力盔甲：纳米肌体 (I) MV / 进阶 (II) EV / 夸克高科 (III) LuV / 进阶 (IV) UV，均为完整四件
+        // 统一使用同级组装机、电路、电池、传感器、场发生器与外壳材料板；带飞行的胸甲另加飞行部件
+        armorPieces("nano", NANO_HELMET, NANO_CHESTPLATE, NANO_LEGGINGS, NANO_BOOTS, MV,
+                CustomTags.MV_CIRCUITS, CustomTags.MV_BATTERIES, SENSOR_MV, FIELD_GENERATOR_MV, Aluminium, null, 0);
+        armorPieces("nano_advanced", NANO_HELMET_ADVANCED, NANO_CHESTPLATE_ADVANCED, NANO_LEGGINGS_ADVANCED,
+                NANO_BOOTS_ADVANCED, EV, CustomTags.EV_CIRCUITS, CustomTags.EV_BATTERIES, SENSOR_EV, FIELD_GENERATOR_EV,
+                Titanium, ELECTRIC_JETPACK_ADVANCED, 1);
+        armorPieces("quantum", QUANTUM_HELMET, QUANTUM_CHESTPLATE, QUANTUM_LEGGINGS, QUANTUM_BOOTS, LuV,
+                CustomTags.LuV_CIRCUITS, CustomTags.LuV_BATTERIES, SENSOR_LuV, FIELD_GENERATOR_LuV, RhodiumPlatedPalladium,
+                GRAVITATION_ENGINE, 1);
+        armorPieces("quantum_advanced", QUANTUM_HELMET_ADVANCED, QUANTUM_CHESTPLATE_ADVANCED, QUANTUM_LEGGINGS_ADVANCED,
+                QUANTUM_BOOTS_ADVANCED, UV, CustomTags.UV_CIRCUITS, CustomTags.UV_BATTERIES, SENSOR_UV, FIELD_GENERATOR_UV,
+                Darmstadtium, GRAVITATION_ENGINE, 2);
 
         // Dyed Lens Decomposition
         for (ItemEntry<Item> item : GLASS_LENSES.values()) {
@@ -470,5 +419,38 @@ public final class MiscRecipeLoader {
                 .inputItems(Blocks.CHISELED_BOOKSHELF.asItem())
                 .outputItems(dust, Wood, 6)
                 .duration(100).EUt(2).save();
+    }
+
+    /**
+     * 电力盔甲的头盔、胸甲、护腿、靴子：头盔多一个传感器，胸甲多一个场发生器，外壳板按部位用量；
+     * flight 不为 null 时加入胸甲配方（带喷气背包的胸甲）
+     */
+    private static void armorPieces(String prefix, ItemEntry<?> helmet, ItemEntry<?> chestplate, ItemEntry<?> leggings,
+                                    ItemEntry<?> boots, int tier, TagKey<Item> circuit, TagKey<Item> battery,
+                                    ItemEntry<?> sensor, ItemEntry<?> fieldGenerator, Material plateMaterial,
+                                    @Nullable ItemEntry<?> flight, int flightCount) {
+        armorPiece(prefix + "_helmet", helmet, tier, circuit, battery, sensor, 2, fieldGenerator, 1, plateMaterial, 5)
+                .save();
+        RecipeBuilder chest = armorPiece(prefix + "_chestplate", chestplate, tier, circuit, battery, sensor, 1,
+                fieldGenerator, 2, plateMaterial, 8);
+        if (flight != null) chest.inputItems(flight, flightCount);
+        chest.save();
+        armorPiece(prefix + "_leggings", leggings, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 7)
+                .save();
+        armorPiece(prefix + "_boots", boots, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 4)
+                .save();
+    }
+
+    private static RecipeBuilder armorPiece(String id, ItemEntry<?> output, int tier, TagKey<Item> circuit,
+                                            TagKey<Item> battery, ItemEntry<?> sensor, int sensors,
+                                            ItemEntry<?> fieldGenerator, int fieldGenerators, Material plateMaterial,
+                                            int plates) {
+        return ASSEMBLER_RECIPES.recipeBuilder(id).duration(1200).EUt(VA[tier])
+                .inputItems(circuit, 2)
+                .inputItems(battery)
+                .inputItems(sensor, sensors)
+                .inputItems(fieldGenerator, fieldGenerators)
+                .inputItems(plate, plateMaterial, plates)
+                .outputItems(output);
     }
 }

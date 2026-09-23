@@ -149,10 +149,11 @@ public final class GTOConfig {
         ConfigHolder.INSTANCE.tools.sprayCanChainLength = 16;
         ConfigHolder.INSTANCE.tools.treeFellingDelay = 2;
         ConfigHolder.INSTANCE.tools.voltageTierNightVision = 1;
-        ConfigHolder.INSTANCE.tools.voltageTierNanoSuit = 3;
-        ConfigHolder.INSTANCE.tools.voltageTierAdvNanoSuit = 3;
-        ConfigHolder.INSTANCE.tools.voltageTierQuarkTech = 5;
-        ConfigHolder.INSTANCE.tools.voltageTierAdvQuarkTech = 6;
+        // 纳米肌体 (I) MV / 进阶 (II) EV / 夸克高科 (III) LuV / 进阶 (IV) UV，配方同级
+        ConfigHolder.INSTANCE.tools.voltageTierNanoSuit = 2;
+        ConfigHolder.INSTANCE.tools.voltageTierAdvNanoSuit = 4;
+        ConfigHolder.INSTANCE.tools.voltageTierQuarkTech = 6;
+        ConfigHolder.INSTANCE.tools.voltageTierAdvQuarkTech = 8;
         ConfigHolder.INSTANCE.tools.voltageTierImpeller = 2;
         ConfigHolder.INSTANCE.tools.voltageTierAdvImpeller = 3;
         ConfigHolder.INSTANCE.tools.nanoSaber.nanoSaberDamageBoost = 256 >> difficulty;

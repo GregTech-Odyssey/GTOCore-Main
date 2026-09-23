@@ -1,10 +1,15 @@
 package com.gtocore.common.item.armor;
 
+import com.gtolib.utils.ItemUtils;
+
 import com.gregtechceu.gtceu.api.item.armor.ArmorComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.IArmorLogic;
 import com.gregtechceu.gtceu.api.item.component.IDurabilityBar;
 import com.gregtechceu.gtceu.api.item.component.IItemComponent;
+import com.gregtechceu.gtceu.common.item.armor.ArmorTooltips;
+import com.gregtechceu.gtceu.common.item.armor.QuarkTechSuite;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -32,6 +37,7 @@ import earth.terrarium.botarium.common.item.ItemStackHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class SpaceArmorComponentItem extends ArmorComponentItem implements BotariumFluidItem<WrappedItemFluidContainer> {
@@ -105,6 +111,43 @@ public final class SpaceArmorComponentItem extends ArmorComponentItem implements
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
         tooltipComponents.add(TooltipUtils.getFluidComponent(FluidUtils.getTank(stack), FluidConstants.fromMillibuckets(getFluidContainer(stack).getTankCapacity(0)), ModFluids.OXYGEN.get()));
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+        addSpaceFeatures(stack, tooltipComponents);
+    }
+
+    private void addSpaceFeatures(ItemStack stack, List<Component> lines) {
+        boolean hasOxygen = getFluidContainer(stack).getFirstFluid().getFluidAmount() > FluidConstants.fromMillibuckets(1);
+        boolean worn = ArmorTooltips.isWorn(stack);
+        List<Component> space = new ArrayList<>(8);
+        space.add(ArmorTooltips.section("space"));
+        // 与 IEnhancedPlayer.spaceTick 一致：有氧，且四个部位都是纳米肌体 / 夸克高科装备
+        Component protection;
+        if (!hasOxygen) protection = ArmorTooltips.oxygen(false, worn);
+        else if (ArmorTooltips.isWornInSet(stack, SpaceArmorComponentItem::isSpaceSetPiece)) protection = ArmorTooltips.oxygen(true, true);
+        else protection = ArmorTooltips.state("need_set", ChatFormatting.YELLOW);
+        // 无氧环境下每秒扣 2 mB，水下再扣 2 mB
+        Component oxygenCost = ArmorTooltips.tr("cost.oxygen", 2).withStyle(ChatFormatting.GRAY);
+        ArmorTooltips.addFeature(space, "space_protection", protection, oxygenCost);
+        ArmorTooltips.addDetail(space, "detail.space_protection");
+        ArmorTooltips.addFeature(space, "underwater_breath", ArmorTooltips.oxygen(hasOxygen, worn), oxygenCost);
+        ArmorTooltips.addDetail(space, "detail.underwater_breath");
+        // 夸克胸甲本身已列出免疫冰冻；纳米胸甲的免疫冰冻来自太空胸甲
+        if (!(getArmorLogic() instanceof QuarkTechSuite)) {
+            ArmorTooltips.addFeature(space, "freeze_immune", ArmorTooltips.piecePassive(), null);
+        }
+        // 太空胸甲都带 PPE 标签；逻辑本身不是 PPE 的（纳米胸甲 I）在这里补一行
+        if (!getArmorLogic().isPPE()) {
+            ArmorTooltips.addFeature(space, "ppe", ArmorTooltips.setPassive(stack, ArmorTooltips::isPPE), null);
+            ArmorTooltips.addDetail(space, "detail.ppe");
+        }
+        // 放在"按住 Shift 查看说明"之前
+        int hint = lines.indexOf(ArmorTooltips.SHIFT_HINT);
+        lines.addAll(hint < 0 ? lines.size() : hint, space);
+    }
+
+    private static boolean isSpaceSetPiece(ItemStack stack) {
+        if (!(stack.getItem() instanceof ArmorComponentItem item)) return false;
+        String path = ItemUtils.getIdLocation(item).getPath();
+        return path.contains("nanomuscle") || path.contains("quarktech");
     }
 
     public static long getOxygenAmount(Entity entity) {

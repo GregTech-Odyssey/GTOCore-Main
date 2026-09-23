@@ -304,20 +304,7 @@ public final class CraftingRecipeLoader {
                 GTItems.ELECTRIC_JETPACK.asItem(), 'T', GTItems.POWER_THRUSTER_ADVANCED.asItem(), 'B',
                 ENERGIUM_CRYSTAL.asItem(), 'W', new MaterialEntry(wireGtQuadruple, Gold), 'C',
                 CustomTags.HV_CIRCUITS);
-        VanillaRecipeHelper.addShapedRecipe("nano_helmet", GTItems.NANO_HELMET.asItem(), "PPP", "PNP", "xEd",
-                'P', GTItems.CARBON_FIBER_PLATE.asItem(), 'N', GTItems.NIGHTVISION_GOGGLES.asItem(), 'E',
-                GTItems.ENERGIUM_CRYSTAL.asItem());
-        VanillaRecipeHelper.addShapedRecipe("nano_chestplate", GTItems.NANO_CHESTPLATE.asItem(), "PEP",
-                "PPP", "PPP", 'P', GTItems.CARBON_FIBER_PLATE.asItem(), 'E', GTItems.ENERGIUM_CRYSTAL.asItem());
-        VanillaRecipeHelper.addShapedRecipe("nano_leggings", GTItems.NANO_LEGGINGS.asItem(), "PPP", "PEP",
-                "PxP", 'P', GTItems.CARBON_FIBER_PLATE.asItem(), 'E', GTItems.ENERGIUM_CRYSTAL.asItem());
-        VanillaRecipeHelper.addShapedRecipe("nano_boots", GTItems.NANO_BOOTS.asItem(), "PxP", "PEP", 'P',
-                GTItems.CARBON_FIBER_PLATE.asItem(), 'E', GTItems.ENERGIUM_CRYSTAL.asItem());
-        VanillaRecipeHelper.addShapedRecipe("nano_chestplate_advanced",
-                GTItems.NANO_CHESTPLATE_ADVANCED.asItem(), "xJd", "PNP", "WCW", 'J',
-                GTItems.ELECTRIC_JETPACK_ADVANCED.asItem(), 'P', GTItems.LOW_POWER_INTEGRATED_CIRCUIT.asItem(), 'N',
-                GTItems.NANO_CHESTPLATE.asItem(), 'W', new MaterialEntry(wireGtQuadruple, Platinum), 'C',
-                CustomTags.IV_CIRCUITS);
+        // 纳米肌体 (I)(II) 改为组装机配方，见 MiscRecipeLoader
         VanillaRecipeHelper.addShapedRecipe("gravitation_engine", GTItems.GRAVITATION_ENGINE.asItem(), "ESE",
                 "POP", "ESE", 'E', GTItems.EMITTER_LuV.asItem(), 'S', new MaterialEntry(wireGtQuadruple, Osmium),
                 'P', new MaterialEntry(plateDouble, Iridium), 'O', GTItems.ENERGY_LAPOTRONIC_ORB.asItem());
