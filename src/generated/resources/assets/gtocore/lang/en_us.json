@@ -2304,6 +2304,7 @@
   "gtocore.ae.appeng.craft.encode_send.match_provider": "Provider name match",
   "gtocore.ae.appeng.craft.encode_send.match_provider.desc": "The provider's custom name matches the search",
   "gtocore.ae.appeng.craft.encode_send.resize": "Drag to resize the panel",
+  "gtocore.ae.appeng.craft.encode_send.same_pattern": "Already has the same pattern",
   "gtocore.ae.appeng.craft.encode_send.search": "Name or pattern output",
   "gtocore.ae.appeng.craft.encode_send.search.desc": "Search by provider or machine name; turn on the toggle at the top right to also search outputs of existing patterns",
   "gtocore.ae.appeng.craft.encode_send.search.names": "Provider or machine name",

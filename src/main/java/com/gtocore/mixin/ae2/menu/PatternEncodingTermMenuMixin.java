@@ -96,6 +96,9 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     private List<IExtendedPatternContainer> gto$currentContainers = null;
     @Unique
     private ItemStack gto$patternStack;
+    // 本次编码样板的主产物，用于标记「已有相同样板」的目的地
+    @Unique
+    private Object gto$primaryOutput;
     // 每次下发目的地列表加一；客户端发送样板、请求产物时带回，用来拒绝过期请求
     @Unique
     private int gto$destinationRequestId;
@@ -256,10 +259,10 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         }
         var thisPatternDetails = AEPatternDecoder.INSTANCE.decodePattern(stack, getPlayer().level(), false);
         if (thisPatternDetails == null) return Collections.emptyList();
-        var primaryOutput = thisPatternDetails.getPrimaryOutput().what();
+        gto$primaryOutput = thisPatternDetails.getPrimaryOutput().what();
         Set<Object> sameCluster = new OpenCacheHashSet<>();
 
-        machines.removeIf(container -> gto$shouldRemoveContainer(container, stack, primaryOutput, sameCluster));
+        machines.removeIf(container -> gto$shouldRemoveContainer(container, stack, sameCluster));
         var containerComparator = (gto$isCraft ? gto$craftFirst(stack) : gto$recipeFirst(gto$lastRecipeType, recipeLocName, stack)).reversed();
 
         machines.sort(containerComparator);
@@ -303,8 +306,12 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         return container.getTerminalPatternInventory().simulateAdd(patternStack).isEmpty();
     }
 
+    /**
+     * 只去掉终端里不可见的目的地，以及集群（装配矩阵 / 超分子装配器）中除代表成员外的其余成员；
+     * 已有相同样板的目的地不再隐藏，改由 {@link #gto$hasSamePattern} 标记后在列表中置灰。
+     */
     @Unique
-    private boolean gto$shouldRemoveContainer(IExtendedPatternContainer container, ItemStack patternStack, Object primaryOutput,
+    private boolean gto$shouldRemoveContainer(IExtendedPatternContainer container, ItemStack patternStack,
                                               Set<Object> sameCluster) {
         if (!container.isVisibleInTerminal()) {
             return true;
@@ -314,76 +321,76 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         var hasSpace = gto$canAddPattern(container, patternStack);
         if (patternInv instanceof AppEngInternalInventory aeInv &&
                 aeInv.getHost() instanceof TileAssemblerMatrixPattern matrixPattern) {
-            return gto$shouldRemoveMatrixContainer(matrixPattern, container, patternStack, primaryOutput, sameCluster, hasSpace);
+            var matrix = matrixPattern.getCluster();
+            if (matrix == null) {
+                return false;
+            }
+            return gto$shouldRemoveClusterMember(matrix, gto$getMatrixContainers(matrixPattern), patternStack, sameCluster, hasSpace);
         }
         if (patternInv instanceof MEPartInv inv &&
                 inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
-            return gto$shouldRemoveSmaContainer(smaMachine, container, patternStack, primaryOutput, sameCluster, hasSpace);
-        }
-
-        return hasSpace && gto$containsPrimaryOutput(container, primaryOutput, getPlayer().level());
-    }
-
-    @Unique
-    private boolean gto$shouldRemoveMatrixContainer(TileAssemblerMatrixPattern matrixPattern, IExtendedPatternContainer container,
-                                                    ItemStack patternStack, Object primaryOutput, Set<Object> sameCluster,
-                                                    boolean hasSpace) {
-        var matrix = matrixPattern.getCluster();
-        if (matrix == null) {
-            return false;
-        }
-
-        if (sameCluster.contains(matrix)) {
-            return true;
-        }
-
-        var clusterContainers = matrix.getPatterns().stream()
-                .filter(IExtendedPatternContainer.class::isInstance)
-                .map(IExtendedPatternContainer.class::cast)
-                .toList();
-        var clusterHasSpace = clusterContainers.stream().anyMatch(p -> gto$canAddPattern(p, patternStack));
-        if (!hasSpace && clusterHasSpace) {
-            return true;
-        }
-        sameCluster.add(matrix);
-        if (!clusterHasSpace) {
-            return false;
-        }
-
-        for (var c : clusterContainers) {
-            if (gto$containsPrimaryOutput(c, primaryOutput, getPlayer().level())) {
-                return true;
-            }
+            return gto$shouldRemoveClusterMember(smaMachine, gto$getSmaContainers(smaMachine), patternStack, sameCluster, hasSpace);
         }
         return false;
     }
 
+    /**
+     * 集群在列表中只保留一个代表成员：优先选有空位的成员，其余成员去掉。
+     */
     @Unique
-    private boolean gto$shouldRemoveSmaContainer(SuperMolecularAssemblerMachine smaMachine, IExtendedPatternContainer container,
-                                                 ItemStack patternStack, Object primaryOutput, Set<Object> sameCluster,
-                                                 boolean hasSpace) {
-        if (sameCluster.contains(smaMachine)) {
+    private static boolean gto$shouldRemoveClusterMember(Object cluster, List<IExtendedPatternContainer> clusterContainers,
+                                                         ItemStack patternStack, Set<Object> sameCluster, boolean hasSpace) {
+        if (sameCluster.contains(cluster)) {
             return true;
         }
-
-        var clusterContainers = Arrays.stream(smaMachine.getParts())
-                .filter(IExtendedPatternContainer.class::isInstance)
-                .map(IExtendedPatternContainer.class::cast)
-                .toList();
         var clusterHasSpace = clusterContainers.stream().anyMatch(p -> gto$canAddPattern(p, patternStack));
         if (!hasSpace && clusterHasSpace) {
             return true;
         }
-        sameCluster.add(smaMachine);
-        if (!clusterHasSpace) {
-            return false;
-        }
+        sameCluster.add(cluster);
+        return false;
+    }
 
-        for (var c : clusterContainers) {
-            if (gto$containsPrimaryOutput(c, primaryOutput, getPlayer().level())) {
-                return true;
-            }
+    @Unique
+    private static List<IExtendedPatternContainer> gto$getMatrixContainers(TileAssemblerMatrixPattern matrixPattern) {
+        var matrix = matrixPattern.getCluster();
+        if (matrix == null) return Collections.emptyList();
+        return matrix.getPatterns().stream()
+                .filter(IExtendedPatternContainer.class::isInstance)
+                .map(IExtendedPatternContainer.class::cast)
+                .toList();
+    }
+
+    @Unique
+    private static List<IExtendedPatternContainer> gto$getSmaContainers(SuperMolecularAssemblerMachine smaMachine) {
+        return Arrays.stream(smaMachine.getParts())
+                .filter(IExtendedPatternContainer.class::isInstance)
+                .map(IExtendedPatternContainer.class::cast)
+                .toList();
+    }
+
+    /**
+     * 目的地（集群则为整个集群）是否已有与本次样板主产物相同的样板。
+     */
+    @Unique
+    private static boolean gto$hasSamePattern(IExtendedPatternContainer container, Object primaryOutput, Level level) {
+        var patternInv = container.getTerminalPatternInventory();
+        List<IExtendedPatternContainer> members = null;
+        if (patternInv instanceof AppEngInternalInventory aeInv &&
+                aeInv.getHost() instanceof TileAssemblerMatrixPattern matrixPattern &&
+                matrixPattern.getCluster() != null) {
+            members = gto$getMatrixContainers(matrixPattern);
+        } else if (patternInv instanceof MEPartInv inv &&
+                inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
+                mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
+                    members = gto$getSmaContainers(smaMachine);
+                }
+        if (members == null) {
+            return gto$containsPrimaryOutput(container, primaryOutput, level);
+        }
+        for (int i = 0, size = members.size(); i < size; i++) {
+            if (gto$containsPrimaryOutput(members.get(i), primaryOutput, level)) return true;
         }
         return false;
     }
@@ -486,6 +493,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         gto$currentContainers = gto$getPatternContainers(recipeLocName);
         gto$destinationRequestId++;
         if (gto$currentContainers.isEmpty()) return;
+        var level = getPlayer().level();
         var destinations = new Message.PatternDestination[gto$currentContainers.size()];
         for (int i = 0; i < destinations.length; i++) {
             var container = gto$currentContainers.get(i);
@@ -493,7 +501,8 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
                     container.gto$getMachineGroup(),
                     container.gto$getPlainCustomName(),
                     container.gto$getProviderIcon(),
-                    gto$isFull(container, patternStack));
+                    gto$isFull(container, patternStack),
+                    gto$hasSamePattern(container, gto$primaryOutput, level));
         }
         Message.sendPatternDestination((ServerPlayer) getPlayer(), gto$destinationRequestId, destinations);
     }

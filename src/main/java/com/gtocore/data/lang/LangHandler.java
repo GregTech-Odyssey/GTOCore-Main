@@ -456,6 +456,7 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.craft.encode_send.desc", "点击将样板发送至该目的地", "Click to send the pattern to this destination");
         addCNEN("gtocore.ae.appeng.craft.encode_send.full", "满", "Full");
         addCNEN("gtocore.ae.appeng.craft.encode_send.full.desc", "该目的地样板槽已满", "This destination has no empty pattern slot");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.same_pattern", "已有相同样板", "Already has the same pattern");
         addCNEN("gtocore.ae.appeng.craft.encode_send.title", "发送样板至", "Send Pattern To");
         addCNEN("gtocore.ae.appeng.craft.encode_send.close", "关闭", "Close");
         addCNEN("gtocore.ae.appeng.craft.encode_send.search", "搜索名称或样板产物", "Name or pattern output");

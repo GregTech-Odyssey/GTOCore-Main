@@ -99,7 +99,8 @@ public final class Message {
                 // 未知的 key 类型不会读掉 key 本体，之后的数据已经错位，整包丢弃
                 if (providerIcon == null) return;
             }
-            destinations[i] = new PatternDestination(group, customName, providerIcon, b.readBoolean());
+            var full = b.readBoolean();
+            destinations[i] = new PatternDestination(group, customName, providerIcon, full, b.readBoolean());
         }
         Client.patternDestinationReceived(requestId, destinations);
     });
@@ -160,6 +161,7 @@ public final class Message {
                 buf.writeBoolean(dest.providerIcon() != null);
                 if (dest.providerIcon() != null) AEKey.writeKey(buf, dest.providerIcon());
                 buf.writeBoolean(dest.full());
+                buf.writeBoolean(dest.hasSamePattern());
             }
         }, player);
     }
@@ -189,12 +191,13 @@ public final class Message {
     }
 
     /**
-     * @param group        对接机器的分组（图标 + 名称），忽略目的地的普通改名
-     * @param customName   目的地被普通改名时的名字，未改名为 null
-     * @param providerIcon 目的地本体（样板供应器等）的图标，null 表示不单独显示
+     * @param group          对接机器的分组（图标 + 名称），忽略目的地的普通改名
+     * @param customName     目的地被普通改名时的名字，未改名为 null
+     * @param providerIcon   目的地本体（样板供应器等）的图标，null 表示不单独显示
+     * @param hasSamePattern 目的地（集群则为整个集群）已有与本次样板主产物相同的样板；列表中置灰，仍可发送
      */
     public record PatternDestination(PatternContainerGroup group, @Nullable Component customName, @Nullable AEKey providerIcon,
-                                     boolean full) {}
+                                     boolean full, boolean hasSamePattern) {}
 
     public static final NetworkPack serverLangSync = NetworkPack.registerC2S("serverLangSyncC2S", (p, b) -> {
         if (!ServerUtils.isServerLangInitialized()) {

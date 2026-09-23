@@ -73,6 +73,11 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static final int MATCH_COLOR = 0xFFFF55;
     private static final int PROVIDER_MATCH_COLOR = 0x55FF55;
     private static final int MACHINE_MATCH_COLOR = 0x7FD7FF;
+    // 已有相同样板的行：底色偏暗、文字灰色、图标盖一层半透明底色
+    private static final int GREYED_ROW_COLOR = 0xFF7A7A7A;
+    private static final int GREYED_TEXT_COLOR = 0xB4B4B4;
+    private static final int GREYED_SUB_TEXT_COLOR = 0x969696;
+    private static final int GREYED_ICON_OVERLAY = 0x907A7A7A;
     private static final int TOGGLE_SIZE = 16;
     // 改名后两行名称的字号缩放
     private static final float SMALL_TEXT_SCALE = 0.75f;
@@ -368,12 +373,12 @@ public class PatternDestinationPanel implements ICompositeWidget {
             int ry = bodyY + row * ROW_H;
             int index = start + row;
             if (index >= visible.size()) {
-                drawRowBackground(guiGraphics, listX, ry, listWidth, false, false);
+                drawRowBackground(guiGraphics, listX, ry, listWidth, false, false, false);
                 continue;
             }
             var entry = entries.get(visible.getInt(index));
             boolean hovered = !dragging && !resizing && inRect(mouse, listX, ry, listWidth, ROW_H);
-            drawRowBackground(guiGraphics, listX, ry, listWidth, entry.full, hovered && !entry.full);
+            drawRowBackground(guiGraphics, listX, ry, listWidth, entry.full, entry.isGreyed(), hovered && !entry.full);
             entry.draw(guiGraphics, font, listX, ry, listWidth);
         }
         scrollbar.drawForegroundLayer(guiGraphics, bounds, mouse);
@@ -408,11 +413,12 @@ public class PatternDestinationPanel implements ICompositeWidget {
         pose.popPose();
     }
 
-    private static void drawRowBackground(GuiGraphics guiGraphics, int rx, int ry, int rw, boolean full, boolean hovered) {
-        // 与 ME 面板物品槽一致的内凹样式：左上深色、右下白色
+    private static void drawRowBackground(GuiGraphics guiGraphics, int rx, int ry, int rw, boolean full, boolean greyed,
+                                          boolean hovered) {
+        // 与 ME 面板物品槽一致的内凹样式：左上深色、右下白色；已满偏红，已有相同样板偏暗
         guiGraphics.fill(rx, ry, rx + rw, ry + ROW_H, 0xFF373737);
         guiGraphics.fill(rx + 1, ry + 1, rx + rw, ry + ROW_H, 0xFFFFFFFF);
-        guiGraphics.fill(rx + 1, ry + 1, rx + rw - 1, ry + ROW_H - 1, full ? 0xFF8B6060 : 0xFF8B8B8B);
+        guiGraphics.fill(rx + 1, ry + 1, rx + rw - 1, ry + ROW_H - 1, full ? 0xFF8B6060 : greyed ? GREYED_ROW_COLOR : 0xFF8B8B8B);
         if (hovered) {
             guiGraphics.fill(rx + 1, ry + 1, rx + rw - 1, ry + ROW_H - 1, 0x80FFFFFF);
         }
@@ -686,6 +692,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
         final String customSearchName;
         final String machineSearchName;
         final boolean full;
+        // 已有相同样板：置灰显示，点击仍会发送
+        final boolean hasSamePattern;
         final Ellipsized nameText;
         final Ellipsized customNameText;
         final Ellipsized machineNameText;
@@ -716,9 +724,18 @@ public class PatternDestinationPanel implements ICompositeWidget {
             this.customSearchName = customName == null ? null : customName.toLowerCase(Locale.ROOT);
             this.machineSearchName = machineName.toLowerCase(Locale.ROOT);
             this.full = destination.full();
-            this.nameText = new Ellipsized(name.getString());
+            this.hasSamePattern = destination.hasSamePattern();
+            // 置灰时名称去掉颜色码，否则 § 颜色会盖掉灰色
+            this.nameText = new Ellipsized(isGreyed() ? machineName : name.getString());
             this.customNameText = new Ellipsized(customName == null ? "" : customName);
             this.machineNameText = new Ellipsized(machineName);
+        }
+
+        /**
+         * 已满时按已满样式显示（红色、不可点），否则已有相同样板时置灰。
+         */
+        boolean isGreyed() {
+            return hasSamePattern && !full;
         }
 
         private static String stripFormatting(String text) {
@@ -847,8 +864,18 @@ public class PatternDestinationPanel implements ICompositeWidget {
                 iconX += 17;
             }
             if (icon != null) drawIcon(guiGraphics, iconX, ry + 1, icon);
+            boolean greyed = isGreyed();
+            if (greyed) {
+                // 盖在图标之上（图标在 ICON_Z + 150 附近），仍低于 tooltip
+                var pose = guiGraphics.pose();
+                pose.pushPose();
+                pose.translate(0, 0, 20);
+                guiGraphics.fill(rx + 1, ry + 1, iconX + 16, ry + 17, GREYED_ICON_OVERLAY);
+                pose.popPose();
+            }
             if (customName == null) {
-                guiGraphics.drawString(font, nameText.get(font, right - nameX), nameX, textY, full ? 0xAAAAAA : 0xFFFFFF);
+                guiGraphics.drawString(font, nameText.get(font, right - nameX), nameX, textY,
+                        full ? 0xAAAAAA : greyed ? GREYED_TEXT_COLOR : 0xFFFFFF);
                 return;
             }
             // 改过名：两行小字，上为改名（亮），下为机器名（暗），体现主附关系
@@ -857,8 +884,10 @@ public class PatternDestinationPanel implements ICompositeWidget {
             pose.pushPose();
             pose.translate(nameX, ry + 2, 0);
             pose.scale(SMALL_TEXT_SCALE, SMALL_TEXT_SCALE, 1);
-            guiGraphics.drawString(font, customNameText.get(font, scaledWidth), 0, 0, full ? 0xAAAAAA : 0xFFFFFF);
-            guiGraphics.drawString(font, machineNameText.get(font, scaledWidth), 0, 10, full ? 0x707070 : 0xA0A0A0);
+            guiGraphics.drawString(font, customNameText.get(font, scaledWidth), 0, 0,
+                    full ? 0xAAAAAA : greyed ? GREYED_TEXT_COLOR : 0xFFFFFF);
+            guiGraphics.drawString(font, machineNameText.get(font, scaledWidth), 0, 10,
+                    full ? 0x707070 : greyed ? GREYED_SUB_TEXT_COLOR : 0xA0A0A0);
             pose.popPose();
         }
 
@@ -879,7 +908,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
             } else {
                 lines.add(name);
             }
-            lines.add(Component.translatable(full ? "gtocore.ae.appeng.craft.encode_send.full.desc" : "gtocore.ae.appeng.craft.encode_send.desc"));
+            lines.add(Component.translatable(full ? "gtocore.ae.appeng.craft.encode_send.full.desc" :
+                    hasSamePattern ? "gtocore.ae.appeng.craft.encode_send.same_pattern" : "gtocore.ae.appeng.craft.encode_send.desc"));
             if (providerNameMatched) {
                 lines.add(Component.translatable("gtocore.ae.appeng.craft.encode_send.match_provider.desc").withStyle(ChatFormatting.GREEN));
             }

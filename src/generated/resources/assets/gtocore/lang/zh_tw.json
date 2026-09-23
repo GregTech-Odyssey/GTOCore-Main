@@ -2432,6 +2432,7 @@
   "gtocore.ae.appeng.craft.encode_send.match_provider": "供應器名稱匹配",
   "gtocore.ae.appeng.craft.encode_send.match_provider.desc": "樣板供應器改過的名稱與搜索詞匹配",
   "gtocore.ae.appeng.craft.encode_send.resize": "拖動以調整面板大小",
+  "gtocore.ae.appeng.craft.encode_send.same_pattern": "已有相同樣板",
   "gtocore.ae.appeng.craft.encode_send.search": "搜索名稱或樣板產物",
   "gtocore.ae.appeng.craft.encode_send.search.desc": "按供應器名稱或機器名稱搜索；打開右上角的開關後，也會搜索已有樣板的產物",
   "gtocore.ae.appeng.craft.encode_send.search.names": "搜索供應器或機器名稱",
