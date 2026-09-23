@@ -18,7 +18,10 @@ import net.minecraft.world.Nameable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import appeng.api.crafting.IPatternDetails;
+import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.implementations.blockentities.PatternContainerGroup;
+import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.AEKey;
 import appeng.blockentity.crafting.MolecularAssemblerBlockEntity;
 import appeng.helpers.patternprovider.PatternContainer;
@@ -115,18 +118,37 @@ public interface IExtendedPatternContainer extends PatternContainer {
     }
 
     /**
-     * 发送样板面板：普通改名（不以 "+" 开头的名字）时返回自定义名，否则返回 null。
-     * "+" 开头是给机器名追加后缀的写法，名字仍以机器为主，不算改名。
+     * 发送样板面板：普通改名时返回自定义名，否则返回 null（见 {@link PatternContainerGroupHelper#isPlainCustomName}）。
      */
     @Nullable
     default Component gto$getPlainCustomName() {
         if (this instanceof Nameable nameable && nameable.hasCustomName()) {
             var customName = nameable.getCustomName();
-            if (!customName.getString().startsWith("+")) {
+            if (PatternContainerGroupHelper.isPlainCustomName(customName.getString())) {
                 return customName;
             }
         }
         return null;
+    }
+
+    /**
+     * 发送样板面板：目的地已有的样板，供按产物搜索。样板供应器、装配矩阵、GT 样板总成等都持有解码好的样板，
+     * 直接取用；其他容器才现场解码。
+     */
+    default List<IPatternDetails> gto$getAvailablePatterns(Level level) {
+        if (this instanceof ICraftingProvider provider) {
+            return provider.getAvailablePatterns();
+        }
+        if (this instanceof PatternProviderLogicHost host) {
+            return host.getLogic().getAvailablePatterns();
+        }
+        var inv = getTerminalPatternInventory();
+        var patterns = new ArrayList<IPatternDetails>(inv.size());
+        for (int slot = 0; slot < inv.size(); slot++) {
+            var details = PatternDetailsHelper.decodePattern(inv.getStackInSlot(slot), level);
+            if (details != null) patterns.add(details);
+        }
+        return patterns;
     }
 
     /**

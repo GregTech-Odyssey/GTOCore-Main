@@ -258,18 +258,7 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
     override fun getTerminalPatternInventory(): InternalInventory = internalPatternInventory
 
     override fun getTerminalGroup(): PatternContainerGroup = when {
-        isFormed -> {
-            val controller = getController()
-            val availableRecipeTypes =
-                if (controller is IRecipeLogicMachine) controller.availableRecipeTypes.asList() else emptyList()
-            PatternContainerGroupHelper.forPatternBuffer(
-                controller.self(),
-                this,
-                customName,
-                null,
-                availableRecipeTypes,
-            )
-        }
+        isFormed -> formedGroup(customName)
 
         else -> {
             val itemKey = AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem())
@@ -285,18 +274,21 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
 
     override fun `gto$getProviderIcon`(): AEKey? = AEItemKey.of(definition.asStack())
 
-    override fun `gto$getPlainCustomName`(): Component? = if (customName.isNotEmpty() && !customName.startsWith("+")) Component.literal(customName) else null
+    override fun `gto$getPlainCustomName`(): Component? = if (PatternContainerGroupHelper.isPlainCustomName(customName)) Component.literal(customName) else null
 
     /** 发送样板面板：忽略普通改名时的分组，名字回到所属多方块机器 */
-    override fun `gto$getMachineGroup`(): PatternContainerGroup {
-        if (`gto$getPlainCustomName`() == null) return terminalGroup
-        if (!isFormed) {
-            return PatternContainerGroup(AEItemKey.of(definition.asStack()), definition.asItem().description, emptyList())
-        }
+    override fun `gto$getMachineGroup`(): PatternContainerGroup = when {
+        `gto$getPlainCustomName`() == null -> terminalGroup
+        isFormed -> formedGroup("")
+        else -> PatternContainerGroup(AEItemKey.of(definition.asStack()), definition.asItem().description, emptyList())
+    }
+
+    /** 已成形时的分组：按所属多方块机器命名，[name] 为自定义名（普通改名或 "+" 后缀），空串表示不改名 */
+    private fun formedGroup(name: String): PatternContainerGroup {
         val controller = getController()
         val availableRecipeTypes =
             if (controller is IRecipeLogicMachine) controller.availableRecipeTypes.asList() else emptyList()
-        return PatternContainerGroupHelper.forPatternBuffer(controller.self(), this, "", groupRecipeType(), availableRecipeTypes)
+        return PatternContainerGroupHelper.forPatternBuffer(controller.self(), this, name, groupRecipeType(), availableRecipeTypes)
     }
 
     /** 分组名中用于显示的已选配方类型；样板总成按自身设置覆写 */

@@ -47,6 +47,13 @@ public final class PatternContainerGroupHelper {
 
     private PatternContainerGroupHelper() {}
 
+    /**
+     * 自定义名是否为普通改名。以 "+" 开头的名字是给机器名追加后缀的写法，名字仍以机器为主，不算改名。
+     */
+    public static boolean isPlainCustomName(String customName) {
+        return !customName.isEmpty() && !customName.startsWith("+");
+    }
+
     public static @Nullable PatternContainerGroup fromMachine(Level level, BlockPos pos, String extraSuffix) {
         MachineNameContext context = getMachineNameContext(level, pos);
         if (context == null) {
@@ -64,7 +71,7 @@ public final class PatternContainerGroupHelper {
         var icon = AEItemKey.of(displayMachine.getDefinition().asStack());
         List<Component> tooltip = List.of(
                 Component.translatable(actualMachine.getDefinition().getDescriptionId()));
-        if (!customName.isEmpty() && !customName.startsWith("+")) {
+        if (isPlainCustomName(customName)) {
             return new PatternContainerGroup(icon, Component.literal(customName), tooltip);
         }
 

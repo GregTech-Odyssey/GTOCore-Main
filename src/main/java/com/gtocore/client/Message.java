@@ -36,7 +36,6 @@ import appeng.menu.me.common.MEStorageMenu;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 public final class Message {
@@ -84,25 +83,41 @@ public final class Message {
         ICraftAmountMenu.open(p, menu.getLocator(), keyCounter, b.readLong());
     });
 
+    // 样板产物包里所有 AEKey 的字节预算；超出后其余目的地不再携带产物，保证远低于自定义包 1 MiB 的上限
+    private static final int PATTERN_OUTPUTS_BYTE_BUDGET = 512 * 1024;
+
     public static final NetworkPack SEND_PATTERN_DESTINATION_S2C = NetworkPack.registerS2C("sendPatternDestinationS2C", (p, b) -> {
+        var requestId = b.readVarInt();
         var size = b.readVarInt();
         var destinations = new PatternDestination[size];
         for (int i = 0; i < size; i++) {
             var group = PatternContainerGroup.readFromPacket(b);
             var customName = b.readBoolean() ? b.readComponent() : null;
-            var providerIcon = b.readBoolean() ? AEKey.readKey(b) : null;
-            var full = b.readBoolean();
-            var outputCount = b.readVarInt();
-            var outputs = new AEKey[outputCount];
-            int valid = 0;
-            for (int j = 0; j < outputCount; j++) {
-                var key = AEKey.readKey(b);
-                if (key != null) outputs[valid++] = key;
+            AEKey providerIcon = null;
+            if (b.readBoolean()) {
+                providerIcon = AEKey.readKey(b);
+                // 未知的 key 类型不会读掉 key 本体，之后的数据已经错位，整包丢弃
+                if (providerIcon == null) return;
             }
-            destinations[i] = new PatternDestination(group, customName, providerIcon, full,
-                    valid == outputCount ? outputs : Arrays.copyOf(outputs, valid));
+            destinations[i] = new PatternDestination(group, customName, providerIcon, b.readBoolean());
         }
-        Client.patternDestinationReceived(destinations);
+        Client.patternDestinationReceived(requestId, destinations);
+    });
+
+    public static final NetworkPack SEND_PATTERN_OUTPUTS_S2C = NetworkPack.registerS2C("sendPatternOutputsS2C", (p, b) -> {
+        var requestId = b.readVarInt();
+        var size = b.readVarInt();
+        var outputs = new AEKey[size][];
+        for (int i = 0; i < size; i++) {
+            var keys = new AEKey[b.readInt()];
+            for (int j = 0; j < keys.length; j++) {
+                keys[j] = AEKey.readKey(b);
+                // 同上：数据已错位，整包丢弃
+                if (keys[j] == null) return;
+            }
+            outputs[i] = keys;
+        }
+        Client.patternOutputsReceived(requestId, outputs);
     });
 
     public static final NetworkPack SEND_RESEARCH_S2C = NetworkPack.registerS2C("sendResearchS2C", (p, b) -> {
@@ -131,8 +146,12 @@ public final class Message {
         }
     }
 
-    public static void sendPatternDestination(ServerPlayer player, PatternDestination[] destinations) {
+    /**
+     * @param requestId 本次目的地列表的编号；客户端发送样板、请求产物时带回，服务端据此拒绝过期的请求
+     */
+    public static void sendPatternDestination(ServerPlayer player, int requestId, PatternDestination[] destinations) {
         SEND_PATTERN_DESTINATION_S2C.send(buf -> {
+            buf.writeVarInt(requestId);
             buf.writeVarInt(destinations.length);
             for (var dest : destinations) {
                 dest.group().writeToPacket(buf);
@@ -141,10 +160,30 @@ public final class Message {
                 buf.writeBoolean(dest.providerIcon() != null);
                 if (dest.providerIcon() != null) AEKey.writeKey(buf, dest.providerIcon());
                 buf.writeBoolean(dest.full());
-                buf.writeVarInt(dest.outputs().length);
-                for (var output : dest.outputs()) {
-                    AEKey.writeKey(buf, output);
+            }
+        }, player);
+    }
+
+    /**
+     * 按需下发各目的地已有样板的产物（与目的地列表一一对应）。所有产物共用 {@link #PATTERN_OUTPUTS_BYTE_BUDGET}，
+     * 超出预算后剩余目的地的产物被截断为空。
+     */
+    public static void sendPatternOutputs(ServerPlayer player, int requestId, AEKey[][] outputs) {
+        SEND_PATTERN_OUTPUTS_S2C.send(buf -> {
+            buf.writeVarInt(requestId);
+            buf.writeVarInt(outputs.length);
+            int budgetEnd = buf.writerIndex() + PATTERN_OUTPUTS_BYTE_BUDGET;
+            for (var keys : outputs) {
+                // 先占位，写完再回填实际写入的个数
+                int countIndex = buf.writerIndex();
+                buf.writeInt(0);
+                int written = 0;
+                for (var key : keys) {
+                    if (buf.writerIndex() >= budgetEnd) break;
+                    AEKey.writeKey(buf, key);
+                    written++;
                 }
+                buf.setInt(countIndex, written);
             }
         }, player);
     }
@@ -153,10 +192,9 @@ public final class Message {
      * @param group        对接机器的分组（图标 + 名称），忽略目的地的普通改名
      * @param customName   目的地被普通改名时的名字，未改名为 null
      * @param providerIcon 目的地本体（样板供应器等）的图标，null 表示不单独显示
-     * @param outputs      该目的地（集群则为整个集群）已有样板的产物，供客户端按产物名搜索
      */
     public record PatternDestination(PatternContainerGroup group, @Nullable Component customName, @Nullable AEKey providerIcon,
-                                     boolean full, AEKey[] outputs) {}
+                                     boolean full) {}
 
     public static final NetworkPack serverLangSync = NetworkPack.registerC2S("serverLangSyncC2S", (p, b) -> {
         if (!ServerUtils.isServerLangInitialized()) {
@@ -177,9 +215,15 @@ public final class Message {
             });
         }
 
-        public static void patternDestinationReceived(PatternDestination[] destinations) {
+        public static void patternDestinationReceived(int requestId, PatternDestination[] destinations) {
             if (Minecraft.getInstance().screen instanceof PatternEncodingTermScreen<?> screen) {
-                ((IExtendedPatternEncodingTerm) screen).gto$getPatternDestDisplay().open(destinations);
+                ((IExtendedPatternEncodingTerm) screen).gto$getPatternDestDisplay().open(requestId, destinations);
+            }
+        }
+
+        public static void patternOutputsReceived(int requestId, AEKey[][] outputs) {
+            if (Minecraft.getInstance().screen instanceof PatternEncodingTermScreen<?> screen) {
+                ((IExtendedPatternEncodingTerm) screen).gto$getPatternDestDisplay().setOutputs(requestId, outputs);
             }
         }
 

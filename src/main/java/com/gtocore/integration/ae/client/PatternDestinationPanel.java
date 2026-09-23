@@ -4,9 +4,10 @@ import com.gtocore.client.Message;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 import com.gtocore.integration.jech.PinYinUtils;
 
-import com.gtolib.api.ae2.gui.BlitterHelper;
+import com.gtolib.api.ae2.gui.MePanelFrame;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,44 +38,31 @@ import java.util.Locale;
 /**
  * 右键「编码」后弹出的样板发送目的地面板。
  * <p>
- * 外观沿用 ME 二合一终端的面板（me_panel 贴图、扳手拖动标记、右下角缩放角），可拖动、可调整大小，位置与大小在本次游戏内记忆。
- * 面板整体绘制在前景层并抬高 z，盖住终端的物品槽；鼠标与键盘事件由 {@code PatternEncodingTermScreenMixin} 优先转交给本面板。
+ * 外观沿用 ME 二合一终端的面板（{@link MePanelFrame}），可拖动、可调整大小，位置与大小在本次游戏内记忆。
+ * 面板整体绘制在前景层并抬高 z，盖住终端的物品槽。面板只以复合组件身份参与绘制、提示与排除区；
+ * 鼠标与键盘事件全部由 {@code PatternEncodingTermScreenMixin} 先转交给这里的同名方法（屏幕绝对坐标）。
  * <p>
- * 搜索同时匹配供应器名称与供应器内已有样板的产物；因产物命中的行会在右侧标注命中的产物。
+ * 搜索匹配供应器名称与对接机器名称；打开「匹配样板产物」后才向服务端请求各目的地已有样板的产物，
+ * 因产物命中的行会在右侧标注命中的产物。
  */
 public class PatternDestinationPanel implements ICompositeWidget {
 
-    private static final Blitter PANEL = Blitter.texture("guis/me_panel.png");
-    private static final Blitter HEADER_L = PANEL.copy().src(0, 0, 11, 31);
-    private static final Blitter HEADER_M = PANEL.copy().src(11, 0, 81, 31);
-    private static final Blitter HEADER_R = PANEL.copy().src(92, 0, 9, 31);
-    private static final Blitter MARGIN_L = PANEL.copy().src(0, 31, 11, 72);
-    private static final Blitter MARGIN_R = PANEL.copy().src(92, 31, 9, 72);
-    private static final Blitter SCROLL_U = PANEL.copy().src(11, 31, 9, 4);
-    private static final Blitter SCROLL_M = PANEL.copy().src(11, 35, 9, 64);
-    private static final Blitter SCROLL_D = PANEL.copy().src(11, 99, 9, 4);
-    private static final Blitter FOOTER_L = PANEL.copy().src(0, 103, 11, 9);
-    private static final Blitter FOOTER_M = PANEL.copy().src(11, 103, 81, 9);
-    private static final Blitter FOOTER_R = PANEL.copy().src(92, 103, 9, 9);
-    private static final Blitter RESIZE_GRIP = Blitter.texture("guis/me2in1_resize_grip.png", 8, 8).src(0, 0, 8, 8);
-    private static final Blitter DRAG_MARK = Icon.WRENCH_DISABLED.getBlitter();
-    private static final Blitter DRAG_MARK_ACTIVE = Icon.WRENCH.getBlitter();
+    private static final AEKey[] NO_OUTPUTS = new AEKey[0];
     private static final Blitter CLOSE = Icon.CLEAR.getBlitter();
     private static final Blitter TOGGLE_BACKGROUND = Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter();
     private static final Blitter MATCH_OUTPUTS_ON = Icon.PATTERN_ACCESS_SHOW.getBlitter();
     private static final Blitter MATCH_OUTPUTS_OFF = Icon.PATTERN_ACCESS_HIDE.getBlitter();
+    private static final Blitter TEXT_FIELD = Blitter.texture("guis/text_field.png", 128, 128);
 
-    private static final int HEADER_H = 31;
-    private static final int FOOTER_H = 9;
-    private static final int LIST_X = 20;
-    private static final int RIGHT_MARGIN = 9;
+    private static final int HEADER_H = MePanelFrame.HEADER_HEIGHT;
+    private static final int LIST_X = MePanelFrame.CONTENT_X;
+    private static final int RIGHT_MARGIN = MePanelFrame.RIGHT_MARGIN_WIDTH;
     private static final int ROW_H = 18;
     private static final int SEARCH_X = 11;
     private static final int SEARCH_Y = 17;
     private static final int SEARCH_H = 12;
     private static final int SEARCH_PAD_X = 2;
     private static final int SEARCH_PAD_Y = 2;
-    private static final Blitter TEXT_FIELD = Blitter.texture("guis/text_field.png", 128, 128);
     private static final int CLOSE_SIZE = 10;
     private static final int RESIZE_HANDLE = 12;
     private static final int MIN_ROWS = 3;
@@ -89,6 +77,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
     // 改名后两行名称的字号缩放
     private static final float SMALL_TEXT_SCALE = 0.75f;
     private static final int TOOLTIP_MATCH_LINES = 8;
+    // 匹配样板产物时，停止输入这么久之后才重新搜索（产物可能上千个）
+    private static final long SEARCH_DEBOUNCE_MS = 150;
     // 盖过物品槽（物品约 z 150，数量文字 z 200），但低于 tooltip（z 400）
     private static final float Z = 250;
     // 面板内图标由 renderItem 自带 +150，先回退，避免盖住 tooltip
@@ -112,7 +102,26 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private final List<Entry> entries = new ArrayList<>();
     private final IntArrayList visible = new IntArrayList();
 
+    // 界面打开期间不变的文字，构造时取一次
+    private final String fullText;
+    private final String matchPrefix;
+    private final String providerMatchLabel;
+    private final String machineMatchLabel;
+    private final Ellipsized title;
+    private final Ellipsized namesHint;
+    private final Ellipsized outputsHint;
+    private final Tooltip closeTooltip;
+    private final Tooltip dragTooltip;
+    private final Tooltip resizeTooltip;
+    private final Tooltip searchTooltip;
+    private final Tooltip matchOutputsOnTooltip;
+    private final Tooltip matchOutputsOffTooltip;
+
     private boolean shown = false;
+    private int requestId;
+    private boolean outputsRequested;
+    private boolean searchDirty;
+    private long searchChangedAt;
     private int x;
     private int y;
     private int autoWidth = MIN_WIDTH;
@@ -139,12 +148,37 @@ public class PatternDestinationPanel implements ICompositeWidget {
         var style = screen.getStyle();
         searchField.setTextColor(style.getColor(PaletteColor.TEXTFIELD_TEXT).toARGB());
         placeholderColor = style.getColor(PaletteColor.TEXTFIELD_PLACEHOLDER).toARGB();
-        searchField.setResponder(value -> updateSearch());
+        searchField.setResponder(value -> {
+            searchDirty = true;
+            searchChangedAt = Util.getMillis();
+        });
         scrollbar = new Scrollbar(Scrollbar.SMALL);
         scrollbar.setCaptureMouseWheel(false);
+
+        fullText = Component.translatable("gtocore.ae.appeng.craft.encode_send.full").getString();
+        matchPrefix = Component.translatable("gtocore.ae.appeng.craft.encode_send.match").getString();
+        providerMatchLabel = Component.translatable("gtocore.ae.appeng.craft.encode_send.match_provider").getString();
+        machineMatchLabel = Component.translatable("gtocore.ae.appeng.craft.encode_send.match_machine").getString();
+        title = new Ellipsized(Component.translatable("gtocore.ae.appeng.craft.encode_send.title").getString());
+        namesHint = new Ellipsized(Component.translatable("gtocore.ae.appeng.craft.encode_send.search.names").getString());
+        outputsHint = new Ellipsized(Component.translatable("gtocore.ae.appeng.craft.encode_send.search").getString());
+        closeTooltip = new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.close"));
+        dragTooltip = new Tooltip(Component.translatable("gtocore.ae.appeng.me2in1.draggable_mark.tooltip"));
+        resizeTooltip = new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.resize"));
+        searchTooltip = new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.search.desc"));
+        var matchOutputsDesc = Component.translatable("gtocore.ae.appeng.craft.encode_send.match_outputs.desc");
+        matchOutputsOnTooltip = new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.match_outputs.on"), matchOutputsDesc);
+        matchOutputsOffTooltip = new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.match_outputs.off"), matchOutputsDesc);
     }
 
-    public void open(Message.PatternDestination[] destinations) {
+    /**
+     * 服务端下发了新的目的地列表。
+     *
+     * @param requestId 列表编号，发送样板、请求产物时带回
+     */
+    public void open(int requestId, Message.PatternDestination[] destinations) {
+        this.requestId = requestId;
+        outputsRequested = false;
         entries.clear();
         for (int i = 0; i < destinations.length; i++) {
             entries.add(new Entry(i, destinations[i]));
@@ -160,6 +194,24 @@ public class PatternDestinationPanel implements ICompositeWidget {
         x = savedX;
         y = savedY;
         shown = true;
+        if (matchOutputs) requestOutputs();
+    }
+
+    /**
+     * 服务端按需下发了各目的地已有样板的产物；与当前列表不对应（已关闭或已换了新列表）时忽略。
+     */
+    public void setOutputs(int requestId, AEKey[][] outputs) {
+        if (!shown || requestId != this.requestId) return;
+        for (int i = 0, size = Math.min(outputs.length, entries.size()); i < size; i++) {
+            entries.get(i).setOutputs(outputs[i]);
+        }
+        updateSearch();
+    }
+
+    private void requestOutputs() {
+        if (outputsRequested) return;
+        outputsRequested = true;
+        term.gto$getMenu().gtolib$requestPatternOutputs(requestId);
     }
 
     public void close() {
@@ -192,13 +244,6 @@ public class PatternDestinationPanel implements ICompositeWidget {
         return rx >= x && rx < x + getWidth() && ry >= y && ry < y + getHeight();
     }
 
-    /**
-     * 拖动、缩放或拖动滚动条期间，需要接收面板外的鼠标事件。
-     */
-    public boolean isCapturingMouse() {
-        return shown && (dragging || resizing || scrolling);
-    }
-
     private int getRows() {
         return savedRows;
     }
@@ -208,7 +253,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
     }
 
     private int getHeight() {
-        return HEADER_H + getRows() * ROW_H + FOOTER_H;
+        return MePanelFrame.totalHeight(getRows() * ROW_H);
     }
 
     private int getListWidth() {
@@ -229,25 +274,14 @@ public class PatternDestinationPanel implements ICompositeWidget {
     // ---------------------------------------------------------------- 搜索
 
     private void updateSearch() {
+        searchDirty = false;
         var query = searchField.getValue().trim().toLowerCase(Locale.ROOT);
         visible.clear();
         var font = Minecraft.getInstance().font;
         int widest = 0;
         for (int i = 0, size = entries.size(); i < size; i++) {
             var entry = entries.get(i);
-            entry.matched.clear();
-            entry.providerNameMatched = false;
-            entry.machineNameMatched = false;
-            if (!query.isEmpty()) {
-                entry.providerNameMatched = entry.customSearchName != null && PinYinUtils.match(entry.customSearchName, query);
-                entry.machineNameMatched = PinYinUtils.match(entry.machineSearchName, query);
-                if (matchOutputs) {
-                    var names = entry.outputSearchNames();
-                    for (int j = 0; j < names.length; j++) {
-                        if (PinYinUtils.match(names[j], query)) entry.matched.add(j);
-                    }
-                }
-            }
+            entry.match(query);
             if (query.isEmpty() || entry.providerNameMatched || entry.machineNameMatched || !entry.matched.isEmpty()) {
                 visible.add(i);
                 widest = Math.max(widest, entry.preferredWidth(font));
@@ -266,6 +300,10 @@ public class PatternDestinationPanel implements ICompositeWidget {
     @Override
     public void updateBeforeRender() {
         if (!shown) return;
+        // 只按名称搜索时开销很小，立即生效；匹配产物时等停止输入后再搜
+        if (searchDirty && (!matchOutputs || Util.getMillis() - searchChangedAt >= SEARCH_DEBOUNCE_MS)) {
+            updateSearch();
+        }
         // 防止面板被拖出窗口
         int maxX = screen.width - screen.getGuiLeft() - getWidth();
         int maxY = screen.height - screen.getGuiTop() - getHeight();
@@ -302,21 +340,14 @@ public class PatternDestinationPanel implements ICompositeWidget {
 
         int width = getWidth();
         int rows = getRows();
-        int listHeight = rows * ROW_H;
-        var helper = BlitterHelper.of(guiGraphics);
-        helper.hBlit(HEADER_L, HEADER_M, HEADER_R, x, y, width, HEADER_H);
         int bodyY = y + HEADER_H;
-        MARGIN_L.copy().dest(x, bodyY, MARGIN_L.getSrcWidth(), listHeight).blit(guiGraphics);
-        MARGIN_R.copy().dest(x + width - RIGHT_MARGIN, bodyY, RIGHT_MARGIN, listHeight).blit(guiGraphics);
-        helper.vBlit(SCROLL_U, SCROLL_M, SCROLL_D, x + MARGIN_L.getSrcWidth(), bodyY, SCROLL_U.getSrcWidth(), listHeight);
-        helper.hBlit(FOOTER_L, FOOTER_M, FOOTER_R, x, bodyY + listHeight, width, FOOTER_H);
+        MePanelFrame.draw(guiGraphics, x, y, width, rows * ROW_H);
 
         // 标题栏：拖动标记、标题、产物匹配开关、关闭按钮
-        (dragging ? DRAG_MARK_ACTIVE : DRAG_MARK).copy().dest(x + 3, y + 1).blit(guiGraphics);
-        var title = Component.translatable("gtocore.ae.appeng.craft.encode_send.title");
-        guiGraphics.drawString(font, ellipsize(font, title.getString(), getToggleX() - 4 - (x + 21)), x + 21, y + 5, TEXT_COLOR, false);
+        (dragging ? MePanelFrame.DRAG_MARK_ACTIVE : MePanelFrame.DRAG_MARK).copy().dest(x + 3, y + 1).blit(guiGraphics);
         int toggleX = getToggleX();
         int toggleY = getToggleY();
+        guiGraphics.drawString(font, title.get(font, toggleX - 4 - (x + 21)), x + 21, y + 5, TEXT_COLOR, false);
         TOGGLE_BACKGROUND.copy().dest(toggleX, toggleY).blit(guiGraphics);
         (matchOutputs ? MATCH_OUTPUTS_ON : MATCH_OUTPUTS_OFF).copy().dest(toggleX, toggleY).blit(guiGraphics);
         if (inRect(mouse, toggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE)) {
@@ -347,7 +378,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
         scrollbar.drawForegroundLayer(guiGraphics, bounds, mouse);
 
-        RESIZE_GRIP.copy().dest(x + width - 8 - 2, y + getHeight() - 8 - 2).blit(guiGraphics);
+        MePanelFrame.RESIZE_GRIP.copy().dest(x + width - MePanelFrame.RESIZE_GRIP_SIZE - 2,
+                y + getHeight() - MePanelFrame.RESIZE_GRIP_SIZE - 2).blit(guiGraphics);
 
         // 搜索框：用 AE 原版 text_field.png，中段平铺（AETextField 只画一段，最宽 126px）
         int sx = x + SEARCH_X;
@@ -362,8 +394,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
         TEXT_FIELD.copy().src(127, v, 1, SEARCH_H).dest(sx + sw - 1, sy).blit(guiGraphics);
         if (!focused && searchField.getValue().isEmpty()) {
-            var hint = ellipsize(font, Component.translatable(matchOutputs ? "gtocore.ae.appeng.craft.encode_send.search" :
-                    "gtocore.ae.appeng.craft.encode_send.search.names").getString(), sw - SEARCH_PAD_X * 2);
+            var hint = (matchOutputs ? outputsHint : namesHint).get(font, sw - SEARCH_PAD_X * 2);
             guiGraphics.drawString(font, hint, sx + SEARCH_PAD_X, sy + SEARCH_PAD_Y, placeholderColor, false);
         }
 
@@ -415,6 +446,10 @@ public class PatternDestinationPanel implements ICompositeWidget {
         return inRect(p, getToggleX(), getToggleY(), TOGGLE_SIZE, TOGGLE_SIZE);
     }
 
+    private boolean inClose(Point p) {
+        return inRect(p, getCloseX() - 1, getCloseY() - 1, CLOSE_SIZE + 2, CLOSE_SIZE + 2);
+    }
+
     private static boolean inRect(Point p, int rx, int ry, int rw, int rh) {
         return p.getX() >= rx && p.getX() < rx + rw && p.getY() >= ry && p.getY() < ry + rh;
     }
@@ -429,8 +464,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
 
     private boolean inDragArea(Point p) {
         // 扳手标记与标题所在的一整条都可以拖动（开关与关闭按钮除外）
-        return inRect(p, x, y, getWidth(), SEARCH_Y - 1) && !inToggle(p) &&
-                !inRect(p, getCloseX() - 1, getCloseY() - 1, CLOSE_SIZE + 2, CLOSE_SIZE + 2);
+        return inRect(p, x, y, getWidth(), SEARCH_Y - 1) && !inToggle(p) && !inClose(p);
     }
 
     private boolean inResizeHandle(Point p) {
@@ -445,86 +479,85 @@ public class PatternDestinationPanel implements ICompositeWidget {
         return index < visible.size() ? index : -1;
     }
 
-    // ---------------------------------------------------------------- 输入
+    // ---------------------------------------------------------------- 输入（屏幕绝对坐标）
 
-    @Override
-    public boolean wantsAllMouseUpEvents() {
-        return isCapturingMouse();
+    private Point toLocal(double mouseX, double mouseY) {
+        return new Point((int) Math.floor(mouseX - screen.getGuiLeft()), (int) Math.floor(mouseY - screen.getGuiTop()));
     }
 
-    @Override
-    public boolean onMouseDown(Point mousePos, int button) {
-        if (!shown || !mousePos.isIn(getBounds())) {
-            if (shown) searchField.setFocused(false);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!shown) return false;
+        var p = toLocal(mouseX, mouseY);
+        if (!p.isIn(getBounds())) {
+            searchField.setFocused(false);
             return false;
         }
-        if (inSearchField(mousePos)) {
+        if (inSearchField(p)) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) searchField.setValue("");
             searchField.setFocused(true);
             // 点在内边距上也要能定位光标，把坐标夹进 EditBox 的文字区域
-            double clickX = Mth.clamp(mousePos.getX() + screen.getGuiLeft(), searchField.getX(), searchField.getX() + searchField.getWidth() - 1);
-            double clickY = searchField.getY();
-            searchField.mouseClicked(clickX, clickY, GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            double clickX = Mth.clamp(mouseX, searchField.getX(), searchField.getX() + searchField.getWidth() - 1);
+            searchField.mouseClicked(clickX, searchField.getY(), GLFW.GLFW_MOUSE_BUTTON_LEFT);
             return true;
         }
         searchField.setFocused(false);
         if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return true;
-        if (inRect(mousePos, getCloseX() - 1, getCloseY() - 1, CLOSE_SIZE + 2, CLOSE_SIZE + 2)) {
+        if (inClose(p)) {
             close();
             return true;
         }
-        if (inToggle(mousePos)) {
+        if (inToggle(p)) {
             matchOutputs = !matchOutputs;
+            if (matchOutputs) requestOutputs();
             updateSearch();
             return true;
         }
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && inResizeHandle(mousePos)) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && inResizeHandle(p)) {
             resizing = true;
-            resizeStartMouseX = mousePos.getX();
-            resizeStartMouseY = mousePos.getY();
+            resizeStartMouseX = p.getX();
+            resizeStartMouseY = p.getY();
             resizeStartWidth = getWidth();
             resizeStartRows = getRows();
             return true;
         }
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && inDragArea(mousePos)) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && inDragArea(p)) {
             dragging = true;
-            dragOffsetX = mousePos.getX() - x;
-            dragOffsetY = mousePos.getY() - y;
+            dragOffsetX = p.getX() - x;
+            dragOffsetY = p.getY() - y;
             return true;
         }
-        if (mousePos.isIn(scrollbar.getBounds())) {
-            scrolling = scrollbar.onMouseDown(mousePos, button);
+        if (p.isIn(scrollbar.getBounds())) {
+            scrolling = scrollbar.onMouseDown(p, button);
             return true;
         }
-        pressedRow = rowAt(mousePos);
+        pressedRow = rowAt(p);
         return true;
     }
 
-    @Override
-    public boolean onMouseDrag(Point mousePos, int button) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button) {
         if (!shown) return false;
+        var p = toLocal(mouseX, mouseY);
         if (dragging) {
-            x = mousePos.getX() - dragOffsetX;
-            y = mousePos.getY() - dragOffsetY;
+            x = p.getX() - dragOffsetX;
+            y = p.getY() - dragOffsetY;
             return true;
         }
         if (resizing) {
-            savedWidth = Mth.clamp(resizeStartWidth + mousePos.getX() - resizeStartMouseX, MIN_WIDTH, MAX_WIDTH);
-            savedRows = Mth.clamp(resizeStartRows + Math.round((mousePos.getY() - resizeStartMouseY) / (float) ROW_H), MIN_ROWS, MAX_ROWS);
+            savedWidth = Mth.clamp(resizeStartWidth + p.getX() - resizeStartMouseX, MIN_WIDTH, MAX_WIDTH);
+            savedRows = Mth.clamp(resizeStartRows + Math.round((p.getY() - resizeStartMouseY) / (float) ROW_H), MIN_ROWS, MAX_ROWS);
             updateScrollRange();
             return true;
         }
         if (scrolling) {
-            scrollbar.onMouseDrag(mousePos, button);
+            scrollbar.onMouseDrag(p, button);
             return true;
         }
-        return mousePos.isIn(getBounds());
+        return p.isIn(getBounds());
     }
 
-    @Override
-    public boolean onMouseUp(Point mousePos, int button) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (!shown) return false;
-        boolean captured = isCapturingMouse();
+        var p = toLocal(mouseX, mouseY);
         if (dragging || resizing) {
             dragging = false;
             resizing = false;
@@ -534,26 +567,28 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
         if (scrolling) {
             scrolling = false;
-            scrollbar.onMouseUp(mousePos, button);
+            scrollbar.onMouseUp(p, button);
             return true;
         }
-        if (!mousePos.isIn(getBounds())) return captured;
-        int row = rowAt(mousePos);
-        if (row >= 0 && row == pressedRow && (button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+        int pressed = pressedRow;
+        pressedRow = -1;
+        if (!p.isIn(getBounds())) return false;
+        int row = rowAt(p);
+        if (row >= 0 && row == pressed && (button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
             var entry = entries.get(visible.getInt(row));
             if (!entry.full) {
-                term.gto$getMenu().gtolib$sendPattern(entry.index);
+                term.gto$getMenu().gtolib$sendPattern(requestId, entry.index);
                 close();
             }
         }
-        pressedRow = -1;
         return true;
     }
 
-    @Override
-    public boolean onMouseWheel(Point mousePos, double delta) {
-        if (!shown || !mousePos.isIn(getBounds())) return false;
-        scrollbar.onMouseWheel(mousePos, delta);
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        if (!shown) return false;
+        var p = toLocal(mouseX, mouseY);
+        if (!p.isIn(getBounds())) return false;
+        scrollbar.onMouseWheel(p, delta);
         return true;
     }
 
@@ -587,24 +622,11 @@ public class PatternDestinationPanel implements ICompositeWidget {
     public @Nullable Tooltip getTooltip(int mouseX, int mouseY) {
         if (!shown || dragging || resizing) return null;
         var mouse = new Point(mouseX, mouseY);
-        if (inRect(mouse, getCloseX() - 1, getCloseY() - 1, CLOSE_SIZE + 2, CLOSE_SIZE + 2)) {
-            return new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.close"));
-        }
-        if (inToggle(mouse)) {
-            return new Tooltip(
-                    Component.translatable(matchOutputs ? "gtocore.ae.appeng.craft.encode_send.match_outputs.on" :
-                            "gtocore.ae.appeng.craft.encode_send.match_outputs.off"),
-                    Component.translatable("gtocore.ae.appeng.craft.encode_send.match_outputs.desc"));
-        }
-        if (inRect(mouse, x + 3, y + 1, 16, 16)) {
-            return new Tooltip(Component.translatable("gtocore.ae.appeng.me2in1.draggable_mark.tooltip"));
-        }
-        if (inResizeHandle(mouse)) {
-            return new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.resize"));
-        }
-        if (inSearchField(mouse)) {
-            return new Tooltip(Component.translatable("gtocore.ae.appeng.craft.encode_send.search.desc"));
-        }
+        if (inClose(mouse)) return closeTooltip;
+        if (inToggle(mouse)) return matchOutputs ? matchOutputsOnTooltip : matchOutputsOffTooltip;
+        if (inRect(mouse, x + 3, y + 1, 16, 16)) return dragTooltip;
+        if (inResizeHandle(mouse)) return resizeTooltip;
+        if (inSearchField(mouse)) return searchTooltip;
         int row = rowAt(mouse);
         if (row < 0) return null;
         return entries.get(visible.getInt(row)).tooltip();
@@ -618,7 +640,36 @@ public class PatternDestinationPanel implements ICompositeWidget {
 
     // ---------------------------------------------------------------- 条目
 
-    private static final class Entry {
+    /**
+     * 按可用宽度截断并缓存结果的文字，避免每帧重复截断、拼接。
+     */
+    private static final class Ellipsized {
+
+        private String text;
+        private int width = -1;
+        private String result = "";
+
+        Ellipsized(String text) {
+            this.text = text;
+        }
+
+        void set(String text) {
+            if (!text.equals(this.text)) {
+                this.text = text;
+                width = -1;
+            }
+        }
+
+        String get(Font font, int maxWidth) {
+            if (maxWidth != width) {
+                width = maxWidth;
+                result = ellipsize(font, text, maxWidth);
+            }
+            return result;
+        }
+    }
+
+    private final class Entry {
 
         final int index;
         // 对接机器的图标与名称
@@ -635,13 +686,24 @@ public class PatternDestinationPanel implements ICompositeWidget {
         final String customSearchName;
         final String machineSearchName;
         final boolean full;
-        final AEKey[] outputs;
+        final Ellipsized nameText;
+        final Ellipsized customNameText;
+        final Ellipsized machineNameText;
+        // 已有样板的产物，打开「匹配样板产物」后由服务端按需下发
+        AEKey[] outputs = NO_OUTPUTS;
+        @Nullable
+        String[] outputNames;
+        @Nullable
+        String[] outputSearchNames;
         final IntArrayList matched = new IntArrayList();
         // 供应器改后的名字命中 / 对接机器名字命中
         boolean providerNameMatched;
         boolean machineNameMatched;
-        String[] outputNames;
-        String[] outputSearchNames;
+        // 命中产物的标注：首个命中产物名与 "(+N)" 后缀，随搜索结果更新
+        final Ellipsized matchedOutputText = new Ellipsized("");
+        String matchSuffix = "";
+        @Nullable
+        Tooltip tooltip;
 
         Entry(int index, Message.PatternDestination destination) {
             this.index = index;
@@ -654,12 +716,56 @@ public class PatternDestinationPanel implements ICompositeWidget {
             this.customSearchName = customName == null ? null : customName.toLowerCase(Locale.ROOT);
             this.machineSearchName = machineName.toLowerCase(Locale.ROOT);
             this.full = destination.full();
-            this.outputs = destination.outputs();
+            this.nameText = new Ellipsized(name.getString());
+            this.customNameText = new Ellipsized(customName == null ? "" : customName);
+            this.machineNameText = new Ellipsized(machineName);
         }
 
         private static String stripFormatting(String text) {
             var plain = ChatFormatting.stripFormatting(text);
             return plain == null ? "" : plain;
+        }
+
+        void setOutputs(AEKey[] outputs) {
+            this.outputs = outputs;
+            outputNames = null;
+            outputSearchNames = null;
+        }
+
+        private String[] outputSearchNames() {
+            if (outputSearchNames == null) {
+                outputNames = new String[outputs.length];
+                outputSearchNames = new String[outputs.length];
+                for (int i = 0; i < outputs.length; i++) {
+                    // 部分物品名自带 § 颜色码（如「§7LV§r输入总线」），会盖掉标注颜色，也会干扰搜索
+                    outputNames[i] = stripFormatting(outputs[i].getDisplayName().getString());
+                    outputSearchNames[i] = outputNames[i].toLowerCase(Locale.ROOT);
+                }
+            }
+            return outputSearchNames;
+        }
+
+        void match(String query) {
+            matched.clear();
+            providerNameMatched = false;
+            machineNameMatched = false;
+            tooltip = null;
+            if (!query.isEmpty()) {
+                providerNameMatched = customSearchName != null && PinYinUtils.match(customSearchName, query);
+                machineNameMatched = PinYinUtils.match(machineSearchName, query);
+                if (matchOutputs) {
+                    var names = outputSearchNames();
+                    for (int j = 0; j < names.length; j++) {
+                        if (PinYinUtils.match(names[j], query)) matched.add(j);
+                    }
+                }
+            }
+            if (matched.isEmpty()) {
+                matchSuffix = "";
+            } else {
+                matchedOutputText.set(outputNames[matched.getInt(0)]);
+                matchSuffix = matched.size() > 1 ? " (+" + (matched.size() - 1) + ")" : "";
+            }
         }
 
         private int iconsWidth() {
@@ -671,34 +777,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
             return (int) Math.ceil(Math.max(font.width(customName), font.width(machineName)) * SMALL_TEXT_SCALE);
         }
 
-        String[] outputSearchNames() {
-            if (outputSearchNames == null) {
-                outputNames = new String[outputs.length];
-                outputSearchNames = new String[outputs.length];
-                for (int i = 0; i < outputs.length; i++) {
-                    // 部分物品名自带 § 颜色码（如「§7LV§r输入总线」），会盖掉标注颜色，也会干扰搜索
-                    var plain = ChatFormatting.stripFormatting(outputs[i].getDisplayName().getString());
-                    outputNames[i] = plain == null ? "" : plain;
-                    outputSearchNames[i] = outputNames[i].toLowerCase(Locale.ROOT);
-                }
-            }
-            return outputSearchNames;
-        }
-
-        private String matchSuffix() {
-            return matched.size() > 1 ? " (+" + (matched.size() - 1) + ")" : "";
-        }
-
         private int fullWidth(Font font) {
-            return full ? font.width(Component.translatable("gtocore.ae.appeng.craft.encode_send.full")) + 4 : 0;
-        }
-
-        private static String providerMatchLabel() {
-            return Component.translatable("gtocore.ae.appeng.craft.encode_send.match_provider").getString();
-        }
-
-        private static String machineMatchLabel() {
-            return Component.translatable("gtocore.ae.appeng.craft.encode_send.match_machine").getString();
+            return full ? font.width(fullText) + 4 : 0;
         }
 
         /**
@@ -706,8 +786,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
          */
         private int nameLabelsWidth(Font font) {
             int width = 0;
-            if (providerNameMatched) width += font.width(providerMatchLabel()) + 8;
-            if (machineNameMatched) width += font.width(machineMatchLabel()) + 8;
+            if (providerNameMatched) width += font.width(providerMatchLabel) + 8;
+            if (machineNameMatched) width += font.width(machineMatchLabel) + 8;
             return width;
         }
 
@@ -717,8 +797,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         int preferredWidth(Font font) {
             int width = iconsWidth() + nameWidth(font) + 4 + fullWidth(font) + nameLabelsWidth(font);
             if (!matched.isEmpty()) {
-                width += 8 + font.width(Component.translatable("gtocore.ae.appeng.craft.encode_send.match")) +
-                        16 + 1 + font.width(outputNames[matched.getInt(0)] + matchSuffix());
+                width += 8 + font.width(matchPrefix) + 16 + 1 + font.width(outputNames[matched.getInt(0)]) + font.width(matchSuffix);
             }
             return width;
         }
@@ -727,7 +806,6 @@ public class PatternDestinationPanel implements ICompositeWidget {
             int textY = ry + 5;
             int right = rx + rw - 3;
             if (full) {
-                var fullText = Component.translatable("gtocore.ae.appeng.craft.encode_send.full");
                 right -= font.width(fullText);
                 guiGraphics.drawString(font, fullText, right, textY, 0xFF5555);
                 right -= 4;
@@ -737,32 +815,29 @@ public class PatternDestinationPanel implements ICompositeWidget {
             int nameLabelWidth = nameLabelsWidth(font);
             if (!matched.isEmpty()) {
                 // 标注：产物匹配：[图标] 铜转子 (+2)
-                var prefix = Component.translatable("gtocore.ae.appeng.craft.encode_send.match").getString();
-                var suffix = matchSuffix();
-                int fixedWidth = font.width(prefix) + 16 + 1 + font.width(suffix);
+                int fixedWidth = font.width(matchPrefix) + 16 + 1 + font.width(matchSuffix);
                 // 供应器名称至少保留 40 像素，再扣掉名称匹配标签，剩下的留给命中产物名
                 int outputNameWidth = Math.max(0, Math.min(font.width(outputNames[matched.getInt(0)]),
                         right - nameX - 40 - 8 - nameLabelWidth - fixedWidth));
-                var outputName = ellipsize(font, outputNames[matched.getInt(0)], outputNameWidth);
+                var outputName = matchedOutputText.get(font, outputNameWidth);
                 int matchWidth = fixedWidth + font.width(outputName);
                 int mx = right - matchWidth;
-                guiGraphics.drawString(font, prefix, mx, textY, MATCH_COLOR);
-                mx += font.width(prefix);
+                guiGraphics.drawString(font, matchPrefix, mx, textY, MATCH_COLOR);
+                mx += font.width(matchPrefix);
                 drawIcon(guiGraphics, mx, ry + 1, outputs[matched.getInt(0)]);
                 mx += 17;
-                guiGraphics.drawString(font, outputName + suffix, mx, textY, MATCH_COLOR);
+                mx = guiGraphics.drawString(font, outputName, mx, textY, MATCH_COLOR);
+                guiGraphics.drawString(font, matchSuffix, mx, textY, MATCH_COLOR);
                 right -= matchWidth + 8;
             }
             if (machineNameMatched) {
-                var label = machineMatchLabel();
-                right -= font.width(label);
-                guiGraphics.drawString(font, label, right, textY, MACHINE_MATCH_COLOR);
+                right -= font.width(machineMatchLabel);
+                guiGraphics.drawString(font, machineMatchLabel, right, textY, MACHINE_MATCH_COLOR);
                 right -= 8;
             }
             if (providerNameMatched) {
-                var label = providerMatchLabel();
-                right -= font.width(label);
-                guiGraphics.drawString(font, label, right, textY, PROVIDER_MATCH_COLOR);
+                right -= font.width(providerMatchLabel);
+                guiGraphics.drawString(font, providerMatchLabel, right, textY, PROVIDER_MATCH_COLOR);
                 right -= 8;
             }
             // 左侧：样板供应器图标 → 对接机器图标
@@ -773,7 +848,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
             }
             if (icon != null) drawIcon(guiGraphics, iconX, ry + 1, icon);
             if (customName == null) {
-                guiGraphics.drawString(font, ellipsize(font, name.getString(), right - nameX), nameX, textY, full ? 0xAAAAAA : 0xFFFFFF);
+                guiGraphics.drawString(font, nameText.get(font, right - nameX), nameX, textY, full ? 0xAAAAAA : 0xFFFFFF);
                 return;
             }
             // 改过名：两行小字，上为改名（亮），下为机器名（暗），体现主附关系
@@ -782,8 +857,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
             pose.pushPose();
             pose.translate(nameX, ry + 2, 0);
             pose.scale(SMALL_TEXT_SCALE, SMALL_TEXT_SCALE, 1);
-            guiGraphics.drawString(font, ellipsize(font, customName, scaledWidth), 0, 0, full ? 0xAAAAAA : 0xFFFFFF);
-            guiGraphics.drawString(font, ellipsize(font, machineName, scaledWidth), 0, 10, full ? 0x707070 : 0xA0A0A0);
+            guiGraphics.drawString(font, customNameText.get(font, scaledWidth), 0, 0, full ? 0xAAAAAA : 0xFFFFFF);
+            guiGraphics.drawString(font, machineNameText.get(font, scaledWidth), 0, 10, full ? 0x707070 : 0xA0A0A0);
             pose.popPose();
         }
 
@@ -796,6 +871,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
 
         Tooltip tooltip() {
+            if (tooltip != null) return tooltip;
             var lines = new ArrayList<Component>(5 + Math.min(matched.size(), TOOLTIP_MATCH_LINES));
             if (customName != null) {
                 lines.add(Component.literal(customName));
@@ -820,7 +896,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
                     lines.add(Component.translatable("gtocore.ae.appeng.craft.encode_send.match.more", matched.size() - shownCount));
                 }
             }
-            return new Tooltip(lines);
+            return tooltip = new Tooltip(lines);
         }
     }
 }

@@ -2,11 +2,11 @@ package com.gtocore.mixin.ae2.screen;
 
 import com.gtocore.integration.ae.client.PatternDestinationPanel;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
+import com.gtocore.integration.ae.hooks.ISlotOverlayScreen;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-import appeng.client.Point;
 import appeng.client.gui.me.common.MEStorageScreen;
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.client.gui.style.ScreenStyle;
@@ -22,8 +22,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * 样板发送面板浮在终端之上：面板只以组件身份参与绘制、提示与排除区，鼠标与键盘事件全部由这里先转交给面板，
+ * 面板不处理时才交还终端。
+ */
 @Mixin(PatternEncodingTermScreen.class)
-public class PatternEncodingTermScreenMixin<C extends PatternEncodingTermMenu> extends MEStorageScreen<C> implements IExtendedPatternEncodingTerm {
+public class PatternEncodingTermScreenMixin<C extends PatternEncodingTermMenu> extends MEStorageScreen<C> implements IExtendedPatternEncodingTerm, ISlotOverlayScreen {
 
     @Shadow(remap = false)
     @Final
@@ -41,42 +45,29 @@ public class PatternEncodingTermScreenMixin<C extends PatternEncodingTermMenu> e
         widgets.add("gto$destPanel", gto$destPanel);
     }
 
-    @Unique
-    private Point gto$relative(double mouseX, double mouseY) {
-        return new Point((int) Math.round(mouseX - leftPos), (int) Math.round(mouseY - topPos));
-    }
-
-    // 面板浮在终端之上，点击须先于终端自身（右键转发、物品槽、其他组件）处理
+    // 点击须先于终端自身（右键转发、物品槽、其他组件）处理
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void gtolib$panelMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (gto$destPanel.isVisible() && gto$destPanel.onMouseDown(gto$relative(mouseX, mouseY), button)) {
+        if (gto$destPanel.mouseClicked(mouseX, mouseY, button)) {
             cir.setReturnValue(true);
         }
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (gto$destPanel.isVisible() && (gto$destPanel.isCapturingMouse() || gto$destPanel.isMouseOver(mouseX, mouseY)) &&
-                gto$destPanel.onMouseUp(gto$relative(mouseX, mouseY), button)) {
-            return true;
-        }
+        if (gto$destPanel.mouseReleased(mouseX, mouseY, button)) return true;
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (gto$destPanel.isVisible() && (gto$destPanel.isCapturingMouse() || gto$destPanel.isMouseOver(mouseX, mouseY)) &&
-                gto$destPanel.onMouseDrag(gto$relative(mouseX, mouseY), button)) {
-            return true;
-        }
+        if (gto$destPanel.mouseDragged(mouseX, mouseY, button)) return true;
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (gto$destPanel.isMouseOver(mouseX, mouseY) && gto$destPanel.onMouseWheel(gto$relative(mouseX, mouseY), delta)) {
-            return true;
-        }
+        if (gto$destPanel.mouseScrolled(mouseX, mouseY, delta)) return true;
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
@@ -90,6 +81,11 @@ public class PatternEncodingTermScreenMixin<C extends PatternEncodingTermMenu> e
     public boolean charTyped(char codePoint, int modifiers) {
         if (gto$destPanel.charTyped(codePoint, modifiers)) return true;
         return super.charTyped(codePoint, modifiers);
+    }
+
+    @Override
+    public boolean gto$isOverlayAt(double mouseX, double mouseY) {
+        return gto$destPanel != null && gto$destPanel.isMouseOver(mouseX, mouseY);
     }
 
     @Override

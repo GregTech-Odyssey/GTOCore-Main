@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
@@ -95,6 +96,12 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     private List<IExtendedPatternContainer> gto$currentContainers = null;
     @Unique
     private ItemStack gto$patternStack;
+    // 每次下发目的地列表加一；客户端发送样板、请求产物时带回，用来拒绝过期请求
+    @Unique
+    private int gto$destinationRequestId;
+    // 已经下发过产物的目的地列表编号，同一份列表只响应一次产物请求
+    @Unique
+    private int gto$outputsSentRequestId = -1;
     @Unique
     private UUID gtocore$UUID;
 
@@ -178,7 +185,10 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         registerClientAction("addRecipe", String.class, this::gtolib$addRecipe);
         registerClientAction("clickRecipeInfo", this::gtolib$clickRecipeInfo);
         registerClientAction("addUUID", UUID.class, this::gtolib$addUUID);
-        registerClientAction("sendPattern", Integer.class, this::gtolib$sendPattern);
+        registerClientAction("sendPattern", int[].class, this::gto$onSendPatternAction);
+        registerClientAction("requestPatternOutputs", Integer.class, requestId -> {
+            if (requestId != null) gtolib$requestPatternOutputs(requestId);
+        });
         registerClientAction("sendPatternRequest", String.class, this::gtolib$sendEncodeRequest);
     }
 
@@ -380,10 +390,10 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
 
     @Unique
     private static boolean gto$containsPrimaryOutput(IExtendedPatternContainer container, Object primaryOutput,
-                                                     net.minecraft.world.level.Level level) {
-        for (var pattern : container.getTerminalPatternInventory()) {
-            var details = AEPatternDecoder.INSTANCE.decodePattern(pattern, level, false);
-            if (details != null && details.getPrimaryOutput().what() == primaryOutput) {
+                                                     Level level) {
+        var patterns = container.gto$getAvailablePatterns(level);
+        for (int i = 0, size = patterns.size(); i < size; i++) {
+            if (patterns.get(i).getPrimaryOutput().what() == primaryOutput) {
                 return true;
             }
         }
@@ -416,11 +426,13 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     }
 
     @Override
-    public void gtolib$sendPattern(int index) {
+    public void gtolib$sendPattern(int requestId, int index) {
         if (isClientSide()) {
-            sendClientAction("sendPattern", index);
+            sendClientAction("sendPattern", new int[] { requestId, index });
             return;
         }
+        // 客户端点的是旧列表（期间又右键编码过一次）时拒绝，避免按下标发到新列表里的另一个目的地
+        if (requestId != gto$destinationRequestId) return;
         var gridNode = getActionHost().getActionableNode();
         if (gridNode == null) {
             return;
@@ -457,6 +469,12 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     }
 
     @Unique
+    private void gto$onSendPatternAction(int[] args) {
+        if (args == null || args.length != 2) return;
+        gtolib$sendPattern(args[0], args[1]);
+    }
+
+    @Unique
     private void gtolib$sendEncodeRequest(String recipeLocName) {
         if (isClientSide()) {
             sendClientAction("sendPatternRequest", recipeLocName);
@@ -466,8 +484,8 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         if (patternStack == null) return;
         gto$patternStack = patternStack;
         gto$currentContainers = gto$getPatternContainers(recipeLocName);
+        gto$destinationRequestId++;
         if (gto$currentContainers.isEmpty()) return;
-        var level = getPlayer().level();
         var destinations = new Message.PatternDestination[gto$currentContainers.size()];
         for (int i = 0; i < destinations.length; i++) {
             var container = gto$currentContainers.get(i);
@@ -475,17 +493,36 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
                     container.gto$getMachineGroup(),
                     container.gto$getPlainCustomName(),
                     container.gto$getProviderIcon(),
-                    gto$isFull(container, patternStack),
-                    gto$collectPatternOutputs(container, level));
+                    gto$isFull(container, patternStack));
         }
-        Message.sendPatternDestination((ServerPlayer) getPlayer(), destinations);
+        Message.sendPatternDestination((ServerPlayer) getPlayer(), gto$destinationRequestId, destinations);
+    }
+
+    /**
+     * 客户端打开「匹配样板产物」时才请求各目的地已有样板的产物；同一份目的地列表只响应一次。
+     */
+    @Override
+    public void gtolib$requestPatternOutputs(int requestId) {
+        if (isClientSide()) {
+            sendClientAction("requestPatternOutputs", requestId);
+            return;
+        }
+        var containers = gto$currentContainers;
+        if (containers == null || requestId != gto$destinationRequestId || requestId == gto$outputsSentRequestId) return;
+        gto$outputsSentRequestId = requestId;
+        var level = getPlayer().level();
+        var outputs = new AEKey[containers.size()][];
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] = gto$collectPatternOutputs(containers.get(i), level);
+        }
+        Message.sendPatternOutputs((ServerPlayer) getPlayer(), requestId, outputs);
     }
 
     /**
      * 收集目的地已有样板的全部产物（去重），集群（装配矩阵 / 超分子装配器）按整个集群收集，与列表中一行代表一个集群一致。
      */
     @Unique
-    private static AEKey[] gto$collectPatternOutputs(IExtendedPatternContainer container, net.minecraft.world.level.Level level) {
+    private static AEKey[] gto$collectPatternOutputs(IExtendedPatternContainer container, Level level) {
         var outputs = new AEKeyMap<AEKey>();
         var patternInv = container.getTerminalPatternInventory();
         if (patternInv instanceof AppEngInternalInventory aeInv &&
@@ -503,19 +540,15 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
                 } else {
                     gto$collectPatternOutputs(container, level, outputs);
                 }
-        var result = new AEKey[outputs.size()];
-        var index = new int[1];
-        outputs.fastForEach((key, v) -> result[index[0]++] = key);
-        return result;
+        return outputs.keySet().toArray(new AEKey[outputs.size()]);
     }
 
     @Unique
-    private static void gto$collectPatternOutputs(IExtendedPatternContainer container, net.minecraft.world.level.Level level, AEKeyMap<AEKey> outputs) {
-        for (var pattern : container.getTerminalPatternInventory()) {
+    private static void gto$collectPatternOutputs(IExtendedPatternContainer container, Level level, AEKeyMap<AEKey> outputs) {
+        var patterns = container.gto$getAvailablePatterns(level);
+        for (int i = 0, size = patterns.size(); i < size; i++) {
             if (outputs.size() >= GTO$MAX_OUTPUTS_PER_DESTINATION) return;
-            var details = AEPatternDecoder.INSTANCE.decodePattern(pattern, level, false);
-            if (details == null) continue;
-            for (var output : details.getOutputs()) {
+            for (var output : patterns.get(i).getOutputs()) {
                 if (output != null) outputs.put(output.what(), 1);
             }
         }
