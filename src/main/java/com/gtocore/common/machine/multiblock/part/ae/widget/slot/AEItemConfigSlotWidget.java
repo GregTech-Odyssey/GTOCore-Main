@@ -102,7 +102,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
                 ItemStack item = this.gui.getModularUIContainer().getCarried();
 
                 if (!item.isEmpty()) {
-                    writeClientAction(UPDATE_ID, buf -> buf.writeItem(item));
+                    writeClientAction(UPDATE_ID, buf -> GenericStack.writeBuffer(GenericStack.fromItemStack(item), buf));
                 }
 
                 if (!parentWidget.isStocking()) {
@@ -160,13 +160,14 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
                 writeUpdateInfo(REMOVE_ID, buf -> {});
             }
             case UPDATE_ID -> {
-                var itemStack = buffer.readItem();
-                var stack = GenericStack.fromItemStack(itemStack);
+                // writeItem 的数量只占一个有符号字节，EMI 带过来的 130、420、1024 这类数量会被读成空物品，故改用 GenericStack
+                var stack = GenericStack.readBuffer(buffer);
+                if (stack != null && (!(stack.what() instanceof AEItemKey) || stack.amount() <= 0)) return;
                 if (!isStackValidForSlot(stack)) return;
                 slot.setConfig(stack);
                 this.parentWidget.enableAmount(this.index);
-                if (!itemStack.isEmpty()) {
-                    writeUpdateInfo(UPDATE_ID, buf -> buf.writeItem(itemStack));
+                if (stack != null) {
+                    writeUpdateInfo(UPDATE_ID, buf -> GenericStack.writeBuffer(stack, buf));
                 }
             }
             case AMOUNT_CHANGE_ID -> {
@@ -247,10 +248,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
         IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
         switch (id) {
             case REMOVE_ID -> slot.setConfig(null);
-            case UPDATE_ID -> {
-                ItemStack item = buffer.readItem();
-                slot.setConfig(new GenericStack(AEItemKey.of(item), item.getCount()));
-            }
+            case UPDATE_ID -> slot.setConfig(GenericStack.readBuffer(buffer));
             case AMOUNT_CHANGE_ID -> {
                 if (slot.getConfig() != null) {
                     long amt = buffer.readVarLong();
@@ -288,7 +286,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
     @OnlyIn(Dist.CLIENT)
     @Override
     public void acceptItem(ItemStack itemStack) {
-        writeClientAction(UPDATE_ID, buf -> buf.writeItem(itemStack));
+        writeClientAction(UPDATE_ID, buf -> GenericStack.writeBuffer(GenericStack.fromItemStack(itemStack), buf));
     }
 
     @OnlyIn(Dist.CLIENT)
