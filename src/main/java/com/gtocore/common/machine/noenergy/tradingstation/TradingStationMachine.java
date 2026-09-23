@@ -214,7 +214,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
                 MutableComponent sharedComponent = Component.literal(sharedText);
                 Optional.ofNullable(teamUUID)
                         .filter(t -> !t.equals(uuid))
-                        .map(t -> TeamUtil.GetName(level, uuid))
+                        .map(t -> TeamUtil.getName(level, uuid))
                         .ifPresent(sharedComponent::append);
                 if (sharedComponent.getString().isEmpty()) {
                     sharedComponent = trans(4);

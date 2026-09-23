@@ -34,12 +34,12 @@ public class TeamUtil {
         return playerUUID;
     }
 
-    public static Component GetName(Player player) {
+    public static Component getName(Player player) {
         Component name = findTeamOrPlayerName(player.level(), player.getUUID());
         return name == null ? player.getName() : name;
     }
 
-    public static Component GetName(Level level, UUID playerUUID) {
+    public static Component getName(Level level, UUID playerUUID) {
         Component name = findTeamOrPlayerName(level, playerUUID);
         return name == null ? Component.literal(playerUUID.toString()) : name;
     }

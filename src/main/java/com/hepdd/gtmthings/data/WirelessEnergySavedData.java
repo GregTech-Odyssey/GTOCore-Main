@@ -18,15 +18,15 @@ import java.math.BigInteger;
 import java.util.Objects;
 import java.util.UUID;
 
-public class WirelessEnergySavaedData extends SavedData {
+public class WirelessEnergySavedData extends SavedData {
 
-    public static WirelessEnergySavaedData INSTANCE = new WirelessEnergySavaedData();
+    public static WirelessEnergySavedData INSTANCE = new WirelessEnergySavedData();
 
     public final O2OOpenCacheHashMap<UUID, WirelessEnergyContainer> containerMap = new O2OOpenCacheHashMap<>();
 
-    public WirelessEnergySavaedData() {}
+    public WirelessEnergySavedData() {}
 
-    public WirelessEnergySavaedData(CompoundTag tag) {
+    public WirelessEnergySavedData(CompoundTag tag) {
         ListTag allEnergy = tag.getList("allEnergy", Tag.TAG_COMPOUND);
         for (int i = 0; i < allEnergy.size(); i++) {
             WirelessEnergyContainer container = readTag(allEnergy.getCompound(i));

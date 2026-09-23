@@ -34,7 +34,7 @@ import java.util.UUID;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import static com.hepdd.gtmthings.utils.TeamUtil.GetName;
+import static com.hepdd.gtmthings.utils.TeamUtil.getName;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -74,7 +74,7 @@ public class WirelessEnergyInterface extends TieredIOPartMachine implements IInt
         if (is.is(GTItems.TOOL_DATA_STICK.asItem())) {
             setOwnerUUID(player.getUUID());
             setWirelessEnergyContainerCache(null);
-            player.sendSystemMessage(Component.translatable("gtmthings.machine.wireless_energy_hatch.tooltip.bind", GetName(player)));
+            player.sendSystemMessage(Component.translatable("gtmthings.machine.wireless_energy_hatch.tooltip.bind", getName(player)));
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

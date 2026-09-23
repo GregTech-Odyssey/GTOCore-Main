@@ -144,7 +144,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         if (this.getUUID() == null) return;
         var container = getWirelessEnergyContainer();
         if (container == null) return;
-        textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.GetName(getLevel(), this.getUUID())).withStyle(ChatFormatting.AQUA));
+        textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.getName(getLevel(), this.getUUID())).withStyle(ChatFormatting.AQUA));
         BigInteger storage = container.getStorage();
         BigInteger capacity = container.getCapacity();
         ChatFormatting color = getStorageColor(capacity, storage);

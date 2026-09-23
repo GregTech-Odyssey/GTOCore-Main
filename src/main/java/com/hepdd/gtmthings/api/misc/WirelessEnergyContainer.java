@@ -7,7 +7,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.MinecraftServer;
 
-import com.hepdd.gtmthings.data.WirelessEnergySavaedData;
+import com.hepdd.gtmthings.data.WirelessEnergySavedData;
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import lombok.Getter;
@@ -26,7 +26,7 @@ public class WirelessEnergyContainer {
     public static MinecraftServer server;
 
     public static WirelessEnergyContainer getOrCreateContainer(UUID uuid) {
-        return WirelessEnergySavaedData.INSTANCE.containerMap.computeIfAbsent(TeamUtil.getTeamUUID(uuid), K -> new ExtendWirelessEnergyContainer(uuid));
+        return WirelessEnergySavedData.INSTANCE.containerMap.computeIfAbsent(TeamUtil.getTeamUUID(uuid), K -> new ExtendWirelessEnergyContainer(uuid));
     }
 
     private BigInteger storage;
@@ -58,7 +58,7 @@ public class WirelessEnergyContainer {
         long change = Math.min(rate, energy);
         if (change <= 0) return 0;
         storage = storage.add(BigInteger.valueOf(change));
-        WirelessEnergySavaedData.INSTANCE.setDirty(true);
+        WirelessEnergySavedData.INSTANCE.setDirty(true);
         if (machine != null) {
             energyStat.update(BigInteger.valueOf(change), server.getTickCount());
         }
@@ -72,7 +72,7 @@ public class WirelessEnergyContainer {
         long change = Math.min(BigIntegerUtils.getLongValue(storage), Math.min(rate, energy));
         if (change <= 0) return 0;
         storage = storage.subtract(BigInteger.valueOf(change));
-        WirelessEnergySavaedData.INSTANCE.setDirty(true);
+        WirelessEnergySavedData.INSTANCE.setDirty(true);
         if (machine != null) {
             energyStat.update(BigInteger.valueOf(change).negate(), server.getTickCount());
         }
@@ -84,17 +84,17 @@ public class WirelessEnergyContainer {
 
     public void setStorage(BigInteger energy) {
         storage = energy;
-        WirelessEnergySavaedData.INSTANCE.setDirty(true);
+        WirelessEnergySavedData.INSTANCE.setDirty(true);
     }
 
     public void setRate(long rate) {
         this.rate = rate;
-        WirelessEnergySavaedData.INSTANCE.setDirty(true);
+        WirelessEnergySavedData.INSTANCE.setDirty(true);
     }
 
     public void setBindPos(GlobalPos bindPos) {
         this.bindPos = bindPos;
-        WirelessEnergySavaedData.INSTANCE.setDirty(true);
+        WirelessEnergySavedData.INSTANCE.setDirty(true);
     }
 
     public BigInteger getCapacity() {

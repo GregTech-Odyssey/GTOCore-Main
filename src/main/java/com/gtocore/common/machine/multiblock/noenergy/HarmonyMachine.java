@@ -120,7 +120,7 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
         textList.add(Component.translatable("behaviour.lighter.uses", 16 + (tier << 2) - count));
         if (getUUID() != null) {
             var container = getWirelessEnergyContainer();
-            textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.GetName(getLevel(), getUUID())));
+            textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.getName(getLevel(), getUUID())));
             if (container != null) textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.1", FormattingUtil.formatNumbers(container.getStorage())));
         }
         textList.add(Component.translatable("gtocore.machine.eye_of_harmony.eu", FormattingUtil.formatNumbers(getStartupEnergy())));

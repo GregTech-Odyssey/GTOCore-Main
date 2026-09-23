@@ -24,7 +24,7 @@ public interface ITeamInformationProvider extends IInformationProvider, IBindabl
             infoList.addIfAbsent(
                     DisplayRegistry.OWNER.id(),
                     Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0",
-                            TeamUtil.GetName(this.getLevel(), this.getUUID()))
+                            TeamUtil.getName(this.getLevel(), this.getUUID()))
                             .withStyle(ChatFormatting.AQUA)
                             .getVisualOrderText());
         }

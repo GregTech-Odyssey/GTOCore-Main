@@ -31,7 +31,7 @@ import snownee.jade.api.config.IPluginConfig;
 
 import java.util.UUID;
 
-import static com.hepdd.gtmthings.utils.TeamUtil.GetName;
+import static com.hepdd.gtmthings.utils.TeamUtil.getName;
 
 public final class WirelessNetworkComputationHatchMachine extends WorkableMultiblockPartMachine implements IInteractedMachine, IBindable, IWailaDisplayProvider {
 
@@ -57,7 +57,7 @@ public final class WirelessNetworkComputationHatchMachine extends WorkableMultib
         if (player.getItemInHand(hand).is(GTItems.TOOL_DATA_STICK.asItem())) {
             setOwnerUUID(player.getUUID());
             if (isRemote()) {
-                player.sendSystemMessage(Component.translatable("gtmthings.machine.wireless_energy_hatch.tooltip.bind", GetName(player)));
+                player.sendSystemMessage(Component.translatable("gtmthings.machine.wireless_energy_hatch.tooltip.bind", getName(player)));
             }
             return InteractionResult.SUCCESS;
         }

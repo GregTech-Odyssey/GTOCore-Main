@@ -20,7 +20,7 @@ import java.util.*;
 
 import static com.gregtechceu.gtceu.common.machine.multiblock.electric.PowerSubstationMachine.getTimeToFillDrainText;
 import static com.hepdd.gtmthings.utils.FormatUtil.*;
-import static com.hepdd.gtmthings.utils.TeamUtil.GetName;
+import static com.hepdd.gtmthings.utils.TeamUtil.getName;
 
 public interface IWirelessMonitor extends IWirelessEnergyContainerHolder {
 
@@ -30,7 +30,7 @@ public interface IWirelessMonitor extends IWirelessEnergyContainerHolder {
         WirelessEnergyContainer container = getWirelessEnergyContainer();
         if (container == null) return List.of();
         BigInteger energyTotal = container.getStorage();
-        textListCache.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", GetName(getLevel(), getUUID())).withStyle(ChatFormatting.AQUA));
+        textListCache.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", getName(getLevel(), getUUID())).withStyle(ChatFormatting.AQUA));
         textListCache.add(formatWithConstantWidth("gtmthings.machine.wireless_energy_monitor.tooltip.1", Component.literal(formatBigIntegerNumberOrSic(energyTotal))).withStyle(ChatFormatting.GOLD));
         long rate = container.getRate();
         // textListCache.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.2",
