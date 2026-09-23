@@ -456,8 +456,8 @@ final class StellarForge {
                 .chancedOutput(GTOMaterials.Mana.getFluid(14400), 7000, 10)
                 .circuitMeta(1)
                 .EUt(31457280)
-                .duration(40)
-                .MANAt(-12500000)
+                .duration(80)
+                .MANAt(-50000000)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)
                 .save();
@@ -467,8 +467,8 @@ final class StellarForge {
                 .chancedOutput(GTOMaterials.Mana.getFluid(57600), 7000, 10)
                 .circuitMeta(2)
                 .EUt(31457280)
-                .duration(40)
-                .MANAt(-100000000)
+                .duration(80)
+                .MANAt(-400000000)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 2)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)
                 .save();
@@ -478,8 +478,8 @@ final class StellarForge {
                 .chancedOutput(GTOMaterials.Mana.getFluid(307200), 7000, 10)
                 .circuitMeta(3)
                 .EUt(31457280)
-                .duration(40)
-                .MANAt(-800000000)
+                .duration(80)
+                .MANAt(-3200000000L)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 3)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)
                 .save();
