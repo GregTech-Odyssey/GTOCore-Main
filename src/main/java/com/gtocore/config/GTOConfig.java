@@ -156,10 +156,7 @@ public final class GTOConfig {
         ConfigHolder.INSTANCE.tools.voltageTierAdvQuarkTech = 8;
         ConfigHolder.INSTANCE.tools.voltageTierImpeller = 2;
         ConfigHolder.INSTANCE.tools.voltageTierAdvImpeller = 3;
-        ConfigHolder.INSTANCE.tools.nanoSaber.nanoSaberDamageBoost = 256 >> difficulty;
-        ConfigHolder.INSTANCE.tools.nanoSaber.nanoSaberBaseDamage = 1;
         ConfigHolder.INSTANCE.tools.nanoSaber.zombieSpawnWithSabers = true;
-        ConfigHolder.INSTANCE.tools.nanoSaber.energyConsumption = 64;
         if (GTOCore.isEasy()) {
             ConfigHolder.INSTANCE.gameplay.hazardsEnabled = false;
         }

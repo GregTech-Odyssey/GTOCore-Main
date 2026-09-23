@@ -206,6 +206,16 @@ public final class MiscRecipeLoader {
                 QUANTUM_BOOTS_ADVANCED, UV, CustomTags.UV_CIRCUITS, CustomTags.UV_BATTERIES, SENSOR_UV, FIELD_GENERATOR_UV,
                 Darmstadtium, GRAVITATION_ENGINE, 2);
 
+        // 纳米剑 I～IV：与同级盔甲相同的电压与外壳材料
+        nanoSaber("nano_saber", NANO_SABER, MV, CustomTags.MV_CIRCUITS, CustomTags.MV_BATTERIES, FIELD_GENERATOR_MV,
+                Aluminium);
+        nanoSaber("nano_saber_ii", NANO_SABER_II, EV, CustomTags.EV_CIRCUITS, CustomTags.EV_BATTERIES,
+                FIELD_GENERATOR_EV, Titanium);
+        nanoSaber("nano_saber_iii", NANO_SABER_III, LuV, CustomTags.LuV_CIRCUITS, CustomTags.LuV_BATTERIES,
+                FIELD_GENERATOR_LuV, RhodiumPlatedPalladium);
+        nanoSaber("nano_saber_iv", NANO_SABER_IV, UV, CustomTags.UV_CIRCUITS, CustomTags.UV_BATTERIES,
+                FIELD_GENERATOR_UV, Darmstadtium);
+
         // Dyed Lens Decomposition
         for (ItemEntry<Item> item : GLASS_LENSES.values()) {
             EXTRACTOR_RECIPES.recipeBuilder("extract_" + item.get()).EUt(VA[LV]).duration(15)
@@ -438,6 +448,17 @@ public final class MiscRecipeLoader {
         armorPiece(prefix + "_leggings", leggings, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 7)
                 .save();
         armorPiece(prefix + "_boots", boots, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 4)
+                .save();
+    }
+
+    private static void nanoSaber(String id, ItemEntry<?> output, int tier, TagKey<Item> circuit,
+                                  TagKey<Item> battery, ItemEntry<?> fieldGenerator, Material plateMaterial) {
+        ASSEMBLER_RECIPES.recipeBuilder(id).duration(1200).EUt(VA[tier])
+                .inputItems(circuit, 2)
+                .inputItems(battery)
+                .inputItems(fieldGenerator)
+                .inputItems(plate, plateMaterial, 6)
+                .outputItems(output)
                 .save();
     }
 

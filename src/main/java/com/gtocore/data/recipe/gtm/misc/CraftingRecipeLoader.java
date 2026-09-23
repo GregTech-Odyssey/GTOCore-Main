@@ -128,10 +128,6 @@ public final class CraftingRecipeLoader {
         VanillaRecipeHelper.addShapedRecipe("minecart_wheels_steel", STEEL_MINECART_WHEELS.asItem(), " h ",
                 "RSR", " w ", 'R', new MaterialEntry(ring, Steel), 'S', new MaterialEntry(rod, Steel));
 
-        VanillaRecipeHelper.addShapedRecipe("nano_saber", NANO_SABER.asItem(), "PIC", "PIC",
-                "XEX", 'P', new MaterialEntry(plate, Platinum), 'I', new MaterialEntry(plate, Ruridit), 'C',
-                CARBON_FIBER_PLATE.asItem(), 'X', CustomTags.EV_CIRCUITS, 'E', ENERGIUM_CRYSTAL.asItem());
-
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("solar_panel"), GTItems.COVER_SOLAR_PANEL.asItem(),
                 " A ",
                 "BCB",
