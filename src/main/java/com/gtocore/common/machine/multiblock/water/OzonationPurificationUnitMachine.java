@@ -20,7 +20,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class OzonationPurificationUnitMachine extends WaterPurificationUnitMachine implements IExplosionMachine {
 
     private static final Fluid Ozone = GTOMaterials.Ozone.getFluid();
-    private static final Fluid[] CATALYSTS = { WaterPurificationPlantMachine.GradePurifiedWater3, WaterPurificationPlantMachine.GradePurifiedWater2 };
 
     @SaveToDisk(defaultValue = "0")
     private int chance;
@@ -48,7 +47,7 @@ public final class OzonationPurificationUnitMachine extends WaterPurificationUni
                 long outputCount = inputCount * 9 / 10;
                 RecipeBuilder builder = getRecipeBuilder();
                 builder.duration(WaterPurificationPlantMachine.DURATION).inputFluids(Ozone, inputCount / 10000).inputFluids(WaterPurificationPlantMachine.GradePurifiedWater1, inputCount);
-                chance = getChance(unit, builder, outputCount / 10, ozoneCount);
+                chance = getChance(outputCount / 10, ozoneCount);
                 if (Math.random() * 100 <= chance) {
                     builder.outputFluids(WaterPurificationPlantMachine.GradePurifiedWater2, outputCount);
                 } else {
@@ -63,18 +62,11 @@ public final class OzonationPurificationUnitMachine extends WaterPurificationUni
         return eut;
     }
 
-    /// 催化用的净化水取自当前输入单元，写进配方随原料一起扣除，配方未启动时不消耗
-    private static int getChance(RecipeHandlerUnit unit, RecipeBuilder builder, long count, long ozoneCount) {
+    private int getChance(long count, long ozoneCount) {
         int a = (int) (80 * Math.log(1 + ozoneCount / 10000.0) / Math.log(103.0));
-        long[] amounts = unit.getFluidAmount(true, CATALYSTS);
-        long need3 = Math.max(1, count / 4);
-        if (amounts[0] >= need3) {
-            builder.inputFluids(WaterPurificationPlantMachine.GradePurifiedWater3, need3);
+        if (inputFluid(WaterPurificationPlantMachine.GradePurifiedWater3, count / 4)) {
             return a + 20;
-        }
-        long need2 = Math.max(1, count);
-        if (amounts[1] >= need2) {
-            builder.inputFluids(WaterPurificationPlantMachine.GradePurifiedWater2, need2);
+        } else if (inputFluid(WaterPurificationPlantMachine.GradePurifiedWater2, count)) {
             return a + 15;
         }
         return a;
