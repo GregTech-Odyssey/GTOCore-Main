@@ -49,6 +49,7 @@ import static com.gtocore.api.machine.part.GTOPartAbility.DRONE_HATCH;
 import static com.gtocore.api.pattern.GTOPredicates.autoSpaceMachineAbilities;
 import static com.gtocore.api.pattern.GTOPredicates.light;
 import static com.gtocore.common.data.GTOMachines.EXHAUST_FAN;
+import static com.gtocore.common.data.GTOMachines.SPACE_SHIELD_HATCH;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
 
 public class SpaceMultiblock {
@@ -119,7 +120,8 @@ public class SpaceMultiblock {
                     .where('G', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .where('H', blocks(GTOBlocks.ALUMINUM_ALLOY_2090_SKIN_MECHANICAL_BLOCK.get()))
                     .wherePart('I', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get())
-                            .or(autoAbilities(definition.getRecipeTypes())))
+                            .or(autoAbilities(definition.getRecipeTypes())),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('i', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get())
                             .or(light()))
                     .where('J', blocks(GTOBlocks.ALUMINUM_ALLOY_7050_SUPPORT_MECHANICAL_BLOCK.get()))
@@ -221,7 +223,8 @@ public class SpaceMultiblock {
                     .where('Q', blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))
                     .wherePart('R', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get())
                             .or(abilities(INPUT_ENERGY, IMPORT_FLUIDS, EXPORT_FLUIDS))
-                            .or(abilities(MAINTENANCE).setExactLimit(1)))
+                            .or(abilities(MAINTENANCE).setExactLimit(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('S', controller(definition))
                     .where('T', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
                     .where('U', blocks(GCYMBlocks.CASING_NONCONDUCTING.get()))
@@ -435,7 +438,8 @@ public class SpaceMultiblock {
                     .where('F', GTOPredicates.frame(GTOMaterials.StainlessSteel316))
                     .where('G', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .wherePart('H', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get())
-                            .or(abilities(EXPORT_ITEMS)))
+                            .or(abilities(EXPORT_ITEMS)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('I', blocks(GTOBlocks.STAINLESS_STEEL_CORROSION_RESISTANT_CASING.get()))
                     .where('J', blocks(GTOBlocks.CHEMICAL_CORROSION_RESISTANT_PIPE_CASING.get()))
                     .where('K', blocks(GTOBlocks.HIGH_PRESSURE_GAS_STORAGE_TANKS_CASING.get()))
@@ -495,7 +499,8 @@ public class SpaceMultiblock {
                     .where('G', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
                     .wherePart('H', blocks(GTOBlocks.SMELTING_CONTROL_CASING.get())
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
-                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)))
+                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('I', blocks(GTOBlocks.CREEP_RESISTANT_SMELTING_CASING.get()))
                     .where('J', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .where('K', blocks(GTOBlocks.SMELTING_CONTROL_CASING.get()))
@@ -547,7 +552,8 @@ public class SpaceMultiblock {
                     .where('F', GTOPredicates.frame(GTOMaterials.StainlessSteel316))
                     .wherePart('G', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get())
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
-                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)))
+                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('H', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
                     .where('I', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .where('J', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
@@ -599,7 +605,8 @@ public class SpaceMultiblock {
                     .where('G', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .wherePart('H', blocks(GTOBlocks.PRECISION_MACHINING_CONTROL_CASING.get())
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
-                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)))
+                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('I', blocks(GTOBlocks.TUNGSTEN_ALLOY_RADIATION_SHIELDING_MECHANICAL_BLOCK.get()))
                     .where('J', blocks(GTOBlocks.PRECISION_MACHINING_CONTROL_CASING.get()))
                     .where('K', blocks(GTOBlocks.HYPER_MECHANICAL_CASING.get()))
@@ -650,7 +657,8 @@ public class SpaceMultiblock {
                     .where('G', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
                     .wherePart('H', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get())
                             .or(autoAbilities(definition.getRecipeTypes()))
-                            .or(abilities(INPUT_LASER).setMaxGlobalLimited(2)))
+                            .or(abilities(INPUT_LASER).setMaxGlobalLimited(2)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('I', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
                     .where('J', blocks(GTOBlocks.LOW_TEMPERATURE_FUEL_TANK_CASING.get()))
                     .where('K', blocks(GTOBlocks.LOW_TEMPERATURE_FUEL_PIPE_CASING.get()))
@@ -711,7 +719,8 @@ public class SpaceMultiblock {
                     .where('N', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
                     .where('O', blocks(GTOBlocks.OPTICAL_DYNAMIC_COATING_INSTRUMENT_PROTECTIVE_SHIELD_GLASS.get()))
                     .where('P', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get()))
-                    .wherePart('Q', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
+                    .wherePart('Q', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('R', GTOPredicates.frame(GTOMaterials.StainlessSteel316))
                     .where('S', blocks(GTOBlocks.ALUMINUM_ALLOY_2090_SKIN_MECHANICAL_BLOCK.get()))
                     .where('T', blocks(GTOBlocks.ALUMINUM_ALLOY_7050_SUPPORT_MECHANICAL_BLOCK.get()))
@@ -796,7 +805,8 @@ public class SpaceMultiblock {
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
                             .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
                             .or(abilities(GTOPartAbility.RADIATION_HATCH).setMaxGlobalLimited(2))
-                            .or(blocks(ExResearchMachines.BIOLOGY_DATA_HOLDER.get()).setMaxGlobalLimited(1)))
+                            .or(blocks(ExResearchMachines.BIOLOGY_DATA_HOLDER.get()).setMaxGlobalLimited(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('R', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
                     .where('S', blocks(GTOBlocks.STRONTIUM_CARBONATE_CERAMIC_RAY_ABSORBING_MECHANICAL_CUBE.get()))
                     .where('T', blocks(GTBlocks.PLASTCRETE.get()))
@@ -865,7 +875,8 @@ public class SpaceMultiblock {
                     .where('O', GTOPredicates.frame(GTOMaterials.HighEntropyShapeMemoryAlloy))
                     .wherePart('P', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get())
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
-                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)))
+                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('Q', blocks(GTOBlocks.MOLECULAR_CASING.get()))
                     .where('R', blocks(GTOBlocks.HIGH_PRESSURE_RESISTANT_CASING.get()))
                     .where('S', blocks(GTOBlocks.HOLLOW_CASING.get()))
@@ -918,7 +929,8 @@ public class SpaceMultiblock {
                     .where('W', blocks(GTOBlocks.HIGH_PRESSURE_GAS_STORAGE_TANKS_CASING.get()))
                     .wherePart('X', blocks(GTOBlocks.THREE_PROOF_COMPUTER_CASING.get())
                             .or(autoSpaceMachineAbilities(definition.getRecipeTypes()))
-                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)))
+                            .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1)),
+                            blocks(SPACE_SHIELD_HATCH.get()))
                     .where('Y', controller(definition))
                     .where(' ', any())
                     .build())
