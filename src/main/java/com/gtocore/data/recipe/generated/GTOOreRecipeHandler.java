@@ -32,6 +32,7 @@ import java.util.List;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags.HIGH_SIFTER_OUTPUT;
+import static com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags.NO_ORE_SIFTING;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.api.data.material.GTOMaterialFlags.DISABLE_GEM_RECIPES;
@@ -41,6 +42,10 @@ public final class GTOOreRecipeHandler {
 
     private static boolean doesMaterialUseNormalFurnace(Material material) {
         return !material.hasProperty(PropertyKey.BLAST) && !material.hasFlag(MaterialFlags.NO_ORE_SMELTING);
+    }
+
+    private static boolean doesMaterialUseNormalSifter(Material material) {
+        return material.hasProperty(PropertyKey.GEM) && !material.hasFlag(NO_ORE_SIFTING);
     }
 
     public static void run(Material material) {
@@ -179,7 +184,7 @@ public final class GTOOreRecipeHandler {
             opBuilder3.save();
 
             // 4 破碎-洗矿-筛选-离心
-            if (material.hasProperty(PropertyKey.GEM) && !material.hasFlag(DISABLE_GEM_RECIPES)) {
+            if (doesMaterialUseNormalSifter(material)) {
                 ItemStack exquisiteStack = ChemicalHelper.get(gemExquisite, material);
                 ItemStack flawlessStack = ChemicalHelper.get(gemFlawless, material);
                 ItemStack gemStack = ChemicalHelper.get(gem, material);
@@ -279,7 +284,7 @@ public final class GTOOreRecipeHandler {
                 opBuilder6.save();
 
                 // 7 破碎-浸洗-筛选-离心
-                if (material.hasProperty(PropertyKey.GEM) && !material.hasFlag(DISABLE_GEM_RECIPES)) {
+                if (doesMaterialUseNormalSifter(material)) {
                     ItemStack exquisiteStack = ChemicalHelper.get(gemExquisite, material);
                     ItemStack flawlessStack = ChemicalHelper.get(gemFlawless, material);
                     ItemStack gemStack = ChemicalHelper.get(gem, material);
@@ -463,7 +468,7 @@ public final class GTOOreRecipeHandler {
         opBuilder3.save();
 
         // 4 破碎-洗矿-筛选-离心
-        if (material.hasProperty(PropertyKey.GEM) && !material.hasFlag(DISABLE_GEM_RECIPES)) {
+        if (doesMaterialUseNormalSifter(material)) {
             ItemStack exquisiteStack = ChemicalHelper.get(gemExquisite, material);
             ItemStack flawlessStack = ChemicalHelper.get(gemFlawless, material);
             ItemStack gemStack = ChemicalHelper.get(gem, material);
@@ -522,7 +527,7 @@ public final class GTOOreRecipeHandler {
             opBuilder6.save();
 
             // 7 破碎-浸洗-筛选-离心
-            if (material.hasProperty(PropertyKey.GEM) && !material.hasFlag(DISABLE_GEM_RECIPES)) {
+            if (doesMaterialUseNormalSifter(material)) {
                 ItemStack exquisiteStack = ChemicalHelper.get(gemExquisite, material);
                 ItemStack flawlessStack = ChemicalHelper.get(gemFlawless, material);
                 ItemStack gemStack = ChemicalHelper.get(gem, material);
@@ -707,7 +712,7 @@ public final class GTOOreRecipeHandler {
                     .save();
         }
 
-        if (material.hasProperty(PropertyKey.GEM) && !material.hasFlag(DISABLE_GEM_RECIPES)) {
+        if (doesMaterialUseNormalSifter(material)) {
             ItemStack exquisiteStack = ChemicalHelper.get(gemExquisite, material);
             ItemStack flawlessStack = ChemicalHelper.get(gemFlawless, material);
             ItemStack gemStack = ChemicalHelper.get(gem, material);

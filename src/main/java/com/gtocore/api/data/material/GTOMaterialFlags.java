@@ -85,5 +85,6 @@ public final class GTOMaterialFlags {
             .build();
 
     public static final MaterialFlag DISABLE_GEM_RECIPES = new MaterialFlag.Builder("disable_gem_recipes")
+            .requireFlags(MaterialFlags.NO_ORE_SIFTING)
             .requireProps(new PropertyKey<?>[] { PropertyKey.ORE }).build();
 }

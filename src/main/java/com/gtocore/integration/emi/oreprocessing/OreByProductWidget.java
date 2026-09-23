@@ -52,6 +52,8 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.gtocore.api.data.material.GTOMaterialFlags.DISABLE_GEM_RECIPES;
+
 final class OreByProductWrapper {
 
     private static final ImmutableList<TagPrefix> IN_PROCESSING_STEPS = ImmutableList.of(TagPrefix.crushed, TagPrefix.crushedPurified, TagPrefix.dustImpure, TagPrefix.dustPure, TagPrefix.crushedRefined);
@@ -80,6 +82,9 @@ final class OreByProductWrapper {
         var property = material.getProperty(PropertyKey.ORE);
         int oreMultiplier = property.getOreMultiplier();
         int byproductMultiplier = property.getByProductMultiplier();
+        boolean gemRecipesEnabled = material.hasProperty(PropertyKey.GEM) &&
+                !material.hasFlag(DISABLE_GEM_RECIPES);
+        boolean normalSifterEnabled = gemRecipesEnabled && !material.hasFlag(MaterialFlags.NO_ORE_SIFTING);
         int rawOreCrushedAmount = Math.max(1, oreMultiplier * (GTOCore.isExpert() ? 4 : 6) / 2);
         currentSlot = 0;
         Material[] byproducts = (new Material[] { property.getOreByProduct(0, material), property.getOreByProduct(1, material), property.getOreByProduct(2, material), property.getOreByProduct(3, material) });
@@ -119,7 +124,7 @@ final class OreByProductWrapper {
         } else {
             addToInputs(ItemStack.EMPTY);
         }
-        if (material.hasProperty(PropertyKey.GEM)) {
+        if (normalSifterEnabled) {
             hasSifter = true;
             addToInputs(GTMachines.SIFTER[GTValues.LV].asStack());
         } else {
@@ -140,7 +145,7 @@ final class OreByProductWrapper {
             Material smeltingMaterial = property.getDirectSmeltResult().isNull() ? material : property.getDirectSmeltResult();
             if (smeltingMaterial.hasProperty(PropertyKey.INGOT)) {
                 smeltingResult = ChemicalHelper.get(TagPrefix.ingot, smeltingMaterial);
-            } else if (smeltingMaterial.hasProperty(PropertyKey.GEM)) {
+            } else if (gemRecipesEnabled && smeltingMaterial.hasProperty(PropertyKey.GEM)) {
                 smeltingResult = ChemicalHelper.get(TagPrefix.gem, smeltingMaterial);
             } else {
                 smeltingResult = ChemicalHelper.get(TagPrefix.dust, smeltingMaterial);
@@ -152,7 +157,7 @@ final class OreByProductWrapper {
         }
         // macerate ore -> crushed
         addToOutputs(material, TagPrefix.crushed, rawOreCrushedAmount);
-        if (!ChemicalHelper.get(TagPrefix.gem, byproducts[0]).isEmpty()) {
+        if (gemRecipesEnabled && !ChemicalHelper.get(TagPrefix.gem, byproducts[0]).isEmpty()) {
             addToOutputs(byproducts[0], TagPrefix.gem, 1);
         } else {
             addToOutputs(byproducts[0], TagPrefix.dust, 1);

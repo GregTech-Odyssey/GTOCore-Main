@@ -108,6 +108,11 @@ public final class TagsHandler {
 
     public static void initItem() {
         create(Tags.HUMAN_EGG, Items.VILLAGER_SPAWN_EGG, Items.WITCH_SPAWN_EGG);
+        create(Tags.SIFTABLES,
+                GTOItems.CRUDELY_PURIFIED_ORIGIN_CORE_CRYSTAL_ORE.asItem(),
+                GTOItems.CRUDELY_FUSED_STAR_BLOOD_CRYSTAL_ORE.asItem(),
+                GTOItems.CRUDELY_HARMONIZED_SOUL_JADE_CRYSTAL_ORE.asItem(),
+                GTOItems.CRUDELY_SHAPED_REMNANT_SPIRIT_STONE_ORE.asItem());
         create(ResourceLocation.fromNamespaceAndPath("curios", "curio"),
                 GTOItems.WIRELESS_ME2IN1.asItem());
         create(ResourceLocation.parse("forge:ingots/redstone_alloy"),
