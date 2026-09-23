@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.*;
+import com.gtocore.common.recipe.GeneralVaultRecipe;
 
 import com.gtolib.GTOCore;
 
@@ -15,9 +16,11 @@ import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.common.data.GTRecipes;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
+import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 
@@ -42,6 +45,8 @@ public final class MachineRecipe {
                 "PCP", "RPR", 'P', new MaterialEntry(plateDouble, GTMaterials.Steel), 'R', new MaterialEntry(TagPrefix.rodLong, GTMaterials.Steel), 'C', GTMachines.BRONZE_DRUM.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("general_vault"), MultiBlockG.GENERAL_VAULT.asItem(), "PAP",
                 "RPR", "PBP", 'P', new MaterialEntry(plateDouble, GTMaterials.Steel), 'R', new MaterialEntry(TagPrefix.rodLong, GTMaterials.Steel), 'A', MultiBlockG.ITEM_VAULT.asItem(), 'B', MultiBlockG.FLUID_VAULT.asItem());
+        GTRecipes.RECIPE_MAP.compute(GTOCore.id("shaped/general_vault"), (id, recipe) -> new GeneralVaultRecipe((ShapedRecipe) recipe));
+
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("vault_hatch"), GTOMachines.VAULT_HATCH.asItem(), " P ",
                 "PVP", " P ", 'P', new MaterialEntry(plateDouble, WroughtIron), 'V', MultiBlockG.GENERAL_VAULT.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("evaporation_plant"),
