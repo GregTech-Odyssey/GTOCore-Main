@@ -9,18 +9,16 @@ import com.gtolib.api.recipe.RecipeBuilder;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.BedrockFluidVeinSavedData;
 import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.FluidVeinWorldEntry;
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+import com.gregtechceu.gtceu.api.machine.trait.VeinDrillLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
-import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.jetbrains.annotations.Nullable;
 
-public final class INFFluidDrillLogic extends RecipeLogic implements IFluidDrillLogic {
+public final class INFFluidDrillLogic extends VeinDrillLogic implements IFluidDrillLogic {
 
     public static final int MAX_PROGRESS = 20;
     private DrillingControlCenterMachine cache;
@@ -38,28 +36,16 @@ public final class INFFluidDrillLogic extends RecipeLogic implements IFluidDrill
     }
 
     @Override
-    public boolean findAndHandleRecipe() {
-        if (getMachine().getLevel() instanceof ServerLevel serverLevel) {
-            lastRecipe = null;
-            var data = BedrockFluidVeinSavedData.getOrCreate(serverLevel);
-            if (veinFluid == null) {
-                veinFluid = data.getFluidInChunk(getChunkX(), getChunkZ());
-                if (veinFluid == null) {
-                    return false;
-                }
-            }
-            var match = getFluidDrillRecipe();
-            if (match != null) {
-                if (machine.matchRecipeOutput(match) && machine.matchTickRecipe(match)) {
-                    return setupRecipe(RecipeHandlerUnit.NO_DATA, match);
-                }
-            }
+    protected boolean resolveVein(ServerLevel serverLevel) {
+        if (veinFluid == null) {
+            veinFluid = BedrockFluidVeinSavedData.getOrCreate(serverLevel).getFluidInChunk(getChunkX(), getChunkZ());
         }
-        return false;
+        return veinFluid != null;
     }
 
     @Nullable
-    private GTRecipe getFluidDrillRecipe() {
+    @Override
+    protected GTRecipe buildDrillRecipe() {
         if (getMachine().getLevel() instanceof ServerLevel serverLevel && veinFluid != null) {
             var data = BedrockFluidVeinSavedData.getOrCreate(serverLevel);
             return RecipeBuilder.ofRaw().outputFluids(new FluidStack(veinFluid, getFluidToProduce(data.getFluidVeinWorldEntry(getChunkX(), getChunkZ())))).duration(MAX_PROGRESS).EUt((long) (GTValues.VA[getMachine().getEnergyTier()] * Math.pow(parallel, 1.2))).buildRawRecipe();
@@ -93,35 +79,8 @@ public final class INFFluidDrillLogic extends RecipeLogic implements IFluidDrill
         return 0;
     }
 
-    @Override
-    public boolean onRecipeFinish() {
-        machine.afterWorking();
-        if (lastRecipe != null) machine.handleRecipeOutput(lastRecipe);
-        if (this.suspendAfterFinish) {
-            this.setStatus(SUSPEND);
-            this.suspendAfterFinish = false;
-        } else {
-            var match = getFluidDrillRecipe();
-            if (match != null) {
-                if (machine.matchRecipeOutput(match) && machine.matchTickRecipe(match)) {
-                    return setupRecipe(RecipeHandlerUnit.NO_DATA, match);
-                }
-            }
-            setStatus(IDLE);
-        }
-        return false;
-    }
-
     private boolean isOverclocked() {
         return getMachine().getEnergyTier() > getMachine().getTier();
-    }
-
-    private int getChunkX() {
-        return SectionPos.blockToSectionCoord(getMachine().getPos().getX());
-    }
-
-    private int getChunkZ() {
-        return SectionPos.blockToSectionCoord(getMachine().getPos().getZ());
     }
 
     @Override

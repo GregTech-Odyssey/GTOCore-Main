@@ -5,7 +5,7 @@ import com.gtolib.api.machine.trait.IFluidDrillLogic;
 
 import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.FluidVeinWorldEntry;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+import com.gregtechceu.gtceu.api.machine.trait.VeinDrillLogic;
 import com.gregtechceu.gtceu.common.machine.trait.FluidDrillLogic;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FluidDrillLogic.class)
-public class FluidDrillLogicMixin extends RecipeLogic implements IFluidDrillLogic {
+public abstract class FluidDrillLogicMixin extends VeinDrillLogic implements IFluidDrillLogic {
 
     @Unique
     private DrillingControlCenterMachine gtolib$cache;
