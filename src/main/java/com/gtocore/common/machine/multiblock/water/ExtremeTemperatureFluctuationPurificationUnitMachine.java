@@ -68,12 +68,14 @@ public final class ExtremeTemperatureFluctuationPurificationUnitMachine extends 
     }
 
     @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        if (getRecipeLogic().isWorking()) {
-            textList.add(Component.translatable("gtceu.multiblock.fusion_reactor.heat", heat));
-            textList.add(Component.translatable("gtceu.jei.ore_vein_diagram.chance", chance));
-        }
+    void addWorkingText(List<Component> textList) {
+        textList.add(Component.translatable("gtceu.multiblock.fusion_reactor.heat", heat));
+        super.addWorkingText(textList);
+    }
+
+    @Override
+    double getSuccessChance() {
+        return chance;
     }
 
     @Override

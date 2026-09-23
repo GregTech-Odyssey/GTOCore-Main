@@ -64,12 +64,14 @@ public final class AbsoluteBaryonicPerfectionPurificationUnitMachine extends Wat
     }
 
     @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        if (getRecipeLogic().isWorking()) {
-            textList.add(Component.translatable("gtocore.machine.absolute_baryonic_perfection_purification_unit.items", catalyst1.getDescription(), catalyst2.getDescription()));
-            textList.add(Component.translatable("gtceu.jei.ore_vein_diagram.chance", successful ? 100 : 0));
-        }
+    void addWorkingText(List<Component> textList) {
+        textList.add(Component.translatable("gtocore.machine.absolute_baryonic_perfection_purification_unit.items", catalyst1.getDescription(), catalyst2.getDescription()));
+        super.addWorkingText(textList);
+    }
+
+    @Override
+    double getSuccessChance() {
+        return successful ? 100 : 0;
     }
 
     @Override

@@ -7,22 +7,34 @@ import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTSoundEntries;
+import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 @MethodsReturnNonnullByDefault
-abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultiblockMachine implements IIWirelessInteractor<WaterPurificationPlantMachine> {
+abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultiblockMachine implements IIWirelessInteractor<WaterPurificationPlantMachine>, IDataInfoProvider {
 
     abstract long prepareRecipe(RecipeHandlerUnit unit);
+
+    /// 本轮产出下一级净化水的成功率（0-100），仅在运行时有意义
+    abstract double getSuccessChance();
 
     private WaterPurificationPlantMachine netMachineCache;
     GTRecipe recipe;
@@ -121,6 +133,31 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         super.onUnload();
         tickSubs.unsubscribe();
         removeNetMachineCache();
+    }
+
+    /// 运行时信息，机器 GUI 与便携式扫描仪共用
+    void addWorkingText(List<Component> textList) {
+        textList.add(successChanceText(getSuccessChance()));
+    }
+
+    static Component successChanceText(double chance) {
+        return Component.translatable("gtocore.machine.water_purification_unit.success_chance", FormattingUtil.formatNumber2Places(Math.min(chance, 100))).withStyle(ChatFormatting.YELLOW);
+    }
+
+    @Override
+    public void customText(List<Component> textList) {
+        super.customText(textList);
+        if (getRecipeLogic().isWorking()) addWorkingText(textList);
+    }
+
+    @Override
+    public List<Component> getDataInfo(PortableScannerBehavior.DisplayMode mode) {
+        if ((mode == PortableScannerBehavior.DisplayMode.SHOW_ALL || mode == PortableScannerBehavior.DisplayMode.SHOW_MACHINE_INFO) && getRecipeLogic().isWorking()) {
+            List<Component> list = new ArrayList<>(3);
+            addWorkingText(list);
+            return list;
+        }
+        return Collections.emptyList();
     }
 
     @Override

@@ -98,8 +98,10 @@ final class MachineLang {
         addCNEN("gtocore.machine.wind_mill_turbine.tooltip.1", "风速加成: 雨天x1.5，雷雨天x2，风速决定最高转速", "Wind Speed Bonus: x1.5 for rainy days, x2 for thunderstorms, the wind speed determines the maximum rotation speed");
         addCNEN("gtocore.machine.wind_mill_turbine.wind", "当前风力: %s", "Current Wind Speed: %s");
         addCNEN("gtocore.machine.water_purification_plant.bind", "已绑定机器:", "Bound Machine:");
+        addCNEN("gtocore.machine.water_purification_unit.success_chance", "成功率: %s%%", "Success Chance: %s%%");
         addCNEN("gtocore.machine.absolute_baryonic_perfection_purification_unit.items", "本次循环组合:\n%s, %s", "Current combination for this cycle:\n%s, %s");
         addCNEN("gtocore.machine.residual_decontaminant_degasser_purification_unit.fluids", "本次循环需求:\n%s", "Current cycle requirements:\n%s");
+        addCNEN("gtocore.machine.wireless_laser_hatch.no_laser_bonus", "§c占用激光仓位置，但不享受激光仓加成", "§cOccupies laser hatch slot, but does not receive laser hatch bonus");
         addCNEN("gtocore.machine.wireless_data_hatch.bind", "无线数据仓绑定完成", "Wireless data hatch binding completed");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.tooltip.0", "需要使用闪存右键无线光学数据靶仓和无线数据源仓进行绑定", "Use the flash drive to right-click and bind the wireless optical data target hatch and the wireless data source hatch");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.to_bind", "源仓数据读取完成，请右键靶仓进行绑定", "Source hatch data reading completed, please right-click the target hatch to bind");

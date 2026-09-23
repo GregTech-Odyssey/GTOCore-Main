@@ -8,10 +8,12 @@ import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -27,6 +29,8 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanRBTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanSortedMap;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -34,7 +38,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class WaterPurificationPlantMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
+public final class WaterPurificationPlantMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder, IDataInfoProvider {
 
     static final int DURATION = 2400;
 
@@ -160,6 +164,26 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             }
             textList.add(component);
         }
+    }
+
+    @Override
+    public List<Component> getDataInfo(PortableScannerBehavior.DisplayMode mode) {
+        if (!isFormed() || waterPurificationUnitMachineMap.isEmpty() || (mode != PortableScannerBehavior.DisplayMode.SHOW_ALL && mode != PortableScannerBehavior.DisplayMode.SHOW_MACHINE_INFO)) {
+            return Collections.emptyList();
+        }
+        List<Component> list = new ArrayList<>(waterPurificationUnitMachineMap.size() + 1);
+        list.add(Component.translatable("gtocore.machine.water_purification_plant.bind"));
+        for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
+            var machine = entry.getKey();
+            MutableComponent component = Component.translatable(machine.getBlockState().getBlock().getDescriptionId()).append(" ");
+            if (entry.getBooleanValue()) {
+                component.append(WaterPurificationUnitMachine.successChanceText(machine.getSuccessChance()));
+            } else {
+                component.append(Component.translatable("gtceu.multiblock.idling"));
+            }
+            list.add(component);
+        }
+        return list;
     }
 
     @Override

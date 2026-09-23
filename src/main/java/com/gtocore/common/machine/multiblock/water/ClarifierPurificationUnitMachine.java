@@ -34,9 +34,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class ClarifierPurificationUnitMachine extends WaterPurificationUnitMachine implements IFluidRendererMachine {
 
     private static final Fluid AIR = GTMaterials.Air.getFluid();
+    private static final Fluid[] CATALYSTS = { WaterPurificationPlantMachine.GradePurifiedWater4, WaterPurificationPlantMachine.GradePurifiedWater3, WaterPurificationPlantMachine.GradePurifiedWater2, WaterPurificationPlantMachine.GradePurifiedWater1 };
+    private static final int[] CATALYST_DIVISORS = { 16, 4, 2, 1 };
+    private static final int[] CATALYST_CHANCES = { 100, 95, 90, 85 };
 
     @SaveToDisk(defaultValue = "0")
     private int count;
+    @SaveToDisk(defaultValue = "0")
+    private int chance;
     @Getter
     @SyncToClient(scheduleUpdate = true, autoDetect = false)
     private final Set<BlockPos> fluidBlockOffsets = FluidRenderUtils.emptyFluidBlockOffsets();
@@ -79,7 +84,10 @@ public final class ClarifierPurificationUnitMachine extends WaterPurificationUni
         eut = 0;
         if (count > 100) {
             if (!simulateOutputItem(GTOItems.SCRAP.asItem(), count / 20)) return 0;
-            if (inputFluid(AIR, count * 10000L) && inputFluid(Fluids.WATER, (200L + GTValues.RNG.nextInt(100)) * 1000) && outputItem(GTOItems.SCRAP.asItem(), count / 20)) {
+            long air = count * 10000L;
+            long water = (200L + GTValues.RNG.nextInt(100)) * 1000;
+            // 空气和水都够才开始扣，否则扣完空气后水不够会白白损失空气，且每次搜索配方都会再扣一次
+            if (matchFluid(AIR, air) && matchFluid(Fluids.WATER, water) && inputFluid(AIR, air) && inputFluid(Fluids.WATER, water) && outputItem(GTOItems.SCRAP.asItem(), count / 20)) {
                 count = 0;
             } else {
                 return 0;
@@ -90,7 +98,8 @@ public final class ClarifierPurificationUnitMachine extends WaterPurificationUni
             long outputCount = inputCount * 9 / 10;
             RecipeBuilder builder = getRecipeBuilder();
             builder.duration(WaterPurificationPlantMachine.DURATION).inputFluids(Fluids.WATER, inputCount);
-            if (GTValues.RNG.nextInt(100) <= getChance(outputCount / 10)) {
+            chance = addCatalyst(unit, builder, outputCount / 10);
+            if (GTValues.RNG.nextInt(100) < chance) {
                 builder.outputFluids(WaterPurificationPlantMachine.GradePurifiedWater1, outputCount);
             } else {
                 builder.outputFluids(Fluids.WATER, outputCount);
@@ -104,15 +113,20 @@ public final class ClarifierPurificationUnitMachine extends WaterPurificationUni
         return eut;
     }
 
-    private int getChance(long count) {
-        if (inputFluid(WaterPurificationPlantMachine.GradePurifiedWater4, count / 16)) {
-            return 100;
-        } else if (inputFluid(WaterPurificationPlantMachine.GradePurifiedWater3, count / 4)) {
-            return 95;
-        } else if (inputFluid(WaterPurificationPlantMachine.GradePurifiedWater2, count / 2)) {
-            return 90;
-        } else if (inputFluid(WaterPurificationPlantMachine.GradePurifiedWater1, count)) {
-            return 85;
+    @Override
+    double getSuccessChance() {
+        return chance;
+    }
+
+    /// 在当前输入单元里选够量的最高等级净化水作催化，写进配方随水一起扣除，配方未启动时不消耗
+    private static int addCatalyst(RecipeHandlerUnit unit, RecipeBuilder builder, long count) {
+        long[] amounts = unit.getFluidAmount(true, CATALYSTS);
+        for (int i = 0; i < CATALYSTS.length; i++) {
+            long need = Math.max(1, count / CATALYST_DIVISORS[i]);
+            if (amounts[i] >= need) {
+                builder.inputFluids(CATALYSTS[i], need);
+                return CATALYST_CHANCES[i];
+            }
         }
         return 70;
     }

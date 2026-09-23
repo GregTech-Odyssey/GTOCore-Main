@@ -6,12 +6,9 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-
-import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -22,25 +19,17 @@ public final class FlocculationPurificationUnitMachine extends WaterPurification
     private static final Fluid PolyAluminiumChloride = GTOMaterials.PolyAluminiumChloride.getFluid();
     private static final Fluid FlocculationWasteSolution = GTOMaterials.FlocculationWasteSolution.getFluid();
 
-    @SaveToDisk(defaultValue = "0")
-    private long chance;
+    private static final long CHEMICAL_PER_LEVEL = 100000;
 
     @SaveToDisk(defaultValue = "0")
     private long inputCount;
 
+    /// 本轮累计消耗的聚合氯化铝，同时也是絮凝废液的产量
     @SaveToDisk(defaultValue = "0")
     private long outputCount;
 
     public FlocculationPurificationUnitMachine(MetaMachineBlockEntity holder) {
         super(holder, 4);
-    }
-
-    @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        if (getRecipeLogic().isWorking()) {
-            textList.add(Component.translatable("gtceu.jei.ore_vein_diagram.chance", Math.min(chance, 100)));
-        }
     }
 
     @Override
@@ -50,13 +39,17 @@ public final class FlocculationPurificationUnitMachine extends WaterPurification
             long amount = getFluidAmount(true, PolyAluminiumChloride)[0];
             if (inputFluid(PolyAluminiumChloride, amount)) {
                 outputCount += amount;
-                if (amount % 100000 == 0) {
-                    if (chance < 100) chance += amount / 10000;
-                } else {
-                    chance = chance * (1L << (-10 * Math.abs((amount - 100000) / 100000)));
-                }
             }
         }
+    }
+
+    /// 按本轮消耗总量计算：每满 100,000mB +10%（封顶 100%），总量有零头时再乘 2^(-10 × 零头/100,000)
+    @Override
+    double getSuccessChance() {
+        double chance = Math.min(100, outputCount / CHEMICAL_PER_LEVEL * 10);
+        long overflow = outputCount % CHEMICAL_PER_LEVEL;
+        if (overflow > 0) chance *= Math.pow(2, -10.0 * overflow / CHEMICAL_PER_LEVEL);
+        return chance;
     }
 
     @Override
@@ -64,14 +57,13 @@ public final class FlocculationPurificationUnitMachine extends WaterPurification
         super.afterWorking();
         outputFluid(FlocculationWasteSolution, outputCount);
         long outputCount = inputCount * 9 / 10;
-        if (Math.random() * 100 <= chance) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater3, outputCount);
+        if (Math.random() * 100 < getSuccessChance()) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater3, outputCount);
         else outputFluid(WaterPurificationPlantMachine.GradePurifiedWater2, outputCount);
     }
 
     @Override
     long prepareRecipe(RecipeHandlerUnit unit) {
         eut = 0;
-        chance = 0;
         outputCount = 0;
         inputCount = Math.min(parallel(), unit.getFluidAmount(true, WaterPurificationPlantMachine.GradePurifiedWater2)[0]);
         if (inputCount > 0) {

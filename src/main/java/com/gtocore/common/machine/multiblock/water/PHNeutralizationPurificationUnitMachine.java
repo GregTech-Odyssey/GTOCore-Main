@@ -63,11 +63,18 @@ public final class PHNeutralizationPurificationUnitMachine extends WaterPurifica
     }
 
     @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        if (getRecipeLogic().isWorking()) {
-            textList.add(Component.literal("pH: " + ph));
-        }
+    void addWorkingText(List<Component> textList) {
+        textList.add(Component.literal("pH: " + ph));
+        super.addWorkingText(textList);
+    }
+
+    private boolean isNeutral() {
+        return ph >= 6.95 && ph <= 7.05;
+    }
+
+    @Override
+    double getSuccessChance() {
+        return isNeutral() ? 100 : 0;
     }
 
     @Override
@@ -89,7 +96,7 @@ public final class PHNeutralizationPurificationUnitMachine extends WaterPurifica
     @Override
     public void afterWorking() {
         super.afterWorking();
-        if (ph >= 6.95 && ph <= 7.05) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater4, inputCount * 9 / 10);
+        if (isNeutral()) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater4, inputCount * 9 / 10);
     }
 
     @Override

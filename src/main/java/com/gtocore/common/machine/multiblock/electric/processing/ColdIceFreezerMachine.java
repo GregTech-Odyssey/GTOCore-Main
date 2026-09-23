@@ -33,12 +33,21 @@ public final class ColdIceFreezerMachine extends CustomParallelMultiblockMachine
         long amount = (1L << Math.max(0, getTier() - 2)) * 10L;
         // 被动消耗优先从普通输入仓取：配方所在 unit 和样板总成槽位里的液态冰是配方原料，
         // 且样板槽位 priority 恒为 HIGH、总排在最前，按默认顺序扣会先吃掉原料
-        for (var unit : getInputUnits()) {
+        var units = getInputUnits();
+        int size = units.size();
+        for (int i = 0; i < size; i++) {
+            var unit = units.get(i);
             if (unit != recipeUnit && !(unit instanceof InternalSlotRecipeHandler.AbstractRHL) && unit.inputFluid(fluid, amount)) return true;
         }
-        for (var unit : getInputUnits()) {
-            // 从配方所在 unit 扣时须够"配方 + 被动"两份，否则扣完被动后配方扣料半途失败，已扣的物品会被吞
-            if (unit == recipeUnit && reserved > 0 && unit.getFluidAmount(true, fluid)[0] < amount + reserved) continue;
+        // 回退时只需再试第一轮跳过的 unit，其余已确认不够量
+        for (int i = 0; i < size; i++) {
+            var unit = units.get(i);
+            if (unit == recipeUnit) {
+                // 从配方所在 unit 扣时须够"配方 + 被动"两份，否则扣完被动后配方扣料半途失败，已扣的物品会被吞
+                if (reserved > 0 && unit.getFluidAmount(true, fluid)[0] < amount + reserved) continue;
+            } else if (!(unit instanceof InternalSlotRecipeHandler.AbstractRHL)) {
+                continue;
+            }
             if (unit.inputFluid(fluid, amount)) return true;
         }
         setIdleReason(() -> ActionResult.failInsufficientIn(ICE.getDisplayName()).reason());

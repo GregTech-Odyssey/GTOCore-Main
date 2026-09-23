@@ -81,12 +81,14 @@ public final class HighEnergyLaserPurificationUnitMachine extends WaterPurificat
     }
 
     @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        if (getRecipeLogic().isWorking()) {
-            textList.add(Component.translatable("gtceu.jei.ore_vein_diagram.chance", chance));
-            textList.add(Component.translatable("attributeslib.gui.current", LENS.get(index).getDescription()));
-        }
+    void addWorkingText(List<Component> textList) {
+        super.addWorkingText(textList);
+        textList.add(Component.translatable("attributeslib.gui.current", LENS.get(index).getDescription()));
+    }
+
+    @Override
+    double getSuccessChance() {
+        return chance;
     }
 
     @Override
@@ -128,7 +130,7 @@ public final class HighEnergyLaserPurificationUnitMachine extends WaterPurificat
     @Override
     public void afterWorking() {
         super.afterWorking();
-        if (GTValues.RNG.nextInt(100) <= chance) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater6, inputCount * 9 / 10);
+        if (GTValues.RNG.nextInt(100) < chance) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater6, inputCount * 9 / 10);
     }
 
     @Override

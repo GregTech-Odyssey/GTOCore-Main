@@ -56,12 +56,14 @@ public final class ResidualDecontaminantDegasserPurificationUnitMachine extends 
     }
 
     @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        if (getRecipeLogic().isWorking()) {
-            textList.add(Component.translatable("gtocore.machine.residual_decontaminant_degasser_purification_unit.fluids", fluidStack.getDisplayName()));
-            textList.add(Component.translatable("gtceu.jei.ore_vein_diagram.chance", (successful && !failed) ? 100 : 0));
-        }
+    void addWorkingText(List<Component> textList) {
+        textList.add(Component.translatable("gtocore.machine.residual_decontaminant_degasser_purification_unit.fluids", fluidStack.getDisplayName()));
+        super.addWorkingText(textList);
+    }
+
+    @Override
+    double getSuccessChance() {
+        return (successful && !failed) ? 100 : 0;
     }
 
     @Override
