@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 召唤盖亚守护者 III 前的物品检查：纳米肌体 / 夸克高科 II 起的装备可耗电解析，视为允许携带。
- * 解析成功不提示；电量不足时提示并按原逻辑拒绝召唤。其余不允许的物品照旧拒绝，且此时不扣电。
+ * 召唤盖亚守护者 III 前的物品检查（召唤限制破解）：纳米肌体 / 夸克高科 II 起的装备与能量剑可耗电破解，视为允许携带。
+ * 破解成功不提示；电量不足时提示并按原逻辑拒绝召唤。其余不允许的物品照旧拒绝，且此时不扣电。
  */
 @Mixin(value = GaiaArena.class, remap = false)
 public class GaiaArenaMixin {

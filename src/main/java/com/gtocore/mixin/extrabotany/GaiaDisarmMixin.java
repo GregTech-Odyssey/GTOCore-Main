@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * 盖亚守护者 III 每 tick 的缴械：纳米肌体 / 夸克高科 II 起的装备可按 1 A/s 耗电抵消，不被卸下；没电时照常卸下
+ * 盖亚守护者 III 每 tick 的缴械（缴械魔法破解）：纳米肌体 / 夸克高科 II 起的装备与能量剑可按 1 A/s 耗电抵消，不被卸下；没电时照常卸下
  */
 @Mixin(value = GaiaDisarm.class, remap = false)
 public class GaiaDisarmMixin {
