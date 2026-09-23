@@ -103,6 +103,7 @@ final class MachineLang {
         addCNEN("gtocore.machine.residual_decontaminant_degasser_purification_unit.fluids", "本次循环需求:\n%s", "Current cycle requirements:\n%s");
         addCNEN("gtocore.machine.wireless_laser_hatch.no_laser_bonus", "§c占用激光仓位置，但不享受激光仓加成", "§cOccupies laser hatch slot, but does not receive laser hatch bonus");
         addCNEN("gtocore.machine.wireless_data_hatch.bind", "无线数据仓绑定完成", "Wireless data hatch binding completed");
+        addCNEN("gtocore.machine.wireless_laser_hatch.no_laser_bonus", "§c占用激光仓位置，但不享受激光仓加成", "§cOccupies laser hatch slot, but does not receive laser hatch bonus");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.tooltip.0", "需要使用闪存右键无线光学数据靶仓和无线数据源仓进行绑定", "Use the flash drive to right-click and bind the wireless optical data target hatch and the wireless data source hatch");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.to_bind", "源仓数据读取完成，请右键靶仓进行绑定", "Source hatch data reading completed, please right-click the target hatch to bind");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.bind", "已绑定无线光学数据靶仓(%s)", "Bound wireless optical data target hatch (%s)");
