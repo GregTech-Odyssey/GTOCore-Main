@@ -24,6 +24,8 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyMap;
 import appeng.api.storage.ITerminalHost;
 import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEPatternDecoder;
@@ -65,6 +67,9 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     private static final String CLICK_TO_DISABLE = "gtocore.pattern.recipeInfoButton.clickToDisable";
     @Unique
     private static final String CLICK_TO_CLEAR = "gtocore.pattern.recipeInfoButton.clickToClear";
+    // 单个目的地最多同步的样板产物数，防止大型装配矩阵集群撑爆发包
+    @Unique
+    private static final int GTO$MAX_OUTPUTS_PER_DESTINATION = 1024;
 
     @Shadow(remap = false)
     @Final
@@ -462,11 +467,58 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         gto$patternStack = patternStack;
         gto$currentContainers = gto$getPatternContainers(recipeLocName);
         if (gto$currentContainers.isEmpty()) return;
-        Message.sendPatternDestination((ServerPlayer) getPlayer(), gto$currentContainers.stream()
-                .map(container -> new Message.PatternDestination(
-                        container.getTerminalGroup(),
-                        gto$isFull(container, patternStack)))
-                .toArray(Message.PatternDestination[]::new));
+        var level = getPlayer().level();
+        var destinations = new Message.PatternDestination[gto$currentContainers.size()];
+        for (int i = 0; i < destinations.length; i++) {
+            var container = gto$currentContainers.get(i);
+            destinations[i] = new Message.PatternDestination(
+                    container.gto$getMachineGroup(),
+                    container.gto$getPlainCustomName(),
+                    container.gto$getProviderIcon(),
+                    gto$isFull(container, patternStack),
+                    gto$collectPatternOutputs(container, level));
+        }
+        Message.sendPatternDestination((ServerPlayer) getPlayer(), destinations);
+    }
+
+    /**
+     * 收集目的地已有样板的全部产物（去重），集群（装配矩阵 / 超分子装配器）按整个集群收集，与列表中一行代表一个集群一致。
+     */
+    @Unique
+    private static AEKey[] gto$collectPatternOutputs(IExtendedPatternContainer container, net.minecraft.world.level.Level level) {
+        var outputs = new AEKeyMap<AEKey>();
+        var patternInv = container.getTerminalPatternInventory();
+        if (patternInv instanceof AppEngInternalInventory aeInv &&
+                aeInv.getHost() instanceof TileAssemblerMatrixPattern matrixPattern &&
+                matrixPattern.getCluster() != null) {
+            for (var member : matrixPattern.getCluster().getPatterns()) {
+                if (member instanceof IExtendedPatternContainer c) gto$collectPatternOutputs(c, level, outputs);
+            }
+        } else if (patternInv instanceof MEPartInv inv &&
+                inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
+                mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
+                    for (var part : smaMachine.getParts()) {
+                        if (part instanceof IExtendedPatternContainer c) gto$collectPatternOutputs(c, level, outputs);
+                    }
+                } else {
+                    gto$collectPatternOutputs(container, level, outputs);
+                }
+        var result = new AEKey[outputs.size()];
+        var index = new int[1];
+        outputs.fastForEach((key, v) -> result[index[0]++] = key);
+        return result;
+    }
+
+    @Unique
+    private static void gto$collectPatternOutputs(IExtendedPatternContainer container, net.minecraft.world.level.Level level, AEKeyMap<AEKey> outputs) {
+        for (var pattern : container.getTerminalPatternInventory()) {
+            if (outputs.size() >= GTO$MAX_OUTPUTS_PER_DESTINATION) return;
+            var details = AEPatternDecoder.INSTANCE.decodePattern(pattern, level, false);
+            if (details == null) continue;
+            for (var output : details.getOutputs()) {
+                if (output != null) outputs.put(output.what(), 1);
+            }
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.gtocore.mixin.ae2.screen;
 import com.gtocore.client.forge.DebugScreenInspector;
 import com.gtocore.client.renderer.RenderUtil;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 
 import com.gtolib.api.ae2.gui.hooks.IWUTScreen;
@@ -68,6 +69,14 @@ public abstract class AEBaseScreenMixin<T extends AEBaseMenu> extends AbstractCo
             verticalToolbar.add(b = new CycleTerminalButton(CycleTerminalButton.LayoutDirection.LEFT));
             if ((Object) this instanceof WFTMenu.WFTScreen fs) fs.filterModeGroup.add(b);
             cir.setReturnValue(button);
+        }
+    }
+
+    // 样板发送面板盖在物品槽之上：鼠标在面板上时不应显示下方物品槽的悬停提示
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lappeng/client/gui/AEBaseScreen;renderTooltips(Lnet/minecraft/client/gui/GuiGraphics;II)V", remap = false))
+    private void gtolib$hideSlotUnderDestPanel(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+        if ((Object) this instanceof IExtendedPatternEncodingTerm term && term.gto$getPatternDestDisplay().isMouseOver(mouseX, mouseY)) {
+            hoveredSlot = null;
         }
     }
 

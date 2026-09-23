@@ -401,6 +401,11 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     }
 
     @Override
+    protected GTRecipeType groupRecipeType() {
+        return recipeType;
+    }
+
+    @Override
     public Component gto$getTerminalGroupSearchName() {
         if (!isFormed()) {
             return getTerminalGroup().name();

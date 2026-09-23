@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IUIMachine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.implementations.blockentities.PatternContainerGroup;
+import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.block.AEBaseEntityBlock;
@@ -34,6 +36,7 @@ import appeng.menu.me.common.MEStorageMenu;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public final class Message {
@@ -85,7 +88,19 @@ public final class Message {
         var size = b.readVarInt();
         var destinations = new PatternDestination[size];
         for (int i = 0; i < size; i++) {
-            destinations[i] = new PatternDestination(PatternContainerGroup.readFromPacket(b), b.readBoolean());
+            var group = PatternContainerGroup.readFromPacket(b);
+            var customName = b.readBoolean() ? b.readComponent() : null;
+            var providerIcon = b.readBoolean() ? AEKey.readKey(b) : null;
+            var full = b.readBoolean();
+            var outputCount = b.readVarInt();
+            var outputs = new AEKey[outputCount];
+            int valid = 0;
+            for (int j = 0; j < outputCount; j++) {
+                var key = AEKey.readKey(b);
+                if (key != null) outputs[valid++] = key;
+            }
+            destinations[i] = new PatternDestination(group, customName, providerIcon, full,
+                    valid == outputCount ? outputs : Arrays.copyOf(outputs, valid));
         }
         Client.patternDestinationReceived(destinations);
     });
@@ -121,12 +136,27 @@ public final class Message {
             buf.writeVarInt(destinations.length);
             for (var dest : destinations) {
                 dest.group().writeToPacket(buf);
+                buf.writeBoolean(dest.customName() != null);
+                if (dest.customName() != null) buf.writeComponent(dest.customName());
+                buf.writeBoolean(dest.providerIcon() != null);
+                if (dest.providerIcon() != null) AEKey.writeKey(buf, dest.providerIcon());
                 buf.writeBoolean(dest.full());
+                buf.writeVarInt(dest.outputs().length);
+                for (var output : dest.outputs()) {
+                    AEKey.writeKey(buf, output);
+                }
             }
         }, player);
     }
 
-    public record PatternDestination(PatternContainerGroup group, boolean full) {}
+    /**
+     * @param group        对接机器的分组（图标 + 名称），忽略目的地的普通改名
+     * @param customName   目的地被普通改名时的名字，未改名为 null
+     * @param providerIcon 目的地本体（样板供应器等）的图标，null 表示不单独显示
+     * @param outputs      该目的地（集群则为整个集群）已有样板的产物，供客户端按产物名搜索
+     */
+    public record PatternDestination(PatternContainerGroup group, @Nullable Component customName, @Nullable AEKey providerIcon,
+                                     boolean full, AEKey[] outputs) {}
 
     public static final NetworkPack serverLangSync = NetworkPack.registerC2S("serverLangSyncC2S", (p, b) -> {
         if (!ServerUtils.isServerLangInitialized()) {
@@ -149,16 +179,7 @@ public final class Message {
 
         public static void patternDestinationReceived(PatternDestination[] destinations) {
             if (Minecraft.getInstance().screen instanceof PatternEncodingTermScreen<?> screen) {
-                var term = (IExtendedPatternEncodingTerm) screen;
-                var listBox = term.gto$getPatternDestDisplay();
-                listBox.reset();
-                listBox.setVisible(true);
-                listBox.setX(200);
-                listBox.setY(screen.getYSize() - 100);
-                for (int i = 0; i < destinations.length; i++) {
-                    var dest = destinations[i];
-                    listBox.addPatternContainerGroup(dest.group(), i, dest.full());
-                }
+                ((IExtendedPatternEncodingTerm) screen).gto$getPatternDestDisplay().open(destinations);
             }
         }
 

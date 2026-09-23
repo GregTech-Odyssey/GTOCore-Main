@@ -1,12 +1,12 @@
 package com.gtocore.integration.ae.hooks;
 
-import com.gtocore.integration.ae.client.AESearchPatternProviderListBox;
+import com.gtocore.integration.ae.client.PatternDestinationPanel;
 
 import appeng.client.gui.widgets.ActionButton;
 
 public interface IExtendedPatternEncodingTerm {
 
-    AESearchPatternProviderListBox gto$getPatternDestDisplay();
+    PatternDestinationPanel gto$getPatternDestDisplay();
 
     IExtendedPatternEncodingTerm.Menu gto$getMenu();
 

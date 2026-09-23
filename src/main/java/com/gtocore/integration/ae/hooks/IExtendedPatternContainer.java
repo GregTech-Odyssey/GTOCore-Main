@@ -19,8 +19,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import appeng.api.implementations.blockentities.PatternContainerGroup;
+import appeng.api.stacks.AEKey;
 import appeng.blockentity.crafting.MolecularAssemblerBlockEntity;
 import appeng.helpers.patternprovider.PatternContainer;
+import appeng.helpers.patternprovider.PatternProviderLogicHost;
 
 import com.glodblock.github.extendedae.common.tileentities.TileExMolecularAssembler;
 import org.jetbrains.annotations.Nullable;
@@ -102,6 +104,46 @@ public interface IExtendedPatternContainer extends PatternContainer {
             }
         }
         return getTerminalGroup().name();
+    }
+
+    /**
+     * 发送样板面板：目的地本体（样板供应器、样板总成等）的图标，显示在对接机器图标左边；null 表示不单独显示。
+     */
+    @Nullable
+    default AEKey gto$getProviderIcon() {
+        return this instanceof PatternProviderLogicHost host ? host.getTerminalIcon() : null;
+    }
+
+    /**
+     * 发送样板面板：普通改名（不以 "+" 开头的名字）时返回自定义名，否则返回 null。
+     * "+" 开头是给机器名追加后缀的写法，名字仍以机器为主，不算改名。
+     */
+    @Nullable
+    default Component gto$getPlainCustomName() {
+        if (this instanceof Nameable nameable && nameable.hasCustomName()) {
+            var customName = nameable.getCustomName();
+            if (!customName.getString().startsWith("+")) {
+                return customName;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 发送样板面板：忽略普通改名时对接机器的分组（图标 + 名称）。未改名时就是 {@link #getTerminalGroup()}。
+     */
+    default PatternContainerGroup gto$getMachineGroup() {
+        if (gto$getPlainCustomName() != null && this instanceof IPPPC self) {
+            var level = self.gto$getLevel();
+            var pos = self.gto$getBlockPos();
+            for (var direction : self.gto$getPushDirection()) {
+                var adjacentPos = pos.relative(direction);
+                var group = PatternContainerGroupHelper.fromMachine(level, adjacentPos, "");
+                if (group == null) group = PatternContainerGroup.fromMachine(level, adjacentPos, direction.getOpposite());
+                if (group != null) return group;
+            }
+        }
+        return getTerminalGroup();
     }
 
     interface IPPPC extends IExtendedPatternContainer {

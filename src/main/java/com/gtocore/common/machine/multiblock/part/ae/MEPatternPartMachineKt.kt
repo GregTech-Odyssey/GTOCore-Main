@@ -33,6 +33,7 @@ import appeng.api.networking.IGrid
 import appeng.api.networking.IGridNodeListener
 import appeng.api.networking.crafting.ICraftingProvider
 import appeng.api.stacks.AEItemKey
+import appeng.api.stacks.AEKey
 import appeng.api.stacks.KeyCounter
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
@@ -46,6 +47,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine
 import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType
 import com.gregtechceu.gtceu.api.recipe.handler.IO
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler
@@ -280,6 +282,25 @@ abstract class MEPatternPartMachineKt<T : MEPatternPartMachineKt.AbstractInterna
             PatternContainerGroup(itemKey, description, emptyList())
         }
     }
+
+    override fun `gto$getProviderIcon`(): AEKey? = AEItemKey.of(definition.asStack())
+
+    override fun `gto$getPlainCustomName`(): Component? = if (customName.isNotEmpty() && !customName.startsWith("+")) Component.literal(customName) else null
+
+    /** 发送样板面板：忽略普通改名时的分组，名字回到所属多方块机器 */
+    override fun `gto$getMachineGroup`(): PatternContainerGroup {
+        if (`gto$getPlainCustomName`() == null) return terminalGroup
+        if (!isFormed) {
+            return PatternContainerGroup(AEItemKey.of(definition.asStack()), definition.asItem().description, emptyList())
+        }
+        val controller = getController()
+        val availableRecipeTypes =
+            if (controller is IRecipeLogicMachine) controller.availableRecipeTypes.asList() else emptyList()
+        return PatternContainerGroupHelper.forPatternBuffer(controller.self(), this, "", groupRecipeType(), availableRecipeTypes)
+    }
+
+    /** 分组名中用于显示的已选配方类型；样板总成按自身设置覆写 */
+    protected open fun groupRecipeType(): GTRecipeType? = null
 
     override fun `gto$getTerminalGroupSearchName`(): Component {
         if (!isFormed) {
