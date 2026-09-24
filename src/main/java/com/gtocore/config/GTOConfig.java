@@ -276,6 +276,14 @@ public final class GTOConfig {
         public boolean disableChargeBomb = false;
 
         @Configurable
+        @Configurable.Comment({ "禁用空白样板的所有合成配方（不禁用空白样板物品）",
+                "重启游戏后生效",
+                "Disable all recipes that craft Blank Patterns (does not disable the Blank Pattern item)",
+                "Takes effect after restarting the game" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Challenge: Disable Ordering", cn = "挑战：禁用下单")
+        public boolean disableBlankPatternRecipes = false;
+
+        @Configurable
         @Configurable.Comment({ "调整监控器的最大成型尺寸", "Adjust the maximum formed size of the monitor" })
         @Configurable.Range(min = 4, max = 64)
         @Configurable.Gui.Slider

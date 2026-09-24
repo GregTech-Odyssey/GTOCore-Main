@@ -4,6 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.ManaMachine;
+import com.gtocore.config.GTOConfig;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
@@ -473,50 +474,52 @@ public final class AE2 {
                     .duration(100)
                     .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern_less")
-                    .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 8)
-                    .inputItems(TagPrefix.plate, GTMaterials.PolyvinylChloride, 5)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 16)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 1)
-                    .inputItems(CustomTags.HV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem())
-                    .EUt(GTValues.VA[GTValues.HV])
-                    .duration(400)
-                    .save();
+            if (!GTOConfig.INSTANCE.gamePlay.disableBlankPatternRecipes) {
+                ASSEMBLER_RECIPES.builder("blank_pattern_less")
+                        .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 8)
+                        .inputItems(TagPrefix.plate, GTMaterials.PolyvinylChloride, 5)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 16)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 1)
+                        .inputItems(CustomTags.HV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem())
+                        .EUt(GTValues.VA[GTValues.HV])
+                        .duration(400)
+                        .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern")
-                    .inputItems(TagPrefix.plate, GTOMaterials.Terrasteel, 8)
-                    .inputItems(TagPrefix.plate, GTMaterials.PolyvinylChloride, 5)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 32)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 4)
-                    .inputItems(CustomTags.EV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem(), 4)
-                    .EUt(GTValues.VA[GTValues.EV])
-                    .duration(400)
-                    .save();
+                ASSEMBLER_RECIPES.builder("blank_pattern")
+                        .inputItems(TagPrefix.plate, GTOMaterials.Terrasteel, 8)
+                        .inputItems(TagPrefix.plate, GTMaterials.PolyvinylChloride, 5)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 32)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 4)
+                        .inputItems(CustomTags.EV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem(), 4)
+                        .EUt(GTValues.VA[GTValues.EV])
+                        .duration(400)
+                        .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern_better")
-                    .inputItems(TagPrefix.plate, GTMaterials.TungstenSteel, 8)
-                    .inputItems(TagPrefix.plate, GTMaterials.Polytetrafluoroethylene, 5)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 16)
-                    .inputItems(CustomTags.IV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem(), 16)
-                    .EUt(GTValues.VA[GTValues.IV])
-                    .duration(400)
-                    .save();
+                ASSEMBLER_RECIPES.builder("blank_pattern_better")
+                        .inputItems(TagPrefix.plate, GTMaterials.TungstenSteel, 8)
+                        .inputItems(TagPrefix.plate, GTMaterials.Polytetrafluoroethylene, 5)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 16)
+                        .inputItems(CustomTags.IV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem(), 16)
+                        .EUt(GTValues.VA[GTValues.IV])
+                        .duration(400)
+                        .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern_best")
-                    .inputItems(TagPrefix.plate, GTMaterials.RhodiumPlatedPalladium, 8)
-                    .inputItems(TagPrefix.plate, GTMaterials.Polybenzimidazole, 5)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 64)
-                    .inputItems(CustomTags.LuV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem(), 64)
-                    .EUt(GTValues.VA[GTValues.LuV])
-                    .duration(400)
-                    .save();
+                ASSEMBLER_RECIPES.builder("blank_pattern_best")
+                        .inputItems(TagPrefix.plate, GTMaterials.RhodiumPlatedPalladium, 8)
+                        .inputItems(TagPrefix.plate, GTMaterials.Polybenzimidazole, 5)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 64)
+                        .inputItems(CustomTags.LuV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem(), 64)
+                        .EUt(GTValues.VA[GTValues.LuV])
+                        .duration(400)
+                        .save();
+            }
 
             ASSEMBLER_RECIPES.builder("pattern_provider_magic")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.EV])
@@ -630,49 +633,51 @@ public final class AE2 {
                     .duration(100)
                     .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern_less")
-                    .inputItems(TagPrefix.plate, GTOMaterials.Manasteel, 3)
-                    .inputItems(TagPrefix.plate, GTMaterials.Polyethylene, 2)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 8)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 1)
-                    .inputItems(CustomTags.LV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem())
-                    .EUt(GTValues.VA[GTValues.HV])
-                    .duration(400)
-                    .save();
+            if (!GTOConfig.INSTANCE.gamePlay.disableBlankPatternRecipes) {
+                ASSEMBLER_RECIPES.builder("blank_pattern_less")
+                        .inputItems(TagPrefix.plate, GTOMaterials.Manasteel, 3)
+                        .inputItems(TagPrefix.plate, GTMaterials.Polyethylene, 2)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 8)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 1)
+                        .inputItems(CustomTags.LV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem())
+                        .EUt(GTValues.VA[GTValues.HV])
+                        .duration(400)
+                        .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern")
-                    .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 3)
-                    .inputItems(TagPrefix.plate, GTMaterials.PolyvinylChloride, 2)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 16)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 2)
-                    .inputItems(CustomTags.HV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem(), 4)
-                    .EUt(GTValues.VA[GTValues.EV])
-                    .duration(400)
-                    .save();
+                ASSEMBLER_RECIPES.builder("blank_pattern")
+                        .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 3)
+                        .inputItems(TagPrefix.plate, GTMaterials.PolyvinylChloride, 2)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 16)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 2)
+                        .inputItems(CustomTags.HV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem(), 4)
+                        .EUt(GTValues.VA[GTValues.EV])
+                        .duration(400)
+                        .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern_better")
-                    .inputItems(TagPrefix.plate, GTMaterials.TungstenSteel, 3)
-                    .inputItems(TagPrefix.plate, GTMaterials.Polytetrafluoroethylene, 2)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 32)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 4)
-                    .inputItems(CustomTags.IV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem(), 16)
-                    .EUt(GTValues.VA[GTValues.IV])
-                    .duration(400)
-                    .save();
+                ASSEMBLER_RECIPES.builder("blank_pattern_better")
+                        .inputItems(TagPrefix.plate, GTMaterials.TungstenSteel, 3)
+                        .inputItems(TagPrefix.plate, GTMaterials.Polytetrafluoroethylene, 2)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 32)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 4)
+                        .inputItems(CustomTags.IV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem(), 16)
+                        .EUt(GTValues.VA[GTValues.IV])
+                        .duration(400)
+                        .save();
 
-            ASSEMBLER_RECIPES.builder("blank_pattern_best")
-                    .inputItems(TagPrefix.plate, GTMaterials.RhodiumPlatedPalladium, 3)
-                    .inputItems(TagPrefix.plate, GTMaterials.Polybenzimidazole, 2)
-                    .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
-                    .inputItems(GTItems.NAND_MEMORY_CHIP, 8)
-                    .inputItems(CustomTags.LuV_CIRCUITS)
-                    .outputItems(AEItems.BLANK_PATTERN.asItem(), 64)
-                    .EUt(GTValues.VA[GTValues.LuV])
-                    .duration(400)
-                    .save();
+                ASSEMBLER_RECIPES.builder("blank_pattern_best")
+                        .inputItems(TagPrefix.plate, GTMaterials.RhodiumPlatedPalladium, 3)
+                        .inputItems(TagPrefix.plate, GTMaterials.Polybenzimidazole, 2)
+                        .inputItems(TagPrefix.foil, GTMaterials.Aluminium, 64)
+                        .inputItems(GTItems.NAND_MEMORY_CHIP, 8)
+                        .inputItems(CustomTags.LuV_CIRCUITS)
+                        .outputItems(AEItems.BLANK_PATTERN.asItem(), 64)
+                        .EUt(GTValues.VA[GTValues.LuV])
+                        .duration(400)
+                        .save();
+            }
 
             ASSEMBLER_RECIPES.builder("pattern_provider_magic")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.HV])
@@ -753,7 +758,12 @@ public final class AE2 {
     public static void initJsonFilter(Set<ResourceLocation> filters) {
         filters.add(ExtendedAE.id("silicon_block"));
         filters.add(AppEng.makeId("network/blocks/io_condenser"));
-        if (GTOCore.isEasy()) return;
+        if (GTOCore.isEasy()) {
+            if (GTOConfig.INSTANCE.gamePlay.disableBlankPatternRecipes) {
+                filters.add(AppEng.makeId("network/crafting/patterns_blank"));
+            }
+            return;
+        }
         filters.add(AppEng.makeId("network/cells/item_storage_components_cell_1k_part"));
         filters.add(AppEng.makeId("network/cells/item_storage_components_cell_4k_part"));
         filters.add(AppEng.makeId("network/cells/item_storage_components_cell_16k_part"));
