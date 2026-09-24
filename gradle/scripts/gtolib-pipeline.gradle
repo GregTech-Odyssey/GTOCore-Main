@@ -2395,26 +2395,67 @@ ext.injectGtolibMixinConfig = { File jarFile ->
 }
 
 /**
- * 解析「当前最好的」gtolib.refmap.json：
- * 选 mappings 更多 / 体积更大的（CI 无 GTOLib 时 AP 产物往往残缺，不能盖过预置完整版）。
+ * 解析「当前最好的」gtolib.refmap.json：按类、按成员合并所有候选，写入 build/mixin/gtolib.refmap.json。
+ * 优先级 build/resources/main < 预置 src/main/resources < 本次 Mixin AP 产物：
+ *  - CI 无 GTOLib 源码时 AP 只含 gtocore 的 Mixin，gtolib 条目由预置补齐；
+ *  - AP 新增/变更的注入（含 gtocore 自己的）必须进最终 refmap。
+ * 不能整份二选一：旧版按「类数多者胜」选，预置里残留的旧类让它永远胜出，
+ * AP 新生成的映射（如 AEBaseScreenMixin.render）被整份丢弃，生产环境注入找不到方法而崩溃。
  */
 ext.resolveGtolibRefmapFile = {
+    def apOut = file("${buildDir}/mixin/gtolib.refmap.json")
     def candidates = [
-            file("${buildDir}/mixin/gtolib.refmap.json"),
-            file('src/main/resources/gtolib.refmap.json'),
             file("${buildDir}/resources/main/gtolib.refmap.json"),
+            file('src/main/resources/gtolib.refmap.json'),
+            apOut,
     ].findAll { it.exists() && it.length() > 64 }
     if (candidates.isEmpty()) return null
-    def score = { File f ->
-        try {
-            def root = new groovy.json.JsonSlurper().parse(f)
-            def n = (root instanceof Map && root.mappings instanceof Map) ? root.mappings.size() : 0
-            return n * 1_000_000L + f.length()
-        } catch (Throwable t) {
-            return f.length()
+    def mergeInto = { Map dst, Map src ->
+        src.each { cls, members ->
+            if (!(members instanceof Map)) return
+            def cur = dst[cls]
+            if (!(cur instanceof Map)) {
+                cur = new LinkedHashMap()
+                dst[cls] = cur
+            }
+            cur.putAll(members)
         }
     }
-    return candidates.max { score(it) }
+    def merged = new LinkedHashMap()
+    def mappings = new LinkedHashMap()
+    def data = new LinkedHashMap()
+    int parsed = 0
+    candidates.each { File f ->
+        def root
+        try {
+            root = new groovy.json.JsonSlurper().parse(f)
+        } catch (Throwable t) {
+            logger.warn("GTOLib refmap: 跳过无法解析的 ${f}: ${t.message}")
+            return
+        }
+        if (!(root instanceof Map)) return
+        parsed++
+        if (root.mappings instanceof Map) mergeInto(mappings, root.mappings)
+        if (root.data instanceof Map) {
+            root.data.each { env, envMappings ->
+                if (!(envMappings instanceof Map)) return
+                def dst = data[env]
+                if (!(dst instanceof Map)) {
+                    dst = new LinkedHashMap()
+                    data[env] = dst
+                }
+                mergeInto(dst, envMappings)
+            }
+        }
+    }
+    // 全部候选都坏了就别写出空 refmap（有源码打包会把它回写进 src/main/resources）
+    if (parsed == 0 || mappings.isEmpty()) return null
+    merged.mappings = mappings
+    merged.data = data
+    apOut.parentFile.mkdirs()
+    apOut.setText(groovy.json.JsonOutput.toJson(merged), 'UTF-8')
+    logger.lifecycle("GTOLib refmap: 已合并 ${candidates.size()} 份候选（AP 优先），共 ${mappings.size()} 个 Mixin 类")
+    return apOut
 }
 
 /**

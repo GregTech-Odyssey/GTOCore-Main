@@ -136,7 +136,8 @@
       "scheduleElementParse": "Lnet/minecraft/world/level/storage/loot/LootDataManager;m_278800_(Lnet/minecraft/world/level/storage/loot/LootDataType;Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/concurrent/Executor;Ljava/util/Map;)Ljava/util/concurrent/CompletableFuture;"
     },
     "com/gtocore/mixin/ae2/screen/AEBaseScreenMixin": {
-      "renderLabels": "Lappeng/client/gui/AEBaseScreen;m_280003_(Lnet/minecraft/client/gui/GuiGraphics;II)V"
+      "renderLabels": "Lappeng/client/gui/AEBaseScreen;m_280003_(Lnet/minecraft/client/gui/GuiGraphics;II)V",
+      "render": "Lappeng/client/gui/AEBaseScreen;m_88315_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
     },
     "com/gtolib/mixin/mc/entity/BatMixin": {
       "tick": "Lnet/minecraft/world/entity/ambient/Bat;m_8119_()V"
@@ -346,7 +347,8 @@
       "readAdditionalSaveData": "Lnet/minecraft/world/entity/Mob;m_7378_(Lnet/minecraft/nbt/CompoundTag;)V"
     },
     "com/gtocore/mixin/mc/mob/LivingEntityMixin": {
-      "die": "Lnet/minecraft/world/entity/LivingEntity;m_6667_(Lnet/minecraft/world/damagesource/DamageSource;)V"
+      "die": "Lnet/minecraft/world/entity/LivingEntity;m_6667_(Lnet/minecraft/world/damagesource/DamageSource;)V",
+      "handleEquipmentChanges": "Lnet/minecraft/world/entity/LivingEntity;m_21142_(Ljava/util/Map;)V"
     },
     "com/gtocore/mixin/mc/client/LevelRendererMixin": {
       "renderEntity": "Lnet/minecraft/client/renderer/LevelRenderer;m_109517_(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;)V",
@@ -376,6 +378,9 @@
       "assertValidNamespace": "Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
       "assertValidPath": "Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
       "withPath": "Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"
+    },
+    "com/gtocore/mixin/ae2/screen/PatternEncodingTermScreenMixin": {
+      "mouseClicked": "Lappeng/client/gui/me/items/PatternEncodingTermScreen;m_6375_(DDI)Z"
     }
   },
   "data": {
@@ -516,7 +521,8 @@
         "scheduleElementParse": "Lnet/minecraft/world/level/storage/loot/LootDataManager;m_278800_(Lnet/minecraft/world/level/storage/loot/LootDataType;Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/concurrent/Executor;Ljava/util/Map;)Ljava/util/concurrent/CompletableFuture;"
       },
       "com/gtocore/mixin/ae2/screen/AEBaseScreenMixin": {
-        "renderLabels": "Lappeng/client/gui/AEBaseScreen;m_280003_(Lnet/minecraft/client/gui/GuiGraphics;II)V"
+        "renderLabels": "Lappeng/client/gui/AEBaseScreen;m_280003_(Lnet/minecraft/client/gui/GuiGraphics;II)V",
+        "render": "Lappeng/client/gui/AEBaseScreen;m_88315_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
       },
       "com/gtolib/mixin/mc/entity/BatMixin": {
         "tick": "Lnet/minecraft/world/entity/ambient/Bat;m_8119_()V"
@@ -726,7 +732,8 @@
         "readAdditionalSaveData": "Lnet/minecraft/world/entity/Mob;m_7378_(Lnet/minecraft/nbt/CompoundTag;)V"
       },
       "com/gtocore/mixin/mc/mob/LivingEntityMixin": {
-        "die": "Lnet/minecraft/world/entity/LivingEntity;m_6667_(Lnet/minecraft/world/damagesource/DamageSource;)V"
+        "die": "Lnet/minecraft/world/entity/LivingEntity;m_6667_(Lnet/minecraft/world/damagesource/DamageSource;)V",
+        "handleEquipmentChanges": "Lnet/minecraft/world/entity/LivingEntity;m_21142_(Ljava/util/Map;)V"
       },
       "com/gtocore/mixin/mc/client/LevelRendererMixin": {
         "renderEntity": "Lnet/minecraft/client/renderer/LevelRenderer;m_109517_(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;)V",
@@ -756,6 +763,9 @@
         "assertValidNamespace": "Lnet/minecraft/resources/ResourceLocation;m_245413_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
         "assertValidPath": "Lnet/minecraft/resources/ResourceLocation;m_245185_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
         "withPath": "Lnet/minecraft/resources/ResourceLocation;m_247449_(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"
+      },
+      "com/gtocore/mixin/ae2/screen/PatternEncodingTermScreenMixin": {
+        "mouseClicked": "Lappeng/client/gui/me/items/PatternEncodingTermScreen;m_6375_(DDI)Z"
       }
     }
   }
