@@ -69,6 +69,8 @@ public final class OrganTooltips {
     private static final String INFO_PART = "gtocore.organ.info.part";
     @RegisterLanguage(cn = "缺少此部位时，生命上限 %s", en = "Max health %s while this part is missing")
     private static final String INFO_MISSING = "gtocore.organ.info.missing";
+    @RegisterLanguage(cn = "下辈子或许可以再领一套...", en = "Maybe you can get another set in your next life...")
+    private static final String INFO_SPROUT = "gtocore.organ.info.sprout";
     @RegisterLanguage(cn = "部位 %s · 最高飞行速度 %s", en = "Part %s · Max flight speed %s")
     private static final String INFO_WING = "gtocore.organ.info.wing";
     @RegisterLanguage(cn = "剩余飞行时间 %s", en = "Flight time left %s")
@@ -236,6 +238,8 @@ public final class OrganTooltips {
 
         lines.add(ArmorTooltips.info(INFO_PART, white(type.translationKey), white(tierName(tier))));
         lines.add(ArmorTooltips.info(INFO_MISSING, ArmorTooltips.value(MISSING_ONE_TEXT, ChatFormatting.RED)));
+        // 萌芽级：出生自带、死亡重生补发
+        if (tier == 0) lines.add(Component.literal(" ").append(Component.translatable(INFO_SPROUT)).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
 
         List<Component> piece = new ArrayList<>(3);
         switch (type) {

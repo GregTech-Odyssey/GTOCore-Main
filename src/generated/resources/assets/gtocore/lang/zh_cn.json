@@ -6075,6 +6075,7 @@
   "gtocore.organ.info.part": "部位 %s · 等级 %s",
   "gtocore.organ.info.planet": "可停留星球 %s",
   "gtocore.organ.info.set_tier": "套装等级 %s",
+  "gtocore.organ.info.sprout": "下辈子或许可以再领一套...",
   "gtocore.organ.info.wing": "部位 %s · 最高飞行速度 %s",
   "gtocore.organ.info.wings": "翅膀 %s / %s",
   "gtocore.organ.section.body": "当前身体",

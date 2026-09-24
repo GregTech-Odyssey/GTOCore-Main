@@ -5947,6 +5947,7 @@
   "gtocore.organ.info.part": "Part %s · Tier %s",
   "gtocore.organ.info.planet": "Habitable planets %s",
   "gtocore.organ.info.set_tier": "Set tier %s",
+  "gtocore.organ.info.sprout": "Maybe you can get another set in your next life...",
   "gtocore.organ.info.wing": "Part %s · Max flight speed %s",
   "gtocore.organ.info.wings": "Wings %s / %s",
   "gtocore.organ.section.body": "Current Body",
