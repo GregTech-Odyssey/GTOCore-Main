@@ -24,12 +24,15 @@ import com.gtolib.utils.MultiBlockFileReader;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
+import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredActiveMachineRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
@@ -431,10 +434,30 @@ public final class ExResearchMachines {
                     .where('E', blocks(GTBlocks.HIGH_POWER_CASING.get()))
                     .where('F', blocks(GTBlocks.CLEANROOM_GLASS.get()))
                     .where('G', GTOPredicates.frame(GTOMaterials.StainlessSteel420))
-                    .where('H', blocks(RESEARCH_HOLDER.get()))
+                    .where('H', blockDirection(RESEARCH_HOLDER.get(), RelativeDirection.FRONT))
                     .where('I', controller(definition))
                     .where(' ', any())
                     .build())
+            .shapeInfo(definition -> MultiblockShapeInfo.builder()
+                    .aisle("   AAA   ", " BBJIKBB ", "   L C   ", "         ", "         ", " BB   BB ", "         ")
+                    .aisle(" DDEEEDD ", "BDFFCFFDB", " D     D ", " D     D ", " D     D ", "BDEBBBEDB", " BB   BB ")
+                    .aisle("GGDDDDDGG", "BBFFDFFBB", "    H    ", "         ", "         ", "BBEEEEEBB", " BBBBBBB ")
+                    .aisle(" DDEEEDD ", "BDFFCFFDB", " D     D ", " D     D ", " D     D ", "BDEBBBEDB", " BB   BB ")
+                    .aisle("   AAA   ", " BBCCCBB ", "   C C   ", "         ", "         ", " BB   BB ", "         ")
+                    .where('A', GTBlocks.COMPUTER_HEAT_VENT.get())
+                    .where('B', GTBlocks.COMPUTER_CASING.get())
+                    .where('C', GTBlocks.COMPUTER_CASING.get())
+                    .where('D', GTBlocks.ADVANCED_COMPUTER_CASING.get())
+                    .where('E', GTBlocks.HIGH_POWER_CASING.get())
+                    .where('F', GTBlocks.CLEANROOM_GLASS.get())
+                    .where('G', ChemicalHelper.getBlock(TagPrefix.frameGt, GTOMaterials.StainlessSteel420))
+                    .where('H', RESEARCH_HOLDER.get(), Direction.NORTH)
+                    .where('I', definition, Direction.NORTH)
+                    .where('J', GTMachines.ENERGY_INPUT_HATCH[ZPM], Direction.NORTH)
+                    .where('K', GTResearchMachines.COMPUTATION_HATCH_RECEIVER, Direction.NORTH)
+                    .where('L', GTMachines.MAINTENANCE_HATCH.get(), Direction.NORTH)
+                    .where(' ', Blocks.AIR)
+                    .build(definition))
             .workableCasingRenderer(GTCEu.id("block/casings/hpca/high_power_casing"), GTCEu.id("block/multiblock/research_station"))
             .register();
 
