@@ -1,5 +1,6 @@
 package com.gtocore.config;
 
+import com.hollingsworth.arsnouveau.common.block.tile.CraftingLecternTile;
 import com.hollingsworth.arsnouveau.common.block.tile.StorageLecternTile;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.experimental.UtilityClass;
@@ -11,5 +12,6 @@ public class StorageBusBlacklist {
 
     static {
         LIST.add(StorageLecternTile.class);
+        LIST.add(CraftingLecternTile.class);
     }
 }
