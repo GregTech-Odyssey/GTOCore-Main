@@ -54,6 +54,7 @@ public final class GTAEMachines {
             .allRotation()
             .tooltipsText("Use BigInteger Storage", "使用BigInteger存储")
             .notAllowSharedTooltips()
+            .abilities(GTOPartAbility.ME_STORAGE_ACCESS)
             .renderer(() -> new OverlayTieredMachineRenderer(IV, GTCEu.id("block/machine/part/me_pattern_buffer")))
             .register();
 
@@ -65,14 +66,26 @@ public final class GTAEMachines {
             .tooltipsText("Rate Limit: configurable, default 33,554,432 Items per Tick", "速率限制: 可配置, 默认每Tick 33,554,432 物品")
             .tooltipsText("Beware of power surge!", "小心跳电!")
             .notAllowSharedTooltips()
+            .abilities(GTOPartAbility.ME_STORAGE_ACCESS)
             .renderer(() -> new OverlayTieredMachineRenderer(EV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
     public static final MachineDefinition ME_STORAGE_ACCESS_HATCH = machine("me_storage_access_hatch", "ME存储访问仓", StorageAccessPartMachine::create)
             .langValue("ME Storage Access Hatch")
             .tooltips(GTOMachineTooltips.MEStorageAccessHatchTooltips)
+            .tier(HV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .abilities(GTOPartAbility.ME_STORAGE_ACCESS)
+            .renderer(() -> new OverlayTieredMachineRenderer(HV, GTCEu.id("block/machine/part/me_pattern_buffer")))
+            .register();
+
+    public static final MachineDefinition ME_CONFIGURABLE_STORAGE_ACCESS_HATCH = machine("me_configurable_storage_access_hatch", "可配置存储访问仓", StorageAccessPartMachine::createConfigurable)
+            .langValue("Configurable Storage Access Hatch")
+            .tooltips(GTOMachineTooltips.MeConfigurableStorageAccessHatchTooltips)
             .tier(EV)
             .allRotation()
             .notAllowSharedTooltips()
+            .abilities(GTOPartAbility.ME_STORAGE_ACCESS)
             .renderer(() -> new OverlayTieredMachineRenderer(EV, GTCEu.id("block/machine/part/me_pattern_buffer")))
             .register();
 

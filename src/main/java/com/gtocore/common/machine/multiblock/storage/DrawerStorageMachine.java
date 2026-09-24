@@ -10,11 +10,11 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.UITemplate;
 import com.gregtechceu.gtceu.api.machine.feature.IUIMachine;
-import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import com.gtolib.utils.FluidUtils;
+import com.gtolib.utils.ItemUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -35,7 +35,6 @@ import com.buuz135.functionalstorage.block.DrawerBlock;
 import com.buuz135.functionalstorage.block.FluidDrawerBlock;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
@@ -72,9 +71,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Getter
     private int hermeticLevel = 1;
 
-    private final List<NotifiableItemStackHandler> drawerBuses = new ArrayList<>();
-
-    private final List<ISubscription> drawerBusSubscriptions = new ArrayList<>();
+    private final StorageBusListener drawerBuses = new StorageBusListener();
 
     private final List<AEKey> displayOrder = new ArrayList<>();
     private boolean displayOrderDirty = true;
@@ -101,7 +98,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         int types = 0;
         int upgrades = 0;
         long drawerCapacity = 0;
-        for (var bus : drawerBuses) {
+        for (var bus : drawerBuses.buses()) {
             for (int i = 0, slots = bus.getSlots(); i < slots; i++) {
                 var stack = bus.getStackInSlot(i);
                 if (stack.isEmpty()) continue;
@@ -135,8 +132,8 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     private static String displaySortKey(AEKey key) {
-        if (key instanceof AEItemKey itemKey) return BuiltInRegistries.ITEM.getKey(itemKey.getItem()).toString();
-        if (key instanceof AEFluidKey fluidKey) return BuiltInRegistries.FLUID.getKey(fluidKey.getFluid()).toString();
+        if (key instanceof AEItemKey itemKey) return ItemUtils.getId(itemKey.getItem());
+        if (key instanceof AEFluidKey fluidKey) return FluidUtils.getId(fluidKey.getFluid());
         return key.toString();
     }
 
@@ -228,21 +225,11 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     private void bindDrawerBuses() {
-        unbindDrawerBuses();
-        for (var part : getMultiblockState().getMatchContext().getParts()) {
-            var partMachine = part.self();
-            if (partMachine == this || !PartAbility.IMPORT_ITEMS.isApplicable(partMachine.getDefinition().get())) continue;
-            if (partMachine.getItemHandlerCap(null, false) instanceof NotifiableItemStackHandler bus) {
-                drawerBuses.add(bus);
-                drawerBusSubscriptions.add(bus.addChangedListener(this::onDrawerBusChanged));
-            }
-        }
+        drawerBuses.bind(getMultiblockState().getMatchContext(), this, this::onDrawerBusChanged);
     }
 
     private void unbindDrawerBuses() {
-        drawerBusSubscriptions.forEach(ISubscription::unsubscribe);
-        drawerBusSubscriptions.clear();
-        drawerBuses.clear();
+        drawerBuses.unbind();
     }
 
     private void onDrawerBusChanged() {

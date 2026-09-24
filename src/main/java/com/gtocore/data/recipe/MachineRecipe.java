@@ -24,6 +24,8 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 
+import appeng.core.definitions.AEItems;
+
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
@@ -49,6 +51,9 @@ public final class MachineRecipe {
 
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("vault_hatch"), GTOMachines.VAULT_HATCH.asItem(), " P ",
                 "PVP", " P ", 'P', new MaterialEntry(plateDouble, WroughtIron), 'V', MultiBlockG.GENERAL_VAULT.asItem());
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_storage"), MultiBlockG.ME_DISK_STORAGE.asItem(), "PCP",
+                "CAC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.StainlessSteel), 'C', CustomTags.HV_CIRCUITS,
+                'A', AEItems.CELL_COMPONENT_1K.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("evaporation_plant"),
                 MultiBlockA.EVAPORATION_PLANT.asItem(), "CBC", "FMF", "CBC", 'M', GTMachines.HULL[HV].asItem(),
                 'B', new MaterialEntry(TagPrefix.wireGtDouble, GTMaterials.Kanthal), 'C', CustomTags.HV_CIRCUITS,

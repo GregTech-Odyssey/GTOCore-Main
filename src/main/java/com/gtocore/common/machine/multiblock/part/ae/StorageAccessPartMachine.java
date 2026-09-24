@@ -1,6 +1,10 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.api.data.Algae;
+import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
+import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
+import com.gtocore.common.machine.multiblock.part.ae.widget.AELimitFluidConfigWidget;
+import com.gtocore.common.machine.multiblock.part.ae.widget.AELimitItemConfigWidget;
 
 import com.gtolib.api.ae2.storage.BigCellDataStorage;
 import com.gtolib.api.ae2.storage.CellDataStorage;
@@ -18,7 +22,16 @@ import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.chat.Component;
@@ -63,6 +76,15 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         return new StorageAccessPartMachine.AlgaeAccessHatch(holder);
     }
 
+    public static StorageAccessPartMachine createConfigurable(MetaMachineBlockEntity holder) {
+        return new StorageAccessPartMachine.Configurable(holder);
+    }
+
+    @RegisterLanguage(cn = "存储转移", en = "Transfer Storage")
+    private static final String LANG_TRANSFER = "gtocore.machine.storage_access_hatch.transfer";
+    @RegisterLanguage(cn = "把网络里其它 ME 存储的内容全部搬进本仓（本仓装不下的留在原处）", en = "Move everything held by the other ME storages in the network into this hatch (what does not fit stays where it is)")
+    private static final String LANG_TRANSFER_TOOLTIP = "gtocore.machine.storage_access_hatch.transfer_tooltip";
+
     @Setter
     boolean observe;
 
@@ -70,6 +92,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     @Setter
     boolean check;
     boolean dirty = false;
+    boolean transferring;
 
     @Setter
     @Getter
@@ -89,34 +112,74 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     private final ConditionalSubscriptionHandler tickSubs;
 
     StorageAccessPartMachine(MetaMachineBlockEntity holder) {
-        super(holder, GTValues.EV, -1000000, 1000000);
+        super(holder, GTValues.HV, -1000000, 1000000);
         this.nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
         tickSubs = new ConditionalSubscriptionHandler(this, this::tickUpdate, 0, () -> true);
         current = 0;
     }
 
-    /// 优先级范围（与构造时传给基类的范围一致）
     private static final long PRIORITY_MIN = -1000000L;
     private static final long PRIORITY_MAX = 1000000L;
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
+        if (widget instanceof MachineWindow window) registerPopups(window);
         return MEPartUI.mainPage(this::isOnline, getTitle(), widget, buildPage());
     }
+
+    /** 注册本仓用到的弹出面板；外壳是 {@link MachineWindow} 时才会调用，覆写时先调用 super。 */
+    protected void registerPopups(MachineWindow window) {}
 
     @Override
     public Widget createUIWidget() {
         return buildPage();
     }
 
-    /** 页面：一个设置区块，默认是 AE 优先级（悬停看提取 / 存入优先级说明）。 */
     UIElement buildPage() {
         var section = UIElement.section();
         section.addChild(MEPartUI.numberRow("gui.ae2.Priority", MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
                 "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
+        addTransferButton(section);
         return MEPartUI.page().addChild(section);
     }
+
+    final void addTransferButton(UIElement section) {
+        section.addChild(Button.translatable(UISizes.BUTTON_WIDTH, LANG_TRANSFER)
+                .setOnServerClick(this::transferFromNetwork)
+                .bindTooltip(() -> Component.translatable(LANG_TRANSFER_TOOLTIP)));
+    }
+
+    private void transferFromNetwork() {
+        if (isRemote() || uuid == null || !isOnline) return;
+        var grid = getMainNode().getGrid();
+        if (grid == null) return;
+        var network = grid.getStorageService().getInventory();
+        var networkContent = new KeyCounter();
+        network.getAvailableStacks(networkContent);
+        if (networkContent.isEmpty()) return;
+        var source = IActionSource.ofMachine(this);
+        transferring = true;
+        try {
+            for (var entry : networkContent) {
+                var what = entry.getKey();
+                if (what == null) continue;
+                long want = entry.getLongValue() - getOwnAmount(what);
+                if (want < 1) continue;
+                long possible = insert(what, want, Actionable.SIMULATE, source);
+                if (possible < 1) continue;
+                long extracted = network.extract(what, possible, Actionable.MODULATE, source);
+                if (extracted < 1) continue;
+                long inserted = insert(what, extracted, Actionable.MODULATE, source);
+                if (inserted < extracted) network.insert(what, extracted - inserted, Actionable.MODULATE, source);
+            }
+        } finally {
+            transferring = false;
+        }
+        onChanged();
+    }
+
+    abstract long getOwnAmount(AEKey what);
 
     private void setPriority(long priority) {
         current = Math.clamp(priority, PRIORITY_MIN, PRIORITY_MAX);
@@ -194,6 +257,14 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
+        long getOwnAmount(AEKey what) {
+            var data = getCellStorage();
+            if (data == CellDataStorage.EMPTY) return 0;
+            var map = data.getStoredMap();
+            return map == null ? 0 : map.getAmount(what);
+        }
+
+        @Override
         public void setUUID(UUID uuid) {
             this.uuid = uuid;
             dataStorage = null;
@@ -244,7 +315,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             }
         }
 
-        private CellDataStorage getCellStorage() {
+        protected CellDataStorage getCellStorage() {
             if (dataStorage != null) return dataStorage;
             if (uuid == null || isRemote()) return CellDataStorage.EMPTY;
             dataStorage = CellDataStorage.get(uuid);
@@ -279,6 +350,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         @Override
         public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
+            if (this.transferring) return 0;
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return 0;
             var map = data.getStoredMap();
@@ -332,6 +404,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                 rate = value;
                 onChanged();
             }, 0L)));
+            addTransferButton(section);
             return MEPartUI.page().addChild(section);
         }
 
@@ -464,6 +537,14 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
+        long getOwnAmount(AEKey what) {
+            var data = getCellStorage();
+            if (data == BigCellDataStorage.EMPTY) return 0;
+            var map = data.getStoredMap();
+            return map == null ? 0 : map.getLongAmount(what);
+        }
+
+        @Override
         public void setUUID(UUID uuid) {
             this.uuid = uuid;
             dataStorage = null;
@@ -549,6 +630,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         @Override
         public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
+            if (this.transferring) return 0;
             var data = getCellStorage();
             if (data == BigCellDataStorage.EMPTY) return 0;
             var map = data.getStoredMap();
@@ -604,4 +686,248 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     private static final String LANG_IMPORT = "gtocore.machine.part.ae.storage_access.import";
     @RegisterLanguage(cn = "导入/导出速率设置", en = "Import/Export Rate Setting")
     private static final String LANG_RATE_SETTING = "gtocore.machine.part.ae.storage_access.rate_setting";
+
+    /**
+     * 可配置存储访问仓：在普通访问仓之上加两张按 AEKey 记的表——
+     * 输入上限（insert 时按它卡，未配置=不限、-1=禁止存入、N=最多 N）与
+     * 输出下限（extract 时按它卡，未配置=不限、-1=禁止取出、N=至少保留 N）。
+     * <p>
+     * 两张表各有一个启用开关，互不影响；都没开时这个仓就是个普通访问仓，一次表查询都不做。
+     * 配置面板是弹出面板，用 81 个物品 + 81 个流体虚拟格：点格子选中数量输入框（网格中央）改数量，
+     * 「配置」按钮决定改的是哪张表（点按钮同时打开面板）；数量写 0 会按 -1（禁止）记录。
+     */
+    @DataGeneratorScanned
+    static final class Configurable extends LONG {
+
+        static final int CONFIG_SLOTS = 81;
+        static final int CONFIG_COLUMNS = 9;
+        static final long FORBIDDEN = -1;
+        static final String CONFIG_POPUP = "configurable_storage_limits";
+        static final int OUTPUT_ARGUMENT = 1;
+
+        @RegisterLanguage(cn = "输入限制", en = "Input Limit")
+        private static final String LANG_INPUT_LIMIT = "gtocore.machine.configurable_storage_access_hatch.input_limit";
+        @RegisterLanguage(cn = "启用后按输入表卡住存入：每种最多存多少；未配置=不限、0 记成 -1（禁止存入）、正数=上限", en = "When enabled, the input table caps insertion: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden), positive = the cap")
+        private static final String LANG_INPUT_LIMIT_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_limit_tooltip";
+        @RegisterLanguage(cn = "开关：是否按输入表限制存入；关着时不看这张表", en = "Switch: whether the input table restricts insertion; while off the table is not read at all")
+        private static final String LANG_INPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_switch_tooltip";
+        @RegisterLanguage(cn = "输出限制", en = "Output Limit")
+        private static final String LANG_OUTPUT_LIMIT = "gtocore.machine.configurable_storage_access_hatch.output_limit";
+        @RegisterLanguage(cn = "启用后按输出表卡住取出：每种至少保留多少，库存不够就不取出；未配置=不限、0 记成 -1（禁止取出）、正数=保留下限", en = "When enabled, the output table floors extraction: how much to keep, nothing comes out below it; unconfigured = unlimited, 0 is stored as -1 (never extract), positive = the floor to keep")
+        private static final String LANG_OUTPUT_LIMIT_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_limit_tooltip";
+        @RegisterLanguage(cn = "开关：是否按输出表限制取出；关着时不看这张表", en = "Switch: whether the output table restricts extraction; while off the table is not read at all")
+        private static final String LANG_OUTPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_switch_tooltip";
+        @RegisterLanguage(cn = "配置", en = "Configure")
+        private static final String LANG_CONFIG = "gtocore.machine.configurable_storage_access_hatch.config";
+        @RegisterLanguage(cn = "在弹出面板里编辑这张表（物品 81 格 + 流体 81 格）；要生效先把左边的开关打开", en = "Edit this table in the popup (81 item + 81 fluid slots); turn on the switch on the left to make it take effect")
+        private static final String LANG_CONFIG_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.config_tooltip";
+        @RegisterLanguage(cn = "配置格：点格子放东西、在中间的输入框里改数量；数量写 0 = 禁止（记成 -1）、右键清掉格子 = 不限", en = "Config slots: click a slot to set a key, edit the amount in the middle field; 0 means forbidden (stored as -1), right-click clears the slot (unlimited)")
+        private static final String LANG_CONFIG_HINT = "gtocore.machine.configurable_storage_access_hatch.config_hint";
+        @RegisterLanguage(cn = "物品格", en = "Item Slots")
+        private static final String LANG_CONFIG_ITEMS = "gtocore.machine.configurable_storage_access_hatch.config_items";
+        @RegisterLanguage(cn = "流体格", en = "Fluid Slots")
+        private static final String LANG_CONFIG_FLUIDS = "gtocore.machine.configurable_storage_access_hatch.config_fluids";
+
+        @SaveToDisk
+        private final AEKeyMap<AEKey> inputLimits = new AEKeyMap<>();
+        @SaveToDisk
+        private final AEKeyMap<AEKey> outputLimits = new AEKeyMap<>();
+        @SaveToDisk(defaultValue = "false")
+        @SyncToClient
+        private boolean inputLimitEnabled;
+        @SaveToDisk(defaultValue = "false")
+        @SyncToClient
+        private boolean outputLimitEnabled;
+        @SyncToClient
+        private boolean editingOutput;
+        @SaveToDisk
+        private final ExportOnlyAEItemList itemConfig;
+        @SaveToDisk
+        private final ExportOnlyAEFluidList fluidConfig;
+        private boolean loadingConfig;
+
+        private Configurable(MetaMachineBlockEntity holder) {
+            super(holder);
+            itemConfig = new ExportOnlyAEItemList(this, CONFIG_SLOTS);
+            fluidConfig = new ExportOnlyAEFluidList(this, CONFIG_SLOTS);
+        }
+
+        @Override
+        public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
+            long limit = insertLimit(what);
+            if (limit == Long.MAX_VALUE) return super.insert(what, amount, mode, source);
+            if (limit < 1) return 0; // -1/0：禁止存入，连表都不用查
+            if (amount == 0 || uuid == null) return 0;
+            var data = getCellStorage();
+            if (data == CellDataStorage.EMPTY) return 0;
+            if (!isInfinite) {
+                amount = (long) Math.min(capacity - data.getBytes(), amount);
+            }
+            if (amount < 1) return 0;
+            if (mode != Actionable.MODULATE) {
+                var storedMap = data.getStoredMap();
+                long stored = storedMap == null ? 0 : storedMap.getAmount(what);
+                return stored >= limit ? 0 : Math.min(amount, limit - stored);
+            }
+            var map = data.getStoredMap();
+            if (map == null) {
+                map = new AEKeyMap<>();
+                data.setStoredMap(map);
+            }
+            long inserted = map.insert(what, amount, limit);
+            if (inserted < 1) return 0;
+            dirty = true;
+            return inserted;
+        }
+
+        private long insertLimit(AEKey what) {
+            if (!inputLimitEnabled) return Long.MAX_VALUE;
+            long limit = inputLimits.getAmount(what);
+            if (limit == FORBIDDEN) return 0;
+            return limit > 0 ? limit : Long.MAX_VALUE;
+        }
+
+        @Override
+        public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
+            if (inputLimitEnabled) {
+                long limit = inputLimits.getAmount(what);
+                if (limit == FORBIDDEN) return false;
+                if (limit > 0 && getOwnAmount(what) >= limit) return false;
+            }
+            return super.isPreferredStorageFor(what, source);
+        }
+
+        @Override
+        public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
+            if (!outputLimitEnabled) return super.extract(what, amount, mode, source);
+            long limit = outputLimits.getAmount(what);
+            if (limit == FORBIDDEN) return 0;
+            if (limit > 0) {
+                long movable = getOwnAmount(what) - limit;
+                if (movable < 1) return 0;
+                amount = Math.min(amount, movable);
+            }
+            return super.extract(what, amount, mode, source);
+        }
+
+        private AEKeyMap<AEKey> editingLimits() {
+            return editingOutput ? outputLimits : inputLimits;
+        }
+
+        private void onConfigChanged() {
+            if (isRemote() || loadingConfig) return;
+            saveConfigToLimits();
+            onChanged();
+        }
+
+        private void saveConfigToLimits() {
+            var limits = editingLimits();
+            limits.clear();
+            collectConfig(limits, itemConfig.getInventory());
+            collectConfig(limits, fluidConfig.getInventory());
+        }
+
+        private static void collectConfig(AEKeyMap<AEKey> limits, IConfigurableSlot[] slots) {
+            for (var slot : slots) {
+                var config = slot.getConfig();
+                if (config == null || config.what() == null) continue;
+                limits.put(config.what(), config.amount() == 0 ? FORBIDDEN : config.amount());
+            }
+        }
+
+        private void loadConfigFromLimits() {
+            loadingConfig = true;
+            try {
+                int itemIndex = 0;
+                int fluidIndex = 0;
+                var itemSlots = itemConfig.getInventory();
+                var fluidSlots = fluidConfig.getInventory();
+                for (var entry : editingLimits()) {
+                    // 表里禁止记的是 -1，格子显示成 0（"0 = 禁止"），写回去时还会记回 -1
+                    long amount = Math.max(0, entry.getLongValue());
+                    var config = new GenericStack(entry.getKey(), amount);
+                    if (entry.getKey() instanceof AEItemKey) {
+                        if (itemIndex < itemSlots.length) itemSlots[itemIndex++].setConfig(config);
+                    } else if (fluidIndex < fluidSlots.length) {
+                        fluidSlots[fluidIndex++].setConfig(config);
+                    }
+                }
+                for (int i = itemIndex; i < itemSlots.length; i++) itemSlots[i].setConfig(null);
+                for (int i = fluidIndex; i < fluidSlots.length; i++) fluidSlots[i].setConfig(null);
+            } finally {
+                loadingConfig = false;
+            }
+        }
+
+        private void switchLimitMode(boolean output) {
+            if (isRemote() || editingOutput == output) return;
+            saveConfigToLimits();
+            editingOutput = output;
+            loadConfigFromLimits();
+            onChanged();
+        }
+
+        @Override
+        UIElement buildPage() {
+            var page = super.buildPage();
+            var section = UIElement.section();
+            section.addChildren(limitRow(false), limitRow(true));
+            return page.addChild(section);
+        }
+
+        private UIElement limitRow(boolean output) {
+            var controls = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                    .addChildren(limitSwitch(output), configButton(output));
+            return MEPartUI.controlRow(output ? LANG_OUTPUT_LIMIT : LANG_INPUT_LIMIT, controls,
+                    output ? LANG_OUTPUT_LIMIT_TOOLTIP : LANG_INPUT_LIMIT_TOOLTIP);
+        }
+
+        private Widget limitSwitch(boolean output) {
+            return Switch.of(() -> output ? outputLimitEnabled : inputLimitEnabled, value -> {
+                if (output) outputLimitEnabled = value;
+                else inputLimitEnabled = value;
+                onChanged();
+            }).bindTooltip(() -> Component.translatable(output ? LANG_OUTPUT_SWITCH_TOOLTIP : LANG_INPUT_SWITCH_TOOLTIP));
+        }
+
+        @Override
+        protected void registerPopups(MachineWindow window) {
+            window.registerPopup(CONFIG_POPUP, argument -> Popup.of(
+                    () -> Component.translatable(argument == OUTPUT_ARGUMENT ? LANG_OUTPUT_LIMIT : LANG_INPUT_LIMIT),
+                    this::buildConfigPanel));
+        }
+
+        /**
+         * 弹出面板内容：和仓库里已有的单槽配置面板一样，每片网格各放一个面板区块
+         * （区块标题「物品格」「流体格」，说明行放最前面）。
+         */
+        private void buildConfigPanel(UIElement column) {
+            var hint = MEPatternPartUI.section(column, LANG_CONFIG);
+            hint.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_CONFIG_HINT).setColor(UITheme.PANEL_TEXT));
+            MEPatternPartUI.section(column, LANG_CONFIG_ITEMS).addChild(configGrid(true));
+            MEPatternPartUI.section(column, LANG_CONFIG_FLUIDS).addChild(configGrid(false));
+        }
+
+        /** 一片配置格：物品或流体，每行 {@link #CONFIG_COLUMNS} 格（只有配置槽，没有库存半格）。 */
+        private Widget configGrid(boolean item) {
+            if (item) {
+                return new AELimitItemConfigWidget(0, 0, itemConfig, CONFIG_COLUMNS, this::onConfigChanged);
+            }
+            return new AELimitFluidConfigWidget(0, 0, fluidConfig, CONFIG_COLUMNS, this::onConfigChanged);
+        }
+
+        /** 配置按钮：服务端切到这张表，客户端打开配置面板（已打开时原地换成新表的界面）。 */
+        private Button configButton(boolean output) {
+            var button = Button.translatable(UISizes.BUTTON_WIDTH, LANG_CONFIG)
+                    .setSelected(() -> editingOutput == output)
+                    .setOnServerClick(() -> switchLimitMode(output))
+                    .bindTooltip(() -> Component.translatable(LANG_CONFIG_TOOLTIP));
+            // 用按钮自己（一定挂在窗口里）反查窗口，别用建界面时抓的元素：那个可能已经不在树上
+            button.setOnClientClick(() -> {
+                var window = MachineWindow.of(button);
+                if (window != null) window.openPopup(CONFIG_POPUP, output ? OUTPUT_ARGUMENT : 0);
+            });
+            return button;
+        }
+    }
 }

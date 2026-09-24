@@ -3985,13 +3985,24 @@ final class Assembler {
                 .save();
 
         ASSEMBLER_RECIPES.builder("me_storage_access_hatch")
-                .inputItems("gtceu:data_access_hatch")
-                .inputItems("expatternprovider:oversize_interface", 4)
-                .inputItems(CustomTags.IV_CIRCUITS, 4)
-                .inputItems(GTItems.SENSOR_EV, 4)
+                .inputItems(GTMachines.HULL[HV])
+                .inputItems("expatternprovider:oversize_interface")
+                .inputItems("ae2:storage_bus", 4)
+                .inputItems(GTItems.SENSOR_HV, 4)
                 .outputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 1000)
-                .EUt(1920)
+                .EUt(VA[HV])
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("me_configurable_storage_access_hatch")
+                .inputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH.asItem())
+                .inputItems("ae2:fuzzy_card", 4)
+                .inputItems(CustomTags.EV_CIRCUITS, 4)
+                .inputItems(GTItems.SENSOR_EV, 4)
+                .outputItems(GTAEMachines.ME_CONFIGURABLE_STORAGE_ACCESS_HATCH.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 1000)
+                .EUt(VA[EV])
                 .duration(400)
                 .save();
 

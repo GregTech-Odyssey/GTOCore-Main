@@ -141,6 +141,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
             case REMOVE_ID -> {
                 slot.setConfig(null);
                 this.parentWidget.disableAmount();
+                this.parentWidget.notifyConfigChanged();
                 writeUpdateInfo(REMOVE_ID, buf -> {});
             }
             case UPDATE_ID -> {
@@ -150,6 +151,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
                 if (!isStackValidForSlot(stack)) return;
                 slot.setConfig(stack);
                 this.parentWidget.enableAmount(this.index);
+                this.parentWidget.notifyConfigChanged();
                 if (stack != null) {
                     writeUpdateInfo(UPDATE_ID, buf -> GenericStack.writeBuffer(stack, buf));
                 }
@@ -158,6 +160,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
                 if (slot.getConfig() == null) return;
                 long amt = buffer.readVarLong();
                 slot.setConfig(new GenericStack(slot.getConfig().what(), amt));
+                this.parentWidget.notifyConfigChanged();
                 writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeVarLong(amt));
             }
             case SLOT_CLICK_ID -> {

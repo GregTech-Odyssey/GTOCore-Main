@@ -232,7 +232,7 @@ final class AssemblerA {
                 .inputItems(GTMachines.HULL[GTValues.HV].asItem())
                 .inputItems("expatternprovider:oversize_interface")
                 .inputItems("ae2:storage_bus", 4)
-                .inputItems(GTItems.SENSOR_HV, 4)
+                .inputItems(GTItems.EMITTER_HV, 4)
                 .outputItems(GTAEMachines.CRAFTING_CPU_INTERFACE.asItem())
                 .EUt(480)
                 .duration(400)

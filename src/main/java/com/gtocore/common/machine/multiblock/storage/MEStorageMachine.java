@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.UUID;
 
 @DataGeneratorScanned
-public final class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements IBindable, IDropSaveMachine, IStorageMultiblock {
+public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements IBindable, IDropSaveMachine, IStorageMultiblock {
 
     public static final long infinite = 1000000000000L; // 1T
     @RegisterLanguage(en = "Data Index Position: ", cn = "数据索引位置：")
@@ -48,9 +48,9 @@ public final class MEStorageMachine extends NoRecipeLogicMultiblockMachine imple
     private final NotifiableItemStackHandler machineStorage;
     @SaveToDisk
     private UUID uuid;
-    @SaveToDisk(defaultValue = "true")
-    private boolean player = true;
-    private StorageAccessPartMachine accessPartMachine;
+    @SaveToDisk(defaultValue = "false")
+    protected boolean player = false;
+    protected StorageAccessPartMachine accessPartMachine;
     private final List<Reference2ReferenceMap.Entry<AEKey, BigInteger>> list = new ArrayList<>();
 
     public MEStorageMachine(MetaMachineBlockEntity holder) {
@@ -64,7 +64,7 @@ public final class MEStorageMachine extends NoRecipeLogicMultiblockMachine imple
         loadContainer();
     }
 
-    private void loadContainer() {
+    protected void loadContainer() {
         if (isRemote()) return;
         Level level = getLevel();
         if (level == null) return;
@@ -75,20 +75,32 @@ public final class MEStorageMachine extends NoRecipeLogicMultiblockMachine imple
             }
         }
         if (accessPartMachine == null) return;
-        var functionContainer = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.ME_STORAGE_CORE);
-        if (functionContainer == null) return;
+        double capacity = getStorageCapacity();
+        // 没有容量来源（结构里的核心 / 输入总线里的存储组件）就不绑定访问仓
+        if (capacity <= 0) return;
         if (player) {
             accessPartMachine.setUUID(getOwnerUUID());
         } else {
             if (uuid == null) uuid = UUID.randomUUID();
             accessPartMachine.setUUID(uuid);
         }
-        accessPartMachine.setCapacity(functionContainer);
-        accessPartMachine.setInfinite(accessPartMachine.getCapacity() > infinite && getStorageStack().getCount() == 64);
+        accessPartMachine.setCapacity(capacity);
+        accessPartMachine.setInfinite(isInfiniteStorage(capacity));
         accessPartMachine.setCheck(true);
     }
 
-    private void unloadContainer() {
+    /** 数据索引容量（字节）：默认取结构里 ME 存储核心给的字节数，子类可以换个容量来源。 */
+    protected double getStorageCapacity() {
+        var core = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.ME_STORAGE_CORE);
+        return core == null ? 0 : core;
+    }
+
+    /** 是否按无限存储处理：默认容量超过 {@link #infinite} 且机器存储里塞了 64 个无限元件。 */
+    protected boolean isInfiniteStorage(double capacity) {
+        return capacity > infinite && getStorageStack().getCount() == 64;
+    }
+
+    protected void unloadContainer() {
         if (accessPartMachine != null) {
             accessPartMachine.setCapacity(0);
             accessPartMachine.setUUID(null);

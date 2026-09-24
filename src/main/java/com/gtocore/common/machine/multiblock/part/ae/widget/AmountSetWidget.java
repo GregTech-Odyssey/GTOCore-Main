@@ -95,9 +95,16 @@ class AmountSetWidget extends Widget {
             }
 
             IConfigurableSlot slot = this.parentWidget.getConfig(this.index);
-            if (newAmount > 0 && slot.getConfig() != null) {
-                slot.setConfig(new GenericStack(slot.getConfig().what(), newAmount));
+            if (slot.getConfig() == null) {
+                return;
             }
+            // 默认只收正数；可配置存储访问仓把 0 映射成 -1（禁止）
+            long mapped = this.parentWidget.mapAmount(newAmount);
+            if (mapped == ConfigWidget.REJECT_AMOUNT) {
+                return;
+            }
+            slot.setConfig(new GenericStack(slot.getConfig().what(), mapped));
+            this.parentWidget.notifyConfigChanged();
         } catch (IllegalArgumentException | ArithmeticException ignore) {}
     }
 

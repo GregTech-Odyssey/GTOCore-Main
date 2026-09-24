@@ -136,6 +136,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
             case REMOVE_ID -> {
                 slot.setConfig(null);
                 this.parentWidget.disableAmount();
+                this.parentWidget.notifyConfigChanged();
                 writeUpdateInfo(REMOVE_ID, buf -> {});
             }
             case UPDATE_ID -> {
@@ -144,6 +145,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 if (!isStackValidForSlot(stack)) return;
                 slot.setConfig(stack);
                 this.parentWidget.enableAmount(this.index);
+                this.parentWidget.notifyConfigChanged();
                 if (fluid != FluidStack.EMPTY) {
                     writeUpdateInfo(UPDATE_ID, fluid::writeToPacket);
                 }
@@ -152,6 +154,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 if (slot.getConfig() != null) {
                     int amt = buffer.readInt();
                     slot.setConfig(ExportOnlyAESlot.copy(slot.getConfig(), amt));
+                    this.parentWidget.notifyConfigChanged();
                     writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeInt(amt));
                 }
             }

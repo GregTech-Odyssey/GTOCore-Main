@@ -42,6 +42,8 @@ public final class GTOPartAbility extends PartAbility {
     // 仅用于放入附属模块的描述中
     public static final PartAbility EXTRA_ENERGY_HATCH = new GTOPartAbility("extra_energy_hatch", "额外能源仓", "Extra Energy Hatch");
 
+    public static final PartAbility ME_STORAGE_ACCESS = new GTOPartAbility("me_storage_access", "ME存储访问", "ME Storage Access");
+
     public GTOPartAbility(String name, String cn, String en) {
         super(name);
         if (LANG != null) {

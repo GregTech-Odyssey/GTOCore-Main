@@ -550,6 +550,7 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         function("访问ME存储器内的存储" translatedTo "Access storage in ME storage")
         content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
+        info("在 ME 磁盘存储器里由机器写入数据索引与容量，不需要手动绑定 UUID" translatedTo "Inside the ME Disk Storage the machine supplies the data index and capacity, no manual UUID binding needed")
     }
 
     // 合成样板仓
@@ -690,6 +691,33 @@ object GTOMachineTooltips {
         info("压缩抽屉、末影抽屉等不作为介质" translatedTo "Compacting and ender drawers do not count as media")
         important("抽屉与升级留在总线里当介质，随时可以取回；放入或取走会立刻重算容量" translatedTo "Drawers and upgrades stay in the bus as media and can be taken back at any time; adding or removing one recalculates the capacity immediately")
         content("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓" translatedTo "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO")
+    }
+
+    // ME 磁盘存储器
+    @JvmField
+    val MEDiskStorageTooltips = ComponentListSupplier {
+        setTranslationPrefix("me_disk_storage")
+
+        section(ComponentSlang.MainFunction)
+        function("把 AE2 的存储组件（1k…256k）放进输入总线，再用存储访问仓存储" translatedTo "Put AE2 storage components (1k...256k) into an input bus and store through the Storage Access Hatch")
+        info("和 ME 存储器同一套实现：存储与数据索引都由结构里的存储访问仓承担" translatedTo "Same implementation as the ME Storage: the Storage Access Hatch in the structure holds both the storage and its data index")
+        info("总容量 = 存储组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）" translatedTo "Total capacity = the storage components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...)")
+        important("数据索引位置可以选玩家或机器，界面上点「数据索引位置」右边那一项切换；机器模式用机器自己的 UUID，拆机时随物品带走，同一台重建后数据还在" translatedTo "The data index can be the player or the machine, switched by clicking the button after Data Index Position; in machine mode it uses the machine's own UUID, which travels with the dropped item so rebuilding the same machine keeps the data")
+        info("没有无限存储：容量完全来自总线里的存储组件" translatedTo "No infinite storage: the capacity comes entirely from the storage components in the bus")
+    }
+
+    // 可配置存储访问仓
+    @JvmField
+    val MeConfigurableStorageAccessHatchTooltips = ComponentListSupplier {
+        setTranslationPrefix("me_configurable_storage_access_hatch")
+
+        section(ComponentSlang.MainFunction)
+        function("访问ME存储器内的存储，并可给每种东西单独设上限" translatedTo "Access storage in ME storage and set a limit for every key")
+        info("输入限制：每种最多存多少；未配置=不限、0 记成 -1（禁止存入）、正数=上限" translatedTo "Input limit: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden), positive = the cap")
+        info("输出限制：每种至少保留多少，库存不够就不取出；未配置=不限、0 记成 -1（禁止取出）" translatedTo "Output limit: how much of each key to keep, nothing comes out below it; unconfigured = unlimited, 0 is stored as -1 (never extract)")
+        important("输入、输出两张表各有一个开关，互不影响；都不开时这个仓就是普通访问仓" translatedTo "The input and output tables each have their own switch and do not affect each other; with both off this hatch is an ordinary access hatch")
+        important("配置面板：81 个物品格 + 81 个流体格，点格子后在中间的输入框改数量，用「配置」按钮切到那张表" translatedTo "Config panel: 81 item slots + 81 fluid slots; click a slot and edit the amount in the middle field, the Configure button picks which table is being edited")
+        content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
     }
 
     @JvmField

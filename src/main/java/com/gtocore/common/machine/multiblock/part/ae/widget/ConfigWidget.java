@@ -42,6 +42,9 @@ public abstract class ConfigWidget extends WidgetGroup {
     private static final int CELL_WIDTH = 18;
     private static final int ROW_HEIGHT = 38;
 
+    /// {@link #mapAmount} 的返回值：输入框里的数量不接受
+    static final long REJECT_AMOUNT = Long.MIN_VALUE;
+
     /// 每行格数
     private final int columns;
 
@@ -126,6 +129,17 @@ public abstract class ConfigWidget extends WidgetGroup {
     }
 
     abstract void init();
+
+    /**
+     * 输入框里的数量映射成真正写进格子的数量；返回 {@link #REJECT_AMOUNT} 表示不接受。
+     * 默认只接受正数；可配置存储访问仓覆写成「0 记成 -1（禁止）」。
+     */
+    long mapAmount(long newAmount) {
+        return newAmount > 0 ? newAmount : REJECT_AMOUNT;
+    }
+
+    /** 服务端配置格内容变了（键或数量）：默认什么都不做，配了查表的机器覆写它重建查表。 */
+    public void notifyConfigChanged() {}
 
     @Override
     public void writeInitialData(FriendlyByteBuf buffer) {
