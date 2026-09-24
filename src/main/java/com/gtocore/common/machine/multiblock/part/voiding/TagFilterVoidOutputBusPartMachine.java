@@ -54,12 +54,19 @@ public final class TagFilterVoidOutputBusPartMachine extends VoidOutputBusPartMa
     public void setTagWhite(final String tagWhite) {
         this.tagWhite = tagWhite;
         onSlotChanged();
+        onChanged();
     }
 
     @Override
     public void setTagBlack(final String tagBlack) {
         this.tagBlack = tagBlack;
         onSlotChanged();
+        onChanged();
+    }
+
+    @Override
+    public boolean isItemFilter() {
+        return true;
     }
 
     @Override

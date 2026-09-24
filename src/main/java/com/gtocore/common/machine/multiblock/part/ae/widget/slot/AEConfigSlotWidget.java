@@ -38,7 +38,9 @@ import static com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWi
 public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
 
     @RegisterLanguage(cn = "配置由 ME 自动拉取管理", en = "The configuration is managed by ME auto-pull")
-    private static final String CONFIG_MANAGED = "gtocore.gui.ae_config_slot.config_managed";
+    public static final String CONFIG_MANAGED = "gtocore.gui.ae_config_slot.config_managed";
+    @RegisterLanguage(cn = "配置格为空，先放入要配置的物品或流体", en = "The config slot is empty. Set an item or fluid first")
+    public static final String NO_CONFIG = "gtocore.gui.ae_config_slot.no_config";
     @RegisterLanguage(cn = "库存由 ME 网络自动补充，不能直接取放", en = "The stock is filled from the ME network and cannot be taken or placed directly")
     private static final String STOCK_MANAGED = "gtocore.gui.ae_config_slot.stock_managed";
 
@@ -46,9 +48,8 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
     final int index;
     static final int REMOVE_ID = 1000;
     static final int UPDATE_ID = 1001;
+    /// 格子上滚轮改数量：只有限制格（可配置存储访问仓）用，普通配置格的数量只经数量面板改
     static final int AMOUNT_CHANGE_ID = 1002;
-    static final int SLOT_CLICK_ID = 1003;
-    static final int SLOT_DROP_ID = 1004;
     @Setter
     boolean select = false;
 
@@ -75,7 +76,6 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
             if (!isConfigDisabled()) {
                 if (!parentWidget.isStocking()) {
                     lines.add(Component.translatable("gtceu.gui.config_slot.set"));
-                    lines.add(Component.translatable("gtceu.gui.config_slot.scroll"));
                 } else {
                     lines.add(Component.translatable("gtceu.gui.config_slot.set_only"));
                 }
@@ -93,9 +93,9 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
         return parentWidget.isAutoPull();
     }
 
-    /// 下格（库存）禁用：库存模式下存货来自网络，点不了
+    /// 下格（库存）一律禁用：存货由 ME 网络补充（库存模式是网络里的存量，普通模式是按配置拉取来的），不能直接取放
     boolean isStockDisabled() {
-        return parentWidget.isStocking();
+        return true;
     }
 
     /// 上格可从 EMI 拖入（LDLib2 {@code xeiPhantom}）：未禁用时
@@ -103,10 +103,9 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
         return !isConfigDisabled();
     }
 
-    /// 服务端再判一次禁用：禁用的格子不接受设置、清除、改数量（上格）或取放（下格）请求，客户端可以伪造
+    /// 服务端再判一次禁用：禁用的格子不接受设置、清除、改数量请求，客户端可以伪造（下格没有任何操作）
     boolean rejectsDisabledAction(int id) {
         if (id == REMOVE_ID || id == UPDATE_ID || id == AMOUNT_CHANGE_ID) return isConfigDisabled();
-        if (id == SLOT_CLICK_ID || id == SLOT_DROP_ID) return isStockDisabled();
         return false;
     }
 
@@ -123,7 +122,7 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
         if (this.select) UITheme.drawSelection(graphics, position.x, position.y, 18, 18);
     }
 
-    /** 内容画完后：只读格叠斜纹；可操作的格子悬停时高亮。 */
+    /** 内容画完后：只读格叠斜纹；可操作的上格悬停时高亮。 */
     @OnlyIn(Dist.CLIENT)
     void drawStates(GuiGraphics graphics, int mouseX, int mouseY) {
         Position position = getPosition();
@@ -131,8 +130,6 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
         if (isStockDisabled()) UITheme.drawDisabled(graphics, position.x, position.y + 18, 18, 18);
         if (mouseOverConfig(mouseX, mouseY) && !isConfigDisabled()) {
             drawSelectionOverlay(graphics, position.x + 1, position.y + 1, 16, 16);
-        } else if (mouseOverStock(mouseX, mouseY) && !isStockDisabled()) {
-            drawSelectionOverlay(graphics, position.x + 1, position.y + 19, 16, 16);
         }
     }
 

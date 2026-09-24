@@ -3,6 +3,8 @@ package com.gtocore.common.machine.multiblock.part.ae.widget;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEConfigSlotWidget;
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
@@ -42,9 +44,6 @@ public abstract class ConfigWidget extends WidgetGroup {
     private static final int CELL_WIDTH = 18;
     private static final int ROW_HEIGHT = 38;
 
-    /// {@link #mapAmount} 的返回值：输入框里的数量不接受
-    static final long REJECT_AMOUNT = Long.MIN_VALUE;
-
     /// 每行格数
     private final int columns;
 
@@ -55,12 +54,10 @@ public abstract class ConfigWidget extends WidgetGroup {
         this.showAmount = showAmount;
         this.config = config;
         this.init();
-        // 设置数量的小面板浮在网格中央（原先在网格上方 60 像素，放进窗口后会飘到窗口外），面板自己抬高一层盖住下面的物品
-        this.amountSetWidget = new AmountSetWidget((getSizeWidth() - AmountSetWidget.WIDTH) / 2, (getSizeHeight() - AmountSetWidget.HEIGHT) / 2, this);
+        // 设置数量的小面板：打开时摆到对应配置格的正下方（见 placeAmountPanel），最后加入、自己抬高一层盖住下面的格子
+        this.amountSetWidget = new AmountSetWidget(this);
         this.addWidget(this.amountSetWidget);
-        this.addWidget(this.amountSetWidget.getAmountText());
         this.amountSetWidget.setVisible(false);
-        this.amountSetWidget.getAmountText().setVisible(false);
     }
 
     ConfigWidget(int x, int y, IConfigurableSlot[] config, boolean isStocking, int columns) {
@@ -76,30 +73,55 @@ public abstract class ConfigWidget extends WidgetGroup {
         return new Position(index % columns * CELL_WIDTH, index / columns * ROW_HEIGHT);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public void enableAmountClient(int slotIndex) {
-        this.amountSetWidget.setSlotIndexClient(slotIndex);
-        this.amountSetWidget.setVisible(true);
-        this.amountSetWidget.getAmountText().setVisible(true);
+    /**
+     * 把数量面板摆到第 {@code slotIndex} 格的配置格（上格）正下方：面板顶边离配置格下沿一个尖角高，尖角对准该格中心；
+     * 水平以该格为中心，超出网格左右边界时收回网格内（网格比面板窄时收回窗口内）。两端都摆，控件树一致。
+     * 坐标以主控件组为基准：客户端的绝对坐标含界面在屏幕上的偏移，服务端没有，直接拿去和界面尺寸比会两端不一致。
+     */
+    private void placeAmountPanel(int slotIndex) {
+        if (!isValidIndex(slotIndex)) return;
+        Position cell = cellPosition(slotIndex);
+        int width = AmountSetWidget.WIDTH;
+        int centerX = cell.x + CELL_WIDTH / 2;
+        int x = centerX - width / 2;
+        int y = cell.y + UISizes.SLOT + UITheme.POPUP_NOTCH;
+        var gui = getGui();
+        if (width <= getSizeWidth()) {
+            x = Math.max(0, Math.min(x, getSizeWidth() - width));
+        } else if (gui != null) {
+            // 网格比面板窄（如只有一两格）：收回窗口内，留出窗口内边距；网格不在界面矩形内（挂在界面外的弹出面板里）时不收
+            int gx = getPositionX() - gui.mainGroup.getPositionX();
+            int gy = getPositionY() - gui.mainGroup.getPositionY();
+            boolean inWindow = gx >= 0 && gy >= 0 && gx + getSizeWidth() <= gui.getWidth() && gy + getSizeHeight() <= gui.getHeight();
+            if (inWindow) {
+                int minX = UISizes.WINDOW_PADDING_X - gx;
+                int maxX = gui.getWidth() - UISizes.WINDOW_PADDING_X - width - gx;
+                x = Math.max(minX, Math.min(x, maxX));
+            }
+        }
+        // 尖角对准格子中心，但不伸进面板的圆角
+        int margin = UITheme.POPUP_NOTCH + 2;
+        this.amountSetWidget.setNotchX(Math.max(margin, Math.min(width - margin, centerX - x)));
+        this.amountSetWidget.setSelfPosition(new Position(x, y));
     }
 
+    @OnlyIn(Dist.CLIENT)
+    public void enableAmountClient(int slotIndex) {
+        placeAmountPanel(slotIndex);
+        this.amountSetWidget.setSlotIndexClient(slotIndex);
+        this.amountSetWidget.setVisible(true);
+    }
+
+    /** 关闭数量面板，并取消格子的选中框。 */
     @OnlyIn(Dist.CLIENT)
     public void disableAmountClient() {
         this.amountSetWidget.setSlotIndexClient(-1);
         this.amountSetWidget.setVisible(false);
-        this.amountSetWidget.getAmountText().setVisible(false);
-    }
-
-    public void enableAmount(int slotIndex) {
-        this.amountSetWidget.setSlotIndex(slotIndex);
-        this.amountSetWidget.setVisible(true);
-        this.amountSetWidget.getAmountText().setVisible(true);
-    }
-
-    public void disableAmount() {
-        this.amountSetWidget.setSlotIndex(-1);
-        this.amountSetWidget.setVisible(false);
-        this.amountSetWidget.getAmountText().setVisible(false);
+        for (Widget w : this.widgets) {
+            if (w instanceof AEConfigSlotWidget slot) {
+                slot.setSelect(false);
+            }
+        }
     }
 
     /** 数量面板打开且鼠标在面板上：下面的格子不响应悬停和点击。 */
@@ -107,18 +129,31 @@ public abstract class ConfigWidget extends WidgetGroup {
         return this.amountSetWidget.isVisible() && this.amountSetWidget.isMouseOverElement(mouseX, mouseY);
     }
 
+    boolean isValidIndex(int index) {
+        return index >= 0 && index < this.config.length;
+    }
+
+    /**
+     * 服务端：第 {@code index} 格此刻能否改数量——格号合法、格子有配置、不是库存模式（数量无意义，面板也不会打开）、
+     * 没有自动拉取（配置由机器管理）。数量写入前必须判它，客户端的请求可以伪造。
+     */
+    public boolean canSetAmount(int index) {
+        return isValidIndex(index) && !isStocking && !isAutoPull() && this.config[index].getConfig() != null;
+    }
+
+    /**
+     * 面板打开时：点在面板上交给面板（面板吃掉整块区域的点击）；点在别处时面板已在点击分发前关闭
+     * （{@link AmountSetWidget#onOutsideClick}，窗口内外都算，先提交输入框草稿、后关闭），这里只是不在机器窗口里时的后备。
+     */
     @OnlyIn(Dist.CLIENT)
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.amountSetWidget.isVisible()) {
-            if (this.amountSetWidget.getAmountText().mouseClicked(mouseX, mouseY, button)) {
+            if (this.amountSetWidget.mouseClicked(mouseX, mouseY, button) || isAmountPanelOver(mouseX, mouseY)) {
                 return true;
             }
-            if (!this.amountSetWidget.isMouseOverElement(mouseX, mouseY)) {
-                this.disableAmountClient();
-            }
+            this.disableAmountClient();
         }
-        if (isAmountPanelOver(mouseX, mouseY)) return true;
         for (Widget w : this.widgets) {
             if (w instanceof AEConfigSlotWidget slot) {
                 slot.setSelect(false);
@@ -128,14 +163,25 @@ public abstract class ConfigWidget extends WidgetGroup {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    /** 面板上的滚轮交给调节器，不漏到下面的格子。 */
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
+        if (isAmountPanelOver(mouseX, mouseY)) {
+            this.amountSetWidget.mouseWheelMove(mouseX, mouseY, wheelDelta);
+            return true;
+        }
+        return super.mouseWheelMove(mouseX, mouseY, wheelDelta);
+    }
+
     abstract void init();
 
     /**
-     * 输入框里的数量映射成真正写进格子的数量；返回 {@link #REJECT_AMOUNT} 表示不接受。
-     * 默认只接受正数；可配置存储访问仓覆写成「0 记成 -1（禁止）」。
+     * 配置数量的下限：数量面板调节器的最小值，服务端写入数量时也按它校验。
+     * 默认 1；可配置存储访问仓的限制格为 0（0 表示禁止，查表时按 -1 记）。
      */
-    long mapAmount(long newAmount) {
-        return newAmount > 0 ? newAmount : REJECT_AMOUNT;
+    public long minAmount() {
+        return 1;
     }
 
     /** 服务端配置格内容变了（键或数量）：默认什么都不做，配了查表的机器覆写它重建查表。 */

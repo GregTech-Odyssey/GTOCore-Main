@@ -6,7 +6,6 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AELimitItemConf
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.Nullable;
@@ -28,10 +27,9 @@ public class AELimitItemConfigWidget extends AEItemConfigWidget {
     public AELimitItemConfigWidget(int x, int y, ExportOnlyAEItemList list, int columns, @Nullable Runnable onChanged) {
         super(x, y, list, columns);
         this.onChanged = onChanged;
-        // 高度按"每格 18"重算（父类按每格 38 算的），数量输入面板跟着摆到格子区中间
+        // 高度按"每格 18"重算（父类按每格 38 算的）
         int rows = Math.max(1, (config.length + columns() - 1) / columns());
         setSize(new Size(getSizeWidth(), rows * CELL));
-        recenterAmountPanel();
     }
 
     @Override
@@ -57,26 +55,14 @@ public class AELimitItemConfigWidget extends AEItemConfigWidget {
         return new Position(index % columns * CELL, index / columns * CELL);
     }
 
-    /// 输入框里的数量：0 照收（查表时按 -1 禁止），负数不收
+    /// 数量下限 0：0 就是"禁止"（查表时按 -1 记）
     @Override
-    long mapAmount(long newAmount) {
-        return newAmount < 0 ? REJECT_AMOUNT : newAmount;
+    public long minAmount() {
+        return 0;
     }
 
     @Override
     public void notifyConfigChanged() {
         if (onChanged != null) onChanged.run();
-    }
-
-    /// 数量输入面板（父类按旧的格子高度摆在中间）挪到当前的格子区中间
-    private void recenterAmountPanel() {
-        for (Widget widget : getContainedWidgets(true)) {
-            if (widget instanceof AmountSetWidget panel) {
-                Position center = new Position((getSizeWidth() - AmountSetWidget.WIDTH) / 2,
-                        (getSizeHeight() - AmountSetWidget.HEIGHT) / 2);
-                panel.setSelfPosition(center);
-                panel.getAmountText().setSelfPosition(new Position(center.x + 8, center.y + 12));
-            }
-        }
     }
 }

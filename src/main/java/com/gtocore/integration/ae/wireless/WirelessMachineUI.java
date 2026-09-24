@@ -1,5 +1,7 @@
 package com.gtocore.integration.ae.wireless;
 
+import com.gtocore.api.gui.GTOGuiTextures;
+
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
@@ -391,7 +393,7 @@ public final class WirelessMachineUI {
         var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
         var favorite = row.addSyncValue(SyncValue.of(() -> id.equals(ctx.networks().favorite(ctx.uuid())), SyncValue.BOOLEAN, false));
         var current = row.addSyncValue(SyncValue.of(() -> isCurrent.test(id), SyncValue.BOOLEAN, false));
-        var star = Button.text(UISizes.ICON_BUTTON, () -> favorite.getValue() ? "★" : "☆")
+        var star = Button.icon(UITheme.switching(favorite::getValue, GTOGuiTextures.FAVORITE_OFF, GTOGuiTextures.FAVORITE_ON))
                 .setOnServerClick(() -> ctx.report(ctx.networks().toggleFavorite(ctx.serverPlayer(), id)));
         star.setHoverTooltips(FAVORITE);
         var name = TextLine.of(0, () -> {

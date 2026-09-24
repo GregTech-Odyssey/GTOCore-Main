@@ -6,7 +6,6 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AELimitFluidCon
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +28,6 @@ public class AELimitFluidConfigWidget extends AEFluidConfigWidget {
         this.onChanged = onChanged;
         int rows = Math.max(1, (config.length + columns() - 1) / columns());
         setSize(new Size(getSizeWidth(), rows * CELL));
-        recenterAmountPanel();
     }
 
     @Override
@@ -55,26 +53,14 @@ public class AELimitFluidConfigWidget extends AEFluidConfigWidget {
         return new Position(index % columns * CELL, index / columns * CELL);
     }
 
-    /// 输入框里的数量：0 照收（查表时按 -1 禁止），负数不收
+    /// 数量下限 0：0 就是"禁止"（查表时按 -1 记）
     @Override
-    long mapAmount(long newAmount) {
-        return newAmount < 0 ? REJECT_AMOUNT : newAmount;
+    public long minAmount() {
+        return 0;
     }
 
     @Override
     public void notifyConfigChanged() {
         if (onChanged != null) onChanged.run();
-    }
-
-    /// 数量输入面板（父类按旧的格子高度摆在中间）挪到当前的格子区中间
-    private void recenterAmountPanel() {
-        for (Widget widget : getContainedWidgets(true)) {
-            if (widget instanceof AmountSetWidget panel) {
-                Position center = new Position((getSizeWidth() - AmountSetWidget.WIDTH) / 2,
-                        (getSizeHeight() - AmountSetWidget.HEIGHT) / 2);
-                panel.setSelfPosition(center);
-                panel.getAmountText().setSelfPosition(new Position(center.x + 8, center.y + 12));
-            }
-        }
     }
 }

@@ -31,6 +31,7 @@ import com.gtocore.integration.construction_wand.ConstructionWandRegistrar;
 import com.gtocore.integration.emi.GTEMIPlugin;
 import com.gtocore.integration.ftbquests.GTOQuestTypes;
 import com.gtocore.integration.ftbu.AreaShape;
+import com.gtocore.utils.AdvMathExpParser;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Me2in1Menu;
@@ -46,6 +47,7 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.common.data.GTMaterialBlocks;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
+import com.gregtechceu.gtceu.uipro.utils.NumberExpressions;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -131,6 +133,8 @@ public class CommonProxy {
         Algae.init();
         AEConfig.instance().setChannelModel(ChannelMode.INFINITE);
         PlayerAttributes.init();
+        // 调节器（数值输入）的简写与算式：两端都要注册，解析在服务端做（解析器自带位数、指数、位移上限）
+        NumberExpressions.setEvaluator(AdvMathExpParser::parse);
 
         FusionReactorMachine.registerFusionTier(GTValues.UHV, " (MKIV)");
         FusionReactorMachine.registerFusionTier(GTValues.UEV, " (MKV)");

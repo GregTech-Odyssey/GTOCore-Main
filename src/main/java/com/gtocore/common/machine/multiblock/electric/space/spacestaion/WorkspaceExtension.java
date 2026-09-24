@@ -12,13 +12,13 @@ import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
-import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -27,7 +27,6 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -83,14 +82,17 @@ public class WorkspaceExtension extends Extension {
                 return WidgetIcons.SETTINGS;
             }
 
+            /** 重复段长度：新式数值输入（固定上下限 2~9），数值由组件自己从服务端下发；长度变了请求重新检查结构。 */
             @Override
             public Widget createConfigurator() {
-                WidgetGroup group = new WidgetGroup(0, 0, 100, 20);
-                var intInput = new IntInputWidget(() -> length, p -> {
-                    if (p != length) requestCheck();
+                return NumberSettingPage.compact(() -> length, v -> {
+                    int p = (int) v;
+                    if (p == length) return;
+                    requestCheck();
                     length = p;
-                }).setMin(2).setMax(9).setValue(length);
-                return group.addWidget(intInput);
+                    // 变了要标记存盘，否则重启丢失
+                    onChanged();
+                }, () -> 2, () -> 9);
             }
         });
     }

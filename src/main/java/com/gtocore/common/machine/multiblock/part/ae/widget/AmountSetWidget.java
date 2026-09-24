@@ -1,144 +1,114 @@
 package com.gtocore.common.machine.multiblock.part.ae.widget;
 
-import com.gtocore.utils.AdvMathExpParser;
+import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEConfigSlotWidget;
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.PageOverlay;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.stacks.GenericStack;
 
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.utils.Position;
-import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
+/**
+ * 配置格"设置数量"的小弹出面板（页内浮层 {@link PageOverlay}：画在整个窗口最上层、盖住处的鼠标先交给它）：
+ * 标准窗口外观（{@link UITheme#WINDOW}），顶边伸出一个小尖角指向所属的配置格
+ * （{@link UITheme#drawPopupNotch}），里面只有一个标准整数调节器 {@link NumberField}（确认后提交、服务端夹取、滚轮与修饰键步长，
+ * 支持简写与算式）。
+ * <p>
+ * 面板对应哪一格（{@link #index}）是这个打开的界面的状态：只由客户端打开 / 关闭时上报，服务端校验后记下（放入、清除配置不会改它）；
+ * 数量只在服务端写入，写之前由 {@link ConfigWidget#canSetAmount} 再判一次（格号、是否有配置、自动拉取 / 库存模式）。
+ * 位置由 {@link ConfigWidget} 摆放（配置格正下方，尖角对准该格）。
+ */
+class AmountSetWidget extends PageOverlay {
 
-import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawStringSized;
+    /// 调节器宽：按钮放得下 "±512"（Ctrl+Shift），输入框放得下约 10 位数字
+    private static final int FIELD_WIDTH = 134;
+    /// 窗口外框的内边距：左右、上 4，下 6（外框底部是厚边）
+    private static final int PADDING = 4;
+    private static final int PADDING_BOTTOM = 6;
+    static final int WIDTH = FIELD_WIDTH + 2 * PADDING;
+    static final int HEIGHT = NumberField.HEIGHT + PADDING + PADDING_BOTTOM;
+    /// 客户端上报面板对应的格号（不能用 1、2：WidgetGroup 用它们转发子控件的请求）
+    private static final int SLOT_INDEX_ID = 1000;
 
-class AmountSetWidget extends Widget {
-
-    static final int WIDTH = 80;
-    static final int HEIGHT = 30;
-    /// 浮层的高度层：高于格子里的物品（约 150）与数量文字（200）
-    private static final int FLOAT_Z = 250;
-
-    private int index = -1;
-    @Getter
-    private final TextFieldWidget amountText;
     private final ConfigWidget parentWidget;
+    /// 面板对应的格号，-1 为未打开；两端各自记，服务端的值经校验
+    private int index = -1;
+    /// 尖角中线相对面板左边的位置（对准所属格子的中心）
+    private int notchX = WIDTH / 2;
 
-    private static final Integer COLOR_DEFAULT = 0xFFFFFFFF;
-    private static final Integer COLOR_ERROR = 0xFFDF0000;
-
-    AmountSetWidget(int x, int y, ConfigWidget widget) {
-        super(x, y, WIDTH, HEIGHT);
+    AmountSetWidget(ConfigWidget widget) {
         this.parentWidget = widget;
-        // 面板浮在配置网格上：面板和输入框都抬到 FLOAT_Z，盖住下面格子里的物品与数量（物品约 150、数量 200）
-        this.amountText = (TextFieldWidget) new TextFieldWidget(x + 8, y + 12, 60, 13, this::getAmountStr, this::setNewAmount) {
-
-            @Override
-            @OnlyIn(Dist.CLIENT)
-            public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-                graphics.pose().pushPose();
-                graphics.pose().translate(0, 0, FLOAT_Z + 1);
-                super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-                graphics.pose().popPose();
-            }
-        }
-                .setValidator(this::amountTextValidator)
-                .setMaxStringLength(24) // Long.MAX_VALUE 19 digits
-                .appendHoverTooltips(Component.translatable("gtocore.gui.widget.amount_set.hover_tooltip"));
+        layout(l -> l.row().size(WIDTH, HEIGHT).paddingAll(PADDING).paddingBottom(PADDING_BOTTOM));
+        var field = new NumberField(FIELD_WIDTH, this::getAmount, this::setAmount, parentWidget::minAmount, () -> Long.MAX_VALUE);
+        // 两层禁用（原因不同）：自动拉取时整个面板禁用；格子没有配置时调节器禁用（打开空格子时，配置随后才到）
+        disabled(parentWidget::isAutoPull, AEConfigSlotWidget.CONFIG_MANAGED);
+        field.disabled(() -> parentWidget.isValidIndex(index) && parentWidget.getConfig(index).getConfig() == null, AEConfigSlotWidget.NO_CONFIG);
+        addChild(field);
     }
 
+    int getIndex() {
+        return index;
+    }
+
+    /** 尖角对准的位置（相对面板左边）。 */
+    void setNotchX(int notchX) {
+        this.notchX = notchX;
+    }
+
+    /** 客户端：打开（格号 ≥ 0）或关闭（-1），同时告诉服务端。 */
     @OnlyIn(Dist.CLIENT)
-    public void setSlotIndexClient(int slotIndex) {
+    void setSlotIndexClient(int slotIndex) {
         this.index = slotIndex;
-        writeClientAction(0, buf -> buf.writeVarInt(this.index));
+        writeClientAction(SLOT_INDEX_ID, buf -> buf.writeVarInt(slotIndex));
     }
 
-    public void setSlotIndex(int slotIndex) {
-        this.index = slotIndex;
+    /** 服务端：客户端上报的格号，越界（伪造）按关闭处理。 */
+    private void setSlotIndex(int slotIndex) {
+        this.index = parentWidget.isValidIndex(slotIndex) ? slotIndex : -1;
     }
 
-    private String getAmountStr() {
-        if (this.index < 0) {
-            return "0";
-        }
-        IConfigurableSlot slot = this.parentWidget.getConfig(this.index);
-        if (slot.getConfig() != null) {
-            if (this.amountText.getCurrentString().isEmpty() || this.amountText.getCurrentString().equals("0")) {
-                return String.valueOf(slot.getConfig().amount());
-            }
-            return this.amountText.getCurrentString();
-        }
-        return "0";
+    /** 服务端取值：面板对应格的配置数量，未打开或没有配置时为 0。 */
+    private long getAmount() {
+        if (!parentWidget.isValidIndex(index)) return 0;
+        GenericStack config = parentWidget.getConfig(index).getConfig();
+        return config == null ? 0 : config.amount();
     }
 
-    // We have two parses here, but it's acceptable for better UX. <= 1μs
-    // Otherwise, we cannot support complex expressions as it updates char by char.
-    private void setNewAmount(String amount) {
-        try {
-            if (this.index < 0) {
-                return;
-            }
-
-            long newAmount = 0;
-            if (!amount.isEmpty()) {
-                newAmount = AdvMathExpParser.parse(amount).longValue();
-            }
-
-            IConfigurableSlot slot = this.parentWidget.getConfig(this.index);
-            if (slot.getConfig() == null) {
-                return;
-            }
-            // 默认只收正数；可配置存储访问仓把 0 映射成 -1（禁止）
-            long mapped = this.parentWidget.mapAmount(newAmount);
-            if (mapped == ConfigWidget.REJECT_AMOUNT) {
-                return;
-            }
-            slot.setConfig(new GenericStack(slot.getConfig().what(), mapped));
-            this.parentWidget.notifyConfigChanged();
-        } catch (IllegalArgumentException | ArithmeticException ignore) {}
-    }
-
-    private String amountTextValidator(String text) {
-        try {
-            long value = AdvMathExpParser.parse(text).longValue();
-            if (value < 0) {
-                throw new IllegalArgumentException("Amount cannot be negative");
-            }
-            this.amountText.setTextColor(COLOR_DEFAULT);
-        } catch (IllegalArgumentException | ArithmeticException e) {
-            this.amountText.setTextColor(COLOR_ERROR);
-        }
-        return text;
+    /** 服务端写值：调节器已夹到 [下限, Long.MAX]，这里再校验格子此刻能不能改（客户端可以伪造请求）。 */
+    private void setAmount(long amount) {
+        if (amount < parentWidget.minAmount() || !parentWidget.canSetAmount(index)) return;
+        IConfigurableSlot slot = parentWidget.getConfig(index);
+        slot.setConfig(new GenericStack(slot.getConfig().what(), amount));
+        parentWidget.notifyConfigChanged();
     }
 
     @Override
     public void handleClientAction(int id, FriendlyByteBuf buffer) {
-        super.handleClientAction(id, buffer);
-        if (id == 0) {
-            this.amountText.setCurrentString("");
-            this.index = buffer.readVarInt();
+        if (id == SLOT_INDEX_ID) {
+            setSlotIndex(buffer.readVarInt());
+            return;
         }
+        super.handleClientAction(id, buffer);
     }
 
+    /** 点在面板外面（窗口内外任意处）：关闭；输入框里没确认的草稿此前已提交，关闭请求排在提交之后。 */
+    @Override
+    protected void onOutsideClick() {
+        parentWidget.disableAmountClient();
+    }
+
+    /** 标准窗口外框 + 顶边指向所属格子的尖角（由窗口在最上层画，见 {@link PageOverlay}）。 */
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-        Position position = getPosition();
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, FLOAT_Z);
-        UITheme.WINDOW.draw(graphics, mouseX, mouseY, position.x, position.y, WIDTH, HEIGHT);
-        drawStringSized(graphics, I18n.get("ldlib.gui.editor.configurator.amount"), position.x + 25, position.y + 3, UITheme.TEXT, false, 1.0F, false);
-        graphics.pose().popPose();
+    protected void drawOverlayBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        int x = getPositionX(), y = getPositionY();
+        UITheme.WINDOW.draw(graphics, mouseX, mouseY, x, y, getSizeWidth(), getSizeHeight());
+        UITheme.drawPopupNotch(graphics, x + notchX, y);
     }
 }

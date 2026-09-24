@@ -1,7 +1,5 @@
 package com.gtocore.common.machine.multiblock.part.ae.widget.slot;
 
-import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
-import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAESlot;
 import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
 
 import com.gregtechceu.gtceu.api.gui.misc.IGhostFluidTarget;
@@ -9,22 +7,15 @@ import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.integration.ae2.utils.AEUtil;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.GTMath;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.SoundActions;
-import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
@@ -104,23 +95,19 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                     this.parentWidget.disableAmountClient();
                 }
             } else if (button == 0) {
-                // Left click to set/select
+                // 左键：拿着装有流体的容器时设为配置；否则点空格子无反应，点有配置的格子打开数量面板
                 ItemStack hold = this.gui.getModularUIContainer().getCarried();
-                FluidUtil.getFluidContained(hold).ifPresent(f -> writeClientAction(UPDATE_ID, f::writeToPacket));
+                var fluid = FluidUtil.getFluidContained(hold);
+                if (fluid.isPresent()) {
+                    writeClientAction(UPDATE_ID, fluid.get()::writeToPacket);
+                } else if (this.parentWidget.getDisplay(this.index).getConfig() == null) {
+                    return true;
+                }
 
                 if (!parentWidget.isStocking()) {
                     this.parentWidget.enableAmountClient(this.index);
                     this.select = true;
                 }
-            }
-            return true;
-        } else if (mouseOverStock(mouseX, mouseY)) {
-            if (button != 0) return false;
-            if (parentWidget.isStocking()) {
-                return false;
-            }
-            if (this.parentWidget.getDisplay(this.index).getStock() != null) {
-                writeClientAction(SLOT_CLICK_ID, buf -> buf.writeBoolean(isShiftDown()));
             }
             return true;
         }
@@ -135,7 +122,6 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
         switch (id) {
             case REMOVE_ID -> {
                 slot.setConfig(null);
-                this.parentWidget.disableAmount();
                 this.parentWidget.notifyConfigChanged();
                 writeUpdateInfo(REMOVE_ID, buf -> {});
             }
@@ -144,28 +130,18 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 var stack = AEUtil.fromFluidStack(fluid);
                 if (!isStackValidForSlot(stack)) return;
                 slot.setConfig(stack);
-                this.parentWidget.enableAmount(this.index);
                 this.parentWidget.notifyConfigChanged();
                 if (fluid != FluidStack.EMPTY) {
                     writeUpdateInfo(UPDATE_ID, fluid::writeToPacket);
                 }
             }
             case AMOUNT_CHANGE_ID -> {
-                if (slot.getConfig() != null) {
-                    int amt = buffer.readInt();
-                    slot.setConfig(ExportOnlyAESlot.copy(slot.getConfig(), amt));
-                    this.parentWidget.notifyConfigChanged();
-                    writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeInt(amt));
-                }
-            }
-            case SLOT_CLICK_ID -> {
-                if (slot.getStock() != null) {
-                    boolean isShiftDown = buffer.readBoolean();
-                    int clickResult = tryClickContainer(isShiftDown);
-                    if (clickResult >= 0) {
-                        writeUpdateInfo(SLOT_CLICK_ID, buf -> buf.writeVarInt(clickResult));
-                    }
-                }
+                int amt = buffer.readInt();
+                // 与数量面板同一套校验（客户端可以伪造）
+                if (amt < this.parentWidget.minAmount() || !this.parentWidget.canSetAmount(this.index)) return;
+                slot.setConfig(new GenericStack(slot.getConfig().what(), amt));
+                this.parentWidget.notifyConfigChanged();
+                writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeInt(amt));
             }
         }
     }
@@ -183,27 +159,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 slot.setConfig(new GenericStack(AEFluidKey.of(fluid.getFluid()), fluid.getAmount()));
             }
             case AMOUNT_CHANGE_ID -> {
-                if (slot.getConfig() != null) {
-                    int amt = buffer.readInt();
-                    slot.setConfig(ExportOnlyAESlot.copy(slot.getConfig(), amt));
-                }
-            }
-            case SLOT_CLICK_ID -> {
-                if (slot.getStock() != null && slot.getStock().what() instanceof AEFluidKey key) {
-                    ItemStack currentStack = gui.getModularUIContainer().getCarried();
-                    int newStackSize = buffer.readVarInt();
-                    currentStack.setCount(newStackSize);
-                    gui.getModularUIContainer().setCarried(currentStack);
-
-                    FluidStack stack = new FluidStack(key.getFluid(), GTMath.saturatedCast(slot.getStock().amount()));
-                    var tag = key.getTag();
-                    if (tag != null) {
-                        stack.setTag(tag.copy());
-                    }
-                    GenericStack stack1 = ExportOnlyAESlot.copy(slot.getStock(),
-                            Math.max(0, (slot.getStock().amount() - stack.getAmount())));
-                    slot.setStock(stack1.amount() == 0 ? null : stack1);
-                }
+                if (slot.getConfig() != null) slot.setConfig(new GenericStack(slot.getConfig().what(), buffer.readInt()));
             }
         }
     }
@@ -233,76 +189,5 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
         if (!fluidStack.isEmpty()) {
             writeClientAction(UPDATE_ID, fluidStack::writeToPacket);
         }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public boolean mouseWheelMove(double mouseX, double mouseY, double wheelDelta) {
-        // Only allow the amount scrolling if not stocking, as amount is useless for stocking
-        if (parentWidget.isStocking()) return false;
-        IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
-        Rect2i rectangle = toRectangleBox();
-        rectangle.setHeight(rectangle.getHeight() / 2);
-        if (slot.getConfig() == null || wheelDelta == 0 || !rectangle.contains((int) mouseX, (int) mouseY)) {
-            return false;
-        }
-        FluidStack fluid = slot.getConfig().what() instanceof AEFluidKey fluidKey ?
-                new FluidStack(fluidKey.getFluid(), GTMath.saturatedCast(slot.getConfig().amount()),
-                        fluidKey.getTag()) :
-                FluidStack.EMPTY;
-        long amt;
-        if (isCtrlDown()) {
-            amt = wheelDelta > 0 ? fluid.getAmount() * 2L : fluid.getAmount() / 2L;
-        } else {
-            amt = wheelDelta > 0 ? fluid.getAmount() + 1L : fluid.getAmount() - 1L;
-        }
-
-        if (amt > 0 && amt < Integer.MAX_VALUE + 1L) {
-            int finalAmt = (int) amt;
-            writeClientAction(AMOUNT_CHANGE_ID, buf -> buf.writeInt(finalAmt));
-            return true;
-        }
-        return false;
-    }
-
-    private int tryClickContainer(boolean isShiftKeyDown) {
-        ExportOnlyAEFluidSlot fluidTank = this.parentWidget
-                .getConfig(this.index) instanceof ExportOnlyAEFluidSlot fluid ? fluid : null;
-        if (fluidTank == null) return -1;
-        Player player = gui.entityPlayer;
-        ItemStack currentStack = gui.getModularUIContainer().getCarried();
-        var handler = FluidUtil.getFluidHandler(currentStack).resolve().orElse(null);
-        if (handler == null) return -1;
-        int maxAttempts = isShiftKeyDown ? currentStack.getCount() : 1;
-
-        if (!fluidTank.getStack().isEmpty()) {
-            boolean performedFill = false;
-            FluidStack initialFluid = fluidTank.getStack();
-            for (int i = 0; i < maxAttempts; i++) {
-                FluidActionResult result = FluidUtil.tryFillContainer(currentStack, fluidTank, Integer.MAX_VALUE, null,
-                        false);
-                if (!result.isSuccess()) break;
-                ItemStack remainingStack = FluidUtil
-                        .tryFillContainer(currentStack, fluidTank, Integer.MAX_VALUE, null, true).getResult();
-                currentStack.shrink(1);
-                performedFill = true;
-                if (!remainingStack.isEmpty() && !player.addItem(remainingStack)) {
-                    Block.popResource(player.level(), player.getOnPos(), remainingStack);
-                    break;
-                }
-            }
-            if (performedFill) {
-                SoundEvent soundevent = initialFluid.getFluid().getFluidType().getSound(initialFluid,
-                        SoundActions.BUCKET_FILL);
-                if (soundevent != null) {
-                    player.level().playSound(null, player.position().x, player.position().y + 0.5, player.position().z,
-                            soundevent, SoundSource.BLOCKS, 1.0F, 1.0F);
-                }
-                gui.getModularUIContainer().setCarried(currentStack);
-                return currentStack.getCount();
-            }
-        }
-
-        return -1;
     }
 }

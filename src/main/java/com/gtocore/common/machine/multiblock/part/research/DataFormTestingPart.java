@@ -22,9 +22,6 @@ import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,8 +45,8 @@ public class DataFormTestingPart extends AmountConfigurationPartMachine implemen
     }
 
     @Override
-    public Widget createUIWidget() {
-        return ((WidgetGroup) super.createUIWidget()).addWidget(new LabelWidget(24, -16, () -> "gui.ae2.Priority"));
+    protected Component getSettingTitle() {
+        return Component.translatable("gui.ae2.Priority");
     }
 
     @Override

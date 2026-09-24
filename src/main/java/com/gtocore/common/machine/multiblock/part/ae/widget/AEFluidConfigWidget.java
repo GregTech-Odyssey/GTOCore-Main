@@ -18,6 +18,7 @@ public class AEFluidConfigWidget extends ConfigWidget {
 
     /** 每行 {@code columns} 格。 */
     public AEFluidConfigWidget(int x, int y, ExportOnlyAEFluidList list, int columns) {
+        // 流体数量以 mB 计（AE 流体 1 桶 = 1000）
         super(x, y, list.getInventory(), list.isStocking(), columns);
         this.fluidList = list;
     }

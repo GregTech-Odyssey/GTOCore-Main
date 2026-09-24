@@ -42,7 +42,7 @@ public final class GTOGuiTextures {
     public static final ResourceTexture LARGE_XP_ORB = XP_ORBS.getSubTexture(0, 0.5, 0.25, 0.25);
 
     /// 机器小组件（窗口左侧配置标签）图标，画法标准见 {@link WidgetIconAtlas}；通用的在 GTM WidgetIcons
-    private static final WidgetIconAtlas WIDGET_ICONS = new WidgetIconAtlas(GTOCore.id("textures/gui/widget_icons.png"), 10);
+    private static final WidgetIconAtlas WIDGET_ICONS = new WidgetIconAtlas(GTOCore.id("textures/gui/widget_icons.png"), 11);
     public static final IGuiTexture HUD_OFF = WIDGET_ICONS.icon(0, 0);
     public static final IGuiTexture HUD_ON = WIDGET_ICONS.icon(0, 1);
     /// 在传送网络中显示
@@ -66,6 +66,9 @@ public final class GTOGuiTextures {
     /// 中子通量显示：平均 / 最低
     public static final IGuiTexture FLUX_AVG = WIDGET_ICONS.icon(9, 0);
     public static final IGuiTexture FLUX_MIN = WIDGET_ICONS.icon(9, 1);
+    /// 收藏（8×8 画法放大 2 倍存放，用在 14 像素的小图标按钮里按 8 像素绘制）
+    public static final IGuiTexture FAVORITE_OFF = WIDGET_ICONS.icon(10, 0);
+    public static final IGuiTexture FAVORITE_ON = WIDGET_ICONS.icon(10, 1);
 
     private static ResourceTexture getTexture(String string) {
         return new ResourceTexture(GTOCore.id("textures/gui/" + string + ".png"));

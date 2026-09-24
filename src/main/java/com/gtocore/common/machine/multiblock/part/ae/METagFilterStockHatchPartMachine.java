@@ -66,12 +66,19 @@ public class METagFilterStockHatchPartMachine extends MEStockingHatchPartMachine
     public void setTagWhite(final String tagWhite) {
         this.tagWhite = tagWhite;
         filter = Caches.getTagPriorityList(tagWhite, tagBlack);
+        onChanged();
     }
 
     @Override
     public void setTagBlack(final String tagBlack) {
         this.tagBlack = tagBlack;
         filter = Caches.getTagPriorityList(tagWhite, tagBlack);
+        onChanged();
+    }
+
+    @Override
+    public boolean isItemFilter() {
+        return false;
     }
 
     @Override

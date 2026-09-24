@@ -12,13 +12,13 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
-import com.gregtechceu.gtceu.api.gui.widget.LongInputWidget;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -27,7 +27,6 @@ import net.minecraft.network.chat.Component;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import dev.shadowsoffire.placebo.color.GradientColor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -127,16 +126,17 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
             return WidgetIcons.SETTINGS;
         }
 
+        /** 每刻算力上限：新式数值输入（0 ~ Long.MAX_VALUE，与原来的 LongInputWidget 默认范围相同），数值由组件自己从服务端下发。 */
         @Override
         public Widget createConfigurator() {
-            WidgetGroup group = new WidgetGroup(0, 0, 100, 20);
-            var longInput = new LongInputWidget(machine::getCwuLimitConfig, this::onChange);
-            group.addWidget(longInput);
-            return group;
+            return NumberSettingPage.compact(machine::getCwuLimitConfig, this::onChange, () -> 0L, () -> Long.MAX_VALUE);
         }
 
+        /** 字段只有 @SaveToDisk，变了要标记存盘，否则重启丢失。 */
         private void onChange(long newValue) {
+            if (newValue == machine.cwuLimitConfig) return;
             machine.cwuLimitConfig = newValue;
+            machine.onChanged();
         }
     }
 
