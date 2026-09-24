@@ -604,8 +604,8 @@ public final class GTOConfig {
         public boolean aeWirelessLog = false;
 
         @Configurable
-        @Configurable.Comment({ "AE2 无线网络使用的存储键，切换后将使用新的存储键重新生成网络（警告：切换后所有AE无线设备的设置将重置！）", "The storage key used by the AE2 wireless network. After switching, a new storage key will be used to regenerate the network (Warning: After switching, all AE wireless device settings will be reset!)" })
-        @RegisterLanguage(namePrefix = "config.gtocore.option", cn = "AE2 网格存储键", en = "AE2 Grid Storage Key")
+        @Configurable.Comment({ "仅用于迁移：旧版 ME 无线网络存档文件名的后缀（wireless_saved_data_<键>）。新版数据存在 gtocore_me_wireless，首次加载时从这里指定的旧文件迁移一次，之后不再使用", "Migration only: suffix of the legacy ME wireless network save file (wireless_saved_data_<key>). New data lives in gtocore_me_wireless and is migrated once from the legacy file named here on first load" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", cn = "旧版 AE2 无线存储键（仅迁移）", en = "Legacy AE2 Wireless Storage Key (Migration Only)")
         public String aeGridKey = "four";
 
         @Configurable

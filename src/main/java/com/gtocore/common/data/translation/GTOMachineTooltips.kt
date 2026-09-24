@@ -620,7 +620,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_wireless_connection_machine")
 
         miraculousTools("ME无线连接机" translatedTo "ME Wireless Connection Machine")
-        content("多对多的ME无线网络节点" translatedTo "A many-to-many ME wireless network node")
+        content("同一无线网络中的所有机器接入同一个ME网络" translatedTo "All machines in the same wireless network join one ME network")
         content("可以在不同世界传输" translatedTo "Can transmit across different worlds")
         content("可以连接GTO ME无线网络" translatedTo "Can connect to GTO ME wireless network")
         section("无线ME网络连接" translatedTo "Built-in wireless ME network connection feature")
@@ -647,6 +647,8 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         content("可为保险库IO" translatedTo "Can serve as vault IO")
         info("最大安装数 = 密封机械方块数" translatedTo "Maximum installations = hermetic casing amount")
+        content("可标记一种物品和一种流体" translatedTo "Can mark one item and one fluid")
+        info("标记后该仓只读写被标记的资源，未标记的资源不进出" translatedTo "Once marked, this hatch only reads and writes the marked resource; unmarked resources are rejected")
     }
 
     @JvmField

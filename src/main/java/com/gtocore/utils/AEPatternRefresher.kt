@@ -1,6 +1,6 @@
 package com.gtocore.utils
 
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachineKt
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine
 
 import appeng.api.networking.IGrid
 import appeng.blockentity.crafting.PatternProviderBlockEntity
@@ -55,7 +55,7 @@ object AEPatternRefresher {
         if (grid is IExpandedGrid) {
             grid.machines.values()
                 .filter { it.isActive }
-                .mapNotNull { it.owner as? MEPatternPartMachineKt<*> }
+                .mapNotNull { it.owner as? MEPatternPartMachine<*> }
                 .forEach { machine ->
                     refreshTasks.add(
                         Runnable {

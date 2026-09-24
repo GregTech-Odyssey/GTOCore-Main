@@ -1,15 +1,15 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.api.gui.ui.UIElement;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
-import com.gtocore.common.machine.multiblock.part.ae.widget.MEInputBufferPartMachineUIKt;
-import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt;
+import com.gtocore.common.machine.multiblock.part.ae.widget.MEInputBufferPartMachineUI;
+import com.gtocore.common.machine.multiblock.part.ae.widget.slot.MEPatternViewSlotWidget;
 import com.gtocore.common.machine.trait.InternalSlotRecipeHandler;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.gui.ktflexible.VBoxBuilder;
 import com.gtolib.api.machine.trait.NotifiableNotConsumableFluidHandler;
 import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -29,7 +29,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.fluid.LockableIFluidHandler;
 import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -65,11 +64,8 @@ import com.gto.datasynclib.LazyFieldDataManager;
 import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.annotations.SyncToServer;
 import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.gto.datasynclib.util.DataCodecs;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -78,10 +74,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.IntSupplier;
 
 @DataGeneratorScanned
-public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBufferPartMachine.InternalSlot> {
+public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBufferPartMachine.InternalSlot> {
 
     private IStackWatcher craftingWatcher;
 
@@ -89,25 +84,6 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
     @SyncToClient
     final boolean[] disconnectStates = new boolean[getMaxPatternCount()];
-
-    @Getter
-    @SyncToServer
-    public IntNotifiableHolder configuratorField = IntNotifiableHolder.create(-1)
-            .setReceiverListener((side, o, n) -> {
-                if (side.isServer()) TaskHandler.enqueueTask(Objects.requireNonNull(getLevel()), () -> freshWidgetGroup.serverFresh());
-            });
-
-    @Override
-    public void onMouseClicked(int index) {
-        if (!isRemote()) return;
-        if (configuratorField.get() == index) {
-            configuratorField.set(-1);
-        } else {
-            configuratorField.set(index);
-        }
-        configuratorField.markAsChanged();
-        syncToServer();
-    }
 
     private final Multimap<AEKey, InternalSlot> watcher2SlotMap = Multimaps.newSetMultimap(new Reference2ObjectOpenHashMap<>(), ReferenceOpenHashSet::new);
     private final Reference2ReferenceMap<InternalSlot, AEKey> slot2WatcherMap = new Reference2ReferenceOpenHashMap<>();
@@ -203,13 +179,13 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
     }
 
     @Override
-    public @NotNull Widget createUIWidget() {
-        return MEInputBufferPartMachineUIKt.createUIWidgetFor(this);
+    protected boolean supportsSlotConfig() {
+        return true;
     }
 
     @Override
-    public void buildToolBoxContent(@NotNull VBoxBuilder $this$buildToolBoxContent) {
-        MEInputBufferPartMachineUIKt.buildToolBoxContentFor($this$buildToolBoxContent, this);
+    protected void buildSlotConfig(@NotNull UIElement column, int index) {
+        MEInputBufferPartMachineUI.buildSlotConfig(column, this, index);
     }
 
     @Override
@@ -298,33 +274,12 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
     @Override
     public boolean patternFilter(@NotNull ItemStack stack) {
         return stack.getItem() instanceof ProcessingPatternItem &&
-                MEPatternPartMachineKtKt.checkDuplicatedPattern(this, stack);
+                checkDuplicatedPattern(this, stack);
     }
 
     @Override
-    public @NotNull IntSupplier getApplyIndex() {
-        return configuratorField::get;
-    }
-
-    @Override
-    public void runOnUpdate() {
-        if (isRemote()) {
-            configuratorField.set(-1);
-            configuratorField.markAsChanged();
-            syncToServer();
-        }
-    }
-
-    @Override
-    public @NotNull AEPatternViewSlotWidgetKt createPatternSlotWidget(int index) {
-        return new AEPatternViewSlotWidgetKt(
-                0,
-                0,
-                index,
-                getApplyIndex(),
-                getPatternInventory(),
-                () -> onMouseClicked(-1),
-                () -> onMouseClicked(index)) {
+    public @NotNull MEPatternViewSlotWidget createPatternSlotWidget(int index) {
+        return new MEPatternViewSlotWidget(index, getPatternInventory(), SLOT_CONFIG_POPUP) {
 
             @Override
             public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
@@ -367,10 +322,8 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
 
         public AEKey reportingKey = null;
         @Getter
-        @Setter
         @SaveToDisk(defaultValue = "-1")
         public long minThreshold = -1;
-        @Setter
         @SaveToDisk(defaultValue = "1")
         public long multiplier = 1;
         @SaveToDisk(defaultValue = "false")
@@ -487,9 +440,32 @@ public class MEInputBufferPartMachine extends MEPatternPartMachineKt<MEInputBuff
             return isEmitterMode;
         }
 
+        // 以下设置项只有 @SaveToDisk（没有 @SyncToClient，不会被自动标脏），改动后必须 machine.onChanged() 才会存盘
+
         public void setEmitterMode(boolean emitterMode) {
+            if (isEmitterMode == emitterMode) return;
             isEmitterMode = emitterMode;
+            machine.onChanged();
             ICraftingProvider.requestUpdate(machine.getMainNode());
+        }
+
+        public void setMinThreshold(long minThreshold) {
+            if (this.minThreshold == minThreshold) return;
+            this.minThreshold = minThreshold;
+            machine.onChanged();
+        }
+
+        public void setMultiplier(long multiplier) {
+            if (this.multiplier == multiplier) return;
+            this.multiplier = multiplier;
+            machine.onChanged();
+            reloadConfig();
+        }
+
+        public void setUseRequest(boolean useRequest) {
+            if (this.useRequest == useRequest) return;
+            this.useRequest = useRequest;
+            machine.onChanged();
         }
 
         public void reloadConfig() {

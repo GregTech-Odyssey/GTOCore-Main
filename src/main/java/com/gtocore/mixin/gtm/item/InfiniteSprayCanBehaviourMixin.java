@@ -1,6 +1,6 @@
 package com.gtocore.mixin.gtm.item;
 
-import com.gtocore.mixin.ftbu.FTBUltimineClientAccessor;
+import com.gtocore.client.InfiniteSprayCanClient;
 
 import com.gregtechceu.gtceu.common.item.ColorSprayBehaviour;
 import com.gregtechceu.gtceu.common.item.InfiniteSprayCanBehaviour;
@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltiminePlayerData;
-import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +25,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * FTB Ultimine chain paint for the infinite spray can.
@@ -75,7 +73,7 @@ public class InfiniteSprayCanBehaviourMixin {
 
         // Client: paint the same FTB highlight set immediately (prediction).
         if (level.isClientSide) {
-            Collection<BlockPos> clientShape = gto$clientShapeBlocks();
+            Collection<BlockPos> clientShape = InfiniteSprayCanClient.shapeBlocks();
             if (clientShape != null && !clientShape.isEmpty()) {
                 ColorSprayBehaviour.paintBlocks(level, clientShape, color, charge);
                 return;
@@ -106,8 +104,9 @@ public class InfiniteSprayCanBehaviourMixin {
         if (player instanceof ServerPlayer) {
             return FTBUltimine.instance.getOrCreatePlayerData(player).isPressed();
         }
-        if (player.level().isClientSide && FTBUltimineClient.keyBinding != null) {
-            return FTBUltimineClient.keyBinding.isDown();
+        if (player.level().isClientSide) {
+            // 客户端类只经 InfiniteSprayCanClient 访问，本 mixin 两端都会应用，直接引用会让专用服务器崩溃
+            return InfiniteSprayCanClient.isUltimineKeyDown();
         }
         return false;
     }
@@ -123,18 +122,5 @@ public class InfiniteSprayCanBehaviourMixin {
             }
         }
         return false;
-    }
-
-    @Unique
-    @Nullable
-    private static Collection<BlockPos> gto$clientShapeBlocks() {
-        if (!(FTBUltimine.instance.proxy instanceof FTBUltimineClient client)) {
-            return null;
-        }
-        List<BlockPos> shape = ((FTBUltimineClientAccessor) (Object) client).gto$getShapeBlocks();
-        if (shape == null || shape.isEmpty()) {
-            return null;
-        }
-        return shape;
     }
 }

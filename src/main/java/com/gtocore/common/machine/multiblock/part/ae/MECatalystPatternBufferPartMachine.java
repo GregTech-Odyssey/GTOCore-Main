@@ -7,7 +7,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class MECatalystPatternBufferPartMachine extends MEPatternBufferPartMachineKt {
+public final class MECatalystPatternBufferPartMachine extends MEPatternBufferPartMachine {
 
     public MECatalystPatternBufferPartMachine(MetaMachineBlockEntity holder) {
         super(holder, 36);

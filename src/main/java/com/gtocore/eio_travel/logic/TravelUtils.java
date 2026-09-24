@@ -1,7 +1,7 @@
 package com.gtocore.eio_travel.logic;
 
 import com.gtocore.api.travel.TravelMode;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachineKt;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.api.ITravelTarget;
@@ -119,7 +119,7 @@ public interface TravelUtils {
         requireResync(level);
     }
 
-    static void removeAndReadd(@NotNull Level level, MEPatternPartMachineKt<?> host) {
+    static void removeAndReadd(@NotNull Level level, MEPatternPartMachine<?> host) {
         Optional<ITravelTarget> travelTarget = TravelSavedData.getTravelData(level).getTravelTarget(host.getHolder().getBlockPos());
         if (travelTarget.isPresent() && travelTarget.get() instanceof ITravelTarget anchorTravelTarget) {
             TravelSavedData.getTravelData(level).removeTravelTargetAt(level, anchorTravelTarget.getPos());

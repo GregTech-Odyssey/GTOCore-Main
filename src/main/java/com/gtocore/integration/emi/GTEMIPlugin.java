@@ -1,10 +1,10 @@
 package com.gtocore.integration.emi;
 
+import com.gtocore.api.gui.ui.window.MachineWindow;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineKt;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.chisel.ChiselRecipe;
@@ -333,9 +333,12 @@ public final class GTEMIPlugin implements EmiPlugin {
                         if (simulate) {
                             return true;
                         }
-                        if (patternBuffer instanceof MEPatternBufferPartMachineKt && recipe.getId() != null) {
-                            var currentSlot = patternBuffer.getConfiguratorField().get();
-                            MEPatternBufferPartMachineKt.Companion.getSET_ID_CHANNEL()
+                        if (recipe.getId() != null) {
+                            // 写进当前打开着单槽配置弹出面板的那个样板槽；没打开时不写
+                            var window = MachineWindow.find(context.getScreenHandler().getModularUI());
+                            int currentSlot = window == null ? -1 : window.getPopupArgument(MEPatternBufferPartMachine.SLOT_CONFIG_POPUP);
+                            if (currentSlot < 0) return true;
+                            MEPatternBufferPartMachine.SET_ID_CHANNEL
                                     .send(buf -> {
                                         buf.writeBlockPos(patternBuffer.getPos());
                                         buf.writeVarInt(currentSlot);

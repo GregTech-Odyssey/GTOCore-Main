@@ -1,6 +1,6 @@
 package com.gtocore.eio_travel.implementations;
 
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachineKt;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 import com.gtocore.eio_travel.EioTravelNbtKeys;
 import com.gtocore.eio_travel.api.AbstractTravelTarget;
 
@@ -41,7 +41,7 @@ public class PatternTravelTarget extends AbstractTravelTarget {
     @Nullable
     private final PatternProviderLogicHost patternProviderLogicHost;
     @Nullable
-    private final MEPatternPartMachineKt<?> patternBufferHost;
+    private final MEPatternPartMachine<?> patternBufferHost;
     private final boolean isClient;
     /// NotNull on server side
     @Nullable
@@ -59,7 +59,7 @@ public class PatternTravelTarget extends AbstractTravelTarget {
         this.dimension = Optional.ofNullable(host.getBlockEntity().getLevel()).map(Level::dimension).orElse(null);
     }
 
-    public PatternTravelTarget(MEPatternPartMachineKt<?> host) {
+    public PatternTravelTarget(MEPatternPartMachine<?> host) {
         super(host.getHolder().getBlockPos(),
                 getPlayerCustomName(host),
                 getAdjacentMachineIcon(),
@@ -87,7 +87,7 @@ public class PatternTravelTarget extends AbstractTravelTarget {
                     return customNameComponent.getString();
                 }
             }
-        } else if (host instanceof MEPatternPartMachineKt<?> partHost) {
+        } else if (host instanceof MEPatternPartMachine<?> partHost) {
             return partHost.getCustomName();
         }
         return "";

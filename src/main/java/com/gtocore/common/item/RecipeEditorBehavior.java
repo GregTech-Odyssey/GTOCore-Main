@@ -237,7 +237,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                 WidgetGroup group = new WidgetGroup(0, 0, maxCount * 18 + 8, totalR * 18 + 8);
                 int index = 0;
                 for (var entry : map.entrySet()) {
-                    if (entry.getKey() instanceof ContentRecipeInfo<?> cap) {
+                    if (entry.getKey() instanceof ContentRecipeInfo<?, ?> cap) {
                         boolean i = cap == ItemRecipeInfo.INSTANCE;
                         if (i || isGT) {
                             if (cap.getWidgetClass() == null) {
@@ -281,7 +281,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                     for (var capabilityEntry : recipeHolder.storages().rowMap().entrySet()) {
                         IO io = capabilityEntry.getKey();
                         for (var storagesEntry : capabilityEntry.getValue().entrySet()) {
-                            if (storagesEntry.getKey() instanceof ContentRecipeInfo<?> cap) {
+                            if (storagesEntry.getKey() instanceof ContentRecipeInfo<?, ?> cap) {
                                 Object storage = storagesEntry.getValue();
                                 Class<? extends Widget> widgetClass = cap.getWidgetClass();
                                 if (widgetClass != null) {

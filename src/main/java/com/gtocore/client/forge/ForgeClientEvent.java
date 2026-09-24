@@ -16,8 +16,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
-import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEPatternViewSlotWidgetKt;
-import com.gtocore.common.saved.WirelessNetworkSavedData;
+import com.gtocore.integration.ae.wireless.WirelessClientCache;
 import com.gtocore.integration.emi.HiddenItems;
 
 import com.gtolib.GTOCore;
@@ -33,12 +32,15 @@ import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -54,14 +56,14 @@ import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import com.hepdd.gtmthings.common.block.machine.electric.WirelessEnergyMonitor;
 import com.hepdd.gtmthings.data.CustomItems;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUIGuiContainer;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.emi.emi.screen.RecipeScreen;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import snownee.jade.util.Color;
 
@@ -215,26 +217,36 @@ public final class ForgeClientEvent {
         }
     }
 
-    @SubscribeEvent
-    public static void onScreenClosing(ScreenEvent.Closing event) {
-        if (event.getScreen() instanceof ModularUIGuiContainer gui) {
-            var p = gui.getMenu().getModularUI().getFlatWidgetCollection().stream()
-                    .filter(AEPatternViewSlotWidgetKt.class::isInstance)
-                    .map(AEPatternViewSlotWidgetKt.class::cast)
-                    .filter(AEPatternViewSlotWidgetKt::emiFlagFilter)
-                    .findFirst();
-            p.ifPresent(AEPatternViewSlotWidgetKt::onDestroy);
-        }
-    }
+    /**
+     * 开发环境（runClient）里自动确认"实验性设置"警告：整合包的数据驱动世界生成让世界的生命周期不是 stable，
+     * Forge 在每个世界第一次载入时（{@code ForgeHooksClient.createWorldConfirmationScreen}）、原版在新建世界时
+     * （{@code WorldOpenFlows.confirmWorldCreation}）都会弹这个确认框，测试时反复手点。只在非生产环境生效。
+     */
+    @Nullable
+    private static Screen autoConfirmedScreen;
 
     @SubscribeEvent
-    public static void onScreenOpening(ScreenEvent.Opening event) {
-        if (event.getCurrentScreen() instanceof ModularUIGuiContainer gui &&
-                event.getNewScreen() instanceof RecipeScreen) {
-            gui.getMenu().getModularUI().getFlatWidgetCollection().stream()
-                    .filter(AEPatternViewSlotWidgetKt.class::isInstance)
-                    .map(AEPatternViewSlotWidgetKt.class::cast)
-                    .forEach(a -> a.setEmiFlag(true));
+    public static void autoConfirmExperimentalWarning(ScreenEvent.Init.Post event) {
+        if (FMLEnvironment.production || !(event.getScreen() instanceof ConfirmScreen screen)) return;
+        if (!(screen.getTitle().getContents() instanceof TranslatableContents title)) return;
+        var key = title.getKey();
+        if (!"selectWorld.backupQuestion.experimental".equals(key) && !"selectWorld.warning.experimental.title".equals(key)) return;
+        // 同一个确认框可能初始化不止一次（窗口尺寸变化等），只点一次：第一次确认后载入过程中会处理任务队列，
+        // 若队列里还有第二次点击，会在载入中途再次载入同一存档
+        if (screen == autoConfirmedScreen) return;
+        autoConfirmedScreen = screen;
+        // ConfirmScreen 先加"是"按钮（Forge 这里是"继续"），再加"否"
+        for (var child : screen.children()) {
+            if (child instanceof Button button) {
+                // 必须推迟到下一帧：Forge 弹出确认框后才关闭存档的文件锁，当场确认会重新载入同一存档而撞上文件锁
+                var mc = Minecraft.getInstance();
+                mc.tell(() -> {
+                    if (mc.screen != screen) return;
+                    GTOCore.LOGGER.info("[dev] auto-confirmed experimental settings warning");
+                    button.onPress();
+                });
+                return;
+            }
         }
     }
 
@@ -247,7 +259,7 @@ public final class ForgeClientEvent {
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         TeamResearchSavedData.clearClientInstance();
         TechTreeSavedData.clearClientInstance();
-        WirelessNetworkSavedData.setCLIENT_INSTANCE(new WirelessNetworkSavedData());
+        WirelessClientCache.clear();
         ReceiverTransmitterHandler.unloadClient();
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();

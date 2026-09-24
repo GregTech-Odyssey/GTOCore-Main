@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IItemRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
@@ -31,7 +32,7 @@ import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
 @Getter
-public class ExportOnlyAEItemList extends NotifiableContentHandler implements ICustomItemStackHandler, IConfigurableSlotList {
+public class ExportOnlyAEItemList extends NotifiableContentHandler implements IItemRecipeHandler, ICustomItemStackHandler, IConfigurableSlotList {
 
     @SaveToDisk
     final ExportOnlyAEItemSlot[] inventory;
@@ -105,8 +106,7 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
         return stack.copyWithCount(amount);
     }
 
-    @Override
-    public boolean canHandleItem() {
+    protected boolean acceptsIngredient(Content<ItemIngredient> contentItemIngredient) {
         return true;
     }
 
@@ -120,8 +120,8 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
                     it.remove();
                     continue;
                 }
-                if (ingredient.chance == 0) {
-                    continue; // only consumable (chance > 0) contents are handled here
+                if (!acceptsIngredient(ingredient)) {
+                    continue;
                 }
                 for (var i : inventory) {
                     GenericStack stored = i.stock;

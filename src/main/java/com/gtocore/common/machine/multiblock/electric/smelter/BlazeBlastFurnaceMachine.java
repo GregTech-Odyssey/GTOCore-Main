@@ -22,8 +22,8 @@ public final class BlazeBlastFurnaceMachine extends CoilCustomParallelMultiblock
         super(holder, true, true, m -> 64);
     }
 
-    private boolean inputFluid() {
-        if (inputFluid(BLAZE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
+    private boolean inputFluid(RecipeHandlerUnit unit) {
+        if (inputFluid(unit, BLAZE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
             return true;
         }
         setIdleReason(() -> ActionResult.failInsufficientIn(BLAZE.getDisplayName()).reason());
@@ -40,12 +40,12 @@ public final class BlazeBlastFurnaceMachine extends CoilCustomParallelMultiblock
 
     @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
-        if (getOffsetTimer() % 20 == 0 && !inputFluid()) return false;
+        if (getOffsetTimer() % 20 == 0 && !inputFluid(getRecipeLogic().getLastOriginUnit())) return false;
         return super.handleTickRecipe(recipe);
     }
 
     @Override
     public boolean handleRecipeInput(RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        return inputFluid() && super.handleRecipeInput(unit, recipe);
+        return inputFluid(unit) && super.handleRecipeInput(unit, recipe);
     }
 }
