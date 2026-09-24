@@ -14,7 +14,12 @@ import com.google.gson.JsonObject;
 
 import java.io.Reader;
 
-/** Resource-pack configurable colors used by the research tree screens. */
+/**
+ * 科技树画布内容（节点、连线、分区线、节点悬停提示）的配色，可由资源包 {@code gtocore:ui/techtree.json} 覆盖。
+ * <p>
+ * 窗口、面板、按钮、进度条等界面外观由框架主题（{@code UITheme}）统一决定，这里只管科技树自己的内容。
+ * 默认值按亮色界面取：大面积颜色不比窗口底色 #C6C6C6 暗太多，状态色用深一档的绿 / 金，与框架状态色一致。
+ */
 public final class TechTreeStyle {
 
     public static final ResourceLocation RESOURCE = ResourceLocation.fromNamespaceAndPath("gtocore", "ui/techtree.json");
@@ -34,100 +39,66 @@ public final class TechTreeStyle {
         }
     };
 
-    public int tierSeparatorColor;
-    public int hoveredDependencyLineColor;
-    public int selectedNodeBorderColor;
-    public int lockedNodeFill;
-    public int availableNodeFillLow;
-    public int availableNodeFillHigh;
-    public int unlockedNodeFill;
-    public int lockedNodeBorder;
-    public int availableNodeBorderLow;
-    public int availableNodeBorderHigh;
-    public int unlockedNodeBorder;
-    public int defaultDependencyLine;
-    public int unlockedDependencyLine;
-    public int availableDependencyLine;
-    public int prerequisiteUnlockedDependencyLine;
-    public int lockedNodeOverlay;
-    public int nodeIconFallback;
-    public int nodeHoverBorder;
-    public int nodeBoxFill;
-    public int nodeBoxBorder;
-    public int headerName;
-    public int headerDescription;
-    public int rowBackground;
-    public int rowText;
-    public int rowValue;
-    public int rowCompletedValue;
-    public int cwuBarFill;
-    public int cwuBarBorder;
-    public int prerequisiteHoverBorder;
-    public int progressHighlightStart;
-    public int widgetTooltipDescription;
-    public int widgetTooltipPrerequisites;
-    public int widgetTooltipUnlocked;
-    public int widgetTooltipAvailable;
-    public int widgetTooltipLocked;
-    public int sideTabTierText;
-    public int sideTabManagerText;
-    public int sideTabNavigateText;
-    public int sideTabTierItemText;
-    public int selectorSelectedFill;
-    public int selectorSelectedBorder;
-    public int selectorHoverBorder;
-    public int materialHighlightStart;
+    public final int tierSeparatorColor;
+    public final int hoveredDependencyLineColor;
+    public final int lockedNodeFill;
+    public final int availableNodeFill;
+    public final int unlockedNodeFill;
+    public final int lockedNodeBorder;
+    public final int availableNodeBorder;
+    public final int unlockedNodeBorder;
+    /// 数据中心正在研究的节点：底色与边框在两色之间呼吸（全树只有它会动）
+    public final int researchingNodeFillLow;
+    public final int researchingNodeFillHigh;
+    public final int researchingNodeBorderLow;
+    public final int researchingNodeBorderHigh;
+    public final int lockedNodeOverlay;
+    public final int nodeIconFallback;
+    public final int nodeHoverOverlay;
+    public final int defaultDependencyLine;
+    public final int unlockedDependencyLine;
+    public final int availableDependencyLine;
+    public final int prerequisiteUnlockedDependencyLine;
+    public final int cwuBarFill;
+    public final int tooltipDescription;
+    public final int tooltipPrerequisites;
+    public final int tooltipUnlocked;
+    public final int tooltipAvailable;
+    public final int tooltipLocked;
+    public final int tooltipResearching;
 
     private TechTreeStyle(JsonObject root) {
         JsonObject node = object(root, "node");
         JsonObject lines = object(root, "dependency_lines");
-        JsonObject side = object(root, "side_tab");
         JsonObject text = object(root, "text");
-        JsonObject selector = object(root, "selector");
+        JsonObject details = object(root, "details");
 
-        tierSeparatorColor = color(root, "tier_separator_color", 0x66FFFFFF);
-        hoveredDependencyLineColor = color(root, "hovered_dependency_line_color", 0xFF4DE3E3);
-        selectedNodeBorderColor = color(root, "selected_node_border_color", 0xFF8BE7DE);
-        lockedNodeFill = color(node, "locked_fill", 0xFF2F2F34);
-        availableNodeFillLow = color(node, "available_fill_low", 0xFF2F2F34);
-        availableNodeFillHigh = color(node, "available_fill_high", 0xFF4C4C50);
-        unlockedNodeFill = color(node, "unlocked_fill", 0xFF1E4D2B);
-        lockedNodeBorder = color(node, "locked_border", 0xFF8C8C93);
-        availableNodeBorderLow = color(node, "available_border_low", 0xFF8C8C93);
-        availableNodeBorderHigh = color(node, "available_border_high", 0xFF9999A2);
-        unlockedNodeBorder = color(node, "unlocked_border", 0xFF6CDA84);
-        defaultDependencyLine = color(lines, "default", 0xFF4F4F57);
-        unlockedDependencyLine = color(lines, "node_unlocked", 0xFF5CC978);
-        availableDependencyLine = color(lines, "node_available", 0xFFE3C45D);
-        prerequisiteUnlockedDependencyLine = color(lines, "prerequisite_unlocked", 0xFF7A7A82);
-        lockedNodeOverlay = color(node, "locked_overlay", 0x55000000);
-        nodeIconFallback = color(node, "icon_fallback", 0xFFFFFFFF);
-        nodeHoverBorder = color(node, "hover_border", 0xFFFFFFFF);
-        nodeBoxFill = color(side, "node_box_fill", 0xFF2F2F34);
-        nodeBoxBorder = color(side, "node_box_border", 0xFF8C8C93);
-        headerName = color(side, "header_name", 0xFFF3F3F3);
-        headerDescription = color(side, "header_description", 0xFFB9B9C0);
-        rowBackground = color(side, "row_background", 0xFF232328);
-        rowText = color(side, "row_text", 0xFFF3F3F3);
-        rowValue = color(side, "row_value", 0xFFD4D4DB);
-        rowCompletedValue = color(side, "row_completed_value", 0xFF6CDA84);
-        cwuBarFill = color(side, "cwu_bar_fill", 0xFF39C5BB);
-        cwuBarBorder = color(side, "cwu_bar_border", 0xFF8BE7DE);
-        prerequisiteHoverBorder = color(side, "prerequisite_hover_border", 0xFF39C5BB);
-        progressHighlightStart = color(side, "progress_highlight_start", 0x00E2E2E2);
-        widgetTooltipDescription = color(text, "widget_tooltip_description", 0xFFAAAAAA);
-        widgetTooltipPrerequisites = color(text, "widget_tooltip_prerequisites", 0xFFFFFF55);
-        widgetTooltipUnlocked = color(text, "widget_tooltip_unlocked", 0xFF55FF55);
-        widgetTooltipAvailable = color(text, "widget_tooltip_available", 0xFFFFAA00);
-        widgetTooltipLocked = color(text, "widget_tooltip_locked", 0xFFFF5555);
-        sideTabTierText = color(text, "side_tab_tier", 0xFF5555FF);
-        sideTabManagerText = color(text, "side_tab_manager", 0xFFAAAAAA);
-        sideTabNavigateText = color(text, "side_tab_navigate", 0xFF55FF55);
-        sideTabTierItemText = color(text, "side_tab_tier_item", 0xFF55FFFF);
-        selectorSelectedFill = color(selector, "selected_fill", 0x5539C5BB);
-        selectorSelectedBorder = color(selector, "selected_border", 0xFF39C5BB);
-        selectorHoverBorder = color(selector, "hover_border", 0xFFF3F3F3);
-        materialHighlightStart = color(side, "material_highlight_start", 0xFFFFFFFF);
+        tierSeparatorColor = color(root, "tier_separator_color", 0x40000000);
+        hoveredDependencyLineColor = color(root, "hovered_dependency_line_color", 0xFFFFC83D);
+        lockedNodeFill = color(node, "locked_fill", 0xFF8B8B8B);
+        availableNodeFill = color(node, "available_fill", 0xFFD9C98C);
+        unlockedNodeFill = color(node, "unlocked_fill", 0xFF8FBF7F);
+        lockedNodeBorder = color(node, "locked_border", 0xFF555555);
+        availableNodeBorder = color(node, "available_border", 0xFFB07A10);
+        unlockedNodeBorder = color(node, "unlocked_border", 0xFF2E7D1E);
+        researchingNodeFillLow = color(node, "researching_fill_low", 0xFF8CC7C2);
+        researchingNodeFillHigh = color(node, "researching_fill_high", 0xFFB8ECE7);
+        researchingNodeBorderLow = color(node, "researching_border_low", 0xFF006D6A);
+        researchingNodeBorderHigh = color(node, "researching_border_high", 0xFF2FD3CB);
+        lockedNodeOverlay = color(node, "locked_overlay", 0x80A0A0A0);
+        nodeIconFallback = color(node, "icon_fallback", 0xFF202020);
+        nodeHoverOverlay = color(node, "hover_overlay", 0x50FFFFFF);
+        defaultDependencyLine = color(lines, "default", 0xFF8A8A8A);
+        unlockedDependencyLine = color(lines, "node_unlocked", 0xFF3E8E2E);
+        availableDependencyLine = color(lines, "node_available", 0xFFC49A1A);
+        prerequisiteUnlockedDependencyLine = color(lines, "prerequisite_unlocked", 0xFF5C5C5C);
+        cwuBarFill = color(details, "cwu_bar_fill", 0xFF6FD0C8);
+        tooltipDescription = color(text, "widget_tooltip_description", 0xFFAAAAAA);
+        tooltipPrerequisites = color(text, "widget_tooltip_prerequisites", 0xFFFFFF55);
+        tooltipUnlocked = color(text, "widget_tooltip_unlocked", 0xFF55FF55);
+        tooltipAvailable = color(text, "widget_tooltip_available", 0xFFFFAA00);
+        tooltipLocked = color(text, "widget_tooltip_locked", 0xFFFF5555);
+        tooltipResearching = color(text, "widget_tooltip_researching", 0xFF55FFFF);
     }
 
     public static TechTreeStyle get() {

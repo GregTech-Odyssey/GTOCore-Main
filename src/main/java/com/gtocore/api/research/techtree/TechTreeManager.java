@@ -78,6 +78,14 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
         return REGISTRY.values();
     }
 
+    /** 所有树，按注册序号（{@code REGISTRY.getId}）排列；两端一致，界面按下标同步时用它。 */
+    public static List<TechTreeManager> managersById() {
+        int count = REGISTRY.values().size();
+        var list = new ArrayList<TechTreeManager>(count);
+        for (int id = 0; id < count; id++) list.add(REGISTRY.get(id));
+        return list;
+    }
+
     public Builder builder(String name, String cn, String en) {
         return new Builder(this, name, cn, en);
     }

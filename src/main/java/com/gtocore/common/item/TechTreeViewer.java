@@ -1,40 +1,32 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.editor.DataScanningEditor;
-import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.editor.TechNodeEditor;
-import com.gtocore.api.research.techtree.ui.TechTreeSelectorWidget;
-import com.gtocore.api.research.techtree.ui.TechTreeWidget;
+import com.gtocore.api.research.techtree.ui.TechTreePage;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
 
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
-import java.util.List;
-
-import static com.gtocore.data.techtree.BaseNodes.MainTree;
-
+/**
+ * 科技树调试器（物品）与 {@code /gtocore techtree ui} 的界面：研究窗口，每个研究类别一个标签，节点详情里有"强制解锁"；
+ * 开发环境（或开启自定义配方）时，标签栏末尾再加节点编辑器、数据扫描编辑器。
+ */
 @DataGeneratorScanned
-public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
+public class TechTreeViewer implements IItemUIFactory {
+
+    @RegisterLanguage(cn = "科技树查看器", en = "Tech Tree Viewer")
+    public static final String NAME = "gtocore.tech_tree_viewer";
 
     private final boolean editorTabsEnabled;
 
@@ -48,72 +40,14 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
-        return new ModularUI(176, 166, heldItemHolder, player)
-                .widget(new MachineWindow(this));
+        return new ModularUI(176, 166, heldItemHolder, player).widget(createWindow());
     }
 
-    @Override
-    public Widget createMainPage(FancyMachineUIWidget widget) {
-        return new WidgetGroup();
-    }
-
-    @Override
-    public IGuiTexture getTabIcon() {
-        return new ItemStackTexture(Blocks.DIRT.asItem());
-    }
-
-    @Override
-    public Component getTitle() {
-        return Component.translatable(NAME);
-    }
-
-    @RegisterLanguage(cn = "科技树查看器", en = "Tech Tree Viewer")
-    public static final String NAME = "gtocore.tech_tree_viewer";
-
-    @Override
-    public void attachSideTabs(TabsWidget tabs) {
-        IFancyUIProvider page;
-        var manager = MainTree;
-        page = new IFancyUIProvider() {
-
-            @Override
-            public Widget createMainPage(FancyMachineUIWidget widget) {
-                var root = new WidgetGroup(0, 0, 176, 166);
-                var treeWidget = new TechTreeWidget(0, TechTreeSelectorWidget.HEIGHT, 176,
-                        166 - TechTreeSelectorWidget.HEIGHT, manager, TeamResearchSavedData::getOrCreateContext);
-                treeWidget.setForce(true);
-                root.addWidget(new TechTreeSelectorWidget(0, 0, 176, manager, treeWidget::setManager));
-                root.addWidget(treeWidget);
-                return root;
-            }
-
-            @Override
-            public IGuiTexture getTabIcon() {
-                return manager.getIcon();
-            }
-
-            @Override
-            public List<Component> getTabTooltips() {
-                return List.of(TechTreeManager.getTreeName(manager));
-            }
-
-            @Override
-            public Component getTitle() {
-                return TechTreeManager.getTreeName(manager);
-            }
-        };
-        if (tabs.getMainTab() == null) {
-            tabs.setMainTab(page);
-        } else {
-            tabs.attachSubTab(page);
-        }
-        if (editorTabsEnabled && (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes)) {
-            if (tabs.getMainTab() == null) {
-                tabs.setMainTab(TechNodeEditor.INSTANCE);
-            } else {
-                tabs.attachSubTab(TechNodeEditor.INSTANCE);
-            }
-            tabs.attachSubTab(DataScanningEditor.INSTANCE);
-        }
+    /** 研究窗口（两端都会调用）。 */
+    public MachineWindow createWindow() {
+        var options = new TechTreePage.Options().force();
+        boolean editors = editorTabsEnabled && (GTCEu.isDev() || GTOConfig.INSTANCE.devMode.enableCustomRecipes);
+        var extraTabs = editors ? new IFancyUIProvider[] { TechNodeEditor.INSTANCE, DataScanningEditor.INSTANCE } : new IFancyUIProvider[0];
+        return TechTreePage.window(options, extraTabs);
     }
 }

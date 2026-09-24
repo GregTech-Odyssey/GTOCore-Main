@@ -18,7 +18,7 @@ public final class TechNodeEditor implements IFancyUIProvider {
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
-        return new TechNodeEditorWidget();
+        return TechNodeEditorPage.create();
     }
 
     @Override

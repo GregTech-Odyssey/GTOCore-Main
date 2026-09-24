@@ -1,40 +1,29 @@
 {
-  "tier_separator_color": "#66FFFFFF",
-  "hovered_dependency_line_color": "#FF4DE3E3",
-  "selected_node_border_color": "#FF8BE7DE",
+  "tier_separator_color": "#40000000",
+  "hovered_dependency_line_color": "#FFFFC83D",
   "node": {
-    "locked_fill": "#FF2F2F34",
-    "available_fill_low": "#FF2F2F34",
-    "available_fill_high": "#FF4C4C50",
-    "unlocked_fill": "#FF1E4D2B",
-    "locked_border": "#FF8C8C93",
-    "available_border_low": "#FF8C8C93",
-    "available_border_high": "#FF9999A2",
-    "unlocked_border": "#FF6CDA84",
-    "locked_overlay": "#55000000",
-    "icon_fallback": "#FFFFFFFF",
-    "hover_border": "#FFFFFFFF"
+    "locked_fill": "#FF8B8B8B",
+    "available_fill": "#FFD9C98C",
+    "unlocked_fill": "#FF8FBF7F",
+    "locked_border": "#FF555555",
+    "available_border": "#FFB07A10",
+    "unlocked_border": "#FF2E7D1E",
+    "researching_fill_low": "#FF8CC7C2",
+    "researching_fill_high": "#FFB8ECE7",
+    "researching_border_low": "#FF006D6A",
+    "researching_border_high": "#FF2FD3CB",
+    "locked_overlay": "#80A0A0A0",
+    "icon_fallback": "#FF202020",
+    "hover_overlay": "#50FFFFFF"
   },
   "dependency_lines": {
-    "default": "#FF4F4F57",
-    "node_unlocked": "#FF5CC978",
-    "node_available": "#FFE3C45D",
-    "prerequisite_unlocked": "#FF7A7A82"
+    "default": "#FF8A8A8A",
+    "node_unlocked": "#FF3E8E2E",
+    "node_available": "#FFC49A1A",
+    "prerequisite_unlocked": "#FF5C5C5C"
   },
-  "side_tab": {
-    "node_box_fill": "#FF2F2F34",
-    "node_box_border": "#FF8C8C93",
-    "header_name": "#FFF3F3F3",
-    "header_description": "#FFB9B9C0",
-    "row_background": "#FF232328",
-    "row_text": "#FFF3F3F3",
-    "row_value": "#FFD4D4DB",
-    "row_completed_value": "#FF6CDA84",
-    "cwu_bar_fill": "#FF39C5BB",
-    "cwu_bar_border": "#FF8BE7DE",
-    "prerequisite_hover_border": "#FF39C5BB",
-    "progress_highlight_start": "#00E2E2E2",
-    "material_highlight_start": "#FFFFFFFF"
+  "details": {
+    "cwu_bar_fill": "#FF6FD0C8"
   },
   "text": {
     "widget_tooltip_description": "#FFAAAAAA",
@@ -42,14 +31,6 @@
     "widget_tooltip_unlocked": "#FF55FF55",
     "widget_tooltip_available": "#FFFFAA00",
     "widget_tooltip_locked": "#FFFF5555",
-    "side_tab_tier": "#FF5555FF",
-    "side_tab_manager": "#FFAAAAAA",
-    "side_tab_navigate": "#FF55FF55",
-    "side_tab_tier_item": "#FF55FFFF"
-  },
-  "selector": {
-    "selected_fill": "#5539C5BB",
-    "selected_border": "#FF39C5BB",
-    "hover_border": "#FFF3F3F3"
+    "widget_tooltip_researching": "#FF55FFFF"
   }
 }

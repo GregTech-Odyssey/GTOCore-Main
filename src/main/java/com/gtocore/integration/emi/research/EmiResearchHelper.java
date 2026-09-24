@@ -5,6 +5,7 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.api.research.techtree.ui.TechTreeView;
 import com.gtocore.common.machine.electric.ScannerMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -70,7 +71,7 @@ public final class EmiResearchHelper {
             var plrTree = TechTreeSavedData.findTree(plr, node.getManager());
             if (plrTree != null) {
                 var ctx = plrTree.getUnlockedNodes().contains(node);
-                return Component.translatable("gtocore.techtree.widget.status." + (ctx ? "unlocked" : "locked"))
+                return Component.translatable(ctx ? TechTreeView.STATUS_UNLOCKED : TechTreeView.STATUS_LOCKED)
                         .withStyle(ctx ? ChatFormatting.GREEN : ChatFormatting.GOLD);
             }
         }

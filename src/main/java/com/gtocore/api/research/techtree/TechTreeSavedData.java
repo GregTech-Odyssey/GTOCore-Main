@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class TechTreeSavedData extends FastSavedData {
@@ -35,6 +36,11 @@ public class TechTreeSavedData extends FastSavedData {
     public static TechTreeSavedData CLIENT_INSTANCE = new TechTreeSavedData();
 
     private static boolean syncPending;
+    /**
+     * 解锁数据的修改计数：服务端数据标脏、客户端收到新快照时各加一。界面按它判断"节点状态要不要重算"，
+     * 不必每 tick 遍历整棵树（单人游戏两端共用这个计数，多出来的失效只是多算一次，不影响正确性）。
+     */
+    private static final AtomicInteger MOD_COUNT = new AtomicInteger();
 
     private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("techTreeSavedDataSyncS2C",
             (objs, buf) -> {
@@ -47,6 +53,7 @@ public class TechTreeSavedData extends FastSavedData {
                 try {
                     TechTreeSavedData data = load(DataIOStream.of(buffer));
                     CLIENT_INSTANCE = data == null ? new TechTreeSavedData() : data;
+                    MOD_COUNT.incrementAndGet();
                 } catch (RuntimeException exception) {
                     GTOCore.LOGGER.error("Failed to synchronize tech tree data", exception);
                 }
@@ -164,6 +171,12 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static void clearClientInstance() {
         CLIENT_INSTANCE = new TechTreeSavedData();
+        MOD_COUNT.incrementAndGet();
+    }
+
+    /** 解锁数据的修改计数，见 {@link #MOD_COUNT}。 */
+    public static int getModCount() {
+        return MOD_COUNT.get();
     }
 
     @Override
@@ -171,6 +184,7 @@ public class TechTreeSavedData extends FastSavedData {
         super.setDirty(dirty);
         if (dirty && this == INSTANCE) {
             syncPending = true;
+            MOD_COUNT.incrementAndGet();
         }
     }
 
