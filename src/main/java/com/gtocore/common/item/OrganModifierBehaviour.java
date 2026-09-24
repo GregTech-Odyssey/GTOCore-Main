@@ -1,79 +1,80 @@
 package com.gtocore.common.item;
 
 import com.gtocore.common.data.GTOOrganItems;
-import com.gtocore.common.data.translation.OrganTranslation;
-import com.gtocore.common.item.misc.OrganItemBase;
+import com.gtocore.common.item.misc.OrganTooltips;
 import com.gtocore.common.item.misc.OrganType;
-import com.gtocore.utils.OrganUtilsKt;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.player.IEnhancedPlayer;
+import com.gtolib.api.player.OrganInventory;
 
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
-import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
-import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 器官修改器：玩家装配的器官槽，放入/取出后立即写回玩家数据并刷新器官等级缓存。
- * 
+ * 器官修改器：直接编辑玩家身上的器官库存（{@link OrganInventory}，槽位固定），放入 / 取出立即生效。
+ *
  * <pre>
- * ┌ 翅膀 ─────────────────────┐   多格的器官：标题 + 每行 9 个槽
- * │ [][][][][][][][]           │
- * └────────────────────────────┘
- * ┌ 身体器官 ─────────────────┐   单格的器官合成一块：每行"名称 …… [槽]"
- * │ 眼睛 ……………………………… []  │
- * │ 脊椎 ……………………………… []  │
- * └────────────────────────────┘
+ * ┌ 状态面板 ─────────────────────┐
+ * │ 套装等级 ……………… 标准级（1） ●│
+ * │ 生命上限 ……………………… 完整 ●│
+ * │ 可停留星球 ………… 2 级及以下  │
+ * └───────────────────────────────┘
+ * [眼][肺][心][肝][脊][左臂][右臂][左腿][右腿]   身体器官一行 9 格，与背包同一条左边缘
+ *  眼睛 肺 心脏 …                                 每格下方小字标出部位
+ * 翅膀 …………………………………… [ ][ ][ ][ ]           翅膀 4 格靠右
  * </pre>
- * 
- * 列表放在滚动区里，高度跟随内容，整个窗口最高到屏幕的 {@link UISizes#MAX_WINDOW_SCREEN_RATIO}，再多才滚动。
  */
 @DataGeneratorScanned
-public class OrganModifierBehaviour implements IItemUIFactory {
+public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
 
-    @RegisterLanguage(cn = "身体器官", en = "Body organs")
-    private static final String BODY_ORGANS = "gtocore.organ_modifier.body_organs";
-
-    /// ModularUI 的初始尺寸，打开后外壳按页面重算
-    private static final int WIDTH = 176;
-    private static final int HEIGHT = 166;
-    /// 窗口除列表外的高度：外框、标题行、玩家背包（估算列表在屏幕上能占多高用）
-    private static final int WINDOW_CHROME = UISizes.WINDOW_PADDING_TOP + UISizes.CONTROL_HEIGHT + UISizes.SECTION_GAP +
-            UISizes.WINDOW_PADDING_BOTTOM + UISizes.PLAYER_INVENTORY_HEIGHT;
-    /// 服务端不知道屏幕尺寸：用一个足够大的值（两端尺寸可以不同，控件树一致即可）
-    private static final int SERVER_LIST_HEIGHT = 1000;
+    @RegisterLanguage(cn = "套装等级", en = "Set tier")
+    private static final String LABEL_SET_TIER = "gtocore.organ_modifier.set_tier";
+    @RegisterLanguage(cn = "生命上限", en = "Max health")
+    private static final String LABEL_HEALTH = "gtocore.organ_modifier.health";
+    @RegisterLanguage(cn = "可停留星球", en = "Habitable planets")
+    private static final String LABEL_PLANET = "gtocore.organ_modifier.planet";
+    @RegisterLanguage(cn = "套装等级取九种身体器官中最低的等级，缺任何一件都不算整套", en = "The set tier is the lowest tier among the nine body organs; any missing organ breaks the set")
+    private static final String TIP_SET_TIER = "gtocore.organ_modifier.set_tier.tip";
+    @RegisterLanguage(cn = "每缺一件身体器官，生命上限按比例降低", en = "Each missing body organ lowers your max health")
+    private static final String TIP_HEALTH = "gtocore.organ_modifier.health.tip";
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        return new ModularUI(WIDTH, HEIGHT, holder, player).widget(new MachineWindow(new Page(player)));
+        // 初始尺寸随便填，外壳按页面重算
+        return new ModularUI(UISizes.WINDOW_WIDTH, 166, holder, player).widget(new MachineWindow(new Page(player)));
+    }
+
+    @Override
+    public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+        OrganTooltips.addModifierTooltip(tooltipComponents);
     }
 
     /** 每次打开界面单独一份，绑定打开界面的玩家（行为对象是全物品共享的单例）。 */
@@ -81,66 +82,44 @@ public class OrganModifierBehaviour implements IItemUIFactory {
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
-            var handlers = new HandlerContainer(player);
-            Runnable onChanged = () -> {
-                handlers.save();
-                handlers.read();
-                OrganUtilsKt.ktFreshOrganState(IEnhancedPlayer.of(player).getPlayerData());
-            };
-            var scroller = new ScrollerView("organ.modifier", UISizes.CONTENT_WIDTH, UISizes.SLOT, UISizes.SECTION_GAP)
-                    .adaptiveHeight(player.level().isClientSide ? clientListHeight() : SERVER_LIST_HEIGHT);
-            var body = UIElement.section();
-            body.addChild(TextLine.translatable(LayoutStyle.AUTO, BODY_ORGANS).setColor(UITheme.PANEL_TEXT));
-            boolean hasSingle = false;
-            for (var entry : handlers.handlers.entrySet()) {
-                var organType = entry.getKey();
-                if (organType.getSlotCount() > 1) {
-                    scroller.addScrollViewChild(multiSlotSection(organType, entry.getValue(), onChanged));
-                } else {
-                    body.addChild(singleSlotRow(organType, entry.getValue(), onChanged));
-                    hasSingle = true;
-                }
+            OrganInventory organs = IEnhancedPlayer.of(player).getPlayerData().organs;
+
+            var status = new StatusPanel(LayoutStyle.AUTO);
+            status.addLine(LABEL_SET_TIER, () -> OrganTooltips.tierValue(organs.getSetTier()))
+                    .level(() -> organs.getSetTier() >= 1 ? StatusLine.Level.GOOD : organs.getSetTier() == 0 ? StatusLine.Level.WARNING : StatusLine.Level.ERROR)
+                    .tooltip(TIP_SET_TIER);
+            status.addLine(LABEL_HEALTH, () -> OrganTooltips.healthValue(organs.getMissingBodyCount()))
+                    .level(() -> organs.getMissingBodyCount() == 0 ? StatusLine.Level.GOOD : organs.getMissingBodyCount() < 3 ? StatusLine.Level.WARNING : StatusLine.Level.ERROR)
+                    .tooltip(TIP_HEALTH);
+            status.addLine(LABEL_PLANET, () -> OrganTooltips.planetValue(organs.getSetTier()));
+
+            // 身体器官一行 9 格（正好内容宽），下方小字部位名逐格对齐
+            var bodySlots = UIElement.row(UISizes.SLOT);
+            var bodyLabels = UIElement.row(UISizes.SMALL_TEXT_HEIGHT);
+            for (var type : OrganType.BODY) {
+                bodySlots.addChild(organSlot(organs, type, 0));
+                // 与槽同宽；放不下时截断，悬停看全名
+                bodyLabels.addChild(TextLine.translatable(UISizes.SLOT, type.translationKey).setSmall());
             }
-            if (hasSingle) scroller.addScrollViewChild(body);
-            // 页面至少标准内容宽，尺寸跟随滚动区（拖拽右下角缩放时窗口一起变）
-            return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChild(scroller);
-        }
+            var body = UIElement.column(LayoutStyle.AUTO).addChildren(bodySlots, bodyLabels);
 
-        /** 多格的器官（如翅膀）：标题 + 每行 9 个槽。 */
-        private static UIElement multiSlotSection(OrganType organType, CustomItemStackHandler handler, Runnable onChanged) {
-            var section = UIElement.section();
-            section.addChild(TextLine.translatable(LayoutStyle.AUTO, organType.getTranslationKey()).setColor(UITheme.PANEL_TEXT));
-            for (int rowStart = 0; rowStart < handler.getSlots(); rowStart += UISizes.SLOTS_PER_ROW) {
-                var row = UIElement.row(UISizes.SLOT);
-                for (int index = rowStart; index < Math.min(handler.getSlots(), rowStart + UISizes.SLOTS_PER_ROW); index++) {
-                    row.addChild(organSlot(organType, handler, index, onChanged));
-                }
-                section.addChild(row);
+            // 翅膀：名称 …… 4 格
+            var wingName = TextLine.translatable(0, OrganType.WING.translationKey);
+            wingName.layout(l -> l.flex(1));
+            var wings = UIElement.row(UISizes.SLOT).layout(l -> l.alignCenter()).addChild(wingName);
+            for (int i = 0; i < OrganType.WING.slotCount; i++) {
+                wings.addChild(organSlot(organs, OrganType.WING, i));
             }
-            return section;
+
+            return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP))
+                    .addChildren(status, body, wings);
         }
 
-        /** 单格的器官：一行"名称 …… [槽]"。 */
-        private static UIElement singleSlotRow(OrganType organType, CustomItemStackHandler handler, Runnable onChanged) {
-            var name = TextLine.translatable(0, organType.getTranslationKey()).setColor(UITheme.PANEL_TEXT);
-            name.layout(l -> l.flex(1));
-            return UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
-                    .addChildren(name, organSlot(organType, handler, 0, onChanged));
-        }
-
-        /** 器官槽：只收这种器官（容器的过滤），空槽悬停显示器官种类。 */
-        private static ItemSlot organSlot(OrganType organType, CustomItemStackHandler handler, int index, Runnable onChanged) {
-            var slot = ItemSlot.of(handler, index);
-            slot.setChangeListener(onChanged);
-            slot.setHoverTooltips(Component.translatable(organType.getTranslationKey()));
+        /** 器官槽：直接绑定玩家器官库存的固定槽位，库存只收对应部位（{@link OrganInventory#isItemValid}）；空槽悬停显示部位。 */
+        private static ItemSlot organSlot(OrganInventory organs, OrganType type, int index) {
+            var slot = ItemSlot.of(organs, type.firstSlot() + index);
+            slot.setHoverTooltips(Component.translatable(type.translationKey));
             return slot;
-        }
-
-        /** 客户端：窗口不超过屏幕高度上限时，列表视口最多多高。 */
-        @OnlyIn(Dist.CLIENT)
-        private static int clientListHeight() {
-            int screen = Minecraft.getInstance().getWindow().getGuiScaledHeight();
-            return Math.max(UISizes.SLOT, (int) (screen * UISizes.MAX_WINDOW_SCREEN_RATIO) - WINDOW_CHROME);
         }
 
         @Override
@@ -150,53 +129,12 @@ public class OrganModifierBehaviour implements IItemUIFactory {
 
         @Override
         public IGuiTexture getTabIcon() {
-            return new ItemStackTexture(GTOOrganItems.INSTANCE.getORGAN_MODIFIER().get());
+            return new ItemStackTexture(GTOOrganItems.ORGAN_MODIFIER.get());
         }
 
         @Override
         public Component getTitle() {
-            return OrganTranslation.INSTANCE.getOrganModifierName().get();
-        }
-    }
-
-    /** 每种器官一个物品槽容器，与玩家数据里的器官列表互相转换。 */
-    private static final class HandlerContainer {
-
-        private final Player player;
-        private final List<ItemStack> organItemStacks;
-        private final Map<OrganType, CustomItemStackHandler> handlers = new EnumMap<>(OrganType.class);
-
-        private HandlerContainer(Player player) {
-            this.player = player;
-            this.organItemStacks = IEnhancedPlayer.of(player).getPlayerData().organItemStacks;
-            for (var organType : OrganType.values()) {
-                var handler = new CustomItemStackHandler(organType.getSlotCount());
-                handler.setFilter(stack -> stack.getItem() instanceof OrganItemBase organ && organ.getOrganType() == organType);
-                handlers.put(organType, handler);
-            }
-            read();
-        }
-
-        private void read() {
-            var organStacks = OrganUtilsKt.ktGetOrganStack(IEnhancedPlayer.of(player).getPlayerData());
-            handlers.forEach((organType, handler) -> {
-                handler.clear();
-                var stacks = organStacks.get(organType);
-                if (stacks == null) return;
-                for (int i = 0; i < Math.min(stacks.size(), organType.getSlotCount()); i++) {
-                    handler.setStackInSlot(i, stacks.get(i));
-                }
-            });
-        }
-
-        private void save() {
-            organItemStacks.clear();
-            for (var handler : handlers.values()) {
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    var stack = handler.getStackInSlot(i);
-                    if (!stack.isEmpty()) organItemStacks.add(stack);
-                }
-            }
+            return GTOOrganItems.ORGAN_MODIFIER.get().getDescription();
         }
     }
 }

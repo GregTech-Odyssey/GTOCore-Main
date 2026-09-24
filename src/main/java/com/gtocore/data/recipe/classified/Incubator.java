@@ -764,7 +764,7 @@ final class Incubator {
         INCUBATOR_RECIPES.builder("bio_cardiomyocyte_cluster")
                 .inputItems(GTItems.STEM_CELLS, 16)
                 .inputItems(GTOItems.BIOLOGICAL_CELLS, 4)
-                .inputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst(), 1024)
+                .inputItems(GTOOrganItems.tierOrgan(OrganType.HEART, 0), 1024)
                 .chancedOutput(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.asItem(), 300, 300)
                 .inputFluids(GTMaterials.Mutagen, 1000)
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)

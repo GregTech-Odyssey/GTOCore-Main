@@ -126,7 +126,7 @@ public final class Data {
         MachineRecipe.init();
         MiscRecipe.init();
         SpaceStationRecipes.init();
-        OrganRecipes.INSTANCE.init();
+        OrganRecipes.init();
         BotaniaRecipes.init();
         ArsNouveauRecipes.init();
         MagicRecipesA.init();

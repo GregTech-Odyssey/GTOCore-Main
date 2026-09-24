@@ -13,7 +13,6 @@ import com.gtocore.integration.ae.wireless.WirelessNetworks;
 import com.gtocore.integration.ae.wireless.WirelessSync;
 import com.gtocore.integration.botania.IEntropinnyum;
 import com.gtocore.integration.ftbquests.AdditionalTeamData;
-import com.gtocore.utils.OrganUtilsKt;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -162,7 +161,6 @@ public final class ForgeCommonEvent {
     @SubscribeEvent
     public static void onLivingJumpEvent(LivingEvent.LivingJumpEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.level() instanceof ServerLevel serverLevel) {
-            OrganUtilsKt.ktFreshOrganState(IEnhancedPlayer.of(player).getPlayerData());
             Optional.ofNullable(player.getEffect(GTOEffects.MYSTERIOUS_BOOST.get())).ifPresent(effect -> {
                 if (MetaMachine.getMachine(serverLevel, player.getOnPos()) instanceof WorkableTieredMachine machine && machine.getRecipeLogic().isWorking()) {
                     RecipeLogic recipeLogic = machine.getRecipeLogic();

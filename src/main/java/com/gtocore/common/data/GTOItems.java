@@ -77,7 +77,7 @@ import static com.gtolib.utils.register.ItemRegisterUtils.*;
 public final class GTOItems {
 
     public static void init() {
-        GTOOrganItems.INSTANCE.init();
+        GTOOrganItems.init();
         GTOAEParts.INSTANCE.init();
         AutoInitializeImpl.INSTANCE.originInit();
         GTMaterials.Oxygen.getProperty(PropertyKey.FLUID).getStorage().store(FluidStorageKeys.GAS, ModFluids.OXYGEN, null);

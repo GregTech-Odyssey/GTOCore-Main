@@ -7,7 +7,6 @@ import kotlin.reflect.KProperty1
 open class AutoInitialize<T> {
     fun originInit() {
         GTOItemTooltips.init()
-        OrganTranslation.init()
         GTOMachineStories.init()
         ComponentSlang.init()
         MachineSlang.init()

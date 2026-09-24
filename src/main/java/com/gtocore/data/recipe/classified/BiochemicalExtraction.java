@@ -108,13 +108,13 @@ final class BiochemicalExtraction {
                 .save();
         BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart")
                 .inputItems(Items.GOAT_SPAWN_EGG)
-                .outputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst())
+                .outputItems(GTOOrganItems.tierOrgan(OrganType.HEART, 0))
                 .EUt(1920)
                 .duration(400)
                 .save();
         BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart1")
                 .inputItems(Items.SHEEP_SPAWN_EGG)
-                .outputItems(GTOOrganItems.INSTANCE.getTierOrganMap().get(OrganType.Heart).getFirst())
+                .outputItems(GTOOrganItems.tierOrgan(OrganType.HEART, 0))
                 .EUt(1920)
                 .duration(400)
                 .save();
