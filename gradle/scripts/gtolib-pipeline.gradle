@@ -1156,6 +1156,53 @@ tasks.register('prepareForgeSrgLibrary', JavaExec) {
     }
 }
 
+def gtmthingsNamedLibraryJar = file("${buildDir}/gtolib/gtmthings-named-library.jar")
+def gtmthingsSrgLibraryJar = file("${buildDir}/gtolib/gtmthings-srg-library.jar")
+
+tasks.register('prepareGtmthingsNamedLibrary', Jar) {
+    group = 'gtolib'
+    description = '仅打包主工程内的 GTMThings 类，供 GTOLib ProGuard 识别父类'
+    onlyIf { hasGtolibSources && !isGtolibJarUpToDate }
+    dependsOn 'classes'
+    archiveFileName = gtmthingsNamedLibraryJar.name
+    destinationDirectory = gtmthingsNamedLibraryJar.parentFile
+    from(file("${buildDir}/classes/java/main")) { include 'com/hepdd/gtmthings/**' }
+    from(file("${buildDir}/classes/kotlin/main")) { include 'com/hepdd/gtmthings/**' }
+}
+
+tasks.register('prepareGtmthingsSrgLibrary', JavaExec) {
+    group = 'gtolib'
+    description = '将 GTMThings 父类库转成 SRG，供发行 ProGuard 使用'
+    onlyIf { hasGtolibSources && !isGtolibJarUpToDate }
+    dependsOn 'prepareGtmthingsNamedLibrary', 'resolveGtolibRaw', 'createMinecraftArtifacts'
+    classpath = configurations.artTool
+    mainClass = 'net.neoforged.art.Main'
+    inputs.files(gtmthingsNamedLibraryJar, gtolibNamedToIntermediate, gtolibNamedForgeArtifact, gtolibUnprotectedJar)
+    outputs.file(gtmthingsSrgLibraryJar)
+    doFirst {
+        if (!gtmthingsNamedLibraryJar.exists() || !gtolibNamedToIntermediate.exists() ||
+                !gtolibNamedForgeArtifact.exists()) {
+            throw new GradleException('prepareGtmthingsSrgLibrary: 缺少 named 类库或映射')
+        }
+        if (gtmthingsSrgLibraryJar.exists()) gtmthingsSrgLibraryJar.delete()
+        args = [
+                '--input', gtmthingsNamedLibraryJar.absolutePath,
+                '--output', gtmthingsSrgLibraryJar.absolutePath,
+                '--names', gtolibNamedToIntermediate.absolutePath,
+                '--lib', gtolibNamedForgeArtifact.absolutePath,
+                '--lib', gtolibUnprotectedJar.get().asFile.absolutePath,
+        ]
+    }
+    doLast {
+        new java.util.zip.ZipFile(gtmthingsSrgLibraryJar).withCloseable { zf ->
+            def parent = zf.getEntry('com/hepdd/gtmthings/data/WirelessEnergySavedData.class')
+            if (parent == null || !new String(zf.getInputStream(parent).bytes, 'ISO-8859-1').contains('m_7176_')) {
+                throw new GradleException('prepareGtmthingsSrgLibrary: WirelessEnergySavedData 未转成 SRG')
+            }
+        }
+    }
+}
+
 /** 混淆字典（dev/release 两条 ProGuard 链共用；确定性 shuffle） */
 ext.ensureProguardDictionaries = {
     def dictFile = file("${gtolibProtectDir}/my_dict.txt")
@@ -1200,6 +1247,13 @@ ext.writeProguardExtraFile = { File target, String mappingName, boolean srgInput
         def forgeSrg = resolveForgeSrgLibraryJar()
         seen.add(forgeSrg.canonicalPath)
         libArgs.append("-libraryjars '${forgeSrg.absolutePath.replace('\\', '/')}'\n")
+    }
+    def gtmthingsLibrary = srgInput ? gtmthingsSrgLibraryJar : gtmthingsNamedLibraryJar
+    if (!gtmthingsLibrary.exists() || gtmthingsLibrary.length() < 1024) {
+        throw new GradleException("GTOLib ProGuard: 缺少 GTMThings 父类库: ${gtmthingsLibrary}")
+    }
+    if (seen.add(gtmthingsLibrary.canonicalPath)) {
+        libArgs.append("-libraryjars '${gtmthingsLibrary.absolutePath.replace('\\', '/')}'\n")
     }
     project.configurations.findAll { it.name.endsWith('Classpath') && it.canBeResolved }.each { config ->
         try {
@@ -1248,6 +1302,32 @@ ext.verifyReleaseSrgMethodMappings = { File mappingFile ->
         )
     }
     logger.lifecycle("GTOLib release ProGuard: ${checked} 个 SRG 方法保持原名")
+}
+
+/** GTMThings 合入主仓后，确认 GTOLib 数据类覆写仍按父类方法名输出。 */
+ext.verifyWirelessEnergySavedDataOverrides = { File mappingFile ->
+    if (mappingFile == null || !mappingFile.exists()) {
+        throw new GradleException("GTOLib release mapping 缺失，无法验证 WirelessEnergy 覆写: ${mappingFile}")
+    }
+    def inTarget = false
+    def found = [readTag: false, toTag: false]
+    mappingFile.eachLine('UTF-8') { line ->
+        if (!line.startsWith(' ') && !line.startsWith('#')) {
+            inTarget = line.startsWith('com.gtolib.data.ExtendWirelessEnergySavedData -> ')
+            return
+        }
+        if (!inTarget) return
+        if (line ==~ /.*\breadTag\([^)]*\)\s+->\s+readTag\s*$/) found.readTag = true
+        if (line ==~ /.*\btoTag\([^)]*\)\s+->\s+toTag\s*$/) found.toTag = true
+    }
+    def missing = found.findAll { !it.value }.keySet()
+    if (!missing.isEmpty()) {
+        throw new GradleException(
+                "GTOLib release ProGuard 重命名了 WirelessEnergy 父类覆写: ${missing.join(', ')}。" +
+                        "请检查主工程编译类是否作为 libraryjars 传入。"
+        )
+    }
+    logger.lifecycle("GTOLib release ProGuard: WirelessEnergy readTag/toTag 覆写保持原名")
 }
 
 /**
@@ -1320,7 +1400,7 @@ tasks.register('proguardGtolib', JavaExec) {
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canProguard && !detectGtolibDebugMode()
     }
-    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes', 'prepareForgeSrgLibrary'
+    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes', 'prepareForgeSrgLibrary', 'prepareGtmthingsSrgLibrary'
     classpath = configurations.proguardCp
     mainClass = 'proguard.ProGuard'
 
@@ -1351,7 +1431,7 @@ tasks.register('proguardGtolibRelease', JavaExec) {
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canProguardRelease && !detectGtolibDebugMode()
     }
-    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes', 'prepareForgeSrgLibrary'
+    dependsOn 'reobfGtolibRaw', 'resolveGtolibRaw', 'classes', 'prepareForgeSrgLibrary', 'prepareGtmthingsSrgLibrary'
     mustRunAfter 'proguardGtolib'
     classpath = configurations.proguardCp
     mainClass = 'proguard.ProGuard'
@@ -1382,6 +1462,7 @@ tasks.register('proguardGtolibRelease', JavaExec) {
             throw new GradleException("proguardGtolibRelease: 未产出 ${out}")
         }
         verifyReleaseSrgMethodMappings(file("${buildDir}/gtolib/gtolib-release-mapping.txt"))
+        verifyWirelessEnergySavedDataOverrides(file("${buildDir}/gtolib/gtolib-release-mapping.txt"))
         // 混淆必须真的发生：与 named unprotected 对比 class 路径集合
         def unprot = gtolibUnprotectedJar.get().asFile
         if (unprot.exists() && unprot.length() > 0) {
@@ -1702,7 +1783,7 @@ tasks.register('proguardGtolibDevNamed', JavaExec) {
     onlyIf {
         hasGtolibSources && !isGtolibJarUpToDate && canProguard && !detectGtolibDebugMode()
     }
-    dependsOn 'resolveGtolibRaw', 'classes'
+    dependsOn 'resolveGtolibRaw', 'classes', 'prepareGtmthingsNamedLibrary'
     // 三条 ProGuard 共用 build/gtolib 下的混淆字典，串行避免互相覆盖
     mustRunAfter 'proguardGtolib', 'proguardGtolibRelease'
     classpath = configurations.proguardCp
