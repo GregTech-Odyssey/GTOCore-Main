@@ -250,8 +250,11 @@ public final class GTOConfig {
         public int defaultMinOverclockDuration = 20;
 
         @Configurable
-        @Configurable.Comment({ "ME输出向ME网络传输内容的间隔（tick）", "The interval at which ME Output transfer contents to the ME network (ticks)" })
-        @Configurable.Range(min = 1, max = 100)
+        @Configurable.Comment({ "ME输出向ME网络传输内容的间隔（tick）",
+                "警告：调低此数值会较大幅度影响游戏性能！",
+                "The interval at which ME outputs transfer contents to the ME network (ticks)",
+                "Warning: Lowering this value may significantly impact game performance!" })
+        @Configurable.Range(min = 5, max = 100)
         @Configurable.Gui.Slider
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "ME Output Transfer Interval", cn = "ME输出传输间隔")
         public int meOutputTransferInterval = 20;

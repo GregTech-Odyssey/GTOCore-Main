@@ -21,8 +21,6 @@ com/gtolib/mixin/mc/ItemStackMixin item f_41589_
 com/gtolib/mixin/mc/LootDataManagerMixin typeKeys f_278404_
 com/gtolib/mixin/mc/LootDataManagerMixin elements f_278415_
 com/gtolib/mixin/mc/nbt/CompoundTagMixin tags f_128329_
-com/gtolib/mixin/mc/nbt/ListTagMixin type f_128717_
-com/gtolib/mixin/mc/nbt/ListTagMixin list f_128716_
 com/gtolib/mixin/mc/pack/PathPackResourcesMixin root f_243919_
 com/gtolib/mixin/mc/pack/VanillaPackResourcesMixin rootPaths f_244169_
 com/gtolib/mixin/mc/pack/VanillaPackResourcesMixin pathsForType f_244459_
@@ -75,14 +73,9 @@ com/gtolib/mixin/mc/ItemStackMixin isSameItemSameTags (Lnet/minecraft/world/item
 com/gtolib/mixin/mc/MthMixin sin (F)F m_14031_
 com/gtolib/mixin/mc/MthMixin cos (F)F m_14089_
 com/gtolib/mixin/mc/nbt/CompoundTagMixin sizeInBytes ()I m_263179_
-com/gtolib/mixin/mc/nbt/CompoundTagMixin entries ()Ljava/util/Map; m_128450_
-com/gtolib/mixin/mc/nbt/CompoundTagMixin copy ()Lnet/minecraft/nbt/CompoundTag; m_6426_
-com/gtolib/mixin/mc/nbt/ListTagMixin copy ()Lnet/minecraft/nbt/ListTag; m_6426_
-com/gtolib/mixin/mc/nbt/NbtOpsMixin build (Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/Tag;)Lcom/mojang/serialization/DataResult; build
 com/gtolib/mixin/mc/recipe/IngredientMixin isEmpty ()Z m_43947_
 com/gtolib/mixin/mc/recipe/IngredientMixin getItems ()[Lnet/minecraft/world/item/ItemStack; m_43908_
 com/gtolib/mixin/mc/recipe/IngredientMixin test (Lnet/minecraft/world/item/ItemStack;)Z test
-com/gtolib/mixin/mc/recipe/IngredientMixin of (Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/item/crafting/Ingredient; m_204132_
 com/gtolib/mixin/mc/ReferenceMixin bindTags (Ljava/util/Collection;)V m_205769_
 com/gtolib/mixin/mc/SimpleJsonResourceReloadListenerMixin scanDirectory (Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/lang/String;Lcom/google/gson/Gson;Ljava/util/Map;)V m_278771_
 com/gtolib/mixin/mc/TagLoaderMixin load (Lnet/minecraft/server/packs/resources/ResourceManager;)Ljava/util/Map; m_144495_
