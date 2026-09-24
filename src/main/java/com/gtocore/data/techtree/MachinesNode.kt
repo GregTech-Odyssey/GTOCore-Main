@@ -367,7 +367,7 @@ object MachinesNode : AutoInitialize<MachinesNode>() {
         )
         .tier(3)
         .build()
-        .addRewardDescription("解锁空间站激光仓、高级仓室的使用", "Unlock the use of laser bays and advanced chambers in space stations")
+        .addRewardDescription("解锁空间站超高安仓及其他高级仓室的使用", "Unlock the use of High-Amp Hatches and other advanced modules in space stations")
 
     @JvmField
     val ComponentProductionEnhancement = MachinesTree.builder("component_production_enhancement", "组件生产强化", "Component Production Enhancement")

@@ -50,7 +50,6 @@ final class MachineLang {
         addCNEN("gtocore.machine.large_combustion_engine.supply_dinitrogen_tetroxide_to_boost", "提供四氧化二氮来联合促燃", "Provide Dinitrogen Tetroxide to joint combustion");
         addCNEN("gtocore.machine.large_steam_circuit_assembler.circuit", "已铭刻电路: %s", "Inscribed Circuit: %s");
         addCNEN("gtocore.machine.large_steam_circuit_assembler.engrave_circuit", "铭刻电路", "Engrave Circuit");
-        addCNEN("gtocore.machine.laser.tooltip", "允许使用超高安能源仓", "Allows the use of ultra high amperage energy hatch");
         addCNEN("gtocore.machine.lightning_rod.tooltip.0", "上方避雷针被雷击后产生大量能量", "Large amounts of energy are generated after the lightning rod above is struck");
         addCNEN("gtocore.machine.lightning_rod.tooltip.1", "每0.5秒只能产生一次能量，且有一定几率破坏上方避雷针", "Can only generate energy once every 0.5 seconds, with a chance to damage the lightning rod above");
         addCNEN("gtocore.machine.lightning_rod.tooltip.2", "如果存储能量已满，机器将会爆炸", "If the stored energy is full, the machine will explode");
@@ -101,7 +100,6 @@ final class MachineLang {
         addCNEN("gtocore.machine.water_purification_unit.success_chance", "成功率: %s%%", "Success Chance: %s%%");
         addCNEN("gtocore.machine.absolute_baryonic_perfection_purification_unit.items", "本次循环组合:\n%s, %s", "Current combination for this cycle:\n%s, %s");
         addCNEN("gtocore.machine.residual_decontaminant_degasser_purification_unit.fluids", "本次循环需求:\n%s", "Current cycle requirements:\n%s");
-        addCNEN("gtocore.machine.wireless_laser_hatch.no_laser_bonus", "§c占用激光仓位置，但不享受激光仓加成", "§cOccupies laser hatch slot, but does not receive laser hatch bonus");
         addCNEN("gtocore.machine.wireless_data_hatch.bind", "无线数据仓绑定完成", "Wireless data hatch binding completed");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.tooltip.0", "需要使用闪存右键无线光学数据靶仓和无线数据源仓进行绑定", "Use the flash drive to right-click and bind the wireless optical data target hatch and the wireless data source hatch");
         addCNEN("gtocore.machine.wireless_data_transmitter_hatch.to_bind", "源仓数据读取完成，请右键靶仓进行绑定", "Source hatch data reading completed, please right-click the target hatch to bind");

@@ -81,7 +81,6 @@ public final class GeneratorMultiblock {
             .recipeTypes(GTRecipeTypes.PLASMA_GENERATOR_FUELS)
             .tooltipsText("等离子体洪流带着磅礴的能量奔涌", "A torrent of plasma rushes forward with majestic energy")
             .tooltips(GTOMachineTooltipsA.magneticFluidGeneratorTooltips)
-            .laserTooltips()
             .generator()
             .moduleTooltips(new PartAbility[0])
             .block(GTBlocks.CASING_TUNGSTENSTEEL_ROBUST)

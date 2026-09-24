@@ -127,9 +127,6 @@ public final class MachineRegisterUtils {
                                     Component.translatable("gtceu.universal.tooltip.amperage_" + iao, amperage),
                                     Component.translatable("gtceu.universal.tooltip.energy_storage_capacity", FormattingUtil.formatNumbers(WirelessEnergyHatchPartMachine.getHatchEnergyCapacity(tier, amperage))),
                                     Component.translatable("gtmthings.machine.wireless_energy_hatch." + id + ".tooltip"));
-                    if (amperage > 64) {
-                        builder.tooltips(Component.translatable("gtocore.machine.wireless_laser_hatch.no_laser_bonus"));
-                    }
                     return builder.renderer(() -> new OverlayTieredMachineRenderer(tier, GTMThings.id("block/machine/part/" + finalRender)))
                             .register();
                 },

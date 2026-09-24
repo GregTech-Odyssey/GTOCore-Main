@@ -455,10 +455,9 @@ object GTOMachineTooltips {
 
         content("在GTO寰宇重工的空间站技术还没完全完善的时候科研人员紧急开发出的小型防护罩" translatedTo "A small protective shield urgently developed by researchers when GTO Universal Heavy Industries' space station technology was not fully developed")
         content("经过技术改良，现在可以保护机器免受太空环境干扰" translatedTo "After technical improvements, it can now protect machines from space environment interference")
-        decrease("需要机器内置的激光仓提供激光" translatedTo "Requires lasers provided by built-in laser hatches in the machine")
         section(ComponentSlang.MainFunction)
         function("保护机器免受太空环境干扰而无法运行" translatedTo "Protects machines from space environment interference")
-        decrease("需要机器同时配备激光能源仓" translatedTo "Requires the machine to be equipped with laser hatches at the same time")
+        decrease("需要所在机器安装至少一个超高安仓" translatedTo "Requires at least one High-Amp Hatch installed in the machine")
     }
 
     // 转子仓
@@ -1796,7 +1795,7 @@ object GTOMachineTooltips {
                 GTValues.VNF[GTValues.UV].toLiteralSupplier() +
                 ("，并允许安装加速仓" translatedTo ", and allows installing Accelerate Hatches"),
         )
-        increase("再次升级结构后支持并行控制仓和激光仓" translatedTo "After upgrading the structure again, it supports Parallel Control Hatch and Laser Hatch")
+        increase("再次升级结构后支持并行控制仓和超高安仓" translatedTo "After upgrading the structure again, it supports Parallel Control Hatches and High-Amp Hatches")
     }
 
     // 蒸汽搅拌机
@@ -2379,7 +2378,7 @@ object GTOMachineTooltips {
         highlight(
             "如果解锁了[激光太空工程]科技节点" translatedTo "If the [Laser Space Engineering] Node is unlocked",
         )
-        highlight("则解锁§d激光仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限" translatedTo "The use of advanced modules such as §dLaser Chamber§r/§dOverclocking Chamber§r/§dThread Chamber§r will be unlocked")
+        highlight("则解锁§d超高安仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限" translatedTo "The use of advanced modules such as §dHigh-Amp Hatches§r/§dOverclocking Hatches§r/§dThread Hatches§r will be unlocked")
     }
 
     @JvmField
