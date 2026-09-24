@@ -668,7 +668,7 @@ public final class MultiBlockG {
                     .where('M', GTOPredicates.integralFramework())
                     .where('C', controller(definition))
                     .build())
-            .workableCasingRenderer(GTOCore.id("block/casings/multi_functional_casing"), GTCEu.id("block/multiblock/general1"))
+            .workableCasingRenderer(GTOCore.id("block/casings/multi_functional_casing"), GTOCore.id("block/multiblock/general1"))
             .register();
 
     public static final MultiblockMachineDefinition RARITY_FORGE = multiblock("rarity_forge", "珍宝锻炉", CrossRecipeMultiblockMachine::createHatchParallel)
