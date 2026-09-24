@@ -33,18 +33,22 @@ import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.item.tool.GTToolItem;
 import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.utils.TaskHandler;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -89,7 +93,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.MissingMappingsEvent;
 
+import appeng.api.parts.IPartHost;
+import appeng.blockentity.crafting.PatternProviderBlockEntity;
+import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEParts;
+import appeng.parts.crafting.PatternProviderPart;
+
 import com.google.common.collect.ImmutableMap;
+import com.glodblock.github.extendedae.common.EPPItemAndBlock;
+import com.glodblock.github.extendedae.common.parts.PartExPatternProvider;
+import com.glodblock.github.extendedae.common.tileentities.TileExPatternProvider;
 import earth.terrarium.adastra.common.entities.mob.GlacianRam;
 import org.apache.logging.log4j.core.config.Configurator;
 
@@ -180,6 +193,16 @@ public final class ForgeCommonEvent {
         InteractionHand hand = event.getHand();
         ItemStack itemStack = player.getItemInHand(hand);
         Item item = itemStack.getItem();
+
+        if (!level.isClientSide && player.isShiftKeyDown() && level instanceof ServerLevel serverLevel) {
+            Direction clickedFace = event.getFace();
+            if (isPatternProviderItem(item) && MetaMachine.getMachine(level, pos) instanceof SimpleTieredMachine) {
+                TaskHandler.enqueueTask(serverLevel, () -> configureMachineForPatternProvider(serverLevel, pos, clickedFace));
+            } else if (item instanceof MetaMachineItem && isPatternProviderAt(level, pos, clickedFace)) {
+                BlockPos machinePos = pos.relative(clickedFace);
+                TaskHandler.enqueueTask(serverLevel, () -> configureMachineForPatternProvider(serverLevel, machinePos, clickedFace.getOpposite()));
+            }
+        }
 
         if (item == GTOItems.RAW_VACUUM_TUBE.get() && player.isShiftKeyDown() && MetaMachine.getMachine(level, pos) instanceof IVacuumMachine vacuumMachine && vacuumMachine.getVacuumTier() > 0) {
             event.setCanceled(true);
@@ -288,6 +311,32 @@ public final class ForgeCommonEvent {
                 }
             }
         }
+    }
+
+    private static boolean isPatternProviderItem(Item item) {
+        return item == AEBlocks.PATTERN_PROVIDER.asItem() || item == AEParts.PATTERN_PROVIDER.asItem() ||
+                item == EPPItemAndBlock.EX_PATTERN_PROVIDER.asItem() || item == EPPItemAndBlock.EX_PATTERN_PROVIDER_PART;
+    }
+
+    private static boolean isPatternProviderAt(Level level, BlockPos pos, Direction side) {
+        var blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof PatternProviderBlockEntity || blockEntity instanceof TileExPatternProvider) return true;
+        if (!(blockEntity instanceof IPartHost partHost)) return false;
+        var part = partHost.getPart(side);
+        return part instanceof PatternProviderPart || part instanceof PartExPatternProvider;
+    }
+
+    private static void configureMachineForPatternProvider(ServerLevel level, BlockPos machinePos, Direction outputSide) {
+        if (!(MetaMachine.getMachine(level, machinePos) instanceof SimpleTieredMachine machine) ||
+                !isPatternProviderAt(level, machinePos.relative(outputSide), outputSide.getOpposite())) {
+            return;
+        }
+        machine.setOutputFacingItems(outputSide);
+        machine.setOutputFacingFluids(outputSide);
+        machine.setAutoOutputItems(true);
+        machine.setAutoOutputFluids(true);
+        machine.setAllowInputFromOutputSideItems(true);
+        machine.setAllowInputFromOutputSideFluids(true);
     }
 
     @SubscribeEvent
