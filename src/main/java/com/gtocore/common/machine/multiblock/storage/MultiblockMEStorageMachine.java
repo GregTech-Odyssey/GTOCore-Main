@@ -99,7 +99,7 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
         super(holder);
         this.type = type;
         if (type == AEKeyType.items() || type == null) {
-            itemStackHandler = new AEItemKeyStackHandler();
+            itemStackHandler = new AEItemKeyStackHandler(this);
             itemStackHandler.setMap(keyMap);
             itemStackHandler.setStorage(this);
             itemStackHandler.setStorageSupplier(storageSupplier);
@@ -108,7 +108,7 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
             itemStackHandler = null;
         }
         if (type == AEKeyType.fluids() || type == null) {
-            fluidStackHandler = new AEFluidKeyStackHandler();
+            fluidStackHandler = new AEFluidKeyStackHandler(this);
             fluidStackHandler.setMap(keyMap);
             fluidStackHandler.setStorage(this);
             fluidStackHandler.setStorageSupplier(storageSupplier);

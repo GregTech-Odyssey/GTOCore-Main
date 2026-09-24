@@ -647,6 +647,8 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         content("可为保险库IO" translatedTo "Can serve as vault IO")
         info("最大安装数 = 密封机械方块数" translatedTo "Maximum installations = hermetic casing amount")
+        content("可标记一种物品和一种流体" translatedTo "Can mark one item and one fluid")
+        info("标记后该仓只读写被标记的资源，未标记的资源不进出" translatedTo "Once marked, this hatch only reads and writes the marked resource; unmarked resources are rejected")
     }
 
     @JvmField
