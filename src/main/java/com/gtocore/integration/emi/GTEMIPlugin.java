@@ -1,6 +1,5 @@
 package com.gtocore.integration.emi;
 
-import com.gtocore.api.gui.ui.window.MachineWindow;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeTypes;
@@ -45,6 +44,7 @@ import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory
 import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTOreVeinEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;

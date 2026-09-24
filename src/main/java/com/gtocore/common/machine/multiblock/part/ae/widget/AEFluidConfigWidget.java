@@ -13,20 +13,24 @@ public class AEFluidConfigWidget extends ConfigWidget {
     private final ExportOnlyAEFluidList fluidList;
 
     public AEFluidConfigWidget(int x, int y, ExportOnlyAEFluidList list) {
-        super(x, y, list.getInventory(), list.isStocking());
+        this(x, y, list, DEFAULT_COLUMNS);
+    }
+
+    /** 每行 {@code columns} 格。 */
+    public AEFluidConfigWidget(int x, int y, ExportOnlyAEFluidList list, int columns) {
+        super(x, y, list.getInventory(), list.isStocking(), columns);
         this.fluidList = list;
     }
 
     @Override
     void init() {
-        int line;
         this.displayList = new IConfigurableSlot[this.config.length];
         this.cached = new IConfigurableSlot[this.config.length];
         for (int index = 0; index < this.config.length; index++) {
             this.displayList[index] = new ExportOnlyAEFluidSlot();
             this.cached[index] = new ExportOnlyAEFluidSlot();
-            line = index / 8;
-            this.addWidget(new AEFluidConfigSlotWidget((index - (line << 3)) * 18, line * 38, this, index));
+            var position = cellPosition(index);
+            this.addWidget(new AEFluidConfigSlotWidget(position.x, position.y, this, index));
         }
     }
 
@@ -36,7 +40,7 @@ public class AEFluidConfigWidget extends ConfigWidget {
     }
 
     @Override
-    public boolean isAutoPull() {
+    boolean listAutoPull() {
         return fluidList.isAutoPull();
     }
 }

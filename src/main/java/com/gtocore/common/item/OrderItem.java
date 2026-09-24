@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.ICustomDescriptionId;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -46,7 +47,7 @@ public final class OrderItem implements IItemUIFactory, IFancyUIProvider, ICusto
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
-        return new ModularUI(176, 166, heldItemHolder, player).widget(new FancyMachineUIWidget(this, 176, 166));
+        return new ModularUI(176, 166, heldItemHolder, player).widget(new MachineWindow(this));
     }
 
     public static ItemStack setTarget(ItemStack stack, ItemStack target) {

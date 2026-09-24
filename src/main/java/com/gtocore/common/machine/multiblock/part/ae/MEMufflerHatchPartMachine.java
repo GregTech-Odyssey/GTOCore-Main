@@ -12,9 +12,8 @@ import com.gtolib.api.machine.trait.MEOutputItemHandler;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
@@ -23,8 +22,11 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.item.SingleCustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMachines;
-import com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.network.chat.Component;
@@ -36,10 +38,7 @@ import appeng.api.networking.IGridNodeListener;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -170,24 +169,27 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     private static final String AMPLIFIER_TOOLTIP_KEY = "gtocore.machine.me_muffler_part.apm_tooltip";
 
     @Override
-    public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(0, 0, 170, 110);
-        WidgetGroup muffler = new WidgetGroup(0, 0, 170, 25);
-        muffler.addWidget(new SlotWidget(mufflerHatchInv.storage, 0, 140, 10, true, true)
-                .setBackground(GuiTextures.SLOT)
-                .setHoverTooltips(Component.translatable(GTOCore.isExpert() ? MUFFLER_TOOLTIP_KEY_EXPERT : MUFFLER_TOOLTIP_KEY)));
-        muffler.addWidget(new SlotWidget(amplifierInv.storage, 0, 120, 10, true, true)
-                .setBackground(GuiTextures.SLOT)
-                .setHoverTooltips(Component.translatable(AMPLIFIER_TOOLTIP_KEY)));
-        muffler.addWidget(new ComponentPanelWidget(6, 15, (list) -> list.add(Component.translatable("gtceu.muffler.recovery_tooltip", recoveryChance))));
-        group.addWidget(muffler);
-        WidgetGroup meOutput = new WidgetGroup(0, 35, 170, 65);
-        meOutput.addWidget(new LabelWidget(5, 0, () -> this.getOnlineField() ? "gtceu.gui.me_network.online" : "gtceu.gui.me_network.offline"));
-        meOutput.addWidget(new LabelWidget(5, 10, "gtceu.gui.waiting_list"));
-        meOutput.addWidget(new AEListGridWidget.Item(5, 20, 3, this.internalBuffer));
-        group.addWidget(meOutput);
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this, widget, buildPage());
+    }
 
-        return group;
+    @Override
+    public Widget createUIWidget() {
+        return buildPage();
+    }
+
+    /**
+     * 页面：回收几率（状态面板）、消声器槽与增幅槽（悬停看说明）、"等待输出"网格。
+     */
+    private UIElement buildPage() {
+        var status = new StatusPanel();
+        status.addSentence(() -> Component.translatable("gtceu.muffler.recovery_tooltip", recoveryChance));
+        var muffler = ItemSlot.of(mufflerHatchInv.storage, 0);
+        muffler.setHoverTooltips(Component.translatable(GTOCore.isExpert() ? MUFFLER_TOOLTIP_KEY_EXPERT : MUFFLER_TOOLTIP_KEY));
+        var amplifier = ItemSlot.of(amplifierInv.storage, 0);
+        amplifier.setHoverTooltips(Component.translatable(AMPLIFIER_TOOLTIP_KEY));
+        var slots = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(muffler, amplifier);
+        return MEPartUI.page().addChildren(status, slots, MEPartUI.waitingList("me.muffler.waiting", this.internalBuffer, false, null));
     }
 
     @Override

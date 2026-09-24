@@ -1,11 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.api.gui.configurators.MultiMachineModeFancyConfigurator;
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.Button;
-import com.gtocore.api.gui.ui.elements.TextField;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.GTORecipes;
 import com.gtocore.common.data.machines.GTAEMachines;
@@ -23,10 +18,8 @@ import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
@@ -48,12 +41,18 @@ import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
@@ -85,9 +84,7 @@ import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.util.DataCodecs;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.gto.recipesearch.IntLongMap;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiStack;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -145,6 +142,11 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
                       en = "This mode is similar to the crafting card function of a standard emitter. " +
                               "After placing an order for the item, the machine will passively and continuously input items into the machine using the recipe in the pattern.")
     public static final String EMITTING_CRAFTING_MODE_TOOLTIP = "gtceu.ae.pattern_part_machine.EMITTING_CRAFTING_MODE_TOOLTIP";
+    @RegisterLanguage(cn = "需要先在此槽放入处理样板（发信合成监听样板产物的下单请求）",
+                      en = "Put a processing pattern in this slot first (emitting crafting watches orders for the pattern's output)")
+    public static final String EMITTING_CRAFTING_MODE_NEED_PATTERN = "gtocore.pattern_buffer.emitting_crafting_mode.need_pattern";
+    @RegisterLanguage(cn = "需要先在此槽放入样板", en = "Put a pattern in this slot first")
+    public static final String PATTERN_REQUIRED = "gtocore.pattern_buffer.pattern_required";
     @RegisterLanguage(cn = "低存量触发模式", en = "Low stock triggering mode")
     public static final String LOW_STOCK_TRIGGERING_MODE = "gtceu.ae.pattern_part_machine.LOW_STOCK_TRIGGERING_MODE";
     @RegisterLanguage(cn = "该模式会在网络库存量低于设定数量时触发持续被动配方输入，直到库存量满足要求。",
@@ -436,15 +438,14 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         return recipeId.isEmpty() ? null : ResourceLocation.tryParse(recipeId);
     }
 
-    /** 把配方写进样板物品的 {@code recipe} 标签并缓存到该槽；{@code recipeId} 为空或查无此配方时清除。 */
+    /** 把配方写进样板物品的 {@code recipe} 标签并缓存到该槽；{@code recipeId} 为空或查无此配方时清除。槽里没有样板时不做任何事。 */
     public void setSlotRecipeId(int slot, @Nullable ResourceLocation recipeId) {
         if (slot < 0 || slot >= getMaxPatternCount()) return;
-        var recipe = recipeId == null ? null : RecipeBuilder.get(recipeId);
         var stack = getPatternInventory().getStackInSlot(slot);
-        if (!stack.isEmpty()) {
-            if (recipe == null) stack.getOrCreateTag().remove("recipe");
-            else stack.getOrCreateTag().putString("recipe", recipe.id.toString());
-        }
+        if (stack.isEmpty()) return;
+        var recipe = recipeId == null ? null : RecipeBuilder.get(recipeId);
+        if (recipe == null) stack.getOrCreateTag().remove("recipe");
+        else stack.getOrCreateTag().putString("recipe", recipe.id.toString());
         getInternalInventory()[slot].setRecipe(recipe);
         // 改样板物品的 NBT 不会触发物品栏回调，要自己标记存盘
         onChanged();
@@ -462,7 +463,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
         var items = MEPatternPartUI.section(column, ITEM_SPECIAL);
         MEPatternPartUI.slotRows(items, slot.lockableInventory.getSlots(),
-                i -> MEPatternPartUI.missingVirtualInputOverlay(new LockableSlotWidget(slot, i), () -> slot.isMissingVirtualItemSlot(i)));
+                // 样板被虚拟输入锁定时只读（锁定状态由服务端判定下发）
+                i -> MEPatternPartUI.missingVirtualInputOverlay(ItemSlot.of(slot.lockableInventory, i).disabled(slot::isLock, ITEM_LOCKED),
+                        () -> slot.isMissingVirtualItemSlot(i)));
 
         var fluids = MEPatternPartUI.section(column, FLUID_SPECIAL);
         MEPatternPartUI.fluidSlots(fluids, slot.shareTank.getStorages(),
@@ -481,20 +484,23 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         }, text -> setSlotRecipeId(index, ResourceLocation.tryParse(text))).setRightClickClear(true);
         recipeField.layout(l -> l.flexGrow(1));
         recipeField.setHoverTooltips(Component.translatable(ADD_RECIPE_MSG));
-        recipe.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(recipe.getContentWidth()).gapAll(UISizes.GAP).alignCenter()).addChildren(
-                Button.glyph("?")
-                        .bindTooltip(() -> Component.translatable(getSlotRecipeId(index) != null ? VIEW_RECIPE : NO_RECIPE))
-                        .setOnClientClick(() -> {
-                            var recipeId = getSlotRecipeId(index);
-                            if (recipeId != null) displayEmiRecipe(recipeId);
-                        }),
-                recipeField,
-                Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER)
-                        .setOnServerClick(() -> {
-                            slot.setRecipe(null);
-                            onChanged();
-                        })
-                        .setHoverTooltips(CLEAR_RECIPE_SLOT)));
+        // 样板槽为空时整行只读（没有样板物品可写配方）：查看、输入、清除三个控件一起叠斜纹，悬停说明原因
+        recipe.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(recipe.getContentWidth()).gapAll(UISizes.GAP).alignCenter())
+                .disabled(() -> getPatternInventory().getStackInSlot(index).isEmpty(), PATTERN_REQUIRED).addChildren(
+                        Button.glyph("?")
+                                .bindTooltip(() -> Component.translatable(getSlotRecipeId(index) != null ? VIEW_RECIPE : NO_RECIPE))
+                                .setOnClientClick(() -> {
+                                    var recipeId = getSlotRecipeId(index);
+                                    if (recipeId != null) displayEmiRecipe(recipeId);
+                                }),
+                        recipeField,
+                        Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER)
+                                .setOnServerClick(() -> {
+                                    if (getPatternInventory().getStackInSlot(index).isEmpty()) return;
+                                    slot.setRecipe(null);
+                                    onChanged();
+                                })
+                                .setHoverTooltips(CLEAR_RECIPE_SLOT)));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -526,32 +532,6 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         }
         var player = Minecraft.getInstance().player;
         if (player != null) player.displayClientMessage(Component.translatable(RECIPE_NOT_IN_EMI, recipeId.toString()), true);
-    }
-
-    /** 单槽配置里的物品槽：样板被虚拟输入锁定时压暗并在提示里说明。 */
-    private static final class LockableSlotWidget extends SlotWidget {
-
-        private final InternalSlot slot;
-
-        private LockableSlotWidget(InternalSlot slot, int index) {
-            super(slot.lockableInventory, index, 0, 0, true, true);
-            this.slot = slot;
-            setBackgroundTexture(UITheme.ITEM_SLOT);
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            if (slot.isLock()) DrawerHelper.drawSolidRect(graphics, getPositionX(), getPositionY(), getSizeWidth(), getSizeHeight(), 0x80000000);
-        }
-
-        @Override
-        public List<Component> getFullTooltipTexts() {
-            var tooltips = new ArrayList<>(super.getFullTooltipTexts());
-            if (slot.isLock()) tooltips.add(Component.translatable(ITEM_LOCKED));
-            return tooltips;
-        }
     }
 
     @Override
@@ -594,7 +574,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @Override
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         this.configuratorPanel = configuratorPanel;
-        configuratorPanel.attachConfigurators(new ButtonConfigurator(new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.REFUND_OVERLAY), this::refundAll).setTooltips(List.of(Component.translatable("gui.gtceu.refund_all.desc"))));
+        configuratorPanel.attachConfigurators(new ButtonConfigurator(WidgetIcons.REFUND, this::refundAll).setTooltips(List.of(Component.translatable("gui.gtceu.refund_all.desc"))));
         configuratorPanel.attachConfigurators(new CircuitFancyConfigurator(circuitInventorySimulated.storage));
         configuratorPanel.attachConfigurators(new FancyInvConfigurator(shareInventory.storage, Component.translatable("gui.gtceu.share_inventory.title")).setTooltips(List.of(Component.translatable("gui.gtceu.share_inventory.desc.0"), Component.translatable("gui.gtceu.share_inventory.desc.1"))));
         configuratorPanel.attachConfigurators(new FancyTankConfigurator(shareTank.getStorages(), Component.translatable("gui.gtceu.share_tank.title")).setTooltips(List.of(Component.translatable("gui.gtceu.share_tank.desc.0"), Component.translatable("gui.gtceu.share_inventory.desc.1"))));

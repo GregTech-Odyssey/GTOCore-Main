@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -79,7 +80,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
         return new ModularUI(176, 166, holder, player)
-                .widget(new FancyMachineUIWidget(this, 176, 166));
+                .widget(new MachineWindow(this));
     }
 
     @Override

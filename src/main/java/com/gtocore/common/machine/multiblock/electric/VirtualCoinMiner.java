@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
-import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.saved.VirtualCoinSavedData;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -19,6 +18,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -124,7 +124,7 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
 
         @Override
         public IGuiTexture getIcon() {
-            return GTOGuiTextures.PARALLEL_CONFIG;
+            return WidgetIcons.SETTINGS;
         }
 
         @Override

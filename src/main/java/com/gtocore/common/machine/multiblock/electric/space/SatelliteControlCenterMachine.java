@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space;
 
 import com.gtocore.api.data.RocketFuels;
+import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.client.hud.HUDConfigurator;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.data.IdleReason;
@@ -11,7 +12,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -65,7 +65,7 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
         super.attachConfigurators(configuratorPanel);
         HUDConfigurator c;
         configuratorPanel.attachConfigurators(
-                c = new HUDConfigurator(GuiTextures.LIGHT_ON, GuiTextures.LIGHT_OFF));
+                c = new HUDConfigurator(GTOGuiTextures.HUD_ON, GTOGuiTextures.HUD_OFF));
         if (isRemote()) c.setHudInstance("adastra_hud");
     }
 

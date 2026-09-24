@@ -1,12 +1,11 @@
 package com.gtocore.common.machine.multiblock.part.ae.widget.slot;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
-import com.gtocore.api.gui.ui.window.MachineWindow;
-
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.integration.ae2.gui.widget.slot.AEPatternViewSlotWidget;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;

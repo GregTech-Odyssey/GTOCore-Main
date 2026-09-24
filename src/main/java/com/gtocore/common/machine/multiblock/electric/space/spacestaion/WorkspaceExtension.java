@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
-import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOBlocks;
@@ -19,6 +18,7 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.common.data.GTMachines;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -80,7 +80,7 @@ public class WorkspaceExtension extends Extension {
 
             @Override
             public IGuiTexture getIcon() {
-                return GTOGuiTextures.PARALLEL_CONFIG;
+                return WidgetIcons.SETTINGS;
             }
 
             @Override

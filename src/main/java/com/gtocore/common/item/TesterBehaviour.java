@@ -1,11 +1,11 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.gui.ui.UIElement;
-
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +24,7 @@ public class TesterBehaviour implements IItemUIFactory, IFancyUIProvider {
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        return new ModularUI(176, 166, holder, player).widget(new FancyMachineUIWidget(this, 176, 166));
+        return new ModularUI(176, 166, holder, player).widget(new MachineWindow(this));
     }
 
     @Override

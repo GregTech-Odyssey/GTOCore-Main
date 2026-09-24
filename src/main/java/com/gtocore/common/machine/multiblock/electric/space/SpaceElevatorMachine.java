@@ -182,7 +182,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Override
     public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(GTOGuiTextures.PLANET_TELEPORT.getSubTexture(0, 0.5, 1, 0.5), GTOGuiTextures.PLANET_TELEPORT.getSubTexture(0, 0, 1, 0.5), getRecipeLogic()::isWorking, (clickData, pressed) -> {
+        configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(GTOGuiTextures.PLANET_OFF, GTOGuiTextures.PLANET_ON, getRecipeLogic()::isWorking, (clickData, pressed) -> {
             if (!clickData.isRemote && getRecipeLogic().isWorking() && configuratorPanel.getGui() != null && configuratorPanel.getGui().entityPlayer instanceof ServerPlayer player) {
                 PlanetManagement.unlock(player.getUUID(), GTODimensions.BARNARDA_C);
                 player.addTag("spaceelevatorst");

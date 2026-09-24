@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.gui.ui.UIElement;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
@@ -29,6 +28,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.fluid.LockableIFluidHandler;
 import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.uipro.UIElement;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -303,6 +303,11 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
     public static final class InternalSlot extends AbstractRecipeInternalSlot implements ICraftingRequester, IFieldDataHolder {
 
+        /// 每个样板的物品、流体配置各几格（界面每行 9 格排两行）。
+        /// 旧存档是 16 格：存档按下标读入、多出的格子忽略/留空（DataSyncLib 数组与旧 NBT 路径都取两者较短的长度），
+        /// 所以旧的 16 格库存原样落在前 16 格，无需额外迁移；配置每次由样板重新生成
+        public static final int CONFIG_SLOTS = 18;
+
         public final MEInputBufferPartMachine machine;
         public final int index;
 
@@ -338,7 +343,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
         /// fluctuates around the threshold
         private boolean disconnected = false;
 
-        MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, 32);
+        MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, CONFIG_SLOTS * 2);
 
         private final MEVirtualInputState virtualInputState;
         private final LazyFieldDataManager fieldDataManager = new LazyFieldDataManager(this);
@@ -349,7 +354,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
             this.notConsumableItem = createShareInventory();
             this.notConsumableFluid = new NotifiableNotConsumableFluidHandler(machine, 9, 64000);
 
-            this.exportOnlyItemList = new ExportOnlyAEItemList(machine, 16) {
+            this.exportOnlyItemList = new ExportOnlyAEItemList(machine, CONFIG_SLOTS) {
 
                 @Override
                 public boolean isStocking() {
@@ -361,7 +366,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
                     return true;
                 }
             };
-            this.exportOnlyFluidList = new ExportOnlyAEFluidList(machine, 16) {
+            this.exportOnlyFluidList = new ExportOnlyAEFluidList(machine, CONFIG_SLOTS) {
 
                 @Override
                 public boolean isStocking() {
@@ -442,7 +447,14 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
         // 以下设置项只有 @SaveToDisk（没有 @SyncToClient，不会被自动标脏），改动后必须 machine.onChanged() 才会存盘
 
+        /// 发信合成监听的是样板主产物的下单请求：槽里没有处理样板时无从监听，不能开启
+        public boolean canUseEmitterMode() {
+            return reportingKey != null;
+        }
+
         public void setEmitterMode(boolean emitterMode) {
+            // 没有样板时拒绝开启（否则开关看起来没反应，却把隐藏的状态存成开启，放入样板后突然生效）
+            if (emitterMode && !canUseEmitterMode()) return;
             if (isEmitterMode == emitterMode) return;
             isEmitterMode = emitterMode;
             machine.onChanged();

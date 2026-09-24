@@ -4,10 +4,10 @@ import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAESlot;
 import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.misc.IGhostFluidTarget;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.integration.ae2.utils.AEUtil;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTMath;
 
@@ -31,13 +31,15 @@ import net.minecraftforge.fluids.FluidUtil;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.GenericStack;
 
+import com.lowdragmc.lowdraglib.gui.ingredient.Target;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.side.fluid.forge.FluidHelperImpl;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.NotNull;
 
-import static com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget.drawSelectionOverlay;
+import java.util.List;
+
 import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawStringFixedCorner;
 
 public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhostFluidTarget {
@@ -54,10 +56,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
         IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
         GenericStack config = slot.getConfig();
         GenericStack stock = slot.getStock();
-        drawSlots(graphics, mouseX, mouseY, position.x, position.y, parentWidget.isAutoPull());
-        if (this.select) {
-            GuiTextures.SELECT_BOX.draw(graphics, mouseX, mouseY, position.x, position.y, 18, 18);
-        }
+        drawSlots(graphics, mouseX, mouseY, UITheme.FLUID_SLOT, true);
 
         int stackX = position.x + 1;
         int stackY = position.y + 1;
@@ -85,23 +84,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
             }
         }
 
-        if (mouseOverConfig(mouseX, mouseY)) {
-            drawSelectionOverlay(graphics, stackX, stackY, 16, 16);
-        } else if (mouseOverStock(mouseX, mouseY)) {
-            drawSelectionOverlay(graphics, stackX, stackY + 18, 16, 16);
-        }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private static void drawSlots(GuiGraphics graphics, int mouseX, int mouseY, int x, int y, boolean autoPull) {
-        if (autoPull) {
-            GuiTextures.SLOT_DARK.draw(graphics, mouseX, mouseY, x, y, 18, 18);
-            GuiTextures.CONFIG_ARROW_DARK.draw(graphics, mouseX, mouseY, x, y, 18, 18);
-        } else {
-            GuiTextures.FLUID_SLOT.draw(graphics, mouseX, mouseY, x, y, 18, 18);
-            GuiTextures.CONFIG_ARROW.draw(graphics, mouseX, mouseY, x, y, 18, 18);
-        }
-        GuiTextures.SLOT_DARK.draw(graphics, mouseX, mouseY, x, y + 18, 18, 18);
+        drawStates(graphics, mouseX, mouseY);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -147,6 +130,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
     @Override
     public void handleClientAction(int id, FriendlyByteBuf buffer) {
         super.handleClientAction(id, buffer);
+        if (rejectsDisabledAction(id)) return;
         IConfigurableSlot slot = this.parentWidget.getConfig(this.index);
         switch (id) {
             case REMOVE_ID -> {
@@ -219,6 +203,13 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 }
             }
         }
+    }
+
+    /** 只在上格可从 EMI 拖入时接受（LDLib2 {@code xeiPhantom}）。 */
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public List<Target> getPhantomTargets(Object ingredient) {
+        return isXeiPhantom() ? IGhostFluidTarget.super.getPhantomTargets(ingredient) : List.of();
     }
 
     @OnlyIn(Dist.CLIENT)

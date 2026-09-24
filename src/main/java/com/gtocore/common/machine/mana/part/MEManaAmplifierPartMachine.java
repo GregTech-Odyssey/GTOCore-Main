@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.mana.part;
 
+import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -7,12 +9,15 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.ManaAmplifierPartMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.chat.Component;
 
@@ -23,12 +28,8 @@ import appeng.api.networking.security.IActionSource;
 import appbot.ae2.ManaKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.SwitchWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import gripe._90.arseng.me.key.SourceKey;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,34 +72,33 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
         updateSubs.initialize(getLevel());
     }
 
+    /// 基类"最大魔力"设置的翻译键（GTOLib 里声明为私有，这里写完整字面量）
+    private static final String LANG_MAX_MANA = "gtocore.machine.mana_amplifier_part.max_mana";
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this::isOnline, getTitle(), widget, buildPage());
+    }
+
+    /** 页面：一个设置区块——最大魔力、是否从 ME 取魔力、是否从 ME 取源质。 */
     @Override
     public Widget createUIWidget() {
-        WidgetGroup superWidget = (WidgetGroup) super.createUIWidget();
-        return superWidget.addWidget(
-                new LabelWidget(4, 26, () -> LANG_USE_MANA)).addWidget(
-                        new SwitchWidget(82, 22, 16, 16, (cd, result) -> useMana = result)
-                                .setPressed(useMana)
-                                .setBaseTexture(GuiTextures.BUTTON,
-                                        GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true)
-                                                .copy()
-                                                .getSubTexture(0.0F, 0.0F, 1.0F, (double) 0.5F).scale(0.8F))
-                                .setPressedTexture(GuiTextures.BUTTON,
-                                        GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true)
-                                                .copy()
-                                                .getSubTexture(0.0F, 0.5F, 1.0F, (double) 0.5F).scale(0.8F)))
-                .addWidget(
-                        new LabelWidget(4, 44, () -> LANG_USE_SOURCE))
-                .addWidget(
-                        new SwitchWidget(82, 40, 16, 16, (cd, result) -> useSource = result)
-                                .setPressed(useSource)
-                                .setBaseTexture(GuiTextures.BUTTON,
-                                        GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true)
-                                                .copy()
-                                                .getSubTexture(0.0F, 0.0F, 1.0F, (double) 0.5F).scale(0.8F))
-                                .setPressedTexture(GuiTextures.BUTTON,
-                                        GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true)
-                                                .copy()
-                                                .getSubTexture(0.0F, 0.5F, 1.0F, (double) 0.5F).scale(0.8F)));
+        return buildPage();
+    }
+
+    private UIElement buildPage() {
+        var section = UIElement.section();
+        section.addChildren(
+                MEPartUI.numberRow(LANG_MAX_MANA, MEPatternPartUI.longField(0, this::getCurrent, this::setMaxMana, min)),
+                MEPartUI.controlRow(LANG_USE_MANA, Switch.of(() -> useMana, enabled -> useMana = enabled)),
+                MEPartUI.controlRow(LANG_USE_SOURCE, Switch.of(() -> useSource, enabled -> useSource = enabled)));
+        return MEPartUI.page().addChild(section);
+    }
+
+    private void setMaxMana(long amount) {
+        current = Math.max(min, amount);
+        onAmountChange(current);
+        onChanged();
     }
 
     private void updateTick() {
@@ -133,7 +133,7 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
     @Override
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new ButtonConfigurator(new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.REFUND_OVERLAY), this::refundAll).setTooltips(List.of(Component.translatable("gui.gtceu.refund_all.desc"))));
+        configuratorPanel.attachConfigurators(new ButtonConfigurator(WidgetIcons.REFUND, this::refundAll).setTooltips(List.of(Component.translatable("gui.gtceu.refund_all.desc"))));
     }
 
     private void refundAll(ClickData clickData) {

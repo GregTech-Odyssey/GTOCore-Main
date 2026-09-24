@@ -13,20 +13,24 @@ public class AEItemConfigWidget extends ConfigWidget {
     private final ExportOnlyAEItemList itemList;
 
     public AEItemConfigWidget(int x, int y, ExportOnlyAEItemList list) {
-        super(x, y, list.getInventory(), list.isStocking());
+        this(x, y, list, DEFAULT_COLUMNS);
+    }
+
+    /** 每行 {@code columns} 格。 */
+    public AEItemConfigWidget(int x, int y, ExportOnlyAEItemList list, int columns) {
+        super(x, y, list.getInventory(), list.isStocking(), columns);
         this.itemList = list;
     }
 
     @Override
     void init() {
-        int line;
         this.displayList = new IConfigurableSlot[this.config.length];
         this.cached = new IConfigurableSlot[this.config.length];
         for (int index = 0; index < this.config.length; index++) {
             this.displayList[index] = new ExportOnlyAEItemSlot();
             this.cached[index] = new ExportOnlyAEItemSlot();
-            line = index / 8;
-            this.addWidget(new AEItemConfigSlotWidget((index - (line << 3)) * 18, line * 38, this, index));
+            var position = cellPosition(index);
+            this.addWidget(new AEItemConfigSlotWidget(position.x, position.y, this, index));
         }
     }
 
@@ -36,7 +40,7 @@ public class AEItemConfigWidget extends ConfigWidget {
     }
 
     @Override
-    public boolean isAutoPull() {
+    boolean listAutoPull() {
         return itemList.isAutoPull();
     }
 }

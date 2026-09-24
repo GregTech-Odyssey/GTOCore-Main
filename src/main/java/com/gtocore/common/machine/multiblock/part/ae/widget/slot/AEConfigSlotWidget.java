@@ -2,7 +2,12 @@ package com.gtocore.common.machine.multiblock.part.ae.widget.slot;
 
 import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.ElementState;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +20,7 @@ import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.emi.EmiStackHelper;
 
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
+import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
@@ -26,7 +32,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget.drawSelectionOverlay;
+
+@DataGeneratorScanned
 public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
+
+    @RegisterLanguage(cn = "配置由 ME 自动拉取管理", en = "The configuration is managed by ME auto-pull")
+    private static final String CONFIG_MANAGED = "gtocore.gui.ae_config_slot.config_managed";
+    @RegisterLanguage(cn = "库存由 ME 网络自动补充，不能直接取放", en = "The stock is filled from the ME network and cannot be taken or placed directly")
+    private static final String STOCK_MANAGED = "gtocore.gui.ae_config_slot.stock_managed";
 
     final ConfigWidget parentWidget;
     final int index;
@@ -49,44 +63,87 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
     public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
         IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
-        if (slot.getConfig() == null) {
-            if (mouseOverConfig(mouseX, mouseY)) {
-                List<Component> hoverStringList = new ArrayList<>();
-                hoverStringList.add(Component.translatable("gtceu.gui.config_slot"));
-                if (parentWidget.isAutoPull()) {
-                    hoverStringList.add(Component.translatable("gtceu.gui.config_slot.auto_pull_managed"));
+        boolean overConfig = mouseOverConfig(mouseX, mouseY);
+        boolean overStock = !overConfig && mouseOverStock(mouseX, mouseY);
+        if (!overConfig && !overStock) return;
+        List<Component> lines = new ArrayList<>();
+        GenericStack stack = overConfig ? slot.getConfig() : slot.getStock();
+        if (stack != null) {
+            lines.addAll(Screen.getTooltipFromItem(Minecraft.getInstance(), GenericStack.wrapInItemStack(stack)));
+        } else if (overConfig) {
+            lines.add(Component.translatable("gtceu.gui.config_slot"));
+            if (!isConfigDisabled()) {
+                if (!parentWidget.isStocking()) {
+                    lines.add(Component.translatable("gtceu.gui.config_slot.set"));
+                    lines.add(Component.translatable("gtceu.gui.config_slot.scroll"));
                 } else {
-                    if (!parentWidget.isStocking()) {
-                        hoverStringList.add(Component.translatable("gtceu.gui.config_slot.set"));
-                        hoverStringList.add(Component.translatable("gtceu.gui.config_slot.scroll"));
-                    } else {
-                        hoverStringList.add(Component.translatable("gtceu.gui.config_slot.set_only"));
-                    }
-                    hoverStringList.add(Component.translatable("gtceu.gui.config_slot.remove"));
+                    lines.add(Component.translatable("gtceu.gui.config_slot.set_only"));
                 }
-                setHoverTooltips(hoverStringList);
+                lines.add(Component.translatable("gtceu.gui.config_slot.remove"));
             }
-        } else {
-            GenericStack item = null;
-            if (mouseOverConfig(mouseX, mouseY)) {
-                item = slot.getConfig();
-            } else if (mouseOverStock(mouseX, mouseY)) {
-                item = slot.getStock();
-            }
-            if (item != null) {
-                setHoverTooltips(Screen.getTooltipFromItem(Minecraft.getInstance(), GenericStack.wrapInItemStack(item)));
-            }
+        }
+        // 禁用格（画了斜纹）：与标准控件一样先"禁止操作"、再原因
+        if (overConfig && isConfigDisabled()) ElementState.appendDisabledLines(lines, Component.translatable(CONFIG_MANAGED));
+        if (overStock && isStockDisabled()) ElementState.appendDisabledLines(lines, Component.translatable(STOCK_MANAGED));
+        setHoverTooltips(lines);
+    }
+
+    /// 上格（配置）禁用：自动拉取时配置由机器管理，点不了
+    boolean isConfigDisabled() {
+        return parentWidget.isAutoPull();
+    }
+
+    /// 下格（库存）禁用：库存模式下存货来自网络，点不了
+    boolean isStockDisabled() {
+        return parentWidget.isStocking();
+    }
+
+    /// 上格可从 EMI 拖入（LDLib2 {@code xeiPhantom}）：未禁用时
+    boolean isXeiPhantom() {
+        return !isConfigDisabled();
+    }
+
+    /// 服务端再判一次禁用：禁用的格子不接受设置、清除、改数量（上格）或取放（下格）请求，客户端可以伪造
+    boolean rejectsDisabledAction(int id) {
+        if (id == REMOVE_ID || id == UPDATE_ID || id == AMOUNT_CHANGE_ID) return isConfigDisabled();
+        if (id == SLOT_CLICK_ID || id == SLOT_DROP_ID) return isStockDisabled();
+        return false;
+    }
+
+    /**
+     * 上下两格的底图：{@code slot} 是物品槽或流体槽的标准底图；上格可从 EMI 拖入时画下箭头标记（{@link UITheme#drawXeiPhantom}）。
+     * 点不了的格子不压暗，保持原色、叠统一的禁用斜纹（{@link UITheme#drawDisabled}）。
+     */
+    @OnlyIn(Dist.CLIENT)
+    void drawSlots(GuiGraphics graphics, int mouseX, int mouseY, IGuiTexture slot, boolean darkSlot) {
+        Position position = getPosition();
+        slot.draw(graphics, mouseX, mouseY, position.x, position.y, 18, 18);
+        if (isXeiPhantom()) UITheme.drawXeiPhantom(graphics, position.x, position.y, 18, 18, darkSlot);
+        slot.draw(graphics, mouseX, mouseY, position.x, position.y + 18, 18, 18);
+        if (this.select) UITheme.drawSelection(graphics, position.x, position.y, 18, 18);
+    }
+
+    /** 内容画完后：只读格叠斜纹；可操作的格子悬停时高亮。 */
+    @OnlyIn(Dist.CLIENT)
+    void drawStates(GuiGraphics graphics, int mouseX, int mouseY) {
+        Position position = getPosition();
+        if (isConfigDisabled()) UITheme.drawDisabled(graphics, position.x, position.y, 18, 18);
+        if (isStockDisabled()) UITheme.drawDisabled(graphics, position.x, position.y + 18, 18, 18);
+        if (mouseOverConfig(mouseX, mouseY) && !isConfigDisabled()) {
+            drawSelectionOverlay(graphics, position.x + 1, position.y + 1, 16, 16);
+        } else if (mouseOverStock(mouseX, mouseY) && !isStockDisabled()) {
+            drawSelectionOverlay(graphics, position.x + 1, position.y + 19, 16, 16);
         }
     }
 
     boolean mouseOverConfig(double mouseX, double mouseY) {
         Position position = getPosition();
-        return isMouseOver(position.x, position.y, 18, 18, mouseX, mouseY);
+        return !parentWidget.isAmountPanelOver(mouseX, mouseY) && isMouseOver(position.x, position.y, 18, 18, mouseX, mouseY);
     }
 
     boolean mouseOverStock(double mouseX, double mouseY) {
         Position position = getPosition();
-        return isMouseOver(position.x, position.y + 18, 18, 18, mouseX, mouseY);
+        return !parentWidget.isAmountPanelOver(mouseX, mouseY) && isMouseOver(position.x, position.y + 18, 18, 18, mouseX, mouseY);
     }
 
     boolean isStackValidForSlot(GenericStack stack) {

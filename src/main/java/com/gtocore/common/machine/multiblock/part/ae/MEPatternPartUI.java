@@ -1,22 +1,24 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.Indicator;
-import com.gtocore.api.gui.ui.elements.InfoIcon;
-import com.gtocore.api.gui.ui.elements.Label;
-import com.gtocore.api.gui.ui.elements.PageView;
-import com.gtocore.api.gui.ui.elements.StatusLine;
-import com.gtocore.api.gui.ui.elements.StatusPanel;
-import com.gtocore.api.gui.ui.elements.Stepper;
-import com.gtocore.api.gui.ui.elements.TextField;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
 import com.gtocore.eio_travel.logic.TravelUtils;
 
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
-import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.Indicator;
+import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.Label;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.PageView;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.Stepper;
+import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
@@ -29,7 +31,6 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.jei.IngredientIO;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -44,7 +45,7 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 /**
- * ME 样板类部件界面的公共片段。页面宽 {@link UISizes#CONTENT_WIDTH}（162），放在 {@link com.gtocore.api.gui.ui.window.MachineWindow} 里：
+ * ME 样板类部件界面的公共片段。页面宽 {@link UISizes#CONTENT_WIDTH}（162），放在 {@link com.gregtechceu.gtceu.uipro.window.MachineWindow} 里：
  *
  * <pre>
  * ┌ 标题栏：网络状态 · AE 显示名称 [输入框吃满剩余宽度] ┐
@@ -74,7 +75,7 @@ public final class MEPatternPartUI {
     // ==================== 标题栏、底栏 ====================
 
     /**
-     * 标题栏中段（放进 {@link com.gtocore.api.gui.ui.window.MachineWindow} 的标题栏）：网络在线指示灯 + AE 显示名称输入框（吃满剩余宽度）。
+     * 标题栏中段（放进 {@link com.gregtechceu.gtceu.uipro.window.MachineWindow} 的标题栏）：网络在线指示灯 + AE 显示名称输入框（吃满剩余宽度）。
      * 名称为空时输入框里灰字显示机器名——AE 在没有自定义名称时用的就是它。
      */
     public static UIElement header(MEPatternPartMachine<?> machine, int width) {
@@ -86,9 +87,14 @@ public final class MEPatternPartUI {
         nameField.setPlaceholder(() -> machine.getDefinition().asItem().getDescription());
         nameField.setHoverTooltips(Component.translatable(MEPatternPartMachine.AE_NAME));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
-                .addChildren(Indicator.of(() -> machine.getOnlineField() ? 1 : 0,
-                        Indicator.State.of(0xFFDD4444, "gtceu.gui.me_network.offline"),
-                        Indicator.State.of(0xFF55DD55, "gtceu.gui.me_network.online")), nameField);
+                .addChildren(onlineIndicator(machine::getOnlineField), nameField);
+    }
+
+    /** ME 网络在线指示灯（红：离线，绿：在线），标题栏行首用；{@code online} 在服务端取值。 */
+    public static Indicator onlineIndicator(BooleanSupplier online) {
+        return Indicator.of(() -> online.getAsBoolean() ? 1 : 0,
+                Indicator.State.of(UITheme.STATUS_OFFLINE, "gtceu.gui.me_network.offline"),
+                Indicator.State.of(UITheme.STATUS_ONLINE, "gtceu.gui.me_network.online"));
     }
 
     /** 底栏：左侧翻页（多于一页时），右侧附加按钮。两者都没有时返回 null。 */
@@ -169,10 +175,10 @@ public final class MEPatternPartUI {
         }
     }
 
-    /** 流体槽行；{@code decorator} 可给每个槽套一层叠加显示。 */
-    public static void fluidSlots(UIElement section, IFluidHandler[] fluidHandlers, @Nullable BiFunction<Integer, Widget, Widget> decorator) {
+    /** 流体槽行（标准 {@link FluidSlot}）；{@code decorator} 可设置每个槽的状态或给它套一层叠加显示。 */
+    public static void fluidSlots(UIElement section, IFluidHandler[] fluidHandlers, @Nullable BiFunction<Integer, FluidSlot, Widget> decorator) {
         slotRows(section, fluidHandlers.length, i -> {
-            Widget tank = new TankWidget(fluidHandlers[i], 0, 0, UISizes.SLOT, UISizes.SLOT, true, true).setBackground(UITheme.FLUID_SLOT);
+            var tank = FluidSlot.of(fluidHandlers[i]);
             return decorator == null ? tank : decorator.apply(i, tank);
         });
     }
@@ -198,30 +204,19 @@ public final class MEPatternPartUI {
         return circuit < 0 ? ItemStack.EMPTY : IntCircuitBehaviour.stack(Math.min(circuit, MAX_CIRCUIT));
     }
 
-    public static SlotWidget readOnlyCircuitSlot(CustomItemStackHandler circuitHandler) {
-        var slot = new SlotWidget(circuitHandler, 0, 0, 0, false, false);
-        slot.setBackgroundTexture(UITheme.ITEM_SLOT);
-        slot.setIngredientIO(IngredientIO.RENDER_ONLY);
-        return slot;
+    /** 电路槽只作展示（由步进器设置），标为只读。 */
+    public static ItemSlot readOnlyCircuitSlot(CustomItemStackHandler circuitHandler) {
+        return ItemSlot.display(circuitHandler, 0, MEPatternPartMachine.CIRCUIT_READ_ONLY);
     }
 
-    /** 整数输入框：非数字输入忽略，写入值不小于 {@code min}（超出 int 范围时取边界）。 */
-    public static TextField intField(int width, IntSupplier getter, IntConsumer setter, int min) {
-        return new TextField(width, () -> String.valueOf(getter.getAsInt()), text -> {
-            try {
-                long value = Long.parseLong(text.trim());
-                setter.accept((int) Math.max(min, Math.min(Integer.MAX_VALUE, value)));
-            } catch (NumberFormatException ignored) {}
-        });
+    /** 整数输入（标准数值输入 {@link NumberField}），写入值在 [{@code min}, int 上限]；{@code width} 为 0 时由父元素拉伸。 */
+    public static NumberField intField(int width, IntSupplier getter, IntConsumer setter, int min) {
+        return NumberField.of(width == 0 ? LayoutStyle.AUTO : width, getter::getAsInt, value -> setter.accept((int) value), min, Integer.MAX_VALUE);
     }
 
-    /** 长整数输入框：非数字输入忽略，写入值不小于 {@code min}。 */
-    public static TextField longField(int width, LongSupplier getter, LongConsumer setter, long min) {
-        return new TextField(width, () -> String.valueOf(getter.getAsLong()), text -> {
-            try {
-                setter.accept(Math.max(min, Long.parseLong(text.trim())));
-            } catch (NumberFormatException ignored) {}
-        });
+    /** 长整数输入（标准数值输入 {@link NumberField}），写入值不小于 {@code min}；{@code width} 为 0 时由父元素拉伸。 */
+    public static NumberField longField(int width, LongSupplier getter, LongConsumer setter, long min) {
+        return NumberField.of(width == 0 ? LayoutStyle.AUTO : width, getter, setter, min, Long.MAX_VALUE);
     }
 
     /** 一行"说明文字 …… 控件"，控件靠右；用在面板区块里。 */

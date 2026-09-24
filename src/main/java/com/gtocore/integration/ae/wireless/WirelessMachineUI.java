@@ -1,24 +1,27 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.data.SyncValue;
-import com.gtocore.api.gui.ui.elements.Button;
-import com.gtocore.api.gui.ui.elements.Indicator;
-import com.gtocore.api.gui.ui.elements.ScrollerView;
-import com.gtocore.api.gui.ui.elements.StatusLine;
-import com.gtocore.api.gui.ui.elements.StatusPanel;
-import com.gtocore.api.gui.ui.elements.TextField;
-import com.gtocore.api.gui.ui.elements.TextLine;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
-import com.gtocore.api.gui.ui.window.MachineWindow;
-import com.gtocore.api.gui.ui.window.Popup;
-
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
+import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Indicator;
+import com.gregtechceu.gtceu.uipro.elements.ItemView;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.window.Popup;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -26,6 +29,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -60,9 +65,9 @@ import java.util.function.Supplier;
  * 放在 {@link MachineWindow} 里时网络名进标题栏、详情用弹出面板；放在 GTM 外壳里（ME 部件自身界面、多方块主机里的部件页）时，
  * 状态面板多一行"网络"，详情与主页用 {@link WirelessSwitch} 原位切换。只读状态一律放进状态面板（{@link StatusPanel}），不用散落的文字行。
  * <p>
- * 尺寸：所有尺寸在构建时确定（窗口高度只在建页时算一次），文字用定宽的 {@link TextLine}，不留空白占位行。
- * 网络列表按打开界面时的网络数全部显示（至少 {@link #LIST_MIN_ROWS} 行），窗口高到屏幕的 2/3 就不再加高、改为滚动（见 {@link #visibleRows}）；客户端建页时网络数取
- * {@link WirelessClientCache}（服务端建页时先推同步包，包先于打开界面的包到达）。尺寸只影响客户端外观，两端控件树始终一致。
+ * 尺寸：由 Taffy 布局决定（flexbox）。页面至少标准内容宽，区块、按钮、列表行都被拉伸到同宽，名称类用 {@code flex(1)} 吃满剩余宽度；
+ * 列表高度跟随内容，最多 {@link #LIST_MAX_VISIBLE_ROWS} 行且窗口不超过屏幕 2/3（见 {@link #maxRows}），超出滚动；
+ * 列表右下角可拖拽缩放，窗口随内容一起变。尺寸只影响客户端外观，两端控件树始终一致。
  * <p>
  * 数据同步：机器与网络数据由各控件的 {@link SyncValue} 从服务端下发；列表行由 {@link WirelessRows} 服务端驱动增删；
  * 操作只走 {@link Button#setOnServerClick} 与 {@link TextField}，以打开界面的玩家校验权限。界面状态在 {@link WirelessUIContext}。
@@ -117,6 +122,8 @@ public final class WirelessMachineUI {
     static final String LEAVE = "gtocore.wireless.leave";
     @RegisterLanguage(cn = "网络详情", en = "Network Details")
     static final String DETAIL = "gtocore.wireless.detail";
+    @RegisterLanguage(cn = "未加入网络，或无权查看此网络", en = "Not joined, or not permitted to view this network")
+    static final String DETAIL_UNAVAILABLE = "gtocore.wireless.detail_unavailable";
     @RegisterLanguage(cn = "收藏：潜行放置无线机器时自动加入此网络", en = "Favorite: wireless machines placed while sneaking join this network")
     static final String FAVORITE = "gtocore.wireless.favorite";
     @RegisterLanguage(cn = "此机器不能连接无线网络", en = "This machine cannot connect to wireless networks")
@@ -151,16 +158,22 @@ public final class WirelessMachineUI {
     /** 网络详情弹出面板的键（参数不使用）。 */
     public static final String DETAIL_POPUP = "wireless_network_detail";
 
-    /** 网络列表至少显示的行数。 */
+    /** 列表最多显示行数的下限（屏幕很矮时也至少能看到这么多行）。 */
     static final int LIST_MIN_ROWS = 2;
-    /** 详情弹出面板里成员列表的行数，超出滚动。 */
+    /** 列表最多显示的行数，再多滚动查看（与"窗口不超过屏幕 2/3"两者先到为准）。 */
+    static final int LIST_MAX_VISIBLE_ROWS = 10;
+    /** 详情弹出面板里成员列表最多显示的行数，超出滚动。 */
     static final int LIST_MAX_ROWS = 4;
+    /** 列表的首选宽度：标准内容宽减去区块左右内边距（被拉伸或拖宽时更宽）。 */
+    static final int LIST_WIDTH = UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING;
+    /** 成员行高：16 的机器图标，右侧两行小字。 */
+    static final int MEMBER_ROW_HEIGHT = UISizes.SLOT;
     /** 窗口外框与标题行占的高度（上下内边距 + 标题行 + 与页面的间距），估算整个窗口高度用。 */
     static final int WINDOW_CHROME = UISizes.WINDOW_PADDING_TOP + UISizes.CONTROL_HEIGHT + UISizes.SECTION_GAP + UISizes.WINDOW_PADDING_BOTTOM;
-    /** 网络区块除列表视口外的高度：上下内边距 + 新建行 + 新建行与列表的间距。 */
-    static final int NETWORK_SECTION_FIXED = UITheme.PANEL_PADDING + UISizes.CONTROL_HEIGHT + UISizes.GAP + UITheme.PANEL_PADDING_BOTTOM;
-    /** 窗口高度上限：屏幕（GUI 缩放后）高度的这个比例，列表自动加高到此为止。 */
-    private static final double MAX_WINDOW_SCREEN_RATIO = 2.0 / 3.0;
+    /** 网络区块除列表视口外的高度：上下内边距（ME 无线连接机另有新建行，见 {@link #CREATE_ROW_HEIGHT}）。 */
+    static final int NETWORK_SECTION_FIXED = UITheme.PANEL_PADDING + UITheme.PANEL_PADDING_BOTTOM;
+    /** 新建行连同与列表的间距。 */
+    static final int CREATE_ROW_HEIGHT = UISizes.CONTROL_HEIGHT + UISizes.GAP;
 
     static final SyncValue.Codec<String> STRING_CODEC = new SyncValue.Codec<>() {
 
@@ -205,42 +218,48 @@ public final class WirelessMachineUI {
         };
     }
 
-    /** 机器页（连接机主页、ME 部件侧标签页），宽 {@link UISizes#CONTENT_WIDTH}。 */
+    /**
+     * 机器页（连接机主页、ME 部件侧标签页）。宽度至少 {@link UISizes#CONTENT_WIDTH}，其余全部由布局决定：
+     * 各区块、按钮被拉伸到同宽，列表被拖宽时整页一起变宽；高度随内容，窗口跟着变。
+     */
     public static Widget createPage(WirelessMachine machine, FancyMachineUIWidget host) {
-        var root = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+        var root = page();
         if (!machine.allowWirelessConnection()) {
-            return root.addChild(TextLine.translatable(UISizes.CONTENT_WIDTH, BANNED).setColor(UITheme.STATUS_OFFLINE));
+            return root.addChild(TextLine.translatable(LayoutStyle.AUTO, BANNED).setColor(UITheme.STATUS_OFFLINE));
         }
         var ctx = new WirelessUIContext(host.getGui().entityPlayer, machine.self()::getOffsetTimer);
         if (!ctx.remote) WirelessSync.pushTo(ctx.serverPlayer());
 
-        var main = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+        var main = page();
         if (host instanceof MachineWindow window) {
             window.setTitleContent(width -> header(machine, width, UITheme.TEXT, () -> networkName(ctx, machine)));
             // 客户端只在服务端决定打开后才构建面板，所以查看权限只需服务端判定
             window.registerPopup(DETAIL_POPUP, argument -> ctx.remote || canView(ctx, machine) ? detailPopup(machine, ctx) : null);
-            buildMain(main, machine, ctx, true, visibleRows(ctx, LIST_MIN_ROWS, mainOtherHeight(3)),
+            buildMain(main, machine, ctx, true, maxRows(ctx, mainOtherHeight(3, machine), UISizes.CONTROL_HEIGHT),
                     detail -> detail.setOnClientClick(() -> window.togglePopup(DETAIL_POPUP, 0)));
             root.addChild(main);
         } else {
-            // 原位详情页与主页叠放、取两者较高者：列表至少 3 行。主页的状态面板（4 行）比详情页的标题行与改名区块高约 3 行，
-            // 成员列表因此比网络列表多 2 行（详情页多出的标题行与改名区块约占 1 行），两页高度接近
-            int rows = visibleRows(ctx, LIST_MIN_ROWS + 1, mainOtherHeight(4));
-            var detailPage = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+            // 主页与原位详情页叠放，只显示当前页，窗口高度跟随当前页
+            var detailPage = page();
             var pages = new WirelessSwitch(main, detailPage);
-            var back = Button.glyph("<");
+            var back = Button.icon(UITheme.ARROW_LEFT);
             back.setHoverTooltips(BACK);
-            detailPage.addChild(UIElement.row(UISizes.CONTROL_HEIGHT)
-                    .layout(l -> l.width(UISizes.CONTENT_WIDTH).gapAll(UISizes.GAP).alignCenter())
-                    .addChildren(back, TextLine.of(UISizes.CONTENT_WIDTH - UISizes.ICON_BUTTON - UISizes.GAP, () -> detailTitle(ctx, machine))));
+            var title = TextLine.of(0, () -> detailTitle(ctx, machine));
+            title.layout(l -> l.flex(1));
+            detailPage.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(back, title));
             // 点"确认"删除后两端都回到主页（按钮的 setOnClick 两端各执行一次）
-            buildDetail(detailPage, machine, ctx, rows + 2, () -> pages.select(0), button -> {});
-            buildMain(main, machine, ctx, false, rows, detail -> detail.setOnClick(click -> pages.select(1)));
+            buildDetail(detailPage, machine, ctx, "wireless.part.members", maxRows(ctx, detailOtherHeight(), MEMBER_ROW_HEIGHT), () -> pages.select(0), button -> {});
+            buildMain(main, machine, ctx, false, maxRows(ctx, mainOtherHeight(4, machine), UISizes.CONTROL_HEIGHT), detail -> detail.setOnClick(click -> pages.select(1)));
             back.setOnClick(click -> pages.select(0));
             pages.select(0);
             root.addChild(pages);
         }
         return root;
+    }
+
+    /** 页面级纵向容器：至少标准内容宽，宽度随内容（被拖宽的列表）变化，子元素拉伸到同宽。 */
+    private static UIElement page() {
+        return new UIElement().layout(l -> l.column().minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
     }
 
     // ==================== 标题行 ====================
@@ -253,7 +272,8 @@ public final class WirelessMachineUI {
                 Indicator.State.of(UITheme.STATUS_OFFLINE, WirelessMachine.KEY_STATE_OFFLINE),
                 Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_NO_PERMISSION),
                 Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_UNAVAILABLE));
-        var line = TextLine.of(Math.max(0, width - Indicator.SIZE - UISizes.SECTION_GAP), text).setColor(color);
+        var line = TextLine.of(0, text).setColor(color);
+        line.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(indicator, line);
     }
@@ -262,20 +282,22 @@ public final class WirelessMachineUI {
 
     /**
      * @param inWindow 在 {@link MachineWindow} 里（网络名已在标题栏）：区块第一行只放说明；否则第一行是 ● 网络名 + 说明
-     * @param rows     网络列表可见行数
+     * @param maxRows  网络列表最多显示的行数（高度跟随内容，超出滚动）
      */
-    private static void buildMain(UIElement main, WirelessMachine machine, WirelessUIContext ctx, boolean inWindow, int rows,
+    private static void buildMain(UIElement main, WirelessMachine machine, WirelessUIContext ctx, boolean inWindow, int maxRows,
                                   Consumer<Button> detailAction) {
-        // 当前网络：状态面板 + 紧贴其下、与面板两边对齐的整行 [网络详情]
-        var current = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.GAP));
-        var viewable = current.addSyncValue(SyncValue.of(() -> machine.getWirelessNetwork() != null && canView(ctx, machine), SyncValue.BOOLEAN, false));
-        var detail = Button.translatable(UISizes.CONTENT_WIDTH, DETAIL).setEnabled(viewable::getValue);
+        // 当前网络：状态面板 + 紧贴其下、与面板两边对齐的整行 [网络详情]（都被拉伸到页面宽）
+        var current = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));
+        var detail = Button.translatable(LayoutStyle.AUTO, DETAIL)
+                .disabled(() -> machine.getWirelessNetwork() == null || !canView(ctx, machine), DETAIL_UNAVAILABLE);
         detailAction.accept(detail);
         current.addChildren(statusPanel(machine, ctx, !inWindow), detail);
         main.addChild(current);
 
-        // 新建 + 可用网络：当前网络那一行的按钮是 [断开]（红色），其余行是 [加入]；新建先按加入的规则预检，不会建出加不进去的网络
-        main.addChild(networkSection(UISizes.CONTENT_WIDTH, ctx, rows, JOIN, LEAVE,
+        // 可用网络：当前网络那一行的按钮是 [断开]（红色），其余行是 [加入]。
+        // 新建行只有连接机有，新建前先按加入的规则预检，不会建出加不进去的网络
+        boolean create = canCreate(machine);
+        main.addChild(networkSection(ctx, create ? "wireless.networks" : "wireless.part.networks", maxRows, JOIN, LEAVE,
                 id -> id.equals(machine.getWirelessNetworkId()),
                 id -> machine.joinWireless(ctx.serverPlayer(), id),
                 from -> {
@@ -283,59 +305,78 @@ public final class WirelessMachineUI {
                     if (result.ok()) closeDetail(from);
                     return result;
                 },
-                () -> machine.checkCreateAndJoin(ctx.serverPlayer()),
-                network -> machine.joinWireless(ctx.serverPlayer(), network.id())));
+                create ? () -> machine.checkCreateAndJoin(ctx.serverPlayer()) : null,
+                create ? network -> machine.joinWireless(ctx.serverPlayer(), network.id()) : null));
     }
 
     /**
-     * 网络列表的可见行数：打开界面时本玩家可访问的网络数（全部显示、不滚动），至少 {@code minRows} 行；
-     * 但整个窗口不超过屏幕高度的 {@link #MAX_WINDOW_SCREEN_RATIO}，再多的网络滚动查看。
-     * {@code otherHeight} 是页面里除列表视口外的高度。
+     * 列表最多显示的行数（高度跟随内容，放不下才滚动）：不超过 {@link #LIST_MAX_VISIBLE_ROWS} 行，
+     * 也不让整个窗口高过屏幕（GUI 缩放后）的 {@link UISizes#MAX_WINDOW_SCREEN_RATIO}——两者哪个先到按哪个，至少 {@link #LIST_MIN_ROWS} 行。
+     * {@code otherHeight} 是页面里除列表视口外的高度，{@code rowHeight} 是一行的高度。
      * <p>
-     * 屏幕尺寸只在客户端知道。客户端建页时还拿不到界面的同步数据，网络数取 {@link WirelessClientCache}（服务端建页前已推送）；
-     * 两端算得不同也只影响客户端尺寸，控件树不变。
+     * 屏幕尺寸只在客户端知道，服务端按行数上限算；两端尺寸不同不影响同步（控件树一致）。
+     * 玩家还可以拖列表右下角的缩放角改变高度。
      */
-    static int visibleRows(WirelessUIContext ctx, int minRows, int otherHeight) {
-        if (!ctx.remote) return Math.max(minRows, ctx.networks().listFor(ctx.uuid()).size());
-        return Math.clamp(WirelessClientCache.size(), minRows, Math.max(minRows, rowsFitting(otherHeight)));
+    static int maxRows(WirelessUIContext ctx, int otherHeight, int rowHeight) {
+        if (!ctx.remote) return LIST_MAX_VISIBLE_ROWS;
+        return Math.clamp(rowsFitting(otherHeight, rowHeight), LIST_MIN_ROWS, LIST_MAX_VISIBLE_ROWS);
     }
 
     /** 客户端：窗口不超过屏幕高度上限时，列表视口最多能放几行。 */
     @OnlyIn(Dist.CLIENT)
-    private static int rowsFitting(int otherHeight) {
-        int budget = (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * MAX_WINDOW_SCREEN_RATIO) - WINDOW_CHROME - otherHeight;
-        return (budget + UISizes.GAP) / (UISizes.CONTROL_HEIGHT + UISizes.GAP);
+    private static int rowsFitting(int otherHeight, int rowHeight) {
+        int budget = (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * UISizes.MAX_WINDOW_SCREEN_RATIO) - WINDOW_CHROME - otherHeight;
+        return (budget + UISizes.GAP) / (rowHeight + UISizes.GAP);
     }
 
-    /** 主页除网络列表视口外的高度：状态面板（{@code statusLines} 行）+ [网络详情] + 网络区块的固定部分。 */
-    private static int mainOtherHeight(int statusLines) {
-        return StatusPanel.heightFor(statusLines) + UISizes.GAP + UISizes.CONTROL_HEIGHT + UISizes.SECTION_GAP + NETWORK_SECTION_FIXED;
+    /** 主页除网络列表视口外的高度：状态面板（{@code statusLines} 行）+ [网络详情] + 网络区块的固定部分（连接机含新建行）。 */
+    private static int mainOtherHeight(int statusLines, WirelessMachine machine) {
+        return StatusPanel.heightFor(statusLines) + UISizes.GAP + UISizes.CONTROL_HEIGHT + UISizes.SECTION_GAP + NETWORK_SECTION_FIXED +
+                (canCreate(machine) ? CREATE_ROW_HEIGHT : 0);
+    }
+
+    /** 只有 ME 无线连接机能在界面里新建网络；ME 部件、配置器只能从已有网络里选。 */
+    private static boolean canCreate(WirelessMachine machine) {
+        return machine instanceof MeWirelessConnectMachine;
+    }
+
+    /** 原位详情页除成员列表视口外的高度：标题行、改名区块、成员区块的标题与内边距、删除区块。 */
+    private static int detailOtherHeight() {
+        int section = UITheme.PANEL_PADDING + UISizes.CONTROL_HEIGHT + UITheme.PANEL_PADDING_BOTTOM;
+        return UISizes.CONTROL_HEIGHT + UISizes.SECTION_GAP + section + UISizes.SECTION_GAP +
+                (section + TextLine.HEIGHT + UISizes.GAP) + UISizes.SECTION_GAP + section;
     }
 
     /**
-     * 网络区块：第一行是新建（输入框 + [新建]），下面是可用网络的滚动列表（{@code rows} 行高，超出滚动），
-     * 每行 [★] 名称 [操作]。当前网络那一行的按钮换成 {@code currentKey}（红色，如"断开"），执行 {@code currentAction}。与配置器共用。
+     * 网络区块：可用网络的滚动列表（高度跟随内容，最多 {@code maxRows} 行，超出滚动），每行 [★] 名称 [操作]。
+     * 当前网络那一行的按钮换成 {@code currentKey}（红色，如"断开"），执行 {@code currentAction}。与部件标签页、配置器共用。
+     * 只有 ME 无线连接机在列表上方有新建行（输入框 + [新建]），其他地方 {@code precheck} 传 null、不显示新建行。
      *
+     * @param scrollerId    列表滚动区的固定 id（锁定的高度按它保存）
      * @param isCurrent     服务端：该网络是否就是当前网络
      * @param action        服务端：点击其他行的操作按钮
      * @param currentAction 服务端：点击当前网络那一行的按钮，参数是被点的按钮
+     * @param precheck      服务端：新建前的检查；null 时没有新建行
+     * @param afterCreate   服务端：新建成功后做的事（加入 / 选中）
      */
-    static UIElement networkSection(int width, WirelessUIContext ctx, int rows, String actionKey, String currentKey,
+    static UIElement networkSection(WirelessUIContext ctx, String scrollerId, int maxRows, String actionKey, String currentKey,
                                     Predicate<String> isCurrent, Function<String, WirelessStatus> action,
-                                    Function<Widget, WirelessStatus> currentAction, Supplier<WirelessStatus> precheck,
-                                    Function<WirelessNetwork, WirelessStatus> afterCreate) {
-        var section = UIElement.section(width);
-        int inner = section.getContentWidth();
-        var scroller = new ScrollerView(inner, listHeight(rows));
-        int rowWidth = scroller.getContentWidth();
-        var list = new WirelessRows<>(rowWidth, ctx.remote, STRING_CODEC,
+                                    Function<Widget, WirelessStatus> currentAction, @Nullable Supplier<WirelessStatus> precheck,
+                                    @Nullable Function<WirelessNetwork, WirelessStatus> afterCreate) {
+        var section = UIElement.section();
+        var scroller = new ScrollerView(scrollerId, LIST_WIDTH, listHeight(1)).adaptiveHeight(listHeight(maxRows));
+        if (precheck != null && afterCreate != null) {
+            // 新建行与列表行同宽：[新建] 与各行的 [加入] 右对齐成一列；滚动条出现时新建行右侧让出滚动条的宽度
+            var create = createRow(ctx, precheck, afterCreate);
+            scroller.setOnContentWidthChanged(contentWidth -> create.layout(l -> l.marginRight(scroller.isVerticalScrollBarShown() ? ScrollerView.SCROLL_BAR_SPACE : 0)));
+            section.addChild(create);
+        }
+        scroller.addScrollViewChild(new WirelessRows<>(ctx.remote, STRING_CODEC,
                 () -> ctx.networks().listFor(ctx.uuid()).stream().map(WirelessNetwork::id).toList(),
                 () -> ctx.networks().revision(),
-                id -> networkRow(rowWidth, id, ctx, actionKey, currentKey, isCurrent, action, currentAction),
-                Component.translatable(EMPTY));
-        scroller.addScrollViewChild(list);
-        // 新建行与列表行同宽：[新建] 与各行的 [加入] 右对齐成一列
-        return section.addChildren(createRow(rowWidth, ctx, precheck, afterCreate), scroller);
+                id -> networkRow(id, ctx, actionKey, currentKey, isCurrent, action, currentAction),
+                Component.translatable(EMPTY)));
+        return section.addChild(scroller);
     }
 
     /** {@code rows} 行（行高 14、行距 2）的列表视口高度。 */
@@ -343,19 +384,21 @@ public final class WirelessMachineUI {
         return rows * UISizes.CONTROL_HEIGHT + (rows - 1) * UISizes.GAP;
     }
 
-    private static Widget networkRow(int width, String id, WirelessUIContext ctx, String actionKey, String currentKey,
-                                     Predicate<String> isCurrent, Function<String, WirelessStatus> action,
-                                     Function<Widget, WirelessStatus> currentAction) {
-        var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter());
+    private static UIElement networkRow(String id, WirelessUIContext ctx, String actionKey, String currentKey,
+                                        Predicate<String> isCurrent, Function<String, WirelessStatus> action,
+                                        Function<Widget, WirelessStatus> currentAction) {
+        // 宽度由列表拉伸，名称 flex(1) 吃掉剩余宽度
+        var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
         var favorite = row.addSyncValue(SyncValue.of(() -> id.equals(ctx.networks().favorite(ctx.uuid())), SyncValue.BOOLEAN, false));
         var current = row.addSyncValue(SyncValue.of(() -> isCurrent.test(id), SyncValue.BOOLEAN, false));
         var star = Button.text(UISizes.ICON_BUTTON, () -> favorite.getValue() ? "★" : "☆")
                 .setOnServerClick(() -> ctx.report(ctx.networks().toggleFavorite(ctx.serverPlayer(), id)));
         star.setHoverTooltips(FAVORITE);
-        var name = TextLine.of(width - UISizes.ICON_BUTTON - UISizes.BUTTON_WIDTH - 2 * UISizes.GAP, () -> {
+        var name = TextLine.of(0, () -> {
             var network = ctx.networks().get(id);
             return network == null ? Component.empty() : Component.literal(network.name());
         }).setColor(UITheme.PANEL_TEXT);
+        name.layout(l -> l.flex(1));
         // 当前网络：红色 [断开]；其他网络：[加入]。点击时以服务端的当前网络为准，不信客户端显示
         var button = Button.text(UISizes.BUTTON_WIDTH, () -> Component.translatable(current.getValue() ? currentKey : actionKey).getString())
                 .setVariant(() -> current.getValue() ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.DEFAULT);
@@ -366,10 +409,10 @@ public final class WirelessMachineUI {
     /**
      * 新建行：输入框 + [新建]；{@code precheck} 通过才创建，新建成功后清空输入并执行 {@code afterCreate}（加入 / 选中）。
      */
-    private static UIElement createRow(int width, WirelessUIContext ctx, Supplier<WirelessStatus> precheck,
+    private static UIElement createRow(WirelessUIContext ctx, Supplier<WirelessStatus> precheck,
                                        Function<WirelessNetwork, WirelessStatus> afterCreate) {
         var field = new TextField(0, () -> ctx.pendingName, text -> ctx.pendingName = text);
-        field.layout(l -> l.flexGrow(1));
+        field.layout(l -> l.flex(1));
         field.setPlaceholder(() -> Component.translatable(NAME_PLACEHOLDER));
         field.getInput().setMaxStringLength(WirelessNetworks.MAX_NAME_LENGTH);
         var create = Button.translatable(UISizes.BUTTON_WIDTH, CREATE).setVariant(UITheme.ButtonVariant.CONFIRM)
@@ -387,7 +430,7 @@ public final class WirelessMachineUI {
                     ctx.pendingName = "";
                     ctx.report(afterCreate.apply(created.network()));
                 });
-        return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter())
+        return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
                 .addChildren(field, create);
     }
 
@@ -395,45 +438,44 @@ public final class WirelessMachineUI {
 
     private static Popup detailPopup(WirelessMachine machine, WirelessUIContext ctx) {
         return Popup.of(() -> ctx.remote ? Component.empty() : detailTitle(ctx, machine),
-                column -> buildDetail(column, machine, ctx, LIST_MAX_ROWS, () -> {}, WirelessMachineUI::closeDetail));
+                column -> buildDetail(column, machine, ctx, "wireless.members", LIST_MAX_ROWS, () -> {}, WirelessMachineUI::closeDetail));
     }
 
     /**
      * 网络详情：改名、成员列表（点击成员在聊天栏生成传送命令）、控制器冲突提示、删除（二次确认）。
+     * 各区块被拉伸到所在容器的宽度，成员列表被拖宽时一起变宽。
      *
-     * @param memberRows  成员列表可见行数
+     * @param membersId   成员列表滚动区的固定 id
+     * @param memberRows  成员列表最多显示的行数（高度跟随成员数，超出滚动）
      * @param onConfirm   两端：点"确认"后执行（原位切换模式下回到主页）
      * @param afterDelete 服务端：删除成功后对"确认"按钮做的事（弹出面板模式下关闭面板）
      */
-    private static void buildDetail(UIElement column, WirelessMachine machine, WirelessUIContext ctx, int memberRows,
+    private static void buildDetail(UIElement column, WirelessMachine machine, WirelessUIContext ctx, String membersId, int memberRows,
                                     Runnable onConfirm, Consumer<Button> afterDelete) {
-        int width = column.getContentWidth();
-
         // 改名
-        var rename = UIElement.section(width);
-        int inner = rename.getContentWidth();
+        var rename = UIElement.section();
         var currentName = rename.addSyncValue(SyncValue.of(() -> networkName(ctx, machine), SyncValue.COMPONENT, Component.empty()));
-        var joined = rename.addSyncValue(SyncValue.of(() -> machine.getWirelessNetwork() != null, SyncValue.BOOLEAN, false));
         var field = new TextField(0, () -> ctx.renameBuffer, text -> ctx.renameBuffer = text);
-        field.layout(l -> l.flexGrow(1));
+        field.layout(l -> l.flex(1));
         field.setPlaceholder(currentName::getValue);
         field.getInput().setMaxStringLength(WirelessNetworks.MAX_NAME_LENGTH);
-        var apply = Button.translatable(UISizes.BUTTON_WIDTH, RENAME).setEnabled(joined::getValue).setOnServerClick(() -> {
+        var apply = Button.translatable(UISizes.BUTTON_WIDTH, RENAME).setOnServerClick(() -> {
             var result = ctx.networks().rename(ctx.serverPlayer(), machine.getWirelessNetworkId(), ctx.renameBuffer);
             if (result.ok()) ctx.renameBuffer = "";
             ctx.report(result);
         });
         // 改名：输入框占位文字就是当前名称，按钮写明"重命名"，不再另加标题行
-        rename.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(inner).gapAll(UISizes.GAP).alignCenter()).addChildren(field, apply));
+        // 未加入网络时整行只读（输入框和按钮一起），悬停说明原因
+        rename.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                .disabled(() -> machine.getWirelessNetwork() == null, STATE_STANDALONE).addChildren(field, apply));
         column.addChild(rename);
 
-        // 成员
-        var members = UIElement.section(width);
-        var scroller = new ScrollerView(members.getContentWidth(), listHeight(memberRows));
-        int rowWidth = scroller.getContentWidth();
-        scroller.addScrollViewChild(new WirelessRows<>(rowWidth, ctx.remote, MemberKey.CODEC,
-                () -> memberKeys(ctx, machine), () -> memberVersion(ctx, machine), key -> new MemberRow(rowWidth, key), null));
-        members.addChildren(TextLine.of(members.getContentWidth(), () -> {
+        // 成员：每行 [机器图标] 两行小字（机器名 / 坐标与维度）
+        var members = UIElement.section();
+        var scroller = new ScrollerView(membersId, LIST_WIDTH, MEMBER_ROW_HEIGHT).adaptiveHeight(memberListHeight(memberRows));
+        scroller.addScrollViewChild(new WirelessRows<>(ctx.remote, MemberKey.CODEC,
+                () -> memberKeys(ctx, machine), () -> memberVersion(ctx, machine), MemberRow::new, null));
+        members.addChildren(TextLine.of(LayoutStyle.AUTO, () -> {
             var hub = WirelessHub.get(machine.getWirelessNetworkId());
             return Component.translatable(MEMBERS, hub == null || !canView(ctx, machine) ? 0 : hub.memberCount());
         }).setColor(UITheme.PANEL_TEXT), scroller);
@@ -441,20 +483,19 @@ public final class WirelessMachineUI {
 
         // 删除：二次确认，确认状态在控件里（WirelessSwitch），不在机器上。
         // 控制器冲突提示放在 [删除网络] 左侧的空位里，没有冲突时不占一整行
-        var delete = UIElement.section(width);
-        int deleteWidth = delete.getContentWidth();
-        var ask = Button.translatable(UISizes.BUTTON_WIDTH, DELETE).setVariant(UITheme.ButtonVariant.DANGER).setEnabled(joined::getValue);
+        var delete = UIElement.section();
+        var ask = Button.translatable(UISizes.BUTTON_WIDTH, DELETE).setVariant(UITheme.ButtonVariant.DANGER)
+                .disabled(() -> machine.getWirelessNetwork() == null, STATE_STANDALONE);
         var confirm = Button.translatable(UISizes.BUTTON_WIDTH, CONFIRM).setVariant(UITheme.ButtonVariant.DANGER);
         confirm.setHoverTooltips(DELETE_WARNING);
         var cancel = Button.translatable(UISizes.BUTTON_WIDTH, CANCEL);
-        var conflict = TextLine.of(deleteWidth - UISizes.BUTTON_WIDTH - UISizes.GAP,
-                () -> canView(ctx, machine) && isConflict(machine) ? Component.translatable(CONFLICT) : Component.empty())
+        var conflict = TextLine.of(0, () -> canView(ctx, machine) && isConflict(machine) ? Component.translatable(CONFLICT) : Component.empty())
                 .setColor(UITheme.STATUS_OFFLINE);
-        var askRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(deleteWidth).gapAll(UISizes.GAP).alignCenter())
-                .addChildren(conflict, ask);
-        var confirmRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(deleteWidth).gapAll(UISizes.GAP).alignCenter())
-                .addChildren(TextLine.translatable(deleteWidth - 2 * UISizes.BUTTON_WIDTH - 2 * UISizes.GAP, DELETE_CONFIRM).setColor(UITheme.PANEL_TEXT),
-                        confirm, cancel);
+        conflict.layout(l -> l.flex(1));
+        var askRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(conflict, ask);
+        var question = TextLine.translatable(0, DELETE_CONFIRM).setColor(UITheme.PANEL_TEXT);
+        question.layout(l -> l.flex(1));
+        var confirmRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(question, confirm, cancel);
         var steps = new WirelessSwitch(askRow, confirmRow);
         ask.setOnClick(click -> steps.select(1));
         cancel.setOnClick(click -> steps.select(0));
@@ -467,6 +508,11 @@ public final class WirelessMachineUI {
             if (result.ok()) afterDelete.accept(confirm);
         });
         column.addChild(delete.addChild(steps));
+    }
+
+    /** {@code rows} 行成员（行高 {@link #MEMBER_ROW_HEIGHT}、行距 2）的列表视口高度。 */
+    private static int memberListHeight(int rows) {
+        return rows * MEMBER_ROW_HEIGHT + (rows - 1) * UISizes.GAP;
     }
 
     /** 服务端：关闭所在窗口的详情弹出面板（不在 MachineWindow 里时什么都不做）。 */
@@ -482,8 +528,8 @@ public final class WirelessMachineUI {
 
     // ==================== 成员行 ====================
 
-    /** 成员：所在维度、坐标、机器描述键。 */
-    record MemberKey(String dimension, BlockPos pos, String descriptionId) {
+    /** 成员：所在维度、坐标、机器定义 id（客户端据此取机器名与图标）。 */
+    record MemberKey(String dimension, BlockPos pos, String machineId) {
 
         static final SyncValue.Codec<MemberKey> CODEC = new SyncValue.Codec<>() {
 
@@ -491,7 +537,7 @@ public final class WirelessMachineUI {
             public void write(FriendlyByteBuf buf, MemberKey value) {
                 buf.writeUtf(value.dimension());
                 buf.writeBlockPos(value.pos());
-                buf.writeUtf(value.descriptionId());
+                buf.writeUtf(value.machineId());
             }
 
             @Override
@@ -505,7 +551,29 @@ public final class WirelessMachineUI {
         }
 
         Component text() {
-            return Component.translatable(MEMBER_ROW, Component.translatable(descriptionId), posText(), dimension);
+            return Component.translatable(MEMBER_ROW, name(), posText(), dimension);
+        }
+
+        @Nullable
+        private MachineDefinition definition() {
+            var id = ResourceLocation.tryParse(machineId);
+            return id == null ? null : GTRegistries.MACHINES.get(id);
+        }
+
+        /** 机器名；定义已不存在时显示 id。 */
+        Component name() {
+            var definition = definition();
+            return definition == null ? Component.literal(machineId) : Component.translatable(definition.getDescriptionId());
+        }
+
+        ItemStack icon() {
+            var definition = definition();
+            return definition == null ? ItemStack.EMPTY : definition.asStack();
+        }
+
+        /** 第二行：坐标与维度。 */
+        Component location() {
+            return Component.literal(posText() + "  " + dimension);
         }
     }
 
@@ -517,7 +585,7 @@ public final class WirelessMachineUI {
                     var self = member.self();
                     var level = self.getLevel();
                     var dimension = level == null ? "" : level.dimension().location().toString();
-                    return new MemberKey(dimension, self.getPos(), self.getDefinition().getDescriptionId());
+                    return new MemberKey(dimension, self.getPos(), self.getDefinition().getId().toString());
                 })
                 .sorted(Comparator.comparing(MemberKey::dimension).thenComparing(MemberKey::pos))
                 .toList();
@@ -530,17 +598,28 @@ public final class WirelessMachineUI {
         return 31 * hub.membershipStamp() + (canView(ctx, machine) ? 1 : 0);
     }
 
-    /** 成员行：只读文字，客户端点击在聊天栏输出一条可点的传送命令（不发包）。 */
+    /**
+     * 成员行：左侧 16 的机器图标，右侧两行小字（机器名 / 坐标与维度），宽度由列表拉伸、文字截断时悬停看全文。
+     * 只读，客户端点击在聊天栏输出一条可点的传送命令（不发包）。
+     */
     private static final class MemberRow extends UIElement {
+
+        private static final int ICON = 16;
 
         private final MemberKey key;
 
-        private MemberRow(int width, MemberKey key) {
+        private MemberRow(MemberKey key) {
             this.key = key;
-            var text = TextLine.constant(width, key.text()).setColor(UITheme.PANEL_TEXT);
-            text.setHoverTooltips(key.text(), Component.translatable(MEMBER_HINT));
-            layout(l -> l.column().size(width, UISizes.CONTROL_HEIGHT).alignCenter().paddingTop((UISizes.CONTROL_HEIGHT - TextLine.HEIGHT) / 2));
-            addChild(text);
+            layout(l -> l.row().height(MEMBER_ROW_HEIGHT).gapAll(UISizes.GAP).alignCenter());
+            var tooltips = new Component[] { key.name(), key.location(), Component.translatable(MEMBER_HINT) };
+            var icon = ItemView.of(key.icon(), ICON);
+            icon.setHoverTooltips(tooltips);
+            var name = TextLine.constant(LayoutStyle.AUTO, key.name()).setSmall().setColor(UITheme.PANEL_TEXT);
+            name.setHoverTooltips(tooltips);
+            var location = TextLine.constant(LayoutStyle.AUTO, key.location()).setSmall().setColor(UITheme.TEXT_SECONDARY);
+            location.setHoverTooltips(tooltips);
+            var lines = new UIElement().layout(l -> l.column().flex(1).gapAll(2)).addChildren(name, location);
+            addChildren(icon, lines);
         }
 
         @Override
@@ -590,7 +669,7 @@ public final class WirelessMachineUI {
      * 所有者与成员只下发给能查看该网络的玩家（{@link #canView}），否则显示"—"。
      */
     private static StatusPanel statusPanel(WirelessMachine machine, WirelessUIContext ctx, boolean withNetwork) {
-        var panel = new StatusPanel(UISizes.CONTENT_WIDTH);
+        var panel = new StatusPanel();
         // 最近 3 秒内的操作结果优先显示在状态行（成功绿灯、失败红灯），之后回到连接状态；悬停看完整原因
         panel.addLine(LINE_STATE, () -> ctx.stateText(() -> stateText(ctx, machine)))
                 .level(() -> ctx.stateLevel(() -> stateLevel(ctx, machine)))

@@ -1,17 +1,20 @@
 package com.gtocore.common.machine.mana;
 
+import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.api.machine.mana.feature.IWirelessManaContainerHolder;
 import com.gtolib.api.wireless.WirelessManaContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.UIElement;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,9 +33,7 @@ import appbot.ae2.ManaKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import gripe._90.arseng.me.key.SourceKey;
 import lombok.Getter;
 import lombok.Setter;
@@ -157,17 +158,26 @@ public final class MEManaInterface extends MetaMachine implements
         storageMounts.mount(this);
     }
 
+    /// 优先级范围
+    private static final int PRIORITY_LIMIT = 100000000;
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this::isOnline, getTitle(), widget, buildPage());
+    }
+
     @Override
     public Widget createUIWidget() {
-        final int before = priority;
-        var intWidget = new IntInputWidget(this::getPriority, this::setPriority);
-        intWidget.setMax(100000000);
-        intWidget.setMin(-100000000);
-        intWidget.setValue(before);
-        return new WidgetGroup(0, 0, 100, 20)
-                .addWidget(intWidget)
-                .addWidget(new LabelWidget(24, -16, () -> "gui.ae2.Priority")
-                        .setHoverTooltips("gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
+        return buildPage();
+    }
+
+    /** 页面：AE 优先级（悬停看提取 / 存入优先级说明）。 */
+    private UIElement buildPage() {
+        var section = UIElement.section();
+        section.addChild(MEPartUI.numberRow("gui.ae2.Priority",
+                MEPatternPartUI.intField(0, this::getPriority, value -> setPriority(Math.min(value, PRIORITY_LIMIT)), -PRIORITY_LIMIT),
+                "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
+        return MEPartUI.page().addChild(section);
     }
 
     private void setPriority(int integer) {

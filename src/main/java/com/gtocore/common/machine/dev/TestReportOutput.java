@@ -3,9 +3,9 @@ package com.gtocore.common.machine.dev;
 import com.gtocore.api.report.*;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.network.chat.Component;
 
@@ -23,14 +23,7 @@ public class TestReportOutput extends MetaMachine implements IFancyUIMachine {
 
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 182 + 8, 117 + 8);
-        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 182, 117)
-                .setBackground(GuiTextures.DISPLAY)
-                .addWidget(new LabelWidget(4, 5, self().getBlockState().getBlock().getDescriptionId()))
-                .addWidget(new ComponentPanelWidget(4, 17, this::addDisplayText).setMaxWidthLimit(150).clickHandler(this::handleDisplayClick)));
-
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick);
     }
 
     private void addDisplayText(List<Component> textList) {

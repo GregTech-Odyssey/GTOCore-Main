@@ -7,6 +7,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -48,7 +49,7 @@ public final class PatternModifierProBehavior implements IItemUIFactory, IFancyU
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
-        return new ModularUI(206, 124, heldItemHolder, player).widget(new FancyMachineUIWidget(this, 206, 124)).background(GuiTextures.BACKGROUND);
+        return new ModularUI(206, 124, heldItemHolder, player).widget(new MachineWindow(this));
     }
 
     private void setAe2PatternGeneratorAppliedNumber(String s) {

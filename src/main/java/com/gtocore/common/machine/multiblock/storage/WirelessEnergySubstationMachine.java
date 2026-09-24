@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.storage;
 
+import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.hud.HUDConfigurator;
 import com.gtocore.common.block.WirelessEnergyUnitBlock;
@@ -14,7 +15,6 @@ import com.gtolib.api.recipe.TierDataKey;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyInfoProvider;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -194,7 +194,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         super.attachConfigurators(configuratorPanel);
         HUDConfigurator c;
         configuratorPanel.attachConfigurators(
-                c = new HUDConfigurator(GuiTextures.LIGHT_ON, GuiTextures.LIGHT_OFF));
+                c = new HUDConfigurator(GTOGuiTextures.HUD_ON, GTOGuiTextures.HUD_OFF));
         if (isRemote()) c.setHudInstance("wireless_energy_hud");
     }
 

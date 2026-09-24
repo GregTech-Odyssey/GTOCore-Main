@@ -1,8 +1,5 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.window.MachineWindow;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
@@ -10,6 +7,8 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;

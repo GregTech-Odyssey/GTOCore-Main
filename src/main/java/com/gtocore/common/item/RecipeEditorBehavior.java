@@ -42,6 +42,7 @@ import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.integration.ae2.gui.widget.AETextInputButtonWidget;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -199,7 +200,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
-        return new ModularUI(176, 166, holder, entityPlayer).widget(new FancyMachineUIWidget(this, 176, 166));
+        return new ModularUI(176, 166, holder, entityPlayer).widget(new MachineWindow(this));
     }
 
     @Override

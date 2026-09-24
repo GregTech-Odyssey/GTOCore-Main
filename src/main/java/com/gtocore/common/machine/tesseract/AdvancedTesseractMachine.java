@@ -20,6 +20,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -131,7 +132,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         IFancyUIMachine.super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(
-                GuiTextures.LIGHT_ON, GuiTextures.LIGHT_ON, () -> false,
+                WidgetIcons.HIGHLIGHT, WidgetIcons.HIGHLIGHT, () -> false,
                 (clickData, pressed) -> {
                     if (clickData.isRemote && getLevel() != null) {
                         HIGHLIGHTS.add(poss.stream().map(BlockPos::asLong).collect(ImmutableList.toImmutableList()), 200);

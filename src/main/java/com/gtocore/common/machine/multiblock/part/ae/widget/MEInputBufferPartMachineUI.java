@@ -1,13 +1,13 @@
 package com.gtocore.common.machine.multiblock.part.ae.widget;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.Switch;
-import com.gtocore.api.gui.ui.elements.TextField;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
 import com.gtocore.common.machine.multiblock.part.ae.MEInputBufferPartMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.network.chat.Component;
 
@@ -26,11 +26,7 @@ public final class MEInputBufferPartMachineUI {
 
         var itemHandlers = slot.itemUiHandlers;
         var items = MEPatternPartUI.section(column, ITEM_SPECIAL);
-        MEPatternPartUI.slotRows(items, itemHandlers.length, i -> {
-            var slotWidget = new SlotWidget(itemHandlers[i], i, 0, 0, true, true);
-            slotWidget.setBackgroundTexture(UITheme.ITEM_SLOT);
-            return slotWidget;
-        });
+        MEPatternPartUI.slotRows(items, itemHandlers.length, i -> ItemSlot.of(itemHandlers[i], i));
 
         MEPatternPartUI.fluidSlots(MEPatternPartUI.section(column, FLUID_SPECIAL), slot.getFluidUiHandlers(), null);
 
@@ -54,7 +50,8 @@ public final class MEInputBufferPartMachineUI {
                         Switch.of(() -> slot.minThreshold >= 0, enabled -> slot.setMinThreshold(enabled ? 0 : -1))),
                 UIElement.row(TextField.HEIGHT).layout(l -> l.width(width)).addChild(threshold),
                 MEPatternPartUI.labeledRow(width, EMITTING_CRAFTING_MODE, EMITTING_CRAFTING_MODE_TOOLTIP,
-                        Switch.of(slot::isEmitterMode, slot::setEmitterMode)),
+                        Switch.of(slot::isEmitterMode, slot::setEmitterMode)
+                                .disabled(() -> !slot.canUseEmitterMode(), EMITTING_CRAFTING_MODE_NEED_PATTERN)),
                 MEPatternPartUI.labeledRow(width, REQUEST_CRAFTING_WHEN_INSUFFICIENT, null,
                         Switch.of(() -> slot.useRequest, slot::setUseRequest)));
 
@@ -64,9 +61,10 @@ public final class MEInputBufferPartMachineUI {
         multiplier.addChild(multiplierField);
 
         var config = MEPatternPartUI.section(column, PATTERN_CONFIGURATION);
-        var itemConfig = new AEItemConfigWidget(0, 0, slot.exportOnlyItemList);
+        // 每行 9 格，与上方物品、流体输入槽对齐
+        var itemConfig = new AEItemConfigWidget(0, 0, slot.exportOnlyItemList, UISizes.SLOTS_PER_ROW);
         itemConfig.setShowAmount(true);
-        var fluidConfig = new AEFluidConfigWidget(0, 0, slot.exportOnlyFluidList);
+        var fluidConfig = new AEFluidConfigWidget(0, 0, slot.exportOnlyFluidList, UISizes.SLOTS_PER_ROW);
         fluidConfig.setShowAmount(true);
         config.addChildren(itemConfig, fluidConfig);
     }

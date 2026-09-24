@@ -1,11 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.Button;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
-import com.gtocore.api.gui.ui.window.MachineWindow;
-import com.gtocore.api.gui.ui.window.Popup;
+import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.MEPatternViewSlotWidget;
 import com.gtocore.eio_travel.logic.TravelSavedData;
@@ -20,7 +15,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
@@ -34,6 +28,12 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 import com.gregtechceu.gtceu.utils.asm.EmptyMethodChecker;
 
@@ -72,7 +72,6 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
 import org.jetbrains.annotations.Nullable;
@@ -115,6 +114,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     public static final String CIRCUIT_HINT = "gtocore.pattern_part.circuit_hint";
     @RegisterLanguage(cn = "-1 表示不放电路；0~32 为对应编号的编程电路", en = "-1 means no circuit; 0-32 select the programmed circuit with that number")
     public static final String CIRCUIT_NONE = "gtocore.pattern_part.circuit_none";
+    @RegisterLanguage(cn = "电路由右侧的编号设置，不能直接放取", en = "The circuit is set by the number on the right; it cannot be placed or taken directly")
+    public static final String CIRCUIT_READ_ONLY = "gtocore.pattern_part.circuit_read_only";
     @RegisterLanguage(cn = "重置缓存", en = "Recache")
     public static final String CLEAR_MACHINE_RECIPE_CACHE = "gtceu.ae.pattern_part_machine.clear_machine_recipe_cache";
     @RegisterLanguage(cn = "重置机器的所有配方缓存，不会改变样板的任何数据内容", en = "Clear all recipe cache of the machine, will not change any data content in pattern")
@@ -164,7 +165,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @Nullable
     private Boolean hasClearButtons;
 
-    /// 当前页码；翻页按钮在服务端改它，经机器同步驱动两端的 {@link com.gtocore.api.gui.ui.elements.PageView} 重建
+    /// 当前页码；翻页按钮在服务端改它，经机器同步驱动两端的 {@link com.gregtechceu.gtceu.uipro.elements.PageView} 重建
     @SyncToClient
     private final IntNotifiableHolder newPageField = IntNotifiableHolder.create();
 
@@ -461,8 +462,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @Override
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         var toggle = new IFancyConfiguratorButton.Toggle(
-                new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true).copy().getSubTexture(0.0, 0.0, 1.0, 0.5)),
-                new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true).copy().getSubTexture(0.0, 0.5, 1.0, 0.5)),
+                GTOGuiTextures.TRAVEL_OFF,
+                GTOGuiTextures.TRAVEL_ON,
                 () -> showInTravelNetwork,
                 (clickData, show) -> {
                     showInTravelNetwork = show;

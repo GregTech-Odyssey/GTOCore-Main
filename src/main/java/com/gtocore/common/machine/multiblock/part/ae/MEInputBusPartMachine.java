@@ -6,6 +6,7 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.AEItemConfigWidget;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
@@ -16,6 +17,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
@@ -34,10 +36,7 @@ import appeng.api.storage.MEStorage;
 import gto_ae.helpers.facility_management.WorkingStatus;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.Position;
 import lombok.Getter;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -186,17 +185,14 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
     }
 
     @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this, widget, MEPartUI.page().addChild(createUIWidget()));
+    }
+
+    /** 配置网格：每行 9 格（上：配置 / 下：库存）。 */
+    @Override
     public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(new Position(0, 0));
-        // ME Network status
-        group.addWidget(new LabelWidget(3, 0, () -> this.getOnlineField() ?
-                "gtceu.gui.me_network.online" :
-                "gtceu.gui.me_network.offline"));
-
-        // Config slots
-        group.addWidget(new AEItemConfigWidget(3, 10, this.aeItemHandler));
-
-        return group;
+        return new AEItemConfigWidget(0, 0, this.aeItemHandler, UISizes.SLOTS_PER_ROW);
     }
 
     ////////////////////////////////

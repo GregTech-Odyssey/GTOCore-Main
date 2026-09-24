@@ -42,7 +42,6 @@
     "sodium.SodiumWorldRendererMixin"
   ],
   "mixins": [
-    "ldlib.ModularUIContainerMixin",
     "adastra.GasTankItemMixin",
     "adastra.ModBlocksMixin",
     "adastra.ModItemsMixin",

@@ -9,9 +9,9 @@ import com.gtolib.api.data.GTODimensions;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -61,12 +61,7 @@ public final class PerformanceMonitorMachine extends MetaMachine implements IFan
 
     @Override
     public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(0, 0, 182 + 8, 117 + 8);
-        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 182, 117).setBackground(GuiTextures.DISPLAY)
-                .addWidget(new LabelWidget(4, 5, self().getBlockState().getBlock().getDescriptionId()))
-                .addWidget(new ComponentPanelWidget(4, 17, this::addDisplayText).setMaxWidthLimit(150).clickHandler(this::handleDisplayClick)));
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick);
     }
 
     private void addDisplayText(@NotNull List<Component> textList) {

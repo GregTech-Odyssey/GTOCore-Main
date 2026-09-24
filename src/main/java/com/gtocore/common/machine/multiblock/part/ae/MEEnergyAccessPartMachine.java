@@ -2,14 +2,22 @@ package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 
@@ -22,14 +30,18 @@ import appeng.api.networking.energy.IEnergyService;
 import appeng.api.networking.events.GridPowerStorageStateChanged;
 import appeng.me.service.EnergyService;
 
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 
+@DataGeneratorScanned
 public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPowerStorage {
+
+    @RegisterLanguage(cn = "能量缓存", en = "Energy buffer")
+    private static final String LINE_ENERGY = "gtocore.machine.me_energy_access.line.energy";
+    @RegisterLanguage(cn = "未接入多方块", en = "Not attached to a multiblock")
+    private static final String VALUE_NO_CONTROLLER = "gtocore.machine.me_energy_access.no_controller";
 
     /**
      * AE2 {@link EnergyService} 的 providerPowerSum 字段。它只在节点 addNode/removeNode 时更新，
@@ -217,9 +229,21 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     }
 
     @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this, widget, buildPage());
+    }
+
+    @Override
     public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(0, 0, 170, 65);
-        group.addWidget(new LabelWidget(5, 0, () -> this.getOnlineField() ? "gtceu.gui.me_network.online" : "gtceu.gui.me_network.offline"));
-        return group;
+        return buildPage();
+    }
+
+    /** 页面：借给 AE 网络的能量缓存（状态面板）；没有接入多方块时黄灯提示。 */
+    private UIElement buildPage() {
+        var status = new StatusPanel();
+        status.addLine(LINE_ENERGY, () -> controller == null || isInValid() ? Component.translatable(VALUE_NO_CONTROLLER) :
+                Component.literal(FormattingUtil.formatNumbers(getEnergyStored()) + " / " + FormattingUtil.formatNumbers(getEnergyCapacity()) + " EU"))
+                .level(() -> controller == null || isInValid() ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL);
+        return MEPartUI.page().addChild(status);
     }
 }

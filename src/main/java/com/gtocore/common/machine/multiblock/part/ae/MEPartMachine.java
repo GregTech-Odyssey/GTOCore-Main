@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.gui.InitFancyMachineUIWidget;
 import com.gtocore.integration.ae.wireless.WirelessMachine;
 
 import com.gtolib.api.machine.feature.IMEPartMachine;
@@ -16,6 +15,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -54,7 +54,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public abstract class MEPartMachine extends WorkableTieredIOPartMachine implements WirelessMachine, IMEPartMachine, IDistinctPart, IMachineLife {
 
-    public static final int CONFIG_SIZE = 16;
+    /// ME 输入总线/仓的配置格数：界面每行 9 格、两行（2026-09 由 16 改为 18）。
+    /// 旧存档是 16 格：配置/库存数组按下标读入、多出的格子留空（DataSyncLib 数组读取取两者较短的长度），无需额外迁移；
+    /// 数据棒复制的旧配置同理，缺的键视为空
+    public static final int CONFIG_SIZE = 18;
 
     // ==================== AE2 Grid ====================
     @SaveToDisk(key = "nodeHolder")
@@ -235,7 +238,7 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 166, this, entityPlayer).widget(new InitFancyMachineUIWidget(this, 176, 166));
+        return new ModularUI(176, 166, this, entityPlayer).widget(new MachineWindow(this));
     }
 
     @Override

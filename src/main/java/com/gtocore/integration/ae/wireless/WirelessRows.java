@@ -1,11 +1,11 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.data.SyncValue;
-import com.gtocore.api.gui.ui.data.SyncValueHost;
-import com.gtocore.api.gui.ui.elements.TextLine;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.data.SyncValueHost;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,9 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.utils.Position;
-import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -30,7 +27,7 @@ import java.util.function.Supplier;
  * 由服务端决定内容的纵向列表，两端对称增删。
  * <p>
  * <b>行下标在一次界面生命周期内稳定</b>：只追加、不删除、不重排。某个 key 从数据源里消失时，它的行原地隐藏
- * （{@code setVisible(false)} + {@code setActive(false)}，不占位置）；再次出现时原地恢复。LDLib1 的客户端操作按子控件下标路由，
+ * （{@link UIElement#setDisplay} 隐藏，{@code display: none} 不占位置）；再次出现时原地恢复。LDLib1 的客户端操作按子控件下标路由，
  * 下标不变就保证了客户端对"旧列表"里某一行的点击，在服务端一定落到同一个 key 的行上，不会点中别的条目。
  * 每次打开界面都新建本控件，所以隐藏行只存在于当次界面，重开后是一份干净的列表。
  * <p>
@@ -50,18 +47,16 @@ final class WirelessRows<K> extends UIElement {
     /** 行结构更新包：避开 WidgetGroup 自用的 1、2 与本控件 SyncValueHost 的 {@code ID_BASE + i}。 */
     private static final int ROWS_ID = SyncValueHost.ID_BASE - 1;
 
-    private final int width;
     private final boolean remote;
     private final SyncValue.Codec<K> codec;
     private final Supplier<List<K>> source;
     private final IntSupplier version;
-    private final Function<K, Widget> rowFactory;
+    private final Function<K, UIElement> rowFactory;
     @Nullable
     private final Component emptyText;
     private final List<K> keys = new ArrayList<>();
     private boolean built;
     private int builtVersion;
-    private boolean placing;
 
     /**
      * @param remote     是否客户端
@@ -70,16 +65,17 @@ final class WirelessRows<K> extends UIElement {
      * @param rowFactory 按 key 建一行，两端都会调用，同一 key 必须产生同样结构的控件
      * @param emptyText  没有可见行时显示的提示（客户端绘制），可为 null
      */
-    WirelessRows(int width, boolean remote, SyncValue.Codec<K> codec, Supplier<List<K>> source, IntSupplier version,
-                 Function<K, Widget> rowFactory, @Nullable Component emptyText) {
-        this.width = width;
+    WirelessRows(boolean remote, SyncValue.Codec<K> codec, Supplier<List<K>> source, IntSupplier version,
+                 Function<K, UIElement> rowFactory, @Nullable Component emptyText) {
         this.remote = remote;
         this.codec = codec;
         this.source = source;
         this.version = version;
         this.rowFactory = rowFactory;
         this.emptyText = emptyText;
-        setSize(new Size(width, emptyText == null ? 0 : TextLine.HEIGHT));
+        // 纵向排行，行宽被拉伸到列表宽；隐藏的行 display: none 不占位
+        layout(l -> l.column().gapAll(UISizes.GAP));
+        updateEmptyHeight();
     }
 
     @Override
@@ -98,40 +94,17 @@ final class WirelessRows<K> extends UIElement {
     }
 
     private void setRowVisible(int index, boolean visible) {
-        var row = widgets.get(index);
-        row.setVisible(visible);
-        row.setActive(visible);
+        ((UIElement) widgets.get(index)).setDisplay(visible);
     }
 
-    // ==================== 布局：隐藏行不占位 ====================
-
-    @Override
-    protected void recomputeLayout() {
-        if (placing) return;
-        placing = true;
-        try {
-            int y = 0;
-            boolean any = false;
-            for (var widget : widgets) {
-                if (widget.isVisible()) {
-                    if (any) y += UISizes.GAP;
-                    any = true;
-                    widget.setSelfPosition(new Position(0, y));
-                    y += widget.getSizeHeight();
-                } else {
-                    widget.setSelfPosition(new Position(0, y));
-                }
-            }
-            int height = any || emptyText == null ? y : TextLine.HEIGHT;
-            if (getSizeWidth() != width || getSizeHeight() != height) setSize(new Size(width, height));
-        } finally {
-            placing = false;
-        }
+    /// 没有可见行时留出一行高度画空提示
+    private void updateEmptyHeight() {
+        if (emptyText != null) layout(l -> l.minHeight(hasVisibleRow() ? 0 : TextLine.HEIGHT));
     }
 
     private boolean hasVisibleRow() {
         for (var widget : widgets) {
-            if (widget.isVisible()) return true;
+            if (widget instanceof UIElement row && row.isDisplayed()) return true;
         }
         return false;
     }
@@ -142,7 +115,7 @@ final class WirelessRows<K> extends UIElement {
         super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
         if (emptyText != null && !hasVisibleRow()) {
             var font = Minecraft.getInstance().font;
-            graphics.drawString(font, UITheme.clip(font, emptyText.getString(), width), getPositionX(), getPositionY(), UITheme.TEXT_SECONDARY, false);
+            graphics.drawString(font, UITheme.clip(font, emptyText.getString(), getSizeWidth()), getPositionX(), getPositionY(), UITheme.TEXT_SECONDARY, false);
         }
     }
 
@@ -153,7 +126,7 @@ final class WirelessRows<K> extends UIElement {
         buffer.writeVarInt(keys.size());
         for (int i = 0; i < keys.size(); i++) {
             codec.write(buffer, keys.get(i));
-            buffer.writeBoolean(widgets.get(i).isVisible());
+            buffer.writeBoolean(((UIElement) widgets.get(i)).isDisplayed());
         }
         super.writeInitialData(buffer);
     }
@@ -165,7 +138,7 @@ final class WirelessRows<K> extends UIElement {
             addRow(codec.read(buffer));
             setRowVisible(i, buffer.readBoolean());
         }
-        recomputeLayout();
+        updateEmptyHeight();
         super.readInitialData(buffer);
     }
 
@@ -184,7 +157,7 @@ final class WirelessRows<K> extends UIElement {
         boolean changed = false;
         for (int i = 0; i < keys.size(); i++) {
             visible[i] = latest.remove(keys.get(i));
-            if (visible[i] != widgets.get(i).isVisible()) changed = true;
+            if (visible[i] != ((UIElement) widgets.get(i)).isDisplayed()) changed = true;
         }
         var added = new ArrayList<>(latest);
         if (!changed && added.isEmpty()) return;
@@ -200,7 +173,7 @@ final class WirelessRows<K> extends UIElement {
     private void apply(boolean[] visible, List<K> added) {
         for (int i = 0; i < visible.length; i++) setRowVisible(i, visible[i]);
         for (var key : added) addRow(key);
-        recomputeLayout();
+        updateEmptyHeight();
     }
 
     @Override

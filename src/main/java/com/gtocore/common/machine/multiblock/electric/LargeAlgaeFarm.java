@@ -19,6 +19,10 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTSoundEntries;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.RichText;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -35,9 +39,7 @@ import appeng.api.networking.security.IActionSource;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
@@ -212,11 +214,8 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
 
     @Override
     public @NotNull Widget createUIWidget() {
-        WidgetGroup widget = (WidgetGroup) super.createUIWidget();
-        widget.getWidgetsByType(DraggableScrollableWidgetGroup.class).stream().findAny()
-                .ifPresent(ds -> ds.setSizeHeight(ds.getSizeHeight() - 55));
-        widget.addWidget(new StatisticWidget(8, 69, 174, 50));
-        return widget;
+        // 状态显示窗下方加产量统计区块
+        return ((UIElement) super.createUIWidget()).addChild(new StatisticWidget());
     }
 
     private void updateStatistics(Algae algae, long amount) {
@@ -248,13 +247,16 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
         return getRecipeBuilder().duration(200).EUt(V[tier] / 2).build();
     }
 
-    private class StatisticWidget extends WidgetGroup {
+    /** 产量统计：状态显示窗样式的区块，第一行选择藻类（可点击），下面是所选藻类最近的产量折线图。 */
+    private class StatisticWidget extends UIElement {
 
-        ComponentPanelWidget panelWidget;
+        private static final int CHART_HEIGHT = 40;
 
-        private StatisticWidget(int x, int y, int width, int height) {
-            super(x, y, width, height);
-            addWidget(panelWidget = new ComponentPanelWidget(3, 3, l -> l.add(
+        private StatisticWidget() {
+            layout(l -> l.column().gapAll(UISizes.GAP).paddingAll(UITheme.PANEL_PADDING));
+            setBackground(UITheme.STATUS_PANEL);
+            var selector = new RichText();
+            selector.textSupplier(LargeAlgaeFarm.this.isRemote() ? null : l -> l.add(
                     Component.translatable("config.jade.display_mode").append(" ")
                             .append(Arrays.stream(Algae.values()).map(algae -> {
                                 MutableComponent m = ((MutableComponent) algae.getDisplayName());
@@ -262,8 +264,9 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
                                     m.withStyle(ChatFormatting.UNDERLINE);
                                 }
                                 return ComponentPanelWidget.withButton(m, "select_algae_" + algae.ordinal());
-                            }).collect(GTOUtils.joiningComponent(Component.literal(" "))))))
-                    .clickHandler(this::handleDisplayClick));
+                            }).collect(GTOUtils.joiningComponent(Component.literal(" "))))));
+            selector.clickHandler(this::handleDisplayClick);
+            addChildren(selector, new Chart());
         }
 
         private void handleDisplayClick(String componentData, ClickData clickData) {
@@ -275,24 +278,25 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
             }
         }
 
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            graphics.pose().pushPose();
-            graphics.pose().translate(getPositionX(), getPositionY(), 0f);
-            // LineChartHelper.INSTANCE.drawLineChart(
-            // graphics,
-            // statistics.getOrDefault(selectedAlgae, LongList.of()),
-            // getSizeWidth(),
-            // getSizeHeight(),
-            // selectedAlgae.getColor() | 0xFF000000);
-            LineChartHelper.INSTANCE.builder(graphics, statistics.getOrDefault(selectedAlgae, LongList.of()))
-                    .width(getSizeWidth())
-                    .height(getSizeHeight())
-                    .lineColor(selectedAlgae.getColor() | 0xFF000000)
-                    .draw();
-            graphics.pose().popPose();
-            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+        /** 折线图：宽度铺满区块内容，高 {@link #CHART_HEIGHT}。 */
+        private final class Chart extends Widget {
+
+            private Chart() {
+                super(0, 0, UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING, CHART_HEIGHT);
+            }
+
+            @Override
+            @OnlyIn(Dist.CLIENT)
+            public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+                graphics.pose().pushPose();
+                graphics.pose().translate(getPositionX(), getPositionY(), 0f);
+                LineChartHelper.INSTANCE.builder(graphics, statistics.getOrDefault(selectedAlgae, LongList.of()))
+                        .width(getSizeWidth())
+                        .height(getSizeHeight())
+                        .lineColor(selectedAlgae.getColor() | 0xFF000000)
+                        .draw();
+                graphics.pose().popPose();
+            }
         }
 
         @Override

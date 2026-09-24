@@ -6,8 +6,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtolib.api.recipe.RecipeHelper;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
@@ -15,6 +13,10 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -106,12 +108,9 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
 
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 182 + 8, 117 + 8);
-        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 182, 117).setBackground(GuiTextures.DISPLAY).addWidget(new LabelWidget(4, 5, self().getBlockState().getBlock().getDescriptionId())).addWidget(new ComponentPanelWidget(4, 17, this::addDisplayText).setMaxWidthLimit(150).clickHandler(this::handleDisplayClick)));
-        var size = group.getSize();
-        group.addWidget(new SlotWidget(inventory.storage, 0, size.width - 30, size.height - 30, true, true).setBackground(GuiTextures.SLOT));
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        // 状态显示窗下方右对齐放放射源槽
+        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick)
+                .addChild(UIElement.row(UISizes.SLOT).addChildren(UIElement.flexSpacer(), ItemSlot.of(inventory.storage, 0)));
     }
 
     private void addDisplayText(List<Component> textList) {

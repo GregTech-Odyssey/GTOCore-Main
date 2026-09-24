@@ -1,7 +1,5 @@
 package com.gtocore.common.item;
 
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.window.MachineWindow;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.integration.ae.wireless.WirelessConfiguratorUI;
 import com.gtocore.integration.ae.wireless.WirelessMachine;
@@ -14,6 +12,8 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

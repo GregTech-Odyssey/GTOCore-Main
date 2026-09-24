@@ -1,16 +1,19 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.trait.MEOutputFluidHandler;
 import com.gtolib.api.machine.trait.MEOutputItemHandler;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
+import com.gregtechceu.gtceu.uipro.UIElement;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 
@@ -18,17 +21,20 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IGridNodeListener;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.Position;
 import lombok.Getter;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class MEDualOutputPartMachine extends StatusTrackedMEPartMachine {
+
+    @RegisterLanguage(cn = "等待送入网络的物品", en = "Items waiting for the network")
+    private static final String WAITING_ITEMS = "gtocore.machine.me_dual_output.waiting_items";
+    @RegisterLanguage(cn = "等待送入网络的流体", en = "Fluids waiting for the network")
+    private static final String WAITING_FLUIDS = "gtocore.machine.me_dual_output.waiting_fluids";
 
     @SaveToDisk
     private final KeyStorage internalBuffer;
@@ -109,12 +115,19 @@ public class MEDualOutputPartMachine extends StatusTrackedMEPartMachine {
     }
 
     @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this::isOnline, getTitle(), widget, buildPage());
+    }
+
+    @Override
     public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(new Position(0, 0));
-        group.addWidget(new LabelWidget(5, 0, () -> this.isOnline() ? "gtceu.gui.me_network.online" : "gtceu.gui.me_network.offline"));
-        group.addWidget(new LabelWidget(5, 10, "gtceu.gui.waiting_list"));
-        group.addWidget(new AEListGridWidget.Item(5, 20, 3, this.internalBuffer));
-        group.addWidget(new AEListGridWidget.Fluid(5, 80, 3, this.internalTankBuffer));
-        return group;
+        return buildPage();
+    }
+
+    /** 页面：物品、流体两块"等待输出"网格（每行 9 格，只读）。 */
+    private UIElement buildPage() {
+        return MEPartUI.page().addChildren(
+                MEPartUI.waitingList("me.dual_output.items", this.internalBuffer, false, WAITING_ITEMS),
+                MEPartUI.waitingList("me.dual_output.fluids", this.internalTankBuffer, true, WAITING_FLUIDS));
     }
 }

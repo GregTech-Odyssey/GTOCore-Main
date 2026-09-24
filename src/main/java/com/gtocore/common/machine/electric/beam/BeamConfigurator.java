@@ -5,6 +5,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.chat.Component;
 
@@ -70,7 +71,7 @@ final class BeamConfigurator implements IFancyConfigurator {
 
     @Override
     public com.lowdragmc.lowdraglib.gui.texture.IGuiTexture getIcon() {
-        return GuiTextures.INFO_ICON;
+        return WidgetIcons.INFO;
     }
 
     @Override

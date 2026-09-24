@@ -10,10 +10,10 @@ import com.gtolib.api.beam.BeamProperties;
 import com.gtolib.api.beam.IBeamOperator;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -21,11 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.util.ArrayList;
@@ -92,13 +88,7 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
 
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 190, 125);
-        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 182, 117)
-                .setBackground(GuiTextures.DISPLAY)
-                .addWidget(new LabelWidget(4, 5, self().getBlockState().getBlock().getDescriptionId()))
-                .addWidget(new ComponentPanelWidget(4, 17, this::addDisplayText).setMaxWidthLimit(170)));
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        return MachineDisplay.page(this, this::addDisplayText, null);
     }
 
     private void addDisplayText(List<Component> textList) {

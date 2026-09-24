@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
 import com.gtocore.api.data.NeutronSeries;
+import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.machine.multiblock.part.NeutronIrradiationPartMachine;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
@@ -9,7 +10,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -120,10 +119,8 @@ public class NeutronIrradiationChamber extends NoEnergyMultiblockMachine {
     public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(
-                new GuiTextureGroup(GuiTextures.TOGGLE_BUTTON_BACK.getSubTexture(0, 0.5, 1, 0.5),
-                        GuiTextures.DISTRIBUTION_MODE.getSubTexture(0, 0, 1, 1 / 3d)),
-                new GuiTextureGroup(GuiTextures.TOGGLE_BUTTON_BACK.getSubTexture(0, 0.5, 1, 0.5),
-                        GuiTextures.DISTRIBUTION_MODE.getSubTexture(0, 2 / 3d, 1, 1 / 3d)),
+                GTOGuiTextures.FLUX_AVG,
+                GTOGuiTextures.FLUX_MIN,
                 this::isReportsMinFlux, (cd, b) -> setReportsMinFlux(b)).setTooltipsSupplier(b -> Collections.singletonList(Component.translatable(b ? LANG_REPORTS_MIN_FLUX : LANG_REPORTS_AVG_FLUX))));
     }
 

@@ -6,7 +6,7 @@ import com.gtocore.common.item.TechTreeViewer;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -231,7 +231,7 @@ public final class TechTreeCommands {
         @Override
         public ModularUI createUI(Player player) {
             return new ModularUI(176, 166, this, player)
-                    .widget(new FancyMachineUIWidget(VIEWER, 176, 166));
+                    .widget(new MachineWindow(VIEWER));
         }
 
         @Override

@@ -9,8 +9,6 @@ import com.gtolib.utils.explosion.CylinderExplosion;
 import com.gtolib.utils.explosion.SphereExplosion;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -18,6 +16,8 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+import com.gregtechceu.gtceu.uiwidgets.inventory.SlotGridView;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -123,21 +123,8 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
     // 创建UI组件
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 182 + 8, 117 + 8);
-        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 182, 117)
-                .setBackground(GuiTextures.DISPLAY)
-                .addWidget(new LabelWidget(4, 5, self().getBlockState().getBlock().getDescriptionId()))
-                .addWidget(new ComponentPanelWidget(4, 17, this::addDisplayText).setMaxWidthLimit(150).clickHandler(this::handleDisplayClick)));
-
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 3; x++) {
-                int slotIndex = y * 3 + x;
-                group.addWidget(new SlotWidget(inventory, slotIndex, 133 + x * 18, 68 + y * 18, true, true).setBackground(GuiTextures.SLOT));
-            }
-        }
-
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        // 状态显示窗下方是 3×3 库存
+        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick).addChild(SlotGridView.items(inventory.storage));
     }
 
     private void addDisplayText(List<Component> textList) {

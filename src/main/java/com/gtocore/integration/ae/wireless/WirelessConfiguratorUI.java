@@ -1,11 +1,5 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.StatusLine;
-import com.gtocore.api.gui.ui.elements.StatusPanel;
-import com.gtocore.api.gui.ui.elements.TextLine;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
 import com.gtocore.common.item.MEWirelessMachineConfigurator;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -14,6 +8,13 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -25,7 +26,7 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * ME 无线机器配置器的手持界面（放在 {@link com.gtocore.api.gui.ui.window.MachineWindow} 里，单页、无背包）：
+ * ME 无线机器配置器的手持界面（放在 {@link com.gregtechceu.gtceu.uipro.window.MachineWindow} 里，单页、无背包）：
  * 目标网络、可用网络列表（[选择] 写入手中物品）、新建网络、状态行。
  * 列表、新建行与机器页共用 {@link WirelessMachineUI} 的片段。
  */
@@ -84,11 +85,11 @@ public final class WirelessConfiguratorUI {
 
     private static Widget createPage(Player player, InteractionHand hand) {
         var ctx = new WirelessUIContext(player, () -> player.tickCount);
-        int width = UISizes.CONTENT_WIDTH;
-        var root = UIElement.column(width).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+        // 至少标准内容宽，其余由布局决定：各区块拉伸到同宽，列表被拖宽时整页一起变宽
+        var root = new UIElement().layout(l -> l.column().minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
 
         // 目标网络：状态面板（目标网络 / 所有者 / 成员）
-        var target = new StatusPanel(width);
+        var target = new StatusPanel();
         // 最近 3 秒内的操作结果优先显示在第一行
         target.addLine(TARGET, () -> ctx.stateText(() -> selectedLine(ctx, hand))).level(() -> ctx.stateLevel(() -> selectedLevel(ctx, hand)));
         target.addLine(WirelessMachineUI.LINE_OWNER, () -> WirelessMachineUI.ownerValue(ctx, selected(ctx, hand)));
@@ -98,15 +99,15 @@ public final class WirelessConfiguratorUI {
         // 列表以外的高度：状态面板 3 行 + 网络区块固定部分 + 底部两行说明，各隔一个区块间距
         int otherHeight = StatusPanel.heightFor(3) + UISizes.SECTION_GAP + WirelessMachineUI.NETWORK_SECTION_FIXED +
                 UISizes.SECTION_GAP + 2 * TextLine.HEIGHT + UISizes.GAP;
-        root.addChild(WirelessMachineUI.networkSection(width, ctx, WirelessMachineUI.visibleRows(ctx, WirelessMachineUI.LIST_MIN_ROWS, otherHeight), SELECT, CLEAR,
+        // 配置器只从已有网络里选，不能新建（新建只在 ME 无线连接机里）
+        root.addChild(WirelessMachineUI.networkSection(ctx, "wireless.configurator.networks", WirelessMachineUI.maxRows(ctx, otherHeight, UISizes.CONTROL_HEIGHT), SELECT, CLEAR,
                 id -> id.equals(selectedId(ctx, hand)),
                 id -> select(ctx, hand, id),
                 from -> clear(ctx, hand),
-                () -> WirelessStatus.OK,
-                network -> select(ctx, hand, network.id())));
-        root.addChild(UIElement.column(width).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(width, HINT).setColor(UITheme.TEXT_SECONDARY),
-                TextLine.translatable(width, HINT_SNEAK).setColor(UITheme.TEXT_SECONDARY)));
+                null, null));
+        root.addChild(UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
+                TextLine.translatable(LayoutStyle.AUTO, HINT).setColor(UITheme.TEXT_SECONDARY),
+                TextLine.translatable(LayoutStyle.AUTO, HINT_SNEAK).setColor(UITheme.TEXT_SECONDARY)));
         return root;
     }
 

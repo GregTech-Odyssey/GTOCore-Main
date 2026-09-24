@@ -8,6 +8,7 @@ import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -53,7 +54,7 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
         return new ModularUI(176, 166, holder, entityPlayer)
-                .widget(new FancyMachineUIWidget(new ProviderUI(holder.getHand()), 176, 166));
+                .widget(new MachineWindow(new ProviderUI(holder.getHand())));
     }
 
     private record ProviderUI(InteractionHand hand) implements IFancyUIProvider {

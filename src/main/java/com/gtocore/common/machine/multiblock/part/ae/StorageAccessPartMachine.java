@@ -11,14 +11,15 @@ import com.gtolib.api.machine.part.AmountConfigurationPartMachine;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IControllable;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.gui.widget.LongInputWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.chat.Component;
 
@@ -34,10 +35,7 @@ import appeng.api.storage.StorageHelper;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -98,9 +96,32 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         current = 0;
     }
 
+    /// 优先级范围（与构造时传给基类的范围一致）
+    private static final long PRIORITY_MIN = -1000000L;
+    private static final long PRIORITY_MAX = 1000000L;
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this::isOnline, getTitle(), widget, buildPage());
+    }
+
     @Override
     public Widget createUIWidget() {
-        return ((WidgetGroup) super.createUIWidget()).addWidget(new LabelWidget(24, -16, () -> "gui.ae2.Priority"));
+        return buildPage();
+    }
+
+    /** 页面：一个设置区块，默认是 AE 优先级（悬停看提取 / 存入优先级说明）。 */
+    UIElement buildPage() {
+        var section = UIElement.section();
+        section.addChild(MEPartUI.numberRow("gui.ae2.Priority", MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
+                "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
+        return MEPartUI.page().addChild(section);
+    }
+
+    private void setPriority(long priority) {
+        current = Math.clamp(priority, PRIORITY_MIN, PRIORITY_MAX);
+        onAmountChange(current);
+        onChanged();
     }
 
     @Override
@@ -303,23 +324,24 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             mySrc = IActionSource.ofMachine(this);
         }
 
+        /** 页面：传输速率（每次最多搬运多少）。 */
         @Override
-        public Widget createUIWidget() {
-            var longInput = new LongInputWidget(() -> rate, (v) -> rate = v);
-            longInput.setMax(Long.MAX_VALUE);
-            longInput.setMin(0L);
-            return new WidgetGroup(0, 0, 100, 20).addWidget(longInput).addWidget(new LabelWidget(24, -16, () -> LANG_RATE_SETTING));
+        UIElement buildPage() {
+            var section = UIElement.section();
+            section.addChild(MEPartUI.numberRow(LANG_RATE_SETTING, MEPatternPartUI.longField(0, () -> rate, value -> {
+                rate = value;
+                onChanged();
+            }, 0L)));
+            return MEPartUI.page().addChild(section);
         }
 
         @Override
         public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
             super.attachConfigurators(configuratorPanel);
             configuratorPanel.attachConfigurators(toggle = new IFancyConfiguratorButton.Toggle(
-                    new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true).copy()
-                            .getSubTexture(0, 0, 1, 0.5)),
+                    WidgetIcons.IMPORT,
 
-                    new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.PROGRESS_BAR_SOLAR_STEAM.get(true).copy()
-                            .getSubTexture(0, 0.5, 1, 0.5)),
+                    WidgetIcons.EXPORT,
                     () -> export,
                     (cd, b) -> export = b
 

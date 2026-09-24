@@ -1,8 +1,5 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.Switch;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
 import com.gtocore.common.machine.multiblock.electric.AbstractMEPatternAssemblerMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -11,6 +8,9 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;

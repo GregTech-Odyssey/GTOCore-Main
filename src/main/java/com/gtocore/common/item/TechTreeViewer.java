@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +49,7 @@ public class TechTreeViewer implements IItemUIFactory, IFancyUIProvider {
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
         return new ModularUI(176, 166, heldItemHolder, player)
-                .widget(new FancyMachineUIWidget(this, 176, 166));
+                .widget(new MachineWindow(this));
     }
 
     @Override

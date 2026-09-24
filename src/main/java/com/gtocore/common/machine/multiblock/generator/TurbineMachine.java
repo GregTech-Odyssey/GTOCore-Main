@@ -33,6 +33,7 @@ import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.item.TurbineRotorBehaviour;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.RotorHolderPartMachine;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -271,7 +272,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     @Override
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(GTOGuiTextures.HIGH_SPEED_MODE.getSubTexture(0, 0.5, 1, 0.5), GTOGuiTextures.HIGH_SPEED_MODE.getSubTexture(0, 0, 1, 0.5), () -> highSpeedMode, (clickData, pressed) -> {
+        configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(GTOGuiTextures.HIGH_SPEED_OFF, GTOGuiTextures.HIGH_SPEED_ON, () -> highSpeedMode, (clickData, pressed) -> {
             for (RotorHolderPartMachine part : rotorHolderMachines) {
                 part.setRotorSpeed(0);
             }
@@ -298,7 +299,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
 
                 @Override
                 public IGuiTexture getIcon() {
-                    return GTOGuiTextures.PARALLEL_CONFIG;
+                    return WidgetIcons.SETTINGS;
                 }
 
                 @Override

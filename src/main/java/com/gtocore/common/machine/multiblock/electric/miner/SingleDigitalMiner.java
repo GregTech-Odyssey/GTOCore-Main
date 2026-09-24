@@ -20,6 +20,7 @@ import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
@@ -364,7 +365,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(
-                GuiTextures.LIGHT_ON, GuiTextures.LIGHT_ON, () -> false,
+                WidgetIcons.HIGHLIGHT, WidgetIcons.HIGHLIGHT, () -> false,
                 (clickData, pressed) -> {
                     if (clickData.isRemote && this.self().getLevel() != null) {
                         if (need != null && ForgeClientEvent.CUstomHighlightNeeds.containsKey(need)) {

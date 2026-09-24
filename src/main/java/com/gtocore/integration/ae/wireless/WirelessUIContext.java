@@ -1,6 +1,6 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.api.gui.ui.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

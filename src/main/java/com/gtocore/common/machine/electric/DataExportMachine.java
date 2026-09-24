@@ -5,7 +5,6 @@ import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -14,6 +13,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.utils.ResearchManager;
 
 import net.minecraft.world.entity.player.Player;
@@ -51,7 +51,7 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 166, this, entityPlayer).widget(new FancyMachineUIWidget(new RecipeExportTab(this), 176, 166));
+        return new ModularUI(176, 166, this, entityPlayer).widget(new MachineWindow(new RecipeExportTab(this)));
     }
 
     @Override

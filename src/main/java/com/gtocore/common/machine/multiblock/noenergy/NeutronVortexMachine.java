@@ -12,7 +12,6 @@ import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
@@ -23,6 +22,7 @@ import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.chat.Component;
 
@@ -98,8 +98,8 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
     public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(
-                GuiTextures.INVERT_REDSTONE_BUTTON.getSubTexture(0, 0, 1, 0.5),
-                GuiTextures.INVERT_REDSTONE_BUTTON.getSubTexture(0, 0.5, 1, 0.5),
+                WidgetIcons.ENERGY_OFF,
+                WidgetIcons.ENERGY_ON,
                 () -> energy, (clickData, pressed) -> {
                     energy = pressed;
                     this.requestCheck();

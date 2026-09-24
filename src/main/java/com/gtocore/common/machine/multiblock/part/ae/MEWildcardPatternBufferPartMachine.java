@@ -1,13 +1,5 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.gui.ui.UIElement;
-import com.gtocore.api.gui.ui.elements.Button;
-import com.gtocore.api.gui.ui.elements.StatusLine;
-import com.gtocore.api.gui.ui.elements.StatusPanel;
-import com.gtocore.api.gui.ui.styletemplate.UISizes;
-import com.gtocore.api.gui.ui.styletemplate.UITheme;
-import com.gtocore.api.gui.ui.window.MachineWindow;
-import com.gtocore.api.gui.ui.window.Popup;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.GTOCore;
@@ -24,8 +16,6 @@ import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -36,6 +26,15 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.window.Popup;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -61,8 +60,6 @@ import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
@@ -622,7 +619,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private static final int BLACKLIST_ITEM_SLOTS = 18;
     private static final int BLACKLIST_FLUID_SLOTS = 18;
     private static final int BLACKLIST_MACHINE_SLOTS = 6;
-    private static final IGuiTexture BLACKLIST_SLOT_BACKGROUND = new GuiTextureGroup(UITheme.ITEM_SLOT, GuiTextures.CONFIG_ARROW_DARK);
 
     @Override
     protected void buildGridHeader(@NotNull UIElement page) {
@@ -646,14 +642,14 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         root.addChild(settings);
         int inner = settings.getContentWidth();
         settings.addChildren(
-                MEPatternPartUI.labeledRow(inner, LANG_WILDCARD_PATTERN_BUFFER_PRIORITY,
-                        MEPatternPartUI.intField(UISizes.BUTTON_WIDTH, this::getPatternPriority, this::setPatternPriority, Integer.MIN_VALUE),
+                MEPartUI.numberRow(LANG_WILDCARD_PATTERN_BUFFER_PRIORITY,
+                        MEPatternPartUI.intField(0, this::getPatternPriority, this::setPatternPriority, Integer.MIN_VALUE),
                         LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC),
-                MEPatternPartUI.labeledRow(inner, LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES,
-                        MEPatternPartUI.intField(UISizes.BUTTON_WIDTH, this::getMaxFluidsOutput, this::setMaxFluidsOutput, 0),
+                MEPartUI.numberRow(LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES,
+                        MEPatternPartUI.intField(0, this::getMaxFluidsOutput, this::setMaxFluidsOutput, 0),
                         LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES_DESC, LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES_EXAMPLE),
-                MEPatternPartUI.labeledRow(inner, LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES,
-                        MEPatternPartUI.intField(UISizes.BUTTON_WIDTH, this::getMaxItemsOutput, this::setMaxItemsOutput, 0),
+                MEPartUI.numberRow(LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES,
+                        MEPatternPartUI.intField(0, this::getMaxItemsOutput, this::setMaxItemsOutput, 0),
                         LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES_DESC, LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES_EXAMPLE),
                 MEPatternPartUI.labeledRow(inner, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST,
                         Button.translatable(UISizes.BUTTON_WIDTH, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN)
@@ -678,7 +674,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private Widget createItemBlacklistSlot(int finalIndex) {
-        return new PhantomSlotWidget(blacklistedItemsStorageTransfer, finalIndex, 0, 0) {
+        return new PhantomItemSlot(blacklistedItemsStorageTransfer, finalIndex) {
 
             @Override
             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -733,14 +729,12 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 }
                 return superText;
             }
-        }.setClearSlotOnRightClick(false).setChangeListener(this::onChanged).setBackgroundTexture(BLACKLIST_SLOT_BACKGROUND);
+        }.xeiPhantom().setClearSlotOnRightClick(false).setChangeListener(this::onChanged);
     }
 
     private Widget createFluidBlacklistSlot(int fluidIndex) {
         int shift = blacklistedItems.getSlots();
-        return new PhantomFluidWidget(
-                this.blacklistedFluids[fluidIndex], fluidIndex,
-                0, 0, UISizes.SLOT, UISizes.SLOT,
+        return new PhantomFluidSlot(this.blacklistedFluids[fluidIndex], fluidIndex,
                 () -> this.blacklistedFluids[fluidIndex].getFluid(),
                 (fluid -> {
                     int shiftedIndex = fluidIndex + shift;
@@ -775,11 +769,11 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 }
                 return superTexts;
             }
-        }.setShowAmount(false).setBackground(UITheme.FLUID_SLOT);
+        }.xeiPhantom();
     }
 
     private Widget createMachineBlacklistSlot(int finalIndex) {
-        return new PhantomSlotWidget(blacklistedAltProcessableMachinesStorageTransfer, finalIndex, 0, 0) {
+        return new PhantomItemSlot(blacklistedAltProcessableMachinesStorageTransfer, finalIndex) {
 
             @Override
             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -860,7 +854,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                     }
                 }
             }
-        }.setClearSlotOnRightClick(false).setChangeListener(this::onChanged).setBackgroundTexture(BLACKLIST_SLOT_BACKGROUND);
+        }.xeiPhantom().setClearSlotOnRightClick(false).setChangeListener(this::onChanged);
     }
 
     private void setFluid(int index, FluidStack fs) {

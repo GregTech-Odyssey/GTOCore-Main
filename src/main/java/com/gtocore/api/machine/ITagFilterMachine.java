@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -67,7 +68,7 @@ public interface ITagFilterMachine extends IDropSaveMachine {
 
         @Override
         public IGuiTexture getIcon() {
-            return GuiTextures.BUTTON_BLACKLIST.getSubTexture(0, 0, 1, 0.5);
+            return WidgetIcons.FILTER;
         }
 
         @Override
