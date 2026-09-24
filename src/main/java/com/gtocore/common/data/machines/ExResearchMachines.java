@@ -499,9 +499,6 @@ public final class ExResearchMachines {
                         .where('K', GTMachines.MAINTENANCE_HATCH.get(), Direction.NORTH)
                         .where('L', GTMachines.ENERGY_INPUT_HATCH[ZPM], Direction.NORTH);
                 shapeInfo.add(builder.shallowCopy()
-                        .where('H', ANALYZE_HOLDER.get(), Direction.NORTH)
-                        .build(definition));
-                shapeInfo.add(builder.shallowCopy()
                         .where('H', RESEARCH_HOLDER.get(), Direction.NORTH)
                         .build(definition));
                 return shapeInfo;
