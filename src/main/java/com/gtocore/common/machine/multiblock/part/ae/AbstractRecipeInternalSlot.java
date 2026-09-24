@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-public abstract class AbstractRecipeInternalSlot extends MEPatternPartMachineKt.AbstractInternalSlot {
+public abstract class AbstractRecipeInternalSlot extends MEPatternPartMachine.AbstractInternalSlot {
 
     private Runnable onContentsChanged = () -> {};
     private boolean isContentsChanged = true;

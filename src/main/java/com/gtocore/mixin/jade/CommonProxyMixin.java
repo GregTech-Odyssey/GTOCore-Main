@@ -1,7 +1,7 @@
 package com.gtocore.mixin.jade;
 
 import com.gtocore.common.blockentity.TesseractBlockEntity;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachineKt;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.jade.GTOJadePlugin;
 import com.gtocore.integration.lang.LangAdaptor;
@@ -62,7 +62,7 @@ public class CommonProxyMixin {
     @Redirect(method = "createItemCollector", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/common/capabilities/CapabilityProvider;getCapability(Lnet/minecraftforge/common/capabilities/Capability;)Lnet/minecraftforge/common/util/LazyOptional;"), remap = false)
     private static <T> LazyOptional<T> createItemCollector(CapabilityProvider<?> instance, Capability<T> capability) {
         if (instance instanceof MetaMachineBlockEntity blockEntity && !(blockEntity instanceof TesseractBlockEntity)) {
-            if (blockEntity.metaMachine instanceof MEPatternPartMachineKt<?>) return LazyOptional.empty();
+            if (blockEntity.metaMachine instanceof MEPatternPartMachine<?>) return LazyOptional.empty();
             if (blockEntity.metaMachine instanceof MufflerPartMachine mufflerPartMachine) {
                 return LazyOptional.of(mufflerPartMachine::getInventory).cast();
             }
@@ -83,7 +83,7 @@ public class CommonProxyMixin {
     @Redirect(method = "wrapFluidStorage", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/common/capabilities/CapabilityProvider;getCapability(Lnet/minecraftforge/common/capabilities/Capability;)Lnet/minecraftforge/common/util/LazyOptional;"), remap = false)
     private static <T> LazyOptional<T> wrapFluidStorage(CapabilityProvider<?> instance, Capability<T> capability) {
         if (instance instanceof MetaMachineBlockEntity blockEntity) {
-            if (blockEntity.metaMachine instanceof MEPatternPartMachineKt<?>) return LazyOptional.empty();
+            if (blockEntity.metaMachine instanceof MEPatternPartMachine<?>) return LazyOptional.empty();
             var ts = blockEntity.metaMachine.getTraits();
             List<ICustomFluidStackHandler> filteredTraits = new ArrayList<>(ts.size());
             for (var t : ts) {

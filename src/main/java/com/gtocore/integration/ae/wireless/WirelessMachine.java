@@ -1,382 +1,252 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.common.saved.NetworkSummary;
-import com.gtocore.common.saved.STATUS;
-import com.gtocore.common.saved.TopologySummary;
-import com.gtocore.common.saved.WirelessNetworkSavedData;
-
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
-import com.gregtechceu.gtceu.api.blockentity.ISync;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
-import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import com.gto.datasynclib.listener.IntNotifiableHolder;
-import com.gto.datasynclib.listener.ObjNotifiableHolder;
-import com.gto.datasynclib.util.holder.ObjHolder;
-import com.hepdd.gtmthings.api.capability.IBindable;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
+import appeng.api.networking.GridHelper;
+
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 重写后的无线网络节点接口。
+ * 可加入 GTO 无线 ME 网络的机器（ME 无线连接机、各种 ME 部件）。
  * <p>
- * 每个网络有源节点（Source，提供AE网络）和子节点（Child，消费AE网络）。
- * 子节点连接到一个源节点，源节点最多供应 maxOutputsPerInput 个子节点。
- * 源节点掉线时自动重分配子节点到其余源节点。
+ * 拓扑：每个网络一个虚拟 hub 节点（{@link WirelessHub}），每台成员机器只维护自己到 hub 的<strong>一条</strong>连接，
+ * 同网所有成员因此处在同一个 AE 网格里。没有源/子节点之分，没有分配表、没有周期扫描。
+ * <p>
+ * 生命周期：
+ * <ul>
+ * <li>{@code onLoad}：在 {@code super.onLoad()} 之后调用 {@link #onWirelessLoad()}，注册 AE 首 tick 回调
+ * （排在 GTM 建节点的回调之后，同一区块先进先出），回调里 {@link #attachWireless()}。</li>
+ * <li>{@code onUnload}：什么都不做——AE 销毁节点时自动拆边。</li>
+ * <li>放置：{@link #onWirelessPlaced} 处理潜行放置自动加入收藏网络。</li>
+ * </ul>
+ * 实现类只需提供网络 id 字段（存档键固定为 {@code _connectedNetworkId}，{@code @SyncToClient} 供客户端高亮与 Jade）。
  */
 @DataGeneratorScanned
-public interface WirelessMachine extends IGridConnectedMachine, ISync, IBindable {
+public interface WirelessMachine extends IGridConnectedMachine {
 
-    // client key
-    IBindable EMPTY_BINDABLE = new IBindable() {
-
-        private static final AtomicInteger CODE = new AtomicInteger(0);
-
-        @Override
-        public @Nullable UUID getUUID() {
-            return null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return CODE.getAndIncrement();
-        }
-    };
-
-    ReferenceSet<MachineDefinition> WIRELESS_MACHINE_DEFINITIONS = new ReferenceOpenHashSet<>();
-
-    enum NodeType {
-        SOURCE,
-        CHILD
-    }
-
-    // ==================== Language Keys ====================
-
-    @RegisterLanguage(cn = "网络节点选择", en = "Network Node Selector")
-    String KEY_NODE_SELECTOR = "gtocore.wireless.node_selector";
-
-    @RegisterLanguage(cn = "系统源节点", en = "SYSTEM SOURCE")
-    String KEY_SYSTEM_SOURCE = "gtocore.wireless.system_source";
-
-    @RegisterLanguage(cn = "终端节点", en = "TERMINAL NODE")
-    String KEY_TERMINAL_NODE = "gtocore.wireless.terminal_node";
-
-    @RegisterLanguage(cn = "无线网络配置器", en = "W-NETWORK CONFIGURATOR")
-    String KEY_CONFIGURATOR = "gtocore.wireless.configurator";
-
-    @RegisterLanguage(cn = "网络状态", en = "NETWORK STATUS")
-    String KEY_STATUS = "gtocore.wireless.status";
-
-    @RegisterLanguage(cn = "独立运行", en = "STANDALONE")
-    String KEY_STANDALONE = "gtocore.wireless.standalone";
-
-    @RegisterLanguage(cn = "可用频道 (%d)", en = "AVAILABLE CHANNELS (%d)")
-    String KEY_CHANNELS = "gtocore.wireless.channels";
-
-    @RegisterLanguage(cn = "目标频率", en = "TARGET FREQUENCY")
-    String KEY_TARGET_FREQ = "gtocore.wireless.target_freq";
-
-    @RegisterLanguage(cn = "无目标", en = "NO TARGET")
-    String KEY_NO_TARGET = "gtocore.wireless.no_target";
-
-    @RegisterLanguage(cn = "可访问网络 (%d)", en = "ACCESSIBLE NETWORKS (%d)")
-    String KEY_ACCESSIBLE_NETS = "gtocore.wireless.accessible_nets";
-
-    @RegisterLanguage(cn = "输入: %d", en = "INPUTS: %d")
-    String KEY_INPUTS_COUNT = "gtocore.wireless.inputs_count";
-
-    @RegisterLanguage(cn = "输出: %d", en = "OUTPUTS: %d")
-    String KEY_OUTPUTS_COUNT = "gtocore.wireless.outputs_count";
-
-    @RegisterLanguage(cn = "无活跃网络", en = "NO NETWORK ACTIVE")
-    String KEY_NO_NETWORK_ACTIVE = "gtocore.wireless.no_network_active";
-
-    @RegisterLanguage(cn = "源节点", en = "SOURCE")
-    String KEY_SOURCE_TITLE = "gtocore.wireless.source_title";
-
-    @RegisterLanguage(cn = "客户端", en = "CLIENT")
-    String KEY_CLIENT_TITLE = "gtocore.wireless.client_title";
-
-    @RegisterLanguage(cn = "绑定玩家: %s", en = "Player: %s")
-    String KEY_PLAYER = "gtocore.wireless.player";
-
-    @RegisterLanguage(cn = "已连接: %s", en = "Connected: %s")
+    @RegisterLanguage(cn = "已连接：%s", en = "Connected: %s")
     String KEY_CONNECTED = "gtocore.wireless.connected";
+    @RegisterLanguage(cn = "无权查看的网络", en = "Inaccessible network")
+    String KEY_UNKNOWN_NETWORK = "gtocore.wireless.jade.unknown_network";
+    @RegisterLanguage(cn = "未加入无线网络", en = "Not in a wireless network")
+    String KEY_STATE_STANDALONE = "gtocore.wireless.state.standalone";
+    @RegisterLanguage(cn = "无线连接正常，ME 网络在线", en = "Wireless link up, ME network online")
+    String KEY_STATE_ONLINE = "gtocore.wireless.state.online";
+    @RegisterLanguage(cn = "已加入无线网络，但 ME 网络离线", en = "Joined, but the ME network is offline")
+    String KEY_STATE_OFFLINE = "gtocore.wireless.state.offline";
+    @RegisterLanguage(cn = "机器所有者无权使用此网络，未连接", en = "The machine owner cannot use this network; not linked")
+    String KEY_STATE_NO_PERMISSION = "gtocore.wireless.state.no_permission";
+    @RegisterLanguage(cn = "无线网络数据不可用", en = "Wireless network data unavailable")
+    String KEY_STATE_UNAVAILABLE = "gtocore.wireless.state.unavailable";
 
-    @RegisterLanguage(cn = "无", en = "None")
-    String KEY_NONE = "gtocore.wireless.none";
+    /** 无线连接状态（服务端计算），界面指示灯与 Jade 共用。 */
+    enum LinkState {
 
-    @RegisterLanguage(cn = "新建", en = "New")
-    String KEY_CREATE = "gtocore.wireless.create";
+        /** 没有加入任何无线网络。 */
+        STANDALONE,
+        /** 已连上 hub，且 ME 网络在线。 */
+        ONLINE,
+        /** 已加入网络，但未连上 hub 或 ME 网络离线（未供电、无控制器、控制器冲突等）。 */
+        OFFLINE,
+        /** 机器所有者无权使用该网络，未连接。 */
+        NO_PERMISSION,
+        /** 无线网络数据不可用（存档文件损坏或版本过新），未连接，id 保留。 */
+        UNAVAILABLE;
 
-    @RegisterLanguage(cn = "断开连接", en = "Disconnect")
-    String KEY_LEAVE = "gtocore.wireless.leave";
-
-    @RegisterLanguage(cn = "删除", en = "Del")
-    String KEY_REMOVE = "gtocore.wireless.remove";
-
-    @RegisterLanguage(cn = "确认删除?", en = "Confirm?")
-    String KEY_CONFIRM_DELETE = "gtocore.wireless.confirm_delete";
-
-    @RegisterLanguage(cn = "节点: %s", en = "Node: %s")
-    String KEY_NODE_TYPE = "gtocore.wireless.node_type";
-
-    @RegisterLanguage(cn = "源节点", en = "Source")
-    String KEY_SOURCE_NODE = "gtocore.wireless.source_node";
-
-    @RegisterLanguage(cn = "子节点", en = "Child")
-    String KEY_CHILD_NODE = "gtocore.wireless.child_node";
-
-    @RegisterLanguage(cn = "源节点 (%d/%d 已连接)", en = "Source (%d/%d connected)")
-    String KEY_INPUT_STATUS = "gtocore.wireless.input_status";
-
-    @RegisterLanguage(cn = "子节点 (已连接)", en = "Child (connected)")
-    String KEY_OUTPUT_CONNECTED = "gtocore.wireless.output_connected";
-
-    @RegisterLanguage(cn = "子节点 (未分配！)", en = "Child (unassigned!)")
-    String KEY_OUTPUT_UNASSIGNED = "gtocore.wireless.output_unassigned";
-
-    @RegisterLanguage(cn = "⚠ %d 个子节点未分配", en = "⚠ %d child nodes unassigned")
-    String KEY_UNASSIGNED_WARNING = "gtocore.wireless.unassigned_warning";
-
-    @RegisterLanguage(cn = "此机器禁止连接无线网络", en = "This machine cannot connect to wireless networks")
-    String KEY_BANNED = "gtocore.wireless.banned";
-
-    @RegisterLanguage(cn = "可用网络: %d", en = "Networks: %d")
-    String KEY_AVAILABLE = "gtocore.wireless.available";
-
-    @RegisterLanguage(cn = "切换节点类型", en = "Toggle Node Type")
-    String KEY_TOGGLE_TYPE = "gtocore.wireless.toggle_type";
-
-    @RegisterLanguage(cn = "网络拓扑", en = "Network Topology")
-    String KEY_TOPOLOGY = "gtocore.wireless.topology";
-
-    @RegisterLanguage(cn = "选择网络查看拓扑", en = "Select a network to view topology")
-    String KEY_TOPOLOGY_HINT = "gtocore.wireless.topology_hint";
-
-    @RegisterLanguage(cn = "未分配", en = "Unassigned")
-    String KEY_UNASSIGNED = "gtocore.wireless.unassigned";
-
-    @RegisterLanguage(cn = "(无客户端连接)", en = "(No clients connected)")
-    String NO_CLIENT = "gtocore.wireless.no_clients_connected";
-
-    @RegisterLanguage(cn = "重命名", en = "Rename")
-    String KEY_RENAME = "gtocore.wireless.rename";
-
-    @RegisterLanguage(cn = "每个源节点最大载荷: %d", en = "Max Load Per Source: %d")
-    String KEY_MAX_CONNECTIONS = "gtocore.wireless.max_connections";
-
-    @RegisterLanguage(cn = "设置", en = "Set")
-    String KEY_SET = "gtocore.wireless.set";
-
-    // ==================== Node Type ====================
-
-    /** SOURCE (源节点) 提供 AE 网络，CHILD (子节点) 使用 AE 网络。 */
-    NodeType getNodeType();
-
-    /** 是否支持在 GUI 中切换节点类型。 */
-    default boolean supportsNodeTypeSwitching() {
-        return false;
+        public Component describe() {
+            return switch (this) {
+                case STANDALONE -> Component.translatable(KEY_STATE_STANDALONE);
+                case ONLINE -> Component.translatable(KEY_STATE_ONLINE);
+                case OFFLINE -> Component.translatable(KEY_STATE_OFFLINE);
+                case NO_PERMISSION -> Component.translatable(KEY_STATE_NO_PERMISSION);
+                case UNAVAILABLE -> Component.translatable(KEY_STATE_UNAVAILABLE);
+            };
+        }
     }
 
-    /** 切换节点类型。如果当前已连接网络，先离开再重新以新类型加入。 */
-    default void setNodeType(NodeType type) {}
+    // ==================== 实现类提供 ====================
 
-    // ==================== Persisted State ====================
+    /** 当前网络 id，空串表示未加入。 */
+    String getWirelessNetworkId();
 
-    String getConnectedNetworkId();
+    void setWirelessNetworkId(String id);
 
-    void setConnectedNetworkId(String id);
-
-    // ==================== Sync Fields ====================
-
-    ObjNotifiableHolder<List<NetworkSummary>> getNetworkListCache();
-
-    IntNotifiableHolder getUnassignedOutputCount();
-
-    ObjNotifiableHolder<List<TopologySummary>> getTopologyCache();
-
-    IntNotifiableHolder getNodeTypeSync();
-
-    // ==================== UUID ====================
-
-    default UUID getRequesterUUID() {
-        UUID owner = self().getOwnerUUID();
-        return owner != null ? owner : getUUID();
-    }
-
-    @Override
-    default UUID getUUID() {
-        UUID owner = self().getOwnerUUID();
-        return owner != null ? owner : UUID.randomUUID();
-    }
-
-    // ==================== Callbacks ====================
-
+    /** 是否允许加入无线网络（例如简易样板总成不允许）。 */
     default boolean allowWirelessConnection() {
         return true;
     }
 
-    // ==================== Lifecycle ====================
+    // ==================== 生命周期 ====================
 
+    /** 在 {@code onLoad} 的 {@code super.onLoad()} 之后调用（仅服务端生效）：节点建好后的首 tick 接回网络。 */
     default void onWirelessLoad() {
-        if (self().isRemote()) return;
-        ObjHolder<TickableSubscription> subscription = new ObjHolder<>();
-        subscription.value = TaskHandler.enqueueTick(Objects.requireNonNull(getHolder().getLevel()), self().holder.isRemove, () -> {
-            if (self().getLevel() != null && getMainNode().getNode() != null) {
-                String id = getConnectedNetworkId();
-                if (!id.isEmpty()) {
-                    linkNetwork(id);
-                    WirelessNetworkSavedData.requireWriteToAll();
-                }
-                if (subscription.value != null) subscription.value.unsubscribe();
-            }
-        }, 40, 20);
+        var machine = self();
+        if (machine.isRemote()) return;
+        GridHelper.onFirstTick(machine.holder, blockEntity -> attachWireless());
     }
 
-    default void onWirelessUnload() {
-        if (self().isRemote()) return;
-        unlinkNetwork();
-        if (self().getLevel() != null) {
-            WirelessNetworkSavedData.requireWriteToAll();
+    /** 潜行放置时自动加入放置者收藏的网络；失败在 actionbar 提示原因。 */
+    default void onWirelessPlaced(@Nullable LivingEntity placer, ItemStack stack) {
+        if (!(placer instanceof ServerPlayer player) || !player.isShiftKeyDown()) return;
+        var favorite = WirelessNetworks.get(player.server).favorite(player.getUUID());
+        if (favorite == null) return;
+        var status = joinWireless(player, favorite);
+        if (!status.ok()) player.displayClientMessage(status.message(), true);
+    }
+
+    // ==================== 连接 ====================
+
+    /**
+     * 按当前 id 连到对应网络的 hub（幂等）。网络已被删除（例如删除时本机所在区块未加载）则清空 id；
+     * 机器有主人且主人无权使用该网络时不连（{@link LinkState#NO_PERMISSION}，界面与 Jade 显示原因）；
+     * 无线数据不可用时不连、不改 id。
+     */
+    default void attachWireless() {
+        var id = getWirelessNetworkId();
+        if (id.isEmpty()) return;
+        if (!allowWirelessConnection()) {
+            clearWirelessNetworkId();
+            return;
         }
-    }
-
-    default void onWirelessPlaced(LivingEntity player, ItemStack stack) {
-        if (player != null) {
-            self().setOwnerUUID(player.getUUID());
-            // Shift-place: auto-connect to the player's starred (default) network
-            if (player instanceof Player p && p.isShiftKeyDown()) {
-                UUID requester = getRequesterUUID();
-                String defaultId = WirelessNetworkSavedData.Companion.getDefaultNetworkId(requester);
-                if (defaultId != null && !defaultId.isEmpty()) {
-                    WirelessNetwork net = WirelessNetworkSavedData.Companion.findNetworkById(defaultId);
-                    if (net != null && WirelessNetworkSavedData.Companion.checkPermission(net.getOwner(), requester)) {
-                        setConnectedNetworkId(defaultId);
-                    }
-                }
-                WirelessNetworkSavedData.write(player);
-            }
+        var server = Objects.requireNonNull(self().getLevel()).getServer();
+        var networks = WirelessNetworks.get(Objects.requireNonNull(server));
+        if (!networks.isAvailable()) return;
+        var network = networks.get(id);
+        if (network == null) {
+            clearWirelessNetworkId();
+            return;
         }
-        self().requestSync();
-    }
-
-    // ==================== Network Operations ====================
-
-    /** 加入网络并持久化。 */
-    default void joinNetwork(String networkId) {
-        if (!allowWirelessConnection()) return;
-        if (self().isRemote()) return;
-        setConnectedNetworkId(networkId);
-        linkNetwork(networkId);
-        refreshNetworkListOnServer();
-    }
-
-    /** 内部连接（加载/恢复时调用，不变更持久化状态）。 */
-    default void linkNetwork(String networkId) {
-        if (!allowWirelessConnection()) return;
-        if (self().isRemote()) return;
-        STATUS status = WirelessNetworkSavedData.Companion.joinNetwork(networkId, this, getRequesterUUID());
-        switch (status) {
-            case SUCCESS, ALREADY_JOINT, NOT_PERMISSION -> {}
-            case NOT_FOUND_GRID -> setConnectedNetworkId("");
-        }
-    }
-
-    /** 断开连接（不清除持久化状态）。 */
-    default void unlinkNetwork() {
-        if (self().isRemote()) return;
-        WirelessNetworkSavedData.Companion.leaveNetwork(this);
-    }
-
-    /** 断开连接并清除持久化。 */
-    default void leaveNetwork() {
-        if (self().isRemote()) return;
-        unlinkNetwork();
-        setConnectedNetworkId("");
-        refreshNetworkListOnServer();
+        var owner = self().getOwnerUUID();
+        if (owner != null && !network.canUse(owner)) return;
+        var node = getMainNode().getNode();
+        // 放置当 tick 节点还没建：已排队的首 tick 回调会再调用本方法接上
+        if (node == null) return;
+        var hub = WirelessHub.getOrCreate(server, id);
+        if (hub.isConnected(node)) return;
+        GridHelper.createConnection(node, hub.node());
     }
 
     /**
-     * 切换节点类型并保持连接。
-     * 如果当前已连接网络，先离开旧角色再以新角色重新加入同一网络。
+     * 机器主人（有的话）能否使用该网络。操作玩家能管理机器、能用网络还不够：OP 可以管理别人的机器，
+     * 但机器仍以主人身份接入，主人无权使用的网络接不上（{@link #attachWireless} 同样按主人判定）。
      */
-    default void switchNodeType(NodeType newType) {
-        if (self().isRemote()) return;
-        if (getNodeType() == newType) return;
-        String currentNetwork = getConnectedNetworkId();
-        if (!currentNetwork.isEmpty()) {
-            unlinkNetwork();
-        }
-        setNodeType(newType);
-        if (!currentNetwork.isEmpty()) {
-            setConnectedNetworkId(currentNetwork);
-            linkNetwork(currentNetwork);
-        }
-        refreshNetworkListOnServer();
+    private boolean ownerCanUse(WirelessNetwork network) {
+        var owner = self().getOwnerUUID();
+        return owner == null || network.canUse(owner);
     }
 
-    /** 同步网络列表、拓扑和未分配数到客户端。仅服务端调用。 */
-    default void refreshNetworkListOnServer() {
-        if (self().isRemote()) return;
-        String connId = getConnectedNetworkId();
-        // Auto-clear stale connection (network deleted by others)
-        WirelessNetwork net = WirelessNetworkSavedData.Companion.findNetworkById(connId);
-        if (net == null && !connId.isEmpty()) {
-            setConnectedNetworkId("");
-            connId = "";
-        }
-        String syncConnId = connId;
-        getNetworkListCache().set(
-                WirelessNetworkSavedData.Companion.getNetworkSummaries(getRequesterUUID(), syncConnId));
-        getNetworkListCache().markAsChanged();
-        getUnassignedOutputCount().set(net != null ? net.getUnassignedOutputCount() : 0);
-        getUnassignedOutputCount().markAsChanged();
-        // Only sync topology for connected network
-        if (syncConnId.isEmpty()) {
-            getTopologyCache().set(Collections.emptyList());
-        } else {
-            getTopologyCache().set(
-                    WirelessNetworkSavedData.Companion.getTopologySummaries(getRequesterUUID())
-                            .stream().filter(t -> t.getNetworkId().equals(syncConnId)).toList());
-        }
-        getTopologyCache().markAsChanged();
-        getNodeTypeSync().set(getNodeType().ordinal());
-        getNodeTypeSync().markAsChanged();
-        if (self().getLevel() != null) {
-            WirelessNetworkSavedData.write(Objects.requireNonNull(self().getLevel()));
-            self().syncToClient();
+    /** 拆掉本机到当前网络 hub 的连接（从节点的连接表里现找，不持有句柄）。只用于主动离开或换网。 */
+    default void detachWireless() {
+        var hub = WirelessHub.get(getWirelessNetworkId());
+        var node = getMainNode().getNode();
+        if (hub == null || node == null) return;
+        var hubNode = hub.node();
+        for (var connection : node.getConnections()) {
+            if (connection.getOtherSide(node) == hubNode) {
+                connection.destroy();
+                return;
+            }
         }
     }
 
-    // ==================== GUI ====================
+    /** 由玩家发起的加入（界面、配置器、潜行放置）：先校验两层权限，失败时不写 id。 */
+    default WirelessStatus joinWireless(ServerPlayer player, String id) {
+        if (!allowWirelessConnection()) return WirelessStatus.NOT_ALLOWED;
+        var networks = WirelessNetworks.get(player.server);
+        if (!networks.isAvailable()) return WirelessStatus.UNAVAILABLE;
+        if (!WirelessPermissions.canManage(player, self())) return WirelessStatus.NO_PERMISSION_MACHINE;
+        var network = networks.get(id);
+        if (network == null) return WirelessStatus.NOT_FOUND;
+        if (!network.canUse(player.getUUID()) || !ownerCanUse(network)) return WirelessStatus.NO_PERMISSION_NETWORK;
+        if (!id.equals(getWirelessNetworkId())) {
+            detachWireless();
+            setWirelessNetworkId(id);
+            markWirelessChanged();
+        }
+        attachWireless();
+        return WirelessStatus.OK;
+    }
 
+    /**
+     * 界面"新建并加入"的预检，与 {@link #joinWireless} 的校验一致（新网络的所有者就是发起玩家）：
+     * 先检查再创建，不会留下建好了却加不进去的网络。
+     */
+    default WirelessStatus checkCreateAndJoin(ServerPlayer player) {
+        if (!allowWirelessConnection()) return WirelessStatus.NOT_ALLOWED;
+        if (!WirelessNetworks.get(player.server).isAvailable()) return WirelessStatus.UNAVAILABLE;
+        if (!WirelessPermissions.canManage(player, self())) return WirelessStatus.NO_PERMISSION_MACHINE;
+        var owner = self().getOwnerUUID();
+        if (owner != null && !WirelessPermissions.sameTeam(owner, player.getUUID())) return WirelessStatus.NO_PERMISSION_NETWORK;
+        return WirelessStatus.OK;
+    }
+
+    /** 由玩家发起的离开。 */
+    default WirelessStatus leaveWireless(ServerPlayer player) {
+        if (!WirelessNetworks.get(player.server).isAvailable()) return WirelessStatus.UNAVAILABLE;
+        if (!WirelessPermissions.canManage(player, self())) return WirelessStatus.NO_PERMISSION_MACHINE;
+        detachWireless();
+        clearWirelessNetworkId();
+        return WirelessStatus.OK;
+    }
+
+    // ==================== 查询（服务端） ====================
+
+    @Nullable
+    default WirelessNetwork getWirelessNetwork() {
+        var id = getWirelessNetworkId();
+        if (id.isEmpty()) return null;
+        var server = Objects.requireNonNull(self().getLevel()).getServer();
+        return WirelessNetworks.get(Objects.requireNonNull(server)).get(id);
+    }
+
+    /** 是否已有一条连到当前网络 hub 的边。 */
+    default boolean isWirelessLinked() {
+        var hub = WirelessHub.get(getWirelessNetworkId());
+        var node = getMainNode().getNode();
+        return hub != null && node != null && hub.isConnected(node);
+    }
+
+    default LinkState getWirelessLinkState() {
+        if (getWirelessNetworkId().isEmpty()) return LinkState.STANDALONE;
+        if (!isWirelessAvailable()) return LinkState.UNAVAILABLE;
+        var network = getWirelessNetwork();
+        if (network == null) return LinkState.OFFLINE;
+        if (!ownerCanUse(network)) return LinkState.NO_PERMISSION;
+        return isWirelessLinked() && getMainNode().isOnline() ? LinkState.ONLINE : LinkState.OFFLINE;
+    }
+
+    /** 服务端：无线数据是否可用。 */
+    default boolean isWirelessAvailable() {
+        var server = Objects.requireNonNull(self().getLevel()).getServer();
+        return WirelessNetworks.get(Objects.requireNonNull(server)).isAvailable();
+    }
+
+    // ==================== 辅助 ====================
+
+    /** id 改动后：标记存盘并同步到客户端（高亮、Jade 读客户端字段）。 */
+    default void markWirelessChanged() {
+        self().onChanged();
+        self().requestSync();
+    }
+
+    private void clearWirelessNetworkId() {
+        setWirelessNetworkId("");
+        markWirelessChanged();
+    }
+
+    /** ME 部件侧边的无线网络标签页。 */
     default IFancyUIProvider getWirelessUIProvider() {
-        return WirelessNodeUIKt.createWirelessUIProvider(this);
-    }
-
-    default IFancyUIProvider getWirelessTopologyProvider() {
-        return WirelessNodeUIKt.createTopologyUIProvider(this);
+        return WirelessMachineUI.tab(this);
     }
 }

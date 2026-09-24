@@ -1,7 +1,7 @@
 package com.gtocore.common.item;
 
 import com.gtocore.common.data.machines.GTAEMachines;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineKt;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 
 import com.gtolib.api.item.IMachineUpgraderBehavior;
 
@@ -38,14 +38,14 @@ public enum PatternBufferUpgraderBehavior implements IMachineUpgraderBehavior {
         var world = context.getLevel();
         var tile = world.getBlockEntity(pos);
         if (tile instanceof MetaMachineBlockEntity mbe &&
-                mbe.getMetaMachine() instanceof MEPatternBufferPartMachineKt machine) {
+                mbe.getMetaMachine() instanceof MEPatternBufferPartMachine machine) {
 
             var originState = world.getBlockState(pos);
             var state = copyBlockStateProperties(originState, upgradeTo.get().get().defaultBlockState());
 
             BlockEntity upgradedTile = upgradeTo.get().get().newBlockEntity(pos, state);
             if (upgradedTile instanceof MetaMachineBlockEntity upgradedMbe &&
-                    upgradedMbe.getMetaMachine() instanceof MEPatternBufferPartMachineKt upgradedMachine &&
+                    upgradedMbe.getMetaMachine() instanceof MEPatternBufferPartMachine upgradedMachine &&
                     machine.getMaxPatternCount() < upgradedMachine.getMaxPatternCount()) {
 
                 replaceBlockEntityWithNBTHook(world, pos, tile, upgradedTile, state, (contents) -> operateContentsNBT(contents, machine.getMaxPatternCount(), upgradedMachine.getMaxPatternCount()));

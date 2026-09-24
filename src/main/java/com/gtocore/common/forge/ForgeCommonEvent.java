@@ -8,6 +8,9 @@ import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporter
 import com.gtocore.common.saved.*;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.integration.Mods;
+import com.gtocore.integration.ae.wireless.WirelessEvents;
+import com.gtocore.integration.ae.wireless.WirelessNetworks;
+import com.gtocore.integration.ae.wireless.WirelessSync;
 import com.gtocore.integration.botania.IEntropinnyum;
 import com.gtocore.integration.ftbquests.AdditionalTeamData;
 import com.gtocore.utils.OrganUtilsKt;
@@ -104,6 +107,7 @@ public final class ForgeCommonEvent {
     public static void init() {
         MinecraftForge.EVENT_BUS.register(ForgeCommonEvent.class);
         MinecraftForge.EVENT_BUS.register(AnimalsRevengeEvent.class);
+        WirelessEvents.init();
     }
 
     @SubscribeEvent
@@ -322,7 +326,7 @@ public final class ForgeCommonEvent {
             }
             showVoidTimeHint(player);
             syncPlayerTime(player);
-            WirelessNetworkSavedData.write(player);
+            WirelessSync.pushTo(player);
             TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
         }
@@ -341,7 +345,6 @@ public final class ForgeCommonEvent {
         if (event.getEntity() instanceof ServerPlayer player) {
             showVoidTimeHint(player);
             syncPlayerTime(player);
-            WirelessNetworkSavedData.write(player);
             // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
         }
     }
@@ -366,7 +369,7 @@ public final class ForgeCommonEvent {
             RecipeRunLimitSavaedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(RecipeRunLimitSavaedData::new, RecipeRunLimitSavaedData::new, "recipe_run_limit_data");
             VoidWorldTimeSavedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(VoidWorldTimeSavedData::initialize, VoidWorldTimeSavedData::new, VoidWorldTimeSavedData.DATA_NAME);
             VirtualCoinSavedData.INSTANCE = serverLevel.getDataStorage().computeIfAbsent(VirtualCoinSavedData::new, VirtualCoinSavedData::new, "virtual_coin_data");
-            WirelessNetworkSavedData.Companion.setINSTANCE(serverLevel.getDataStorage().computeIfAbsent(WirelessNetworkSavedData::initialize, WirelessNetworkSavedData::new, "wireless_saved_data_" + GTOConfig.INSTANCE.devMode.aeGridKey));
+            WirelessNetworks.get(level.getServer());
             if (Mods.FTBQUESTS.isLoaded()) {
                 AdditionalTeamData.instance = serverLevel.getDataStorage().computeIfAbsent(AdditionalTeamData::new, AdditionalTeamData::new, "ftb_quests_additional_team_data");
             }
@@ -380,7 +383,6 @@ public final class ForgeCommonEvent {
         RecipeRunLimitSavaedData.INSTANCE = new RecipeRunLimitSavaedData();
         VoidWorldTimeSavedData.INSTANCE = new VoidWorldTimeSavedData();
         VirtualCoinSavedData.INSTANCE = new VirtualCoinSavedData();
-        WirelessNetworkSavedData.Companion.setINSTANCE(new WirelessNetworkSavedData());
         if (Mods.FTBQUESTS.isLoaded()) {
             AdditionalTeamData.instance = new AdditionalTeamData();
         }

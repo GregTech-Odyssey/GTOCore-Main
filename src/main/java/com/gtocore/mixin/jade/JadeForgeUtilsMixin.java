@@ -1,7 +1,7 @@
 package com.gtocore.mixin.jade;
 
 import com.gtocore.common.blockentity.TesseractBlockEntity;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachineKt;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
@@ -40,7 +40,7 @@ public abstract class JadeForgeUtilsMixin {
         return fromItemHandler(storage, fromIndex, target -> {
             if (target instanceof CapabilityProvider<?> capProvider) {
                 if (capProvider instanceof MetaMachineBlockEntity blockEntity && !(blockEntity instanceof TesseractBlockEntity)) {
-                    if (blockEntity.metaMachine instanceof MEPatternPartMachineKt<?>) return null;
+                    if (blockEntity.metaMachine instanceof MEPatternPartMachine<?>) return null;
                     if (blockEntity.metaMachine instanceof MufflerPartMachine mufflerPartMachine) {
                         return mufflerPartMachine.getInventory();
                     }

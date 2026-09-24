@@ -1,7 +1,13 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.api.gui.configurators.MultiMachineModeFancyConfigurator;
+import com.gtocore.api.gui.ui.UIElement;
+import com.gtocore.api.gui.ui.elements.Button;
+import com.gtocore.api.gui.ui.elements.TextField;
+import com.gtocore.api.gui.ui.styletemplate.UISizes;
+import com.gtocore.api.gui.ui.styletemplate.UITheme;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.common.data.GTORecipes;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.trait.InternalSlotRecipeHandler;
 import com.gtocore.integration.ae.PatternContainerGroupHelper;
@@ -10,6 +16,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.trait.NotifiableNotConsumableFluidHandler;
 import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
+import com.gtolib.api.network.NetworkPack;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.RecipeType;
 import com.gtolib.utils.RLUtils;
@@ -19,6 +26,7 @@ import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
@@ -41,17 +49,21 @@ import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.crafting.IPatternDetails;
@@ -69,16 +81,15 @@ import com.gto.datasynclib.LazyFieldDataManager;
 import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.annotations.SyncToServer;
 import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.gto.datasynclib.util.DataCodecs;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.gto.recipesearch.IntLongMap;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
+import dev.emi.emi.api.EmiApi;
+import dev.emi.emi.api.stack.EmiStack;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
@@ -97,14 +108,66 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<MEPatternBufferPartMachine.InternalSlot> implements IDataStickInteractable, IWailaDisplayProvider {
+public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBufferPartMachine.InternalSlot> implements IDataStickInteractable, IWailaDisplayProvider {
 
     @RegisterLanguage(cn = "此槽已缓存配方", en = "Recipe cached in this slot")
     private static final String CACHE = "gtocore.pattern_buffer.cache";
-    @RegisterLanguage(cn = "样板独立配置", en = "Pattern independent configuration")
-    private static final String INDEPENDENT = "gtocore.pattern_buffer.independent";
-    @RegisterLanguage(cn = "总成共享配置", en = "Buffer share configuration")
-    private static final String SHARE = "gtocore.pattern_buffer.share";
+
+    @RegisterLanguage(cn = "此样板物品输入槽", en = "The item input slots of this pattern")
+    public static final String ITEM_SPECIAL = "gtceu.ae.pattern_part_machine.ITEM_SPECIAL";
+    @RegisterLanguage(cn = "此样板流体输入槽", en = "The fluid input slots of this pattern")
+    public static final String FLUID_SPECIAL = "gtceu.ae.pattern_part_machine.FLUID_SPECIAL";
+    @RegisterLanguage(cn = "此样板电路输入槽", en = "The circuit input slot of this pattern")
+    public static final String CIRCUIT_SPECIAL = "gtceu.ae.pattern_part_machine.CIRCUIT_SPECIAL";
+    @RegisterLanguage(cn = "此样板记录的配方", en = "The recipe recorded by this pattern")
+    public static final String RECIPE_SPECIAL = "gtceu.ae.pattern_part_machine.RECIPE_SPECIAL";
+    @RegisterLanguage(cn = "点此查看配方详情", en = "Click to see recipe details")
+    public static final String VIEW_RECIPE = "gtceu.ae.pattern_part_machine.VIEW_RECIPE";
+    @RegisterLanguage(cn = "当前并没有记录任何配方", en = "No recipe is recorded currently")
+    public static final String NO_RECIPE = "gtceu.ae.pattern_part_machine.NO_RECIPE";
+    @RegisterLanguage(cn = "EMI 中找不到配方 %s", en = "Recipe %s is not available in EMI")
+    public static final String RECIPE_NOT_IN_EMI = "gtocore.pattern_buffer.recipe_not_in_emi";
+    @RegisterLanguage(cn = "解除当前机器的配方锁定", en = "Clear the recipe lock of this machine")
+    public static final String CLEAR_RECIPE_SLOT = "gtceu.ae.pattern_part_machine.clear_recipe";
+    @RegisterLanguage(cn = "当前机器的配方锁定已清除", en = "The recipe lock of this machine has been cleared")
+    public static final String CLEAR_RECIPE_SLOT_MSG = "gtceu.ae.pattern_part_machine.clear_recipe_msg";
+    @RegisterLanguage(cn = "打开emi页面后，选择一个配方，用“+”按钮将其添加到样板中。", en = "After opening the emi page, select a recipe and use the \"+\" button to add it to the pattern.")
+    public static final String ADD_RECIPE_MSG = "gtceu.ae.pattern_part_machine.clear_recipe_msg2";
+    @RegisterLanguage(cn = "此样板物品与流体配置", en = "The item and fluid configuration of this pattern")
+    public static final String PATTERN_CONFIGURATION = "gtceu.ae.pattern_part_machine.PATTERN_CONFIGURATION";
+    @RegisterLanguage(cn = "发信合成模式", en = "Emitting crafting mode")
+    public static final String EMITTING_CRAFTING_MODE = "gtceu.ae.pattern_part_machine.EMITTING_CRAFTING_MODE";
+    @RegisterLanguage(cn = "物品不够时请求合成", en = "Request crafting when items are insufficient")
+    public static final String REQUEST_CRAFTING_WHEN_INSUFFICIENT = "gtceu.ae.pattern_part_machine.REQUEST_CRAFTING_WHEN_INSUFFICIENT";
+    @RegisterLanguage(cn = "已锁定，由样板内的配方自动拉取虚拟成分进行合成", en = "Locked, automatically pull virtual ingredients for crafting according to the recipe in the pattern")
+    public static final String ITEM_LOCKED = "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode";
+    @RegisterLanguage(cn = "该模式与标准发信器的合成卡功能相似，在下单请求该物品后，机器会使用样板中的配方被动持续向机器内输入",
+                      en = "This mode is similar to the crafting card function of a standard emitter. " +
+                              "After placing an order for the item, the machine will passively and continuously input items into the machine using the recipe in the pattern.")
+    public static final String EMITTING_CRAFTING_MODE_TOOLTIP = "gtceu.ae.pattern_part_machine.EMITTING_CRAFTING_MODE_TOOLTIP";
+    @RegisterLanguage(cn = "低存量触发模式", en = "Low stock triggering mode")
+    public static final String LOW_STOCK_TRIGGERING_MODE = "gtceu.ae.pattern_part_machine.LOW_STOCK_TRIGGERING_MODE";
+    @RegisterLanguage(cn = "该模式会在网络库存量低于设定数量时触发持续被动配方输入，直到库存量满足要求。",
+                      en = "This mode will trigger continuous passive recipe input when the network inventory is below the set quantity, until the inventory meets the requirements.")
+    public static final String LOW_STOCK_TRIGGERING_MODE_TOOLTIP = "gtceu.ae.pattern_part_machine.LOW_STOCK_TRIGGERING_MODE_TOOLTIP";
+    @RegisterLanguage(cn = "低存量库存触发阈值", en = "Low stock triggering threshold")
+    public static final String LOW_STOCK_TRIGGERING_THRESHOLD = "gtceu.ae.pattern_part_machine.LOW_STOCK_TRIGGERING_THRESHOLD";
+    @RegisterLanguage(cn = "被动输入乘数", en = "Passive input multiplier")
+    public static final String PASSIVE_INPUT_MULTIPLIER = "gtceu.ae.pattern_part_machine.PASSIVE_INPUT_MULTIPLIER";
+    @RegisterLanguage(cn = "按照设定的乘数调整被动输入的数量。例如，设定为10时，按样板配置的数量×10进行被动输入。",
+                      en = "Adjust the quantity of passive input according to the set multiplier. For example, when set to 10, passive input will be performed according to the quantity configured in the pattern x10.")
+    public static final String PASSIVE_INPUT_MULTIPLIER_TOOLTIP = "gtceu.ae.pattern_part_machine.PASSIVE_INPUT_MULTIPLIER_TOOLTIP";
+
+    /// EMI 配方页的"+"按钮：把选中的配方写进指定样板槽（客户端发往服务端）
+    public static final NetworkPack SET_ID_CHANNEL = NetworkPack.registerC2S("me_pattern_buffer_set_id_channel", (player, buf) -> {
+        var blockPos = buf.readBlockPos();
+        var slot = buf.readVarInt();
+        var recipeId = buf.readResourceLocation();
+        if (player.level().getBlockEntity(blockPos) instanceof MetaMachineBlockEntity blockEntity &&
+                blockEntity.getMetaMachine() instanceof MEPatternBufferPartMachine machine) {
+            machine.setSlotRecipeId(slot, recipeId);
+        }
+    });
 
     @Override
     public @Nullable GTRecipeType gto$getRecipeType() {
@@ -139,21 +202,13 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
     private final Set<MEPatternBufferProxyPartMachine> proxyMachines = new ReferenceOpenHashSet<>();
     public final InternalSlotRecipeHandler internalRecipeHandler;
 
-    /// C2S sync field for configurator slot index
-    @Getter
-    @SyncToServer
-    protected IntNotifiableHolder configuratorField = IntNotifiableHolder.create(-1)
-            .setSenderListener((side, o, n) -> {}).setReceiverListener((side, o, n) -> {
-                if (side.isServer()) TaskHandler.enqueueTask(Objects.requireNonNull(getLevel()), () -> freshWidgetGroup.serverFresh());
-            });
-
     protected ConfiguratorPanel configuratorPanel;
 
     @Getter
     @SaveToDisk(defaultValue = "0")
     private int priority = 0;
 
-    MEPatternBufferPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
+    public MEPatternBufferPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
         super(holder, maxPatternCount);
         this.caches = new boolean[maxPatternCount];
         this.shareInventory = createShareInventory();
@@ -194,7 +249,7 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         }
         var f = stack.getItem() instanceof ProcessingPatternItem;
         if (!f) return false;
-        return MEPatternPartMachineKtKt.checkDuplicatedPattern(this, stack);
+        return checkDuplicatedPattern(this, stack);
     }
 
     @Override
@@ -366,21 +421,137 @@ public abstract class MEPatternBufferPartMachine extends MEPatternPartMachineKt<
         return null;
     }
 
-    @Override
-    public void onMouseClicked(int index) {
-        if (!isRemote()) return;
-        if (configuratorField.get() == index) {
-            configuratorField.set(-1);
-        } else {
-            configuratorField.set(index);
+    // ==================== 单槽配方 ====================
+
+    /** 样板槽记录的配方：优先取已缓存的配方，否则读样板物品上的 {@code recipe} 标签；槽号越界或都没有时返回 null。 */
+    @Nullable
+    public ResourceLocation getSlotRecipeId(int slot) {
+        if (slot < 0 || slot >= getMaxPatternCount()) return null;
+        var recipe = getInternalInventory()[slot].recipe;
+        if (recipe != null) return recipe.id;
+        var stack = getPatternInventory().getStackInSlot(slot);
+        if (stack.isEmpty() || stack.getTag() == null) return null;
+        var recipeId = stack.getTag().getString("recipe");
+        // 空串会被解析成 "minecraft:"
+        return recipeId.isEmpty() ? null : ResourceLocation.tryParse(recipeId);
+    }
+
+    /** 把配方写进样板物品的 {@code recipe} 标签并缓存到该槽；{@code recipeId} 为空或查无此配方时清除。 */
+    public void setSlotRecipeId(int slot, @Nullable ResourceLocation recipeId) {
+        if (slot < 0 || slot >= getMaxPatternCount()) return;
+        var recipe = recipeId == null ? null : RecipeBuilder.get(recipeId);
+        var stack = getPatternInventory().getStackInSlot(slot);
+        if (!stack.isEmpty()) {
+            if (recipe == null) stack.getOrCreateTag().remove("recipe");
+            else stack.getOrCreateTag().putString("recipe", recipe.id.toString());
         }
-        configuratorField.markAsChanged();
-        syncToServer();
+        getInternalInventory()[slot].setRecipe(recipe);
+        // 改样板物品的 NBT 不会触发物品栏回调，要自己标记存盘
+        onChanged();
     }
 
     @Override
-    public void addWidget(WidgetGroup group) {
-        group.addWidget(new LabelWidget(81, 2, () -> configuratorField.get() < 0 ? SHARE : INDEPENDENT).setHoverTooltips(Component.translatable("monitor.gui.title.slot").append(String.valueOf(configuratorField.get()))));
+    protected boolean supportsSlotConfig() {
+        return true;
+    }
+
+    /** 单槽配置：物品输入、流体输入、电路、记录的配方，各占一个面板区块。 */
+    @Override
+    protected void buildSlotConfig(UIElement column, int index) {
+        var slot = getInternalInventory()[index];
+
+        var items = MEPatternPartUI.section(column, ITEM_SPECIAL);
+        MEPatternPartUI.slotRows(items, slot.lockableInventory.getSlots(),
+                i -> MEPatternPartUI.missingVirtualInputOverlay(new LockableSlotWidget(slot, i), () -> slot.isMissingVirtualItemSlot(i)));
+
+        var fluids = MEPatternPartUI.section(column, FLUID_SPECIAL);
+        MEPatternPartUI.fluidSlots(fluids, slot.shareTank.getStorages(),
+                (i, tank) -> MEPatternPartUI.missingVirtualInputOverlay(tank, () -> slot.isMissingVirtualFluidSlot(i)));
+
+        var circuitStorage = slot.circuitInventory.storage;
+        MEPatternPartUI.section(column, CIRCUIT_SPECIAL).addChild(MEPatternPartUI.circuitRow(
+                MEPatternPartUI.missingVirtualInputOverlay(MEPatternPartUI.readOnlyCircuitSlot(circuitStorage), slot::isMissingVirtualCircuit),
+                () -> MEPatternPartUI.circuitOf(circuitStorage.getStackInSlot(0)),
+                circuit -> circuitStorage.setStackInSlot(0, MEPatternPartUI.circuitStack(circuit))));
+
+        var recipe = MEPatternPartUI.section(column, RECIPE_SPECIAL);
+        var recipeField = new TextField(0, () -> {
+            var recipeId = getSlotRecipeId(index);
+            return recipeId == null ? "" : recipeId.toString();
+        }, text -> setSlotRecipeId(index, ResourceLocation.tryParse(text))).setRightClickClear(true);
+        recipeField.layout(l -> l.flexGrow(1));
+        recipeField.setHoverTooltips(Component.translatable(ADD_RECIPE_MSG));
+        recipe.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(recipe.getContentWidth()).gapAll(UISizes.GAP).alignCenter()).addChildren(
+                Button.glyph("?")
+                        .bindTooltip(() -> Component.translatable(getSlotRecipeId(index) != null ? VIEW_RECIPE : NO_RECIPE))
+                        .setOnClientClick(() -> {
+                            var recipeId = getSlotRecipeId(index);
+                            if (recipeId != null) displayEmiRecipe(recipeId);
+                        }),
+                recipeField,
+                Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER)
+                        .setOnServerClick(() -> {
+                            slot.setRecipe(null);
+                            onChanged();
+                        })
+                        .setHoverTooltips(CLEAR_RECIPE_SLOT)));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void displayEmiRecipe(ResourceLocation recipeId) {
+        // 先按 id 在 EMI 里找这条配方
+        var emiRecipe = EmiApi.getRecipeManager().getRecipe(recipeId);
+        if (emiRecipe == null) {
+            for (var recipe : GTORecipes.EMI_RECIPES) {
+                if (recipeId.equals(recipe.getId())) {
+                    emiRecipe = recipe;
+                    break;
+                }
+            }
+        }
+        if (emiRecipe != null) {
+            EmiApi.displayRecipe(emiRecipe);
+            return;
+        }
+        // EMI 里没有这条配方（如所在类别不在 EMI 展示）：退而打开它第一个物品产物的全部配方
+        var definition = RecipeBuilder.get(recipeId);
+        if (definition != null) {
+            for (var output : definition.itemOutputs) {
+                var stack = output.inner.getInnerItemStack();
+                if (!stack.isEmpty()) {
+                    EmiApi.displayRecipes(EmiStack.of(stack));
+                    return;
+                }
+            }
+        }
+        var player = Minecraft.getInstance().player;
+        if (player != null) player.displayClientMessage(Component.translatable(RECIPE_NOT_IN_EMI, recipeId.toString()), true);
+    }
+
+    /** 单槽配置里的物品槽：样板被虚拟输入锁定时压暗并在提示里说明。 */
+    private static final class LockableSlotWidget extends SlotWidget {
+
+        private final InternalSlot slot;
+
+        private LockableSlotWidget(InternalSlot slot, int index) {
+            super(slot.lockableInventory, index, 0, 0, true, true);
+            this.slot = slot;
+            setBackgroundTexture(UITheme.ITEM_SLOT);
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+            if (slot.isLock()) DrawerHelper.drawSolidRect(graphics, getPositionX(), getPositionY(), getSizeWidth(), getSizeHeight(), 0x80000000);
+        }
+
+        @Override
+        public List<Component> getFullTooltipTexts() {
+            var tooltips = new ArrayList<>(super.getFullTooltipTexts());
+            if (slot.isLock()) tooltips.add(Component.translatable(ITEM_LOCKED));
+            return tooltips;
+        }
     }
 
     @Override

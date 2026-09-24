@@ -620,7 +620,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_wireless_connection_machine")
 
         miraculousTools("ME无线连接机" translatedTo "ME Wireless Connection Machine")
-        content("多对多的ME无线网络节点" translatedTo "A many-to-many ME wireless network node")
+        content("同一无线网络中的所有机器接入同一个ME网络" translatedTo "All machines in the same wireless network join one ME network")
         content("可以在不同世界传输" translatedTo "Can transmit across different worlds")
         content("可以连接GTO ME无线网络" translatedTo "Can connect to GTO ME wireless network")
         section("无线ME网络连接" translatedTo "Built-in wireless ME network connection feature")

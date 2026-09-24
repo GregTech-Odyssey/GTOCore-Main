@@ -6,7 +6,7 @@ import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
 @Scanned
-public class MESimplePatternBufferPartMachine extends MEPatternBufferPartMachineKt {
+public class MESimplePatternBufferPartMachine extends MEPatternBufferPartMachine {
 
     @DynamicInitialValue(
                          key = "gtceu.machine.part.ae.simple_pattern_buffer.slot_count",

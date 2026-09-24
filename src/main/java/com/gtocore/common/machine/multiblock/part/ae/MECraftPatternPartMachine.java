@@ -27,7 +27,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Setter
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPatternPartMachine.InternalSlot> {
+public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatternPartMachine.InternalSlot> {
 
     private Runnable onContentsChanged = () -> {};
 
@@ -44,7 +44,7 @@ public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPat
     public boolean patternFilter(ItemStack stack) {
         return stack.getItem() instanceof EncodedPatternItem &&
                 !(stack.getItem() instanceof ProcessingPatternItem) &&
-                MEPatternPartMachineKtKt.checkDuplicatedPattern(this, stack);
+                checkDuplicatedPattern(this, stack);
     }
 
     @Override
@@ -105,14 +105,14 @@ public class MECraftPatternPartMachine extends MEPatternPartMachineKt<MECraftPat
             }
         }
 
+        /// 旧版这里构造了列表却没有返回，待取出的合成产物从未存盘；旧存档里该槽是空数据，读取时跳过
         @Override
         public Data writeData() {
-            if (output != null) {
-                var list = new ListData(2);
-                list.addLong(amount);
-                list.add(DataCodecs.ITEM_STACK_CODEC.encode(output));
-            }
-            return NullData.INSTANCE;
+            if (output == null) return NullData.INSTANCE;
+            var list = new ListData(2);
+            list.addLong(amount);
+            list.add(DataCodecs.ITEM_STACK_CODEC.encode(output));
+            return list;
         }
 
         @Override

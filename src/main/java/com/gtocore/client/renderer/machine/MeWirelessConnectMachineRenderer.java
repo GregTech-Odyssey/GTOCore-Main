@@ -1,6 +1,6 @@
 package com.gtocore.client.renderer.machine;
 
-import com.gtocore.integration.ae.MeWirelessConnectMachine;
+import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
 
 import com.gtolib.GTOCore;
 

@@ -28,7 +28,7 @@ import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
 import com.gtocore.common.machine.tesseract.DirectedTesseractMachine;
 import com.gtocore.common.machine.tesseract.TesseractMachine;
-import com.gtocore.integration.ae.MeWirelessConnectMachine;
+import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
