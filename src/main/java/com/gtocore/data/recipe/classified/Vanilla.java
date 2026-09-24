@@ -766,6 +766,21 @@ final class Vanilla {
                 "BCB",
                 "DBD",
                 'B', new MaterialEntry(TagPrefix.cableGtQuadruple, GTMaterials.Kanthal), 'D', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.StainlessSteel), 'C', GTMachines.ELECTRIC_FURNACE[GTValues.HV].asItem(), 'A', CustomTags.HV_CIRCUITS);
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("molecular_assembly_factory"), MultiBlockG.MOLECULAR_ASSEMBLY_FACTORY.asItem(),
+                "ABA",
+                "BCB",
+                "DBD",
+                'A', CustomTags.HV_CIRCUITS, 'B', RegistriesUtils.getItem("expatternprovider:ex_molecular_assembler"), 'C', GTOBlocks.MULTI_FUNCTIONAL_CASING.asItem(), 'D', new MaterialEntry(TagPrefix.gearSmall, GTMaterials.StainlessSteel));
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("molecular_assembly_factory_pattern_hatch"), GTAEMachines.MOLECULAR_ASSEMBLY_FACTORY_PATTERN_HATCH.asItem(),
+                "ABA",
+                "CDE",
+                "ABA",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.StainlessSteel), 'B', AEBlocks.PATTERN_PROVIDER.asItem(), 'C', AEItems.CAPACITY_CARD.asItem(), 'D', GTMachines.DUAL_IMPORT_HATCH[GTValues.MV].asItem(), 'E', AEItems.SPEED_CARD.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("molecular_assembly_factory_pull_pattern_hatch"), GTAEMachines.MOLECULAR_ASSEMBLY_FACTORY_PULL_PATTERN_HATCH.asItem(),
+                "ABA",
+                "CDE",
+                "ABA",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.StainlessSteel), 'B', AEBlocks.PATTERN_PROVIDER.asItem(), 'C', AEItems.CRAFTING_CARD.asItem(), 'D', GTMachines.DUAL_IMPORT_HATCH[GTValues.MV].asItem(), 'E', AEItems.SPEED_CARD.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("spool_hatch"), GTOMachines.SPOOL_HATCH.asItem(),
                 "ABA",
                 "BCB",
