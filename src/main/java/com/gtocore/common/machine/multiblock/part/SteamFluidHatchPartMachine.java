@@ -6,50 +6,52 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.UITemplate;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
+import com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine;
+import com.gregtechceu.gtceu.uipro.elements.IconToggle;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
+import com.lowdragmc.lowdraglib.utils.Position;
 import org.jetbrains.annotations.NotNull;
 
 import static com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine.IS_STEEL;
 
 public class SteamFluidHatchPartMachine extends FluidHatchPartMachine {
 
-    private final String autoTooltipKey;
-
     public SteamFluidHatchPartMachine(MetaMachineBlockEntity holder, IO io) {
         super(holder, 1, io, 8000, 1);
-        autoTooltipKey = io == IO.IN ? "gtceu.gui.fluid_auto_input.tooltip" : "gtceu.gui.fluid_auto_output.tooltip";
     }
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 166, this, entityPlayer)
+        // 保留蒸汽皮肤（铜/钢底板、蒸汽槽背包）；内容与其他仓一样分两区：
+        // 上面流体槽（输出仓另有锁定）和自动输入/输出开关，下面状态面板
+        var auto = io == IO.IN ?
+                IconToggle.of(WidgetIcons.IMPORT, this::isWorkingEnabled, this::setWorkingEnabled)
+                        .tooltips("gtceu.gui.fluid_auto_input.tooltip.enabled", "gtceu.gui.fluid_auto_input.tooltip.disabled") :
+                IconToggle.of(WidgetIcons.EXPORT, this::isWorkingEnabled, this::setWorkingEnabled)
+                        .tooltips("gtceu.gui.fluid_auto_output.tooltip.enabled", "gtceu.gui.fluid_auto_output.tooltip.disabled");
+        var content = HatchViews.fixedPage(UISizes.CONTENT_WIDTH, SteamHatchPartMachine.STEAM_CONTENT_HEIGHT,
+                HatchViews.operations(HatchViews.tankOperation(tank, io), auto), HatchViews.tankStatus(tank, io),
+                SteamHatchPartMachine.STEAM_DISPLAY_WIDTH);
+        content.setSelfPosition(new Position(UISizes.WINDOW_PADDING_X, SteamHatchPartMachine.STEAM_CONTENT_Y));
+        return new ModularUI(UISizes.WINDOW_WIDTH, 166, this, entityPlayer)
                 .background(GuiTextures.BACKGROUND_STEAM.get(IS_STEEL))
-                .widget(new ImageWidget(7, 16, 81, 55, GuiTextures.DISPLAY_STEAM.get(IS_STEEL)))
-                .widget(new ToggleButtonWidget(7, 64, 18, 18,
-                        GuiTextures.BUTTON_FLUID_OUTPUT, this::isWorkingEnabled, this::setWorkingEnabled)
-                        .setShouldUseBaseBackground()
-                        .setTooltipText(autoTooltipKey))
-                .widget(new LabelWidget(11, 20, "gtceu.gui.fluid_amount"))
-                .widget(new LabelWidget(11, 30, () -> tank.getFluidInTank(0).getAmount() + "").setTextColor(-1)
-                        .setDropShadow(true))
                 .widget(new LabelWidget(6, 6, getBlockState().getBlock().getDescriptionId()))
-                .widget(new TankWidget(tank.getStorages()[0], 90, 35, true, true)
-                        .setBackground(GuiTextures.FLUID_SLOT))
+                .widget(content)
                 .widget(UITemplate.bindPlayerInventory(entityPlayer.getInventory(),
-                        GuiTextures.SLOT_STEAM.get(IS_STEEL), 7, 84, true));
+                        GuiTextures.SLOT_STEAM.get(IS_STEEL), UISizes.WINDOW_PADDING_X, SteamHatchPartMachine.STEAM_INVENTORY_Y, true));
     }
 
     @Override

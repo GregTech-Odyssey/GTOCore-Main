@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -20,8 +21,6 @@ import appeng.api.stacks.KeyCounter;
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.recipesearch.IntLongMap;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -73,13 +72,9 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
     @Override
     public void setParallel(GTRecipe recipe, long parallel) {}
 
+    /** 不在配方页显示。 */
     @Override
-    public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {}
-
-    @Override
-    public int getInfoHeight(GTRecipeDefinition recipe) {
-        return 0;
-    }
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {}
 
     public record AEKeyDataCrystal(KeyCounter aeKeys, ItemStack dataCystal, UUID team) {}
 

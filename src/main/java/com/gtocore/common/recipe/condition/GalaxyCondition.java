@@ -5,14 +5,15 @@ import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.data.Galaxy;
 
 import com.gregtechceu.gtceu.api.data.DimensionMarker;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.recipe.condition.DimensionCondition;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -20,10 +21,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -45,22 +44,19 @@ public class GalaxyCondition extends DimensionCondition {
         return Component.translatable("gtocore.condition.within_galaxy", Component.translatable("gtolib.galaxy.name." + galaxy.name()));
     }
 
+    /** 配方页：一句说明，并以展示槽轮流显示该星系各维度的标志物品。 */
     @Override
-    public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {
-        super.addInfo(recipe, group, xOffset, yOffset);
-        group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), getTooltips().getString()));
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.sentence(this::getTooltips);
+        info.slot(this::createDimensionSlot);
     }
 
     @Override
-    public int getInfoHeight(GTRecipeDefinition recipe) {
-        return 10;
-    }
-
-    @Override
-    public SlotWidget setupDimensionMarkers(int xOffset, int yOffset) {
+    public Widget createDimensionSlot() {
+        if (getDimensions().length == 0) return super.createDimensionSlot();
         Supplier<DimensionMarker> dimSupplier = () -> getDimensions()[Math.toIntExact((System.currentTimeMillis() / 1000) % getDimensions().length)];
         CustomItemStackHandler handler = new CustomItemStackHandler(1);
-        return new SlotWidget(handler, 0, xOffset, yOffset, false, false) {
+        var slot = new ItemSlot(handler, 0, false, false) {
 
             @Override
             public void drawOverlay(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
@@ -75,12 +71,9 @@ public class GalaxyCondition extends DimensionCondition {
                 handler.setStackInSlot(0, dimSupplier.get().getIcon());
                 return dimSupplier.get().getIcon();
             }
-
-            @Override
-            public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-                super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            }
-        }.setIngredientIO(IngredientIO.INPUT);
+        };
+        slot.setIngredientIO(IngredientIO.INPUT);
+        return slot;
     }
 
     public DimensionMarker[] getDimensions() {

@@ -5,11 +5,10 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.recipesearch.IntLongMap;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.List;
 
@@ -36,11 +35,7 @@ public final class ParticleRecipeExtension extends RecipeExtension<List<Particle
     @Override
     public void setParallel(GTRecipe recipe, long parallel) {}
 
+    /** 不在配方页显示。 */
     @Override
-    public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {}
-
-    @Override
-    public int getInfoHeight(GTRecipeDefinition recipe) {
-        return 0;
-    }
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {}
 }

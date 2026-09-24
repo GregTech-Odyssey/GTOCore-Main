@@ -7,12 +7,9 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
-
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.HashMap;
 
@@ -50,16 +47,13 @@ public final class BeamCondition extends RecipeCondition {
         return Component.translatable("gtocore.recipe.ray_requirement.1", minWavelength, maxWavelength, minIntensity, polarization);
     }
 
-    public void addInfo(GTRecipeDefinition recipe, WidgetGroup group, int xOffset, MutableInt yOffset) {
-        group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable("gtocore.recipe.ray_requirement.wavelength", minWavelength, maxWavelength)));
-        group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable("gtocore.recipe.ray_requirement.intensity", minIntensity)));
+    @Override
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.wavelength", minWavelength, maxWavelength));
+        info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.intensity", minIntensity));
         if (hasPolarization) {
-            group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10), Component.translatable("gtocore.recipe.ray_requirement.polarization", polarization)));
+            info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.polarization", polarization));
         }
-    }
-
-    public int getInfoHeight(GTRecipeDefinition recipe) {
-        return hasPolarization ? 30 : 20;
     }
 
     @Override

@@ -17,7 +17,13 @@ import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
@@ -29,6 +35,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
@@ -39,9 +46,7 @@ import com.gto.datasynclib.util.DataCodecs;
 import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.hepdd.gtmthings.api.transfer.UnlimitItemTransferHelper;
-import com.lowdragmc.lowdraglib.gui.editor.Icons;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceBorderTexture;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
@@ -49,6 +54,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.ObjLongConsumer;
+import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -155,25 +161,61 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 109, 63);
-        var importItems = createImportItems();
-        group.addWidget(new ImageWidget(4, 4, 82, 55, GuiTextures.DISPLAY))
-                .addWidget(new LabelWidget(8, 8, "gtceu.machine.quantum_chest.items_stored"))
-                .addWidget(new LabelWidget(8, 18, () -> FormattingUtil.formatNumbers(inventory.getCount())))
-                .addWidget(new com.gregtechceu.gtceu.api.gui.widget.SlotWidget(importItems, 0, 87, 4, false, true).setBackgroundTexture(new GuiTextureGroup(GuiTextures.SLOT, GuiTextures.IN_SLOT_OVERLAY)))
-                .addWidget(new com.gregtechceu.gtceu.api.gui.widget.SlotWidget(inventory, 0, 87, 22, false, false).setItemHook(s -> s.copyWithCount((int) Math.min(inventory.getCount(), s.getMaxStackSize()))).setBackgroundTexture(GuiTextures.SLOT))
-                .addWidget(new ButtonWidget(87, 41, 18, 18, new GuiTextureGroup(ResourceBorderTexture.BUTTON_COMMON, Icons.DOWN.scale(0.7F)), cd -> {
-                    if (!cd.isRemote) {
-                        if (!inventory.isEmpty()) {
-                            var extracted = inventory.extractItemInternal(0, (int) Math.min(inventory.getCount(), inventory.getStackInSlot(0).getMaxStackSize()), false);
-                            if (!group.getGui().entityPlayer.addItem(extracted)) {
-                                Block.popResource(group.getGui().entityPlayer.level(), group.getGui().entityPlayer.getOnPos(), extracted);
-                            }
-                        }
-                    }
-                }));
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        // 与其他总线、仓一样分两区：上面放入槽、存储物品（只取）、取出一组按钮，下面状态面板（物品、存储数量）
+        var importSlot = new ItemSlot(createImportItems(), 0, false, true);
+        importSlot.setBackgroundTexture(new GuiTextureGroup(UITheme.ITEM_SLOT, GuiTextures.IN_SLOT_OVERLAY));
+        var storedSlot = new ItemSlot(inventory, 0, false, false);
+        storedSlot.setItemHook(s -> s.copyWithCount((int) Math.min(inventory.getCount(), s.getMaxStackSize())));
+        var extract = Button.icon(UITheme.ARROW_DOWN, UISizes.SLOT);
+        extract.setOnServerClick(() -> extractStack(extract.getGui() == null ? null : extract.getGui().entityPlayer));
+        extract.setHoverTooltips(HatchViews.EXTRACT_STACK);
+        var status = new StatusPanel();
+        status.addLine(HatchViews.ITEM, new StoredName());
+        status.addLine(HatchViews.STORED, new StoredText());
+        return HatchViews.page(HatchViews.operations(importSlot, HatchViews.group(storedSlot, extract)), status);
+    }
+
+    /** 取出一组给玩家，背包放不下的部分像原版一样丢在玩家面前。 */
+    private void extractStack(@Nullable Player player) {
+        if (player == null || inventory.isEmpty()) return;
+        var extracted = inventory.extractItemInternal(0, (int) Math.min(inventory.getCount(), inventory.getStackInSlot(0).getMaxStackSize()), false);
+        // addItem 只放进一部分时也返回 true，剩下的留在 extracted 里
+        player.getInventory().add(extracted);
+        if (!extracted.isEmpty()) player.drop(extracted, false);
+    }
+
+    /** 存储物品的名称：物品不变时复用上次的文字。 */
+    private final class StoredName implements Supplier<Component> {
+
+        private ItemStack last = ItemStack.EMPTY;
+        private Component text = Component.translatable(HatchViews.EMPTY);
+
+        @Override
+        public Component get() {
+            var current = inventory.getStackInSlot(0);
+            if (current.isEmpty() != last.isEmpty() || !ItemStack.isSameItemSameTags(current, last)) {
+                last = current.copyWithCount(1);
+                text = current.isEmpty() ? Component.translatable(HatchViews.EMPTY) : current.getHoverName();
+            }
+            return text;
+        }
+    }
+
+    /** 存储数量的文字：数量不变时复用上次的文字。 */
+    private final class StoredText implements Supplier<Component> {
+
+        private long count = -1;
+        private Component text = Component.empty();
+
+        @Override
+        public Component get() {
+            long current = inventory.getCount();
+            if (current != count) {
+                count = current;
+                text = Component.literal(FormattingUtil.formatNumbers(current));
+            }
+            return text;
+        }
     }
 
     private CustomItemStackHandler createImportItems() {
