@@ -676,6 +676,22 @@ object GTOMachineTooltips {
         info("标记后该仓只读写被标记的资源，未标记的资源不进出" translatedTo "Once marked, this hatch only reads and writes the marked resource; unmarked resources are rejected")
     }
 
+    // 抽屉存储器
+    @JvmField
+    val DrawerStorageTooltips = ComponentListSupplier {
+        setTranslationPrefix("drawer_storage")
+
+        section(ComponentSlang.MainFunction)
+        function("把功能存储的 1x/2x/4x 物品与流体抽屉放进输入总线即可存储物品与流体" translatedTo "Put Functional Storage 1x/2x/4x item and fluid drawers into an input bus to store items and fluids")
+        info("种类由抽屉决定：1x/2x/4x 抽屉各贡献 1/2/4 种，按总线里的数量叠加，每个键占一种" translatedTo "Types come from the drawers: 1x/2x/4x drawers contribute 1/2/4 types each, added up by amount in the bus; each key takes one type")
+        info("每种类容量 = 抽屉每槽容量 × 升级倍率 × 密封机械方块等级" translatedTo "Capacity per type = drawer amount per slot x upgrade multiplier x Hermetic Casing tier")
+        info("升级倍率取总线里升级之和（用功能存储自己的倍率），无升级为 1" translatedTo "Upgrade multiplier is the sum of the upgrades in the bus (using Functional Storage's own values), 1 without any")
+        info("不设总容量，只限每种上限；界面里可以看每个键的容量使用情况" translatedTo "There is no overall capacity, only a per-type cap; the UI shows the usage of every stored key")
+        info("压缩抽屉、末影抽屉等不作为介质" translatedTo "Compacting and ender drawers do not count as media")
+        important("抽屉与升级留在总线里当介质，随时可以取回；放入或取走会立刻重算容量" translatedTo "Drawers and upgrades stay in the bus as media and can be taken back at any time; adding or removing one recalculates the capacity immediately")
+        content("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓" translatedTo "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO")
+    }
+
     @JvmField
     val fishingFarmTooltips: ComponentListSupplier = ComponentListSupplier {
         setTranslationPrefix("fishing_farm")

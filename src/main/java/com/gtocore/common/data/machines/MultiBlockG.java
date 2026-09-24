@@ -894,6 +894,26 @@ public final class MultiBlockG {
             .workableCasingRenderer(GTCEu.id("block/casings/steam/steel/side"), GTCEu.id("block/multiblock/multiblock_tank"))
             .register();
 
+    public static final MultiblockMachineDefinition DRAWER_STORAGE = multiblock("drawer_storage", "抽屉存储器", DrawerStorageMachine::new)
+            .nonYAxisRotation()
+            .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
+            .block(GTBlocks.STEEL_HULL)
+            .tooltips(GTOMachineTooltips.DrawerStorageTooltips)
+            .pattern(definition -> FactoryBlockPattern.start(definition)
+                    .aisle("FFF", "FFF", "FFF")
+                    .aisle("FFF", "FMF", "FFF")
+                    .aisle("FFF", "FCF", "FFF")
+                    .wherePart('F', blocks(GTBlocks.STEEL_HULL.get())
+                            .setMinGlobalLimited(10)
+                            .or(blocks(GTOMachines.VAULT_HATCH.get()).setMaxGlobalLimited(1))
+                            .or(abilities(IMPORT_ITEMS)))
+                    .where('M', GTOPredicates.hermeticCasing())
+                    .where('C', controller(definition))
+                    .build())
+            .blockBuilder(b -> b.properties(p -> p.explosionResistance(100)))
+            .workableCasingRenderer(GTCEu.id("block/casings/steam/steel/side"), GTCEu.id("block/multiblock/multiblock_tank"))
+            .register();
+
     public static final MultiblockMachineDefinition ME_CPU = multiblock("me_cpu", "ME超算核心", MECPUMachine::new)
             .langValue("ME Super Computer Core")
             .allRotation()

@@ -53,7 +53,7 @@ import java.util.function.Supplier;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
 
-public final class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, IDropSaveMachine, IWailaDisplayProvider {
+public class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, IDropSaveMachine, IWailaDisplayProvider {
 
     public static final int MIN_DEPTH = 2;
     public static final int MAX_DEPTH = 14;
@@ -68,7 +68,7 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
     @SaveToDisk
     @Getter
     @NotNull
-    private final AEKeyMap<AEKey> keyMap = new AEKeyMap<>();
+    protected final AEKeyMap<AEKey> keyMap = new AEKeyMap<>();
 
     private int cells;
     private long storage;
@@ -245,12 +245,23 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
 
     @Override
     public void onStructureFormed() {
-        capacity = cells * 800L * (getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1);
+        // 容量要在 super 之前算好：部件（保险库仓）在 super 里绑定处理器时会读当前容量
+        refreshCapacity();
+        super.onStructureFormed();
+        notifyNeighborsUpdate();
+    }
+
+    /** 按当前结构重算容量并同步给各处理器；容量口径不同时子类覆写 {@link #computeCapacity()}。 */
+    protected void refreshCapacity() {
+        capacity = Math.max(0, computeCapacity());
         if (itemStackHandler != null) itemStackHandler.setCapacity(capacity);
         if (fluidStackHandler != null) fluidStackHandler.setCapacity(capacity);
         if (manaHandler != null) manaHandler.setCapacity(capacity);
-        super.onStructureFormed();
-        notifyNeighborsUpdate();
+    }
+
+    /** 容量（按 {@link #getCapacityUsage} 计）：密封机械方块数量 × 800 × (密封等级 + 1)。 */
+    protected long computeCapacity() {
+        return cells * 800L * (getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1);
     }
 
     @Override
@@ -358,7 +369,8 @@ public final class MultiblockMEStorageMachine extends MultiblockControllerMachin
         out.addAll(map.size(), m -> map.fastForEach(m::insert));
     }
 
-    private void saveChanges() {
+    /** 存储内容变化后标脏并按当前内容重算已用容量；子类写入路径也要调它。 */
+    protected void saveChanges() {
         holder.setChanged();
         double totalAmount = 0;
         for (var e : keyMap) {

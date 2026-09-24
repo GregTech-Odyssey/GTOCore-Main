@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.mod;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -87,6 +88,12 @@ public final class FunctionalStorage {
                     "CDC",
                     "CBC",
                     'A', GTItems.FLUID_REGULATOR_MV.asItem(), 'B', GTItems.ROBOT_ARM_MV.asItem(), 'C', CustomTags.MV_CIRCUITS, 'D', TagUtils.createItemTag("functionalstorage:drawer"));
+
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("drawer_storage"), MultiBlockG.DRAWER_STORAGE.asItem(),
+                    "PDP",
+                    "DCD",
+                    "PDP",
+                    'P', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'D', TagUtils.createItemTag("functionalstorage:drawer"), 'C', GTMachines.BRONZE_CRATE.asItem());
         }
     }
 

@@ -177,6 +177,18 @@ public final class MEStorageHatch extends MultiblockPartMachine {
     }
 
     /**
+     * 控制器容量变化后重读一次绑定（如抽屉存储器增减抽屉时会变）。
+     * 处理器里的容量只是写入前的预检上限，真正的限制在控制器的写入逻辑里。
+     */
+    public void refreshStorageBinding() {
+        for (var controller : getControllers()) {
+            if (!(controller instanceof MultiblockMEStorageMachine machine)) continue;
+            bindHandlers(machine);
+            manaHandler.setCapacity(machine.getCapacity());
+        }
+    }
+
+    /**
      * 绑定本仓的物品/流体处理器：它们与控制器共用同一份存储和容量，但各自带本仓的标记。
      * 保险库只支持物品或流体中的一种，另一种不绑也不当其能力，行为与改造前一致。
      */
