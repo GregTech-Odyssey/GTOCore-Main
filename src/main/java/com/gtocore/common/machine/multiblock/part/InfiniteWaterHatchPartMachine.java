@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableRecipeHandlerTrait;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IFluidRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
@@ -43,7 +44,7 @@ public final class InfiniteWaterHatchPartMachine extends WorkableTieredIOPartMac
         return false;
     }
 
-    private static final class FluidTank extends NotifiableRecipeHandlerTrait {
+    private static final class FluidTank extends NotifiableRecipeHandlerTrait implements IFluidRecipeHandler {
 
         private static final FluidStack WATER = new FluidStack(Fluids.WATER, Integer.MAX_VALUE);
 
@@ -88,11 +89,6 @@ public final class InfiniteWaterHatchPartMachine extends WorkableTieredIOPartMac
         @Override
         public IntLongMap getSearchMap(@NotNull GTRecipeType type) {
             return MAP;
-        }
-
-        @Override
-        public boolean canHandleFluid() {
-            return true;
         }
     }
 }

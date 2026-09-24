@@ -11,10 +11,14 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.ContentInner;
 import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.ContentRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
@@ -278,6 +282,45 @@ public final class InternalSlotRecipeHandler {
         @Override
         public boolean canHandleFluid() {
             return true;
+        }
+
+        @Override
+        public boolean isOnlyRecipe() {
+            return true;
+        }
+
+        @Override
+        public <T, C extends ContentInner<T>> boolean canHandleContent(@Nullable ContentRecipeInfo<T, C> key) {
+            return key == null || key == ItemRecipeInfo.INSTANCE || key == FluidRecipeInfo.INSTANCE;
+        }
+
+        @Override
+        public <T, C extends ContentInner<T>> boolean forEachContent(@NotNull ContentRecipeInfo<T, C> key, ObjLongPredicate<T> function) {
+            if (key == ItemRecipeInfo.INSTANCE) {
+                return this.forEachItems((ObjLongPredicate<ItemStack>) function);
+            } else if (key == FluidRecipeInfo.INSTANCE) {
+                return this.forEachFluids((ObjLongPredicate<FluidStack>) function);
+            }
+            return false;
+        }
+
+        @Override
+        public <T, C extends ContentInner<T>> void fastForEachContent(@NotNull ContentRecipeInfo<T, C> key, ObjLongConsumer<T> function) {
+            if (key == ItemRecipeInfo.INSTANCE) {
+                fastForEachItems((ObjLongConsumer<ItemStack>) function);
+            } else if (key == FluidRecipeInfo.INSTANCE) {
+                fastForEachFluids((ObjLongConsumer<FluidStack>) function);
+            }
+        }
+
+        @Override
+        public <T, C extends ContentInner<T>> boolean handleRecipeContent(@NotNull ContentRecipeInfo<T, C> key, IO io, GTRecipe recipe, List<Content<C>> contents, boolean simulate) {
+            if (key == ItemRecipeInfo.INSTANCE) {
+                return handleRecipeItem(io, recipe, (List) contents, simulate);
+            } else if (key == FluidRecipeInfo.INSTANCE) {
+                return handleRecipeFluid(io, recipe, (List) contents, simulate);
+            }
+            return false;
         }
     }
 }

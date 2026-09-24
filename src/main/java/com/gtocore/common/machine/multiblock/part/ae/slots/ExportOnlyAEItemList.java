@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IItemRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
@@ -31,7 +32,7 @@ import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
 @Getter
-public class ExportOnlyAEItemList extends NotifiableContentHandler implements ICustomItemStackHandler, IConfigurableSlotList {
+public class ExportOnlyAEItemList extends NotifiableContentHandler implements IItemRecipeHandler, ICustomItemStackHandler, IConfigurableSlotList {
 
     @SaveToDisk
     final ExportOnlyAEItemSlot[] inventory;
@@ -103,11 +104,6 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
         amount = MathUtil.saturatedCast(inv.extract(amount, simulate, true));
         if (amount < 1) return ItemStack.EMPTY;
         return stack.copyWithCount(amount);
-    }
-
-    @Override
-    public boolean canHandleItem() {
-        return true;
     }
 
     protected boolean acceptsIngredient(Content<ItemIngredient> contentItemIngredient) {

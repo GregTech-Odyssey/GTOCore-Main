@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
@@ -36,7 +37,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(ItemRecipeInfo.class)
-public abstract class ItemRecipeInfoMixin extends ContentRecipeInfo<ItemIngredient> {
+public abstract class ItemRecipeInfoMixin extends ContentRecipeInfo<ItemStack, ItemIngredient> {
 
     protected ItemRecipeInfoMixin(String name, int color, boolean doRenderSlot, int sortIndex) {
         super(name, color, doRenderSlot, sortIndex);

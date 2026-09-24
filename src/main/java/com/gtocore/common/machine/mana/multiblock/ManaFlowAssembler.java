@@ -20,8 +20,8 @@ import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IItemRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -219,12 +219,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         });
     }
 
-    private class ItemEntityRecipeHandler implements IRecipeHandler {
-
-        @Override
-        public boolean canHandleItem() {
-            return true;
-        }
+    private class ItemEntityRecipeHandler implements IItemRecipeHandler {
 
         @Override
         public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {

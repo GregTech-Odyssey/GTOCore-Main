@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IFluidRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
@@ -30,7 +31,7 @@ import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
 @Getter
-public class ExportOnlyAEFluidList extends NotifiableContentHandler implements ICustomFluidStackHandler, IConfigurableSlotList {
+public class ExportOnlyAEFluidList extends NotifiableContentHandler implements IFluidRecipeHandler, ICustomFluidStackHandler, IConfigurableSlotList {
 
     @SaveToDisk
     final ExportOnlyAEFluidSlot[] inventory;
@@ -116,11 +117,6 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
             }
         }
         return drained > 0 ? ICustomFluidStackHandler.copy(resource, drained) : FluidStack.EMPTY;
-    }
-
-    @Override
-    public boolean canHandleFluid() {
-        return true;
     }
 
     protected boolean acceptsIngredient(Content<FluidIngredient> contentFluidIngredient) {
