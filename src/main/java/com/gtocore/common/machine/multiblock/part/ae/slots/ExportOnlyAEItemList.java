@@ -110,6 +110,10 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
         return true;
     }
 
+    protected boolean acceptsIngredient(Content<ItemIngredient> contentItemIngredient) {
+        return true;
+    }
+
     @Override
     public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
         if (io == IO.IN) {
@@ -120,8 +124,8 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IC
                     it.remove();
                     continue;
                 }
-                if (ingredient.chance == 0) {
-                    continue; // only consumable (chance > 0) contents are handled here
+                if (!acceptsIngredient(ingredient)) {
+                    continue;
                 }
                 for (var i : inventory) {
                     GenericStack stored = i.stock;

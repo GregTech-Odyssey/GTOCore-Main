@@ -114,6 +114,12 @@ public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
         }
     }
 
+    // only consumable (chance > 0) contents are handled here (preventing phantom counts).
+    @Override
+    protected boolean acceptsIngredient(Content<ItemIngredient> contentItemIngredient) {
+        return contentItemIngredient.chance > 0;
+    }
+
     @Override
     public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
         if (machine.isWorkingEnabled()) return super.handleRecipeItem(io, recipe, items, simulate);

@@ -114,6 +114,12 @@ public class ExportOnlyAEStockingFluidList extends ExportOnlyAEFluidList {
         }
     }
 
+    // only consumable (chance > 0) contents are handled here (preventing phantom counts).
+    @Override
+    protected boolean acceptsIngredient(Content<FluidIngredient> contentFluidIngredient) {
+        return contentFluidIngredient.chance > 0;
+    }
+
     @Override
     public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
         if (machine.isWorkingEnabled()) return super.handleRecipeFluid(io, recipe, fluids, simulate);

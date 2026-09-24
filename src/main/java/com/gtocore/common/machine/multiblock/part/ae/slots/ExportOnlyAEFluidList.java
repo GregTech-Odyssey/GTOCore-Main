@@ -123,6 +123,10 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
         return true;
     }
 
+    protected boolean acceptsIngredient(Content<FluidIngredient> contentFluidIngredient) {
+        return true;
+    }
+
     @Override
     public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
         if (io == IO.IN) {
@@ -133,8 +137,8 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
                     it.remove();
                     continue;
                 }
-                if (ingredient.chance == 0) {
-                    continue; // only consumable (chance > 0) contents are handled here
+                if (!acceptsIngredient(ingredient)) {
+                    continue;
                 }
                 for (var i : inventory) {
                     var stored = i.stock;
