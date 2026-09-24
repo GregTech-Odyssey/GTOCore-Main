@@ -9,6 +9,7 @@ import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.DrawingTowerMachine;
+import com.gtocore.common.machine.multiblock.electric.MolecularAssemblyFactoryMachine;
 import com.gtocore.common.machine.multiblock.electric.SuperMolecularAssemblerMachine;
 import com.gtocore.common.machine.multiblock.electric.TreeGrowthSimulator;
 import com.gtocore.common.machine.multiblock.electric.adventure.BossSummonerMachine;
@@ -50,6 +51,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 
 import appeng.api.stacks.AEKeyType;
+import appeng.core.definitions.AEBlocks;
 
 import earth.terrarium.adastra.common.registry.ModBlocks;
 
@@ -633,8 +635,7 @@ public final class MultiBlockG {
                     .where('B', blocks(GTOBlocks.OXIDATION_RESISTANT_HASTELLOY_N_MECHANICAL_CASING.get()))
                     .wherePart('C', blocks(GTOBlocks.ZIRCONIA_CERAMIC_HIGH_STRENGTH_BENDING_RESISTANCE_MECHANICAL_BLOCK.get()).setMinGlobalLimited(20)
                             .or(blocks(GTAEMachines.ME_CRAFT_PATTERN_PART_MACHINE.get()))
-                            .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2))
-                            .or(abilities(EXPORT_ITEMS)))
+                            .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2)))
                     .where('D', blocks(GTOBlocks.NAQUADAH_BOROSILICATE_GLASS.get()))
                     .where('E', blocks(GTOBlocks.MAGTECH_CASING.get()))
                     .where('F', blocks(GTOBlocks.PROCESS_MACHINE_CASING.get()))
@@ -647,6 +648,27 @@ public final class MultiBlockG {
                     .where(' ', any())
                     .build())
             .renderer(() -> new CustomPartRenderer(GTOCore.id("block/casings/oxidation_resistant_hastelloy_n_mechanical_casing"), GTCEu.id("block/multiblock/fusion_reactor"), GTOCore.id("block/zirconia_ceramic_high_strength_bending_resistance_mechanical_block")))
+            .register();
+
+    public static final MultiblockMachineDefinition MOLECULAR_ASSEMBLY_FACTORY = multiblock("molecular_assembly_factory", "分子装配工厂", MolecularAssemblyFactoryMachine::new)
+            .nonYAxisRotation()
+            .recipeTypes(DUMMY_RECIPES)
+            .tooltips(GTOMachineTooltips.MolecularAssemblyFactoryTooltips)
+            .block(GTOBlocks.MULTI_FUNCTIONAL_CASING)
+            .pattern(definition -> FactoryBlockPattern.start(definition)
+                    .aisle("FFF", "FGF", "FFF")
+                    .aisle("FFF", "GMG", "FFF")
+                    .aisle("FFF", "FCF", "FFF")
+                    .wherePart('F', blocks(GTOBlocks.MULTI_FUNCTIONAL_CASING.get())
+                            .setMinGlobalLimited(10)
+                            .or(blocks(GTAEMachines.MOLECULAR_ASSEMBLY_FACTORY_PATTERN_HATCH.get()).setMaxGlobalLimited(9))
+                            .or(blocks(GTAEMachines.MOLECULAR_ASSEMBLY_FACTORY_PULL_PATTERN_HATCH.get()).setMaxGlobalLimited(9))
+                            .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(1)))
+                    .where('G', blocks(AEBlocks.QUARTZ_VIBRANT_GLASS.block()))
+                    .where('M', GTOPredicates.integralFramework())
+                    .where('C', controller(definition))
+                    .build())
+            .workableCasingRenderer(GTOCore.id("block/casings/multi_functional_casing"), GTCEu.id("block/multiblock/general1"))
             .register();
 
     public static final MultiblockMachineDefinition RARITY_FORGE = multiblock("rarity_forge", "珍宝锻炉", CrossRecipeMultiblockMachine::createHatchParallel)

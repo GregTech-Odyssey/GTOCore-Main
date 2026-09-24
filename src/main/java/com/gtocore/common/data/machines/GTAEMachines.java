@@ -161,6 +161,26 @@ public final class GTAEMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(ZPM, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 
+    public static final MachineDefinition MOLECULAR_ASSEMBLY_FACTORY_PATTERN_HATCH = machine("molecular_assembly_factory_pattern_hatch", "分子装配工厂样板仓", h -> new MECraftPatternPartMachine(h, 18))
+            .langValue("Molecular Assembly Factory Pattern Hatch")
+            .tooltips(GTOMachineTooltips.MeSmallCraftPatternHatchTooltips)
+            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+            .tier(MV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
+
+    public static final MachineDefinition MOLECULAR_ASSEMBLY_FACTORY_PULL_PATTERN_HATCH = machine("molecular_assembly_factory_pull_pattern_hatch", "分子装配工厂拉取样板仓", h -> new MEPullCraftPatternPartMachine(h, 18))
+            .langValue("Molecular Assembly Factory Pull Pattern Hatch")
+            .tooltips(GTOMachineTooltips.MePullCraftPatternHatchTooltips)
+            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+            .tier(MV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
+
     public static final MachineDefinition ME_CATALYST_ME_PATTERN_BUFFER = machine("me_catalyst_pattern_buffer", "ME催化剂样板总成", MECatalystPatternBufferPartMachine::new)
             .langValue("ME Catalyst Pattern Buffer")
             .tooltips(GTOMachineTooltips.MeCatalystPatternBufferTooltips)

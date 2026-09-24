@@ -1,6 +1,10 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.common.data.GTOCodecs;
+import com.gtocore.integration.jade.AEKeyTooltip;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
@@ -9,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyMap;
 import appeng.api.stacks.KeyCounter;
 import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 import appeng.crafting.pattern.EncodedPatternItem;
@@ -21,23 +26,31 @@ import com.gto.datasynclib.datastream.data.NullData;
 import com.gto.datasynclib.util.DataCodecs;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.ITooltip;
+import snownee.jade.api.config.IPluginConfig;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @Setter
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatternPartMachine.InternalSlot> {
+public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatternPartMachine.InternalSlot> implements IWailaDisplayProvider {
 
     private Runnable onContentsChanged = () -> {};
 
     public MECraftPatternPartMachine(MetaMachineBlockEntity holder) {
-        super(holder, 72);
+        this(holder, 72);
+    }
+
+    public MECraftPatternPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
+        super(holder, maxPatternCount);
     }
 
     @Override
     public InternalSlot[] createInternalSlotArray() {
-        return new InternalSlot[72];
+        return new InternalSlot[getMaxPatternCount()];
     }
 
     @Override
@@ -60,7 +73,8 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
     public static final class InternalSlot extends AbstractInternalSlot {
 
         @Getter
-        private ItemStack output;
+        @Nullable
+        private AEItemKey output;
         @Setter
         @Getter
         private long amount;
@@ -73,12 +87,17 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
         @Override
         public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
             if (patternDetails instanceof IMolecularAssemblerSupportedPattern pattern && pattern.getOutputs().length == 1 && pattern.getOutputs()[0].what() instanceof AEItemKey itemKey) {
-                if (output == null) output = itemKey.toStack();
-                amount += pattern.getOutputs()[0].amount();
-                machine.onContentsChanged.run();
-                return true;
+                return addOutput(itemKey, pattern.getOutputs()[0].amount());
             }
             return false;
+        }
+
+        boolean addOutput(AEItemKey itemKey, long addAmount) {
+            if (addAmount < 1) return false;
+            if (output == null) output = itemKey;
+            amount += addAmount;
+            machine.onContentsChanged.run();
+            return true;
         }
 
         @Override
@@ -101,17 +120,16 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
         public void deserializeNBT(CompoundTag nbt) {
             amount = nbt.getLong("amount");
             if (nbt.contains("output")) {
-                output = ItemStack.of(nbt.getCompound("output"));
+                output = AEItemKey.of(ItemStack.of(nbt.getCompound("output")));
             }
         }
 
-        /// 旧版这里构造了列表却没有返回，待取出的合成产物从未存盘；旧存档里该槽是空数据，读取时跳过
         @Override
         public Data writeData() {
-            if (output == null) return NullData.INSTANCE;
+            if (output == null || amount == 0) return NullData.INSTANCE;
             var list = new ListData(2);
             list.addLong(amount);
-            list.add(DataCodecs.ITEM_STACK_CODEC.encode(output));
+            list.add(GTOCodecs.AE_ITEM_KEY_DATA_CODEC, output);
             return list;
         }
 
@@ -127,12 +145,29 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
             }
             var list = data.asListData();
             amount = list.getLong(0);
-            output = DataCodecs.ITEM_STACK_CODEC.decode(list.get(1), dataVersion);
+            output = GTOCodecs.AE_ITEM_KEY_DATA_CODEC.decode(list.get(1), dataVersion);
         }
     }
 
     @Override
     public boolean gto$isCraftingContainer() {
         return true;
+    }
+
+    @Override
+    public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
+        var pending = new AEKeyMap<AEItemKey>();
+        for (var slot : getInternalInventory()) {
+            var output = slot.getOutput();
+            var amount = slot.getAmount();
+            if (output == null || amount < 1) continue;
+            pending.insert(output, amount);
+        }
+        AEKeyTooltip.write(data, AEKeyTooltip.PENDING, pending);
+    }
+
+    @Override
+    public void appendWailaTooltip(CompoundTag data, ITooltip tooltip, BlockAccessor blockAccessor, IPluginConfig config) {
+        AEKeyTooltip.read(tooltip, data, AEKeyTooltip.PENDING);
     }
 }

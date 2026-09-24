@@ -563,6 +563,31 @@ object GTOMachineTooltips {
         info(ComponentSlang.Capacity(72.toString()))
     }
 
+    // 小型合成样板仓
+    @JvmField
+    val MeSmallCraftPatternHatchTooltips = ComponentListSupplier {
+        setTranslationPrefix("me_small_craft_pattern_part_machine")
+
+        section(ComponentSlang.MainFunction)
+        function("小型合成样板仓用于存储合成样板" translatedTo "Small Craft Pattern Hatch is used to store crafting patterns")
+        function("配合分子装配工厂使用" translatedTo "Use it with Molecular Assembly Factory")
+        info(ComponentSlang.Capacity(18.toString()))
+    }
+
+    // 分子装配工厂拉取样板仓
+    @JvmField
+    val MePullCraftPatternHatchTooltips = ComponentListSupplier {
+        setTranslationPrefix("molecular_assembly_factory_pull_pattern_hatch")
+
+        section(ComponentSlang.MainFunction)
+        function("拉取样板仓用于存储合成样板" translatedTo "Pull Pattern Hatch is used to store crafting patterns")
+        function("不参与 AE 发配，只在产物不足阈值时从网络拉取原料并合成" translatedTo "Does not take part in AE pattern distribution; pulls ingredients from the network to craft only when the product is below the threshold")
+        command("对着样板按鼠标中键可单独设置拉取开关与产物阈值" translatedTo "Middle-click a pattern to set its pull mode and product threshold")
+        important("补货数量按差额补齐到阈值，上限为网络原料能支撑的次数" translatedTo "Restocks by the deficit up to the threshold, capped by what the network's ingredients can support")
+        info("每 2 秒检查一次补货" translatedTo "Restocking is checked once every 2 seconds")
+        info(ComponentSlang.Capacity(18.toString()))
+    }
+
     // ME样板总成
     @JvmField
     val MePatternHatchTooltips = { capacity: Int ->
@@ -961,7 +986,25 @@ object GTOMachineTooltips {
         section(ComponentSlang.RunningRequirements)
         command("通过合成样板仓放入合成样板" translatedTo "Insert crafting patterns via craft pattern hatches")
         command("每次运行同时处理所有的配方以及所有的输入物品" translatedTo "Processes all recipes and all input items at once each operation")
+        info("产物直接进入 ME 网络，无需输出仓" translatedTo "Outputs go straight into the ME network, no output bus needed")
         info("每个物品合成消耗1EU" translatedTo "Each item crafted consumes 1 EU")
+    }
+
+    // 分子装配工厂
+    @JvmField
+    val MolecularAssemblyFactoryTooltips = ComponentListSupplier {
+        setTranslationPrefix("molecular_assembly_factory")
+
+        section(ComponentSlang.MainFunction)
+        function("通过分子装配工厂样板仓放入合成样板" translatedTo "Insert crafting patterns via molecular assembly factory pattern hatcs")
+        function("每轮只处理一个样板仓，从中最多取线程数个内部槽位" translatedTo "Each operation handles a single hatch, taking at most one internal slot per thread")
+        function("拉取样板仓可按产物阈值被动补货，不需要 AE 合成任务" translatedTo "Pull pattern hatches top products up to a threshold on their own, without an AE crafting job")
+        info("取到的槽位整份产物一起合成，数量不设上限" translatedTo "The entire stored output of every taken slot is crafted at once, with no amount cap")
+        info("产物直接进入 ME 网络，无需输出仓" translatedTo "Outputs go straight into the ME network, no output bus needed")
+
+        section(ComponentSlang.RunningRequirements)
+        info("每个物品合成消耗1EU" translatedTo "Each item crafted consumes 1 EU")
+        info("线程数按整体框架等级：ULV 1、LV 4，之后每级 +4（MV 8…）" translatedTo "Threads scale with the Integral Framework tier: ULV 1, LV 4, then +4 per tier (MV 8, ...)")
     }
 
     // ME 超算核心
