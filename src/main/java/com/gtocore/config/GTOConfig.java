@@ -250,6 +250,13 @@ public final class GTOConfig {
         public int defaultMinOverclockDuration = 20;
 
         @Configurable
+        @Configurable.Comment({ "ME输出向ME网络传输内容的间隔（tick）", "The interval at which ME Output transfer contents to the ME network (ticks)" })
+        @Configurable.Range(min = 1, max = 100)
+        @Configurable.Gui.Slider
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "ME Output Transfer Interval", cn = "ME输出传输间隔")
+        public int meOutputTransferInterval = 20;
+
+        @Configurable
         @Configurable.DecimalRange(min = 0.0001, max = 100)
         @Configurable.Gui.Slider
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Recipe Duration Multiplier", cn = "配方时间乘数")
