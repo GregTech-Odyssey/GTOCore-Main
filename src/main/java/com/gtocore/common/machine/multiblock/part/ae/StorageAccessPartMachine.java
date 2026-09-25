@@ -756,7 +756,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             long limit = insertLimit(what);
             if (limit == Long.MAX_VALUE) return super.insert(what, amount, mode, source);
-            if (limit < 1) return 0; // -1/0：禁止存入，连表都不用查
+            if (limit == 0) return 0; // 0：禁止存入，连表都不用查
             if (amount == 0 || uuid == null) return 0;
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return 0;
@@ -800,14 +800,20 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         @Override
         public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (!outputLimitEnabled) return super.extract(what, amount, mode, source);
+            if (this.transferring) return 0;
             long limit = outputLimits.getAmount(what);
-            if (limit == FORBIDDEN) return 0;
-            if (limit > 0) {
-                long movable = getOwnAmount(what) - limit;
-                if (movable < 1) return 0;
-                amount = Math.min(amount, movable);
+            if (limit == FORBIDDEN) return super.extract(what, amount, mode, source);
+            var data = getCellStorage();
+            if (data == CellDataStorage.EMPTY) return 0;
+            var map = data.getStoredMap();
+            if (map == null) return 0;
+            if (mode == Actionable.MODULATE) {
+                var extract = map.extract(what, amount, limit);
+                if (extract > 0) dirty = true;
+                return extract;
+            } else {
+                return Math.clamp(map.getAmount(what) - limit, 0L, amount);
             }
-            return super.extract(what, amount, mode, source);
         }
 
         private AEKeyMap<AEKey> editingLimits() {
