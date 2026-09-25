@@ -279,17 +279,17 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (!isFormed || amount < 1 || types < 1 || perTypeCapacity < 1 || !accepts(what)) return 0;
         var map = keyMap;
-        var stored = map.getAmount(what);
-        // 种类满了就一个新种类也进不来；已经存过的种类只受每种类容量的限制
-        long room = stored == 0 && map.size() >= types ? 0 : perTypeCapacity - stored;
-        long fits = Math.clamp(room, 0, amount);
-        if (mode == Actionable.SIMULATE) return voidOverflow ? amount : fits;
-        if (fits > 0) {
-            map.insert(what, fits, perTypeCapacity);
-            saveChanges();
+        if (mode == Actionable.SIMULATE) {
+            var stored = map.getAmount(what);
+            // 种类满了就一个新种类也进不来；已经存过的种类只受每种类容量的限制
+            if (stored == 0 && map.size() >= types) return voidOverflow ? amount : 0;
+            return voidOverflow ? amount : Math.clamp(perTypeCapacity - stored, 0, amount);
         }
+        // 实际插入前调用方都会先模拟一次，这里就不用再查种类了
+        long inserted = map.insert(what, amount, perTypeCapacity);
+        if (inserted > 0) saveChanges();
         // 溢出销毁：放不下的部分也照单收下（多的直接销毁），调用方不会再把它们退回来
-        return voidOverflow ? amount : fits;
+        return voidOverflow ? amount : inserted;
     }
 
     @Override
