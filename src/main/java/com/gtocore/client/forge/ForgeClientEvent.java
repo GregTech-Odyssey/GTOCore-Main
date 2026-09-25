@@ -24,7 +24,6 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
-import com.gtolib.data.wallet.sync.WalletClientCache;
 import com.gtolib.utils.ItemUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -261,7 +260,6 @@ public final class ForgeClientEvent {
         TeamResearchSavedData.clearClientInstance();
         TechTreeSavedData.clearClientInstance();
         WirelessClientCache.clear();
-        WalletClientCache.clear();
         ReceiverTransmitterHandler.unloadClient();
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
