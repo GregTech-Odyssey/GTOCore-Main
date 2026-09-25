@@ -66,6 +66,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.LongStream;
 
 @OnlyIn(Dist.CLIENT)
@@ -898,6 +899,8 @@ public final class PatternPreview extends WidgetGroup {
         private final IMultiController controllerBase;
         @Nullable
         private final Long2ReferenceOpenHashMap<BlockInfo> blockMap;
+        @NotNull
+        private final Long2ReferenceOpenHashMap<BlockInfo> cells;
         private final LongSet partsSet;
         private final LongSet placeHolderSet;
         private final int minX;
@@ -916,6 +919,7 @@ public final class PatternPreview extends WidgetGroup {
             this.predicateMap = predicateMap;
             this.controllerBase = controllerBase;
             this.blockMap = hasModule ? blockMap : null;
+            this.cells = blockMap;
             this.center = controllerBase.self().getPos();
             for (var entry : predicateMap.long2ObjectEntrySet()) {
                 var pos = entry.getLongKey();
@@ -957,6 +961,13 @@ public final class PatternPreview extends WidgetGroup {
             this.maxY = maxY;
             this.minZ = minZ;
             this.maxZ = maxZ;
+        }
+
+        public void forEachCell(BiConsumer<BlockInfo, TraceabilityPredicate> action) {
+            for (var it = cells.long2ReferenceEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
+                action.accept(entry.getValue(), predicateMap.get(entry.getLongKey()));
+            }
         }
     }
 
