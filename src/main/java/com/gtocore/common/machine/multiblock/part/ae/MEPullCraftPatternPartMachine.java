@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -266,11 +265,10 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
     @Override
     protected void buildSlotConfig(UIElement column, int index) {
         var section = MEPatternPartUI.section(column, PULL_TITLE);
-        int width = section.getContentWidth();
-        var threshold = MEPatternPartUI.longField(UISizes.BUTTON_WIDTH, () -> pullThresholds[index], value -> setPullThreshold(index, value), 0);
+        var threshold = MEPatternPartUI.longField(0, () -> pullThresholds[index], value -> setPullThreshold(index, value), 0);
         section.addChildren(
-                MEPatternPartUI.labeledRow(width, PULL_MODE, PULL_MODE_TOOLTIP,
+                MEPatternPartUI.labeledRow(section.getContentWidth(), PULL_MODE, PULL_MODE_TOOLTIP,
                         Switch.of(() -> pullModes[index], enabled -> setPullMode(index, enabled))),
-                MEPatternPartUI.labeledRow(width, PULL_THRESHOLD, PULL_THRESHOLD_TOOLTIP, threshold));
+                MEPartUI.numberRow(PULL_THRESHOLD, threshold, PULL_THRESHOLD_TOOLTIP));
     }
 }

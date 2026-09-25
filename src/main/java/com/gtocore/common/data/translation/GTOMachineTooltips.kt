@@ -706,7 +706,6 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         function("把 AE2 的存储组件（1k…256m）放进输入总线，再用存储访问仓存储" translatedTo "Put AE2 storage components (1k...256m) into an input bus and store through the Storage Access Hatch")
         info("和 ME 存储器同一套实现：存储与数据索引都由结构里的存储访问仓承担" translatedTo "Same implementation as the ME Storage: the Storage Access Hatch in the structure holds both the storage and its data index")
-        info("总容量 = 存储组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）" translatedTo "Total capacity = the storage components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...)")
         important("数据索引位置可以选玩家或机器，界面上点「数据索引位置」右边那一项切换；机器模式用机器自己的 UUID，拆机时随物品带走，同一台重建后数据还在" translatedTo "The data index can be the player or the machine, switched by clicking the button after Data Index Position; in machine mode it uses the machine's own UUID, which travels with the dropped item so rebuilding the same machine keeps the data")
         info("没有无限存储：容量完全来自总线里的存储组件" translatedTo "No infinite storage: the capacity comes entirely from the storage components in the bus")
     }
