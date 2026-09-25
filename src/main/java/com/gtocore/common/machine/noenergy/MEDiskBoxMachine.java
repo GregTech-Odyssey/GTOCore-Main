@@ -292,6 +292,11 @@ public final class MEDiskBoxMachine extends MetaMachine
     }
 
     @Override
+    public Object getResourceIdentity() {
+        return cellStorage();
+    }
+
+    @Override
     public void getAvailableStacks(@NotNull KeyCounter out) {
         out.addAll(cellStorage().cache.getAvailableStacksCache());
     }

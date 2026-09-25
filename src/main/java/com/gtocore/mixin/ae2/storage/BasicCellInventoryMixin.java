@@ -172,6 +172,11 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
         return gtolib$cache = CellDataStorage.get(uuid);
     }
 
+    @Override
+    public Object getResourceIdentity() {
+        return gtolib$getCellStorage();
+    }
+
     /**
      * @author .
      * @reason .
