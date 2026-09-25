@@ -212,7 +212,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Override
     public boolean firstTestMachine(SpaceElevatorConnectorModule machine) {
         Level level = machine.getLevel();
-        if (level != null && testMachine(machine)) {
+        if (level != null && testUUID(machine) && testMachine(machine)) {
             machine.registerElevator(this, getCasingTier(GTORecipeDataKeys.POWER_MODULE_TIER));
             return true;
         }

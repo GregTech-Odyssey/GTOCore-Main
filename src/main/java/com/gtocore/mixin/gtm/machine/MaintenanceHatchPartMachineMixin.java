@@ -133,8 +133,8 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
 
     @Override
     public boolean firstTestMachine(IDroneControlCenterMachine machine) {
-        Level level = machine.getLevel();
-        if (level == null) return false;
+        Level level = machine.self().getLevel();
+        if (level == null || !testUUID(machine)) return false;
         if (testMachine(machine) && machine.hasDrone(self().getPos(), d -> d.getCharge() > 0)) {
             return true;
         }

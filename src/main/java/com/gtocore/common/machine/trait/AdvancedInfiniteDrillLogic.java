@@ -23,6 +23,8 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public final class AdvancedInfiniteDrillLogic extends VeinDrillLogic implements IFluidDrillLogic {
 
     private static final int MAX_PROGRESS = 20;
@@ -124,6 +126,11 @@ public final class AdvancedInfiniteDrillLogic extends VeinDrillLogic implements 
     @NotNull
     public Reference2IntOpenHashMap<Fluid> getVeinFluids() {
         return veinFluids;
+    }
+
+    @Override
+    public UUID getOwnerUUID() {
+        return machine.self().getOwnerUUID();
     }
 
     @Override

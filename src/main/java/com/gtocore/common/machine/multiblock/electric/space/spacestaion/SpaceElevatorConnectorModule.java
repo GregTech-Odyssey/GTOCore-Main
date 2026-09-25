@@ -31,7 +31,7 @@ import static com.gregtechceu.gtceu.api.GTValues.UHV;
 import static com.gregtechceu.gtceu.api.GTValues.VA;
 
 @DataGeneratorScanned
-public class SpaceElevatorConnectorModule extends Extension implements ISpaceServiceMachine, IIWirelessInteractor.IWirelessProvider {
+public class SpaceElevatorConnectorModule extends Extension implements ISpaceServiceMachine {
 
     private final Map<SpaceElevatorMachine, Integer> elevatorTiers = new O2IOpenCacheHashMap<>();
     @SyncToClient

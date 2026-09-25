@@ -104,6 +104,11 @@ public final class WirelessChargerCover extends CoverBehavior implements IWirele
     }
 
     @Override
+    public UUID getOwnerUUID() {
+        return machine.getOwnerUUID();
+    }
+
+    @Override
     public WirelessChargerMachine getNetMachineCache() {
         return wirelessChargerMachine;
     }

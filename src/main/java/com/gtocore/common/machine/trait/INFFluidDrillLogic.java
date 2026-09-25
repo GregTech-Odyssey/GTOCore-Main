@@ -18,6 +18,8 @@ import net.minecraftforge.fluids.FluidStack;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public final class INFFluidDrillLogic extends VeinDrillLogic implements IFluidDrillLogic {
 
     public static final int MAX_PROGRESS = 20;
@@ -81,6 +83,11 @@ public final class INFFluidDrillLogic extends VeinDrillLogic implements IFluidDr
 
     private boolean isOverclocked() {
         return getMachine().getEnergyTier() > getMachine().getTier();
+    }
+
+    @Override
+    public UUID getOwnerUUID() {
+        return machine.self().getOwnerUUID();
     }
 
     @Override

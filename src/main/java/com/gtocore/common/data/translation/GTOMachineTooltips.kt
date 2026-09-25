@@ -683,13 +683,16 @@ object GTOMachineTooltips {
         setTranslationPrefix("drawer_storage")
 
         section(ComponentSlang.MainFunction)
-        function("把功能存储的 1x/2x/4x 物品与流体抽屉放进输入总线即可存储物品与流体" translatedTo "Put Functional Storage 1x/2x/4x item and fluid drawers into an input bus to store items and fluids")
-        info("种类由抽屉决定：1x/2x/4x 抽屉各贡献 1/2/4 种，按总线里的数量叠加，每个键占一种" translatedTo "Types come from the drawers: 1x/2x/4x drawers contribute 1/2/4 types each, added up by amount in the bus; each key takes one type")
-        info("每种类容量 = 抽屉每槽容量 × 升级倍率 × 密封机械方块等级" translatedTo "Capacity per type = drawer amount per slot x upgrade multiplier x Hermetic Casing tier")
-        info("升级倍率取总线里升级之和（用功能存储自己的倍率），无升级为 1" translatedTo "Upgrade multiplier is the sum of the upgrades in the bus (using Functional Storage's own values), 1 without any")
-        info("不设总容量，只限每种上限；界面里可以看每个键的容量使用情况" translatedTo "There is no overall capacity, only a per-type cap; the UI shows the usage of every stored key")
+        function("把功能存储的 1x/2x/4x 抽屉放进输入总线即可存储物品与流体" translatedTo "Put Functional Storage 1x/2x/4x drawers into the input buses to store items and fluids")
+        info("升级插在主机自己的槽里：一格、最多 16 个（乘算，再多会溢出）" translatedTo "Upgrades go into the controller's own slot: a single stack of at most 16 (multiplicative, more would overflow)")
+        important("类型跟着抽屉走：没有物品抽屉就存不了物品，没有流体抽屉就存不了流体" translatedTo "The kind follows the drawers: without an item drawer nothing is stored as items, without a fluid drawer nothing as fluids")
+        info("种类数 = 每个抽屉的槽数 × 抽屉数量：1x 抽屉各贡献 1 种，2x/4x 各贡献 2/4 种，物品与流体共用一个池子" translatedTo "Type count = each drawer's slots x drawer count: a 1x drawer contributes 1 type, 2x/4x contribute 2/4; items and fluids share one pool")
+        info("每种类容量 = 那一类抽屉里最好的每槽容量 × 升级倍率 × 密封机械方块等级（抽屉数量不乘容量）" translatedTo "Capacity per type = the best amount per slot among that kind of drawer x upgrade multiplier x Hermetic Casing tier (the drawer count does not multiply the capacity)")
+        info("升级倍率是乘算（与功能存储一致）：主机槽里每个升级按自己的倍率相乘，无升级为 1" translatedTo "The upgrade multiplier is multiplicative (same as Functional Storage): every upgrade in the controller slot multiplies by its own value, 1 without any")
+        info("流体抽屉的容量按桶算，再 ×1000 折算成 mB" translatedTo "Fluid drawer capacity is counted in buckets and then multiplied by 1000 to get mB")
+        info("不设总容量，只限每种上限；显示窗里能看当前种类与容量" translatedTo "There is no overall capacity, only a per-type cap; the display window shows the current types and capacity")
         info("压缩抽屉、末影抽屉等不作为介质" translatedTo "Compacting and ender drawers do not count as media")
-        important("抽屉与升级留在总线里当介质，随时可以取回；放入或取走会立刻重算容量" translatedTo "Drawers and upgrades stay in the bus as media and can be taken back at any time; adding or removing one recalculates the capacity immediately")
+        important("抽屉与升级当介质，随时可以取回；放入或取走会立刻重算容量" translatedTo "The drawers and the upgrades act as media and can be taken back at any time; adding or removing one recalculates the capacity immediately")
         content("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓" translatedTo "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO")
     }
 
@@ -699,7 +702,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_disk_storage")
 
         section(ComponentSlang.MainFunction)
-        function("把 AE2 的存储组件（1k…256k）放进输入总线，再用存储访问仓存储" translatedTo "Put AE2 storage components (1k...256k) into an input bus and store through the Storage Access Hatch")
+        function("把 AE2 的存储组件（1k…256m）放进输入总线，再用存储访问仓存储" translatedTo "Put AE2 storage components (1k...256m) into an input bus and store through the Storage Access Hatch")
         info("和 ME 存储器同一套实现：存储与数据索引都由结构里的存储访问仓承担" translatedTo "Same implementation as the ME Storage: the Storage Access Hatch in the structure holds both the storage and its data index")
         info("总容量 = 存储组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）" translatedTo "Total capacity = the storage components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...)")
         important("数据索引位置可以选玩家或机器，界面上点「数据索引位置」右边那一项切换；机器模式用机器自己的 UUID，拆机时随物品带走，同一台重建后数据还在" translatedTo "The data index can be the player or the machine, switched by clicking the button after Data Index Position; in machine mode it uses the machine's own UUID, which travels with the dropped item so rebuilding the same machine keeps the data")

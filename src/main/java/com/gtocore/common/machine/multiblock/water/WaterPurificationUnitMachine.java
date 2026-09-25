@@ -91,7 +91,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     @Override
     public boolean firstTestMachine(WaterPurificationPlantMachine machine) {
         Level level = machine.getLevel();
-        if (level != null && isFormed() && machine.isFormed() && GTOUtils.calculateDistance(machine.getPos(), getPos()) < 32) {
+        if (level != null && isFormed() && machine.isFormed() && testUUID(machine) && GTOUtils.calculateDistance(machine.getPos(), getPos()) < 32) {
             machine.waterPurificationUnitMachineMap.put(this, getRecipeLogic().isWorking());
             return true;
         }

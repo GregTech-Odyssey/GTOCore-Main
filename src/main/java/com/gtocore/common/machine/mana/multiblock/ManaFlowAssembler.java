@@ -398,6 +398,11 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         }
 
         @Override
+        public UUID getOwnerUUID() {
+            return null;
+        }
+
+        @Override
         public ManaDistributorMachine getNetMachineCache() {
             return null;
         }
