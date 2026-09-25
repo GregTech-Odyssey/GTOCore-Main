@@ -40,6 +40,7 @@ import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -531,7 +532,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
         @Override
         public IGuiTexture getTabIcon() {
-            return GuiTextures.BUTTON_LOCK;
+            return WidgetIcons.INPUT_LIMIT_ON;
         }
 
         @Override

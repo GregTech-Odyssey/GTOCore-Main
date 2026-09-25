@@ -15,6 +15,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import earth.terrarium.adastra.common.registry.ModFluids;
 import earth.terrarium.adastra.common.registry.ModItems;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ public class RocketFuels {
             GTOMaterials.StellarEnergyRocketFuel.getFluid() };
 
     public static final Dimension[] PLANETS;
+    public static final Dimension[] SATELLITE_TARGETS;
     public static final Item[] drones = {
             GTOItems.SPACE_DRONE_MK1.asItem(), GTOItems.SPACE_DRONE_MK2.asItem(), GTOItems.SPACE_DRONE_MK3.asItem(),
             GTOItems.SPACE_DRONE_MK4.asItem(), GTOItems.SPACE_DRONE_MK5.asItem(), GTOItems.SPACE_DRONE_MK6.asItem()
@@ -58,5 +60,16 @@ public class RocketFuels {
         List<Dimension> list = new ArrayList<>();
         GTODimensions.forEachPlanet(list::add);
         PLANETS = list.toArray(new Dimension[0]);
+        SATELLITE_TARGETS = list.stream().filter(d -> getRocket(d.getTier()) != null).toArray(Dimension[]::new);
+    }
+
+    @Nullable
+    public static Item getRocket(int tier) {
+        return tier > 0 && tier <= ROCKET.length ? ROCKET[tier - 1] : null;
+    }
+
+    @Nullable
+    public static Fluid getFuel(int tier) {
+        return tier > 0 && tier <= FUEL.length ? FUEL[tier - 1] : null;
     }
 }

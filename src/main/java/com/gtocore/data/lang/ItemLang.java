@@ -193,5 +193,13 @@ final class ItemLang {
         addCNEN("gtocore.cover.creative_power_amplifier.energy", "耗能乘数", "Energy Multiplier");
         addCNEN("gtocore.cover.creative_power_amplifier.title", "创造模式功率增幅器", "Creative Power Amplifier");
         addCNEN("gtocore.cover.creative_power_amplifier.tooltip", "安装后使用螺丝刀打开界面调整乘数", "Use a screwdriver after installation to configure multipliers");
+
+        addCNEN("gtocore.cover.advanced_wireless_transfer.status", "状态", "Status");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.target", "目标容器", "Target");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.position", "坐标", "Position");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.dimension", "维度", "Dimension");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.unbound", "未绑定", "Not bound");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.connected", "已连接", "Connected");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.unavailable", "目标不可用", "Target unavailable");
     }
 }
