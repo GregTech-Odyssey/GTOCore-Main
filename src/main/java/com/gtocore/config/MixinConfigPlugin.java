@@ -17,6 +17,9 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.equals("com.gtocore.mixin.adastra.ServerboundLandOnSpaceStationPacketMixin")) {
             return Mods.FTBTEAMS.isLoaded();
         }
+        if (mixinClassName.equals("com.gtocore.mixin.mousetweaks.GuiContainerHandlerMixin")) {
+            return Mods.MOUSETWEAKS.isLoaded();
+        }
         return true;
     }
 }

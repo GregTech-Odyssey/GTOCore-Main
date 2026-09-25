@@ -172,6 +172,10 @@ dependencies {
     modCompileOnly("curse.maven:emi-loot-681783:6449092")
     modClientRuntimeOnly("curse.maven:emi-loot-681783:6449092")
 
+    // Mouse Tweaks
+    modCompileOnly("curse.maven:mouse-tweaks-60089:5338457")
+    modClientRuntimeOnly("curse.maven:mouse-tweaks-60089:5338457")
+
     // JE Characters
     modCompileOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
     modClientRuntimeOnly("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")

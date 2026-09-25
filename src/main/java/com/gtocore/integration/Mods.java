@@ -25,7 +25,8 @@ public enum Mods {
     LANG("moremorelang"),
     EFFORTLESS("effortlessbuilding"),
     FACTORY_BLOCKS("factory_blocks"),
-    MYTHICBOTANY("mythicbotany");
+    MYTHICBOTANY("mythicbotany"),
+    MOUSETWEAKS("mousetweaks");
 
     @Getter
     private final boolean loaded;

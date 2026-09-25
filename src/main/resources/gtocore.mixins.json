@@ -42,6 +42,7 @@
     "mc.client.ClientPacketListenerMixin",
     "mc.client.LevelRendererMixin",
     "merequester.NumberFieldMixin",
+    "mousetweaks.GuiContainerHandlerMixin",
     "sodium.SodiumWorldRendererMixin"
   ],
   "mixins": [
