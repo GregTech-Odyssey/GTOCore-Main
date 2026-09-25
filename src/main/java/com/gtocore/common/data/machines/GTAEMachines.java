@@ -4,6 +4,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.part.ae.*;
+import com.gtocore.common.machine.noenergy.MEDiskBoxMachine;
 import com.gtocore.common.machine.noenergy.VirtualIngredientProviderMachine;
 import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
 
@@ -87,6 +88,15 @@ public final class GTAEMachines {
             .notAllowSharedTooltips()
             .abilities(GTOPartAbility.ME_STORAGE_ACCESS)
             .renderer(() -> new OverlayTieredMachineRenderer(EV, GTCEu.id("block/machine/part/me_pattern_buffer")))
+            .register();
+
+    public static final MachineDefinition ME_DISK_BOX = machine("me_disk_box", "ME磁盘箱子", MEDiskBoxMachine::new)
+            .langValue("ME Disk Box")
+            .tooltips(GTOMachineTooltips.MeDiskBoxTooltips)
+            .tier(EV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .renderer(() -> new OverlayTieredMachineRenderer(EV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 
     public static final MachineDefinition ME_ENERGY_ACCESS_HATCH = machine("me_energy_access_hatch", "ME能量访问仓", MEEnergyAccessPartMachine::new)

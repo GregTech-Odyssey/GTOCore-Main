@@ -698,6 +698,18 @@ object GTOMachineTooltips {
         content("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓" translatedTo "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO")
     }
 
+    // ME 磁盘箱子
+    @JvmField
+    val MeDiskBoxTooltips = ComponentListSupplier {
+        setTranslationPrefix("me_disk_box")
+
+        section(ComponentSlang.MainFunction)
+        function("ME 磁盘存储器的单方块版本：一个槽放 AE2 存储组件（1k…256k，最多 64 个），组件字节之和就是容量" translatedTo "A single-block version of the ME Disk Storage: one slot for AE2 storage components (1k...256k, up to 64), the sum of their bytes is the capacity")
+        info("存储机制和存储访问仓一致：挂进 ME 网络当一个存储器，按字节卡容量" translatedTo "The storage works like the Storage Access Hatch: it mounts into the ME network as a storage and caps the capacity in bytes")
+        important("箱子里存的东西随物品走（拆机后重新放下还在）；槽里的组件拆机时会掉出来" translatedTo "The stored contents travel with the dropped item (they survive breaking and replacing); the components in the slot drop out when broken")
+        content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
+    }
+
     // ME 磁盘存储器
     @JvmField
     val MEDiskStorageTooltips = ComponentListSupplier {
