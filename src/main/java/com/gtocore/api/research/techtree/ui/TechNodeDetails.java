@@ -118,8 +118,8 @@ public final class TechNodeDetails {
      * @param force     调试器：显示"强制解锁"
      * @param extra     使用方追加的区块（可为 null），参数是新区块与节点
      */
-    static void build(UIElement column, TechNode node, TechTreeView.Navigator navigator, boolean force,
-                      @Nullable BiConsumer<UIElement, TechNode> extra) {
+    public static void build(UIElement column, TechNode node, TechTreeView.Navigator navigator, boolean force,
+                             @Nullable BiConsumer<UIElement, TechNode> extra) {
         Supplier<Player> player = navigator::player;
         var state = new StateMemo(node);
 

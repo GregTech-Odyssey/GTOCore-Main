@@ -11,7 +11,10 @@ import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -210,8 +213,13 @@ public final class TechTreePage {
             var node = TechTreeView.decodeNode(code);
             if (node == null) return;
             tabs.initialFocusHandled = true;
-            view.showDetails(node);
+            runAfterOpen(() -> view.showDetails(node));
         });
         view.addSyncValue(initial);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void runAfterOpen(Runnable task) {
+        Minecraft.getInstance().tell(task);
     }
 }

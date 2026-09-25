@@ -6,6 +6,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeCommands;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.api.research.techtree.ui.TechTreeBrowser;
 import com.gtocore.client.KeyMessage;
 import com.gtocore.client.Message;
 import com.gtocore.common.block.BlockMap;
@@ -114,6 +115,7 @@ public class CommonProxy {
         GTOEntityTypes.init();
         IPushResultsHandler.init();
         TechTreeCommands.init();
+        TechTreeBrowser.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();
         }

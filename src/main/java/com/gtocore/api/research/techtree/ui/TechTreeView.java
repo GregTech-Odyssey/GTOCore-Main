@@ -139,7 +139,7 @@ public class TechTreeView extends UIElement {
     private Popup createDetails(int code) {
         var node = decodeNode(code);
         if (node == null || node.getManager() != manager) return null;
-        return Popup.of(nameOf(node), column -> TechNodeDetails.build(column, node, new Navigator(this), force, extraDetails));
+        return Popup.of(nameOf(node), column -> TechNodeDetails.build(column, node, new Navigator(this::player, this::showDetails), force, extraDetails));
     }
 
     // ==================== 配置（使用方） ====================
@@ -218,21 +218,6 @@ public class TechTreeView extends UIElement {
         // 先打开卡片：定位按卡片左边露出的部分居中
         details.open(encodeNode(node));
         navigateTo(node);
-    }
-
-    /**
-     * 界面打开时就显示 {@code node}（本树的节点）：初始视图按 {@code scale} 倍缩放、以它为中心
-     * （卡片左边露出的部分）。用于纯客户端界面（EMI 配方页）；详情等界面初始化后再打开。
-     */
-    public TechTreeView setInitialNode(TechNode node, float scale, boolean openDetails) {
-        if (node.getManager() != manager) return this;
-        var rect = TechTreeScene.nodeRect(manager, node);
-        canvas.setInitialView(view -> {
-            view.setView(view.offsetX(), view.offsetY(), scale, false);
-            view.centerOn(rect.centerX(), rect.centerY(), false);
-        });
-        if (openDetails) details.open(encodeNode(node));
-        return this;
     }
 
     /**
@@ -363,22 +348,23 @@ public class TechTreeView extends UIElement {
     }
 
     /** 节点详情与所在视图的连接：取打开界面的玩家、"跳到节点"。 */
-    static final class Navigator {
+    public static final class Navigator {
 
-        private final TechTreeView view;
+        private final Supplier<Player> player;
+        private final Consumer<TechNode> navigate;
 
-        Navigator(TechTreeView view) {
-            this.view = view;
+        public Navigator(Supplier<Player> player, Consumer<TechNode> navigate) {
+            this.player = player;
+            this.navigate = navigate;
         }
 
         @Nullable
         Player player() {
-            return view.player();
+            return player.get();
         }
 
-        /** 客户端：打开节点的详情并定位过去（别的树时交给视图的使用方切树）。 */
         void navigateTo(TechNode node) {
-            view.showDetails(node);
+            navigate.accept(node);
         }
     }
 

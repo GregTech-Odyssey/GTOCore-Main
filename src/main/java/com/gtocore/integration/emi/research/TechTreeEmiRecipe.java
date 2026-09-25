@@ -2,6 +2,8 @@ package com.gtocore.integration.emi.research;
 
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.api.research.techtree.ui.TechNodeDetails;
+import com.gtocore.api.research.techtree.ui.TechTreeBrowser;
 import com.gtocore.api.research.techtree.ui.TechTreeView;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.ExResearchMachines;
@@ -13,19 +15,19 @@ import com.gtolib.GTOCore;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.lowdragmc.lowdraglib.emi.ModularEmiRecipe;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
@@ -33,19 +35,18 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.screen.EmiScreenManager;
+import dev.vfyjxf.taffy.style.AlignItems;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
 public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayout.Paged {
 
     private static final Widget PLACEHOLDER = new Widget(0, 0, 0, 0);
-    private static final int PAGE_MIN_WIDTH = UISizes.WINDOW_WIDTH, PAGE_MAX_WIDTH = 26 * UISizes.SLOT;
-    private static final int EMI_SIDEBARS_WIDTH = 2 * 5 * UISizes.SLOT;
-    private static final int COMPACT_WIDTH = UISizes.WINDOW_WIDTH, COMPACT_HEIGHT = 8 * UISizes.SLOT;
-    private static final GTRecipeWidget.PageFrame COMPACT_FRAME = new GTRecipeWidget.PageFrame(COMPACT_WIDTH, COMPACT_HEIGHT, 0, false);
-    private static final int CARD_WIDTH = UISizes.POPUP_CONTENT_WIDTH + 2 * UISizes.POPUP_PADDING;
-    private static final float INITIAL_SCALE = 1;
+    private static final int DETAILS_WIDTH = UISizes.POPUP_CONTENT_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
+    private static final int COMPACT_HEIGHT = 8 * UISizes.SLOT;
+    private static final GTRecipeWidget.PageFrame COMPACT_FRAME = new GTRecipeWidget.PageFrame(DETAILS_WIDTH, COMPACT_HEIGHT, 0, false);
 
     public static final EmiRecipeCategory CATEGORY = new EmiRecipeCategory(
             GTOCore.id("research"), EmiStack.of(GTOItems.BLUE_HALIDE_LAMP.asStack())) {
@@ -78,7 +79,6 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
                 .forEach(manager -> manager.getAllNodes().forEach(node -> recipeConsumer.accept(new TechTreeEmiRecipe(node)))));
     }
 
-    /** 纯客户端界面：与研究窗口同一个科技树视图（定位到本节点）。 */
     private static Widget createWidget(TechNode node, GTRecipeWidget.PageFrame frame) {
         var widget = new Page(node, frame);
         widget.setClientSideWidget();
@@ -87,9 +87,8 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
 
     @Override
     public int getPagedWidth() {
-        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-        int min = Math.max(PAGE_MIN_WIDTH, EmiPageLayout.minPageWidth());
-        pagedWidth = Mth.clamp(screenWidth - EMI_SIDEBARS_WIDTH - EmiPageLayout.SCREEN_SIDES, min, PAGE_MAX_WIDTH) & ~1;
+        int width = Math.max(DETAILS_WIDTH, EmiPageLayout.minPageWidth());
+        pagedWidth = width + (width & 1);
         pagedButtons = EmiPageLayout.sideButtons(this);
         return EmiPageLayout.displayWidth(pagedWidth, pagedButtons);
     }
@@ -102,7 +101,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
 
     @Override
     public int getDisplayWidth() {
-        return COMPACT_WIDTH;
+        return DETAILS_WIDTH;
     }
 
     @Override
@@ -118,6 +117,11 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
             frame = COMPACT_FRAME;
         }
         super.addWidgets(widgets);
+    }
+
+    @Override
+    public List<Widget> getFlatWidgetCollection(Widget widget) {
+        return Collections.emptyList();
     }
 
     @Override
@@ -137,6 +141,10 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
 
     @Override
     public @NotNull ResourceLocation getId() {
+        return recipeId(node);
+    }
+
+    public static ResourceLocation recipeId(TechNode node) {
         return GTOCore.id("research/" + node.getManager().getId() + "/" + node.name);
     }
 
@@ -150,11 +158,6 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
         return true;
     }
 
-    /**
-     * 配方页：与研究窗口同一个科技树视图（详情卡片浮在画布右侧），一开始以本节点为中心。
-     * 没有服务端的界面（{@link ILocalUI}）：同步值取本端、卡片在本端直接构建。不能拖拽缩放、不套用锁定的尺寸。
-     * 另外处理 EMI 的按键（查配方 / 用途 / 收藏）：EMI 配方页只把按键转给界面、不带鼠标位置，这里记下最近一帧的鼠标位置。
-     */
     private static final class Page extends UIElement implements ILocalUI {
 
         private final GTRecipeWidget.PageFrame frame;
@@ -163,13 +166,21 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
         private Page(TechNode node, GTRecipeWidget.PageFrame frame) {
             this.frame = frame;
             int width = frame.minWidth(), height = frame.fillHeight();
-            int canvasWidth = frame.besideNotch(width);
-            layout(l -> l.row().size(width, height));
-            var view = new TechTreeView(node.getManager(), "techtree.emi.canvas", canvasWidth, height)
-                    .setInitialNode(node, INITIAL_SCALE, canvasWidth >= 2 * CARD_WIDTH);
-            view.getCanvas().setResizable(false);
-            view.setOnOtherTree(other -> EmiApi.displayRecipes(new TechNodeEmiStack(other)));
-            addChild(view);
+            int lowerHeight = Math.max(UISizes.CONTROL_HEIGHT, frame.notchHeight());
+            layout(l -> l.column().size(width, height).gapAll(UISizes.SECTION_GAP));
+
+            var details = new UIElement().layout(l -> l.column().gapAll(UISizes.SECTION_GAP));
+            TechNodeDetails.build(details, node, new TechTreeView.Navigator(() -> Minecraft.getInstance().player, EmiResearchHelper::openTechNode), false, null);
+            var scroller = new ScrollerView("techtree.emi.details", width, height - lowerHeight - UISizes.SECTION_GAP).setResizable(false);
+            scroller.addScrollViewChild(details);
+            addChild(scroller);
+
+            var open = Button.translatable(frame.besideNotch(width), EmiResearchHelper.OPEN_TECH_TREE)
+                    .setOnClientClick(() -> TechTreeBrowser.request(node));
+            var lower = new UIElement().layout(l -> l.row().height(lowerHeight).gapAll(UISizes.SECTION_GAP).alignItems(AlignItems.END));
+            lower.addChild(open);
+            if (frame.sideButtons() > 0) lower.addChild(UIElement.spacer(GTRecipeWidget.PageFrame.NOTCH_WIDTH, 0));
+            addChild(lower);
         }
 
         @Override

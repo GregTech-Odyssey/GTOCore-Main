@@ -2,6 +2,7 @@ package com.gtocore.client;
 
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechNodeToast;
+import com.gtocore.api.research.techtree.ui.TechTreeBrowser;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.integration.ae.hooks.ICraftAmountMenu;
@@ -68,6 +69,8 @@ public final class Message {
             }
         }
     }
+
+    public static final NetworkPack OPEN_TECH_TREE_C2S = NetworkPack.registerC2S("openTechTreeC2S", (p, b) -> TechTreeBrowser.open(p, b.readVarInt()));
 
     public static final NetworkPack ORDER_ITEM_C2S = NetworkPack.registerC2S("orderItemC2S", (p, b) -> {
         var containerId = b.readInt();

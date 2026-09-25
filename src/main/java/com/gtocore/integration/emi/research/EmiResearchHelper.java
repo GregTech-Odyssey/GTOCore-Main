@@ -20,6 +20,7 @@ import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.emi.EmiStackHelper;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
+import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,8 +54,18 @@ public final class EmiResearchHelper {
     static final String DOMAIN_DATA_STORAGE_REPEAT = "gtocore.research.domain_data.storage.repeat";
     @RegisterLanguage(cn = "这件物品还没有被扫描", en = "This item has not been scanned yet")
     static final String DOMAIN_DATA_STORAGE_NOT_SCANNED = "gtocore.research.domain_data.storage.not_scanned";
-    @RegisterLanguage(cn = "扫描预计耗能：%s EU/t", en = "Scanning expected energy consumption: %s EU/t")
-    static final String DOMAIN_DATA_STORAGE_ENERGY = "gtocore.research.domain_data.storage.energy";
+    @RegisterLanguage(cn = "打开科技树", en = "Open Tech Tree")
+    static final String OPEN_TECH_TREE = "gtocore.research.open_tech_tree";
+    @RegisterLanguage(cn = "扫描耗能", en = "Scan Power")
+    static final String SCAN_POWER = "gtocore.research.scan_power";
+    @RegisterLanguage(cn = "扫描状态", en = "Scan Status")
+    static final String SCAN_STATE = "gtocore.research.scan_state";
+    @RegisterLanguage(cn = "未扫描", en = "Not scanned")
+    static final String SCAN_STATE_NEW = "gtocore.research.scan_state.new";
+    @RegisterLanguage(cn = "已扫描，收益 %s%%", en = "Scanned, %s%% yield")
+    static final String SCAN_STATE_REPEAT = "gtocore.research.scan_state.repeat";
+    @RegisterLanguage(cn = "尤里卡：%s", en = "Eureka: %s")
+    static final String EUREKA_UNLOCK = "gtocore.research.eureka_unlock";
 
     public static Component getResearchTagTeamTotal(ResearchTag tag) {
         var plr = Minecraft.getInstance().player;
@@ -80,6 +91,12 @@ public final class EmiResearchHelper {
 
     public static @Nullable EmiStack toEmiStack(AEKey key) {
         return EmiStackHelper.toEmiStack(new GenericStack(key, key.getAmountPerOperation()));
+    }
+
+    public static void openTechNode(TechNode node) {
+        var recipe = EmiApi.getRecipeManager().getRecipe(TechTreeEmiRecipe.recipeId(node));
+        if (recipe != null) EmiApi.displayRecipe(recipe);
+        else EmiApi.displayUses(new TechNodeEmiStack(node));
     }
 
     public static long getScannerEUt(AEKey key) {

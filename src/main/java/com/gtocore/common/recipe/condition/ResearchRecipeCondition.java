@@ -2,6 +2,7 @@ package com.gtocore.common.recipe.condition;
 
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.integration.emi.research.EmiResearchHelper;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gregtechceu.gtceu.api.capability.IDataAccessHatch;
@@ -57,7 +58,7 @@ public class ResearchRecipeCondition extends RecipeCondition {
      */
     @Override
     public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
-        info.sentence(this::getTooltips);
+        info.link(this::getTooltips, () -> EmiResearchHelper.openTechNode(techNode));
         info.slot(this::createResearchSlot);
     }
 

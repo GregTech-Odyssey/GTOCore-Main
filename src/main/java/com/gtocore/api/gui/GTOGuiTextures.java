@@ -22,6 +22,7 @@ public final class GTOGuiTextures {
             getTexture("base/villager_recipe_slot_2") };
 
     public static final ResourceTexture PROGRESS_BAR_DATA_GENERATE_BASE = getTexture("progress_bar/progress_bar_data_generate_base");
+    public static final ResourceTexture PROGRESS_BAR_EUREKA = getTexture("progress_bar/progress_bar_eureka_what");
     public static final ResourceTexture PROGRESS_BAR_RESEARCH_BASE = getTexture("progress_bar/progress_bar_research_base");
     public static final ResourceTexture CONDENSE_FROM_FLUID = getTexture("progress_bar/condense_from_fluid");
     public static final ResourceTexture CONDENSE_FROM_PLASMA = getTexture("progress_bar/condense_from_plasma");
