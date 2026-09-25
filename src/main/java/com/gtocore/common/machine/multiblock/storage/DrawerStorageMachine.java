@@ -61,7 +61,7 @@ import java.util.function.Supplier;
 public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IStorageMultiblock, IFancyUIMachine, IDisplayUIMachine {
 
     /// 主机槽里的升级上限（乘算，多了会溢出）
-    public static final int UPGRADE_LIMIT = 16;
+    public static final int UPGRADE_LIMIT = 8;
 
     @RegisterLanguage(cn = "种类：%s / %s", en = "Types: %s / %s")
     public static final String TYPES = "gtocore.machine.drawer_storage.types";

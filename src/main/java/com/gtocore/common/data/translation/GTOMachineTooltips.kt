@@ -684,7 +684,7 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         function("把功能存储的 1x/2x/4x 抽屉放进输入总线即可存储物品与流体" translatedTo "Put Functional Storage 1x/2x/4x drawers into the input buses to store items and fluids")
-        info("升级插在主机自己的槽里：一格、最多 16 个（乘算，再多会溢出）" translatedTo "Upgrades go into the controller's own slot: a single stack of at most 16 (multiplicative, more would overflow)")
+        info("升级插在主机自己的槽里：一格、最多 8 个（乘算，再多会溢出）" translatedTo "Upgrades go into the controller's own slot: a single stack of at most 8 (multiplicative, more would overflow)")
         important("类型跟着抽屉走：没有物品抽屉就存不了物品，没有流体抽屉就存不了流体" translatedTo "The kind follows the drawers: without an item drawer nothing is stored as items, without a fluid drawer nothing as fluids")
         info("种类数 = 每个抽屉的槽数 × 抽屉数量：1x 抽屉各贡献 1 种，2x/4x 各贡献 2/4 种，物品与流体共用一个池子" translatedTo "Type count = each drawer's slots x drawer count: a 1x drawer contributes 1 type, 2x/4x contribute 2/4; items and fluids share one pool")
         info("每种类容量 = 那一类抽屉里最好的每槽容量 × 升级倍率 × 密封机械方块等级（抽屉数量不乘容量）" translatedTo "Capacity per type = the best amount per slot among that kind of drawer x upgrade multiplier x Hermetic Casing tier (the drawer count does not multiply the capacity)")
