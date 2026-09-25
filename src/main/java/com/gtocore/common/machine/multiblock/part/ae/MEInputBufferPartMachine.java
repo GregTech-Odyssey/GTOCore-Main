@@ -415,15 +415,21 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
                 for (var aeSlot : exportOnlyItemList.getInventory()) {
                     GenericStack stock = aeSlot.getStock();
                     if (stock != null) {
-                        networkInv.insert(stock.what(), stock.amount(), Actionable.MODULATE,
+                        long inserted = networkInv.insert(stock.what(), stock.amount(), Actionable.MODULATE,
                                 machine.getActionSourceField());
+                        if (inserted > 0) {
+                            aeSlot.extract(inserted, false, true);
+                        }
                     }
                 }
                 for (var aeTank : exportOnlyFluidList.getInventory()) {
                     GenericStack stock = aeTank.getStock();
                     if (stock != null) {
-                        networkInv.insert(stock.what(), stock.amount(), Actionable.MODULATE,
+                        long inserted = networkInv.insert(stock.what(), stock.amount(), Actionable.MODULATE,
                                 machine.getActionSourceField());
+                        if (inserted > 0) {
+                            aeTank.extract(inserted, false, true);
+                        }
                     }
                 }
                 markContentsChanged();
