@@ -96,6 +96,7 @@ import snownee.jade.api.ui.IElementHelper;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.gregtechceu.gtceu.api.GTValues.LuV;
@@ -201,17 +202,29 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 .setOnServerClick(() -> {
                     var gui = section.getGui();
                     if (gui == null || gui.entityPlayer == null) return;
-                    selectedNode = node == selectedNode ? null : node;
-                    researchRequester = gui.entityPlayer.getUUID();
-                    cwuBuffer = 0L;
-                    getRecipeLogic().resetRecipeLogic();
+                    if (node == selectedNode) cancelResearch(gui.entityPlayer);
+                    else startResearch(gui.entityPlayer, node);
                 })
                 .bindTooltip(() -> Component.translatable(selectedNode == node ? LANG_DATA_ACCESS_CANCEL_RESEARCH : LANG_DATA_ACCESS_LAUNCH_RESEARCH));
         button.disabled(() -> {
             var gui = section.getGui();
             return gui != null && gui.entityPlayer != null && TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(gui.entityPlayer), node);
         }, TechNodeDetails.ALREADY_UNLOCKED);
+        section.disabled(() -> {
+            var gui = section.getGui();
+            return gui != null && gui.entityPlayer != null && selectedNode != node &&
+                    !TechTreeSavedData.isPrerequisitesUnlocked(TechTreeSavedData.getTeamUUID(gui.entityPlayer), node);
+        }, LANG_PREREQUISITES_NOT_RESEARCHED);
         section.addChild(button);
+    }
+
+    private void startResearch(Player player, TechNode node) {
+        var team = TechTreeSavedData.getTeamUUID(player);
+        if (TechTreeSavedData.isUnlocked(team, node) || !TechTreeSavedData.isPrerequisitesUnlocked(team, node)) return;
+        selectedNode = node;
+        researchRequester = player.getUUID();
+        cwuBuffer = 0L;
+        getRecipeLogic().resetRecipeLogic();
     }
 
     private List<NotifiableItemStackHandler> getDataAccessHandlers() {
@@ -261,6 +274,10 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (researchRequester == null || selectedNode == null) return null;
+        if (isResearchBlocked()) {
+            setIdleReason(PREREQUISITES_IDLE_REASON);
+            return null;
+        }
         var cwuAvailable = requestCWU(getCWUInputLimit(), true);
         if (TechTreeSavedData.isUnlocked(getOwnerUUID(), DataCenterOverclocking)) {
             var cwuTotalAvailable = requestCWU(Long.MAX_VALUE, true);
@@ -306,6 +323,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         if (selectedNode != null) {
             textList.add(Component.translatable(LANG_DATA_ACCESS_CURRENT_NODE, selectedNode.getDisplayName().withStyle(ChatFormatting.AQUA))
                     .withStyle(ChatFormatting.GRAY));
+            if (isResearchBlocked()) textList.add(Component.translatable(LANG_PREREQUISITES_NOT_RESEARCHED).withStyle(ChatFormatting.RED));
         }
     }
 
@@ -379,6 +397,14 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     // ========= 研究（数据访问页用） =========
+
+    private static final Supplier<Component> PREREQUISITES_IDLE_REASON = () -> Component.translatable(DataCenter.LANG_PREREQUISITES_NOT_RESEARCHED);
+
+    private boolean isResearchBlocked() {
+        var node = selectedNode;
+        var requester = researchRequester;
+        return node != null && requester != null && !TechTreeSavedData.isPrerequisitesUnlocked(requester, node);
+    }
 
     /** 取消本机正在进行的研究，与科技树里再次点击"正在研究中"相同（服务端）。 */
     private void cancelResearch(Player player) {
@@ -472,7 +498,10 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                         if (machine.selectedNode == null) return StatusLine.Level.NORMAL;
                         return machine.isActive() ? StatusLine.Level.GOOD : StatusLine.Level.WARNING;
                     })
-                    .detail(() -> machine.selectedNode != null && !machine.isActive() ? Component.translatable(LANG_RESEARCH_IDLE) : Component.empty())
+                    .detail(() -> {
+                        if (machine.selectedNode == null || machine.isActive()) return Component.empty();
+                        return Component.translatable(machine.isResearchBlocked() ? LANG_PREREQUISITES_NOT_RESEARCHED : LANG_RESEARCH_IDLE);
+                    })
                     // 点击打开科技树窗口，定位到正在研究的节点并打开它的详情（窗口的初始定位就是它）
                     .onClick(Component.translatable(LANG_RESEARCH_LOCATE).withStyle(ChatFormatting.GRAY), () -> machine.selectedNode != null, clicker -> {
                         if (clicker instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.open(serverPlayer, machine, WINDOW_TECH_TREE);
@@ -874,6 +903,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_LAUNCH_RESEARCH = "gtocore.machine.data_center.data_access.launch_research";
     @RegisterLanguage(cn = "正在研究中", en = "Research in Progress")
     private static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
+    @RegisterLanguage(cn = "前置科技未研究", en = "Prerequisites not researched")
+    private static final String LANG_PREREQUISITES_NOT_RESEARCHED = "gtocore.machine.data_center.data_access.prerequisites_not_researched";
     @RegisterLanguage(cn = "再次点击以取消研究", en = "Click again to cancel research")
     private static final String LANG_DATA_ACCESS_CANCEL_RESEARCH = "gtocore.machine.data_center.data_access.cancel_research";
     @RegisterLanguage(cn = "最大可接受算力：%s CWU/t", en = "Maximum Acceptable CWU: %s CWU/t")

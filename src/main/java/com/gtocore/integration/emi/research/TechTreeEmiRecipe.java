@@ -6,9 +6,11 @@ import com.gtocore.api.research.techtree.ui.TechTreeView;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.item.TechTreeViewer;
+import com.gtocore.integration.emi.EmiPageLayout;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -29,27 +31,21 @@ import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
-import dev.emi.emi.config.EmiConfig;
+import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.screen.EmiScreenManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> {
+public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayout.Paged {
 
-    /// 画布的最小 / 最大尺寸：在这个范围里按屏幕与 EMI 配方页的上限尽量撑大（详情卡片浮在画布右侧，不另占宽度）
-    private static final int CANVAS_MIN_WIDTH = 176, CANVAS_MAX_WIDTH = 26 * UISizes.SLOT;
-    private static final int CANVAS_MIN_HEIGHT = 8 * UISizes.SLOT;
-    /// EMI 配方页：配方区域上方标题与翻页占 46（RecipeTab.getVerticalRecipeSpace），配方页左右各 8 像素边
-    private static final int EMI_HEADER_HEIGHT = 46, EMI_SIDE_PADDING = 16;
-    /// EMI 配方页高度 = min(配置上限, 屏幕高 − 52 − 竖直边距)，与 RecipeScreen 一致
-    private static final int EMI_SCREEN_MARGIN = 52;
-    /// 两侧给 EMI 的物品列表与收藏栏留的宽度
+    private static final Widget PLACEHOLDER = new Widget(0, 0, 0, 0);
+    private static final int PAGE_MIN_WIDTH = UISizes.WINDOW_WIDTH, PAGE_MAX_WIDTH = 26 * UISizes.SLOT;
     private static final int EMI_SIDEBARS_WIDTH = 2 * 5 * UISizes.SLOT;
-    /// 画布尺寸：注册配方时按当时的屏幕算一次，之后每次建界面都用它（EMI 只在注册时量一次整页尺寸）
-    private static int canvasWidth = CANVAS_MIN_WIDTH, canvasHeight = CANVAS_MIN_HEIGHT;
-    /// 初始缩放：比 1 倍小一些，节点周围多露出几列
-    private static final float INITIAL_SCALE = 0.75f;
+    private static final int COMPACT_WIDTH = UISizes.WINDOW_WIDTH, COMPACT_HEIGHT = 8 * UISizes.SLOT;
+    private static final GTRecipeWidget.PageFrame COMPACT_FRAME = new GTRecipeWidget.PageFrame(COMPACT_WIDTH, COMPACT_HEIGHT, 0, false);
+    private static final int CARD_WIDTH = UISizes.POPUP_CONTENT_WIDTH + 2 * UISizes.POPUP_PADDING;
+    private static final float INITIAL_SCALE = 1;
 
     public static final EmiRecipeCategory CATEGORY = new EmiRecipeCategory(
             GTOCore.id("research"), EmiStack.of(GTOItems.BLUE_HALIDE_LAMP.asStack())) {
@@ -63,36 +59,65 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> {
     private final TechNode node;
     private final List<EmiIngredient> techNodeInput;
     private final List<EmiStack> recipeOutputs;
+    private int pagedButtons = -1;
+    private int pagedWidth;
+    private GTRecipeWidget.PageFrame frame = COMPACT_FRAME;
 
     private TechTreeEmiRecipe(TechNode node) {
-        super(() -> createWidget(node));
+        super(() -> PLACEHOLDER);
         this.node = node;
         this.techNodeInput = List.of(new TechNodeEmiStack(node));
         this.recipeOutputs = EmiResearchHelper.toEmiStacks(node.getRecipePrimaryOutputs());
+        this.widget = () -> createWidget(node, frame);
     }
 
     public static void register(EmiRegistry registry) {
-        computeCanvasSize();
         registry.addCategory(CATEGORY);
         registry.addWorkstation(CATEGORY, EmiStack.of(ExResearchMachines.DATA_CENTER.asItem()));
         registry.addDeferredRecipes(recipeConsumer -> TechTreeManager.getManagers()
                 .forEach(manager -> manager.getAllNodes().forEach(node -> recipeConsumer.accept(new TechTreeEmiRecipe(node)))));
     }
 
-    /** 画布尽量撑大，但整页不超过 EMI 配方页能放下的高度（超出会被截掉）和屏幕宽度。 */
-    private static void computeCanvasSize() {
-        var window = Minecraft.getInstance().getWindow();
-        int screenWidth = window.getGuiScaledWidth(), screenHeight = window.getGuiScaledHeight();
-        int pageHeight = Math.min(EmiConfig.maximumRecipeScreenHeight, screenHeight - EMI_SCREEN_MARGIN - EmiConfig.verticalMargin);
-        canvasHeight = Math.max(CANVAS_MIN_HEIGHT, pageHeight - EMI_HEADER_HEIGHT);
-        canvasWidth = Mth.clamp(screenWidth - EMI_SIDEBARS_WIDTH - EMI_SIDE_PADDING, CANVAS_MIN_WIDTH, CANVAS_MAX_WIDTH);
-    }
-
-    /** 纯客户端界面：与研究窗口同一个科技树视图（定位到本节点），右侧浮着本节点的详情卡片。 */
-    private static Widget createWidget(TechNode node) {
-        var widget = new Page(node, canvasWidth, canvasHeight);
+    /** 纯客户端界面：与研究窗口同一个科技树视图（定位到本节点）。 */
+    private static Widget createWidget(TechNode node, GTRecipeWidget.PageFrame frame) {
+        var widget = new Page(node, frame);
         widget.setClientSideWidget();
         return widget;
+    }
+
+    @Override
+    public int getPagedWidth() {
+        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        int min = Math.max(PAGE_MIN_WIDTH, EmiPageLayout.minPageWidth());
+        pagedWidth = Mth.clamp(screenWidth - EMI_SIDEBARS_WIDTH - EmiPageLayout.SCREEN_SIDES, min, PAGE_MAX_WIDTH) & ~1;
+        pagedButtons = EmiPageLayout.sideButtons(this);
+        return EmiPageLayout.displayWidth(pagedWidth, pagedButtons);
+    }
+
+    @Override
+    public int getPagedHeight() {
+        int area = EmiPageLayout.recipeAreaHeight(CATEGORY);
+        return area > 0 ? area : COMPACT_HEIGHT;
+    }
+
+    @Override
+    public int getDisplayWidth() {
+        return COMPACT_WIDTH;
+    }
+
+    @Override
+    public int getDisplayHeight() {
+        return COMPACT_HEIGHT;
+    }
+
+    @Override
+    public void addWidgets(WidgetHolder widgets) {
+        if (pagedButtons >= 0 && EmiPageLayout.claimPagedGroup(widgets, EmiPageLayout.displayWidth(pagedWidth, pagedButtons))) {
+            frame = new GTRecipeWidget.PageFrame(pagedWidth, widgets.getHeight(), pagedButtons, true);
+        } else {
+            frame = COMPACT_FRAME;
+        }
+        super.addWidgets(widgets);
     }
 
     @Override
@@ -126,17 +151,22 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> {
     }
 
     /**
-     * 配方页：与研究窗口同一个科技树视图（详情卡片浮在画布右侧），一开始以本节点为中心并打开它的详情。
-     * 没有服务端的界面（{@link ILocalUI}）：同步值取本端、卡片在本端直接构建。画布尺寸固定（EMI 在注册配方时就量好了整页尺寸），不能拖拽缩放、不套用锁定的尺寸。
+     * 配方页：与研究窗口同一个科技树视图（详情卡片浮在画布右侧），一开始以本节点为中心。
+     * 没有服务端的界面（{@link ILocalUI}）：同步值取本端、卡片在本端直接构建。不能拖拽缩放、不套用锁定的尺寸。
      * 另外处理 EMI 的按键（查配方 / 用途 / 收藏）：EMI 配方页只把按键转给界面、不带鼠标位置，这里记下最近一帧的鼠标位置。
      */
     private static final class Page extends UIElement implements ILocalUI {
 
+        private final GTRecipeWidget.PageFrame frame;
         private double lastMouseX = Double.NaN, lastMouseY = Double.NaN;
 
-        private Page(TechNode node, int width, int height) {
-            layout(l -> l.column());
-            var view = new TechTreeView(node.getManager(), "techtree.emi.canvas", width, height).setInitialNode(node, INITIAL_SCALE);
+        private Page(TechNode node, GTRecipeWidget.PageFrame frame) {
+            this.frame = frame;
+            int width = frame.minWidth(), height = frame.fillHeight();
+            int canvasWidth = frame.besideNotch(width);
+            layout(l -> l.row().size(width, height));
+            var view = new TechTreeView(node.getManager(), "techtree.emi.canvas", canvasWidth, height)
+                    .setInitialNode(node, INITIAL_SCALE, canvasWidth >= 2 * CARD_WIDTH);
             view.getCanvas().setResizable(false);
             view.setOnOtherTree(other -> EmiApi.displayRecipes(new TechNodeEmiStack(other)));
             addChild(view);
@@ -147,6 +177,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> {
         public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             lastMouseX = mouseX;
             lastMouseY = mouseY;
+            GTRecipeWidget.drawPageCard(graphics, getPositionX(), getPositionY(), getSizeWidth(), getSizeHeight(), frame);
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
         }
 

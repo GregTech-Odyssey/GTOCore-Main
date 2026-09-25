@@ -88,7 +88,7 @@ public final class TechTreePage {
      * 画布按屏幕撑大，窗口始终按屏幕居中（拖拽缩放后用动画回到正中）。
      */
     public static MachineWindow window(Options options, IFancyUIProvider... extraTabs) {
-        return new MachineWindow(new Tabs(options, List.of(extraTabs)).trees.get(0)).setCentered(true);
+        return new MachineWindow(new Tabs(options, List.of(extraTabs)).trees.get(0)).setCentered(true).setTitleFollowsTab(true);
     }
 
     /** 一个研究窗口的所有标签与跨标签的状态（两端各一份）。 */

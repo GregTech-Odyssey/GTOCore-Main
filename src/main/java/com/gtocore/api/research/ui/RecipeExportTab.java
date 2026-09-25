@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.uipro.ElementState;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
@@ -27,7 +26,6 @@ import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -73,15 +71,14 @@ import java.util.Set;
  *
  * <pre>
  * ┌ 区块：[搜索配方主产物 ………………]         ┐
- * │       显示未解锁奖励 ……………… [开关]     │
- * ├ 配方网格（每行 9 格，滚动）             ┤  单击选中，再次单击导出；未解锁的格子叠斜纹（禁止操作）
+ * ├ 配方网格（每行 9 格，滚动）             ┤  单击选中，再次单击导出
  * ├ 状态面板：已解锁配方 / 已选配方 / 所需数据物品 ┤
  * ├ [导出研究数据]（整行）                  ┤
  * └ 数据物品输入（9 格） / 数据物品导出（9 格） ┘
  * </pre>
  * 
  * 同步：可导出的配方条目在打开界面时由服务端下发一次（{@link RecipeGrid}），之后只下发"是否解锁 / 是否已含有"的位图与选中项；
- * 位图按科技解锁的修改计数或每秒至多重算一次。搜索和"显示未解锁"只影响本端显示，控件树两端一致。
+ * 位图按科技解锁的修改计数或每秒至多重算一次。搜索只影响本端显示，控件树两端一致。
  * 选中、导出都由服务端按最新的解锁状态校验后执行，导出本身仍是 {@link DataItemHolder#exportSelectedRecipe}。
  */
 @DataGeneratorScanned
@@ -105,12 +102,6 @@ public class RecipeExportTab implements IFancyUIProvider {
     private static final String EXPORT_TOOLTIP = "gtocore.research.recipe_export_tab.export";
     @RegisterLanguage(cn = "搜索配方主产物", en = "Search recipe outputs")
     private static final String SEARCH_TOOLTIP = "gtocore.research.recipe_export_tab.search";
-    @RegisterLanguage(cn = "显示未解锁奖励", en = "Show Locked")
-    private static final String SHOW_LOCKED_LABEL = "gtocore.research.recipe_export_tab.show_locked";
-    @RegisterLanguage(cn = "显示未解锁科技节点的奖励（仅预览）", en = "Show rewards from locked research nodes (preview only)")
-    private static final String SHOW_LOCKED_TOOLTIP = "gtocore.research.recipe_export_tab.show_locked.tooltip";
-    @RegisterLanguage(cn = "请先解锁该科技节点，然后再导出这个奖励", en = "Unlock this research node before exporting this reward")
-    private static final String LOCKED_TOOLTIP = "gtocore.research.recipe_export_tab.locked";
     @RegisterLanguage(cn = "没有找到匹配的配方奖励", en = "No matching recipe rewards were found.")
     private static final String FILTER_EMPTY_RECIPES = "gtocore.research.recipe_export_tab.filter_empty";
     @RegisterLanguage(cn = "已含有", en = "Included")
@@ -158,22 +149,15 @@ public class RecipeExportTab implements IFancyUIProvider {
         if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
         var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
 
-        // 筛选：只影响本端显示，搜索框与开关都是纯客户端控件（两端都建，不参与同步）
+        // 筛选：只影响本端显示，搜索框是纯客户端控件（两端都建，不参与同步）
         var search = new TextField(LayoutStyle.AUTO, () -> grid.search, grid::setSearch)
                 .setPlaceholder(() -> Component.translatable(SEARCH_TOOLTIP));
         search.setHoverTooltips(Component.translatable(SEARCH_TOOLTIP));
         search.getInput().setMaxStringLength(SEARCH_MAX_LENGTH);
         search.setClientSideWidget();
-        var showLocked = Switch.of(() -> grid.showLocked, grid::setShowLocked);
-        showLocked.setHoverTooltips(Component.translatable(SHOW_LOCKED_TOOLTIP));
-        showLocked.setClientSideWidget();
-        var showLockedLabel = TextLine.translatable(0, SHOW_LOCKED_LABEL).setColor(UITheme.PANEL_TEXT);
-        showLockedLabel.layout(l -> l.flex(1));
-        showLockedLabel.setHoverTooltips(Component.translatable(SHOW_LOCKED_TOOLTIP));
-        var filter = UIElement.section().addChildren(search,
-                UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(showLockedLabel, showLocked));
+        var filter = UIElement.section().addChild(search);
 
-        // 固定高度、常显滚动条：搜索、切换开关时格子数变化，窗口不跟着伸缩跳动（右下角仍可拖拽缩放）
+        // 固定高度、常显滚动条：搜索时格子数变化，窗口不跟着伸缩跳动（右下角仍可拖拽缩放）
         var scroller = new ScrollerView("research.recipe_export", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, GRID_ROWS * UISizes.SLOT)
                 .verticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
         scroller.addScrollViewChild(grid);
@@ -282,7 +266,7 @@ public class RecipeExportTab implements IFancyUIProvider {
      * <ul>
      * <li>条目列表：服务端建页时按科技树顺序收集，随初始数据下发（节点用注册 id，配方用配方 id）；界面打开期间不变，下标两端一致。</li>
      * <li>状态位图（每条两位：已解锁、已含有）与选中项由服务端经 {@link SyncValue} 下发；位图按科技解锁修改计数或每秒至多重算一次。</li>
-     * <li>显示顺序、搜索、"显示未解锁"只在客户端计算：已解锁在前，其中未含有的在前。</li>
+     * <li>显示顺序、搜索只在客户端计算：未含有的在前。</li>
      * </ul>
      * 选中项是"这一个打开的界面"的状态，存在本控件里（服务端），不进机器字段。
      */
@@ -318,7 +302,6 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         // ---- 客户端 ----
         String search = "";
-        boolean showLocked;
         private final IntArrayList visible = new IntArrayList();
         /// 选中项在可见列表里的位置（按选中项缓存，重新筛选后作废）
         private int positionOf = -2;
@@ -567,24 +550,18 @@ public class RecipeExportTab implements IFancyUIProvider {
             refilter();
         }
 
-        void setShowLocked(boolean value) {
-            if (showLocked == value) return;
-            showLocked = value;
-            refilter();
-        }
-
         /** 客户端：按筛选条件重排可见条目，并按行数改高度。 */
         private void refilter() {
             if (!remote) return;
             visible.clear();
             String normalized = search.trim().toLowerCase(Locale.ROOT);
             for (int i = 0; i < entries.size(); i++) {
-                if (!showLocked && !unlocked(i)) continue;
+                if (!unlocked(i)) continue;
                 if (!normalized.isEmpty() && !PinYinUtils.match(searchName(entries.get(i)), normalized)) continue;
                 visible.add(i);
             }
-            // 已解锁在前，其中未含有的在前；同组保持科技树顺序（归并排序是稳定的）
-            IntArrays.mergeSort(visible.elements(), 0, visible.size(), (a, b) -> Integer.compare(sortKey(a), sortKey(b)));
+            // 未含有的在前；同组保持科技树顺序（归并排序是稳定的）
+            IntArrays.mergeSort(visible.elements(), 0, visible.size(), (a, b) -> Boolean.compare(included(a), included(b)));
             int rows = Math.max(1, (visible.size() + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW);
             layout(l -> l.height(rows * UISizes.SLOT));
             tooltipIndex = -1;
@@ -599,10 +576,6 @@ public class RecipeExportTab implements IFancyUIProvider {
                 position = selectedEntry < 0 ? -1 : visible.indexOf(selectedEntry);
             }
             return position;
-        }
-
-        private int sortKey(int index) {
-            return (unlocked(index) ? 0 : 2) + (included(index) ? 1 : 0);
         }
 
         private static String searchName(Entry entry) {
@@ -650,7 +623,7 @@ public class RecipeExportTab implements IFancyUIProvider {
             int x0 = getPositionX(), y0 = getPositionY();
             var font = Minecraft.getInstance().font;
             if (visible.isEmpty()) {
-                var key = entries.isEmpty() || (search.isBlank() && !showLocked) ? EMPTY_RECIPES : FILTER_EMPTY_RECIPES;
+                var key = search.isBlank() ? EMPTY_RECIPES : FILTER_EMPTY_RECIPES;
                 graphics.drawString(font, UITheme.clip(font, Component.translatable(key).getString(), getSizeWidth()),
                         x0, y0 + (UISizes.SLOT - 8) / 2, UITheme.TEXT_SECONDARY, false);
                 return;
@@ -670,15 +643,11 @@ public class RecipeExportTab implements IFancyUIProvider {
                 UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT, UISizes.SLOT);
                 if (entry.output != null) AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x + 1, y + 1, entry.output);
                 else graphics.drawString(font, "?", x + 6, y + 5, UITheme.TEXT, false);
-                boolean isUnlocked = unlocked(index);
-                if (isUnlocked && included(index)) {
+                if (included(index)) {
                     StackSizeRenderer.renderSizeLabel(graphics, font, x + 1, y + 17 - font.lineHeight * 0.5f,
                             INCLUDED_LABEL, 0.5f, true, true);
                 }
-                if (!isUnlocked) {
-                    // 未解锁：与禁用控件一致的斜纹（不压暗）
-                    UITheme.drawDisabled(graphics, x, y, UISizes.SLOT, UISizes.SLOT);
-                } else if (index == hovered) {
+                if (index == hovered) {
                     RenderSystem.colorMask(true, true, true, false);
                     graphics.fill(x + 1, y + 1, x + UISizes.SLOT - 1, y + UISizes.SLOT - 1, 200, UITheme.SLOT_HOVER_OVERLAY);
                     RenderSystem.colorMask(true, true, true, true);
@@ -721,14 +690,10 @@ public class RecipeExportTab implements IFancyUIProvider {
             lines.add(Component.translatable(NODE_TOOLTIP, entry.node.getDisplayName()).withStyle(ChatFormatting.GRAY));
             var tierItem = entry.node.getTierItem();
             if (!tierItem.isEmpty()) lines.add(Component.translatable(TIER_TOOLTIP, tierItem.getHoverName()).withStyle(ChatFormatting.GRAY));
-            if (!unlocked(index)) {
-                ElementState.appendDisabledLines(lines, Component.translatable(LOCKED_TOOLTIP));
-            } else {
-                boolean isSelected = index == currentSelected;
-                lines.add(Component.translatable(isSelected ? EXPORT_TOOLTIP : SELECT_TOOLTIP)
-                        .withStyle(isSelected ? ChatFormatting.AQUA : ChatFormatting.GRAY));
-                if (included(index)) lines.add(Component.translatable(INCLUDED_TOOLTIP_DETAIL).withStyle(ChatFormatting.GOLD));
-            }
+            boolean isSelected = index == currentSelected;
+            lines.add(Component.translatable(isSelected ? EXPORT_TOOLTIP : SELECT_TOOLTIP)
+                    .withStyle(isSelected ? ChatFormatting.AQUA : ChatFormatting.GRAY));
+            if (included(index)) lines.add(Component.translatable(INCLUDED_TOOLTIP_DETAIL).withStyle(ChatFormatting.GOLD));
             tooltip = lines;
             return tooltip;
         }
@@ -738,8 +703,6 @@ public class RecipeExportTab implements IFancyUIProvider {
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             int index = entryAt(mouseX, mouseY);
             if (index < 0 || button != 0) return super.mouseClicked(mouseX, mouseY, button);
-            // 未解锁的格子只能预览：吃掉点击，不发请求
-            if (!unlocked(index)) return true;
             writeClientAction(ACTION_CLICK, buffer -> buffer.writeVarInt(index));
             playButtonClickSound();
             return true;

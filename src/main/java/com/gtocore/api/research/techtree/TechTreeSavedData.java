@@ -111,6 +111,13 @@ public class TechTreeSavedData extends FastSavedData {
         return tree != null && tree.isUnlocked(node);
     }
 
+    public static boolean isPrerequisitesUnlocked(@Nullable UUID uuid, TechNode node) {
+        for (var prerequisite : node.prerequisites) {
+            if (!isUnlocked(uuid, prerequisite)) return false;
+        }
+        return true;
+    }
+
     public static boolean unlock(Player player, TechNode node) {
         return unlock(getTeamUUID(player), node);
     }

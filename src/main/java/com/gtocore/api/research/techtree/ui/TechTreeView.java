@@ -221,17 +221,17 @@ public class TechTreeView extends UIElement {
     }
 
     /**
-     * 界面打开时就显示 {@code node}（本树的节点）：打开它的详情，初始视图按 {@code scale} 倍缩放、以它为中心
+     * 界面打开时就显示 {@code node}（本树的节点）：初始视图按 {@code scale} 倍缩放、以它为中心
      * （卡片左边露出的部分）。用于纯客户端界面（EMI 配方页）；详情等界面初始化后再打开。
      */
-    public TechTreeView setInitialNode(TechNode node, float scale) {
+    public TechTreeView setInitialNode(TechNode node, float scale, boolean openDetails) {
         if (node.getManager() != manager) return this;
         var rect = TechTreeScene.nodeRect(manager, node);
         canvas.setInitialView(view -> {
             view.setView(view.offsetX(), view.offsetY(), scale, false);
             view.centerOn(rect.centerX(), rect.centerY(), false);
         });
-        details.open(encodeNode(node));
+        if (openDetails) details.open(encodeNode(node));
         return this;
     }
 
@@ -303,10 +303,7 @@ public class TechTreeView extends UIElement {
     }
 
     static boolean prerequisitesUnlocked(UUID team, TechNode node) {
-        for (var prerequisite : node.prerequisites) {
-            if (!TechTreeSavedData.isUnlocked(team, prerequisite)) return false;
-        }
-        return true;
+        return TechTreeSavedData.isPrerequisitesUnlocked(team, node);
     }
 
     /** 一棵树所有节点的状态（按布局顺序）。数组按内容比较，状态没变就不重发。 */
