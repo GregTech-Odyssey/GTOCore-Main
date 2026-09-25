@@ -53,6 +53,9 @@ public final class TradeLang {
         addTradeLang("gtocore.currency." + ENERGY_COIN, "能量币", "Energy Coin");
         addTradeLang("gtocore.currency." + COMPACT_ENERGY_COIN, "致密能量币", "Compact Energy Coin");
 
+        addTradeLang("gtocore.trade.quest_requirement", "前置任务：%s", "Quest prerequisite: %s");
+        addTradeLang("gtocore.trade.quest_requirement_id", "前置任务 ID：%s", "Quest prerequisite ID: %s");
+
         addTradeLang("gtocore.palm_sized_bank.textList.1", "欢迎使用掌上银行！", "Welcome to Mobile Banking!");
         addTradeLang("gtocore.palm_sized_bank.textList.2", "在这里, 您可以方便地管理您的虚拟资产", "Here, you can conveniently manage your virtual assets");
         addTradeLang("gtocore.palm_sized_bank.textList.3", "请注意保护您的账户信息, 避免泄露给他人", "Please be careful to protect your account information and avoid disclosing it to others");
@@ -104,6 +107,8 @@ public final class TradeLang {
         addTradeLang("gtocore.trading_station.unlock_shop", "解锁商店", "Unlock Store");
         addTradeLang("gtocore.trading_station.item_storage", "物品存储", "Item Storage");
         addTradeLang("gtocore.trading_station.fluid_storage", "流体存储", "Fluid Storage");
+        addTradeLang("gtocore.trading_station.help", "使用说明", "Guide");
+        addTradeLang("gtocore.trading_station.open_help", "查看使用说明", "View Guide");
 
         addTradeLang("gtocore.trading_station.textList.2", "⇦ 请放入会员卡", "⇦ Please insert your membership card.");
         addTradeLang("gtocore.trading_station.textList.3", "欢迎「 %s 」", "Welcome「 %s 」");

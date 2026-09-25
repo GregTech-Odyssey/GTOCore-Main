@@ -110,14 +110,17 @@ public final class GTOTrade {
         return builder.build();
     }
 
-    public static TradeEntry questGatedItemTrading(String unlockCondition, ItemStack stack, String currency, int amount, long questId) {
-        return new TradeEntry.Builder()
+    public static TradeEntry questGatedItemTrading(String unlockCondition, ItemStack stack, String currency, int amount, long questId, Component... descriptions) {
+        TradeEntry.Builder builder = new TradeEntry.Builder()
                 .texture(new StackTexture(stack))
                 .unlockCondition(unlockCondition)
                 .preCheck((data, entry) -> Mods.FTBQUESTS.isLoaded() && QuestTradeIntegration.hasCompletedQuest(data, questId) ? -1 : 0)
                 .inputCurrency(currency, amount)
-                .outputItem(stack)
-                .build();
+                .outputItem(stack);
+        for (Component description : descriptions) builder.addDescription(description);
+        if (Mods.FTBQUESTS.isLoaded()) builder.dynamicDescription(() -> QuestTradeIntegration.questRequirement(questId));
+        else builder.addDescription(Component.translatable("gtocore.trade.quest_requirement_id", String.format("%016X", questId)));
+        return builder.build();
     }
 
     /**

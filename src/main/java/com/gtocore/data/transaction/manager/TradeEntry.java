@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static com.gtocore.data.transaction.TradingStationTool.*;
@@ -35,6 +36,8 @@ public record TradeEntry(
                          IGuiTexture texture,
                          // 交易描述
                          List<Component> description,
+                         // 需要在显示时生成的描述（如任务书加载后的任务名称）
+                         Supplier<Component> dynamicDescription,
                          // 解锁条件文本
                          String unlockCondition,
                          // 交易前额外检查逻辑
@@ -179,6 +182,7 @@ public record TradeEntry(
 
     public List<Component> getDescription() {
         List<Component> componentList = new ArrayList<>(description());
+        if (dynamicDescription != null) componentList.add(dynamicDescription.get());
         if (!inputGroup().isEmpty()) componentList.addAll(inputGroup().getComponentList(true));
         if (!outputGroup().isEmpty()) componentList.addAll(outputGroup().getComponentList(false));
         return componentList;
@@ -317,6 +321,7 @@ public record TradeEntry(
 
         private IGuiTexture texture;
         private final List<Component> description = new ArrayList<>();
+        private Supplier<Component> dynamicDescription;
         private String unlockCondition;
         private PreTradeCheck preCheck;
         private TradeRunnable onExecute;
@@ -339,6 +344,11 @@ public record TradeEntry(
 
         public Builder addDescription(Component component) {
             this.description.add(component);
+            return this;
+        }
+
+        public Builder dynamicDescription(Supplier<Component> description) {
+            this.dynamicDescription = description;
             return this;
         }
 
@@ -446,6 +456,7 @@ public record TradeEntry(
             return new TradeEntry(
                     texture,
                     ImmutableList.copyOf(description),
+                    dynamicDescription,
                     unlockCondition,
                     preCheck,
                     onExecute,

@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -71,7 +72,8 @@ public final class WelfareGroup {
                         .addDescription(Component.translatable(addTradeLang(
                                 "欢迎来到格雷科技™员工会员专卖店",
                                 "Welcome to the Grey Tech™ Employee Membership Store")))
-                        .addDescription(Component.translatable(addTradeLang("希望你喜欢", "Hope you like it")))
+                        .addDescription(Component.translatable(addTradeLang("以后会添加更多购买项以及钱币获取途径",
+                                "More purchase options and ways to obtain currency will be added in the future")))
                         .outputItem(new ItemStack(BotaniaItems.manaCookie))
                         .outputItem(ChemicalHelper.get(ingot, Bronze, 64))
                         .preCheck((a, b) -> checkTag(a, b, "Welcome to the Grey Tech™ Employee Membership Store"))
@@ -94,7 +96,14 @@ public final class WelfareGroup {
         {
             ItemStack stack = itemStackAddNbtString(GTOItems.PROSPECTOR_MANA_ULV.asStack(), "{mana:500000}");
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                    simpleItemTrading(true, UNLOCK_BASE, stack, TECH_OPERATOR_COIN, 16));
+                    new TradeEntry.Builder()
+                            .texture(new StackTexture(stack))
+                            .unlockCondition(UNLOCK_BASE)
+                            .addDescription(Component.translatable(addTradeLang("主线送了一个，如果你丢了可以在这里买",
+                                    "The main quest gave you one, you can buy it here if you lost it.")))
+                            .inputCurrency(TECH_OPERATOR_COIN, 16)
+                            .outputItem(stack)
+                            .build());
 
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     new TradeEntry.Builder()
@@ -111,8 +120,18 @@ public final class WelfareGroup {
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                 simpleItemTrading(true, UNLOCK_BASE, ChemicalHelper.get(block, Bronze, 8), TECH_OPERATOR_COIN, 10));
 
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                simpleItemTrading(true, UNLOCK_BASE, GTOItems.PRECISION_STEAM_MECHANISM.asStack(), TECH_OPERATOR_COIN, 128));
+        {
+            ItemStack stack = GTOItems.PRECISION_STEAM_MECHANISM.asStack();
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
+                    new TradeEntry.Builder()
+                            .texture(new StackTexture(stack))
+                            .unlockCondition(UNLOCK_BASE)
+                            .addDescription(Component.translatable(addTradeLang("提前造出大蒸汽机器",
+                                    "Build large steam machines in advance")))
+                            .inputCurrency(TECH_OPERATOR_COIN, 128)
+                            .outputItem(stack)
+                            .build());
+        }
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                 simpleItemTrading(true, UNLOCK_BASE, GTItems.STICKY_RESIN.asStack(128), TECH_OPERATOR_COIN, 16));
@@ -132,6 +151,9 @@ public final class WelfareGroup {
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                 questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_TANK[LV].asStack(), TECH_OPERATOR_COIN, 24, LV_ASSEMBLER_QUEST));
 
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
+                questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_CHEST[LV].asStack(), TECH_OPERATOR_COIN, 16, LV_CIRCUIT_QUEST));
+
         {
             ItemStack stack = itemStackAddNbtString(Objects.requireNonNull(GTMaterialItems.TOOL_ITEMS.get(DamascusSteel, GTToolType.MINING_HAMMER)).asStack(),
                     "{DisallowContainerItem:0b,Enchantments:[{id:\"minecraft:unbreaking\",lvl:3s}],GT.Behaviours:{AoEColumn:1,AoELayer:0,AoERow:1},GT.Tool:{Damage:0},HideFlags:2}");
@@ -143,7 +165,9 @@ public final class WelfareGroup {
                 SimpleLotteryTrading(UNLOCK_BASE, TECH_OPERATOR_COIN, 8,
                         List.of(Component.translatable(addTradeLang(
                                 "喝了可乐之后在小机器上跳来跳去可以加速小机器工作",
-                                "Jumping up and down on the small machine after drinking Coke can speed up its operation"))),
+                                "Jumping up and down on the small machine after drinking Coke can speed up its operation")),
+                                Component.translatable(addTradeLang("可乐等级/机械之神附身的等级代表其最高能加速的小机器的等级",
+                                        "Cola Level / Possession of the Machine God Level represents the highest level of small machines it can accelerate."))),
                         List.of(lotteryItem(25, GTOItems.MYSTERIOUS_BOOST_DRINK[2].asStack()),
                                 lotteryItem(75, GTOItems.MYSTERIOUS_BOOST_DRINK[1].asStack()),
                                 lotteryItem(900, GTOItems.MYSTERIOUS_BOOST_DRINK[0].asStack()))));
@@ -201,41 +225,6 @@ public final class WelfareGroup {
                 questGatedItemTrading(UNLOCK_BASE, RegistriesUtils.getItemStack("ad_astra:large_gas_tank", 1,
                         "{BotariumData:{StoredFluids:[{Amount:3000L,Fluid:\"ad_astra:oxygen\"}]}}"), TECH_OPERATOR_COIN, 64, MOON_QUEST));
 
-        if (!GTOCore.isExpert()) {
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                    new TradeEntry.Builder()
-                            .texture(new StackTexture(ChemicalHelper.get(ingot, Titanium, 3)))
-                            .addDescription(Component.translatable(addTradeLang("钛锭", "Titanium Ingots")))
-                            .inputItem(ChemicalHelper.get(ingot, Nichrome, 32))
-                            .inputCurrency(TECH_OPERATOR_COIN, 64)
-                            .outputItem(ChemicalHelper.get(ingot, Titanium, 3))
-                            .build());
-
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                    new TradeEntry.Builder()
-                            .texture(new StackTexture(GTItems.FIELD_GENERATOR_HV.asStack()))
-                            .addDescription(Component.translatable(addTradeLang("HV力场发生器", "HV Field Generator")))
-                            .inputItem(GTItems.FIELD_GENERATOR_MV.asStack(8))
-                            .inputCurrency(TECH_OPERATOR_COIN, 64)
-                            .outputItem(GTItems.FIELD_GENERATOR_HV.asStack())
-                            .build());
-        }
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_CHEST[LV].asStack(), TECH_OPERATOR_COIN, 16, LV_CIRCUIT_QUEST));
-
-        if (Mods.FACTORY_BLOCKS.isLoaded()) {
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                    freeItemTrading(UNLOCK_BASE, RegistriesUtils.getItemStack("factory_blocks:factory", 64)));
-        }
-
-        for (String color : List.of("white", "light_gray", "gray", "black", "brown", "red", "orange", "yellow",
-                "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink")) {
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                    simpleItemTrading(true, UNLOCK_BASE,
-                            RegistriesUtils.getItemStack("botania:" + color + "_mystical_flower", 16), TECH_OPERATOR_COIN, 16));
-        }
-
         for (String ore : List.of("iron", "copper", "tin", "coal")) {
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     simpleItemTrading(true, UNLOCK_BASE, RegistriesUtils.getItemStack("gtceu:" + ore + "_ore", 64), TECH_OPERATOR_COIN, 24));
@@ -248,38 +237,29 @@ public final class WelfareGroup {
                     simpleItemTrading(true, UNLOCK_BASE, stack, TECH_OPERATOR_COIN, 32));
         }
 
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.WHITE_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.ORANGE_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.MAGENTA_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.LIGHT_BLUE_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.YELLOW_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.LIME_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.PINK_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.GRAY_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.LIGHT_GRAY_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.CYAN_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.PURPLE_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.BLUE_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.BROWN_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.GREEN_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.RED_CONCRETE, 64)));
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                freeItemTrading(UNLOCK_BASE, new ItemStack(Items.BLACK_CONCRETE, 64)));
+        if (!GTOCore.isExpert()) {
+            var titaniumTrade = new TradeEntry.Builder()
+                    .texture(new StackTexture(ChemicalHelper.get(ingot, Titanium, 3)))
+                    .description(List.of(
+                            Component.translatable(addTradeLang("进入HV之后再来兑换吧", "Come back to redeem after entering HV.")),
+                            Component.translatable(addTradeLang("能让你提前做出少量的HV整体框架", "Allows you to craft a small amount of HV Integral Framework in advance."))))
+                    .inputItem(ChemicalHelper.get(ingot, Nichrome, 32))
+                    .inputCurrency(TECH_OPERATOR_COIN, 64)
+                    .outputItem(ChemicalHelper.get(ingot, Titanium, 3));
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, titaniumTrade.build());
+
+            var fieldGeneratorTrade = new TradeEntry.Builder()
+                    .texture(new StackTexture(GTItems.FIELD_GENERATOR_HV.asStack()))
+                    .description(List.of(
+                            Component.translatable(addTradeLang("进入HV之后再来兑换吧", "Come back to redeem after entering HV.")),
+                            Component.translatable(addTradeLang("能让你提前做出金刚杵和普通难度下的HV输入输出总成", "Allows you to craft the Vajra in advance and the HV Importing/Exporting Dual Output Hatch on Normal difficulty."))))
+                    .inputItem(GTItems.FIELD_GENERATOR_MV.asStack(8))
+                    .inputCurrency(TECH_OPERATOR_COIN, 64)
+                    .outputItem(GTItems.FIELD_GENERATOR_HV.asStack());
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, fieldGeneratorTrade.build());
+        }
+
+        // ----------------------------------------------------------------
 
         int ShopIndex2 = TradingManager.INSTANCE.addShopByGroupIndex(
                 GroupIndex,
@@ -287,5 +267,40 @@ public final class WelfareGroup {
                 UNLOCK_BASE,
                 Set.of(TECH_OPERATOR_COIN),
                 GuiTextures.GREGTECH_LOGO);
+
+        String factoryBlocksDescription = addTradeLang("不想手动点也可以制作建筑方块的无限AE元件",
+                "Don't want to click manually? You can also craft an Infinite AE Component for building blocks.");
+        String factoryBlocksSubtitle = addTradeLang("建筑师必备", "Essential for Architects");
+        if (Mods.FACTORY_BLOCKS.isLoaded()) {
+            ItemStack stack = RegistriesUtils.getItemStack("factory_blocks:factory", 64);
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
+                    new TradeEntry.Builder()
+                            .texture(new StackTexture(stack))
+                            .unlockCondition(UNLOCK_BASE)
+                            .addDescription(Component.translatable(factoryBlocksDescription))
+                            .addDescription(Component.translatable(factoryBlocksSubtitle))
+                            .outputItem(stack)
+                            .build());
+        }
+
+        for (String color : List.of("white", "light_gray", "gray", "black", "brown", "red", "orange", "yellow",
+                "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink")) {
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2,
+                    simpleItemTrading(true, UNLOCK_BASE,
+                            RegistriesUtils.getItemStack("botania:" + color + "_mystical_flower", 16), TECH_OPERATOR_COIN, 16));
+        }
+        for (String color : List.of("white", "light_gray", "gray", "black", "brown", "red", "orange", "yellow",
+                "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink")) {
+            ItemStack stack = RegistriesUtils.getItemStack("minecraft:" + color + "_concrete", 64);
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2,
+                    new TradeEntry.Builder()
+                            .texture(new StackTexture(stack))
+                            .unlockCondition(UNLOCK_BASE)
+                            .addDescription(Component.translatable(addTradeLang("不想手动点也可以制作混凝土的无限AE元件",
+                                    "Don't want to click manually? You can also craft an Infinite AE component for Concrete.")))
+                            .addDescription(Component.translatable(addTradeLang("免费续杯", "Free Refills")))
+                            .outputItem(stack)
+                            .build());
+        }
     }
 }

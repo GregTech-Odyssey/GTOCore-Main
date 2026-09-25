@@ -201,11 +201,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     private static final String TEXT_HEADER = "gtocore.trading_station.textList.";
     private static final String CURRENCY_HEADER = "gtocore.currency.";
+    private static final String HELP_TITLE = "gtocore.trading_station.help";
+    private static final String OPEN_HELP = "gtocore.trading_station.open_help";
     private static final String UNKNOWN_PLAYER = "Unknown";
     /// 没有值时的占位
     private static final Component NO_VALUE = Component.literal("—");
-    /// 主页使用说明的高度（再高就滚动）
-    private static final int HELP_HEIGHT = 6 * UISizes.SLOT;
     /// 交易解锁页里解锁项列表的高度
     private static final int KEY_LIST_HEIGHT = 4 * UISizes.CONTROL_HEIGHT;
     /// 每行/每页的交易格数（与原实现一致：商店 4×8，解锁 4×8）
@@ -216,17 +216,19 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     /// 存储页每行几组（一组 = 左边输入、右边输出）
     private static final int STORAGE_PER_ROW = 4;
 
+    private final HelpTab helpTab = new HelpTab();
     private List<Component> helpLines;
 
     // ==================== 主页 ====================
 
-    /** 主页：会员卡、会员信息、商店组切换与使用说明。 */
+    /** 主页：会员卡、会员信息、商店组切换与使用说明入口。 */
     @Override
-    public Widget createUIWidget() {
+    public Widget createMainPage(FancyMachineUIWidget widget) {
         var page = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
         page.addChild(memberSection());
         page.addChild(shopGroupSection());
-        page.addChild(helpView());
+        page.addChild(Button.translatable(LayoutStyle.AUTO, OPEN_HELP)
+                .setOnClick(clickData -> openPage(widget, helpTab)));
         return page;
     }
 
@@ -287,16 +289,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         return cell;
     }
 
-    /** 使用说明：多行富文本，服务端取文字、变化时整表下发（客户端不设 textSupplier）。 */
-    private Widget helpView() {
-        var text = new RichText();
-        text.textSupplier(isRemote() ? null : this::helpText);
-        var scroller = new ScrollerView("trading_station.help", UISizes.SLOT_ROW_WIDTH, HELP_HEIGHT)
-                .adaptiveHeight(HELP_HEIGHT)
-                .layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
-        scroller.setBackground(UITheme.STATUS_PANEL);
-        scroller.addScrollViewChild(text);
-        return scroller;
+    /** 两端同步跳转到指定页，与点击顶部页签的行为一致。 */
+    private static void openPage(FancyMachineUIWidget widget, IFancyUIProvider page) {
+        var tabs = widget.getSideTabsWidget();
+        tabs.selectTab(page);
+        tabs.getOnTabClick().accept(page);
     }
 
     /** 服务端：使用说明（内容固定，取一次存下来，避免每刻重建整表文字）。 */
@@ -321,6 +318,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         // 固定页签（与原实现一致：只在第一个商店组里显示）
         List<IFancyUIProvider> fixedTabs = new ArrayList<>();
         if (groupSelected == 0) {
+            fixedTabs.add(helpTab);
             fixedTabs.add(itemStorageTab());
             fixedTabs.add(fluidStorageTab());
             fixedTabs.add(new UnlockTab());
@@ -368,6 +366,46 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             if (tradingShop != null) tabs.add(new ShopTab(groupSelected, shop, tradingShop));
         }
         return tabs;
+    }
+
+    // ==================== 使用说明页 ====================
+
+    private final class HelpTab implements IFancyUIProvider {
+
+        private static final int SERVER_HEIGHT_LIMIT = Integer.MAX_VALUE / 4;
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var text = new RichText();
+            text.textSupplier(isRemote() ? null : TradingStationMachine.this::helpText);
+            var scroller = new ScrollerView("trading_station.help", UISizes.CONTENT_WIDTH, UISizes.SLOT)
+                    .setResizable(false)
+                    .layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
+            scroller.addScrollViewChild(text);
+            scroller.adaptiveHeight(widget.isRemote() ? MachineWindow.clientPageHeightLimit(false) : SERVER_HEIGHT_LIMIT);
+            scroller.setBackground(UITheme.STATUS_PANEL);
+            return UIElement.column(UISizes.CONTENT_WIDTH).addChild(scroller);
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.INFO;
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(HELP_TITLE);
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(getTitle());
+        }
+
+        @Override
+        public boolean hasPlayerInventory() {
+            return false;
+        }
     }
 
     // ==================== 物品/流体存储页 ====================
