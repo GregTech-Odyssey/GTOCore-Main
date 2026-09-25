@@ -21,6 +21,8 @@ final class MachineLang {
         addCNEN("gtocore.machine.energy_loss", "能量损失: %s", "Energy loss: %s");
         addCNEN("gtocore.machine.highlight_module", "高亮显示模块位置", "Highlight module position");
         addCNEN("gtocore.machine.highlight_obstruction", "高亮显示会被阻挡的区域", "Highlight areas that will be obstructed");
+        addCNEN("gtocore.machine.storage_transfer", "存储转移", "Transfer Storage");
+        addCNEN("gtocore.machine.storage_transfer.tooltip", "把网络里其它 ME 存储的内容全部搬进这里（装不下的留在原处）", "Moves everything held by the other ME storages in the network in here (what does not fit stays where it is)");
         addCNEN("gtocore.machine.structure_check", "更新结构检查", "Update structure check");
         addCNEN("gtocore.machine.structure_check.shift", "Shift+点击 将强制重新检查结构", "Shift+click will forced recheck the structure");
         addCNEN("gtocore.machine.overclock_configurator", "调整机器超频的最小时间", "Adjust the minimum time for machine overclocking");

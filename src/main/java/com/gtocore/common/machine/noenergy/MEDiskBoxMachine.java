@@ -69,15 +69,14 @@ public final class MEDiskBoxMachine extends MetaMachine
     private static final String SWITCH = "switch";
     /// 存储转移按钮的键
     private static final String TRANSFER_BUTTON = "transfer";
+    /// 存储转移的文案与存储访问仓共用，注册在 MachineLang
+    private static final String TRANSFER = "gtocore.machine.storage_transfer";
+    private static final String TRANSFER_TOOLTIP = "gtocore.machine.storage_transfer.tooltip";
 
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
     @RegisterLanguage(cn = "放 AE2 存储组件（只收 256k 及以下）来提供容量", en = "Put AE2 storage components (256k and below only) in to provide capacity")
     public static final String NO_COMPONENTS = "gtocore.machine.me_disk_box.no_components";
-    @RegisterLanguage(cn = "存储转移", en = "Transfer Storage")
-    public static final String TRANSFER = "gtocore.machine.me_disk_box.transfer";
-    @RegisterLanguage(cn = "把网络里其它 ME 存储的内容全部搬进本箱（本箱装不下的留在原处）", en = "Move everything held by the other ME storages in the network into this box (what does not fit stays where it is)")
-    public static final String TRANSFER_TOOLTIP = "gtocore.machine.me_disk_box.transfer_tooltip";
 
     /// 组件槽（1 格，最多 {@link #COMPONENT_LIMIT} 个存储组件）
     @SaveToDisk

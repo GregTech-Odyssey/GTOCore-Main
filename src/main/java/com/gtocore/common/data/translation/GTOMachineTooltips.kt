@@ -723,8 +723,8 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         function("访问 ME 存储器内的存储，并可为每种东西单独设置上下限" translatedTo "Accesses storage in ME storage and sets a limit for every key")
-        info("输入限制：每种最多存多少；未配置 = 不限，0 记为 -1（禁止存入）" translatedTo "Input limit: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden)")
-        info("输出限制：每种至少保留多少；未配置 = 不限，0 记为 -1（不设下限）" translatedTo "Output limit: how much of each key to keep; unconfigured = unlimited, 0 is stored as -1 (no floor)")
+        info("输入限制：每种最多存多少；未配置 = 不限，0 = 禁止存入" translatedTo "Input limit: the most of each key that may be stored; unconfigured = unlimited, 0 = forbidden")
+        info("输出限制：每种至少保留多少；未配置 = 不限，0 = 不设下限" translatedTo "Output limit: the least of each key to keep; unconfigured = unlimited, 0 = no floor")
         important("两张表各有开关、互不影响；都不开时就是普通访问仓" translatedTo "The two tables have their own switches and do not affect each other; with both off this is an ordinary access hatch")
         info("配置面板：81 个物品格 + 81 个流体格，选中格子后在中间的输入框改数量" translatedTo "Config panel: 81 item slots + 81 fluid slots; select a slot and edit the amount in the middle field")
     }

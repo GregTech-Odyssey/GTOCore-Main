@@ -80,10 +80,9 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         return new StorageAccessPartMachine.Configurable(holder);
     }
 
-    @RegisterLanguage(cn = "存储转移", en = "Transfer Storage")
-    private static final String LANG_TRANSFER = "gtocore.machine.storage_access_hatch.transfer";
-    @RegisterLanguage(cn = "把网络里其它 ME 存储的内容全部搬进本仓（本仓装不下的留在原处）", en = "Move everything held by the other ME storages in the network into this hatch (what does not fit stays where it is)")
-    private static final String LANG_TRANSFER_TOOLTIP = "gtocore.machine.storage_access_hatch.transfer_tooltip";
+    /// 存储转移（文案与 ME 磁盘箱子共用，注册在 MachineLang）
+    private static final String LANG_TRANSFER = "gtocore.machine.storage_transfer";
+    private static final String LANG_TRANSFER_TOOLTIP = "gtocore.machine.storage_transfer.tooltip";
 
     @Setter
     boolean observe;
@@ -709,21 +708,21 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         @RegisterLanguage(cn = "输入限制", en = "Input Limit")
         private static final String LANG_INPUT_LIMIT = "gtocore.machine.configurable_storage_access_hatch.input_limit";
-        @RegisterLanguage(cn = "启用后按输入表卡住存入：每种最多存多少；未配置=不限、0 记成 -1（禁止存入）、正数=上限", en = "When enabled, the input table caps insertion: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden), positive = the cap")
+        @RegisterLanguage(cn = "按输入表限制存入：每种最多存多少（0 = 禁止存入）", en = "Limits insertion by the input table: the most of each key that may be stored (0 = forbidden)")
         private static final String LANG_INPUT_LIMIT_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_limit_tooltip";
-        @RegisterLanguage(cn = "开关：是否按输入表限制存入；关着时不看这张表", en = "Switch: whether the input table restricts insertion; while off the table is not read at all")
+        @RegisterLanguage(cn = "开关：关着时不看输入表", en = "Switch: the input table is ignored while off")
         private static final String LANG_INPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_switch_tooltip";
         @RegisterLanguage(cn = "输出限制", en = "Output Limit")
         private static final String LANG_OUTPUT_LIMIT = "gtocore.machine.configurable_storage_access_hatch.output_limit";
-        @RegisterLanguage(cn = "启用后按输出表卡住取出：每种至少保留多少，库存不够就不取出；未配置=不限、0 记成 -1（也不设下限）、正数=保留下限", en = "When enabled, the output table floors extraction: how much to keep, nothing comes out below it; unconfigured = unlimited, 0 is stored as -1 (no floor either), positive = the floor to keep")
+        @RegisterLanguage(cn = "按输出表限制取出：每种至少保留多少（0 = 不设下限）", en = "Limits extraction by the output table: the least of each key to keep (0 = no floor)")
         private static final String LANG_OUTPUT_LIMIT_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_limit_tooltip";
-        @RegisterLanguage(cn = "开关：是否按输出表限制取出；关着时不看这张表", en = "Switch: whether the output table restricts extraction; while off the table is not read at all")
+        @RegisterLanguage(cn = "开关：关着时不看输出表", en = "Switch: the output table is ignored while off")
         private static final String LANG_OUTPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_switch_tooltip";
         @RegisterLanguage(cn = "配置", en = "Configure")
         private static final String LANG_CONFIG = "gtocore.machine.configurable_storage_access_hatch.config";
-        @RegisterLanguage(cn = "在弹出面板里编辑这张表（物品 81 格 + 流体 81 格）；要生效先把左边的开关打开", en = "Edit this table in the popup (81 item + 81 fluid slots); turn on the switch on the left to make it take effect")
+        @RegisterLanguage(cn = "在弹出面板里编辑这张表", en = "Edit this table in the popup")
         private static final String LANG_CONFIG_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.config_tooltip";
-        @RegisterLanguage(cn = "配置格：点格子放东西、在中间的输入框里改数量；输入表写 0 = 禁止存入、输出表写 0 = 不设下限（都记成 -1），右键清掉格子 = 不限", en = "Config slots: click a slot to set a key, edit the amount in the middle field; 0 in the input table means forbidden, 0 in the output table means no floor (both stored as -1), right-click clears the slot (unlimited)")
+        @RegisterLanguage(cn = "点格子放东西、在中间的输入框里改数量；右键清掉格子 = 不限", en = "Click a slot to set a key, edit the amount in the middle field; right-click a slot to clear it (unlimited)")
         private static final String LANG_CONFIG_HINT = "gtocore.machine.configurable_storage_access_hatch.config_hint";
         @RegisterLanguage(cn = "物品格", en = "Item Slots")
         private static final String LANG_CONFIG_ITEMS = "gtocore.machine.configurable_storage_access_hatch.config_items";
