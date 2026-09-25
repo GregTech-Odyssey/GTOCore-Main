@@ -29,10 +29,12 @@ import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -83,6 +85,7 @@ final class MEPatternVirtualInputHelper {
         int targetItemSlot = 0;
         int targetFluidSlot = 0;
         var locked = false;
+        Set<Object> virtuals = new ReferenceOpenHashSet<>();
         for (var stack : sparseInput) {
             if (!(stack.what() instanceof AEItemKey what) || !isVirtualProvider(what)) {
                 input.add(stack);
@@ -92,6 +95,7 @@ final class MEPatternVirtualInputHelper {
             if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
                 ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
                 if (virtualItem.isEmpty()) continue;
+                if (!virtuals.add(virtualItem.getItem())) continue;
                 boolean missingProvider = availability != null && !isProviderAvailable(what, gridGetter, actionSourceGetter);
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
@@ -123,6 +127,7 @@ final class MEPatternVirtualInputHelper {
             } else {
                 FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
                 if (virtualFluid.isEmpty()) continue;
+                if (!virtuals.add(virtualFluid.getFluid())) continue;
                 boolean missingProvider = availability != null && !isProviderAvailable(what, gridGetter, actionSourceGetter);
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
