@@ -157,6 +157,9 @@ dependencies {
     modClientRuntimeOnly("curse.maven:spark-361579:4738952")
     modServerRuntimeOnly("curse.maven:spark-361579:4738952")
 
+    modClientRuntimeOnly("curse.maven:modern-ui-352491:5977000")
+    modServerRuntimeOnly("curse.maven:modern-ui-352491:5977000")
+
     /* -------------------- Client 运行范围声明 -------------------- */
     // Xaero
     modCompileOnly("xaero.lib:xaerolib-forge-1.20.1:1.1.15")
@@ -192,7 +195,6 @@ dependencies {
     modCompileOnly("curse.maven:moremorelang-1444917:8673054")
     modClientRuntimeOnly("curse.maven:moremorelang-1444917:8673054")
 
-    modClientRuntimeOnly("curse.maven:modern-ui-352491:5977000")
     modClientRuntimeOnly("curse.maven:fzzy-config-1005914:7085017")
     modClientRuntimeOnly("curse.maven:ae2-network-analyser-961856:5107131")
     modClientRuntimeOnly("curse.maven:imblocker-483760:6922546")

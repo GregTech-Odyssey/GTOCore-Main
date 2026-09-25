@@ -718,17 +718,43 @@ if (hasGtosealSources) {
      */
     tasks.register('syncSealRuntimeToLibs') {
         group = 'gtolib'
-        description = '同步完整 GTO Seal Runtime → libs/gto-seal-runtime-1.0.jar'
+        description = '同步完整 GTO Seal Runtime → libs/gto-seal-runtime-1.0.jar（目标被占用时自动跳过）'
         def candidates = [
                 file('GTOSeal/jni/gto-seal-runtime-1.0.jar'),
                 file('GTOSeal/dist/gto-seal-runtime-1.0.jar'),
         ]
+        // 便于本机已开着 runServer/runClient 时手动跳过
+        outputs.upToDateWhen { findProperty('skipSealSync') != 'true' }
         doLast {
+            if (findProperty('skipSealSync') == 'true') {
+                logger.lifecycle("GTO Seal Runtime: -PskipSealSync=true → 跳过同步")
+                return
+            }
             def src = candidates.find { it.exists() && it.length() > 100_000 }
             if (src != null) {
+                // 内容一致：直接跳过（此时不会触碰目标文件，runServer/runClient 锁定时也安全）
+                if (sealRuntimeLibsJar.exists()
+                        && sealRuntimeLibsJar.length() == src.length()
+                        && computeFileSha256(sealRuntimeLibsJar) == computeFileSha256(src)) {
+                    logger.lifecycle("GTO Seal Runtime: 内容一致，跳过同步 (${sealRuntimeLibsJar.length()} bytes)")
+                    return
+                }
                 sealRuntimeLibsJar.parentFile.mkdirs()
-                Files.copy(src.toPath(), sealRuntimeLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                logger.lifecycle("GTO Seal Runtime (full) → ${sealRuntimeLibsJar} (${sealRuntimeLibsJar.length()} bytes) ← ${src}")
+                try {
+                    Files.copy(src.toPath(), sealRuntimeLibsJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                } catch (java.nio.file.FileSystemException e) {
+                    // 典型场景：runServer / runClient 仍持有 libs/gto-seal-runtime-1.0.jar
+                    if (sealRuntimeLibsJar.exists() && sealRuntimeLibsJar.length() > 100_000) {
+                        logger.warn(
+                                "GTO Seal Runtime: 目标被占用，跳过同步（沿用现有 " +
+                                        "libs/${sealRuntimeLibsJar.name} ${sealRuntimeLibsJar.length()} bytes）：${e.message}")
+                        return
+                    }
+                    throw e
+                }
+                logger.lifecycle(
+                        "GTO Seal Runtime (full) → ${sealRuntimeLibsJar} " +
+                                "(${sealRuntimeLibsJar.length()} bytes) ← ${src}")
                 return
             }
             // 无 GTOSeal submodule：使用公开 libs 预构建 Runtime（改 GTOLib 的常态）

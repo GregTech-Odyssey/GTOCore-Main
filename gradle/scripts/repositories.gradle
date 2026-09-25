@@ -83,4 +83,6 @@ repositories {
             includeGroup "net.blay09.mods"
         }
     }
+    maven { url = "https://neoforged.forgecdn.net/releases" }
+    maven { url = "https://neoforged.forgecdn.net/mojang-meta" }
 }

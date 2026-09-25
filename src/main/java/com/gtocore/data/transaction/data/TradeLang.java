@@ -81,6 +81,7 @@ public final class TradeLang {
         addTradeLang("gtocore.palm_sized_bank.textList.40", "需要%s%s", "need%s%s");
         addTradeLang("gtocore.palm_sized_bank.textList.41", "[获取会员卡]", "[Get membership card]");
         addTradeLang("gtocore.palm_sized_bank.textList.42", "添加到共享名单", "Add to shared list");
+        addTradeLang("gtocore.palm_sized_bank.textList.43", "共享名单", "Shared list");
 
         addTradeLang("gtocore.palm_sized_bank.textList.50", "转账给此账户", "Transfer to this account");
         addTradeLang("gtocore.palm_sized_bank.textList.51", "转账此货币", "Transfer this currency");

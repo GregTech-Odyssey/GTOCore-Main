@@ -1,7 +1,5 @@
 package com.gtocore.common.machine.noenergy.tradingstation;
 
-import com.gtocore.api.gui.GTOGuiTextures;
-import com.gtocore.api.gui.InteractiveImageWidget;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.data.transaction.manager.TradeData;
@@ -17,8 +15,6 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
-import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CombinedDirectionalFancyConfigurator;
@@ -29,48 +25,78 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.ItemView;
+import com.gregtechceu.gtceu.uipro.elements.RichText;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.utils.TeamUtil;
-import com.lowdragmc.lowdraglib.gui.editor.ColorPattern;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.*;
-import com.lowdragmc.lowdraglib.gui.widget.layout.Layout;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import dev.vfyjxf.taffy.style.FlexWrap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.IntFunction;
+import java.util.function.IntSupplier;
 
 import static com.gtocore.common.item.GregMembershipCardItem.getSharedUuids;
 import static com.gtocore.common.item.GregMembershipCardItem.getSingleUuid;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_SHOP;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_TRADE;
-import static com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup.ScrollWheelDirection.HORIZONTAL;
 
+/**
+ * 泛银河系格雷科技贸易站。
+ * <p>
+ * 界面按 GTM 的 uipro（Ore UI）搭：主页、物品/流体存储、交易解锁各一页，每个商店一个页签，页面元素全部是 uipro 控件。
+ * 数据流与 {@code DataCenter} 相同——<b>服务端是唯一权威</b>：
+ * <ul>
+ * <li>要显示的数值、文字都由服务端取值：{@link TextLine#of}、{@link StatusPanel} 的行、交易格的悬停说明、
+ * {@link RichText} 的 {@code textSupplier}（客户端传 null，只等下发）都只在服务端执行，读机器字段、{@link TradingManager}、
+ * {@link UnlockManager}、{@link WalletUtils} 这些客户端没有（或不可信）的数据源；</li>
+ * <li>客户端渲染时只读同步下来的值（{@link SyncValue#getValue()}）与两端一致的静态注册数据（{@link TradingManager} 的名字、
+ * 图标、条目数量）；</li>
+ * <li>会改数据的点击走 {@code setOnServerClick}（如执行交易）；会改变控件树结构的点击走 {@link Button#setOnClick}
+ * ——切换商店组、翻页、切换解锁项时两端各执行一次、各重建一份同样的结构（LDLib1 的控件更新按子控件下标路由，
+ * 两端树必须一致），结构只依据静态注册数据决定，数值仍由服务端算。</li>
+ * </ul>
+ */
 public class TradingStationMachine extends MetaMachine implements IFancyUIMachine, IAutoOutputBoth, IMachineLife, IControllable {
 
     /////////////////////////////////////
@@ -99,10 +125,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     @SaveToDisk
     private final CustomItemStackHandler cardHandler;
 
-    private static final int Item_slots_in_a_row = 4;
-    private static final int Fluid_slots_in_a_row = 4;
-
-    /** 玩家信息 */
+    /** 玩家信息（只在服务端有值：不做客户端同步，界面里一律经服务端 supplier 取值） */
     @Getter
     @SaveToDisk
     private UUID uuid;
@@ -173,83 +196,112 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     /////////////////////////////////////
     // ************ UI实现 ************ //
+    /////////////////////////////////////
 
-    private static final int width = 336;
-    private static final int height = 144;
+    private static final String TEXT_HEADER = "gtocore.trading_station.textList.";
+    private static final String CURRENCY_HEADER = "gtocore.currency.";
+    private static final String UNKNOWN_PLAYER = "Unknown";
+    /// 没有值时的占位
+    private static final Component NO_VALUE = Component.literal("—");
+    /// 主页使用说明的高度（再高就滚动）
+    private static final int HELP_HEIGHT = 6 * UISizes.SLOT;
+    /// 交易解锁页里解锁项列表的高度
+    private static final int KEY_LIST_HEIGHT = 4 * UISizes.CONTROL_HEIGHT;
+    /// 每行/每页的交易格数（与原实现一致：商店 4×8，解锁 4×8）
+    private static final int SHOP_COLUMNS = 8;
+    private static final int SHOP_PER_PAGE = 32;
+    private static final int UNLOCK_COLUMNS = 8;
+    private static final int UNLOCK_PER_PAGE = 32;
+    /// 存储页每行几组（一组 = 左边输入、右边输出）
+    private static final int STORAGE_PER_ROW = 4;
 
+    private List<Component> helpLines;
+
+    // ==================== 主页 ====================
+
+    /** 主页：会员卡、会员信息、商店组切换与使用说明。 */
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, width + 8, height + 8);
+        var page = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+        page.addChild(memberSection());
+        page.addChild(shopGroupSection());
+        page.addChild(helpView());
+        return page;
+    }
 
-        WidgetGroup mainGroup = new WidgetGroup(4, 4, width, height);
-        mainGroup.setBackground(GuiTextures.DISPLAY);
+    /** 会员卡槽 + 刷新按钮（贴图与名字两端相同），下面一行会员信息由服务端取值下发。 */
+    private Widget memberSection() {
+        var section = UIElement.section(UISizes.CONTENT_WIDTH);
+        var card = new ItemSlot(cardHandler, 0, true, true);
+        card.setHoverTooltips(trans(11));
+        var refresh = Button.translatable(LayoutStyle.AUTO, "↻").layout(l -> l.flex(1));
+        refresh.setHoverTooltips(trans(8));
+        refresh.setOnServerClick(clickData -> refreshMembership(refresh));
+        var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+        row.addChildren(card, refresh);
+        section.addChild(row);
 
-        // 底边展开面板
-        mainGroup.addWidget(new DraggableScrollableWidgetGroup(4, 34, width - 90, height - 34)
-                .setYScrollBarWidth(2)
-                .setYBarStyle(null, ColorPattern.T_WHITE.rectTexture().setRadius(1))
-                .addWidget(new ComponentPanelWidget(0, 0, GTOMachineTooltips.PanGalaxyGregTechTradingStationIntroduction.get()).setMaxWidthLimit(width - 90)));
+        // 会员信息：文字、等级、悬停说明都在服务端取值（客户端只显示下发的内容）
+        var status = new StatusPanel();
+        status.addSentence(this::memberText)
+                .level(() -> uuid == null ? StatusLine.Level.WARNING : StatusLine.Level.GOOD)
+                .detail(this::sharedText);
+        section.addChild(status);
+        return section;
+    }
 
-        Level level = getLevel();
-        ServerLevel serverLevel = getLevel() instanceof ServerLevel ? (ServerLevel) getLevel() : null;
+    /** 当前商店组的名称与图标 + 组切换图标；切组会换掉页签结构，由服务端重开界面。 */
+    private Widget shopGroupSection() {
+        var section = UIElement.section(UISizes.CONTENT_WIDTH);
+        var group = currentGroup();
+        var name = TextLine.of(LayoutStyle.AUTO, this::currentGroupName);
+        name.layout(l -> l.flex(1));
+        var header = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+        header.addChildren(new ItemView(group == null ? IGuiTexture.EMPTY : group.getTexture1(), UISizes.SLOT), name);
+        section.addChild(header);
+        section.addChild(shopGroupSwitcher());
+        return section;
+    }
 
-        // 左侧卡片槽和信息
-        mainGroup.addWidget(new SlotWidget(cardHandler, 0, 10, 10)
-                .setBackgroundTexture(GuiTextures.SLOT).setHoverTooltips(trans(11)));
+    /** 商店组切换：格子数与图标取两端一致的注册数据，选中状态由服务端下发。 */
+    private Widget shopGroupSwitcher() {
+        // 宽度按区块内宽（区块左右各有内边距），一行 8 个图标
+        var grid = new UIElement().layout(l -> l.row().flexWrap(FlexWrap.WRAP).gapAll(UISizes.GAP)
+                .width(UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING));
+        for (int index = 0; index < TradingManager.INSTANCE.getGroupCount(); index++) {
+            grid.addChild(shopGroupButton(index));
+        }
+        return grid;
+    }
 
-        Object2ObjectMap<UUID, String> WalletPlayers = WalletUtils.getAllWalletPlayers(serverLevel);
+    private Widget shopGroupButton(int index) {
+        var group = TradingManager.INSTANCE.getShopGroup(index);
+        var cell = new UIElement().layout(l -> l.size(Button.ICON_SIZE, Button.ICON_SIZE));
+        if (group == null) return cell;
+        var selected = cell.addSyncValue(SyncValue.of(() -> groupSelected == index, SyncValue.BOOLEAN, false));
+        cell.addChild(Button.icon(group.getTexture2())
+                .setVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
+                .setOnClick(clickData -> selectShopGroup(cell, index))
+                .bindTooltip(() -> Component.translatable(group.getName())));
+        return cell;
+    }
 
-        mainGroup.addWidget(new ComponentPanelWidget(34, 14, textList -> {
-            if (uuid == null) {
-                textList.add(trans(2));
-                return;
-            }
-            String playerName = WalletPlayers.getOrDefault(uuid, "Unknown");
-            boolean hasShared = !sharedUUIDs.isEmpty();
-            boolean hasTeam = Optional.ofNullable(teamUUID).filter(t -> !t.equals(uuid)).isPresent();
-            if (hasShared || hasTeam) {
-                String sharedText = sharedUUIDs.stream()
-                        .map(shareUuid -> WalletPlayers.getOrDefault(shareUuid, "Unknown"))
-                        .collect(Collectors.joining(", "));
-                MutableComponent sharedComponent = Component.literal(sharedText);
-                Optional.ofNullable(teamUUID)
-                        .filter(t -> !t.equals(uuid))
-                        .map(t -> TeamUtil.getName(level, uuid))
-                        .ifPresent(sharedComponent::append);
-                if (sharedComponent.getString().isEmpty()) {
-                    sharedComponent = trans(4);
-                }
-                textList.add(ComponentPanelWidget.withHoverTextTranslate(
-                        trans(3, playerName),
-                        sharedComponent));
-            } else {
-                textList.add(trans(3, playerName));
-            }
-        }).setMaxWidthLimit(256 - 34));
+    /** 使用说明：多行富文本，服务端取文字、变化时整表下发（客户端不设 textSupplier）。 */
+    private Widget helpView() {
+        var text = new RichText();
+        text.textSupplier(isRemote() ? null : this::helpText);
+        var scroller = new ScrollerView("trading_station.help", UISizes.SLOT_ROW_WIDTH, HELP_HEIGHT)
+                .adaptiveHeight(HELP_HEIGHT)
+                .layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
+        scroller.setBackground(UITheme.STATUS_PANEL);
+        scroller.addScrollViewChild(text);
+        return scroller;
+    }
 
-        // 刷新
-        mainGroup.addWidget(new InteractiveImageWidget(237, 10, 9, 9, GTOGuiTextures.REFRESH)
-                .textSupplier(texts -> texts.add(trans(8)))
-                .clickHandler((data, clickData) -> {
-                    initializationInformation(cardHandler.getStackInSlot(0));
-                    Player player = mainGroup.getGui().entityPlayer;
-                    if (!isRemote() && player != null) {
-                        if (shouldOpenUI(player, InteractionHand.MAIN_HAND, null)) {
-                            tryToOpenUI(player, InteractionHand.MAIN_HAND, null);
-                        }
-                    }
-                }));
-
-        // 左右分区线
-        mainGroup.addWidget(new ImageWidget(253, 2, 2, 140, GuiTextures.SLOT));
-
-        // 右侧商店组切换面板
-        mainGroup.addWidget(ShopGroupSwitchWidget());
-
-        group.addWidget(mainGroup);
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-
-        return group;
+    /** 服务端：使用说明（内容固定，取一次存下来，避免每刻重建整表文字）。 */
+    private void helpText(List<Component> lines) {
+        if (helpLines == null) helpLines = List.copyOf(GTOMachineTooltips.PanGalaxyGregTechTradingStationIntroduction.get());
+        lines.addAll(helpLines);
     }
 
     @Override
@@ -257,35 +309,33 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         return GuiTextures.GREGTECH_LOGO;
     }
 
+    // ==================== 页签 ====================
+
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         sideTabs.setId("fancy_side_tabs");
         sideTabs.clearSubTabs();
         sideTabs.setMainTab(this);
 
-        // 添加固定标签
+        // 固定页签（与原实现一致：只在第一个商店组里显示）
         List<IFancyUIProvider> fixedTabs = new ArrayList<>();
         if (groupSelected == 0) {
-            fixedTabs.add(ItemStorageUI());
-            fixedTabs.add(FluidStorageUI());
-            fixedTabs.add(TransactionUnlock());
-
+            fixedTabs.add(itemStorageTab());
+            fixedTabs.add(fluidStorageTab());
+            fixedTabs.add(new UnlockTab());
         }
 
-        // 动态生成商店标签
-        List<IFancyUIProvider> originalShopTabs = shopGroup();
-        List<IFancyUIProvider> displayShopTabs = new ArrayList<>(originalShopTabs);
-
-        // 添加所有标签
+        // 当前商店组的商店页签
+        List<IFancyUIProvider> shopTabs = shopTabs();
         fixedTabs.forEach(sideTabs::attachSubTab);
-        displayShopTabs.forEach(sideTabs::attachSubTab);
+        shopTabs.forEach(sideTabs::attachSubTab);
         sideTabs.attachSubTab(CombinedDirectionalFancyConfigurator.of(this, this));
-        // 标签切换监听器
+
         sideTabs.setOnTabSwitch((oldTab, newTab) -> {
-            if (newTab instanceof ShopTabProvider newShopTab) {
-                // 只允许选择当前组的商店标签
-                if (newShopTab.groupIndex == groupSelected) {
-                    shopSelected = originalShopTabs.indexOf(newShopTab);
+            if (newTab instanceof ShopTab shopTab) {
+                // 只允许选择当前组的商店页签
+                if (shopTab.groupIndex == groupSelected) {
+                    shopSelected = shopTab.shopIndex;
                 } else {
                     shopSelected = -1;
                     sideTabs.selectTab(sideTabs.getMainTab());
@@ -295,72 +345,50 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             }
             sideTabs.detectAndSendChanges();
 
-            ModularUI modularUI = sideTabs.getGui();
-            if (modularUI != null && modularUI.getModularUIGui() != null) {
-                modularUI.getModularUIGui().init();
-            }
+            var modularUI = sideTabs.getGui();
+            if (modularUI != null && modularUI.getModularUIGui() != null) modularUI.getModularUIGui().init();
         });
 
-        if (shopSelected != -1 && shopSelected < originalShopTabs.size()) {
-            sideTabs.selectTab(originalShopTabs.get(shopSelected));
+        if (shopSelected != -1 && shopSelected < shopTabs.size()) {
+            sideTabs.selectTab(shopTabs.get(shopSelected));
         } else {
             sideTabs.selectTab(sideTabs.getMainTab());
         }
-
         sideTabs.detectAndSendChanges();
     }
 
-    private WidgetGroup ShopGroupSwitchWidget() {
-        WidgetGroup mainGroup = new WidgetGroup(256, 0, 80, height - 8);
-        mainGroup.setLayout(Layout.VERTICAL_CENTER);
-        mainGroup.setLayoutPadding(10);
-
-        TradingManager.TradingShopGroup SwitchedShopGroup = TradingManager.INSTANCE.getShopGroup(groupSelected);
-        if (SwitchedShopGroup == null) SwitchedShopGroup = TradingManager.INSTANCE.getShopGroup(0);
-        if (SwitchedShopGroup != null) {
-            mainGroup.addWidget(new ImageWidget(0, 0, 80, 13,
-                    new TextTexture(Component.translatable(SwitchedShopGroup.getName()).copy().getString())
-                            .setDropShadow(false)
-                            .setType(TextTexture.TextType.ROLL)
-                            .setWidth(80)));
-            mainGroup.addWidget(new ImageWidget(0, 10, 64, 64, SwitchedShopGroup.getTexture1()));
+    /** 当前组的商店页签；组索引无效时没有商店页签（不抛异常）。 */
+    private List<IFancyUIProvider> shopTabs() {
+        List<IFancyUIProvider> tabs = new ArrayList<>();
+        var group = TradingManager.INSTANCE.getShopGroup(groupSelected);
+        if (group == null) return tabs;
+        for (int shop = 0; shop < group.getShopCount(); shop++) {
+            var tradingShop = group.getShop(shop);
+            if (tradingShop != null) tabs.add(new ShopTab(groupSelected, shop, tradingShop));
         }
-
-        WidgetGroup SwitchWidget = new WidgetGroup(0, 80, 79, 39);
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 8; x++) {
-                int index = y * 8 + x;
-                TradingManager.TradingShopGroup shopGroup = TradingManager.INSTANCE.getShopGroup(index);
-                if (shopGroup != null) {
-                    SwitchWidget.addWidget(new InteractiveImageWidget(x * 10, y * 10, 9, 9, shopGroup.getTexture2())
-                            .textSupplier(texts -> texts.add(Component.translatable(shopGroup.getName())))
-                            .clickHandler((data, clickData) -> {
-                                if (groupSelected != index) {
-                                    groupSelected = index;
-                                    shopSelected = -1;
-                                    markAsDirty();
-
-                                    Player player = SwitchWidget.getGui().entityPlayer;
-                                    if (!isRemote() && player != null) {
-                                        if (shouldOpenUI(player, InteractionHand.MAIN_HAND, null)) {
-                                            tryToOpenUI(player, InteractionHand.MAIN_HAND, null);
-                                        }
-                                    }
-                                }
-                            }).setBackground(GTOGuiTextures.BOXED_BACKGROUND));
-                } else {
-                    SwitchWidget.addWidget(new ImageWidget(x * 10, y * 10, 9, 9, GTOGuiTextures.BOXED_BACKGROUND));
-                }
-            }
-        }
-        mainGroup.addWidget(SwitchWidget);
-
-        return mainGroup;
+        return tabs;
     }
 
-    // 库存展示
-    private @NotNull IFancyUIProvider ItemStorageUI() {
+    // ==================== 物品/流体存储页 ====================
+
+    /** 物品存储：每行 4 组（左输入、右输出），格数取机器的物品栏（两端相同）。 */
+    private IFancyUIProvider itemStorageTab() {
         return new IFancyUIProvider() {
+
+            @Override
+            public Widget createMainPage(FancyMachineUIWidget widget) {
+                if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
+                var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+                page.addChild(TextLine.translatable(LayoutStyle.AUTO, "gtocore.trading_station.item_storage"));
+                var scroller = new ScrollerView("trading_station.items", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
+                        .adaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
+                        .verticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
+                scroller.addScrollViewChild(storageGrid(inputItem.getSlots(), outputItem.getSlots(),
+                        index -> new ItemSlot(inputItem, index, true, true),
+                        index -> new ItemSlot(outputItem, index, true, false)));
+                page.addChild(scroller);
+                return page;
+            }
 
             @Override
             public IGuiTexture getTabIcon() {
@@ -374,41 +402,29 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
             @Override
             public List<Component> getTabTooltips() {
-                return Collections.singletonList(Component.translatable("gtocore.trading_station.item_storage"));
-            }
-
-            @Override
-            public Widget createMainPage(FancyMachineUIWidget widget) {
-                var group = new WidgetGroup(0, 0, 176, height + 8);
-
-                WidgetGroup mainGroup = new DraggableScrollableWidgetGroup(4, 4, 169, height)
-                        .setBackground(GuiTextures.DISPLAY).setYScrollBarWidth(2).setYBarStyle(null, ColorPattern.T_WHITE.rectTexture().setRadius(1));
-
-                int itemHigh = inputItem.getSlots() / Item_slots_in_a_row;
-                WidgetGroup Item_slot = new WidgetGroup(2, 4, 168, itemHigh * 18 + 10);
-                Item_slot.addWidget(new ComponentPanelWidget(0, 0, List.of(Component.translatable("gtocore.trading_station.item_storage"))));
-                for (int y = 0; y < itemHigh; y++) {
-                    for (int x = 0; x < Item_slots_in_a_row; x++) {
-                        int slotIndex = y * Item_slots_in_a_row + x;
-                        if (inputItem.getSlots() > slotIndex) {
-                            Item_slot.addWidget(new SlotWidget(inputItem, slotIndex, x * 18, 10 + y * 18, true, true)
-                                    .setBackground(GuiTextures.SLOT));
-                            Item_slot.addWidget(new SlotWidget(outputItem, slotIndex, x * 18 + Item_slots_in_a_row * 18 + 18, 10 + y * 18, true, false)
-                                    .setBackground(GuiTextures.SLOT));
-                        } else break;
-                    }
-                }
-                mainGroup.addWidget(Item_slot);
-                group.addWidget(mainGroup);
-                group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-
-                return group;
+                return List.of(Component.translatable("gtocore.trading_station.item_storage"));
             }
         };
     }
 
-    private @NotNull IFancyUIProvider FluidStorageUI() {
+    /** 流体存储：布局同物品存储，用流体槽。 */
+    private IFancyUIProvider fluidStorageTab() {
         return new IFancyUIProvider() {
+
+            @Override
+            public Widget createMainPage(FancyMachineUIWidget widget) {
+                if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
+                var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+                page.addChild(TextLine.translatable(LayoutStyle.AUTO, "gtocore.trading_station.fluid_storage"));
+                var scroller = new ScrollerView("trading_station.fluids", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
+                        .adaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
+                        .verticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
+                scroller.addScrollViewChild(storageGrid(inputFluid.getTanks(), outputFluid.getTanks(),
+                        index -> new FluidSlot(inputFluid, index, true, true),
+                        index -> new FluidSlot(outputFluid, index, true, true)));
+                page.addChild(scroller);
+                return page;
+            }
 
             @Override
             public IGuiTexture getTabIcon() {
@@ -422,261 +438,482 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
             @Override
             public List<Component> getTabTooltips() {
-                return Collections.singletonList(Component.translatable("gtocore.trading_station.fluid_storage"));
-            }
-
-            @Override
-            public Widget createMainPage(FancyMachineUIWidget widget) {
-                var group = new WidgetGroup(0, 0, 176, height + 8);
-
-                WidgetGroup mainGroup = new DraggableScrollableWidgetGroup(4, 4, 169, height)
-                        .setBackground(GuiTextures.DISPLAY).setYScrollBarWidth(2).setYBarStyle(null, ColorPattern.T_WHITE.rectTexture().setRadius(1));
-
-                int fluidHigh = inputFluid.getTanks() / Fluid_slots_in_a_row;
-                WidgetGroup Fluid_slot = new WidgetGroup(2, 4, 168, fluidHigh * 18 + 10);
-                Fluid_slot.addWidget(new ComponentPanelWidget(0, 0, List.of(Component.translatable("gtocore.trading_station.fluid_storage"))));
-                for (int y = 0; y < fluidHigh; y++) {
-                    for (int x = 0; x < Fluid_slots_in_a_row; x++) {
-                        int slotIndex = y * Fluid_slots_in_a_row + x;
-                        if (inputFluid.getTanks() > slotIndex) {
-                            Fluid_slot.addWidget(new TankWidget(inputFluid, slotIndex, x * 18, 10 + y * 18, true, true)
-                                    .setBackground(GuiTextures.SLOT_DARK));
-                            Fluid_slot.addWidget(new TankWidget(outputFluid, slotIndex, x * 18 + Fluid_slots_in_a_row * 18 + 18, 10 + y * 18, true, true)
-                                    .setBackground(GuiTextures.SLOT_DARK));
-                        } else break;
-                    }
-                }
-                mainGroup.addWidget(Fluid_slot);
-
-                group.addWidget(mainGroup);
-                group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-
-                return group;
+                return List.of(Component.translatable("gtocore.trading_station.fluid_storage"));
             }
         };
     }
 
-    // 交易解锁
-    private @NotNull IFancyUIProvider TransactionUnlock() {
-        return new IFancyUIProvider() {
-
-            private String upgradeSelect = null;
-
-            private int internalPageSelected = 0;
-
-            @Override
-            public IGuiTexture getTabIcon() {
-                return GuiTextures.BUTTON_LOCK;
+    /**
+     * 一行 {@code perRow} 组、一组是"左边一个输入槽，右边一个输出槽"的网格，整行正好 9 格宽。
+     * 槽数与槽的注册顺序只依赖两端一致的机器字段（两端的原生容器槽位才会一一对应）。
+     */
+    private static Widget storageGrid(int inputCount, int outputCount, IntFunction<Widget> inputSlot, IntFunction<Widget> outputSlot) {
+        var grid = new UIElement().layout(l -> l.row().flexWrap(FlexWrap.WRAP).width(UISizes.SLOT_ROW_WIDTH));
+        int rows = Math.max(rowsOf(inputCount), rowsOf(outputCount));
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < STORAGE_PER_ROW; col++) {
+                int index = row * STORAGE_PER_ROW + col;
+                grid.addChild(index < inputCount ? inputSlot.apply(index) : UIElement.spacer(UISizes.SLOT, UISizes.SLOT));
             }
-
-            @Override
-            public Component getTitle() {
-                return Component.translatable("gtocore.trading_station.unlock_shop");
+            // 中间空一列，输入与输出分开
+            grid.addChild(UIElement.spacer(UISizes.SLOT, UISizes.SLOT));
+            for (int col = 0; col < STORAGE_PER_ROW; col++) {
+                int index = row * STORAGE_PER_ROW + col;
+                grid.addChild(index < outputCount ? outputSlot.apply(index) : UIElement.spacer(UISizes.SLOT, UISizes.SLOT));
             }
+        }
+        return grid;
+    }
 
-            @Override
-            public List<Component> getTabTooltips() {
-                return Collections.singletonList(Component.translatable("gtocore.trading_station.unlock_shop"));
+    private static int rowsOf(int count) {
+        return (count + STORAGE_PER_ROW - 1) / STORAGE_PER_ROW;
+    }
+
+    // ==================== 交易解锁页 ====================
+
+    /** 交易解锁：上面是解锁项列表，下面是选中解锁项的交易格。 */
+    private final class UnlockTab implements IFancyUIProvider {
+
+        private final TradeGrid grid;
+        @Nullable
+        private String selectedKey;
+
+        private UnlockTab() {
+            grid = new TradeGrid(-1, -1, UNLOCK_COLUMNS, UNLOCK_PER_PAGE,
+                    () -> selectedKey == null ? 0 : UnlockManager.INSTANCE.getEntryTradeCount(selectedKey),
+                    index -> selectedKey == null ? null : UnlockManager.INSTANCE.getTradeEntry(selectedKey, index));
+        }
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+            page.addChild(UIElement.section(UISizes.CONTENT_WIDTH).addChildren(
+                    TextLine.translatable(LayoutStyle.AUTO, TEXT_HEADER + 21),
+                    keyListView()));
+            page.addChild(TextLine.of(LayoutStyle.AUTO, this::selectedKeyName));
+            page.addChild(grid);
+            page.addChild(grid.pageRow());
+            return page;
+        }
+
+        /** 解锁项列表：条目名与数量取两端一致的注册数据，选中状态由服务端下发。 */
+        private Widget keyListView() {
+            var scroller = new ScrollerView("trading_station.unlock", UISizes.SLOT_ROW_WIDTH, KEY_LIST_HEIGHT)
+                    .adaptiveHeight(KEY_LIST_HEIGHT)
+                    .layoutContent(l -> l.gapAll(UISizes.GAP));
+            var keys = UnlockManager.INSTANCE.getKeySet();
+            if (keys != null) {
+                for (String key : keys) scroller.addScrollViewChild(keyButton(key));
             }
+            return scroller;
+        }
 
-            @Override
-            public Widget createMainPage(FancyMachineUIWidget widget) {
-                var group = new WidgetGroup(0, 0, width + 8, height + 8);
+        private Widget keyButton(String key) {
+            var cell = new UIElement();
+            var selected = cell.addSyncValue(SyncValue.of(() -> key.equals(selectedKey), SyncValue.BOOLEAN, false));
+            cell.addChild(Button.translatable(LayoutStyle.AUTO, key)
+                    .setVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
+                    .setOnClick(clickData -> selectKey(key)));
+            return cell;
+        }
 
-                WidgetGroup mainGroup = new WidgetGroup(4, 4, width, height);
-                mainGroup.setBackground(GuiTextures.DISPLAY);
+        /** 选中解锁项：换掉整片交易格（结构变化，两端各执行一次），页码回到第一页。 */
+        private void selectKey(String key) {
+            if (key.equals(selectedKey)) return;
+            selectedKey = key;
+            grid.reset();
+        }
 
-                // 右侧交易项容器
-                WidgetGroup tradeContainer = new WidgetGroup(0, 12, 204, 101);
+        /** 服务端：当前解锁项的名字（没选时占位）。 */
+        private Component selectedKeyName() {
+            return selectedKey == null ? NO_VALUE : Component.translatable(selectedKey);
+        }
 
-                // 左侧：当前等级和升级按钮
-                WidgetGroup leftPanel = new DraggableScrollableWidgetGroup(0, 5, 110, height - 10);
-                leftPanel.setLayout(Layout.VERTICAL_CENTER);
-                leftPanel.setLayoutPadding(8);
+        @Override
+        public IGuiTexture getTabIcon() {
+            return GuiTextures.BUTTON_LOCK;
+        }
 
-                leftPanel.addWidget(new ComponentPanelWidget(0, 0, textList -> textList.add(trans(21))).setSpace(8).setCenter(true));
+        @Override
+        public Component getTitle() {
+            return Component.translatable("gtocore.trading_station.unlock_shop");
+        }
 
-                leftPanel.addWidget(new ComponentPanelWidget(0, 10, textList -> {
-                    Set<String> keySet = UnlockManager.INSTANCE.getKeySet();
-                    if (keySet == null) return;
-                    for (String key : keySet) {
-                        textList.add(ComponentPanelWidget.withButton(Component.translatable(key),
-                                key).copy().withStyle(ChatFormatting.AQUA));
-                    }
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable("gtocore.trading_station.unlock_shop"));
+        }
+    }
 
-                }).clickHandler(((upgrade, clickData) -> {
-                    upgradeSelect = upgrade;
-                    internalPageSelected = 0;
-                    updateWidget(tradeContainer, widget);
-                })).setSpace(8).setCenter(true));
+    // ==================== 商店页 ====================
 
-                // 右侧：升级列表
-                WidgetGroup rightPanel = new DraggableScrollableWidgetGroup(110, 8, width - 110, height - 10);
-                rightPanel.setLayout(Layout.VERTICAL_CENTER);
-                rightPanel.setLayoutPadding(4);
+    /** 一个商店：解锁状态与机器钱包余额在服务端算，交易格每页 16 个（2 行 × 8 列）。 */
+    private final class ShopTab implements IFancyUIProvider {
 
-                rightPanel.addWidget(new ComponentPanelWidget(0, 0, textList -> {
-                    if (upgradeSelect != null) textList.add(Component.translatable(upgradeSelect));
-                }));
+        private final int groupIndex;
+        @Getter
+        private final int shopIndex;
+        private final TradingManager.TradingShop shop;
+        private final TradeGrid grid;
 
-                // 2. 交易项容器（显示升级所需资源）
-                updateWidget(tradeContainer, widget);
-                rightPanel.addWidget(tradeContainer);
+        private ShopTab(int groupIndex, int shopIndex, TradingManager.TradingShop shop) {
+            this.groupIndex = groupIndex;
+            this.shopIndex = shopIndex;
+            this.shop = shop;
+            this.grid = new TradeGrid(groupIndex, shopIndex, SHOP_COLUMNS, SHOP_PER_PAGE,
+                    () -> TradingManager.INSTANCE.getTradeCount(groupIndex, shopIndex),
+                    index -> TradingManager.INSTANCE.getTradeEntryByIndices(groupIndex, shopIndex, index));
+        }
 
-                // 3. 分页控件（仅当交易项数量 > 10 时显示）
-                rightPanel.addWidget(new ComponentPanelWidget(0, 5, textList -> {
-                    int tradeCount = getCurrentTradeCount();
-                    if (tradeCount <= 10) return;
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
+            page.addChild(shopStatus());
+            page.addChild(grid);
+            page.addChild(grid.pageRow());
+            return page;
+        }
 
-                    int totalPage = tradeCount / 10 + (tradeCount % 10 == 0 ? 0 : 1);
-                    textList.add(Component.empty()
-                            .append(ComponentPanelWidget.withButton(Component.literal(" [ ← ] "), "previous_page"))
-                            .append(Component.literal(" " + (internalPageSelected + 1) + "/" + totalPage + " "))
-                            .append(ComponentPanelWidget.withButton(Component.literal(" [ → ] "), "next_page")));
-                }).clickHandler((data, clickData) -> {
-                    int tradeCount = getCurrentTradeCount();
-                    int totalPage = tradeCount / 10 + (tradeCount % 10 == 0 ? 0 : 1);
-                    if (totalPage <= 1) return;
-                    switch (data) {
-                        case "previous_page" -> internalPageSelected = Mth.clamp(internalPageSelected - 1, 0, totalPage - 1);
-                        case "next_page" -> internalPageSelected = Mth.clamp(internalPageSelected + 1, 0, totalPage - 1);
-                    }
-                    updateWidget(tradeContainer, widget);
-                    widget.detectAndSendChanges();
-                }));
-
-                // 组装主面板
-                mainGroup.addWidget(leftPanel);
-                mainGroup.addWidget(rightPanel);
-                mainGroup.addWidget(new ImageWidget(109, 5, 2, height - 10, GuiTextures.SLOT));
-
-                group.addWidget(mainGroup);
-                group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-
-                return group;
-            }
-
-            private int getCurrentTradeCount() {
-                if (upgradeSelect == null) return 0;
-                return UnlockManager.INSTANCE.getEntryTradeCount(upgradeSelect);
-            }
-
-            private void updateWidget(WidgetGroup container, FancyMachineUIWidget widget) {
-                container.clearAllWidgets();
-                if (upgradeSelect == null) return;
-                container.addWidget(tradeGroup_10(upgradeSelect, internalPageSelected));
-                widget.detectAndSendChanges();
-            }
-
-            /**
-             * 构建 2 行 5 列的交易项组（适配容器尺寸）
-             */
-            private WidgetGroup tradeGroup_10(String key, int pageIndex) {
-                WidgetGroup tradeGroup = new WidgetGroup(0, 0, 204, 101);
-                int startIndex = pageIndex * 10;
-
-                for (int row = 0; row < 2; row++) {
-                    for (int col = 0; col < 5; col++) {
-                        int X = col * (40 + 1);
-                        int Y = row * (50 + 1);
-                        int entryIndex = startIndex + row * 5 + col;
-                        TradeEntry tradeEntry = UnlockManager.INSTANCE.getTradeEntry(key, entryIndex);
-                        if (tradeEntry != null) {
-                            tradeGroup.addWidget(trade(X, Y, true, tradeEntry));
-                        } else {
-                            tradeGroup.addWidget(emptyTrade(X, Y));
-                        }
-                    }
+        /** 商店名、解锁状态与货币余额：全部由服务端取值下发。 */
+        private Widget shopStatus() {
+            var status = new StatusPanel();
+            status.addSentence(this::shopName)
+                    .level(() -> shopUnlocked(groupIndex, shopIndex) ? StatusLine.Level.GOOD : StatusLine.Level.ERROR)
+                    .detail(this::shopDetail);
+            var currencies = shop.getCurrencies();
+            if (currencies != null && !currencies.isEmpty()) {
+                // 每行一个货币 → 行的顺序就是子控件顺序，而 LDLib 的点击/初始数据都按"父控件的子控件下标"路由，
+                // 两端必须完全一致。注册数据是 Set.of(...)，元素多于 2 个时 JDK 的不可变集合按 per-JVM 随机盐排布，
+                // 顺序不保证两端相同；这里排序固定下来（建页路径，一次性的小数组）。
+                String[] currencyIds = currencies.toArray(new String[0]);
+                Arrays.sort(currencyIds);
+                for (String currency : currencyIds) {
+                    status.addLine(CURRENCY_HEADER + currency, () -> currencyAmount(currency));
                 }
-                return tradeGroup;
+            }
+            return status;
+        }
+
+        /** 服务端：商店名。 */
+        private Component shopName() {
+            return Component.translatable(shop.getName());
+        }
+
+        /** 服务端：未解锁时说明还差什么，解锁后说明解锁条件。 */
+        private Component shopDetail() {
+            var condition = unlockName(shop.getUnlockCondition());
+            return shopUnlocked(groupIndex, shopIndex) ? condition : trans(20, condition);
+        }
+
+        /** 服务端：机器钱包里该货币的数量。 */
+        private Component currencyAmount(String currency) {
+            return Component.literal(FormattingUtil.formatNumbers(WalletUtils.getCurrencyAmount(uuid, getLevel(), currency)));
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return shop.getTexture();
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(shop.getName());
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(shop.getName()));
+        }
+    }
+
+    // ==================== 交易格网格 ====================
+
+    /**
+     * 交易格网格：每页 {@code perPage} 格（{@code perRow} 列 × 若干行）。
+     * 换页、换解锁项会换掉整片格子（控件树结构变化），所以那些点击用 {@link Button#setOnClick}：两端各重建一次
+     * 同样的结构（只依据静态注册数据），格子里显示的数值仍由服务端算。
+     */
+    private final class TradeGrid extends UIElement {
+
+        /// {@code groupIndex < 0}：不检查商店解锁（交易解锁页）
+        private final int groupIndex;
+        private final int shopIndex;
+        private final int perRow;
+        private final int perPage;
+        private final IntSupplier totalCount;
+        private final IntFunction<TradeEntry> entryAt;
+        private int pageSelected;
+
+        private TradeGrid(int groupIndex, int shopIndex, int perRow, int perPage, IntSupplier totalCount, IntFunction<TradeEntry> entryAt) {
+            this.groupIndex = groupIndex;
+            this.shopIndex = shopIndex;
+            this.perRow = perRow;
+            this.perPage = perPage;
+            this.totalCount = totalCount;
+            this.entryAt = entryAt;
+            layout(l -> l.column().gapAll(UISizes.GAP));
+            rebuild();
+        }
+
+        /** 总页数（至少 1 页）。 */
+        private int totalPages() {
+            return Math.max(1, (totalCount.getAsInt() + perPage - 1) / perPage);
+        }
+
+        /** 翻页（两端各执行一次）。 */
+        private void changePage(int delta) {
+            int next = Mth.clamp(pageSelected + delta, 0, totalPages() - 1);
+            if (next == pageSelected) return;
+            pageSelected = next;
+            rebuild();
+        }
+
+        /** 回到第一页并重建（换解锁项时两端各执行一次）。 */
+        private void reset() {
+            pageSelected = 0;
+            rebuild();
+        }
+
+        /** 按当前页码重建格子：两端结构一致，服务端随后给新加的格子补发初始数据。 */
+        private void rebuild() {
+            clearAllWidgets();
+            int start = pageSelected * perPage;
+            int count = totalCount.getAsInt();
+            for (int row = 0; row < Math.max(1, perPage / perRow); row++) {
+                var line = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP));
+                for (int col = 0; col < perRow; col++) {
+                    int index = start + row * perRow + col;
+                    var entry = index < count ? entryAt.apply(index) : null;
+                    line.addChild(entry == null ? UIElement.spacer(UISizes.SLOT, UISizes.SLOT) :
+                            new TradeCell(groupIndex, shopIndex, entry));
+                }
+                addChild(line);
+            }
+        }
+
+        /** 翻页行：[←] 页码 [→]，页码文字与两端禁用状态都由服务端算。 */
+        private Widget pageRow() {
+            var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+            var label = TextLine.of(LayoutStyle.AUTO, this::pageText);
+            label.layout(l -> l.flex(1));
+            row.addChildren(Button.icon(UITheme.ARROW_LEFT)
+                    .setOnClick(clickData -> changePage(-1))
+                    .disabled(() -> pageSelected <= 0, null),
+                    label,
+                    Button.icon(UITheme.ARROW_RIGHT)
+                            .setOnClick(clickData -> changePage(1))
+                            .disabled(() -> pageSelected + 1 >= totalPages(), null));
+            return row;
+        }
+
+        /** 服务端：页码文字。 */
+        private Component pageText() {
+            return Component.literal(" " + (pageSelected + 1) + " / " + totalPages() + " ");
+        }
+    }
+
+    // ==================== 单个交易格 ====================
+
+    /**
+     * 一个交易格：图标按钮 + 悬停说明。说明里的解锁状态、可交易次数、价格与产出都在服务端算好后下发
+     * （不用 {@code bindTooltip}：它在建界面时两端都会取一次值，客户端取不了钱包和背包数据）。
+     * 点击只在服务端执行，倍率取点击时的 Ctrl / Shift。
+     * <p>
+     * 悬停说明按<b>行</b>同步：LDLib 的悬停提示是"一个 {@link Component} 一行"，所以这里下发的是
+     * {@code List<Component>}（自己写 {@link SyncValue.Codec}），服务端把每一行分开算好，
+     * 客户端逐行交给按钮，不会挤在一行里。
+     */
+    private final class TradeCell extends UIElement {
+
+        /// 悬停说明的重算间隔（tick）：里面的判定要读钱包与输入输出栏，不必每刻都算
+        private static final int REFRESH_TICKS = 10;
+
+        /// 逐行同步悬停说明：行数 + 每行的组件（提示接口要的是"每行一个组件"，不能拼成一条带换行符的文字）
+        private static final SyncValue.Codec<List<Component>> TOOLTIP_LINES_CODEC = new SyncValue.Codec<>() {
+
+            @Override
+            public void write(FriendlyByteBuf buf, List<Component> lines) {
+                buf.writeVarInt(lines.size());
+                for (Component line : lines) buf.writeComponent(line);
+            }
+
+            @Override
+            public List<Component> read(FriendlyByteBuf buf) {
+                int size = buf.readVarInt();
+                List<Component> lines = new ArrayList<>(size);
+                for (int i = 0; i < size; i++) lines.add(buf.readComponent());
+                return lines;
             }
         };
-    }
 
-    /////////////////////////////////////
-    // ********* UI单元构建 ********* //
-    /////////////////////////////////////
+        private final int groupIndex;
+        private final int shopIndex;
+        private final TradeEntry entry;
+        private List<Component> cachedTooltip = List.of();
+        private boolean refreshed;
+        private int refreshedAt;
 
-    // 一个交易组
-    private List<IFancyUIProvider> shopGroup() {
-        List<IFancyUIProvider> shopGroupTabs = new ArrayList<>();
-
-        for (int shop = 0; shop < TradingManager.INSTANCE.getShopCount(groupSelected); shop++) {
-            TradingManager.TradingShop tradingShop = TradingManager.INSTANCE.getShopByIndices(groupSelected, shop);
-
-            shopGroupTabs.add(new ShopTabProvider(this, groupSelected, shop, tradingShop));
+        private TradeCell(int groupIndex, int shopIndex, TradeEntry entry) {
+            this.groupIndex = groupIndex;
+            this.shopIndex = shopIndex;
+            this.entry = entry;
+            layout(l -> l.size(UISizes.SLOT, UISizes.SLOT));
+            var button = Button.icon(entry.texture(), UISizes.SLOT);
+            button.setOnServerClick(this::executeTrade);
+            button.disabled(this::locked, null);
+            addChild(button);
+            addSyncValue(SyncValue.of(this::tooltipLines, TOOLTIP_LINES_CODEC, List.of())
+                    .onChanged(lines -> button.setHoverTooltips(lines.toArray(Component[]::new))));
         }
-        return shopGroupTabs;
-    }
 
-    // 16个交易的组
-    private WidgetGroup tradeGroup_16(int groupIndex, int shopIndex, int pageIndex, boolean unlockShop) {
-        WidgetGroup tradeGroup = new WidgetGroup(0, 0, 327, 102);
+        /**
+         * 服务端：商店未解锁、交易未解锁时这格不能交易（滚轮判定与点击时都会再判一次）。
+         * 客户端一律按"不可交易"回答：能不能交易由服务端下发的禁用状态与点击时的服务端判定决定，
+         * 客户端不会去读钱包和背包。
+         */
+        private boolean locked() {
+            if (TradingStationMachine.this.isRemote()) return true;
+            if (groupIndex >= 0 && !shopUnlocked(groupIndex, shopIndex)) return true;
+            return !entryUnlocked(entry);
+        }
 
-        for (int row = 0; row < 2; row++) {
-            for (int col = 0; col < 8; col++) {
-                int X = col * 41;
-                int Y = row * 51;
-                int entryIndex = pageIndex * 16 + row * 8 + col;
-                boolean isIndexValid = TradingManager.INSTANCE.isTradeIndexValid(groupIndex, shopIndex, entryIndex);
-                if (isIndexValid) {
-                    tradeGroup.addWidget(trade(X, Y, unlockShop, TradingManager.INSTANCE.getTradeEntryByIndices(groupIndex, shopIndex, entryIndex)));
-                } else {
-                    tradeGroup.addWidget(emptyTrade(X, Y));
-                }
+        /** 服务端：执行交易（Ctrl 十倍、Ctrl + Shift 百倍），能否交易与倍率都在这里判定。 */
+        private void executeTrade(ClickData clickData) {
+            if (clickData.isRemote || locked()) return;
+            int multiplier = clickData.isCtrlClick ? (clickData.isShiftClick ? 100 : 10) : 1;
+            entry.executeTrade(tradeData(), multiplier);
+        }
+
+        /** 只在服务端执行：悬停说明逐行由服务端拼好下发，按 {@link #REFRESH_TICKS} 重算一次。 */
+        private List<Component> tooltipLines() {
+            int now = getOffsetTimer();
+            if (refreshed && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) return cachedTooltip;
+            refreshed = true;
+            refreshedAt = now;
+            cachedTooltip = buildTooltipLines();
+            return cachedTooltip;
+        }
+
+        /** 服务端：一行一个组件——状态行、以及交易说明里的每一条输入/产出各占一行。 */
+        private List<Component> buildTooltipLines() {
+            var data = tradeData();
+            List<Component> lines = new ArrayList<>(4);
+            if (groupIndex >= 0 && !shopUnlocked(groupIndex, shopIndex)) {
+                lines.add(trans(20, unlockName(entry.unlockCondition())).withStyle(ChatFormatting.RED));
+            } else if (!entryUnlocked(entry)) {
+                lines.add(Component.translatable("gtocore.trade_group.unlock", unlockName(entry.unlockCondition()))
+                        .withStyle(ChatFormatting.DARK_RED));
+            } else if (entry.canExecuteCount(data) == 0) {
+                lines.add(Component.translatable("gtocore.trade_group.unsatisfied").withStyle(ChatFormatting.DARK_RED));
+            } else {
+                int amount = entry.check(data);
+                lines.add(Component.translatable("gtocore.trade_group.amount", FormattingUtil.formatNumbers(amount))
+                        .withStyle(ChatFormatting.GOLD));
+                if (amount >= 10) lines.add(Component.translatable("gtocore.trade_group.repeatedly1"));
+                if (amount >= 100) lines.add(Component.translatable("gtocore.trade_group.repeatedly2"));
             }
+            lines.addAll(entry.getDescription());
+            return lines;
         }
-
-        return tradeGroup;
     }
 
-    // 单个交易
-    private WidgetGroup trade(int x, int y, boolean unlockShop, TradeEntry entry) {
-        WidgetGroup trade = new WidgetGroup(x, y, 40, 50);
-        trade.setBackground(GTOGuiTextures.BOXED_BACKGROUND);
+    // ==================== 服务端数据与动作 ====================
 
-        ServerLevel serverLevel = getLevel() instanceof ServerLevel ? (ServerLevel) getLevel() : null;
-
-        TradeData tradeData = new TradeData(this.getLevel(), this.getPos(), inputItem, outputItem, inputFluid, outputFluid, uuid, sharedUUIDs, teamUUID);
-        boolean unlock = WalletUtils.containsTagValueInWallet(uuid, serverLevel, UNLOCK_TRADE, entry.unlockCondition());
-        boolean canExecute = entry.canExecuteCount(tradeData) != 0;
-
-        trade.addWidget(new InteractiveImageWidget(2, 7, 36, 36, entry.texture())
-                .textSupplier(texts -> {
-                    if (!unlock) texts.add(Component.translatable("gtocore.trade_group.unlock", entry.unlockCondition()).withStyle(ChatFormatting.DARK_RED));
-                    if (!canExecute) texts.add(Component.translatable("gtocore.trade_group.unsatisfied").withStyle(ChatFormatting.DARK_RED));
-                    int k = 0;
-                    if (unlock && canExecute) {
-                        k = entry.check(tradeData);
-                        texts.add(Component.translatable("gtocore.trade_group.amount", FormattingUtil.formatNumbers(k)).withStyle(ChatFormatting.GOLD));
-                    }
-                    texts.addAll(entry.getDescription());
-                    if (k >= 10) texts.add(Component.translatable("gtocore.trade_group.repeatedly1"));
-                    if (k >= 100) texts.add(Component.translatable("gtocore.trade_group.repeatedly2"));
-                })
-                .clickHandler((data, clickData) -> {
-                    if (!unlockShop) return;
-                    if (!unlock) return;
-                    int multiplier = clickData.isCtrlClick ? (clickData.isShiftClick ? 100 : 10) : 1;
-                    entry.executeTrade(tradeData, multiplier);
-                }));
-
-        return trade;
+    /** 交易数据（只在服务端构造：玩家 UUID、队伍只存在服务端）。 */
+    private TradeData tradeData() {
+        return new TradeData(getLevel(), getPos(), inputItem, outputItem, inputFluid, outputFluid, uuid, sharedUUIDs, teamUUID);
     }
 
-    private ImageWidget emptyTrade(int x, int y) {
-        return new ImageWidget(x, y, 40, 50, GTOGuiTextures.BOXED_BACKGROUND);
+    /** 服务端：商店是否已解锁。 */
+    private boolean shopUnlocked(int groupIndex, int shopIndex) {
+        var shop = TradingManager.INSTANCE.getShopByIndices(groupIndex, shopIndex);
+        return WalletUtils.containsTagValueInWallet(uuid, getLevel(), UNLOCK_SHOP, shop.getUnlockCondition());
     }
 
-    /////////////////////////////////////
-    // ********* 辅助类与方法 ********* //
-    /////////////////////////////////////
+    /** 服务端：交易是否已解锁。 */
+    private boolean entryUnlocked(TradeEntry entry) {
+        return WalletUtils.containsTagValueInWallet(uuid, getLevel(), UNLOCK_TRADE, entry.unlockCondition());
+    }
 
-    private static final String TEXT_HEADER = "gtocore.trading_station.textList.";
+    private static Component unlockName(@Nullable String key) {
+        return key == null ? NO_VALUE : Component.translatable(key);
+    }
+
+    /**
+     * 切换商店组（两端各执行一次）：两端都改成本地的组索引，客户端的控件树才不会和服务端走岔；
+     * 服务端再重开界面，页签、窗口尺寸按新的组整体重建。
+     */
+    private void selectShopGroup(Widget source, int index) {
+        if (groupSelected == index) return;
+        groupSelected = index;
+        shopSelected = -1;
+        if (isRemote()) return;
+        markAsDirty();
+        reopenUI(source);
+    }
+
+    /** 刷新（服务端）：重新读会员卡上的玩家信息，再重开界面。 */
+    private void refreshMembership(Widget source) {
+        if (isRemote()) return;
+        initializationInformation(cardHandler.getStackInSlot(0));
+        reopenUI(source);
+    }
+
+    /** 服务端：重开界面，让两端按最新的数据重建控件树（页签结构会变，只能整棵重建）。 */
+    private void reopenUI(Widget source) {
+        if (isRemote()) return;
+        var gui = source.getGui();
+        Player player = gui == null ? null : gui.entityPlayer;
+        if (player == null) return;
+        if (shouldOpenUI(player, InteractionHand.MAIN_HAND, null)) {
+            tryToOpenUI(player, InteractionHand.MAIN_HAND, null);
+        }
+    }
+
+    /** 服务端：当前组的名字（组索引无效时占位）。 */
+    private Component currentGroupName() {
+        var group = currentGroup();
+        return group == null ? NO_VALUE : Component.translatable(group.getName());
+    }
+
+    @Nullable
+    private TradingManager.TradingShopGroup currentGroup() {
+        var group = TradingManager.INSTANCE.getShopGroup(groupSelected);
+        return group != null ? group : TradingManager.INSTANCE.getShopGroup(0);
+    }
+
+    /** 服务端：会员信息一行（没有卡时提示放入会员卡）。 */
+    private Component memberText() {
+        if (uuid == null) return trans(2);
+        return trans(3, Component.literal(playerName(uuid)));
+    }
+
+    /** 服务端：共享名单（没有共享时为空，不显示悬停说明）。 */
+    private Component sharedText() {
+        if (uuid == null) return Component.empty();
+        var players = WalletUtils.getAllWalletPlayers(getLevel());
+        var shared = new StringBuilder();
+        for (UUID id : sharedUUIDs) {
+            if (shared.length() > 0) shared.append(", ");
+            shared.append(players.getOrDefault(id, UNKNOWN_PLAYER));
+        }
+        var team = teamUUID != null && !teamUUID.equals(uuid) ? TeamUtil.getName(getLevel(), uuid) : null;
+        if (shared.length() == 0 && team == null) return Component.empty();
+        var text = trans(4).copy();
+        if (shared.length() > 0) text.append(Component.literal(shared.toString()));
+        if (team != null) text.append(team);
+        return text;
+    }
+
+    /** 服务端：会员卡上记录的玩家名。 */
+    private String playerName(UUID playerUUID) {
+        return WalletUtils.getAllWalletPlayers(getLevel()).getOrDefault(playerUUID, UNKNOWN_PLAYER);
+    }
+
+    // ==================== 辅助类与方法 ====================
 
     // 机器基础翻译键
     private static @NotNull MutableComponent trans(int id, Object... args) {
-        if (args.length == 1 && args[0] instanceof Object[]) args = (Object[]) args[0];
         return Component.translatable(TEXT_HEADER + id, args);
     }
 
@@ -692,109 +929,6 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             this.uuid = null;
             this.sharedUUIDs = new ArrayList<>();
             this.teamUUID = null;
-        }
-    }
-
-    /////////////////////////////////////
-    // **** 内部类：ShopTabProvider **** //
-    /////////////////////////////////////
-
-    // 一个商店
-    private static class ShopTabProvider implements IFancyUIProvider {
-
-        private final TradingStationMachine machine;
-        private final int groupIndex;
-        @Getter
-        private final int shopIndex;
-        private final TradingManager.TradingShop tradingShop;
-        private int localPageSelected = 0;
-
-        private ShopTabProvider(TradingStationMachine machine, int groupIndex, int shopIndex, TradingManager.TradingShop tradingShop) {
-            this.machine = machine;
-            this.groupIndex = groupIndex;
-            this.shopIndex = shopIndex;
-            this.tradingShop = tradingShop;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return tradingShop.getTexture();
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(tradingShop.getName());
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return Collections.singletonList(Component.translatable(tradingShop.getName()));
-        }
-
-        @Override
-        public Widget createMainPage(FancyMachineUIWidget widget) {
-            var group = new WidgetGroup(0, 0, width + 8, height + 8);
-            WidgetGroup mainGroup = new WidgetGroup(4, 4, width, height);
-            mainGroup.setBackground(GuiTextures.DISPLAY);
-
-            int tradeCount = TradingManager.INSTANCE.getTradeCount(groupIndex, shopIndex);
-            int totalPage = tradeCount / 16 + (tradeCount % 16 == 0 ? 0 : 1);
-
-            WidgetGroup shopGroup = new WidgetGroup(0, 0, width, height);
-            shopGroup.setLayout(Layout.VERTICAL_CENTER);
-            shopGroup.setLayoutPadding(3);
-
-            ServerLevel serverLevel = machine.getLevel() instanceof ServerLevel ? (ServerLevel) machine.getLevel() : null;
-
-            boolean unlockShop = WalletUtils.containsTagValueInWallet(machine.getUuid(), serverLevel, UNLOCK_SHOP, tradingShop.getUnlockCondition());
-
-            shopGroup.addWidget(new LabelWidget(0, 0, Component.translatable(tradingShop.getName())));
-            WidgetGroup componentGroup = new DraggableScrollableWidgetGroup(4, 12, width - 8, 10)
-                    .setScrollWheelDirection(HORIZONTAL);
-            componentGroup.addWidget(new ComponentPanelWidget(0, 0, textList -> {
-                MutableComponent component = Component.empty();
-                if (!unlockShop) {
-                    component.append(trans(20, tradingShop.getUnlockCondition()).withStyle(ChatFormatting.RED));
-                }
-                for (String string : tradingShop.getCurrencies()) {
-                    component.append(
-                            Component.empty().append(Component.literal("["))
-                                    .append(Component.translatable("gtocore.currency." + string))
-                                    .append(Component.literal("-"))
-                                    .append(Component.literal(FormattingUtil.formatNumbers(WalletUtils.getCurrencyAmount(machine.getUuid(), serverLevel, string))))
-                                    .append(Component.literal("]")));
-                    textList.add(component);
-                }
-            }));
-            shopGroup.addWidget(componentGroup);
-
-            WidgetGroup tradeContainer = new WidgetGroup(0, 36, 327, 102);
-            updateTradeContainer(tradeContainer, localPageSelected, unlockShop);
-            shopGroup.addWidget(tradeContainer);
-
-            shopGroup.addWidget(new ComponentPanelWidget(0, 140, textList -> textList.add(Component.empty()
-                    .append(ComponentPanelWidget.withButton(Component.literal(" [ ← ] "), "previous_page"))
-                    .append(Component.literal("<" + (localPageSelected + 1) + "/" + totalPage + ">"))
-                    .append(ComponentPanelWidget.withButton(Component.literal(" [ → ] "), "next_page"))))
-                    .clickHandler((data, clickData) -> {
-                        switch (data) {
-                            case "previous_page" -> localPageSelected = Mth.clamp(localPageSelected - 1, 0, totalPage - 1);
-                            case "next_page" -> localPageSelected = Mth.clamp(localPageSelected + 1, 0, totalPage - 1);
-                        }
-                        updateTradeContainer(tradeContainer, localPageSelected, unlockShop);
-                        widget.detectAndSendChanges();
-                    }));
-
-            mainGroup.addWidget(shopGroup);
-            group.addWidget(mainGroup);
-            group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-
-            return group;
-        }
-
-        private void updateTradeContainer(WidgetGroup container, int pageIndex, boolean unlockShop) {
-            container.clearAllWidgets();
-            container.addWidget(machine.tradeGroup_16(groupIndex, shopIndex, pageIndex, unlockShop));
         }
     }
 
