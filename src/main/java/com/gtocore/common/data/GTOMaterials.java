@@ -226,6 +226,88 @@ public final class GTOMaterials {
     public static Material SiliconDopedDiamond;
     public static Material WideBandgapSemiconductorGradeDiamond;
 
+    // 物质的含杂形态（原物质）
+    // 页岩油（石油）
+    public static Material ShaleOil;
+    // 干馏页岩油
+    public static Material RetortedShaleOil;
+    // 含沙重油（重油）
+    public static Material HeavyOilWithSand;
+    // 含沙轻油（轻油）
+    public static Material LightOilWithSand;
+    // 页岩气（天然气）
+    public static Material ShaleGas;
+    // 致密油原油（原油）
+    public static Material TightOilCrudeOil;
+    // 解析致密油原油
+    public static Material ProcessedTightOilCrudeOil;
+
+    // 不纯硫酸（硫酸）
+    public static Material ImpureSulfuricAcid;
+    // 洁净硫酸
+    public static Material PureSulfuricAcid;
+    // 不纯硝酸（硝酸）
+    public static Material ImpureNitricAcid;
+    // 洁净硝酸
+    public static Material PureNitricAcid;
+    // 混杂氯化氢（盐酸）
+    public static Material MixedHydrochloricAcid;
+    // 洁净盐酸
+    public static Material PureHydrochloricAcid;
+
+    // 芳香烃混合物（苯）
+    public static Material AromaticHydrocarbonMixture;
+    // 低压芳香烃混合物
+    public static Material LowPressureAromaticHydrocarbonMixture;
+    // 轻瓦斯气（甲烷）
+    public static Material LightGas;
+    // 低压轻瓦斯气
+    public static Material LowPressureLightGas;
+    // 渣油混合物（渣油）
+    public static Material ResidualOilMixture;
+    // 含硫沥青渣油
+    public static Material SulfurContainingAsphaltResidualOil;
+    // 沥青渣油
+    public static Material AsphaltResidualOil;
+    // 裂解沥青渣油
+    public static Material CrackedAsphaltResidualOil;
+    // 易逃逸含杂气体（氦、氦3）
+    public static Material EasyToEscapeMixedGas;
+    // 纯净氦
+    public static Material PureHelium;
+    // 含杂氖（氖）
+    public static Material MixedNeon;
+    // 纯净氖
+    public static Material PureNeon;
+    // 含杂氩（氩）
+    public static Material MixedArgon;
+    // 纯净氩
+    public static Material PureArgon;
+    // 含杂氪（氪）
+    public static Material MixedKrypton;
+    // 纯净氪
+    public static Material PureKrypton;
+    // 含杂氙（氙）
+    public static Material MixedXenon;
+    // 纯净氙
+    public static Material PureXenon;
+    // 高辐射气体（氡）
+    public static Material HighRadiationGas;
+    // 纯净氡
+    public static Material PureRadon;
+    // 漂白气（氯）
+    public static Material BleachingGas;
+    // 纯净氯
+    public static Material PureChlorine;
+    // 爆闪气（氢、氘）
+    public static Material FlashExplosionGas;
+    // 纯净氢
+    public static Material PureHydrogen;
+    // 含杂氟（氟）
+    public static Material MixedFluorine;
+    // 纯净氟
+    public static Material PureFluorine;
+
     public static Material IronChromiumRedoxFlowBatteryElectrolyte;// iv 2a uev
     public static Material VanadiumRedoxFlowBatteryElectrolyte;// luv 1a uxv
     public static Material ZincIodideFlowBatteryElectrolyte;// zpm 2a opv

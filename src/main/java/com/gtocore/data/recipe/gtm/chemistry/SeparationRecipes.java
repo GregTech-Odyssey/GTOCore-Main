@@ -1,5 +1,7 @@
 package com.gtocore.data.recipe.gtm.chemistry;
 
+import com.gtolib.GTOCore;
+
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +13,8 @@ import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTItems.PLANT_BALL;
 import static com.gregtechceu.gtceu.common.data.GTItems.STICKY_RESIN;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gtocore.common.data.GTOMaterials.HeavyOilWithSand;
+import static com.gtocore.common.data.GTOMaterials.ShaleOil;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 
 final class SeparationRecipes {
@@ -47,13 +51,13 @@ final class SeparationRecipes {
         CENTRIFUGE_RECIPES.recipeBuilder("oilsands_ore_separation")
                 .inputItems(ore, Oilsands)
                 .chancedOutput(new ItemStack(Blocks.SAND), 5000, 5000)
-                .outputFluids(Oil.getFluid(2000))
+                .outputFluids((GTOCore.isExpert() ? ShaleOil : Oil).getFluid(2000))
                 .duration(200).EUt(30).save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("oilsands_dust_separation")
                 .inputItems(dust, Oilsands)
                 .chancedOutput(new ItemStack(Blocks.SAND), 5000, 5000)
-                .outputFluids(OilHeavy.getFluid(2000))
+                .outputFluids((GTOCore.isExpert() ? HeavyOilWithSand : OilHeavy).getFluid(2000))
                 .duration(200).EUt(30).save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("nether_wart_separation").duration(144).EUt(5)

@@ -1,5 +1,7 @@
 package com.gtocore.data.recipe.classified;
 
+import com.gtolib.GTOCore;
+
 public final class $ClassifiedRecipe {
 
     public static void init() {
@@ -127,5 +129,8 @@ public final class $ClassifiedRecipe {
         ElectroPlating.init();
         FuelCell.init();
         BioOscillation.init();
+        if (GTOCore.isExpert()) {
+            ExpertFluidProcessing.init();
+        }
     }
 }

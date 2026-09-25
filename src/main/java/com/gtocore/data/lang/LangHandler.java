@@ -310,6 +310,8 @@ public final class LangHandler {
         addCNEN("gtocore.lang.power_substation.tooltip.2", "内部必须填满电容，可用空电容填补空隙。", "All internal slots must be filled with capacitors; empty capacitors can be used to fill any gaps.");
 
         addCNEN("key.ae2.me2in1_wireless_locating_service", "打开ME2合1无线终端", "Open ME2in1 Wireless Terminal");
+        addCNEN("key.ae2.requester_wt_menu_locating_service", "打开请求器无线终端", "Open Requester Wireless Terminal");
+        addCNEN("key.ae2.wft_menu_locating_service", "打开ME无线设施终端", "Open Wireless Facility Terminal");
 
         addCNEN("gtocore.player_exp_status.mysterious_boost_potion.success", "你似乎被赋予了某种神秘能力...", "You seem to be granted with some mysterious ability ......");
 

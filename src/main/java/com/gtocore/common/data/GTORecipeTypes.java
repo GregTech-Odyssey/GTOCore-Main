@@ -120,7 +120,17 @@ public final class GTORecipeTypes {
     public static final RecipeType VACUUM_RECIPES = (RecipeType) GTRecipeTypes.VACUUM_RECIPES;
     public static final RecipeType ASSEMBLY_LINE_RECIPES = ((RecipeType) GTRecipeTypes.ASSEMBLY_LINE_RECIPES);
     public static final RecipeType LARGE_CHEMICAL_RECIPES = (RecipeType) GTRecipeTypes.LARGE_CHEMICAL_RECIPES;
-    public static final RecipeType FUSION_RECIPES = (RecipeType) GTRecipeTypes.FUSION_RECIPES;
+    public static final RecipeType FUSION_RECIPES = (RecipeType) GTRecipeTypes.FUSION_RECIPES.setMaxIOSize(0, 0, 2, GTOCore.isExpert() ? 3 : 1)
+            .onRecipeBuild(GTOCore.isExpert() ? (b) -> {
+                var lo = b.getFluidOutputs().getFirst().inner;
+                var f = lo.copy(lo.amount * 3 / 4);
+                b.getFluidOutputs().clear();
+                b.outputFluids(f);
+                var l0 = b.getFluidInputs().getFirst().inner;
+                var l1 = b.getFluidInputs().getLast().inner;
+                b.outputFluids(l0.copy(l0.amount / 8));
+                b.outputFluids(l1.copy(l1.amount / 8));
+            } : null);
     public static final RecipeType DUMMY_RECIPES = (RecipeType) GTRecipeTypes.DUMMY_RECIPES;
 
     public static final RecipeType RADIATION_HATCH_RECIPES = register("radiation_hatch", "放射仓材料", MULTIBLOCK)

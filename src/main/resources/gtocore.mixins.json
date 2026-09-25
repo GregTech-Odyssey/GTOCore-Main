@@ -207,7 +207,6 @@
     "gtm.recipe.MaceratorLogicMixin",
     "gtm.recipe.RecyclingRecipesMixin",
     "gtm.recipe.WoodMachineRecipesMixin",
-    "gtm.registry.GTBedrockFluidsMixin",
     "gtm.registry.GTBlocksMixin",
     "gtm.registry.GTFluidsMixin",
     "gtm.registry.GTMachineUtilsMixin",

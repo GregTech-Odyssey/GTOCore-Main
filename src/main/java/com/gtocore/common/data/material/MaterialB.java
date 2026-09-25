@@ -5194,5 +5194,201 @@ public final class MaterialB {
                 .color(0x283301)
                 .iconSet(DULL)
                 .buildAndRegister().setFormula("YBa2Cu3O6");
+
+        ShaleOil = material("shale_oil", "页岩油")
+                .fluid()
+                .color(0x3E3C3A)
+                .iconSet(DULL)
+                .buildAndRegister();
+        RetortedShaleOil = material("retorted_shale_oil", "干馏页岩油")
+                .fluid()
+                .color(0x4a4b45)
+                .iconSet(DULL)
+                .buildAndRegister();
+        HeavyOilWithSand = material("heavy_oil_with_sand", "含沙重油")
+                .fluid()
+                .color(0x4E4C4A)
+                .iconSet(DULL)
+                .buildAndRegister();
+        LightOilWithSand = material("light_oil_with_sand", "含沙轻油")
+                .fluid()
+                .color(0x8E8C8A)
+                .iconSet(DULL)
+                .buildAndRegister();
+        ShaleGas = material("shale_gas", "页岩气")
+                .gas()
+                .color(0xaDaBa7)
+                .iconSet(DULL)
+                .buildAndRegister();
+        TightOilCrudeOil = material("tight_oil_crude_oil", "致密油原油")
+                .fluid()
+                .color(0x3E3C3A)
+                .iconSet(DULL)
+                .buildAndRegister();
+        ProcessedTightOilCrudeOil = material("processed_tight_oil_crude_oil", "解析致密油原油")
+                .fluid()
+                .color(0x4a4b45)
+                .iconSet(DULL)
+                .buildAndRegister();
+        ImpureSulfuricAcid = material("impure_sulfuric_acid", "不纯硫酸")
+                .fluid()
+                .color(0xcaaC3f)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureSulfuricAcid = material("pure_sulfuric_acid", "洁净硫酸")
+                .fluid()
+                .color(0xddbf99)
+                .iconSet(DULL)
+                .buildAndRegister();
+        ImpureNitricAcid = material("impure_nitric_acid", "不纯硝酸")
+                .fluid()
+                .color(0xeeee4c)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureNitricAcid = material("pure_nitric_acid", "洁净硝酸")
+                .fluid()
+                .color(0xefef9f)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedHydrochloricAcid = material("mixed_hydrochloric_acid", "混杂氯化氢")
+                .fluid()
+                .color(0x757586)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureHydrochloricAcid = material("pure_hydrochloric_acid", "洁净盐酸")
+                .fluid()
+                .color(0x9898b1)
+                .iconSet(DULL)
+                .buildAndRegister();
+        AromaticHydrocarbonMixture = material("aromatic_hydrocarbon_mixture", "芳香烃混合物")
+                .fluid()
+                .color(0x5f4c3d)
+                .iconSet(DULL)
+                .buildAndRegister();
+        LowPressureAromaticHydrocarbonMixture = material("low_pressure_aromatic_hydrocarbon_mixture", "低压芳香烃混合物")
+                .fluid()
+                .color(0x9f7c6a)
+                .iconSet(DULL)
+                .buildAndRegister();
+        LightGas = material("light_gas", "轻瓦斯气")
+                .gas()
+                .color(0xeeeecc)
+                .iconSet(DULL)
+                .buildAndRegister();
+        LowPressureLightGas = material("low_pressure_light_gas", "低压轻瓦斯气")
+                .gas()
+                .color(0xcccc99)
+                .iconSet(DULL)
+                .buildAndRegister();
+        ResidualOilMixture = material("residual_oil_mixture", "渣油混合物")
+                .fluid()
+                .color(0x10130f)
+                .iconSet(DULL)
+                .buildAndRegister();
+        SulfurContainingAsphaltResidualOil = material("sulfur_containing_asphalt_residual_oil", "含硫沥青渣油")
+                .fluid()
+                .color(0x1a1c18)
+                .iconSet(DULL)
+                .buildAndRegister();
+        AsphaltResidualOil = material("asphalt_residual_oil", "沥青渣油")
+                .fluid()
+                .color(0x1f211d)
+                .iconSet(DULL)
+                .buildAndRegister();
+        CrackedAsphaltResidualOil = material("cracked_asphalt_residual_oil", "裂化沥青渣油")
+                .fluid()
+                .color(0x2a2c28)
+                .iconSet(DULL)
+                .buildAndRegister();
+        EasyToEscapeMixedGas = material("easy_to_escape_mixed_gas", "易逃逸含杂气体")
+                .gas()
+                .color(0xefecda)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureHelium = material("pure_helium", "纯净氦")
+                .gas()
+                .color(0xeeeecc)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedNeon = material("mixed_neon", "含杂氖")
+                .gas()
+                .color(0xa35ce3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureNeon = material("pure_neon", "纯净氖")
+                .gas()
+                .color(0xcf9df3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedArgon = material("mixed_argon", "含杂氩")
+                .gas()
+                .color(0x5ced38)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureArgon = material("pure_argon", "纯净氩")
+                .gas()
+                .color(0x9df3a3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedKrypton = material("mixed_krypton", "含杂氪")
+                .gas()
+                .color(0x5c9de3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureKrypton = material("pure_krypton", "纯净氪")
+                .gas()
+                .color(0x9dcff3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedXenon = material("mixed_xenon", "含杂氙")
+                .gas()
+                .color(0x6c38e3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureXenon = material("pure_xenon", "纯净氙")
+                .gas()
+                .color(0xad9cf3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        HighRadiationGas = material("high_radiation_gas", "高辐射气体")
+                .gas()
+                .color(0xaf88e3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureRadon = material("pure_radon", "纯净氡")
+                .gas()
+                .color(0xd1b9f3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        BleachingGas = material("bleaching_gas", "漂白气")
+                .gas()
+                .color(0x88e3eb)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureChlorine = material("pure_chlorine", "纯净氯")
+                .gas()
+                .color(0x9cf3fb)
+                .iconSet(DULL)
+                .buildAndRegister();
+        FlashExplosionGas = material("flash_explosion_gas", "爆闪气")
+                .gas()
+                .color(0x1111e8)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureHydrogen = material("pure_hydrogen", "纯净氢")
+                .gas()
+                .color(0x3333ff)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedFluorine = material("mixed_fluorine", "含杂氟")
+                .gas()
+                .color(0x88e3eb)
+                .iconSet(DULL)
+                .buildAndRegister();
+        PureFluorine = material("pure_fluorine", "纯净氟")
+                .gas()
+                .color(0x9cf3fb)
+                .iconSet(DULL)
+                .buildAndRegister();
     }
 }

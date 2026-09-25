@@ -14,7 +14,6 @@ import com.gregtechceu.gtceu.api.data.worldgen.generator.indicators.SurfaceIndic
 import com.gregtechceu.gtceu.api.data.worldgen.generator.veins.DikeVeinGenerator;
 import com.gregtechceu.gtceu.api.data.worldgen.generator.veins.VeinedVeinGenerator;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.common.data.GTBedrockFluids;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTOres;
 
@@ -46,7 +45,7 @@ public final class GTOOres {
     @SuppressWarnings("ConstantConditions")
     public static void init() {
         GTRegistries.BEDROCK_FLUID_DEFINITIONS.unfreeze();
-        GTBedrockFluids.init();
+        GTOBedrockFluids.init();
         GTRegistries.BEDROCK_FLUID_DEFINITIONS.freeze();
         GTRegistries.BEDROCK_ORE_DEFINITIONS.freeze();
         GTRegistries.ORE_VEINS.freeze();
