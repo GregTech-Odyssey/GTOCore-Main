@@ -183,6 +183,29 @@ public final class GTOOreRecipeHandler {
             }
             opBuilder3.save();
 
+            // 8 破碎-洗矿-研磨-电磁选矿
+            if (property.getSeparatedInto() != null && !property.getSeparatedInto().isEmpty()) {
+                RecipeBuilder opBuilder8 = INTEGRATED_ORE_PROCESSOR
+                        .recipeBuilder("processor_8_" + material.getName())
+                        .circuitMeta(8)
+                        .inputItems(tag)
+                        .inputFluids(DistilledWater.getFluid(100 * crushedAmount))
+                        .outputItems(dust, getOutputMaterial(material), crushedAmount)
+                        .chancedOutput(byproductStack, 1400, 850)
+                        .chancedOutput(dust, byproductMaterial, crushedAmount, 3333, 0)
+                        .outputItems(dust, Stone, crushedAmount)
+                        .chancedOutput(byproductStack1, 1400, 850)
+                        .duration(dur + (200 + dur + 200) * crushedAmount)
+                        .EUt(30);
+                addSeparatedOutputs(opBuilder8, property.getSeparatedInto(), crushedAmount);
+                for (MaterialStack secondaryMaterial : TagPrefix.ore.secondaryMaterials()) {
+                    if (secondaryMaterial.material().hasProperty(PropertyKey.DUST)) {
+                        opBuilder8.chancedOutput(ChemicalHelper.getGem(secondaryMaterial).copyWithCount(crushedAmount), 6700, 800);
+                    }
+                }
+                opBuilder8.save();
+            }
+
             // 4 破碎-洗矿-筛选-离心
             if (doesMaterialUseNormalSifter(material)) {
                 ItemStack exquisiteStack = ChemicalHelper.get(gemExquisite, material);
@@ -466,6 +489,30 @@ public final class GTOOreRecipeHandler {
             }
         }
         opBuilder3.save();
+
+        // 8 破碎-洗矿-研磨-电磁选矿
+        if (property.getSeparatedInto() != null && !property.getSeparatedInto().isEmpty()) {
+            RecipeBuilder opBuilder8 = INTEGRATED_ORE_PROCESSOR.recipeBuilder("raw_processor_8_" + material.getName())
+                    .circuitMeta(8)
+                    .inputItems(stack)
+                    .inputFluids(DistilledWater.getFluid(100 * crushedAmount))
+                    .outputItems(dust, getOutputMaterial(material), crushedAmount)
+                    .chancedOutput(byproductStack, 1000, 300)
+                    .chancedOutput(dust, byproductMaterial, crushedAmount, 3333, 0)
+                    .outputItems(dust, Stone, crushedAmount)
+                    .chancedOutput(byproductStack1, 1400, 850)
+                    .duration(dur + (200 + dur + 200) * crushedAmount)
+                    .EUt(30);
+            addSeparatedOutputs(opBuilder8, property.getSeparatedInto(), crushedAmount);
+            for (MaterialStack secondaryMaterial : ore.secondaryMaterials()) {
+                if (secondaryMaterial.material().hasProperty(PropertyKey.DUST)) {
+                    ItemStack dustStack = ChemicalHelper.getGem(secondaryMaterial);
+                    opBuilder8.chancedOutput(dustStack, 500, 100);
+                    break;
+                }
+            }
+            opBuilder8.save();
+        }
 
         // 4 破碎-洗矿-筛选-离心
         if (doesMaterialUseNormalSifter(material)) {
@@ -851,6 +898,14 @@ public final class GTOOreRecipeHandler {
                 VanillaRecipeHelper.addSmeltingRecipe(prefix.name + "_" + material.getName(), ChemicalHelper.getTag(prefix, material), ingotStack, 0.5f);
             }
         }
+    }
+
+    private static void addSeparatedOutputs(RecipeBuilder builder, List<Material> separatedMaterial, int amount) {
+        TagPrefix prefix = (separatedMaterial.getLast().getBlastTemperature() == 0 &&
+                separatedMaterial.getLast().hasProperty(PropertyKey.INGOT)) ? nugget : dust;
+        ItemStack separatedStack2 = ChemicalHelper.get(prefix, separatedMaterial.getLast(), (prefix == nugget ? 2 : 1) * amount);
+        builder.chancedOutput(dust, separatedMaterial.getFirst(), amount, 1000, 250)
+                .chancedOutput(separatedStack2, prefix == dust ? 500 : 2000, prefix == dust ? 150 : 600);
     }
 
     public static Material getOutputMaterial(Material material) {

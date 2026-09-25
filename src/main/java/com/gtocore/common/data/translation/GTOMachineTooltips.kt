@@ -1838,6 +1838,7 @@ object GTOMachineTooltips {
         function("5号电路: 破碎-浸洗-热离-研磨" translatedTo "Circuit 5: Crusher → Chemical Bath → Thermal Centrifuging → Macerator")
         function("6号电路: 破碎-浸洗-研磨-离心" translatedTo "Circuit 6: Crusher → Chemical Bath → Macerator → Centrifuging")
         function("7号电路: 破碎-浸洗-筛选-离心" translatedTo "Circuit 7: Crusher → Chemical Bath → Sifter → Centrifuging")
+        function("8号电路: 破碎-洗矿-研磨-电磁选矿" translatedTo "Circuit 8: Crusher → Ore Washer → Macerator → Electromagnetic Separation")
 
         section(ComponentSlang.AfterModuleInstallation)
         increase("解锁8线程处理" translatedTo "Unlock 8-thread processing")
