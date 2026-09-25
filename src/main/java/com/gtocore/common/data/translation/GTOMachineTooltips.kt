@@ -699,8 +699,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_disk_box")
 
         section(ComponentSlang.MainFunction)
-        function("ME 磁盘存储器的单方块版本，槽里的 AE2 存储组件（1k…256k）提供容量" translatedTo "Single-block version of the ME Disk Storage; the AE2 storage components in its slot (1k...256k) provide the capacity")
-        info("容量 = 组件字节之和；1M 及以上的组件不接收" translatedTo "Capacity = the sum of the components' bytes; components from 1M up are not accepted")
+        function("ME 磁盘存储器的单方块版本，槽里的存储组件（1k…256M）提供容量" translatedTo "Single-block version of the ME Disk Storage; the storage components in its slot (1k...256M) provide the capacity")
         important("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在" translatedTo "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again")
         info("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通" translatedTo "With the player data index, such machines of the same player share one storage, so different ME networks can share contents")
         command("存储转移：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处" translatedTo "Transfer Storage: moves everything held by the other ME storages in the network into this box, what does not fit stays where it is")

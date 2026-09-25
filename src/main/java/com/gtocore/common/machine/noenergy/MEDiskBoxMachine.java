@@ -49,9 +49,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * ME 磁盘箱子：ME 磁盘存储器的单方块版本。一个槽放 AE2 存储组件（1k…256k，最多 {@link #COMPONENT_LIMIT} 个，
- * 单个组件不超过 {@link #MAX_COMPONENT_BYTES}，1M 及以上的组件不收），组件字节之和就是容量；
- * 存储直接用存储访问仓那一套（{@link CellDataStorage} + 数据索引 UUID + 按字节卡容量），
+ * ME 磁盘箱子：ME 磁盘存储器的单方块版本。一个槽放存储组件（1k…256M，最多 {@link #COMPONENT_LIMIT} 个），
+ * 组件字节之和就是容量；存储直接用存储访问仓那一套（{@link CellDataStorage} + 数据索引 UUID + 按字节卡容量），
  * 数据索引可以选玩家或机器（显示窗里点一下切换），显示窗里还有一个「存储转移」按钮，
  * 口径与存储访问仓一致：把网络里其它 ME 存储的内容全部搬进本箱。
  */
@@ -61,8 +60,6 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     /// 组件槽的数量上限
     public static final int COMPONENT_LIMIT = 64;
-    /// 单个组件的容量上限：本机是单方块小箱子，只收 AE2 的 256k 及以下组件（1M 及以上的组件不收）
-    public static final long MAX_COMPONENT_BYTES = 256 * 1024L;
     /// 数据索引位置（与 ME 存储器共用同一套文案）
     private static final String MODE = "gtocore.machine.me_storage.mode";
     /// 数据索引开关的按钮键
@@ -75,7 +72,7 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
-    @RegisterLanguage(cn = "放 AE2 存储组件（只收 256k 及以下）来提供容量", en = "Put AE2 storage components (256k and below only) in to provide capacity")
+    @RegisterLanguage(cn = "放存储组件（1k…256M）来提供容量", en = "Put storage components (1k...256M) in to provide capacity")
     public static final String NO_COMPONENTS = "gtocore.machine.me_disk_box.no_components";
 
     /// 组件槽（1 格，最多 {@link #COMPONENT_LIMIT} 个存储组件）
@@ -117,10 +114,10 @@ public final class MEDiskBoxMachine extends MetaMachine
         return componentStorage;
     }
 
-    /// 组件槽只收 256k 及以下的 AE2 存储组件
+    /// 组件槽只收存储组件
     @Override
     public boolean storageFilter(ItemStack stack) {
-        return componentBytes(stack) > 0;
+        return stack.getItem() instanceof StorageComponentItem;
     }
 
     @Override
@@ -161,11 +158,10 @@ public final class MEDiskBoxMachine extends MetaMachine
         capacity = total;
     }
 
-    /// 组件能提供的字节数；不是组件、或者超过 {@link #MAX_COMPONENT_BYTES} 的（1M 及以上）都算 0
+    /// 组件能提供的字节数；不是组件返回 0
     private static long componentBytes(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof StorageComponentItem component)) return 0;
-        long bytes = component.getBytes();
-        return bytes > MAX_COMPONENT_BYTES ? 0 : bytes;
+        return component.getBytes();
     }
 
     // ==================== 数据索引 ====================
