@@ -284,8 +284,9 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         void tickUpdate() {
+            var dirty = this.dirty;
             if (dirty) {
-                dirty = false;
+                this.dirty = false;
                 getCellStorage().setDirty();
             }
             if (uuid == null || capacity == 0 || !isOnline) return;
@@ -298,7 +299,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     isInfinite = false;
                 }
             }
-            if (observe) {
+            if (observe || (dirty && !isInfinite)) {
                 observe = false;
                 double totalAmount = 0;
                 var storage = getCellStorage();
@@ -564,8 +565,9 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         void tickUpdate() {
+            var dirty = this.dirty;
             if (dirty) {
-                dirty = false;
+                this.dirty = false;
                 getCellStorage().setDirty();
             }
             if (uuid == null || capacity == 0 || !isOnline) return;
@@ -578,7 +580,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     isInfinite = false;
                 }
             }
-            if (observe) {
+            if (observe || (dirty && !isInfinite)) {
                 observe = false;
                 double totalAmount = 0;
                 var data = getCellStorage();

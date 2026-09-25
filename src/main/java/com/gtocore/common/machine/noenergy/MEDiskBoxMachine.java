@@ -192,12 +192,13 @@ public final class MEDiskBoxMachine extends MetaMachine
     private void tickUpdate() {
         var data = cellStorage();
         if (data == CellDataStorage.EMPTY) return;
+        var dirty = this.dirty;
         if (dirty) {
-            dirty = false;
+            this.dirty = false;
             data.setDirty();
         }
         if (capacity == 0 || !isOnline) return;
-        if (observe) {
+        if (dirty || observe) {
             observe = false;
             double totalAmount = 0;
             var map = data.getStoredMap();

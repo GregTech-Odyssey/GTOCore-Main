@@ -66,7 +66,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     public void onStructureFormed() {
         partMachines.clear();
         super.onStructureFormed();
-        if (!getRecipeLogic().isWorking()) requestRetry();
+        requestRetry();
     }
 
     @Override
@@ -101,7 +101,10 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         long maxEUt = getOverclockVoltage();
         if (maxEUt == 0) return null;
-        if (!plannedOutputs.isEmpty()) return null;
+        if (!plannedOutputs.isEmpty()) {
+            requestRetry();
+            return null;
+        }
         plannedSlots = 0;
         plannedAmount = 0;
         if (!planOutputs()) return null;
@@ -136,7 +139,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     }
 
     private void requestRetry() {
-        if (isRemote() || plannedOutputs.isEmpty()) return;
+        if (plannedOutputs.isEmpty()) return;
         retrySubs = subscribeServerTick(retrySubs, this::retryDelivery, 40);
     }
 
@@ -148,7 +151,10 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     }
 
     private void retryDelivery() {
-        if (flushPlanned()) cancelRetry();
+        if (!getRecipeLogic().isWorking() && flushPlanned()) {
+            getRecipeLogic().updateTickSubscription();
+            cancelRetry();
+        }
     }
 
     private boolean flushPlanned() {
