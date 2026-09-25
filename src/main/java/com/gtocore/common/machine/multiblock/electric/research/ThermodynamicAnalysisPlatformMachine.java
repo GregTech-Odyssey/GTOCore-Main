@@ -87,6 +87,9 @@ public class ThermodynamicAnalysisPlatformMachine extends ElectricMultiblockMach
     }
 
     @Override
+    public void setWorkingEnabled(boolean isWorkingAllowed) {}
+
+    @Override
     public boolean alwaysSearchRecipe() {
         return true;
     }

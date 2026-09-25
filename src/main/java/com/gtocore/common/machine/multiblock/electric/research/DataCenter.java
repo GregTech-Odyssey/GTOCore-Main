@@ -421,6 +421,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
      * ├ [科技树] [取消研究]                                                ┤
      * └ 数据物品：所有数据访问仓的槽位合在一起，每行 9 格（滚动）            ┘
      * </pre>
+     * 
      * 状态由服务端取值下发（统计每秒至多重算一次）；槽位数在打开页面时由服务端决定并随初始数据下发，两端据此建同样多的槽，
      * 结构变化后状态行提示重新打开页面。
      */
@@ -848,7 +849,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
         private record SlotReference(ICustomItemStackHandler handler, int slot) {}
     }
-
 
     /// 数据物品网格默认最多显示几行，再多滚动（右下角可拖拽缩放）
     private static final int DATA_MAX_ROWS = 5;

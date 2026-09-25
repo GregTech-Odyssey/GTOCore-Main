@@ -28,6 +28,13 @@
 
 ## 构建与验证
 
+- 代码推送到远程仓库前，或在本地执行 `build` / `assemble` 前，必须先按下方要求设置有效的 JDK 21，再使用 Spotless 应用并检查格式：
+
+```powershell
+.\gradlew.bat spotlessApply
+.\gradlew.bat spotlessCheck
+```
+
 - **Windows agent 第一次调用 Gradle 前必须显式设置有效的 JDK 21**，并先确认 `java.exe` 存在：
 
 ```powershell

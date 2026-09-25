@@ -27,9 +27,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -40,8 +37,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.client.AEKeyRendering;
-import com.mojang.blaze3d.systems.RenderSystem;
 import appeng.api.stacks.AEKey;
+
+import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
+import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
@@ -115,8 +115,8 @@ public final class TechNodeDetails {
      * 往 {@code column}（纵向、区块间距 {@link UISizes#SECTION_GAP}）里加节点详情。
      *
      * @param navigator 与所在视图的连接（取打开界面的玩家、跳转节点）
-     * @param force 调试器：显示"强制解锁"
-     * @param extra 使用方追加的区块（可为 null），参数是新区块与节点
+     * @param force     调试器：显示"强制解锁"
+     * @param extra     使用方追加的区块（可为 null），参数是新区块与节点
      */
     static void build(UIElement column, TechNode node, TechTreeView.Navigator navigator, boolean force,
                       @Nullable BiConsumer<UIElement, TechNode> extra) {
