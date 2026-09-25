@@ -719,7 +719,7 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         function("访问ME存储器内的存储，并可给每种东西单独设上限" translatedTo "Access storage in ME storage and set a limit for every key")
         info("输入限制：每种最多存多少；未配置=不限、0 记成 -1（禁止存入）、正数=上限" translatedTo "Input limit: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden), positive = the cap")
-        info("输出限制：每种至少保留多少，库存不够就不取出；未配置=不限、0 记成 -1（禁止取出）" translatedTo "Output limit: how much of each key to keep, nothing comes out below it; unconfigured = unlimited, 0 is stored as -1 (never extract)")
+        info("输出限制：每种至少保留多少，库存不够就不取出；未配置=不限、0 记成 -1（也不设下限）" translatedTo "Output limit: how much of each key to keep, nothing comes out below it; unconfigured = unlimited, 0 is stored as -1 (no floor either)")
         important("输入、输出两张表各有一个开关，互不影响；都不开时这个仓就是普通访问仓" translatedTo "The input and output tables each have their own switch and do not affect each other; with both off this hatch is an ordinary access hatch")
         important("配置面板：81 个物品格 + 81 个流体格，点格子后在中间的输入框改数量，用「配置」按钮切到那张表" translatedTo "Config panel: 81 item slots + 81 fluid slots; click a slot and edit the amount in the middle field, the Configure button picks which table is being edited")
         content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
