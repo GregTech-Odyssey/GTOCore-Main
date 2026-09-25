@@ -21,6 +21,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -51,7 +52,8 @@ import java.util.UUID;
  * ME 磁盘箱子：ME 磁盘存储器的单方块版本。一个槽放 AE2 存储组件（1k…256k，最多 {@link #COMPONENT_LIMIT} 个，
  * 单个组件不超过 {@link #MAX_COMPONENT_BYTES}，1M 及以上的组件不收），组件字节之和就是容量；
  * 存储直接用存储访问仓那一套（{@link CellDataStorage} + 数据索引 UUID + 按字节卡容量），
- * 数据索引可以选玩家或机器（显示窗里点一下切换）。
+ * 数据索引可以选玩家或机器（显示窗里点一下切换），显示窗里还有一个「存储转移」按钮，
+ * 口径与存储访问仓一致：把网络里其它 ME 存储的内容全部搬进本箱。
  */
 @DataGeneratorScanned
 public final class MEDiskBoxMachine extends MetaMachine
@@ -65,11 +67,17 @@ public final class MEDiskBoxMachine extends MetaMachine
     private static final String MODE = "gtocore.machine.me_storage.mode";
     /// 数据索引开关的按钮键
     private static final String SWITCH = "switch";
+    /// 存储转移按钮的键
+    private static final String TRANSFER_BUTTON = "transfer";
 
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
     @RegisterLanguage(cn = "放 AE2 存储组件（只收 256k 及以下）来提供容量", en = "Put AE2 storage components (256k and below only) in to provide capacity")
     public static final String NO_COMPONENTS = "gtocore.machine.me_disk_box.no_components";
+    @RegisterLanguage(cn = "存储转移", en = "Transfer Storage")
+    public static final String TRANSFER = "gtocore.machine.me_disk_box.transfer";
+    @RegisterLanguage(cn = "把网络里其它 ME 存储的内容全部搬进本箱（本箱装不下的留在原处）", en = "Move everything held by the other ME storages in the network into this box (what does not fit stays where it is)")
+    public static final String TRANSFER_TOOLTIP = "gtocore.machine.me_disk_box.transfer_tooltip";
 
     /// 组件槽（1 格，最多 {@link #COMPONENT_LIMIT} 个存储组件）
     @SaveToDisk
@@ -93,6 +101,8 @@ public final class MEDiskBoxMachine extends MetaMachine
     private CellDataStorage dataStorage;
     private boolean dirty;
     private boolean observe;
+    /// 存储转移进行中：这期间自己的 extract 一律为 0，网络取物只能从别的存储拿
+    private boolean transferring;
 
     public MEDiskBoxMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -269,6 +279,7 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @Override
     public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
+        if (transferring) return 0;
         var data = cellStorage();
         if (data == CellDataStorage.EMPTY) return 0;
         var map = data.getStoredMap();
@@ -289,6 +300,50 @@ public final class MEDiskBoxMachine extends MetaMachine
     @Override
     public KeyCounter getAvailableStacks() {
         return cellStorage().cache.getAvailableStacksCache();
+    }
+
+    // ==================== 存储转移 ====================
+
+    /// 存储转移（与存储访问仓同口径）：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处
+    private void transferFromNetwork() {
+        if (isRemote() || !isOnline) return;
+        ensureIndex();
+        var data = cellStorage();
+        if (data == CellDataStorage.EMPTY) return;
+        var grid = getMainNode().getGrid();
+        if (grid == null) return;
+        var network = grid.getStorageService().getInventory();
+        var networkContent = new KeyCounter();
+        network.getAvailableStacks(networkContent);
+        if (networkContent.isEmpty()) return;
+        var source = IActionSource.ofMachine(this);
+        transferring = true;
+        try {
+            for (var entry : networkContent) {
+                var what = entry.getKey();
+                if (what == null) continue;
+                // 网络清单里包含本箱自己，减掉自己已有的那部分才只搬别人的
+                long want = entry.getLongValue() - getOwnAmount(what);
+                if (want < 1) continue;
+                long possible = insert(what, want, Actionable.SIMULATE, source);
+                if (possible < 1) continue;
+                long extracted = network.extract(what, possible, Actionable.MODULATE, source);
+                if (extracted < 1) continue;
+                long inserted = insert(what, extracted, Actionable.MODULATE, source);
+                if (inserted < extracted) network.insert(what, extracted - inserted, Actionable.MODULATE, source);
+            }
+        } finally {
+            transferring = false;
+        }
+        onChanged();
+    }
+
+    /// 本箱自己存了多少
+    private long getOwnAmount(AEKey what) {
+        var data = cellStorage();
+        if (data == CellDataStorage.EMPTY) return 0;
+        var map = data.getStoredMap();
+        return map == null ? 0 : map.getAmount(what);
     }
 
     // ==================== 界面 ====================
@@ -316,19 +371,28 @@ public final class MEDiskBoxMachine extends MetaMachine
         textList.add(Component.translatable(COMPONENTS,
                 FormattingUtil.formatNumbers(componentStorage.getStackInSlot(0).getCount()),
                 NumberUtils.formatDouble(capacity)).withStyle(ChatFormatting.GRAY));
-        if (data != CellDataStorage.EMPTY) {
-            textList.add(Component.translatable("gui.ae2.BytesUsed",
-                    NumberUtils.numberText(data.getBytes()).append(" / ").append(NumberUtils.formatDouble(capacity)))
-                    .withStyle(ChatFormatting.GRAY));
-            var map = data.getStoredMap();
-            textList.add(Component.literal(String.valueOf(map == null ? 0 : map.size())).withStyle(ChatFormatting.AQUA)
-                    .append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
-        }
+        // 数据索引还没建（机器模式还没存过东西）时按已用 0 算，用量与种类这一行照样显示
+        var map = data == CellDataStorage.EMPTY ? null : data.getStoredMap();
+        double used = data == CellDataStorage.EMPTY ? 0 : data.getBytes();
+        textList.add(Component.translatable("gui.ae2.BytesUsed",
+                NumberUtils.numberText(used).append(" / ").append(NumberUtils.formatDouble(capacity)))
+                .withStyle(ChatFormatting.GRAY));
+        textList.add(Component.literal(String.valueOf(map == null ? 0 : map.size())).withStyle(ChatFormatting.AQUA)
+                .append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
+        textList.add(ComponentPanelWidget.withButton(
+                Component.literal("[").append(Component.translatable(TRANSFER)).append("]"), TRANSFER_BUTTON)
+                .copy().withStyle(ChatFormatting.GRAY)
+                .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        Component.translatable(TRANSFER_TOOLTIP).withStyle(ChatFormatting.YELLOW)))));
     }
 
     public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (clickData.isRemote || !SWITCH.equals(componentData)) return;
-        setPlayer(!player);
+        if (clickData.isRemote) return;
+        if (SWITCH.equals(componentData)) {
+            setPlayer(!player);
+        } else if (TRANSFER_BUTTON.equals(componentData)) {
+            transferFromNetwork();
+        }
     }
 
     // ==================== 拆机保存 ====================

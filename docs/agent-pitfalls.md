@@ -22,6 +22,10 @@
 
 `GTOFluids.<clinit>` 注册时 `FastCollection` 的 `MultiMap.put` → fastutil `ReferenceLinkedOpenHashSet.rehash` 抛 `ArrayIndexOutOfBoundsException`（依赖 identity hash，同一份代码重跑常常就过）。先重试 1~2 次；连续失败再当真实错误查。
 
+### 配置阶段「Remote host terminated the handshake」
+
+网络不通时，配置阶段「正在从 Mojang API 验证 MC 版本」会失败，报 `Failed to notify project evaluation listener` / `Remote host terminated the handshake`，和改的代码无关。加 `--offline` 走本地缓存即可：`.\gradlew.bat runData --offline`（`spotlessApply` 同理）。
+
 ### 语言键扫描
 
 - `@RegisterLanguage` 只对**带 `@DataGeneratorScanned` / `@Scanned` 的类**生效；嵌套类里的语言常量要**单独**给那个嵌套类加注解，否则键不会生成。

@@ -708,7 +708,8 @@ object GTOMachineTooltips {
         function("ME 磁盘存储器的单方块版本：一个槽放 AE2 存储组件（1k…256k，最多 64 个，1M 及以上的组件不收），组件字节之和就是容量" translatedTo "A single-block version of the ME Disk Storage: one slot for AE2 storage components (1k...256k, up to 64, nothing from 1M up), the sum of their bytes is the capacity")
         info("存储直接用存储访问仓那一套：按数据索引 UUID 存，挂进 ME 网络当一个存储器、按字节卡容量" translatedTo "The storage uses the Storage Access Hatch mechanism directly: kept under a data index UUID, mounted into the ME network as a storage with a byte capacity")
         important("数据索引可以选玩家或机器，显示窗里点「数据索引位置」右边那一项切换；机器模式拆机时索引随物品走" translatedTo "The data index can be the player or the machine, switched in the display window; in machine mode the index travels with the dropped item")
-        content("用 MV 机器外壳制作；直接让ME线缆连上就好，不推荐无线连接" translatedTo "Made from the MV machine hull; connect it with ME cable, wireless is not recommended")
+        content("用 MV 机器外壳 + ME 驱动器 + 铝双层板制作；直接让ME线缆连上就好，不推荐无线连接" translatedTo "Made from an MV machine hull, an ME Drive and aluminium double plates; connect it with ME cable, wireless is not recommended")
+        important("显示窗里能看已用/容量与种类，还有一个「存储转移」按钮：点一下把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处" translatedTo "The display window shows used/capacity and types, plus a Transfer Storage button: click it to move everything held by the other ME storages in the network into this box, what does not fit stays where it is")
     }
 
     // ME 磁盘存储器

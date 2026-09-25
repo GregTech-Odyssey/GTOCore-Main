@@ -24,6 +24,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 
+import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -54,8 +55,8 @@ public final class MachineRecipe {
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_storage"), MultiBlockG.ME_DISK_STORAGE.asItem(), "PCP",
                 "CAC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.StainlessSteel), 'C', CustomTags.HV_CIRCUITS,
                 'A', AEItems.CELL_COMPONENT_1K.asItem());
-        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_box"), GTAEMachines.ME_DISK_BOX.asItem(), "PCP",
-                "CHC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.Aluminium), 'C', CustomTags.MV_CIRCUITS,
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_box"), GTAEMachines.ME_DISK_BOX.asItem(), "PDP",
+                "PHP", "PPP", 'P', new MaterialEntry(plateDouble, GTMaterials.Aluminium), 'D', AEBlocks.DRIVE.block().asItem(),
                 'H', GTMachines.HULL[MV].asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("evaporation_plant"),
                 MultiBlockA.EVAPORATION_PLANT.asItem(), "CBC", "FMF", "CBC", 'M', GTMachines.HULL[HV].asItem(),
