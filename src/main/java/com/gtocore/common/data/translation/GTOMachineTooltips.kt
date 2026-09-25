@@ -702,6 +702,7 @@ object GTOMachineTooltips {
         function("ME 磁盘存储器的单方块版本，槽里的 AE2 存储组件（1k…256k）提供容量" translatedTo "Single-block version of the ME Disk Storage; the AE2 storage components in its slot (1k...256k) provide the capacity")
         info("容量 = 组件字节之和；1M 及以上的组件不接收" translatedTo "Capacity = the sum of the components' bytes; components from 1M up are not accepted")
         important("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在" translatedTo "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again")
+        info("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通" translatedTo "With the player data index, such machines of the same player share one storage, so different ME networks can share contents")
         command("存储转移：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处" translatedTo "Transfer Storage: moves everything held by the other ME storages in the network into this box, what does not fit stays where it is")
     }
 
@@ -714,6 +715,7 @@ object GTOMachineTooltips {
         function("以输入总线里的存储组件（1k…256m）提供容量，存储由结构里的存储访问仓承担" translatedTo "Storage components in the input bus (1k...256m) provide the capacity; the Storage Access Hatch in the structure holds the data")
         info("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）；没有无限存储" translatedTo "Capacity = the components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...); there is no infinite storage")
         info("数据索引可选玩家或机器；机器模式的索引随物品带走，同一台重建后数据还在" translatedTo "The data index can be the player or the machine; in machine mode the index travels with the item, so rebuilding the same machine keeps the data")
+        info("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通" translatedTo "With the player data index, such machines of the same player share one storage, so different ME networks can share contents")
     }
 
     // 可配置存储访问仓
@@ -1607,6 +1609,7 @@ object GTOMachineTooltips {
         function("不受存储类型限制" translatedTo "Without storage type restrictions")
         function("你需要在结构中安装存储核心来提升容量" translatedTo "Install Storage Cores in structure to increase capacity.")
         content("使用§eME数据访问仓§r连接ME线缆来访问储存器。" translatedTo "Connect via §eME Data Access Hatch§r to access storage.")
+        info("数据索引可选玩家或机器；选玩家时，同一玩家的这类设备共用同一份存储，不同 ME 网络之间可以共通" translatedTo "The data index can be the player or the machine; with the player index, such machines of the same player share one storage, so different ME networks can share contents")
         info("结构可以延长，在EMI看看能有多长吧！" translatedTo "Structure is extendable — check max length in EMI.")
 
         val bytes = NumberUtils.formatLongToKorM(MEStorageMachine.infinite)
