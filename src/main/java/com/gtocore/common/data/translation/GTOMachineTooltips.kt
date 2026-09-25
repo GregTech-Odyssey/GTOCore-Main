@@ -693,6 +693,7 @@ object GTOMachineTooltips {
         info("创造（最大存储）升级不算倍率" translatedTo "The creative (max storage) upgrade is not counted")
         info("流体抽屉的容量按桶算，再 ×1000 折算成 mB" translatedTo "Fluid drawer capacity is counted in buckets and then multiplied by 1000 to get mB")
         info("不设总容量，只限每种上限；显示窗里能看当前种类与容量" translatedTo "There is no overall capacity, only a per-type cap; the display window shows the current types and capacity")
+        important("显示窗里的「溢出销毁」可以开关：开启后，放不下的内容（超过每种类容量，或种类已满放不进新种类）会被直接销毁，调用方不会收回" translatedTo "The Overflow Voiding toggle in the display window: when enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned to the caller")
         info("压缩抽屉、末影抽屉等不作为介质" translatedTo "Compacting and ender drawers do not count as media")
         important("抽屉、升级与主机都是介质，随时可以取回；放入或取走会立刻重算容量" translatedTo "The drawers, upgrades and the controller all act as media and can be taken back at any time; adding or removing one recalculates the capacity immediately")
         content("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓" translatedTo "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO")
@@ -704,7 +705,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_disk_box")
 
         section(ComponentSlang.MainFunction)
-        function("ME 磁盘存储器的单方块版本：一个槽放 AE2 存储组件（1k…256k，最多 64 个），组件字节之和就是容量" translatedTo "A single-block version of the ME Disk Storage: one slot for AE2 storage components (1k...256k, up to 64), the sum of their bytes is the capacity")
+        function("ME 磁盘存储器的单方块版本：一个槽放 AE2 存储组件（1k…256k，最多 64 个，1M 及以上的组件不收），组件字节之和就是容量" translatedTo "A single-block version of the ME Disk Storage: one slot for AE2 storage components (1k...256k, up to 64, nothing from 1M up), the sum of their bytes is the capacity")
         info("存储直接用存储访问仓那一套：按数据索引 UUID 存，挂进 ME 网络当一个存储器、按字节卡容量" translatedTo "The storage uses the Storage Access Hatch mechanism directly: kept under a data index UUID, mounted into the ME network as a storage with a byte capacity")
         important("数据索引可以选玩家或机器，显示窗里点「数据索引位置」右边那一项切换；机器模式拆机时索引随物品走" translatedTo "The data index can be the player or the machine, switched in the display window; in machine mode the index travels with the dropped item")
         content("用 MV 机器外壳制作；直接让ME线缆连上就好，不推荐无线连接" translatedTo "Made from the MV machine hull; connect it with ME cable, wireless is not recommended")

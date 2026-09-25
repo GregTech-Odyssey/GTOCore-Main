@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -42,6 +43,8 @@ import com.buuz135.functionalstorage.block.FluidDrawerBlock;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -62,6 +65,8 @@ import java.util.function.Supplier;
  * 流体抽屉按桶算再 ×1000 折算成 mB；</li>
  * <li>升级倍率：所有升级的倍率相乘，再按同类抽屉数量均分（{@code 乘积^(1/抽屉数)}），
  * 也就是 4 个抽屉 8 个升级只乘 2 次、4 个抽屉 3 个升级乘 0.75 次；流体的升级收益再减半（不低于 1）。</li>
+ * <li>显示窗里可以开关「溢出销毁」：开启后，超过每种类容量或种类已满时放不下的内容会被直接销毁，
+ * 调用方不会把放不下的部分收回去。</li>
  * </ul>
  */
 @DataGeneratorScanned
@@ -88,6 +93,13 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public static final String FLUID_DRAWERS = "gtocore.machine.drawer_storage.fluid_drawers";
     @RegisterLanguage(cn = "输入总线里放与主机同类的抽屉：可存种类 = 每个抽屉的槽数 × 数量", en = "Put drawers of the controller's kind into the input buses: type count = each drawer's slots x its count")
     public static final String NO_DRAWER = "gtocore.machine.drawer_storage.no_drawer";
+    @RegisterLanguage(cn = "溢出销毁：%s", en = "Overflow voiding: %s")
+    public static final String OVERFLOW = "gtocore.machine.drawer_storage.overflow";
+    @RegisterLanguage(cn = "开启后，放不下的内容（超过每种类容量，或种类已满放不进新种类）会被直接销毁，调用方不会收回", en = "When enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned")
+    public static final String OVERFLOW_TOOLTIP = "gtocore.machine.drawer_storage.overflow.tooltip";
+
+    /// 溢出销毁开关的按钮键
+    private static final String OVERFLOW_BUTTON = "voidOverflow";
 
     /// 主机槽（超级箱/缸）：一格，最多 {@link #CONTROLLER_LIMIT} 个
     @SaveToDisk
@@ -118,6 +130,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     private int controllerLevel;
     @Getter
     private int hermeticLevel = 1;
+    /// 溢出销毁：放不下的内容直接销毁，不退回调用方
+    @SaveToDisk(defaultValue = "false")
+    @Getter
+    private boolean voidOverflow;
 
     /// 输入总线：放抽屉与升级
     private final StorageBusListener drawerBuses = new StorageBusListener();
@@ -263,16 +279,17 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (!isFormed || amount < 1 || types < 1 || perTypeCapacity < 1 || !accepts(what)) return 0;
         var map = keyMap;
-        var size = map.size();
-        if (mode == Actionable.SIMULATE) {
-            var stored = map.getAmount(what);
-            if (stored == 0 && size >= types) return 0;
-            return Math.min(amount, perTypeCapacity - stored);
+        var stored = map.getAmount(what);
+        // 种类满了就一个新种类也进不来；已经存过的种类只受每种类容量的限制
+        long room = stored == 0 && map.size() >= types ? 0 : perTypeCapacity - stored;
+        long fits = Math.clamp(room, 0, amount);
+        if (mode == Actionable.SIMULATE) return voidOverflow ? amount : fits;
+        if (fits > 0) {
+            map.insert(what, fits, perTypeCapacity);
+            saveChanges();
         }
-        if (size > types) return 0;
-        long inserted = map.insert(what, amount, perTypeCapacity);
-        if (inserted > 0) saveChanges();
-        return inserted;
+        // 溢出销毁：放不下的部分也照单收下（多的直接销毁），调用方不会再把它们退回来
+        return voidOverflow ? amount : fits;
     }
 
     @Override
@@ -394,6 +411,21 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         textList.add(Component.translatable(TYPES,
                 FormattingUtil.formatNumbers(getKeyMap().size()),
                 FormattingUtil.formatNumbers(types)).withStyle(ChatFormatting.GRAY));
+        textList.add(Component.translatable(OVERFLOW, ComponentPanelWidget.withButton(
+                Component.translatable(voidOverflow ? "gtocore.machine.on" : "gtocore.machine.off"), OVERFLOW_BUTTON))
+                .withStyle(ChatFormatting.GRAY)
+                .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        Component.translatable(OVERFLOW_TOOLTIP).withStyle(ChatFormatting.YELLOW)))));
+    }
+
+    @Override
+    public void handleDisplayClick(String componentData, ClickData clickData) {
+        if (!clickData.isRemote && OVERFLOW_BUTTON.equals(componentData)) {
+            voidOverflow = !voidOverflow;
+            onChanged();
+            return;
+        }
+        IDisplayUIMachine.super.handleDisplayClick(componentData, clickData);
     }
 
     /// 主机与密封的总加成开根号（显示用）
@@ -412,6 +444,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         compoundTag.putLong("controllerMultiplier", controllerMultiplier);
         compoundTag.putInt("hermeticLevel", hermeticLevel);
         compoundTag.putBoolean("fluidKind", fluidKind);
+        compoundTag.putBoolean("voidOverflow", voidOverflow);
     }
 
     @Override
@@ -431,5 +464,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
                 FormattingUtil.formatNumbers(compoundTag.getInt("hermeticLevel")),
                 NumberUtils.formatDouble(Math.sqrt(Math.max(0, compoundTag.getInt("hermeticLevel")) *
                         (double) Math.max(0, compoundTag.getLong("controllerMultiplier"))))));
+        iTooltip.add(Component.translatable(OVERFLOW,
+                Component.translatable(compoundTag.getBoolean("voidOverflow") ? "gtocore.machine.on" : "gtocore.machine.off")));
     }
 }
