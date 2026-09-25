@@ -13,6 +13,7 @@
 | 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖 | [本地 GTM 联调](docs/local-gtm.md) |
 | 操作 `GTOLib/`、`GTOSeal/`、预构建 jar、`.PROTECTED`、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与预构建](docs/gtolib.md) |
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
+| 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、多方块显示窗/弹出面板/主机槽、AE 配置格 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 
@@ -48,11 +49,14 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - `build` / `assemble` 只构建，不会自动运行单测。单测须显式执行 `test` 或 `testCrafting`；禁止添加凑数、明显正确或与行为无关的测试。
 - `src/test/` 下的 `com.gtolib.*` 测试需要明文 GTOLib 字节码；只有 Seal hollow class 的 CI prebuild 会自动跳过这些测试。
 - 验证应与改动范围相称。通常只需 `compileJava`、`compileKotlin`、相关测试或专题文档要求的 `runData` / `buildGtolibProtected`，不要为纯说明修改运行 Gradle。
+- 任务报「另一个程序正在使用此文件」（如 `libs/gto-seal-runtime-1.0.jar`）时先 `.\gradlew.bat --stop`，再单独跑目标任务；`runData` 至少 1~3 分钟且可能因 datagen 崩溃偶发失败，先重试再排查。详见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
+- 用 PowerShell 管道接 `gradlew` 输出会让 `$LASTEXITCODE` 失真（可能拿到 -1）：先把输出存进变量，再读退出码。
 
 ## 生成资源
 
 - `src/generated/resources` 是 data generator 输出。修改生成内容时必须改真实生成源并运行 `runData`；手工编辑或脚本改写生成文件只能用于诊断，不能作为最终结果。
 - 语言文件的来源、简繁转换与 HashCache 强制回写方法见 [生成资源](docs/generated-resources.md)。
+- 用 `git reset` / `git checkout --` / 合并 / 手工改写动过生成文件后再跑 `runData` 可能空转（成功但文件没变）：按 `docs/generated-resources.md` 删掉含 `Registrate Provider for gtocore` 的 `.cache` 清单并加 `--rerun-tasks`；跑完对比文件 mtime 确认真的写了。
 
 ## GTOLib 与预构建安全
 
@@ -70,5 +74,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 ## 收尾
 
 - 保留用户已有和无关改动，只处理当前任务范围内的文件。
+- 提交只带自己的路径（`git commit --only <paths>` 或 `git commit -F msg -- <paths>`）：同一工作区里可能有别人并行 `git add`，不带路径的 `git commit` 与 `git commit --amend` 会把对方的暂存一起提交。误提交后用 `git reset --mixed <上一个好提交>` 重做，再把对方原本暂存的文件原样 `git add` 回去。
+- 推送前先 `git fetch` 并用 `git rev-list --left-right --count origin/<branch>...HEAD` 看差距：远端可能已有内容等价的提交，这种情况不要 force，reset 到远端后只补真正的增量。详细流程与其它坑见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
 - 报告实际执行的验证；若某项必要检查不可运行，说明具体原因，不用无关检查代替。
 - 若本次修改新增了可长期复用的仓库约束，将简短触发条件放在本文件，将详细流程放进 `docs/`，避免再次把全部背景塞回常驻上下文。
