@@ -3,13 +3,12 @@ package com.gtocore.api.machine;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
-import com.gregtechceu.gtceu.uipro.elements.Label;
+import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
 import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.RichText;
@@ -19,7 +18,6 @@ import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -29,7 +27,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -74,7 +71,7 @@ public interface ITagFilterMachine extends IDropSaveMachine {
     }
 
     /**
-     * 标签过滤配置（机器左侧小组件）：白名单、黑名单两个区块，末尾两行表达式语法说明。
+     * 标签过滤配置：白名单、黑名单两个区块。
      *
      * <pre>
      *  ┌ 白名单 ─────────────────────┐
@@ -84,8 +81,6 @@ public interface ITagFilterMachine extends IDropSaveMachine {
      *  │ └──────────────────────────┘ │
      *  └──────────────────────────────┘
      *  ┌ 黑名单 …（同上）─────────────┐
-     *  * 表示通配符 () 表示优先
-     *  &amp; = 逻辑与 | = 逻辑或 ^ = 逻辑异或
      * </pre>
      *
      * 同步全部走组件自带的服务端下发：输入框与机器的标签字符串双向绑定（服务端值变了下发，玩家输入上行给 setter）；
@@ -93,47 +88,36 @@ public interface ITagFilterMachine extends IDropSaveMachine {
      * 虚拟槽只是界面里的临时工具（查标签用），库存属于这一个打开的界面，不进机器。
      */
     @DataGeneratorScanned
-    class FilterIFancyConfigurator implements IFancyConfigurator {
+    final class TagFilterUI {
 
         @RegisterLanguage(cn = "白名单", en = "Whitelist")
         private static final String WHITELIST = "gtocore.machine.tag_filter.whitelist";
         @RegisterLanguage(cn = "黑名单", en = "Blacklist")
         private static final String BLACKLIST = "gtocore.machine.tag_filter.blacklist";
+        @RegisterLanguage(cn = "放入物品以查看其标签", en = "Insert an item to view its tags")
+        private static final String LOOKUP_ITEM = "gtocore.machine.tag_filter.lookup_item";
+        @RegisterLanguage(cn = "从EMI拖入流体以查看其标签", en = "Drag a fluid from EMI to view its tags")
+        private static final String LOOKUP_FLUID = "gtocore.machine.tag_filter.lookup_fluid";
+        @RegisterLanguage(cn = "仅用于查询，不影响过滤结果", en = "For lookup only; does not affect filtering")
+        private static final String LOOKUP_ONLY = "gtocore.machine.tag_filter.lookup_only";
 
         /// 标签列表最多显示几行，再多滚动（行距与状态行相同）
         private static final int TAG_LIST_MAX_LINES = 6;
 
-        private final ITagFilterMachine machine;
+        private TagFilterUI() {}
 
-        public FilterIFancyConfigurator(ITagFilterMachine machine) {
-            this.machine = machine;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable("gtocore.machine.tag_filter.tag_config_title");
-        }
-
-        @Override
-        public IGuiTexture getIcon() {
-            return WidgetIcons.FILTER;
-        }
-
-        @Override
-        public Widget createConfigurator() {
+        public static UIElement create(ITagFilterMachine machine) {
             boolean isItem = machine.isItemFilter();
-            return UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP)).addChildren(
-                    filterSection(WHITELIST, "tag_filter.whitelist", isItem, machine::getTagWhite, machine::setTagWhite),
-                    filterSection(BLACKLIST, "tag_filter.blacklist", isItem, machine::getTagBlack, machine::setTagBlack),
-                    Label.translatable("gtocore.machine.tag_filter.tooltip.0", UISizes.CONTENT_WIDTH).setColor(UITheme.TEXT_SECONDARY),
-                    Label.translatable("gtocore.machine.tag_filter.tooltip.1", UISizes.CONTENT_WIDTH).setColor(UITheme.TEXT_SECONDARY));
+            return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP)).addChildren(
+                    filterSection(machine, WHITELIST, "tag_filter.whitelist", isItem, machine::getTagWhite, machine::setTagWhite),
+                    filterSection(machine, BLACKLIST, "tag_filter.blacklist", isItem, machine::getTagBlack, machine::setTagBlack));
         }
 
         /**
          * 一个名单的区块：标题、"输入框 + 虚拟槽"一行、槽里内容的标签列表。
          * {@code scrollerId} 是标签列表滚动区的固定 id（锁定高度按它记）。
          */
-        private UIElement filterSection(String titleKey, String scrollerId, boolean isItem, Supplier<String> getter, Consumer<String> setter) {
+        private static UIElement filterSection(ITagFilterMachine machine, String titleKey, String scrollerId, boolean isItem, Supplier<String> getter, Consumer<String> setter) {
             var tags = new TagList();
             Widget slot;
             if (isItem) {
@@ -150,6 +134,7 @@ public interface ITagFilterMachine extends IDropSaveMachine {
                 tags.source = () -> tank.getFluid().getFluid().defaultFluidState().getTags().map(t -> t);
                 slot = new PhantomFluidSlot(tank, 0, tank::getFluid, tank::setFluid).xeiPhantom();
             }
+            slot.setHoverTooltips(isItem ? LOOKUP_ITEM : LOOKUP_FLUID, LOOKUP_ONLY);
 
             var field = new TextField(0, getter, setter);
             field.layout(l -> l.flexGrow(1));
@@ -171,7 +156,11 @@ public interface ITagFilterMachine extends IDropSaveMachine {
 
             var section = UIElement.section(LayoutStyle.AUTO);
             section.addSyncValue(SyncValue.of(tags::hasTags, SyncValue.BOOLEAN, false).onChanged(tagList::setDisplay));
-            return section.addChildren(TextLine.translatable(LayoutStyle.AUTO, titleKey).setColor(UITheme.PANEL_TEXT), inputRow, tagList);
+            var title = TextLine.translatable(0, titleKey).setColor(UITheme.PANEL_TEXT);
+            title.layout(l -> l.flex(1));
+            var titleRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                    .addChildren(title, InfoIcon.info("gtocore.machine.tag_filter.tooltip.0", "gtocore.machine.tag_filter.tooltip.1"));
+            return section.addChildren(titleRow, inputRow, tagList);
         }
 
         /** 点击标签：两端各调用一次。客户端右键复制；服务端左键把标签填进名单（先确认它确实是槽里内容的标签）。 */

@@ -145,7 +145,6 @@ final class MachineLang {
         addCNEN("gtocore.machine.air_scrubber.range", "工作半径：%s格", "Working radius: %s blocks");
         addCNEN("gtocore.machine.cwut_modification", "算力修正系数: %s", "Hashrate correction factor: %s");
         addCNEN("gtocore.machine.components_list", "组件列表: ", "Components List: ");
-        addCNEN("gtocore.machine.tag_filter.tag_config_title", "标签过滤配置", "Tag Filtering Configuration");
         addCNEN("gtocore.machine.tag_filter.tooltip.0", "* 表示通配符 () 表示优先", "* Indicates a wildcard () Indicates Priority");
         addCNEN("gtocore.machine.tag_filter.tooltip.1", "& = 逻辑与 | = 逻辑或 ^ = 逻辑异或", "& = Logic with | = Logic or ^ = Logical XOR");
         addCNEN("gtocore.machine.me_dual_hatch_stock.turns.0", "自动拉取关", "Auto-Pull Disable");

@@ -5,7 +5,6 @@ import com.gtocore.utils.Caches;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -15,6 +14,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.util.prioritylist.IPartitionList;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
 import java.util.function.Predicate;
@@ -76,8 +76,7 @@ public final class TagFilterVoidOutputBusPartMachine extends VoidOutputBusPartMa
     }
 
     @Override
-    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
-        super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new FilterIFancyConfigurator(this));
+    public Widget createUIWidget() {
+        return TagFilterUI.create(this);
     }
 }

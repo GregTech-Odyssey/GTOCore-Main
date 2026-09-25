@@ -4,7 +4,7 @@ import com.gtocore.api.machine.ITagFilterMachine;
 import com.gtocore.utils.Caches;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +13,7 @@ import appeng.api.stacks.AEKey;
 import appeng.util.prioritylist.IPartitionList;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -32,9 +33,8 @@ public class METagFilterStockBusPartMachine extends MEStockingBusPartMachine imp
     }
 
     @Override
-    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
-        super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new FilterIFancyConfigurator(this));
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return MEPartUI.mainPage(this, widget, MEPartUI.page().addChildren(TagFilterUI.create(this), createUIWidget()));
     }
 
     @Override
