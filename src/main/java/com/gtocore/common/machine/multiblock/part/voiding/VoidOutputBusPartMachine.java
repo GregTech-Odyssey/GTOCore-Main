@@ -50,6 +50,6 @@ public class VoidOutputBusPartMachine extends WorkableTieredIOPartMachine {
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(IFilteredHandler.createPriorityConfigurator(this::getPriority, this::setPriority));
+        sideTabs.attachSubTab(IFilteredHandler.createOutputPriorityConfigurator(this::getPriority, this::setPriority));
     }
 }
