@@ -2359,12 +2359,6 @@ object GTOMachineTooltips {
         ok("燃料效率与使用的电极膜有关，效率越高的电极膜能转化更多的燃料能量" translatedTo "Fuel efficiency is related to the Electrode Membrane used, higher efficiency membranes can convert more fuel energy")
         info("并行数 = min(输入的电解液数量, 当前燃料可转化的电解液数量)" translatedTo "Parallel = min(input electrolyte amount, amount of electrolyte convertible by current fuel)")
         info("耗能 = 1EU × 并行数" translatedTo "EU cost = 1EU × parallel")
-        if (!GTOCore.isEasy()) {
-            section(cs1)
-            command(cs2)
-            command(cs3)
-            info(cs4)
-        }
         function("模式二：能量交换，将A类储能电解液的能量转移给B类释能电解液" translatedTo "Mode 2: Energy Exchange, transfers the energy from Type A Charged Electrolyte to Type B Discharged Electrolyte")
         command("对于输入的两种电解液，均需要等量的阴极液与阳极液" translatedTo "Both input electrolytes require equal amounts of Catholyte and Anolyte")
         info("产物为两种电解液交换能量状态后的结果" translatedTo "The output is the result of the two electrolytes swapping their energy states")
@@ -2376,6 +2370,12 @@ object GTOMachineTooltips {
         error("在该模式下， 不能安装能源仓" translatedTo "In this mode, Energy Input Hatches cannot be installed")
         command("所有工作模式均需要输入电极膜才可工作" translatedTo "All operating modes require input of Electrode Membranes to operate")
         command("且发电模式仅可使用特定电极膜" translatedTo "And the power generation mode can only use specific Electrode Membranes")
+        if (!GTOCore.isEasy()) {
+            section(cs1)
+            command(cs2)
+            command(cs3)
+            info(cs4)
+        }
     }
 
     @JvmField

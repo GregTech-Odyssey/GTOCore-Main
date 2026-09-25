@@ -19,6 +19,7 @@ import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -119,6 +120,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public DrawerStorageMachine(MetaMachineBlockEntity holder) {
         super(holder, null);
         machineStorage = createMachineStorage(null);
+        machineStorage.setCapabilityValidator(GTUtil.NEGATIVE);
     }
 
     /// 主机槽只收超级箱 / 超级缸

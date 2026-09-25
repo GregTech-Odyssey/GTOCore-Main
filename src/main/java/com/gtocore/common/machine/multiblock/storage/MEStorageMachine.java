@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -56,6 +57,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     public MEStorageMachine(MetaMachineBlockEntity holder) {
         super(holder);
         machineStorage = createMachineStorage(i -> i.getItem() == GTOItems.INFINITE_CELL_COMPONENT.asItem());
+        machineStorage.setCapabilityValidator(GTUtil.NEGATIVE);
     }
 
     @Override
