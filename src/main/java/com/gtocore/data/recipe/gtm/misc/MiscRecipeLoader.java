@@ -439,21 +439,22 @@ public final class MiscRecipeLoader {
                                     ItemEntry<?> boots, int tier, TagKey<Item> circuit, TagKey<Item> battery,
                                     ItemEntry<?> sensor, ItemEntry<?> fieldGenerator, Material plateMaterial,
                                     @Nullable ItemEntry<?> flight, int flightCount) {
-        armorPiece(prefix + "_helmet", helmet, tier, circuit, battery, sensor, 2, fieldGenerator, 1, plateMaterial, 5)
+        armorPiece(prefix + "_helmet", helmet, 1, tier, circuit, battery, sensor, 2, fieldGenerator, 1, plateMaterial, 5)
                 .save();
-        RecipeBuilder chest = armorPiece(prefix + "_chestplate", chestplate, tier, circuit, battery, sensor, 1,
+        RecipeBuilder chest = armorPiece(prefix + "_chestplate", chestplate, 2, tier, circuit, battery, sensor, 1,
                 fieldGenerator, 2, plateMaterial, 8);
         if (flight != null) chest.inputItems(flight, flightCount);
         chest.save();
-        armorPiece(prefix + "_leggings", leggings, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 7)
-                .save();
-        armorPiece(prefix + "_boots", boots, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 4)
+        armorPiece(prefix + "_leggings", leggings, 3, tier, circuit, battery, sensor, 1, fieldGenerator, 1,
+                plateMaterial, 7).save();
+        armorPiece(prefix + "_boots", boots, 4, tier, circuit, battery, sensor, 1, fieldGenerator, 1, plateMaterial, 4)
                 .save();
     }
 
     private static void nanoSaber(String id, ItemEntry<?> output, int tier, TagKey<Item> circuit,
                                   TagKey<Item> battery, ItemEntry<?> fieldGenerator, Material plateMaterial) {
         ASSEMBLER_RECIPES.recipeBuilder(id).duration(1200).EUt(VA[tier])
+                .circuitMeta(5)
                 .inputItems(circuit, 2)
                 .inputItems(battery)
                 .inputItems(fieldGenerator)
@@ -462,11 +463,13 @@ public final class MiscRecipeLoader {
                 .save();
     }
 
-    private static RecipeBuilder armorPiece(String id, ItemEntry<?> output, int tier, TagKey<Item> circuit,
+    private static RecipeBuilder armorPiece(String id, ItemEntry<?> output, int circuitMeta, int tier,
+                                            TagKey<Item> circuit,
                                             TagKey<Item> battery, ItemEntry<?> sensor, int sensors,
                                             ItemEntry<?> fieldGenerator, int fieldGenerators, Material plateMaterial,
                                             int plates) {
         return ASSEMBLER_RECIPES.recipeBuilder(id).duration(1200).EUt(VA[tier])
+                .circuitMeta(circuitMeta)
                 .inputItems(circuit, 2)
                 .inputItems(battery)
                 .inputItems(sensor, sensors)

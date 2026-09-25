@@ -757,7 +757,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
         @Override
         protected void onRecipeHandled(GTRecipe recipe) {
-            slot.setRecipe(recipe.definition);
+            slot.setRecipe(registeredDefinition(recipe));
         }
 
         @Override

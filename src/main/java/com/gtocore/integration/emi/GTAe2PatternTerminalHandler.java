@@ -6,9 +6,7 @@ import com.gtolib.api.ae2.IPatterEncodingTermMenu;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.ClientUtil;
 
-import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.integration.emi.recipe.Ae2PatternBuilder;
-import com.gregtechceu.gtceu.uiwidgets.patternbuilder.PatternBuilderModel;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
@@ -16,7 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 
@@ -38,7 +35,6 @@ import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.recipe.EmiCookingRecipe;
 import dev.emi.emi.recipe.EmiStonecuttingRecipe;
 import dev.emi.emi.screen.RecipeScreen;
-import org.jetbrains.annotations.Nullable;
 import vazkii.botania.client.integration.emi.BotaniaEmiRecipe;
 
 import java.util.ArrayList;
@@ -142,11 +138,18 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
     @Override
     public boolean craft(EmiRecipe recipe, EmiCraftContext<T> context) {
         T menu = context.getScreenHandler();
-        if (recipe instanceof MultiblockInfoEmiRecipe multiblock && openPatternBuilder(menu, multiblock)) {
-            if (Minecraft.getInstance().screen instanceof RecipeScreen e) {
-                e.onClose();
+        if (recipe instanceof MultiblockInfoEmiRecipe multiblock) {
+            var builder = multiblock.createPatternBuilder();
+            if (builder != null) {
+                Ae2PatternBuilder.open(menu, builder, multiblock.getPatternTitle(), ofOutputs(recipe), () -> {
+                    ((IPatterEncodingTermMenu) menu).gtolib$addUUID(ClientUtil.getUUID());
+                    ((IPatterEncodingTermMenu) menu).gtolib$addRecipe("");
+                });
+                if (Minecraft.getInstance().screen instanceof RecipeScreen e) {
+                    e.onClose();
+                }
+                return true;
             }
-            return true;
         }
         ((IPatterEncodingTermMenu) menu).gtolib$addUUID(ClientUtil.getUUID());
         if (isCrafting(recipe)) {
@@ -174,39 +177,6 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
             e.onClose();
         }
         return true;
-    }
-
-    private static boolean openPatternBuilder(PatternEncodingTermMenu menu, MultiblockInfoEmiRecipe recipe) {
-        var patterns = recipe.patterns;
-        if (patterns == null || recipe.i < 0 || recipe.i >= patterns.length) return false;
-        int from = recipe.i;
-        boolean withMain = false;
-        if (recipe.i > 0 && recipe.definition.getSubPatternFactory() != null) {
-            if (GTUtil.isCtrlDown()) from = 0;
-            else withMain = GTUtil.isShiftDown();
-        }
-        var builder = PatternBuilderModel.builder(recipe.definition.asStack()).abilityNames(GTAe2PatternTerminalHandler::abilityName);
-        if (withMain) {
-            if (patterns[0] == null) return false;
-            patterns[0].forEachCell(builder::addCell);
-        }
-        for (int index = from; index <= recipe.i; index++) {
-            if (patterns[index] == null) return false;
-            patterns[index].forEachCell(builder::addCell);
-        }
-        Component title = recipe.definition.asStack().getHoverName();
-        if (recipe.i > 0) title = Component.empty().append(title).append(" ").append(Component.translatable("gtocore.shape", recipe.i));
-        Ae2PatternBuilder.open(menu, builder, title, ofOutputs(recipe), () -> {
-            ((IPatterEncodingTermMenu) menu).gtolib$addUUID(ClientUtil.getUUID());
-            ((IPatterEncodingTermMenu) menu).gtolib$addRecipe("");
-        });
-        return true;
-    }
-
-    @Nullable
-    private static Component abilityName(PartAbility ability) {
-        var key = "gtocore.part_ability." + ability.getName();
-        return I18n.exists(key) ? Component.translatable(key) : null;
     }
 
     private static boolean isCrafting(EmiRecipe recipe) {

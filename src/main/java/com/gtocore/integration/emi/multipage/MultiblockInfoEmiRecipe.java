@@ -13,9 +13,13 @@ import com.gtolib.utils.iostream.IOStreamEncoder;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
+import com.gregtechceu.gtceu.uiwidgets.patternbuilder.PatternBuilderModel;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -110,6 +114,39 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> {
             return getInputs(i);
         }
         return super.getInputs();
+    }
+
+    @Nullable
+    public PatternBuilderModel.Builder createPatternBuilder() {
+        if (patterns == null || i < 0 || i >= patterns.length) return null;
+        int from = i;
+        boolean withMain = false;
+        if (i > 0 && definition.getSubPatternFactory() != null) {
+            if (GTUtil.isCtrlDown()) from = 0;
+            else withMain = GTUtil.isShiftDown();
+        }
+        var builder = PatternBuilderModel.builder(definition.asStack()).abilityNames(MultiblockInfoEmiRecipe::abilityName);
+        if (withMain) {
+            if (patterns[0] == null) return null;
+            patterns[0].forEachCell(builder::addCell);
+        }
+        for (int index = from; index <= i; index++) {
+            if (patterns[index] == null) return null;
+            patterns[index].forEachCell(builder::addCell);
+        }
+        return builder;
+    }
+
+    public Component getPatternTitle() {
+        Component title = definition.asStack().getHoverName();
+        if (i > 0) title = Component.empty().append(title).append(" ").append(Component.translatable("gtocore.shape", i));
+        return title;
+    }
+
+    @Nullable
+    private static Component abilityName(PartAbility ability) {
+        var key = "gtocore.part_ability." + ability.getName();
+        return I18n.exists(key) ? Component.translatable(key) : null;
     }
 
     @Override
