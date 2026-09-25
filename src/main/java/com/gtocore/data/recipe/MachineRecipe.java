@@ -55,8 +55,8 @@ public final class MachineRecipe {
                 "CAC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.StainlessSteel), 'C', CustomTags.HV_CIRCUITS,
                 'A', AEItems.CELL_COMPONENT_1K.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_box"), GTAEMachines.ME_DISK_BOX.asItem(), "PCP",
-                "CAC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.Titanium), 'C', CustomTags.EV_CIRCUITS,
-                'A', AEItems.CELL_COMPONENT_1K.asItem());
+                "CHC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.Aluminium), 'C', CustomTags.MV_CIRCUITS,
+                'H', GTMachines.HULL[MV].asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("evaporation_plant"),
                 MultiBlockA.EVAPORATION_PLANT.asItem(), "CBC", "FMF", "CBC", 'M', GTMachines.HULL[HV].asItem(),
                 'B', new MaterialEntry(TagPrefix.wireGtDouble, GTMaterials.Kanthal), 'C', CustomTags.HV_CIRCUITS,

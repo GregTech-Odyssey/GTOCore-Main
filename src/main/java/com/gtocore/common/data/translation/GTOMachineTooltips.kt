@@ -705,9 +705,9 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.MainFunction)
         function("ME 磁盘存储器的单方块版本：一个槽放 AE2 存储组件（1k…256k，最多 64 个），组件字节之和就是容量" translatedTo "A single-block version of the ME Disk Storage: one slot for AE2 storage components (1k...256k, up to 64), the sum of their bytes is the capacity")
-        info("存储机制和存储访问仓一致：挂进 ME 网络当一个存储器，按字节卡容量" translatedTo "The storage works like the Storage Access Hatch: it mounts into the ME network as a storage and caps the capacity in bytes")
-        important("箱子里存的东西随物品走（拆机后重新放下还在）；槽里的组件拆机时会掉出来" translatedTo "The stored contents travel with the dropped item (they survive breaking and replacing); the components in the slot drop out when broken")
-        content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
+        info("存储直接用存储访问仓那一套：按数据索引 UUID 存，挂进 ME 网络当一个存储器、按字节卡容量" translatedTo "The storage uses the Storage Access Hatch mechanism directly: kept under a data index UUID, mounted into the ME network as a storage with a byte capacity")
+        important("数据索引可以选玩家或机器，显示窗里点「数据索引位置」右边那一项切换；机器模式拆机时索引随物品走" translatedTo "The data index can be the player or the machine, switched in the display window; in machine mode the index travels with the dropped item")
+        content("用 MV 机器外壳制作；直接让ME线缆连上就好，不推荐无线连接" translatedTo "Made from the MV machine hull; connect it with ME cable, wireless is not recommended")
     }
 
     // ME 磁盘存储器

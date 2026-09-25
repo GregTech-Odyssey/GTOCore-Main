@@ -1,11 +1,13 @@
 package com.gtocore.common.machine.noenergy;
 
+import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
@@ -17,7 +19,6 @@ import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -36,17 +37,20 @@ import appeng.items.materials.StorageComponentItem;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.data.Data;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * ME 磁盘箱子：ME 磁盘存储器的单方块版本。一个槽放 AE2 存储组件（1k…256k，最多 {@link #COMPONENT_LIMIT} 个），
- * 组件字节之和就是容量；存储本身的机制与存储访问仓一致（挂进 ME 网络当一个存储器、按字节卡容量、
- * 物品 1 个 1 字节的近似口径也照抄），内容随物品走、组件拆机时掉出来。
+ * 组件字节之和就是容量；存储直接用存储访问仓那一套（{@link CellDataStorage} + 数据索引 UUID + 按字节卡容量），
+ * 数据索引可以选玩家或机器（显示窗里点一下切换）。
  */
 @DataGeneratorScanned
 public final class MEDiskBoxMachine extends MetaMachine
@@ -54,32 +58,45 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     /// 组件槽的数量上限
     public static final int COMPONENT_LIMIT = 64;
+    /// 数据索引位置（与 ME 存储器共用同一套文案）
+    private static final String MODE = "gtocore.machine.me_storage.mode";
+    /// 数据索引开关的按钮键
+    private static final String SWITCH = "switch";
 
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
     @RegisterLanguage(cn = "放 AE2 存储组件（1k…256k）来提供容量", en = "Put AE2 storage components (1k...256k) in to provide capacity")
     public static final String NO_COMPONENTS = "gtocore.machine.me_disk_box.no_components";
 
-    /// 箱子里存的内容（随物品走）
-    @SaveToDisk
-    @NotNull
-    private final AEKeyMap<AEKey> keyMap = new AEKeyMap<>();
     /// 组件槽（1 格，最多 {@link #COMPONENT_LIMIT} 个存储组件）
     @SaveToDisk
     private final NotifiableItemStackHandler componentStorage;
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
+    /// 机器模式下的数据索引；玩家模式用玩家的 UUID
+    @SaveToDisk
+    @Nullable
+    private UUID uuid;
+    @SaveToDisk(defaultValue = "false")
+    private boolean player;
     @SyncToClient
     private boolean isOnline;
-    /// 容量（组件字节之和）与已用字节
+    private final ConditionalSubscriptionHandler tickSubs;
+
+    /// 容量（组件字节之和）
     private double capacity;
-    private double bytes;
+    /// 本机存储数据（换数据索引后重新取）
+    @Nullable
+    private CellDataStorage dataStorage;
+    private boolean dirty;
+    private boolean observe;
 
     public MEDiskBoxMachine(MetaMachineBlockEntity holder) {
         super(holder);
         componentStorage = createMachineStorage(null);
         nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
+        tickSubs = new ConditionalSubscriptionHandler(this, this::tickUpdate, 0, () -> true);
     }
 
     /// 组件槽就是 {@link IStorageMultiblock} 的机器存储槽
@@ -99,18 +116,25 @@ public final class MEDiskBoxMachine extends MetaMachine
         return COMPONENT_LIMIT;
     }
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        tickSubs.initialize(getLevel());
+        refreshCapacity();
+    }
+
+    @Override
+    public void onUnload() {
+        tickSubs.unsubscribe();
+        super.onUnload();
+    }
+
     /// 组件增减：容量立刻跟着变
     @Override
     public void onMachineChanged() {
         if (isRemote()) return;
         refreshCapacity();
         onChanged();
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        refreshCapacity();
     }
 
     private void refreshCapacity() {
@@ -123,16 +147,59 @@ public final class MEDiskBoxMachine extends MetaMachine
             if (total == Long.MAX_VALUE) break;
         }
         capacity = total;
-        recalcBytes();
     }
 
-    /// 已用字节：与存储访问仓的 observe 口径一致（按 AEKeyType 的 amountPerByte 折算）
-    private void recalcBytes() {
-        double total = 0;
-        for (var entry : keyMap) {
-            total += (double) entry.getLongValue() / entry.getKey().getType().getAmountPerByte();
+    // ==================== 数据索引 ====================
+
+    /// 当前数据索引：玩家模式取玩家的 UUID，机器模式取机器自己的 UUID
+    @Nullable
+    private UUID dataIndex() {
+        return player ? getOwnerUUID() : uuid;
+    }
+
+    /// 取本机存储数据：和存储访问仓一样按 UUID 拿 CellDataStorage，拿过一次就缓存
+    private CellDataStorage cellStorage() {
+        if (dataStorage != null) return dataStorage;
+        var index = dataIndex();
+        if (index == null || isRemote()) return CellDataStorage.EMPTY;
+        dataStorage = CellDataStorage.get(index);
+        return dataStorage;
+    }
+
+    /// 切换玩家/机器索引：换索引后存储数据要重新取
+    private void setPlayer(boolean value) {
+        player = value;
+        dataStorage = null;
+        onChanged();
+    }
+
+    /// 机器模式要有自己的 UUID 才能存；没有就现生成一个
+    private void ensureIndex() {
+        if (!player && uuid == null) uuid = UUID.randomUUID();
+    }
+
+    /// 每 20 tick 重算一次已用字节（照抄存储访问仓的 observe 口径）
+    private void tickUpdate() {
+        var data = cellStorage();
+        if (data == CellDataStorage.EMPTY) return;
+        if (dirty) {
+            dirty = false;
+            data.setDirty();
         }
-        bytes = total;
+        if (capacity == 0 || !isOnline) return;
+        if (observe) {
+            observe = false;
+            double totalAmount = 0;
+            var map = data.getStoredMap();
+            if (map != null) {
+                for (var entry : map) {
+                    totalAmount += (double) entry.getLongValue() / entry.getKey().getType().getAmountPerByte();
+                }
+            }
+            data.setBytes(totalAmount);
+        } else if (getOffsetTimer() % 20 == 7) {
+            observe = true;
+        }
     }
 
     // ==================== ME 网络 ====================
@@ -166,44 +233,51 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @Override
     public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return capacity > bytes;
+        return capacity > cellStorage().getBytes();
     }
 
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
-        if (amount < 1 || capacity <= bytes) return 0;
-        long space = (long) Math.min(capacity - bytes, amount);
-        if (space < 1) return 0;
+        if (amount == 0) return 0;
+        ensureIndex();
+        var data = cellStorage();
+        if (data == CellDataStorage.EMPTY) return 0;
+        amount = (long) Math.min(capacity - data.getBytes(), amount);
+        if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
-            keyMap.insert(what, space);
-            recalcBytes();
-            onChanged();
+            var map = data.getStoredMap();
+            if (map == null) {
+                map = new AEKeyMap<>();
+                data.setStoredMap(map);
+            }
+            map.insert(what, amount);
+            dirty = true;
         }
-        return space;
+        return amount;
     }
 
     @Override
     public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
-        if (mode != Actionable.MODULATE) return Math.min(amount, keyMap.getAmount(what));
-        long extracted = keyMap.extract(what, amount);
-        if (extracted > 0) {
-            recalcBytes();
-            onChanged();
+        var data = cellStorage();
+        if (data == CellDataStorage.EMPTY) return 0;
+        var map = data.getStoredMap();
+        if (map == null) return 0;
+        if (mode == Actionable.MODULATE) {
+            long extracted = map.extract(what, amount);
+            if (extracted > 0) dirty = true;
+            return extracted;
         }
-        return extracted;
+        return Math.min(amount, map.getAmount(what));
     }
 
     @Override
     public void getAvailableStacks(@NotNull KeyCounter out) {
-        if (keyMap.isEmpty()) return;
-        out.addAll(keyMap.size(), m -> keyMap.fastForEach(m::insert));
+        out.addAll(cellStorage().cache.getAvailableStacksCache());
     }
 
     @Override
     public KeyCounter getAvailableStacks() {
-        var counter = new KeyCounter();
-        getAvailableStacks(counter);
-        return counter;
+        return cellStorage().cache.getAvailableStacksCache();
     }
 
     // ==================== 界面 ====================
@@ -211,7 +285,7 @@ public final class MEDiskBoxMachine extends MetaMachine
     /// 显示窗那一套：主页是状态显示窗，组件槽挂在下方（和通用工厂一样）
     @Override
     public Widget createUIWidget() {
-        return IStorageMultiblock.super.createUIWidget(MachineDisplay.page(this, this::addDisplayText, null));
+        return IStorageMultiblock.super.createUIWidget(MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick));
     }
 
     @Override
@@ -219,26 +293,39 @@ public final class MEDiskBoxMachine extends MetaMachine
         return new ModularUI(198, 208, this, entityPlayer).widget(new MachineWindow(this));
     }
 
-    /// 显示窗里的内容（单方块机器不是多方块，走 MachineDisplay 的文本回调）
     public void addDisplayText(List<Component> textList) {
+        var data = cellStorage();
+        textList.add(Component.translatable(MODE).append(ComponentPanelWidget.withButton(
+                Component.literal("[").append(player ? Component.translatable("gtceu.ownership.name.player") :
+                        Component.translatable("config.gtceu.option.machines")).append("]"),
+                SWITCH)));
         if (capacity < 1) {
             textList.add(Component.translatable(NO_COMPONENTS).withStyle(ChatFormatting.GRAY));
         }
         textList.add(Component.translatable(COMPONENTS,
                 FormattingUtil.formatNumbers(componentStorage.getStackInSlot(0).getCount()),
                 NumberUtils.formatDouble(capacity)).withStyle(ChatFormatting.GRAY));
-        textList.add(Component.translatable("gui.ae2.BytesUsed",
-                NumberUtils.numberText(bytes).append(" / ").append(NumberUtils.formatDouble(capacity)))
-                .withStyle(ChatFormatting.GRAY));
-        textList.add(Component.literal(String.valueOf(keyMap.size())).withStyle(ChatFormatting.AQUA)
-                .append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
+        if (data != CellDataStorage.EMPTY) {
+            textList.add(Component.translatable("gui.ae2.BytesUsed",
+                    NumberUtils.numberText(data.getBytes()).append(" / ").append(NumberUtils.formatDouble(capacity)))
+                    .withStyle(ChatFormatting.GRAY));
+            var map = data.getStoredMap();
+            textList.add(Component.literal(String.valueOf(map == null ? 0 : map.size())).withStyle(ChatFormatting.AQUA)
+                    .append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
+        }
+    }
+
+    public void handleDisplayClick(String componentData, ClickData clickData) {
+        if (clickData.isRemote || !SWITCH.equals(componentData)) return;
+        setPlayer(!player);
     }
 
     // ==================== 拆机保存 ====================
 
+    /// 机器模式的数据索引随物品走；玩家模式本来就是玩家的索引，不需要带
     @Override
     public boolean saveBreak() {
-        return true;
+        return uuid != null;
     }
 
     @Override
@@ -248,14 +335,12 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @Override
     public void saveToItem(CompoundTag tag) {
-        tag.putByteArray("keymap", getFieldDataManager().writeFieldToData("keyMap").writeToBytes());
+        if (uuid != null) tag.putUUID("uuid", uuid);
     }
 
     @Override
     public void loadFromItem(CompoundTag tag) {
-        if (tag.get("keymap") instanceof ByteArrayTag byteArrayTag) {
-            getFieldDataManager().readFieldFromData(Data.readData(byteArrayTag.getAsByteArray()), 0, "keyMap");
-        }
-        recalcBytes();
+        if (tag.hasUUID("uuid")) uuid = tag.getUUID("uuid");
+        dataStorage = null;
     }
 }
