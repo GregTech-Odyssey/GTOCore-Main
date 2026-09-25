@@ -6,7 +6,6 @@ import com.gtolib.api.machine.feature.IVacuumMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
@@ -14,6 +13,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.chat.Component;
 
@@ -79,7 +79,7 @@ public final class VacuumPumpMachine extends SimpleTieredMachine implements IVac
     @Override
     public void attachTooltips(TooltipsPanel tooltipsPanel) {
         super.attachTooltips(tooltipsPanel);
-        tooltipsPanel.attachTooltips(new IFancyTooltip.Basic(() -> GuiTextures.INFO_ICON, () -> List.of(Component.translatable("gtocore.recipe.vacuum.tier", vacuumTier)), () -> true, () -> null));
+        tooltipsPanel.attachTooltips(new IFancyTooltip.Basic(() -> WidgetIcons.STATUS_INFO, () -> List.of(Component.translatable("gtocore.recipe.vacuum.tier", vacuumTier)), () -> true, () -> null));
     }
 
     @Override

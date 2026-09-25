@@ -5,24 +5,23 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.IconToggle;
+import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
 import dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper;
 import dev.shadowsoffire.apotheosis.adventure.loot.LootRarity;
 import dev.shadowsoffire.apotheosis.adventure.loot.RarityRegistry;
@@ -30,8 +29,10 @@ import dev.shadowsoffire.apotheosis.adventure.socket.gem.Gem;
 import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemItem;
 import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemRegistry;
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
+import dev.vfyjxf.taffy.style.FlexWrap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -46,7 +47,6 @@ public class ApotheosisGemFilter implements ItemFilter {
     protected DynamicHolder<Gem> gemType;
     protected Consumer<ItemFilter> itemWriter = filter -> {};
     protected Consumer<ItemFilter> onUpdated = filter -> itemWriter.accept(filter);
-    private CustomItemStackHandler guiSLot;
 
     @Override
     public int testItemCount(ItemStack itemStack) {
@@ -54,58 +54,65 @@ public class ApotheosisGemFilter implements ItemFilter {
     }
 
     @Override
-    public WidgetGroup openConfigurator(int x, int y) {
-        var raritySelector = new DraggableScrollableWidgetGroup(0, 16, 90, 20);
-        raritySelector.setScrollWheelDirection(DraggableScrollableWidgetGroup.ScrollWheelDirection.HORIZONTAL);
-        raritySelector.setXScrollBarHeight(2);
-        raritySelector.setBackground(GuiTextures.DISPLAY);
-        for (var rH : RarityRegistry.INSTANCE.getOrderedRarities()) {
-            var r = rH.get();
-            var button = new ButtonWidget(r.ordinal() * 18, 2, 16, 16, cd -> {
-                if (this.rarity == r) {
-                    this.rarity = null;
-                } else {
-                    this.rarity = r;
-                }
-                onUpdated.accept(this);
-            }) {
-
-                @Override
-                @OnlyIn(Dist.CLIENT)
-                protected void drawBackgroundTexture(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
-                    var btnBg = rarity == r ? GuiTextures.BACKGROUND_INVERSE : GuiTextures.BACKGROUND;
-                    setButtonTexture(new GuiTextureGroup(btnBg, new ItemStackTexture(r.getMaterial()).scale(0.8f)));
-                    super.drawBackgroundTexture(graphics, mouseX, mouseY);
-                }
-            };
-            button.setHoverTooltips(r.toComponent());
-            raritySelector.addWidget(button);
+    public Widget createConfigUI() {
+        var rarities = UIElement.column(LayoutStyle.AUTO).layout(l -> l.row().gapAll(UISizes.GAP).flexWrap(FlexWrap.WRAP));
+        for (var holder : RarityRegistry.INSTANCE.getOrderedRarities()) {
+            var r = holder.get();
+            var toggle = IconToggle.of(new ItemStackTexture(r.getMaterial()), () -> rarity == r, on -> setRarity(on ? r : null));
+            toggle.setHoverTooltips(r.toComponent());
+            rarities.addChild(toggle);
         }
-
-        guiSLot = new CustomItemStackHandler(1);
-        guiSLot.setStackInSlot(0, gemType != null ? GemRegistry.createGemStack(gemType.get(), gemType.get().getMinRarity()) : ItemStack.EMPTY);
-        guiSLot.setOnContentsChanged(() -> {
-            ItemStack stack = guiSLot.getStackInSlot(0);
-            if (stack.isEmpty() || !GemItem.getGem(stack).isBound()) {
-                gemType = null;
-            } else {
-                gemType = GemItem.getGem(stack);
-            }
-            onUpdated.accept(this);
-        });
-        var typeSlot = new PhantomSlotWidget(guiSLot, 0,
-                90, 40, stack -> GemItem.getGem(stack).isBound());
-        typeSlot.setBackground(GuiTextures.SLOT);
+        var typeSlot = new PhantomItemSlot(new GemTypeSlot(), 0).xeiPhantom();
+        typeSlot.setMaxStackSize(1);
         typeSlot.setClearSlotOnRightClick(true);
         typeSlot.setHoverTooltips(Component.translatable(TYPE_DESC));
+        var typeRow = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                .addChildren(CoverUIs.label(TYPE_FILTER_DESC, TYPE_DESC), typeSlot);
+        return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
+                CoverUIs.controlRow("cover.filter.blacklist.enabled", Switch.of(this::isBlackList, this::setBlackList)),
+                TextLine.translatable(LayoutStyle.AUTO, RARITY_DESC).setColor(UITheme.PANEL_TEXT),
+                rarities,
+                typeRow);
+    }
 
-        WidgetGroup group = new WidgetGroup(x, y, 18 * 3 + 25, 18 * 3);
-        group.addWidget(new LabelWidget(0, 2, Component.translatable(RARITY_DESC)));
-        group.addWidget(raritySelector);
-        group.addWidget(new LabelWidget(0, 40, Component.translatable(TYPE_FILTER_DESC)));
-        group.addWidget(typeSlot);
-        group.addWidget(new ToggleButtonWidget(90, 0, 20, 20, GuiTextures.BUTTON_BLACKLIST, this::isBlackList, this::setBlackList));
-        return group;
+    private void setRarity(@Nullable LootRarity rarity) {
+        this.rarity = rarity;
+        onUpdated.accept(this);
+    }
+
+    private final class GemTypeSlot extends ItemStackTransfer {
+
+        @Nullable
+        private DynamicHolder<Gem> shownType;
+        private ItemStack shown = ItemStack.EMPTY;
+
+        private GemTypeSlot() {
+            super(1);
+        }
+
+        @Override
+        public @NotNull ItemStack getStackInSlot(int slot) {
+            if (shownType != gemType) {
+                shownType = gemType;
+                shown = gemType == null || !gemType.isBound() ? ItemStack.EMPTY : GemRegistry.createGemStack(gemType.get(), gemType.get().getMinRarity());
+            }
+            return shown;
+        }
+
+        @Override
+        public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+            DynamicHolder<Gem> type = null;
+            if (!stack.isEmpty()) {
+                var gem = GemItem.getGem(stack);
+                if (!gem.isBound()) return;
+                type = gem;
+            }
+            shownType = type;
+            shown = type == null ? ItemStack.EMPTY : stack.copyWithCount(1);
+            if (type == null ? gemType == null : type.equals(gemType)) return;
+            gemType = type;
+            onUpdated.accept(ApotheosisGemFilter.this);
+        }
     }
 
     @Override

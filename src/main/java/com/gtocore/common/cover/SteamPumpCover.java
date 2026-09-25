@@ -21,6 +21,11 @@ public final class SteamPumpCover extends PumpCover {
     }
 
     @Override
+    protected boolean hasFilterUI() {
+        return false;
+    }
+
+    @Override
     protected int transferAny(@NotNull ICustomFluidStackHandler source, @NotNull ICustomFluidStackHandler destination, int platformTransferLimit) {
         return GTTransferUtils.transferFluidsFiltered(source, destination, f -> f.getFluid() == STEAM, platformTransferLimit);
     }

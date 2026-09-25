@@ -40,6 +40,8 @@ import com.gtolib.api.emi.stack.TagPrefixRenderer;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.data.pack.GTDynamicResourcePack;
+import com.gregtechceu.gtceu.uiwidgets.icon.IdleReasonIcons;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -123,6 +125,34 @@ public final class ClientProxy extends CommonProxy {
     private static void clientSetup(FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.GELID_CRYOTHEUM.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.FLOWING_GELID_CRYOTHEUM.get(), RenderType.translucent());
+        registerIdleReasonIcons();
+    }
+
+    private static void registerIdleReasonIcons() {
+        IdleReasonIcons.register("gtocore.idle_reason.no_match", WidgetIcons.IDLE_NO_RECIPE);
+        IdleReasonIcons.register("gtocore.idle_reason.invalid_input", WidgetIcons.IDLE_NO_RECIPE);
+        IdleReasonIcons.register("gtocore.idle_reason.insufficient_energy_buffer", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.idle_reason.charge", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.idle_reason.voltage_tier_not_satisfies", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.idle_reason.block_tier_not_satisfies", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.cannot_work_in_space", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.felling_tool", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.grindball", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.set_circuit", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.no_ores", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.radiation", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.incorrect_direction_volta", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.heat_accumulation", WidgetIcons.IDLE_OVERHEAT);
+        IdleReasonIcons.register("gtocore.idle_reason.muffler_not_supported", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.idle_reason.obstructed_volta", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.idle_reason.lack_material", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.amount_not_enough", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.ordered", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.output_full", WidgetIcons.IDLE_OUTPUT_FULL);
+        IdleReasonIcons.register("gtocore.idle_reason.no_mana", WidgetIcons.IDLE_NO_MANA);
+        IdleReasonIcons.register("gtocore.idle_reason.no_crank", WidgetIcons.IDLE_NO_KINETIC);
+        IdleReasonIcons.register("gtocore.idle_reason.insufficient_temperature", WidgetIcons.IDLE_LOW_TEMPERATURE);
     }
 
     private static void registerLights(ForgeShimmerReloadEvent e) {

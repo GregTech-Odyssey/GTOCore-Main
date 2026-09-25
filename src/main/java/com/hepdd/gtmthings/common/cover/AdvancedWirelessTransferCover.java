@@ -15,6 +15,9 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.utils.GTTransferUtils;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -36,14 +39,14 @@ import net.minecraftforge.items.IItemHandler;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.api.misc.BlockEntityCache;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -202,32 +205,61 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
 
     @Override
     public Widget createUIWidget() {
-        if (transferType == TRANSFER_ITEM) {
-            return createItemUIWidget();
-        } else {
-            return createFluidUIWidget();
+        var status = new StatusPanel();
+        status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).level(this::connectionLevel);
+        status.addLine("gtocore.cover.advanced_wireless_transfer.target",
+                new Memo<>(() -> isBound() ? target.get() : null, be -> be.getBlockState().getBlock().getName()));
+        status.addLine("gtocore.cover.advanced_wireless_transfer.position",
+                new Memo<>(() -> targetPos, pos -> Component.literal(pos.toShortString())));
+        status.addLine("gtocore.cover.advanced_wireless_transfer.dimension",
+                new Memo<>(() -> dimensionId, Component::literal));
+        return CoverUIs.page().addChildren(status,
+                CoverUIs.filterSection(transferType == TRANSFER_ITEM ? filterHandlerItem : filterHandlerFluid));
+    }
+
+    private boolean isBound() {
+        return targetLever != null && targetPos != null;
+    }
+
+    private boolean isConnected() {
+        return transferType == TRANSFER_ITEM ? getTargetItemTransfer() != null : getTargetFluidTransfer() != null;
+    }
+
+    private Component connectionText() {
+        if (!isBound()) return UNBOUND;
+        return isConnected() ? CONNECTED : UNAVAILABLE;
+    }
+
+    private StatusLine.Level connectionLevel() {
+        if (!isBound()) return StatusLine.Level.WARNING;
+        return isConnected() ? StatusLine.Level.GOOD : StatusLine.Level.ERROR;
+    }
+
+    private static final Component NONE = Component.literal("—");
+    private static final Component UNBOUND = Component.translatable("gtocore.cover.advanced_wireless_transfer.unbound");
+    private static final Component CONNECTED = Component.translatable("gtocore.cover.advanced_wireless_transfer.connected");
+    private static final Component UNAVAILABLE = Component.translatable("gtocore.cover.advanced_wireless_transfer.unavailable");
+
+    private static final class Memo<K> implements Supplier<Component> {
+
+        private final Supplier<K> key;
+        private final Function<K, Component> text;
+        private @Nullable K last;
+        private Component value = NONE;
+
+        private Memo(Supplier<K> key, Function<K, Component> text) {
+            this.key = key;
+            this.text = text;
         }
-    }
 
-    public Widget createItemUIWidget() {
-        final var group = new WidgetGroup(0, 0, 176, 107);
-        var titleLabel = new LabelWidget(10, 5, Component.translatable("item.gtmthings.advanced_wireless_item_transfer_cover"));
-        titleLabel.setText(Component.translatable("item.gtmthings.advanced_wireless_item_transfer_cover").getString());
-        group.addWidget(titleLabel);
-        group.addWidget(filterHandlerItem.createFilterSlotUI(10, 20));
-        group.addWidget(filterHandlerItem.createFilterConfigUI(10, 42, 156, 60));
-
-        return group;
-    }
-
-    public Widget createFluidUIWidget() {
-        final var group = new WidgetGroup(0, 0, 176, 107);
-        var titleLabel = new LabelWidget(10, 5, Component.translatable("item.gtmthings.advanced_wireless_fluid_transfer_cover"));
-        titleLabel.setText(Component.translatable("item.gtmthings.advanced_wireless_fluid_transfer_cover").getString());
-        group.addWidget(titleLabel);
-        group.addWidget(filterHandlerFluid.createFilterSlotUI(10, 20));
-        group.addWidget(filterHandlerFluid.createFilterConfigUI(10, 42, 156, 60));
-
-        return group;
+        @Override
+        public Component get() {
+            K current = key.get();
+            if (current != last) {
+                last = current;
+                value = current == null ? NONE : text.apply(current);
+            }
+            return value;
+        }
     }
 }

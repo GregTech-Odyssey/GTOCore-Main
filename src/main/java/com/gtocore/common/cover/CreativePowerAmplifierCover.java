@@ -7,8 +7,11 @@ import com.gregtechceu.gtceu.api.capability.ICoverable;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.cover.CoverDefinition;
 import com.gregtechceu.gtceu.api.cover.IUICover;
-import com.gregtechceu.gtceu.api.gui.widget.FloatInputWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.PercentField;
+import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
@@ -17,9 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -70,33 +71,21 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
 
     @Override
     public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(0, 0, 176, 75);
-        group.addWidget(new LabelWidget(10, 5, "gtocore.cover.creative_power_amplifier.title"));
-        group.addWidget(new LabelWidget(10, 22, "gtocore.cover.creative_power_amplifier.duration"));
-        group.addWidget(new FloatInputWidget(76, 18, 90, 20, this::getDurationMultiplierInput, this::setDurationMultiplier)
-                .setMin((float) MIN_DURATION_MULTIPLIER)
-                .setMax((float) MAX_MULTIPLIER));
-        group.addWidget(new LabelWidget(10, 50, "gtocore.cover.creative_power_amplifier.energy"));
-        group.addWidget(new FloatInputWidget(76, 46, 90, 20, this::getEnergyMultiplierInput, this::setEnergyMultiplier)
-                .setMin((float) MIN_ENERGY_MULTIPLIER)
-                .setMax((float) MAX_MULTIPLIER));
-        return group;
+        var duration = new PercentField(LayoutStyle.AUTO, () -> durationMultiplier, this::setDurationMultiplier,
+                () -> MIN_DURATION_MULTIPLIER, () -> MAX_MULTIPLIER, MIN_DURATION_MULTIPLIER, 100, 1000, 10000);
+        var energy = new PercentField(LayoutStyle.AUTO, () -> energyMultiplier, this::setEnergyMultiplier,
+                () -> MIN_ENERGY_MULTIPLIER, () -> MAX_MULTIPLIER, PercentField.DEFAULT_STEP, 1, 10, 100);
+        return CoverUIs.page().addChild(UIElement.section().addChildren(
+                CoverUIs.numberRow("gtocore.cover.creative_power_amplifier.duration", duration),
+                CoverUIs.numberRow("gtocore.cover.creative_power_amplifier.energy", energy)));
     }
 
-    private float getDurationMultiplierInput() {
-        return (float) durationMultiplier;
-    }
-
-    private float getEnergyMultiplierInput() {
-        return (float) energyMultiplier;
-    }
-
-    private void setDurationMultiplier(float durationMultiplier) {
+    private void setDurationMultiplier(double durationMultiplier) {
         this.durationMultiplier = clamp(durationMultiplier, MIN_DURATION_MULTIPLIER, MAX_MULTIPLIER);
         updatePowerAmplifier();
     }
 
-    private void setEnergyMultiplier(float energyMultiplier) {
+    private void setEnergyMultiplier(double energyMultiplier) {
         this.energyMultiplier = clamp(energyMultiplier, MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER);
         updatePowerAmplifier();
     }
