@@ -42,6 +42,7 @@
 
 - Windows 上第一次调用 Gradle 前显式设置 JDK 21 并确认 `java.exe` 存在（见 AGENTS.md）。
 - 推送前 `spotlessApply` + `spotlessCheck`；只覆盖 Java 时用 `spotlessJavaCheck`（`spotlessCheck` 会连 Kotlin 一起查，可能报别人正在改的文件）。
+- **依赖版本升级（`gradle.properties`）会静默换掉 API**：例如 AE2 `15.269.2` 去掉了 `appeng.api.implementations.items.IStorageComponent`，`StorageComponentItem` 从「实现该接口、`int getBytes(ItemStack)`」变成「无参 `long getBytes()`」。升版本后先 `compileJava`，按编译错误逐个适配，并把版本号与适配代码放进**同一个提交**（否则提交出去的状态编译不过）。
 - `gradlew.bat ... | Select-String ...` 这类管道会让 `$LASTEXITCODE` 失真（可能拿到 -1）：把输出先存变量，再读 `$LASTEXITCODE`。
 - `runData` 至少要 1~3 分钟，崩溃/占用都要重试，别把它当秒级任务。
 
