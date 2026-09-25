@@ -712,7 +712,7 @@ public final class MultiBlockG {
                     .where('A', blocks(GTBlocks.COMPUTER_HEAT_VENT.get()))
                     .where('B', blocks(GTBlocks.COMPUTER_CASING.get()))
                     .where('C', GTOPredicates.absBlocks())
-                    .where('D', abilities(GTOPartAbility.ME_STORAGE_ACCESS).setExactLimit(1))
+                    .where('D', blocks(GTBlocks.COMPUTER_CASING.get()).or(abilities(GTOPartAbility.ME_STORAGE_ACCESS).setExactLimit(1)))
                     .where('E', controller(definition))
                     .where('G', blocks(GTBlocks.HIGH_POWER_CASING.get()))
                     .where('H', blocks(GTOBlocks.LITHIUM_OXIDE_CERAMIC_HEAT_RESISTANT_SHOCK_RESISTANT_MECHANICAL_CUBE.get()))
