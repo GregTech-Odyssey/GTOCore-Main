@@ -550,7 +550,7 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         function("访问ME存储器内的存储" translatedTo "Access storage in ME storage")
         content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
-        info("在 ME 磁盘存储器里由机器写入数据索引与容量，不需要手动绑定 UUID" translatedTo "Inside the ME Disk Storage the machine supplies the data index and capacity, no manual UUID binding needed")
+        info("装在磁盘存储器里时，数据索引与容量由机器写入，无需手动绑定" translatedTo "Inside the ME Disk Storage the machine supplies the data index and capacity, no manual binding needed")
     }
 
     // 合成样板仓
@@ -585,7 +585,7 @@ object GTOMachineTooltips {
         function("不参与 AE 发配，只在产物不足阈值时从网络拉取原料并合成" translatedTo "Does not take part in AE pattern distribution; pulls ingredients from the network to craft only when the product is below the threshold")
         command("对着样板按鼠标中键可单独设置拉取开关与产物阈值" translatedTo "Middle-click a pattern to set its pull mode and product threshold")
         important("补货数量按差额补齐到阈值，上限为网络原料能支撑的次数" translatedTo "Restocks by the deficit up to the threshold, capped by what the network's ingredients can support")
-        info("每 2 秒检查一次补货" translatedTo "Restocking is checked once every 2 seconds")
+        info("每 2 秒检查一次" translatedTo "Checked once every 2 seconds")
         info(ComponentSlang.Capacity(18.toString()))
     }
 
@@ -683,19 +683,13 @@ object GTOMachineTooltips {
         setTranslationPrefix("drawer_storage")
 
         section(ComponentSlang.MainFunction)
-        function("把功能存储的 1x/2x/4x 抽屉与升级放进输入总线，主机自己的槽里放超级箱或超级缸" translatedTo "Put Functional Storage 1x/2x/4x drawers and upgrades into the input buses, and a super chest or super tank into the controller's own slot")
-        important("主机决定能存哪一大类：超级箱只能存物品、超级缸只能存流体；一格最多 64 个" translatedTo "The controller decides the kind: a super chest stores items only, a super tank fluids only; up to 64 in the single slot")
-        info("主机加成：容量额外 ×√（超级箱/缸等级 × 数量 × 密封机械方块等级）——主机与密封的总加成开根号" translatedTo "Controller bonus: capacity x sqrt(super chest/tank tier x count x Hermetic Casing tier) - the combined controller and hermetic bonus is square-rooted")
-        info("种类数 = 与主机同类抽屉的槽数 × 抽屉数量：1x 各贡献 1 种、2x/4x 各贡献 2/4 种" translatedTo "Type count = slots x count of the drawers matching the controller's kind: a 1x drawer contributes 1 type, 2x/4x contribute 2/4")
-        info("每种类容量 = 同类抽屉里最小的每槽容量（混放取小的）× 主机加成 × 均分后的升级倍率" translatedTo "Capacity per type = the smallest amount per slot among the matching drawers (mixing picks the small one) x the controller bonus x the split upgrade multiplier")
-        info("升级倍率：所有升级的倍率相乘后按同类抽屉数量均分（乘积^(1/抽屉数)），平均每个抽屉最多算 4 个升级（原版抽屉就只放得下 4 个）" translatedTo "Upgrade multiplier: all upgrades multiplied together then split over the matching drawer count (product^(1/drawers)), counting at most 4 upgrades per drawer on average (an original drawer only holds 4)")
-        info("流体的升级收益只有物品的一半（倍率 ÷2，不低于 1）" translatedTo "Fluids only get half the upgrade benefit (multiplier / 2, never below 1)")
-        info("创造（最大存储）升级不算倍率" translatedTo "The creative (max storage) upgrade is not counted")
-        info("流体抽屉的容量按桶算，再 ×1000 折算成 mB" translatedTo "Fluid drawer capacity is counted in buckets and then multiplied by 1000 to get mB")
-        info("不设总容量，只限每种上限；显示窗里能看当前种类与容量" translatedTo "There is no overall capacity, only a per-type cap; the display window shows the current types and capacity")
-        important("显示窗里的「溢出销毁」可以开关：开启后，放不下的内容（超过每种类容量，或种类已满放不进新种类）会被直接销毁，调用方不会收回" translatedTo "The Overflow Voiding toggle in the display window: when enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned to the caller")
-        info("压缩抽屉、末影抽屉等不作为介质" translatedTo "Compacting and ender drawers do not count as media")
-        important("抽屉、升级与主机都是介质，随时可以取回；放入或取走会立刻重算容量" translatedTo "The drawers, upgrades and the controller all act as media and can be taken back at any time; adding or removing one recalculates the capacity immediately")
+        function("以功能存储的抽屉为存储介质：可存种类与每种容量都由抽屉决定" translatedTo "Stores through Functional Storage drawers: the drawer setup decides both the type count and the capacity per type")
+        important("抽屉与升级放进输入总线，超级箱/超级缸放进主机槽；超级箱只能存物品、超级缸只能存流体，最多 64 个" translatedTo "Drawers and upgrades go into the input buses, the super chest/tank into the controller slot; a super chest stores items only, a super tank fluids only, up to 64")
+        info("可存种类 = 与主机同类抽屉的槽数 × 数量；1x 各贡献 1 种，2x/4x 各贡献 2/4 种" translatedTo "Type count = slots x amount of the matching drawers; a 1x drawer contributes 1 type, 2x/4x contribute 2/4")
+        info("只限每种上限，不设总容量：每种容量 = 同类抽屉中最小的每槽容量 × √(主机等级 × 数量 × 密封等级) × 升级倍率" translatedTo "Only a per-type cap, no overall capacity: capacity per type = the smallest slot amount among the matching drawers x sqrt(controller tier x amount x hermetic tier) x upgrade multiplier")
+        info("升级倍率：所有升级相乘后按同类抽屉数量均分，平均每个抽屉最多算 4 个；流体收益再减半（不低于 1）" translatedTo "Upgrade multiplier: all upgrades multiplied then split over the matching drawer count, counting at most 4 per drawer on average; fluids get half of it (never below 1)")
+        important("开启溢出销毁后，超过每种容量或种类已满时放不下的内容会被直接销毁" translatedTo "With overflow voiding on, anything that does not fit (over the per-type capacity, or no free type) is voided")
+        content("压缩抽屉、末影抽屉等不作为介质" translatedTo "Compacting and ender drawers do not count as media")
         content("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓" translatedTo "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO")
     }
 
@@ -705,11 +699,10 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_disk_box")
 
         section(ComponentSlang.MainFunction)
-        function("ME 磁盘存储器的单方块版本：一个槽放 AE2 存储组件（1k…256k，最多 64 个，1M 及以上的组件不收），组件字节之和就是容量" translatedTo "A single-block version of the ME Disk Storage: one slot for AE2 storage components (1k...256k, up to 64, nothing from 1M up), the sum of their bytes is the capacity")
-        info("存储直接用存储访问仓那一套：按数据索引 UUID 存，挂进 ME 网络当一个存储器、按字节卡容量" translatedTo "The storage uses the Storage Access Hatch mechanism directly: kept under a data index UUID, mounted into the ME network as a storage with a byte capacity")
-        important("数据索引可以选玩家或机器，显示窗里点「数据索引位置」右边那一项切换；机器模式拆机时索引随物品走" translatedTo "The data index can be the player or the machine, switched in the display window; in machine mode the index travels with the dropped item")
-        content("用 MV 机器外壳 + ME 驱动器 + 铝双层板制作；直接让ME线缆连上就好，不推荐无线连接" translatedTo "Made from an MV machine hull, an ME Drive and aluminium double plates; connect it with ME cable, wireless is not recommended")
-        important("显示窗里能看已用/容量与种类，还有一个「存储转移」按钮：点一下把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处" translatedTo "The display window shows used/capacity and types, plus a Transfer Storage button: click it to move everything held by the other ME storages in the network into this box, what does not fit stays where it is")
+        function("ME 磁盘存储器的单方块版本，槽里的 AE2 存储组件（1k…256k）提供容量" translatedTo "Single-block version of the ME Disk Storage; the AE2 storage components in its slot (1k...256k) provide the capacity")
+        info("容量 = 组件字节之和；1M 及以上的组件不接收" translatedTo "Capacity = the sum of the components' bytes; components from 1M up are not accepted")
+        important("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在" translatedTo "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again")
+        command("存储转移：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处" translatedTo "Transfer Storage: moves everything held by the other ME storages in the network into this box, what does not fit stays where it is")
     }
 
     // ME 磁盘存储器
@@ -718,11 +711,9 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_disk_storage")
 
         section(ComponentSlang.MainFunction)
-        function("把 AE2 的存储组件（1k…256m）放进输入总线，再用存储访问仓存储" translatedTo "Put AE2 storage components (1k...256m) into an input bus and store through the Storage Access Hatch")
-        info("和 ME 存储器同一套实现：存储与数据索引都由结构里的存储访问仓承担" translatedTo "Same implementation as the ME Storage: the Storage Access Hatch in the structure holds both the storage and its data index")
-        info("总容量 = 存储组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）" translatedTo "Total capacity = the storage components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...)")
-        important("数据索引位置可以选玩家或机器，界面上点「数据索引位置」右边那一项切换；机器模式用机器自己的 UUID，拆机时随物品带走，同一台重建后数据还在" translatedTo "The data index can be the player or the machine, switched by clicking the button after Data Index Position; in machine mode it uses the machine's own UUID, which travels with the dropped item so rebuilding the same machine keeps the data")
-        info("没有无限存储：容量完全来自总线里的存储组件" translatedTo "No infinite storage: the capacity comes entirely from the storage components in the bus")
+        function("以输入总线里的存储组件（1k…256m）提供容量，存储由结构里的存储访问仓承担" translatedTo "Storage components in the input bus (1k...256m) provide the capacity; the Storage Access Hatch in the structure holds the data")
+        info("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）；没有无限存储" translatedTo "Capacity = the components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...); there is no infinite storage")
+        info("数据索引可选玩家或机器；机器模式的索引随物品带走，同一台重建后数据还在" translatedTo "The data index can be the player or the machine; in machine mode the index travels with the item, so rebuilding the same machine keeps the data")
     }
 
     // 可配置存储访问仓
@@ -731,12 +722,11 @@ object GTOMachineTooltips {
         setTranslationPrefix("me_configurable_storage_access_hatch")
 
         section(ComponentSlang.MainFunction)
-        function("访问ME存储器内的存储，并可给每种东西单独设上限" translatedTo "Access storage in ME storage and set a limit for every key")
-        info("输入限制：每种最多存多少；未配置=不限、0 记成 -1（禁止存入）、正数=上限" translatedTo "Input limit: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden), positive = the cap")
-        info("输出限制：每种至少保留多少，库存不够就不取出；未配置=不限、0 记成 -1（也不设下限）" translatedTo "Output limit: how much of each key to keep, nothing comes out below it; unconfigured = unlimited, 0 is stored as -1 (no floor either)")
-        important("输入、输出两张表各有一个开关，互不影响；都不开时这个仓就是普通访问仓" translatedTo "The input and output tables each have their own switch and do not affect each other; with both off this hatch is an ordinary access hatch")
-        important("配置面板：81 个物品格 + 81 个流体格，点格子后在中间的输入框改数量，用「配置」按钮切到那张表" translatedTo "Config panel: 81 item slots + 81 fluid slots; click a slot and edit the amount in the middle field, the Configure button picks which table is being edited")
-        content("直接让ME线缆连上就好，不推荐无线连接" translatedTo "Directly let ME cable connect, not recommended to use wireless connection")
+        function("访问 ME 存储器内的存储，并可为每种东西单独设置上下限" translatedTo "Accesses storage in ME storage and sets a limit for every key")
+        info("输入限制：每种最多存多少；未配置 = 不限，0 记为 -1（禁止存入）" translatedTo "Input limit: how much of each key may be stored; unconfigured = unlimited, 0 is stored as -1 (forbidden)")
+        info("输出限制：每种至少保留多少；未配置 = 不限，0 记为 -1（不设下限）" translatedTo "Output limit: how much of each key to keep; unconfigured = unlimited, 0 is stored as -1 (no floor)")
+        important("两张表各有开关、互不影响；都不开时就是普通访问仓" translatedTo "The two tables have their own switches and do not affect each other; with both off this is an ordinary access hatch")
+        info("配置面板：81 个物品格 + 81 个流体格，选中格子后在中间的输入框改数量" translatedTo "Config panel: 81 item slots + 81 fluid slots; select a slot and edit the amount in the middle field")
     }
 
     @JvmField
@@ -1059,7 +1049,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("molecular_assembly_factory")
 
         section(ComponentSlang.MainFunction)
-        function("通过分子装配工厂样板仓放入合成样板" translatedTo "Insert crafting patterns via molecular assembly factory pattern hatcs")
+        function("通过分子装配工厂样板仓放入合成样板" translatedTo "Insert crafting patterns via molecular assembly factory pattern hatches")
         function("每轮只处理一个样板仓，从中最多取线程数个内部槽位" translatedTo "Each operation handles a single hatch, taking at most one internal slot per thread")
         function("拉取样板仓可按产物阈值被动补货，不需要 AE 合成任务" translatedTo "Pull pattern hatches top products up to a threshold on their own, without an AE crafting job")
         info("取到的槽位整份产物一起合成，数量不设上限" translatedTo "The entire stored output of every taken slot is crafted at once, with no amount cap")
