@@ -1422,6 +1422,9 @@ object GTOMachineTooltips {
         important("需要太多EU，无法用常规手段供能" translatedTo "Requires too much EU — cannot be powered by conventional means")
         important("由无线EU网络直接供给" translatedTo "Directly supplied by wireless EU network")
         info("具体数值可在GUI内查看" translatedTo "Specific values can be viewed in the GUI")
+        important("实际启动耗能 = GUI启动耗能 × 配方倍率" translatedTo "Actual startup energy = GUI startup energy × recipe multiplier")
+        info("配方倍率 = (配方等级 - 1) × 4，至少为1" translatedTo "Recipe multiplier = (recipe tier - 1) × 4, at least 1")
+        info("例：等级10配方为36倍" translatedTo "e.g. a tier 10 recipe costs 36x")
 
         section("特殊超频" translatedTo "Special Overclocking")
         increase("每次超频使功率乘以16、速度乘以2" translatedTo "Speed increases 2x for every 16x power increase")
