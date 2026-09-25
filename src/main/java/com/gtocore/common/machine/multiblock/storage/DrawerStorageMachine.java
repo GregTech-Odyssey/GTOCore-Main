@@ -6,12 +6,16 @@ import com.gtocore.common.machine.multiblock.part.MEStorageHatch;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
+import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.item.MetaMachineItem;
+import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -48,61 +52,68 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * 抽屉存储器：抽屉放进结构的输入总线，升级插在主机（控制器）自己的槽里（一格、最多 16 个，防止乘算溢出）。
+ * 抽屉存储器：抽屉与升级都放进结构的输入总线，主机（控制器）自己的槽里放超级箱或超级缸。
  * <ul>
- * <li>每种类容量 = 那一类抽屉里最好的每槽容量 × 升级倍率 × 密封机械方块等级（抽屉数量不乘容量）；
+ * <li>主机槽（一格、最多 {@link #CONTROLLER_LIMIT} 个）决定能存哪一大类：超级箱只能存物品、超级缸只能存流体，
+ * 并按「等级 × 数量」给容量额外加成；</li>
+ * <li>可存种类数 = 与主机同类别的抽屉槽数 × 抽屉数量（1x=1、2x=2、4x=4）；</li>
+ * <li>每种类容量 = 那类抽屉里**最小**的每槽容量（混放取小的）× 密封机械方块等级 × 均分后的升级倍率 × 主机加成，
  * 流体抽屉按桶算再 ×1000 折算成 mB；</li>
- * <li>种类数 = 每个抽屉自己的槽数 × 抽屉数量（1x=1、2x=2、4x=4），物品与流体共用一个池子；</li>
- * <li>类型跟着抽屉走：没有物品抽屉就存不了物品，没有流体抽屉就存不了流体；</li>
- * <li>升级倍率是乘算（与功能存储一致）：每个升级按自己的倍率相乘。</li>
+ * <li>升级倍率：所有升级的倍率相乘，再按同类抽屉数量均分（{@code 乘积^(1/抽屉数)}），
+ * 也就是 4 个抽屉 8 个升级只乘 2 次、4 个抽屉 3 个升级乘 0.75 次；流体的升级收益再减半（不低于 1）。</li>
  * </ul>
  */
 @DataGeneratorScanned
 public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IStorageMultiblock, IFancyUIMachine, IDisplayUIMachine {
 
-    /// 主机槽里的升级上限（乘算，多了会溢出）
-    public static final int UPGRADE_LIMIT = 4;
+    /// 主机槽（超级箱/缸）的数量上限
+    public static final int CONTROLLER_LIMIT = 64;
 
     @RegisterLanguage(cn = "种类：%s / %s", en = "Types: %s / %s")
     public static final String TYPES = "gtocore.machine.drawer_storage.types";
     @RegisterLanguage(cn = "密封等级 %s × 升级倍率 %s", en = "Hermetic tier %s x upgrade multiplier %s")
     public static final String HERMETIC_UPGRADE = "gtocore.machine.drawer_storage.hermetic_upgrade";
-    @RegisterLanguage(cn = "升级 %s / " + UPGRADE_LIMIT + " 个：倍率 ×%s", en = "Upgrades %s / " + UPGRADE_LIMIT + ": multiplier x%s")
+    @RegisterLanguage(cn = "主机：%s ×%s（等级 %s）：容量额外 ×%s", en = "Controller: %s x%s (tier %s): capacity x%s extra")
+    public static final String CONTROLLER = "gtocore.machine.drawer_storage.controller";
+    @RegisterLanguage(cn = "主机槽里放超级箱（只能存物品）或超级缸（只能存流体），最多 " + CONTROLLER_LIMIT + " 个", en = "Put a super chest (items only) or a super tank (fluids only) into the controller slot, up to " + CONTROLLER_LIMIT)
+    public static final String NO_CONTROLLER = "gtocore.machine.drawer_storage.no_controller";
+    @RegisterLanguage(cn = "升级 %s 个，按 %s 个抽屉均分：倍率 ×%s", en = "Upgrades %s, split over %s drawers: multiplier x%s")
     public static final String UPGRADES = "gtocore.machine.drawer_storage.upgrades";
     @RegisterLanguage(cn = "物品抽屉 %s 种：每种类容量 %s", en = "Item drawers %s types: %s per type")
     public static final String ITEM_DRAWERS = "gtocore.machine.drawer_storage.item_drawers";
-    @RegisterLanguage(cn = "没有物品抽屉：装不了物品", en = "No item drawer: items cannot be stored")
-    public static final String NO_ITEM_DRAWERS = "gtocore.machine.drawer_storage.no_item_drawers";
     @RegisterLanguage(cn = "流体抽屉 %s 种：每种类容量 %s", en = "Fluid drawers %s types: %s per type")
     public static final String FLUID_DRAWERS = "gtocore.machine.drawer_storage.fluid_drawers";
-    @RegisterLanguage(cn = "没有流体抽屉：装不了流体", en = "No fluid drawer: fluids cannot be stored")
-    public static final String NO_FLUID_DRAWERS = "gtocore.machine.drawer_storage.no_fluid_drawers";
-    @RegisterLanguage(cn = "输入总线里放抽屉：没有物品抽屉就存不了物品，没有流体抽屉就存不了流体", en = "Put drawers into the input buses: without an item drawer nothing can be stored as items, without a fluid drawer nothing as fluids")
+    @RegisterLanguage(cn = "输入总线里放与主机同类的抽屉：可存种类 = 每个抽屉的槽数 × 数量", en = "Put drawers of the controller's kind into the input buses: type count = each drawer's slots x its count")
     public static final String NO_DRAWER = "gtocore.machine.drawer_storage.no_drawer";
 
-    /// 主机槽（升级）：一格，最多 {@link #UPGRADE_LIMIT} 个
+    /// 主机槽（超级箱/缸）：一格，最多 {@link #CONTROLLER_LIMIT} 个
     @SaveToDisk
     @Getter
     private final NotifiableItemStackHandler machineStorage;
-    /// 可存种类数：所有抽屉的槽数 × 数量（物品与流体共用）
+    /// 可存种类数：同类抽屉的槽数 × 数量
     @Getter
     private int types;
+    /// 每种类容量
     @Getter
-    private int itemTypes;
+    private long perTypeCapacity;
+    /// 主机槽决定的大类：true = 只能存流体
     @Getter
-    private int fluidTypes;
-    /// 物品每种类容量（没有物品抽屉就是 0）
+    private boolean fluidKind;
+    /// 同类抽屉的数量（升级按它均分）
     @Getter
-    private long itemPerTypeCapacity;
-    /// 流体每种类容量（没有流体抽屉就是 0）
+    private int drawerCount;
+    /// 均分后的升级倍率（已含流体减半）
     @Getter
-    private long fluidPerTypeCapacity;
+    private double upgradeMultiplier = 1;
+    /// 主机等级 × 数量
     @Getter
-    private long upgradeMultiplier = 1;
+    private long controllerMultiplier;
+    @Getter
+    private int controllerLevel;
     @Getter
     private int hermeticLevel = 1;
 
-    /// 输入总线：只用来放抽屉
+    /// 输入总线：放抽屉与升级
     private final StorageBusListener drawerBuses = new StorageBusListener();
 
     public DrawerStorageMachine(MetaMachineBlockEntity holder) {
@@ -110,15 +121,15 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         machineStorage = createMachineStorage(null);
     }
 
-    /// 主机槽只收功能性存储的升级（创造/最大存储升级不在这里算，直接不收）；抽屉放输入总线
+    /// 主机槽只收超级箱 / 超级缸
     @Override
     public boolean storageFilter(ItemStack stack) {
-        return storageTier(stack) != null;
+        return controllerDefinition(stack) != null;
     }
 
     @Override
     public int getSlotLimit() {
-        return UPGRADE_LIMIT;
+        return CONTROLLER_LIMIT;
     }
 
     @Override
@@ -133,48 +144,52 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         return Long.MAX_VALUE;
     }
 
-    /// 重扫输入总线里的抽屉与主机槽里的升级，算出种类数与每种类容量
+    /// 重扫输入总线里的抽屉/升级与主机槽里的超级箱缸，算出种类数与每种类容量
     private void refreshDrawers() {
-        upgradeMultiplier = scanUpgrades();
         hermeticLevel = getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
-        long itemSlotAmount = 0;
-        long fluidSlotAmount = 0;
-        itemTypes = 0;
-        fluidTypes = 0;
+        var controller = getStorageStack();
+        var definition = controllerDefinition(controller);
+        fluidKind = definition != null && isSuperTank(definition);
+        controllerLevel = definition == null ? 0 : Math.max(1, definition.getTier());
+        controllerMultiplier = definition == null ? 0 : (long) controllerLevel * controller.getCount();
+
+        long minSlotAmount = 0;
+        int types = 0;
+        int drawers = 0;
+        double upgradeProduct = 1;
         for (var bus : drawerBuses.buses()) {
             for (int i = 0, slots = bus.getSlots(); i < slots; i++) {
                 var stack = bus.getStackInSlot(i);
+                if (stack.isEmpty()) continue;
                 var drawerType = drawerType(stack);
-                if (drawerType == null) continue;
-                int types = drawerType.getSlots() * stack.getCount();
-                if (isFluidDrawer(stack)) {
-                    fluidTypes += types;
+                if (drawerType != null) {
+                    // 只算与主机同类的抽屉：它们决定种类数、最小每槽容量与升级均分基数
+                    if (isFluidDrawer(stack) != fluidKind) continue;
+                    types += drawerType.getSlots() * stack.getCount();
+                    drawers += stack.getCount();
                     // 流体抽屉的容量按桶算，折算成 mB
-                    fluidSlotAmount = Math.max(fluidSlotAmount, drawerType.getSlotAmount() * 1000L);
-                } else {
-                    itemTypes += types;
-                    itemSlotAmount = Math.max(itemSlotAmount, drawerType.getSlotAmount());
+                    long slotAmount = fluidKind ? drawerType.getSlotAmount() * 1000L : drawerType.getSlotAmount();
+                    minSlotAmount = minSlotAmount == 0 ? slotAmount : Math.min(minSlotAmount, slotAmount);
+                    continue;
                 }
+                int perItem = upgradeMultiplier(stack);
+                if (perItem < 2) continue;
+                upgradeProduct *= Math.pow(perItem, stack.getCount());
+                if (Double.isInfinite(upgradeProduct)) upgradeProduct = Double.MAX_VALUE;
             }
         }
-        this.types = itemTypes + fluidTypes;
-        itemPerTypeCapacity = itemSlotAmount < 1 ? 0 : capacityOf(itemSlotAmount, hermeticLevel, upgradeMultiplier);
-        // 流体的升级收益只有物品的一半
-        fluidPerTypeCapacity = fluidSlotAmount < 1 ? 0 :
-                capacityOf(fluidSlotAmount, hermeticLevel, Math.max(1, upgradeMultiplier / 2));
+        this.types = types;
+        this.drawerCount = drawers;
+        this.upgradeMultiplier = averageUpgrade(upgradeProduct, drawers, fluidKind);
+        this.perTypeCapacity = minSlotAmount < 1 ? 0 :
+                capacityOf(minSlotAmount, hermeticLevel, upgradeMultiplier, controllerMultiplier);
     }
 
-    /// 升级倍率：和功能存储一样是乘算——主机槽里每个升级按自己的倍率相乘
-    private long scanUpgrades() {
-        long multiplier = 1;
-        var stack = getStorageStack();
-        int perItem = upgradeMultiplier(stack);
-        if (perItem < 2) return multiplier;
-        for (int count = Math.min(stack.getCount(), UPGRADE_LIMIT); count > 0; count--) {
-            multiplier = multiply(multiplier, perItem);
-            if (multiplier == Long.MAX_VALUE) return multiplier;
-        }
-        return multiplier;
+    /// 升级倍率：所有升级相乘后按同类抽屉数量均分（{@code 乘积^(1/抽屉数)}）；流体只拿一半，不低于 1
+    private static double averageUpgrade(double product, int drawerCount, boolean fluid) {
+        if (product <= 1 || drawerCount < 1) return 1;
+        double multiplier = Math.pow(product, 1.0 / drawerCount);
+        return fluid ? Math.max(1, multiplier / 2) : multiplier;
     }
 
     @Nullable
@@ -190,51 +205,58 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof FluidDrawerBlock;
     }
 
-    /// 存储升级的等级；创造（最大存储）升级返回 null，不算倍率也不收进主机槽
+    /// 主机槽里超级箱 / 超级缸对应的定义；不是这两类返回 null
     @Nullable
-    private static StorageUpgradeItem.StorageTier storageTier(ItemStack stack) {
-        if (!(stack.getItem() instanceof StorageUpgradeItem upgrade)) return null;
-        var tier = upgrade.getStorageTier();
-        return tier == StorageUpgradeItem.StorageTier.MAX_STORAGE ? null : tier;
+    private static MachineDefinition controllerDefinition(ItemStack stack) {
+        if (!(stack.getItem() instanceof MetaMachineItem item)) return null;
+        var definition = item.getDefinition();
+        if (contains(GTMachines.SUPER_CHEST, definition) || contains(GTMachines.SUPER_TANK, definition)) return definition;
+        return null;
     }
 
+    private static boolean contains(MachineDefinition[] definitions, MachineDefinition definition) {
+        for (var candidate : definitions) {
+            if (candidate != null && candidate == definition) return true;
+        }
+        return false;
+    }
+
+    private static boolean isSuperTank(MachineDefinition definition) {
+        return contains(GTMachines.SUPER_TANK, definition);
+    }
+
+    /// 存储升级的倍率；创造（最大存储）升级返回 0，不算倍率
     private static int upgradeMultiplier(ItemStack stack) {
-        var tier = storageTier(stack);
-        if (tier == null) return 0;
-        return ((StorageUpgradeItem) stack.getItem()).getStorageMultiplier();
+        if (!(stack.getItem() instanceof StorageUpgradeItem upgrade)) return 0;
+        if (upgrade.getStorageTier() == StorageUpgradeItem.StorageTier.MAX_STORAGE) return 0;
+        return upgrade.getStorageMultiplier();
     }
 
-    /// 每种类容量：抽屉的每槽容量 × 升级倍率 × 密封等级
-    private static long capacityOf(long slotAmount, int hermeticLevel, long upgradeMultiplier) {
-        long capacity = Math.max(1, slotAmount);
-        capacity = multiply(capacity, Math.max(1, upgradeMultiplier));
-        return multiply(capacity, Math.max(1, hermeticLevel));
+    /// 每种类容量：最小每槽容量 × 密封等级 × 均分后的升级倍率 × 主机加成
+    private static long capacityOf(long slotAmount, int hermeticLevel, double upgradeMultiplier, long controllerMultiplier) {
+        double capacity = Math.max(1, slotAmount) * Math.max(1, hermeticLevel) *
+                Math.max(1, upgradeMultiplier) * Math.max(1, controllerMultiplier);
+        if (!(capacity < Long.MAX_VALUE)) return Long.MAX_VALUE;
+        return Math.max(1, (long) capacity);
     }
 
-    private static long multiply(long a, long b) {
-        return a > Long.MAX_VALUE / b ? Long.MAX_VALUE : a * b;
-    }
-
-    /// 这一类东西的每种类容量；0 表示没有这一类的抽屉，装不了
-    private long capacityFor(AEKey what) {
-        if (what instanceof AEItemKey) return itemPerTypeCapacity;
-        if (what instanceof AEFluidKey) return fluidPerTypeCapacity;
-        return 0;
+    /// 主机决定的大类：超级箱只收物品、超级缸只收流体
+    private boolean accepts(AEKey what) {
+        return fluidKind ? what instanceof AEFluidKey : what instanceof AEItemKey;
     }
 
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
-        long capacity = capacityFor(what);
-        if (!isFormed || amount < 1 || types < 1 || capacity < 1) return 0;
+        if (!isFormed || amount < 1 || types < 1 || perTypeCapacity < 1 || !accepts(what)) return 0;
         var map = keyMap;
         var size = map.size();
         if (mode == Actionable.SIMULATE) {
             var stored = map.getAmount(what);
             if (stored == 0 && size >= types) return 0;
-            return Math.min(amount, capacity - stored);
+            return Math.min(amount, perTypeCapacity - stored);
         }
         if (size > types) return 0;
-        long inserted = map.insert(what, amount, capacity);
+        long inserted = map.insert(what, amount, perTypeCapacity);
         if (inserted > 0) saveChanges();
         return inserted;
     }
@@ -254,16 +276,15 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     @Override
     public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        long capacity = capacityFor(what);
-        if (!isFormed || types < 1 || capacity < 1) return false;
+        if (!isFormed || types < 1 || perTypeCapacity < 1 || !accepts(what)) return false;
         var map = getKeyMap();
         long stored = map.getAmount(what);
-        return stored < capacity && (stored > 0 || map.size() < types);
+        return stored < perTypeCapacity && (stored > 0 || map.size() < types);
     }
 
     @Override
     public void onStructureFormed() {
-        // 抽屉总线要先挂上，容量里要用
+        // 抽屉/升级总线要先挂上，容量里要用
         drawerBuses.bind(getMultiblockState().getMatchContext(), this, this::onDrawerBusChanged);
         super.onStructureFormed();
     }
@@ -273,11 +294,11 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         super.onStructureInvalid();
         drawerBuses.unbind();
         types = 0;
-        itemTypes = 0;
-        fluidTypes = 0;
-        itemPerTypeCapacity = 0;
-        fluidPerTypeCapacity = 0;
+        drawerCount = 0;
+        perTypeCapacity = 0;
         upgradeMultiplier = 1;
+        controllerMultiplier = 0;
+        controllerLevel = 0;
     }
 
     @Override
@@ -286,7 +307,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         drawerBuses.unbind();
     }
 
-    /// 主机槽里的升级换了（{@link IStorageMultiblock} 的槽变更回调）
+    /// 主机槽里的超级箱/缸换了（{@link IStorageMultiblock} 的槽变更回调）
     @Override
     public void onMachineChanged() {
         if (isRemote() || !isFormed) return;
@@ -297,11 +318,11 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     private void onDrawerBusChanged() {
         if (isRemote() || !isFormed) return;
-        long oldItem = itemPerTypeCapacity;
-        long oldFluid = fluidPerTypeCapacity;
+        long oldCapacity = perTypeCapacity;
         int oldTypes = types;
+        int oldDrawers = drawerCount;
         refreshCapacity();
-        if (oldItem == itemPerTypeCapacity && oldFluid == fluidPerTypeCapacity && oldTypes == types) return;
+        if (oldCapacity == perTypeCapacity && oldTypes == types && oldDrawers == drawerCount) return;
         refreshHatches();
         onChanged();
     }
@@ -320,7 +341,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         return isFormed && IFancyUIMachine.super.shouldOpenUI(player, hand, hit);
     }
 
-    /// 显示窗那一套：主页是机器的状态显示窗，主机槽（升级）跟在下方（和通用工厂一样）
+    /// 显示窗那一套：主页是机器的状态显示窗，主机槽（超级箱/缸）跟在下方（和通用工厂一样）
     @Override
     public Widget createUIWidget() {
         return IStorageMultiblock.super.createUIWidget(MachineDisplay.page(this));
@@ -334,43 +355,54 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Override
     public void addDisplayText(List<Component> textList) {
         IDisplayUIMachine.super.addDisplayText(textList);
-        textList.add(Component.translatable(UPGRADES,
-                FormattingUtil.formatNumbers(getStorageStack().getCount()),
-                FormattingUtil.formatNumbers(upgradeMultiplier)).withStyle(ChatFormatting.GRAY));
-        if (itemTypes < 1) {
-            textList.add(Component.translatable(NO_ITEM_DRAWERS).withStyle(ChatFormatting.GRAY));
+        var controller = getStorageStack();
+        if (controller.isEmpty()) {
+            textList.add(Component.translatable(NO_CONTROLLER).withStyle(ChatFormatting.GRAY));
         } else {
-            textList.add(Component.translatable(ITEM_DRAWERS, FormattingUtil.formatNumbers(itemTypes),
-                    FormattingUtil.formatNumbers(itemPerTypeCapacity)).withStyle(ChatFormatting.GRAY));
+            textList.add(Component.translatable(CONTROLLER, controller.getHoverName(),
+                    FormattingUtil.formatNumbers(controller.getCount()),
+                    FormattingUtil.formatNumbers(controllerLevel),
+                    FormattingUtil.formatNumbers(controllerMultiplier)).withStyle(ChatFormatting.GRAY));
         }
-        if (fluidTypes < 1) {
-            textList.add(Component.translatable(NO_FLUID_DRAWERS).withStyle(ChatFormatting.GRAY));
-        } else {
-            textList.add(Component.translatable(FLUID_DRAWERS, FormattingUtil.formatNumbers(fluidTypes),
-                    FormattingUtil.formatNumbers(fluidPerTypeCapacity)).withStyle(ChatFormatting.GRAY));
-        }
+        textList.add(Component.translatable(UPGRADES, FormattingUtil.formatNumbers(countUpgrades()),
+                FormattingUtil.formatNumbers(drawerCount), NumberUtils.formatDouble(upgradeMultiplier))
+                .withStyle(ChatFormatting.GRAY));
         if (types < 1) {
             textList.add(Component.translatable(NO_DRAWER).withStyle(ChatFormatting.GRAY));
+        } else {
+            textList.add(Component.translatable(fluidKind ? FLUID_DRAWERS : ITEM_DRAWERS,
+                    FormattingUtil.formatNumbers(types),
+                    FormattingUtil.formatNumbers(perTypeCapacity)).withStyle(ChatFormatting.GRAY));
         }
         textList.add(Component.translatable(TYPES,
                 FormattingUtil.formatNumbers(getKeyMap().size()),
                 FormattingUtil.formatNumbers(types)).withStyle(ChatFormatting.GRAY));
         textList.add(Component.translatable(HERMETIC_UPGRADE,
                 FormattingUtil.formatNumbers(hermeticLevel),
-                FormattingUtil.formatNumbers(upgradeMultiplier)).withStyle(ChatFormatting.GRAY));
+                NumberUtils.formatDouble(upgradeMultiplier)).withStyle(ChatFormatting.GRAY));
+    }
+
+    /// 只用来显示：总线里算进倍率的升级数量
+    private long countUpgrades() {
+        long count = 0;
+        for (var bus : drawerBuses.buses()) {
+            for (int i = 0, slots = bus.getSlots(); i < slots; i++) {
+                var stack = bus.getStackInSlot(i);
+                if (upgradeMultiplier(stack) >= 2) count += stack.getCount();
+            }
+        }
+        return count;
     }
 
     @Override
     public void appendWailaData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
         compoundTag.putInt("types", types);
         compoundTag.putInt("usedTypes", getKeyMap().size());
-        compoundTag.putInt("itemTypes", itemTypes);
-        compoundTag.putInt("fluidTypes", fluidTypes);
-        compoundTag.putLong("itemCapacity", itemPerTypeCapacity);
-        compoundTag.putLong("fluidCapacity", fluidPerTypeCapacity);
-        compoundTag.putLong("upgrades", getStorageStack().getCount());
-        compoundTag.putLong("upgradeMultiplier", upgradeMultiplier);
+        compoundTag.putLong("perTypeCapacity", perTypeCapacity);
+        compoundTag.putInt("drawerCount", drawerCount);
+        compoundTag.putLong("controllerMultiplier", controllerMultiplier);
         compoundTag.putInt("hermeticLevel", hermeticLevel);
+        compoundTag.putBoolean("fluidKind", fluidKind);
     }
 
     @Override
@@ -378,13 +410,11 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         iTooltip.add(Component.translatable(TYPES,
                 FormattingUtil.formatNumbers(compoundTag.getInt("usedTypes")),
                 FormattingUtil.formatNumbers(compoundTag.getInt("types"))));
-        iTooltip.add(compoundTag.getInt("itemTypes") < 1 ? Component.translatable(NO_ITEM_DRAWERS) :
-                Component.translatable(ITEM_DRAWERS, FormattingUtil.formatNumbers(compoundTag.getInt("itemTypes")),
-                        FormattingUtil.formatNumbers(compoundTag.getLong("itemCapacity"))));
-        iTooltip.add(compoundTag.getInt("fluidTypes") < 1 ? Component.translatable(NO_FLUID_DRAWERS) :
-                Component.translatable(FLUID_DRAWERS, FormattingUtil.formatNumbers(compoundTag.getInt("fluidTypes")),
-                        FormattingUtil.formatNumbers(compoundTag.getLong("fluidCapacity"))));
-        iTooltip.add(Component.translatable(UPGRADES, FormattingUtil.formatNumbers(compoundTag.getLong("upgrades")),
-                FormattingUtil.formatNumbers(compoundTag.getLong("upgradeMultiplier"))));
+        iTooltip.add(Component.translatable(compoundTag.getBoolean("fluidKind") ? FLUID_DRAWERS : ITEM_DRAWERS,
+                FormattingUtil.formatNumbers(compoundTag.getInt("types")),
+                FormattingUtil.formatNumbers(compoundTag.getLong("perTypeCapacity"))));
+        iTooltip.add(Component.translatable(HERMETIC_UPGRADE,
+                FormattingUtil.formatNumbers(compoundTag.getInt("hermeticLevel")),
+                FormattingUtil.formatNumbers(compoundTag.getLong("controllerMultiplier"))));
     }
 }
