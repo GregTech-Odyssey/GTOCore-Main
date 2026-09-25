@@ -8,6 +8,8 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.data.transaction.data.trade.*;
 import com.gtocore.data.transaction.manager.TradeData;
 import com.gtocore.data.transaction.manager.TradeEntry;
+import com.gtocore.integration.Mods;
+import com.gtocore.integration.ftbquests.QuestTradeIntegration;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.WalletUtils;
@@ -106,6 +108,16 @@ public final class GTOTrade {
         if (BuyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
         else builder.outputCurrency(currency, amount).inputItem(stack);
         return builder.build();
+    }
+
+    public static TradeEntry questGatedItemTrading(String unlockCondition, ItemStack stack, String currency, int amount, long questId) {
+        return new TradeEntry.Builder()
+                .texture(new StackTexture(stack))
+                .unlockCondition(unlockCondition)
+                .preCheck((data, entry) -> Mods.FTBQUESTS.isLoaded() && QuestTradeIntegration.hasCompletedQuest(data, questId) ? -1 : 0)
+                .inputCurrency(currency, amount)
+                .outputItem(stack)
+                .build();
     }
 
     /**

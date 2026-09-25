@@ -19,6 +19,10 @@ dependencies {
     implementation("curse.maven:kotlin-for-forge-351264:5402061")
     implementation("com.github.houbb:opencc4j:1.14.0") // 用来 datagen 繁中
 
+    // Taffy：新式 UI 框架（GTM 的 uipro 包）的布局引擎。运行时由 GTM 的 jarJar 提供（开发环境也经 JarInJar 加载），
+    // 这里只要编译期可见；再自己内嵌或加进运行 classpath 会出现两个同名模块（Module ... reads more than one module named taffy）
+    compileOnly("dev.vfyjxf:taffy:$project.taffy_version")
+
     // GTO Seal Runtime：开发 classpath（flatDir）。
     // 禁止打进 gtocore jar（ITransformationService SPI 会使 Forge 整包排除 gtocore）。
     // 运行时 / 发行：独立 gto-seal-runtime-1.0.jar 与 gtocore 并列放在 mods/。
@@ -29,9 +33,6 @@ dependencies {
     jarJar(implementation("org.apache.commons:commons-math3:3.6.1"))
     jarJar(modImplementation("appeng:appliedenergistics2-forge-1.20.1:${project.ae2_version}"))
     jarJar(modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$project.gtceu_version"))
-    // Taffy：新式 UI 框架（GTM 的 uipro 包）的布局引擎。运行时由 GTM 的 jarJar 提供（开发环境也经 JarInJar 加载），
-    // 这里只要编译期可见；再自己内嵌或加进运行 classpath 会出现两个同名模块（Module ... reads more than one module named taffy）
-    compileOnly("dev.vfyjxf:taffy:$project.taffy_version")
 
     /* -------------------- 全局运行范围 -------------------- */
     modImplementation("com.gto:datasynclib-forge-1.20.1:$project.datasynclib_version")
