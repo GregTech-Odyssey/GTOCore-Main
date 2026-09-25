@@ -61,7 +61,7 @@ import java.util.function.Supplier;
 public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IStorageMultiblock, IFancyUIMachine, IDisplayUIMachine {
 
     /// 主机槽里的升级上限（乘算，多了会溢出）
-    public static final int UPGRADE_LIMIT = 8;
+    public static final int UPGRADE_LIMIT = 4;
 
     @RegisterLanguage(cn = "种类：%s / %s", en = "Types: %s / %s")
     public static final String TYPES = "gtocore.machine.drawer_storage.types";
@@ -110,10 +110,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         machineStorage = createMachineStorage(null);
     }
 
-    /// 主机槽只收功能性存储的升级；抽屉放输入总线
+    /// 主机槽只收功能性存储的升级（创造/最大存储升级不在这里算，直接不收）；抽屉放输入总线
     @Override
     public boolean storageFilter(ItemStack stack) {
-        return stack.getItem() instanceof StorageUpgradeItem;
+        return storageTier(stack) != null;
     }
 
     @Override
@@ -159,7 +159,9 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         }
         this.types = itemTypes + fluidTypes;
         itemPerTypeCapacity = itemSlotAmount < 1 ? 0 : capacityOf(itemSlotAmount, hermeticLevel, upgradeMultiplier);
-        fluidPerTypeCapacity = fluidSlotAmount < 1 ? 0 : capacityOf(fluidSlotAmount, hermeticLevel, upgradeMultiplier);
+        // 流体的升级收益只有物品的一半
+        fluidPerTypeCapacity = fluidSlotAmount < 1 ? 0 :
+                capacityOf(fluidSlotAmount, hermeticLevel, Math.max(1, upgradeMultiplier / 2));
     }
 
     /// 升级倍率：和功能存储一样是乘算——主机槽里每个升级按自己的倍率相乘
@@ -188,8 +190,18 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof FluidDrawerBlock;
     }
 
+    /// 存储升级的等级；创造（最大存储）升级返回 null，不算倍率也不收进主机槽
+    @Nullable
+    private static StorageUpgradeItem.StorageTier storageTier(ItemStack stack) {
+        if (!(stack.getItem() instanceof StorageUpgradeItem upgrade)) return null;
+        var tier = upgrade.getStorageTier();
+        return tier == StorageUpgradeItem.StorageTier.MAX_STORAGE ? null : tier;
+    }
+
     private static int upgradeMultiplier(ItemStack stack) {
-        return stack.getItem() instanceof StorageUpgradeItem upgrade ? upgrade.getStorageMultiplier() : 0;
+        var tier = storageTier(stack);
+        if (tier == null) return 0;
+        return ((StorageUpgradeItem) stack.getItem()).getStorageMultiplier();
     }
 
     /// 每种类容量：抽屉的每槽容量 × 升级倍率 × 密封等级

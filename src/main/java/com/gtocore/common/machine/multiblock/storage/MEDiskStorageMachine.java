@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-import appeng.api.implementations.items.IStorageComponent;
+import appeng.items.materials.StorageComponentItem;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -72,9 +72,8 @@ public final class MEDiskStorageMachine extends MEStorageMachine {
     }
 
     private static long componentBytes(ItemStack stack) {
-        if (stack.isEmpty() || !(stack.getItem() instanceof IStorageComponent component)) return 0;
-        if (!component.isStorageComponent(stack)) return 0;
-        long bytes = component.getBytes(stack);
+        if (stack.isEmpty() || !(stack.getItem() instanceof StorageComponentItem component)) return 0;
+        long bytes = component.getBytes();
         long count = stack.getCount();
         return bytes > Long.MAX_VALUE / count ? Long.MAX_VALUE : bytes * count;
     }
