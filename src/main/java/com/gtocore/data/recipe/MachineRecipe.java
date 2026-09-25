@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 
 import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
@@ -54,7 +53,7 @@ public final class MachineRecipe {
                 "PVP", " P ", 'P', new MaterialEntry(plateDouble, WroughtIron), 'V', MultiBlockG.GENERAL_VAULT.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_storage"), MultiBlockG.ME_DISK_STORAGE.asItem(), "PCP",
                 "CAC", "PCP", 'P', new MaterialEntry(plateDouble, GTMaterials.StainlessSteel), 'C', CustomTags.HV_CIRCUITS,
-                'A', AEItems.CELL_COMPONENT_1K.asItem());
+                'A', GTAEMachines.ME_DISK_BOX.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_box"), GTAEMachines.ME_DISK_BOX.asItem(), "PDP",
                 "CHC", "PPP", 'P', new MaterialEntry(plateDouble, GTMaterials.Aluminium), 'C', CustomTags.MV_CIRCUITS, 'D', AEBlocks.DRIVE.block().asItem(),
                 'H', GTMachines.HULL[MV].asItem());

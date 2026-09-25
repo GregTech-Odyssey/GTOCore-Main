@@ -3972,6 +3972,7 @@ final class Assembler {
                 .save();
 
         ASSEMBLER_RECIPES.builder("me_storage")
+                .inputItems(MultiBlockG.ME_DISK_STORAGE.asItem())
                 .inputItems("expatternprovider:ex_drive", 16)
                 .inputItems(CustomTags.LuV_CIRCUITS, 16)
                 .inputItems(GTItems.EMITTER_IV, 8)
