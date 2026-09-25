@@ -139,7 +139,8 @@ final class MEPatternVirtualInputHelper {
     }
 
     static boolean isVirtualProvider(AEItemKey key) {
-        if (!VirtualProviderData.hasData(key.getReadOnlyStack())) return false;
+        var stack = key.getReadOnlyStack();
+        if (!VirtualProviderData.hasData(stack) && !VirtualProviderData.isLocked(stack)) return false;
         var item = key.getItem();
         return item == CustomItems.VIRTUAL_ITEM_PROVIDER.get() ||
                 item == CustomItems.VIRTUAL_FLUID_PROVIDER.get();
