@@ -891,7 +891,7 @@ public final class MultiBlockG {
                     .where('D', GTOPredicates.hermeticCasing())
                     .where('E', blocks(GTOBlocks.INFUSED_GOLD_CASING.get())
                             .or(blocks(GTOMachines.VAULT_HATCH.get()))
-                            .or(abilities(GTOPartAbility.ITEMS_INPUT_BUS).setMaxGlobalLimited(1)))
+                            .or(abilities(GTOPartAbility.ITEMS_INPUT_BUS)))
                     .where('F', controller(definition))
                     .where(' ', any())
                     .build())
