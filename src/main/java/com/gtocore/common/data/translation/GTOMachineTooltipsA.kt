@@ -598,13 +598,13 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         ok("可使用激光源仓或256A及以上的无线动力仓输出能量" translatedTo "Energy can be output through Laser Source Hatches or wireless dynamo hatches rated at 256A or higher")
 
         section(EfficiencyBonus)
-        increase("如果密封外壳等级大于LuV，则提升效率 x 密封外壳等级/4" translatedTo "If the hermetic casing tier is greater than LuV, the efficiency is increased by x (hermetic casing tier) / 4")
-        increase("如果使用激光源仓，则提升发电量 x 2^等级" translatedTo "If a Laser Source Hatch is used, power generation is increased by x 2^tier")
+        increase("如果密封外壳等级大于LuV，则提升效率 x 密封外壳等级/4" translatedTo "If the hermetic casing tier is greater than LuV, efficiency is increased by x (hermetic casing tier) / 4")
+        increase("如果使用激光源仓，仓室等级每超过LV一级，提升并行 x 2" translatedTo "If a Laser Source Hatch is used, each level above LV gives parallel x 2")
 
         section(AfterModuleInstallation)
         increase("提升效率 x 2" translatedTo "Efficiency is increased by x 2")
         increase("基础并行 x 4" translatedTo "Basic parallel x 4")
-        increase("激光源仓的发电量加成提升为 x 4^等级" translatedTo "The Laser Source Hatch power generation bonus is increased to x 4^tier")
+        increase("激光源仓的并行加成提升为 x 4" translatedTo "The Laser Source Hatch parallel bonus is increased to x 4")
     }
 
     // 戴森球接收站
