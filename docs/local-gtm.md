@@ -4,7 +4,7 @@
 
 ## 依赖方式
 
-主仓不会直接读取本地 GTM 工作区，而是通过 `dependencies.gradle` 中的 Maven 坐标 `com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:${gtceu_version}` 使用 GTM。GTM 源码位于 [GregTech-Odyssey/GregTech-Modern](https://github.com/GregTech-Odyssey/GregTech-Modern)。主仓正常构建不要求本地检出 GTM；只有确需联调本地源码时才使用下述步骤，并先确认该工作区的实际路径，不假定它与主仓同级。
+主仓不会直接读取本地 GTM 工作区，而是通过 `dependencies.gradle` 中的 Maven 坐标 `com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:${gtceu_version}` 使用 GTM。GTM 源码位于 [GregTech-Odyssey/GregTech-Modern](https://github.com/GregTech-Odyssey/GregTech-Modern)。主仓正常构建不要求本地检出 GTM；确需本地联调时，默认查找与主仓同级的 `GregTech-Modern/`。若未找到，停止联调并请用户提供已有检出的路径或决定是否克隆，不自行克隆。
 
 联调前确认：
 
@@ -16,7 +16,8 @@
 
 ```powershell
 $gtocoreRepoPath = (Get-Location).Path
-$gtmRepoPath = '<GTM_REPO_PATH>'
+$gtmRepoPath = Join-Path (Split-Path -Parent $gtocoreRepoPath) 'GregTech-Modern'
+if (-not (Test-Path -LiteralPath (Join-Path $gtmRepoPath 'gradlew.bat'))) { throw '未找到同级 GTM 仓库；停止并向用户确认实际路径' }
 Set-Location -LiteralPath $gtmRepoPath
 $env:JAVA_HOME = '<JDK_21_HOME>'
 if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid JDK 21 required' }

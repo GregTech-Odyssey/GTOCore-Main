@@ -10,12 +10,15 @@
 |---|---|
 | 创建、修改或审查 Java/Kotlin 代码 | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节 |
 | 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
+| 定位或修复 GTM/AE2 行为、考虑在主仓增加 Mixin 或调整这两个依赖 | [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md) |
 | 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖 | [本地 GTM 联调](docs/local-gtm.md) |
 | 操作 `GTOLib/`、`GTOSeal/`、预构建 jar、`.PROTECTED`、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与预构建](docs/gtolib.md) |
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
+
+GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，先判断是否应直接改对应 fork，不默认在 GTOCore 添加 Mixin；根据 [修改位置说明](docs/forked-dependencies.md) 权衡。
 
 ## 编码规范
 
