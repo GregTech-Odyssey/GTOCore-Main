@@ -109,6 +109,6 @@ public final class VirtualProviderData {
 
     public static boolean hasData(ItemStack stack) {
         var tag = stack.getTag();
-        return tag != null && tag.contains(MOD_TAG);
+        return tag != null && !tag.isEmpty();
     }
 }

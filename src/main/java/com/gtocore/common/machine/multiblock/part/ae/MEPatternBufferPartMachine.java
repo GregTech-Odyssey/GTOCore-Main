@@ -1012,7 +1012,6 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         public void pushInput(AEKey key, long amount) {
             if (amount < 1) return;
             if (key instanceof AEItemKey itemKey) {
-                if (MEPatternVirtualInputHelper.isVirtualProvider(itemKey)) return;
                 slot.itemInventory.insert(itemKey, amount);
             } else if (key instanceof AEFluidKey fluidKey) {
                 slot.fluidInventory.insert(fluidKey, amount);

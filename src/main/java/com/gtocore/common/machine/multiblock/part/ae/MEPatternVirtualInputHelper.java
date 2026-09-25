@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtolib.api.ae2.MyPatternDetailsHelper;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.RLUtils;
 
@@ -15,11 +16,13 @@ import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
+import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.GenericStack;
 import appeng.crafting.pattern.AEProcessingPattern;
 
 import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
@@ -29,6 +32,7 @@ import com.hepdd.gtmthings.data.CustomItems;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -75,11 +79,15 @@ final class MEPatternVirtualInputHelper {
         }
 
         var sparseInput = processingPattern.getSparseInputs();
+        var input = new ArrayList<GenericStack>(sparseInput.length);
         int targetItemSlot = 0;
         int targetFluidSlot = 0;
         var locked = false;
         for (var stack : sparseInput) {
-            if (stack == null || !(stack.what() instanceof AEItemKey what) || !isVirtualProvider(what)) continue;
+            if (!(stack.what() instanceof AEItemKey what) || !isVirtualProvider(what)) {
+                input.add(stack);
+                continue;
+            }
 
             if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
                 ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
@@ -135,12 +143,16 @@ final class MEPatternVirtualInputHelper {
                 targetFluidSlot++;
             }
         }
-        return pattern;
+        if (input.size() == sparseInput.length || input.isEmpty()) {
+            return pattern;
+        }
+        var stack = PatternDetailsHelper.encodeProcessingPattern(input.toArray(new GenericStack[0]), processingPattern.getSparseOutputs());
+        return MyPatternDetailsHelper.decode(AEItemKey.of(stack));
     }
 
     static boolean isVirtualProvider(AEItemKey key) {
         var stack = key.getReadOnlyStack();
-        if (!VirtualProviderData.hasData(stack) && !VirtualProviderData.isLocked(stack)) return false;
+        if (!VirtualProviderData.hasData(stack)) return false;
         var item = key.getItem();
         return item == CustomItems.VIRTUAL_ITEM_PROVIDER.get() ||
                 item == CustomItems.VIRTUAL_FLUID_PROVIDER.get();

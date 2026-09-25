@@ -3,7 +3,6 @@ package com.gtocore.common.machine.trait;
 import com.gtocore.common.machine.multiblock.part.ae.AbstractRecipeInternalSlot;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 
-import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.lookup.IIngredientConvertible;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
@@ -72,11 +71,6 @@ public final class InternalSlotRecipeHandler {
         protected abstract @Nullable GTRecipeType getEffectiveRecipeType(GTRecipeType recipeType);
 
         protected abstract void onRecipeHandled(GTRecipe recipe);
-
-        protected static GTRecipeDefinition registeredDefinition(GTRecipe recipe) {
-            var definition = recipe.definition;
-            return definition.registered ? RecipeBuilder.get(definition.id) : definition;
-        }
 
         @Override
         public abstract RecipeHandlerUnit wrapper(Collection<IRecipeHandler> handlers);
@@ -172,7 +166,7 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         protected void onRecipeHandled(GTRecipe recipe) {
-            slot.setRecipe(registeredDefinition(recipe));
+            slot.setRecipe(recipe.definition);
         }
 
         @Override
