@@ -158,11 +158,11 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
     @JvmField
     val SuperConductingMaterialResearch = MainTree.builder("super_conducting_material_research", "超导材料研究", "Superconducting Material Research")
         .description("将具有超导特性的材料封装并维持在环境中，实现电压传输的零线损", "Encapsulate materials with superconducting properties and maintain them in the environment to achieve zero-loss voltage transmission")
-        .icon(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.UraniumRhodiumDinaquadide)
+        .icon(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.IndiumTinBariumTitaniumCuprate)
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(32 * 20 * 300L)
-                .setEurekaItem(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.UraniumRhodiumDinaquadide, 1.0F)
+                .setEurekaItem(GTOTagPrefix.SUPERCONDUCTOR_BASE, GTMaterials.IndiumTinBariumTitaniumCuprate, 1.0F)
                 .build(),
         )
         .build()

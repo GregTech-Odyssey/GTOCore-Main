@@ -5390,5 +5390,71 @@ public final class MaterialB {
                 .color(0x9cf3fb)
                 .iconSet(DULL)
                 .buildAndRegister();
+
+        CalcareousSludge = material("calcareous_sludge", "石灰质淤泥")
+                .dust()
+                .color(0xE8E8E8)
+                .iconSet(DULL)
+                .buildAndRegister();
+        GlassySludge = material("glassy_sludge", "玻璃质淤泥")
+                .dust()
+                .color(0xeaecf1)
+                .iconSet(DULL)
+                .buildAndRegister();
+        IgneousSludge = material("igneous_sludge", "火成岩质淤泥")
+                .dust()
+                .color(0xf2c9c2)
+                .iconSet(DULL)
+                .buildAndRegister();
+        SedimentarySludge = material("sedimentary_sludge", "沉积岩质淤泥")
+                .dust()
+                .color(0xf2e1c2)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MetamorphicSludge = material("metamorphic_sludge", "变质岩质淤泥")
+                .dust()
+                .color(0xf2e1c2)
+                .iconSet(DULL)
+                .buildAndRegister();
+        AsphaltOilSlag = material("asphalt_oil_slag", "沥青油渣")
+                .dust()
+                .color(0x1f211d)
+                .iconSet(DULL)
+                .buildAndRegister();
+        BleachingStone = material("bleaching_stone", "漂白石")
+                .dust()
+                .color(0x88e3eb)
+                .iconSet(DULL)
+                .buildAndRegister();
+        CalciumSulfateStone = material("calcium_sulfate_stone", "硫酸钙石")
+                .dust()
+                .color(0xEba88d)
+                .iconSet(DULL)
+                .buildAndRegister();
+        AcidicOxidizedMudSlag = material("acidic_oxidized_mud_slag", "酸化氧化渣泥")
+                .dust()
+                .color(0xc8d467)
+                .iconSet(DULL)
+                .buildAndRegister();
+        FluorideContainingSlagMud = material("fluoride_containing_slag_mud", "含氟渣泥")
+                .dust()
+                .color(0x88e3eb)
+                .iconSet(DULL)
+                .buildAndRegister();
+        RadioactiveWasteMud = material("radioactive_waste_mud", "放射性废泥")
+                .dust()
+                .color(0xaf88e3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        FineDustSoil = material("fine_dust_soil", "细尘土")
+                .dust()
+                .color(0xE8E8E8)
+                .iconSet(DULL)
+                .buildAndRegister();
+        MixedMetalDustSoil = material("mixed_metal_dust_soil", "杂金属尘土")
+                .dust()
+                .color(0x9c7a34)
+                .iconSet(DULL)
+                .buildAndRegister();
     }
 }

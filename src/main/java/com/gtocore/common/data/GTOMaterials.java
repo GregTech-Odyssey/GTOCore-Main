@@ -308,6 +308,34 @@ public final class GTOMaterials {
     // 纯净氟
     public static Material PureFluorine;
 
+    // 副产物质的含杂形态（副产物）
+    // 石灰质淤泥
+    public static Material CalcareousSludge;
+    // 玻璃质淤泥
+    public static Material GlassySludge;
+    // 火成岩质淤泥
+    public static Material IgneousSludge;
+    // 沉积岩质淤泥
+    public static Material SedimentarySludge;
+    // 变质岩质淤泥
+    public static Material MetamorphicSludge;
+    // 沥青油渣
+    public static Material AsphaltOilSlag;
+    // 漂白石
+    public static Material BleachingStone;
+    // 硫酸钙石
+    public static Material CalciumSulfateStone;
+    // 含氟渣泥
+    public static Material FluorideContainingSlagMud;
+    // 放射性废泥
+    public static Material RadioactiveWasteMud;
+    // 酸性氧化泥渣
+    public static Material AcidicOxidizedMudSlag;
+    // 细尘土
+    public static Material FineDustSoil;
+    // 杂金属尘土
+    public static Material MixedMetalDustSoil;
+
     public static Material IronChromiumRedoxFlowBatteryElectrolyte;// iv 2a uev
     public static Material VanadiumRedoxFlowBatteryElectrolyte;// luv 1a uxv
     public static Material ZincIodideFlowBatteryElectrolyte;// zpm 2a opv
