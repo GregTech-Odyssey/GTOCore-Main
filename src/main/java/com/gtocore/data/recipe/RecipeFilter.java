@@ -454,6 +454,7 @@ public final class RecipeFilter {
         filters.add(RLUtils.fromNamespaceAndPath("effortlessbuilding", "golden_randomizer_bag"));
         filters.add(RLUtils.fromNamespaceAndPath("effortlessbuilding", "diamond_randomizer_bag"));
 
+        filters.add(RLUtils.fromNamespaceAndPath("arseng", "me_source_jar"));
         // 去除简单模式下的原版末影珍珠配方
         filters.add(RLUtils.mc("ender_eye"));
 

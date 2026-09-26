@@ -229,14 +229,18 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
                     gtolib$lastFrontFaceFree = false;
                 }
             }
-            gtolib$pollutionPos = getPos();
-            gtolib$pollutionFacing = getFrontFacing();
+            if (!isRemote()) {
+                gtolib$pollutionPos = getPos();
+                gtolib$pollutionFacing = getFrontFacing();
+            }
             if (!gtolib$lastFrontFaceFree) {
                 var output = IMufflerConduction.getMufflerPipeNetOutput(this);
                 if (output != null && output.shouldWorkAsMufflerSource()) {
                     gtolib$lastFrontFaceFree = true;
-                    gtolib$pollutionPos = output.self().getPos();
-                    gtolib$pollutionFacing = output.self().getFrontFacing();
+                    if (!isRemote()) {
+                        gtolib$pollutionPos = output.self().getPos();
+                        gtolib$pollutionFacing = output.self().getFrontFacing();
+                    }
                     requestSync();
                 }
             }

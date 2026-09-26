@@ -67,6 +67,10 @@ public final class ArsNouveauRecipes {
 
             ImbuementRecipe("spirit_fuel", Ingredient.of(ExtraBotanyItems.nightmareFuel), new ItemStack(ExtraBotanyItems.spiritFuel), 2000,
                     new Ingredient[] { Ingredient.of(Blocks.PLAYER_HEAD) });
+
+            ImbuementRecipe("arseng_me_source_jar", Ingredient.of(GTOBlocks.LAURERIL_JAR), RegistriesUtils.getItemStack("arseng:me_source_jar"), 10000,
+                    new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(TagUtils.createItemTag(RLUtils.ae("interface"))) });
+
         }
 
         // 附魔装置
@@ -401,7 +405,7 @@ public final class ArsNouveauRecipes {
 
         // Ars Energistique 灌注核心
         {
-            MultiblockImbuementRecipe(5, true, "arseng_me_source_jar", Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_jar")), RegistriesUtils.getItemStack("arseng:me_source_jar"), 10000,
+            MultiblockImbuementRecipe(5, true, "arseng_me_source_jar", Ingredient.of(GTOBlocks.LAURERIL_JAR), RegistriesUtils.getItemStack("arseng:me_source_jar"), 10000,
                     new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(TagUtils.createItemTag(RLUtils.ae("interface"))) }, new FluidStack[0]);
             MultiblockImbuementRecipe(5, true, "arseng_source_acceptor", Ingredient.of(RegistriesUtils.getItem("ae2:energy_acceptor")), RegistriesUtils.getItemStack("arseng:source_acceptor"), 10000,
                     new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")),
