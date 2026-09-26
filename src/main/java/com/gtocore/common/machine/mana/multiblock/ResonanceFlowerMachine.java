@@ -92,7 +92,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
      * （即存储键）改名为 {@code recipeProgress}，旧数据自然被忽略，代价只是等级进度重置一次。
      */
     @SaveToDisk
-    private final Reference2ObjectLinkedOpenHashMap<GTRecipeDefinition, Entry> recipeProgress = new Reference2ObjectLinkedOpenHashMap<>(MAX_SIZE);
+    private final Reference2ObjectLinkedOpenHashMap<GTRecipeDefinition, Entry> recipeProgresEntrys = new Reference2ObjectLinkedOpenHashMap<>(MAX_SIZE);
 
     /** 最近一次真正开跑的配方定义；未跑过时为 {@code null}。只用于界面显示。 */
     @SaveToDisk
@@ -241,7 +241,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
      */
     @Override
     public void saveToItem(CompoundTag tag) {
-        if (recipeProgress.isEmpty() && lastRecipe == null) return;
+        if (recipeProgresEntrys.isEmpty() && lastRecipe == null) return;
         byte[] data = getFieldDataManager().writeFieldsToData("recipeProgress", "lastRecipe").writeToBytes();
         tag.put(NBT_KEY_RECIPE_PROGRESS, new ByteArrayTag(data));
     }
@@ -362,20 +362,20 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
      */
     public void addEntry(@Nullable GTRecipeDefinition definition, long frequency) {
         if (definition == null) return;
-        recipeProgress.compute(definition, (k, v) -> {
+        recipeProgresEntrys.compute(definition, (k, v) -> {
             if (v == null) {
                 return new Entry((short) 1, frequency);
             } else {
                 return new Entry(v.tier, v.frequency + frequency);
             }
         });
-        while (recipeProgress.size() > MAX_SIZE) recipeProgress.removeFirst();
+        while (recipeProgresEntrys.size() > MAX_SIZE) recipeProgresEntrys.removeFirst();
     }
 
     /** 取某个配方的进度条目；没有记录（或传入 null）时返回 {@code null}。 */
     @Nullable
     public Entry getEntry(@Nullable GTRecipeDefinition definition) {
-        return definition == null ? null : recipeProgress.get(definition);
+        return definition == null ? null : recipeProgresEntrys.get(definition);
     }
 
     /** 取某个配方的等级；没有记录时为 0（此时不减免时长、并行 1）。 */
