@@ -67,4 +67,9 @@ public class HUDConfigurator extends IFancyConfiguratorButton.Toggle {
     public void onClick(ClickData clickData) {
         onClick.accept(clickData, hudInstance.isEnabled());
     }
+
+    @Override
+    public boolean isLatched() {
+        return hudInstance != null && hudInstance.isEnabled();
+    }
 }
