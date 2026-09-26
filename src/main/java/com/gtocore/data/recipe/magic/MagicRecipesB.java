@@ -26,6 +26,7 @@ import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
 import mythicbotany.register.ModItems;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -133,6 +134,15 @@ public final class MagicRecipesB {
                     .outputItems(GTOBlocks.THE_SOLARIS_LENS.asItem())
                     .duration(100)
                     .addData(SOLARIS, 50000)
+                    .save();
+
+            ItemStack manaTablet = BotaniaItems.manaTablet.getDefaultInstance();
+            ItemNBTHelper.setInt(manaTablet, "mana", 500000);
+            CELESTIAL_CONDENSER_RECIPES.builder("add_mana_to_mana_tablet")
+                    .inputItems(BotaniaItems.manaTablet)
+                    .outputItems(manaTablet)
+                    .duration(100)
+                    .addData(ANY, 5000)
                     .save();
         }
 

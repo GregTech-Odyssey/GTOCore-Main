@@ -1037,6 +1037,11 @@ public final class GTOItems {
     public static final ItemEntry<Item> SOUL_JADE_CRYSTAL_GIANT_POLYCRYSTAL = register("soul_jade_crystal_giant_polycrystal", "魂玉晶巨型多晶体");
     public static final ItemEntry<Item> REMNANT_SPIRIT_STONE_GIANT_POLYCRYSTAL = register("remnant_spirit_stone_giant_polycrystal", "骸灵石巨型多晶体");
 
+    public static final ItemEntry<Item> ORIGIN_CORE_CRYSTAL_ETCHED_CRYSTAL_PLATE = register("origin_core_crystal_etched_crystal_plate", "源核晶蚀刻晶版");
+    public static final ItemEntry<Item> STAR_BLOOD_CRYSTAL_ETCHED_CRYSTAL_PLATE = register("star_blood_crystal_etched_crystal_plate", "星血晶蚀刻晶版");
+    public static final ItemEntry<Item> SOUL_JADE_CRYSTAL_ETCHED_CRYSTAL_PLATE = register("soul_jade_crystal_etched_crystal_plate", "魂玉晶蚀刻晶版");
+    public static final ItemEntry<Item> REMNANT_SPIRIT_STONE_ETCHED_CRYSTAL_PLATE = register("remnant_spirit_stone_etched_crystal_plate", "骸灵石蚀刻晶版");
+
     public static final ItemEntry<TarotArcanum>[] TAROT_ARCANUM = registerTarotArcanum();
 
     public static final ItemEntry<AffixCanvas> AFFIX_CANVAS = item("affix_canvas", "铭刻之布", AffixCanvas::new).register();

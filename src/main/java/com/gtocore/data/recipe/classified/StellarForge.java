@@ -489,7 +489,6 @@ final class StellarForge {
                 .inputItems(Items.BREAD.asItem(), 6400)
                 .chancedOutput(GTOMaterials.Mana.getFluid(7200), 7000, 10)
                 .EUt(69)
-                .duration(8)
                 .MANAt(-420)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)

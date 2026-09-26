@@ -16,8 +16,8 @@ import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -29,16 +29,37 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.datastream.data.Data;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static com.lowdragmc.lowdraglib.LDLib.random;
 
 public class ResonanceFlowerMachine extends ManaMultiblockMachine implements IStorageMultiblock, IDropSaveMachine {
+
+    // 进度表最多保留的配方条数
+    private static final int MAX_SIZE = 10;
+    // 等级上限
+    private static final short MAX_TIER = 256;
+
+    // 以物品形式掉落/放置时保存进度的 NBT 键
+    private static final String NBT_KEY_RECIPE_PROGRESS = "RecipeProgress";
+
+    // 共鸣标签的键
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_FREQUENCY = "frequency";
+    private static final String KEY_STACK = "stack";
+    private static final String KEY_AMOUNT = "Amount";
+    private static final String TYPE_ITEM = "item";
+    private static final String TYPE_FLUID = "fluid";
+
+    // 进度条目的键
+    private static final String KEY_TIER = "tier";
 
     // 时间消耗波动系数
     @SaveToDisk(defaultValue = "1.0")
@@ -51,16 +72,29 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     @SaveToDisk(defaultValue = "0")
     private int stableTime = 0;
 
-    // TODO 使用Map<GTRecipeDefinition, CompoundTag>重写
-    // 存储信息
+    /**
+     * 配方进度表：{@link GTRecipeDefinition} → {@code {tier, frequency}}，最多 {@link #MAX_SIZE} 条。
+     *
+     * <p>
+     * 键直接用配方定义本身（注册对象、标识稳定，按引用比较），于是查找/去重/界面取名都不必再拿
+     * 字符串在配方表里线性扫描。用 Linked 版引用容器是为了保留「最近使用」顺序：累加时先移除再放回
+     * 末尾，超量时 {@code removeFirst()} 淘汰最久未使用的那条。
+     *
+     * <p>
+     * 持久化走 DataSyncLib 的 Map 访问器：键用 gtm 注册的 {@code GTRecipeDefinition} 编解码器
+     * （只写配方类型 + 注册 id，读回时从配方表解析），值用 {@code CompoundTag}。
+     *
+     * <p>
+     * <b>存档兼容：</b>旧实现是 {@code List<CompoundTag>}（条目自带 id 字符串），字段名
+     * {@code recipeIncremental}。数据形状完全不同，沿用旧键会让新格式去解析旧数据而崩溃，故字段
+     * （即存储键）改名为 {@code recipeProgress}，旧数据自然被忽略，代价只是等级进度重置一次。
+     */
     @SaveToDisk
-    private final List<CompoundTag> recipeIncremental = new ArrayList<>();
-    private static final int MAX_SIZE = 10;
-    private static final String NBT_KEY_RECIPE_INCREMENTAL = "RecipeIncremental";
-    private static final String NBT_KEY_LAST_RECIPE = "LastRecipe";
+    private final Reference2ObjectLinkedOpenHashMap<GTRecipeDefinition, CompoundTag> recipeProgress = new Reference2ObjectLinkedOpenHashMap<>(MAX_SIZE);
 
-    @SaveToDisk(defaultValue = "")
-    private String lastRecipeId = "";
+    /** 最近一次真正开跑的配方定义；未跑过时为 {@code null}。只用于界面显示。 */
+    @SaveToDisk
+    private GTRecipeDefinition lastRecipe = null;
 
     // 额外共鸣输入
     @SaveToDisk(defaultValue = "2147483647")
@@ -96,71 +130,80 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         return IStorageMultiblock.super.createUIWidget(super.createUIWidget());
     }
 
+    /**
+     * 只计算「这条配方此刻该跑成什么样」：等级给出时长减免与并行上限，其余交给
+     * {@link ParallelLogic} 依据内容库存与持续消耗继续收紧。
+     *
+     * <p>
+     * <b>不要在这里改机器状态。</b>本方法在配方搜索期间（机器空闲时每 {@code interval} tick 搜一次）
+     * 会对每个候选定义各调用一次。原实现在这里累计进度、消耗存储里的稳定资源、记录最近配方，于是
+     * 连「只是被扫到、并没有跑」的配方也会升级，放入的下界之星也会被白吃掉。副作用已移到
+     * {@link #beforeWorking} 与 {@link #afterWorking}，只在配方真正开跑、真正完成时各执行一次。
+     */
     @Override
-    public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        resetResonance();
+    public @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        short tier = getTier(recipe.definition);
+        // 时长 = 基础时长 × 时间波动系数 × 等级减免
+        recipe.duration = (int) Math.max(1D, recipe.duration * timeFluctuationCoefficient * getTimeMultiplier(tier));
+        // 并行上限由等级给出，内容库存/持续消耗不足时 ParallelLogic 会自行收紧（返回 null 表示这条配方跑不了）
+        return ParallelLogic.accurateParallel(this, unit, recipe, getMaxParallel(tier));
+    }
 
-        String id = recipe.definition.id.getPath();
-        Object[] tierEffect = getTierEffect(id);
-
-        if (recipe.data.containsKey(GTORecipeDataKeys.RESONANCE)) {
-            Object[] resonance = fromResonanceTag(recipe.data.getData(GTORecipeDataKeys.RESONANCE));
-            if (resonance[0] instanceof ItemStack itemStack) {
-                resonanceItem = itemStack;
-                resonanceFluid = FluidStack.EMPTY;
-            } else if (resonance[0] instanceof FluidStack fluidStack) {
-                resonanceItem = ItemStack.EMPTY;
-                resonanceFluid = fluidStack;
-            }
-            frequency = (int) resonance[1];
-        }
-
-        double durationMultiplier = recipe.duration * timeFluctuationCoefficient * (float) tierEffect[0];
-        recipe.duration = (int) Math.max(1, durationMultiplier);
-        long maxContentParallel = ParallelLogic.getMaxContentParallelAmount(this, unit, recipe, (long) tierEffect[1]);
-
-        addEntry(id, maxContentParallel);
-        upgradeEntry(id);
-        lastRecipeId = id;
-        updateStableTime();
-
-        return ParallelLogic.accurateParallel(this, unit, recipe, maxContentParallel);
+    /** 配方真正开跑（输入已扣）时才记录当前配方与它要求的共鸣物。 */
+    @Override
+    public void beforeWorking(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        super.beforeWorking(unit, recipe);
+        lastRecipe = recipe.definition;
+        applyResonance(recipe);
     }
 
     @Override
     public void afterWorking() {
+        // 先抓住刚跑完的那条配方：父类回调里有部件逻辑，不能假设它之后 lastRecipe 还在
+        GTRecipe finished = getRecipeLogic().getLastRecipe();
         super.afterWorking();
         resetResonance();
-
+        // 进度按「真正跑完的配方」结算，且只加本次实际生效的并行数
+        if (finished != null) {
+            addEntry(finished.definition, finished.parallels);
+            upgradeEntry(finished.definition);
+        }
+        // 补料：存储槽里的下界之星/稳定核心换成稳定次数
         updateStableTime();
+        // 每次完工消耗一次锚定，没有锚定就波动一次
         if (stableTime > 0) stableTime--;
         else triggerFluctuation();
     }
 
     @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
-        if (super.handleTickRecipe(recipe)) {
-            if (frequency > 0 && getRecipeLogic().getProgress() % frequency == 0 && getRecipeLogic().getProgress() != 0) {
-                if (!resonanceFluid.isEmpty()) {
-                    return inputFluid(resonanceFluid);
-                } else if (!resonanceItem.isEmpty()) {
-                    return inputItem(resonanceItem);
-                }
+        if (!super.handleTickRecipe(recipe)) return false;
+        int progress = getRecipeLogic().getProgress();
+        if (frequency > 0 && progress != 0 && progress % frequency == 0) {
+            // 元素消耗波动：一次脉冲吃多少随系数缩放（至少 1 个），系数失控时消耗随之暴涨
+            if (!resonanceFluid.isEmpty()) {
+                int amount = scaleElementalAmount(resonanceFluid.getAmount());
+                if (amount == resonanceFluid.getAmount()) return inputFluid(resonanceFluid);
+                return inputFluid(new FluidStack(resonanceFluid.getFluid(), amount, resonanceFluid.getTag()));
             }
-            return true;
+            if (!resonanceItem.isEmpty()) {
+                int count = scaleElementalAmount(resonanceItem.getCount());
+                if (count == resonanceItem.getCount()) return inputItem(resonanceItem);
+                return inputItem(resonanceItem.copyWithCount(count));
+            }
         }
-        return false;
+        return true;
     }
 
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        CompoundTag recipeEntry = getEntryById(lastRecipeId);
+        CompoundTag recipeEntry = getEntry(lastRecipe);
         if (recipeEntry != null) {
-            short tier = recipeEntry.getShort("tier");
+            short tier = recipeEntry.getShort(KEY_TIER);
             textList.add(Component.translatable("gtocore.machine.resonance_flower.current_recipe",
                     getLastRecipeName().copy().withStyle(ChatFormatting.GREEN)));
-            if (tier >= 256) {
+            if (tier >= MAX_TIER) {
                 textList.add(Component.translatable("gtocore.machine.resonance_flower.tier_max",
                         Component.literal(Short.toString(tier)).withStyle(ChatFormatting.GREEN)));
             } else {
@@ -181,34 +224,44 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
                 Component.literal(String.format("%.3f", elementalFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
     }
 
+    /** 最近一次运行配方的显示名：优先取产物名，取不到就退回注册 id。 */
     private Component getLastRecipeName() {
-        for (GTRecipeDefinition definition : getRecipeType().recipes.values()) {
-            if (lastRecipeId.equals(definition.id.getPath())) {
-                if (!definition.itemOutputs.isEmpty()) return definition.itemOutputs.getFirst().inner.getName();
-                if (!definition.fluidOutputs.isEmpty()) return definition.fluidOutputs.getFirst().inner.getName();
-                break;
-            }
-        }
-        return Component.literal(lastRecipeId);
+        GTRecipeDefinition recipe = lastRecipe;
+        if (recipe == null) return Component.literal("");
+        if (!recipe.itemOutputs.isEmpty()) return recipe.itemOutputs.getFirst().inner.getName();
+        if (!recipe.fluidOutputs.isEmpty()) return recipe.fluidOutputs.getFirst().inner.getName();
+        return Component.literal(recipe.id.toString());
     }
 
+    /**
+     * 物品形式保存：直接复用 {@code @SaveToDisk} 那套字段编解码（{@link Data} 二进制），
+     * 不再自己手搓一份 NBT 格式——同一份数据只留一条持久化路径。
+     */
     @Override
     public void saveToItem(CompoundTag tag) {
-        ListTag tagList = new ListTag();
-        tagList.addAll(this.recipeIncremental);
-        tag.put(NBT_KEY_RECIPE_INCREMENTAL, tagList);
-        if (!lastRecipeId.isEmpty()) tag.putString(NBT_KEY_LAST_RECIPE, lastRecipeId);
+        if (recipeProgress.isEmpty() && lastRecipe == null) return;
+        byte[] data = getFieldDataManager().writeFieldsToData("recipeProgress", "lastRecipe").writeToBytes();
+        tag.put(NBT_KEY_RECIPE_PROGRESS, new ByteArrayTag(data));
     }
 
     @Override
     public void loadFromItem(CompoundTag tag) {
-        if (tag.contains(NBT_KEY_RECIPE_INCREMENTAL, Tag.TAG_LIST)) {
-            ListTag tagList = tag.getList(NBT_KEY_RECIPE_INCREMENTAL, Tag.TAG_COMPOUND);
-            tagList.forEach(itemTag -> this.recipeIncremental.add((CompoundTag) itemTag));
+        if (tag.get(NBT_KEY_RECIPE_PROGRESS) instanceof ByteArrayTag data) {
+            getFieldDataManager().readFieldsFromData(Data.readData(data.getAsByteArray()), 0, "recipeProgress", "lastRecipe");
         }
-        if (tag.contains(NBT_KEY_LAST_RECIPE, Tag.TAG_STRING)) {
-            lastRecipeId = tag.getString(NBT_KEY_LAST_RECIPE);
+    }
+
+    /** 读取配方携带的共鸣需求（没有标签则清空：不消耗任何共鸣物）。 */
+    private void applyResonance(GTRecipe recipe) {
+        resetResonance();
+        if (!recipe.data.containsKey(GTORecipeDataKeys.RESONANCE)) return;
+        Object[] resonance = fromResonanceTag(recipe.data.getData(GTORecipeDataKeys.RESONANCE));
+        if (resonance[0] instanceof ItemStack itemStack) {
+            resonanceItem = itemStack;
+        } else if (resonance[0] instanceof FluidStack fluidStack) {
+            resonanceFluid = fluidStack;
         }
+        frequency = (int) resonance[1];
     }
 
     private void resetResonance() {
@@ -234,13 +287,6 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     /////////////////////////////////////
     // ********** 共鸣消耗系统 ********** //
     /////////////////////////////////////
-
-    private static final String KEY_TYPE = "type";
-    private static final String KEY_FREQUENCY = "frequency";
-    private static final String KEY_STACK = "stack";
-    private static final String KEY_AMOUNT = "Amount";
-    private static final String TYPE_ITEM = "item";
-    private static final String TYPE_FLUID = "fluid";
 
     // 通用序列化：ItemStack/FluidStack + 频率 → CompoundTag
     public static CompoundTag toResonanceTag(Object stack, int frequency) {
@@ -283,6 +329,12 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         return new Object[] { stack, frequency };
     }
 
+    /** 一次共鸣脉冲实际消耗的元素量：受元素消耗波动系数缩放，至少 1。 */
+    private int scaleElementalAmount(int baseAmount) {
+        if (elementalFluctuationCoefficient == 1.0D) return baseAmount;
+        return Math.max(1, (int) (baseAmount * elementalFluctuationCoefficient));
+    }
+
     /** 波动系数系统 */
     public void triggerFluctuation() {
         // 1. 时间消耗波动：每次跳变乘数范围 0.2 ~ 2.6，最终乘数范围 0.05 ~ 20
@@ -298,70 +350,74 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     /////////////////////////////////////
 
     /**
-     * 添加/更新条目：
-     * - id不存在 → 新增（tier=1，frequency=传入值）；
-     * - id存在 → 累加frequency（旧值+传入值），并将条目移到末尾（最晚添加）；
-     * - 超量则删除最早添加的条目。
+     * 累加配方的进度，并把它挪到「最近使用」的位置。
+     *
+     * <ul>
+     * <li>尚无记录 → 新建条目，{@code tier = 1}，{@code frequency = 本次并行数}；</li>
+     * <li>已有记录 → {@code frequency} 累加到旧条目上；</li>
+     * <li>记录数超过 {@link #MAX_SIZE} → 淘汰最久未使用（链表头）的那条。</li>
+     * </ul>
      */
-    public void addEntry(String id, long frequency) {
-        if (id == null || id.isEmpty()) return;
+    public void addEntry(@Nullable GTRecipeDefinition definition, long frequency) {
+        if (definition == null) return;
 
-        // 查找并移除旧条目（存在则累加，且移到末尾）
-        CompoundTag oldEntry = null;
-        for (int i = 0; i < recipeIncremental.size(); i++) {
-            CompoundTag entryTag = recipeIncremental.get(i);
-            if (id.equals(entryTag.getString("id"))) {
-                oldEntry = entryTag;
-                recipeIncremental.remove(i);
-                break;
-            }
-        }
-
-        // 构建新条目（存在则累加frequency）
+        CompoundTag oldEntry = recipeProgress.remove(definition);
         CompoundTag newEntry = new CompoundTag();
-        newEntry.putString("id", id);
-        if (oldEntry != null) {
-            newEntry.putShort("tier", oldEntry.getShort("tier"));
-            newEntry.putLong("frequency", oldEntry.getLong("frequency") + frequency);
+        if (oldEntry == null) {
+            newEntry.putShort(KEY_TIER, (short) 1);
+            newEntry.putLong(KEY_FREQUENCY, frequency);
         } else {
-            newEntry.putShort("tier", (short) 1);
-            newEntry.putLong("frequency", frequency);
+            newEntry.putShort(KEY_TIER, oldEntry.getShort(KEY_TIER));
+            newEntry.putLong(KEY_FREQUENCY, oldEntry.getLong(KEY_FREQUENCY) + frequency);
         }
+        // 先移除再放回，让 Linked 容器把这条记录排到末尾（最近使用）
+        recipeProgress.put(definition, newEntry);
 
-        recipeIncremental.add(newEntry);
-
-        while (recipeIncremental.size() > MAX_SIZE) recipeIncremental.removeFirst();
+        while (recipeProgress.size() > MAX_SIZE) recipeProgress.removeFirst();
     }
 
-    /** 按id查找条目 */
-    public CompoundTag getEntryById(String id) {
-        if (id == null || id.isEmpty()) return null;
-        for (CompoundTag entryTag : recipeIncremental) {
-            if (id.equals(entryTag.getString("id"))) return entryTag;
-        }
-        return null;
+    /** 取某个配方的进度条目；没有记录（或传入 null）时返回 {@code null}。 */
+    @Nullable
+    public CompoundTag getEntry(@Nullable GTRecipeDefinition definition) {
+        return definition == null ? null : recipeProgress.get(definition);
     }
 
-    /** 升级指定ID的配方等级 */
-    public void upgradeEntry(String id) {
-        CompoundTag entry = getEntryById(id);
+    /** 取某个配方的等级；没有记录时为 0（此时不减免时长、并行 1）。 */
+    public short getTier(@Nullable GTRecipeDefinition definition) {
+        CompoundTag entry = getEntry(definition);
+        return entry == null ? 0 : entry.getShort(KEY_TIER);
+    }
+
+    /**
+     * 把攒够的 frequency 兑换成等级：只要还够下一级的门槛就继续升。
+     *
+     * <p>
+     * 用循环而不是「一次只升一级」，是因为并行数拉高后单次运行就能攒下远超一级门槛的 frequency，
+     * 一次只扣一级会让 frequency 无限累积，最终溢出 {@code long}。等级上限 {@link #MAX_TIER}。
+     */
+    public void upgradeEntry(@Nullable GTRecipeDefinition definition) {
+        CompoundTag entry = getEntry(definition);
         if (entry == null) return;
 
-        short currentTier = entry.getShort("tier");
-        if (currentTier >= 256) return;
-
-        long currentFrequency = entry.getLong("frequency");
-        long upgradeRequirement = calculateUpgradeRequirement(currentTier);
-
-        if (currentFrequency < upgradeRequirement) return;
-
-        entry.putLong("frequency", currentFrequency - upgradeRequirement);
-        entry.putShort("tier", (short) (currentTier + 1));
+        short tier = entry.getShort(KEY_TIER);
+        long frequency = entry.getLong(KEY_FREQUENCY);
+        boolean upgraded = false;
+        while (tier < MAX_TIER) {
+            long requirement = calculateUpgradeRequirement(tier);
+            if (frequency < requirement) break;
+            frequency -= requirement;
+            tier++;
+            upgraded = true;
+        }
+        if (upgraded) {
+            entry.putShort(KEY_TIER, tier);
+            entry.putLong(KEY_FREQUENCY, frequency);
+        }
     }
 
     /** 计算升级所需frequency */
     private long calculateUpgradeRequirement(short currentTier) {
-        if (currentTier >= 256) return Long.MAX_VALUE;
+        if (currentTier >= MAX_TIER) return Long.MAX_VALUE;
         if (currentTier <= 0) return 10L;
 
         if (currentTier <= 4) {
@@ -387,13 +443,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         }
     }
 
-    /** 指定ID的运行加成 */
-    public Object[] getTierEffect(String id) {
-        CompoundTag entry = getEntryById(id);
-        short tier = entry == null ? 0 : entry.getShort("tier");
-        return new Object[] { getTimeMultiplier(tier), getMaxParallel(tier) };
-    }
-
+    /** 指定等级的时长减免系数（≥64 级固定 0.1，即最多减 90%）。 */
     public float getTimeMultiplier(short tier) {
         if (tier >= 64) return 0.1f;
         if (tier <= 0) return 1.0f;
@@ -401,8 +451,9 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         return tier <= 8 ? 1.0f - tier * 0.025f : 0.8f - (tier - 8) * 0.0125f;
     }
 
+    /** 指定等级的并行上限（≥256 级为 {@link Long#MAX_VALUE}）。 */
     public long getMaxParallel(short tier) {
-        if (tier >= 256) return Long.MAX_VALUE;
+        if (tier >= MAX_TIER) return Long.MAX_VALUE;
         if (tier <= 0) return 1L;
 
         if (tier <= 4) {
