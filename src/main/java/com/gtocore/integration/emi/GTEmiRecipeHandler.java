@@ -33,7 +33,7 @@ final class GTEmiRecipeHandler implements StandardRecipeHandler<ModularUIContain
 
     @Override
     public boolean supportsRecipe(EmiRecipe recipe) {
-        return recipe instanceof GTEMIRecipe;
+        return recipe instanceof GTEMIRecipe gtRecipe && gtRecipe.supportsTransfer();
     }
 
     @Override

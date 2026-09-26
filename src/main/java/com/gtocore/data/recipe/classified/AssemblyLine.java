@@ -639,6 +639,22 @@ final class AssemblyLine {
                 .researchNode(DataCenter)
                 .save();
 
+        ASSEMBLY_LINE_RECIPES.builder("data_center_aggregation_terminal")
+                .inputItems(TagPrefix.plate, GTMaterials.RhodiumPlatedPalladium, 4)
+                .inputItems(GTItems.COVER_SCREEN, 2)
+                .inputItems(CustomTags.LuV_CIRCUITS, 2)
+                .inputItems(GTItems.TOOL_DATA_ORB, 4)
+                .inputItems(GTItems.SENSOR_LuV)
+                .inputItems(GTItems.EMITTER_LuV)
+                .inputItems(GTBlocks.OPTICAL_PIPES[0].asItem(), 4)
+                .inputFluids(GTMaterials.SolderingAlloy, L << 2)
+                .inputFluids(GTMaterials.Polybenzimidazole, L << 1)
+                .outputItems(GTOItems.DATA_CENTER_AGGREGATION_TERMINAL)
+                .EUt(VA[LuV])
+                .duration(600)
+                .researchNode(DataCenterAggregationTerminal)
+                .save();
+
         ASSEMBLY_LINE_RECIPES.builder("me_pattern_buffer")
                 .inputItems(GTMachines.DUAL_IMPORT_HATCH[LuV], 1)
                 .inputItems(GTItems.EMITTER_LuV, 2)

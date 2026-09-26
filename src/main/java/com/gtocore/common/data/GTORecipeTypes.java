@@ -180,6 +180,13 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_CIRCUIT, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.BATH);
 
+    public static final RecipeType SATELLITE_LAUNCH_RECIPES = register("satellite_launch", "卫星发射", ELECTRIC)
+            .setMaxIOSize(3, 1, 1, 0)
+            .setEUIO(IO.IN)
+            .setSlotLayout(GTORecipeLayouts.SINGLE_ROW)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setXEIVisible(false);
+
     public static final RecipeType LOOM_RECIPES = register("loom", "织布机", ELECTRIC)
             .setMaxIOSize(2, 1, 0, 0)
             .setEUIO(IO.IN)

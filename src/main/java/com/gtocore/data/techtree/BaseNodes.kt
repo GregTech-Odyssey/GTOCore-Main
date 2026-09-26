@@ -265,6 +265,18 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
+    val DataCenterAggregationTerminal = MainTree.builder("data_center_aggregation_terminal", "便捷式多数据中心聚合终端", "Portable Data Center Aggregation Terminal")
+        .description("将多台数据中心的科研控制台聚合进一台手持终端，统一查看各台的研究状态，并远程分配与取消研究", "Aggregates the research consoles of several Data Centers into one handheld terminal to monitor their research and assign or cancel it remotely")
+        .requirements(
+            ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 60L)
+                .addMaterialNeeded(COMPUTATION, 60)
+                .setEurekaItem(ExResearchMachines.DATA_CENTER, 1.0f).build(),
+        )
+        .icon(GTOItems.DATA_CENTER_AGGREGATION_TERMINAL)
+        .prerequisites(DataCenter)
+        .build()
+
+    @JvmField
     val CrystalTechMainframe = MainTree.builder("crystal_tech_mainframe", "晶体技术主机", "Crystal Technology Mainframe")
         .description("合成大晶片", "Synthesize large crystal chips")
         .icon(GTItems.CRYSTAL_MAINFRAME_UV)

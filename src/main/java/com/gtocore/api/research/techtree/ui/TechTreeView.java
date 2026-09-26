@@ -29,6 +29,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -68,6 +69,19 @@ public class TechTreeView extends UIElement {
     private static final String HELP_CLICK = "gtocore.techtree.view.help.click";
     @RegisterLanguage(cn = "定位到选中的科技", en = "Locate the selected node")
     private static final String LOCATE = "gtocore.techtree.view.locate";
+    private static final int[] NO_CODES = new int[0];
+    private static final SyncValue.Codec<int[]> CODES = new SyncValue.Codec<>() {
+
+        @Override
+        public void write(FriendlyByteBuf buf, int[] value) {
+            buf.writeVarIntArray(value);
+        }
+
+        @Override
+        public int[] read(FriendlyByteBuf buf) {
+            return buf.readVarIntArray();
+        }
+    };
     @RegisterLanguage(cn = "点击查看详情", en = "Click for details")
     static final String CLICK_FOR_DETAILS = "gtocore.techtree.view.click_for_details";
 
@@ -79,9 +93,11 @@ public class TechTreeView extends UIElement {
     private final CanvasView canvas;
     private final CardHost details;
     private final SyncValue<NodeStates> states;
-    /// 正在研究的节点编码（数据中心的研究窗口里由服务端取值下发，其他场合为 -1）
-    private final SyncValue<Integer> researching;
+    private final SyncValue<int[]> researching;
     private Supplier<TechNode> researchingSource = () -> null;
+    @Nullable
+    private Supplier<? extends Collection<TechNode>> researchingAllSource;
+    private int[] researchingCodes = NO_CODES;
     /// 详情里显示"强制解锁"、末尾追加的区块（两端设置要一致）
     private boolean force;
     @Nullable
@@ -109,10 +125,7 @@ public class TechTreeView extends UIElement {
         this.manager = manager;
         layout(l -> l.column());
         states = addSyncValue(SyncValue.of(this::computeStates, NodeStates.CODEC, NodeStates.EMPTY));
-        researching = addSyncValue(SyncValue.ofInt(() -> {
-            var node = researchingSource.get();
-            return node == null || node.getManager() != manager ? -1 : encodeNode(node);
-        }, -1));
+        researching = addSyncValue(SyncValue.of(this::computeResearching, CODES, NO_CODES));
 
         canvas = new CanvasView(canvasId, canvasWidth, canvasHeight);
         details = new CardHost("techtree.details", this::createDetails);
@@ -150,9 +163,43 @@ public class TechTreeView extends UIElement {
         return this;
     }
 
+    public TechTreeView setResearchingAll(Supplier<? extends Collection<TechNode>> researching) {
+        this.researchingAllSource = researching;
+        return this;
+    }
+
+    private int[] computeResearching() {
+        var memo = researchingCodes;
+        if (researchingAllSource == null) {
+            var node = researchingSource.get();
+            if (node == null || node.getManager() != manager) return researchingCodes = NO_CODES;
+            int code = encodeNode(node);
+            return memo.length == 1 && memo[0] == code ? memo : (researchingCodes = new int[] { code });
+        }
+        var nodes = researchingAllSource.get();
+        int count = 0;
+        boolean same = true;
+        for (var node : nodes) {
+            if (node.getManager() != manager) continue;
+            if (count >= memo.length || memo[count] != encodeNode(node)) same = false;
+            count++;
+        }
+        if (same && count == memo.length) return memo;
+        if (count == 0) return researchingCodes = NO_CODES;
+        var codes = new int[count];
+        int i = 0;
+        for (var node : nodes) {
+            if (node.getManager() == manager) codes[i++] = encodeNode(node);
+        }
+        return researchingCodes = codes;
+    }
+
     /** {@code code} 是不是正在研究的节点（客户端读下发的值）。 */
     boolean isResearching(int code) {
-        return researching.getValue() == code;
+        for (int value : researching.getValue()) {
+            if (value == code) return true;
+        }
+        return false;
     }
 
     /**

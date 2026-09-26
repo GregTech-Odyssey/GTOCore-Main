@@ -1,14 +1,18 @@
 package com.hepdd.gtmthings.common.item;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
-import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -20,19 +24,19 @@ import net.minecraft.world.level.Level;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+@DataGeneratorScanned
 public final class VirtualItemProviderBehavior implements IAddInformation, IItemUIFactory {
 
     public static final VirtualItemProviderBehavior INSTANCE = new VirtualItemProviderBehavior();
+
+    @RegisterLanguage(cn = "未设置虚拟物品", en = "No virtual item set")
+    private static final String EMPTY = "gtocore.virtual_item_provider.empty";
 
     public static ItemStack setVirtualItem(ItemStack stack, ItemStack virtualItem) {
         return VirtualProviderData.setVirtualItem(stack, virtualItem);
@@ -52,36 +56,16 @@ public final class VirtualItemProviderBehavior implements IAddInformation, IItem
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
-        return new ModularUI(176, 166, holder, entityPlayer)
-                .widget(new MachineWindow(new ProviderUI(holder.getHand())));
-    }
-
-    private record ProviderUI(InteractionHand hand) implements IFancyUIProvider {
-
-        @Override
-        public Widget createMainPage(FancyMachineUIWidget widget) {
-            WidgetGroup group = new WidgetGroup(0, 0, 18 + 16, 18 + 16);
-            WidgetGroup container = new WidgetGroup(4, 4, 18 + 8, 18 + 8);
-            container.addWidget(new SlotWidget(new ItemHandler(widget.getGui().entityPlayer, hand), 0, 4, 4, true, true)
-                    .setBackground(GuiTextures.SLOT));
-            group.addWidget(container);
-            return group;
-        }
-
-        @Override
-        public void attachSideTabs(TabsWidget sideTabs) {
-            sideTabs.setMainTab(this);
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return new ItemStackTexture(CustomItems.VIRTUAL_ITEM_PROVIDER.get());
-        }
-
-        @Override
-        public Component getTitle() {
-            return CustomItems.VIRTUAL_ITEM_PROVIDER.get().getDescription();
-        }
+        return HeldItemPage.create(holder, entityPlayer, window -> {
+            var handler = new ItemHandler(entityPlayer, holder.getHand());
+            var name = TextLine.of(0, () -> {
+                var stack = handler.getStackInSlot(0);
+                return stack.isEmpty() ? Component.translatable(EMPTY) : stack.getHoverName();
+            }).setColor(UITheme.PANEL_TEXT);
+            name.layout(l -> l.flex(1));
+            var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(ItemSlot.of(handler, 0), name);
+            return UIElement.section(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChild(row);
+        });
     }
 
     private static class ItemHandler implements ICustomItemStackHandler {
@@ -101,8 +85,9 @@ public final class VirtualItemProviderBehavior implements IAddInformation, IItem
 
         @Override
         public void setStackInSlot(int i, @NotNull ItemStack arg) {
-            if (entityPlayer.isLocalPlayer() || arg.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get())) return;
-            virtualItem = arg.copyWithCount(1);
+            if (arg.is(CustomItems.VIRTUAL_ITEM_PROVIDER.get())) return;
+            virtualItem = arg.isEmpty() ? ItemStack.EMPTY : arg.copyWithCount(1);
+            if (entityPlayer.isLocalPlayer()) return;
             entityPlayer.setItemInHand(hand, setVirtualItem(getItem(), virtualItem));
         }
 

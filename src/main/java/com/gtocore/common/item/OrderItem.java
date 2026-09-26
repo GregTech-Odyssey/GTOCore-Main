@@ -1,53 +1,49 @@
 package com.gtocore.common.item;
 
-import com.gtocore.common.data.GTOItems;
-
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
 
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.component.ICustomDescriptionId;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
-import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.widget.PhantomSlotWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.side.item.IItemTransfer;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("all")
-public final class OrderItem implements IItemUIFactory, IFancyUIProvider, ICustomDescriptionId {
+public final class OrderItem implements IItemUIFactory, ICustomDescriptionId {
 
     public static final OrderItem INSTANCE = new OrderItem();
 
-    private InteractionHand hand;
+    private static final String TARGET = "item.gtocore.order.target";
+    private static final String NO_TARGET = "item.gtocore.order.no_target";
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Item item, Level level, Player player, InteractionHand usedHand) {
-        this.hand = usedHand;
-        return IItemUIFactory.super.use(item, level, player, usedHand);
-    }
-
-    @Override
-    public ModularUI createUI(HeldItemUIFactory.HeldItemHolder heldItemHolder, Player player) {
-        return new ModularUI(176, 166, heldItemHolder, player).widget(new MachineWindow(this));
+    public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
+        return HeldItemPage.create(holder, player, window -> {
+            var name = TextLine.of(0, () -> {
+                var target = getTarget(holder.getHeld());
+                return target.isEmpty() ? Component.translatable(NO_TARGET) : target.getHoverName();
+            }).setColor(UITheme.PANEL_TEXT);
+            name.layout(l -> l.flex(1));
+            var slot = new PhantomItemSlot(new TargetSlot(holder), 0).xeiPhantom();
+            slot.setHoverTooltips(Component.translatable(TARGET));
+            var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(slot, name);
+            return UIElement.section(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChild(row);
+        });
     }
 
     public static ItemStack setTarget(ItemStack stack, ItemStack target) {
@@ -56,6 +52,8 @@ public final class OrderItem implements IItemUIFactory, IFancyUIProvider, ICusto
         tag.putString("marker_id", id.toString());
         if (target.hasTag()) {
             tag.put("marker_nbt", target.getTag().copy());
+        } else {
+            tag.remove("marker_nbt");
         }
         return stack;
     }
@@ -91,43 +89,13 @@ public final class OrderItem implements IItemUIFactory, IFancyUIProvider, ICusto
         return Component.translatable(stack.getDescriptionId(), name);
     }
 
-    @Override
-    public Widget createMainPage(FancyMachineUIWidget fancyMachineUIWidget) {
-        WidgetGroup group = new WidgetGroup(0, 0, 34, 34);
-        WidgetGroup container = new WidgetGroup(4, 4, 26, 26);
-        Player player = null;
-        if (fancyMachineUIWidget.getGui() != null) {
-            player = fancyMachineUIWidget.getGui().entityPlayer;
-        }
-        if (player != null) container.addWidget(new PhantomSlotWidget(new ItemHandler(hand, player), 0, 4, 4));
-        group.addWidget(container);
-        return group;
-    }
+    private static final class TargetSlot implements IItemTransfer {
 
-    @Override
-    public IGuiTexture getTabIcon() {
-        return new ItemStackTexture(GTOItems.ORDER.asItem());
-    }
+        private final HeldItemUIFactory.HeldItemHolder holder;
+        private ItemStack clientStack = ItemStack.EMPTY;
 
-    @Override
-    public Component getTitle() {
-        return Component.translatable("item.gtocore.order.config");
-    }
-
-    public void attachSideTabs(TabsWidget sideTabs) {
-        sideTabs.setMainTab(this);
-    }
-
-    private static class ItemHandler implements IItemTransfer {
-
-        @NotNull
-        private ItemStack stack = ItemStack.EMPTY;
-        private final InteractionHand hand;
-        private final Player player;
-
-        public ItemHandler(InteractionHand hand, @NotNull Player player) {
-            this.hand = hand;
-            this.player = player;
+        private TargetSlot(HeldItemUIFactory.HeldItemHolder holder) {
+            this.holder = holder;
         }
 
         @Override
@@ -138,23 +106,34 @@ public final class OrderItem implements IItemUIFactory, IFancyUIProvider, ICusto
         @NotNull
         @Override
         public ItemStack getStackInSlot(int slot) {
-            return stack;
+            if (holder.isRemote()) return clientStack;
+            return getTarget(holder.getHeld());
+        }
+
+        @Override
+        public void setStackInSlot(int index, ItemStack stack) {
+            if (holder.isRemote()) {
+                clientStack = stack;
+                return;
+            }
+            if (stack.isEmpty()) clearTarget(holder.getHeld());
+            else if (isItemValid(index, stack)) setTarget(holder.getHeld(), stack);
         }
 
         @NotNull
         @Override
         public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate, boolean notifyChanges) {
-            this.stack = stack;
-            player.setItemInHand(hand, setTarget(player.getItemInHand(hand), stack));
-            return null;
+            if (stack.isEmpty() || !isItemValid(slot, stack)) return stack;
+            if (!simulate) setStackInSlot(slot, stack);
+            return stack.copyWithCount(stack.getCount() - 1);
         }
 
         @NotNull
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate, boolean notifyChanges) {
-            this.stack = ItemStack.EMPTY;
-            player.setItemInHand(hand, clearTarget(player.getItemInHand(hand)));
-            return stack;
+            var target = getTarget(holder.getHeld());
+            if (!simulate && !target.isEmpty()) setStackInSlot(slot, ItemStack.EMPTY);
+            return target;
         }
 
         @Override
@@ -164,20 +143,18 @@ public final class OrderItem implements IItemUIFactory, IFancyUIProvider, ICusto
 
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return stack.getItem() == this.stack.getItem();
+            return stack.getItem() != holder.getHeld().getItem();
         }
 
         @NotNull
         @Override
         public Object createSnapshot() {
-            return stack;
+            return getTarget(holder.getHeld());
         }
 
         @Override
         public void restoreFromSnapshot(Object snapshot) {
-            if (snapshot instanceof ItemStack stack) {
-                this.stack = stack;
-            }
+            if (snapshot instanceof ItemStack stack) setStackInSlot(0, stack);
         }
     }
 }

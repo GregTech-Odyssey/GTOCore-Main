@@ -1,60 +1,48 @@
 package com.hepdd.gtmthings.common.item;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.RichText;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-import com.hepdd.gtmthings.api.gui.widget.AlignComponentPanelWidget;
-import com.hepdd.gtmthings.api.gui.widget.AlignLabelWidget;
-import com.hepdd.gtmthings.api.gui.widget.FixedDraggableScrollableWidgetGroup;
 import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
-import com.lowdragmc.lowdraglib.gui.editor.ColorPattern;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.hepdd.gtmthings.api.gui.widget.AlignLabelWidget.ALIGN_CENTER;
 import static com.hepdd.gtmthings.common.block.machine.electric.WirelessEnergyMonitor.DISPLAY_TEXT_WIDTH;
 
 public class WirelessEnergyTerminalBehavior implements IItemUIFactory {
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
-        return new ModularUI(DISPLAY_TEXT_WIDTH + 8 + 8, 117 + 8 + 8 + 8 + 17, holder, entityPlayer).widget(createWidget(holder.getHeld().getDescriptionId(), new WirelessMonitor(entityPlayer.getUUID(), entityPlayer.level())));
-    }
-
-    private static Widget createWidget(String descriptionId, WirelessMonitor monitor) {
-        var group = new WidgetGroup(0, 0, DISPLAY_TEXT_WIDTH + 8 + 8, 117 + 8 + 8 + 8 + 17);
-        Widget label = new AlignLabelWidget(DISPLAY_TEXT_WIDTH / 2 + 4, 5, descriptionId).setTextAlign(ALIGN_CENTER);
-        group.addWidget(
-                new FixedDraggableScrollableWidgetGroup(4, 4, DISPLAY_TEXT_WIDTH + 8, 117 + 8 + 8 + 17)
-                        .setBackground(GuiTextures.DISPLAY)
-                        .setYScrollBarWidth(2)
-                        .setYBarStyle(null, ColorPattern.T_WHITE.rectTexture().setRadius(1))
-                        .addWidget(label)
-                        .addWidget(new AlignComponentPanelWidget(4, 17, text -> addDisplayText(text, monitor))
-                                .setMaxWidthLimit(DISPLAY_TEXT_WIDTH)
-                                .setSplitChar(".")));
-
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
-    }
-
-    private static void addDisplayText(List<Component> textList, WirelessMonitor monitor) {
-        if (monitor.isRemote()) return;
-        if (monitor.displayTextCache == null || monitor.level.getServer().getTickCount() % 10 == 0) {
-            monitor.displayTextCache = monitor.getDisplayText(false, 0, DISPLAY_TEXT_WIDTH);
-        }
-        textList.addAll(monitor.displayTextCache);
+        var monitor = new WirelessMonitor(entityPlayer.getUUID(), entityPlayer.level());
+        return new HeldItemPage(holder, window -> {
+            var text = new RichText().justify(".");
+            text.textSupplier(monitor.isRemote() ? null : monitor::addDisplayText);
+            text.clickHandler(monitor::handleClick);
+            var scroller = new ScrollerView("wireless_energy_terminal.display", DISPLAY_TEXT_WIDTH + 2 * UITheme.PANEL_PADDING + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT);
+            scroller.setBackground(UITheme.STATUS_PANEL);
+            scroller.layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
+            scroller.addScrollViewChild(text);
+            scroller.adaptiveHeight(window.isRemote() ? MachineWindow.clientPageHeightLimit(false) : Integer.MAX_VALUE / 4);
+            return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
+        }).noInventory().noScroll().createUI(entityPlayer);
     }
 
     private static class WirelessMonitor implements IWirelessMonitor {
@@ -70,6 +58,8 @@ public class WirelessEnergyTerminalBehavior implements IItemUIFactory {
 
         private final UUID uuid;
         private final Level level;
+        private boolean all;
+        private int powerDisplayMode;
 
         private List<Component> displayTextCache;
 
@@ -77,25 +67,31 @@ public class WirelessEnergyTerminalBehavior implements IItemUIFactory {
         @Setter
         private WirelessEnergyContainer WirelessEnergyContainerCache;
 
-        /**
-         * @return cached uuid of player/team
-         */
+        private void addDisplayText(List<Component> textList) {
+            if (displayTextCache == null || level.getServer().getTickCount() % 10 == 0) {
+                displayTextCache = getDisplayText(all, powerDisplayMode, DISPLAY_TEXT_WIDTH);
+            }
+            textList.addAll(displayTextCache);
+        }
+
+        private void handleClick(String data, ClickData clickData) {
+            if (clickData.isRemote) return;
+            if (data.equals("all")) all = !all;
+            else if (data.equals("power_mode")) powerDisplayMode = (powerDisplayMode + 1) % 3;
+            else return;
+            displayTextCache = null;
+        }
+
         @Override
         public @Nullable UUID getUUID() {
             return uuid;
         }
 
-        /**
-         * @return false
-         */
         @Override
         public boolean display() {
             return false;
         }
 
-        /**
-         * @return level
-         */
         @Override
         public Level getLevel() {
             return level;

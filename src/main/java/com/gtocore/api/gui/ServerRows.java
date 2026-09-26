@@ -1,4 +1,4 @@
-package com.gtocore.integration.ae.wireless;
+package com.gtocore.api.gui;
 
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
@@ -42,7 +42,7 @@ import java.util.function.Supplier;
  *
  * @param <K> 行的 key（需正确实现 equals/hashCode），两端用 {@code codec} 传输
  */
-final class WirelessRows<K> extends UIElement {
+public final class ServerRows<K> extends UIElement {
 
     /** 行结构更新包：避开 WidgetGroup 自用的 1、2 与本控件 SyncValueHost 的 {@code ID_BASE + i}。 */
     private static final int ROWS_ID = SyncValueHost.ID_BASE - 1;
@@ -65,8 +65,8 @@ final class WirelessRows<K> extends UIElement {
      * @param rowFactory 按 key 建一行，两端都会调用，同一 key 必须产生同样结构的控件
      * @param emptyText  没有可见行时显示的提示（客户端绘制），可为 null
      */
-    WirelessRows(boolean remote, SyncValue.Codec<K> codec, Supplier<List<K>> source, IntSupplier version,
-                 Function<K, UIElement> rowFactory, @Nullable Component emptyText) {
+    public ServerRows(boolean remote, SyncValue.Codec<K> codec, Supplier<List<K>> source, IntSupplier version,
+                      Function<K, UIElement> rowFactory, @Nullable Component emptyText) {
         this.remote = remote;
         this.codec = codec;
         this.source = source;

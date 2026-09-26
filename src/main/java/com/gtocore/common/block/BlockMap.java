@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
@@ -84,6 +85,10 @@ public final class BlockMap {
 
     public static final String namePrefix = "gtocore.adv_terminal.block_map";
 
+    public static Component categoryName(String category) {
+        return Component.translatable(namePrefix + "." + category);
+    }
+
     @RegisterLanguage(namePrefix = namePrefix, cn = "无线能量单元", en = "Wireless Energy Unit")
     private static final String wireless_energy_unit = "wireless_energy_unit";
 
@@ -141,6 +146,12 @@ public final class BlockMap {
     public static final String muffler_hatch = "muffler_hatch";
     @RegisterLanguage(namePrefix = namePrefix, cn = "转子仓", en = "Rotor Hatch")
     public static final String rotor_hatch = "rotor_hatch";
+
+    @RegisterLanguage(namePrefix = namePrefix, cn = "能量控制方块", en = "Energy Control Casing")
+    private static final String energy_module = GTOValues.ENERGY_CONTROL_MODULE_TIER;
+
+    @RegisterLanguage(namePrefix = namePrefix, cn = "运行控制方块", en = "Machining Control Casing")
+    private static final String machining_control_module = GTOValues.MACHINING_CONTROL_MODULE_TIER;
 
     public static void build() {
         var coils = new ArrayList<>(GTCEuAPI.HEATING_COILS.entrySet());

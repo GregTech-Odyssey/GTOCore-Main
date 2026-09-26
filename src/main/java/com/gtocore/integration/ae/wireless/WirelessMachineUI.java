@@ -1,6 +1,7 @@
 package com.gtocore.integration.ae.wireless;
 
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.api.gui.ServerRows;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -71,7 +72,7 @@ import java.util.function.Supplier;
  * 列表高度跟随内容，最多 {@link #LIST_MAX_VISIBLE_ROWS} 行且窗口不超过屏幕 2/3（见 {@link #maxRows}），超出滚动；
  * 列表右下角可拖拽缩放，窗口随内容一起变。尺寸只影响客户端外观，两端控件树始终一致。
  * <p>
- * 数据同步：机器与网络数据由各控件的 {@link SyncValue} 从服务端下发；列表行由 {@link WirelessRows} 服务端驱动增删；
+ * 数据同步：机器与网络数据由各控件的 {@link SyncValue} 从服务端下发；列表行由 {@link ServerRows} 服务端驱动增删；
  * 操作只走 {@link Button#setOnServerClick} 与 {@link TextField}，以打开界面的玩家校验权限。界面状态在 {@link WirelessUIContext}。
  * <p>
  * 查看权限：机器所在网络的名称、所有者、成员数、成员坐标只下发给能使用该网络或能管理这台机器的玩家
@@ -373,7 +374,7 @@ public final class WirelessMachineUI {
             scroller.setOnContentWidthChanged(contentWidth -> create.layout(l -> l.marginRight(scroller.isVerticalScrollBarShown() ? ScrollerView.SCROLL_BAR_SPACE : 0)));
             section.addChild(create);
         }
-        scroller.addScrollViewChild(new WirelessRows<>(ctx.remote, STRING_CODEC,
+        scroller.addScrollViewChild(new ServerRows<>(ctx.remote, STRING_CODEC,
                 () -> ctx.networks().listFor(ctx.uuid()).stream().map(WirelessNetwork::id).toList(),
                 () -> ctx.networks().revision(),
                 id -> networkRow(id, ctx, actionKey, currentKey, isCurrent, action, currentAction),
@@ -475,7 +476,7 @@ public final class WirelessMachineUI {
         // 成员：每行 [机器图标] 两行小字（机器名 / 坐标与维度）
         var members = UIElement.section();
         var scroller = new ScrollerView(membersId, LIST_WIDTH, MEMBER_ROW_HEIGHT).adaptiveHeight(memberListHeight(memberRows));
-        scroller.addScrollViewChild(new WirelessRows<>(ctx.remote, MemberKey.CODEC,
+        scroller.addScrollViewChild(new ServerRows<>(ctx.remote, MemberKey.CODEC,
                 () -> memberKeys(ctx, machine), () -> memberVersion(ctx, machine), MemberRow::new, null));
         members.addChildren(TextLine.of(LayoutStyle.AUTO, () -> {
             var hub = WirelessHub.get(machine.getWirelessNetworkId());

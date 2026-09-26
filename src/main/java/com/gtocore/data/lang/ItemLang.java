@@ -144,7 +144,8 @@ final class ItemLang {
         addCNEN("item.gtocore.structure_detect.tooltip.1", "检测大型结构时可能会有延迟", "There may be lag when detecting large structures.");
         addCNEN("item.gtocore.disc.data", "光盘数据：%s", "Disc data: %s");
 
-        addCNEN("item.gtocore.order.config", "订单配置", "Order Config");
+        addCNEN("item.gtocore.order.target", "订单目标", "Order target");
+        addCNEN("item.gtocore.order.no_target", "未设置订单目标", "No order target set");
 
         addCNEN("item.gtocore.pattern.wildcard", "含通配符处理样板", "With Wildcard Processing Pattern");
 

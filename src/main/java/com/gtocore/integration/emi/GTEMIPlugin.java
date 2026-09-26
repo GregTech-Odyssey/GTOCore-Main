@@ -225,8 +225,8 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addCategory(GTProgrammedCircuitCategory.CATEGORY);
 
         OreProcessingEmiCategory.registerDisplays(registry);
-        GTOreVeinEmiCategory.registerDisplays(registry);
-        GTBedrockFluidEmiCategory.registerDisplays(registry);
+        GTOreVeinEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
+        GTBedrockFluidEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
         GTProgrammedCircuitCategory.registerDisplays(registry);
 
         PrimordialReconstructorDisassemblyEmiCategory.register(registry);

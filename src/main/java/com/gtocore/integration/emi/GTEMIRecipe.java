@@ -239,7 +239,7 @@ public class GTEMIRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayo
                                 w.getSize().width, w.getSize().height, capacity);
                     }
                     if (slotWidget == null) {
-                        slotWidget = new SlotWidget(ingredients, w.getPosition().x, w.getPosition().y);
+                        slotWidget = createItemSlot(ingredients, w.getPosition().x, w.getPosition().y);
                     }
 
                     slotWidget
@@ -268,6 +268,14 @@ public class GTEMIRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayo
             return pagedFrame(widgets.getHeight(), pagedButtons);
         }
         return GTRecipeWidget.PageFrame.COMPACT;
+    }
+
+    protected SlotWidget createItemSlot(EmiIngredient ingredient, int x, int y) {
+        return new SlotWidget(ingredient, x, y);
+    }
+
+    public boolean supportsTransfer() {
+        return true;
     }
 
     protected EmiIngredient resolveSlotIngredient(IRecipeIngredientSlot slot, EmiIngredient ingredient) {

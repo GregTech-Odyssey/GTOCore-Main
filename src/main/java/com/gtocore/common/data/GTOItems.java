@@ -1376,6 +1376,12 @@ public final class GTOItems {
             .onRegister(attach(MEWirelessMachineConfigurator.INSTANCE))
             .register();
 
+    public static final ItemEntry<ComponentItem> DATA_CENTER_AGGREGATION_TERMINAL = item("data_center_aggregation_terminal", "便捷式多数据中心聚合终端",
+            p -> ComponentItem.create(p.stacksTo(1)))
+            .lang("Portable Data Center Aggregation Terminal")
+            .onRegister(attach(DataCenterAggregationTerminal.INSTANCE))
+            .register();
+
     public static final ItemEntry<ComponentItem> TESSERACT_TARGET_MARKER = item("tesseract_target_marker", "坐标标签枪", ComponentItem::create)
             .toolTips(ComponentBuilder.create()
                     .addLines("§7可以按顺序标记超立方体传输目标位置。§r",

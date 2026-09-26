@@ -3,14 +3,23 @@ package com.gtocore.common.item;
 import com.gtocore.common.data.GTOBlocks;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.pattern.DebugBlockPattern;
 import com.gtolib.utils.*;
 import com.gtolib.utils.iostream.IOStreamCodec;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
@@ -32,22 +41,33 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 
 import java.io.File;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
+@DataGeneratorScanned
 public final class StructureWriteBehavior implements IItemUIFactory {
 
     public static final StructureWriteBehavior INSTANCE = new StructureWriteBehavior();
+
+    @RegisterLanguage(cn = "结构规模", en = "Structure size")
+    private static final String SCALE = "gtocore.structure_writer.scale";
+    @RegisterLanguage(cn = "导出顺序", en = "Export order")
+    private static final String ORDER = "gtocore.structure_writer.order";
+    @RegisterLanguage(cn = "绑定模式", en = "Bind mode")
+    private static final String MODE_BIND = "gtocore.structure_writer.mode.bind";
+    @RegisterLanguage(cn = "导出模式", en = "Export mode")
+    private static final String MODE_EXPORT = "gtocore.structure_writer.mode.export";
+    @RegisterLanguage(cn = "绕 X 轴旋转", en = "Rotate around X")
+    private static final String ROTATE_X = "gtocore.structure_writer.rotate_x";
+    @RegisterLanguage(cn = "绕 Y 轴旋转", en = "Rotate around Y")
+    private static final String ROTATE_Y = "gtocore.structure_writer.rotate_y";
+    @RegisterLanguage(cn = "导出为日志", en = "Export to log")
+    private static final String EXPORT = "gtocore.structure_writer.export";
+    @RegisterLanguage(cn = "尚未选定区域", en = "No area selected")
+    private static final String NO_AREA = "gtocore.structure_writer.no_area";
 
     private static final String EXPORT_MBS_FILE = "structure_pattern.mbs";
     private static final String EXPORT_TEXT_FILE = "structure_pattern.txt";
@@ -63,39 +83,30 @@ public final class StructureWriteBehavior implements IItemUIFactory {
                                  RelativeDirection[] directions) {}
 
     @Override
-    public ModularUI createUI(HeldItemUIFactory.HeldItemHolder playerInventoryHolder, Player entityPlayer) {
-        var container = new WidgetGroup(8, 8, 160, 54);
-        container.addWidget(new ImageWidget(4, 4, 152, 46, GuiTextures.DISPLAY))
-                .addWidget(new LabelWidget(7, 7, () -> {
-                    int x = 0;
-                    int y = 0;
-                    int z = 0;
-                    if (getPos(playerInventoryHolder.getHeld()) != null) {
-                        BlockPos[] blockPos = getPos(playerInventoryHolder.getHeld());
-                        if (blockPos != null) {
-                            x = 1 + blockPos[1].getX() - blockPos[0].getX();
-                            y = 1 + blockPos[1].getY() - blockPos[0].getY();
-                            z = 1 + blockPos[1].getZ() - blockPos[0].getZ();
-                        }
-                    }
-                    return LocalizationUtils.format("structure_writer.structural_scale", x, y, z);
-                }).setTextColor(0xFAF9F6)).addWidget(new LabelWidget(7, 20, () -> {
-                    var direction = getDir(playerInventoryHolder.getHeld());
-                    var dirs = DebugBlockPattern.getDir(direction);
-                    return LocalizationUtils.format("structure_writer.export_order", dirs[0].name(), dirs[1].name(), dirs[2].name());
-                }).setTextColor(0xFAF9F6));
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return new ModularUI(176, 120, playerInventoryHolder, entityPlayer)
-                .background(GuiTextures.BACKGROUND)
-                .widget(container)
-                .widget(new ButtonWidget(9, 91, 77, 20, new GuiTextureGroup(GuiTextures.BUTTON, new TextTexture(playerInventoryHolder.getHeld().getOrCreateTag().getBoolean("export") ? "导出模式" : "绑定模式")),
-                        clickData -> switchMode(playerInventoryHolder)))
-                .widget(new ButtonWidget(90, 91, 77, 20, new GuiTextureGroup(GuiTextures.BUTTON, new TextTexture("导出为日志")),
-                        clickData -> exportLog(playerInventoryHolder)))
-                .widget(new ButtonWidget(9, 68, 77, 20, new GuiTextureGroup(GuiTextures.BUTTON, new TextTexture("沿X轴旋转")),
-                        clickData -> changeDirX(playerInventoryHolder)))
-                .widget(new ButtonWidget(90, 68, 77, 20, new GuiTextureGroup(GuiTextures.BUTTON, new TextTexture("沿Y轴旋转")),
-                        clickData -> changeDirY(playerInventoryHolder)));
+    public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
+        return new HeldItemPage(holder, window -> {
+            var status = new StatusPanel(LayoutStyle.AUTO);
+            status.addLine(SCALE, () -> {
+                var pos = getPos(holder.getHeld());
+                if (pos == null) return Component.translatable(NO_AREA);
+                return Component.literal((1 + pos[1].getX() - pos[0].getX()) + " × " + (1 + pos[1].getY() - pos[0].getY()) + " × " + (1 + pos[1].getZ() - pos[0].getZ()));
+            });
+            status.addLine(ORDER, () -> {
+                var dirs = DebugBlockPattern.getDir(getDir(holder.getHeld()));
+                return Component.literal("C:" + dirs[0].name() + "  S:" + dirs[1].name() + "  A:" + dirs[2].name());
+            });
+            var mode = ButtonGroup.single(2, i -> Component.translatable(i == 0 ? MODE_BIND : MODE_EXPORT),
+                    () -> holder.getHeld().getOrCreateTag().getBoolean("export") ? 1 : 0, i -> switchMode(holder)).horizontal();
+            var rotate = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
+                    Button.translatable(LayoutStyle.AUTO, ROTATE_X).layout(l -> l.flex(1)).setOnServerClick(() -> changeDirX(holder)),
+                    Button.translatable(LayoutStyle.AUTO, ROTATE_Y).layout(l -> l.flex(1)).setOnServerClick(() -> changeDirY(holder)));
+            rotate.disabled(() -> getPos(holder.getHeld()) == null, NO_AREA);
+            var export = Button.translatable(LayoutStyle.AUTO, EXPORT).setVariant(UITheme.ButtonVariant.CONFIRM)
+                    .disabled(() -> getPos(holder.getHeld()) == null, NO_AREA)
+                    .setOnServerClick(() -> exportLog(holder));
+            return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP))
+                    .addChildren(status, UIElement.section().addChildren(mode, rotate), export);
+        }).noInventory().createUI(entityPlayer);
     }
 
     private static void exportLog(HeldItemUIFactory.HeldItemHolder playerInventoryHolder) {

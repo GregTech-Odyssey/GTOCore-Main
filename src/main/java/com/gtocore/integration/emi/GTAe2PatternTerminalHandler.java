@@ -58,7 +58,7 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
 
     @Override
     public boolean supportsRecipe(EmiRecipe recipe) {
-        return recipe instanceof GTEMIRecipe || recipe instanceof MultiblockInfoEmiRecipe || recipe instanceof EmiCookingRecipe || isCrafting(recipe) || recipe instanceof BotaniaEmiRecipe;
+        return recipe instanceof GTEMIRecipe gtRecipe && gtRecipe.supportsTransfer() || recipe instanceof MultiblockInfoEmiRecipe || recipe instanceof EmiCookingRecipe || isCrafting(recipe) || recipe instanceof BotaniaEmiRecipe;
     }
 
     private Set<AEKey> getCraftableKeys(T menu) {

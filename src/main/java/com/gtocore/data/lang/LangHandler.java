@@ -144,9 +144,6 @@ public final class LangHandler {
         addCNEN("selectWorld.gto_difficulty.tooltip.expert", "专家模式：具有更难的游戏机制和更复杂的配方，适合寻求挑战的玩家。", "Expert Mode: Features more difficult game mechanics and complex recipes, suitable for players seeking a challenge. ");
         addCNEN("selectWorld.gto_difficulty.tooltip.generic", "具体机制可在GTO Wiki上查看。", "Specific mechanics can be found on the GTO Wiki.");
 
-        addCNEN("structure_writer.export_order", "导出顺序： C:%s  S:%s  A:%s", "Export Order: C:%s  S:%s  A:%s");
-        addCNEN("structure_writer.structural_scale", "结构规模： X:%s  Y:%s  Z:%s", "Structural Scale: X:%s  Y:%s  Z:%s");
-
         addCNEN("gtocore.pattern.blocking_mode", "容器有任何内容时阻止插入", "Block insertion when the container has any content");
         addCNEN("gtocore.pattern.blocking_reverse", "非同一样板时阻止插入", "Prevent insertion when not using the same pattern");
         addCNEN("gtocore.pattern.blocking_parallel", "并行发配后容器内存在合成材料时暂停发送", "Prevent insertion after parallel allocation if container has synthetic materials");
@@ -188,13 +185,7 @@ public final class LangHandler {
         addCNEN("gtocore.multiblock_preview.structure_size", "当前结构大小", "Current Structure Size");
         addCNEN("gtocore.multiblock_preview.controls", "左键拖动旋转 · 滚轮缩放 · 右键拖动平移 · 点击方块查看候选 · Esc 返回", "Left-drag rotate · Wheel zoom · Right-drag pan · Click blocks for candidates · Esc to return");
 
-        addCNEN("item.gtocore.pattern_modifier_pro.name", "样板修改器 Pro", "Pattern Modifier Pro");
         addCNEN("gtocore.patternModifierPro.0", "设置完成后，潜行右击样板供应器以应用", "After setup,shift + right-click template provider to apply");
-        addCNEN("gtocore.patternModifierPro.1", "模板乘数：所有物品和流体乘以该数值", "Set Item and Fluid Multiplier");
-        addCNEN("gtocore.patternModifierPro.2", "模板除数：所有物品和流体除以该数值", "Set Item and Fluid Divider");
-        addCNEN("gtocore.patternModifierPro.3", "最大物品数：所有物品不会超过此数量", "Set Maximum Item Count");
-        addCNEN("gtocore.patternModifierPro.4", "最大流体数：所有流体不会超过此桶数", "Set Maximum Fluid Amount / Bucket");
-        addCNEN("gtocore.patternModifierPro.5", "应用次数为：循环上述操作次数，最大为16", "Set Application Cycles , Up to 16");
 
         addCNEN("gtceu.jei.ore_vein.bauxite_vein", "铝土矿脉", "Bauxite Vein");
         addCNEN("gtceu.jei.ore_vein.chromite_vein", "铬铁矿脉", "Chromite Vein");
@@ -477,10 +468,6 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.wft.wireless", "无线设施管理终端", "Wireless Facility Management Terminal");
         addCNEN("gtocore.ae.appeng.wrt.wireless", "无线请求器终端", "Wireless Requester Terminal");
 
-        addCNEN("gtocore.adv_terminal.block.confirm", "确认", "Confirm");
-        addCNEN("gtocore.adv_terminal.block.cancel", "取消", "Cancel");
-        addCNEN("gtocore.adv_terminal.block.select", "选择方块", "Select Block");
-        addCNEN("gtocore.adv_terminal.category.select", "选择类别", "Select Category");
         addCNEN("gtocore.adv_terminal.setting_already_existed", "存在已有设置", "Setting Already Existed");
 
         addCNEN("gtocore.travel.mode.all", "所有目标", "All Targets");

@@ -34,9 +34,8 @@ public class SatelliteEmiCategory extends EmiRecipeCategory {
         registry.addWorkstation(CATEGORY, EmiStack.of(MultiBlockG.SATELLITE_CONTROL_CENTER.asStack()));
         for (var entry : RocketFuels.SATELLITE_TARGETS) {
             var dimMarker = GTRegistries.DIMENSION_MARKERS.getOrDefault(entry.getLocation(), GTDimensionMarkers.OVERWORLD);
-            registry.addRecipe(SatelliteEmiRecipe.fromInputOutput(GTOCore.id("satellite/launch_satellite/" + entry.getKey()), b -> b.inputItems(RocketFuels.getRocket(entry.getTier()))
-                    .inputFluids(new FluidStack(RocketFuels.getFuel(entry.getTier()), 16000))
-                    .outputItems(dimMarker.getIcon())));
+            registry.addRecipe(SatelliteEmiRecipe.fromInputOutput(GTOCore.id("satellite/launch_satellite/" + entry.getKey()), dimMarker, b -> b.inputItems(RocketFuels.getRocket(entry.getTier()))
+                    .inputFluids(new FluidStack(RocketFuels.getFuel(entry.getTier()), 16000))));
         }
     }
 }

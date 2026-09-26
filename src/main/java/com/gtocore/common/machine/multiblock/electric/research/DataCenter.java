@@ -5,6 +5,7 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.techtree.ui.TechNodeDetails;
+import com.gtocore.api.research.techtree.ui.TechNodeLine;
 import com.gtocore.api.research.techtree.ui.TechTreePage;
 import com.gtocore.api.research.ui.RecipeExportTab;
 import com.gtocore.common.data.GTOCodecs;
@@ -113,9 +114,9 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     @SaveToDisk
     @SyncToClient
-    private TechNode selectedNode;
+    TechNode selectedNode;
     @SaveToDisk
-    private UUID researchRequester;
+    UUID researchRequester;
     @SaveToDisk(defaultValue = "0")
     private long cwuBuffer = 0L;
     @SaveToDisk(defaultValue = "0")
@@ -145,7 +146,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         return totalSlots;
     }
 
-    private long getCWUInputLimit() {
+    long getCWUInputLimit() {
         var startTier = getCasingTier(GTORecipeDataKeys.GLASS_TIER) - LuV;
         if (startTier < 0) {
             return 0;
@@ -218,7 +219,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         section.addChild(button);
     }
 
-    private void startResearch(Player player, TechNode node) {
+    void startResearch(Player player, TechNode node) {
         var team = TechTreeSavedData.getTeamUUID(player);
         if (TechTreeSavedData.isUnlocked(team, node) || !TechTreeSavedData.isPrerequisitesUnlocked(team, node)) return;
         selectedNode = node;
@@ -400,14 +401,14 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     private static final Supplier<Component> PREREQUISITES_IDLE_REASON = () -> Component.translatable(DataCenter.LANG_PREREQUISITES_NOT_RESEARCHED);
 
-    private boolean isResearchBlocked() {
+    boolean isResearchBlocked() {
         var node = selectedNode;
         var requester = researchRequester;
         return node != null && requester != null && !TechTreeSavedData.isPrerequisitesUnlocked(requester, node);
     }
 
     /** 取消本机正在进行的研究，与科技树里再次点击"正在研究中"相同（服务端）。 */
-    private void cancelResearch(Player player) {
+    void cancelResearch(Player player) {
         if (selectedNode == null) return;
         selectedNode = null;
         researchRequester = player.getUUID();
@@ -416,7 +417,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     /** 当前研究节点的 CWU 进度（服务端）：研究发起人所在队伍已累计的量，扫描过尤里卡物品时带加成。 */
-    private ProgressBar.Progress researchProgress() {
+    ProgressBar.Progress researchProgress() {
         var node = selectedNode;
         var requester = researchRequester;
         if (node == null || requester == null) return ProgressBar.Progress.EMPTY;
@@ -493,7 +494,9 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             status.addLine(LANG_LINE_SLOTS, stats::slotsText);
             status.addLine(LANG_LINE_RECIPES, stats::recipesText);
             status.addLine(LANG_LINE_MAX_CWU, stats::maxCwuText);
-            status.addLine(LANG_LINE_RESEARCH, stats::researchText)
+            status.addLine(TechNodeLine.server(LANG_LINE_RESEARCH, () -> machine.selectedNode, (clicker, node) -> {
+                if (clicker instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.open(serverPlayer, machine, WINDOW_TECH_TREE);
+            }))
                     .level(() -> {
                         if (machine.selectedNode == null) return StatusLine.Level.NORMAL;
                         return machine.isActive() ? StatusLine.Level.GOOD : StatusLine.Level.WARNING;
@@ -501,10 +504,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     .detail(() -> {
                         if (machine.selectedNode == null || machine.isActive()) return Component.empty();
                         return Component.translatable(machine.isResearchBlocked() ? LANG_PREREQUISITES_NOT_RESEARCHED : LANG_RESEARCH_IDLE);
-                    })
-                    // 点击打开科技树窗口，定位到正在研究的节点并打开它的详情（窗口的初始定位就是它）
-                    .onClick(Component.translatable(LANG_RESEARCH_LOCATE).withStyle(ChatFormatting.GRAY), () -> machine.selectedNode != null, clicker -> {
-                        if (clicker instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.open(serverPlayer, machine, WINDOW_TECH_TREE);
                     });
             page.addChild(status);
 
@@ -577,9 +576,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         private Component slotsText = NONE;
         private Component recipesText = NONE;
         private Component maxCwuText = NONE;
-        @Nullable
-        private TechNode researchNode;
-        private Component researchText = NONE;
 
         private DataAccessStats(DataCenter machine) {
             this.machine = machine;
@@ -627,16 +623,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         Component maxCwuText() {
             refresh();
             return maxCwuText;
-        }
-
-        /** 当前研究的节点名（节点变了才重新取）。 */
-        Component researchText() {
-            var node = machine.selectedNode;
-            if (node != researchNode) {
-                researchNode = node;
-                researchText = node == null ? NONE : node.getDisplayName();
-            }
-            return researchText;
         }
     }
 
@@ -882,7 +868,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     /// 数据物品网格默认最多显示几行，再多滚动（右下角可拖拽缩放）
     private static final int DATA_MAX_ROWS = 5;
     /** 状态面板里没有值时显示的占位。 */
-    private static final String NO_VALUE = "—";
+    static final String NO_VALUE = "—";
     @RegisterLanguage(cn = "数据库使用：%s/%s", en = "Database Usage: %s/%s")
     private static final String LANG_DATA_ACCESS_USAGE = "gtocore.machine.data_center.data_access.usage";
     @RegisterLanguage(cn = "数据访问", en = "Data Access")
@@ -900,13 +886,13 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @RegisterLanguage(cn = "点击打开独立窗口", en = "Click to open in its own window")
     private static final String LANG_OPEN_WINDOW = "gtocore.machine.data_center.window.open";
     @RegisterLanguage(cn = "启动研究", en = "Launch Research")
-    private static final String LANG_DATA_ACCESS_LAUNCH_RESEARCH = "gtocore.machine.data_center.data_access.launch_research";
+    static final String LANG_DATA_ACCESS_LAUNCH_RESEARCH = "gtocore.machine.data_center.data_access.launch_research";
     @RegisterLanguage(cn = "正在研究中", en = "Research in Progress")
-    private static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
+    static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
     @RegisterLanguage(cn = "前置科技未研究", en = "Prerequisites not researched")
-    private static final String LANG_PREREQUISITES_NOT_RESEARCHED = "gtocore.machine.data_center.data_access.prerequisites_not_researched";
+    static final String LANG_PREREQUISITES_NOT_RESEARCHED = "gtocore.machine.data_center.data_access.prerequisites_not_researched";
     @RegisterLanguage(cn = "再次点击以取消研究", en = "Click again to cancel research")
-    private static final String LANG_DATA_ACCESS_CANCEL_RESEARCH = "gtocore.machine.data_center.data_access.cancel_research";
+    static final String LANG_DATA_ACCESS_CANCEL_RESEARCH = "gtocore.machine.data_center.data_access.cancel_research";
     @RegisterLanguage(cn = "最大可接受算力：%s CWU/t", en = "Maximum Acceptable CWU: %s CWU/t")
     private static final String LANG_DATA_ACCESS_MAX_CWU = "gtocore.machine.data_center.data_access.max_cwu";
     @RegisterLanguage(cn = "§6警告：未正常运行§r", en = "§6Warning: Not Running Properly§r")
@@ -915,11 +901,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_RESEARCH_PROGRESS = "gtocore.machine.data_center.data_access.research_progress";
     // 数据访问页：状态面板各行的名称与短状态（行内只剩约 12 个汉字宽，完整说明放悬停）
     @RegisterLanguage(cn = "状态", en = "Status")
-    private static final String LANG_LINE_STATE = "gtocore.machine.data_center.data_access.line.state";
+    static final String LANG_LINE_STATE = "gtocore.machine.data_center.data_access.line.state";
     @RegisterLanguage(cn = "正常", en = "Normal")
     private static final String LANG_STATE_OK = "gtocore.machine.data_center.data_access.state.ok";
     @RegisterLanguage(cn = "未成型", en = "Not formed")
-    private static final String LANG_STATE_UNFORMED = "gtocore.machine.data_center.data_access.state.unformed";
+    static final String LANG_STATE_UNFORMED = "gtocore.machine.data_center.data_access.state.unformed";
     @RegisterLanguage(cn = "结构已变化", en = "Structure changed")
     private static final String LANG_STATE_CHANGED = "gtocore.machine.data_center.data_access.state.changed";
     @RegisterLanguage(cn = "无数据访问仓", en = "No hatches")
@@ -927,23 +913,21 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @RegisterLanguage(cn = "数据访问仓", en = "Data Access Hatches")
     private static final String LANG_LINE_HATCHES = "gtocore.machine.data_center.data_access.line.hatches";
     @RegisterLanguage(cn = "数据槽位", en = "Data slots")
-    private static final String LANG_LINE_SLOTS = "gtocore.machine.data_center.data_access.line.slots";
+    static final String LANG_LINE_SLOTS = "gtocore.machine.data_center.data_access.line.slots";
     @RegisterLanguage(cn = "已存配方", en = "Stored recipes")
-    private static final String LANG_LINE_RECIPES = "gtocore.machine.data_center.data_access.line.recipes";
+    static final String LANG_LINE_RECIPES = "gtocore.machine.data_center.data_access.line.recipes";
     @RegisterLanguage(cn = "算力上限", en = "Max CWU")
-    private static final String LANG_LINE_MAX_CWU = "gtocore.machine.data_center.data_access.line.max_cwu";
+    static final String LANG_LINE_MAX_CWU = "gtocore.machine.data_center.data_access.line.max_cwu";
     @RegisterLanguage(cn = "当前研究", en = "Research")
-    private static final String LANG_LINE_RESEARCH = "gtocore.machine.data_center.data_access.line.research";
-    @RegisterLanguage(cn = "点击在科技树中定位", en = "Click to locate it in the Tech Tree")
-    private static final String LANG_RESEARCH_LOCATE = "gtocore.machine.data_center.data_access.research_locate";
+    static final String LANG_LINE_RESEARCH = "gtocore.machine.data_center.data_access.line.research";
     @RegisterLanguage(cn = "数据中心未在运行，研究暂停", en = "The Data Center is not running; research is paused")
-    private static final String LANG_RESEARCH_IDLE = "gtocore.machine.data_center.data_access.research_idle";
+    static final String LANG_RESEARCH_IDLE = "gtocore.machine.data_center.data_access.research_idle";
     @RegisterLanguage(cn = "研究进度", en = "Progress")
-    private static final String LANG_RESEARCH_PROGRESS = "gtocore.machine.data_center.data_access.progress";
+    static final String LANG_RESEARCH_PROGRESS = "gtocore.machine.data_center.data_access.progress";
     @RegisterLanguage(cn = "打开科技树，选择要研究的节点", en = "Open the Tech Tree to choose a node to research")
     private static final String LANG_OPEN_TECH_TREE = "gtocore.machine.data_center.data_access.open_tech_tree";
     @RegisterLanguage(cn = "取消研究", en = "Cancel")
-    private static final String LANG_CANCEL_BUTTON = "gtocore.machine.data_center.data_access.cancel";
+    static final String LANG_CANCEL_BUTTON = "gtocore.machine.data_center.data_access.cancel";
     @RegisterLanguage(cn = "当前没有进行中的研究", en = "No research in progress")
     private static final String LANG_NO_RESEARCH = "gtocore.machine.data_center.data_access.no_research";
     @RegisterLanguage(cn = "数据物品", en = "Data Items")

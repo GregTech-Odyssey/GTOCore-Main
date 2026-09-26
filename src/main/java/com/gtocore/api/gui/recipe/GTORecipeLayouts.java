@@ -80,6 +80,17 @@ public final class GTORecipeLayouts {
         return canvas;
     };
 
+    public static final RecipeSlotLayout SINGLE_ROW = slots -> {
+        var inputs = UIElement.row(UISizes.SLOT);
+        slots.slots(IO.IN, ItemRecipeInfo.INSTANCE).forEach(inputs::addChild);
+        slots.slots(IO.IN, FluidRecipeInfo.INSTANCE).forEach(inputs::addChild);
+        var outputs = UIElement.row(UISizes.SLOT);
+        slots.slots(IO.OUT, ItemRecipeInfo.INSTANCE).forEach(outputs::addChild);
+        slots.slots(IO.OUT, FluidRecipeInfo.INSTANCE).forEach(outputs::addChild);
+        return new UIElement().layout(l -> l.row().paddingAll(PADDING).gapAll(PROGRESS_MARGIN).alignCenter())
+                .addChildren(inputs, slots.progress(), outputs);
+    };
+
     /** 精密组装：左侧上一行 4 个物品输入、下一行 4 个流体输入，箭头指向右侧的输出。 */
     public static final RecipeSlotLayout PRECISION_ASSEMBLER = slots -> {
         var inputs = new UIElement().layout(l -> l.column().gapAll(UISizes.SLOT));

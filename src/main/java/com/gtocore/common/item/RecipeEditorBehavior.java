@@ -43,6 +43,7 @@ import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -210,11 +211,11 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
             var section = UIElement.section();
             section.addChildren(
                     textRow("ID", new TextField(UISizes.BUTTON_WIDTH * 2, () -> machine.id, id -> machine.id = id)),
-                    numberRow("Circuit", NumberField.of(LayoutStyle.AUTO, () -> machine.circuit, value -> machine.circuit = (int) value, 0, 32)),
-                    numberRow("EUt", NumberField.of(LayoutStyle.AUTO, () -> machine.eut, value -> machine.eut = value, -Long.MAX_VALUE, Long.MAX_VALUE)),
-                    numberRow("Duration", NumberField.of(LayoutStyle.AUTO, () -> machine.duration, value -> machine.duration = (int) value, 0, Integer.MAX_VALUE)),
-                    numberRow("FurnaceTemp", NumberField.of(LayoutStyle.AUTO, () -> machine.temp, value -> machine.temp = (int) value, 0, Integer.MAX_VALUE)),
-                    numberRow("MANAt", NumberField.of(LayoutStyle.AUTO, () -> machine.manat, value -> machine.manat = (int) value, Integer.MIN_VALUE, Integer.MAX_VALUE)));
+                    CoverUIs.inlineNumberRow("Circuit", NumberField.of(LayoutStyle.AUTO, () -> machine.circuit, value -> machine.circuit = (int) value, 0, 32)),
+                    CoverUIs.inlineNumberRow("EUt", NumberField.of(LayoutStyle.AUTO, () -> machine.eut, value -> machine.eut = value, -Long.MAX_VALUE, Long.MAX_VALUE)),
+                    CoverUIs.inlineNumberRow("Duration", NumberField.of(LayoutStyle.AUTO, () -> machine.duration, value -> machine.duration = (int) value, 0, Integer.MAX_VALUE)),
+                    CoverUIs.inlineNumberRow("FurnaceTemp", NumberField.of(LayoutStyle.AUTO, () -> machine.temp, value -> machine.temp = (int) value, 0, Integer.MAX_VALUE)),
+                    CoverUIs.inlineNumberRow("MANAt", NumberField.of(LayoutStyle.AUTO, () -> machine.manat, value -> machine.manat = (int) value, Integer.MIN_VALUE, Integer.MAX_VALUE)));
             page.addChild(section);
         }
         page.addChild(Button.text(LayoutStyle.AUTO, () -> "Export").setOnServerClick(this::exportRecipe));
@@ -274,12 +275,6 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
         var name = TextLine.constant(0, Component.literal(label)).setColor(UITheme.PANEL_TEXT);
         name.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(name, field);
-    }
-
-    /** 区块里的数值设置：上一行名称，下一行整宽数值输入（开发工具，名称不翻译）。 */
-    private static UIElement numberRow(String label, NumberField field) {
-        return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.constant(LayoutStyle.AUTO, Component.literal(label)).setColor(UITheme.PANEL_TEXT), field);
     }
 
     /** 把当前内容导出成配方代码（GT 配方构建器或工作台有序合成），写进日志。只在服务端执行。 */

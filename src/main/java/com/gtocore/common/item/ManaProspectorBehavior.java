@@ -1,11 +1,11 @@
 package com.gtocore.common.item;
 
 import com.gregtechceu.gtceu.api.gui.misc.ProspectorMode;
-import com.gregtechceu.gtceu.api.gui.widget.ProspectingMapWidget;
 import com.gregtechceu.gtceu.api.item.component.IDurabilityBar;
 import com.gregtechceu.gtceu.api.item.component.IItemLifeCycle;
 import com.gregtechceu.gtceu.api.item.component.forge.IComponentCapability;
 import com.gregtechceu.gtceu.common.item.ProspectorScannerBehavior;
+import com.gregtechceu.gtceu.uiwidgets.prospector.ProspectorMapView;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
@@ -113,7 +113,7 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
         }
         if (entity instanceof Player player && !player.isCreative()) {
             // check if the player is opening the prospector menu
-            if (isSelected && player.containerMenu instanceof ModularUIContainer ui && ui.getModularUI().getFlatVisibleWidgetCollection().stream().anyMatch(ProspectingMapWidget.class::isInstance)) {
+            if (isSelected && player.containerMenu instanceof ModularUIContainer ui && ProspectorMapView.isOpen(ui.getModularUI())) {
                 if (!checkAndConsumeMana(stack, (int) (CONSUMPTION_PER_TICK * 10 * costMultiplier))) {
                     preCancelScan(player, stack);
                     player.closeContainer();
