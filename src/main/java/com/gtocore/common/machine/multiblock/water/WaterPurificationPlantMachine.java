@@ -203,7 +203,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             var entry = it.next();
             entry.setValue(false);
             var machine = entry.getKey();
-            if (machine.isFormed() && !machine.isInValid()) {
+            if (machine.isFormed() && !machine.isRemoved()) {
                 if (machine.getRecipeLogic().isIdle()) {
                     for (var u : machine.getInputUnits()) {
                         long eu = machine.prepareRecipe(u);

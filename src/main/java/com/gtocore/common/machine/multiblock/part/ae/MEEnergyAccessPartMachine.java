@@ -74,12 +74,12 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     }
 
     public long getEnergyCapacity() {
-        if (isInValid() || controller == null) return 0;
+        if (isRemoved() || controller == null) return 0;
         return controller.getEnergyContainer().getEnergyCapacity();
     }
 
     public long getEnergyStored() {
-        if (isInValid() || controller == null) return 0;
+        if (isRemoved() || controller == null) return 0;
         return controller.getEnergyContainer().getEnergyStored();
     }
 
@@ -117,7 +117,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
         powerNotifyQueued = true;
         serverLevel.getServer().tell(new TickTask(0, () -> {
             powerNotifyQueued = false;
-            if (!isInValid() && controller != null && controller.getEnergyContainer().getEnergyStored() > 0) {
+            if (!isRemoved() && controller != null && controller.getEnergyContainer().getEnergyStored() > 0) {
                 postEnergyEvent();
             }
         }));
@@ -241,9 +241,9 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     /** 页面：借给 AE 网络的能量缓存（状态面板）；没有接入多方块时黄灯提示。 */
     private UIElement buildPage() {
         var status = new StatusPanel();
-        status.addLine(LINE_ENERGY, () -> controller == null || isInValid() ? Component.translatable(VALUE_NO_CONTROLLER) :
+        status.addLine(LINE_ENERGY, () -> controller == null || isRemoved() ? Component.translatable(VALUE_NO_CONTROLLER) :
                 Component.literal(FormattingUtil.formatNumbers(getEnergyStored()) + " / " + FormattingUtil.formatNumbers(getEnergyCapacity()) + " EU"))
-                .level(() -> controller == null || isInValid() ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL);
+                .level(() -> controller == null || isRemoved() ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL);
         return MEPartUI.page().addChild(status);
     }
 }

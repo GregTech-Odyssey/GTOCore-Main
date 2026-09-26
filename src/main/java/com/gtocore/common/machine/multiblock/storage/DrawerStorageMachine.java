@@ -196,7 +196,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
                     minSlotAmount = minSlotAmount == 0 ? slotAmount : Math.min(minSlotAmount, slotAmount);
                     continue;
                 }
-                int perItem = upgradeMultiplier(stack);
+                int perItem = upgradeMultiplier(stack, fluidKind);
                 if (perItem < 2) continue;
                 upgrades += stack.getCount();
                 upgradeProduct *= Math.pow(perItem, stack.getCount());
@@ -206,7 +206,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         this.types = types;
         this.drawerCount = drawers;
         this.upgradeCount = upgrades;
-        this.upgradeMultiplier = averageUpgrade(upgradeProduct, upgrades, drawers, fluidKind);
+        this.upgradeMultiplier = averageUpgrade(upgradeProduct, upgrades, drawers);
         this.perTypeCapacity = minSlotAmount < 1 ? 0 :
                 capacityOf(minSlotAmount, hermeticLevel, upgradeMultiplier, controllerMultiplier);
     }
@@ -214,11 +214,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     /// 升级倍率：所有升级相乘后按同类抽屉数量均分（{@code 乘积^(1/抽屉数)}），
     /// 且平均到每个抽屉的升级数最多算 {@link #MAX_UPGRADES_PER_DRAWER} 个（原版抽屉就只放得下 4 个）；
     /// 流体只拿一半，不低于 1
-    private static double averageUpgrade(double product, int upgradeCount, int drawerCount, boolean fluid) {
+    private static double averageUpgrade(double product, int upgradeCount, int drawerCount) {
         if (product <= 1 || upgradeCount < 1 || drawerCount < 1) return 1;
         double counted = Math.min(upgradeCount, (double) MAX_UPGRADES_PER_DRAWER * drawerCount);
-        double multiplier = Math.pow(product, counted / upgradeCount / drawerCount);
-        return fluid ? Math.max(1, multiplier / 2) : multiplier;
+        return Math.pow(product, counted / upgradeCount / drawerCount);
     }
 
     @Nullable
@@ -255,10 +254,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     /// 存储升级的倍率；创造（最大存储）升级返回 0，不算倍率
-    private static int upgradeMultiplier(ItemStack stack) {
+    private static int upgradeMultiplier(ItemStack stack, boolean fluid) {
         if (!(stack.getItem() instanceof StorageUpgradeItem upgrade)) return 0;
         if (upgrade.getStorageTier() == StorageUpgradeItem.StorageTier.MAX_STORAGE) return 0;
-        return upgrade.getStorageMultiplier();
+        return fluid ? upgrade.getStorageMultiplier() / 2 : upgrade.getStorageMultiplier();
     }
 
     /// 每种类容量：最小每槽容量 × √(密封等级 × 主机加成) × 均分后的升级倍率

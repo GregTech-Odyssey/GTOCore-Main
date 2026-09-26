@@ -38,7 +38,7 @@ public final class WirelessOpticalDataHatchMachine extends OpticalDataHatchMachi
     public static final String KEY_TRANSMITTER = "wireless_data_transmitter";
     public static final String KEY_RECEIVER = "wireless_data_receiver";
 
-    private final CleanableReferenceSupplier<MetaMachine> transmitterMachine = new CleanableReferenceSupplier<>(() -> MetaMachine.getMachine(getLevel(), transmitterPos), MetaMachine::isInValid);
+    private final CleanableReferenceSupplier<MetaMachine> transmitterMachine = new CleanableReferenceSupplier<>(() -> MetaMachine.getMachine(getLevel(), transmitterPos), MetaMachine::isRemoved);
 
     public WirelessOpticalDataHatchMachine(MetaMachineBlockEntity holder, boolean transmitter) {
         super(holder, transmitter);

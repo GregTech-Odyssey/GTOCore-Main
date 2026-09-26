@@ -22,7 +22,7 @@ public class WirelessNotifiableComputationContainer extends NotifiableComputatio
             }
         }
         return null;
-    }, MetaMachine::isInValid);
+    }, MetaMachine::isRemoved);
 
     public WirelessNotifiableComputationContainer(MetaMachine machine, boolean transmitter) {
         super(machine, transmitter);

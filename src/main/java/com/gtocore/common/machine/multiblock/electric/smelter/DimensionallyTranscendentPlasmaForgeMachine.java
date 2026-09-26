@@ -77,7 +77,7 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
                         workingSound = null;
                     }
                     if (sound != null) {
-                        var sound0 = new AutoReleasedSound(sound, () -> shouldWorkingPlaySound() && isWorking() && !isInValid() && getLevel().isLoaded(getPos()), getPos().relative(getFrontFacing(), -7), true, 0, 2f, 1) {
+                        var sound0 = new AutoReleasedSound(sound, () -> shouldWorkingPlaySound() && isWorking() && !isRemoved() && getLevel().isLoaded(getPos()), getPos().relative(getFrontFacing(), -7), true, 0, 2f, 1) {
 
                             @Override
                             public void tick() {

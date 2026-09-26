@@ -1,5 +1,7 @@
 package com.hepdd.gtmthings.api.misc;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.ref.WeakReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -13,7 +15,7 @@ public class CleanableReferenceSupplier<T> implements Supplier<T> {
     private final Supplier<T> supplier;
     private final Predicate<T> removeCondition;
 
-    public CleanableReferenceSupplier(Supplier<T> supplier, Predicate<T> removeCondition) {
+    public CleanableReferenceSupplier(Supplier<T> supplier, Predicate<@NotNull T> removeCondition) {
         this.supplier = supplier;
         this.removeCondition = removeCondition;
     }
