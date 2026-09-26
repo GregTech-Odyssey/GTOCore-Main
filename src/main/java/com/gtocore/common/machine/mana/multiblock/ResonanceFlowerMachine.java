@@ -28,7 +28,9 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.datasynclib.datastream.data.Data;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
@@ -90,7 +92,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
      * （即存储键）改名为 {@code recipeProgress}，旧数据自然被忽略，代价只是等级进度重置一次。
      */
     @SaveToDisk
-    private final Reference2ObjectLinkedOpenHashMap<GTRecipeDefinition, CompoundTag> recipeProgress = new Reference2ObjectLinkedOpenHashMap<>(MAX_SIZE);
+    private final Reference2ObjectLinkedOpenHashMap<GTRecipeDefinition, Entry> recipeProgress = new Reference2ObjectLinkedOpenHashMap<>(MAX_SIZE);
 
     /** 最近一次真正开跑的配方定义；未跑过时为 {@code null}。只用于界面显示。 */
     @SaveToDisk
@@ -198,9 +200,9 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        CompoundTag recipeEntry = getEntry(lastRecipe);
+        var recipeEntry = getEntry(lastRecipe);
         if (recipeEntry != null) {
-            short tier = recipeEntry.getShort(KEY_TIER);
+            short tier = recipeEntry.tier;
             textList.add(Component.translatable("gtocore.machine.resonance_flower.current_recipe",
                     getLastRecipeName().copy().withStyle(ChatFormatting.GREEN)));
             if (tier >= MAX_TIER) {
@@ -209,7 +211,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             } else {
                 textList.add(Component.translatable("gtocore.machine.resonance_flower.tier_progress",
                         Component.literal(Short.toString(tier)).withStyle(ChatFormatting.GREEN),
-                        Component.literal(FormattingUtil.formatNumbers(recipeEntry.getLong(KEY_FREQUENCY))).withStyle(ChatFormatting.GREEN),
+                        Component.literal(FormattingUtil.formatNumbers(recipeEntry.frequency)).withStyle(ChatFormatting.GREEN),
                         Component.literal(FormattingUtil.formatNumbers(calculateUpgradeRequirement(tier))).withStyle(ChatFormatting.GREEN)));
             }
             textList.add(Component.translatable("gtocore.machine.resonance_flower.tier_effect",
@@ -360,32 +362,26 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
      */
     public void addEntry(@Nullable GTRecipeDefinition definition, long frequency) {
         if (definition == null) return;
-
-        CompoundTag oldEntry = recipeProgress.remove(definition);
-        CompoundTag newEntry = new CompoundTag();
-        if (oldEntry == null) {
-            newEntry.putShort(KEY_TIER, (short) 1);
-            newEntry.putLong(KEY_FREQUENCY, frequency);
-        } else {
-            newEntry.putShort(KEY_TIER, oldEntry.getShort(KEY_TIER));
-            newEntry.putLong(KEY_FREQUENCY, oldEntry.getLong(KEY_FREQUENCY) + frequency);
-        }
-        // 先移除再放回，让 Linked 容器把这条记录排到末尾（最近使用）
-        recipeProgress.put(definition, newEntry);
-
+        recipeProgress.compute(definition, (k, v) -> {
+            if (v == null) {
+                return new Entry((short) 1, frequency);
+            } else {
+                return new Entry(v.tier, v.frequency + frequency);
+            }
+        });
         while (recipeProgress.size() > MAX_SIZE) recipeProgress.removeFirst();
     }
 
     /** 取某个配方的进度条目；没有记录（或传入 null）时返回 {@code null}。 */
     @Nullable
-    public CompoundTag getEntry(@Nullable GTRecipeDefinition definition) {
+    public Entry getEntry(@Nullable GTRecipeDefinition definition) {
         return definition == null ? null : recipeProgress.get(definition);
     }
 
     /** 取某个配方的等级；没有记录时为 0（此时不减免时长、并行 1）。 */
     public short getTier(@Nullable GTRecipeDefinition definition) {
-        CompoundTag entry = getEntry(definition);
-        return entry == null ? 0 : entry.getShort(KEY_TIER);
+        var entry = getEntry(definition);
+        return entry == null ? 0 : entry.tier;
     }
 
     /**
@@ -396,11 +392,11 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
      * 一次只扣一级会让 frequency 无限累积，最终溢出 {@code long}。等级上限 {@link #MAX_TIER}。
      */
     public void upgradeEntry(@Nullable GTRecipeDefinition definition) {
-        CompoundTag entry = getEntry(definition);
+        var entry = getEntry(definition);
         if (entry == null) return;
 
-        short tier = entry.getShort(KEY_TIER);
-        long frequency = entry.getLong(KEY_FREQUENCY);
+        short tier = entry.tier;
+        long frequency = entry.frequency;
         boolean upgraded = false;
         while (tier < MAX_TIER) {
             long requirement = calculateUpgradeRequirement(tier);
@@ -410,8 +406,8 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             upgraded = true;
         }
         if (upgraded) {
-            entry.putShort(KEY_TIER, tier);
-            entry.putLong(KEY_FREQUENCY, frequency);
+            entry.tier = tier;
+            entry.frequency = frequency;
         }
     }
 
@@ -476,6 +472,26 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             return 42000000L + (tier - 128) * 800000000L;
         } else {
             return 52000000000L + (tier - 192) * 140000000000L;
+        }
+    }
+
+    public static void addCodec() {
+        Entry.CODEC.register(Entry.class);
+    }
+
+    private static final class Entry {
+
+        private static final DataSyncCodec<Entry> CODEC = CombinedCodec.composite(
+                DataSyncCodec.SHORT_CODEC, entry -> entry.tier,
+                DataSyncCodec.LONG_CODEC, entry -> entry.frequency,
+                Entry::new);
+
+        private short tier;
+        private long frequency;
+
+        private Entry(short tier, long frequency) {
+            this.tier = tier;
+            this.frequency = frequency;
         }
     }
 }

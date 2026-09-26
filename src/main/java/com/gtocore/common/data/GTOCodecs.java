@@ -5,6 +5,7 @@ import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
 
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -310,5 +311,6 @@ public class GTOCodecs {
         // 其余类型均已由字段处 DataSyncCodec.register(...) 一步注册到全局；
         // 仅 ScanningRecipeExtion.AEKEYDATACRYSTAL 是 CombinedCodec.composite 构建（不注册），在此用实例方法补注册。
         ScanningRecipeExtion.AEKEYDATACRYSTAL_CODEC.register(ScanningRecipeExtion.AEKeyDataCrystal.class);
+        ResonanceFlowerMachine.addCodec();
     }
 }
