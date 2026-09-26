@@ -1,5 +1,6 @@
 package com.gtocore.mixin.ae2.crafting;
 
+import com.gtocore.integration.ae.AdvancedBlockingTarget;
 import com.gtocore.integration.ae.PatternContainerGroupHelper;
 
 import com.gtolib.api.ae2.*;
@@ -12,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import appeng.api.config.Actionable;
 import appeng.api.config.LockCraftingMode;
@@ -24,7 +26,10 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
+import appeng.blockentity.networking.CableBusBlockEntity;
+import appeng.core.definitions.AEItems;
 import appeng.core.localization.GuiText;
+import appeng.helpers.InterfaceLogicHost;
 import appeng.helpers.patternprovider.PatternProviderLogic;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTarget;
@@ -208,6 +213,7 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
                         if (result.needBreak()) return result;
                     } else {
                         var target = PatternProviderTargetCache.find(adjBe, this, adjBeSide, actionSource, 0);
+                        target = gtocore$wrapAdvancedBlockingTarget(adjBe, adjBeSide, patternDetails, target);
                         if (target == null || target.containsPatternInput(patternInputs)) continue;
                         var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
                         if (result.success()) success.value = true;
@@ -215,6 +221,7 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
                     }
                 } else {
                     var target = findAdapter(direction);
+                    target = gtocore$wrapAdvancedBlockingTarget(adjBe, adjBeSide, patternDetails, target);
                     if (target == null || target.containsPatternInput(patternInputs)) continue;
                     var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
                     if (result.success()) success.value = true;
@@ -279,6 +286,40 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
             break;
         }
         return success ? PushResult.SUCCESS : PushResult.REJECTED;
+    }
+
+    @Unique
+    private @Nullable PatternProviderTarget gtocore$wrapAdvancedBlockingTarget(
+                                                                               BlockEntity targetBlockEntity,
+                                                                               Direction targetSide,
+                                                                               IPatternDetails patternDetails,
+                                                                               @Nullable PatternProviderTarget fallback) {
+        if (fallback == null || configManager.getSetting(GTOSettings.BLOCKING_TYPE) != BlockingType.NON_CONTAIN) {
+            return fallback;
+        }
+
+        InterfaceLogicHost interfaceHost = null;
+        if (targetBlockEntity instanceof InterfaceLogicHost directInterface) {
+            interfaceHost = directInterface;
+        } else if (targetBlockEntity instanceof CableBusBlockEntity cableBus && cableBus.getPart(targetSide) instanceof InterfaceLogicHost partInterface) {
+            interfaceHost = partInterface;
+        }
+
+        if (interfaceHost == null || !interfaceHost.getUpgrades().isInstalled(AEItems.ADVANCED_BLOCKING_CARD)) {
+            return fallback;
+        }
+
+        var interfaceLogic = interfaceHost.getInterfaceLogic();
+        var networkStorage = interfaceLogic.getNetworkStorage();
+        if (networkStorage == null) {
+            return fallback;
+        }
+
+        return new AdvancedBlockingTarget(
+                networkStorage,
+                actionSource,
+                interfaceLogic,
+                patternDetails.getDefinition());
     }
 
     /**
