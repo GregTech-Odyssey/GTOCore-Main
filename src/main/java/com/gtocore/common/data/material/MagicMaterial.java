@@ -696,6 +696,150 @@ public final class MagicMaterial {
                 .dust().color(0x454545).iconSet(BRIGHT).buildAndRegister();
         InactiveRemnantErosionCatalyst = material("inactive_remnant_erosion_catalyst", "失活骸蚀催化尘")
                 .dust().color(0x3A3A3A).iconSet(BRIGHT).buildAndRegister();
+
+        // 命树灵脉 - 四矿共用的增产交叉料
+        LeylineProliferationDregs = material("leyline_proliferation_dregs", "命树增产残料")
+                .dust().color(0x5F7A4A).iconSet(SAND).buildAndRegister();
+
+        // 命树灵脉 - 源核晶标准产线中间物料
+        CoarseOriginCoreCrystalDust = material("coarse_origin_core_crystal_dust", "源核晶粗粉")
+                .dust().color(0xC8BC94).iconSet(SAND).buildAndRegister();
+        ActivatedOriginCoreCrystalDust = material("activated_origin_core_crystal_dust", "活化源核晶粉")
+                .dust().color(0xFFF2CE).iconSet(SAND).buildAndRegister();
+        OriginCoreCrystalReactionSolution = magicMaterial("origin_core_crystal_reaction_solution", "源核晶反应液")
+                .liquid(new FluidBuilder().temperature(320).viscosity(1300))
+                .color(0xE8D8AC).iconSet(LIMPID).buildAndRegister();
+        FineOriginCoreCrystalDust = material("fine_origin_core_crystal_dust", "源核晶精粉")
+                .dust().color(0xF2E8C6).iconSet(SAND).buildAndRegister();
+        PurifiedOriginCoreCrystalDust = material("purified_origin_core_crystal_dust", "纯化源核晶粉")
+                .dust().color(0xFFFBEA).iconSet(SAND).buildAndRegister();
+        OriginCoreCrystalMotherLiquor = magicMaterial("origin_core_crystal_mother_liquor", "源核晶回收母液")
+                .liquid(new FluidBuilder().temperature(310).viscosity(1500))
+                .color(0xB8A87A).iconSet(LIMPID).buildAndRegister();
+
+        // 命树灵脉 - 星血晶标准产线中间物料
+        CoarseStarBloodCrystalDust = material("coarse_star_blood_crystal_dust", "星血晶粗粉")
+                .dust().color(0x5A4CB0).iconSet(SAND).buildAndRegister();
+        ActivatedStarBloodCrystalDust = material("activated_star_blood_crystal_dust", "活化星血晶粉")
+                .dust().color(0x9A8AF5).iconSet(SAND).buildAndRegister();
+        StarBloodCrystalReactionSolution = magicMaterial("star_blood_crystal_reaction_solution", "星血晶反应液")
+                .liquid(new FluidBuilder().temperature(320).viscosity(1300))
+                .color(0x8878EC).iconSet(LIMPID).buildAndRegister();
+        FineStarBloodCrystalDust = material("fine_star_blood_crystal_dust", "星血晶精粉")
+                .dust().color(0x7B68EE).iconSet(SAND).buildAndRegister();
+        PurifiedStarBloodCrystalDust = material("purified_star_blood_crystal_dust", "纯化星血晶粉")
+                .dust().color(0xC3B8FF).iconSet(SAND).buildAndRegister();
+        StarBloodCrystalMotherLiquor = magicMaterial("star_blood_crystal_mother_liquor", "星血晶回收母液")
+                .liquid(new FluidBuilder().temperature(310).viscosity(1500))
+                .color(0x5548A0).iconSet(LIMPID).buildAndRegister();
+
+        // 命树灵脉 - 魂玉晶标准产线中间物料
+        CoarseSoulJadeCrystalDust = material("coarse_soul_jade_crystal_dust", "魂玉晶粗粉")
+                .dust().color(0x8A78B0).iconSet(SAND).buildAndRegister();
+        ActivatedSoulJadeCrystalDust = material("activated_soul_jade_crystal_dust", "活化魂玉晶粉")
+                .dust().color(0xCBB8F0).iconSet(SAND).buildAndRegister();
+        SoulJadeCrystalReactionSolution = magicMaterial("soul_jade_crystal_reaction_solution", "魂玉晶反应液")
+                .liquid(new FluidBuilder().temperature(320).viscosity(1300))
+                .color(0xBBA8E4).iconSet(LIMPID).buildAndRegister();
+        FineSoulJadeCrystalDust = material("fine_soul_jade_crystal_dust", "魂玉晶精粉")
+                .dust().color(0xB19CD9).iconSet(SAND).buildAndRegister();
+        PurifiedSoulJadeCrystalDust = material("purified_soul_jade_crystal_dust", "纯化魂玉晶粉")
+                .dust().color(0xE6DCFF).iconSet(SAND).buildAndRegister();
+        SoulJadeCrystalMotherLiquor = magicMaterial("soul_jade_crystal_mother_liquor", "魂玉晶回收母液")
+                .liquid(new FluidBuilder().temperature(310).viscosity(1500))
+                .color(0x8878B0).iconSet(LIMPID).buildAndRegister();
+
+        // 命树灵脉 - 骸灵石标准产线中间物料
+        CoarseRemnantSpiritStoneDust = material("coarse_remnant_spirit_stone_dust", "骸灵石粗粉")
+                .dust().color(0x333333).iconSet(SAND).buildAndRegister();
+        ActivatedRemnantSpiritStoneDust = material("activated_remnant_spirit_stone_dust", "活化骸灵石粉")
+                .dust().color(0x6B6B6B).iconSet(SAND).buildAndRegister();
+        RemnantSpiritStoneReactionSolution = magicMaterial("remnant_spirit_stone_reaction_solution", "骸灵石反应液")
+                .liquid(new FluidBuilder().temperature(320).viscosity(1300))
+                .color(0x5A5A5A).iconSet(LIMPID).buildAndRegister();
+        FineRemnantSpiritStoneDust = material("fine_remnant_spirit_stone_dust", "骸灵石精粉")
+                .dust().color(0x4F4F4F).iconSet(SAND).buildAndRegister();
+        PurifiedRemnantSpiritStoneDust = material("purified_remnant_spirit_stone_dust", "纯化骸灵石粉")
+                .dust().color(0x8A8A8A).iconSet(SAND).buildAndRegister();
+        RemnantSpiritStoneMotherLiquor = magicMaterial("remnant_spirit_stone_mother_liquor", "骸灵石回收母液")
+                .liquid(new FluidBuilder().temperature(310).viscosity(1500))
+                .color(0x3F3F3F).iconSet(LIMPID).buildAndRegister();
+
+        // 命树灵脉 - 源核晶增产产线中间物料
+        SynergizedOriginCoreCrystalSlurry = magicMaterial("synergized_origin_core_crystal_slurry", "增效源核晶浆料")
+                .liquid(new FluidBuilder().temperature(300).viscosity(1800))
+                .color(0xE6D6A2).iconSet(LIMPID).buildAndRegister();
+        CatalyzedOriginCoreCrystalDust = material("catalyzed_origin_core_crystal_dust", "催化源核晶粉体")
+                .dust().color(0xFFE9A6).iconSet(BRIGHT).buildAndRegister();
+        ProliferatedOriginCoreCrystalDust = material("proliferated_origin_core_crystal_dust", "增殖源核晶粉体")
+                .dust().color(0xF7DE96).iconSet(BRIGHT).buildAndRegister();
+        CoatedOriginCoreCrystalMelt = magicMaterial("coated_origin_core_crystal_melt", "包覆源核晶熔液")
+                .liquid(new FluidBuilder().temperature(900).viscosity(2000))
+                .color(0xD8C282).iconSet(LIMPID).buildAndRegister();
+        StrengthenedOriginCoreCrystalDust = material("strengthened_origin_core_crystal_dust", "强化源核晶粉体")
+                .dust().color(0xFFDF72).iconSet(BRIGHT).buildAndRegister();
+        ResonatedOriginCoreCrystalSolution = magicMaterial("resonated_origin_core_crystal_solution", "共振源核晶溶液")
+                .liquid(new FluidBuilder().temperature(340).viscosity(1400))
+                .color(0xFFD24A).iconSet(LIMPID).buildAndRegister();
+        CrystallizedOriginCoreCrystalDust = material("crystallized_origin_core_crystal_dust", "晶化源核晶粉体")
+                .dust().color(0xFFF6D2).iconSet(BRIGHT).buildAndRegister();
+
+        // 命树灵脉 - 星血晶增产产线中间物料
+        SynergizedStarBloodCrystalSlurry = magicMaterial("synergized_star_blood_crystal_slurry", "增效星血晶浆料")
+                .liquid(new FluidBuilder().temperature(300).viscosity(1800))
+                .color(0x917FF2).iconSet(LIMPID).buildAndRegister();
+        CatalyzedStarBloodCrystalDust = material("catalyzed_star_blood_crystal_dust", "催化星血晶粉体")
+                .dust().color(0xA88CFF).iconSet(BRIGHT).buildAndRegister();
+        ProliferatedStarBloodCrystalDust = material("proliferated_star_blood_crystal_dust", "增殖星血晶粉体")
+                .dust().color(0x9C7BF5).iconSet(BRIGHT).buildAndRegister();
+        CoatedStarBloodCrystalMelt = magicMaterial("coated_star_blood_crystal_melt", "包覆星血晶熔液")
+                .liquid(new FluidBuilder().temperature(900).viscosity(2000))
+                .color(0x6A55C8).iconSet(LIMPID).buildAndRegister();
+        StrengthenedStarBloodCrystalDust = material("strengthened_star_blood_crystal_dust", "强化星血晶粉体")
+                .dust().color(0xB58CFF).iconSet(BRIGHT).buildAndRegister();
+        ResonatedStarBloodCrystalSolution = magicMaterial("resonated_star_blood_crystal_solution", "共振星血晶溶液")
+                .liquid(new FluidBuilder().temperature(340).viscosity(1400))
+                .color(0xD06AFF).iconSet(LIMPID).buildAndRegister();
+        CrystallizedStarBloodCrystalDust = material("crystallized_star_blood_crystal_dust", "晶化星血晶粉体")
+                .dust().color(0xDCD0FF).iconSet(BRIGHT).buildAndRegister();
+
+        // 命树灵脉 - 魂玉晶增产产线中间物料
+        SynergizedSoulJadeCrystalSlurry = magicMaterial("synergized_soul_jade_crystal_slurry", "增效魂玉晶浆料")
+                .liquid(new FluidBuilder().temperature(300).viscosity(1800))
+                .color(0xBAA6DE).iconSet(LIMPID).buildAndRegister();
+        CatalyzedSoulJadeCrystalDust = material("catalyzed_soul_jade_crystal_dust", "催化魂玉晶粉体")
+                .dust().color(0xC9A0F0).iconSet(BRIGHT).buildAndRegister();
+        ProliferatedSoulJadeCrystalDust = material("proliferated_soul_jade_crystal_dust", "增殖魂玉晶粉体")
+                .dust().color(0xBE97E6).iconSet(BRIGHT).buildAndRegister();
+        CoatedSoulJadeCrystalMelt = magicMaterial("coated_soul_jade_crystal_melt", "包覆魂玉晶熔液")
+                .liquid(new FluidBuilder().temperature(900).viscosity(2000))
+                .color(0x9A85C4).iconSet(LIMPID).buildAndRegister();
+        StrengthenedSoulJadeCrystalDust = material("strengthened_soul_jade_crystal_dust", "强化魂玉晶粉体")
+                .dust().color(0xD4A0FF).iconSet(BRIGHT).buildAndRegister();
+        ResonatedSoulJadeCrystalSolution = magicMaterial("resonated_soul_jade_crystal_solution", "共振魂玉晶溶液")
+                .liquid(new FluidBuilder().temperature(340).viscosity(1400))
+                .color(0xE070FF).iconSet(LIMPID).buildAndRegister();
+        CrystallizedSoulJadeCrystalDust = material("crystallized_soul_jade_crystal_dust", "晶化魂玉晶粉体")
+                .dust().color(0xEDE2FF).iconSet(BRIGHT).buildAndRegister();
+
+        // 命树灵脉 - 骸灵石增产产线中间物料
+        SynergizedRemnantSpiritStoneSlurry = magicMaterial("synergized_remnant_spirit_stone_slurry", "增效骸灵石浆料")
+                .liquid(new FluidBuilder().temperature(300).viscosity(1800))
+                .color(0x626262).iconSet(LIMPID).buildAndRegister();
+        CatalyzedRemnantSpiritStoneDust = material("catalyzed_remnant_spirit_stone_dust", "催化骸灵石粉体")
+                .dust().color(0x7A6A5A).iconSet(BRIGHT).buildAndRegister();
+        ProliferatedRemnantSpiritStoneDust = material("proliferated_remnant_spirit_stone_dust", "增殖骸灵石粉体")
+                .dust().color(0x6E5F52).iconSet(BRIGHT).buildAndRegister();
+        CoatedRemnantSpiritStoneMelt = magicMaterial("coated_remnant_spirit_stone_melt", "包覆骸灵石熔液")
+                .liquid(new FluidBuilder().temperature(900).viscosity(2000))
+                .color(0x424242).iconSet(LIMPID).buildAndRegister();
+        StrengthenedRemnantSpiritStoneDust = material("strengthened_remnant_spirit_stone_dust", "强化骸灵石粉体")
+                .dust().color(0x8C7A66).iconSet(BRIGHT).buildAndRegister();
+        ResonatedRemnantSpiritStoneSolution = magicMaterial("resonated_remnant_spirit_stone_solution", "共振骸灵石溶液")
+                .liquid(new FluidBuilder().temperature(340).viscosity(1400))
+                .color(0xA08A6E).iconSet(LIMPID).buildAndRegister();
+        CrystallizedRemnantSpiritStoneDust = material("crystallized_remnant_spirit_stone_dust", "晶化骸灵石粉体")
+                .dust().color(0xB0B0B0).iconSet(BRIGHT).buildAndRegister();
     }
 
     public static GTOMaterialBuilder magicMaterial(String name, String cn) {

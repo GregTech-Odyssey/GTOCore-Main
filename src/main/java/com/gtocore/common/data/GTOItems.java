@@ -1022,6 +1022,21 @@ public final class GTOItems {
     public static final ItemEntry<Item> CRUDELY_HARMONIZED_SOUL_JADE_CRYSTAL_ORE = register("crudely_harmonized_soul_jade_crystal_ore", "粗劣调和魂玉晶矿石");
     public static final ItemEntry<Item> CRUDELY_SHAPED_REMNANT_SPIRIT_STONE_ORE = register("crudely_shaped_remnant_spirit_stone_ore", "粗劣塑形骸灵石矿石");
 
+    public static final ItemEntry<Item> DECONTAMINATED_ORIGIN_CORE_CRYSTAL_ORE = register("decontaminated_origin_core_crystal_ore", "除杂源核晶矿石");
+    public static final ItemEntry<Item> DECONTAMINATED_STAR_BLOOD_CRYSTAL_ORE = register("decontaminated_star_blood_crystal_ore", "除杂星血晶矿石");
+    public static final ItemEntry<Item> DECONTAMINATED_SOUL_JADE_CRYSTAL_ORE = register("decontaminated_soul_jade_crystal_ore", "除杂魂玉晶矿石");
+    public static final ItemEntry<Item> DECONTAMINATED_REMNANT_SPIRIT_STONE_ORE = register("decontaminated_remnant_spirit_stone_ore", "除杂骸灵石矿石");
+
+    public static final ItemEntry<Item> INFILTRATED_ORIGIN_CORE_CRYSTAL = register("infiltrated_origin_core_crystal", "浸润源核晶");
+    public static final ItemEntry<Item> INFILTRATED_STAR_BLOOD_CRYSTAL = register("infiltrated_star_blood_crystal", "浸润星血晶");
+    public static final ItemEntry<Item> INFILTRATED_SOUL_JADE_CRYSTAL = register("infiltrated_soul_jade_crystal", "浸润魂玉晶");
+    public static final ItemEntry<Item> INFILTRATED_REMNANT_SPIRIT_STONE = register("infiltrated_remnant_spirit_stone", "浸润骸灵石");
+
+    public static final ItemEntry<Item> ORIGIN_CORE_CRYSTAL_GIANT_POLYCRYSTAL = register("origin_core_crystal_giant_polycrystal", "源核晶巨型多晶体");
+    public static final ItemEntry<Item> STAR_BLOOD_CRYSTAL_GIANT_POLYCRYSTAL = register("star_blood_crystal_giant_polycrystal", "星血晶巨型多晶体");
+    public static final ItemEntry<Item> SOUL_JADE_CRYSTAL_GIANT_POLYCRYSTAL = register("soul_jade_crystal_giant_polycrystal", "魂玉晶巨型多晶体");
+    public static final ItemEntry<Item> REMNANT_SPIRIT_STONE_GIANT_POLYCRYSTAL = register("remnant_spirit_stone_giant_polycrystal", "骸灵石巨型多晶体");
+
     public static final ItemEntry<TarotArcanum>[] TAROT_ARCANUM = registerTarotArcanum();
 
     public static final ItemEntry<AffixCanvas> AFFIX_CANVAS = item("affix_canvas", "铭刻之布", AffixCanvas::new).register();
