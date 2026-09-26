@@ -774,8 +774,6 @@ public final class MagicRecipesB {
                             .inputItems(CRUDELY_PURIFIED_ORIGIN_CORE_CRYSTAL_ORE)
                             .chancedOutput(gemFlawless, OriginCoreCrystal, chance, chanceBoost)
                             .chancedOutput(gem, OriginCoreCrystal, chance * 2, 100)
-                            .chancedOutput(gemFlawed, OriginCoreCrystal, 1000, 200)
-                            .chancedOutput(gemChipped, OriginCoreCrystal, 1500, 300)
                             .chancedOutput(dust, OriginCoreCrystalResidue, 6500 - 3 * chance, 600)
                             .chancedOutput(dustPure, OriginCoreCrystal, 5000, 0)
                             .duration(600).EUt(VA[HV])
@@ -807,8 +805,6 @@ public final class MagicRecipesB {
                             .inputItems(CRUDELY_FUSED_STAR_BLOOD_CRYSTAL_ORE)
                             .chancedOutput(gemFlawless, StarBloodCrystal, chance, chanceBoost)
                             .chancedOutput(gem, StarBloodCrystal, chance * 2, 100)
-                            .chancedOutput(gemFlawed, StarBloodCrystal, 1000, 200)
-                            .chancedOutput(gemChipped, StarBloodCrystal, 1500, 300)
                             .chancedOutput(dust, StarBloodCrystalResidue, 6500 - 3 * chance, 600)
                             .chancedOutput(dustPure, StarBloodCrystal, 5000, 0)
                             .duration(600).EUt(VA[HV])
@@ -840,8 +836,6 @@ public final class MagicRecipesB {
                             .inputItems(CRUDELY_HARMONIZED_SOUL_JADE_CRYSTAL_ORE)
                             .chancedOutput(gemFlawless, SoulJadeCrystal, chance, chanceBoost)
                             .chancedOutput(gem, SoulJadeCrystal, chance * 2, 100)
-                            .chancedOutput(gemFlawed, SoulJadeCrystal, 1000, 200)
-                            .chancedOutput(gemChipped, SoulJadeCrystal, 1500, 300)
                             .chancedOutput(dust, SoulJadeCrystalResidue, 6500 - 3 * chance, 600)
                             .chancedOutput(dustPure, SoulJadeCrystal, 5000, 0)
                             .duration(600).EUt(VA[HV])
@@ -873,8 +867,6 @@ public final class MagicRecipesB {
                             .inputItems(CRUDELY_SHAPED_REMNANT_SPIRIT_STONE_ORE)
                             .chancedOutput(gemFlawless, RemnantSpiritStone, chance, chanceBoost)
                             .chancedOutput(gem, RemnantSpiritStone, chance * 2, 100)
-                            .chancedOutput(gemFlawed, RemnantSpiritStone, 1000, 200)
-                            .chancedOutput(gemChipped, RemnantSpiritStone, 1500, 300)
                             .chancedOutput(dust, RemnantSpiritStoneResidue, 6500 - 3 * chance, 600)
                             .chancedOutput(dustPure, RemnantSpiritStone, 5000, 0)
                             .duration(600).EUt(VA[HV])
@@ -952,8 +944,6 @@ public final class MagicRecipesB {
                             .chancedOutput(gemExquisite, OriginCoreCrystal, 300, 0)
                             .chancedOutput(gemFlawless, OriginCoreCrystal, 4000, 0)
                             .chancedOutput(gem, OriginCoreCrystal, 2500, 0)
-                            .chancedOutput(gemFlawed, OriginCoreCrystal, 1500, 0)
-                            .chancedOutput(gemChipped, OriginCoreCrystal, 2500, 0)
                             .chancedOutput(dust, OriginCoreCrystalResidue, 3500, 0)
                             .duration(720).EUt(VA[UV])
                             .save();
@@ -1023,8 +1013,6 @@ public final class MagicRecipesB {
                             .chancedOutput(gemExquisite, StarBloodCrystal, 300, 0)
                             .chancedOutput(gemFlawless, StarBloodCrystal, 4000, 0)
                             .chancedOutput(gem, StarBloodCrystal, 2500, 0)
-                            .chancedOutput(gemFlawed, StarBloodCrystal, 1500, 0)
-                            .chancedOutput(gemChipped, StarBloodCrystal, 2500, 0)
                             .chancedOutput(dust, StarBloodCrystalResidue, 3500, 0)
                             .duration(600).EUt(VA[ZPM])
                             .save();
@@ -1094,8 +1082,6 @@ public final class MagicRecipesB {
                             .chancedOutput(gemExquisite, SoulJadeCrystal, 300, 0)
                             .chancedOutput(gemFlawless, SoulJadeCrystal, 4000, 0)
                             .chancedOutput(gem, SoulJadeCrystal, 2500, 0)
-                            .chancedOutput(gemFlawed, SoulJadeCrystal, 1500, 0)
-                            .chancedOutput(gemChipped, SoulJadeCrystal, 2500, 0)
                             .chancedOutput(dust, SoulJadeCrystalResidue, 3500, 0)
                             .duration(780).EUt(VA[UV])
                             .save();
@@ -1164,8 +1150,6 @@ public final class MagicRecipesB {
                             .chancedOutput(gemExquisite, RemnantSpiritStone, 300, 0)
                             .chancedOutput(gemFlawless, RemnantSpiritStone, 4000, 0)
                             .chancedOutput(gem, RemnantSpiritStone, 2500, 0)
-                            .chancedOutput(gemFlawed, RemnantSpiritStone, 1500, 0)
-                            .chancedOutput(gemChipped, RemnantSpiritStone, 2500, 0)
                             .chancedOutput(dust, RemnantSpiritStoneResidue, 3500, 0)
                             .duration(660).EUt(VA[ZPM])
                             .save();
@@ -1274,10 +1258,8 @@ public final class MagicRecipesB {
                             .inputItems(ORIGIN_CORE_CRYSTAL_GIANT_POLYCRYSTAL)
                             .chancedOutput(gemExquisite, OriginCoreCrystal, 8, 3000, 0)
                             .chancedOutput(gemFlawless, OriginCoreCrystal, 16, 5000, 0)
-                            .chancedOutput(gem, OriginCoreCrystal, 16, 2500, 0)
-                            .chancedOutput(gemFlawed, OriginCoreCrystal, 32, 1500, 0)
-                            .chancedOutput(gemChipped, OriginCoreCrystal, 32, 2000, 0)
-                            .chancedOutput(dust, OriginCoreCrystalResidue, 16, 3000, 0)
+                            .chancedOutput(gem, OriginCoreCrystal, 32, 2500, 0)
+                            .chancedOutput(dust, OriginCoreCrystalResidue, 32, 3000, 0)
                             .duration(900).EUt(VA[UEV])
                             .save();
                 }
@@ -1374,10 +1356,8 @@ public final class MagicRecipesB {
                             .inputItems(STAR_BLOOD_CRYSTAL_GIANT_POLYCRYSTAL)
                             .chancedOutput(gemExquisite, StarBloodCrystal, 8, 3000, 0)
                             .chancedOutput(gemFlawless, StarBloodCrystal, 16, 5000, 0)
-                            .chancedOutput(gem, StarBloodCrystal, 16, 2500, 0)
-                            .chancedOutput(gemFlawed, StarBloodCrystal, 32, 1500, 0)
-                            .chancedOutput(gemChipped, StarBloodCrystal, 32, 2000, 0)
-                            .chancedOutput(dust, StarBloodCrystalResidue, 16, 3000, 0)
+                            .chancedOutput(gem, StarBloodCrystal, 32, 2500, 0)
+                            .chancedOutput(dust, StarBloodCrystalResidue, 32, 3000, 0)
                             .duration(800).EUt(VA[UEV])
                             .save();
                 }
@@ -1474,10 +1454,8 @@ public final class MagicRecipesB {
                             .inputItems(SOUL_JADE_CRYSTAL_GIANT_POLYCRYSTAL)
                             .chancedOutput(gemExquisite, SoulJadeCrystal, 8, 3000, 0)
                             .chancedOutput(gemFlawless, SoulJadeCrystal, 16, 5000, 0)
-                            .chancedOutput(gem, SoulJadeCrystal, 16, 2500, 0)
-                            .chancedOutput(gemFlawed, SoulJadeCrystal, 32, 1500, 0)
-                            .chancedOutput(gemChipped, SoulJadeCrystal, 32, 2000, 0)
-                            .chancedOutput(dust, SoulJadeCrystalResidue, 16, 3000, 0)
+                            .chancedOutput(gem, SoulJadeCrystal, 32, 2500, 0)
+                            .chancedOutput(dust, SoulJadeCrystalResidue, 32, 3000, 0)
                             .duration(950).EUt(VA[UEV])
                             .save();
                 }
@@ -1574,10 +1552,8 @@ public final class MagicRecipesB {
                             .inputItems(REMNANT_SPIRIT_STONE_GIANT_POLYCRYSTAL)
                             .chancedOutput(gemExquisite, RemnantSpiritStone, 8, 3000, 0)
                             .chancedOutput(gemFlawless, RemnantSpiritStone, 16, 5000, 0)
-                            .chancedOutput(gem, RemnantSpiritStone, 16, 2500, 0)
-                            .chancedOutput(gemFlawed, RemnantSpiritStone, 32, 1500, 0)
-                            .chancedOutput(gemChipped, RemnantSpiritStone, 32, 2000, 0)
-                            .chancedOutput(dust, RemnantSpiritStoneResidue, 16, 3000, 0)
+                            .chancedOutput(gem, RemnantSpiritStone, 32, 2500, 0)
+                            .chancedOutput(dust, RemnantSpiritStoneResidue, 32, 3000, 0)
                             .duration(1000).EUt(VA[UEV])
                             .save();
                 }
