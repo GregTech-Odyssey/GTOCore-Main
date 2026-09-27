@@ -27,7 +27,6 @@ import net.minecraft.network.chat.Component;
 
 import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
 import earth.terrarium.adastra.api.planets.PlanetApi;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -48,7 +47,7 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     @Getter
     private final Map<Class<? extends ISpaceServiceMachine>, ISpaceServiceMachine> serviceMachineMap = new Reference2ObjectOpenHashMap<>();
 
-    private final Set<ILargeSpaceStationMachine> subMachinesFlat;
+    private final ReferenceOpenHashSet<ILargeSpaceStationMachine> subMachinesFlat;
     private WirelessEnergyContainer WirelessEnergyContainerCache;
     private final TierCasingTrait tierCasingTrait;
 
@@ -62,7 +61,7 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     public Core(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
-        this.subMachinesFlat = new ObjectOpenHashSet<>();
+        this.subMachinesFlat = new ReferenceOpenHashSet<>();
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
     }
 
@@ -186,7 +185,7 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
         }
         long EUt = getEUt();
         for (ILargeSpaceStationMachine machine : subMachinesFlat) {
-            EUt += machine.getEUt();
+            if (machine.isFormed()) EUt += machine.getEUt();
             if (machine instanceof IRecipeLogicMachine r) r.getRecipeLogic().updateTickSubscription();
         }
         return inputFluids(getRecipeBuilder().duration(20).EUt(EUt), subMachinesFlat.size() + 1)

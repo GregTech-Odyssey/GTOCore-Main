@@ -103,7 +103,7 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
             var blockEntity = getLevel().getBlockEntity(pos);
             if (blockEntity instanceof MetaMachineBlockEntity metaMachineBlockEntity) {
                 var machine = metaMachineBlockEntity.getMetaMachine();
-                if (machine instanceof ILargeSpaceStationMachine largeSpaceStationMachine && largeSpaceStationMachine.isFormed()) {
+                if (machine instanceof ILargeSpaceStationMachine largeSpaceStationMachine) {
                     machines.add(largeSpaceStationMachine);
                 }
             }
