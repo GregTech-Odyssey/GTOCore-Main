@@ -55,16 +55,20 @@ public final class GeneratorMultiblock {
     public static final MultiblockMachineDefinition PHOTOVOLTAIC_POWER_STATION_PULSATING = registerPhotovoltaicPowerStation("pulsating", "脉冲", 4, GTBlocks.CASING_TITANIUM_STABLE, GTOBlocks.PULSATING_PHOTOVOLTAIC_BLOCK, GTCEu.id("block/casings/solid/machine_casing_stable_titanium"));
     public static final MultiblockMachineDefinition PHOTOVOLTAIC_POWER_STATION_VIBRANT = registerPhotovoltaicPowerStation("vibrant", "振动", 16, GTBlocks.CASING_TUNGSTENSTEEL_ROBUST, GTOBlocks.VIBRANT_PHOTOVOLTAIC_BLOCK, GTCEu.id("block/casings/solid/machine_casing_robust_tungstensteel"));
 
-    private static MultiblockMachineDefinition registerPhotovoltaicPowerStation(String name, String cn, int basicRate, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock, ResourceLocation texture) {
-        String model;
-        if (basicRate < 4) model = "PG-11";
-        else if (basicRate < 16) model = "PG-12";
-        else model = "PG-13";
+    public static final MultiblockMachineDefinition PHOTOVOLTAIC_SAIL_CONTROLLER_ENERGETIC = registerPhotovoltaicSailController("energetic", "充能", "Energetic", 1, GTBlocks.CASING_STEEL_SOLID, GTOBlocks.ENERGETIC_PHOTOVOLTAIC_BLOCK, GTCEu.id("block/casings/solid/machine_casing_solid_steel"));
+    public static final MultiblockMachineDefinition PHOTOVOLTAIC_SAIL_CONTROLLER_PULSATING = registerPhotovoltaicSailController("pulsating", "脉冲", "Pulsating", 4, GTBlocks.CASING_TITANIUM_STABLE, GTOBlocks.PULSATING_PHOTOVOLTAIC_BLOCK, GTCEu.id("block/casings/solid/machine_casing_stable_titanium"));
+    public static final MultiblockMachineDefinition PHOTOVOLTAIC_SAIL_CONTROLLER_VIBRANT = registerPhotovoltaicSailController("vibrant", "振动", "Vibrant", 16, GTBlocks.CASING_TUNGSTENSTEEL_ROBUST, GTOBlocks.VIBRANT_PHOTOVOLTAIC_BLOCK, GTCEu.id("block/casings/solid/machine_casing_robust_tungstensteel"));
 
-        return multiblock(name + "_photovoltaic_power_station", cn + "光伏电站", holder -> new PhotovoltaicPowerStationMachine(holder, basicRate, casing, photovoltaicBlock))
+    private static String photovoltaicModel(int basicRate) {
+        if (basicRate < 4) return "PG-11";
+        if (basicRate < 16) return "PG-12";
+        return "PG-13";
+    }
+
+    private static MultiblockMachineDefinition registerPhotovoltaicPowerStation(String name, String cn, int basicRate, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock, ResourceLocation texture) {
+        return multiblock(name + "_photovoltaic_power_station", cn + "光伏电站", holder -> new PhotovoltaicPowerStationMachine(holder, basicRate))
                 .allRotation()
-                .workableInSpace()
-                .tooltips(GTOMachineStories.PhotovoltaicPlantTooltips.invoke(model))
+                .tooltips(GTOMachineStories.PhotovoltaicPlantTooltips.invoke(photovoltaicModel(basicRate)))
                 .tooltips(GTOMachineTooltips.PhotovoltaicPlantTooltips)
                 .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
                 .generator()
@@ -72,7 +76,22 @@ public final class GeneratorMultiblock {
                 .pattern(definition -> PhotovoltaicPowerStationMachine.getPatternCommon(definition, casing, photovoltaicBlock))
                 .workableCasingRenderer(texture, GTCEu.id("block/multiblock/generator/large_steam_turbine"))
                 .shapeInfo(d -> PhotovoltaicPowerStationMachine.getPatternCommonPreview(d, casing, photovoltaicBlock))
-                .shapeInfo(d -> PhotovoltaicPowerStationMachine.getPatternInSpacePreview(d, casing, photovoltaicBlock))
+                .register();
+    }
+
+    private static MultiblockMachineDefinition registerPhotovoltaicSailController(String name, String cn, String en, int basicRate, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock, ResourceLocation texture) {
+        return multiblock(name + "_photovoltaic_sail_controller", "探索者号空间站" + cn + "光伏帆板控制器", holder -> new PhotovoltaicSailControllerMachine(holder, basicRate))
+                .langValue("Explorer Space Station " + en + " Photovoltaic Sail Controller")
+                .allRotation()
+                .workableInSpace()
+                .tooltips(GTOMachineStories.PhotovoltaicSailTooltips.invoke(photovoltaicModel(basicRate)))
+                .tooltips(GTOMachineTooltips.PhotovoltaicSailTooltips)
+                .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
+                .generator()
+                .block(casing)
+                .pattern(definition -> PhotovoltaicSailControllerMachine.getPattern(definition, casing, photovoltaicBlock))
+                .workableCasingRenderer(texture, GTCEu.id("block/multiblock/generator/large_steam_turbine"))
+                .shapeInfo(d -> PhotovoltaicSailControllerMachine.getPreview(d, casing, photovoltaicBlock))
                 .register();
     }
 

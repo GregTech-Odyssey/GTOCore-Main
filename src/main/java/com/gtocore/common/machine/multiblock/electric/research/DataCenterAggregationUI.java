@@ -45,6 +45,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -140,16 +141,16 @@ public final class DataCenterAggregationUI {
     @RegisterLanguage(cn = "没有空闲的数据中心", en = "No idle Data Center")
     private static final String NO_IDLE = "gtocore.data_center_aggregation.research.no_idle";
 
-    private static final SyncValue.Codec<Binding> BINDING_CODEC = new SyncValue.Codec<>() {
+    private static final ByteStreamCodec<Binding> BINDING_CODEC = new ByteStreamCodec<>() {
 
         @Override
-        public void write(FriendlyByteBuf buf, Binding value) {
+        public void encode(FriendlyByteBuf buf, Binding value) {
             buf.writeResourceLocation(value.dimension().location());
             buf.writeLong(value.pos().asLong());
         }
 
         @Override
-        public Binding read(FriendlyByteBuf buf) {
+        public Binding decode(FriendlyByteBuf buf) {
             return new Binding(ResourceKey.create(Registries.DIMENSION, buf.readResourceLocation()), BlockPos.of(buf.readLong()));
         }
     };
@@ -493,7 +494,7 @@ public final class DataCenterAggregationUI {
             });
             page.addChild(summary);
 
-            var confirming = SyncValue.of(context::isConfirming, SyncValue.BOOLEAN, false);
+            var confirming = SyncValue.of(context::isConfirming, ByteStreamCodec.BOOLEAN_CODEC, false);
             var unbindAll = Button.text(LayoutStyle.AUTO, () -> Component.translatable(confirming.getValue() ? UNBIND_ALL_CONFIRM : UNBIND_ALL).getString())
                     .setVariant(UITheme.ButtonVariant.DANGER)
                     .setOnServerClick(context::unbindAll)
@@ -603,7 +604,7 @@ public final class DataCenterAggregationUI {
         card.addSyncValue(SyncValue.of(() -> {
             var entry = context.entry(binding);
             return entry != null && entry.machine != null && entry.node != null;
-        }, SyncValue.BOOLEAN, researching).onChanged(research::setDisplay));
+        }, ByteStreamCodec.BOOLEAN_CODEC, researching).onChanged(research::setDisplay));
         card.addChild(research);
         return card;
     }

@@ -333,7 +333,6 @@ public final class LangHandler {
         addCNEN("affix.apotheosis:kinetic.suffix", "势如破竹", "the Momentum Master");
 
         addCNEN("gtocore.bar.distillation.1", "产出，消耗水", "Output , Consumption water");
-        addCNEN("gtocore.bar.exploration", "爆炸", "Explosion");
         addCNEN("gtocore.bar.heat", "温度", "Heat");
         addCNEN("gtocore.bar.occupancy", "占用率", "Occupancy");
 

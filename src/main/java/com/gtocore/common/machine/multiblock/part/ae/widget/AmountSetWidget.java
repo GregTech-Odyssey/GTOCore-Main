@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.part.ae.widget;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEConfigSlotWidget;
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.elements.CalloutBubble;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.PageOverlay;
@@ -17,7 +18,7 @@ import appeng.api.stacks.GenericStack;
 /**
  * 配置格"设置数量"的小弹出面板（页内浮层 {@link PageOverlay}：画在整个窗口最上层、盖住处的鼠标先交给它）：
  * 标准窗口外观（{@link UITheme#WINDOW}），顶边伸出一个小尖角指向所属的配置格
- * （{@link UITheme#drawPopupNotch}），里面只有一个标准整数调节器 {@link NumberField}（确认后提交、服务端夹取、滚轮与修饰键步长，
+ * ，里面只有一个标准整数调节器 {@link NumberField}（确认后提交、服务端夹取、滚轮与修饰键步长，
  * 支持简写与算式）。
  * <p>
  * 面板对应哪一格（{@link #index}）是这个打开的界面的状态：只由客户端打开 / 关闭时上报，服务端校验后记下（放入、清除配置不会改它）；
@@ -108,7 +109,6 @@ class AmountSetWidget extends PageOverlay {
     @Override
     protected void drawOverlayBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int x = getPositionX(), y = getPositionY();
-        UITheme.WINDOW.draw(graphics, mouseX, mouseY, x, y, getSizeWidth(), getSizeHeight());
-        UITheme.drawPopupNotch(graphics, x + notchX, y);
+        CalloutBubble.drawFrame(graphics, x, y, getSizeWidth(), getSizeHeight(), x + notchX, CalloutBubble.Tone.NEUTRAL);
     }
 }

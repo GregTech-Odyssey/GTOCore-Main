@@ -76,6 +76,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datastream.data.Data;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -197,7 +198,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
      * 是否正在研究由服务端判定、经按钮所在区块的同步值下发；点击只在服务端执行，研究发起人是点按钮的玩家。
      */
     private void attachResearchButton(UIElement section, TechNode node) {
-        var researching = section.addSyncValue(SyncValue.of(() -> selectedNode == node, SyncValue.BOOLEAN, false));
+        var researching = section.addSyncValue(SyncValue.of(() -> selectedNode == node, ByteStreamCodec.BOOLEAN_CODEC, false));
         var button = Button.text(LayoutStyle.AUTO, () -> Component.translatable(researching.getValue() ? LANG_DATA_ACCESS_RESEARCHING : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
                 .setVariant(() -> researching.getValue() ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(() -> {
@@ -524,7 +525,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     .layout(l -> l.flex(1));
             var research = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(progress,
                     UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(techTree, cancel));
-            research.addSyncValue(SyncValue.of(() -> machine.selectedNode != null, SyncValue.BOOLEAN, researching).onChanged(progress::setDisplay));
+            research.addSyncValue(SyncValue.of(() -> machine.selectedNode != null, ByteStreamCodec.BOOLEAN_CODEC, researching).onChanged(progress::setDisplay));
             page.addChild(research);
 
             var scroller = new ScrollerView("research.data_access", UISizes.SLOT_ROW_WIDTH, UISizes.SLOT)

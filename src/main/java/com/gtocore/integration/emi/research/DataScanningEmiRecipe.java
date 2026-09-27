@@ -14,6 +14,7 @@ import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayouts;
 import com.gregtechceu.gtceu.common.data.GTMachines;
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -140,7 +141,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.DATA_CRYSTAL_MK4.asItem()));
         registry.addWorkstation(CATEGORY, EmiStack.of(GTOItems.DATA_CRYSTAL_MK5.asItem()));
         for (var scanner : GTMachines.SCANNER) {
-            if (scanner != null) registry.addWorkstation(CATEGORY, EmiStack.of(scanner.asItem()));
+            if (scanner != null) registry.addWorkstation(CATEGORY, new FrontLitEmiStack(scanner.asItem().getDefaultInstance()));
         }
         registry.addDeferredRecipes(DataScanningEmiRecipe::registerRecipes);
     }

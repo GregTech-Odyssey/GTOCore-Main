@@ -7,6 +7,8 @@ import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -14,14 +16,15 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
+import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +48,8 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     /// 空间站附赠超净间
     @Nullable
     private CleanroomType cleanroomType = null;
+
+    static final int MAX_WATER_PER_HATCH = 1000;
 
     @SaveToDisk(defaultValue = "8")
     private int waterAmountPerHatch = 8;
@@ -118,25 +123,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
-        list.add(Component.translatable("gtocore.machine.simple_spacestation.distilled_water", waterAmountPerHatch).append(ComponentPanelWidget.withButton(Component.literal(" [-]"), "Sub")).append(ComponentPanelWidget.withButton(Component.literal(" [+]"), "Add")));
-    }
-
-    @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            int delta = (clickData.isCtrlClick ? 64 : 1) * (clickData.isShiftClick ? 8 : 1);
-            switch (componentData) {
-                case "Add" -> {
-                    waterAmountPerHatch += delta;
-                    waterAmountPerHatch = Math.min(waterAmountPerHatch, 1000);
-                }
-                case "Sub" -> {
-                    waterAmountPerHatch -= delta;
-                    waterAmountPerHatch = Math.max(waterAmountPerHatch, 0);
-                }
-                default -> super.handleDisplayClick(componentData, clickData);
-            }
-        }
+        list.add(Component.translatable("gtocore.machine.simple_spacestation.distilled_water", waterAmountPerHatch));
     }
 
     @Override
@@ -165,9 +152,64 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (!PlanetApi.API.isSpace(getLevel())) return null;
+        if (!isInSpace()) return null;
+        return roundRecipe();
+    }
+
+    GTRecipeDefinition roundRecipe() {
         return inputFluids(getRecipeBuilder().duration(200).EUt(VA[EV]))
                 .outputFluids(FlocculationWasteSolution.getFluid(30))
                 .build();
+    }
+
+    boolean isInSpace() {
+        return PlanetApi.API.isSpace(getLevel());
+    }
+
+    int getWaterAmountPerHatch() {
+        return waterAmountPerHatch;
+    }
+
+    void setWaterAmountPerHatch(int amount) {
+        int clamped = Math.max(0, Math.min(MAX_WATER_PER_HATCH, amount));
+        if (clamped == waterAmountPerHatch) return;
+        waterAmountPerHatch = clamped;
+        onChanged();
+    }
+
+    int getInnerVolume() {
+        if (!isFormed()) return 0;
+        return getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()).size();
+    }
+
+    @Nullable
+    List<RecipeHandlerUnit> getSupplyHatches() {
+        return outputDistilledWaterHatchesList;
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(0, DetailsTab.display(this));
+    }
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return SpaceStationFlowPage.create(this, widget);
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
+    }
+
+    @Override
+    public boolean windowHasPlayerInventory() {
+        return true;
+    }
+
+    @Override
+    public WindowAnchor windowAnchor() {
+        return WindowAnchor.CENTER;
     }
 }

@@ -26,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -70,18 +71,6 @@ public class TechTreeView extends UIElement {
     @RegisterLanguage(cn = "定位到选中的科技", en = "Locate the selected node")
     private static final String LOCATE = "gtocore.techtree.view.locate";
     private static final int[] NO_CODES = new int[0];
-    private static final SyncValue.Codec<int[]> CODES = new SyncValue.Codec<>() {
-
-        @Override
-        public void write(FriendlyByteBuf buf, int[] value) {
-            buf.writeVarIntArray(value);
-        }
-
-        @Override
-        public int[] read(FriendlyByteBuf buf) {
-            return buf.readVarIntArray();
-        }
-    };
     @RegisterLanguage(cn = "点击查看详情", en = "Click for details")
     static final String CLICK_FOR_DETAILS = "gtocore.techtree.view.click_for_details";
 
@@ -125,7 +114,7 @@ public class TechTreeView extends UIElement {
         this.manager = manager;
         layout(l -> l.column());
         states = addSyncValue(SyncValue.of(this::computeStates, NodeStates.CODEC, NodeStates.EMPTY));
-        researching = addSyncValue(SyncValue.of(this::computeResearching, CODES, NO_CODES));
+        researching = addSyncValue(SyncValue.of(this::computeResearching, ByteStreamCodec.INTS_CODEC, NO_CODES));
 
         canvas = new CanvasView(canvasId, canvasWidth, canvasHeight);
         details = new CardHost("techtree.details", this::createDetails);
@@ -345,15 +334,15 @@ public class TechTreeView extends UIElement {
         /// 一棵树节点数的上限（节点注册序号只占 16 位）
         private static final int MAX_NODES = 1 << 16;
 
-        static final SyncValue.Codec<NodeStates> CODEC = new SyncValue.Codec<>() {
+        static final ByteStreamCodec<NodeStates> CODEC = new ByteStreamCodec<>() {
 
             @Override
-            public void write(FriendlyByteBuf buf, NodeStates value) {
+            public void encode(FriendlyByteBuf buf, NodeStates value) {
                 buf.writeByteArray(value.states);
             }
 
             @Override
-            public NodeStates read(FriendlyByteBuf buf) {
+            public NodeStates decode(FriendlyByteBuf buf) {
                 return new NodeStates(buf.readByteArray(MAX_NODES));
             }
         };

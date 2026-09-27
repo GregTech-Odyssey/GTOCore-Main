@@ -40,6 +40,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.networking.pathing.ControllerState;
 import appeng.core.definitions.AEItems;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.util.StreamCodecs;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -177,19 +179,6 @@ public final class WirelessMachineUI {
     static final int NETWORK_SECTION_FIXED = UITheme.PANEL_PADDING + UITheme.PANEL_PADDING_BOTTOM;
     /** 新建行连同与列表的间距。 */
     static final int CREATE_ROW_HEIGHT = UISizes.CONTROL_HEIGHT + UISizes.GAP;
-
-    static final SyncValue.Codec<String> STRING_CODEC = new SyncValue.Codec<>() {
-
-        @Override
-        public void write(FriendlyByteBuf buf, String value) {
-            buf.writeUtf(value);
-        }
-
-        @Override
-        public String read(FriendlyByteBuf buf) {
-            return buf.readUtf();
-        }
-    };
 
     private WirelessMachineUI() {}
 
@@ -374,7 +363,7 @@ public final class WirelessMachineUI {
             scroller.setOnContentWidthChanged(contentWidth -> create.layout(l -> l.marginRight(scroller.isVerticalScrollBarShown() ? ScrollerView.SCROLL_BAR_SPACE : 0)));
             section.addChild(create);
         }
-        scroller.addScrollViewChild(new ServerRows<>(ctx.remote, STRING_CODEC,
+        scroller.addScrollViewChild(new ServerRows<>(ctx.remote, ByteStreamCodec.STRING_CODEC,
                 () -> ctx.networks().listFor(ctx.uuid()).stream().map(WirelessNetwork::id).toList(),
                 () -> ctx.networks().revision(),
                 id -> networkRow(id, ctx, actionKey, currentKey, isCurrent, action, currentAction),
@@ -392,8 +381,8 @@ public final class WirelessMachineUI {
                                         Function<Widget, WirelessStatus> currentAction) {
         // 宽度由列表拉伸，名称 flex(1) 吃掉剩余宽度
         var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        var favorite = row.addSyncValue(SyncValue.of(() -> id.equals(ctx.networks().favorite(ctx.uuid())), SyncValue.BOOLEAN, false));
-        var current = row.addSyncValue(SyncValue.of(() -> isCurrent.test(id), SyncValue.BOOLEAN, false));
+        var favorite = row.addSyncValue(SyncValue.of(() -> id.equals(ctx.networks().favorite(ctx.uuid())), ByteStreamCodec.BOOLEAN_CODEC, false));
+        var current = row.addSyncValue(SyncValue.of(() -> isCurrent.test(id), ByteStreamCodec.BOOLEAN_CODEC, false));
         var star = Button.icon(UITheme.switching(favorite::getValue, GTOGuiTextures.FAVORITE_OFF, GTOGuiTextures.FAVORITE_ON))
                 .setOnServerClick(() -> ctx.report(ctx.networks().toggleFavorite(ctx.serverPlayer(), id)));
         star.setHoverTooltips(FAVORITE);
@@ -457,7 +446,7 @@ public final class WirelessMachineUI {
                                     Runnable onConfirm, Consumer<Button> afterDelete) {
         // 改名
         var rename = UIElement.section();
-        var currentName = rename.addSyncValue(SyncValue.of(() -> networkName(ctx, machine), SyncValue.COMPONENT, Component.empty()));
+        var currentName = rename.addSyncValue(SyncValue.of(() -> networkName(ctx, machine), StreamCodecs.COMPONENT_CODEC, Component.empty()));
         var field = new TextField(0, () -> ctx.renameBuffer, text -> ctx.renameBuffer = text);
         field.layout(l -> l.flex(1));
         field.setPlaceholder(currentName::getValue);
@@ -534,17 +523,17 @@ public final class WirelessMachineUI {
     /** 成员：所在维度、坐标、机器定义 id（客户端据此取机器名与图标）。 */
     record MemberKey(String dimension, BlockPos pos, String machineId) {
 
-        static final SyncValue.Codec<MemberKey> CODEC = new SyncValue.Codec<>() {
+        static final ByteStreamCodec<MemberKey> CODEC = new ByteStreamCodec<>() {
 
             @Override
-            public void write(FriendlyByteBuf buf, MemberKey value) {
+            public void encode(FriendlyByteBuf buf, MemberKey value) {
                 buf.writeUtf(value.dimension());
                 buf.writeBlockPos(value.pos());
                 buf.writeUtf(value.machineId());
             }
 
             @Override
-            public MemberKey read(FriendlyByteBuf buf) {
+            public MemberKey decode(FriendlyByteBuf buf) {
                 return new MemberKey(buf.readUtf(), buf.readBlockPos(), buf.readUtf());
             }
         };

@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.monitor;
 
-import com.gtocore.api.gui.helper.ProgressBarColorStyle;
+import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.mana.feature.IManaEnergyMachine;
@@ -35,6 +35,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -115,6 +116,14 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
         return storage;
     }
 
+    private static int progressColor(float progress) {
+        final int red = 0xFFE74C3C, yellow = 0xFFFDDA0D, green = GTOProgressToolTipComponent.DEFAULT_COLOR;
+        if (progress <= 0.1F) return red;
+        if (progress <= 0.2F) return FastColor.ARGB32.lerp((progress - 0.1F) / 0.1F, red, yellow);
+        if (progress <= 0.3F) return FastColor.ARGB32.lerp((progress - 0.2F) / 0.1F, yellow, green);
+        return green;
+    }
+
     @Override
     public DisplayComponentList provideInformation() {
         var informationList = super.provideInformation();
@@ -125,7 +134,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
                         var c = bufferCache[i];
                         informationList.addIfAbsent(
                                 DISPLAY_REGISTRY.get(i).id(),
-                                DisplayComponent.progressBar(DISPLAY_REGISTRY.get(i).id(), progress, c.getString(), ProgressBarColorStyle.Companion.getDURATION()));
+                                DisplayComponent.progressBar(DISPLAY_REGISTRY.get(i).id(), progress, c.getString(), progressColor(progress), 15));
                     } else {
                         informationList.addIfAbsent(
                                 DISPLAY_REGISTRY.get(i).id(),

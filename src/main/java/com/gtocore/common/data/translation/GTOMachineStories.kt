@@ -207,6 +207,16 @@ object GTOMachineStories : AutoInitialize<GTOMachineStories>() {
         }
     }
 
+    @JvmField
+    val PhotovoltaicSailTooltips = { name: String ->
+        ComponentListSupplier {
+            setTranslationPrefix("photovoltaic_sail")
+            story("探索者号空间站的太阳翼由${name}光伏电站技术改造而来" translatedTo "The solar wings of the Explorer Space Station were adapted from $name photovoltaic plant technology")
+            story("轨道上没有大气与昼夜的遮挡，帆板可持续接收强烈的日照" translatedTo "Without atmosphere or nightfall in orbit, the sails receive intense sunlight continuously")
+            story("代价是帆板持续升温，必须依靠空间站输送的蒸馏水冷却" translatedTo "The cost is constant heating, so the sails depend on Distilled Water supplied by the space station for cooling")
+        }
+    }
+
     // 虚空流体钻机
     @JvmField
     val VoidFluidDrillTooltips = ComponentListSupplier {

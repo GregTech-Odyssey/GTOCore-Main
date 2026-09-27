@@ -2,51 +2,49 @@ package com.gtocore.api.gui.graphic.impl
 
 import com.gtocore.api.gui.graphic.GTOClientTooltipComponent
 import com.gtocore.api.gui.graphic.GTOToolTipComponent
-import com.gtocore.api.gui.helper.MultiProgressData
-import com.gtocore.api.gui.helper.ProgressBarColorStyle
-import com.gtocore.api.gui.helper.ProgressBarHelper
 
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
 
-class GTOProgressToolTipComponent(var percentage: Float, var text: String = "", var progressColorStyle: ProgressBarColorStyle = ProgressBarColorStyle.DEFAULT_GREEN) : GTOToolTipComponent(height = 15, width = 150)
-class GTOProgressClientComponent(data: GTOProgressToolTipComponent) : GTOClientTooltipComponent<GTOProgressToolTipComponent>(data) {
-    override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
-        guiGraphics.pose().pushPose()
-        guiGraphics.pose().translate(x.toDouble(), y.toDouble(), 0.0)
-        ProgressBarHelper.drawProgressBarWithText(
-            graphics = guiGraphics,
-            progress = (data.percentage * 100).toInt(),
-            totalWidth = data.width,
-            totalHeight = data.height,
-            text = data.text,
-            borderWidth = 1,
-            backgroundColor = 0xFF404040.toInt(),
-            borderColor = 0xFF000000.toInt(),
-            progressColorStyle = data.progressColorStyle,
-        )
-        guiGraphics.pose().popPose()
+import com.gregtechceu.gtceu.uipro.elements.ProgressBar
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme
+
+class GTOProgressToolTipComponent(var percentage: Float, var label: String = "", var value: String = "", var color: Int = DEFAULT_COLOR) : GTOToolTipComponent(height = ProgressBar.HEIGHT, width = 150) {
+    companion object {
+        @JvmField
+        val DEFAULT_COLOR = 0xFF2ECC71.toInt()
     }
 }
 
-class GTOMultiProgressToolTipComponent(var text: String = "", val progresses: MultiProgressData) : GTOToolTipComponent(height = 15, width = 150)
+class GTOProgressClientComponent(data: GTOProgressToolTipComponent) : GTOClientTooltipComponent<GTOProgressToolTipComponent>(data) {
+    override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
+        drawLayered(guiGraphics, x, y, data.width, data.height, data.label, data.value) { from ->
+            ProgressBar.drawFill(guiGraphics, x, y, data.width, data.height, from, data.percentage, data.color)
+        }
+    }
+}
+
+class GTOMultiProgressToolTipComponent(val segments: List<Pair<Float, Int>>, var label: String = "", var value: String = "") : GTOToolTipComponent(height = ProgressBar.HEIGHT, width = 150)
 class GTOMultiProgressClientComponent(data: GTOMultiProgressToolTipComponent) : GTOClientTooltipComponent<GTOMultiProgressToolTipComponent>(data) {
     override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
-        guiGraphics.pose().pushPose()
-        guiGraphics.pose().translate(x.toDouble(), y.toDouble(), 0.0)
-        ProgressBarHelper.drawProgressBarWithText(
-            graphics = guiGraphics,
-            progresses = data.progresses,
-            totalWidth = data.width,
-            totalHeight = data.height,
-            text = data.text,
-            borderWidth = 1,
-            backgroundColor = 0xFF404040.toInt(),
-            borderColor = 0xFF000000.toInt(),
-        )
-        guiGraphics.pose().popPose()
+        drawLayered(guiGraphics, x, y, data.width, data.height, data.label, data.value) { start ->
+            var from = start
+            for ((ratio, color) in data.segments) from = ProgressBar.drawFill(guiGraphics, x, y, data.width, data.height, from, ratio, color)
+            from
+        }
     }
+}
+
+private inline fun drawLayered(graphics: GuiGraphics, x: Int, y: Int, w: Int, h: Int, label: String, value: String, fill: (Int) -> Int) {
+    val pose = graphics.pose()
+    ProgressBar.drawTrack(graphics, x, y, w, h)
+    pose.pushPose()
+    pose.translate(0.0, 0.0, 1.0)
+    fill(0)
+    pose.translate(0.0, 0.0, 1.0)
+    ProgressBar.drawText(graphics, x, y, w, h, label, value, UITheme.TEXT)
+    pose.popPose()
 }
 
 class GTOComponentTooltipComponent(val component: Component) : GTOToolTipComponent(priority = 0)

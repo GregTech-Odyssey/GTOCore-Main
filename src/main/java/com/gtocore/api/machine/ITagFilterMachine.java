@@ -27,6 +27,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -155,7 +156,7 @@ public interface ITagFilterMachine extends IDropSaveMachine {
             tagList.setDisplay(false);
 
             var section = UIElement.section(LayoutStyle.AUTO);
-            section.addSyncValue(SyncValue.of(tags::hasTags, SyncValue.BOOLEAN, false).onChanged(tagList::setDisplay));
+            section.addSyncValue(SyncValue.of(tags::hasTags, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(tagList::setDisplay));
             var title = TextLine.translatable(0, titleKey).setColor(UITheme.PANEL_TEXT);
             title.layout(l -> l.flex(1));
             var titleRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())

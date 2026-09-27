@@ -8,6 +8,7 @@ import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTDimensionMarkers;
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fluids.FluidStack;
@@ -31,7 +32,7 @@ public class SatelliteEmiCategory extends EmiRecipeCategory {
 
     public static void register(EmiRegistry registry) {
         registry.addCategory(CATEGORY);
-        registry.addWorkstation(CATEGORY, EmiStack.of(MultiBlockG.SATELLITE_CONTROL_CENTER.asStack()));
+        registry.addWorkstation(CATEGORY, new FrontLitEmiStack(MultiBlockG.SATELLITE_CONTROL_CENTER.asStack()));
         for (var entry : RocketFuels.SATELLITE_TARGETS) {
             var dimMarker = GTRegistries.DIMENSION_MARKERS.getOrDefault(entry.getLocation(), GTDimensionMarkers.OVERWORLD);
             registry.addRecipe(SatelliteEmiRecipe.fromInputOutput(GTOCore.id("satellite/launch_satellite/" + entry.getKey()), dimMarker, b -> b.inputItems(RocketFuels.getRocket(entry.getTier()))

@@ -38,6 +38,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.fastcollection.fastutil.O2LOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -168,7 +169,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
         boolean remote = player.level().isClientSide;
 
         // 钱包是否存在：服务端判定、下发；"钱包不存在"那行按同步值显隐（隐藏的元素自己收不到更新，同步值挂在页面上）
-        var hasWallet = page.addSyncValue(SyncValue.of(() -> WalletUtils.hasWallet(player), SyncValue.BOOLEAN, false));
+        var hasWallet = page.addSyncValue(SyncValue.of(() -> WalletUtils.hasWallet(player), ByteStreamCodec.BOOLEAN_CODEC, false));
 
         page.addChild(BankTab.textPane("gtocore.bank.intro", UISizes.CONTENT_WIDTH, UISizes.TEXT_HEIGHT * 4, UISizes.TEXT_HEIGHT * 8, remote,
                 list -> {

@@ -3,6 +3,7 @@ package com.gtocore.data.lang;
 import com.gtocore.common.machine.monitor.DisplayRegistry;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.GTOValues;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -24,7 +25,8 @@ final class MachineLang {
         addCNEN("gtocore.machine.storage_transfer", "存储转移", "Transfer Storage");
         addCNEN("gtocore.machine.storage_transfer.tooltip", "把网络里其它 ME 存储的内容全部搬进这里（装不下的留在原处）", "Moves everything held by the other ME storages in the network in here (what does not fit stays where it is)");
         addCNEN("gtocore.machine.structure_check", "更新结构检查", "Update structure check");
-        addCNEN("gtocore.machine.structure_check.shift", "Shift+点击 将强制重新检查结构", "Shift+click will forced recheck the structure");
+        addCNEN("gtocore.machine.structure_check.click", "点击重新检查结构", "Click to recheck the structure");
+        addCNEN("gtocore.machine.structure_check.checking", "检查中", "Checking");
         addCNEN("gtocore.machine.overclock_configurator", "调整机器超频的最小时间", "Adjust the minimum time for machine overclocking");
         addCNEN("gtocore.machine.thread", "同时处理至多 %1$s 种不同配方，每种配方至多 %2$s 个", "Processing up to %1$s different recipes simultaneously, with a maximum of %2$s for each recipe");
         addCNEN("gtocore.machine.thread.0", "同时处理至多 %s 种不同配方", "Processing up to %s different recipes simultaneously");
@@ -132,6 +134,13 @@ final class MachineLang {
         addCNEN("gtocore.machine.mana_production", "最大魔力产出: %s", "Max Mana Production Rate: %s");
         addCNEN("gtocore.machine.mana_input", "魔力输入: %s", "Mana input: %s");
         addCNEN("gtocore.machine.mana_output", "魔力输出: %s", "Mana output: %s");
+        addCNEN("gtocore.recipe.info.mana_usage", "魔力消耗", "Mana Usage");
+        addCNEN("gtocore.recipe.info.mana_generation", "魔力产出", "Mana Generation");
+        addCNEN("gtocore.recipe.info.total_mana", "魔力总计", "Total Mana");
+        addCNEN("gtocore.recipe.info.mana_overclock", "最低魔力等级为%s；每提高一级，耗时 ÷4，魔力消耗 ×4", "Minimum mana tier: %s. Each tier above divides duration by 4 and multiplies mana usage by 4");
+        for (int tier = 0; tier < GTOValues.MANA.length; tier++) {
+            addCNEN("gtocore.recipe.info.mana_tier." + tier, GTOValues.MANACN[tier], GTOValues.MANAN[tier]);
+        }
         addCNEN("gtocore.machine.mana_eu", "支持电力配方，转换比1:1", "Supports EU recipes, conversion ratio 1:1");
         addCNEN("gtocore.machine.processing_array.tooltip.0", "玻璃等级限制了内部机器等级", "Tier is limited by glass grade");
         addCNEN("gtocore.machine.processing_array.tooltip.1", "并行数由内部机器数量决定", "Parallel are determined by the amount of internal machines");

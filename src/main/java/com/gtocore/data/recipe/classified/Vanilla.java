@@ -157,6 +157,11 @@ final class Vanilla {
                 "BCB",
                 "ADA",
                 'A', new MaterialEntry(TagPrefix.plate, GTMaterials.TungstenSteel), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.DarkSteel), 'C', GTOBlocks.VIBRANT_PHOTOVOLTAIC_BLOCK.asItem(), 'D', CustomTags.EV_CIRCUITS);
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("vibrant_photovoltaic_sail_controller"), GeneratorMultiblock.PHOTOVOLTAIC_SAIL_CONTROLLER_VIBRANT.asItem(),
+                "ABA",
+                "ECE",
+                "ADA",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.TungstenSteel), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.DarkSteel), 'C', GTOBlocks.VIBRANT_PHOTOVOLTAIC_BLOCK.asItem(), 'D', CustomTags.EV_CIRCUITS, 'E', new MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.TungstenSteel));
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("primitive_distillation_tower"), MultiBlockC.PRIMITIVE_DISTILLATION_TOWER.asItem(),
                 "ABA",
                 "BCB",
@@ -487,6 +492,11 @@ final class Vanilla {
                 "BCB",
                 "ADA",
                 'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Titanium), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.RedstoneAlloy), 'C', GTOBlocks.PULSATING_PHOTOVOLTAIC_BLOCK.asItem(), 'D', CustomTags.HV_CIRCUITS);
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("pulsating_photovoltaic_sail_controller"), GeneratorMultiblock.PHOTOVOLTAIC_SAIL_CONTROLLER_PULSATING.asItem(),
+                "ABA",
+                "ECE",
+                "ADA",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Titanium), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.RedstoneAlloy), 'C', GTOBlocks.PULSATING_PHOTOVOLTAIC_BLOCK.asItem(), 'D', CustomTags.HV_CIRCUITS, 'E', new MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.Titanium));
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("blaze_blast_furnace"), MultiBlockD.BLAZE_BLAST_FURNACE.asItem(),
                 "ABA",
                 "BCB",
@@ -586,6 +596,11 @@ final class Vanilla {
                 "BCB",
                 "ADA",
                 'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.CopperAlloy), 'C', GTOBlocks.ENERGETIC_PHOTOVOLTAIC_BLOCK.asItem(), 'D', CustomTags.MV_CIRCUITS);
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("energetic_photovoltaic_sail_controller"), GeneratorMultiblock.PHOTOVOLTAIC_SAIL_CONTROLLER_ENERGETIC.asItem(),
+                "ABA",
+                "ECE",
+                "ADA",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.CopperAlloy), 'C', GTOBlocks.ENERGETIC_PHOTOVOLTAIC_BLOCK.asItem(), 'D', CustomTags.MV_CIRCUITS, 'E', new MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.Steel));
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("reaction_furnace"), MultiBlockB.REACTION_FURNACE.asItem(),
                 "ABA",
                 "CDC",

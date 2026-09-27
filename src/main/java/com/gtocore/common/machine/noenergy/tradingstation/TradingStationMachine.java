@@ -46,7 +46,6 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -59,6 +58,8 @@ import net.minecraft.world.level.block.Blocks;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.util.StreamCodecs;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -281,7 +282,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         var group = TradingManager.INSTANCE.getShopGroup(index);
         var cell = new UIElement().layout(l -> l.size(Button.ICON_SIZE, Button.ICON_SIZE));
         if (group == null) return cell;
-        var selected = cell.addSyncValue(SyncValue.of(() -> groupSelected == index, SyncValue.BOOLEAN, false));
+        var selected = cell.addSyncValue(SyncValue.of(() -> groupSelected == index, ByteStreamCodec.BOOLEAN_CODEC, false));
         cell.addChild(Button.icon(group.getTexture2())
                 .setVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
                 .setOnClick(clickData -> selectShopGroup(cell, index))
@@ -549,7 +550,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
         private Widget keyButton(String key) {
             var cell = new UIElement();
-            var selected = cell.addSyncValue(SyncValue.of(() -> key.equals(selectedKey), SyncValue.BOOLEAN, false));
+            var selected = cell.addSyncValue(SyncValue.of(() -> key.equals(selectedKey), ByteStreamCodec.BOOLEAN_CODEC, false));
             cell.addChild(Button.translatable(LayoutStyle.AUTO, key)
                     .setVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
                     .setOnClick(clickData -> selectKey(key)));
@@ -759,7 +760,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
      * 点击只在服务端执行，倍率取点击时的 Ctrl / Shift。
      * <p>
      * 悬停说明按<b>行</b>同步：LDLib 的悬停提示是"一个 {@link Component} 一行"，所以这里下发的是
-     * {@code List<Component>}（自己写 {@link SyncValue.Codec}），服务端把每一行分开算好，
+     * {@code List<Component>}（{@link ByteStreamCodec#collection}），服务端把每一行分开算好，
      * 客户端逐行交给按钮，不会挤在一行里。
      */
     private final class TradeCell extends UIElement {
@@ -768,22 +769,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private static final int REFRESH_TICKS = 10;
 
         /// 逐行同步悬停说明：行数 + 每行的组件（提示接口要的是"每行一个组件"，不能拼成一条带换行符的文字）
-        private static final SyncValue.Codec<List<Component>> TOOLTIP_LINES_CODEC = new SyncValue.Codec<>() {
-
-            @Override
-            public void write(FriendlyByteBuf buf, List<Component> lines) {
-                buf.writeVarInt(lines.size());
-                for (Component line : lines) buf.writeComponent(line);
-            }
-
-            @Override
-            public List<Component> read(FriendlyByteBuf buf) {
-                int size = buf.readVarInt();
-                List<Component> lines = new ArrayList<>(size);
-                for (int i = 0; i < size; i++) lines.add(buf.readComponent());
-                return lines;
-            }
-        };
+        private static final ByteStreamCodec<List<Component>> TOOLTIP_LINES_CODEC = ByteStreamCodec.collection(ArrayList::new, StreamCodecs.COMPONENT_CODEC);
 
         private final int groupIndex;
         private final int shopIndex;

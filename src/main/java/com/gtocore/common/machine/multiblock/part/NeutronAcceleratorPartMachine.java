@@ -49,7 +49,7 @@ public final class NeutronAcceleratorPartMachine extends EnergyHatchPartMachine 
         return true;
     }
 
-    private long getMaxEUConsume() {
+    public long getMaxEUConsume() {
         return Math.round(GTValues.V[tier] * 0.8);
     }
 

@@ -35,7 +35,7 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeTierPreview;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTFluids;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -103,6 +103,7 @@ import java.util.function.Consumer;
 public final class GTEMIPlugin implements EmiPlugin {
 
     public static void init() {
+        RecipeTierPreview.register(ManaTierPreview::of);
         GTOApi.EMI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addEMIPlugin);
         GTOApi.JEI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addJEIPlugin);
         if (GTOConfig.INSTANCE.misc.enableEmiJeiExternalPlugins.length > 0) {
@@ -204,14 +205,12 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.ORE_EXTRACTION_MODULE);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.BIOENGINEERING_MODULE);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.POLYMER_TWISTING_MODULE);
-        for (GTRecipeCategory category : GTRegistries.RECIPE_CATEGORIES) {
-            if (category.getRecipeType() == GTORecipeTypes.NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES) {
-                continue;
-            }
+        GTRegistries.RECIPE_CATEGORIES.forEachKeyValue((id, category) -> {
+            if (category.getRecipeType() == GTORecipeTypes.NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES) return;
             if (GTCEu.isDev() || category.isXEIVisible()) {
                 registry.addCategory(GTRecipeEMICategory.CATEGORIES.apply(category));
             }
-        }
+        });
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
         registry.addRecipeHandler(Wireless.TYPE, ME2in1Helper.createEMIWireless());

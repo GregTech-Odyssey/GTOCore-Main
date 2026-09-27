@@ -33,6 +33,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.ingredient.IGhostIngredientTarget;
 import com.lowdragmc.lowdraglib.gui.ingredient.Target;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -168,7 +169,7 @@ public final class TechNodeEditorPage {
      */
     private static void bindDisplay(UIElement parent, UIElement row, BooleanSupplier shown) {
         row.setDisplay(false);
-        parent.addSyncValue(SyncValue.of(shown::getAsBoolean, SyncValue.BOOLEAN, false).onChanged(row::setDisplay));
+        parent.addSyncValue(SyncValue.of(shown::getAsBoolean, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(row::setDisplay));
     }
 
     private static void addMaterial(State state, List<String> tags) {

@@ -39,6 +39,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEKey;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -199,7 +200,7 @@ public final class TechNodeDetails {
      */
     private static void bindDisplay(UIElement parent, UIElement section, BooleanSupplier shown) {
         section.setDisplay(false);
-        parent.addSyncValue(SyncValue.of(shown::getAsBoolean, SyncValue.BOOLEAN, false).onChanged(section::setDisplay));
+        parent.addSyncValue(SyncValue.of(shown::getAsBoolean, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(section::setDisplay));
     }
 
     /**

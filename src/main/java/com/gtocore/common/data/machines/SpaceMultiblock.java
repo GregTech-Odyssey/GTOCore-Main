@@ -56,7 +56,7 @@ public class SpaceMultiblock {
 
     public static void init() {}
 
-    public static final MultiblockMachineDefinition SPACE_STATION = multiblock("space_station", "空间站", SimpleSpaceStationMachine::new)
+    public static final MultiblockMachineDefinition SPACE_STATION = multiblock("space_station", "探索者号空间站控制器", SimpleSpaceStationMachine::new)
             .nonYAxisRotation()
             .tooltips(GTOMachineStories.SpaceStationTooltips)
             .tooltips(GTOMachineTooltips.SpaceStationTooltips)

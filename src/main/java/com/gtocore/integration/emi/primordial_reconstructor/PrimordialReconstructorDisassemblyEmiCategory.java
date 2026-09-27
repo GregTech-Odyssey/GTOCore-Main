@@ -8,6 +8,7 @@ import com.gtocore.data.tag.Tags;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -50,12 +51,12 @@ public final class PrimordialReconstructorDisassemblyEmiCategory extends EmiReci
     public static final PrimordialReconstructorDisassemblyEmiCategory CATEGORY = new PrimordialReconstructorDisassemblyEmiCategory();
 
     private PrimordialReconstructorDisassemblyEmiCategory() {
-        super(GTOCore.id("primordial_reconstructor/disassembly"), EmiStack.of(ManaMultiBlock.THE_PRIMORDIAL_RECONSTRUCTOR.asStack()));
+        super(GTOCore.id("primordial_reconstructor/disassembly"), new FrontLitEmiStack(ManaMultiBlock.THE_PRIMORDIAL_RECONSTRUCTOR.asStack()));
     }
 
     public static void register(EmiRegistry registry) {
         registry.addCategory(CATEGORY);
-        registry.addWorkstation(CATEGORY, EmiStack.of(ManaMultiBlock.THE_PRIMORDIAL_RECONSTRUCTOR.asStack()));
+        registry.addWorkstation(CATEGORY, new FrontLitEmiStack(ManaMultiBlock.THE_PRIMORDIAL_RECONSTRUCTOR.asStack()));
         registry.addRecipe(new DisassemblyTableRecipe());
     }
 

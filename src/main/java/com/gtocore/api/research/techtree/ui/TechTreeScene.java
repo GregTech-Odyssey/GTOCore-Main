@@ -5,12 +5,11 @@ import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
-import com.gtolib.utils.ColorUtils;
-
 import com.gregtechceu.gtceu.uipro.canvas.CanvasItem;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLayer;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLod;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasPainter;
+import com.gregtechceu.gtceu.uipro.canvas.CanvasPulse;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasRect;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasRoute;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
@@ -48,8 +47,6 @@ final class TechTreeScene {
     /// 分区线与分区标题超出节点范围的距离
     private static final float TIER_MARGIN = 20;
     private static final float TIER_DASH = 6, TIER_GAP = 4;
-    /// 呼吸动画（正在研究的节点、悬停时高亮的依赖）的角速度：相位 = 当前毫秒数 / 该值，一个周期约 1.26 秒
-    private static final double PULSE_MS_PER_RADIAN = 200;
 
     private TechTreeScene() {}
 
@@ -207,7 +204,7 @@ final class TechTreeScene {
                 case 1 -> style.prerequisiteUnlockedDependencyLine;
                 default -> style.defaultDependencyLine;
             };
-            return highlighted ? pulse(style.hoveredDependencyLineColor, color) : color;
+            return highlighted ? CanvasPulse.mix(style.hoveredDependencyLineColor, color) : color;
         }
 
         @Override
@@ -270,9 +267,9 @@ final class TechTreeScene {
             byte state = view.state(index);
             int fill, border;
             if (isResearching()) {
-                float t = pulsePhase();
-                fill = ColorUtils.getInterpolatedColor(style.researchingNodeFillLow, style.researchingNodeFillHigh, t);
-                border = ColorUtils.getInterpolatedColor(style.researchingNodeBorderLow, style.researchingNodeBorderHigh, t);
+                float t = CanvasPulse.phase();
+                fill = CanvasPulse.lerp(style.researchingNodeFillLow, style.researchingNodeFillHigh, t);
+                border = CanvasPulse.lerp(style.researchingNodeBorderLow, style.researchingNodeBorderHigh, t);
             } else {
                 switch (state) {
                     case TechTreeView.UNLOCKED -> {
@@ -293,7 +290,7 @@ final class TechTreeScene {
             var selected = view.selectedNode();
             if ((painter.hovered() instanceof NodeItem other && other != this && other.node.prerequisites.contains(node)) ||
                     (selected != null && selected != node && selected.prerequisites.contains(node))) {
-                border = pulse(style.hoveredDependencyLineColor, border);
+                border = CanvasPulse.mix(style.hoveredDependencyLineColor, border);
             }
             painter.fill(rect, fill);
             painter.outline(rect, BORDER_WIDTH, border);
@@ -319,7 +316,7 @@ final class TechTreeScene {
             if (painter.lod() != CanvasLod.FULL) return;
             var style = TechTreeStyle.get();
             int overlay = view.state(index) == TechTreeView.LOCKED && !isResearching() ? style.lockedNodeOverlay : 0;
-            if (hovered) overlay = overlay == 0 ? style.nodeHoverOverlay : ColorUtils.getInterpolatedColor(overlay, style.nodeHoverOverlay, 0.5f);
+            if (hovered) overlay = overlay == 0 ? style.nodeHoverOverlay : CanvasPulse.lerp(overlay, style.nodeHoverOverlay, 0.5f);
             if (overlay != 0) painter.fill(rect.inflate(-painter.atLeastPixel(BORDER_WIDTH)), overlay);
         }
 
@@ -387,14 +384,5 @@ final class TechTreeScene {
         public Object ingredient() {
             return new TechNodeEmiStack(node);
         }
-    }
-
-    /** 0~1 之间的呼吸相位（正在研究的节点、高亮连线共用，保持同步）。 */
-    private static float pulsePhase() {
-        return 0.5f + (float) Math.sin(System.currentTimeMillis() / PULSE_MS_PER_RADIAN) * 0.5f;
-    }
-
-    private static int pulse(int highlight, int base) {
-        return ColorUtils.getInterpolatedColor(highlight, base, 1 - pulsePhase());
     }
 }

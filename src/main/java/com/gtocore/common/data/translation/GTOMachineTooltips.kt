@@ -863,15 +863,25 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.RunningRequirements)
         function("维度和天气决定输出功率" translatedTo "Calculate power output based on dimension and weather")
-        command("在空间站运行时可保持最大功率，但需提供每秒功率/4mB的蒸馏水保持运行" translatedTo "The space station can maintain full power operation, requires a distilled water supply of Power/4 mB per second")
+        error("无法在星球轨道中工作，轨道发电请使用探索者号空间站光伏帆板控制器" translatedTo "Cannot operate in planetary orbit; use the Explorer Space Station Photovoltaic Sail Controller for orbital power generation")
 
         section(ComponentSlang.RecommendedUseAs("生产魔力" translatedTo "mana production"))
         function("在机器内放置64朵太阳花以使机器不再发电，转而采集魔力" translatedTo "Place 64 dayblooms in the machine to stop power generation and start collecting mana")
+    }
 
-        section("结构形态" translatedTo "Structure Forms")
-        command("在特定环境下只有特定的结构能够工作" translatedTo "Only specific structure forms can work in specific environments")
-        info("星球：P:0，星球轨道：P:1" translatedTo "Planet: P:0, Planet Orbit: P:1")
-        info("在特定环境下终端仅能搭建指定结构，无视\"模块搭建\"设置" translatedTo "In specific environments, only specified structures can be built at the terminal, ignoring the \"Module Build\" setting")
+    @JvmField
+    val PhotovoltaicSailTooltips = ComponentListSupplier {
+        setTranslationPrefix("photovoltaic_sail")
+
+        section(ComponentSlang.RunningRequirements)
+        command("仅能在星球轨道中工作" translatedTo "Only operates in planetary orbit")
+        function("输出功率由所在轨道的太阳能强度决定，不受昼夜与天气影响" translatedTo "Power output depends on the solar power of the current orbit and is unaffected by day, night and weather")
+        command("每秒消耗蒸馏水：输出功率(EU/t)/64 mB" translatedTo "Consumes Distilled Water per second: Output Power (EU/t) / 64 mB")
+        info("与探索者号空间站两侧的对接接口相连时，由空间站供给蒸馏水并接收电能" translatedTo "When connected to the docking ports on both sides of the Explorer Space Station, the station supplies Distilled Water and receives the generated power")
+        info("控制器须水平朝向，帆板上方不得有遮挡" translatedTo "The controller must face horizontally, and the space above the sails must be unobstructed")
+
+        section(ComponentSlang.RecommendedUseAs("生产魔力" translatedTo "mana production"))
+        function("在机器内放置64朵太阳花以使机器不再发电，转而采集魔力" translatedTo "Place 64 dayblooms in the machine to stop power generation and start collecting mana")
     }
 
     // 加热器
@@ -2405,9 +2415,11 @@ object GTOMachineTooltips {
         command("运行需要消耗1920EU/t的基础能量" translatedTo "Operation requires a base energy consumption of 1920EU/t")
         info("每10秒固定消耗：" translatedTo "Fixed consumption every 10 seconds:")
         important("15mB 蒸馏水" translatedTo "15mB Distilled Water")
-        important("10mB 火箭燃料" translatedTo "15mB Rocket Fuel")
+        important("10mB 火箭燃料" translatedTo "10mB Rocket Fuel")
         important("100mB 空气" translatedTo "100mB Air")
-        info("当拥有更多蒸馏水供给时，空间站会尝试每秒向连接的光伏阵列各输送§b8mB 蒸馏水§r以冷却其太阳能板" translatedTo "When more distilled water supply is available, the space station will attempt to supply each connected photovoltaic array with §b8mB Distilled Water§r per second to cool its solar panels")
+        info("运行时每秒从空间站自身的输入仓扣除蒸馏水，经对接接口处的供水仓输送给已连接的§b光伏帆板控制器§r" translatedTo "While running, Distilled Water is drawn from the station's own input hatches every second and sent through the supply hatches at the docking ports to connected §bPhotovoltaic Sail Controllers§r")
+        info("每仓每秒供水量默认为§b8mB§r，可在界面中调节（0~1000mB），设为0时停止供水" translatedTo "The supply per hatch per second defaults to §b8mB§r and is adjustable in the GUI (0-1000mB); 0 stops the supply")
+        info("供水与配方共用同一批蒸馏水，库存不足时供水仓可能得不到供给" translatedTo "The supply shares Distilled Water with the recipe; supply hatches may receive nothing when stock is insufficient")
         info("运行时每10秒将排出30mB废水" translatedTo "When operating, it will discharge 30mB of Waste Water every 10 seconds")
     }
 

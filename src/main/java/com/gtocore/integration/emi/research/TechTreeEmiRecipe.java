@@ -12,6 +12,7 @@ import com.gtocore.integration.emi.EmiPageLayout;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -74,7 +75,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
 
     public static void register(EmiRegistry registry) {
         registry.addCategory(CATEGORY);
-        registry.addWorkstation(CATEGORY, EmiStack.of(ExResearchMachines.DATA_CENTER.asItem()));
+        registry.addWorkstation(CATEGORY, new FrontLitEmiStack(ExResearchMachines.DATA_CENTER.asStack()));
         registry.addDeferredRecipes(recipeConsumer -> TechTreeManager.getManagers()
                 .forEach(manager -> manager.getAllNodes().forEach(node -> recipeConsumer.accept(new TechTreeEmiRecipe(node)))));
     }

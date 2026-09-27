@@ -5,8 +5,6 @@ import com.gtocore.api.gui.graphic.GTOTooltipComponentItem
 import com.gtocore.api.gui.graphic.impl.GTOMultiProgressToolTipComponent
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent
 import com.gtocore.api.gui.graphic.impl.toPercentageWith
-import com.gtocore.api.gui.helper.MultiProgressData
-import com.gtocore.api.gui.helper.ProgressBarColorStyle
 import com.gtocore.common.item.DataCrystalItem
 
 import net.minecraft.network.chat.Component
@@ -21,8 +19,6 @@ import appeng.api.storage.cells.IBasicCellItem
 import appeng.me.cells.BasicCellHandler
 import com.gregtechceu.gtceu.utils.FormattingUtil
 import com.mojang.datafixers.util.Either
-import it.unimi.dsi.fastutil.ints.IntArrayList
-import it.unimi.dsi.fastutil.objects.ObjectArrayList
 
 @OnlyIn(Dist.CLIENT)
 object GTOComponentHandler {
@@ -44,13 +40,10 @@ object GTOComponentHandler {
                 val step = itemStack.tag?.getInt("current_craft_step") ?: return@run
                 val maxStep = itemStack.tag?.getInt("craft_step") ?: return@run
                 if (maxStep == 0) return@run
-                val text = Component.translatable(
-                    "gtocore.tooltip.item.craft_step",
-                    "$step/$maxStep (${((step.toFloat() / maxStep.toFloat()) * 100).toInt()}%)",
-                ).string
                 val component = GTOProgressToolTipComponent(
                     percentage = step toPercentageWith maxStep,
-                    text = text,
+                    label = Component.translatable("gtocore.tooltip.item.craft_step", "$step/$maxStep").string,
+                    value = "${((step.toFloat() / maxStep.toFloat()) * 100).toInt()}%",
                 )
                 components.add((component))
             }
@@ -69,7 +62,8 @@ object GTOComponentHandler {
                     (
                         GTOProgressToolTipComponent(
                             percentage = usedBytes toPercentageWith totalBytes,
-                            text = "${(progress * 100).toInt()}%",
+                            label = Component.translatable("gtocore.bar.occupancy").string,
+                            value = "${(progress * 100).toInt()}%",
                         )
                         ),
                 )
@@ -79,20 +73,16 @@ object GTOComponentHandler {
             if (item is DataCrystalItem) {
                 val usedBytes = DataCrystalItem.getResearchData(itemStack)
                 val totalBytes = item.dataCapacity
-                val bytesText = Component.translatable(
-                    "gtocore.bar.occupancy",
-                ).append(" (${FormattingUtil.formatNumber2Places(usedBytes.countBytes().toDouble() / totalBytes * 100)}%)").string
-                val progresses = IntArrayList(usedBytes.size)
-                val styles = ObjectArrayList<ProgressBarColorStyle>(usedBytes.size)
+                val segments = ArrayList<Pair<Float, Int>>(usedBytes.size)
                 usedBytes.forEach {
-                    progresses.add((it.value * it.key.bytePerPoint * 100 / totalBytes).toInt())
-                    styles.add(ProgressBarColorStyle.Solid(it.key.color))
+                    segments.add((it.value * it.key.bytePerPoint).toFloat() / totalBytes to it.key.color)
                 }
                 components.add(
                     (
                         GTOMultiProgressToolTipComponent(
-                            progresses = MultiProgressData(progresses, styles),
-                            text = bytesText,
+                            segments = segments,
+                            label = Component.translatable("gtocore.bar.occupancy").string,
+                            value = "${FormattingUtil.formatNumber2Places(usedBytes.countBytes().toDouble() / totalBytes * 100)}%",
                         )
                         ),
                 )

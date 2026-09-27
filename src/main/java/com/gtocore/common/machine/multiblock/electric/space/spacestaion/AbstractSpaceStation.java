@@ -171,6 +171,10 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
         return ready;
     }
 
+    public int getOxygenatedBlockCount() {
+        return lastDistributedBlocks.size();
+    }
+
     public @Nullable Function<AbstractSpaceStation, Set<BlockPos>> getPositionFunction() {
         return positionFunction;
     }

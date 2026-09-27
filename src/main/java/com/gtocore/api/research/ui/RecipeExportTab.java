@@ -49,6 +49,7 @@ import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEKey;
 import appeng.client.gui.me.common.StackSizeRenderer;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -248,18 +249,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
     }
 
-    private static final SyncValue.Codec<BitSet> BITSET = new SyncValue.Codec<>() {
-
-        @Override
-        public void write(FriendlyByteBuf buf, BitSet value) {
-            buf.writeLongArray(value.toLongArray());
-        }
-
-        @Override
-        public BitSet read(FriendlyByteBuf buf) {
-            return BitSet.valueOf(buf.readLongArray());
-        }
-    };
+    private static final ByteStreamCodec<BitSet> BITSET = ByteStreamCodec.convert(ByteStreamCodec.LONGS_CODEC, BitSet::toLongArray, BitSet::valueOf);
 
     /**
      * 配方网格：一个控件画出全部格子（条目可能上百个，不为每格建控件），点击时把条目下标发给服务端。

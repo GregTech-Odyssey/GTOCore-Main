@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public final class ServerRows<K> extends UIElement {
     private static final int ROWS_ID = SyncValueHost.ID_BASE - 1;
 
     private final boolean remote;
-    private final SyncValue.Codec<K> codec;
+    private final ByteStreamCodec<K> codec;
     private final Supplier<List<K>> source;
     private final IntSupplier version;
     private final Function<K, UIElement> rowFactory;
@@ -65,7 +66,7 @@ public final class ServerRows<K> extends UIElement {
      * @param rowFactory 按 key 建一行，两端都会调用，同一 key 必须产生同样结构的控件
      * @param emptyText  没有可见行时显示的提示（客户端绘制），可为 null
      */
-    public ServerRows(boolean remote, SyncValue.Codec<K> codec, Supplier<List<K>> source, IntSupplier version,
+    public ServerRows(boolean remote, ByteStreamCodec<K> codec, Supplier<List<K>> source, IntSupplier version,
                       Function<K, UIElement> rowFactory, @Nullable Component emptyText) {
         this.remote = remote;
         this.codec = codec;
@@ -125,7 +126,7 @@ public final class ServerRows<K> extends UIElement {
     public void writeInitialData(FriendlyByteBuf buffer) {
         buffer.writeVarInt(keys.size());
         for (int i = 0; i < keys.size(); i++) {
-            codec.write(buffer, keys.get(i));
+            codec.encode(buffer, keys.get(i));
             buffer.writeBoolean(((UIElement) widgets.get(i)).isDisplayed());
         }
         super.writeInitialData(buffer);
@@ -135,7 +136,7 @@ public final class ServerRows<K> extends UIElement {
     public void readInitialData(FriendlyByteBuf buffer) {
         int size = buffer.readVarInt();
         for (int i = 0; i < size; i++) {
-            addRow(codec.read(buffer));
+            addRow(codec.decode(buffer));
             setRowVisible(i, buffer.readBoolean());
         }
         updateEmptyHeight();
@@ -165,7 +166,7 @@ public final class ServerRows<K> extends UIElement {
             buffer.writeVarInt(visible.length);
             for (var value : visible) buffer.writeBoolean(value);
             buffer.writeVarInt(added.size());
-            for (var key : added) codec.write(buffer, key);
+            for (var key : added) codec.encode(buffer, key);
         });
         apply(visible, added);
     }
@@ -187,7 +188,7 @@ public final class ServerRows<K> extends UIElement {
         for (int i = 0; i < visible.length; i++) visible[i] = buffer.readBoolean();
         int count = buffer.readVarInt();
         var added = new ArrayList<K>(count);
-        for (int i = 0; i < count; i++) added.add(codec.read(buffer));
+        for (int i = 0; i < count; i++) added.add(codec.decode(buffer));
         apply(visible, added);
     }
 }

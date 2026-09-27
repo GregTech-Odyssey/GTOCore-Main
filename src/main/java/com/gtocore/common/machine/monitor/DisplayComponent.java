@@ -5,7 +5,6 @@ import com.gtocore.api.gui.graphic.impl.GTOLineChartToolTipComponent;
 import com.gtocore.api.gui.graphic.impl.GTOProgressClientComponent;
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent;
 import com.gtocore.api.gui.helper.GuiIn3DHelper;
-import com.gtocore.api.gui.helper.ProgressBarColorStyle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -94,19 +93,19 @@ public abstract class DisplayComponent implements IDisplayComponent {
 
         private ProgressBar(ResourceLocation id) {
             super(id);
-            this.toolTipComponent = new GTOProgressToolTipComponent(0, "", ProgressBarColorStyle.Companion.getDEFAULT_GREEN());
+            this.toolTipComponent = new GTOProgressToolTipComponent(0, "", "", GTOProgressToolTipComponent.DEFAULT_COLOR);
         }
 
-        public ProgressBar setInformation(float progress, String text, ProgressBarColorStyle style, int height) {
-            return setInformation(progress, height, text, style);
+        public ProgressBar setInformation(float progress, String text, int color, int height) {
+            return setInformation(progress, height, text, color);
         }
 
         @Override
         public ProgressBar setInformation(Object... information) {
             if (information.length >= 2 && information[0] instanceof Float progressValue && information[1] instanceof Integer heightValue) {
-                if (information.length >= 4 && information[2] instanceof String textValue && information[3] instanceof ProgressBarColorStyle styleValue) {
-                    toolTipComponent.setText(textValue);
-                    toolTipComponent.setProgressColorStyle(styleValue);
+                if (information.length >= 4 && information[2] instanceof String textValue && information[3] instanceof Integer colorValue) {
+                    toolTipComponent.setLabel(textValue);
+                    toolTipComponent.setColor(colorValue);
                 }
                 toolTipComponent.setPercentage(progressValue);
                 toolTipComponent.setHeight(heightValue);
@@ -162,15 +161,11 @@ public abstract class DisplayComponent implements IDisplayComponent {
     }
 
     public static ProgressBar progressBar(ResourceLocation id, float progress, String text, int height) {
-        return new ProgressBar(id).setInformation(progress, text, ProgressBarColorStyle.Companion.getDEFAULT_GREEN(), height);
+        return new ProgressBar(id).setInformation(progress, text, GTOProgressToolTipComponent.DEFAULT_COLOR, height);
     }
 
-    public static ProgressBar progressBar(ResourceLocation id, float progress, String text, ProgressBarColorStyle style) {
-        return progressBar(id, progress, text, style, 15);
-    }
-
-    public static ProgressBar progressBar(ResourceLocation id, float progress, String text, ProgressBarColorStyle style, int height) {
-        return new ProgressBar(id).setInformation(progress, text, style, height);
+    public static ProgressBar progressBar(ResourceLocation id, float progress, String text, int color, int height) {
+        return new ProgressBar(id).setInformation(progress, text, color, height);
     }
 
     public static class LineChart extends DisplayComponent {

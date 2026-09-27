@@ -4,6 +4,8 @@ import com.gtocore.common.data.machines.MultiBlockC;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
+
 import net.minecraft.network.chat.Component;
 
 import dev.emi.emi.api.EmiRegistry;
@@ -14,19 +16,19 @@ public final class NanitesIntegratedProcessingEmiCategory extends EmiRecipeCateg
 
     public static final NanitesIntegratedProcessingEmiCategory ORE_EXTRACTION_MODULE = new NanitesIntegratedProcessingEmiCategory(
             "ore_extraction_module",
-            EmiStack.of(MultiBlockC.ORE_EXTRACTION_MODULE.asStack()),
+            new FrontLitEmiStack(MultiBlockC.ORE_EXTRACTION_MODULE.asStack()),
             Component.translatable(MultiBlockC.ORE_EXTRACTION_MODULE.getDescriptionId()));
     public static final NanitesIntegratedProcessingEmiCategory BIOENGINEERING_MODULE = new NanitesIntegratedProcessingEmiCategory(
             "bioengineering_module",
-            EmiStack.of(MultiBlockC.BIOENGINEERING_MODULE.asStack()),
+            new FrontLitEmiStack(MultiBlockC.BIOENGINEERING_MODULE.asStack()),
             Component.translatable(MultiBlockC.BIOENGINEERING_MODULE.getDescriptionId()));
     public static final NanitesIntegratedProcessingEmiCategory POLYMER_TWISTING_MODULE = new NanitesIntegratedProcessingEmiCategory(
             "polymer_twisting_module",
-            EmiStack.of(MultiBlockC.POLYMER_TWISTING_MODULE.asStack()),
+            new FrontLitEmiStack(MultiBlockC.POLYMER_TWISTING_MODULE.asStack()),
             Component.translatable(MultiBlockC.POLYMER_TWISTING_MODULE.getDescriptionId()));
     public static final NanitesIntegratedProcessingEmiCategory MAGICA_MODULE = new NanitesIntegratedProcessingEmiCategory(
             "magica_module",
-            EmiStack.of(MultiBlockC.MAGICA_MODULE.asStack()),
+            new FrontLitEmiStack(MultiBlockC.MAGICA_MODULE.asStack()),
             Component.translatable(MultiBlockC.MAGICA_MODULE.getDescriptionId()));
 
     private final Component name;
@@ -50,15 +52,15 @@ public final class NanitesIntegratedProcessingEmiCategory extends EmiRecipeCateg
     }
 
     public static void registerWorkstations(EmiRegistry registry) {
-        var controller = EmiStack.of(MultiBlockC.NANITES_INTEGRATED_PROCESSING_CENTER.asStack());
+        var controller = new FrontLitEmiStack(MultiBlockC.NANITES_INTEGRATED_PROCESSING_CENTER.asStack());
         registry.addWorkstation(ORE_EXTRACTION_MODULE, controller);
-        registry.addWorkstation(ORE_EXTRACTION_MODULE, EmiStack.of(MultiBlockC.ORE_EXTRACTION_MODULE.asStack()));
+        registry.addWorkstation(ORE_EXTRACTION_MODULE, new FrontLitEmiStack(MultiBlockC.ORE_EXTRACTION_MODULE.asStack()));
         registry.addWorkstation(BIOENGINEERING_MODULE, controller);
-        registry.addWorkstation(BIOENGINEERING_MODULE, EmiStack.of(MultiBlockC.BIOENGINEERING_MODULE.asStack()));
+        registry.addWorkstation(BIOENGINEERING_MODULE, new FrontLitEmiStack(MultiBlockC.BIOENGINEERING_MODULE.asStack()));
         registry.addWorkstation(POLYMER_TWISTING_MODULE, controller);
-        registry.addWorkstation(POLYMER_TWISTING_MODULE, EmiStack.of(MultiBlockC.POLYMER_TWISTING_MODULE.asStack()));
+        registry.addWorkstation(POLYMER_TWISTING_MODULE, new FrontLitEmiStack(MultiBlockC.POLYMER_TWISTING_MODULE.asStack()));
         registry.addWorkstation(MAGICA_MODULE, controller);
-        registry.addWorkstation(MAGICA_MODULE, EmiStack.of(MultiBlockC.MAGICA_MODULE.asStack()));
+        registry.addWorkstation(MAGICA_MODULE, new FrontLitEmiStack(MultiBlockC.MAGICA_MODULE.asStack()));
     }
 
     @Override

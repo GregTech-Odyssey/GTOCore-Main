@@ -57,6 +57,7 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (energy) {
+            recordTarget(recipe);
             int ev = (recipe.data.getInt(GTORecipeDataKeys.EV_MAX) + recipe.data.getInt(GTORecipeDataKeys.EV_MIN)) * 5;
             eV = ev * 100000;
             recipe.duration = recipe.duration / 5;
@@ -64,6 +65,20 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
             return GTORecipeModifiers.parallel(this, unit, recipe);
         }
         return super.getRealRecipe(unit, recipe);
+    }
+
+    boolean isEnergyMode() {
+        return energy;
+    }
+
+    @Override
+    int getMaxAccelerators() {
+        return 4;
+    }
+
+    @Override
+    boolean consumesKineticEnergy() {
+        return false;
     }
 
     @Override
