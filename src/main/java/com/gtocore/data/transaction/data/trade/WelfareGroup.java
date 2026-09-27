@@ -75,7 +75,7 @@ public final class WelfareGroup {
                                 "More purchase options and ways to obtain currency will be added in the future")))
                         .outputItem(new ItemStack(BotaniaItems.manaCookie))
                         .outputItem(ChemicalHelper.get(ingot, Bronze, 64))
-                        .preCheck((a, b) -> checkTag(a, b, "Welcome to the Grey Tech™ Employee Membership Store"))
+                        .condition(singleTransactionCondition("Welcome to the Grey Tech™ Employee Membership Store"))
                         .onExecute((a, b, c) -> performTag(a, b, c, "Welcome to the Grey Tech™ Employee Membership Store"))
                         .build());
 

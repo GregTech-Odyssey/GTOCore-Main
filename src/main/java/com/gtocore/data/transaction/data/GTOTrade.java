@@ -96,30 +96,48 @@ public final class GTOTrade {
     /**
      * 简单的交易项目构建
      *
-     * @param BuyingOrSelling 买入或售出，true消耗货币购买物品，false售出物品得到货币
+     * @param buyingOrSelling 买入或售出，true消耗货币购买物品，false售出物品得到货币
      * @param unlockCondition 解锁标签
      * @param stack           物品堆
      * @param currency        货币种类
      * @param amount          货币数量
      * @return 构建好的简单交易项目
      */
-    public static TradeEntry simpleItemTrading(boolean BuyingOrSelling, String unlockCondition, ItemStack stack, String currency, int amount) {
+    public static TradeEntry simpleItemTrading(boolean buyingOrSelling, String unlockCondition, ItemStack stack, String currency, int amount) {
         TradeEntry.Builder builder = new TradeEntry.Builder().texture(new StackTexture(stack)).unlockCondition(unlockCondition);
-        if (BuyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
+        if (buyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
         else builder.outputCurrency(currency, amount).inputItem(stack);
         return builder.build();
     }
 
+    /**
+     * 构建需要完成指定 FTB Quests 任务才能购买的物品交易。
+     *
+     * @param unlockCondition 交易站自身的解锁标签
+     * @param stack           购买后获得的物品
+     * @param currency        支付货币种类
+     * @param amount          每次购买所需货币数量
+     * @param questId         作为购买前置的 FTB Quests 任务 ID
+     * @param descriptions    商品的额外说明
+     * @return 带任务完成条件的交易条目
+     */
     public static TradeEntry questGatedItemTrading(String unlockCondition, ItemStack stack, String currency, int amount, long questId, Component... descriptions) {
+        String questIdText = String.format("%016X", questId);
         TradeEntry.Builder builder = new TradeEntry.Builder()
                 .texture(new StackTexture(stack))
                 .unlockCondition(unlockCondition)
-                .preCheck((data, entry) -> Mods.FTBQUESTS.isLoaded() && QuestTradeIntegration.hasCompletedQuest(data, questId) ? -1 : 0)
+                .condition(
+                        (data, entry) -> Mods.FTBQUESTS.isLoaded() && QuestTradeIntegration.hasCompletedQuest(data, questId) ? Integer.MAX_VALUE : 0,
+                        remaining -> {
+                            boolean completed = remaining > 0;
+                            Component quest = Mods.FTBQUESTS.isLoaded() ? QuestTradeIntegration.questName(questId, questIdText) :
+                                    Component.translatable("gtocore.trade.quest_id", questIdText);
+                            return Component.translatable("gtocore.trade.condition.quest", quest,
+                                    Component.translatable(completed ? "gtocore.trade.condition.met" : "gtocore.trade.condition.unmet"));
+                        })
                 .inputCurrency(currency, amount)
                 .outputItem(stack);
         for (Component description : descriptions) builder.addDescription(description);
-        if (Mods.FTBQUESTS.isLoaded()) builder.dynamicDescription(() -> QuestTradeIntegration.questRequirement(questId));
-        else builder.addDescription(Component.translatable("gtocore.trade.quest_requirement_id", String.format("%016X", questId)));
         return builder.build();
     }
 
@@ -146,26 +164,38 @@ public final class GTOTrade {
      */
     public static TradeEntry SimpleLotteryTrading(String unlockCondition, String currency, int amount, List<Component> components, List<IntObjectHolder<ItemStack>> reward) {
         ItemStack[] itemStacks = reward.stream().map(i -> i.value).toArray(ItemStack[]::new);
-        List<Component> description = new ArrayList<>(components);
-        for (IntObjectHolder<ItemStack> entry : reward) {
-            ItemStack itemStack = entry.value;
-            description.add(Component.translatable("gtocore.trade_lottery.weight", itemStack.getDisplayName(), itemStack.getCount(), entry.priority));
-        }
         List<IntObjectHolder<ItemStack>> finalReward = ImmutableList.copyOf(reward);
         TradeEntry.Builder builder = new TradeEntry.Builder()
                 .texture(new StackTexture(itemStacks))
                 .unlockCondition(unlockCondition)
-                .description(description)
+                .description(components)
                 .inputCurrency(currency, amount)
                 .onExecute((a, b, c) -> performLottery(a, b, c, finalReward));
+        for (IntObjectHolder<ItemStack> entry : reward) {
+            builder.weightedProduct(entry.value, entry.priority);
+        }
         return builder.build();
     }
 
+    /**
+     * 创建一个带整数权重的抽奖商品。
+     *
+     * @param weight    商品权重
+     * @param itemStack 抽中后获得的物品
+     * @return 可传给 {@link #SimpleLotteryTrading(String, String, int, List, List)} 的权重商品
+     */
     public static IntObjectHolder<ItemStack> lotteryItem(int weight, ItemStack itemStack) {
         return new IntObjectHolder<>(weight, itemStack);
     }
 
-    // 执行逻辑：抽奖
+    /**
+     * 按权重独立抽取指定次数奖励，并将结果送入交易站输出槽。
+     *
+     * @param data       当前交易数据
+     * @param entry      当前抽奖交易条目
+     * @param multiplier 本次实际抽奖次数
+     * @param rewards    候选奖励及其整数权重
+     */
     private static void performLottery(TradeData data, TradeEntry entry, int multiplier, List<IntObjectHolder<ItemStack>> rewards) {
         if (!(data.level() instanceof ServerLevel serverLevel)) return;
         int totalWeight = rewards.stream().mapToInt(i -> i.priority).sum();
@@ -189,23 +219,36 @@ public final class GTOTrade {
     /**
      * 简单的限次交易项目构建
      *
-     * @param record        交易历史标记
-     * @param time          交易历史保留时间
-     * @param maxMultiplier 时间内最大交易次数
+     * @param buyingOrSelling {@code true} 为消耗货币购买物品，{@code false} 为售出物品获得货币
+     * @param unlockCondition 交易解锁标签
+     * @param stack           买卖的物品
+     * @param currency        货币种类
+     * @param amount          每次交易的货币数量
+     * @param record          交易历史标记
+     * @param time            交易历史保留时间
+     * @param maxMultiplier   保留时间内允许的最大交易次数
      * @return 构建好的简单交易项目
      */
-    public static TradeEntry simpleLimitedTimesItemTrading(boolean BuyingOrSelling, String unlockCondition, ItemStack stack, String currency, int amount, String record, long time, int maxMultiplier) {
+    public static TradeEntry simpleLimitedTimesItemTrading(boolean buyingOrSelling, String unlockCondition, ItemStack stack, String currency, int amount, String record, long time, int maxMultiplier) {
         TradeEntry.Builder builder = new TradeEntry.Builder()
                 .texture(new StackTexture(stack))
                 .unlockCondition(unlockCondition)
-                .preCheck((a, b) -> checkMultiplier(a, b, record, maxMultiplier))
+                .condition(limitedTimesCondition(record, maxMultiplier))
                 .onExecute((a, b, c) -> performAddMultiplier(a, b, c, record, time));
-        if (BuyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
+        if (buyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
         else builder.outputCurrency(currency, amount).inputItem(stack);
         return builder.build();
     }
 
-    // 前置检查逻辑：检查交易历史次数
+    /**
+     * 根据交易历史计算一个周期内剩余的可交易次数。
+     *
+     * @param data          当前交易数据
+     * @param entry         正在检查的交易条目
+     * @param record        交易历史标记
+     * @param maxMultiplier 周期内允许的最大交易次数
+     * @return 剩余可交易次数；已达到上限时返回 {@code 0}
+     */
     public static int checkMultiplier(TradeData data, TradeEntry entry, String record, int maxMultiplier) {
         Level level = data.level();
         ServerLevel serverLevel = level instanceof ServerLevel ? (ServerLevel) level : null;
@@ -214,7 +257,28 @@ public final class GTOTrade {
         return 0;
     }
 
-    // 执行逻辑：添加交易历史标记
+    /**
+     * 创建按交易历史总次数限制购买数量的通用条件。
+     *
+     * @param record        交易历史标记
+     * @param maxMultiplier 周期内允许的最大交易次数
+     * @return 可复用的限次交易条件
+     */
+    public static TradeEntry.TradeCondition limitedTimesCondition(String record, int maxMultiplier) {
+        return new TradeEntry.TradeCondition(
+                (data, entry) -> checkMultiplier(data, entry, record, maxMultiplier),
+                remaining -> Component.translatable("gtocore.trade.condition.periodic", maxMultiplier, maxMultiplier - remaining));
+    }
+
+    /**
+     * 将实际完成的交易次数写入带到期时间的交易历史。
+     *
+     * @param data       当前交易数据
+     * @param entry      已完成的交易条目
+     * @param multiplier 本次实际完成的交易次数
+     * @param record     交易历史标记
+     * @param time       交易历史保留时间
+     */
     public static void performAddMultiplier(TradeData data, TradeEntry entry, int multiplier, String record, long time) {
         Level level = data.level();
         ServerLevel serverLevel = level instanceof ServerLevel ? (ServerLevel) level : null;
@@ -224,21 +288,33 @@ public final class GTOTrade {
     /**
      * 简单的单次交易项目构建
      *
-     * @param tag 交易历史标记
+     * @param buyingOrSelling {@code true} 为消耗货币购买物品，{@code false} 为售出物品获得货币
+     * @param unlockCondition 交易解锁标签
+     * @param stack           买卖的物品
+     * @param currency        货币种类
+     * @param amount          每次交易的货币数量
+     * @param tag             单次交易历史标记
      * @return 构建好的简单交易项目
      */
-    public static TradeEntry simpleSingleTimesItemTrading(boolean BuyingOrSelling, String unlockCondition, ItemStack stack, String currency, int amount, String tag) {
+    public static TradeEntry simpleSingleTimesItemTrading(boolean buyingOrSelling, String unlockCondition, ItemStack stack, String currency, int amount, String tag) {
         TradeEntry.Builder builder = new TradeEntry.Builder()
                 .texture(new StackTexture(stack))
                 .unlockCondition(unlockCondition)
-                .preCheck((a, b) -> checkTag(a, b, tag))
+                .condition(singleTransactionCondition(tag))
                 .onExecute((a, b, c) -> performTag(a, b, c, tag));
-        if (BuyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
+        if (buyingOrSelling) builder.inputCurrency(currency, amount).outputItem(stack);
         else builder.outputCurrency(currency, amount).inputItem(stack);
         return builder.build();
     }
 
-    // 前置检查逻辑：检查交易是否交易过
+    /**
+     * 检查指定单次交易是否已经完成。
+     *
+     * @param data  当前交易数据
+     * @param entry 正在检查的交易条目
+     * @param tag   单次交易历史标记
+     * @return 尚未交易时返回 {@code 1}，已经交易时返回 {@code 0}
+     */
     public static int checkTag(TradeData data, TradeEntry entry, String tag) {
         Level level = data.level();
         ServerLevel serverLevel = level instanceof ServerLevel ? (ServerLevel) level : null;
@@ -246,7 +322,27 @@ public final class GTOTrade {
         return 0;
     }
 
-    // 执行逻辑：添加交易历史标记
+    /**
+     * 创建总共只能成功执行一次的通用交易条件。
+     *
+     * @param tag 单次交易历史标记
+     * @return 可复用的单次交易条件
+     */
+    public static TradeEntry.TradeCondition singleTransactionCondition(String tag) {
+        return new TradeEntry.TradeCondition(
+                (data, entry) -> checkTag(data, entry, tag),
+                remaining -> Component.translatable(remaining > 0 ?
+                        "gtocore.trade.condition.single.available" : "gtocore.trade.condition.single.used"));
+    }
+
+    /**
+     * 将单次交易标记写入玩家钱包数据。
+     *
+     * @param data       当前交易数据
+     * @param entry      已完成的交易条目
+     * @param multiplier 本次实际完成的交易次数
+     * @param tag        单次交易历史标记
+     */
     public static void performTag(TradeData data, TradeEntry entry, int multiplier, String tag) {
         Level level = data.level();
         ServerLevel serverLevel = level instanceof ServerLevel ? (ServerLevel) level : null;

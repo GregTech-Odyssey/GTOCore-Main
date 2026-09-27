@@ -50,7 +50,10 @@ public final class UnlockTrade {
                 .texture(texture)
                 .addDescription(Component.translatable(addTradeLang("解锁交易条件 %s - %s", "Unlock transaction conditions %s - %s"), tagKey, tagValue))
                 .input(tradeGroup)
-                .preCheck((a, b) -> checkUnlock(a, b, tagKey, tagValue))
+                .condition(
+                        (data, entry) -> checkUnlock(data, entry, tagKey, tagValue),
+                        remaining -> Component.translatable(remaining > 0 ?
+                                "gtocore.trade.condition.unlock.available" : "gtocore.trade.condition.unlock.used"))
                 .onExecute((a, b, c) -> performUnlock(a, b, c, tagKey, tagValue))
                 .build();
     }

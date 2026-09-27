@@ -72,7 +72,9 @@ public final class WelcomeGroup {
                         Component.translatable(addTradeLang("每周签到", "Weekly check-in")),
                         Component.translatable(addTradeLang("领取幸运物资", "Claim lucky supplies"))))
                 .unlockCondition(UNLOCK_BASE)
-                .preCheck(WelcomeGroup::checkThisWeek)
+                .condition(WelcomeGroup::checkThisWeek,
+                        remaining -> Component.translatable(remaining > 0 ?
+                                "gtocore.trade.condition.weekly.available" : "gtocore.trade.condition.weekly.used"))
                 .onExecute(WelcomeGroup::performCheckIn)
                 .build());
 
@@ -119,8 +121,7 @@ public final class WelcomeGroup {
         Level level = data.level();
         ServerLevel serverLevel = level instanceof ServerLevel ? (ServerLevel) level : null;
         long time = WalletUtils.getGameMinuteKey(level) / Weekly_time * Weekly_time;
-        if (WalletUtils.getTransactionMinuteAmount(data.uuid(), serverLevel, Weekly_check_in, time) == 0) return 1;
-        return 0;
+        return WalletUtils.getTransactionMinuteAmount(data.uuid(), serverLevel, Weekly_check_in, time) == 0 ? 1 : 0;
     }
 
     // 执行逻辑：添加标记，随机给予0-100技术员币

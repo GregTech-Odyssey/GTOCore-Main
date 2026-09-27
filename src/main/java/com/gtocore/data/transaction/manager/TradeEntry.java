@@ -22,8 +22,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 import static com.gtocore.data.transaction.TradingStationTool.*;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
@@ -34,20 +32,18 @@ import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
 public record TradeEntry(
                          // 界面渲染材质
                          IGuiTexture texture,
-                         // 交易描述
-                         List<Component> description,
-                         // 需要在显示时生成的描述（如任务书加载后的任务名称）
-                         Supplier<Component> dynamicDescription,
                          // 解锁条件文本
                          String unlockCondition,
-                         // 交易前额外检查逻辑
-                         PreTradeCheck preCheck,
+                         // 限制交易次数的条件
+                         List<TradeCondition> conditions,
                          // 交易执行回调逻辑
                          TradeRunnable onExecute,
                          // 输入资源组
                          TradeGroup inputGroup,
                          // 输出资源组
-                         TradeGroup outputGroup) {
+                         TradeGroup outputGroup,
+                         // 注册时生成的静态悬浮说明
+                         List<Component> staticTooltip) {
 
     /**
      * 紧凑构造器
@@ -55,25 +51,36 @@ public record TradeEntry(
     public TradeEntry {
         texture = texture != null ? texture : GuiTextures.GREGTECH_LOGO;
         unlockCondition = unlockCondition != null ? unlockCondition : UNLOCK_BASE;
-        description = ImmutableList.copyOf(description != null ? description : Collections.emptyList());
+        conditions = ImmutableList.copyOf(conditions != null ? conditions : Collections.emptyList());
         inputGroup = inputGroup != null ? inputGroup : new TradeGroup(Collections.emptyList(), Collections.emptyList(), new O2LOpenCacheHashMap<>(), BigInteger.ZERO, BigInteger.ZERO);
         outputGroup = outputGroup != null ? outputGroup : new TradeGroup(Collections.emptyList(), Collections.emptyList(), new O2LOpenCacheHashMap<>(), BigInteger.ZERO, BigInteger.ZERO);
+        staticTooltip = ImmutableList.copyOf(staticTooltip != null ? staticTooltip : Collections.emptyList());
     }
 
     // ------------------- 核心业务方法 -------------------
 
     /**
-     * 执行交易前的额外条件检查
+     * 计算所有限制条件共同允许的最大交易次数。
+     *
+     * @param data 当前交易所使用的玩家、库存和世界数据
+     * @return 所有条件上限的最小值；无条件时返回 {@link Integer#MAX_VALUE}
      */
-    public int canExecuteCount(TradeData data) {
-        if (preCheck == null) return -1;
-        return preCheck.test(data, this);
+    private int conditionMaxCount(TradeData data) {
+        int maxCount = Integer.MAX_VALUE;
+        for (TradeCondition condition : conditions) {
+            maxCount = Math.min(maxCount, condition.maxCount(data, this));
+            if (maxCount == 0) return 0;
+        }
+        return maxCount;
     }
 
     /**
-     * 输入资源检查
+     * 根据输入资源余额和输出流体容量计算最多可完成多少次交易。
+     *
+     * @param data 当前交易所使用的玩家、库存和世界数据
+     * @return 资源允许的最大交易次数；不在服务端或任一资源不足时返回 {@code 0}
      */
-    private int checkInputEnough(TradeData data) {
+    public int resourceMaxCount(TradeData data) {
         if (!(data.level() instanceof ServerLevel serverLevel)) return 0;
 
         int inputItem = inputGroup().items().isEmpty() ? Integer.MAX_VALUE : checkMaxMultiplier(data.inputItem(), inputGroup().items());
@@ -85,10 +92,20 @@ public record TradeEntry(
         int outputFluid = outputGroup().fluids().isEmpty() ? Integer.MAX_VALUE : checkMaxCapacityMultiplier(data.outputFluid(), outputGroup().fluids());
         if (outputFluid == 0) return 0;
 
-        int inputCurrencies = inputGroup().currencies().isEmpty() ? Integer.MAX_VALUE : (int) Math.min(inputGroup().currencies().object2LongEntrySet().stream()
-                .filter(entry -> entry.getLongValue() != 0)
-                .mapToLong(entry -> WalletUtils.getCurrencyAmount(data.uuid(), serverLevel, entry.getKey()) / entry.getLongValue())
-                .min().orElse(0L), Integer.MAX_VALUE);
+        int inputCurrencies = Integer.MAX_VALUE;
+        if (!inputGroup().currencies().isEmpty()) {
+            boolean foundCurrency = false;
+            for (var iterator = inputGroup().currencies().object2LongEntrySet().fastIterator(); iterator.hasNext();) {
+                var entry = iterator.next();
+                long singleAmount = entry.getLongValue();
+                if (singleAmount <= 0) continue;
+                foundCurrency = true;
+                long available = WalletUtils.getCurrencyAmount(data.uuid(), serverLevel, entry.getKey()) / singleAmount;
+                if (available <= 0) return 0;
+                inputCurrencies = Math.min(inputCurrencies, (int) Math.min(available, Integer.MAX_VALUE));
+            }
+            if (!foundCurrency) return 0;
+        }
         if (inputCurrencies == 0) return 0;
 
         int inputEnergy = inputGroup().energy().equals(BigInteger.ZERO) ? Integer.MAX_VALUE : WirelessEnergyContainer.getOrCreateContainer(data.teamUUID()).getStorage()
@@ -101,12 +118,14 @@ public record TradeEntry(
                 .min(BigInteger.valueOf(Integer.MAX_VALUE)).intValueExact();
         if (inputMana == 0) return 0;
 
-        return IntStream.of(inputItem, inputFluid, outputFluid, inputCurrencies, inputEnergy, inputMana)
-                .min().orElse(0);
+        return Math.min(Math.min(Math.min(inputItem, inputFluid), Math.min(outputFluid, inputCurrencies)), Math.min(inputEnergy, inputMana));
     }
 
     /**
-     * 运行交易的实际输入输出
+     * 按实际交易次数扣除输入并发放输出。
+     *
+     * @param data       当前交易所使用的玩家、库存和世界数据
+     * @param multiplier 已通过检查的实际交易次数
      */
     private void executeInputOutput(TradeData data, int multiplier) {
         if (!(data.level() instanceof ServerLevel serverLevel)) return;
@@ -148,23 +167,24 @@ public record TradeEntry(
     }
 
     /**
-     * 可执行交易的次数
+     * 综合限制条件与资源状态，计算当前实际可交易次数。
+     *
+     * @param data 当前交易所使用的玩家、库存和世界数据
+     * @return 条件上限与资源上限中的较小值；不可交易时返回 {@code 0}
      */
     public int check(TradeData data) {
         if (!(data.level() instanceof ServerLevel)) return 0;
-        int multiplier = Integer.MAX_VALUE;
-        int preCheckMaxCount = canExecuteCount(data);
-        if (preCheckMaxCount == 0) return 0;
-        else if (preCheckMaxCount > 0) {
-            multiplier = preCheckMaxCount;
-        }
-        int resourceMaxCount = checkInputEnough(data);
-        if (resourceMaxCount <= 0) return 0;
-        return Math.min(multiplier, resourceMaxCount);
+        int conditionMaxCount = conditionMaxCount(data);
+        if (conditionMaxCount == 0) return 0;
+        return Math.min(conditionMaxCount, resourceMaxCount(data));
     }
 
     /**
-     * 执行完整交易（资源变更+回调）
+     * 执行完整交易，包括资源变更、交易回调和结果音效。
+     * 实际次数不会超过 {@link #check(TradeData)} 返回的上限。
+     *
+     * @param data                当前交易所使用的玩家、库存和世界数据
+     * @param requestedMultiplier 玩家本次请求的交易次数
      */
     public void executeTrade(TradeData data, int requestedMultiplier) {
         if (!(data.level() instanceof ServerLevel)) return;
@@ -180,12 +200,46 @@ public record TradeEntry(
         data.level().playSound(null, data.pos(), SoundEvents.ALLAY_ITEM_GIVEN, SoundSource.BLOCKS, 1.8F, 1.4F);
     }
 
-    public List<Component> getDescription() {
-        List<Component> componentList = new ArrayList<>(description());
-        if (dynamicDescription != null) componentList.add(dynamicDescription.get());
-        if (!inputGroup().isEmpty()) componentList.addAll(inputGroup().getComponentList(true));
-        if (!outputGroup().isEmpty()) componentList.addAll(outputGroup().getComponentList(false));
-        return componentList;
+    /**
+     * 在注册阶段构建不会随玩家状态变化的交易说明。
+     *
+     * @param description      商品的额外说明
+     * @param inputGroup       每次交易消耗的资源
+     * @param outputGroup      每次交易产出的资源
+     * @param weightedProducts 抽奖商品及权重，仅用于展示
+     * @return 不可变的静态悬浮文本列表
+     */
+    private static List<Component> buildStaticTooltip(List<Component> description, TradeGroup inputGroup,
+                                                      TradeGroup outputGroup, List<WeightedProduct> weightedProducts) {
+        List<Component> componentList = new ArrayList<>();
+        if (!description.isEmpty()) {
+            componentList.add(sectionHeader("gtocore.trade_group.description", ChatFormatting.DARK_AQUA));
+            componentList.addAll(description);
+        }
+        if (!inputGroup.isEmpty()) componentList.addAll(inputGroup.getComponentList(true));
+        if (!outputGroup.isEmpty()) componentList.addAll(outputGroup.getComponentList(false));
+        if (!weightedProducts.isEmpty()) {
+            if (outputGroup.isEmpty()) componentList.add(sectionHeader("gtocore.trade_group.false", ChatFormatting.DARK_GREEN));
+            for (WeightedProduct product : weightedProducts) {
+                componentList.add(Component.literal("  - ").withStyle(ChatFormatting.DARK_GREEN)
+                        .append(Component.literal(String.valueOf(product.stack().getCount())).withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(" "))
+                        .append(product.stack().getDisplayName().copy().withStyle(ChatFormatting.GOLD))
+                        .append(Component.translatable("gtocore.trade_lottery.weight", product.weight()).withStyle(ChatFormatting.DARK_GREEN)));
+            }
+        }
+        return ImmutableList.copyOf(componentList);
+    }
+
+    /**
+     * 创建带项目符号的悬浮说明分区标题。
+     *
+     * @param translationKey 标题翻译键
+     * @param color          标题和项目符号的颜色
+     * @return 格式化后的标题组件
+     */
+    public static Component sectionHeader(String translationKey, ChatFormatting color) {
+        return Component.literal("- ").withStyle(color).append(Component.translatable(translationKey).withStyle(color));
     }
 
     // ------------------- 内部类：交易资源组 -------------------
@@ -202,11 +256,13 @@ public record TradeEntry(
         public TradeGroup {
             items = ImmutableList.copyOf(items);
             fluids = ImmutableList.copyOf(fluids);
-            currencies = new O2LOpenCacheHashMap<>(currencies);
+            currencies = currencies.clone();
         }
 
         /**
          * 检查当前 TradeGroup 是否所有字段都为空（或无效）。
+         *
+         * @return 没有任何有效物品、流体、货币、能量或魔力时返回 {@code true}
          */
         public boolean isEmpty() {
             boolean isItemsEmpty = items.stream().allMatch(ItemStack::isEmpty);
@@ -217,6 +273,12 @@ public record TradeEntry(
             return isItemsEmpty && isFluidsEmpty && isCurrenciesEmpty && isEnergyEmpty && isManaEmpty;
         }
 
+        /**
+         * 生成资源组在悬浮说明中的标题和资源明细。
+         *
+         * @param input_output {@code true} 表示价格/输入，{@code false} 表示商品/输出
+         * @return 按显示顺序排列的悬浮文本行
+         */
         public List<Component> getComponentList(boolean input_output) {
             List<Component> list = new ArrayList<>();
             ChatFormatting color = input_output ? ChatFormatting.DARK_RED : ChatFormatting.DARK_GREEN;
@@ -224,29 +286,32 @@ public record TradeEntry(
                     .append(input_output ? Component.translatable("gtocore.trade_group.true").withStyle(ChatFormatting.DARK_RED) :
                             Component.translatable("gtocore.trade_group.false").withStyle(ChatFormatting.DARK_GREEN)));
             for (ItemStack itemStack : items) {
-                list.add(Component.literal("- ").withStyle(color)
+                list.add(Component.literal("  - ").withStyle(color)
                         .append(Component.literal(String.valueOf(itemStack.getCount())).withStyle(ChatFormatting.AQUA))
                         .append(Component.literal(" "))
                         .append(itemStack.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
             }
             for (FluidStack fluidStack : fluids) {
-                list.add(Component.literal("- ").withStyle(color)
+                list.add(Component.literal("  - ").withStyle(color)
                         .append(Component.literal(String.valueOf(fluidStack.getAmount())).withStyle(ChatFormatting.AQUA))
                         .append(Component.literal(" "))
                         .append(fluidStack.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE)));
             }
-            currencies.object2LongEntrySet().forEach((entry) -> list.add(Component.literal("- ").withStyle(color)
-                    .append(Component.literal(String.valueOf(entry.getLongValue())).withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(" "))
-                    .append(Component.translatable("gtocore.currency." + entry.getKey()).withStyle(ChatFormatting.YELLOW))));
+            for (var iterator = currencies.object2LongEntrySet().fastIterator(); iterator.hasNext();) {
+                var entry = iterator.next();
+                list.add(Component.literal("  - ").withStyle(color)
+                        .append(Component.literal(String.valueOf(entry.getLongValue())).withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(" "))
+                        .append(Component.translatable("gtocore.currency." + entry.getKey()).withStyle(ChatFormatting.YELLOW)));
+            }
             if (!energy.equals(BigInteger.ZERO)) {
-                list.add(Component.literal("- ").withStyle(color)
+                list.add(Component.literal("  - ").withStyle(color)
                         .append(Component.literal(energy.toString()).withStyle(ChatFormatting.AQUA))
                         .append(Component.literal(" "))
                         .append(Component.literal("EU").withStyle(ChatFormatting.DARK_AQUA)));
             }
             if (!mana.equals(BigInteger.ZERO)) {
-                list.add(Component.literal("- ").withStyle(color)
+                list.add(Component.literal("  - ").withStyle(color)
                         .append(Component.literal(mana.toString()).withStyle(ChatFormatting.AQUA))
                         .append(Component.literal(" "))
                         .append(Component.literal("Mana").withStyle(ChatFormatting.DARK_PURPLE)));
@@ -304,15 +369,66 @@ public record TradeEntry(
     }
 
     // ------------------- 函数式接口 -------------------
-    @FunctionalInterface
-    public interface PreTradeCheck {
+    public record TradeCondition(TradeConditionCheck check, TradeConditionDescription description) {
 
+        /**
+         * 计算该条件当前允许的最大交易次数，并把负数结果收敛为 {@code 0}。
+         *
+         * @param data  当前交易数据
+         * @param entry 正在检查的交易条目
+         * @return 该条件允许的最大次数；{@code 0} 表示不满足条件
+         */
+        public int maxCount(TradeData data, TradeEntry entry) {
+            return Math.max(0, check.test(data, entry));
+        }
+
+        /**
+         * 根据当前条件余量生成面向玩家的限制说明。
+         *
+         * @param maxCount {@link #maxCount(TradeData, TradeEntry)} 返回的条件余量
+         * @return 条件说明组件
+         */
+        public Component getDescription(int maxCount) {
+            return description.create(maxCount);
+        }
+    }
+
+    public record WeightedProduct(ItemStack stack, int weight) {
+
+        public WeightedProduct {
+            stack = stack.copy();
+        }
+    }
+
+    @FunctionalInterface
+    public interface TradeConditionCheck {
+
+        /**
+         * @param data  当前交易数据
+         * @param entry 正在检查的交易条目
+         * @return 条件允许的最大交易次数；{@code 0} 表示禁止，{@link Integer#MAX_VALUE} 表示不限制次数
+         */
         int test(TradeData data, TradeEntry entry);
+    }
+
+    @FunctionalInterface
+    public interface TradeConditionDescription {
+
+        /**
+         * @param maxCount 当前条件允许的剩余交易次数
+         * @return 展示给玩家的限制说明
+         */
+        Component create(int maxCount);
     }
 
     @FunctionalInterface
     public interface TradeRunnable {
 
+        /**
+         * @param data       当前交易数据
+         * @param entry      已执行资源变更的交易条目
+         * @param multiplier 本次实际完成的交易次数
+         */
         void run(TradeData data, TradeEntry entry, int multiplier);
     }
 
@@ -321,9 +437,9 @@ public record TradeEntry(
 
         private IGuiTexture texture;
         private final List<Component> description = new ArrayList<>();
-        private Supplier<Component> dynamicDescription;
         private String unlockCondition;
-        private PreTradeCheck preCheck;
+        private final List<TradeCondition> conditions = new ArrayList<>();
+        private final List<WeightedProduct> weightedProducts = new ArrayList<>();
         private TradeRunnable onExecute;
         private TradeGroup.Builder inputGroupBuilder = new TradeGroup.Builder();
         private TradeGroup.Builder outputGroupBuilder = new TradeGroup.Builder();
@@ -347,21 +463,51 @@ public record TradeEntry(
             return this;
         }
 
-        public Builder dynamicDescription(Supplier<Component> description) {
-            this.dynamicDescription = description;
-            return this;
-        }
-
         public Builder unlockCondition(String condition) {
             this.unlockCondition = condition;
             return this;
         }
 
-        public Builder preCheck(PreTradeCheck check) {
-            this.preCheck = check;
+        /**
+         * 添加一个限制条件；多个条件同时存在时取允许次数的最小值。
+         *
+         * @param condition 要添加的限制条件
+         * @return 当前构建器
+         */
+        public Builder condition(TradeCondition condition) {
+            this.conditions.add(condition);
             return this;
         }
 
+        /**
+         * 根据检查逻辑和展示文案添加一个限制条件。
+         *
+         * @param check       条件允许次数的计算逻辑
+         * @param description 根据条件余量生成文案的逻辑
+         * @return 当前构建器
+         */
+        public Builder condition(TradeConditionCheck check, TradeConditionDescription description) {
+            return condition(new TradeCondition(check, description));
+        }
+
+        /**
+         * 添加一个仅用于悬浮说明展示的抽奖商品及权重。
+         *
+         * @param stack  抽奖商品
+         * @param weight 商品权重
+         * @return 当前构建器
+         */
+        public Builder weightedProduct(ItemStack stack, int weight) {
+            this.weightedProducts.add(new WeightedProduct(stack, weight));
+            return this;
+        }
+
+        /**
+         * 设置资源输入输出完成后执行的交易回调。
+         *
+         * @param runnable 交易完成回调
+         * @return 当前构建器
+         */
         public Builder onExecute(TradeRunnable runnable) {
             this.onExecute = runnable;
             return this;
@@ -451,17 +597,20 @@ public record TradeEntry(
 
         /**
          * 构建不可变 TradeEntry 实例
+         *
+         * @return 包含当前全部配置的交易条目
          */
         public TradeEntry build() {
+            TradeGroup inputGroup = inputGroupBuilder.build();
+            TradeGroup outputGroup = outputGroupBuilder.build();
             return new TradeEntry(
                     texture,
-                    ImmutableList.copyOf(description),
-                    dynamicDescription,
                     unlockCondition,
-                    preCheck,
+                    ImmutableList.copyOf(conditions),
                     onExecute,
-                    inputGroupBuilder.build(),
-                    outputGroupBuilder.build());
+                    inputGroup,
+                    outputGroup,
+                    buildStaticTooltip(description, inputGroup, outputGroup, weightedProducts));
         }
     }
 }

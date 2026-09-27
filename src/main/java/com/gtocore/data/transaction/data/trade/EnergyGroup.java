@@ -16,7 +16,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 
-import static com.gtocore.data.transaction.data.GTOTrade.checkMultiplier;
+import static com.gtocore.data.transaction.data.GTOTrade.limitedTimesCondition;
 import static com.gtocore.data.transaction.data.GTOTrade.performAddMultiplier;
 import static com.gtocore.data.transaction.data.TradeLang.*;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.GT_Values;
@@ -75,7 +75,7 @@ public final class EnergyGroup {
                         .unlockCondition(GTOValues.VNFR[values])
                         .inputEnergy(energy)
                         .outputCurrency(currency, amount)
-                        .preCheck((a, b) -> checkMultiplier(a, b, GT_Values, 10 * values))
+                        .condition(limitedTimesCondition(GT_Values, 10 * values))
                         .onExecute((a, b, c) -> performAddMultiplier(a, b, c, GT_Values, 360L))
                         .build());
 

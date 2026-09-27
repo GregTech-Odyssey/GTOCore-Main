@@ -53,8 +53,7 @@ public final class TradeLang {
         addTradeLang("gtocore.currency." + ENERGY_COIN, "能量币", "Energy Coin");
         addTradeLang("gtocore.currency." + COMPACT_ENERGY_COIN, "致密能量币", "Compact Energy Coin");
 
-        addTradeLang("gtocore.trade.quest_requirement", "前置任务：%s", "Quest prerequisite: %s");
-        addTradeLang("gtocore.trade.quest_requirement_id", "前置任务 ID：%s", "Quest prerequisite ID: %s");
+        addTradeLang("gtocore.trade.quest_id", "任务 ID：%s", "Quest ID: %s");
 
         addTradeLang("gtocore.palm_sized_bank.textList.1", "欢迎使用掌上银行！", "Welcome to Mobile Banking!");
         addTradeLang("gtocore.palm_sized_bank.textList.2", "在这里, 您可以方便地管理您的虚拟资产", "Here, you can conveniently manage your virtual assets");
@@ -97,11 +96,13 @@ public final class TradeLang {
 
         addTradeLang("gtocore.trade_group.true", "价格", "Price");
         addTradeLang("gtocore.trade_group.false", "商品", "Commodity");
+        addTradeLang("gtocore.trade_group.description", "说明", "Description");
         addTradeLang("gtocore.trade_group.unlock", "未解锁, 需要解锁 %s", "Not unlocked, needs to be unlocked %s");
         addTradeLang("gtocore.trade_group.unsatisfied", "不满足额外条件", "Additional conditions not met");
-        addTradeLang("gtocore.trade_group.amount", "可交易次数: %s", "Number of tradables: %s");
-        addTradeLang("gtocore.trade_group.repeatedly1", "按下Ctrl尝试交易10次", "Press Ctrl to attempt 10 trades");
-        addTradeLang("gtocore.trade_group.repeatedly2", "同时按下Ctrl Shift尝试交易100次", "Simultaneously press Ctrl Shift to attempt 100 trades");
+        addTradeLang("gtocore.trade_group.amount", "可交易次数：%s", "Available trades: %s");
+        addTradeLang("gtocore.trade_group.unlimited", "无限", "Unlimited");
+        addTradeLang("gtocore.trade_group.repeatedly.1", "[%s + 点击] 最多交易 10 次", "[%s + Click] Trade up to 10 times");
+        addTradeLang("gtocore.trade_group.repeatedly.2", "[%s + 点击] 最多交易 100 次", "[%s + Click] Trade up to 100 times");
         addTradeLang("gtocore.trade_group.exchanged", "将%2$s兑换为%1$s", "Exchange %1$s for %2$s");
 
         addTradeLang("gtocore.trading_station.unlock_shop", "解锁商店", "Unlock Store");
@@ -121,6 +122,18 @@ public final class TradeLang {
         addTradeLang("gtocore.trading_station.textList.21", "交易解锁", "Transaction unlock");
         addTradeLang("gtocore.trading_station.textList.22", "解锁 %s", "Unlock %s");
 
-        addTradeLang("gtocore.trade_lottery.weight", "- %s x%s [权重: %s]", "- %s x%s [Weight: %s]");
+        addTradeLang("gtocore.trade.condition.header", "限制条件", "Restrictions");
+        addTradeLang("gtocore.trade.condition.single.available", "购买限制：仅限 1 次（未购买）", "Purchase limit: once only (not purchased)");
+        addTradeLang("gtocore.trade.condition.single.used", "购买限制：仅限 1 次（已购买）", "Purchase limit: once only (purchased)");
+        addTradeLang("gtocore.trade.condition.periodic", "周期限制：本周期最多交易 %s 次，已交易 %s 次", "Periodic limit: at most %s trades this period, %s used");
+        addTradeLang("gtocore.trade.condition.weekly.available", "签到限制：本周期只能领取 1 次（未领取）", "Check-in limit: once this period (not claimed)");
+        addTradeLang("gtocore.trade.condition.weekly.used", "签到限制：本周期只能领取 1 次（已领取）", "Check-in limit: once this period (claimed)");
+        addTradeLang("gtocore.trade.condition.unlock.available", "解锁限制：只能执行 1 次（未执行）", "Unlock limit: once only (not executed)");
+        addTradeLang("gtocore.trade.condition.unlock.used", "解锁限制：只能执行 1 次（已执行）", "Unlock limit: once only (executed)");
+        addTradeLang("gtocore.trade.condition.quest", "前置任务：%s（%s）", "Quest prerequisite: %s (%s)");
+        addTradeLang("gtocore.trade.condition.met", "已完成", "Completed");
+        addTradeLang("gtocore.trade.condition.unmet", "未完成", "Incomplete");
+
+        addTradeLang("gtocore.trade_lottery.weight", " [权重: %s]", " [Weight: %s]");
     }
 }

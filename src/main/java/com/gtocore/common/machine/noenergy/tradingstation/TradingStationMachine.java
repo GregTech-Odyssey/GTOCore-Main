@@ -73,6 +73,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.IntFunction;
@@ -143,6 +144,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     @SyncToClient
     private int groupSelected = 0;
     private int shopSelected = -1;
+    private int tradeIdentityRevision;
+    private int tradeExecutionRevision;
 
     /////////////////////////////////////
     // ********* 生命周期管理 ********* //
@@ -767,6 +770,9 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
         /// 悬停说明的重算间隔（tick）：里面的判定要读钱包与输入输出栏，不必每刻都算
         private static final int REFRESH_TICKS = 10;
+        private static final int UNLOCKED = 0;
+        private static final int SHOP_LOCKED = 1;
+        private static final int ENTRY_LOCKED = 2;
 
         /// 逐行同步悬停说明：行数 + 每行的组件（提示接口要的是"每行一个组件"，不能拼成一条带换行符的文字）
         private static final ByteStreamCodec<List<Component>> TOOLTIP_LINES_CODEC = ByteStreamCodec.collection(ArrayList::new, StreamCodecs.COMPONENT_CODEC);
@@ -774,20 +780,36 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private final int groupIndex;
         private final int shopIndex;
         private final TradeEntry entry;
-        private List<Component> cachedTooltip = List.of();
+        private final int[] cachedConditionCounts;
+        private final Component[] cachedConditionLines;
+        private List<Component> cachedTooltip = Collections.emptyList();
+        @Nullable
+        private TradeData cachedTradeData;
+        private int cachedTradeIdentityRevision = Integer.MIN_VALUE;
+        private int observedTradeExecutionRevision = Integer.MIN_VALUE;
+        private int cachedLockState = Integer.MIN_VALUE;
+        private int cachedAmount = Integer.MIN_VALUE;
         private boolean refreshed;
         private int refreshedAt;
 
+        /**
+         * @param groupIndex 所属商店组索引
+         * @param shopIndex  所属商店索引
+         * @param entry      此格展示并执行的交易条目
+         */
         private TradeCell(int groupIndex, int shopIndex, TradeEntry entry) {
             this.groupIndex = groupIndex;
             this.shopIndex = shopIndex;
             this.entry = entry;
+            this.cachedConditionCounts = new int[entry.conditions().size()];
+            this.cachedConditionLines = new Component[entry.conditions().size()];
+            Arrays.fill(cachedConditionCounts, Integer.MIN_VALUE);
             layout(l -> l.size(UISizes.SLOT, UISizes.SLOT));
             var button = Button.icon(entry.texture(), UISizes.SLOT);
             button.setOnServerClick(this::executeTrade);
             button.disabled(this::locked, null);
             addChild(button);
-            addSyncValue(SyncValue.of(this::tooltipLines, TOOLTIP_LINES_CODEC, List.of())
+            addSyncValue(SyncValue.of(this::tooltipLines, TOOLTIP_LINES_CODEC, Collections.emptyList())
                     .onChanged(lines -> button.setHoverTooltips(lines.toArray(Component[]::new))));
         }
 
@@ -795,67 +817,169 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
          * 服务端：商店未解锁、交易未解锁时这格不能交易（滚轮判定与点击时都会再判一次）。
          * 客户端一律按"不可交易"回答：能不能交易由服务端下发的禁用状态与点击时的服务端判定决定，
          * 客户端不会去读钱包和背包。
+         *
+         * @return 当前侧是否应禁用此交易格
          */
         private boolean locked() {
             if (TradingStationMachine.this.isRemote()) return true;
-            if (groupIndex >= 0 && !shopUnlocked(groupIndex, shopIndex)) return true;
-            return !entryUnlocked(entry);
+            return lockState() != UNLOCKED;
         }
 
-        /** 服务端：执行交易（Ctrl 十倍、Ctrl + Shift 百倍），能否交易与倍率都在这里判定。 */
+        /**
+         * 服务端：执行交易（Ctrl 十倍、Ctrl + Shift 百倍），能否交易与倍率都在这里判定。
+         *
+         * @param clickData 本次点击及组合键状态
+         */
         private void executeTrade(ClickData clickData) {
             if (clickData.isRemote || locked()) return;
             int multiplier = clickData.isCtrlClick ? (clickData.isShiftClick ? 100 : 10) : 1;
-            entry.executeTrade(tradeData(), multiplier);
+            entry.executeTrade(currentTradeData(), multiplier);
+            tradeExecutionRevision++;
         }
 
-        /** 只在服务端执行：悬停说明逐行由服务端拼好下发，按 {@link #REFRESH_TICKS} 重算一次。 */
+        /**
+         * 只在服务端执行：交易后立即检查，其余数据变化最多每 {@link #REFRESH_TICKS} tick 检查一次。
+         * 只有显示状态真的变化时才重新创建组件与同步悬停说明。
+         *
+         * @return 当前缓存的逐行悬浮说明
+         */
         private List<Component> tooltipLines() {
             int now = getOffsetTimer();
-            if (refreshed && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) return cachedTooltip;
+            int executionRevision = tradeExecutionRevision;
+            if (refreshed && executionRevision == observedTradeExecutionRevision && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) {
+                return cachedTooltip;
+            }
             refreshed = true;
             refreshedAt = now;
-            cachedTooltip = buildTooltipLines();
+            observedTradeExecutionRevision = executionRevision;
+            refreshTooltip();
             return cachedTooltip;
         }
 
-        /** 服务端：一行一个组件——状态行、以及交易说明里的每一条输入/产出各占一行。 */
-        private List<Component> buildTooltipLines() {
-            var data = tradeData();
-            List<Component> lines = new ArrayList<>(4);
-            if (groupIndex >= 0 && !shopUnlocked(groupIndex, shopIndex)) {
+        /** 服务端：只计算整数状态；条件文案只在对应状态变化时重建。 */
+        private void refreshTooltip() {
+            int lockState = lockState();
+            boolean changed = lockState != cachedLockState;
+            int amount = 0;
+            if (lockState == UNLOCKED) {
+                TradeData data = currentTradeData();
+                int conditionMaxCount = Integer.MAX_VALUE;
+                for (int i = 0; i < entry.conditions().size(); i++) {
+                    TradeEntry.TradeCondition condition = entry.conditions().get(i);
+                    int maxCount = condition.maxCount(data, entry);
+                    conditionMaxCount = Math.min(conditionMaxCount, maxCount);
+                    if (cachedConditionCounts[i] != maxCount) {
+                        cachedConditionCounts[i] = maxCount;
+                        ChatFormatting color = maxCount > 0 ? ChatFormatting.GREEN : ChatFormatting.RED;
+                        cachedConditionLines[i] = Component.literal("  - ").withStyle(color)
+                                .append(condition.getDescription(maxCount).copy().withStyle(color));
+                        changed = true;
+                    }
+                }
+                if (conditionMaxCount > 0) {
+                    amount = Math.min(conditionMaxCount, entry.resourceMaxCount(data));
+                }
+            }
+            if (cachedAmount != amount) changed = true;
+            cachedLockState = lockState;
+            cachedAmount = amount;
+            if (changed) cachedTooltip = buildTooltipLines(lockState, amount);
+        }
+
+        /**
+         * 服务端：状态变化时才拼一遍说明；静态的描述、价格和产出直接复用注册时缓存。
+         *
+         * @param lockState 当前交易格的解锁状态
+         * @param amount    当前实际可交易次数
+         * @return 按最终显示顺序排列的悬浮文本行
+         */
+        private List<Component> buildTooltipLines(int lockState, int amount) {
+            List<Component> lines = new ArrayList<>(entry.staticTooltip().size() + cachedConditionLines.length + 4);
+            if (lockState == SHOP_LOCKED) {
                 lines.add(trans(20, unlockName(entry.unlockCondition())).withStyle(ChatFormatting.RED));
-            } else if (!entryUnlocked(entry)) {
+            } else if (lockState == ENTRY_LOCKED) {
                 lines.add(Component.translatable("gtocore.trade_group.unlock", unlockName(entry.unlockCondition()))
                         .withStyle(ChatFormatting.DARK_RED));
-            } else if (entry.canExecuteCount(data) == 0) {
-                lines.add(Component.translatable("gtocore.trade_group.unsatisfied").withStyle(ChatFormatting.DARK_RED));
             } else {
-                int amount = entry.check(data);
-                lines.add(Component.translatable("gtocore.trade_group.amount", FormattingUtil.formatNumbers(amount))
-                        .withStyle(ChatFormatting.GOLD));
-                if (amount >= 10) lines.add(Component.translatable("gtocore.trade_group.repeatedly1"));
-                if (amount >= 100) lines.add(Component.translatable("gtocore.trade_group.repeatedly2"));
+                lines.add(Component.translatable("gtocore.trade_group.amount", tradeCount(amount))
+                        .withStyle(amount > 0 ? ChatFormatting.GOLD : ChatFormatting.RED));
+                if (cachedConditionLines.length > 0) {
+                    lines.add(TradeEntry.sectionHeader("gtocore.trade.condition.header", ChatFormatting.DARK_AQUA));
+                    Collections.addAll(lines, cachedConditionLines);
+                }
             }
-            lines.addAll(entry.getDescription());
+            lines.addAll(entry.staticTooltip());
+            if (lockState == UNLOCKED && amount >= 10) {
+                lines.add(Component.translatable("gtocore.trade_group.repeatedly.1",
+                        Component.literal("Ctrl").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+                if (amount >= 100) {
+                    lines.add(Component.translatable("gtocore.trade_group.repeatedly.2",
+                            Component.literal("Ctrl + Shift").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+                }
+            }
             return lines;
+        }
+
+        /**
+         * @return {@link #UNLOCKED}、{@link #SHOP_LOCKED} 或 {@link #ENTRY_LOCKED}
+         */
+        private int lockState() {
+            if (groupIndex >= 0 && !shopUnlocked(groupIndex, shopIndex)) return SHOP_LOCKED;
+            return entryUnlocked(entry) ? UNLOCKED : ENTRY_LOCKED;
+        }
+
+        /**
+         * 获取当前玩家身份对应的交易数据；身份未变化时复用同一实例。
+         *
+         * @return 当前交易数据
+         */
+        private TradeData currentTradeData() {
+            if (cachedTradeData == null || cachedTradeIdentityRevision != tradeIdentityRevision) {
+                cachedTradeData = tradeData();
+                cachedTradeIdentityRevision = tradeIdentityRevision;
+            }
+            return cachedTradeData;
+        }
+
+        /**
+         * @param count 可交易次数，{@link Integer#MAX_VALUE} 表示无限
+         * @return 用于悬浮说明的次数文本
+         */
+        private Component tradeCount(int count) {
+            return count == Integer.MAX_VALUE ? Component.translatable("gtocore.trade_group.unlimited") :
+                    Component.literal(FormattingUtil.formatNumbers(count));
         }
     }
 
     // ==================== 服务端数据与动作 ====================
 
-    /** 交易数据（只在服务端构造：玩家 UUID、队伍只存在服务端）。 */
+    /**
+     * 交易数据（只在服务端构造：玩家 UUID、队伍只存在服务端）。
+     *
+     * @return 绑定当前机器库存和会员身份的交易数据
+     */
     private TradeData tradeData() {
         return new TradeData(getLevel(), getPos(), inputItem, outputItem, inputFluid, outputFluid, uuid, sharedUUIDs, teamUUID);
     }
 
-    /** 服务端：商店是否已解锁。 */
+    /**
+     * 服务端：商店是否已解锁。
+     *
+     * @param groupIndex 商店组索引
+     * @param shopIndex  组内商店索引
+     * @return 玩家钱包包含商店解锁标签时返回 {@code true}
+     */
     private boolean shopUnlocked(int groupIndex, int shopIndex) {
         var shop = TradingManager.INSTANCE.getShopByIndices(groupIndex, shopIndex);
         return WalletUtils.containsTagValueInWallet(uuid, getLevel(), UNLOCK_SHOP, shop.getUnlockCondition());
     }
 
-    /** 服务端：交易是否已解锁。 */
+    /**
+     * 服务端：交易是否已解锁。
+     *
+     * @param entry 要检查的交易条目
+     * @return 玩家钱包包含交易解锁标签时返回 {@code true}
+     */
     private boolean entryUnlocked(TradeEntry entry) {
         return WalletUtils.containsTagValueInWallet(uuid, getLevel(), UNLOCK_TRADE, entry.unlockCondition());
     }
@@ -955,6 +1079,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             this.sharedUUIDs = new ArrayList<>();
             this.teamUUID = null;
         }
+        tradeIdentityRevision++;
     }
 
     /////////////////////////////////////
