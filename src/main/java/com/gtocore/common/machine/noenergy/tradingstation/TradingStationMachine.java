@@ -17,7 +17,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CombinedDirectionalFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IAutoOutputBoth;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -40,6 +39,7 @@ import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uiwidgets.cover.CoverTab;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -329,7 +329,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         List<IFancyUIProvider> shopTabs = shopTabs();
         fixedTabs.forEach(sideTabs::attachSubTab);
         shopTabs.forEach(sideTabs::attachSubTab);
-        sideTabs.attachSubTab(CombinedDirectionalFancyConfigurator.of(this, this));
+        CoverTab.attach(sideTabs, this);
 
         sideTabs.setOnTabSwitch((oldTab, newTab) -> {
             if (newTab instanceof ShopTab shopTab) {

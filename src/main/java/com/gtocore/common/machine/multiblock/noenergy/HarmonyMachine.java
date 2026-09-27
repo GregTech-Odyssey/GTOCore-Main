@@ -7,10 +7,14 @@ import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
+import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -20,6 +24,7 @@ import net.minecraft.world.level.material.Fluid;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
 import com.hepdd.gtmthings.utils.TeamUtil;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -34,8 +39,9 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
 
     private static final BigInteger BASE = BigInteger.valueOf(5277655810867200L);
 
-    private static final Fluid HYDROGEN = GTMaterials.Hydrogen.getFluid();
-    private static final Fluid HELIUM = GTMaterials.Helium.getFluid();
+    static final Fluid HYDROGEN = GTMaterials.Hydrogen.getFluid();
+    static final Fluid HELIUM = GTMaterials.Helium.getFluid();
+    static final long FLUID_PER_RUN = 1024000000L;
     private WirelessEnergyContainer WirelessEnergyContainerCache;
     @SaveToDisk(defaultValue = "1")
     private int tier = 1;
@@ -75,7 +81,35 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
         tickSubs.updateSubscription();
     }
 
-    private BigInteger getStartupEnergy() {
+    static int recipeMultiplier(int recipeTier) {
+        return Math.max(1, (recipeTier - 1) << 2);
+    }
+
+    static int runsToAdvance(int tier) {
+        return 17 + (tier << 2);
+    }
+
+    long getHydrogen() {
+        return hydrogen;
+    }
+
+    long getHelium() {
+        return helium;
+    }
+
+    int getOverclock() {
+        return oc;
+    }
+
+    int getTier() {
+        return tier;
+    }
+
+    int getTierCount() {
+        return count;
+    }
+
+    BigInteger getStartupEnergy() {
         if (oc == 0) return BigInteger.ZERO;
         return BASE.multiply(BigInteger.ONE.shiftLeft(3 * oc - 1));
     }
@@ -89,22 +123,14 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     @Nullable
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (getUUID() != null && tier <= recipe.data.getInt(GTORecipeDataKeys.TIER) && hydrogen >= 1024000000 && helium >= 1024000000 && oc > 0) {
-            hydrogen -= 1024000000;
-            helium -= 1024000000;
+        if (tier < recipe.data.getInt(GTORecipeDataKeys.TIER)) {
+            setIdleReason(com.gtocore.data.IdleReason.SIMULATION_TIER);
+            return null;
+        }
+        if (getUUID() != null && hydrogen >= FLUID_PER_RUN && helium >= FLUID_PER_RUN && oc > 0) {
             var container = getWirelessEnergyContainer();
             if (container == null) return null;
-            BigInteger storage = container.getStorage();
-            BigInteger energy = getStartupEnergy().multiply(BigInteger.valueOf(Math.max(1, (recipe.data.getInt(GTORecipeDataKeys.TIER) - 1) << 2)));
-            if (storage.compareTo(energy) > 0) {
-                container.setStorage(storage.subtract(energy));
-                if (tier == recipe.data.getInt(GTORecipeDataKeys.TIER)) {
-                    count++;
-                    if (count > 16 + (tier << 2)) {
-                        count = 0;
-                        tier++;
-                    }
-                }
+            if (container.getStorage().compareTo(getRecipeEnergy(recipe)) > 0) {
                 recipe.duration = recipe.duration >> (oc - 1);
                 return recipe;
             }
@@ -114,10 +140,56 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     @Override
+    public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
+        super.beforeWorking(unit, recipe);
+        hydrogen -= FLUID_PER_RUN;
+        helium -= FLUID_PER_RUN;
+        var container = getWirelessEnergyContainer();
+        if (container != null) container.setStorage(container.getStorage().subtract(getRecipeEnergy(recipe)));
+        if (tier == recipe.data.getInt(GTORecipeDataKeys.TIER)) {
+            count++;
+            if (count >= runsToAdvance(tier)) {
+                count = 0;
+                tier++;
+            }
+        }
+    }
+
+    private BigInteger getRecipeEnergy(GTRecipe recipe) {
+        return getStartupEnergy().multiply(BigInteger.valueOf(recipeMultiplier(recipe.data.getInt(GTORecipeDataKeys.TIER))));
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(0, DetailsTab.display(this));
+    }
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return HarmonyFlowPage.create(this, widget);
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
+    }
+
+    @Override
+    public boolean windowHasPlayerInventory() {
+        return true;
+    }
+
+    @Override
+    public WindowAnchor windowAnchor() {
+        return WindowAnchor.CENTER;
+    }
+
+    @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
         textList.add(Component.translatable("ars_nouveau.tier", tier));
-        textList.add(Component.translatable("behaviour.lighter.uses", 16 + (tier << 2) - count));
+        textList.add(Component.translatable("behaviour.lighter.uses", runsToAdvance(tier) - count));
         if (getUUID() != null) {
             var container = getWirelessEnergyContainer();
             textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.getName(getLevel(), getUUID())));

@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.server.level.ServerLevel;
@@ -49,11 +48,6 @@ public abstract class WorkableMultiblockMachineMixin extends MultiblockControlle
 
     protected WorkableMultiblockMachineMixin(MetaMachineBlockEntity holder) {
         super(holder);
-    }
-
-    @Override
-    public boolean canVoidRecipeOutputs(RecipeInfo capability) {
-        return getVoidingMode().canVoid(capability);
     }
 
     @Inject(method = "onStructureFormed", at = @At("TAIL"), remap = false)

@@ -183,7 +183,6 @@
     "gtm.item.MaterialPipeBlockItemMixin",
     "gtm.item.TagPrefixItemMixin",
     "gtm.machine.AirScrubberMachineMixin",
-    "gtm.machine.CrateMachineMixin",
     "gtm.machine.DataAccessHatchMachineMixin",
     "gtm.machine.EnergyHatchPartMachineMixin",
     "gtm.machine.FluidDrillLogicMixin",

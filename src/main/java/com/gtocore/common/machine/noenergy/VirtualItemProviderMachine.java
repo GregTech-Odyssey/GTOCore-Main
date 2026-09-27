@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy;
 
+import com.gtocore.common.data.machines.GTAEMachines;
+
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
@@ -16,12 +18,21 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.utils.GTUtil;
+import com.gregtechceu.gtceu.utils.TaskHandler;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import appeng.api.config.Actionable;
@@ -102,6 +113,35 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     public void onLoad() {
         super.onLoad();
         inventory.notifyListeners();
+        if (getLevel() instanceof ServerLevel serverLevel) {
+            TaskHandler.enqueueTask(serverLevel, this::migrateToIngredientProvider, 1);
+        }
+    }
+
+    private void migrateToIngredientProvider() {
+        if (isRemoved() || !(getLevel() instanceof ServerLevel level)) return;
+        BlockPos pos = getPos();
+        if (!level.isLoaded(pos) || level.getBlockEntity(pos) != holder) return;
+        BlockState oldState = getBlockState();
+        BlockState newState = GTAEMachines.VIRTUAL_INGREDIENT_PROVIDER.defaultBlockState();
+        for (Property<?> property : oldState.getProperties()) {
+            if (newState.hasProperty(property)) newState = copyProperty(oldState, newState, property);
+        }
+        CompoundTag tag = holder.saveWithoutMetadata();
+        if (!(newState.getBlock() instanceof EntityBlock entityBlock) || !(entityBlock.newBlockEntity(pos, newState) instanceof MetaMachineBlockEntity newHolder)) return;
+        newHolder.load(tag);
+        coverContainer.onUnload();
+        for (Direction side : GTUtil.DIRECTIONS) {
+            coverContainer.setCoverAtSideinternal(null, side);
+        }
+        level.setBlock(pos, newState, Block.UPDATE_ALL);
+        level.setBlockEntity(newHolder);
+        newHolder.setChanged();
+        if (newHolder.metaMachine instanceof VirtualIngredientProviderMachine provider) provider.addMigratedProviders();
+    }
+
+    private static <T extends Comparable<T>> BlockState copyProperty(BlockState from, BlockState to, Property<T> property) {
+        return to.setValue(property, from.getValue(property));
     }
 
     @Override

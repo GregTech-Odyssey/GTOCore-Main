@@ -98,6 +98,7 @@ import net.minecraftforge.registries.MissingMappingsEvent;
 import appeng.api.parts.IPartHost;
 import appeng.blockentity.crafting.PatternProviderBlockEntity;
 import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEItems;
 import appeng.core.definitions.AEParts;
 import appeng.parts.crafting.PatternProviderPart;
 
@@ -529,6 +530,11 @@ public final class ForgeCommonEvent {
                 mapping.remap(GTOBlocks.SPACETIME_BENDING_CORE.asItem());
             } else if (mapping.getKey().equals(GTOCore.id("titanium_alloy_internal_frame"))) {
                 mapping.remap(GTOBlocks.TITANIUM_ALLOY_FRAME_INTERNAL.asItem());
+            }
+        });
+        event.getMappings(Registries.ITEM, GTCEu.MOD_ID).forEach(mapping -> {
+            if (mapping.getKey().equals(GTCEu.id("ender_pearl_dust"))) {
+                mapping.remap(AEItems.ENDER_DUST.asItem());
             }
         });
         event.getMappings(Registries.BLOCK, "avaritia").forEach(mapping -> {

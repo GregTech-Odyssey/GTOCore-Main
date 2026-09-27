@@ -26,6 +26,8 @@ public final class IdleReason extends com.gtolib.api.recipe.IdleReason {
     public static final IdleReason SURFACE_ONLY_VOLTA = new IdleReason("gtocore.idle_reason.surface_only_volta", "光伏电站无法在星球轨道中工作", "The photovoltaic power station cannot operate in planetary orbit");
     public static final IdleReason ORBIT_ONLY_VOLTA = new IdleReason("gtocore.idle_reason.orbit_only_volta", "光伏帆板仅能在星球轨道中工作", "The photovoltaic sail only operates in planetary orbit");
 
+    public static final IdleReason SIMULATION_TIER = new IdleReason("gtocore.idle_reason.simulation_tier", "模拟等级低于配方等级", "The simulation tier is below the recipe tier");
+
     public static final IdleReason MUFFLER_NOT_SUPPORTED = new IdleReason("gtocore.idle_reason.muffler_not_supported", "机器电压等级不支持高级消声仓", "The machine voltage tier does not support advanced muffler");
 
     public IdleReason(String key, String cn, String en) {

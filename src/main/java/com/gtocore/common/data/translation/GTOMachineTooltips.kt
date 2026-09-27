@@ -1436,14 +1436,16 @@ object GTOMachineTooltips {
         section("供电系统" translatedTo "Power System")
         important("需要太多EU，无法用常规手段供能" translatedTo "Requires too much EU — cannot be powered by conventional means")
         important("由无线EU网络直接供给" translatedTo "Directly supplied by wireless EU network")
-        info("具体数值可在GUI内查看" translatedTo "Specific values can be viewed in the GUI")
-        important("实际启动耗能 = GUI启动耗能 × 配方倍率" translatedTo "Actual startup energy = GUI startup energy × recipe multiplier")
+        content("配方启动时从所有者的无线电网一次性扣除启动耗能，运行期间不再耗电" translatedTo "Startup energy is taken from the owner's wireless network once when a recipe starts; no power is drawn while running")
+        command("无线电网储能需大于启动耗能才能启动配方" translatedTo "The wireless network must hold more than the startup energy to start a recipe")
+        important("实际启动耗能 = 基础启动耗能 × 配方倍率" translatedTo "Actual startup energy = base startup energy × recipe multiplier")
+        info("1号电路的基础启动耗能约为2.1×10^16 EU，具体数值可在GUI内查看" translatedTo "Base startup energy with circuit 1 is about 2.1×10^16 EU; specific values can be viewed in the GUI")
         info("配方倍率 = (配方等级 - 1) × 4，至少为1" translatedTo "Recipe multiplier = (recipe tier - 1) × 4, at least 1")
         info("例：等级10配方为36倍" translatedTo "e.g. a tier 10 recipe costs 36x")
 
         section("特殊超频" translatedTo "Special Overclocking")
-        increase("每次超频使功率乘以16、速度乘以2" translatedTo "Speed increases 2x for every 16x power increase")
-        command("超频由编程电路调节" translatedTo "Overclocking must be adjusted via programmed circuits")
+        increase("每次超频使速度乘以2、启动耗能乘以8" translatedTo "Each overclock multiplies speed by 2 and startup energy by 8")
+        command("超频由编程电路调节，未放入1~4号电路时无法运行" translatedTo "Overclocking is set via programmed circuits; the machine cannot run without circuit 1~4")
         info("电路1: 不执行超频" translatedTo "Circuit 1: No overclocking")
         info("电路2-4: 分别执行1-3次超频" translatedTo "Circuits 2-4: Execute 1-3 stages of overclocking")
 
@@ -1451,7 +1453,11 @@ object GTOMachineTooltips {
         command("1024B宇宙素" translatedTo "1024B Cosmic Element")
         command("1024KB氢" translatedTo "1024KB Hydrogen")
         command("1024KB氦" translatedTo "1024KB Helium")
-        command("氢氦存储在机器内部并持续消耗" translatedTo "Hydrogen & Helium stored internally and continuously consumed")
+        info("氢氦每秒从输入仓抽入机器内部储存，每次启动配方各消耗1024KB" translatedTo "Hydrogen & Helium are drawn from input hatches into internal storage every second; each recipe start consumes 1024KB of each")
+
+        section("模拟等级" translatedTo "Simulation Tier")
+        important("只能运行等级不高于模拟等级的配方" translatedTo "Only recipes whose tier does not exceed the simulation tier can run")
+        info("模拟等级从1开始，启动与模拟等级相同的配方累计17+4×等级次后提升1级" translatedTo "The simulation tier starts at 1 and rises by 1 after 17 + 4 × tier starts of recipes at the simulation tier")
     }
 
     // 温室

@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
-import com.gregtechceu.gtceu.integration.emi.recipe.GTEmiRecipe;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.utils.ResearchManager;
 
@@ -67,6 +66,7 @@ public class GTEMIRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayo
     protected final GTRecipeDefinition recipe;
     public final IntSupplier displayPriority;
     private final Size[] pagedSizes = new Size[6];
+    private int pagedArea = -1;
     @Nullable
     private Size compactSize;
     /// 最近一次翻页排版时的右侧按钮数，-1 为还没排过（addWidgets 据此认出翻页排版的页面）
@@ -85,10 +85,15 @@ public class GTEMIRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayo
 
     /** 翻页排版时的页面外框：至少与 EMI 界面最小宽度对齐，填满 {@code fillHeight}，右下角给 {@code buttons} 个 EMI 按钮留缺口，画卡片。 */
     protected GTRecipeWidget.PageFrame pagedFrame(int fillHeight, int buttons) {
-        return new GTRecipeWidget.PageFrame(EmiPageLayout.minPageWidth(), fillHeight, buttons, true);
+        return new GTRecipeWidget.PageFrame(EmiPageLayout.minPageWidth(), fillHeight, buttons, true, EmiPageLayout.recipeAreaHeight(category));
     }
 
     protected Size pagedSize(int buttons) {
+        int area = EmiPageLayout.recipeAreaHeight(category);
+        if (area != pagedArea) {
+            pagedArea = area;
+            Arrays.fill(pagedSizes, null);
+        }
         if (buttons >= pagedSizes.length) return measure(pagedFrame(0, buttons));
         var size = pagedSizes[buttons];
         if (size == null) pagedSizes[buttons] = size = measure(pagedFrame(0, buttons));
@@ -217,8 +222,7 @@ public class GTEMIRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayo
         List<dev.emi.emi.api.widget.Widget> slots = new ArrayList<>();
         for (com.lowdragmc.lowdraglib.gui.widget.Widget w : widgetList) {
             if (w instanceof IRecipeIngredientSlot slot) {
-                // 滚动区里的槽交给滚动区自己画和响应（EMI 槽不会跟着滚动、也不会被裁剪）
-                if (GTEmiRecipe.isInsideScroller(w)) continue;
+                var scroller = ScrolledSlotWidget.findScroller(w);
                 var io = slot.getIngredientIO();
                 if (io != null && io != IngredientIO.RENDER_ONLY) {
                     // noinspection unchecked
@@ -234,11 +238,15 @@ public class GTEMIRecipe extends ModularEmiRecipe<Widget> implements EmiPageLayo
                     } else if (slot instanceof com.gregtechceu.gtceu.api.gui.widget.TankWidget tankW) {
                         tankW.setFluidTank(EmptyFluidHandler.INSTANCE);
                         tankW.setDrawHoverOverlay(false).setDrawHoverTips(false);
-                        long capacity = getTankCapacity(slot, ingredients);
-                        slotWidget = new TankWidget(ingredients, w.getPosition().x, w.getPosition().y,
-                                w.getSize().width, w.getSize().height, capacity);
+                        if (scroller == null) {
+                            long capacity = getTankCapacity(slot, ingredients);
+                            slotWidget = new TankWidget(ingredients, w.getPosition().x, w.getPosition().y,
+                                    w.getSize().width, w.getSize().height, capacity);
+                        }
                     }
-                    if (slotWidget == null) {
+                    if (scroller != null) {
+                        slotWidget = new ScrolledSlotWidget(ingredients, w, scroller, modular);
+                    } else if (slotWidget == null) {
                         slotWidget = createItemSlot(ingredients, w.getPosition().x, w.getPosition().y);
                     }
 

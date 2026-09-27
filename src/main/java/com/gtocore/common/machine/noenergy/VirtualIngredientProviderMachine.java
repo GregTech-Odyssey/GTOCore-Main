@@ -1,31 +1,38 @@
 package com.gtocore.common.machine.noenergy;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
-import com.gtolib.utils.SortUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.UITemplate;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
-import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
-import com.gregtechceu.gtceu.api.machine.feature.IUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
+import com.gregtechceu.gtceu.utils.GTTransferUtils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 
@@ -46,14 +53,12 @@ import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
-public final class VirtualIngredientProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
+import java.util.List;
+import java.util.function.Supplier;
+
+public final class VirtualIngredientProviderMachine extends MetaMachine implements IFancyUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
 
     private static final String INVENTORY_TAG = "inventory";
     private static final String FLUID_INVENTORY_TAG = "fluid_inventory";
@@ -61,6 +66,7 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     private static final String FLUID_TAG = "fluid";
     private static final int SLOT_COUNT = 288;
     private static final int FLUID_CAPACITY = 64000;
+    private static final String CONFIGURED = "gtocore.machine.virtual_ingredient_provider.configured";
     private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
     private static final Item VIRTUAL_FLUID_PROVIDER = CustomItems.VIRTUAL_FLUID_PROVIDER.asItem();
     private static final AEItemKey EMPTY_ITEM_PROVIDER = createEmptyProvider(VIRTUAL_ITEM_PROVIDER);
@@ -81,7 +87,6 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     private final GridNodeHolder nodeHolder;
     @SyncToClient
     private boolean isOnline;
-    @SyncToClient
     private int configuredSlotCount;
 
     public VirtualIngredientProviderMachine(MetaMachineBlockEntity holder) {
@@ -144,36 +149,61 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     }
 
     @Override
-    public ModularUI createUI(Player entityPlayer) {
-        int xOffset = 162;
-        int yOverflow = 9;
-        var modularUI = new ModularUI(xOffset + 19, 244, this, entityPlayer)
-                .background(GuiTextures.BACKGROUND)
-                .widget(new LabelWidget(5, 5, () -> Component.translatable(getBlockState().getBlock().getDescriptionId()).getString() +
-                        "(" + configuredSlotCount + "/" + (SLOT_COUNT << 1) + ")"))
-                .widget(UITemplate.bindPlayerInventory(entityPlayer.getInventory(), GuiTextures.SLOT, 7, 162, true));
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
+        return createUIWidget();
+    }
 
-        var innerContainer = new DraggableScrollableWidgetGroup(4, 4, xOffset + 6, 130)
-                .setYBarStyle(GuiTextures.BACKGROUND_INVERSE, GuiTextures.BUTTON).setYScrollBarWidth(4);
-
-        modularUI.widget(new ButtonWidget(176 - 15, 3, 14, 14,
-                new ResourceTexture(GTOCore.id("textures/gui/sort.png")),
-                (press) -> SortUtils.sort()));
-        for (int slot = 0; slot < SLOT_COUNT; slot++) {
-            int x = slot % yOverflow;
-            int y = slot / yOverflow * 36;
-            innerContainer.addWidget(new SlotWidget(inventory.storage, slot, x * 18, y) {
-
-                @Override
-                public boolean isEnabled() {
-                    return true;
-                }
-            }.setBackgroundTexture(GuiTextures.SLOT));
-            innerContainer.addWidget(new TankWidget(fluidInventory.getStorages()[slot], x * 18, y + 18, true, true)
-                    .setBackground(GuiTextures.FLUID_SLOT));
+    @Override
+    public Widget createUIWidget() {
+        var tanks = fluidInventory.getStorages();
+        var grid = UIElement.column(UISizes.SLOTS_PER_ROW * UISizes.SLOT);
+        for (int start = 0; start < SLOT_COUNT; start += UISizes.SLOTS_PER_ROW) {
+            var items = UIElement.row(UISizes.SLOT);
+            var fluids = UIElement.row(UISizes.SLOT);
+            for (int i = start; i < Math.min(SLOT_COUNT, start + UISizes.SLOTS_PER_ROW); i++) {
+                items.addChild(ItemSlot.of(inventory.storage, i));
+                fluids.addChild(new FluidSlot(tanks[i], 0, true, true));
+            }
+            grid.addChild(items);
+            grid.addChild(fluids);
         }
-        var container = new WidgetGroup(3, 17, xOffset + 20, 140).addWidget(innerContainer);
-        return modularUI.widget(container);
+        int height = HatchViews.MAX_GRID_ROWS * UISizes.SLOT;
+        var scroller = new ScrollerView("virtual_ingredient_provider.slots", UISizes.CONTENT_WIDTH, height).adaptiveWidth().adaptiveHeight(height);
+        scroller.addScrollViewChild(grid);
+        var status = new StatusPanel();
+        status.addLine(CONFIGURED, new ConfiguredText());
+        return HatchViews.page(scroller, status);
+    }
+
+    @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        IFancyUIMachine.super.attachConfigurators(configuratorPanel);
+        configuratorPanel.attachConfigurators(new ButtonConfigurator(WidgetIcons.SORT, clickData -> {
+            if (!clickData.isRemote) GTTransferUtils.sortInventory(inventory.storage);
+        }).setTooltips(List.of(Component.translatable("gtceu.gui.inventory.sort"))));
+    }
+
+    void addMigratedProviders() {
+        for (var provider : new ItemStack[] { new ItemStack(VIRTUAL_ITEM_PROVIDER), new ItemStack(VIRTUAL_FLUID_PROVIDER) }) {
+            var remainder = ItemHandlerHelper.insertItem(inventory.storage, provider, false);
+            if (!remainder.isEmpty()) Block.popResource(getLevel(), getPos(), remainder);
+        }
+    }
+
+    private final class ConfiguredText implements Supplier<Component> {
+
+        private int count = -1;
+        private Component text = Component.empty();
+
+        @Override
+        public Component get() {
+            if (configuredSlotCount != count) {
+                count = configuredSlotCount;
+                text = Component.literal(count + " / " + (SLOT_COUNT << 1));
+            }
+            return text;
+        }
     }
 
     @Override

@@ -11,21 +11,19 @@ import com.gtolib.utils.MachineUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
+import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
-import com.gregtechceu.gtceu.data.lang.LangHandler;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 
-import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -53,18 +51,11 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     @Unique
     private int gtolib$ocLimit;
 
-    @Unique
-    @SaveToDisk(defaultValue = "VOID_NONE")
-    private VoidingMode gtocore$voidingMode = VoidingMode.VOID_NONE;
-
     @Shadow(remap = false)
     protected EnergyContainerList energyContainer;
 
     @Shadow(remap = false)
     public abstract boolean isGenerator();
-
-    @Shadow(remap = false)
-    protected boolean batchEnabled;
 
     @Inject(method = "<init>", at = @At("TAIL"), remap = false)
     private void init(MetaMachineBlockEntity holder, Object[] args, CallbackInfo ci) {
@@ -129,10 +120,12 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     @Overwrite(remap = false)
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(WidgetIcons.POWER_OFF, WidgetIcons.POWER_ON, this::isWorkingEnabled, (clickData, pressed) -> this.setWorkingEnabled(pressed)).setTooltipsSupplier(pressed -> List.of(Component.translatable(pressed ? "behaviour.soft_hammer.enabled" : "behaviour.soft_hammer.disabled"))));
+        IVoidable.attachConfigurators(configuratorPanel, this);
         if (!isGenerator()) {
             if (hasOverclockConfig()) configuratorPanel.attachConfigurators(new OverclockConfigurator(this));
-            if (this.hasBatchConfig()) MachineUtils.attachBatchConfigurators(configuratorPanel, this::isBatchEnabled, (clickData, pressed) -> batchEnabled = pressed);
+            attachBatchConfigurator(configuratorPanel);
         }
+        IRecipeLogicMachine.attachRecipeLockConfigurator(configuratorPanel, this);
         MachineUtils.attachStructureCheckConfigurators(configuratorPanel, this);
         for (var direction : Direction.values()) {
             if (getCoverContainer().hasCover(direction)) {
@@ -149,19 +142,9 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
      */
     @Overwrite(remap = false)
     public void addDisplayText(List<Component> textList) {
-        MachineUtils.addMachineText(textList, this, t -> textList.add(Component.translatable("gtceu.gui.multiblock_no_voiding.0").append(": ")
-                .append(ComponentPanelWidget.withButton(LangHandler.getFromMultiLang(getVoidingMode().getSerializedName(), 1), "voidingMode"))));
+        MachineUtils.addMachineText(textList, this, t -> {});
         for (IMultiPart part : getParts()) {
             part.addMultiText(textList);
-        }
-    }
-
-    @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote && componentData.equals("voidingMode")) {
-            if (gtocore$voidingMode.ordinal() + 1 < VoidingMode.VALUES.length) {
-                gtocore$voidingMode = VoidingMode.VALUES[gtocore$voidingMode.ordinal() + 1];
-            } else gtocore$voidingMode = VoidingMode.VALUES[0];
         }
     }
 
@@ -225,19 +208,5 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
     @Override
     public void gtolib$setHasPowerAmplifier(boolean hasPowerAmplifier) {
         this.gtolib$hasPowerAmplifier = hasPowerAmplifier;
-    }
-
-    @Override
-    public void setVoidingMode(VoidingMode mode) {
-        this.gtocore$voidingMode = mode;
-    }
-
-    @Override
-    public VoidingMode getVoidingMode() {
-        var mode = this.gtocore$voidingMode;
-        if (mode == null) {
-            return this.gtocore$voidingMode = VoidingMode.VOID_NONE;
-        }
-        return mode;
     }
 }

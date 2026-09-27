@@ -77,6 +77,8 @@ public final class MaterialIgnored {
         TagPrefix.block.setIgnored(CertusQuartz, AEBlocks.QUARTZ_BLOCK::block);
         TagPrefix.dust.setIgnored(CertusQuartz, () -> AEItems.CERTUS_QUARTZ_DUST);
 
+        TagPrefix.dust.setIgnored(EnderPearl, () -> AEItems.ENDER_DUST);
+
         TagPrefix.gem.setIgnored(SoulCrystal, () -> DDItems.SOUL_CRYSTAL::get);
         TagPrefix.dust.setIgnored(SoulCrystal, () -> DDItems.SOUL_DUST::get);
 
