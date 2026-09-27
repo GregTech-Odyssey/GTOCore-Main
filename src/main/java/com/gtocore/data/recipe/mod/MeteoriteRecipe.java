@@ -6,6 +6,8 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.data.recipe.builder.ars.MeteoriteRegistryHelper;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -408,6 +410,15 @@ public final class MeteoriteRecipe {
                         Blocks.REDSTONE_BLOCK,
                 },
                 new int[] { 100, 80, 80, 1, 5 });
+
+        MeteoriteRegistryHelper.registerMeteoriteType(
+                GTOBlocks.SATURN_RING_GRUNT.asItem(), 5000, 0, GTOBlocks.SATURN_RING_STONE.asItem(),
+                new Block[] {
+                        GTOBlocks.SATURN_RING_GRUNT.get(), RegistriesUtils.getBlock("ad_astra:sky_stone"), GTOBlocks.SATURN_RING_STONE.get()
+                },
+                new int[] {
+                        100, 50, 1
+                });
 
         {
             // Material组

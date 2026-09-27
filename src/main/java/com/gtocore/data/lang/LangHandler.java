@@ -274,6 +274,7 @@ public final class LangHandler {
         addCNEN("biome.gtocore.io_biome", "木卫一", "Io");
         addCNEN("biome.gtocore.pluto_biome", "冥王星", "Pluto");
         addCNEN("biome.gtocore.titan_biome", "土卫六", "Titan");
+        addCNEN("biome.gtocore.saturn_ring_biome", "土星环", "Saturn Ring");
         addCNEN("biome.gtocore.create", "创造", "Create");
         addCNEN("biome.gtocore.void", "虚空", "Void");
         addCNEN("biome.gtocore.flat", "超平坦", "Superflat");
@@ -292,6 +293,7 @@ public final class LangHandler {
         addCNEN("planet.gtocore.titan", "土卫六", "Titan");
         addCNEN("planet.gtocore.titan_orbit", "土卫六轨道", "Titan Orbit");
         addCNEN("gui.ad_astra.text.barnarda", "巴纳德", "Barnarda");
+        addCNEN("planet.gtocore.saturn_ring", "土星环", "Saturn Ring");
 
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density", "§d电解液能量密度：§r%s EU/mB", "§dElectrolyte Energy Density:§r %s EU/mB");
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density.va", "§d相当于：§r%s @ §b%s§rA/mB", "§dEquivalent to§r %s @ §b%sA§r/mB");
@@ -603,6 +605,7 @@ public final class LangHandler {
         addCNEN("venus_orbit.ad_astra.name", "金星轨道", "Venus Orbit");
         addCNEN("flat.gtocore.name", "超平坦", "Flat");
         addCNEN("void.gtocore.name", "虚空", "Void");
+        addCNEN("saturn_ring.gtocore.name", "土星环", "Saturn Ring");
         addCNEN("spatial_storage.ae2.name", "封闭空间", "Spatial Storage");
 
         addCNEN("tag.fluid.gtocore.purify_water", "净化水", "Purify Water");

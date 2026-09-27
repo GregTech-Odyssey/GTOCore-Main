@@ -551,6 +551,23 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
         .build()
 
     @JvmField
+    val CyberneticExoskeleton = MainTree.builder("cybernetic_exoskeleton", "完全义体外循环系统", "Cybernetic Exoskeleton")
+        .description("通过完全义体外循环系统，将生物体与机械体进行无缝融合，实现超强的力量和耐久性，直接无敌", "Through a complete cybernetic exoskeleton system, seamlessly integrate biological and mechanical bodies, achieving super strength and durability, directly invincible")
+        .icon(RegistriesUtils.getItem("gtocore:tier_4_heart"))
+        .prerequisites(BiowareTech)
+        .requirements(
+            ResearchRequirements.Builder()
+                .setCWUNeeded(512 * 20 * 14400L)
+                .addMaterialNeeded(ASSEMBLY, 400)
+                .addMaterialNeeded(BIOLOGY, 880)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:tier_4_heart"), 0.75F)
+                .build(),
+        )
+        .tier(3)
+        .build()
+        .addRewardDescription("当全身拥有4级器官时，免疫所有伤害", "When the whole body has level 4 organs, immune to all damage")
+
+    @JvmField
     val BlockholeDataStorage = MainTree.builder("blockhole_data_storage", "黑洞数据存储技术", "Black Hole Data Storage Technology")
         .description("利用黑洞的极端引力场，将数据压缩存储在黑洞中，实现超大规模的数据存储与管理", "Use the extreme gravitational field of black holes to compress and store data in black holes, achieving ultra-large-scale data storage and management")
         .icon(RegistriesUtils.getItem("gtocore:black_hole_data_access_hatch"))

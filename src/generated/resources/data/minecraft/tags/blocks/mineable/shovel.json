@@ -3,6 +3,7 @@
     "gtocore:titan_grunt",
     "gtocore:pluto_grunt",
     "gtocore:io_ash",
+    "gtocore:saturn_ring_grunt",
     "gtocore:ganymede_grunt",
     "gtocore:ceres_grunt"
   ]

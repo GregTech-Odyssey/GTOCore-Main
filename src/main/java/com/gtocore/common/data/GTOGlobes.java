@@ -41,6 +41,7 @@ public final class GTOGlobes {
 
         public static final RegistryEntry<Item> TITAN_GLOBE = GLOBES.register("titan_globe", () -> new RenderedBlockItem(Blocks.TITAN_GLOBE.get(), new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
         public static final RegistryEntry<Item> PLUTO_GLOBE = GLOBES.register("pluto_globe", () -> new RenderedBlockItem(Blocks.PLUTO_GLOBE.get(), new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
+        public static final RegistryEntry<Item> SATURN_GLOBE = GLOBES.register("saturn_globe", () -> new RenderedBlockItem(Blocks.SATURN_GLOBE.get(), new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
         public static final RegistryEntry<Item> IO_GLOBE = GLOBES.register("io_globe", () -> new RenderedBlockItem(Blocks.IO_GLOBE.get(), new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
         public static final RegistryEntry<Item> GANYMEDE_GLOBE = GLOBES.register("ganymede_globe", () -> new RenderedBlockItem(Blocks.GANYMEDE_GLOBE.get(), new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
         public static final RegistryEntry<Item> ENCELADUS_GLOBE = GLOBES.register("enceladus_globe", () -> new RenderedBlockItem(Blocks.ENCELADUS_GLOBE.get(), new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
@@ -72,6 +73,8 @@ public final class GTOGlobes {
         public static final RegistryEntry<GlobeBlock> TITAN_GLOBE = registerGlobe("titan_globe");
         // pluto
         public static final RegistryEntry<GlobeBlock> PLUTO_GLOBE = registerGlobe("pluto_globe");
+        // saturn
+        public static final RegistryEntry<GlobeBlock> SATURN_GLOBE = registerGlobe("saturn_globe");
         // io
         public static final RegistryEntry<GlobeBlock> IO_GLOBE = registerGlobe("io_globe");
         // ganymede

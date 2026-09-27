@@ -70,6 +70,7 @@ public final class GTOMaterialIconSet extends MaterialIconSet {
     public static final GTOMaterialIconSet INFINITY_CHAOS = new GTOMaterialIconSet("chaos_infinity", METALLIC, false, () -> SpinTransformRenderer.INSTANCE);
     public static final GTOMaterialIconSet TRANSLUCENT = new GTOMaterialIconSet("translucent", SHINY, false, () -> TranslucentRenderer.INSTANCE);
     public static final GTOMaterialIconSet ASTRAL = new GTOMaterialIconSet("cosmic_translucent", BRIGHT, false, () -> HaloItemRenderer.ASTRIUM);
+    public static final GTOMaterialIconSet ASTEROID = new GTOMaterialIconSet("astroid", DULL, false, () -> HaloItemRenderer.ASTEROID);
 
     public static final MaterialIconSet CRUPTIX = new GTOMaterialIconSet("cruptix", DULL, false, null,
             (t, m) -> (ctx, provider) -> {

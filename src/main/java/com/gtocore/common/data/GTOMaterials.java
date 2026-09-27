@@ -336,6 +336,9 @@ public final class GTOMaterials {
     // 杂金属尘土
     public static Material MixedMetalDustSoil;
 
+    // 小行星碎渣
+    public static Material AsteroidFragment;
+
     public static Material IronChromiumRedoxFlowBatteryElectrolyte;// iv 2a uev
     public static Material VanadiumRedoxFlowBatteryElectrolyte;// luv 1a uxv
     public static Material ZincIodideFlowBatteryElectrolyte;// zpm 2a opv

@@ -50,6 +50,9 @@ public record HaloItemRenderer(float pulse, IntSupplier colour, IntSupplier size
     public static final HaloItemRenderer ASTRIUM = HaloItemRenderer.create(0F, () -> ColorUtils.blendColor(
             0xe1ee595a,
             0xe131bad5, (float) (Math.cos(System.currentTimeMillis() * 0.005) * 0.3F + 0.5F)), () -> 6, RenderBlenderLib.rl("misc/halo"));
+    public static final HaloItemRenderer ASTEROID = HaloItemRenderer.create(0F, () -> ColorUtils.blendColor(
+            0xe1d39632,
+            0xe1e6af5b, (float) (Math.cos(System.currentTimeMillis() * 0.005) * 0.3F + 0.5F)), () -> 6, RenderBlenderLib.rl("misc/halo"));
 
     private static HaloItemRenderer create(float pulse, int colour, int size, ResourceLocation textures) {
         return create(pulse, () -> colour, () -> size, textures);

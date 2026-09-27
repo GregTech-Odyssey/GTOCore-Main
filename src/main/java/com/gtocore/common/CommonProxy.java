@@ -97,6 +97,7 @@ public class CommonProxy {
         GTOFluids.FLUID_TYPE.register(eventBus);
         GTOFluids.FLUID.register(eventBus);
         GTOEffects.init(eventBus);
+        GTOFeatures.init(eventBus);
         GTONumberProviders.NUMBER_PROVIDERS.register(eventBus);
         eventBus.addListener(EventPriority.HIGHEST, CommonProxy::commonSetup);
         eventBus.addListener(CommonProxy::initMenu);

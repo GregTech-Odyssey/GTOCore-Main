@@ -1,14 +1,21 @@
 package com.gtocore.data.recipe.processing;
 
+import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
 
+import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.dust;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.*;
+import static com.gtocore.common.machine.mana.CelestialHandler.STELLARM;
 
 public final class StoneDustProcess {
 
@@ -302,6 +309,56 @@ public final class StoneDustProcess {
                 .inputFluids(Oxygen, 6000)
                 .outputFluids(Ozone.getFluid(2000))
                 .duration(120).EUt(VA[HV])
+                .save();
+
+        MACERATOR_RECIPES.builder("saturn_ring_grunt")
+                .inputItems(GTOBlocks.SATURN_RING_STONE.asItem())
+                .outputItems(GTOBlocks.SATURN_RING_GRUNT.asItem(), 4)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.Cruptix, 1, 22)
+                .EUt(30)
+                .duration(200)
+                .save();
+        CHEMICAL_BATH_RECIPES.builder("asteroid_fragment_dust")
+                .inputItems(GTOBlocks.SATURN_RING_GRUNT.asItem())
+                .outputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment)
+                .inputFluids(GTMaterials.SulfuricAcid, 100)
+                .outputFluids(GTOMaterials.TitanylSulfate, 100)
+                .EUt(1920)
+                .duration(400)
+                .save();
+        ELECTROLYZER_RECIPES.builder("livingsteel_dust1")
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment, 37)
+                .outputItems(TagPrefix.dust, GTOMaterials.Livingsteel, 4)
+                .outputItems(TagPrefix.dust, GTMaterials.WroughtIron, 6)
+                .outputItems(TagPrefix.dust, GTMaterials.Neodymium, 2)
+                .outputItems(TagPrefix.dust, GTMaterials.Lead, 1)
+                .outputItems(TagPrefix.dust, GTMaterials.Stone, 16)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:oxygen", 7000))
+                .EUt(768)
+                .duration(2000)
+                .save();
+        SIFTER_RECIPES.builder("prasiolite_d1ust")
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment, 10)
+                .outputItems(TagPrefix.dust, GTOMaterials.Prasiolite, 4)
+                .outputItems(TagPrefix.dustImpure, GTMaterials.Iron, 4)
+                .outputItems(TagPrefix.dust, GTMaterials.IndiumPhosphide)
+                .outputItems(TagPrefix.dust, GTMaterials.Stone)
+                .EUt(1536)
+                .duration(520)
+                .save();
+        MANA_INFUSER_RECIPES.builder("gaia_core_or1e")
+                .inputItems(TagPrefix.block, GTOMaterials.Livingrock)
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment)
+                .outputItems(TagPrefix.ore, GTOMaterials.GaiaCore, 4)
+                .circuitMeta(1)
+                .duration(50)
+                .MANAt(512)
+                .save();
+        CELESTIAL_CONDENSER_RECIPES.builder("cruptix_dust")
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment)
+                .outputItems(TagPrefix.dust, GTOMaterials.Cruptix)
+                .addData(STELLARM, 40)
+                .duration(2)
                 .save();
     }
 }

@@ -200,6 +200,7 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> GANYMEDE_STONE = createStoneBlock("ganymede_stone", "木卫三岩石", GTOCore.id("block/stone/ganymede_stone"));
     public static final BlockEntry<Block> ENCELADUS_STONE = createStoneBlock("enceladus_stone", "土卫二岩石", GTOCore.id("block/stone/enceladus_stone"));
     public static final BlockEntry<Block> CERES_STONE = createStoneBlock("ceres_stone", "谷神星岩石", GTOCore.id("block/stone/ceres_stone"));
+    public static final BlockEntry<Block> SATURN_RING_STONE = createStoneBlock("saturn_ring_stone", "土星环岩石", GTOCore.id("block/stone/saturn_ring_stone"));
     public static final BlockEntry<Block> ESSENCE_BLOCK = createStoneBlock("essence_block", "精华方块", GTOCore.id("block/essence_block"));
     public static final BlockEntry<Block> COMMAND_BLOCK_BROKEN = createStoneBlock("command_block_broken", "即将打破的命令方块", GTOCore.id("block/command_block_broken"));
     public static final BlockEntry<Block> CHAIN_COMMAND_BLOCK_BROKEN = createStoneBlock("chain_command_block_broken", "即将打破的连锁命令方块", GTOCore.id("block/chain_command_block_broken"));
@@ -211,6 +212,7 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> TITAN_GRUNT = createSandBlock("titan_grunt", "土卫六表皮", GTOCore.id("block/sand/titan_grunt"));
     public static final BlockEntry<Block> PLUTO_GRUNT = createSandBlock("pluto_grunt", "冥王星表皮", GTOCore.id("block/sand/pluto_grunt"));
     public static final BlockEntry<Block> IO_ASH = createSandBlock("io_ash", "木卫一灰烬", GTOCore.id("block/sand/io_ash"));
+    public static final BlockEntry<Block> SATURN_RING_GRUNT = createSandBlock("saturn_ring_grunt", "土星环碎岩", GTOCore.id("block/sand/saturn_ring_grunt"));
     public static final BlockEntry<Block> GANYMEDE_GRUNT = createSandBlock("ganymede_grunt", "木卫三表皮", GTOCore.id("block/sand/titan_grunt"));
     public static final BlockEntry<Block> CERES_GRUNT = createSandBlock("ceres_grunt", "谷神星表皮", GTOCore.id("block/sand/ceres_grunt"));
 

@@ -7,6 +7,7 @@ import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.saved.*;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.ae.wireless.WirelessEvents;
 import com.gtocore.integration.ae.wireless.WirelessNetworks;
@@ -23,6 +24,7 @@ import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.player.IEnhancedPlayer;
+import com.gtolib.api.player.OrganInventory;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -81,9 +83,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -91,6 +91,7 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.MissingMappingsEvent;
@@ -597,5 +598,48 @@ public final class ForgeCommonEvent {
             .put("neutron", ChemicalHelper.getBlock(TagPrefix.block, GTOMaterials.Neutron))
             .build());
 
-    // ===================== CLIENT ONLY HOOKS =====================
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onEntityDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (isPlayerInvincible(player)) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onEntityHurt(LivingHurtEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (isPlayerInvincible(player)) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onLivingAttack(LivingAttackEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (isPlayerInvincible(player)) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onLivingDamage(LivingDamageEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (isPlayerInvincible(player)) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    private static boolean isPlayerInvincible(ServerPlayer player) {
+        if (player.getAbilities().invulnerable || player.isCreative()) return true;
+        if (TechTreeSavedData.isUnlocked(player, BaseNodes.CyberneticExoskeleton)) {
+            OrganInventory organs = IEnhancedPlayer.of(player).getPlayerData().organs;
+            return organs.getSetTier() >= 4;
+        }
+        return false;
+    }
 }

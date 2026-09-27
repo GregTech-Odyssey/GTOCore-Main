@@ -5456,5 +5456,11 @@ public final class MaterialB {
                 .color(0x9c7a34)
                 .iconSet(DULL)
                 .buildAndRegister();
+
+        AsteroidFragment = material("asteroid_fragment", "小行星碎片")
+                .dust()
+                .color(0xf8E8c8)
+                .iconSet(ASTEROID)
+                .buildAndRegister();
     }
 }
