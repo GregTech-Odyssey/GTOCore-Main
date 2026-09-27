@@ -4,11 +4,15 @@ import com.gtocore.client.renderer.GTORenderTypes;
 import com.gtocore.client.renderer.RenderHelper;
 
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -44,11 +48,14 @@ public class BlackHole extends AbstractFX {
             new SphereMesh(64, 128)
     };
 
+    private final ResourceKey<Level> dimension;
+
     public Vec3 center;
     public double coreRadius;
     public double eventHorizonRadius;
 
-    public BlackHole(Vec3 center, double coreRadius, double eventHorizonRadius) {
+    public BlackHole(ResourceKey<Level> dimension, Vec3 center, double coreRadius, double eventHorizonRadius) {
+        this.dimension = dimension;
         this.center = center;
         this.coreRadius = coreRadius;
         this.eventHorizonRadius = eventHorizonRadius;
@@ -56,8 +63,9 @@ public class BlackHole extends AbstractFX {
 
     @Override
     public boolean shouldDiscard() {
-        return stableEndAge > 0 &&
-                age >= shrinkEndAge;
+        ClientLevel level = Minecraft.getInstance().level;
+        return level == null || level.dimension() != dimension ||
+                stableEndAge > 0 && age >= shrinkEndAge;
     }
 
     public void markEnding() {
@@ -67,6 +75,10 @@ public class BlackHole extends AbstractFX {
     @Override
     public void render(RenderLevelStageEvent.Stage stage, LevelRenderer levelRenderer, PoseStack poseStack, Matrix4f projectionMatrix, float partialTick, Camera camera, Frustum frustum) {
         if (stage != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+            return;
+        }
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null || level.dimension() != dimension) {
             return;
         }
 

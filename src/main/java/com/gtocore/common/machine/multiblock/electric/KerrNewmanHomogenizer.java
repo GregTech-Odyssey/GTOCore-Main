@@ -64,7 +64,7 @@ public final class KerrNewmanHomogenizer extends CrossRecipeMultiblockMachine {
                         0.5 + 34 * back.getStepX() + machine.getPos().getX(),
                         0.5 + 34 * back.getStepY() + machine.getPos().getY(),
                         0.5 + 34 * back.getStepZ() + machine.getPos().getZ());
-                FXManager.addFX(new BlackHole(center, 2.5f, 4.5f) {
+                FXManager.addFX(new BlackHole(machine.getLevel().dimension(), center, 2.5f, 4.5f) {
 
                     @Override
                     public void tick() {
