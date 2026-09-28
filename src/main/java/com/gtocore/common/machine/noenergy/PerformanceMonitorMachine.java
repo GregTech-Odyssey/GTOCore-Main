@@ -71,7 +71,7 @@ public final class PerformanceMonitorMachine extends MetaMachine implements IFan
             AEGridProvider.OBSERVE = true;
             if (textListCache == null || holder.getOffsetTimer() % 80 == 0) {
                 textListCache = new ArrayList<>();
-                Map<IExpandedGrid, Long> sortedMap = new TreeMap<>(Comparator.comparing(IExpandedGrid::getLatency).reversed());
+                Map<IExpandedGrid, Long> sortedMap = new TreeMap<>(Comparator.comparing(IExpandedGrid::getAverageTickTimeMicros).reversed());
                 sortedMap.putAll(IExpandedGrid.PERFORMANCE_MAP);
                 IExpandedGrid.PERFORMANCE_MAP.clear();
                 for (Map.Entry<IExpandedGrid, Long> entry : sortedMap.entrySet()) {
@@ -97,7 +97,7 @@ public final class PerformanceMonitorMachine extends MetaMachine implements IFan
                     }
                     textListCache.add(Component.translatable(key.toString()).append(" ")
                             .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("recipe.condition.dimension.tooltip", level == null ? " " : level.dimension().location()).append(" [").append(pos).append("] "))))
-                            .append(Component.translatable(AEGridProvider.LATENCY, entry.getValue()).append(" μs"))
+                            .append(Component.translatable(AEGridProvider.TICK_TIME, entry.getValue()).append(" μs"))
                             .append(ComponentPanelWidget.withButton(Component.literal(" [ ] "), pos + ", " + (level == null ? "" : level.dimension().location()))));
                 }
             }

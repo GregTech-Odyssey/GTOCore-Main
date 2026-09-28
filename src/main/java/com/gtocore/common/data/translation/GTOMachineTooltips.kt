@@ -755,7 +755,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("performance_monitor_machine")
 
         section(ComponentSlang.MainFunction)
-        function("能监测全部机器或AE网络3.2秒内的平均延迟，并支持高亮显示" translatedTo "Can monitor all machines or AE grids' average delay within 3.2 seconds and support highlighting")
+        function("能监测全部机器或AE网络最近一段时间的平均耗时，并支持高亮显示" translatedTo "Can monitor all machines or AE grids' average tick time over a recent window and support highlighting")
         guide("右键点击机器以打开性能监测界面" translatedTo "Right click on the machine to open performance monitoring interface")
     }
 

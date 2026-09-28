@@ -31,8 +31,8 @@ public final class AEGridProvider extends CapabilityBlockProvider<IExpandedGrid>
 
     @RegisterLanguage(cn = "节点数量：%s", en = "Node Amount: %s")
     private static final String NODE_AMOUNT = "gtocore.jade.node_amount";
-    @RegisterLanguage(cn = "网络延迟：%s", en = "Grid Latency: %s")
-    public static final String LATENCY = "gtocore.jade.grid_latency";
+    @RegisterLanguage(cn = "网络耗时：%s", en = "Grid Tick Time: %s")
+    public static final String TICK_TIME = "gtocore.jade.grid_tick_time";
 
     public AEGridProvider() {
         super(GTOCore.id("ae_grid_provider"));
@@ -55,7 +55,6 @@ public final class AEGridProvider extends CapabilityBlockProvider<IExpandedGrid>
             for (var s : Direction.values()) {
                 var node = cap.getGridNode(s);
                 if (node != null && node.getGrid() instanceof IExpandedGrid grid) {
-                    grid.observe();
                     return grid;
                 }
             }
@@ -68,7 +67,7 @@ public final class AEGridProvider extends CapabilityBlockProvider<IExpandedGrid>
         if (capability != null) {
             data.putString("name", capability.toString());
             data.putInt("size", capability.size());
-            data.putLong("latency", capability.getLatency());
+            data.putLong("tick_time", capability.getAverageTickTimeMicros());
         }
     }
 
@@ -78,8 +77,8 @@ public final class AEGridProvider extends CapabilityBlockProvider<IExpandedGrid>
         if (name.isEmpty()) return;
         tooltip.add(Component.translatable(name));
         tooltip.add(Component.translatable(NODE_AMOUNT, capData.getInt("size")));
-        long latency = capData.getInt("latency");
-        if (latency == 0) return;
-        tooltip.add(Component.translatable(LATENCY, latency).append(" μs"));
+        long tickTime = capData.getLong("tick_time");
+        if (tickTime == 0) return;
+        tooltip.add(Component.translatable(TICK_TIME, tickTime).append(" μs"));
     }
 }

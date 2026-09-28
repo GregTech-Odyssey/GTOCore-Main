@@ -4,6 +4,8 @@ import com.gtocore.integration.jade.provider.AEGridProvider;
 
 import com.gtolib.api.ae2.IExpandedGrid;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeSampler;
+
 import appeng.api.networking.IGridNode;
 import appeng.hooks.ticking.TickHandler;
 import appeng.me.Grid;
@@ -17,18 +19,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * AE 网络的 tick 耗时统计：一个游戏刻里有三段服务调用（serverStart / levelStart / serverEnd），每段前后各插一次
+ * {@link TickTimeSampler}，采样与平均都在那个类里。
+ */
 @Mixin(Grid.class)
 public abstract class GridMixin implements IExpandedGrid {
 
     @Unique
-    private long gtocore$averageTickTime;
-
-    @Unique
-    private long gtocore$totaTickCount;
-    @Unique
-    private long gtocore$startTime;
-    @Unique
-    private boolean gtocore$observe;
+    private final TickTimeSampler gtocore$tickTimeSampler = new TickTimeSampler();
 
     @Shadow(remap = false)
     @Final
@@ -40,60 +39,54 @@ public abstract class GridMixin implements IExpandedGrid {
     }
 
     @Override
-    public long getLatency() {
-        return gtocore$averageTickTime;
+    public long getAverageTickTimeMicros() {
+        return gtocore$tickTimeSampler.getAverageTickTimeMicros();
     }
 
-    @Override
-    public void observe() {
-        gtocore$observe = true;
+    @Unique
+    private void gtocore$beginMeasure() {
+        // 性能监控机器打开时，所有网络都要测
+        if (AEGridProvider.OBSERVE) gtocore$tickTimeSampler.getAverageTickTimeMicros();
+        gtocore$tickTimeSampler.insertStart((int) TickHandler.instance().getCurrentTick());
     }
 
-    @Inject(method = "onServerStartTick", at = @At(value = "INVOKE", target = "Lappeng/me/helpers/GridServiceContainer;serverStartTickServices()[Lappeng/api/networking/IGridServiceProvider;"), remap = false)
-    private void onServerStartTick(CallbackInfo ci) {
-        if (gtocore$observe || AEGridProvider.OBSERVE) {
-            gtocore$startTime = System.nanoTime();
-        }
+    @Unique
+    private void gtocore$endMeasure() {
+        gtocore$tickTimeSampler.insertEnd();
+        if (AEGridProvider.OBSERVE) IExpandedGrid.PERFORMANCE_MAP.put(this, gtocore$tickTimeSampler.getAverageTickTimeMicros());
+    }
+
+    //////////////////////////////////////
+    // ******* 注入 *******//
+    //////////////////////////////////////
+
+    @Inject(method = "onServerStartTick", at = @At(value = "HEAD"), remap = false)
+    private void gtocore$onServerStartTick(CallbackInfo ci) {
+        gtocore$beginMeasure();
     }
 
     @Inject(method = "onServerStartTick", at = @At("TAIL"), remap = false)
-    private void onServerStartTick2(CallbackInfo ci) {
-        if (gtocore$observe || AEGridProvider.OBSERVE) {
-            gtocore$totaTickCount += System.nanoTime() - gtocore$startTime;
-        }
+    private void gtocore$onServerStartTickEnd(CallbackInfo ci) {
+        gtocore$endMeasure();
     }
 
-    @Inject(method = "onServerEndTick", at = @At(value = "INVOKE", target = "Lappeng/me/helpers/GridServiceContainer;serverEndTickServices()[Lappeng/api/networking/IGridServiceProvider;"), remap = false)
-    private void onServerEndTick(CallbackInfo ci) {
-        if (gtocore$observe || AEGridProvider.OBSERVE) {
-            gtocore$startTime = System.nanoTime();
-        }
-    }
-
-    @Inject(method = "onServerEndTick", at = @At("TAIL"), remap = false)
-    private void onServerEndTick2(CallbackInfo ci) {
-        if (gtocore$observe || AEGridProvider.OBSERVE) {
-            gtocore$totaTickCount += System.nanoTime() - gtocore$startTime;
-            if ((TickHandler.instance().getCurrentTick() & 63) == 0) {
-                this.gtocore$observe = false;
-                gtocore$averageTickTime = gtocore$totaTickCount / 128000;
-                gtocore$totaTickCount = 0;
-            }
-            if (AEGridProvider.OBSERVE) IExpandedGrid.PERFORMANCE_MAP.put(this, gtocore$averageTickTime);
-        }
-    }
-
-    @Inject(method = "onLevelStartTick", at = @At(value = "INVOKE", target = "Lappeng/me/helpers/GridServiceContainer;levelStartTickServices()[Lappeng/api/networking/IGridServiceProvider;"), remap = false)
-    private void onLevelStartTick(CallbackInfo ci) {
-        if (gtocore$observe || AEGridProvider.OBSERVE) {
-            gtocore$startTime = System.nanoTime();
-        }
+    @Inject(method = "onLevelStartTick", at = @At(value = "HEAD"), remap = false)
+    private void gtocore$onLevelStartTick(CallbackInfo ci) {
+        gtocore$beginMeasure();
     }
 
     @Inject(method = "onLevelStartTick", at = @At("TAIL"), remap = false)
-    private void onLevelStartTick2(CallbackInfo ci) {
-        if (gtocore$observe || AEGridProvider.OBSERVE) {
-            gtocore$totaTickCount += System.nanoTime() - gtocore$startTime;
-        }
+    private void gtocore$onLevelStartTickEnd(CallbackInfo ci) {
+        gtocore$endMeasure();
+    }
+
+    @Inject(method = "onServerEndTick", at = @At(value = "HEAD"), remap = false)
+    private void gtocore$onServerEndTick(CallbackInfo ci) {
+        gtocore$beginMeasure();
+    }
+
+    @Inject(method = "onServerEndTick", at = @At("TAIL"), remap = false)
+    private void gtocore$onServerEndTickEnd(CallbackInfo ci) {
+        gtocore$endMeasure();
     }
 }
