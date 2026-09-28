@@ -61,6 +61,11 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     }
 
     @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
     public void onStructureFormed() {
         super.onStructureFormed();
         IIWirelessInteractor.addToNet(this);

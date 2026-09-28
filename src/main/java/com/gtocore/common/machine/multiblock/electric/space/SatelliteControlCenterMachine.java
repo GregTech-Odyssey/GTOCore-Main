@@ -112,7 +112,7 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
     }
 
     @Override
-    public Widget createUIWidget() {
+    public UIElement createUIWidget() {
         var status = new StatusPanel();
         status.addLine(ROCKET, () -> rocket().getDescription())
                 .icon(() -> ROCKET_ICONS.computeIfAbsent(rocket(), ItemStack::new));
@@ -134,7 +134,7 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
                 .addChildren(stepper, launchButton)
                 .disabled(this::isActive, LAUNCH_IN_PROGRESS);
 
-        return ((UIElement) super.createUIWidget()).addChildren(status,
+        return super.createUIWidget().addChildren(status,
                 UIElement.column(LayoutStyle.AUTO).addChild(controls).disabled(() -> !isFormed(), STATE_UNFORMED));
     }
 

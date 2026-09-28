@@ -41,6 +41,11 @@ public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatC
     }
 
     @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
     public void onLoad() {
         super.onLoad();
         heatContainer.onLoad();

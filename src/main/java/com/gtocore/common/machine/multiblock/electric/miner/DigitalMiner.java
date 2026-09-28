@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.miner;
 
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 
@@ -257,13 +259,13 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public Widget createUIWidget() {
+    public UIElement createUIWidget() {
         int rowSize = 3;
         int colSize = 9;
         int width = colSize * 18 + 16 + 90 + 54;
         int height = rowSize * 18 + 76 + 4;
 
-        WidgetGroup group = new WidgetGroup(0, 0, width, height);
+        var group = MachineDisplay.page(this);
 
         // information screen
         // var componentPanel = new ComponentPanelWidget(4, 5, this::addDisplayText).setMaxWidthLimit(110);

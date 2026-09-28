@@ -108,7 +108,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private final ReferenceOpenHashSet<Material> blacklistedMaterialSet = new ReferenceOpenHashSet<>();
     private final IntSet blacklistedAltProcessableItemIds = new IntOpenHashSet();
     private final IntSet blacklistedAltProcessableFluidIds = new IntOpenHashSet();
-    private final SearchRecipeHandlerUnit searchHolder = new SearchRecipeHandlerUnit();
     private final RecipeHandlerUnit sharedSearchHandlers;
 
     public MEWildcardPatternBufferPartMachine(@NotNull MetaMachineBlockEntity holder) {
@@ -387,7 +386,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         if (recipeType == null) {
             if (!getRecipeTypes().isEmpty()) {
                 for (var rt : getRecipeTypes()) {
-                    if (searchRecipe(rt, inputMap, (u, r) -> {
+                    if (rt.search(inputMap, r -> {
                         if (checkProb(r)) {
                             valid.value = r;
                             recipeType = r.recipeType;
@@ -398,7 +397,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 }
             }
         } else {
-            searchRecipe(recipeType, inputMap, (u, r) -> {
+            recipeType.search(inputMap, r -> {
                 if (checkProb(r)) {
                     valid.value = r;
                     return true;
@@ -451,15 +450,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         return true;
     }
 
-    private boolean searchRecipe(GTRecipeType type, IntLongMap inputMap, java.util.function.BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle) {
-        searchHolder.use(inputMap);
-        try {
-            return searchHolder.findRecipe(type, canHandle);
-        } finally {
-            searchHolder.clear();
-        }
-    }
-
     private static void addSearchKey(IntLongMap map, AEKey key) {
         var normalized = normalizeSearchKey(key);
         if (normalized != null) {
@@ -478,28 +468,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
             }
         }
         return key;
-    }
-
-    private static final class SearchRecipeHandlerUnit extends RecipeHandlerUnit {
-
-        private IntLongMap inputMap = IntLongMap.EMPTY;
-
-        private SearchRecipeHandlerUnit() {
-            super(IO.IN, null);
-        }
-
-        private void use(IntLongMap inputMap) {
-            this.inputMap = inputMap;
-        }
-
-        private void clear() {
-            this.inputMap = IntLongMap.EMPTY;
-        }
-
-        @Override
-        public IntLongMap getSearchMap(@NotNull GTRecipeType type) {
-            return inputMap;
-        }
     }
 
     private final class SearchContext {

@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.mana.multiblock;
 
+import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
@@ -128,7 +129,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     }
 
     @Override
-    public @NotNull Widget createUIWidget() {
+    public @NotNull UIElement createUIWidget() {
         return IStorageMultiblock.super.createUIWidget(super.createUIWidget());
     }
 

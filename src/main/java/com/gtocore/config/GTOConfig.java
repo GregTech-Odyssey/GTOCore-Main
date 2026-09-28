@@ -110,7 +110,6 @@ public final class GTOConfig {
         ConfigHolder.INSTANCE.machines.steelSteamMultiblocks = false;
         ConfigHolder.INSTANCE.machines.enableCleanroom = difficulty > 1;
         ConfigHolder.INSTANCE.machines.cleanMultiblocks = difficulty == 1;
-        ConfigHolder.INSTANCE.machines.replaceMinedBlocksWith = "minecraft:cobblestone";
         ConfigHolder.INSTANCE.machines.enableResearch = true;
         ConfigHolder.INSTANCE.machines.enableMaintenance = difficulty > 1;
         ConfigHolder.INSTANCE.machines.dualChamberPressurizationMode = difficulty == 3 ? 3 : 1;

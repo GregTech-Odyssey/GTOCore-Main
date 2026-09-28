@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.storage;
 
+import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.MEStorageHatch;
 
@@ -373,7 +374,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     /// 显示窗那一套：主页是机器的状态显示窗，主机槽（超级箱/缸）跟在下方（和通用工厂一样）
     @Override
-    public Widget createUIWidget() {
+    public UIElement createUIWidget() {
         return IStorageMultiblock.super.createUIWidget(MachineDisplay.page(this));
     }
 

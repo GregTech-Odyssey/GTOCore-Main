@@ -213,9 +213,9 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
     }
 
     @Override
-    public @NotNull Widget createUIWidget() {
+    public @NotNull UIElement createUIWidget() {
         // 状态显示窗下方加产量统计区块
-        return ((UIElement) super.createUIWidget()).addChild(new StatisticWidget());
+        return super.createUIWidget().addChild(new StatisticWidget());
     }
 
     private void updateStatistics(Algae algae, long amount) {

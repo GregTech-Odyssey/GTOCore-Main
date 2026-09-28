@@ -74,6 +74,11 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     }
 
     @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
     public void onContentChanges(RecipeHandlerUnit handlerList) {
         if (getRecipeLogic().isIdle()) {
             WaterPurificationPlantMachine machine = getNetMachine();

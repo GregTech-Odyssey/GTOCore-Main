@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gtocore.api.data.NeutronSeries;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
@@ -87,7 +88,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     }
 
     @Override
-    public @NotNull Widget createUIWidget() {
+    public @NotNull UIElement createUIWidget() {
         return IStorageMultiblock.super.createUIWidget(super.createUIWidget());
     }
 

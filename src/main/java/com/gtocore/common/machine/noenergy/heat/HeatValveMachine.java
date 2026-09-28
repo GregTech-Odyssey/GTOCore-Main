@@ -48,6 +48,11 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
     }
 
     @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
     public boolean isActive() {
         return isOpen;
     }

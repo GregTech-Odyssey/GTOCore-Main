@@ -4,10 +4,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
-import com.gtocore.common.data.GTOBedrockFluids;
-import com.gtocore.common.data.GTOFluidStorageKey;
-import com.gtocore.common.data.GTOFluids;
-import com.gtocore.common.data.GTORecipeCategories;
+import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformTemplateStorage;
@@ -92,6 +89,7 @@ public final class LangHandler {
         TradeLang.LANG.forEach(LangHandler::addCNEN);
         TechTreeManager.NODE_LANG.forEach(LangHandler::addCNEN);
         TechTreeManager.TREE_LANG.forEach(LangHandler::addCNEN);
+        GTOTickTimeMonitors.LANG.forEach(LangHandler::addCNEN);
         for (var reasons : IdleReason.values()) {
             if (reasons.getEn() == null) continue;
             addCNEN(reasons.getKey(), reasons.getCn(), reasons.getEn());

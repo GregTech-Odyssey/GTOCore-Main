@@ -41,6 +41,11 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
     }
 
     @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
     public void onLoad() {
         super.onLoad();
         heatContainer.onLoad();

@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.nano;
 
+import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
@@ -130,7 +131,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
 
     @Override
     @NotNull
-    public Widget createUIWidget() {
+    public UIElement createUIWidget() {
         return createUIWidget(super.createUIWidget());
     }
 

@@ -45,6 +45,11 @@ public final class AlgaeFarmMachine extends NoEnergyMultiblockMachine implements
     }
 
     @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         boolean raise = unit.matchFluid(FERMENTEDBIOMASS, 10000);
         int amount = raise ? 10 : 1;

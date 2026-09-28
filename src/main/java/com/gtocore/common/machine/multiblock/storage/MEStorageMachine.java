@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.storage;
 
+import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.part.ae.StorageAccessPartMachine;
@@ -137,7 +138,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     }
 
     @Override
-    public Widget createUIWidget() {
+    public UIElement createUIWidget() {
         return createUIWidget(super.createUIWidget());
     }
 
