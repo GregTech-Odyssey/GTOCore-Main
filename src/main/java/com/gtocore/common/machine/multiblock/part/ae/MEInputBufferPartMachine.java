@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
@@ -109,6 +111,8 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
     @Nullable
     private TickableSubscription autoIOSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor meInputMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_INPUT, this::autoIO);
     public MEInputBufferPartMachine(MetaMachineBlockEntity holder) {
         super(holder, 9);
         getMainNode().addService(ICraftingWatcherNode.class, craftingWatcherNode);
@@ -132,7 +136,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
     private void updateSubscription() {
         if (isWorkingEnabled() && getOnlineField()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoIO, 40);
+            autoIOSubs = subscribeServerTick(autoIOSubs, meInputMonitor, 40);
         } else if (autoIOSubs != null) {
             autoIOSubs.unsubscribe();
             autoIOSubs = null;

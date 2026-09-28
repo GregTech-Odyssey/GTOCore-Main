@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.electric.beam;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.beam.BeamNode;
 import com.gtolib.api.beam.BeamPassContext;
 import com.gtolib.api.beam.BeamPassKey;
@@ -22,6 +24,8 @@ public class ExcitationCrystal extends SimpleNoEnergyMachine implements IBeamOpe
     private final Map<BeamPassKey, PassState> activePasses = new HashMap<>();
     private TickableSubscription tickSubscription;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::tick);
     public ExcitationCrystal(MetaMachineBlockEntity holder) {
         super(holder, 0, t -> 0);
     }
@@ -69,7 +73,7 @@ public class ExcitationCrystal extends SimpleNoEnergyMachine implements IBeamOpe
         super.onLoad();
         var level = getLevel();
         if (!isRemote() && level != null) {
-            tickSubscription = subscribeServerTick(tickSubscription, this::tick, 1);
+            tickSubscription = subscribeServerTick(tickSubscription, beamMonitor, 1);
             TaskHandler.enqueueTask(level, () -> requestRayBeamUpdate(level, getPos()), 1);
         }
     }

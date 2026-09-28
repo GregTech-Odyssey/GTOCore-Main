@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy.tradingstation;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.data.transaction.manager.TradeData;
@@ -1100,6 +1102,9 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private boolean autoOutputFluids = false;
     @Nullable
     private TickableSubscription autoOutputSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoOutputMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_OUTPUT, this::autoOutput);
     @Nullable
     private ISubscription outputItemChangeSub;
     @Nullable
@@ -1176,7 +1181,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private void updateAutoOutputSubscription() {
         if (getLevel() == null || isRemote()) return;
         if ((autoOutputItems && !outputItem.isEmpty() && getOutputFacingItems() != null && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getOutputFacingItems())) || (autoOutputFluids && !outputFluid.isEmpty() && getOutputFacingFluids() != null && holder.blockEntityDirectionCache.hasAdjacentFluidHandler(getLevel(), getPos(), getOutputFacingFluids()))) {
-            autoOutputSubs = subscribeServerTick(autoOutputSubs, this::autoOutput, 20);
+            autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
             autoOutputSubs.unsubscribe();
             autoOutputSubs = null;

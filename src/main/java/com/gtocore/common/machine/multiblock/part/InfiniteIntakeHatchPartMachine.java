@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -43,6 +45,8 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
 
     private TickableSubscription intakeSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::intake);
     @SaveToDisk
     private final NotifiableFluidTank tank;
 
@@ -135,7 +139,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
 
     private void updateTankSubscription() {
         if (isWorkingEnabled() && isFrontFaceFree()) {
-            intakeSubs = subscribeServerTick(intakeSubs, this::intake, 20);
+            intakeSubs = subscribeServerTick(intakeSubs, autoIOMonitor, 20);
             this.isWorking = true;
         } else {
             unsubscribe();

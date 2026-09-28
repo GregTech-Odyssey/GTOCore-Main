@@ -1,5 +1,8 @@
 package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -47,6 +50,9 @@ public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine i
     @Nullable
     protected ISubscription LaserListener;
     protected TickableSubscription explosionSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor energyMonitor = holder.monitorTick(GTTickTimeMonitors.ENERGY_TRANSFER, this::addEng);
     private Long maxEnergy;
     @SaveToDisk
     private long voltage = 0;
@@ -92,7 +98,7 @@ public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine i
     }
 
     protected void AddEngerySubscription() {
-        explosionSubs = subscribeServerTick(explosionSubs, this::addEng);
+        explosionSubs = subscribeServerTick(explosionSubs, energyMonitor);
     }
 
     protected void addEng() {

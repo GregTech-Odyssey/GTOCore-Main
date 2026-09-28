@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.ThermalConductorHatchPartMachine;
@@ -60,6 +62,8 @@ import static com.gtocore.common.data.GTOMaterials.*;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class SupercomputingCenterMachine extends StorageMultiblockMachine implements IOpticalComputationProvider {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor cwutMonitor = holder.monitorTick(GTOTickTimeMonitors.CWUT_MODIFICATION, this::maxCWUtModificationUpdate);
 
     private static final Map<Item, Integer> MAINFRAME = Map.of(GTOItems.BIOWARE_MAINFRAME.asItem(), 2, GTOItems.SUPRACAUSAL_MAINFRAME.asItem(), 3);
     private static final Map<Integer, Integer> GLASS_MAP = Map.of(1, GTValues.IV, 2, GTValues.UHV, 3, GTValues.UIV);
@@ -101,9 +105,11 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     @Nullable
     private TickableSubscription tickSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor computationMonitor = holder.monitorTick(GTOTickTimeMonitors.RESEARCH_COMPUTATION, this::tick);
     public SupercomputingCenterMachine(MetaMachineBlockEntity holder) {
         super(holder, 1, stack -> MAINFRAME.containsKey(stack.getItem()));
-        maxCWUtModificationSubs = new ConditionalSubscriptionHandler(this, this::maxCWUtModificationUpdate, 10, () -> isFormed);
+        maxCWUtModificationSubs = new ConditionalSubscriptionHandler(this, cwutMonitor, 10, () -> isFormed);
     }
 
     private void clean(boolean scanOnly) {
@@ -289,7 +295,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
 
     private void updateTickSubscription() {
         if (isFormed && !incompatible) {
-            tickSubs = subscribeServerTick(tickSubs, this::tick);
+            tickSubs = subscribeServerTick(tickSubs, computationMonitor);
         } else if (tickSubs != null) {
             tickSubs.unsubscribe();
             tickSubs = null;

@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.machine.part.IRadiationHatch;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
@@ -57,6 +59,9 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     private boolean signalPowered;
 
     private TickableSubscription radiationSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor radiationMonitor = holder.monitorTick(GTOTickTimeMonitors.RADIATION, this::checkRadiation);
     private final RecipeHandlerUnit handlerList;
 
     public RadiationHatchPartMachine(MetaMachineBlockEntity holder) {
@@ -68,7 +73,7 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     @Override
     public void onLoad() {
         super.onLoad();
-        radiationSubs = subscribeServerTick(radiationSubs, this::checkRadiation);
+        radiationSubs = subscribeServerTick(radiationSubs, radiationMonitor);
     }
 
     @Override

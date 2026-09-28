@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.mana;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.gui.GTOGuiTextures;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -61,6 +63,8 @@ import static com.gtocore.data.tag.Tags.XP_JUICE_TAG;
 
 @DataGeneratorScanned
 public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, IDropSaveMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::absorbXpOrb);
 
     @SaveToDisk
     private final NotifiableFluidTank experienceTank;
@@ -89,7 +93,7 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
             }
         };
         experienceTank.setFilter(f -> f.getFluid() == XP_JUICE.getSource());
-        tickSubs = new ConditionalSubscriptionHandler(this, this::absorbXpOrb, 20, this::isVacuumHopperMode);
+        tickSubs = new ConditionalSubscriptionHandler(this, manaMonitor, 20, this::isVacuumHopperMode);
     }
 
     private void absorbXpOrb() {

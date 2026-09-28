@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.mana;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -50,6 +52,8 @@ public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaD
     private boolean clearSky;
     private TickableSubscription tickSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
     public CelestialCondenser(MetaMachineBlockEntity holder) {
         super(holder, 1, t -> 16000);
         this.celestialHandler = new CelestialHandler(MAX_CAPACITY);
@@ -92,7 +96,7 @@ public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaD
         super.onLoad();
         this.mode = celestialHandler.initMode(getLevel());
         if (!isRemote()) {
-            tickSubs = subscribeServerTick(tickSubs, this::tickUpdate, 10);
+            tickSubs = subscribeServerTick(tickSubs, manaMonitor, 10);
         }
     }
 

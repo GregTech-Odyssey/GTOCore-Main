@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOFluidStorageKey;
 import com.gtocore.common.data.GTOMaterials;
@@ -76,6 +78,8 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
     private TickableSubscription updateSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::recoverEfficiency);
     public FullCellGenerator(MetaMachineBlockEntity holder) {
         super(holder);
     }
@@ -84,7 +88,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     public void onLoad() {
         super.onLoad();
         updateGeneratorState();
-        updateSubs = subscribeServerTick(updateSubs, this::recoverEfficiency);
+        updateSubs = subscribeServerTick(updateSubs, generatorIntakeMonitor);
     }
 
     @Override

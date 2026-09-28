@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.electric.AbstractMEPatternAssemblerMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -71,6 +73,8 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
     @Nullable
     private TickableSubscription pullSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor mePullMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_PULL, this::pullTick);
     private final ReferenceOpenHashSet<AEKey> countedKeys = new ReferenceOpenHashSet<>();
 
     private final AEKeyMap<AEKey> extractedKeys = new AEKeyMap<>();
@@ -141,7 +145,7 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
     private void refreshPullSubs() {
         if (isRemote()) return;
         if (hasPullSlot() && isFormed()) {
-            pullSubs = subscribeServerTick(pullSubs, this::pullTick, 40);
+            pullSubs = subscribeServerTick(pullSubs, mePullMonitor, 40);
         } else {
             cancelPullSubs();
         }

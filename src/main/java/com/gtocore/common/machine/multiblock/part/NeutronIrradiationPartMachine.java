@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 
@@ -78,6 +80,9 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
     private final boolean[] dirtySlots;
 
     private TickableSubscription radiationSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor radiationMonitor = holder.monitorTick(GTOTickTimeMonitors.RADIATION, this::tick);
     private final RecipeHandlerUnit handlerListIn;
 
     public NeutronIrradiationPartMachine(MetaMachineBlockEntity holder, int capacity) {
@@ -95,7 +100,7 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
     @Override
     public void onLoad() {
         super.onLoad();
-        radiationSubs = subscribeServerTick(radiationSubs, this::tick, 5);
+        radiationSubs = subscribeServerTick(radiationSubs, radiationMonitor, 5);
     }
 
     @Override

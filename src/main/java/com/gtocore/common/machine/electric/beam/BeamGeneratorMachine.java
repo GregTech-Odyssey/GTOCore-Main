@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.electric.beam;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gtolib.api.beam.Beam;
@@ -38,6 +40,9 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
     private float phiRad;
 
     private TickableSubscription tickSubscription;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::tick);
     private int beamId = -1;
     private long emittedIntensity = -1;
     private int emittedWaveLength = -1;
@@ -51,7 +56,7 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!isRemote()) tickSubscription = subscribeServerTick(tickSubscription, this::tick, 5);
+        if (!isRemote()) tickSubscription = subscribeServerTick(tickSubscription, beamMonitor, 5);
     }
 
     @Override

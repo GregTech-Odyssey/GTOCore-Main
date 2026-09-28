@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
@@ -33,6 +35,9 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
     private final ItemHandlerProxyTrait inputInventory, outputInventory;
     @Nullable
     private TickableSubscription autoIOSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoIO);
     @Nullable
     private ISubscription outputInventorySubs;
 
@@ -108,7 +113,7 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
 
     private void updateAutoIOSubscription() {
         if ((!outputInventory.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing()))) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoIO, 20);
+            autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
         } else if (autoIOSubs != null) {
             autoIOSubs.unsubscribe();
             autoIOSubs = null;

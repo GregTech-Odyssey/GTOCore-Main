@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemSlot;
 import com.gtocore.common.machine.multiblock.part.ae.widget.AEItemConfigWidget;
@@ -47,6 +49,8 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
 
     private TickableSubscription autoIOSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor meInputMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_INPUT, this::autoIO);
     @SaveToDisk
     final ExportOnlyAEItemList aeItemHandler;
 
@@ -158,7 +162,7 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
 
     void updateInventorySubscription() {
         if (isWorkingEnabled() && getOnlineField()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoIO, 40);
+            autoIOSubs = subscribeServerTick(autoIOSubs, meInputMonitor, 40);
         } else if (autoIOSubs != null) {
             setStatus(WorkingStatus.IDLE);
             autoIOSubs.unsubscribe();

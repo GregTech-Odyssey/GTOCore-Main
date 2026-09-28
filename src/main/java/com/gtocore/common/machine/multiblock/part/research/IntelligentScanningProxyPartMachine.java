@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.research;
 
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.electric.research.IntelligentScanningManagementPlatformMachine;
 
@@ -11,6 +12,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
@@ -53,6 +55,8 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     private boolean changed = true;
     private IStackWatcher storageWatcher;
     private TickableSubscription tickSubscription;
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private final TickTimeMonitor scanMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::scanStorage);
     @SaveToDisk
     private final ScanningContentHandler contentHandler = new ScanningContentHandler(this);
 
@@ -67,40 +71,43 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     @Override
     public void onLoad() {
         super.onLoad();
-        tickSubscription = subscribeServerTick(tickSubscription, () -> {
-            if (getController() != null && changed) {
-                changed = false;
-                var grid = getMainNode().getGrid();
-                if (grid == null) {
-                    cachedKeys = null;
-                    return;
-                }
-                var stack = grid.getStorageService().getCachedInventory();
-                if (stack != null) {
-                    cachedKeys = stack.keySet().stream().map(k -> {
-                        if (k instanceof AEItemKey aeItemKey) {
-                            if (aeItemKey.item instanceof DataCrystalItem) return null;
-                            if (aeItemKey.hasTag()) {
-                                return AEItemKey.of(aeItemKey.getItem());
-                            }
-                            return k;
-                        } else if (k instanceof AEFluidKey aeFluidKey) {
-                            if (stack.get(aeFluidKey) <= 1000) return null;
-                            if (aeFluidKey.hasTag()) {
-                                return AEFluidKey.of(aeFluidKey.getFluid());
-                            }
-                            return k;
-                        }
-                        return null;
-                    }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
-                } else {
-                    cachedKeys = null;
-                }
-                if (getController() instanceof IntelligentScanningManagementPlatformMachine managementPlatform) {
-                    managementPlatform.reloadAvailableAEKeys();
-                }
+        tickSubscription = subscribeServerTick(tickSubscription, scanMonitor, 40);
+    }
+
+    /** 扫描 ME 网络存储，刷新缓存的 key 集合。 */
+    private void scanStorage() {
+        if (getController() != null && changed) {
+            changed = false;
+            var grid = getMainNode().getGrid();
+            if (grid == null) {
+                cachedKeys = null;
+                return;
             }
-        }, 40);
+            var stack = grid.getStorageService().getCachedInventory();
+            if (stack != null) {
+                cachedKeys = stack.keySet().stream().map(k -> {
+                    if (k instanceof AEItemKey aeItemKey) {
+                        if (aeItemKey.item instanceof DataCrystalItem) return null;
+                        if (aeItemKey.hasTag()) {
+                            return AEItemKey.of(aeItemKey.getItem());
+                        }
+                        return k;
+                    } else if (k instanceof AEFluidKey aeFluidKey) {
+                        if (stack.get(aeFluidKey) <= 1000) return null;
+                        if (aeFluidKey.hasTag()) {
+                            return AEFluidKey.of(aeFluidKey.getFluid());
+                        }
+                        return k;
+                    }
+                    return null;
+                }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+            } else {
+                cachedKeys = null;
+            }
+            if (getController() instanceof IntelligentScanningManagementPlatformMachine managementPlatform) {
+                managementPlatform.reloadAvailableAEKeys();
+            }
+        }
     }
 
     public MEStorage getMESStorage() {

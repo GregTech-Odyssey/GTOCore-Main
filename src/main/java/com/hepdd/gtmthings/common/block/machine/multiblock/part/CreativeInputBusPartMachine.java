@@ -1,5 +1,7 @@
 package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -56,6 +58,8 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
     @Nullable
     protected TickableSubscription autoIOSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoKeep);
     @Getter
     @SaveToDisk
     protected final NotifiableItemStackHandler circuitInventory;
@@ -127,7 +131,7 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
 
     protected void updateInventorySubscription() {
         if (!lstItem.isEmpty()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoKeep, 20);
+            autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
         } else if (autoIOSubs != null) {
             autoIOSubs.unsubscribe();
             autoIOSubs = null;

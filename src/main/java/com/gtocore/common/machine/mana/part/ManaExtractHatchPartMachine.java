@@ -18,6 +18,7 @@ import vazkii.botania.api.mana.ManaReceiver;
 import vazkii.botania.xplat.XplatAbstractions;
 
 public final class ManaExtractHatchPartMachine extends ManaHatchPartMachine {
+    // 复用父类的 manaMonitor：同一个 entry 在同一个方块实体上只会有一个监控器，子类再声明一个也拿不到新的。
 
     public ManaExtractHatchPartMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier, IO.IN, 4);
@@ -27,7 +28,7 @@ public final class ManaExtractHatchPartMachine extends ManaHatchPartMachine {
     public void onLoad() {
         super.onLoad();
         if (!isRemote()) {
-            tickSubs = subscribeServerTick(tickSubs, this::tickUpdate, 20);
+            tickSubs = subscribeServerTick(tickSubs, manaMonitor, 20);
         }
     }
 

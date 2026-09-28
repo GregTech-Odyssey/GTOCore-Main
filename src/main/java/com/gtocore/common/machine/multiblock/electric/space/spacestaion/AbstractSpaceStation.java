@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.machine.feature.multiblock.ICustomHighlightMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -63,8 +65,12 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     public void onLoad() {
         super.onLoad();
         firstLoad = true;
-        tickSubscription = subscribeServerTick(tickSubscription, this::tickReady);
+        if (spaceStationMonitor == null) spaceStationMonitor = holder.monitorTick(GTOTickTimeMonitors.SPACE_STATION, this::tickReady);
+        tickSubscription = subscribeServerTick(tickSubscription, spaceStationMonitor);
     }
+
+    /** 空间站 tick 的耗时监控。 */
+    private TickTimeMonitor spaceStationMonitor;
 
     protected void tickReady() {
         var time = getOffsetTimer();

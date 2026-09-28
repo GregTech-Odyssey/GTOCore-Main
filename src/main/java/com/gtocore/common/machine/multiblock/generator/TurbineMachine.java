@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
@@ -74,6 +76,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 @Scanned
 public class TurbineMachine extends ElectricMultiblockMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::rotorUpdate);
 
     @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_output_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4.0F", normalValue = "3.0F", expertValue = "2.5F", cn = "高速模式输出乘数 : %s", en = "High Speed Mode Output Multiplier : %s Multiplier")
     private static float highSpeedModeOutputMultiplier = 3.0F;
@@ -105,7 +109,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         this.mega = mega;
         this.tier = tier;
         baseEUOutput = (long) (GTValues.V[tier] * (mega ? 4 : 1) * (special ? 2.5 : 2));
-        rotorSubs = new ConditionalSubscriptionHandler(this, this::rotorUpdate, 20, () -> rotorHatchPartMachine != null);
+        rotorSubs = new ConditionalSubscriptionHandler(this, generatorIntakeMonitor, 20, () -> rotorHatchPartMachine != null);
     }
 
     private void rotorUpdate() {

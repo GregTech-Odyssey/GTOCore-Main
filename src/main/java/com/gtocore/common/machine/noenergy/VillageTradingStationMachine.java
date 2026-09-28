@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 
@@ -63,6 +65,9 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     private TickableSubscription tickSubs;
     @Nullable
     private TickableSubscription autoOutputSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoOutputMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_OUTPUT, this::autoOutput);
     @Nullable
     private ISubscription exportItemSubs;
 
@@ -806,7 +811,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         if (getLevel() == null) return;
         Direction outputFacing = getOutputFacingItems();
         if (autoOutputItems && !output.isEmpty() && outputFacing != null && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), outputFacing)) {
-            autoOutputSubs = subscribeServerTick(autoOutputSubs, this::autoOutput, 20);
+            autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
             autoOutputSubs.unsubscribe();
             autoOutputSubs = null;

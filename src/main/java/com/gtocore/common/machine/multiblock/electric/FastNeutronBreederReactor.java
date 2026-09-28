@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.data.NeutronSeries;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
@@ -115,12 +117,14 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     @Override
     public void onLoad() {
         super.onLoad();
-        tickSubscription = subscribeServerTick(tickSubscription, this::tick, 20);
+        tickSubscription = subscribeServerTick(tickSubscription, reactorHeatMonitor, 20);
     }
 
     @Nullable
     private TickableSubscription tickSubscription;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::tick);
     @Override
     public void onUnload() {
         super.onUnload();

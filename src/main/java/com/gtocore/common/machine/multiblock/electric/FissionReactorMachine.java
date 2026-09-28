@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
@@ -35,6 +37,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class FissionReactorMachine extends ElectricMultiblockMachine implements IExplosionMachine, IParallelMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::HeatUpdate);
 
     private static final Fluid DistilledWater = GTMaterials.DistilledWater.getFluid();
     private static final Fluid Steam = GTMaterials.Steam.getFluid();
@@ -58,7 +62,7 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
 
     public FissionReactorMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        HeatSubs = new ConditionalSubscriptionHandler(this, this::HeatUpdate, 20, () -> isFormed() || heat > 298);
+        HeatSubs = new ConditionalSubscriptionHandler(this, reactorHeatMonitor, 20, () -> isFormed() || heat > 298);
     }
 
     @Override

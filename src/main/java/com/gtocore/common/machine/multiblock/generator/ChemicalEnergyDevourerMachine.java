@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.common.machine.multiblock.part.InfiniteIntakeHatchPartMachine;
 
@@ -42,6 +44,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachine implements ICustomHighlightMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::intake);
 
     private static final FluidStack DINITROGEN_TETROXIDE_STACK = GTMaterials.DinitrogenTetroxide.getFluid(480);
     private static final FluidStack LIQUID_OXYGEN_STACK = GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID, 320);
@@ -60,7 +64,7 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
     public ChemicalEnergyDevourerMachine(MetaMachineBlockEntity holder) {
         super(holder);
         this.tank = new NotifiableFluidTank(this, 1, 512000, IO.IN, IO.NONE);
-        tankSubs = new ConditionalSubscriptionHandler(this, this::intake, 20, () -> isFormed && !isIntakesObstructed());
+        tankSubs = new ConditionalSubscriptionHandler(this, generatorIntakeMonitor, 20, () -> isFormed && !isIntakesObstructed());
     }
 
     @Override

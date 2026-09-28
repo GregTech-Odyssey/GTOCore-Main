@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.mana.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 import com.gtocore.utils.ManaUnification;
@@ -38,6 +40,8 @@ import java.util.List;
 
 @DataGeneratorScanned
 public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine implements IGridConnectedMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::updateTick);
 
     @RegisterLanguage(cn = "从ME网络拉取魔力", en = "Pull Mana from ME Network")
     public static final String LANG_USE_SOURCE = "gtceu.machine.mana_amplifier.use_source";
@@ -57,7 +61,7 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
     public MEManaAmplifierPartMachine(MetaMachineBlockEntity holder) {
         super(holder);
         this.nodeHolder = new GridNodeHolder(this);
-        this.updateSubs = new ConditionalSubscriptionHandler(this, this::updateTick, 20, this::isWorkingEnabled);
+        this.updateSubs = new ConditionalSubscriptionHandler(this, manaMonitor, 20, this::isWorkingEnabled);
         manaContainer.setAcceptDistributor(false);
     }
 

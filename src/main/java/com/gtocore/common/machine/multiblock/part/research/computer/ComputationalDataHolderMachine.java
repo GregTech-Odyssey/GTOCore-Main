@@ -2,12 +2,14 @@ package com.gtocore.common.machine.multiblock.part.research.computer;
 
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.api.research.ResearchTag;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.electric.SupercomputingCenterMachine;
 import com.gtocore.common.machine.multiblock.part.research.SimpleResearchTagPartMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IHPCAComponentHatch;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.HPCAMachine;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -29,6 +31,8 @@ public class ComputationalDataHolderMachine extends SimpleResearchTagPartMachine
     private boolean damaged;
 
     private TickableSubscription subscription;
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private final TickTimeMonitor dataMonitor = holder.monitorTick(GTOTickTimeMonitors.RESEARCH_COMPUTATION, this::addDataFromController);
 
     public ComputationalDataHolderMachine(MetaMachineBlockEntity holder) {
         super(holder, 1024L, ResearchTag.COMPUTATION);
@@ -37,18 +41,21 @@ public class ComputationalDataHolderMachine extends SimpleResearchTagPartMachine
     @Override
     public void onLoad() {
         super.onLoad();
-        subscription = subscribeServerTick(subscription, () -> {
-            if (isDamaged()) {
-                return;
-            }
-            int data = 0;
-            if (getController() instanceof HPCAMachine hcpa) {
-                data = (int) Math.sqrt(hcpa.getHpcaHandler().getMaxCWUt() + hcpa.getHpcaHandler().getCachedCWUt());
-            } else if (getController() instanceof SupercomputingCenterMachine supercomputingCenter) {
-                data = (int) Math.sqrt(supercomputingCenter.getAdjustedMaxCWU() + supercomputingCenter.getCacheCWUt());
-            }
-            addData(data);
-        }, 100);
+        subscription = subscribeServerTick(subscription, dataMonitor, 100);
+    }
+
+    /** 按控制器的算力给研究中心补数据。 */
+    private void addDataFromController() {
+        if (isDamaged()) {
+            return;
+        }
+        int data = 0;
+        if (getController() instanceof HPCAMachine hcpa) {
+            data = (int) Math.sqrt(hcpa.getHpcaHandler().getMaxCWUt() + hcpa.getHpcaHandler().getCachedCWUt());
+        } else if (getController() instanceof SupercomputingCenterMachine supercomputingCenter) {
+            data = (int) Math.sqrt(supercomputingCenter.getAdjustedMaxCWU() + supercomputingCenter.getCacheCWUt());
+        }
+        addData(data);
     }
 
     @Override

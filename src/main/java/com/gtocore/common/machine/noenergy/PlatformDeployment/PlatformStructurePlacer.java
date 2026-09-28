@@ -54,7 +54,8 @@ final class PlatformStructurePlacer {
                                     boolean skipAir,
                                     boolean updateLight,
                                     IntConsumer onBatch,
-                                    Runnable onFinished) {
+                                    Runnable onFinished,
+                                    Runnable tickTask) {
         this.serverLevel = serverLevel;
         this.blockIterator = blockIterator;
         this.perTick = perTick;
@@ -64,13 +65,15 @@ final class PlatformStructurePlacer {
         this.onBatch = onBatch;
         this.onFinished = onFinished;
 
-        this.subscription = TaskHandler.enqueueTick(serverLevel, this::placeBatch, 0, 0);
+        // tickTask 是机器那边的耗时监控（监控的 task 必须固定，而每次部署都是一个新 placer，
+        // 所以这里不能直接把 this::placeBatch 交给监控）。
+        this.subscription = TaskHandler.enqueueTick(serverLevel, tickTask, 0, 0);
     }
 
     /**
      * 每 tick 放置一批方块
      */
-    private void placeBatch() {
+    void placeBatch() {
         int processedThisTick = 0;
 
         while (blockIterator.hasNext() && processedThisTick < perTick) {
@@ -365,18 +368,19 @@ final class PlatformStructurePlacer {
     /**
      * 外部调用入口（支持旋转和镜像）
      */
-    static void placeStructureAsync(Level level,
-                                    BlockPos startPos,
-                                    PlatformBlockType.PlatformBlockStructure structure,
-                                    int perTick,
-                                    boolean breakBlocks,
-                                    boolean skipAir,
-                                    boolean updateLight,
-                                    boolean zMirror,
-                                    boolean xMirror,
-                                    int rotation,
-                                    IntConsumer onBatch,
-                                    Runnable onFinished) throws IOException {
+    static PlatformStructurePlacer placeStructureAsync(Level level,
+                                                       BlockPos startPos,
+                                                       PlatformBlockType.PlatformBlockStructure structure,
+                                                       int perTick,
+                                                       boolean breakBlocks,
+                                                       boolean skipAir,
+                                                       boolean updateLight,
+                                                       boolean zMirror,
+                                                       boolean xMirror,
+                                                       int rotation,
+                                                       IntConsumer onBatch,
+                                                       Runnable onFinished,
+                                                       Runnable tickTask) throws IOException {
         String resourcePath = "platforms/" + structure.resource().toString().replace(":", "/") + ".mbs";
         try (InputStream input = PlatformStructurePlacer.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (input == null) {
@@ -385,8 +389,9 @@ final class PlatformStructurePlacer {
 
             // 由于未知问题，这里交换了xz顺序，使其可以正常运行
             BlockIterator iterator = new BlockIterator(input, startPos, loadMappingFromJson(structure.blockMapping()), xMirror, zMirror, rotation);
-            if (level instanceof ServerLevel serverLevel) new PlatformStructurePlacer(serverLevel, iterator, perTick, breakBlocks, skipAir, updateLight, onBatch, onFinished);
-            else throw new IllegalArgumentException("Structure placement can only be done on ServerLevel");
+            if (level instanceof ServerLevel serverLevel) {
+                return new PlatformStructurePlacer(serverLevel, iterator, perTick, breakBlocks, skipAir, updateLight, onBatch, onFinished, tickTask);
+            } else throw new IllegalArgumentException("Structure placement can only be done on ServerLevel");
         }
     }
 }

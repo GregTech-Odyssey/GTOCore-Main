@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -57,6 +59,8 @@ import java.util.UUID;
 @DataGeneratorScanned
 public final class MEDiskBoxMachine extends MetaMachine
                                     implements IGridConnectedMachine, MEStorage, IStorageProvider, IStorageMultiblock, IFancyUIMachine, IDropSaveMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor meStorageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::tickUpdate);
 
     /// 组件槽的数量上限
     public static final int COMPONENT_LIMIT = 64;
@@ -105,7 +109,7 @@ public final class MEDiskBoxMachine extends MetaMachine
         componentStorage = createMachineStorage(null);
         nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
-        tickSubs = new ConditionalSubscriptionHandler(this, this::tickUpdate, 0, () -> true);
+        tickSubs = new ConditionalSubscriptionHandler(this, meStorageMonitor, 0, () -> true);
     }
 
     /// 组件槽就是 {@link IStorageMultiblock} 的机器存储槽

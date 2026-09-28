@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
 import com.gtocore.common.machine.multiblock.part.ae.widget.AEFluidConfigWidget;
@@ -49,6 +51,8 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
     @Nullable
     private TickableSubscription autoIOSubs;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor meInputMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_INPUT, this::autoIO);
     @SaveToDisk
     final ExportOnlyAEFluidList aeFluidHandler;
 
@@ -163,7 +167,7 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
 
     void updateTankSubscription() {
         if (isWorkingEnabled() && getOnlineField()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoIO, 40);
+            autoIOSubs = subscribeServerTick(autoIOSubs, meInputMonitor, 40);
         } else if (autoIOSubs != null) {
             setStatus(WorkingStatus.IDLE);
             autoIOSubs.unsubscribe();

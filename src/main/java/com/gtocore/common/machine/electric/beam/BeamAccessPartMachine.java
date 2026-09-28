@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.electric.beam;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.beam.BeamManager;
@@ -44,6 +46,9 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
     @SyncToClient
     private long[] receivedBeamIntensities = new long[0];
     private TickableSubscription tickSubscription;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::sampleCurrentTick);
     private long sampledTick = Long.MIN_VALUE;
     private boolean activeBeamsDirty = true;
 
@@ -70,7 +75,7 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!isRemote()) tickSubscription = subscribeServerTick(tickSubscription, this::sampleCurrentTick, 5);
+        if (!isRemote()) tickSubscription = subscribeServerTick(tickSubscription, beamMonitor, 5);
     }
 
     @Override

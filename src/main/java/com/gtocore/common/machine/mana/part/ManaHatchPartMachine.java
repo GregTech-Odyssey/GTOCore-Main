@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.mana.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.ManaDistributorMachine;
 import com.gtolib.api.machine.mana.feature.IManaMachine;
@@ -30,6 +32,8 @@ import vazkii.botania.api.mana.ManaReceiver;
 import vazkii.botania.xplat.XplatAbstractions;
 
 public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements IManaMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）；子类共用这一个。 */
+    protected TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
 
     TickableSubscription tickSubs;
     @SaveToDisk
@@ -60,7 +64,7 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
     public void onLoad() {
         super.onLoad();
         if (!isRemote() && io == IO.OUT) {
-            tickSubs = subscribeServerTick(tickSubs, this::tickUpdate, 20);
+            tickSubs = subscribeServerTick(tickSubs, manaMonitor, 20);
         }
     }
 

@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy.PlatformDeployment;
 
 import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 
 import com.gtolib.GTOCore;
@@ -15,6 +16,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -196,6 +198,16 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     // 任务是否完成
     @SaveToDisk(defaultValue = "true")
     private boolean taskCompleted = true;
+
+    /** 正在跑的部署任务；tick 由下面的监控转进来（监控的 task 必须固定，而 placer 每次都是新的）。 */
+    private PlatformStructurePlacer activePlacer;
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    protected final TickTimeMonitor platformPlacementMonitor = holder.monitorTick(GTOTickTimeMonitors.PLATFORM_PLACEMENT, this::tickPlatformPlacement);
+
+    private void tickPlatformPlacement() {
+        PlatformStructurePlacer placer = activePlacer;
+        if (placer != null) placer.placeBatch();
+    }
     // 跳过空气
     @SaveToDisk(defaultValue = "true")
     private boolean skipAir = true;
@@ -1055,8 +1067,9 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         PlatformBlockType.PlatformBlockStructure structure = getPlatformBlockStructure(saveGroup, saveId);
         progress = 0;
         taskCompleted = false;
+        activePlacer = null;
         try {
-            PlatformStructurePlacer.placeStructureAsync(
+            activePlacer = PlatformStructurePlacer.placeStructureAsync(
                     serverLevel,
                     pos1,
                     structure,
@@ -1068,7 +1081,11 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
                     xMirror,
                     rotation,
                     progress -> this.progress = progress,
-                    () -> taskCompleted = true);
+                    () -> {
+                        activePlacer = null;
+                        taskCompleted = true;
+                    },
+                    platformPlacementMonitor);
         } catch (IOException e) {
             GTOCore.LOGGER.error("The industrial platform deployment tool cannot deploy the platform, platform error {} {}, file location {}",
                     getPlatformPreset(saveGroup).name(),

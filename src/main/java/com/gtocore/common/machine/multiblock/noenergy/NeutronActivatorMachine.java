@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.NeutronAcceleratorPartMachine;
@@ -46,6 +48,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implements IExplosionMachine {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::neutronEnergyUpdate);
 
     static final int EXPLOSION_EV = 1200000000;
     static final int DISPLAY_MAX_EV = 1400000000;
@@ -68,7 +72,7 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
 
     public NeutronActivatorMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        neutronEnergySubs = new ConditionalSubscriptionHandler(this, this::neutronEnergyUpdate, 0, () -> isFormed || eV > 0);
+        neutronEnergySubs = new ConditionalSubscriptionHandler(this, reactorHeatMonitor, 0, () -> isFormed || eV > 0);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.electric.beam;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtolib.api.beam.Beam;
 import com.gtolib.api.beam.BeamManager;
 import com.gtolib.api.beam.BeamNode;
@@ -36,6 +38,8 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
     private boolean transmittedDirty;
     private TickableSubscription tickSubscription;
 
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::tick);
     public AdjustableSemiReflector(MetaMachineBlockEntity holder) {
         super(holder, 0, t -> 0);
     }
@@ -86,7 +90,7 @@ public class AdjustableSemiReflector extends SimpleNoEnergyMachine implements IB
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!isRemote()) tickSubscription = subscribeServerTick(tickSubscription, this::tick, 1);
+        if (!isRemote()) tickSubscription = subscribeServerTick(tickSubscription, beamMonitor, 1);
     }
 
     @Override

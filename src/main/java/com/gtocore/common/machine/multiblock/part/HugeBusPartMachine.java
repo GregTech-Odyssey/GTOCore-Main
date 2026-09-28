@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -66,6 +68,9 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     private final HugeNotifiableItemStackHandler inventory;
     @Nullable
     private TickableSubscription autoIOSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoIO);
     @Nullable
     private ISubscription inventorySubs;
 
@@ -124,7 +129,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     private void updateInventorySubscription() {
         var level = getLevel();
         if (level != null && isWorkingEnabled() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing())) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoIO, 40);
+            autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 40);
         } else if (autoIOSubs != null) {
             autoIOSubs.unsubscribe();
             autoIOSubs = null;

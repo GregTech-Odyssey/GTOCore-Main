@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.data.Algae;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
@@ -59,6 +61,8 @@ import java.util.UUID;
 
 @DataGeneratorScanned
 public abstract class StorageAccessPartMachine extends AmountConfigurationPartMachine implements IMachineLife, MEStorage, IGridConnectedMachine, IStorageProvider {
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor meStorageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::tickUpdate);
 
     public static StorageAccessPartMachine create(MetaMachineBlockEntity holder) {
         return new StorageAccessPartMachine.LONG(holder);
@@ -114,7 +118,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         super(holder, GTValues.HV, -1000000, 1000000);
         this.nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
-        tickSubs = new ConditionalSubscriptionHandler(this, this::tickUpdate, 0, () -> true);
+        tickSubs = new ConditionalSubscriptionHandler(this, meStorageMonitor, 0, () -> true);
         current = 0;
     }
 

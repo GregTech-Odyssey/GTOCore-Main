@@ -65,6 +65,8 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     private final int maximumRadius;
     @Nullable
     protected TickableSubscription autoOutputSubs;
+
+    /** 复用父类 SimpleTieredMachine 的 autoOutputMonitor（同一个 entry 只会有一个监控器）。 */
     @Nullable
     protected ISubscription exportItemSubs, energySubs;
     @Getter
@@ -179,7 +181,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     /// ///////////////////////////////////
     protected void updateAutoOutputSubscription() {
         if (!exportItems.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing())) {
-            autoOutputSubs = subscribeServerTick(autoOutputSubs, this::autoOutput, 20);
+            autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
             autoOutputSubs.unsubscribe();
             autoOutputSubs = null;

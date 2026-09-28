@@ -1,5 +1,7 @@
 package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -40,6 +42,9 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
     private final int slots;
     @Nullable
     protected TickableSubscription autoIOSubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoKeep);
     private final Int2ObjectOpenHashMap<FluidStack> fluidMap;
     @SaveToDisk
     private final CustomFluidTank[] creativeTanks;
@@ -90,7 +95,7 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
 
     protected void updateTankSubscription() {
         if (!fluidMap.isEmpty()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, this::autoKeep, 20);
+            autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
         } else if (autoIOSubs != null) {
             clearAll();
             autoIOSubs.unsubscribe();
