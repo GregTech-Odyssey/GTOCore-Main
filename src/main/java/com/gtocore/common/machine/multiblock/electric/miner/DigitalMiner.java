@@ -1,7 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.miner;
 
-import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 
@@ -24,6 +22,8 @@ import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.item.ItemFilterBehaviour;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;

@@ -2380,6 +2380,7 @@
   "gtceu.thermal_generator": "热力发电",
   "gtceu.thermo_pressing": "热压成型",
   "gtceu.three_dimensional_printer": "3D打印",
+  "gtceu.top.tick_time.thread_recipe_logic": "多线程配方逻辑",
   "gtceu.transcending_crafting": "超临界合成",
   "gtceu.tree_growth_simulator": "原木拟生场",
   "gtceu.ultimate_material_forge": "终极物质锻造",

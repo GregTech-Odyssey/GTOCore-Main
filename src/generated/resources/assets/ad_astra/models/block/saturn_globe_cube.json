@@ -1,5 +1,5 @@
 {
-  "parent": "ad_astra:block/globe_cube_saturn",
+  "parent": "ad_astra:block/globe_cube",
   "textures": {
     "0": "ad_astra:block/globe/saturn_globe"
   }

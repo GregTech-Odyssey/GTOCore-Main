@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gtocore.api.data.NeutronSeries;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
@@ -21,12 +20,12 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
