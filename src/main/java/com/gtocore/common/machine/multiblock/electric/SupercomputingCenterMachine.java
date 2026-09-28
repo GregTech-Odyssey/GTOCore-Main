@@ -1,9 +1,8 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ThermalConductorHatchPartMachine;
 import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBasePartMachine;
 import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBridgePartMachine;
@@ -21,6 +20,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -62,6 +62,7 @@ import static com.gtocore.common.data.GTOMaterials.*;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class SupercomputingCenterMachine extends StorageMultiblockMachine implements IOpticalComputationProvider {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor cwutMonitor = holder.monitorTick(GTOTickTimeMonitors.CWUT_MODIFICATION, this::maxCWUtModificationUpdate);
 
@@ -107,6 +108,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor computationMonitor = holder.monitorTick(GTOTickTimeMonitors.RESEARCH_COMPUTATION, this::tick);
+
     public SupercomputingCenterMachine(MetaMachineBlockEntity holder) {
         super(holder, 1, stack -> MAINFRAME.containsKey(stack.getItem()));
         maxCWUtModificationSubs = new ConditionalSubscriptionHandler(this, cwutMonitor, 10, () -> isFormed);

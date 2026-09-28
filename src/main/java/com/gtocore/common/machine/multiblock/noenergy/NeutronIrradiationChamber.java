@@ -1,9 +1,8 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.data.NeutronSeries;
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.NeutronIrradiationPartMachine;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
@@ -16,6 +15,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 
 import net.minecraft.network.chat.Component;
 
@@ -43,6 +43,7 @@ public class NeutronIrradiationChamber extends NoEnergyMultiblockMachine {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor radiationMonitor = holder.monitorTick(GTOTickTimeMonitors.RADIATION, this::tick);
+
     public NeutronIrradiationChamber(MetaMachineBlockEntity holder) {
         super(holder);
     }

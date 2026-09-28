@@ -1,9 +1,8 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTODamageTypes;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.api.machine.multiblock.NoEnergyCustomParallelMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
@@ -13,6 +12,7 @@ import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -46,6 +46,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomParallelMultiblockMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::tickUpdate);
 

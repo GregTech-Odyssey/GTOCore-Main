@@ -1,7 +1,5 @@
 package com.gtocore.common.machine.noenergy.tradingstation;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.data.transaction.manager.TradeData;
@@ -24,8 +22,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;

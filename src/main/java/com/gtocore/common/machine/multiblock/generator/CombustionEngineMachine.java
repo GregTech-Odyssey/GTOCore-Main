@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.generator;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.InfiniteIntakeHatchPartMachine;
 
@@ -12,6 +11,7 @@ import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -39,6 +39,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class CombustionEngineMachine extends ElectricMultiblockMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::intake);
 

@@ -1,10 +1,9 @@
 package com.gtocore.common.machine.mana.multiblock;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.client.renderer.StructurePattern;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.mana.CelestialHandler;
 
 import com.gtolib.api.GTOValues;
@@ -13,6 +12,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -38,6 +38,7 @@ import java.util.List;
 import static com.gtocore.common.machine.mana.CelestialHandler.*;
 
 public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
 

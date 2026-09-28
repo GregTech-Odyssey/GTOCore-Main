@@ -1,9 +1,8 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.NeutronAcceleratorPartMachine;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
@@ -21,6 +20,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -48,6 +48,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implements IExplosionMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::neutronEnergyUpdate);
 

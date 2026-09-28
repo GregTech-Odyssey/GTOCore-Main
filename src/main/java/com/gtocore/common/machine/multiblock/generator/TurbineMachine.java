@@ -1,9 +1,8 @@
 package com.gtocore.common.machine.multiblock.generator;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.Scanned;
@@ -29,6 +28,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.ICoilMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiPart;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
@@ -76,6 +76,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 @Scanned
 public class TurbineMachine extends ElectricMultiblockMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::rotorUpdate);
 

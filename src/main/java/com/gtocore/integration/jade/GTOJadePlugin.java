@@ -9,7 +9,9 @@ import com.gtocore.integration.jade.provider.RecipeOutputProvider;
 
 import com.gtolib.api.blockentity.ManaMachineBlockEntity;
 
+import com.gregtechceu.gtceu.api.block.AppearanceBlock;
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
+import com.gregtechceu.gtceu.api.blockentity.GTBlockEntity;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 import com.gregtechceu.gtceu.integration.jade.provider.*;
@@ -42,7 +44,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(new ElectricContainerBlockProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new WorkableBlockProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new ControllableBlockProvider(), MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(BlockEntityProvider.INSTANCE, BlockEntity.class);
+        registration.registerBlockDataProvider(BlockEntityProvider.INSTANCE, GTBlockEntity.class);
         registration.registerBlockDataProvider(new RecipeLogicProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new MaintenanceHatchProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new MaintenanceParamProvider(), MetaMachineBlockEntity.class);
@@ -67,6 +69,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(new WirelessGridProvider(), MetaMachineBlockEntity.class);
 
         registration.registerBlockDataProvider(new AEGridProvider(), BlockEntity.class);
+        registration.registerBlockDataProvider(new TickTimeProvider(), GTBlockEntity.class);
     }
 
     @Override
@@ -77,7 +80,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(new ElectricContainerBlockProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new WorkableBlockProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new ControllableBlockProvider(), MetaMachineBlock.class);
-        registration.registerBlockComponent(BlockEntityProvider.INSTANCE, Block.class);
+        registration.registerBlockComponent(BlockEntityProvider.INSTANCE, AppearanceBlock.class);
         registration.registerBlockComponent(new RecipeLogicProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new MaintenanceHatchProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new MaintenanceParamProvider(), MetaMachineBlock.class);
@@ -102,6 +105,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(new WirelessGridProvider(), MetaMachineBlock.class);
 
         registration.registerBlockComponent(new AEGridProvider(), Block.class);
+        registration.registerBlockComponent(new TickTimeProvider(), AppearanceBlock.class);
 
         registration.registerBlockComponent(AEItemAmountProvider.INSTANCE, Block.class);
         registration.registerEntityComponent(AEItemAmountProvider.INSTANCE, ItemEntity.class);

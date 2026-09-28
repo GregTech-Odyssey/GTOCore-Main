@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ConnectingRodHatch;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
@@ -19,6 +18,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -103,6 +103,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::tick);
+
     public BioOscillationGenerator(MetaMachineBlockEntity holder) {
         super(holder);
         this.tierCasingTrait = new TierCasingTrait(this, MACHINING_CONTROL_MODULE_TIER, ENERGY_CONTROL_MODULE_TIER);

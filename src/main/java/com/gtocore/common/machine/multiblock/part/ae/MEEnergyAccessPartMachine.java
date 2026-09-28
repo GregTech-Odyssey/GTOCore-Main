@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -12,6 +11,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -39,6 +39,7 @@ import java.lang.reflect.Field;
 
 @DataGeneratorScanned
 public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPowerStorage {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meEnergyMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_ENERGY, this::tick);
 

@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.electric.beam;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+
 import com.gtolib.api.beam.BeamNode;
 import com.gtolib.api.beam.BeamPassContext;
 import com.gtolib.api.beam.BeamPassKey;
@@ -11,6 +11,7 @@ import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
@@ -26,6 +27,7 @@ public class ExcitationCrystal extends SimpleNoEnergyMachine implements IBeamOpe
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::tick);
+
     public ExcitationCrystal(MetaMachineBlockEntity holder) {
         super(holder, 0, t -> 0);
     }

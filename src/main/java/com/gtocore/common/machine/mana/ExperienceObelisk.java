@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.mana;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -18,6 +17,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 
 import net.minecraft.core.Direction;
@@ -63,6 +63,7 @@ import static com.gtocore.data.tag.Tags.XP_JUICE_TAG;
 
 @DataGeneratorScanned
 public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, IDropSaveMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::absorbXpOrb);
 

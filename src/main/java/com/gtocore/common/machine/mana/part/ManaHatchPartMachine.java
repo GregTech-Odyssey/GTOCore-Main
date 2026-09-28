@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.mana.part;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.ManaDistributorMachine;
 import com.gtolib.api.machine.mana.feature.IManaMachine;
@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 
 import net.minecraft.core.BlockPos;
@@ -32,6 +33,7 @@ import vazkii.botania.api.mana.ManaReceiver;
 import vazkii.botania.xplat.XplatAbstractions;
 
 public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements IManaMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）；子类共用这一个。 */
     protected TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
 

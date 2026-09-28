@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.machine.feature.multiblock.ICustomHighlightMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;

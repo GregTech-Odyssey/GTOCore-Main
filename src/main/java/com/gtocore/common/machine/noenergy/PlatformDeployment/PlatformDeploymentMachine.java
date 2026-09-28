@@ -208,6 +208,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         PlatformStructurePlacer placer = activePlacer;
         if (placer != null) placer.placeBatch();
     }
+
     // 跳过空气
     @SaveToDisk(defaultValue = "true")
     private boolean skipAir = true;

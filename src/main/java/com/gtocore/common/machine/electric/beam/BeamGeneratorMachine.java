@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.electric.beam;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.api.beam.Beam;
 import com.gtolib.api.beam.BeamManager;
@@ -14,6 +13,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IOverclockMachine;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;

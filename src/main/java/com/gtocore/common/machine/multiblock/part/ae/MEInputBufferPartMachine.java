@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidSlot;
@@ -21,6 +20,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -113,6 +113,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meInputMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_INPUT, this::autoIO);
+
     public MEInputBufferPartMachine(MetaMachineBlockEntity holder) {
         super(holder, 9);
         getMainNode().addService(ICraftingWatcherNode.class, craftingWatcherNode);

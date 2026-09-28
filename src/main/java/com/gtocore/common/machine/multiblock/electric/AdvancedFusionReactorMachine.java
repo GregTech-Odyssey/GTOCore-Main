@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.trait.EnergyContainerTrait;
 import com.gtolib.api.recipe.IdleReason;
@@ -10,6 +10,7 @@ import com.gtolib.utils.MachineUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -34,6 +35,7 @@ import static com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionRea
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::updateHeat);
 

@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.noenergy;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+
 import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
@@ -59,6 +60,7 @@ import java.util.UUID;
 @DataGeneratorScanned
 public final class MEDiskBoxMachine extends MetaMachine
                                     implements IGridConnectedMachine, MEStorage, IStorageProvider, IStorageMultiblock, IFancyUIMachine, IDropSaveMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meStorageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::tickUpdate);
 

@@ -1,10 +1,11 @@
 package com.gtocore.common.machine.multiblock.electric.gcym;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 
@@ -26,6 +27,7 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::spinWheels);
+
     public LargeMacerationTowerMachine(MetaMachineBlockEntity holder) {
         super(holder);
     }

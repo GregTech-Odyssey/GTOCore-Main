@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.mana.part;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
@@ -15,6 +14,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -40,6 +40,7 @@ import java.util.List;
 
 @DataGeneratorScanned
 public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine implements IGridConnectedMachine {
+
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::updateTick);
 

@@ -1,11 +1,10 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.api.data.NeutronSeries;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
@@ -18,6 +17,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -125,6 +125,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::tick);
+
     @Override
     public void onUnload() {
         super.onUnload();
