@@ -70,7 +70,7 @@ public class ApotheosisGemFilter implements ItemFilter {
                 .addChildren(CoverUIs.label(TYPE_FILTER_DESC, TYPE_DESC), typeSlot);
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
                 CoverUIs.controlRow("cover.filter.blacklist.enabled", Switch.of(this::isBlackList, this::setBlackList)),
-                TextLine.translatable(LayoutStyle.AUTO, RARITY_DESC).setColor(UITheme.PANEL_TEXT),
+                TextLine.translatable(LayoutStyle.AUTO, RARITY_DESC).setColor(UITheme::panelText),
                 rarities,
                 typeRow);
     }

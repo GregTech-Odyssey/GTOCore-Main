@@ -10,8 +10,6 @@ import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.world.phys.Vec3;
@@ -19,8 +17,6 @@ import net.minecraft.world.phys.Vec3;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.BiPredicate;
 
 @Getter
 public class BeamPolarizerMachine extends SimpleNoEnergyMachine implements IBeamOperator {
@@ -43,11 +39,6 @@ public class BeamPolarizerMachine extends SimpleNoEnergyMachine implements IBeam
     @Override
     public RecipeLogic createRecipeLogic(Object... args) {
         return super.createRecipeLogic(args);
-    }
-
-    @Override
-    public boolean findRecipe(GTRecipeType type, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle) {
-        return super.findRecipe(type, canHandle);
     }
 
     @Override

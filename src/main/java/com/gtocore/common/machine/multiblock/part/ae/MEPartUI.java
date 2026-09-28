@@ -64,7 +64,7 @@ public final class MEPartUI {
 
     /** 标题栏中段：网络在线指示灯 + 机器名（吃满剩余宽度）。 */
     private static UIElement header(BooleanSupplier online, Component title, int width) {
-        var name = TextLine.constant(0, title).setColor(UITheme.TEXT);
+        var name = TextLine.constant(0, title).setColor(UITheme::text);
         name.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(MEPatternPartUI.onlineIndicator(online), name);
@@ -79,7 +79,7 @@ public final class MEPartUI {
                 .adaptiveWidth().adaptiveHeight(WAITING_MAX_ROWS * UISizes.SLOT);
         scroller.addScrollViewChild(new AEStackGrid(storage, fluid, WAITING_MIN_ROWS));
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, titleKey == null ? "gtceu.gui.waiting_list" : titleKey).setColor(UITheme.TEXT),
+                TextLine.translatable(LayoutStyle.AUTO, titleKey == null ? "gtceu.gui.waiting_list" : titleKey).setColor(UITheme::text),
                 scroller);
     }
 
@@ -94,14 +94,14 @@ public final class MEPartUI {
      * 数值输入两侧有加减按钮，和说明挤在一行时输入框太窄，所以分两行。
      */
     public static UIElement numberRow(String labelKey, NumberField field, String... tooltipKeys) {
-        var label = TextLine.translatable(LayoutStyle.AUTO, labelKey).setColor(UITheme.PANEL_TEXT);
+        var label = TextLine.translatable(LayoutStyle.AUTO, labelKey).setColor(UITheme::panelText);
         if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(label, field);
     }
 
     /** 区块里一行"说明 …… [控件]"（开关、输入框等靠右），说明悬停显示 {@code tooltipKeys}。 */
     public static UIElement controlRow(String labelKey, Widget control, String... tooltipKeys) {
-        var label = TextLine.translatable(0, labelKey).setColor(UITheme.PANEL_TEXT);
+        var label = TextLine.translatable(0, labelKey).setColor(UITheme::panelText);
         label.layout(l -> l.flex(1));
         if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())

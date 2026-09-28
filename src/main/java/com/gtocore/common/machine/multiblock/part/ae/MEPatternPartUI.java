@@ -159,7 +159,7 @@ public final class MEPatternPartUI {
     /** 面板区块：深灰面板，先放一行标题，调用方再往里加内容。 */
     public static UIElement section(UIElement parent, String titleKey) {
         var section = UIElement.section(parent.getContentWidth());
-        section.addChild(Label.translatable(titleKey, section.getContentWidth()).setColor(UITheme.PANEL_TEXT));
+        section.addChild(Label.translatable(titleKey, section.getContentWidth()).setColor(UITheme::panelText));
         parent.addChild(section);
         return section;
     }
@@ -221,7 +221,7 @@ public final class MEPatternPartUI {
 
     /** 一行"说明文字 …… 控件"，控件靠右；用在面板区块里。 */
     public static UIElement labeledRow(int width, String key, @Nullable String tooltipKey, Widget control) {
-        var label = Label.translatable(key, width - control.getSizeWidth() - UISizes.GAP).setColor(UITheme.PANEL_TEXT);
+        var label = Label.translatable(key, width - control.getSizeWidth() - UISizes.GAP).setColor(UITheme::panelText);
         if (tooltipKey != null) label.setHoverTooltips(tooltipKey);
         return UIElement.row(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight()))
                 .layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter())
@@ -230,7 +230,7 @@ public final class MEPatternPartUI {
 
     /** 同上，说明文字的悬浮提示可以有多行（每个键一行）。 */
     public static UIElement labeledRow(int width, String key, Widget control, String... tooltipKeys) {
-        var label = Label.translatable(key, width - control.getSizeWidth() - UISizes.GAP).setColor(UITheme.PANEL_TEXT);
+        var label = Label.translatable(key, width - control.getSizeWidth() - UISizes.GAP).setColor(UITheme::panelText);
         if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
         return UIElement.row(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight()))
                 .layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter())

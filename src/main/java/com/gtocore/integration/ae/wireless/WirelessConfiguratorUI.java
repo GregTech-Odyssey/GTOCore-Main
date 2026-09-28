@@ -106,8 +106,8 @@ public final class WirelessConfiguratorUI {
                 from -> clear(ctx, hand),
                 null, null));
         root.addChild(UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, HINT).setColor(UITheme.TEXT_SECONDARY),
-                TextLine.translatable(LayoutStyle.AUTO, HINT_SNEAK).setColor(UITheme.TEXT_SECONDARY)));
+                TextLine.translatable(LayoutStyle.AUTO, HINT).setColor(UITheme::textSecondary),
+                TextLine.translatable(LayoutStyle.AUTO, HINT_SNEAK).setColor(UITheme::textSecondary)));
         return root;
     }
 

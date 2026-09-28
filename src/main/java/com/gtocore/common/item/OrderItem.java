@@ -37,7 +37,7 @@ public final class OrderItem implements IItemUIFactory, ICustomDescriptionId {
             var name = TextLine.of(0, () -> {
                 var target = getTarget(holder.getHeld());
                 return target.isEmpty() ? Component.translatable(NO_TARGET) : target.getHoverName();
-            }).setColor(UITheme.PANEL_TEXT);
+            }).setColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
             var slot = new PhantomItemSlot(new TargetSlot(holder), 0).xeiPhantom();
             slot.setHoverTooltips(Component.translatable(TARGET));

@@ -289,7 +289,7 @@ public final class SpaceStationFlowPage {
         var field = NumberField.of(fieldWidth, machine::getWaterAmountPerHatch, value -> machine.setWaterAmountPerHatch((int) value), 0, SimpleSpaceStationMachine.MAX_WATER_PER_HATCH);
         field.setHoverTooltips(Component.translatable(LANG_PER_HATCH_TOOLTIP));
         var amountRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
-                .addChildren(TextLine.translatable(LABEL_WIDTH, LANG_PER_HATCH).setColor(UITheme.TEXT_SECONDARY), field);
+                .addChildren(TextLine.translatable(LABEL_WIDTH, LANG_PER_HATCH).setColor(UITheme::textSecondary), field);
         node.addChildren(header,
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::waterView),
                 amountRow,

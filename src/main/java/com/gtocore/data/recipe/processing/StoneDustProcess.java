@@ -357,8 +357,8 @@ public final class StoneDustProcess {
         CELESTIAL_CONDENSER_RECIPES.builder("cruptix_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment)
                 .outputItems(TagPrefix.dust, GTOMaterials.Cruptix)
-                .addData(STELLARM, 40)
-                .duration(2)
+                .addData(STELLARM, 4000)
+                .duration(256)
                 .save();
     }
 }

@@ -94,7 +94,7 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
             var name = TextLine.of(0, () -> {
                 var fluid = getStored(holder.getHeld());
                 return fluid.isEmpty() ? Component.translatable(EMPTY) : fluid.getDisplayName();
-            }).setColor(UITheme.PANEL_TEXT);
+            }).setColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
             var capacity = new NumberField(LayoutStyle.AUTO, () -> getCapacity(holder.getHeld()),
                     value -> setCapacity(holder.getHeld(), (int) Math.clamp(value, 1L, Integer.MAX_VALUE)), () -> 1L, () -> Integer.MAX_VALUE);

@@ -910,7 +910,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
          */
         private void buildConfigPanel(UIElement column) {
             var hint = MEPatternPartUI.section(column, LANG_CONFIG);
-            hint.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_CONFIG_HINT).setColor(UITheme.PANEL_TEXT));
+            hint.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_CONFIG_HINT).setColor(UITheme::panelText));
             MEPatternPartUI.section(column, LANG_CONFIG_ITEMS).addChild(configGrid(true));
             MEPatternPartUI.section(column, LANG_CONFIG_FLUIDS).addChild(configGrid(false));
         }

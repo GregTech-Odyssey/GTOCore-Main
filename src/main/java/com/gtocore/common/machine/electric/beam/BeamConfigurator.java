@@ -58,7 +58,7 @@ final class BeamConfigurator implements IFancyConfigurator {
     /** 标题一行、调节器一行。 */
     private static UIElement labeled(String key, UIElement field) {
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, key).setColor(UITheme.TEXT), field);
+                .addChildren(TextLine.translatable(LayoutStyle.AUTO, key).setColor(UITheme::text), field);
     }
 
     /** 角度（小数调节器，步进 0.1°；四档 0.1° / 1° / 5° / 10°，单位写在标题里）：界面上是度，机器里存弧度。 */

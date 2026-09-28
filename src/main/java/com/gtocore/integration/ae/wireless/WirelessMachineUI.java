@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -217,14 +218,14 @@ public final class WirelessMachineUI {
     public static Widget createPage(WirelessMachine machine, FancyMachineUIWidget host) {
         var root = page();
         if (!machine.allowWirelessConnection()) {
-            return root.addChild(TextLine.translatable(LayoutStyle.AUTO, BANNED).setColor(UITheme.STATUS_OFFLINE));
+            return root.addChild(TextLine.translatable(LayoutStyle.AUTO, BANNED).setColor(() -> UITheme.STATUS_OFFLINE));
         }
         var ctx = new WirelessUIContext(host.getGui().entityPlayer, machine.self()::getOffsetTimer);
         if (!ctx.remote) WirelessSync.pushTo(ctx.serverPlayer());
 
         var main = page();
         if (host instanceof MachineWindow window) {
-            window.setTitleContent(width -> header(machine, width, UITheme.TEXT, () -> networkName(ctx, machine)));
+            window.setTitleContent(width -> header(machine, width, UITheme::text, () -> networkName(ctx, machine)));
             // 客户端只在服务端决定打开后才构建面板，所以查看权限只需服务端判定
             window.registerPopup(DETAIL_POPUP, argument -> ctx.remote || canView(ctx, machine) ? detailPopup(machine, ctx) : null);
             buildMain(main, machine, ctx, true, maxRows(ctx, mainOtherHeight(3, machine), UISizes.CONTROL_HEIGHT),
@@ -257,7 +258,7 @@ public final class WirelessMachineUI {
     // ==================== 标题行 ====================
 
     /** 指示灯 + 一行文字（服务端取值），高 {@link UISizes#CONTROL_HEIGHT}。 */
-    static UIElement header(WirelessMachine machine, int width, int color, Supplier<Component> text) {
+    static UIElement header(WirelessMachine machine, int width, IntSupplier color, Supplier<Component> text) {
         var indicator = Indicator.of(() -> machine.getWirelessLinkState().ordinal(),
                 Indicator.State.of(UITheme.TEXT_SECONDARY, WirelessMachine.KEY_STATE_STANDALONE),
                 Indicator.State.of(UITheme.STATUS_ONLINE, WirelessMachine.KEY_STATE_ONLINE),
@@ -389,7 +390,7 @@ public final class WirelessMachineUI {
         var name = TextLine.of(0, () -> {
             var network = ctx.networks().get(id);
             return network == null ? Component.empty() : Component.literal(network.name());
-        }).setColor(UITheme.PANEL_TEXT);
+        }).setColor(UITheme::panelText);
         name.layout(l -> l.flex(1));
         // 当前网络：红色 [断开]；其他网络：[加入]。点击时以服务端的当前网络为准，不信客户端显示
         var button = Button.text(UISizes.BUTTON_WIDTH, () -> Component.translatable(current.getValue() ? currentKey : actionKey).getString())
@@ -470,7 +471,7 @@ public final class WirelessMachineUI {
         members.addChildren(TextLine.of(LayoutStyle.AUTO, () -> {
             var hub = WirelessHub.get(machine.getWirelessNetworkId());
             return Component.translatable(MEMBERS, hub == null || !canView(ctx, machine) ? 0 : hub.memberCount());
-        }).setColor(UITheme.PANEL_TEXT), scroller);
+        }).setColor(UITheme::panelText), scroller);
         column.addChild(members);
 
         // 删除：二次确认，确认状态在控件里（WirelessSwitch），不在机器上。
@@ -482,10 +483,10 @@ public final class WirelessMachineUI {
         confirm.setHoverTooltips(DELETE_WARNING);
         var cancel = Button.translatable(UISizes.BUTTON_WIDTH, CANCEL);
         var conflict = TextLine.of(0, () -> canView(ctx, machine) && isConflict(machine) ? Component.translatable(CONFLICT) : Component.empty())
-                .setColor(UITheme.STATUS_OFFLINE);
+                .setColor(() -> UITheme.STATUS_OFFLINE);
         conflict.layout(l -> l.flex(1));
         var askRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(conflict, ask);
-        var question = TextLine.translatable(0, DELETE_CONFIRM).setColor(UITheme.PANEL_TEXT);
+        var question = TextLine.translatable(0, DELETE_CONFIRM).setColor(UITheme::panelText);
         question.layout(l -> l.flex(1));
         var confirmRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(question, confirm, cancel);
         var steps = new WirelessSwitch(askRow, confirmRow);
@@ -606,9 +607,9 @@ public final class WirelessMachineUI {
             var tooltips = new Component[] { key.name(), key.location(), Component.translatable(MEMBER_HINT) };
             var icon = ItemView.of(key.icon(), ICON);
             icon.setHoverTooltips(tooltips);
-            var name = TextLine.constant(LayoutStyle.AUTO, key.name()).setSmall().setColor(UITheme.PANEL_TEXT);
+            var name = TextLine.constant(LayoutStyle.AUTO, key.name()).setSmall().setColor(UITheme::panelText);
             name.setHoverTooltips(tooltips);
-            var location = TextLine.constant(LayoutStyle.AUTO, key.location()).setSmall().setColor(UITheme.TEXT_SECONDARY);
+            var location = TextLine.constant(LayoutStyle.AUTO, key.location()).setSmall().setColor(UITheme::textSecondary);
             location.setHoverTooltips(tooltips);
             var lines = new UIElement().layout(l -> l.column().flex(1).gapAll(2)).addChildren(name, location);
             addChildren(icon, lines);

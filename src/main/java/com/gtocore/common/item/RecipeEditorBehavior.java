@@ -272,7 +272,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
 
     /** 区块里一行"名称 …… [输入框]"（开发工具，名称不翻译）。 */
     private static UIElement textRow(String label, TextField field) {
-        var name = TextLine.constant(0, Component.literal(label)).setColor(UITheme.PANEL_TEXT);
+        var name = TextLine.constant(0, Component.literal(label)).setColor(UITheme::panelText);
         name.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(name, field);
     }

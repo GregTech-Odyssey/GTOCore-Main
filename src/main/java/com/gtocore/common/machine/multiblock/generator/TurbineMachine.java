@@ -349,7 +349,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         var reset = Button.translatable(LayoutStyle.AUTO, RESET).setOnServerClick(() -> setHighSpeedFactor(1.0f));
         // 两种锁定原因分两层：外层转子缺失 / 材料不一致，内层转子仍在转动（每个元素只能设一次禁用）
         var controls = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, ADJUST_FACTOR).setColor(UITheme.TEXT), factor, reset)
+                .addChildren(TextLine.translatable(LayoutStyle.AUTO, ADJUST_FACTOR).setColor(UITheme::text), factor, reset)
                 .disabled(this::isAnyRotorSpinning, ROTOR_SPINNING);
         var guarded = UIElement.column(LayoutStyle.AUTO).addChildren(controls)
                 .disabled(() -> !hasMatchingRotors(), ROTOR_MISMATCH);

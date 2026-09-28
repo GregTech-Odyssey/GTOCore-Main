@@ -157,7 +157,7 @@ public interface ITagFilterMachine extends IDropSaveMachine {
 
             var section = UIElement.section(LayoutStyle.AUTO);
             section.addSyncValue(SyncValue.of(tags::hasTags, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(tagList::setDisplay));
-            var title = TextLine.translatable(0, titleKey).setColor(UITheme.PANEL_TEXT);
+            var title = TextLine.translatable(0, titleKey).setColor(UITheme::panelText);
             title.layout(l -> l.flex(1));
             var titleRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
                     .addChildren(title, InfoIcon.info("gtocore.machine.tag_filter.tooltip.0", "gtocore.machine.tag_filter.tooltip.1"));

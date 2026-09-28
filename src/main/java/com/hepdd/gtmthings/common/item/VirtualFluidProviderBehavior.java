@@ -61,7 +61,7 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
             var name = TextLine.of(0, () -> {
                 var fluid = handler.getFluidInTank(0);
                 return fluid.isEmpty() ? Component.translatable(EMPTY) : fluid.getDisplayName();
-            }).setColor(UITheme.PANEL_TEXT);
+            }).setColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
             var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(FluidSlot.of(handler), name);
             return UIElement.section(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChild(row);
