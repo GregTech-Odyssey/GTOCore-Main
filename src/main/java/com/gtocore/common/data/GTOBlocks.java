@@ -78,6 +78,9 @@ public final class GTOBlocks {
     public static final BlockEntry<GelidCryotheumBlock> GELID_CRYOTHEUM = block("gelid_cryotheum", "极寒之凛冰", GelidCryotheumBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .register();
+    public static final BlockEntry<BlazingPyrotheumBlock> BLAZING_PYROTHEUM = block("blazing_pyrotheum", "烈焰之炽焱", BlazingPyrotheumBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .register();
 
     public static final BlockEntry<NukeBombBlock> NUKE_BOMB = block("nuke_bomb", "核弹", NukeBombBlock::new)
             .properties(p -> p.mapColor(MapColor.FIRE).instabreak().sound(SoundType.GRASS).ignitedByLava())

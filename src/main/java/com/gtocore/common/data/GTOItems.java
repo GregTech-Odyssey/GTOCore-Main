@@ -394,7 +394,11 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<BucketItem> GELID_CRYOTHEUM_BUCKET = item("gelid_cryotheum_bucket", "极寒之凛冰桶", p -> new BucketItem(GTOFluids.GELID_CRYOTHEUM, p.craftRemainder(Items.BUCKET).stacksTo(1).rarity(Rarity.COMMON)))
-            .model(NonNullBiConsumer.noop())
+            .model(GTOFluids::bucketModel)
+            .register();
+
+    public static final ItemEntry<BucketItem> BLAZING_PYROTHEUM_BUCKET = item("blazing_pyrotheum_bucket", "烈焰之炽焱桶", p -> new BucketItem(GTOFluids.BLAZING_PYROTHEUM, p.craftRemainder(Items.BUCKET).stacksTo(1).rarity(Rarity.COMMON)))
+            .model(GTOFluids::bucketModel)
             .register();
 
     public static final ItemEntry<Item> COMMAND_WAND = item("command_wand", "命令权杖")

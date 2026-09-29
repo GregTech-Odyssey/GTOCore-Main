@@ -1,0 +1,5 @@
+{
+  "parent": "forge:item/bucket",
+  "fluid": "gtocore:blazing_pyrotheum",
+  "loader": "forge:fluid_container"
+}

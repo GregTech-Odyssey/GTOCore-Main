@@ -233,8 +233,12 @@ public final class GTOMaterials {
     public static Material RetortedShaleOil;
     // 含沙重油（重油）
     public static Material HeavyOilWithSand;
+    // 悬浊重油
+    public static Material HeavyOilSuspension;
     // 含沙轻油（轻油）
     public static Material LightOilWithSand;
+    // 悬浊轻油
+    public static Material LightOilSuspension;
     // 页岩气（天然气）
     public static Material ShaleGas;
     // 致密油原油（原油）
@@ -338,6 +342,10 @@ public final class GTOMaterials {
 
     // 小行星碎渣
     public static Material AsteroidFragment;
+    // 聚星凝核群
+    public static Material StarClusterNucleus;
+    // 烈焰之炽焱
+    public static Material BlazeFlame;
 
     public static Material IronChromiumRedoxFlowBatteryElectrolyte;// iv 2a uev
     public static Material VanadiumRedoxFlowBatteryElectrolyte;// luv 1a uxv

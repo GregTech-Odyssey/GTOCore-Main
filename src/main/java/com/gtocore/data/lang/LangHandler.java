@@ -263,6 +263,7 @@ public final class LangHandler {
                 "Recipe types unlocked by installing auxiliary modules : %s");
 
         addCNEN("fluid.gtocore.gelid_cryotheum", "极寒之凛冰", "Gelid Cryotheum");
+        addCNEN("fluid.gtocore.blazing_pyrotheum", "烈焰之炽焱", "Blazing Pyrotheum");
 
         addCNEN("biome.gtocore.ancient_world_biome", "远古世界", "Ancient World");
         addCNEN("biome.gtocore.barnarda_c_biome", "巴纳德 C", "Barnarda C");

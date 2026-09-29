@@ -23,16 +23,34 @@ public class ExpertFluidProcessing {
         CENTRIFUGE_RECIPES.builder("sand1")
                 .chancedOutput(Items.SAND, 3090, 100)
                 .inputFluids(LightOilWithSand, 1000)
-                .outputFluids(OilLight, 750)
+                .outputFluids(LightOilSuspension, 750)
                 .EUt(30)
                 .duration(450)
+                .save();
+        AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust")
+                .chancedOutput(TagPrefix.dust, GTMaterials.Barite, 400, 50)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.SedimentarySludge, 5000, 100)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.MetamorphicSludge, 5000, 100)
+                .inputFluids(GTOMaterials.LightOilSuspension, 1000)
+                .outputFluids(GTMaterials.OilLight, 1000)
+                .EUt(120)
+                .duration(600)
                 .save();
         CENTRIFUGE_RECIPES.builder("sand2")
                 .chancedOutput(Items.SAND, 3090, 100)
                 .inputFluids(HeavyOilWithSand, 1000)
-                .outputFluids(OilHeavy, 750)
+                .outputFluids(HeavyOilSuspension, 750)
                 .EUt(30)
                 .duration(450)
+                .save();
+        AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust")
+                .chancedOutput(TagPrefix.dust, GTMaterials.Barite, 400, 50)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.SedimentarySludge, 5000, 100)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.MetamorphicSludge, 5000, 100)
+                .inputFluids(GTOMaterials.HeavyOilSuspension, 1000)
+                .outputFluids(GTMaterials.OilHeavy, 1000)
+                .EUt(120)
+                .duration(600)
                 .save();
 
         PYROLYSE_RECIPES.builder("coal_dust1")
@@ -282,7 +300,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dustImpure, GarnetRed, 7500, 700)
                 .chancedOutput(TagPrefix.dustImpure, Lepidolite, 7500, 700)
                 .chancedOutput(TagPrefix.dustImpure, BasalticMineralSand, 7500, 700)
-                .chancedOutput(TagPrefix.dust, ZirconiumOxide, 7500, 700)
+                .chancedOutput(TagPrefix.dust, ZirconiumOxide, 2000, 100)
                 .EUt(30)
                 .duration(2000)
                 .save();
@@ -293,7 +311,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dust, MetalMixture, 7500, 700)
                 .chancedOutput(TagPrefix.dustImpure, Graphite, 7500, 700)
                 .chancedOutput(TagPrefix.dust, MetallicResidues, 7500, 700)
-                .chancedOutput(TagPrefix.dustImpure, NaquadahEnriched, 7500, 700)
+                .chancedOutput(TagPrefix.dustImpure, Cassiterite, 7500, 700)
                 .EUt(30)
                 .duration(2000)
                 .save();
@@ -380,6 +398,19 @@ public class ExpertFluidProcessing {
                 .outputItems(TagPrefix.dust, GTOMaterials.HeavyFerromagneticResidues)
                 .EUt(120)
                 .duration(3000)
+                .save();
+        PETROCHEMICAL_PLANT_RECIPES.builder("salt21_water")
+                .inputFluids(GTOMaterials.ResidualOilMixture, 1000)
+                .inputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 37500 / 8))
+                .outputFluids(GTMaterials.SaltWater, 1000 / 8)
+                .outputFluids(GTMaterials.Naphthalene, 840 / 8)
+                .outputFluids(GTMaterials.Phenol, 960 / 8)
+                .outputFluids(GTMaterials.Octane, 600 / 8)
+                .outputFluids(GTOMaterials.Dimethylnaphthalene, 600 / 8)
+                .outputFluids(GTOMaterials.Cetane, 840 / 8)
+                .outputFluids(GTMaterials.OilHeavy, 1800 / 8)
+                .EUt(1920)
+                .duration(600)
                 .save();
     }
 

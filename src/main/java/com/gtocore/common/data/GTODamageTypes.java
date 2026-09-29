@@ -27,6 +27,7 @@ public final class GTODamageTypes {
     private static final ResourceKey<DamageType> GENERIC = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("generic"));
     private static final ResourceKey<DamageType> MACHINE_HEAT_WAVE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("machine_heat_wave"));
     private static final ResourceKey<DamageType> BLAST_FURNACE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("blast_furnace"));
+    private static final ResourceKey<DamageType> BLAZING_PLASMA = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("blazing_plasma"));
 
     public static final RegistrySetBuilder DAMAGE_TYPES_BUILDER = new RegistrySetBuilder()
             .add(Registries.DAMAGE_TYPE, GTODamageTypes::bootstrap);
@@ -35,6 +36,7 @@ public final class GTODamageTypes {
         context.register(GENERIC, new DamageType("generic", DamageScaling.NEVER, 0.0f, DamageEffects.HURT, DeathMessageType.DEFAULT));
         context.register(MACHINE_HEAT_WAVE, new DamageType("machine_heat_wave", DamageScaling.NEVER, 0.0f, DamageEffects.BURNING, DeathMessageType.DEFAULT));
         context.register(BLAST_FURNACE, new DamageType("blast_furnace", DamageScaling.NEVER, 0.0f, DamageEffects.BURNING, DeathMessageType.DEFAULT));
+        context.register(BLAZING_PLASMA, new DamageType("blazing_plasma", DamageScaling.NEVER, 0.0f, DamageEffects.BURNING, DeathMessageType.DEFAULT));
     }
 
     public static DamageSource getGenericDamageSource(Entity entity, Component customComponent, Runnable onDeath) {
@@ -49,10 +51,9 @@ public final class GTODamageTypes {
         return new BlastFurnaceDamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(BLAST_FURNACE), entity);
     }
 
-    @RegisterLanguage(cn = "员工 %s 在高炉里顷刻炼化", en = "Player %s melted in a blast furnace.")
-    private static final String BLAST_FURNACE_MSG_ID_1 = "gtocore.death.attack.blast_furnace.1";
-    @RegisterLanguage(cn = "员工 %s 尝试在高炉里蒸桑拿", en = "Player %s tired to have a sauna in a blast furnace.")
-    private static final String BLAST_FURNACE_MSG_ID_2 = "gtocore.death.attack.blast_furnace.2";
+    public static DamageSource getBlazingPlasmaDamageSource(Entity entity) {
+        return new DamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(BLAZING_PLASMA), entity);
+    }
 
     private static final class BlastFurnaceDamageSource extends DamageSource {
 
@@ -68,9 +69,6 @@ public final class GTODamageTypes {
             return super.getLocalizedDeathMessage(livingEntity);
         }
     }
-
-    @RegisterLanguage(cn = "悲，员工 %s 死于%s %sK的热浪", en = "Sad, employee %s died from a heat wave of %s %sK")
-    private static final String MACHINE_HEAT_WAVE_MSG_ID = "gtocore.death.attack.machine_heat_wave";
 
     private static final class MachineHeatWaveDamageSource extends DamageSource {
 
@@ -107,4 +105,13 @@ public final class GTODamageTypes {
             return this.customComponent;
         }
     }
+
+    @RegisterLanguage(cn = "员工 %s 在高炉里顷刻炼化", en = "Player %s melted in a blast furnace.")
+    private static final String BLAST_FURNACE_MSG_ID_1 = "gtocore.death.attack.blast_furnace.1";
+    @RegisterLanguage(cn = "员工 %s 尝试在高炉里蒸桑拿", en = "Player %s tired to have a sauna in a blast furnace.")
+    private static final String BLAST_FURNACE_MSG_ID_2 = "gtocore.death.attack.blast_furnace.2";
+    @RegisterLanguage(cn = "悲，员工 %s 死于%s %sK的热浪", en = "Sad, employee %s died from a heat wave of %s %sK")
+    private static final String MACHINE_HEAT_WAVE_MSG_ID = "gtocore.death.attack.machine_heat_wave";
+    @RegisterLanguage(cn = "%s 成为了奔腾炽焱等离子体的一部分", en = "%s became a part of the blazing plasma.")
+    private static final String BLAZING_PLASMA_MSG_ID = "gtocore.death.attack.blazing_plasma";
 }

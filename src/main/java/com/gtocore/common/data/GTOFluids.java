@@ -1,6 +1,8 @@
 package com.gtocore.common.data;
 
+import com.gtocore.common.fluid.BlazingPyrotheumFluid;
 import com.gtocore.common.fluid.GelidCryotheumFluid;
+import com.gtocore.common.fluid.types.BlazingPyrotheumFluidType;
 import com.gtocore.common.fluid.types.GelidCryotheumFluidType;
 
 import com.gtolib.GTOCore;
@@ -41,10 +43,13 @@ public final class GTOFluids {
 
     public static final DeferredRegister<FluidType> FLUID_TYPE = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, GTOCore.MOD_ID);
     public static final RegistryObject<FluidType> GELID_CRYOTHEUM_TYPE = FLUID_TYPE.register("gelid_cryotheum", GelidCryotheumFluidType::new);
+    public static final RegistryObject<FluidType> BLAZING_PYROTHEUM_TYPE = FLUID_TYPE.register("blazing_pyrotheum", BlazingPyrotheumFluidType::new);
 
     public static final DeferredRegister<Fluid> FLUID = DeferredRegister.create(ForgeRegistries.FLUIDS, GTOCore.MOD_ID);
     public static final RegistryObject<FlowingFluid> GELID_CRYOTHEUM = FLUID.register("gelid_cryotheum", GelidCryotheumFluid.Source::new);
+    public static final RegistryObject<FlowingFluid> BLAZING_PYROTHEUM = FLUID.register("blazing_pyrotheum", BlazingPyrotheumFluid.Source::new);
     public static final RegistryObject<FlowingFluid> FLOWING_GELID_CRYOTHEUM = FLUID.register("flowing_gelid_cryotheum", GelidCryotheumFluid.Flowing::new);
+    public static final RegistryObject<FlowingFluid> FLOWING_BLAZING_PYROTHEUM = FLUID.register("flowing_blazing_pyrotheum", BlazingPyrotheumFluid.Flowing::new);
 
     public static final FluidEntry<? extends ForgeFlowingFluid> NUTRIENT_DISTILLATION = fluid("nutrient_distillation", "营养精华液")
             .properties(p -> p.density(1500).viscosity(3000))
@@ -113,7 +118,7 @@ public final class GTOFluids {
                 .build();
     }
 
-    private static DynamicFluidContainerModelBuilder<ItemModelBuilder> bucketModel(DataGenContext<Item, BucketItem> ctx, RegistrateItemModelProvider prov) {
+    public static DynamicFluidContainerModelBuilder<ItemModelBuilder> bucketModel(DataGenContext<Item, BucketItem> ctx, RegistrateItemModelProvider prov) {
         return prov.withExistingParent(ctx.getName(), ResourceLocation.fromNamespaceAndPath(ForgeVersion.MOD_ID, "item/bucket"))
                 .customLoader(DynamicFluidContainerModelBuilder::begin)
                 .fluid(ctx.get().getFluid());

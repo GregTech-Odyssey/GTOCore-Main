@@ -1000,7 +1000,7 @@ public final class MultiBlockB {
                     .where('C', blocks(GTOBlocks.CHEMICAL_GRADE_GLASS.get()))
                     .wherePart('D', blocks(GTOBlocks.STABILIZED_NAQUADAH_WATER_PLANT_CASING.get())
                             .or(blocks(GTOMachines.PH_SENSOR.get()).setMaxGlobalLimited(2).setPreviewCount(1))
-                            .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1).setPreviewCount(1))
+                            .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
                             .or(abilities(EXPORT_FLUIDS).setMaxGlobalLimited(2).setPreviewCount(1)))
                     .where(' ', any())
                     .build())
