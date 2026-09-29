@@ -76,7 +76,7 @@ final class OverviewSelector {
         var data = view.selected();
         if (data == null) return list;
         for (var member : adapter.members(data)) {
-            if (StructurePattern.of(member) != null && adapter.category(member) == category) list.add(member);
+            if (member.hasStructure() && adapter.category(member) == category) list.add(member);
         }
         return list;
     }

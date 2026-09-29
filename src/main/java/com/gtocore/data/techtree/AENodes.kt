@@ -9,10 +9,10 @@ import com.gtocore.api.research.ResearchTag.MATERIAL
 import com.gtocore.api.research.ResearchTag.MECHANICS
 import com.gtocore.common.data.GTOItems
 import com.gtocore.common.data.machines.MultiBlockG
+import com.gtocore.config.GTORules
 import com.gtocore.data.techtree.BaseNodes.AETree
 import com.gtocore.data.techtree.BaseNodes.MainTree
 
-import com.gtolib.GTOCore
 import com.gtolib.utils.RegistriesUtils
 
 object AENodes : AutoInitialize<AENodes>() {
@@ -23,7 +23,7 @@ object AENodes : AutoInitialize<AENodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(32 * 20 * 240L)
-                .setEurekaItem(RegistriesUtils.getItem("expatternprovider:ex_molecular_assembler"), if (GTOCore.isExpert()) 0.9f else 1f)
+                .setEurekaItem(RegistriesUtils.getItem("expatternprovider:ex_molecular_assembler"), if (GTORules.TECH_TREE_TIER.isExpert()) 0.9f else 1f)
                 .build(),
         )
         .build()
@@ -69,7 +69,7 @@ object AENodes : AutoInitialize<AENodes>() {
                 .setCWUNeeded(64 * 20 * 1200L)
                 .addMaterialNeeded(MATERIAL, 640)
                 .addMaterialNeeded(CATALYSIS, 256)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_catalyst_hatch"), if (GTOCore.isEasy()) 1f else 0.8F)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_catalyst_hatch"), if (GTORules.TECH_TREE_TIER.isEasy()) 1f else 0.8F)
                 .build(),
         )
         .tier(2)
@@ -83,12 +83,12 @@ object AENodes : AutoInitialize<AENodes>() {
         .requirements(
             ResearchRequirements.Builder()
                 .setCWUNeeded(64 * 20 * 1200L)
-                .addMaterialNeeded(DATA_STORAGE, 25L shl (GTOCore.difficulty * 2))
-                .addMaterialNeeded(MECHANICS, 12L * GTOCore.difficulty)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), if (GTOCore.isEasy()) 1f else 0.8F)
+                .addMaterialNeeded(DATA_STORAGE, 25L shl (GTORules.TECH_TREE_TIER.level() * 2))
+                .addMaterialNeeded(MECHANICS, 12L * GTORules.TECH_TREE_TIER.level())
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), if (GTORules.TECH_TREE_TIER.isEasy()) 1f else 0.8F)
                 .build(),
         )
-        .tier(GTOCore.difficulty)
+        .tier(GTORules.TECH_TREE_TIER.level())
         .build()
 
     @JvmField
@@ -101,9 +101,9 @@ object AENodes : AutoInitialize<AENodes>() {
                 .setCWUNeeded(64 * 20 * 1200L)
                 .addMaterialNeeded(MATERIAL, 640)
                 .addMaterialNeeded(CATALYSIS, 128)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:iv_drone"), if (GTOCore.isEasy()) 1f else 0.8F)
+                .setEurekaItem(RegistriesUtils.getItem("gtocore:iv_drone"), if (GTORules.TECH_TREE_TIER.isEasy()) 1f else 0.8F)
                 .build(),
         )
-        .tier(if (GTOCore.isEasy()) 1 else 2)
+        .tier(if (GTORules.TECH_TREE_TIER.isEasy()) 1 else 2)
         .build()
 }

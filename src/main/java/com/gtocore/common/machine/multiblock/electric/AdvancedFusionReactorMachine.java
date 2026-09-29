@@ -79,6 +79,8 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @Getter
     @SyncToClient
     private int highEnergyModules;
+    @Nullable
+    private GTRecipe colorRecipe;
     private static final int tier = LuV;
     @SaveToDisk(defaultValue = "0")
     private long heat = 0;
@@ -153,9 +155,9 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
 
     @Override
     public void onWorking() {
-        if (color == -1) {
-            GTRecipe recipe = recipeLogic.getLastRecipe();
-            assert recipe != null;
+        GTRecipe recipe = recipeLogic.getLastRecipe();
+        if (recipe != null && recipe != colorRecipe) {
+            colorRecipe = recipe;
             if (!recipe.fluidOutputs.isEmpty()) {
                 var fluid = recipe.fluidOutputs.getFirst().inner.getFluid();
                 if (fluid != null) {
@@ -167,18 +169,6 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
             }
         }
         super.onWorking();
-    }
-
-    @Override
-    public void onWaiting() {
-        super.onWaiting();
-        color = -1;
-    }
-
-    @Override
-    public void afterWorking() {
-        super.afterWorking();
-        color = -1;
     }
 
     @Override

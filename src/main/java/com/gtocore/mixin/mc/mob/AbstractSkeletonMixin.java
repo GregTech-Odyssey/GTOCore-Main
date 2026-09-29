@@ -1,6 +1,6 @@
 package com.gtocore.mixin.mc.mob;
 
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
@@ -29,7 +29,7 @@ public class AbstractSkeletonMixin extends Monster {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
-        gtolib$intensify = (GTOCore.isEasy() || level().getDifficulty().getId() == 0) ? 1 : 1 + getRandom().nextInt(level().getDifficulty().getId());
+        gtolib$intensify = (!GTORules.MOB_ENHANCEMENT.get() || level().getDifficulty().getId() == 0) ? 1 : 1 + getRandom().nextInt(level().getDifficulty().getId());
     }
 
     @ModifyArg(method = "performRangedAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;shoot(DDDFF)V"), index = 3)

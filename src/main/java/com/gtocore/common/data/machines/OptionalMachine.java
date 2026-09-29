@@ -4,9 +4,9 @@ import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.multiblock.electric.ChiselMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MESimplePatternBufferPartMachine;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.utils.MultiBlockFileReader;
 
@@ -33,7 +33,7 @@ public final class OptionalMachine {
 
     public static void init() {}
 
-    public static final MachineDefinition ME_SIMPLE_PATTERN_BUFFER = GTCEu.isDev() || GTOCore.isEasy() ?
+    public static final MachineDefinition ME_SIMPLE_PATTERN_BUFFER = GTCEu.isDev() || GTORules.SIMPLE_PATTERN_BUFFER_SLOTS.get() > 0 ?
 
             machine("me_simple_pattern_buffer", "ME简单样板总成", MESimplePatternBufferPartMachine::new)
                     .langValue("ME Simple Pattern Buffer")

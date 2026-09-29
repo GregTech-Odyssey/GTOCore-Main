@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space;
 
 import com.gtocore.common.machine.multiblock.part.research.SimpleResearchTagPartMachine;
-
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
@@ -15,8 +14,6 @@ import org.jetbrains.annotations.Nullable;
 public class SpaceElevatorDataModuleMachine extends SpaceElevatorModuleMachine {
 
     private @Nullable SimpleResearchTagPartMachine researchTagPartMachine;
-
-    private static final int WORKS_PER_PRODUCED_DATA = GTOCore.isExpert() ? 75 : 50;
 
     @SaveToDisk(defaultValue = "0")
     private long moduleWorks = 0;
@@ -40,7 +37,7 @@ public class SpaceElevatorDataModuleMachine extends SpaceElevatorModuleMachine {
     }
 
     private int getWorksPerProducedData() {
-        return WORKS_PER_PRODUCED_DATA * 4 / (3 + getSpaceElevatorTier());
+        return GTORules.SPACE_DATA_WORKS.get() * 4 / (3 + getSpaceElevatorTier());
     }
 
     @Override

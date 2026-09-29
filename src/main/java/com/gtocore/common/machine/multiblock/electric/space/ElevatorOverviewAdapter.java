@@ -135,7 +135,7 @@ public final class ElevatorOverviewAdapter implements OverviewAdapter {
         if (!(machine instanceof SpaceElevatorMachine)) return;
         for (int kind = 0; kind < protocols.length; kind++) {
             for (var port : assembly.ports(protocols[kind])) {
-                out.accept(new OverviewSnapshot.Anchor(List.of(port.immutable()), kind, OverviewDocking.horizontalAway(port, centroid), port.getX() + 0.5f,
+                out.accept(new OverviewSnapshot.Anchor(Collections.singletonList(port.immutable()), kind, OverviewDocking.horizontalAway(port, centroid), port.getX() + 0.5f,
                         port.getY() + 0.5f, port.getZ() + 0.5f));
             }
         }

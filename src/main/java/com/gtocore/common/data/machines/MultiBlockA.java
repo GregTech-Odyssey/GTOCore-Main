@@ -20,6 +20,7 @@ import com.gtocore.common.machine.multiblock.noenergy.AdvancedPrimitiveBlastFurn
 import com.gtocore.common.machine.multiblock.steam.LargeSteamCircuitAssemblerMachine;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamMultiblockMachine;
 import com.gtocore.common.machine.multiblock.steam.SteamMultiblockMachine;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.NewDataAttributes;
@@ -959,7 +960,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_PISTON_HAMMER = multiblock("steam_piston_hammer", "蒸汽活塞锤", SteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.FORGE_HAMMER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -982,7 +983,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_FORGE_HAMMER = multiblock("large_steam_forge_hammer", "大型蒸汽锻造锤", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.FORGE_HAMMER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1007,7 +1008,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_PRESSOR = multiblock("steam_pressor", "蒸汽挤压机", SteamMultiblockMachine::new)
             .allRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.COMPRESSOR_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1027,7 +1028,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_FOUNDRY = multiblock("steam_foundry", "蒸汽铸造炉", SteamMultiblockMachine::new)
             .allRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.ALLOY_SMELTER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1048,7 +1049,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_MACERATOR = multiblock("large_steam_macerator", "大型蒸汽研磨机", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.MACERATOR_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1075,7 +1076,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_CIRCUIT_ASSEMBLER = multiblock("large_steam_circuit_assembler", "大型蒸汽电路组装机", LargeSteamCircuitAssemblerMachine::new)
             .allRotation()
-            .addTooltipsFromClass(LargeSteamCircuitAssemblerMachine.class)
+            .ruleTooltips(GTORules.STEAM_CIRCUIT_PARALLELS, GTORules.STEAM_CIRCUIT_DURATION, GTORules.STEAM_CIRCUIT_STEAM_COST, GTORules.STEAM_CIRCUIT_OUTPUT, GTORules.STEAM_CIRCUIT_ENGRAVING)
             .tooltips(GTOMachineStories.LargeSteamCircuitAssemblerTooltips)
             .tooltips(GTOMachineTooltips.LargeSteamCircuitAssemblerTooltips)
             .maxTier(2)
@@ -1104,7 +1105,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_MIXER = multiblock("large_steam_mixer", "大型蒸汽搅拌机", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .tooltips(GTOMachineTooltips.SteamMixerTooltips)
             .recipeTypes(GTRecipeTypes.MIXER_RECIPES)
             .steamOverclock()
@@ -1129,7 +1130,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_MIXER = multiblock("steam_mixer", "蒸汽搅拌机", SteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.MIXER_RECIPES)
             .tooltips(GTOMachineTooltips.SteamMixerTooltips)
             .steamOverclock()
@@ -1155,7 +1156,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_SEPARATOR = multiblock("steam_separator", "蒸汽分离机", (holder) -> new SteamMultiblockMachine(holder, 8))
             .nonYAxisRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.CENTRIFUGE_RECIPES)
             .steamOverclock(0)
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1179,7 +1180,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_CENTRIFUGE = multiblock("large_steam_centrifuge", "大型蒸汽离心机", (holder) -> new LargeSteamMultiblockMachine(holder, 8))
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.CENTRIFUGE_RECIPES)
             .steamOverclock(0)
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1208,7 +1209,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_THERMAL_CENTRIFUGE = multiblock("large_steam_thermal_centrifuge", "大型蒸汽热力离心机", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.THERMAL_CENTRIFUGE_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1233,7 +1234,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_BATH = multiblock("large_steam_bath", "大型蒸汽浸洗机", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.CHEMICAL_BATH_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1260,7 +1261,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_BATH = multiblock("steam_bath", "蒸汽浸洗机", SteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.CHEMICAL_BATH_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1285,7 +1286,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_ORE_WASHER = multiblock("large_steam_ore_washer", "大型蒸汽洗矿机", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.ORE_WASHER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1312,7 +1313,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition STEAM_ORE_WASHER = multiblock("steam_ore_washer", "蒸汽洗矿机", SteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTRecipeTypes.ORE_WASHER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1336,7 +1337,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_FURNACE = multiblock("large_steam_furnace", "大型蒸汽熔炉", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTRecipeTypes.FURNACE_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)

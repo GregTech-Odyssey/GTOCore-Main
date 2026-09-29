@@ -1,11 +1,9 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.config.GTORules;
 import com.gtocore.data.CraftingComponents;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.IGTOMufflerMachine;
 import com.gtolib.api.machine.trait.MEOutputItemHandler;
@@ -60,24 +58,6 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     private int recoveryChance = 0;
 
     private int muffler_tier = 0;
-    @DynamicInitialValue(typeKey = DynamicInitialValueTypes.KEY_AMOUNT,
-                         key = "me_muffler_hatch.amplifier_max_amount",
-                         easyValue = "4",
-                         normalValue = "16",
-                         expertValue = "64",
-                         cn = "集控核心最大数量",
-                         cnComment = "增幅到最大值所需的集控核心数量为%s。",
-                         en = "")
-    private static int COUNT = 16;
-    @DynamicInitialValue(typeKey = DynamicInitialValueTypes.KEY_AMOUNT,
-                         key = "me_muffler_hatch.amplifier_min_amount",
-                         easyValue = "1",
-                         normalValue = "4",
-                         expertValue = "16",
-                         cn = "集控核心最小数量",
-                         cnComment = "启用增幅所需的集控核心数量为%s。",
-                         en = "")
-    private static int MIN_COUNT = 4;
 
     public MEMufflerHatchPartMachine(@NotNull MetaMachineBlockEntity holder) {
         super(holder, IO.NONE);
@@ -90,7 +70,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
 
             @Override
             public int getSlotLimit(int slot) {
-                return COUNT;
+                return GTORules.ME_MUFFLER_MAX.get();
             }
         };
         amplifierInv.setFilter(stack -> Wrapper.AMPLIFIER_TIER_MAP.containsKey(stack.getItem()));
@@ -108,7 +88,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
         if (Objects.equals(Wrapper.AMPLIFIER_TIER_MAP.get(amplifierIs.getItem()), Wrapper.MUFFLER_HATCH.get(item))) {
             var recoveryChanceMin = muffler_tier * 10;
             var recoveryChanceMax = recoveryChanceMin * muffler_tier;
-            recoveryChance = (recoveryChanceMax - recoveryChanceMin) * (amplifierIs.getCount() - MIN_COUNT) / (COUNT - MIN_COUNT);
+            recoveryChance = (recoveryChanceMax - recoveryChanceMin) * (amplifierIs.getCount() - GTORules.ME_MUFFLER_MIN.get()) / Math.max(1, GTORules.ME_MUFFLER_MAX.get() - GTORules.ME_MUFFLER_MIN.get());
             recoveryChance += recoveryChanceMin;
             recoveryChance = Math.max(recoveryChance, recoveryChanceMin);
         } else {
@@ -185,7 +165,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
         var status = new StatusPanel();
         status.addSentence(() -> Component.translatable("gtceu.muffler.recovery_tooltip", recoveryChance));
         var muffler = ItemSlot.of(mufflerHatchInv.storage, 0);
-        muffler.setHoverTooltips(Component.translatable(GTOCore.isExpert() ? MUFFLER_TOOLTIP_KEY_EXPERT : MUFFLER_TOOLTIP_KEY));
+        muffler.setHoverTooltips(Component.translatable(GTORules.MUFFLER_TIER.isExpert() ? MUFFLER_TOOLTIP_KEY_EXPERT : MUFFLER_TOOLTIP_KEY));
         var amplifier = ItemSlot.of(amplifierInv.storage, 0);
         amplifier.setHoverTooltips(Component.translatable(AMPLIFIER_TOOLTIP_KEY));
         var slots = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(muffler, amplifier);
@@ -220,7 +200,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
         static {
             var mufflerMap = new HashMap<Item, Integer>();
             for (var i : GTMachines.MUFFLER_HATCH) {
-                if (i != null && (i.getTier() >= GTValues.LuV || GTOCore.isExpert())) {
+                if (i != null && (i.getTier() >= GTValues.LuV || GTORules.MUFFLER_TIER.isExpert())) {
                     mufflerMap.put(i.asItem(), i.getTier());
                 }
             }

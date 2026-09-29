@@ -3,8 +3,8 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.machine.GTOCleanroomType;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -21,7 +21,7 @@ import static com.gtocore.common.data.GTORecipeTypes.FORMING_PRESS_RECIPES;
 final class FormingPress {
 
     public static void init() {
-        if (GTOCore.isEasy()) {
+        if (GTORules.RECIPE_TIER.isEasy()) {
             FORMING_PRESS_RECIPES.recipeBuilder("engineering_processor_p")
                     .notConsumable(AEItems.SILICON_PRESS.asItem())
                     .notConsumable(AEItems.ENGINEERING_PROCESSOR_PRESS.asItem())

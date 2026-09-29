@@ -58,7 +58,10 @@ public record OverviewSnapshot(List<Module> modules, List<Anchor> anchors, byte 
         }
 
         public void collect(Long2ObjectOpenHashMap<BlockState> into) {
-            var layout = layout();
+            collect(layout(), into);
+        }
+
+        public void collect(@Nullable Layout layout, Long2ObjectOpenHashMap<BlockState> into) {
             if (layout == null) return;
             var cursor = new BlockPos.MutableBlockPos();
             int n = Math.min(blocks.length, layout.cells().size());

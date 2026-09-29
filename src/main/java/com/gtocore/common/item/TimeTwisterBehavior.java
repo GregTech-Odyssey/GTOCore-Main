@@ -2,8 +2,8 @@ package com.gtocore.common.item;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.entity.TaskEntity;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.feature.IManaContainerMachine;
@@ -191,7 +191,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
     }
 
     private static @Nullable BigInteger getUnitCost(GTRecipe recipe, boolean isMana) {
-        int energyMultiplier = 2 << GTOCore.difficulty;
+        int energyMultiplier = GTORules.TIME_TWISTER_ENERGY.get();
         BigInteger unitCost = isMana ? BigInteger.valueOf(MANATRecipeExtension.getInputMANAt(recipe)) : BigInteger.valueOf(recipe.getInputEUt());
         if (unitCost.compareTo(BigInteger.ZERO) <= 0) return null;
         return unitCost.multiply(BigInteger.valueOf(energyMultiplier));
@@ -257,7 +257,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         }
 
         int maxReducedDuration = Math.max((int) ((recipeLogic.getDuration() - recipeLogic.getProgress()) * 0.5), 10);
-        int energyMultiplier = 2 << GTOCore.difficulty;
+        int energyMultiplier = GTORules.TIME_TWISTER_ENERGY.get();
 
         if (machine instanceof IOverclockMachine) {
             var eut = BigInteger.valueOf(recipe.getInputEUt());

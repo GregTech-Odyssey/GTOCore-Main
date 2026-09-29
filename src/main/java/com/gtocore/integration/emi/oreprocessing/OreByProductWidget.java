@@ -1,9 +1,9 @@
 package com.gtocore.integration.emi.oreprocessing;
 
 import com.gtocore.common.data.machines.MultiBlockC;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.recipe.generated.GTOOreRecipeHandler;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.recipe.ContentBuilder;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -85,7 +85,7 @@ final class OreByProductWrapper {
         boolean gemRecipesEnabled = material.hasProperty(PropertyKey.GEM) &&
                 !material.hasFlag(DISABLE_GEM_RECIPES);
         boolean normalSifterEnabled = gemRecipesEnabled && !material.hasFlag(MaterialFlags.NO_ORE_SIFTING);
-        int rawOreCrushedAmount = Math.max(1, oreMultiplier * (GTOCore.isExpert() ? 4 : 6) / 2);
+        int rawOreCrushedAmount = Math.max(1, oreMultiplier * (GTORules.ORE_TIER.isExpert() ? 4 : 6) / 2);
         currentSlot = 0;
         Material[] byproducts = (new Material[] { property.getOreByProduct(0, material), property.getOreByProduct(1, material), property.getOreByProduct(2, material), property.getOreByProduct(3, material) });
         // "INPUTS"

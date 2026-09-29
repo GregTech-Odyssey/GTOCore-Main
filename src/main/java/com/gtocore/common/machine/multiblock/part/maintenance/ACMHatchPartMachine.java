@@ -1,7 +1,8 @@
 package com.gtocore.common.machine.multiblock.part.maintenance;
 
+import com.gtocore.config.GTORules;
+
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -26,7 +27,6 @@ import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,20 +35,11 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import static com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes.KEY_MULTIPLY;
-
 @Scanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IMaintenanceMachine, IMachineLife {
 
-    @Getter
-    @DynamicInitialValue(key = "maintenance.configurable_duration.max", typeKey = KEY_MULTIPLY, easyValue = "1.3F", normalValue = "1.2F", expertValue = "1.1F", cn = "配方处理速度乘数上限 : %s", cnComment = "不计超频，配方处理速度乘数的最高值", en = "Configurable Recipe Speed Multiplier Maximum : %s Multiplier", enComment = "Ignore overclocking, the recipe processing speed is the highest multiplier for normal speed")
-    private static float MAX_DURATION_MULTIPLIER = 1.0F;
-
-    @Getter
-    @DynamicInitialValue(key = "maintenance.configurable_duration.min", typeKey = KEY_MULTIPLY, easyValue = "0.7F", normalValue = "0.8F", expertValue = "0.9F", cn = "配方处理速度乘数下限 : %s", cnComment = "不计超频，配方处理速度乘数的最低值", en = "Configurable Recipe Speed Multiplier Minimum : %s Multiplier", enComment = "Ignore overclocking, the recipe processing speed is the lowest multiplier for normal speed")
-    private static float MIN_DURATION_MULTIPLIER = 1.0F;
     private static final float DURATION_ACTION_AMOUNT = 0.01F;
 
     @SaveToDisk(defaultValue = "1.0")
@@ -103,7 +94,7 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
     @Override
     public void onMachinePlaced(@org.jetbrains.annotations.Nullable LivingEntity player, ItemStack stack) {
         if (player != null && player.isShiftKeyDown()) {
-            durationMultiplier = MIN_DURATION_MULTIPLIER;
+            durationMultiplier = GTORules.CONFIGURABLE_MAINTENANCE_MIN.get();
         }
     }
 
@@ -117,8 +108,8 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
 
     protected void incInternalMultiplier(int multiplier) {
         float newDurationMultiplier = durationMultiplier + DURATION_ACTION_AMOUNT * multiplier;
-        if (newDurationMultiplier >= MAX_DURATION_MULTIPLIER) {
-            durationMultiplier = MAX_DURATION_MULTIPLIER;
+        if (newDurationMultiplier >= GTORules.CONFIGURABLE_MAINTENANCE_MAX.get()) {
+            durationMultiplier = GTORules.CONFIGURABLE_MAINTENANCE_MAX.get();
             return;
         }
         durationMultiplier = newDurationMultiplier;
@@ -126,8 +117,8 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
 
     protected void decInternalMultiplier(int multiplier) {
         float newDurationMultiplier = durationMultiplier - DURATION_ACTION_AMOUNT * multiplier;
-        if (newDurationMultiplier <= MIN_DURATION_MULTIPLIER) {
-            durationMultiplier = MIN_DURATION_MULTIPLIER;
+        if (newDurationMultiplier <= GTORules.CONFIGURABLE_MAINTENANCE_MIN.get()) {
+            durationMultiplier = GTORules.CONFIGURABLE_MAINTENANCE_MIN.get();
             return;
         }
         durationMultiplier = newDurationMultiplier;

@@ -13,6 +13,7 @@ import com.gtocore.common.machine.multiblock.electric.space.MegaSpaceElevatorMod
 import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorModuleMachine;
 import com.gtocore.common.machine.multiblock.noenergy.NeutronIrradiationChamber;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamSolarBoilerMachine;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.NewDataAttributes;
@@ -534,7 +535,7 @@ public final class MultiBlockH {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_SOLAR_BOILER = multiblock("large_steam_solar_boiler", "大型蒸汽太阳能锅炉", LargeSteamSolarBoilerMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamSolarBoilerMachine.class)
+            .ruleTooltips(GTORules.STEAM_SOLAR_RATE)
             .tooltips(GTOMachineStories.LargeSteamSolarBoilerTooltips)
             .tooltips(GTOMachineTooltips.LargeSteamSolarBoilerTooltips)
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)

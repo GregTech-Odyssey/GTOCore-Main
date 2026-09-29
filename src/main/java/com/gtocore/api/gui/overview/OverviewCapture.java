@@ -90,7 +90,7 @@ final class OverviewCapture {
             var pending = queue.poll();
             var machine = pending.machine;
             var definition = machine.getDefinition();
-            var structure = StructurePattern.of(definition);
+            var structure = definition.hasStructure() && definition.getPatternFactory()[0].get() instanceof StructurePattern pattern ? pattern.getStructure() : null;
             if (structure == null) continue;
             assembly = machine.isFormed() ? machine.getAssembly() : null;
             values = assembly != null ? structure.valuesOf(assembly) : structure.defaultValues();

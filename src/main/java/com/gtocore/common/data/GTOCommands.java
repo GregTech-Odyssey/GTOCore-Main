@@ -11,6 +11,7 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
+import com.gtolib.api.rule.RuleManager;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RLUtils;
@@ -112,6 +113,11 @@ public final class GTOCommands {
                             ServerLangHook.set(ctx.getSource().getServer(), lang);
                             return 1;
                         })))
+                .then(Commands.literal("rules").executes(ctx -> {
+                    var lines = RuleManager.summary(RuleManager.current());
+                    for (var line : lines) ctx.getSource().sendSuccess(() -> line, false);
+                    return lines.size();
+                }))
                 .then(TechTreeCommands.register())
                 .then(ResarchTagCommands.register())
                 .then(ResarchTagCommands.registerScan()));

@@ -1,8 +1,7 @@
 package com.gtocore.mixin.ftbu;
 
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.apotheosis.FTBUltimineAffix;
-
-import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.block.OreBlock;
 import com.gregtechceu.gtceu.api.item.IGTTool;
@@ -53,7 +52,7 @@ public class ShapeContextMixin {
         }
         ItemStack stack = player.getMainHandItem();
         Item item = stack.getItem();
-        int base = 128 >> GTOCore.difficulty;
+        int base = GTORules.ULTIMINE_LIMIT.get();
         switch (item) {
             case SpellBook spellBook -> {
                 base <<= spellBook.tier.value;
@@ -66,7 +65,7 @@ public class ShapeContextMixin {
                 if (gtTool.isElectric()) base *= 1 << (gtTool.getElectricTier());
                 ret = Math.min(base, maxBlocks);
             }
-            case DiggerItem ignored -> ret = Math.min(64 >> GTOCore.difficulty, maxBlocks);
+            case DiggerItem ignored -> ret = Math.min(GTORules.ULTIMINE_LIMIT.get() >> 1, maxBlocks);
             default -> {
                 // Infinite spray can: chain paint preview uses sprayCanChainLength
                 if (stack.is(GTItems.INFINITE_SPRAY_CAN.get())) {

@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.mod;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMachines;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -24,7 +25,7 @@ import appeng.core.definitions.AEItems;
 public class ComputerCraft {
 
     public static void init() {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (!Mods.COMPUTERCRAFT.isLoaded()) return;
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("computer_normal"), RegistriesUtils.getItemStack("computercraft:computer_normal"),

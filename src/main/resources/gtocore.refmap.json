@@ -197,7 +197,8 @@
     },
     "com/gtolib/mixin/mc/client/WorldListMixin$WorldListEntryMixin": {
       "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I": "Lnet/minecraft/client/gui/GuiGraphics;m_280614_(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
-      "render": "Lnet/minecraft/client/gui/screens/worldselection/WorldSelectionList$WorldListEntry;m_6311_(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V"
+      "render": "Lnet/minecraft/client/gui/screens/worldselection/WorldSelectionList$WorldListEntry;m_6311_(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V",
+      "joinWorld": "Lnet/minecraft/client/gui/screens/worldselection/WorldSelectionList$WorldListEntry;m_101704_()V"
     },
     "com/gtocore/mixin/mc/ItemEntityMixin": {
       "Lnet/minecraft/world/level/Level;getEntitiesOfClass(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;": "Lnet/minecraft/world/level/Level;m_6443_(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;",
@@ -293,7 +294,8 @@
     },
     "com/gtolib/mixin/mc/client/CreateWorldScreenMixin": {
       "init": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_7856_()V",
-      "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;": "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;m_264139_(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"
+      "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;": "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;m_264139_(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
+      "onCreate": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_100972_()V"
     },
     "com/gtolib/mixin/mc/entity/LivingEntityMixin": {
       "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getRespiration(Lnet/minecraft/world/entity/LivingEntity;)I": "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;m_44918_(Lnet/minecraft/world/entity/LivingEntity;)I",
@@ -582,7 +584,8 @@
       },
       "com/gtolib/mixin/mc/client/WorldListMixin$WorldListEntryMixin": {
         "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I": "Lnet/minecraft/client/gui/GuiGraphics;m_280614_(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
-        "render": "Lnet/minecraft/client/gui/screens/worldselection/WorldSelectionList$WorldListEntry;m_6311_(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V"
+        "render": "Lnet/minecraft/client/gui/screens/worldselection/WorldSelectionList$WorldListEntry;m_6311_(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V",
+        "joinWorld": "Lnet/minecraft/client/gui/screens/worldselection/WorldSelectionList$WorldListEntry;m_101704_()V"
       },
       "com/gtocore/mixin/mc/ItemEntityMixin": {
         "Lnet/minecraft/world/level/Level;getEntitiesOfClass(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;": "Lnet/minecraft/world/level/Level;m_6443_(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;",
@@ -678,7 +681,8 @@
       },
       "com/gtolib/mixin/mc/client/CreateWorldScreenMixin": {
         "init": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_7856_()V",
-        "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;": "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;m_264139_(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"
+        "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;": "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;m_264139_(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
+        "onCreate": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_100972_()V"
       },
       "com/gtolib/mixin/mc/entity/LivingEntityMixin": {
         "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getRespiration(Lnet/minecraft/world/entity/LivingEntity;)I": "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;m_44918_(Lnet/minecraft/world/entity/LivingEntity;)I",

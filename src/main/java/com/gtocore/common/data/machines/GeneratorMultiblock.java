@@ -13,6 +13,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.space.DysonSphereLaunchSiloMachine;
 import com.gtocore.common.machine.multiblock.electric.space.DysonSphereReceivingStationMcahine;
 import com.gtocore.common.machine.multiblock.generator.*;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.NewDataAttributes;
@@ -547,7 +548,7 @@ public final class GeneratorMultiblock {
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
             .generator()
-            .addTooltipsFromClass(GeneratorArrayMachine.class)
+            .ruleTooltips(GTORules.GENERATOR_ARRAY_MULTIPLY, GTORules.GENERATOR_ARRAY_LOSS, GTORules.GENERATOR_ARRAY_LIMIT)
             .tooltips(NewDataAttributes.RECIPES_TYPE.create(
                     Component.empty().append(Component.translatable("gtceu.steam_turbine"))
                             .append(", ").append(Component.translatable("gtceu.combustion_generator"))
@@ -616,7 +617,7 @@ public final class GeneratorMultiblock {
             .recipeTypes(GTORecipeTypes.FUEL_CELL_ENERGY_TRANSFER_RECIPES)
             .recipeTypes(GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES)
             .generator()
-            .addTooltipsFromClass(FullCellGenerator.class)
+            .ruleTooltips(GTORules.FUEL_CELL_CONSUME)
             .tooltipsSupplier(GTOMachineTooltips.FuelCellGeneratorTooltips)
             .block(GTOBlocks.IRIDIUM_CASING)
             .recipeModifier((m, u, r) -> {

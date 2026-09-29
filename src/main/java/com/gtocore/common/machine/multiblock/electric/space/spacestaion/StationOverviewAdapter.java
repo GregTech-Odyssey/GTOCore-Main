@@ -70,7 +70,7 @@ public final class StationOverviewAdapter implements OverviewAdapter {
 
     public static int categoryOf(MachineDefinition definition) {
         return definition == SpaceMultiblock.SPACE_STATION_DOCKING_MODULE || definition == SpaceMultiblock.SPACE_STATION_TRANSPARENT_DOCKING_MODULE ||
-                definition == SpaceMultiblock.SPACE_STATION_EXTENSION_MODULE ? CONNECTORS : FUNCTIONAL;
+                definition == SpaceMultiblock.SPACE_STATION_OBSERVATION_DECK_MODULE || definition == SpaceMultiblock.SPACE_STATION_EXTENSION_MODULE ? CONNECTORS : FUNCTIONAL;
     }
 
     @Override

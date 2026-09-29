@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.generator;
 
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
+
 import com.gtolib.api.capability.IManaContainer;
 import com.gtolib.api.machine.mana.feature.IManaMachine;
 import com.gtolib.api.machine.mana.trait.NotifiableManaContainer;
@@ -98,7 +99,7 @@ public final class MagicEnergyMachine extends TieredEnergyMachine implements IMa
 
     @Override
     protected long getMaxInputOutputAmperage() {
-        return 16 >> GTOCore.difficulty;
+        return GTORules.MAGIC_GENERATOR_AMPERAGE.get();
     }
 
     @Override

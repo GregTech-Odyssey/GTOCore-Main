@@ -1,7 +1,7 @@
 package com.gtocore.integration.ftbquests;
 
-import com.gtolib.GTOCore;
-import com.gtolib.api.annotation.dynamic.DynamicInitialData;
+import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.rule.RulePreset;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -26,7 +26,7 @@ public class DifficultyTask extends AbstractBooleanTask {
 
     @Override
     public boolean canSubmit(TeamData teamData, ServerPlayer player) {
-        return GTOCore.difficulty == d || d == 0;
+        return matches();
     }
 
     @Override
@@ -59,8 +59,12 @@ public class DifficultyTask extends AbstractBooleanTask {
     }
 
     public MutableComponent getAltTitle() {
-        return Component.translatable("selectWorld.gto_difficulty", DynamicInitialData.getDifficultyComponent(d))
-                .append(GTOCore.difficulty == d || d == 0 ? "[✔]" : "[✘]");
+        return Component.translatable("selectWorld.gto_difficulty", RulePreset.tagOfLevel(d))
+                .append(matches() ? "[✔]" : "[✘]");
+    }
+
+    private boolean matches() {
+        return d == 0 || RuleManager.preset().level() == d;
     }
 
     @Override

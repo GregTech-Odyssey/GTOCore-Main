@@ -6,8 +6,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.GTAEMachines;
-
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
@@ -38,10 +37,10 @@ public final class GTMTRecipe {
     public static void init() {
         ASSEMBLER_RECIPES.recipeBuilder("virtual_ingredient_provider")
                 .inputItems(GTOMachines.PROGRAMMABLEC_HATCH[2].asItem())
-                .inputItems(CustomItems.PROGRAMMABLE_COVER.get(), GTOCore.isEasy() ? 4 : 16)
+                .inputItems(CustomItems.PROGRAMMABLE_COVER.get(), GTORules.RECIPE_TIER.isEasy() ? 4 : 16)
                 .inputItems(CustomItems.VIRTUAL_ITEM_PROVIDER.asItem(), 2)
                 .inputItems(CustomItems.VIRTUAL_FLUID_PROVIDER.asItem(), 2)
-                .inputItems(GTItems.ROBOT_ARM_MV, GTOCore.isEasy() ? 4 : 16)
+                .inputItems(GTItems.ROBOT_ARM_MV, GTORules.RECIPE_TIER.isEasy() ? 4 : 16)
                 .outputItems(GTAEMachines.VIRTUAL_INGREDIENT_PROVIDER.asItem())
                 .EUt(120)
                 .duration(400)
@@ -62,7 +61,7 @@ public final class GTMTRecipe {
                 .inputItems(AEBlocks.QUARTZ_VIBRANT_GLASS.block().asItem())
                 .inputItems(TagPrefix.foil, GTMaterials.PolyvinylChloride, 8)
                 .outputItems(CustomItems.VIRTUAL_ITEM_PROVIDER.asItem())
-                .EUt(GTOCore.isEasy() ? 120 : 480)
+                .EUt(GTORules.RECIPE_TIER.isEasy() ? 120 : 480)
                 .duration(200)
                 .save();
 
@@ -71,7 +70,7 @@ public final class GTMTRecipe {
                 .inputItems(GTOBlocks.CHEMICAL_GRADE_GLASS.asItem())
                 .inputItems(TagPrefix.foil, GTMaterials.Polytetrafluoroethylene, 8)
                 .outputItems(CustomItems.VIRTUAL_FLUID_PROVIDER.asItem())
-                .EUt(GTOCore.isEasy() ? 120 : 480)
+                .EUt(GTORules.RECIPE_TIER.isEasy() ? 120 : 480)
                 .duration(200)
                 .save();
 

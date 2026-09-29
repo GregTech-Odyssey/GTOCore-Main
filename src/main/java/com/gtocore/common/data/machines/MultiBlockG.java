@@ -20,6 +20,7 @@ import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporter
 import com.gtocore.common.machine.multiblock.noenergy.AlgaeFarmMachine;
 import com.gtocore.common.machine.multiblock.noenergy.LargeCokeOvenMachine;
 import com.gtocore.common.machine.multiblock.storage.*;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
@@ -868,7 +869,7 @@ public final class MultiBlockG {
 
     public static final MultiblockMachineDefinition WIRELESS_CHARGER = multiblock("wireless_charger", "无线充能器", WirelessChargerMachine::new)
             .allRotation()
-            .addTooltipsFromClass(WirelessChargerMachine.class)
+            .ruleTooltips(GTORules.WIRELESS_CHARGER_AMOUNT)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.CASING_STEEL_SOLID)
             .structure(definition -> Structure

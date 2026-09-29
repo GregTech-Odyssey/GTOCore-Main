@@ -310,7 +310,7 @@ public final class GTOPredicates {
     }
 
     private static BlockState getBlockState(MultiblockState state, BlockPos pos) {
-        return state.blockStateCache.computeIfAbsent(pos.asLong(), k -> state.world.getBlockState(pos));
+        return state.world.getBlockState(pos);
     }
 
     public static TraceabilityPredicate recordPosition(DataComponentKey<Set<BlockPos>> key, TraceabilityPredicate original) {
@@ -343,7 +343,7 @@ public final class GTOPredicates {
             throw new IllegalArgumentException("No frame block found for material: " + frameMaterial.getName());
         }
         return new TraceabilityPredicate(
-                new PredicateBlocks(block)) {
+                PredicateBlocks.of(block)) {
 
             @Override
             public boolean test(MultiblockState blockWorldState) {

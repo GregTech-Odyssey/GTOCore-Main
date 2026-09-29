@@ -1,8 +1,8 @@
 package com.gtocore.mixin.gtm.machine;
 
 import com.gtocore.common.machine.mana.multiblock.PulseMachineMaintenancePedestal;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.feature.IDroneInteractionMachine;
 import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
@@ -78,9 +78,9 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
         var parts = controller.getParts();
         if (parts == null || parts.length == 0) return;
         var pa = parts.length;
-        timeActive = MathUtil.saturatedCast((long) (timeActive + (duration * getTimeMultiplier() * GTOCore.difficulty * pa)));
+        timeActive = MathUtil.saturatedCast((long) (timeActive + (duration * getTimeMultiplier() * GTORules.MAINTENANCE_WEAR.get() * pa)));
         var value = ((float) timeActive / MINIMUM_MAINTENANCE_TIME) - 0.7;
-        if (GTValues.RNG.nextFloat() <= value && !GTOCore.isEasy()) {
+        if (GTValues.RNG.nextFloat() <= value && GTORules.MAINTENANCE_FAILURES.get()) {
             timeActive = 0;
             causeRandomMaintenanceProblems();
             maintenanceMachine.setTaped(false);

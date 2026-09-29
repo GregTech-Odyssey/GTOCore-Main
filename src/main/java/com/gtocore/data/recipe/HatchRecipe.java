@@ -3,6 +3,7 @@ package com.gtocore.data.recipe;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.CraftingComponents;
 
 import com.gtolib.GTOCore;
@@ -138,7 +139,7 @@ final class HatchRecipe {
                 .duration(200)
                 .save();
 
-        if (GTOCore.isEasy()) {
+        if (GTORules.RECIPE_TIER.isEasy()) {
             for (int tier : tiersBetween(LV, MAX)) {
                 ASSEMBLER_RECIPES.recipeBuilder("dual_import_bus_" + VN[tier].toLowerCase())
                         .inputItems(FRAME.get(tier))

@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.mod;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -26,7 +27,7 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 public class SuperFactoryManager {
 
     public static void init() {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (!Mods.SFM.isLoaded()) return;
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("manager"), RegistriesUtils.getItemStack("sfm:manager"),
                 "ABA",

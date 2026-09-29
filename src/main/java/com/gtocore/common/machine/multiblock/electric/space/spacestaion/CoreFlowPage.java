@@ -40,6 +40,7 @@ import earth.terrarium.adastra.common.registry.ModBlocks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @DataGeneratorScanned
@@ -204,8 +205,8 @@ final class CoreFlowPage {
         private int shares;
         private FlowState station = FlowState.IDLE;
         private IssueView stationView = RecipeIssue.IDLE.view();
-        private List<Component> stationDetail = List.of();
-        private List<Component> energyDetail = List.of();
+        private List<Component> stationDetail = Collections.emptyList();
+        private List<Component> energyDetail = Collections.emptyList();
         private IssueView cleanView = RecipeIssue.IDLE.view();
         private IssueView elevatorView = RecipeIssue.IDLE.view();
         private IssueView laserView = RecipeIssue.IDLE.view();
@@ -214,7 +215,7 @@ final class CoreFlowPage {
         private Component attachedText = FlowParts.DASH, formedText = FlowParts.DASH, connectorText = FlowParts.DASH, functionalText = FlowParts.DASH;
         private boolean allFormed = true;
         private FlowState segments = FlowState.IDLE;
-        private List<Component> segmentsDetail = List.of();
+        private List<Component> segmentsDetail = Collections.emptyList();
         private ProgressBar.Progress recipeProgress = new ProgressBar.Progress(0, CYCLE_TICKS, 0);
         private ProgressBar.Progress readiness = new ProgressBar.Progress(0, READY_TARGET, 0);
 

@@ -23,6 +23,7 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
+import com.gtolib.api.rule.RuleManager;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
 import com.gtolib.utils.ItemUtils;
 
@@ -263,6 +264,7 @@ public final class ForgeClientEvent {
         ReceiverTransmitterHandler.unloadClient();
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
+        RuleManager.leaveRemoteWorld();
     }
 
     /**

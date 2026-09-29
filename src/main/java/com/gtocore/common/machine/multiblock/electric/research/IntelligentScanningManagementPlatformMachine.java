@@ -7,8 +7,8 @@ import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.electric.research.ui.ScanningInfoProvider;
 import com.gtocore.common.machine.multiblock.electric.research.ui.ScanningSelectionTab;
 import com.gtocore.common.machine.multiblock.part.research.IntelligentScanningProxyPartMachine;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.AEChemicalHelper;
@@ -216,7 +216,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
             return recipe.EUt(eut(totalBytes * turns))
                     .addExtension(ScanningRecipeExtion.INSTANCE)
                     .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(keyCounter, output, team))
-                    .duration(200 * GTOCore.difficulty)
+                    .duration(GTORules.SCAN_DURATION.get())
                     .build();
 
         } else {
@@ -249,7 +249,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
             return recipe.EUt(eut(initialRemaining - remaining))
                     .addExtension(ScanningRecipeExtion.INSTANCE)
                     .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(keyCounter, output, team))
-                    .duration(200 * GTOCore.difficulty)
+                    .duration(GTORules.SCAN_DURATION.get())
                     .build();
         }
     }

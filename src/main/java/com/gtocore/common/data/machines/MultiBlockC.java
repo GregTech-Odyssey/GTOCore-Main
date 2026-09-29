@@ -23,6 +23,7 @@ import com.gtocore.common.machine.multiblock.noenergy.ThermalPowerPumpMachine;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamCracker;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamMultiblockMachine;
 import com.gtocore.common.machine.multiblock.steam.SteamMultiblockMachine;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
@@ -122,7 +123,7 @@ public final class MultiBlockC {
 
     public static final MultiblockMachineDefinition LARGE_STEAM_CRUSHER = multiblock("large_steam_crusher", "大型蒸汽破碎机", LargeSteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(LargeSteamMultiblockMachine.class)
+            .largeSteamRuleTooltips()
             .recipeTypes(GTORecipeTypes.CRUSHER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -149,7 +150,7 @@ public final class MultiBlockC {
 
     public static final MultiblockMachineDefinition STEAM_CRUSHER = multiblock("steam_crusher", "蒸汽破碎机", SteamMultiblockMachine::new)
             .nonYAxisRotation()
-            .addTooltipsFromClass(SteamMultiblockMachine.class)
+            .steamRuleTooltips()
             .recipeTypes(GTORecipeTypes.CRUSHER_RECIPES)
             .steamOverclock()
             .block(GTBlocks.CASING_BRONZE_BRICKS)
@@ -1145,7 +1146,7 @@ public final class MultiBlockC {
     public static final MultiblockMachineDefinition LARGE_STEAM_STORAGE_TANK = multiblock("large_steam_storage_tank", "大型蒸汽储罐", LargeSteamStorageTank::new)
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
-            .addTooltipsFromClass(LargeSteamStorageTank.class)
+            .ruleTooltips(GTORules.STEAM_TANK_CAPACITY)
             .block(GCYMBlocks.CASING_INDUSTRIAL_STEAM)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("large_steam_storage_tank").build())

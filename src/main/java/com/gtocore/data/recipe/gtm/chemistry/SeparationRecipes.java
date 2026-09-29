@@ -1,6 +1,6 @@
 package com.gtocore.data.recipe.gtm.chemistry;
 
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 
@@ -51,13 +51,13 @@ final class SeparationRecipes {
         CENTRIFUGE_RECIPES.recipeBuilder("oilsands_ore_separation")
                 .inputItems(ore, Oilsands)
                 .chancedOutput(new ItemStack(Blocks.SAND), 5000, 5000)
-                .outputFluids((GTOCore.isExpert() ? ShaleOil : Oil).getFluid(2000))
+                .outputFluids((GTORules.FLUID_TIER.isExpert() ? ShaleOil : Oil).getFluid(2000))
                 .duration(200).EUt(30).save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("oilsands_dust_separation")
                 .inputItems(dust, Oilsands)
                 .chancedOutput(new ItemStack(Blocks.SAND), 5000, 5000)
-                .outputFluids((GTOCore.isExpert() ? HeavyOilWithSand : OilHeavy).getFluid(2000))
+                .outputFluids((GTORules.FLUID_TIER.isExpert() ? HeavyOilWithSand : OilHeavy).getFluid(2000))
                 .duration(200).EUt(30).save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("nether_wart_separation").duration(144).EUt(5)

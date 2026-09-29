@@ -1,8 +1,7 @@
 package com.gtocore.mixin.mc.mob;
 
 import com.gtocore.config.GTOConfig;
-
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Difficulty;
@@ -42,7 +41,7 @@ public abstract class MobMixin extends LivingEntity {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         if (level().isClientSide()) return;
-        if (GTOCore.isEasy() || level().getDifficulty().getId() == 0) return;
+        if (!GTORules.MOB_ENHANCEMENT.get() || level().getDifficulty().getId() == 0) return;
         boolean isBoss = CommonProxy.isBoss(this);
         if (!isBoss && getRandom().nextBoolean()) return;
         double difficultyValue = (double) level().getDifficulty().getId() / 2;

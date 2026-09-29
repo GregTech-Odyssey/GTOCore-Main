@@ -7,11 +7,9 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
@@ -57,13 +55,6 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     private static final double WATER_RECOVERY_RATE = 0.15d;
     private static final BigInteger BIG_INTEGER_LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger BIG_INTEGER_MAX_PARALLEL = BigInteger.valueOf(ParallelLogic.MAX_PARALLEL);
-
-    @DynamicInitialValue(key = "fuelcell.chance_consume", easyValue = "0.0d", normalValue = "0.035d", expertValue = "0.055d", typeKey = DynamicInitialValueTypes.KEY_PROBABILITY, cn = "放电时膜损坏概率", cnComment = """
-            放电时使用的膜材料的损坏概率。
-            """, en = "Fuel Cell Membrane Damage Chance on Discharge", enComment = """
-            The chance of the membrane material used being damaged upon discharging.
-            """)
-    public static double chanceConsumeMembraneOnDischarge = 0.035d;
 
     private boolean isGenerator = false;
     @SaveToDisk(defaultValue = "1.0")
@@ -232,7 +223,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     private void recoverEfficiency() {
-        if (GTOCore.isEasy() || getRecipeType() != GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES ||
+        if (GTORules.FUEL_CELL_TIER.isEasy() || getRecipeType() != GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES ||
                 !getRecipeLogic().isIdle() || accumulatedEfficiencyDecay >= 1.0d) {
             return;
         }
@@ -246,8 +237,8 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     private void updateAbsorptionEfficiency(MembraneBonusInfo membraneInfo, double decay) {
-        double normalizedDecay = GTOCore.isEasy() ? 1.0d : Math.clamp(decay, 0.0d, 1.0d);
-        double efficiencyBonus = GTOCore.isExpert() ? membraneInfo.efficiencyBonusExpertMode : membraneInfo.efficiencyBonus;
+        double normalizedDecay = GTORules.FUEL_CELL_TIER.isEasy() ? 1.0d : Math.clamp(decay, 0.0d, 1.0d);
+        double efficiencyBonus = GTORules.FUEL_CELL_TIER.isExpert() ? membraneInfo.efficiencyBonusExpertMode : membraneInfo.efficiencyBonus;
         double newEfficiency = efficiencyBonus * normalizedDecay;
         accumulatedEfficiencyDecay = normalizedDecay;
         absorptionMembraneTier = membraneInfo.tier;
@@ -261,8 +252,8 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     private static double getEfficiencyDecayFactor(MembraneBonusInfo membraneInfo) {
-        if (GTOCore.isEasy()) return 1.0d;
-        return GTOCore.isExpert() ? membraneInfo.efficiencyBonusDecayFactorExpertMode : membraneInfo.efficiencyBonusDecayFactor;
+        if (GTORules.FUEL_CELL_TIER.isEasy()) return 1.0d;
+        return GTORules.FUEL_CELL_TIER.isExpert() ? membraneInfo.efficiencyBonusDecayFactorExpertMode : membraneInfo.efficiencyBonusDecayFactor;
     }
 
     @Nullable
@@ -326,7 +317,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
             setIdleReason(IdleReason.INVALID_INPUT);
             return null;
         }
-        if (GTValues.RNG.nextFloat() < chanceConsumeMembraneOnDischarge) {
+        if (GTValues.RNG.nextFloat() < GTORules.FUEL_CELL_CONSUME.get()) {
             unit.inputItem(ingredient.getInnerItemStack().getItem(), content.amount);
         }
         return ParallelLogic.accurateParallel(this, unit, recipe, MaxCanReleaseParallel);
@@ -400,12 +391,12 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         public void getInfoComponents(List<Component> components) {
             components.add(Component.translatable(MEMBRANE_TIER, Component.literal(String.valueOf(tier)).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
             components.add(Component.translatable(DISCHARGE_ELECTROLYTE, electrolyte.getLocalizedName().withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GRAY));
-            components.add(Component.translatable(ABSORPTION_EFFICIENCY, Component.literal(FormattingUtil.formatNumber2Places(GTOCore.isExpert() ? efficiencyBonusExpertMode * 100 : efficiencyBonus * 100) + "%").withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
-            if (!GTOCore.isEasy()) {
-                if ((GTOCore.isExpert() ? efficiencyBonusDecayFactorExpertMode : efficiencyBonusDecayFactor) == 1.0d) {
+            components.add(Component.translatable(ABSORPTION_EFFICIENCY, Component.literal(FormattingUtil.formatNumber2Places(GTORules.FUEL_CELL_TIER.isExpert() ? efficiencyBonusExpertMode * 100 : efficiencyBonus * 100) + "%").withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
+            if (!GTORules.FUEL_CELL_TIER.isEasy()) {
+                if ((GTORules.FUEL_CELL_TIER.isExpert() ? efficiencyBonusDecayFactorExpertMode : efficiencyBonusDecayFactor) == 1.0d) {
                     components.add(Component.translatable(ABSORPTION_EFFICIENCY_NO_DECAY).withStyle(ChatFormatting.GRAY));
                 } else {
-                    components.add(Component.translatable(ABSORPTION_EFFICIENCY_DECAY, Component.literal("x" + DECIMAL_FORMAT_4F.format(GTOCore.isExpert() ? efficiencyBonusDecayFactorExpertMode : efficiencyBonusDecayFactor)).withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
+                    components.add(Component.translatable(ABSORPTION_EFFICIENCY_DECAY, Component.literal("x" + DECIMAL_FORMAT_4F.format(GTORules.FUEL_CELL_TIER.isExpert() ? efficiencyBonusDecayFactorExpertMode : efficiencyBonusDecayFactor)).withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
                 }
             }
         }

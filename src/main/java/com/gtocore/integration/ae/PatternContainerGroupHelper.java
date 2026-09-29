@@ -218,7 +218,7 @@ public final class PatternContainerGroupHelper {
                 .filter(PatternContainerGroupHelper::isDisplayableRecipeType)
                 .toList();
         if (recipeTypes.size() > 1 && !showAllRecipeTypes) {
-            recipeTypes = isDisplayableRecipeType(selectedRecipeType) ? List.of(selectedRecipeType) : List.of();
+            recipeTypes = isDisplayableRecipeType(selectedRecipeType) ? Collections.singletonList(selectedRecipeType) : Collections.emptyList();
         }
 
         MutableComponent result = null;

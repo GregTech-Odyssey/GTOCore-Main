@@ -4,8 +4,8 @@ import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.AbstractSpaceStation;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.gui.ParallelConfigurator;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
@@ -119,10 +119,8 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
     }
 
     public static int getParallelPerTier(boolean hasModule) {
-        if (GTOCore.isEasy()) {
-            return hasModule ? 8 : 4;
-        }
-        return hasModule ? 4 : 2;
+        int parallel = GTORules.PROCESSING_PLANT_PARALLEL.get();
+        return hasModule ? parallel * 2 : parallel;
     }
 
     private static boolean filter(ItemStack itemStack) {

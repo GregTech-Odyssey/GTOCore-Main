@@ -7,12 +7,12 @@ import com.gtocore.api.lang.toLiteralSupplier
 import com.gtocore.api.lang.translatable
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine
+import com.gtocore.config.GTORules
 
 import net.minecraft.network.chat.Component
 
 import com.google.common.collect.ImmutableMap
 import com.gregtechceu.gtceu.api.GTValues
-import com.gtolib.GTOCore
 import com.gtolib.utils.NumberUtils
 import com.lowdragmc.lowdraglib.side.fluid.FluidHelper
 
@@ -1184,7 +1184,7 @@ object GTOMachineTooltips {
             val ci2 = ("专家模式下，玻璃等级每一级，高速调节器的损坏基数-0.08" translatedTo "In expert mode, each glass tier reduces the damage base of the high-speed regulator by 0.08")
             val cf2 = ("最低的损坏基数为1.2" translatedTo "The minimum damage base is 1.2")
 
-            if (GTOCore.isExpert()) {
+            if (GTORules.MEGA_TURBINE_REGULATOR.get()) {
                 section(cs1)
                 function(cf1)
                 info(ci1)
@@ -2407,7 +2407,7 @@ object GTOMachineTooltips {
         error("在该模式下， 不能安装能源仓" translatedTo "In this mode, Energy Input Hatches cannot be installed")
         command("所有工作模式均需要输入电极膜才可工作" translatedTo "All operating modes require input of Electrode Membranes to operate")
         command("且发电模式仅可使用特定电极膜" translatedTo "And the power generation mode can only use specific Electrode Membranes")
-        if (!GTOCore.isEasy()) {
+        if (!GTORules.FUEL_CELL_TIER.isEasy()) {
             section(cs1)
             command(cs2)
             command(cs3)

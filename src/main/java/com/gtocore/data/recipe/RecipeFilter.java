@@ -1,5 +1,6 @@
 package com.gtocore.data.recipe;
 
+import com.gtocore.config.GTORules;
 import com.gtocore.data.recipe.ae2.AE2;
 import com.gtocore.data.recipe.generated.DyeRecipes;
 import com.gtocore.data.recipe.misc.SpaceStationRecipes;
@@ -10,7 +11,6 @@ import com.gtocore.data.recipe.mod.Sophisticated;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.biomeswevegone.BYGWoodTypes;
 
-import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.data.recipe.configurable.RecipeRemoval;
@@ -65,7 +65,7 @@ public final class RecipeFilter {
 
     private static void initModFilter(Set<String> filters) {
         filters.add("itemfilters");
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.COMPUTERCRAFT.isLoaded()) filters.add("computercraft");
         if (Mods.SFM.isLoaded()) filters.add("sfm");
         if (Mods.PIPEZ.isLoaded()) filters.add("pipez");

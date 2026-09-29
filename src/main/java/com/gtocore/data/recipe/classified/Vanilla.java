@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -56,7 +57,7 @@ final class Vanilla {
         VanillaRecipeHelper.addSmeltingRecipe(GTOCore.id("raw_aluminum"), GTOItems.RAW_ALUMINUM.asStack(), ChemicalHelper.get(TagPrefix.ingot, GTMaterials.Aluminium), 0);
         VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("pattern_modifier_pro"), GTOItems.PATTERN_MODIFIER_PRO.asItem(), RegistriesUtils.getItemStack("expatternprovider:pattern_modifier"));
 
-        switch (GTOCore.difficulty) {
+        switch (GTORules.RECIPE_TIER.level()) {
             case 1 -> {
                 VanillaRecipeHelper.addShapedRecipe(GTOCore.id("ender_eye"), ChemicalHelper.get(TagPrefix.gem, GTMaterials.EnderEye),
                         "A A",
@@ -881,13 +882,13 @@ final class Vanilla {
                 "CDC",
                 "ABA",
                 'A', new MaterialEntry(GTOTagPrefix.CURVED_PLATE, GTMaterials.StainlessSteel), 'B', new MaterialEntry(TagPrefix.rodLong, GTMaterials.StainlessSteel), 'C', new MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.Aluminium), 'D', GTMachines.FERMENTER[GTValues.HV].asItem());
-        if (GTOCore.isExpert()) {
+        if (GTORules.RECIPE_TIER.isExpert()) {
             VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("time_twister"), GTOItems.TIME_TWISTER.asItem(),
                     "ABA",
                     "CDC",
                     "ABA",
                     'A', new MaterialEntry(TagPrefix.plateDouble, GTOMaterials.Gaia), 'B', RegistriesUtils.getItemStack("gtmthings:ev_4a_wireless_energy_receive_cover"), 'C', RegistriesUtils.getItemStack("ars_nouveau:manipulation_essence"), 'D', GTItems.FIELD_GENERATOR_EV.asItem());
-        } else if (GTOCore.isNormal()) {
+        } else if (GTORules.RECIPE_TIER.isNormal()) {
             VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("time_twister"), GTOItems.TIME_TWISTER.asItem(),
                     "ABA",
                     "CDC",

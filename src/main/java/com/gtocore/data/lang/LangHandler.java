@@ -14,7 +14,6 @@ import com.gtocore.data.transaction.data.TradeLang;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.component_builder.TranslationKeyProvider;
-import com.gtolib.api.annotation.dynamic.DynamicInitialData;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.api.lang.SimplifiedChineseLanguageProvider;
@@ -24,6 +23,7 @@ import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.registries.GTOMachineBuilder;
 import com.gtolib.api.registries.MultiblockBuilder;
 import com.gtolib.api.registries.ScanningClass;
+import com.gtolib.api.rule.RuleRegistry;
 import com.gtolib.utils.ChineseConverter;
 import com.gtolib.utils.register.BlockRegisterUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;
@@ -82,7 +82,7 @@ public final class LangHandler {
         ResearchTag.LNAG.forEach(LangHandler::addCNEN);
         GTOPartAbility.LANG.forEach(LangHandler::addCNEN);
         ScanningClass.LANG.forEach(LangHandler::addCNEN);
-        DynamicInitialData.LANG.forEach(LangHandler::addCNEN);
+        RuleRegistry.LANG.forEach(LangHandler::addCNEN);
         TranslationKeyProvider.LANG.forEach(LangHandler::addCNEN);
         PlayerAttributes.NAMES.forEach((k, v) -> addCNEN(k.getLangKey(), v));
         GTOTrade.init();
@@ -131,7 +131,6 @@ public final class LangHandler {
         addCNEN("selectWorld.dev_mode", "开发者模式已启用", "Developer Mode Enabled");
         addCNEN("selectWorld.gto_difficulty.current", "与当前游戏难度匹配", "Matches current game difficulty");
         addCNEN("selectWorld.gto_difficulty.not_current", "与当前游戏难度不匹配", "Does not match current game difficulty");
-        addCNEN("message.gtocore.difficulty_mismatch", "服务器难度与当前客户端不符，无法加入游戏！（服务器：%s，当前：%s）", "The server difficulty does not match the current client and cannot join the game! (Server: %s, Current: %s)");
         addCNEN("message.gtocore.custom_recipe.mismatch", "服务器的自定义配方脚本(hash=%s)启用情况与当前客户端不符，无法加入游戏！请确保双方的自定义配方脚本启用情况一致。", "The server's custom recipe script (hash=%s) enabled status does not match the current client and cannot join the game! Please ensure that both parties have the same custom recipe script enabled status.");
         addCNEN("message.gtocore.ftbq_editmode", "请勿直接编辑已经json格式化的聊天组件任务！", "Please do not directly edit the chat component task that has been formatted in JSON!");
         addCNEN("message.gtocore.ftbq_editmode.1", "如需编辑，请从github上下载原始任务文件，并放入config/ftbquests/下进行编辑。", "If you need to edit, please download the original task file from GitHub and place it in config/ftbquests/ for editing.");

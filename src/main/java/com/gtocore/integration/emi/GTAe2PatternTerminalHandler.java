@@ -17,7 +17,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 
-import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.emi.EmiStackHelper;
@@ -132,9 +131,9 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
     public boolean craft(EmiRecipe recipe, EmiCraftContext<T> context) {
         T menu = context.getScreenHandler();
         if (recipe instanceof MultiblockInfoEmiRecipe multiblock) {
-            var outputs = List.of(new GenericStack(AEItemKey.of(multiblock.definition.asStack()), 1));
+            var outputs = ofOutputs(recipe);
             if (ME2in1Helper.openStructureEncoder(menu, menu.getClientRepo(), menu.getProcessingInputSlots().length, multiblock.definition,
-                    context.getScreen(), inputs -> EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs))) {
+                    Minecraft.getInstance().screen, inputs -> EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs))) {
                 return true;
             }
         }

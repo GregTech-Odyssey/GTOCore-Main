@@ -1,9 +1,9 @@
 package com.gtocore.common.machine.generator;
 
 import com.gtocore.common.item.KineticRotorItem;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.part.ItemPartMachine;
 
@@ -49,15 +49,11 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import static com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes.KEY_AMPERAGE_OUT;
-
 @Scanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class WindMillTurbineMachine extends TieredEnergyMachine implements IMachineLife, IFancyUIMachine {
 
-    @DynamicInitialValue(key = "wind_mill_turbine.amperage_out", typeKey = KEY_AMPERAGE_OUT, easyValue = "2", normalValue = "1", expertValue = "1", cn = "输出电流", cnComment = "风力涡轮机的最大输出电流。", en = "Output Amperage", enComment = "The maximum output amperage of the wind turbine.")
-    private static int amperage_out = 2;
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
     @Getter
@@ -91,7 +87,7 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
     }
 
     public static int getAmperage_out() {
-        return WindMillTurbineMachine.amperage_out;
+        return GTORules.WIND_MILL_AMPERAGE.get();
     }
 
     private NotifiableItemStackHandler createMachineStorage() {
@@ -240,7 +236,7 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
 
     @Override
     protected long getMaxInputOutputAmperage() {
-        return amperage_out;
+        return GTORules.WIND_MILL_AMPERAGE.get();
     }
 
     private boolean isObstructed() {

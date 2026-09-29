@@ -1,10 +1,9 @@
 package com.gtocore.common.machine.multiblock.steam;
 
 import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
@@ -50,9 +49,6 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.Steam;
 
 @Scanned
 public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine implements IExplosionMachine, IDisplayUIMachine, IEnhancedRecipeLogicMachine, ICustomRecipeLogicHolder {
-
-    @DynamicInitialValue(key = "gtocore.machine.large_steam_solar_boiler", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "20", normalValue = "15", expertValue = "10", cn = "单集热管产率 : %s / t", en = "Steam production per tube : %s / t")
-    private static int basicSteamProduction = 10;
 
     @RegisterLanguage(cn = "左侧宽度", en = "Left Width")
     private static final String LEFT_NAME = "gtocore.multiblock.large_steam_solar_boiler.left";
@@ -186,7 +182,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
     }
 
     private GTRecipeDefinition createNextRecipe() {
-        int steamAmount = basicSteamProduction * sunlit * STEAM_GENERATION_INTERVAL;
+        int steamAmount = GTORules.STEAM_SOLAR_RATE.get() * sunlit * STEAM_GENERATION_INTERVAL;
         int waterAmount = (int) Math.ceil((double) steamAmount / ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater);
 
         if (waterAmount <= 0 || steamAmount <= 0) return null;

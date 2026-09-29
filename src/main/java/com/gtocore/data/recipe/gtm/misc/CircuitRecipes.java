@@ -1,9 +1,8 @@
 package com.gtocore.data.recipe.gtm.misc;
 
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.techtree.BaseNodes;
-
-import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color;
@@ -662,7 +661,7 @@ public final class CircuitRecipes {
 
     private static void circuitRecipes() {
         int outputAmount = ConfigHolder.INSTANCE.recipes.harderCircuitRecipes ? 1 : 2;
-        int amount = GTOCore.isExpert() ? 4 : 3;
+        int amount = GTORules.RECIPE_TIER.isExpert() ? 4 : 3;
 
         // T1: Electronic ==============================================================================================
 

@@ -12,13 +12,13 @@ import com.gtocore.common.data.translation.ComponentSlang.EfficiencyBonus
 import com.gtocore.common.data.translation.ComponentSlang.MainFunction
 import com.gtocore.common.data.translation.ComponentSlang.RunningRequirements
 import com.gtocore.common.machine.multiblock.electric.research.DataFormTestingPlantMachine
+import com.gtocore.config.GTORules
 
 import net.minecraft.network.chat.Component
 
 import appeng.api.config.PowerUnits
 import com.gregtechceu.gtceu.api.GTValues
 import com.gregtechceu.gtceu.config.ConfigHolder
-import com.gtolib.GTOCore
 
 object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
@@ -68,7 +68,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
 
         section(MainFunction)
         function("作为生物振荡发电机的模块，对其中的生物组织进行电刺激" translatedTo "Acts as a module for the Bio Oscillation Generator and electrically stimulates its biological tissue")
-        command(translatable("gtocore.biooscillation.button.set.electrical.stimulation.desc", GTOCore.difficulty * 6))
+        command(translatable("gtocore.biooscillation.button.set.electrical.stimulation.desc", GTORules.BIO_STIMULATION_DURATION.get() / 20))
         command("运行完成后消耗等量的组织生长点数，并按组织当前阶段的电刺激增幅提供临时发电加成" translatedTo "After completing, the stimulator consumes the corresponding amount of tissue growth points and grants a temporary power boost based on the tissue's current stage")
 
         section(RunningRequirements)
@@ -201,7 +201,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         section(RunningRequirements)
         important("扫描使用的晶片必须额外输入到机器中，且每次扫描消耗1个晶片" translatedTo "The data crystal used for scanning must be additionally input into the machine, and each scan consumes one data crystal")
         command("扫描物品时花费1个物品，扫描流体时花费1,000mB流体" translatedTo "Scanning an item consumes 1 item, scanning a fluid consumes 1,000mB of fluid")
-        info("每次运行持续%s秒，耗能为8×本次扫描的数据字节数+8 EU/t".translatedWithArgs("Each operation lasts %s seconds and uses 8 × scanned data bytes + 8 EU/t", GTOCore.difficulty * 10))
+        info("每次运行持续%s秒，耗能为8×本次扫描的数据字节数+8 EU/t".translatedWithArgs("Each operation lasts %s seconds and uses 8 × scanned data bytes + 8 EU/t", GTORules.SCAN_DURATION.get() / 20))
         info("同一种材料每次运行只扫描一个目标" translatedTo "Only one target of the same material is scanned per operation")
     }
 
@@ -223,7 +223,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         section(MainFunction)
         function("安装在能源产生相关的机器上，对能源稳定性与功率进行监测" translatedTo "Installed on energy generation-related machines to monitor energy stability and power")
         command(
-            Component.translatable("gtocore.lang.energy_data_holder.2", 15 + 15 * GTOCore.difficulty)
+            Component.translatable("gtocore.lang.energy_data_holder.2", GTORules.ENERGY_DATA_WARMUP.get() / 20)
                 .toComponentSupplier(),
         )
         command("此后每次机器完成输出UEV级及以上功率的配方时，能源数据仓将转化(功率等级 - 10)²的能源研究点数，并存储于机器内的晶片中" translatedTo "Thereafter, each time the machine finishes recipes that output UEV-level or higher power, the energy data hatch will convert (power level - 9)² energy research points and store them in the data crystal inside the machine")
@@ -341,7 +341,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         decrease(
             Component.translatable(
                 "gtocore.lang.space_elevator_connector_module.3",
-                50.0 + 150.0 * GTOCore.difficulty,
+                50.0 + 100.0 * GTORules.SPACE_ELEVATOR_COMPUTATION.get(),
             ).toComponentSupplier(),
         )
 
@@ -357,7 +357,7 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         command(
             Component.translatable(
                 "gtocore.lang.space_elevator_engineering_data_module.2",
-                if (GTOCore.isExpert()) 75 else 50,
+                GTORules.SPACE_DATA_WORKS.get(),
             ).toComponentSupplier(),
         )
         command("转化为的研究点数将存储于通用数据仓的晶片中" translatedTo "The converted research points will be stored in the data crystal of the universal data hatch")

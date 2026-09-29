@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
+
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -46,7 +47,7 @@ public class BioOscillationElectricStimulator extends ElectricMultiblockMachine 
         if (controller != null && controller.getTissue() != null) {
             currentStimulation = stimulationLevel;
             return RecipeBuilder.ofRaw()
-                    .duration(120 * GTOCore.difficulty)
+                    .duration(GTORules.BIO_STIMULATION_DURATION.get())
                     .EUt(BioOscillationGenerator.TISSUE_MATERIALS_TIER.get(controller.getTissue()).energyConsumption() * stimulationLevel / 1000 / 200)
                     .build();
         } else {

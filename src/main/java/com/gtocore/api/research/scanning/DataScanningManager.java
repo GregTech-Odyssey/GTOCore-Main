@@ -8,6 +8,7 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.Message;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.MultiblockDefinition;
@@ -144,11 +145,7 @@ public class DataScanningManager {
     }
 
     public static float getRepeatedScanPenalty() {
-        return switch (GTOCore.difficulty) {
-            case 1 -> 1 / 4f;
-            case 2 -> 1 / 16f;
-            default -> 1 / 64f;
-        };
+        return GTORules.SCAN_PENALTY.get();
     }
 
     public static ResearchPoints scanData(ItemLike item, UUID team, boolean simulate) {

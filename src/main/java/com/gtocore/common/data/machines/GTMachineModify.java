@@ -40,7 +40,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -116,7 +116,7 @@ public final class GTMachineModify {
     }
 
     private static void setStructure(MultiblockMachineDefinition machine, Function<MultiblockMachineDefinition, Structure> structure) {
-        machine.setPatternFactory(List.of(definition -> structure.apply(definition).toPattern(definition)));
+        machine.setPatternFactory(Collections.singletonList(definition -> structure.apply(definition).toPattern(definition)));
     }
 
     private static Structure steamGrinder(MultiblockMachineDefinition definition) {

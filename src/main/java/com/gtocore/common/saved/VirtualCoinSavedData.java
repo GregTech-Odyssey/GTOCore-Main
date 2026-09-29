@@ -1,6 +1,6 @@
 package com.gtocore.common.saved;
 
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -21,7 +21,7 @@ public class VirtualCoinSavedData extends SavedData {
     private static final Lock LOCK = new ReentrantLock();
 
     private static long getNextCoinConsumption(long timesHasRun) {
-        return (GTOCore.isExpert() ? 1000L : 250L) * (timesHasRun + 1) * (timesHasRun);
+        return GTORules.VIRTUAL_COIN_COST.get() * (timesHasRun + 1) * (timesHasRun);
     }
 
     /**

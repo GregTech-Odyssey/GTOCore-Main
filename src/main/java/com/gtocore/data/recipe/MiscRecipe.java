@@ -7,6 +7,7 @@ import com.gtocore.common.machine.multiblock.electric.BlockConversionRoomMachine
 import com.gtocore.common.recipe.condition.GravityCondition;
 import com.gtocore.common.recipe.condition.RestrictedMachineCondition;
 import com.gtocore.common.recipe.condition.VacuumCondition;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.Dimension;
@@ -648,7 +649,7 @@ public final class MiscRecipe {
                 .duration(100)
                 .save();
 
-        if (GTOCore.isExpert()) {
+        if (GTORules.RECIPE_TIER.isExpert()) {
 
             BRICK_FURNACE_RECIPES.builder("firebrick_exp")
                     .inputItems(Items.COAL)

@@ -2,11 +2,11 @@ package com.gtocore.data.transaction.data.trade;
 
 import com.gtocore.api.gui.StackTexture;
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
 import com.gtocore.integration.Mods;
 
-import com.gtolib.GTOCore;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -236,7 +236,7 @@ public final class WelfareGroup {
                     simpleItemTrading(true, UNLOCK_BASE, stack, TECH_OPERATOR_COIN, 32));
         }
 
-        if (!GTOCore.isExpert()) {
+        if (!GTORules.RECIPE_TIER.isExpert()) {
             var titaniumTrade = new TradeEntry.Builder()
                     .texture(new StackTexture(ChemicalHelper.get(ingot, Titanium, 3)))
                     .description(List.of(

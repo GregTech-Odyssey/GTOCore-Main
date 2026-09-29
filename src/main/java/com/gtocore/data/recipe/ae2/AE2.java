@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.ManaMachine;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
@@ -51,7 +52,7 @@ public final class AE2 {
                 "B B",
                 "ABA",
                 'A', ConventionTags.IRON_INGOT, 'B', ConventionTags.GLASS);
-        if (GTOCore.isEasy()) return;
+        if (GTORules.RECIPE_TIER.isEasy()) return;
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("import_bus"), RegistriesUtils.getItemStack("ae2:import_bus"),
                 "ABC",
                 'A', AEItems.ANNIHILATION_CORE.asItem(), 'B', GTItems.ROBOT_ARM_LV.asItem(), 'C', RegistriesUtils.getItemStack("ae2:fluix_glass_cable"));
@@ -102,14 +103,14 @@ public final class AE2 {
                 .duration(200)
                 .save();
 
-        var t1 = GTOCore.isExpert() ? GTOTagPrefix.dustSmall : GTOTagPrefix.dust;
-        var t2 = GTOCore.isExpert() ? GTMaterials.GalliumArsenide : GTMaterials.Redstone;
+        var t1 = GTORules.RECIPE_TIER.isExpert() ? GTOTagPrefix.dustSmall : GTOTagPrefix.dust;
+        var t2 = GTORules.RECIPE_TIER.isExpert() ? GTMaterials.GalliumArsenide : GTMaterials.Redstone;
 
         CIRCUIT_ASSEMBLER_RECIPES.builder("calculation_processor")
                 .inputItems(AEItems.CALCULATION_PROCESSOR_PRINT.asItem())
                 .inputItems(AEItems.SILICON_PRINT.asItem())
                 .inputItems(t1, t2)
-                .inputItems(GTOCore.isExpert() ? CustomTags.LV_CIRCUITS : CustomTags.ULV_CIRCUITS)
+                .inputItems(GTORules.RECIPE_TIER.isExpert() ? CustomTags.LV_CIRCUITS : CustomTags.ULV_CIRCUITS)
                 .outputItems(AEItems.CALCULATION_PROCESSOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
                 .duration(200)
@@ -120,7 +121,7 @@ public final class AE2 {
                 .inputItems(AEItems.ENGINEERING_PROCESSOR_PRINT.asItem())
                 .inputItems(AEItems.SILICON_PRINT.asItem())
                 .inputItems(t1, t2)
-                .inputItems(GTOCore.isExpert() ? CustomTags.LV_CIRCUITS : CustomTags.ULV_CIRCUITS)
+                .inputItems(GTORules.RECIPE_TIER.isExpert() ? CustomTags.LV_CIRCUITS : CustomTags.ULV_CIRCUITS)
                 .outputItems(AEItems.ENGINEERING_PROCESSOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
                 .duration(200)
@@ -131,19 +132,19 @@ public final class AE2 {
                 .inputItems(AEItems.LOGIC_PROCESSOR_PRINT.asItem())
                 .inputItems(AEItems.SILICON_PRINT.asItem())
                 .inputItems(t1, t2)
-                .inputItems(GTOCore.isExpert() ? CustomTags.LV_CIRCUITS : CustomTags.ULV_CIRCUITS)
+                .inputItems(GTORules.RECIPE_TIER.isExpert() ? CustomTags.LV_CIRCUITS : CustomTags.ULV_CIRCUITS)
                 .outputItems(AEItems.LOGIC_PROCESSOR.asItem())
                 .inputFluids(GTMaterials.SolderingAlloy, 144)
                 .duration(200)
                 .EUt(30)
                 .save();
-        var buffer = GTOCore.isExpert() ? 16 : 32;
+        var buffer = GTORules.RECIPE_TIER.isExpert() ? 16 : 32;
 
         CIRCUIT_ASSEMBLER_RECIPES.builder("engineering_processor_magic")
                 .notConsumable((Item) FIELD_GENERATOR.get(GTValues.HV))
                 .notConsumable(AEItems.SILICON_PRESS.asItem())
                 .notConsumable(AEItems.ENGINEERING_PROCESSOR_PRESS.asItem())
-                .inputItems(GTOTagPrefix.dust, GTOCore.isExpert() ? GTOMaterials.ManaDiamond : GTMaterials.Diamond, buffer)
+                .inputItems(GTOTagPrefix.dust, GTORules.RECIPE_TIER.isExpert() ? GTOMaterials.ManaDiamond : GTMaterials.Diamond, buffer)
                 .inputItems(GTOTagPrefix.dust, GTOMaterials.ElectronicGradeSilicon, buffer)
                 .inputItems("botania:rune_mana")
                 .outputItems(AEItems.ENGINEERING_PROCESSOR.asItem(), buffer)
@@ -167,7 +168,7 @@ public final class AE2 {
                 .notConsumable((Item) FIELD_GENERATOR.get(GTValues.HV))
                 .notConsumable(AEItems.SILICON_PRESS.asItem())
                 .notConsumable(AEItems.LOGIC_PROCESSOR_PRESS.asItem())
-                .inputItems(GTOTagPrefix.dust, GTOCore.isExpert() ? GTOMaterials.InfusedGold : GTMaterials.Gold, buffer)
+                .inputItems(GTOTagPrefix.dust, GTORules.RECIPE_TIER.isExpert() ? GTOMaterials.InfusedGold : GTMaterials.Gold, buffer)
                 .inputItems(GTOTagPrefix.dust, GTOMaterials.ElectronicGradeSilicon, buffer)
                 .inputItems("botania:rune_mana")
                 .outputItems(AEItems.LOGIC_PROCESSOR.asItem(), buffer)
@@ -295,7 +296,7 @@ public final class AE2 {
                 .inputItems(CustomTags.MV_CIRCUITS, 2)
                 .inputItems(TagPrefix.plateDouble, GTMaterials.Aluminium, 4)
                 .inputItems(GTOBlocks.BOROSILICATE_GLASS.asItem(), 2)
-                .outputItems(AEBlocks.INTERFACE.block().asItem(), GTOCore.isExpert() ? 4 : 8)
+                .outputItems(AEBlocks.INTERFACE.block().asItem(), GTORules.RECIPE_TIER.isExpert() ? 4 : 8)
                 .inputFluids(GTMaterials.Polyethylene, 576)
                 .EUt(120)
                 .duration(200)
@@ -451,7 +452,7 @@ public final class AE2 {
                 new ItemStack(RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider").getItem()),
                 new ItemStack(Items.IRON_INGOT));
 
-        if (GTOCore.isExpert()) {
+        if (GTORules.RECIPE_TIER.isExpert()) {
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("ex_pattern_provider"), RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"),
                     "ABA",
                     "CDC",
@@ -758,7 +759,7 @@ public final class AE2 {
     public static void initJsonFilter(Set<ResourceLocation> filters) {
         filters.add(ExtendedAE.id("silicon_block"));
         filters.add(AppEng.makeId("network/blocks/io_condenser"));
-        if (GTOCore.isEasy()) {
+        if (GTORules.RECIPE_TIER.isEasy()) {
             if (GTOConfig.INSTANCE.gamePlay.disableBlankPatternRecipes) {
                 filters.add(AppEng.makeId("network/crafting/patterns_blank"));
             }

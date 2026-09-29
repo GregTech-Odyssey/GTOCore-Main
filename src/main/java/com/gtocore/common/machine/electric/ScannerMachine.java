@@ -5,8 +5,8 @@ import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -138,7 +138,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                 var bytesScanned = c.countBytes();
                 return recipeBuilder.inputItems(input)
                         .inputItems(item.copyWithCount(1))
-                        .duration(200 * GTOCore.difficulty).EUt(eut(bytesScanned))
+                        .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
                         .addExtension(ScanningRecipeExtion.INSTANCE)
                         .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEItemKey.of(item.getItem()), output, team))
                         .build();
@@ -151,7 +151,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                 var bytesScanned = c.countBytes();
                 return recipeBuilder.inputItems(input)
                         .inputFluids(fluidStack.getFluid(), 1000)
-                        .duration(200 * GTOCore.difficulty).EUt(eut(bytesScanned))
+                        .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
                         .addExtension(ScanningRecipeExtion.INSTANCE)
                         .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEFluidKey.of(fluidStack.getFluid()), output, team))
                         .build();

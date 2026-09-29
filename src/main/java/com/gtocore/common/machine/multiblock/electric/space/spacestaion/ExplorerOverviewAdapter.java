@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -42,7 +43,7 @@ public final class ExplorerOverviewAdapter implements OverviewAdapter {
     @RegisterLanguage(cn = "光伏帆板", en = "Photovoltaic Sails")
     public static final String LANG_SAILS = "gtocore.machine.space_station.explorer.overview.sails";
 
-    private static final List<Kind> KINDS = List.of(new Kind(ANCHOR_GOLD, LANG_ANCHOR));
+    private static final List<Kind> KINDS = Collections.singletonList(new Kind(ANCHOR_GOLD, LANG_ANCHOR));
 
     @Override
     public String titleKey() {
@@ -66,7 +67,7 @@ public final class ExplorerOverviewAdapter implements OverviewAdapter {
 
     @Override
     public List<Component> categories() {
-        return List.of(Component.translatable(LANG_SAILS));
+        return Collections.singletonList(Component.translatable(LANG_SAILS));
     }
 
     @Override
@@ -94,7 +95,7 @@ public final class ExplorerOverviewAdapter implements OverviewAdapter {
                 case Z -> port.getX() >= centroid[0] ? Direction.EAST : Direction.WEST;
                 case Y -> OverviewDocking.horizontalAway(port, centroid);
             };
-            out.accept(new OverviewSnapshot.Anchor(List.of(port.immutable()), 0, outward, port.getX() + 0.5f, port.getY() + 0.5f, port.getZ() + 0.5f));
+            out.accept(new OverviewSnapshot.Anchor(Collections.singletonList(port.immutable()), 0, outward, port.getX() + 0.5f, port.getY() + 0.5f, port.getZ() + 0.5f));
         }
     }
 

@@ -28,6 +28,7 @@ import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
 import com.gtocore.common.machine.tesseract.DirectedTesseractMachine;
 import com.gtocore.common.machine.tesseract.TesseractMachine;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
 
 import com.gtolib.GTOCore;
@@ -257,7 +258,7 @@ public final class GTOMachines {
                             FormattingUtil.formatNumbers(V[tier - 1]), VNF[tier - 1]))
                     .tooltips(Component.translatable("gtceu.universal.tooltip.energy_storage_capacity",
                             FormattingUtil.formatNumbers(24414 * (1L << (2 * tier)))))
-                    .addTooltipsFromClass(LightningRodMachine.class)
+                    .ruleTooltips(GTORules.LIGHTNING_ROD_BREAK)
                     .register(),
             EV, IV, LuV);
 
@@ -268,7 +269,7 @@ public final class GTOMachines {
                     .langValue("%s Wind Mill Turbine%s".formatted(VLVH[tier], VLVT[tier]))
                     .nonYAxisRotation()
                     .renderer(() -> new WindMillTurbineRenderer(tier))
-                    .addTooltipsFromClass(WindMillTurbineMachine.class)
+                    .ruleTooltips(GTORules.WIND_MILL_AMPERAGE)
                     .hasTESR(true)
                     .tooltips(Component.translatable("gtocore.machine.wind_mill_turbine.tooltip.0"))
                     .tooltips(Component.translatable("gtocore.machine.wind_mill_turbine.tooltip.1"))
@@ -681,7 +682,7 @@ public final class GTOMachines {
     public static final MachineDefinition AUTO_CONFIGURATION_MAINTENANCE_HATCH = machine("auto_configuration_maintenance_hatch", "可配置自动维护仓", ACMHatchPartMachine::new)
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)
             .notAllowSharedTooltips()
             .renderer(() -> new MaintenanceHatchPartRenderer(5, GTCEu.id("block/machine/part/maintenance.full_auto")))
@@ -690,7 +691,7 @@ public final class GTOMachines {
     public static final MachineDefinition MODULAR_CONFIGURATION_MAINTENANCE_HATCH = machine("modular_configuration_maintenance_hatch", "模块化可配置维护仓", ModularHatchPartMachine::new)
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .tooltips(GTOMachineTooltips.ModularConfigurationMaintenanceHatchTooltips)
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)
             .notAllowSharedTooltips()
@@ -740,7 +741,7 @@ public final class GTOMachines {
     public static final MachineDefinition CLEANING_CONFIGURATION_MAINTENANCE_HATCH = machine("cleaning_configuration_maintenance_hatch", "超净可配置维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.DUMMY_CLEANROOM))
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .notAllowSharedTooltips()
             .tooltips(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
@@ -758,7 +759,7 @@ public final class GTOMachines {
     public static final MachineDefinition STERILE_CONFIGURATION_CLEANING_MAINTENANCE_HATCH = machine("sterile_configuration_cleaning_maintenance_hatch", "无菌可配置维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.STERILE_DUMMY_CLEANROOM))
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .notAllowSharedTooltips()
             .tooltips(
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
@@ -777,7 +778,7 @@ public final class GTOMachines {
     public static final MachineDefinition LAW_CONFIGURATION_CLEANING_MAINTENANCE_HATCH = machine("law_configuration_cleaning_maintenance_hatch", "绝对洁净可配置维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.LAW_DUMMY_CLEANROOM))
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .notAllowSharedTooltips()
             .tooltips(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
@@ -804,7 +805,7 @@ public final class GTOMachines {
             .langValue("Gravity Configuration Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)
             .notAllowSharedTooltips()
             .renderer(() -> new MaintenanceHatchPartRenderer(10, GTCEu.id("block/machine/part/maintenance.full_auto")))
@@ -823,7 +824,7 @@ public final class GTOMachines {
             .langValue("Vacuum Configuration Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
-            .addTooltipsFromClass(ACMHatchPartMachine.class)
+            .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .tooltips(Component.translatable("gtocore.recipe.vacuum.tier", 4))
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)
             .notAllowSharedTooltips()

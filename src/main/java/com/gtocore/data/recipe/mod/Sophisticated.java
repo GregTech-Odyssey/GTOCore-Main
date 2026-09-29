@@ -1,6 +1,7 @@
 package com.gtocore.data.recipe.mod;
 
 import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.recipe.builder.vanilla.SmithingRecipeBuilder;
 import com.gtocore.integration.Mods;
 
@@ -26,7 +27,7 @@ import java.util.Set;
 public final class Sophisticated {
 
     public static void backpack() {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1"), RegistriesUtils.getItemStack("sophisticatedbackpacks:stack_upgrade_tier_1"), RegistriesUtils.getItemStack("sophisticatedbackpacks:stack_upgrade_starter_tier"), GTMachines.SUPER_CHEST[GTValues.MV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("advanced_compacting_upgrade"), RegistriesUtils.getItemStack("sophisticatedbackpacks:advanced_compacting_upgrade"), RegistriesUtils.getItemStack("sophisticatedbackpacks:compacting_upgrade"), GTItems.ELECTRIC_PISTON_MV.asItem());
@@ -285,7 +286,7 @@ public final class Sophisticated {
 
             /* 拿不定强度，两个方案 */
             /* 工作台"堆叠升级T1","升级基板 青铜板条箱 */
-            if (GTOCore.isNormal()) {
+            if (GTORules.MOD_RECIPE_TIER.isNormal()) {
                 VanillaRecipeHelper.addShapedRecipe(GTOCore.id("stack_upgrade_tier_1"), RegistriesUtils.getItem("sophisticatedstorage:stack_upgrade_tier_1"),
                         "AB ",
                         "   ",
@@ -721,7 +722,7 @@ public final class Sophisticated {
     }
 
     public static void backpackFilter(Set<ResourceLocation> filters) {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
             filters.add(RLUtils.sp("backpack"));
             filters.add(RLUtils.sp("pickup_upgrade"));

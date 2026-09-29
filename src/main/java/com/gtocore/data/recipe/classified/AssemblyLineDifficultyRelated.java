@@ -4,8 +4,7 @@ import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.GTAEMachines;
-
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -22,7 +21,7 @@ import static com.gtocore.data.techtree.AENodes.MESmartGatingClustering;
 class AssemblyLineDifficultyRelated {
 
     static void init() {
-        if (GTOCore.isExpert() || GTOCore.isNormal()) {
+        if (GTORules.RECIPE_TIER.isExpert() || GTORules.RECIPE_TIER.isNormal()) {
             ASSEMBLY_LINE_RECIPES.builder("me_wildcard_pattern_buffer_uhv")
                     .inputItems(GTOMachines.HUGE_ITEM_IMPORT_BUS.asItem())
                     .inputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER_ULTRA)
@@ -50,7 +49,7 @@ class AssemblyLineDifficultyRelated {
                     .researchNode(MESmartGatingClustering)
                     .save();
         }
-        if (GTOCore.isNormal()) {
+        if (GTORules.RECIPE_TIER.isNormal()) {
             ASSEMBLY_LINE_RECIPES.builder("me_wildcard_pattern_buffer_orichalcos")
                     .inputItems(GTOMachines.HUGE_ITEM_IMPORT_BUS.asItem())
                     .inputItems(CustomTags.UEV_CIRCUITS, 4)
@@ -79,7 +78,7 @@ class AssemblyLineDifficultyRelated {
                     .researchNode(MESmartGatingClustering)
                     .save();
         }
-        if (GTOCore.isEasy()) {
+        if (GTORules.RECIPE_TIER.isEasy()) {
 
             ASSEMBLY_LINE_RECIPES.builder("me_wildcard_pattern_buffer_easy")
                     .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.LuV].asItem())

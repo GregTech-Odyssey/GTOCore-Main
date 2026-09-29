@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.magic;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.ManaMachine;
 import com.gtocore.common.data.machines.ManaMultiBlock;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.tag.Tags;
 
 import com.gtolib.GTOCore;
@@ -747,8 +748,8 @@ public final class MagicRecipesB {
 
             // 简化产线&残渣产线
             {
-                int chance = GTOCore.isEasy() ? 250 : 25;
-                int chanceBoost = GTOCore.isEasy() ? 50 : 5;
+                int chance = GTORules.RECIPE_TIER.isEasy() ? 250 : 25;
+                int chanceBoost = GTORules.RECIPE_TIER.isEasy() ? 50 : 5;
                 // 源核晶
                 {
                     CHEMICAL_BATH_RECIPES.recipeBuilder("purify_refined_origin_core_crystal_ore")

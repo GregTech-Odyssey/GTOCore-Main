@@ -1,8 +1,8 @@
 package com.gtocore.mixin.gtm.recipe;
 
+import com.gtocore.config.GTORules;
 import com.gtocore.data.recipe.generated.WoodRecipes;
 
-import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -74,7 +74,7 @@ public final class WoodMachineRecipesMixin {
         final String name = entry.woodName;
         TagKey<Item> logTag = entry.logTag;
         boolean hasPlanksRecipe = entry.planksRecipeName != null;
-        boolean skipDuplicateEasyRecipes = GTOCore.isEasy() && !GTCEu.MOD_ID.equals(entry.modid);
+        boolean skipDuplicateEasyRecipes = GTORules.RECIPE_TIER.isEasy() && !GTCEu.MOD_ID.equals(entry.modid);
         // strip log
         if (entry.log != null && entry.strippedLog != null) LATHE_RECIPES.recipeBuilder("strip_" + entry.woodName + "_log")
                 .inputItems(entry.log)

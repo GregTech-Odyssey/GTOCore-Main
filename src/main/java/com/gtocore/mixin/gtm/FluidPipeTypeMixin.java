@@ -1,6 +1,7 @@
 package com.gtocore.mixin.gtm;
 
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 
@@ -41,7 +42,7 @@ public class FluidPipeTypeMixin {
      */
     @Overwrite(remap = false)
     public FluidPipeProperties modifyProperties(FluidPipeProperties fluidPipeData) {
-        return new FluidPipeProperties((4 - GTOCore.difficulty) * fluidPipeData.getThroughput() * capacityMultiplier * channels);
+        return new FluidPipeProperties(GTORules.FLUID_PIPE_THROUGHPUT.get() * fluidPipeData.getThroughput() * capacityMultiplier * channels);
     }
 
     /**

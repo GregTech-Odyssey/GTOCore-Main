@@ -1,8 +1,8 @@
 package com.gtocore.common.machine.generator;
 
+import com.gtocore.config.GTORules;
+
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -29,8 +29,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class LightningRodMachine extends TieredEnergyMachine {
 
     private TickableSubscription energySubs;
-    @DynamicInitialValue(typeKey = DynamicInitialValueTypes.KEY_PROBABILITY, key = "lightning_rod.break_probability", easyValue = "0.2D", normalValue = "0.3D", expertValue = "0.4D", cn = "雷击杆破坏概率", cnComment = "雷击杆被雷击后，被破坏的概率为%s。", en = "Lightning Rod Break Probability", enComment = "Probability of the lightning rod being destroyed after being struck by lightning: %s.")
-    private static double breakProbability = 1.0;
 
     public LightningRodMachine(MetaMachineBlockEntity holder, int tier, Object... args) {
         super(holder, tier, args);
@@ -61,7 +59,7 @@ public final class LightningRodMachine extends TieredEnergyMachine {
             } else {
                 energyContainer.addEnergy(getCharge() / 2 + (GTValues.RNG.nextLong() % getCharge()) / 2);
             }
-            if (GTOUtils.probability(breakProbability)) {
+            if (GTOUtils.probability(GTORules.LIGHTNING_ROD_BREAK.get())) {
                 getLevel().setBlockAndUpdate(getPos().offset(0, 1, 0), Blocks.AIR.defaultBlockState());
             }
         }
@@ -97,6 +95,6 @@ public final class LightningRodMachine extends TieredEnergyMachine {
     }
 
     public static double getBreakProbability() {
-        return LightningRodMachine.breakProbability;
+        return GTORules.LIGHTNING_ROD_BREAK.get();
     }
 }

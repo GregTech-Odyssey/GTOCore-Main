@@ -38,6 +38,8 @@ public final class EmiPageLayout {
         int getPagedHeight();
     }
 
+    public interface NoSideButtons {}
+
     private static boolean classExists(String name) {
         try {
             Class.forName(name, false, EmiPageLayout.class.getClassLoader());
@@ -48,6 +50,7 @@ public final class EmiPageLayout {
     }
 
     public static int sideButtons(EmiRecipe recipe) {
+        if (recipe instanceof NoSideButtons) return 0;
         int count = 0;
         if (EmiConfig.recipeFillButton && EmiRecipeFiller.isSupported(recipe)) count++;
         if (recipe.getId() != null && !recipe.getOutputs().isEmpty()) {

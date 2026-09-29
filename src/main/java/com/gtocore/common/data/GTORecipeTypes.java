@@ -6,13 +6,12 @@ import com.gtocore.common.item.DimensionDataItem;
 import com.gtocore.common.item.DiscItem;
 import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
 import com.gtocore.common.machine.multiblock.electric.PCBFactoryMachine;
-import com.gtocore.common.machine.multiblock.generator.FullCellGenerator;
 import com.gtocore.common.machine.multiblock.part.InfiniteIntakeHatchPartMachine;
 import com.gtocore.common.recipe.RecipeTypeModify;
 import com.gtocore.common.recipe.custom.RecyclerLogic;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.recipe.generated.GenerateDisassembly;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.RecipeType;
 
@@ -120,8 +119,8 @@ public final class GTORecipeTypes {
     public static final RecipeType VACUUM_RECIPES = (RecipeType) GTRecipeTypes.VACUUM_RECIPES;
     public static final RecipeType ASSEMBLY_LINE_RECIPES = ((RecipeType) GTRecipeTypes.ASSEMBLY_LINE_RECIPES);
     public static final RecipeType LARGE_CHEMICAL_RECIPES = (RecipeType) GTRecipeTypes.LARGE_CHEMICAL_RECIPES;
-    public static final RecipeType FUSION_RECIPES = (RecipeType) GTRecipeTypes.FUSION_RECIPES.setMaxIOSize(0, 0, 2, GTOCore.isExpert() ? 3 : 1)
-            .onRecipeBuild(GTOCore.isExpert() ? (b) -> {
+    public static final RecipeType FUSION_RECIPES = (RecipeType) GTRecipeTypes.FUSION_RECIPES.setMaxIOSize(0, 0, 2, GTORules.RECIPE_TIER.isExpert() ? 3 : 1)
+            .onRecipeBuild(GTORules.RECIPE_TIER.isExpert() ? (b) -> {
                 var lo = b.getFluidOutputs().getFirst().inner;
                 var f = lo.copy(lo.amount * 3 / 4);
                 b.getFluidOutputs().clear();
@@ -312,7 +311,7 @@ public final class GTORecipeTypes {
                 };
                 return LocalizationUtils.format(TierCasingTrait.getTierTranslationKey(STELLAR_CONTAINMENT_TIER), tierString);
             })
-            .onRecipeBuild(b -> b.duration(b.getDuration() * GTOCore.difficulty / 3));
+            .onRecipeBuild(b -> b.duration(b.getDuration() * GTORules.RECIPE_TIER.level() / 3));
 
     public static final RecipeType COMPONENT_ASSEMBLY_RECIPES = register("component_assembly", "部件装配", MULTIBLOCK)
             .setSlotLayout(GTORecipeLayouts.COMPONENT_ASSEMBLY)
@@ -940,7 +939,7 @@ public final class GTORecipeTypes {
             .setEUIO(IO.OUT)
             .setMaxIOSize(1, 1, 2, 2)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .addDataInfo(data -> LocalizationUtils.format("gtocore.difficulty_config.name.fuelcell.chance_consume") + ":" + FormattingUtil.formatPercent(FullCellGenerator.chanceConsumeMembraneOnDischarge * 100) + "%%")
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.rule.power.fuel_cell_membrane_damage") + ":" + FormattingUtil.formatPercent(GTORules.FUEL_CELL_CONSUME.get() * 100) + "%%")
             .setSound(GTSoundEntries.ARC);
 
     public static final RecipeType BIOCHEMICAL_EXTRACTION_RECIPES = register("biochemical_extraction", "生物提取", MULTIBLOCK)

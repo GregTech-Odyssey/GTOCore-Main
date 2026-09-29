@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOOrganItems;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.item.misc.TierOrganItem;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 
@@ -60,7 +61,7 @@ public final class OrganRecipes {
         for (int organTier = 1; organTier <= TierOrganItem.MAX_TIER; organTier++) {
             int tier = organTier << 1;
             // 1 级是 MV，还没有自动化，用量减半
-            int shift = organTier == 1 ? GTOCore.difficulty - 1 : GTOCore.difficulty;
+            int shift = organTier == 1 ? GTORules.RECIPE_TIER.level() - 1 : GTORules.RECIPE_TIER.level();
             var motor = (Item) GTCraftingComponents.MOTOR.get(tier);
             var conveyor = (Item) GTCraftingComponents.CONVEYOR.get(tier);
             var pump = (Item) GTCraftingComponents.PUMP.get(tier);

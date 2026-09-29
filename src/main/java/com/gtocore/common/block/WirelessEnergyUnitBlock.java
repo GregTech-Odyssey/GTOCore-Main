@@ -1,8 +1,7 @@
 package com.gtocore.common.block;
 
 import com.gtocore.common.data.machines.MultiBlockG;
-
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -32,12 +31,13 @@ public class WirelessEnergyUnitBlock extends Block {
 
     public WirelessEnergyUnitBlock(Properties properties, int tier) {
         super(properties);
-        var sec_base = 60 << 4 - GTOCore.difficulty;
-        this.capacity = BigInteger.valueOf(GTValues.VEX[tier << 1]).divide(BigInteger.valueOf(GTOCore.difficulty))
+        int level = GTORules.WIRELESS_ENERGY_TIER.level();
+        var sec_base = 60 << 4 - level;
+        this.capacity = BigInteger.valueOf(GTValues.VEX[tier << 1]).divide(BigInteger.valueOf(level))
                 .add(BigInteger.valueOf(GTValues.VEX[tier] * 20 * sec_base)).multiply(BigInteger.valueOf(tier));
-        int loss_tmp = GTOCore.isEasy() ? 0 : (GTValues.MAX - tier) << GTOCore.difficulty;
+        int loss_tmp = GTORules.WIRELESS_ENERGY_TIER.isEasy() ? 0 : (GTValues.MAX - tier) << level;
         if (tier < 6) {
-            loss_tmp += 10 * (GTOCore.difficulty << 2) / tier;
+            loss_tmp += 10 * (level << 2) / tier;
         }
 
         this.loss = loss_tmp;

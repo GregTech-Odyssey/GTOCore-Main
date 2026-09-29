@@ -5,8 +5,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.recipe.condition.BeamCondition;
-
-import com.gtolib.GTOCore;
+import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
@@ -102,7 +101,7 @@ public final class ResearchRecipes {
                     .inputItems(crystals[i - 1].get())
                     .EUt(3L << (4 * i + 8))
                     .CWUt(4L << (i * 2))
-                    .duration(200 * GTOCore.difficulty)
+                    .duration(200 * GTORules.RECIPE_TIER.level())
                     .save();
         }
     }

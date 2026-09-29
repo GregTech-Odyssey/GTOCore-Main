@@ -10,6 +10,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.generator.MagicEnergyMachine;
 import com.gtocore.common.machine.mana.*;
 import com.gtocore.common.machine.mana.part.*;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
@@ -63,7 +64,7 @@ public final class ManaMachine {
                             GTOCore.id("block/generators/primitive_magic_energy")))
                     .tooltips(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.0"))
                     .tooltips(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.1"))
-                    .tooltips(Component.translatable("gtceu.universal.tooltip.amperage_out", 16 >> GTOCore.difficulty))
+                    .tooltips(Component.translatable("gtceu.universal.tooltip.amperage_out", GTORules.MAGIC_GENERATOR_AMPERAGE.get()))
                     .tooltips(Component.translatable("gtceu.universal.tooltip.voltage_out",
                             FormattingUtil.formatNumbers(V[tier]), VNF[tier]))
                     .tooltips(Component.translatable("gtceu.universal.tooltip.energy_storage_capacity",

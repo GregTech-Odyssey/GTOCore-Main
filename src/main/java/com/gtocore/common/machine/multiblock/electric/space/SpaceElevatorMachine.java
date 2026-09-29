@@ -5,9 +5,9 @@ import com.gtocore.api.gui.overview.OverviewWidget;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.SpaceElevatorConnectorModule;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.IdleReason;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.data.GTODimensions;
@@ -64,7 +64,6 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     public static final int REQUIRED_TIER = GTValues.UV;
     public static final int CYCLE_TICKS = 400;
     private static final int CWU_PER_TIER = 128;
-    private static final double LINKED_CWU_FACTOR = 1.5;
 
     private TickableSubscription highSubscription;
 
@@ -241,7 +240,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     }
 
     public static double linkedComputationFactor() {
-        return LINKED_CWU_FACTOR * GTOCore.difficulty;
+        return GTORules.SPACE_ELEVATOR_COMPUTATION.get();
     }
 
     public static long computationDemand(int tier, double factor) {

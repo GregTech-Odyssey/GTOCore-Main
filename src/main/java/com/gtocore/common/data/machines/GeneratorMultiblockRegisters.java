@@ -8,6 +8,7 @@ import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.multiblock.generator.CombustionEngineMachine;
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.registries.GTORegistration;
@@ -135,7 +136,7 @@ public final class GeneratorMultiblockRegisters {
         if (!isGTM) addLang(name, cn);
         var extension = TurbineExtension.of(recipeType);
         return registrate.multiblock(name, holder -> new TurbineMachine(holder, tier, special, false))
-                .addTooltipsFromClass(TurbineMachine.class)
+                .ruleTooltips(GTORules.MEGA_TURBINE_OUTPUT, GTORules.MEGA_TURBINE_ROTOR_DAMAGE, GTORules.MEGA_TURBINE_FAULT)
                 .tooltips(GTOMachineTooltips.LargeTurbineTooltips.invoke((long) (V[tier] * (special ? 2.5 : 2)), tier))
                 .tooltips(GTOMachineTooltips.TurbineHighSpeedTooltips)
                 .moduleTooltips(new PartAbility[0])
@@ -188,7 +189,7 @@ public final class GeneratorMultiblockRegisters {
                         .invoke(V[tier] * (special ? 12 : 8), tier))
                 .tooltips(GTOMachineTooltips.TurbineHighSpeedTooltips)
                 .moduleTooltips(new PartAbility[0])
-                .addTooltipsFromClass(TurbineMachine.class)
+                .ruleTooltips(GTORules.MEGA_TURBINE_OUTPUT, GTORules.MEGA_TURBINE_ROTOR_DAMAGE, GTORules.MEGA_TURBINE_FAULT)
                 .block(casing)
                 .structure(definition -> Structure
                         .root(Piece.start(RelativeDirection.LEFT, RelativeDirection.UP, RelativeDirection.FRONT)

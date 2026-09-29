@@ -1,9 +1,9 @@
 package com.gtocore.data.recipe.generated;
 
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 import com.gtocore.data.tag.Tags;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -68,7 +68,7 @@ public final class GTOOreRecipeHandler {
         }
         ItemStack crushedStack = ChemicalHelper.get(crushed, material);
         int oreMultiplier = property.getOreMultiplier();
-        int oreTypeMultiplier = GTOCore.isExpert() ? 4 : 6;
+        int oreTypeMultiplier = GTORules.ORE_TIER.isExpert() ? 4 : 6;
         long mass = material.getMass();
         int dur = (int) Math.max(8, Math.sqrt(mass) * 2 * oreTypeMultiplier);
         crushedStack.setCount(Math.max(oreTypeMultiplier * oreMultiplier, 1));
@@ -372,16 +372,16 @@ public final class GTOOreRecipeHandler {
                 if (material.hasProperty(PropertyKey.GEM)) {
                     AUTOCLAVE_RECIPES.builder("ore2_" + material.getName())
                             .inputItems(crushedPurified.getItemTags(material)[0])
-                            .outputItems(ingotStack.getItem(), 5 - GTOCore.difficulty)
-                            .inputFluids(GTMaterials.DistilledWater, GTOCore.isExpert() ? 20 : 10)
-                            .EUt(GTOCore.isExpert() ? 8 : 2)
+                            .outputItems(ingotStack.getItem(), 5 - GTORules.ORE_TIER.level())
+                            .inputFluids(GTMaterials.DistilledWater, GTORules.ORE_TIER.isExpert() ? 20 : 10)
+                            .EUt(GTORules.ORE_TIER.isExpert() ? 8 : 2)
                             .duration(100)
                             .save();
                     AUTOCLAVE_RECIPES.builder("ore1_" + material.getName())
                             .inputItems(crushedPurified.getItemTags(material)[0])
-                            .outputItems(ingotStack.getItem(), 5 - GTOCore.difficulty)
+                            .outputItems(ingotStack.getItem(), 5 - GTORules.ORE_TIER.level())
                             .inputFluids(Water, 500)
-                            .EUt(GTOCore.isExpert() ? 16 : 8)
+                            .EUt(GTORules.ORE_TIER.isExpert() ? 16 : 8)
                             .duration(400)
                             .save();
                 }
@@ -393,7 +393,7 @@ public final class GTOOreRecipeHandler {
     private static void processRawOre(Material material, OreProperty property) {
         ItemStack stack = ChemicalHelper.get(TagPrefix.rawOre, material);
         if (stack.isEmpty()) return;
-        int oreTypeMultiplier = GTOCore.isExpert() ? 4 : 6;
+        int oreTypeMultiplier = GTORules.ORE_TIER.isExpert() ? 4 : 6;
         long mass = material.getMass();
         int dur = (int) Math.max(6, Math.sqrt(mass) * oreTypeMultiplier * 2 / 3);
         ItemStack crushedStack = ChemicalHelper.get(crushed, material, Math.max(1, property.getOreMultiplier() * oreTypeMultiplier / 2));

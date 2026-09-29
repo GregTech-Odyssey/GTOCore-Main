@@ -3,11 +3,9 @@ package com.gtocore.common.machine.multiblock.generator;
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -80,13 +78,6 @@ public class TurbineMachine extends ElectricMultiblockMachine {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::rotorUpdate);
-
-    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_output_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4.0F", normalValue = "3.0F", expertValue = "2.5F", cn = "高速模式输出乘数 : %s", en = "High Speed Mode Output Multiplier : %s Multiplier")
-    private static float highSpeedModeOutputMultiplier = 3.0F;
-    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_rotor_damage_multiplier", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4", normalValue = "10", expertValue = "12", cn = "高速模式转子损坏乘数 : %s", en = "High Speed Mode Rotor Damage Multiplier : %s Multiplier")
-    private static int highSpeedModeRotorDamageMultiplier = 10;
-    @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_machine_fault", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4F", normalValue = "8F", expertValue = "10F", cn = "高速模式机器故障乘数 : %s", en = "High Speed Mode Machine Fault Multiplier : %s Multiplier")
-    private static float highSpeedModeMachineFault = 8.0F;
 
     @RegisterLanguage(cn = "扩展涡轮组", en = "Auxiliary Turbine Array")
     public static final String EXTENSION_NAME = "gtocore.multiblock.turbine.extension";
@@ -162,7 +153,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         super.onStructureFormed();
         if (mega) {
             rotorSubs.initialize(getLevel());
-            if (GTOCore.isExpert() && this instanceof MegaTurbine) {
+            if (GTORules.MEGA_TURBINE_REGULATOR.get() && this instanceof MegaTurbine) {
                 damageBase = Math.max(2.2 - 0.08 * ((MegaTurbine) this).getCasingTier(GTORecipeDataKeys.GLASS_TIER), 1.2);
             }
         }
@@ -199,7 +190,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         var recipe = getRecipeLogic().getLastRecipe();
         for (IMultiPart part : getParts()) {
             if (highSpeedMode && recipe != null && part instanceof IMaintenanceMachine maintenanceMachine) {
-                maintenanceMachine.calculateMaintenance(maintenanceMachine, (int) (highSpeedModeMachineFault * recipe.duration * extensionMultiplier()));
+                maintenanceMachine.calculateMaintenance(maintenanceMachine, (int) (GTORules.MEGA_TURBINE_FAULT.get() * recipe.duration * extensionMultiplier()));
                 continue;
             }
             if (part instanceof IWorkableMultiPart workableMultiPart) workableMultiPart.afterWorking(this);
@@ -293,7 +284,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
             onChanged();
         }).setTooltipsSupplier(pressed -> List.of(Component.translatable("gtocore.machine.mega_turbine.high_speed_mode").append("[").append(Component.translatable(pressed ? "gtocore.machine.on" : "gtocore.machine.off")).append("]"))));
 
-        if (mega && GTOCore.isExpert()) {
+        if (mega && GTORules.MEGA_TURBINE_REGULATOR.get()) {
             configuratorPanel.attachConfigurators(new IFancyConfigurator() {
 
                 @Override
@@ -424,7 +415,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         var rotorHolder = getRotorHolder();
         if (rotorHolder != null && rotorHolder.getRotorEfficiency() > 0) {
             double extension = extensionMultiplier();
-            textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed", FormattingUtil.formatNumbers(getRotorSpeed() * (highSpeedMode ? highSpeedModeOutputMultiplier : 1) * extension), FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed() * (highSpeedMode ? highSpeedModeOutputMultiplier : 1) * extension)));
+            textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed", FormattingUtil.formatNumbers(getRotorSpeed() * (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extension), FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed() * (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extension)));
             textList.add(Component.translatable("gtceu.multiblock.turbine.efficiency", rotorHolder.getTotalEfficiency() * extensionEfficiency()));
             if (isActive()) {
                 String voltageName = GTValues.VNF[GTUtil.getTierByVoltage(energyPerTick)];
@@ -447,17 +438,17 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     }
 
     private float getHighSpeedModeOutputMultiplier() {
-        if (!GTOCore.isExpert()) {
-            return highSpeedModeOutputMultiplier;
+        if (!GTORules.MEGA_TURBINE_REGULATOR.get()) {
+            return GTORules.MEGA_TURBINE_OUTPUT.get();
         }
-        return highSpeedModeOutputMultiplier * highSpeedFactor;
+        return GTORules.MEGA_TURBINE_OUTPUT.get() * highSpeedFactor;
     }
 
     private float getHighSpeedModeDamageMultiplier() {
-        if (!GTOCore.isExpert()) {
-            return highSpeedModeRotorDamageMultiplier;
+        if (!GTORules.MEGA_TURBINE_REGULATOR.get()) {
+            return GTORules.MEGA_TURBINE_ROTOR_DAMAGE.get();
         }
-        return Math.max(1f, (float) (highSpeedModeRotorDamageMultiplier * Math.pow(damageBase, highSpeedFactor - 1)));
+        return Math.max(1f, (float) (GTORules.MEGA_TURBINE_ROTOR_DAMAGE.get() * Math.pow(damageBase, highSpeedFactor - 1)));
     }
 
     public static class MegaTurbine extends TurbineMachine implements ICoilMachine, ITierCasingMachine {
@@ -494,7 +485,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         public void customText(List<Component> textList) {
             super.customText(textList);
             textList.add(Component.translatable(COIL_BONUS, getCoilTier(), getCoilTier() * 20));
-            if (GTOCore.isExpert())
+            if (GTORules.MEGA_TURBINE_REGULATOR.get())
                 textList.add(Component.translatable(GLASS_BONUS, getCasingTier(GTORecipeDataKeys.GLASS_TIER), FormattingUtil.formatNumber2Places(damageBase)));
         }
 

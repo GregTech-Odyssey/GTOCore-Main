@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.mod;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -121,7 +122,7 @@ public final class ImmersiveAircraft {
     }
 
     public static void initJsonFilter(Set<ResourceLocation> filters) {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.IMMERSIVE_AIRCRAFT.isLoaded()) {
             filters.add(RLUtils.fromNamespaceAndPath("immersive_aircraft", "boiler"));
             filters.add(RLUtils.fromNamespaceAndPath("immersive_aircraft", "steel_boiler"));

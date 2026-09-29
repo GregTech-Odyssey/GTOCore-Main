@@ -53,6 +53,7 @@ public final class GTOConfig {
     public DevMode devMode = new DevMode();
 
     static {
+        GTORules.init();
         ConfigHolder.init();
         INSTANCE = Configuration.registerConfig(GTOConfig.class, ConfigFormats.YAML).getConfigInstance();
         if (INSTANCE.devMode.startSpark == SparkRange.ALL || INSTANCE.devMode.startSpark == SparkRange.MAIN_MENU) {
@@ -60,75 +61,74 @@ public final class GTOConfig {
         }
         if (INSTANCE.devMode.dev) Configurator.setRootLevel(Level.INFO);
         if (INSTANCE.devMode.detailedLogging) Configurator.setRootLevel(Level.DEBUG);
-        int difficulty = INSTANCE.gamePlay.difficulty.ordinal() + 1;
-        ConfigHolder.GENERATE_ENERGY_NO_MATCH = difficulty == 3;
+        ConfigHolder.GENERATE_ENERGY_NO_MATCH = GTORules.GTM_GENERATE_NO_MATCH.get();
         ConfigHolder.INSTANCE.recipes.generateLowQualityGems = false;
-        ConfigHolder.INSTANCE.recipes.disableManualCompression = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.harderRods = difficulty == 3;
-        ConfigHolder.INSTANCE.recipes.harderBrickRecipes = difficulty == 3;
-        ConfigHolder.INSTANCE.recipes.nerfWoodCrafting = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardWoodRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardIronRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardRedstoneRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardToolArmorRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardMiscRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardGlassRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.nerfPaperCrafting = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardAdvancedIronRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardDyeRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.harderCharcoalRecipe = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.flintAndSteelRequireSteel = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.removeVanillaBlockRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.removeVanillaTNTRecipe = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.casingsPerCraft = Math.max(1, 3 - difficulty);
-        ConfigHolder.INSTANCE.recipes.harderCircuitRecipes = difficulty > 1;
-        ConfigHolder.INSTANCE.recipes.hardMultiRecipes = difficulty == 3;
-        ConfigHolder.INSTANCE.recipes.enchantedTools = difficulty == 1;
+        ConfigHolder.INSTANCE.recipes.disableManualCompression = GTORules.GTM_DISABLE_MANUAL_COMPRESSION.get();
+        ConfigHolder.INSTANCE.recipes.harderRods = GTORules.GTM_HARDER_RODS.get();
+        ConfigHolder.INSTANCE.recipes.harderBrickRecipes = GTORules.GTM_HARDER_BRICKS.get();
+        ConfigHolder.INSTANCE.recipes.nerfWoodCrafting = GTORules.GTM_NERF_WOOD.get();
+        ConfigHolder.INSTANCE.recipes.hardWoodRecipes = GTORules.GTM_HARD_WOOD.get();
+        ConfigHolder.INSTANCE.recipes.hardIronRecipes = GTORules.GTM_HARD_IRON.get();
+        ConfigHolder.INSTANCE.recipes.hardRedstoneRecipes = GTORules.GTM_HARD_REDSTONE.get();
+        ConfigHolder.INSTANCE.recipes.hardToolArmorRecipes = GTORules.GTM_HARD_TOOL_ARMOR.get();
+        ConfigHolder.INSTANCE.recipes.hardMiscRecipes = GTORules.GTM_HARD_MISC.get();
+        ConfigHolder.INSTANCE.recipes.hardGlassRecipes = GTORules.GTM_HARD_GLASS.get();
+        ConfigHolder.INSTANCE.recipes.nerfPaperCrafting = GTORules.GTM_NERF_PAPER.get();
+        ConfigHolder.INSTANCE.recipes.hardAdvancedIronRecipes = GTORules.GTM_HARD_ADVANCED_IRON.get();
+        ConfigHolder.INSTANCE.recipes.hardDyeRecipes = GTORules.GTM_HARD_DYE.get();
+        ConfigHolder.INSTANCE.recipes.harderCharcoalRecipe = GTORules.GTM_HARDER_CHARCOAL.get();
+        ConfigHolder.INSTANCE.recipes.flintAndSteelRequireSteel = GTORules.GTM_FLINT_AND_STEEL.get();
+        ConfigHolder.INSTANCE.recipes.removeVanillaBlockRecipes = GTORules.GTM_REMOVE_VANILLA_BLOCKS.get();
+        ConfigHolder.INSTANCE.recipes.removeVanillaTNTRecipe = GTORules.GTM_REMOVE_TNT.get();
+        ConfigHolder.INSTANCE.recipes.casingsPerCraft = GTORules.GTM_CASINGS_PER_CRAFT.get();
+        ConfigHolder.INSTANCE.recipes.harderCircuitRecipes = GTORules.GTM_HARDER_CIRCUITS.get();
+        ConfigHolder.INSTANCE.recipes.hardMultiRecipes = GTORules.GTM_HARD_MULTIBLOCKS.get();
+        ConfigHolder.INSTANCE.recipes.enchantedTools = GTORules.GTM_ENCHANTED_TOOLS.get();
         ConfigHolder.INSTANCE.compat.energy.nativeEUToFE = true;
         ConfigHolder.INSTANCE.compat.energy.enableFEConverters = false;
         ConfigHolder.INSTANCE.compat.energy.feToEuRatio = 20;
         ConfigHolder.INSTANCE.compat.energy.euToFeRatio = 16;
-        ConfigHolder.INSTANCE.compat.ae2.meHatchEnergyUsage = 32 * difficulty;
+        ConfigHolder.INSTANCE.compat.ae2.meHatchEnergyUsage = GTORules.GTM_ME_HATCH_ENERGY.get();
         ConfigHolder.INSTANCE.compat.showDimensionTier = true;
-        ConfigHolder.INSTANCE.worldgen.rubberTreeSpawnChance = (float) (2 - 0.5 * difficulty);
+        ConfigHolder.INSTANCE.worldgen.rubberTreeSpawnChance = GTORules.GTM_RUBBER_TREE.get();
         ConfigHolder.INSTANCE.worldgen.allUniqueStoneTypes = true;
         ConfigHolder.INSTANCE.worldgen.oreVeins.removeVanillaOreGen = false;
         ConfigHolder.INSTANCE.worldgen.oreVeins.removeVanillaLargeOreVeins = true;
-        ConfigHolder.INSTANCE.worldgen.oreVeins.bedrockOreDistance = difficulty;
-        ConfigHolder.INSTANCE.worldgen.oreVeins.infiniteBedrockOresFluids = difficulty == 1;
+        ConfigHolder.INSTANCE.worldgen.oreVeins.bedrockOreDistance = GTORules.GTM_BEDROCK_ORE_DISTANCE.get();
+        ConfigHolder.INSTANCE.worldgen.oreVeins.infiniteBedrockOresFluids = GTORules.GTM_INFINITE_BEDROCK.get();
         ConfigHolder.INSTANCE.worldgen.oreVeins.oreIndicators = true;
         ConfigHolder.INSTANCE.worldgen.oreVeins.oreGenerationChunkCacheSize = 512;
         ConfigHolder.INSTANCE.worldgen.oreVeins.oreIndicatorChunkCacheSize = 2048;
         ConfigHolder.INSTANCE.machines.batchDuration = INSTANCE.gamePlay.batchProcessingMaxDuration;
-        ConfigHolder.INSTANCE.machines.recipeProgressLowEnergy = difficulty == 3;
-        ConfigHolder.INSTANCE.machines.requireGTToolsForBlocks = difficulty > 1;
-        ConfigHolder.INSTANCE.machines.shouldWeatherOrTerrainExplosion = difficulty == 3;
-        ConfigHolder.INSTANCE.machines.energyUsageMultiplier = 100 * difficulty;
-        ConfigHolder.INSTANCE.machines.prospectorEnergyUseMultiplier = 100 * difficulty;
-        ConfigHolder.INSTANCE.machines.doesExplosionDamagesTerrain = difficulty > 1;
-        ConfigHolder.INSTANCE.machines.harmlessActiveTransformers = difficulty == 1;
+        ConfigHolder.INSTANCE.machines.recipeProgressLowEnergy = GTORules.GTM_LOW_ENERGY_PROGRESS.get();
+        ConfigHolder.INSTANCE.machines.requireGTToolsForBlocks = GTORules.GTM_REQUIRE_TOOLS.get();
+        ConfigHolder.INSTANCE.machines.shouldWeatherOrTerrainExplosion = GTORules.GTM_WEATHER_EXPLOSION.get();
+        ConfigHolder.INSTANCE.machines.energyUsageMultiplier = GTORules.GTM_ELECTRIC_TOOL_ENERGY.get();
+        ConfigHolder.INSTANCE.machines.prospectorEnergyUseMultiplier = GTORules.GTM_PROSPECTOR_ENERGY.get();
+        ConfigHolder.INSTANCE.machines.doesExplosionDamagesTerrain = GTORules.GTM_EXPLOSION_TERRAIN.get();
+        ConfigHolder.INSTANCE.machines.harmlessActiveTransformers = GTORules.GTM_HARMLESS_TRANSFORMERS.get();
         ConfigHolder.INSTANCE.machines.steelSteamMultiblocks = false;
-        ConfigHolder.INSTANCE.machines.enableCleanroom = difficulty > 1;
-        ConfigHolder.INSTANCE.machines.cleanMultiblocks = difficulty == 1;
+        ConfigHolder.INSTANCE.machines.enableCleanroom = GTORules.GTM_CLEANROOM.get();
+        ConfigHolder.INSTANCE.machines.cleanMultiblocks = GTORules.GTM_CLEAN_MULTIBLOCKS.get();
         ConfigHolder.INSTANCE.machines.enableResearch = true;
-        ConfigHolder.INSTANCE.machines.enableMaintenance = difficulty > 1;
-        ConfigHolder.INSTANCE.machines.dualChamberPressurizationMode = difficulty == 3 ? 3 : 1;
+        ConfigHolder.INSTANCE.machines.enableMaintenance = GTORules.GTM_MAINTENANCE.get();
+        ConfigHolder.INSTANCE.machines.dualChamberPressurizationMode = GTORules.GTM_DUAL_CHAMBER.get();
         ConfigHolder.INSTANCE.machines.enableWorldAccelerators = true;
         ConfigHolder.INSTANCE.machines.gt6StylePipesCables = true;
         ConfigHolder.INSTANCE.machines.doBedrockOres = true;
         ConfigHolder.INSTANCE.machines.bedrockOreDropTagPrefix = "raw";
         ConfigHolder.INSTANCE.machines.minerSpeed = 80;
-        ConfigHolder.INSTANCE.machines.enableTieredCasings = difficulty > 1;
+        ConfigHolder.INSTANCE.machines.enableTieredCasings = GTORules.GTM_TIERED_CASINGS.get();
         ConfigHolder.INSTANCE.machines.ldItemPipeMinDistance = 50;
         ConfigHolder.INSTANCE.machines.ldFluidPipeMinDistance = 50;
         ConfigHolder.INSTANCE.machines.onlyOwnerGUI = false;
         ConfigHolder.INSTANCE.machines.onlyOwnerBreak = false;
         ConfigHolder.INSTANCE.machines.ownerOPBypass = 2;
         ConfigHolder.INSTANCE.machines.highTierContent = true;
-        ConfigHolder.INSTANCE.machines.orderedAssemblyLineItems = difficulty > 1;
-        ConfigHolder.INSTANCE.machines.orderedAssemblyLineFluids = difficulty == 3;
+        ConfigHolder.INSTANCE.machines.orderedAssemblyLineItems = GTORules.GTM_ORDERED_ITEMS.get();
+        ConfigHolder.INSTANCE.machines.orderedAssemblyLineFluids = GTORules.GTM_ORDERED_FLUIDS.get();
         ConfigHolder.INSTANCE.machines.steamMultiParallelAmount = 8;
-        int boilerFactor = 8 >> difficulty;
+        int boilerFactor = GTORules.GTM_BOILER_OUTPUT.get();
         ConfigHolder.INSTANCE.machines.smallBoilers.solidBoilerBaseOutput = 120 * boilerFactor;
         ConfigHolder.INSTANCE.machines.smallBoilers.hpSolidBoilerBaseOutput = 300 * boilerFactor;
         ConfigHolder.INSTANCE.machines.smallBoilers.liquidBoilerBaseOutput = 240 * boilerFactor;
@@ -144,7 +144,7 @@ public final class GTOConfig {
         ConfigHolder.INSTANCE.machines.largeBoilers.titaniumBoilerHeatSpeed = boilerFactor;
         ConfigHolder.INSTANCE.machines.largeBoilers.tungstensteelBoilerMaxTemperature = 6400 * boilerFactor;
         ConfigHolder.INSTANCE.machines.largeBoilers.tungstensteelBoilerHeatSpeed = boilerFactor;
-        ConfigHolder.INSTANCE.tools.rngDamageElectricTools = 5 << difficulty;
+        ConfigHolder.INSTANCE.tools.rngDamageElectricTools = GTORules.GTM_ELECTRIC_TOOL_DAMAGE.get();
         ConfigHolder.INSTANCE.tools.sprayCanChainLength = 16;
         ConfigHolder.INSTANCE.tools.treeFellingDelay = 2;
         ConfigHolder.INSTANCE.tools.voltageTierNightVision = 1;
@@ -156,7 +156,7 @@ public final class GTOConfig {
         ConfigHolder.INSTANCE.tools.voltageTierImpeller = 2;
         ConfigHolder.INSTANCE.tools.voltageTierAdvImpeller = 3;
         ConfigHolder.INSTANCE.tools.nanoSaber.zombieSpawnWithSabers = true;
-        if (GTOCore.isEasy()) {
+        if (GTORules.GTM_DISABLE_HAZARDS.get()) {
             ConfigHolder.INSTANCE.gameplay.hazardsEnabled = false;
         }
         ConfigHolder.INSTANCE.dev.debug = INSTANCE.devMode.dev;
@@ -165,6 +165,8 @@ public final class GTOConfig {
 
         CommonProxy.earlyStartup();
     }
+
+    public static void init() {}
 
     public static <T> void set(String fieldName, T value) {
         if (fieldName.contains(".")) {
@@ -203,11 +205,6 @@ public final class GTOConfig {
 
     @DataGeneratorScanned
     public static class GamePlay {
-
-        @Configurable
-        @Configurable.Comment({ "游戏难度等级", "Game difficulty level" })
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Game Difficulty", cn = "游戏难度")
-        public Difficulty difficulty = Difficulty.Normal;
 
         @Configurable
         @Configurable.Comment({ "启用自我约束模式以限制任何形式的作弊指令使用（警告：一旦开启，游玩的存档将永久锁定自我约束模式！）", "Enable Self Restraint Mode to restrict the use of any form of cheat commands (Warning: Once enabled, the played save will be permanently locked in Self Restraint Mode!)" })
@@ -260,7 +257,7 @@ public final class GTOConfig {
 
         @Configurable
         @Configurable.Comment({ "全局配方的运行时间都会乘以这个倍数", "发电和产魔机器不受影响", "All recipe durations will be multiplied by this factor", "eu gen and mana gen machines are not affected" })
-        @Configurable.DecimalRange(min = 0.0001, max = 100)
+        @Configurable.DecimalRange(min = 0.001, max = 1000)
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Recipe Duration Multiplier", cn = "配方时间乘数")
         public double recipeDurationMultiplier = 1;
 

@@ -42,7 +42,6 @@ import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
-import com.gtolib.api.registries.ScanningClass;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -173,7 +172,6 @@ public class CommonProxy {
     }
 
     public static void afterStartup() {
-        ScanningClass.VALUES = null;
         ModList.get().getAllScanData().clear();
         if (GTOConfig.INSTANCE.devMode.startSpark == SparkRange.MAIN_MENU) {
             SparkLaunchProfiler.stop("all");

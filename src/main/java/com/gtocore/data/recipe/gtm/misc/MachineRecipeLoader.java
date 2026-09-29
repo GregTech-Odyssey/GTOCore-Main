@@ -3,8 +3,8 @@ package com.gtocore.data.recipe.gtm.misc;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
+import com.gtocore.config.GTORules;
 
-import com.gtolib.GTOCore;
 import com.gtolib.utils.ItemUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -724,7 +724,7 @@ public final class MachineRecipeLoader {
 
         ASSEMBLER_RECIPES.recipeBuilder("assembly_control_casing")
                 .inputItems(HIGH_POWER_INTEGRATED_CIRCUIT)
-                .inputItems(GTOCore.isExpert() ? CustomTags.LuV_CIRCUITS : CustomTags.EV_CIRCUITS, 4)
+                .inputItems(GTORules.RECIPE_TIER.isExpert() ? CustomTags.LuV_CIRCUITS : CustomTags.EV_CIRCUITS, 4)
                 .inputItems(SENSOR_IV)
                 .inputItems(EMITTER_IV)
                 .inputItems(ELECTRIC_MOTOR_IV)

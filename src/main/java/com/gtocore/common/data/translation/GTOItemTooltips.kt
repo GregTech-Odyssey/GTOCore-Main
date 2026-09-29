@@ -11,6 +11,7 @@ import com.gtocore.common.data.GTOItems
 import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator
 import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator
 import com.gtocore.config.GTOConfig
+import com.gtocore.config.GTORules
 import com.gtocore.utils.setTooltips
 
 import net.minecraft.ChatFormatting

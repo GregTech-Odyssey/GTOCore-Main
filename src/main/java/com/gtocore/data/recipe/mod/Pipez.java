@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.mod;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -18,9 +19,9 @@ import net.minecraft.world.item.Items;
 public class Pipez {
 
     public static void init() {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (!Mods.PIPEZ.isLoaded()) return;
-        int pipeAmount = 18 * (GTOCore.isExpert() ? 1 : 2);
+        int pipeAmount = 18 * (GTORules.MOD_RECIPE_TIER.isExpert() ? 1 : 2);
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("item_pipe"), RegistriesUtils.getItemStack("pipez:item_pipe", pipeAmount),
                 "AAA",
                 "BBB",

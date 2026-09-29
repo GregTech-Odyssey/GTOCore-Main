@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.mod;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -24,18 +25,18 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 public class ModularRouters {
 
     public static void init() {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.MODULARROUTERS.isLoaded()) {
-            var ingotMat = GTOCore.isNormal() ? GTOMaterials.DarkSteel : GTMaterials.BlackSteel;
-            var plateMat = GTOCore.isNormal() ? GTMaterials.Cupronickel : GTMaterials.Kanthal;
-            var eut = GTOCore.isNormal() ? GTValues.VA[GTValues.LV] : GTValues.VA[GTValues.MV];
+            var ingotMat = GTORules.MOD_RECIPE_TIER.isNormal() ? GTOMaterials.DarkSteel : GTMaterials.BlackSteel;
+            var plateMat = GTORules.MOD_RECIPE_TIER.isNormal() ? GTMaterials.Cupronickel : GTMaterials.Kanthal;
+            var eut = GTORules.MOD_RECIPE_TIER.isNormal() ? GTValues.VA[GTValues.LV] : GTValues.VA[GTValues.MV];
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("modular_router"), RegistriesUtils.getItemStack("modularrouters:modular_router"),
                     "ABA",
                     "BCB",
                     "ABA",
                     'A', new MaterialEntry(GTOTagPrefix.ingot, ingotMat), 'B', new MaterialEntry(GTOTagPrefix.plate, plateMat), 'C', RegistriesUtils.getItemStack("modularrouters:blank_module"));
 
-            if (GTOCore.isExpert()) {
+            if (GTORules.MOD_RECIPE_TIER.isExpert()) {
                 ASSEMBLER_RECIPES.builder("blank_module")
                         .inputItems(GTOTagPrefix.plate, GTMaterials.Aluminium, 4)
                         .inputItems("modularrouters:bulk_item_filter")
@@ -105,7 +106,7 @@ public class ModularRouters {
                     .inputItems(GTOTagPrefix.plate, GTMaterials.Diamond, 4)
                     .inputItems(GTItems.ITEM_FILTER, 4)
                     .inputItems(CustomTags.LV_CIRCUITS)
-                    .outputItems("modularrouters:bulk_item_filter", GTOCore.isNormal() ? 4 : 1)
+                    .outputItems("modularrouters:bulk_item_filter", GTORules.MOD_RECIPE_TIER.isNormal() ? 4 : 1)
                     .duration(200)
                     .EUt(eut)
                     .save();
@@ -113,7 +114,7 @@ public class ModularRouters {
     }
 
     public static void initJsonFilter(Set<ResourceLocation> filters) {
-        if (GTOCore.isEasy()) return;
+        if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.MODULARROUTERS.isLoaded()) {
             filters.add(RLUtils.fromNamespaceAndPath("modularrouters", "modular_router"));
             filters.add(RLUtils.fromNamespaceAndPath("modularrouters", "blank_module"));

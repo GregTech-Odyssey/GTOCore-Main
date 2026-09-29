@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.maintenance;
 
 import com.gtocore.common.data.GTOMachines;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -163,7 +164,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
                 .addWidget(getConfigPanel(xlabel, ylabel,
                         () -> getTextWidgetText(this::getDurationMultiplier),
                         () -> Component.translatable("gtceu.maintenance.configurable_duration.modify"),
-                        this::incInternalMultiplier, this::decInternalMultiplier, () -> true, getMIN_DURATION_MULTIPLIER(), getMAX_DURATION_MULTIPLIER()))
+                        this::incInternalMultiplier, this::decInternalMultiplier, () -> true, GTORules.CONFIGURABLE_MAINTENANCE_MIN.get(), GTORules.CONFIGURABLE_MAINTENANCE_MAX.get()))
                 // Temperature
                 .addWidget(new SlotWidget(temperatureModuleInv.storage, 0, xslot, ylabel + y * rowHeight, true, true)
                         .setBackground(GuiTextures.SLOT)

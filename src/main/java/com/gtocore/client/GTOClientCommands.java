@@ -4,6 +4,8 @@ import com.gtocore.client.screen.MessageListScreen;
 import com.gtocore.utils.NotificationUtils;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.rule.client.RulesScreen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
@@ -50,6 +52,10 @@ public final class GTOClientCommands {
                         .then(notifyTypeCommand("error", NotificationUtils.Type.ERROR)))
                 .then(Commands.literal("message").executes((ctx) -> {
                     Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(new MessageListScreen()));
+                    return 1;
+                }))
+                .then(Commands.literal("rules").executes((ctx) -> {
+                    Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(RulesScreen.view(null, RuleManager.current())));
                     return 1;
                 })));
     }

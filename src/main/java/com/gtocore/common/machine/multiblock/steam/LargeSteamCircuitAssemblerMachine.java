@@ -1,8 +1,8 @@
 package com.gtocore.common.machine.multiblock.steam;
 
+import com.gtocore.config.GTORules;
+
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -35,58 +35,6 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
 
     @SaveToDisk(defaultValue = "true")
     private boolean isMultiMode = true;
-    @DynamicInitialValue(
-                         key = "gtceu.machine.multiblock.steam.large_circuit_assembler.max_parallel",
-                         typeKey = DynamicInitialValueTypes.KEY_MAX_PARALLEL,
-                         en = "Max Parallels",
-                         cn = "最大并行数",
-                         easyValue = "8",
-                         normalValue = "4",
-                         expertValue = "4")
-    private static int MAX_PARALLELS = 4;
-    @DynamicInitialValue(
-                         key = "gtceu.machine.multiblock.steam.large_circuit_assembler.reduction_duration",
-                         typeKey = DynamicInitialValueTypes.KEY_MULTIPLY,
-                         easyValue = "2",
-                         normalValue = "4",
-                         expertValue = "6",
-                         cn = "增产模式耗时乘数 : %s",
-                         cnComment = "更多的时间，更高的产出，一报换一报这很合理",
-                         en = "Multiply Mode, Recipe Duration: x %s",
-                         enComment = "More time, higher output, this is reasonable")
-    private static int RECIPE_DURATION_MULTIPLY = 4;
-    @DynamicInitialValue(
-                         key = "gtceu.machine.multiblock.steam.large_circuit_assembler.steam_cost",
-                         typeKey = DynamicInitialValueTypes.KEY_MULTIPLY,
-                         easyValue = "2",
-                         normalValue = "4",
-                         expertValue = "6",
-                         cn = "增产模式蒸汽消耗乘数 : %s",
-                         en = "Multiply Mode Steam Cost: x %s")
-    private static int COST_STEAM_MULTIPLY = 4;
-    @DynamicInitialValue(
-                         key = "gtceu.machine.multiblock.steam.large_circuit_assembler.multiply",
-                         typeKey = DynamicInitialValueTypes.KEY_MULTIPLY,
-                         easyValue = "4",
-                         normalValue = "2",
-                         expertValue = "2",
-                         cn = "增产模式产出乘数 : %s",
-                         en = "Multiply Mode Multiply Output: x %s")
-    private static int PRODUCT_MULTIPLY = 4;
-    @DynamicInitialValue(
-                         key = "gtceu.machine.multiblock.steam.large_circuit_assembler.engraving_needed_amount",
-                         typeKey = DynamicInitialValueTypes.KEY_AMOUNT,
-                         cn = "蚀刻电路所需数量",
-                         cnComment = """
-                                 执行相应电路组装配方前，需要蚀刻此电路所需的物品数量""",
-                         en = "Engraving Circuit Needed Amount",
-                         enComment = """
-                                 The amount of items needed to engrave the circuit before executing the corresponding circuit assembly recipe
-                                 """,
-                         easyValue = "8",
-                         normalValue = "16",
-                         expertValue = "32")
-    private static int Engraving_needed_amount = 16;
 
     @Override
     boolean oc() {
@@ -100,21 +48,21 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
     private int count;
 
     public LargeSteamCircuitAssemblerMachine(MetaMachineBlockEntity holder) {
-        super(holder, MAX_PARALLELS, 128, 1);
+        super(holder, GTORules.STEAM_CIRCUIT_PARALLELS.get(), 128, 1);
     }
 
     @Nullable
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (count < Engraving_needed_amount) return null;
+        if (count < GTORules.STEAM_CIRCUIT_ENGRAVING.get()) return null;
         var content = recipe.itemOutputs.getFirst();
         if (content.inner.getInnerItemStack().getItem() == item) {
             if (isMultiMode) {
-                recipe.itemOutputs = List.of(content.copy(PRODUCT_MULTIPLY));
+                recipe.itemOutputs = List.of(content.copy(GTORules.STEAM_CIRCUIT_OUTPUT.get()));
                 recipe = super.getRealRecipe(unit, recipe);
                 if (recipe != null) {
-                    recipe.duration = recipe.duration * RECIPE_DURATION_MULTIPLY;
-                    recipe.setEUt(recipe.getInputEUt() * COST_STEAM_MULTIPLY);
+                    recipe.duration = recipe.duration * GTORules.STEAM_CIRCUIT_DURATION.get();
+                    recipe.setEUt(recipe.getInputEUt() * GTORules.STEAM_CIRCUIT_STEAM_COST.get());
                 }
                 return recipe;
             } else {
@@ -133,8 +81,8 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
         if (isFormed()) {
             textList.add(ComponentPanelWidget.withButton(Component.translatable("gtocore.machine.large_steam_circuit_assembler.engrave_circuit"), "engraveCircuit"));
             textList.add(Component.translatable("gtocore.machine.large_steam_circuit_assembler.circuit", (item == null ? "null" : Component.translatable(item.getDescriptionId()))));
-            if (item != null && count < Engraving_needed_amount) {
-                textList.add(Component.translatable("gui.ae2.Missing", Engraving_needed_amount - count));
+            if (item != null && count < GTORules.STEAM_CIRCUIT_ENGRAVING.get()) {
+                textList.add(Component.translatable("gui.ae2.Missing", GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count));
             }
             if (isMultiMode) textList.add(Component.translatable(IS_MULTIPLY, true).append(ComponentPanelWidget.withButton(Component.translatable("gtocore.machine.on"), "toggleMultiMode")));
             if (!isMultiMode) textList.add(Component.translatable(IS_MULTIPLY, false).append(ComponentPanelWidget.withButton(Component.translatable("gtocore.machine.off"), "toggleMultiMode")));
@@ -159,15 +107,15 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
                                 if (tagKey.location().toString().contains("gtceu:circuits/")) {
                                     int c = stack.getCount();
                                     if (stack.getItem() == item) {
-                                        c = Math.min(Engraving_needed_amount - count, c);
+                                        c = Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count, c);
                                         count += c;
                                     } else {
-                                        c = Math.min(Engraving_needed_amount, c);
+                                        c = Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get(), c);
                                         count = c;
                                     }
                                     item = stack.getItem();
                                     inv.extractItemInternal(i, c, false);
-                                    if (count >= Engraving_needed_amount) return;
+                                    if (count >= GTORules.STEAM_CIRCUIT_ENGRAVING.get()) return;
                                 }
                             }
                         }

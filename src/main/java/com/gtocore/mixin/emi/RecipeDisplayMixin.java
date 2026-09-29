@@ -6,10 +6,14 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.screen.RecipeDisplay;
 import dev.emi.emi.screen.WidgetGroup;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.List;
 
 /**
  * EMI 配方界面翻页排版（只有 {@code RecipeTab} 为每个配方建 {@link RecipeDisplay}）时，GT 配方页用"整页"外框：
@@ -21,6 +25,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(value = RecipeDisplay.class, remap = false)
 public class RecipeDisplayMixin {
+
+    @Shadow
+    private List<?> rightButtons;
+    @Shadow
+    private int rightWidth;
+
+    @Inject(method = "<init>(Ldev/emi/emi/api/recipe/EmiRecipe;)V", at = @At("RETURN"))
+    private void gtocore$hideSideButtons(EmiRecipe recipe, CallbackInfo ci) {
+        if (!(recipe instanceof EmiPageLayout.NoSideButtons)) return;
+        rightButtons.clear();
+        rightWidth = 0;
+    }
 
     @Redirect(method = "<init>(Ldev/emi/emi/api/recipe/EmiRecipe;)V",
               at = @At(value = "INVOKE", target = "Ldev/emi/emi/api/recipe/EmiRecipe;getDisplayWidth()I"))

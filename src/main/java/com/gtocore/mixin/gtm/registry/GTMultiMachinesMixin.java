@@ -50,11 +50,11 @@ public class GTMultiMachinesMixin {
 
     @Redirect(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/gregtechceu/gtceu/api/registry/registrate/GTRegistrate;multiblock(Ljava/lang/String;Ljava/util/function/Function;)Lcom/gregtechceu/gtceu/api/registry/registrate/MultiblockMachineBuilder;", ordinal = 12), remap = false)
     private static MultiblockMachineBuilder steam_grinder(GTRegistrate instance, String name, Function<MetaMachineBlockEntity, ? extends MultiblockControllerMachine> metaMachine) {
-        return GTORegistration.GTM.multiblock(name, SteamMultiblockMachine::new).addTooltipsFromClass(SteamMultiblockMachine.class).steamOverclock().addRecipeTypeTooltips();
+        return GTORegistration.GTM.multiblock(name, SteamMultiblockMachine::new).steamRuleTooltips().steamOverclock().addRecipeTypeTooltips();
     }
 
     @Redirect(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/gregtechceu/gtceu/api/registry/registrate/GTRegistrate;multiblock(Ljava/lang/String;Ljava/util/function/Function;)Lcom/gregtechceu/gtceu/api/registry/registrate/MultiblockMachineBuilder;", ordinal = 13), remap = false)
     private static MultiblockMachineBuilder steam_oven(GTRegistrate instance, String name, Function<MetaMachineBlockEntity, ? extends MultiblockControllerMachine> metaMachine) {
-        return GTORegistration.GTM.multiblock(name, SteamMultiblockMachine::new).addTooltipsFromClass(SteamMultiblockMachine.class).steamOverclock().addRecipeTypeTooltips();
+        return GTORegistration.GTM.multiblock(name, SteamMultiblockMachine::new).steamRuleTooltips().steamOverclock().addRecipeTypeTooltips();
     }
 }

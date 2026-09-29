@@ -1,5 +1,7 @@
 package com.gtocore.integration.jade.provider;
 
+import com.gtocore.config.GTORules;
+
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -92,7 +94,7 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
         var controller = machine.getController();
         // write() already skips when null; keep defensive for other callers.
         int pa = controller == null || controller.getParts() == null ? 1 : Math.max(1, controller.getParts().length);
-        return machine.getTimeMultiplier() * GTOCore.difficulty * pa;
+        return machine.getTimeMultiplier() * GTORules.MAINTENANCE_WEAR.get() * pa;
     }
 
     static float getDamageChance(IMaintenanceMachine machine) {

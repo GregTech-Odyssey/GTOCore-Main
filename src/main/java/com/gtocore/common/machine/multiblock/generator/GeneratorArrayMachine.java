@@ -1,10 +1,9 @@
 package com.gtocore.common.machine.multiblock.generator;
 
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.api.annotation.Scanned;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
-import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
 import com.gtolib.api.capability.IExtendWirelessEnergyContainerHolder;
 import com.gtolib.api.machine.feature.multiblock.IArrayMachine;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
@@ -47,29 +46,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class GeneratorArrayMachine extends StorageMultiblockMachine implements IArrayMachine, IExtendWirelessEnergyContainerHolder {
 
-    @DynamicInitialValue(key = "generator_array.multiply", easyValue = "2", normalValue = "1.3", expertValue = "1.3", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, cn = "发电阵列乘数", cnComment = """
-            发电阵列的功率奖励乘数，影响每个发电机的输出功率。
-            数值越大，发电机的输出功率越高。
-            此值仅与难度挂钩，代表不同难度下的发电机效率。""", en = "Generator Array Multiply", enComment = """
-            The power multiplier bonus of the generator array, which affects the output power of each generator.
-            The larger the value, the higher the output power of the generator.
-            This value is only related to difficulty, representing the efficiency of generators at different difficulty levels.""")
-    private static double multiply;
-
-    @DynamicInitialValue(key = "generator_array.loss", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4", normalValue = "5", expertValue = "8", cn = "发电阵列无线模式损耗 : 0.0%s", cnComment = """
-            发电阵列在无线模式下的损耗，影响传输到无线网络的能量损失。
-            数值越大，连接无线网络的损耗越大。""", en = "Generator Array Wireless Loss : 0.0%s", enComment = """
-            The loss of the generator array in wireless mode, which affects the loss of energy transferred to the wireless network.
-            The larger the value, the greater the connection loss to the wireless network.""")
-    private static int f_loss;
-    @DynamicInitialValue(key = "generator_array.limit", easyValue = "16", normalValue = "4", expertValue = "4", cn = "发电阵列内部发电机限制", cnComment = """
-            发电阵列发电量和消耗量取决于内部发电机种类和个数
-            内部发电机个数越多，其发电量和消耗量越高。
-            例如：放4个蒸汽发电机，发电量为(4*发电阵列乘数*蒸汽发电机的发电量)，""", en = "Generator Array Internal Generator Limit", enComment = """
-            The power generation and consumption of the generator array depend on the types and number of internal generators.
-            The more internal generators, the higher the power generation and consumption.
-            For example: placing 4 steam generators will result in a power generation of (4 * generator array multiplier * steam generator's power generation).""")
-    private static int generatorLimit = 16;
     private WirelessEnergyContainer WirelessEnergyContainerCache;
     private MachineDefinition machineDefinitionCache;
     @SaveToDisk(defaultValue = "false")
@@ -82,7 +58,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     }
 
     public GeneratorArrayMachine(MetaMachineBlockEntity holder) {
-        super(holder, generatorLimit, GeneratorArrayMachine::filter);
+        super(holder, GTORules.GENERATOR_ARRAY_LIMIT.get(), GeneratorArrayMachine::filter);
     }
 
     private static boolean filter(ItemStack itemStack) {
@@ -126,7 +102,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
                 var container = getWirelessEnergyContainer();
                 if (container != null) {
                     int loss = container.getLoss();
-                    container.setLoss(loss + f_loss * 10);
+                    container.setLoss(loss + GTORules.GENERATOR_ARRAY_LOSS.get() * 10);
                     container.addEnergy(eut, this);
                     container.setLoss(loss);
                 }
@@ -154,7 +130,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
             if (EUt > 0) {
                 recipe.itemOutputs = Collections.emptyList();
                 recipe.fluidOutputs = Collections.emptyList();
-                recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, (long) (multiply * GTValues.V[getOverclockTier()] * a * GTOUtils.getGeneratorAmperage(getTier()) / EUt));
+                recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, (long) (GTORules.GENERATOR_ARRAY_MULTIPLY.get() * GTValues.V[getOverclockTier()] * a * GTOUtils.getGeneratorAmperage(getTier()) / EUt));
                 if (recipe == null) return null;
                 recipe.duration = recipe.duration * GTOUtils.getGeneratorEfficiency(recipe.definition.recipeType, getTier()) / 100;
                 if (isw) {
@@ -217,7 +193,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     }
 
     public static double getMultiply() {
-        return GeneratorArrayMachine.multiply;
+        return GTORules.GENERATOR_ARRAY_MULTIPLY.get();
     }
 
     @Override

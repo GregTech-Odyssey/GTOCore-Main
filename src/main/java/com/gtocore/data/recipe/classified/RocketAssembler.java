@@ -222,6 +222,19 @@ final class RocketAssembler {
                 .duration(1000)
                 .save();
 
+        ROCKET_ASSEMBLER_RECIPES.builder("space_station_observation_deck_module")
+                .inputItems(SpaceMultiblock.SPACE_STATION_TRANSPARENT_DOCKING_MODULE.asItem())
+                .inputItems(CustomTags.ZPM_CIRCUITS, 2)
+                .inputItems(GTBlocks.CLEANROOM_GLASS.asItem(), 64)
+                .inputItems(GTOTagPrefix.plateDouble, GTOMaterials.Inconel718, 48)
+                .inputItems(GTOTagPrefix.plate, GTOMaterials.StainlessSteel316, 32)
+                .outputItems(SpaceMultiblock.SPACE_STATION_OBSERVATION_DECK_MODULE.asItem())
+                .inputFluids(GTMaterials.NiobiumTitanium, 1440)
+                .inputFluids(GTMaterials.Lubricant, 16000)
+                .EUt(32000)
+                .duration(1200)
+                .save();
+
         ROCKET_ASSEMBLER_RECIPES.builder("space_station_environmental_maintenance_module")
                 .inputItems("ad_astra_rocketed:tier_5_rocket")
                 .inputItems(CustomTags.ZPM_CIRCUITS)

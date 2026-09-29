@@ -1,6 +1,7 @@
 package com.gtocore.api.gui.overview;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureBlocks;
 import com.gregtechceu.gtceu.uipro.ILayoutHost;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
@@ -37,11 +38,14 @@ import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -68,6 +72,7 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
     private static final int DEFAULT_MIN_Y = -64;
     private static final float MARKER_MATCH = 0.01f;
 
+    private final Object2ObjectOpenHashMap<String, Layout> layouts = new Object2ObjectOpenHashMap<>();
     private final OverviewWidget owner;
     private final OverviewAdapter adapter;
     private final UIElement frame;
@@ -294,8 +299,9 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
         boolean coarse = next.coarse();
         for (var module : next.modules()) {
             var into = module.state() == OverviewSnapshot.CONNECTED ? connected : detached;
-            if (coarse) collectOutline(module, into);
-            else module.collect(into);
+            var moduleLayout = layoutOf(module);
+            if (coarse) collectOutline(module, moduleLayout, into);
+            else module.collect(moduleLayout, into);
         }
         var keys = connected.keySet().iterator();
         while (keys.hasNext()) detached.remove(keys.nextLong());
@@ -329,9 +335,17 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
         flow.onSnapshot();
     }
 
-    private static void collectOutline(OverviewSnapshot.Module module, Long2ObjectOpenHashMap<BlockState> into) {
-        var definition = module.definition();
+    @Nullable
+    private Layout layoutOf(OverviewSnapshot.Module module) {
+        var key = module.id() + Arrays.toString(module.values());
+        if (layouts.containsKey(key)) return layouts.get(key);
         var layout = module.layout();
+        layouts.put(key, layout);
+        return layout;
+    }
+
+    private static void collectOutline(OverviewSnapshot.Module module, @Nullable Layout layout, Long2ObjectOpenHashMap<BlockState> into) {
+        var definition = module.definition();
         if (definition == null || layout == null) return;
         var items = StructurePlans.preview(definition, layout).items();
         into.putAll(StructureBlocks.worldBlocks(layout, items, module.pos(), module.front(), module.up(), module.flip()));
@@ -369,7 +383,7 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
             var data = anchors.get(i);
             var kind = kinds.get(Math.max(0, Math.min(kinds.size() - 1, data.kind())));
             var pos = new Vector3f(data.markerX(), data.markerY(), data.markerZ());
-            markers.add(new StructureScene.Marker(pos, kind.color(), i == this.anchor, List.of(Component.translatable(kind.tooltipKey()))));
+            markers.add(new StructureScene.Marker(pos, kind.color(), i == this.anchor, Collections.singletonList(Component.translatable(kind.tooltipKey()))));
         }
         scene.setMarkers(new ArrayList<>(markers));
     }
