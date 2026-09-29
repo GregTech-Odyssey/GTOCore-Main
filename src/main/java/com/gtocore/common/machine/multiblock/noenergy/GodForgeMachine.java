@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
 import com.gtocore.api.pattern.GTOPredicates;
-import com.gtocore.client.renderer.StructurePattern;
+import com.gtocore.client.renderer.RingStructureData;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
@@ -17,7 +17,8 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -35,8 +36,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-
-import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -106,7 +105,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     }
 
     private BlockPos getRealPos(int x, int y, int z) {
-        String[][] structure = StructurePattern.ringOne;
+        String[][] structure = RingStructureData.ringOne;
         BlockPos.MutableBlockPos pos = BlockPos.ZERO.offset(122 + structure.length / 2 - x, -structure[0].length / 2 + y, -structure[0][0].length() / 2 + z).mutable();
         switch (getFrontFacing()) {
             case EAST -> pos.set(-pos.getX(), pos.getY(), -pos.getZ());
@@ -117,7 +116,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     }
 
     private boolean removeBlockFromWorld() {
-        String[][] structure = StructurePattern.ringOne;
+        String[][] structure = RingStructureData.ringOne;
         for (int x = 0; x < structure.length; x++) {
             String[] plane = structure[x];
             for (int y = 0; y < plane.length; y++) {
@@ -146,11 +145,11 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
                 .addMapping('3', GTOBlocks.CENTRAL_GRAVITON_FLOW_MODULATOR.get())
                 .addMapping('H', GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get());
 
-        String[][] structure = StructurePattern.ringOne;
+        String[][] structure = RingStructureData.ringOne;
         if (tier == 2) {
-            structure = StructurePattern.ringTwo;
+            structure = RingStructureData.ringTwo;
         } else if (tier == 3) {
-            structure = StructurePattern.ringThree;
+            structure = RingStructureData.ringThree;
         }
         ringStructure.assignStructure(structure);
 
@@ -172,24 +171,19 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
         return true;
     }
 
-    @Override
-    public Supplier<BlockPattern>[] getPattern() {
-        return new Supplier[] { () -> getBlockPattern(getDefinition()) };
-    }
-
-    public static BlockPattern getBlockPattern(MultiblockMachineDefinition definition) {
-        return MultiBlockFileReader.start(definition)
-                .where('~', Predicates.controller(definition))
-                .where(' ', Predicates.any())
-                .wherePart('A', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get())
-                        .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMaxGlobalLimited(1)))
-                .where('B', Predicates.blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get()))
-                .where('C', Predicates.blocks(GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get()))
-                .where('D', Predicates.blocks(GTOBlocks.BOUNDLESS_GRAVITATIONALLY_SEVERED_STRUCTURE_CASING.get()))
-                .where('E', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()))
-                .where('F', Predicates.blocks(GTOBlocks.STELLAR_ENERGY_SIPHON_CASING.get()))
-                .where('G', GTOPredicates.tierBlock(GRAVITONFLOWMAP, GTORecipeDataKeys.GRAVITON_FLOW_TIER))
-                .where('H', Predicates.blocks(GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get()))
+    public static Structure getStructure(MultiblockMachineDefinition definition) {
+        return Structure.root(MultiBlockFileReader.piece("god_forge").build())
+                .symbols(Symbols.create()
+                        .where('~', Predicates.controller(definition))
+                        .wherePart('A', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get())
+                                .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMaxGlobalLimited(1)))
+                        .where('B', Predicates.blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get()))
+                        .where('C', Predicates.blocks(GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get()))
+                        .where('D', Predicates.blocks(GTOBlocks.BOUNDLESS_GRAVITATIONALLY_SEVERED_STRUCTURE_CASING.get()))
+                        .where('E', Predicates.blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()))
+                        .where('F', Predicates.blocks(GTOBlocks.STELLAR_ENERGY_SIPHON_CASING.get()))
+                        .where('G', GTOPredicates.tierBlock(GRAVITONFLOWMAP, GTORecipeDataKeys.GRAVITON_FLOW_TIER))
+                        .where('H', Predicates.blocks(GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get())))
                 .build();
     }
 

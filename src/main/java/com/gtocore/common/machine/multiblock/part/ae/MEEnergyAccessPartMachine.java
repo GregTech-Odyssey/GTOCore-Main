@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 
@@ -92,7 +93,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
         ratio = ConfigHolder.INSTANCE.compat.energy.euToFeRatio * PowerUnits.FE.convertTo(PowerUnits.AE, 1);
         if (controller != null) {
             ratio *= 1 + 0.3 * controller.getCasingTier(GTORecipeDataKeys.GLASS_TIER);
-            ratio *= controller.getSubFormedAmount() + 1;
+            if (controller.hasStructurePart(StructureModuleKeys.ME_ENERGY_SUBSTATION_EXTENSION)) ratio *= 2;
         }
     }
 

@@ -114,9 +114,9 @@ public final class StructureWriteBehavior implements IItemUIFactory {
         var context = createExportContext(playerInventoryHolder, player);
         if (context == null) return;
 
-        var generatedCode = buildGeneratedPatternCode(context);
+        var generatedCode = buildGeneratedPatternCode(context, "MultiBlockFileReader.piece(definition.getName())");
         writeExportFiles(context, generatedCode);
-        logGeneratedPattern(context, generatedCode);
+        GTOCore.LOGGER.info(buildGeneratedPatternCode(context, inlinePiece(context)));
     }
 
     private static ExportContext createExportContext(HeldItemUIFactory.HeldItemHolder holder, ServerPlayer player) {
@@ -144,13 +144,12 @@ public final class StructureWriteBehavior implements IItemUIFactory {
         return new ExportContext(player, stack, partId, RegistriesUtils.getBlock(partId), pattern, directions);
     }
 
-    private static String buildGeneratedPatternCode(ExportContext context) {
+    private static String buildGeneratedPatternCode(ExportContext context, String piece) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n.block(").append(convertBlockToString(context.partBlock(), context.partId(), StringUtils.decompose(context.partId()), true)).append(")\n");
-        builder.append(".pattern(definition -> MultiBlockFileReader.start(definition)\n");
+        builder.append(".structure(definition -> Structure.root(").append(piece).append(".build()).symbols(Symbols.create()\n");
         context.pattern().legend.forEach((block, character) -> appendWhereClause(builder, context, block, character));
-        if (context.pattern().hasAir) builder.append(".where(' ', any())\n");
-        builder.append(".build())\n");
+        builder.append(").build())\n");
         return builder.toString();
     }
 
@@ -171,7 +170,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
     }
 
     private static void appendMachinePartPredicate(StringBuilder builder, ExportContext context, Character character) {
-        builder.append(".where('").append(character).append("', blocks(")
+        builder.append(".wherePart('").append(character).append("', blocks(")
                 .append(convertBlockToString(context.partBlock(), context.partId(), StringUtils.decompose(context.partId()), false))
                 .append(")\n")
                 .append(context.stack().getOrCreateTag().getBoolean("laser") ? ".or(GTOPredicates.autoLaserAbilities(definition.getRecipeTypes()))\n.or(abilities(MAINTENANCE).setExactLimit(1)))\n" : ".or(autoAbilities(definition.getRecipeTypes()))\n.or(abilities(MAINTENANCE).setExactLimit(1)))\n");
@@ -197,12 +196,15 @@ public final class StructureWriteBehavior implements IItemUIFactory {
         FileUtils.saveToFile(generatedCode, new File(GTOCore.getFile(), EXPORT_TEXT_FILE), IOStreamCodec.STRING_CODEC);
     }
 
-    private static void logGeneratedPattern(ExportContext context, String generatedCode) {
-        StringBuilder log = new StringBuilder(generatedCode);
+    private static String inlinePiece(ExportContext context) {
+        var directions = context.directions();
+        StringBuilder piece = new StringBuilder("Piece.start(RelativeDirection.").append(directions[0].name())
+                .append(", RelativeDirection.").append(directions[1].name())
+                .append(", RelativeDirection.").append(directions[2].name()).append(")\n");
         for (String[] strings : context.pattern().pattern) {
-            log.append(".aisle(\"%s\")\n".formatted(Joiner.on("\", \"").join(strings)));
+            piece.append(".aisle(\"").append(Joiner.on("\", \"").join(strings)).append("\")\n");
         }
-        GTOCore.LOGGER.info(log.toString());
+        return piece.toString();
     }
 
     private static Map<Block, BiConsumer<StringBuilder, Character>> specialBlockWriters() {

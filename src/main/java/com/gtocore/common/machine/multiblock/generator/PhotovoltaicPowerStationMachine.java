@@ -9,12 +9,10 @@ import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
-import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
-import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -40,14 +38,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-import static com.gregtechceu.gtceu.api.GTValues.HV;
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.common.data.GTMachines.*;
-import static com.gtocore.common.data.GTOMachines.ENERGY_OUTPUT_HATCH_16A;
-import static com.gtocore.common.data.machines.ManaMachine.WIRELESS_MANA_OUTPUT_HATCH;
 import static com.gtocore.data.IdleReason.SURFACE_ONLY_VOLTA;
-import static net.minecraft.world.level.block.Blocks.AIR;
 
 public final class PhotovoltaicPowerStationMachine extends AbstractPhotovoltaicMachine {
 
@@ -90,51 +84,30 @@ public final class PhotovoltaicPowerStationMachine extends AbstractPhotovoltaicM
         return buildGenerationRecipe(getRecipeBuilder().duration(20), eut);
     }
 
-    public static BlockPattern getPatternCommon(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
-        return FactoryBlockPattern.start(definition, RelativeDirection.BACK, RelativeDirection.UP, RelativeDirection.LEFT)
-                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
-                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("  ~CD  ", "   C   ", "   C   ", " AACAA ", "ABBCBBA")
-                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
-                .where('A', frames(GTMaterials.Aluminium))
-                .where('B', blocks(photovoltaicBlock.get()))
-                .where('C', blocks(casing.get()))
-                .wherePart('D', blocks(casing.get())
-                        .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
-                        .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(1))
-                        .or(abilities(GTOPartAbility.OUTPUT_MANA).setMaxGlobalLimited(4))
-                        .or(abilities(MAINTENANCE).setExactLimit(1)))
-                .where('~', controller(definition))
-                .where(' ', any())
+    public static Structure getStructureCommon(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
+        return Structure
+                .root(Piece.start(RelativeDirection.BACK, RelativeDirection.UP, RelativeDirection.LEFT)
+                        .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
+                        .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
+                        .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                        .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                        .aisle("  ~CD  ", "   C   ", "   C   ", " AACAA ", "ABBCBBA")
+                        .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                        .aisle("   D   ", "       ", "       ", "       ", "ABBCBBA")
+                        .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
+                        .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
+                        .build())
+                .symbols(Symbols.create()
+                        .where('A', frames(GTMaterials.Aluminium))
+                        .where('B', blocks(photovoltaicBlock.get()))
+                        .where('C', blocks(casing.get()))
+                        .wherePart('D', blocks(casing.get())
+                                .or(abilities(IMPORT_FLUIDS).setMaxGlobalLimited(1))
+                                .or(abilities(OUTPUT_ENERGY).setMaxGlobalLimited(1))
+                                .or(abilities(GTOPartAbility.OUTPUT_MANA).setMaxGlobalLimited(4))
+                                .or(abilities(MAINTENANCE).setExactLimit(1)))
+                        .where('~', controller(definition)))
                 .build();
-    }
-
-    public static MultiblockShapeInfo getPatternCommonPreview(MultiblockMachineDefinition definition, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock) {
-        return MultiblockShapeInfo.builder()
-                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
-                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("   q   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("   p   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("  ~CC  ", "   C   ", "   C   ", " AACAA ", "ABBCBBA")
-                .aisle("   n   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("   m   ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("       ", "       ", "       ", "       ", "ABBCBBA")
-                .aisle("       ", "       ", "       ", "       ", "AAAAAAA")
-                .where('A', ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.Aluminium))
-                .where('B', photovoltaicBlock)
-                .where('C', casing)
-                .where('m', WIRELESS_MANA_OUTPUT_HATCH[HV], Direction.WEST)
-                .where('n', ENERGY_OUTPUT_HATCH_16A[HV], Direction.WEST)
-                .where('p', CONTROL_HATCH, Direction.WEST)
-                .where('q', MAINTENANCE_HATCH, Direction.WEST)
-                .where('~', definition, Direction.WEST)
-                .where(' ', AIR)
-                .build(definition);
     }
 
     @Override

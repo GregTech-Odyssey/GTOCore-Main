@@ -5,38 +5,47 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtolib.api.annotation.Scanned;
 import com.gtolib.api.annotation.dynamic.DynamicInitialValue;
 import com.gtolib.api.annotation.dynamic.DynamicInitialValueTypes;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
-import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Assembly;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Size;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
+import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.EXPORT_FLUIDS;
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.IMPORT_FLUIDS;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
+import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Steam;
 
 @Scanned
@@ -44,6 +53,23 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
 
     @DynamicInitialValue(key = "gtocore.machine.large_steam_solar_boiler", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "20", normalValue = "15", expertValue = "10", cn = "单集热管产率 : %s / t", en = "Steam production per tube : %s / t")
     private static int basicSteamProduction = 10;
+
+    @RegisterLanguage(cn = "左侧宽度", en = "Left Width")
+    private static final String LEFT_NAME = "gtocore.multiblock.large_steam_solar_boiler.left";
+    @RegisterLanguage(cn = "控制器正后方一行向左连续的集热管数 + 1", en = "Consecutive heat collector pipes to the left along the row behind the controller, plus 1")
+    private static final String LEFT_DESC = "gtocore.multiblock.large_steam_solar_boiler.left.desc";
+    @RegisterLanguage(cn = "右侧宽度", en = "Right Width")
+    private static final String RIGHT_NAME = "gtocore.multiblock.large_steam_solar_boiler.right";
+    @RegisterLanguage(cn = "控制器正后方一行向右连续的集热管数 + 1", en = "Consecutive heat collector pipes to the right along the row behind the controller, plus 1")
+    private static final String RIGHT_DESC = "gtocore.multiblock.large_steam_solar_boiler.right.desc";
+    @RegisterLanguage(cn = "深度", en = "Depth")
+    private static final String BACK_NAME = "gtocore.multiblock.large_steam_solar_boiler.back";
+    @RegisterLanguage(cn = "控制器向后连续的集热管数 + 1", en = "Consecutive heat collector pipes behind the controller, plus 1")
+    private static final String BACK_DESC = "gtocore.multiblock.large_steam_solar_boiler.back.desc";
+
+    public static final ParamKey LEFT_EDGE = ParamKey.of(LEFT_NAME, LEFT_DESC);
+    public static final ParamKey RIGHT_EDGE = ParamKey.of(RIGHT_NAME, RIGHT_DESC);
+    public static final ParamKey BACK_EDGE = ParamKey.of(BACK_NAME, BACK_DESC);
 
     private static final int MAX_LR_DIST = 14, MAX_B_DIST = 29;
     private static final int MIN_LR_DIST = 1, MIN_B_DIST = 3;
@@ -57,63 +83,56 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
         super(holder);
     }
 
+    public static Structure structure(MultiblockMachineDefinition definition) {
+        var symbols = Symbols.create()
+                .wherePart('a', blocks(GTBlocks.STEEL_HULL.get())
+                        .or(abilities(EXPORT_FLUIDS))
+                        .or(abilities(IMPORT_FLUIDS)))
+                .where('b', blocks(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get()))
+                .where('~', controller(definition));
+        var rowEnd = new TraceabilityPredicate(state -> !isSolar(ILevel.asyncGetBlockState(state.world, state.getPos().relative(state.controller.self().getFrontFacing().getOpposite()))), null, null);
+        var backEnd = new TraceabilityPredicate(state -> !isSolar(state.getBlockState()), null, null);
+        return Structure.root(Piece.sized(LargeSteamSolarBoilerMachine::body))
+                .symbols(symbols)
+                .measure(m -> m.param(LEFT_EDGE).toward(LEFT).until(rowEnd).range(MIN_LR_DIST + 1, MAX_LR_DIST + 1))
+                .measure(m -> m.param(RIGHT_EDGE).toward(RIGHT).until(rowEnd).range(MIN_LR_DIST + 1, MAX_LR_DIST + 1))
+                .measure(m -> m.param(BACK_EDGE).toward(BACK).until(backEnd).range(MIN_B_DIST + 1, MAX_B_DIST + 1))
+                .build();
+    }
+
+    private static Piece body(Size size) {
+        var dims = dimensions(size::get, false);
+        int width = dims[0] + dims[1] + 3;
+        var builder = Piece.start(LEFT, UP, FRONT).aisle("a".repeat(width));
+        var middle = "a" + "b".repeat(width - 2) + "a";
+        for (int i = 0; i < dims[2]; i++) builder.aisle(middle);
+        return builder.aisle("a".repeat(dims[1] + 1) + "~" + "a".repeat(dims[0] + 1)).build();
+    }
+
+    public static int[] dimensions(ToIntFunction<ParamKey> values, boolean flipped) {
+        int left = values.applyAsInt(LEFT_EDGE) - 1;
+        int right = values.applyAsInt(RIGHT_EDGE) - 1;
+        int back = values.applyAsInt(BACK_EDGE) - 1;
+        return flipped ? new int[] { right, left, back } : new int[] { left, right, back };
+    }
+
+    @Nullable
+    public static int[] dimensions(@Nullable Assembly assembly, boolean flipped) {
+        if (assembly == null || !assembly.has(BACK_EDGE)) return null;
+        return dimensions(assembly::get, flipped);
+    }
+
     private boolean updateStructureDimensions() {
-        Level world = getLevel();
-        if (world == null) return false;
-        Direction front = getFrontFacing();
-        Direction back = front.getOpposite();
-        Direction left = front.getCounterClockWise();
-        Direction right = left.getOpposite();
-
-        int newBDist = calculateDistance(world, getPos(), back, MAX_B_DIST);
-        int newLDist = calculateDistance(world, getPos().relative(back), left, MAX_LR_DIST);
-        int newRDist = calculateDistance(world, getPos().relative(back), right, MAX_LR_DIST);
-
-        if (validateStructure(world, front, newLDist, newRDist, newBDist)) {
-            this.lDist = newLDist;
-            this.rDist = newRDist;
-            this.bDist = newBDist;
-            return true;
-        }
-        return false;
-    }
-
-    private static int calculateDistance(Level world, BlockPos startPos, Direction direction, int maxDistance) {
-        int distance = 0;
-        BlockPos.MutableBlockPos pos = startPos.mutable();
-        for (int i = 1; i <= maxDistance; i++) {
-            pos.move(direction);
-            if (isBlockSolar(world, pos)) distance = i;
-            else break;
-        }
-        return distance;
-    }
-
-    private boolean validateStructure(Level world, Direction front, int lDist, int rDist, int bDist) {
-        if (lDist < MIN_LR_DIST || rDist < MIN_LR_DIST || bDist < MIN_B_DIST || lDist > MAX_LR_DIST || rDist > MAX_LR_DIST || bDist > MAX_B_DIST) return false;
-
-        Direction back = front.getOpposite();
-        Direction left = front.getCounterClockWise();
-        Direction right = left.getOpposite();
-        BlockPos startPos = getPos();
-
-        for (int b = 1; b <= bDist; b++) {
-            BlockPos backPos = startPos.relative(back, b);
-            for (int l = 1; l <= lDist; l++)
-                if (!isBlockSolar(world, backPos.relative(left, l))) return false;
-            for (int r = 1; r <= rDist; r++)
-                if (!isBlockSolar(world, backPos.relative(right, r))) return false;
-        }
+        var dims = dimensions(getAssembly(), getMultiblockState().isNeededFlip());
+        if (dims == null) return false;
+        this.lDist = dims[0];
+        this.rDist = dims[1];
+        this.bDist = dims[2];
         return true;
     }
 
-    private void resetStructure() {
-        lDist = rDist = MIN_LR_DIST;
-        bDist = MIN_B_DIST;
-    }
-
-    private static boolean isBlockSolar(@NotNull Level world, @NotNull BlockPos pos) {
-        return world.getBlockState(pos).is(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get());
+    private static boolean isSolar(BlockState state) {
+        return state.is(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get());
     }
 
     @Override
@@ -121,35 +140,10 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
         return true;
     }
 
-    @NotNull
     @Override
-    public Supplier<BlockPattern>[] getPattern() {
-        if (getLevel() != null && updateStructureDimensions()) {
-            if (lDist < MIN_LR_DIST) lDist = MIN_LR_DIST;
-            if (rDist < MIN_LR_DIST) rDist = MIN_LR_DIST;
-            if (bDist < MIN_B_DIST) bDist = MIN_B_DIST;
-            int safeLDist = lDist;
-            int safeRDist = rDist;
-            int safeBDist = bDist;
-
-            int totalWidth = safeLDist + safeRDist + 3;
-
-            String boundaryRow = "a".repeat(totalWidth);
-            String middleRow = "a" + "b".repeat(totalWidth - 2) + "a";
-            String controllerRow = "a".repeat(safeLDist + 1) + "~" + "a".repeat(safeRDist + 1);
-
-            return new Supplier[] { () -> FactoryBlockPattern.start(RelativeDirection.LEFT, RelativeDirection.UP, RelativeDirection.FRONT)
-                    .aisle(boundaryRow)
-                    .aisle(middleRow).setRepeatable(safeBDist)
-                    .aisle(controllerRow)
-                    .wherePart('a', blocks(GTBlocks.STEEL_HULL.get())
-                            .or(abilities(EXPORT_FLUIDS))
-                            .or(abilities(IMPORT_FLUIDS)))
-                    .where('b', blocks(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get()))
-                    .where('~', controller(this.getDefinition()))
-                    .build() };
-        }
-        return super.getPattern();
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        updateStructureDimensions();
     }
 
     @Override

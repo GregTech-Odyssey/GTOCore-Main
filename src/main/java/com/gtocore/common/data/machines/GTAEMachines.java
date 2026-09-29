@@ -169,7 +169,7 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .tier(LuV)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .notAllowSharedTooltips()
             .renderer(() -> new OverlayTieredMachineRenderer(LuV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
@@ -211,7 +211,7 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .tier(ZPM)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .renderer(() -> new OverlayTieredMachineRenderer(ZPM, GTCEu.id("block/machine/part/me_pattern_buffer")))
             .register();
 
@@ -222,7 +222,7 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .tier(UHV)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .renderer(() -> new OverlayTieredMachineRenderer(UHV, GTOCore.id("block/machine/part/me_pattern_buffer_red")))
             .register();
 
@@ -232,7 +232,7 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(108))
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .renderer(() -> new OverlayTieredMachineRenderer(UV, GTCEu.id("block/machine/part/me_pattern_buffer")))
             .register();
 
@@ -242,7 +242,7 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .tier(UHV)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .renderer(() -> new OverlayTieredMachineRenderer(UHV, GTCEu.id("block/machine/part/me_pattern_buffer")))
             .register();
 
@@ -354,7 +354,7 @@ public final class GTAEMachines {
             .machine("me_pattern_buffer", h -> new MEPatternBufferPartMachine(h, 36))
             .tier(LuV)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .allRotation()
             .overlayTieredHullRenderer("me_pattern_buffer")
             .langValue("ME Pattern Buffer")
@@ -367,7 +367,7 @@ public final class GTAEMachines {
             .machine("me_pattern_buffer_proxy", MEPatternBufferProxyPartMachine::new)
             .tier(LuV)
             .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
             .allRotation()
             .overlayTieredHullRenderer("me_pattern_buffer_proxy")
             .langValue("ME Pattern Buffer Proxy")

@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.mana.multiblock;
 
-import com.gtocore.client.renderer.StructurePattern;
+import com.gtocore.client.renderer.RingStructureData;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOTickTimeMonitors;
@@ -201,7 +201,7 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
     }
 
     private boolean removeBlockFromWorld() {
-        String[][] structure = StructurePattern.tinyLight;
+        String[][] structure = RingStructureData.tinyLight;
         for (int x = 0; x < structure.length; x++) {
             String[] plane = structure[x];
             for (int y = 0; y < plane.length; y++) {
@@ -224,7 +224,7 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
                 .addMapping('X', GTOBlocks.THE_SOLARIS_LENS.get())
                 .addMapping('[', RegistriesUtils.getBlock("ars_nouveau:sky_block"));
 
-        String[][] structure = StructurePattern.tinyLight;
+        String[][] structure = RingStructureData.tinyLight;
         ringStructure.assignStructure(structure);
 
         for (int x = 0; x < structure.length; x++) {
@@ -246,7 +246,7 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
     }
 
     private BlockPos getRealPos(int x, int y, int z) {
-        String[][] structure = StructurePattern.tinyLight;
+        String[][] structure = RingStructureData.tinyLight;
         BlockPos.MutableBlockPos pos = BlockPos.ZERO.offset(5 + structure.length / 2 - x, -structure[0].length / 2 + y + 8, -structure[0][0].length() / 2 + z).mutable();
         switch (getFrontFacing()) {
             case EAST -> pos.set(-pos.getX(), pos.getY(), -pos.getZ());

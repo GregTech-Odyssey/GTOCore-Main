@@ -13,7 +13,10 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -21,6 +24,7 @@ import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
 import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.flow.FlowChart;
 import com.gregtechceu.gtceu.uipro.flow.FlowNode;
@@ -255,6 +259,8 @@ public final class NeutronActivatorFlowPage {
     private static final String LANG_INPUT_MATCHED_DESC = "gtocore.machine.neutron_activator.flow.input_matched.desc";
     @RegisterLanguage(cn = "待产出", en = "Standby")
     private static final String LANG_OUTPUT_IDLE = "gtocore.machine.neutron_activator.flow.output_idle";
+    @RegisterLanguage(cn = "结构中没有输出仓，产物将全部销毁。", en = "The structure has no output hatch; all products will be voided.")
+    private static final String LANG_OUTPUT_VOID_ALL_DESC = "gtocore.machine.neutron_activator.flow.output_void_all_desc";
 
     @RegisterLanguage(cn = "动能不在区间", en = "Out of Range")
     private static final String LANG_RECIPE_RANGE = "gtocore.machine.neutron_activator.flow.recipe_range";
@@ -269,10 +275,16 @@ public final class NeutronActivatorFlowPage {
 
     @RegisterLanguage(cn = "未激活", en = "Inactive")
     private static final String LANG_ENERGY_OFF = "gtocore.machine.neutron_activator.flow.energy_off";
-    @RegisterLanguage(cn = "能源接收器未激活，中子动能由加速器提供。可在左侧机器小组件中切换。", en = "The Energy Acceptor is inactive; accelerators supply kinetic energy. Toggle it among the machine widgets on the left.")
+    @RegisterLanguage(cn = "能源接收器未激活，中子动能由加速器提供。可用本节点中的开关切换。", en = "The Energy Acceptor is inactive; accelerators supply kinetic energy. Use the switch in this node to toggle it.")
     private static final String LANG_ENERGY_OFF_DESC = "gtocore.machine.neutron_activator.flow.energy_off.desc";
     @RegisterLanguage(cn = "能源接收器激活后消耗电力，并按配方自动设定中子动能。", en = "When active, the Energy Acceptor uses power and sets kinetic energy from the recipe.")
     private static final String LANG_ENERGY_RULE = "gtocore.machine.neutron_activator.flow.energy_rule";
+    @RegisterLanguage(cn = "启用能源接收器", en = "Enable Energy Acceptor")
+    private static final String LANG_ENERGY_SWITCH = "gtocore.machine.neutron_activator.flow.energy_switch";
+    @RegisterLanguage(cn = "能源接收段未搭建", en = "Energy Acceptor Section not built")
+    private static final String LANG_NO_RECEIVER = "gtocore.machine.neutron_activator.flow.no_receiver";
+    @RegisterLanguage(cn = "结构中没有能源接收段，能源接收器不可用，中子动能由加速器提供。", en = "The structure has no Energy Acceptor Section; the Energy Acceptor is unavailable and accelerators supply kinetic energy.")
+    private static final String LANG_NO_RECEIVER_DESC = "gtocore.machine.neutron_activator.flow.no_receiver.desc";
 
     private NeutronActivatorFlowPage() {}
 
@@ -376,7 +388,12 @@ public final class NeutronActivatorFlowPage {
         var node = chart.node(2, 1).state(status::energyState).detail(status::energyDetail);
         IGuiTexture icon = UITheme.switching(() -> isLit(node.getFlowState()), new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_OFF),
                 new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_ON));
+        var vortex = status.vortex;
+        var toggle = Switch.of(vortex::isEnergySwitchOn, vortex::setEnergySwitch)
+                .disabled(() -> !vortex.hasEnergyReceiver(), LANG_NO_RECEIVER);
         node.addChildren(header(icon, LANG_ENERGY),
+                UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                        .addChildren(TextLine.translatable(0, LANG_ENERGY_SWITCH).layout(l -> l.flex(1)), toggle),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::energyView),
                 StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, status::usageText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status::voltageText),
@@ -403,6 +420,12 @@ public final class NeutronActivatorFlowPage {
 
     private static Component gray(Component component) {
         return component.copy().withStyle(ChatFormatting.GRAY);
+    }
+
+    private static boolean voidsAllOutputs(IVoidable machine, @Nullable GTRecipe recipe) {
+        boolean items = recipe == null || !recipe.itemOutputs.isEmpty();
+        boolean fluids = recipe == null || !recipe.fluidOutputs.isEmpty();
+        return (!items || machine.canVoidRecipeOutputs(ItemRecipeInfo.INSTANCE)) && (!fluids || machine.canVoidRecipeOutputs(FluidRecipeInfo.INSTANCE));
     }
 
     private static Component sentence(IssueView view, @Nullable String description) {
@@ -976,13 +999,19 @@ public final class NeutronActivatorFlowPage {
         private void refreshOutput(boolean formed, boolean working, @Nullable Component reason) {
             int units = formed ? machine.getOutputUnits().size() : 0;
             boolean full = reason == IdleReason.OUTPUT_FULL.reason() || reason == IdleReason.INSUFFICIENT_OUT.reason();
+            boolean voiding = voidsAllOutputs(machine, machine.getRecipeLogic().getLastRecipe());
+            String description = null;
             if (!formed) outputView = RecipeIssue.OFFLINE.view();
-            else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
+            else if (voiding && units == 0) {
+                outputView = RecipeIssue.OUTPUT_VOIDED.view();
+                description = LANG_OUTPUT_VOID_ALL_DESC;
+            } else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
+            else if (voiding) outputView = working ? RecipeIssue.OUTPUT_VOID_OVERFLOW_ACTIVE.view() : RecipeIssue.OUTPUT_VOID_OVERFLOW.view();
             else if (working) outputView = RecipeIssue.OUTPUT_ACTIVE.view();
             else if (full) outputView = RecipeIssue.OUTPUT_FULL.view();
             else outputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
             outputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, null));
+            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, description));
         }
 
         private void refreshRecipe(boolean formed, boolean auto, boolean working, boolean waiting, boolean neutronReason, @Nullable Component reason, double efficiency) {
@@ -1030,7 +1059,10 @@ public final class NeutronActivatorFlowPage {
             long voltage = container.getInputVoltage();
             String description = null;
             if (!formed) energyView = RecipeIssue.OFFLINE.view();
-            else if (!auto) {
+            else if (!vortex.hasEnergyReceiver()) {
+                energyView = IssueView.of(RecipeIssue.DISABLED, Component.translatable(LANG_NO_RECEIVER));
+                description = LANG_NO_RECEIVER_DESC;
+            } else if (!auto) {
                 energyView = IssueView.of(RecipeIssue.DISABLED, Component.translatable(LANG_ENERGY_OFF));
                 description = LANG_ENERGY_OFF_DESC;
             } else if (capacity <= 0) energyView = RecipeIssue.NO_ENERGY_HATCH.view();

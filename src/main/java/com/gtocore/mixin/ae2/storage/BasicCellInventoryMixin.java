@@ -174,7 +174,8 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
 
     @Override
     public Object getResourceIdentity() {
-        return gtolib$getCellStorage();
+        var storage = gtolib$getCellStorage();
+        return storage == CellDataStorage.EMPTY ? null : storage;
     }
 
     /**

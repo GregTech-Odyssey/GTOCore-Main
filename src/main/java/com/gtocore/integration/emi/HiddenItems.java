@@ -6,9 +6,6 @@ import com.gtocore.integration.biomeswevegone.BYGWoodTypes;
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.register.BlockRegisterUtils;
 
-import com.gregtechceu.gtceu.common.data.GTBlocks;
-import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
-
 import net.minecraft.world.item.Item;
 
 import com.glodblock.github.extendedae.common.EPPItemAndBlock;
@@ -32,8 +29,6 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("ad_astra:cryo_freezer"));
         deprecate(RegistriesUtils.getItem("ad_astra:compressor"));
         deprecate(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
-        deprecate(GTMultiMachines.CHARCOAL_PILE_IGNITER.asItem());
-        deprecate(GTBlocks.BRITTLE_CHARCOAL.asItem());
         deprecate(RegistriesUtils.getItem("guideme:guide"));
 
         if (Mods.EFFORTLESS.isLoaded()) {

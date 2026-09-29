@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.processing;
 
+import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.AbstractSpaceStation;
@@ -112,7 +113,7 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
         customParallelTrait = new CustomParallelTrait(this, machine -> {
             ProcessingPlantMachine processingPlantMachine = (ProcessingPlantMachine) machine;
             if (processingPlantMachine.getTier() <= 0) return 0;
-            return (long) processingPlantMachine.getTier() * getParallelPerTier(processingPlantMachine.getSubFormedAmount() > 0);
+            return (long) processingPlantMachine.getTier() * getParallelPerTier(processingPlantMachine.hasStructurePart(StructureModuleKeys.PROCESSING_PLANT_EXTENSION));
         });
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
     }

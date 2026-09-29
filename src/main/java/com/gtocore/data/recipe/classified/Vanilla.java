@@ -811,6 +811,11 @@ final class Vanilla {
                 "CDC",
                 "EFE",
                 'B', GTItems.EMITTER_HV.asItem(), 'F', new ItemStack(AEItems.WIRELESS_BOOSTER.asItem()), 'D', GTMachines.HULL[GTValues.HV].asItem(), 'C', CustomTags.HV_CIRCUITS, 'E', new MaterialEntry(TagPrefix.rodLong, GTMaterials.StainlessSteel), 'A', GTItems.SENSOR_HV.asItem());
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("redstone_timer"), GTOMachines.REDSTONE_TIMER.asItem(),
+                "ACA",
+                "BDB",
+                "EEE",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel), 'B', new ItemStack(Blocks.REDSTONE_TORCH.asItem()), 'C', new ItemStack(Items.CLOCK), 'D', CustomTags.LV_CIRCUITS, 'E', new ItemStack(Blocks.SMOOTH_STONE_SLAB.asItem()));
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("performance_monitor"), GTOMachines.PERFORMANCE_MONITOR.asItem(),
                 "AAA",
                 "ABA",

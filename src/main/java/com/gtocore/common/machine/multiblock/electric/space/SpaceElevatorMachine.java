@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space;
 
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.api.gui.overview.OverviewWidget;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.SpaceElevatorConnectorModule;
@@ -18,22 +19,30 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
+import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import earth.terrarium.adastra.common.menus.base.PlanetsMenuProvider;
@@ -42,13 +51,20 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @DataGeneratorScanned
-public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder {
+public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder, IMachineSubWindows {
+
+    private static final String WINDOW_OVERVIEW = "overview";
+    public static final int REQUIRED_TIER = GTValues.UV;
+    public static final int CYCLE_TICKS = 400;
+    private static final int CWU_PER_TIER = 128;
+    private static final double LINKED_CWU_FACTOR = 1.5;
 
     private TickableSubscription highSubscription;
 
@@ -189,6 +205,51 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
                 MenuHooks.openMenu(player, new PlanetsMenuProvider());
             }
         }).setTooltipsSupplier(pressed -> List.of(Component.translatable("gtocore.machine.space_elevator.set_out"))));
+        configuratorPanel.attachConfigurators(OverviewWidget.button(this, WINDOW_OVERVIEW, getDefinition(), ElevatorOverviewAdapter.of(this)));
+    }
+
+    @Override
+    public @Nullable ModularUI createSubWindow(String key, Player player) {
+        if (!WINDOW_OVERVIEW.equals(key)) return null;
+        return new ModularUI(this, player).widget(new OverviewWidget(this, ElevatorOverviewAdapter.of(this)));
+    }
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return ElevatorFlowPage.create(this, widget);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(0, DetailsTab.display(this));
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
+    }
+
+    @Override
+    public boolean windowHasPlayerInventory() {
+        return true;
+    }
+
+    @Override
+    public WindowAnchor windowAnchor() {
+        return WindowAnchor.CENTER;
+    }
+
+    public static double linkedComputationFactor() {
+        return LINKED_CWU_FACTOR * GTOCore.difficulty;
+    }
+
+    public static long computationDemand(int tier, double factor) {
+        return (long) (CWU_PER_TIER * (tier - GTValues.ZPM) * factor);
+    }
+
+    double exCWUt() {
+        return netMachineCache == null ? 1.0 : linkedComputationFactor();
     }
 
     @Override
@@ -242,9 +303,8 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (getTier() > GTValues.ZPM) {
-            var exCWUt = netMachineCache == null ? 1.0 : 1.5 * GTOCore.difficulty;
-            return getRecipeBuilder().duration(400).CWUt((int) (128 * (getTier() - GTValues.ZPM) * exCWUt)).EUt(GTValues.VA[getTier()]).build();
+        if (getTier() >= REQUIRED_TIER) {
+            return getRecipeBuilder().duration(CYCLE_TICKS).CWUt((int) computationDemand(getTier(), exCWUt())).EUt(GTValues.VA[getTier()]).build();
         } else {
             setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES);
         }

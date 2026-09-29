@@ -1,5 +1,6 @@
 package com.gtocore.mixin.gtm.registry;
 
+import com.gtocore.common.data.machines.GeneratorMultiblockRegisters;
 import com.gtocore.common.machine.electric.ScannerMachine;
 import com.gtocore.utils.register.MachineRegisterUtils;
 
@@ -101,7 +102,7 @@ public final class GTMachineUtilsMixin {
      */
     @Overwrite(remap = false)
     public static MultiblockMachineDefinition registerLargeCombustionEngine(String name, int tier, Supplier<? extends Block> casing, Supplier<? extends Block> gear, Supplier<? extends Block> intake, ResourceLocation casingTexture, ResourceLocation overlayModel) {
-        return MachineRegisterUtils.registerLargeCombustionEngine(GTM, name, null, tier, GTRecipeTypes.COMBUSTION_GENERATOR_FUELS, casing, gear, intake, casingTexture, overlayModel, true);
+        return GeneratorMultiblockRegisters.registerLargeCombustionEngine(GTM, name, null, tier, GTRecipeTypes.COMBUSTION_GENERATOR_FUELS, casing, gear, intake, casingTexture, overlayModel, true);
     }
 
     /**
@@ -110,6 +111,6 @@ public final class GTMachineUtilsMixin {
      */
     @Overwrite(remap = false)
     public static MultiblockMachineDefinition registerLargeTurbine(String name, int tier, GTRecipeType recipeType, Supplier<? extends Block> casing, Supplier<? extends Block> gear, ResourceLocation casingTexture, ResourceLocation overlayModel, boolean needsMuffler) {
-        return MachineRegisterUtils.registerLargeTurbine(GTM, name, null, tier, false, recipeType, casing, gear, casingTexture, overlayModel, true);
+        return GeneratorMultiblockRegisters.registerLargeTurbine(GTM, name, null, tier, false, recipeType, casing, gear, casingTexture, overlayModel, true);
     }
 }

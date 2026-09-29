@@ -8,7 +8,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.error.PatternError;
 
@@ -80,9 +79,6 @@ public final class MultiblockStructureProvider implements IBlockComponentProvide
                 }
             } else {
                 iTooltip.add(Component.translatable("gtceu.top.valid_structure").withStyle(ChatFormatting.GREEN));
-                if (blockAccessor.getServerData().get("patterInfo") instanceof StringTag patterInfo) {
-                    iTooltip.add(Component.Serializer.fromJson(patterInfo.getAsString()));
-                }
             }
         }
     }
@@ -92,12 +88,6 @@ public final class MultiblockStructureProvider implements IBlockComponentProvide
         if (blockAccessor.getBlockEntity() instanceof MetaMachineBlockEntity blockEntity && blockEntity.getMetaMachine() instanceof IMultiController controller) {
             if (controller.isFormed()) {
                 compoundTag.putBoolean("hasError", false);
-                if (controller instanceof MultiblockControllerMachine controllerMachine) {
-                    var mp = controllerMachine.getMatchedPattern();
-                    if (mp != null && mp.info != null) {
-                        compoundTag.putString("patterInfo", Component.Serializer.toJson(mp.info));
-                    }
-                }
             } else {
                 compoundTag.putBoolean("hasError", true);
                 if (controller.checking()) {

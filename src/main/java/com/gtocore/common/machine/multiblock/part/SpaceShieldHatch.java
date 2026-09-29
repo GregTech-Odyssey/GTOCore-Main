@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.part;
 
 import com.gtolib.api.machine.feature.ISpaceWorkspaceMachine;
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
@@ -69,5 +70,10 @@ public class SpaceShieldHatch extends MultiblockPartMachine implements ISpaceWor
                     .anyMatch(p -> (PartAbility.INPUT_LASER.isApplicable(p.self().getBlockState().getBlock()))));
         }
         return hasLaser.value;
+    }
+
+    @Override
+    public Component getWorkspaceNotReadyReason() {
+        return IdleReason.SPACE_SHIELD_NO_LASER.reason();
     }
 }

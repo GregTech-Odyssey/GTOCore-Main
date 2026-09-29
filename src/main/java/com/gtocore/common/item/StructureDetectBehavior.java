@@ -1,8 +1,5 @@
 package com.gtocore.common.item;
 
-import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.language.RegisterLanguage;
-
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
 import com.gregtechceu.gtceu.api.item.tool.behavior.IToolBehavior;
@@ -29,16 +26,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.function.Consumer;
 
-@DataGeneratorScanned
 public final class StructureDetectBehavior extends TooltipBehavior implements IToolBehavior, IInteractionItem {
 
     public static final StructureDetectBehavior INSTANCE = new StructureDetectBehavior(lines -> {
         lines.add(Component.translatable("item.gtocore.structure_detect.tooltip.0"));
         lines.add(Component.translatable("item.gtocore.structure_detect.tooltip.1"));
     });
-
-    @RegisterLanguage(cn = "可能的模块错误", en = "Possible module error")
-    private static final String MODULE = "gtocore.structure_detect.module";
 
     private StructureDetectBehavior(@NotNull Consumer<List<Component>> tooltips) {
         super(tooltips);
@@ -89,18 +82,6 @@ public final class StructureDetectBehavior extends TooltipBehavior implements IT
             if (MetaMachine.getMachine(level, blockPos) instanceof IMultiController controller) {
                 if (controller.isFormed()) {
                     player.sendSystemMessage(Component.translatable("gtceu.top.valid_structure").withStyle(ChatFormatting.GREEN));
-                    var subs = controller.getSubMultiblockState();
-                    if (subs != null) {
-                        for (var s : subs) {
-                            if (s.error != null) {
-                                player.sendSystemMessage(Component.translatable(MODULE).withStyle(ChatFormatting.AQUA));
-                                showError(player, s.error, stack);
-                                for (var error : s.errorRecord) {
-                                    showError(player, error, stack);
-                                }
-                            }
-                        }
-                    }
                 } else {
                     MultiblockState multiblockState = controller.getMultiblockState();
                     if (multiblockState.error != null) {
@@ -108,18 +89,6 @@ public final class StructureDetectBehavior extends TooltipBehavior implements IT
                     }
                     for (var error : controller.getMultiblockState().errorRecord) {
                         showError(player, error, stack);
-                    }
-                    var subs = controller.getSubMultiblockState();
-                    if (subs != null) {
-                        for (var s : subs) {
-                            if (s.error != null) {
-                                player.sendSystemMessage(Component.translatable(MODULE).withStyle(ChatFormatting.AQUA));
-                                showError(player, s.error, stack);
-                                for (var error : s.errorRecord) {
-                                    showError(player, error, stack);
-                                }
-                            }
-                        }
                     }
                 }
                 return InteractionResult.SUCCESS;

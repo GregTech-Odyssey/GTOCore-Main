@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
-import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.common.machine.multiblock.part.maintenance.CMHatchPartMachine;
 
 import com.gtolib.api.capability.IIWirelessInteractor;
@@ -34,7 +33,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     private final List<DroneHatchPartMachine> droneHatchPartMachine = new ArrayList<>();
 
     public CleanroomProvider(MetaMachineBlockEntity metaMachineBlockEntity) {
-        super(metaMachineBlockEntity, ILargeSpaceStationMachine.twoWayPositionFunction(41));
+        super(metaMachineBlockEntity);
     }
 
     @Override

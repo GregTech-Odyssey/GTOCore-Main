@@ -408,8 +408,8 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.RunningRequirements)
         command("在特定环境下只有特定的结构能够工作" translatedTo "Only specific structure forms can work in specific environments")
-        info("默认：P:0，亚尔夫海姆：P:1" translatedTo "Default: P:0, Alfheim: P:1")
-        info("在特定环境下终端仅能搭建指定结构，无视\"模块搭建\"设置" translatedTo "In specific environments, only specified structures can be built at the terminal, ignoring the \"Module Build\" setting")
+        info("亚尔夫海姆以外的维度使用常规形态，亚尔夫海姆使用亚尔夫海姆形态" translatedTo "Dimensions other than Alfheim use the standard form; Alfheim uses the Alfheim form")
+        info("阵列形态与所在维度不符时，机器可以成型但不会工作" translatedTo "If the array form does not match the current dimension, the machine forms but does not work")
     }
 
     // 苍穹凝聚器
@@ -520,6 +520,18 @@ object GTOMachineTooltips {
             function("每点EU都会转化为§e10~20-eV§b中子动能" translatedTo "Each point of EU converts to §e10~20-eV§b neutron kinetic energy")
             content(ComponentSlang.Capacity(euCapacity.toString()))
         }
+    }
+
+    @JvmField
+    val RedstoneTimerTooltips = ComponentListSupplier {
+        setTranslationPrefix("redstone_timer")
+
+        section("定时输出" translatedTo "Timed Output")
+        content("每经过一次间隔，从火把一端输出一段持续信号，间隔、持续时长与信号强度可调" translatedTo "After each interval, emits a signal of set duration from the torch end; interval, duration and strength are adjustable")
+        content("与中继器相同，强充能输出方向上的方块" translatedTo "Strongly powers the block in front of the output, like a repeater")
+        section("控制" translatedTo "Control")
+        content("可按火把对侧输入的控制信号运行或暂停，软锤可切换启用" translatedTo "Can run or pause by a control signal entering opposite the torch; a soft mallet toggles it")
+        content("右键打开界面进行设置" translatedTo "Right-click to configure")
     }
 
     // 传感器
@@ -1269,9 +1281,10 @@ object GTOMachineTooltips {
         setTranslationPrefix("nano_forge")
 
         section(ComponentSlang.RunningRequirements)
-        command("往主机内放入纳米蜂群引导结构等级" translatedTo "Place nanites in the controller to guide structure tier")
+        command("结构等级由已搭建的扩展模块决定：未搭建为 1，搭建主扩展模块为 2，进阶装配线内芯的主扩展模块与副扩展模块同时搭建为 3" translatedTo "Structure tier depends on the extension modules built: 1 with none, 2 with the primary module, 3 with an advanced-core primary module plus the secondary module")
+        command("往主机内放入纳米蜂群以提供蜂群等级" translatedTo "Place nanites in the controller to provide the nanoswarm tier")
         info("碳：1，安普洛：2，龙：3" translatedTo "Carbon: 1, Amprosium: 2, Draconium: 3")
-        info("引导后可使用终端搭建指定结构，无视\"模块搭建\"设置" translatedTo "After guiding, you can use the terminal to build the specified structure, ignoring \"Module Build\" setting")
+        info("生效等级取结构等级与蜂群等级中的较低者，未放入蜂群时无法运行" translatedTo "The effective tier is the lower of the structure tier and the nanoswarm tier; the machine cannot run without nanites")
     }
 
     // 中子活化器
@@ -1367,9 +1380,10 @@ object GTOMachineTooltips {
         setTranslationPrefix("pcb_factory")
 
         section(ComponentSlang.RunningRequirements)
-        command("往主机内放入纳米蜂群引导结构等级" translatedTo "Place nanites in the controller to guide structure tier")
+        command("结构等级由已搭建的扩展结构决定：主体为 1，搭建二级扩展结构为 2，在其后方再搭建三级扩展结构为 3" translatedTo "Structure tier depends on the extensions built: 1 for the main body, 2 with the tier 2 extension, 3 with the tier 3 extension behind it")
+        command("往主机内放入纳米蜂群以提供蜂群等级" translatedTo "Place nanites in the controller to provide the nanoswarm tier")
         info("金：1，山铜：2，末影素：3" translatedTo "Gold: 1, Orichalcum: 2, Enderium: 3")
-        info("引导后可使用终端搭建指定结构，无视\"模块搭建\"设置" translatedTo "After guiding, you can use the terminal to build the specified structure, ignoring \"Module Build\" setting")
+        info("生效等级取结构等级与蜂群等级中的较低者，未放入蜂群时按 1 级运行" translatedTo "The effective tier is the lower of the structure tier and the nanoswarm tier; without nanites the machine runs at tier 1")
     }
 
     // 进阶装配线
@@ -1953,9 +1967,8 @@ object GTOMachineTooltips {
 
         section(ComponentSlang.RunningRequirements)
         ok("运行时不消耗中子动能" translatedTo "Does not consume neutron kinetic energy while running.")
-        command("在主机左下角切换能源接收器模式以引导不同的结构" translatedTo "Switch Energy Acceptor mode in the bottom left corner of the controller to guide different structures")
-        info("未激活：P:0，已激活：P:1" translatedTo "Inactive: P:0, Active: P:1")
-        info("引导后可使用终端搭建指定结构，无视\"模块搭建\"设置" translatedTo "After guiding, you can use the terminal to build the specified structure, ignoring \"Module Build\" setting")
+        command("搭建能源接收段后，可在主界面的能源接收器节点中启用能源接收器" translatedTo "With the Energy Acceptor Section built, the Energy Acceptor can be enabled in its node on the main page")
+        info("未搭建能源接收段时，能源接收器不可用" translatedTo "Without the Energy Acceptor Section, the Energy Acceptor is unavailable")
         increase("能源接收器激活后，将消耗电力自动适应配方的中子动能" translatedTo "After activating the Energy Acceptor, it will consume electricity to automatically adapt to the neutron kinetic energy of the recipe")
     }
 
@@ -2008,10 +2021,8 @@ object GTOMachineTooltips {
         setTranslationPrefix("compound_extreme_cooling_unit")
 
         section(ComponentSlang.RunningRequirements)
-        command("在主机内更改机器模式以引导不同的结构" translatedTo "Change recipe type in the controller to guide different structures")
-        important("机器模式为等离子冷凝模式时才可以运行等离子冷凝配方" translatedTo "Must be in Plasma Condenser mode to run Plasma Condenser recipe")
-        info("真空冷冻机/雾化冷凝：P:0，等离子冷凝：P:1" translatedTo "Vacuum Freezer/Atomization Condensation: P:0, Plasma Condenser: P:1")
-        info("引导后可使用终端搭建指定结构，无视\"模块搭建\"设置" translatedTo "After guiding, you can use the terminal to build the specified structure, ignoring \"Module Build\" setting")
+        important("机器模式为等离子冷凝模式且已搭建等离子冷凝翼时，才可以运行等离子冷凝配方" translatedTo "Plasma Condenser recipes require Plasma Condenser mode and the Plasma Condensing Wings")
+        info("等离子冷凝翼为可选结构，不影响其他模式的运行" translatedTo "The Plasma Condensing Wings are optional and do not affect other modes")
     }
 
     // 恒星炎炀锻炉

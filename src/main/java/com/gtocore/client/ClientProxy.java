@@ -136,7 +136,14 @@ public final class ClientProxy extends CommonProxy {
         IdleReasonIcons.register("gtocore.idle_reason.voltage_tier_not_satisfies", WidgetIcons.IDLE_LOW_TIER);
         IdleReasonIcons.register("gtocore.idle_reason.block_tier_not_satisfies", WidgetIcons.IDLE_CONDITION);
         IdleReasonIcons.register("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.cannot_work_in_space", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace_multiblock", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_shield_no_laser", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_in_space", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_no_core", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_paused", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_running", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_preparing", WidgetIcons.IDLE_CONDITION);
         IdleReasonIcons.register("gtocore.idle_reason.felling_tool", WidgetIcons.IDLE_CONDITION);
         IdleReasonIcons.register("gtocore.idle_reason.grindball", WidgetIcons.IDLE_CONDITION);
         IdleReasonIcons.register("gtocore.idle_reason.set_circuit", WidgetIcons.IDLE_CONDITION);

@@ -2,17 +2,16 @@ package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
 
+import com.gtolib.api.recipe.IdleReason;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 import static com.gregtechceu.gtceu.api.GTValues.HV;
 import static com.gregtechceu.gtceu.api.GTValues.VA;
@@ -21,8 +20,8 @@ public class Conjunction extends AbstractSpaceStation implements ILargeSpaceStat
 
     protected Core core;
 
-    public Conjunction(MetaMachineBlockEntity metaMachineBlockEntity, Function<AbstractSpaceStation, Set<BlockPos>> positionFunction) {
-        super(metaMachineBlockEntity, positionFunction);
+    public Conjunction(MetaMachineBlockEntity metaMachineBlockEntity) {
+        super(metaMachineBlockEntity);
         shouldShowReadyText = false;
     }
 
@@ -49,6 +48,11 @@ public class Conjunction extends AbstractSpaceStation implements ILargeSpaceStat
     @Override
     public boolean isWorkspaceReady() {
         return core != null && core.isWorkspaceReady();
+    }
+
+    @Override
+    public Component getWorkspaceNotReadyReason() {
+        return core == null ? IdleReason.SPACE_STATION_NO_CORE.reason(getPos().toShortString()) : core.getWorkspaceNotReadyReason();
     }
 
     @Override

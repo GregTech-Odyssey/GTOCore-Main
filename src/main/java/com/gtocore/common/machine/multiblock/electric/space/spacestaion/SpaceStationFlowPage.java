@@ -1,15 +1,16 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import com.gtocore.common.data.machines.GTOMachineProtocols;
+
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
@@ -17,7 +18,9 @@ import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.flow.FlowChart;
 import com.gregtechceu.gtceu.uipro.flow.FlowNode;
+import com.gregtechceu.gtceu.uipro.flow.FlowParts;
 import com.gregtechceu.gtceu.uipro.flow.FlowState;
+import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.styletemplate.WidgetIconAtlas;
@@ -39,7 +42,6 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.AlignContent;
 import earth.terrarium.adastra.common.registry.ModBlocks;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,8 +133,12 @@ public final class SpaceStationFlowPage {
     private static final String LANG_HATCHES = "gtocore.machine.space_station.flow.hatches";
     @RegisterLanguage(cn = "每秒", en = "Per Second")
     private static final String LANG_PER_SECOND = "gtocore.machine.space_station.flow.per_second";
-    @RegisterLanguage(cn = "%s / %s", en = "%s / %s")
-    private static final String LANG_RATIO = "gtocore.machine.space_station.flow.ratio";
+    @RegisterLanguage(cn = "帆板", en = "Sails")
+    private static final String LANG_SAILS = "gtocore.machine.space_station.flow.sails";
+    @RegisterLanguage(cn = "光伏帆板：已成型 %s 台，帆板接口共 %s 个。", en = "Photovoltaic sails: %s formed, %s sail docks in total.")
+    private static final String LANG_SAILS_DETAIL = "gtocore.machine.space_station.flow.sails_detail";
+    @RegisterLanguage(cn = "点左侧「探索者号空间站总览」可在空位上安装光伏帆板。", en = "Use \"Explorer Station Overview\" on the left to install sails at free docks.")
+    private static final String LANG_SAILS_HINT = "gtocore.machine.space_station.flow.sails_hint";
     @RegisterLanguage(cn = "、", en = ", ")
     private static final String LANG_SEPARATOR = "gtocore.machine.space_station.flow.separator";
 
@@ -216,53 +222,49 @@ public final class SpaceStationFlowPage {
     }
 
     private static FlowNode stationNode(FlowChart chart, SimpleSpaceStationMachine machine, Status status, int columns) {
-        var node = chart.node(1, 1, columns - 1).state(status::stationState).detail(status::stationDetail);
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(ItemView.of(machine.getDefinition().asStack()), TextLine.translatable(0, LANG_STATION).layout(l -> l.flex(1)));
-        node.addChildren(header,
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::stationView),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status::recipeProgress),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status::readiness)
+        var node = chart.node(1, 1, columns - 1).state(status.live(() -> status.station)).detail(status.live(() -> status.stationDetail));
+        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_STATION),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.stationView)),
+                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
+                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness))
                         .percent().detail(() -> Status.READINESS_HINT));
         return node;
     }
 
     private static FlowNode inputNode(FlowChart chart, Status status, int index, boolean remote) {
         var diagnoser = status.diagnoser;
-        var node = chart.node(0, index).state(() -> status.inputState(index)).detail(() -> status.inputDetail(index));
+        var node = chart.node(0, index).state(status.live(() -> diagnoser.inputIssue(index).state())).detail(status.live(() -> status.inputDetails.get(index)));
         node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(centered(fluidSlot(remote ? null : diagnoser.inputStack(index))),
+        node.addChildren(FlowParts.centered(FlowParts.fluidSlot(remote ? null : diagnoser.inputStack(index))),
                 TextLine.of(LayoutStyle.AUTO, () -> diagnoser.inputName(index)).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.inputAmount(index)).alignCenter().level(() -> status.inputState(index).level()),
-                new IssueLine(LayoutStyle.AUTO, null, () -> status.inputView(index)));
+                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.inputAmount(index)).alignCenter().level(status.live(() -> diagnoser.inputIssue(index).state().level())),
+                new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.inputIssue(index).view())));
         return node;
     }
 
     private static FlowNode energyNode(FlowChart chart, Status status) {
-        var node = chart.node(1, 0).state(status::energyState).detail(status::energyDetail);
+        var diagnoser = status.diagnoser;
+        var node = chart.node(1, 0).state(status.live(() -> diagnoser.energyIssue().state())).detail(status.live(() -> status.energyDetail));
         IGuiTexture icon = UITheme.switching(() -> isLit(node.getFlowState()), new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_OFF),
                 new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_ON));
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(ItemView.of(icon), TextLine.translatable(0, LANG_ENERGY).layout(l -> l.flex(1)));
-        node.addChildren(header, new IssueLine(LayoutStyle.AUTO, null, status::energyView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, status::usageText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status::powerText).level(status::powerLevel),
-                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status::voltageText).level(status::voltageLevel),
-                StatusLine.of(LayoutStyle.AUTO, LANG_REQUIRED_TIER, status::requiredTierText),
-                new ProgressBar(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status::buffer).percent());
+        node.addChildren(FlowParts.header(ItemView.of(icon), LANG_ENERGY), new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.energyIssue().view())),
+                StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, () -> status.usageText),
+                StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status.live(() -> status.powerText))
+                        .level(status.live(() -> diagnoser.energyIssue() == RecipeIssue.LOW_POWER ? StatusLine.Level.ERROR : StatusLine.Level.NORMAL)),
+                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText)).level(status.live(status::voltageLevel)),
+                StatusLine.of(LayoutStyle.AUTO, LANG_REQUIRED_TIER, () -> status.requiredTierText),
+                new ProgressBar(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.buffer)).percent());
         return node;
     }
 
     private static FlowNode environmentNode(FlowChart chart, Status status, int column) {
-        var node = chart.node(1, column).state(status::environmentState).detail(status::environmentDetail);
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), TextLine.translatable(0, LANG_ENVIRONMENT).layout(l -> l.flex(1)));
-        node.addChildren(header,
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_OXYGEN), status::oxygenView),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_TEMPERATURE), status::temperatureView),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_CLEANROOM), status::cleanroomView),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_WORKSPACE), status::workspaceView),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_VOLUME), status::volumeView));
+        var node = chart.node(1, column).state(status.live(() -> status.environment)).detail(status.live(() -> status.environmentDetail));
+        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), LANG_ENVIRONMENT),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_OXYGEN), status.live(() -> status.oxygenView)),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_TEMPERATURE), status.live(() -> status.temperatureView)),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_CLEANROOM), status.live(() -> status.cleanroomView)),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_WORKSPACE), status.live(() -> status.workspaceView)),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_VOLUME), status.live(() -> status.volumeView)));
         return node;
     }
 
@@ -272,46 +274,41 @@ public final class SpaceStationFlowPage {
 
     private static FlowNode outputNode(FlowChart chart, Status status, int column, int index, boolean remote) {
         var diagnoser = status.diagnoser;
-        var node = chart.node(2, column).state(() -> status.outputState(index)).detail(() -> status.outputDetail(index));
+        var node = chart.node(2, column).state(status.live(() -> diagnoser.outputIssue(index).state())).detail(status.live(() -> diagnoser.outputDetail(index)));
         node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(centered(fluidSlot(remote ? null : diagnoser.outputStack(index))),
+        node.addChildren(FlowParts.centered(FlowParts.fluidSlot(remote ? null : diagnoser.outputStack(index))),
                 TextLine.of(LayoutStyle.AUTO, () -> diagnoser.outputName(index)).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.outputAmount(index)).alignCenter().level(() -> status.outputState(index).level()),
-                new IssueLine(LayoutStyle.AUTO, null, () -> status.outputView(index)));
+                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.outputAmount(index)).alignCenter().level(status.live(() -> diagnoser.outputIssue(index).state().level())),
+                new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.outputIssue(index).view())));
         return node;
     }
 
     private static FlowNode waterNode(FlowChart chart, SimpleSpaceStationMachine machine, Status status, int span, boolean remote) {
-        var node = chart.node(2, 0, span).state(status::waterState).detail(status::waterDetail);
+        var node = chart.node(2, 0, span).state(status.live(() -> status.waterState)).detail(status.live(() -> status.waterDetail));
         var header = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(fluidSlot(remote ? null : DistilledWater.getFluid(1)), TextLine.translatable(0, LANG_WATER).layout(l -> l.flex(1)));
+        header.addChildren(FlowParts.fluidSlot(remote ? null : DistilledWater.getFluid(1)), TextLine.translatable(0, LANG_WATER).layout(l -> l.flex(1)));
         int fieldWidth = chart.spanWidth(span) - 2 * UISizes.FLOW_NODE_PADDING - LABEL_WIDTH - UISizes.GAP;
         var field = NumberField.of(fieldWidth, machine::getWaterAmountPerHatch, value -> machine.setWaterAmountPerHatch((int) value), 0, SimpleSpaceStationMachine.MAX_WATER_PER_HATCH);
         field.setHoverTooltips(Component.translatable(LANG_PER_HATCH_TOOLTIP));
         var amountRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
                 .addChildren(TextLine.translatable(LABEL_WIDTH, LANG_PER_HATCH).setColor(UITheme::textSecondary), field);
         node.addChildren(header,
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::waterView),
+                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.waterView)),
                 amountRow,
-                StatusLine.of(LayoutStyle.AUTO, LANG_HATCHES, status::hatchesText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_PER_SECOND, status::rateText).level(() -> status.waterState().level()));
+                StatusLine.of(LayoutStyle.AUTO, LANG_HATCHES, status.live(() -> status.hatchesText)),
+                StatusLine.of(LayoutStyle.AUTO, LANG_SAILS, status.live(() -> status.sailsText))
+                        .level(status.live(() -> status.sailsFormed > 0 ? StatusLine.Level.GOOD : StatusLine.Level.NORMAL)),
+                StatusLine.of(LayoutStyle.AUTO, LANG_PER_SECOND, status.live(() -> status.rateText)).level(status.live(() -> status.waterState.level())));
         return node;
     }
 
-    private static UIElement centered(Widget child) {
-        return UIElement.row(child.getSizeHeight()).layout(l -> l.justifyContent(AlignContent.CENTER)).addChild(child);
+    private static Component ratio(int current, int total) {
+        return Component.literal(current + " / " + total);
     }
 
-    private static FluidSlot fluidSlot(@Nullable FluidStack stack) {
-        var slot = new FluidSlot(stack == null ? null : new CustomFluidTank(stack), 0, false, false);
-        slot.setShowAmount(false);
-        return slot;
-    }
-
-    private static final class Status {
+    private static final class Status extends ThrottledStatus {
 
         private static final Component READINESS_HINT = Component.translatable(LANG_READINESS_HINT);
-        private static final Component NONE = Component.literal("—");
 
         private final SimpleSpaceStationMachine machine;
         private final RecipeDiagnoser diagnoser;
@@ -325,8 +322,6 @@ public final class SpaceStationFlowPage {
         private long[] unitScratch = new long[0];
         private int collectingUnit;
 
-        private boolean refreshed;
-        private int refreshedAt;
         private boolean progressRefreshed;
         private int progressAt;
         private FlowState station = FlowState.IDLE;
@@ -344,10 +339,12 @@ public final class SpaceStationFlowPage {
         private IssueView workspaceView = RecipeIssue.OFFLINE.view();
         private IssueView volumeView = RecipeIssue.OFFLINE.view();
         private List<Component> environmentDetail = Collections.emptyList();
-        private Component powerText = NONE;
-        private Component voltageText = NONE;
-        private Component hatchesText = NONE;
-        private Component rateText = NONE;
+        private Component powerText = FlowParts.DASH;
+        private Component voltageText = FlowParts.DASH;
+        private Component hatchesText = FlowParts.DASH;
+        private Component sailsText = FlowParts.DASH;
+        private int sailsFormed = -1, sailDocks = -1;
+        private Component rateText = FlowParts.DASH;
         private long shownPower = -1;
         private int shownTier = -2;
         private int shownHatches = -1, shownAccepting = -1;
@@ -360,6 +357,7 @@ public final class SpaceStationFlowPage {
         private long shownStored = -1, shownCapacity = -1;
 
         private Status(SimpleSpaceStationMachine machine, GTRecipeDefinition recipe) {
+            super(machine::getOffsetTimer, REFRESH_TICKS);
             this.machine = machine;
             this.diagnoser = new RecipeDiagnoser(machine, recipe);
             this.duration = recipe.duration;
@@ -375,180 +373,22 @@ public final class SpaceStationFlowPage {
             };
         }
 
-        FlowState inputState(int index) {
-            refresh();
-            return diagnoser.inputIssue(index).state();
-        }
-
-        IssueView inputView(int index) {
-            refresh();
-            return diagnoser.inputIssue(index).view();
-        }
-
-        List<Component> inputDetail(int index) {
-            refresh();
-            return inputDetails.get(index);
-        }
-
-        FlowState outputState(int index) {
-            refresh();
-            return diagnoser.outputIssue(index).state();
-        }
-
-        IssueView outputView(int index) {
-            refresh();
-            return diagnoser.outputIssue(index).view();
-        }
-
-        List<Component> outputDetail(int index) {
-            refresh();
-            return diagnoser.outputDetail(index);
-        }
-
-        FlowState stationState() {
-            refresh();
-            return station;
-        }
-
-        IssueView stationView() {
-            refresh();
-            return stationView;
-        }
-
-        List<Component> stationDetail() {
-            refresh();
-            return stationDetail;
-        }
-
-        FlowState environmentState() {
-            refresh();
-            return environment;
-        }
-
-        List<Component> environmentDetail() {
-            refresh();
-            return environmentDetail;
-        }
-
-        IssueView oxygenView() {
-            refresh();
-            return oxygenView;
-        }
-
-        IssueView temperatureView() {
-            refresh();
-            return temperatureView;
-        }
-
-        IssueView cleanroomView() {
-            refresh();
-            return cleanroomView;
-        }
-
-        IssueView workspaceView() {
-            refresh();
-            return workspaceView;
-        }
-
-        IssueView volumeView() {
-            refresh();
-            return volumeView;
-        }
-
-        FlowState energyState() {
-            refresh();
-            return diagnoser.energyIssue().state();
-        }
-
-        IssueView energyView() {
-            refresh();
-            return diagnoser.energyIssue().view();
-        }
-
-        List<Component> energyDetail() {
-            refresh();
-            return energyDetail;
-        }
-
-        Component usageText() {
-            return usageText;
-        }
-
-        Component requiredTierText() {
-            return requiredTierText;
-        }
-
-        Component powerText() {
-            refresh();
-            return powerText;
-        }
-
-        StatusLine.Level powerLevel() {
-            refresh();
-            return diagnoser.energyIssue() == RecipeIssue.LOW_POWER ? StatusLine.Level.ERROR : StatusLine.Level.NORMAL;
-        }
-
-        Component voltageText() {
-            refresh();
-            return voltageText;
-        }
-
-        StatusLine.Level voltageLevel() {
-            refresh();
+        private StatusLine.Level voltageLevel() {
             if (diagnoser.energyTier() < 0) return StatusLine.Level.NORMAL;
             return diagnoser.energyIssue() == RecipeIssue.LOW_VOLTAGE ? StatusLine.Level.ERROR : StatusLine.Level.GOOD;
         }
 
-        FlowState waterState() {
-            refresh();
-            return waterState;
-        }
-
-        IssueView waterView() {
-            refresh();
-            return waterView;
-        }
-
-        List<Component> waterDetail() {
-            refresh();
-            return waterDetail;
-        }
-
-        Component hatchesText() {
-            refresh();
-            return hatchesText;
-        }
-
-        Component rateText() {
-            refresh();
-            return rateText;
-        }
-
-        ProgressBar.Progress recipeProgress() {
-            refresh();
-            return recipeProgress;
-        }
-
-        ProgressBar.Progress readiness() {
-            refresh();
-            return readiness;
-        }
-
-        ProgressBar.Progress buffer() {
-            refresh();
-            return buffer;
-        }
-
-        private void refresh() {
-            int now = machine.getOffsetTimer();
+        @Override
+        protected void onAccess(int now) {
             if (!progressRefreshed || now < progressAt || now - progressAt >= PROGRESS_TICKS) {
                 progressRefreshed = true;
                 progressAt = now;
                 refreshProgress();
             }
-            if (refreshed && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) return;
-            refreshed = true;
-            refreshedAt = now;
+        }
+
+        @Override
+        protected void refresh(int now) {
             refreshStates();
         }
 
@@ -605,7 +445,7 @@ public final class SpaceStationFlowPage {
             int tier = diagnoser.energyTier();
             if (tier != shownTier) {
                 shownTier = tier;
-                voltageText = tier < 0 ? NONE : Component.literal(GTValues.VN[tier]);
+                voltageText = tier < 0 ? FlowParts.DASH : Component.literal(GTValues.VN[tier]);
             }
         }
 
@@ -741,14 +581,27 @@ public final class SpaceStationFlowPage {
             if (total != shownHatches || accepting != shownAccepting) {
                 shownHatches = total;
                 shownAccepting = accepting;
-                hatchesText = Component.translatable(LANG_RATIO, accepting, total);
+                hatchesText = ratio(accepting, total);
             }
             long rate = working ? (long) supplied * amount : (long) accepting * amount;
             if (rate != shownRate) {
                 shownRate = rate;
                 rateText = RecipeDiagnoser.amount(rate);
             }
-            var lines = new ArrayList<Component>(6);
+            int docks = 0, sails = 0;
+            var assembly = formed ? machine.getAssembly() : null;
+            if (assembly != null) {
+                docks = assembly.ports(GTOMachineProtocols.PHOTOVOLTAIC_SAIL).size();
+                for (var sail : assembly.machines(GTOMachineProtocols.PHOTOVOLTAIC_SAIL)) {
+                    if (sail instanceof MultiblockControllerMachine controller && controller.isFormed()) sails++;
+                }
+            }
+            if (sails != sailsFormed || docks != sailDocks) {
+                sailsFormed = sails;
+                sailDocks = docks;
+                sailsText = ratio(sails, docks);
+            }
+            var lines = new ArrayList<Component>(8);
             lines.add(Component.translatable(LANG_WATER));
             lines.add(Component.translatable(LANG_WATER_DESC).withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable(LANG_WATER_HATCHES, total, accepting).withStyle(ChatFormatting.GRAY));
@@ -757,6 +610,8 @@ public final class SpaceStationFlowPage {
                 lines.add(Component.translatable(LANG_WATER_STOCK, RecipeDiagnoser.amount(stock), diagnoser.inputAmount(waterIndex)).withStyle(ChatFormatting.GRAY));
             }
             lines.add(Component.translatable(sentence).withStyle(RecipeDiagnoser.style(issue)));
+            lines.add(Component.translatable(LANG_SAILS_DETAIL, sails, docks).withStyle(ChatFormatting.GRAY));
+            lines.add(Component.translatable(LANG_SAILS_HINT).withStyle(ChatFormatting.GRAY));
             waterDetail = lines;
         }
 
@@ -780,7 +635,7 @@ public final class SpaceStationFlowPage {
                 temperatureView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_TEMPERATURE_OFF));
             }
             var types = machine.getTypes();
-            Component typeName = types.isEmpty() ? NONE : Component.translatable(types.iterator().next().getTranslationKey());
+            Component typeName = types.isEmpty() ? FlowParts.DASH : Component.translatable(types.iterator().next().getTranslationKey());
             cleanroomView = ready ? IssueView.of(RecipeIssue.OK, typeName) : IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_WARMING));
             var machines = machine.getSpaceMachines();
             int total = 0, busy = 0;

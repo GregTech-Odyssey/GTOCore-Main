@@ -1,10 +1,12 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.common.data.GTOTickTimeMonitors;
+import com.gtocore.common.data.machines.GTOMachineProtocols;
 
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.machine.feature.multiblock.ICustomHighlightMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
@@ -17,23 +19,25 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
 import earth.terrarium.adastra.api.systems.OxygenApi;
 import earth.terrarium.adastra.api.systems.TemperatureApi;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 public abstract class AbstractSpaceStation extends ElectricMultiblockMachine implements ISpacePredicateMachine, ICustomHighlightMachine {
 
     @Nullable
     private Collection<IWorkInSpaceMachine> spaceMachines;
     private final Set<BlockPos> lastDistributedBlocks = new ObjectOpenHashSet<>();
-    private final @Nullable Function<AbstractSpaceStation, Set<BlockPos>> positionFunction;
+    @SyncToClient
+    private BlockPos[] stationPorts = new BlockPos[0];
 
     @SaveToDisk(defaultValue = "0")
     protected int ready;
@@ -45,12 +49,27 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
 
     AbstractSpaceStation(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
-        this.positionFunction = null;
     }
 
-    AbstractSpaceStation(MetaMachineBlockEntity metaMachineBlockEntity, @Nullable Function<AbstractSpaceStation, Set<BlockPos>> positionFunction) {
-        super(metaMachineBlockEntity);
-        this.positionFunction = positionFunction;
+    @Override
+    public void onStructureFormed() {
+        var assembly = getAssembly();
+        if (assembly != null) {
+            var ports = new ArrayList<BlockPos>(assembly.ports(GTOMachineProtocols.STATION_DOCKING));
+            ports.addAll(assembly.ports(GTOMachineProtocols.STATION_JUNCTION));
+            stationPorts = ports.toArray(BlockPos[]::new);
+        }
+        super.onStructureFormed();
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        stationPorts = new BlockPos[0];
+        super.onStructureInvalid();
+    }
+
+    public BlockPos[] getStationPorts() {
+        return stationPorts;
     }
 
     @Override
@@ -158,6 +177,14 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     }
 
     @Override
+    public Component getWorkspaceNotReadyReason() {
+        String pos = getPos().toShortString();
+        if (getRecipeLogic().isWorking()) return IdleReason.SPACE_STATION_PREPARING.reason(pos, Math.min(ready * 10, 100));
+        if (!isWorkingEnabled()) return IdleReason.SPACE_STATION_PAUSED.reason(pos);
+        return IdleReason.SPACE_STATION_NOT_RUNNING.reason(pos, getRecipeLogic().getIdleReason());
+    }
+
+    @Override
     public void regressRecipe(RecipeLogic recipeLogic) {
         super.regressRecipe(recipeLogic);
         ready = 0;
@@ -180,9 +207,5 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
 
     public int getOxygenatedBlockCount() {
         return lastDistributedBlocks.size();
-    }
-
-    public @Nullable Function<AbstractSpaceStation, Set<BlockPos>> getPositionFunction() {
-        return positionFunction;
     }
 }

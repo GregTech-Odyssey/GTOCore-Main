@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IRotorHolderMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
@@ -38,7 +37,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.gto.datasynclib.datastream.DataComponentKey;
@@ -60,10 +58,6 @@ import static com.gregtechceu.gtceu.api.pattern.Predicates.abilities;
 import static com.gtocore.common.block.BlockMap.*;
 
 public final class GTOPredicates {
-
-    public static TraceabilityPredicate module(MachineDefinition... definition) {
-        return Predicates.blocks(Blocks.BARRIER).or(Predicates.air().setPreviewCount(0)).or(Predicates.blocks(Arrays.stream(definition).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new)).setPreviewCount(0));
-    }
 
     public static TraceabilityPredicate glass() {
         return tierBlock(GLASSMAP, GTORecipeDataKeys.GLASS_TIER);
@@ -177,10 +171,6 @@ public final class GTOPredicates {
             }
             return false;
         }, () -> BlockInfo.fromBlock(blocks[0]), () -> blocks).addTooltips(Component.translatable("gtocore.machine.pattern.error.tier"));
-    }
-
-    public static TraceabilityPredicate RotorBlock(int tier) {
-        return RotorBlock(tier, (Function<MultiblockState, Direction>) null);
     }
 
     public static TraceabilityPredicate RotorBlock(int tier, RelativeDirection relativeDirection) {
@@ -307,10 +297,6 @@ public final class GTOPredicates {
         }, GTOBlocks.FISSION_FUEL_COMPONENT.get(), GTOBlocks.FISSION_COOLER_COMPONENT.get()).setPreviewCount(1);
     }
 
-    public static TraceabilityPredicate countBlock(DataComponentKey<Integer> key, Block... blocks) {
-        return dataBlock(key, () -> 0, (integer, state) -> ++integer, blocks);
-    }
-
     public static <T> TraceabilityPredicate dataBlock(DataComponentKey<T> key, Supplier<T> dataSupplier, BiFunction<T, MultiblockState, T> dataFunction, Block... blocks) {
         TraceabilityPredicate predicate = Predicates.blocks(blocks);
         return new TraceabilityPredicate(new SimplePredicate(state -> {
@@ -382,10 +368,7 @@ public final class GTOPredicates {
         public static final DataComponentKey<ArrayList<WirelessEnergyUnitBlock.BlockData>> WIRELESS_ENERGY_UNIT = DataComponentKey.create("wirelessEnergyUnit", DataComponentKey.collectionBuilder(ArrayList::new));
         public static final DataComponentKey<int[]> FISSION_COMPONENT = DataComponentKey.createNoCodec("fissionComponent");
 
-        public static final DataComponentKey<Integer> STEEL_FRAME = DataComponentKey.createNoCodec("SteelFrame");
         public static final DataComponentKey<Set<BlockPos>> BLAST_FURNACE_HEAT = DataComponentKey.create("blastFurnaceHeat", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
-        public static final DataComponentKey<Integer> SPEED_PIPE = DataComponentKey.createNoCodec("SpeedPipe");
-        public static final DataComponentKey<Integer> LAMINATED_GLASS = DataComponentKey.createNoCodec("laminated_glass");
 
         public static final DataComponentKey<Set<BlockPos>> CYAN = DataComponentKey.create("cyan", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
         public static final DataComponentKey<Set<BlockPos>> MAGENTA = DataComponentKey.create("magenta", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));

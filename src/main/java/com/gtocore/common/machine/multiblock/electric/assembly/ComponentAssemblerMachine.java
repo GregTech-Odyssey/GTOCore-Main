@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.assembly;
 
+import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
@@ -23,11 +24,8 @@ public class ComponentAssemblerMachine extends TierCasingMultiblockMachine {
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        if (getSubFormedAmount() > 0) {
-            casingTier = Math.min(GTValues.UV, getCasingTier(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER));
-        } else {
-            casingTier = Math.min(GTValues.IV, getCasingTier(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER));
-        }
+        int cap = hasStructurePart(StructureModuleKeys.COMPONENT_ASSEMBLER_ASSEMBLY) ? GTValues.UV : GTValues.IV;
+        casingTier = Math.min(cap, getCasingTier(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER));
     }
 
     @Override

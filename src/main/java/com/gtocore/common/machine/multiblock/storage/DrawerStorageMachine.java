@@ -14,7 +14,6 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
@@ -53,7 +52,6 @@ import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * 抽屉存储器：抽屉与升级都放进结构的输入总线，主机（控制器）自己的槽里放超级箱或超级缸。
@@ -153,11 +151,6 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Override
     public int getSlotLimit() {
         return CONTROLLER_LIMIT;
-    }
-
-    @Override
-    public Supplier<BlockPattern>[] getPattern() {
-        return getDefinition().getPatternFactory();
     }
 
     /// 不设总容量：只按种类卡每一种的上限

@@ -46,7 +46,7 @@ public final class TechTreePage {
     private static final int CANVAS_MAX_WIDTH = 40 * UISizes.SLOT;
     private static final int CANVAS_MAX_HEIGHT = 24 * UISizes.SLOT;
     /// 研究窗口里画布以外占的宽：窗口左右内边距 + 与屏幕边缘的距离（详情卡片浮在画布里，不另占宽度）
-    private static final int RESERVED_WIDTH = 2 * UISizes.WINDOW_PADDING_X + 2 * UISizes.POPUP_SCREEN_MARGIN;
+    private static final int RESERVED_WIDTH = 2 * UISizes.WINDOW_PADDING_X + 2 * UISizes.SCREEN_MARGIN;
     /// 画布以外占的高：顶上标签栏 + 窗口上下内边距 + 标题栏与间距
     private static final int RESERVED_HEIGHT = UISizes.PAGE_TAB_HEIGHT + UISizes.PAGE_TAB_RAISE + UISizes.WINDOW_PADDING_TOP +
             UISizes.CONTROL_HEIGHT + UISizes.SECTION_GAP + UISizes.WINDOW_PADDING_BOTTOM;

@@ -4,7 +4,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.processing.ProcessingPlantMachine;
 import com.gtocore.common.machine.multiblock.part.ProgrammableHatchPartMachine;
-import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 
@@ -35,15 +34,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public final class PatternContainerGroupHelper {
-
-    private static final char MACHINE_PLACEHOLDER = 'm';
-    private static final char TIER_PLACEHOLDER = 't';
-    private static final char SUFFIX_PLACEHOLDER = 's';
-    private static final char RECIPE_TYPE_MULTI_PLACEHOLDER = 'r';
-    private static final char RECIPE_TYPE_ALWAYS_PLACEHOLDER = 'R';
-    private static final String SEARCH_NAME_FORMAT = "%m %t %s %R";
 
     private PatternContainerGroupHelper() {}
 
@@ -87,17 +80,16 @@ public final class PatternContainerGroupHelper {
                                                      Collection<GTRecipeType> availableRecipeTypes,
                                                      boolean showAllRecipeTypes,
                                                      List<Component> tooltip) {
-        NameParts parts = getNameParts(displayMachine, extraSuffix, selectedRecipeType, availableRecipeTypes,
+        MutableComponent name = buildName(displayMachine, extraSuffix, selectedRecipeType, availableRecipeTypes,
                 showAllRecipeTypes);
-        MutableComponent name = formatName(parts, GTOConfig.INSTANCE.misc.patternContainerNameFormat);
         return new PatternContainerGroup(AEItemKey.of(displayMachine.getDefinition().asStack()), name, tooltip);
     }
 
     public static Component getSearchName(MetaMachine displayMachine, String extraSuffix,
                                           @Nullable GTRecipeType selectedRecipeType,
                                           Collection<GTRecipeType> availableRecipeTypes) {
-        return formatName(getNameParts(displayMachine, extraSuffix, selectedRecipeType, availableRecipeTypes,
-                selectedRecipeType == null || selectedRecipeType == GTORecipeTypes.HATCH_COMBINED), SEARCH_NAME_FORMAT);
+        return buildName(displayMachine, extraSuffix, selectedRecipeType, availableRecipeTypes,
+                selectedRecipeType == null || selectedRecipeType == GTORecipeTypes.HATCH_COMBINED);
     }
 
     public static @Nullable Component getSearchName(Level level, BlockPos pos, String extraSuffix) {
@@ -106,8 +98,8 @@ public final class PatternContainerGroupHelper {
             return null;
         }
 
-        return formatName(getNameParts(context.displayMachine(), extraSuffix, context.selectedRecipeType(),
-                getAvailableRecipeTypes(context.recipeMachine()), context.showAllRecipeTypes()), SEARCH_NAME_FORMAT);
+        return buildName(context.displayMachine(), extraSuffix, context.selectedRecipeType(),
+                getAvailableRecipeTypes(context.recipeMachine()), context.showAllRecipeTypes());
     }
 
     private static @Nullable MachineNameContext getMachineNameContext(Level level, BlockPos pos) {
@@ -149,16 +141,25 @@ public final class PatternContainerGroupHelper {
         return recipeMachine == null ? Collections.emptyList() : Arrays.asList(recipeMachine.getAvailableRecipeTypes());
     }
 
-    private static NameParts getNameParts(MetaMachine displayMachine, String extraSuffix,
-                                          @Nullable GTRecipeType selectedRecipeType,
-                                          Collection<GTRecipeType> availableRecipeTypes,
-                                          boolean showAllRecipeTypes) {
-        return new NameParts(
-                getMachineName(displayMachine),
-                getMachineTier(displayMachine),
-                extraSuffix.isBlank() ? null : Component.literal(extraSuffix.strip()),
-                getRecipeTypeName(selectedRecipeType, availableRecipeTypes, showAllRecipeTypes),
-                hasMultipleDisplayableRecipeTypes(availableRecipeTypes));
+    private static MutableComponent buildName(MetaMachine displayMachine, String extraSuffix,
+                                              @Nullable GTRecipeType selectedRecipeType,
+                                              Collection<GTRecipeType> availableRecipeTypes,
+                                              boolean showAllRecipeTypes) {
+        MutableComponent machineName = getMachineName(displayMachine);
+        MutableComponent result = Component.empty().append(machineName);
+        appendPart(result, getMachineTier(displayMachine));
+        if (!extraSuffix.isBlank()) {
+            appendPart(result, Component.literal(extraSuffix.strip()));
+        }
+        appendPart(result, getRecipeTypeName(machineName.getString().toLowerCase(Locale.ROOT), selectedRecipeType,
+                availableRecipeTypes, showAllRecipeTypes));
+        return result;
+    }
+
+    private static void appendPart(MutableComponent result, @Nullable Component part) {
+        if (part != null) {
+            result.append(" ").append(part);
+        }
     }
 
     private static MutableComponent getMachineName(MetaMachine machine) {
@@ -209,39 +210,31 @@ public final class PatternContainerGroupHelper {
         return tierCasingMachine.getCasingTier(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
     }
 
-    private static @Nullable Component getRecipeTypeName(@Nullable GTRecipeType selectedRecipeType,
+    private static @Nullable Component getRecipeTypeName(String machineName,
+                                                         @Nullable GTRecipeType selectedRecipeType,
                                                          Collection<GTRecipeType> availableRecipeTypes,
                                                          boolean showAllRecipeTypes) {
-        List<GTRecipeType> displayableRecipeTypes = availableRecipeTypes.stream()
+        List<GTRecipeType> recipeTypes = availableRecipeTypes.stream()
                 .filter(PatternContainerGroupHelper::isDisplayableRecipeType)
                 .toList();
-        if (displayableRecipeTypes.isEmpty()) {
-            return null;
-        }
-        if (displayableRecipeTypes.size() == 1) {
-            return getRecipeTypeDisplayName(displayableRecipeTypes.get(0));
+        if (recipeTypes.size() > 1 && !showAllRecipeTypes) {
+            recipeTypes = isDisplayableRecipeType(selectedRecipeType) ? List.of(selectedRecipeType) : List.of();
         }
 
-        if (!showAllRecipeTypes) {
-            return isDisplayableRecipeType(selectedRecipeType) ?
-                    getRecipeTypeDisplayName(selectedRecipeType) : null;
-        }
-
-        MutableComponent result = Component.empty();
-        for (GTRecipeType recipeType : displayableRecipeTypes) {
-            if (!result.getString().isEmpty()) {
+        MutableComponent result = null;
+        for (GTRecipeType recipeType : recipeTypes) {
+            Component recipeTypeName = getRecipeTypeDisplayName(recipeType);
+            if (machineName.contains(recipeTypeName.getString().toLowerCase(Locale.ROOT))) {
+                continue;
+            }
+            if (result == null) {
+                result = Component.empty();
+            } else {
                 result.append("/");
             }
-            result.append(getRecipeTypeDisplayName(recipeType));
+            result.append(recipeTypeName);
         }
-        return result.getString().isEmpty() ? null : result;
-    }
-
-    private static boolean hasMultipleDisplayableRecipeTypes(Collection<GTRecipeType> availableRecipeTypes) {
-        return availableRecipeTypes.stream()
-                .filter(PatternContainerGroupHelper::isDisplayableRecipeType)
-                .limit(2)
-                .count() > 1;
+        return result;
     }
 
     private static Component getRecipeTypeDisplayName(GTRecipeType recipeType) {
@@ -261,102 +254,9 @@ public final class PatternContainerGroupHelper {
         return recipeMachine.getRecipeType();
     }
 
-    private static MutableComponent formatName(NameParts parts, String format) {
-        if (format == null || format.isBlank()) {
-            format = "%m";
-        }
-
-        MutableComponent result = Component.empty();
-        StringBuilder literal = new StringBuilder();
-        boolean appended = false;
-        boolean hasMachinePlaceholder = format.indexOf("%" + MACHINE_PLACEHOLDER) >= 0;
-        for (int index = 0; index < format.length(); index++) {
-            char current = format.charAt(index);
-            if (current != '%' || index + 1 >= format.length()) {
-                literal.append(current);
-                continue;
-            }
-
-            char placeholder = format.charAt(index + 1);
-            if (!isPlaceholder(placeholder)) {
-                literal.append(current).append(placeholder);
-                index++;
-                continue;
-            }
-
-            Component component = parts.get(placeholder);
-            if (component == null &&
-                    placeholder == RECIPE_TYPE_ALWAYS_PLACEHOLDER &&
-                    !hasMachinePlaceholder) {
-                component = parts.machine();
-            }
-            if (component != null && !component.getString().isBlank()) {
-                appendLiteral(result, literal.toString(), appended);
-                literal.setLength(0);
-                result.append(component);
-                appended = true;
-            }
-            index++;
-        }
-
-        if (appended) {
-            appendTrailingLiteral(result, literal.toString());
-            return result;
-        }
-        if (!literal.toString().isBlank()) {
-            return Component.literal(literal.toString().strip());
-        }
-        return parts.machine().copy();
-    }
-
-    private static boolean isPlaceholder(char placeholder) {
-        return placeholder == MACHINE_PLACEHOLDER ||
-                placeholder == TIER_PLACEHOLDER ||
-                placeholder == SUFFIX_PLACEHOLDER ||
-                placeholder == RECIPE_TYPE_MULTI_PLACEHOLDER ||
-                placeholder == RECIPE_TYPE_ALWAYS_PLACEHOLDER;
-    }
-
-    private static void appendLiteral(MutableComponent result, String literal, boolean hasPreviousField) {
-        if (literal.isEmpty()) {
-            return;
-        }
-        if (literal.isBlank()) {
-            if (hasPreviousField && !result.getString().endsWith(" ")) {
-                result.append(" ");
-            }
-            return;
-        }
-        result.append(hasPreviousField ? literal : literal.stripLeading());
-    }
-
-    private static void appendTrailingLiteral(MutableComponent result, String literal) {
-        if (!literal.isBlank()) {
-            result.append(literal.stripTrailing());
-        }
-    }
-
     private record MachineNameContext(MetaMachine displayMachine,
                                       @Nullable IRecipeLogicMachine recipeMachine,
                                       @Nullable GTRecipeType selectedRecipeType,
                                       boolean showAllRecipeTypes,
                                       List<Component> tooltip) {}
-
-    private record NameParts(Component machine,
-                             @Nullable Component tier,
-                             @Nullable Component suffix,
-                             @Nullable Component recipeType,
-                             boolean multipleRecipeTypes) {
-
-        private @Nullable Component get(char placeholder) {
-            return switch (placeholder) {
-                case MACHINE_PLACEHOLDER -> machine;
-                case TIER_PLACEHOLDER -> tier;
-                case SUFFIX_PLACEHOLDER -> suffix;
-                case RECIPE_TYPE_MULTI_PLACEHOLDER -> multipleRecipeTypes ? recipeType : null;
-                case RECIPE_TYPE_ALWAYS_PLACEHOLDER -> recipeType;
-                default -> null;
-            };
-        }
-    }
 }

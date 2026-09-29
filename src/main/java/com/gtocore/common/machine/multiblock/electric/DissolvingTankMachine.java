@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.machine.multiblock.FluidRenderUtils;
 
 import com.gtolib.api.machine.feature.multiblock.IFluidRendererMachine;
@@ -55,7 +56,7 @@ public final class DissolvingTankMachine extends ElectricMultiblockMachine imple
     @Nullable
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        if (getSubFormedAmount() > 0) {
+        if (hasStructurePart(StructureModuleKeys.DISSOLVING_TANK_EXTENSION)) {
             return GTORecipeModifiers.UPGRADE_PARALLELIZABLE_OVERCLOCK.applyModifier(this, unit, recipe);
         }
         var fluidList = recipe.fluidInputs;

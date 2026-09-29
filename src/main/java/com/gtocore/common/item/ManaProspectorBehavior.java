@@ -97,11 +97,9 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
         if (level.isClientSide()) {
             return InteractionResultHolder.pass(stack); // No action on client side
         }
-        if (!player.isShiftKeyDown()) {
-            if (getMana(stack) < CONSUMPTION_PER_CHUNK * costMultiplier * radius * radius) {
-                preCancelScan(player, stack);
-                return InteractionResultHolder.fail(stack); // Not enough mana to start scanning
-            }
+        if (getMana(stack) < CONSUMPTION_PER_CHUNK * costMultiplier * radius * radius) {
+            preCancelScan(player, stack);
+            return InteractionResultHolder.fail(stack); // Not enough mana to start scanning
         }
         return super.use(item, level, player, usedHand);
     }
@@ -200,8 +198,8 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
     public record Tier(int radius, ProspectorMode<?>[] modes, int maxMana, double manaCostMultiplier) {}
 
     public static final Tier ULV = new Tier(1, new ProspectorMode<?>[] { ProspectorMode.ORE }, 500000, 1); // half pool
-    public static final Tier LV = new Tier(2, new ProspectorMode<?>[] { ProspectorMode.ORE, ProspectorMode.FLUID }, 2000000, 0.8); // 2
+    public static final Tier LV = new Tier(4, new ProspectorMode<?>[] { ProspectorMode.ORE, ProspectorMode.FLUID }, 2000000, 0.8); // 2
     // pools
-    public static final Tier HV = new Tier(3, new ProspectorMode<?>[] { ProspectorMode.ORE, ProspectorMode.FLUID, ProspectorMode.BEDROCK_ORE }, 8000000, 0.6); // 8
+    public static final Tier HV = new Tier(5, new ProspectorMode<?>[] { ProspectorMode.ORE, ProspectorMode.FLUID, ProspectorMode.BEDROCK_ORE }, 8000000, 0.6); // 8
     // pools
 }

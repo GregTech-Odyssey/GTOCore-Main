@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import com.gtocore.api.gui.overview.OverviewWidget;
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.GTORecipeDataKeys;
@@ -7,25 +8,33 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.IWirelessDimensionProvider;
 import com.gtolib.api.machine.trait.TierCasingTrait;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.TierDataKey;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
+import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -42,7 +51,9 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.DistilledWater;
 import static com.gtocore.common.data.GTOMaterials.FlocculationWasteSolution;
 import static com.gtocore.data.techtree.MachinesNode.LaserSpaceEngineering;
 
-public class Core extends AbstractSpaceStation implements ILargeSpaceStationMachine, IWirelessDimensionProvider {
+public class Core extends AbstractSpaceStation implements ILargeSpaceStationMachine, IWirelessDimensionProvider, IMachineSubWindows {
+
+    private static final String WINDOW_OVERVIEW = "station_overview";
 
     @Getter
     private final Map<Class<? extends ISpaceServiceMachine>, ISpaceServiceMachine> serviceMachineMap = new Reference2ObjectOpenHashMap<>();
@@ -127,6 +138,61 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
         list.add(Component.translatable("gtocore.machine.spacestation.module_count", subMachinesFlat.size()));
     }
 
+    @Override
+    public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        configuratorPanel.attachConfigurators(OverviewWidget.button(this, WINDOW_OVERVIEW, getDefinition(), StationOverviewAdapter.INSTANCE));
+    }
+
+    @Override
+    public @Nullable ModularUI createSubWindow(String key, Player player) {
+        if (!WINDOW_OVERVIEW.equals(key)) return null;
+        return new ModularUI(this, player).widget(new OverviewWidget(this, StationOverviewAdapter.INSTANCE));
+    }
+
+    Set<ILargeSpaceStationMachine> getModules() {
+        return subMachinesFlat;
+    }
+
+    boolean isInSpace() {
+        return PlanetApi.API.isSpace(getLevel());
+    }
+
+    GTRecipeDefinition buildCycleRecipe() {
+        long EUt = getEUt();
+        for (ILargeSpaceStationMachine machine : subMachinesFlat) {
+            if (machine.isFormed()) EUt += machine.getEUt();
+        }
+        int shares = subMachinesFlat.size() + 1;
+        return inputFluids(getRecipeBuilder().duration(20).EUt(EUt), shares).tier(1).outputFluids(FlocculationWasteSolution.getFluid(30 * shares)).build();
+    }
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return CoreFlowPage.create(this, widget);
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(0, DetailsTab.display(this));
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
+    }
+
+    @Override
+    public boolean windowHasPlayerInventory() {
+        return true;
+    }
+
+    @Override
+    public WindowAnchor windowAnchor() {
+        return WindowAnchor.CENTER;
+    }
+
     private void removeAllSubMachines() {
         for (ILargeSpaceStationMachine m : subMachinesFlat) {
             if (m != this && m.getRoot() == this) {
@@ -159,39 +225,24 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     }
 
     @Override
-    public Set<BlockPos> getModulePositions() {
-        var pos = getPos();
-        var fFacing = getFrontFacing();
-        var uFacing = RelativeDirection.UP.getRelative(fFacing, getUpwardsFacing(), false);
-        var thirdAxis = RelativeDirection.RIGHT.getRelative(fFacing, getUpwardsFacing(), false);
-        return Set.of(pos.relative(fFacing, 38).relative(uFacing, 6).relative(thirdAxis, 2),
-                pos.relative(fFacing, 38).relative(uFacing, 6).relative(thirdAxis.getOpposite(), 2),
-                pos.relative(fFacing, 38).relative(uFacing, 4),
-                pos.relative(fFacing, 38).relative(uFacing, 8));
-    }
-
-    @Override
     public ConnectType getConnectType() {
         return ConnectType.CORE;
     }
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (!PlanetApi.API.isSpace(getLevel()))
+        if (!PlanetApi.API.isSpace(getLevel())) {
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
             return null;
+        }
         if (dirty) {
             refreshModules();
             dirty = false;
         }
-        long EUt = getEUt();
         for (ILargeSpaceStationMachine machine : subMachinesFlat) {
-            if (machine.isFormed()) EUt += machine.getEUt();
             if (machine instanceof IRecipeLogicMachine r) r.getRecipeLogic().updateTickSubscription();
         }
-        return inputFluids(getRecipeBuilder().duration(20).EUt(EUt), subMachinesFlat.size() + 1)
-                .tier(1)
-                .outputFluids(FlocculationWasteSolution.getFluid(30 * (subMachinesFlat.size() + 1)))
-                .build();
+        return buildCycleRecipe();
     }
 
     @Override

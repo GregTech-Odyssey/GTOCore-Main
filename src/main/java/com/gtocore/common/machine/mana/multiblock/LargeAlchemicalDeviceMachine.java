@@ -2,7 +2,11 @@ package com.gtocore.common.machine.mana.multiblock;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -19,33 +23,33 @@ import java.util.List;
 import static com.gtolib.utils.MachineUtils.getHatchParallel;
 import static com.lowdragmc.lowdraglib.LDLib.random;
 
+@DataGeneratorScanned
 public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
+
+    @RegisterLanguage(cn = "嬗变扩展室", en = "Transmutation Extension Chamber")
+    public static final String EXTENSION_NAME = "gtocore.multiblock.large_alchemical_device.extension";
+    @RegisterLanguage(cn = "搭建后概率产出按完全匹配计算，配方耗时倍率由 0.4 降至 0.01", en = "When built, chanced outputs are always treated as a perfect match, and the recipe duration multiplier drops from 0.4 to 0.01")
+    public static final String EXTENSION_DESC = "gtocore.multiblock.large_alchemical_device.extension.desc";
+    public static final ParamKey EXTENSION = ParamKey.of(EXTENSION_NAME, EXTENSION_DESC);
 
     @SaveToDisk
     private final int[] probabilityParams = { 10000, 10000, 10000 };
 
     private final int[] currentRecipeParams = new int[3];
 
-    private boolean perfectProbability = false;
-
-    private double timeReduction = 0.4;
-
     public LargeAlchemicalDeviceMachine(MetaMachineBlockEntity holder) {
         super(holder);
     }
 
-    @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
-        perfectProbability = (getSubFormedAmount() == 1);
-        timeReduction = (getSubFormedAmount() == 1) ? 0.01 : 0.4;
+    private double timeReduction() {
+        return hasStructurePart(EXTENSION) ? 0.01 : 0.4;
     }
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
         boolean param = false;
         long parallels = getHatchParallel(this);
-        recipe.duration = Math.max(1, (int) (recipe.duration * timeReduction));
+        recipe.duration = Math.max(1, (int) (recipe.duration * timeReduction()));
         for (int i = 0; i < 3; i++) {
             var key = GTORecipeDataKeys.PARAM[i];
             param = param || recipe.data.containsKey(key);
@@ -81,7 +85,7 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
      * 计算匹配率
      */
     private int calculateMatchRate(int[] recipeParams) {
-        if (perfectProbability) return 10000;
+        if (hasStructurePart(EXTENSION)) return 10000;
         int distance = calculateDistance(probabilityParams, recipeParams);
 
         if (distance <= 0) return 10000;
@@ -141,8 +145,8 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", timeReduction));
-        if (perfectProbability) textList.add(Component.translatable("gtocore.machine.alchemical_device.2"));
+        textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", timeReduction()));
+        if (hasStructurePart(EXTENSION)) textList.add(Component.translatable("gtocore.machine.alchemical_device.2"));
         else textList.add(Component.translatable("gtocore.machine.alchemical_device.1"));
     }
 }

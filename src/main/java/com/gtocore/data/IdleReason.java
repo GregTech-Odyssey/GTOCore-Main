@@ -30,6 +30,8 @@ public final class IdleReason extends com.gtolib.api.recipe.IdleReason {
 
     public static final IdleReason MUFFLER_NOT_SUPPORTED = new IdleReason("gtocore.idle_reason.muffler_not_supported", "机器电压等级不支持高级消声仓", "The machine voltage tier does not support advanced muffler");
 
+    public static final IdleReason MANA_CONDENSER_FORM = new IdleReason("gtocore.idle_reason.mana_condenser_form", "阵列形态与所在维度不符", "The array form does not match the current dimension");
+
     public IdleReason(String key, String cn, String en) {
         super(key, en, cn);
     }

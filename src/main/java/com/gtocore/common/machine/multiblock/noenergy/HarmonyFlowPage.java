@@ -8,6 +8,10 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
@@ -212,6 +216,8 @@ public final class HarmonyFlowPage {
     private static final String LANG_INPUT_RULE = "gtocore.machine.eye_of_harmony.flow.input_rule";
     @RegisterLanguage(cn = "待产出", en = "Standby")
     private static final String LANG_OUTPUT_IDLE = "gtocore.machine.eye_of_harmony.flow.output_idle";
+    @RegisterLanguage(cn = "结构中没有输出仓，产物将全部销毁。", en = "The structure has no output hatch; all products will be voided.")
+    private static final String LANG_OUTPUT_VOID_ALL_DESC = "gtocore.machine.eye_of_harmony.flow.output_void_all_desc";
 
     private HarmonyFlowPage() {}
 
@@ -329,6 +335,12 @@ public final class HarmonyFlowPage {
 
     private static Component gray(Component component) {
         return component.copy().withStyle(ChatFormatting.GRAY);
+    }
+
+    private static boolean voidsAllOutputs(IVoidable machine, @Nullable GTRecipe recipe) {
+        boolean items = recipe == null || !recipe.itemOutputs.isEmpty();
+        boolean fluids = recipe == null || !recipe.fluidOutputs.isEmpty();
+        return (!items || machine.canVoidRecipeOutputs(ItemRecipeInfo.INSTANCE)) && (!fluids || machine.canVoidRecipeOutputs(FluidRecipeInfo.INSTANCE));
     }
 
     private static Component sentence(IssueView view, @Nullable String description) {
@@ -689,13 +701,19 @@ public final class HarmonyFlowPage {
         private void refreshOutput(boolean formed, boolean working, @Nullable Component reason) {
             int units = formed ? machine.getOutputUnits().size() : 0;
             boolean full = reason == IdleReason.OUTPUT_FULL.reason() || reason == IdleReason.INSUFFICIENT_OUT.reason();
+            boolean voiding = voidsAllOutputs(machine, machine.getRecipeLogic().getLastRecipe());
+            String description = null;
             if (!formed) outputView = RecipeIssue.OFFLINE.view();
-            else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
+            else if (voiding && units == 0) {
+                outputView = RecipeIssue.OUTPUT_VOIDED.view();
+                description = LANG_OUTPUT_VOID_ALL_DESC;
+            } else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
+            else if (voiding) outputView = working ? RecipeIssue.OUTPUT_VOID_OVERFLOW_ACTIVE.view() : RecipeIssue.OUTPUT_VOID_OVERFLOW.view();
             else if (working) outputView = RecipeIssue.OUTPUT_ACTIVE.view();
             else if (full) outputView = RecipeIssue.OUTPUT_FULL.view();
             else outputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
             outputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, null));
+            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, description));
         }
 
         private void refreshOverclock(boolean formed, int oc, BigInteger minimum) {

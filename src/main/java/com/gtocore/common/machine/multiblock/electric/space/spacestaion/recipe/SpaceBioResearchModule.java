@@ -9,27 +9,22 @@ import com.gtocore.common.machine.trait.RadioactivityTrait;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
-import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
-import com.google.common.collect.ImmutableSet;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Set;
 
 @DataGeneratorScanned
 public class SpaceBioResearchModule extends RecipeExtension implements IResearchPointsOperation {
@@ -48,7 +43,7 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!isWorkspaceReady()) {
-            setIdleReason(IdleReason.CANNOT_WORK_IN_SPACE);
+            setIdleReason(this::getWorkspaceNotReadyReason);
             return null;
         }
         if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
@@ -57,33 +52,12 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
         }
         if (recipe.definition.recipeType == GTORecipeTypes.BIO_RESEARCH_RECIPES) {
             if (!isWorkspaceReady()) {
-                setIdleReason(IdleReason.CANNOT_WORK_IN_SPACE);
+                setIdleReason(this::getWorkspaceNotReadyReason);
                 return null;
             }
             return RecipeModifier.OVERCLOCKING.applyModifier(this, unit, recipe);
         }
         return super.getRealRecipe(unit, recipe);
-    }
-
-    @Override
-    public Set<BlockPos> getModulePositions() {
-        var pos = getPos();
-        var fFacing = getFrontFacing();
-        var uFacing = getUpwardsFacing();
-        boolean isFlipped = isFlipped();
-        var hallwayCenter = pos.relative(fFacing, 2).relative(RelativeDirection.LEFT.getRelative(fFacing, uFacing, isFlipped), 23);
-        ImmutableSet.Builder<BlockPos> builder = ImmutableSet.builder();
-        for (RelativeDirection dir : RelativeDirection.values()) {
-            if (dir == RelativeDirection.RIGHT || dir == RelativeDirection.LEFT) continue;
-            var newFFacing = dir.getRelative(fFacing, uFacing, isFlipped);
-            var newUFacing = RelativeDirection.UP.getRelative(newFFacing, uFacing, isFlipped);
-            var shiftedPos = hallwayCenter.relative(newFFacing, 12);
-            builder.add(shiftedPos.relative(RelativeDirection.UP.getRelative(newFFacing, newUFacing, isFlipped), 2));
-            builder.add(shiftedPos.relative(RelativeDirection.DOWN.getRelative(newFFacing, newUFacing, isFlipped), 2));
-            builder.add(shiftedPos.relative(RelativeDirection.LEFT.getRelative(newFFacing, newUFacing, isFlipped), 2));
-            builder.add(shiftedPos.relative(RelativeDirection.RIGHT.getRelative(newFFacing, newUFacing, isFlipped), 2));
-        }
-        return builder.build();
     }
 
     @Override

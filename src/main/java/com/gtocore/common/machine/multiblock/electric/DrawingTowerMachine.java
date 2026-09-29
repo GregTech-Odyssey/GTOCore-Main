@@ -1,13 +1,15 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.SpoolHatchPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.CoilMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -24,7 +26,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@DataGeneratorScanned
 public final class DrawingTowerMachine extends CoilMultiblockMachine {
+
+    @RegisterLanguage(cn = "拉丝段层数", en = "Drawing Layers")
+    public static final String LAYERS_NAME = "gtocore.multiblock.drawing_tower.layers";
+    @RegisterLanguage(cn = "塔基与塔顶之间的拉丝段层数", en = "Number of drawing layers between the base and the top")
+    public static final String LAYERS_DESC = "gtocore.multiblock.drawing_tower.layers.desc";
+    public static final ParamKey LAYERS = ParamKey.of(LAYERS_NAME, LAYERS_DESC);
 
     private SpoolHatchPartMachine spoolHatchPartMachine;
 
@@ -49,10 +58,7 @@ public final class DrawingTowerMachine extends CoilMultiblockMachine {
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        var container = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.LAMINATED_GLASS);
-        if (container != null) {
-            height = container;
-        }
+        height = structureParam(LAYERS);
         reduction = Math.max(0.00001, 2 / Math.pow(1.2, ((height / 8D) * ((getTemperature() - 5000D) / 900D))));
         parallels = (getTemperature() <= 10000) ? 1 : (int) Math.round(Math.log(getTemperature() - 9600) / Math.log(1.08) - 84);
     }

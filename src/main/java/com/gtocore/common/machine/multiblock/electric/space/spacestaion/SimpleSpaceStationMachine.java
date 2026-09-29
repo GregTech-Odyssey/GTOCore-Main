@@ -1,14 +1,18 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import com.gtocore.api.gui.overview.OverviewWidget;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.forge.ForgeClientEvent;
 
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -22,8 +26,10 @@ import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +45,9 @@ import static com.gregtechceu.gtceu.api.GTValues.VA;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.DistilledWater;
 import static com.gtocore.common.data.GTOMaterials.FlocculationWasteSolution;
 
-public class SimpleSpaceStationMachine extends AbstractSpaceStation implements ICustomRecipeLogicHolder {
+public class SimpleSpaceStationMachine extends AbstractSpaceStation implements ICustomRecipeLogicHolder, IMachineSubWindows {
+
+    private static final String WINDOW_OVERVIEW = "overview";
 
     @Nullable
     private Set<BlockPos> outputDistilledWaterHatches;
@@ -152,7 +160,10 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (!isInSpace()) return null;
+        if (!isInSpace()) {
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
+            return null;
+        }
         return roundRecipe();
     }
 
@@ -196,6 +207,18 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
         return SpaceStationFlowPage.create(this, widget);
+    }
+
+    @Override
+    public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        configuratorPanel.attachConfigurators(OverviewWidget.button(this, WINDOW_OVERVIEW, getDefinition(), ExplorerOverviewAdapter.INSTANCE));
+    }
+
+    @Override
+    public @Nullable ModularUI createSubWindow(String key, Player player) {
+        if (!WINDOW_OVERVIEW.equals(key)) return null;
+        return new ModularUI(this, player).widget(new OverviewWidget(this, ExplorerOverviewAdapter.INSTANCE));
     }
 
     @Override

@@ -3,10 +3,10 @@ package com.gtocore.integration.emi;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
 import com.gtolib.api.ae2.IPatterEncodingTermMenu;
+import com.gtolib.api.ae2.me2in1.ME2in1Helper;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.ClientUtil;
 
-import com.gregtechceu.gtceu.integration.emi.recipe.Ae2PatternBuilder;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
@@ -17,6 +17,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.emi.EmiStackHelper;
@@ -108,19 +109,11 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
     }
 
     private static List<Component> getCatalystTooltip(EmiRecipe emiRecipe) {
-        if (emiRecipe instanceof MultiblockInfoEmiRecipe recipe) {
-            if (recipe.definition.getSubPatternFactory() != null) {
-                return List.of(
-                        Component.translatable("gtocore.ae.appeng.me2in1.emi.multiblock.sub").withStyle(ChatFormatting.GREEN),
-                        Component.translatable("gtocore.ae.appeng.me2in1.emi.multiblock.sub.all").withStyle(ChatFormatting.DARK_GREEN));
-            }
-            return Collections.emptyList();
-        } else {
-            return List.of(
-                    Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst").withStyle(ChatFormatting.AQUA),
-                    Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst.fill").withStyle(ChatFormatting.GREEN),
-                    Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst.virtual").withStyle(ChatFormatting.DARK_GREEN));
-        }
+        if (emiRecipe instanceof MultiblockInfoEmiRecipe) return Collections.emptyList();
+        return List.of(
+                Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst").withStyle(ChatFormatting.AQUA),
+                Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst.fill").withStyle(ChatFormatting.GREEN),
+                Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst.virtual").withStyle(ChatFormatting.DARK_GREEN));
     }
 
     private static boolean isCraftable(Set<AEKey> craftableKeys, EmiIngredient ingredient) {
@@ -139,15 +132,9 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
     public boolean craft(EmiRecipe recipe, EmiCraftContext<T> context) {
         T menu = context.getScreenHandler();
         if (recipe instanceof MultiblockInfoEmiRecipe multiblock) {
-            var builder = multiblock.createPatternBuilder();
-            if (builder != null) {
-                Ae2PatternBuilder.open(menu, builder, multiblock.getPatternTitle(), ofOutputs(recipe), () -> {
-                    ((IPatterEncodingTermMenu) menu).gtolib$addUUID(ClientUtil.getUUID());
-                    ((IPatterEncodingTermMenu) menu).gtolib$addRecipe("");
-                });
-                if (Minecraft.getInstance().screen instanceof RecipeScreen e) {
-                    e.onClose();
-                }
+            var outputs = List.of(new GenericStack(AEItemKey.of(multiblock.definition.asStack()), 1));
+            if (ME2in1Helper.openStructureEncoder(menu, menu.getClientRepo(), menu.getProcessingInputSlots().length, multiblock.definition,
+                    context.getScreen(), inputs -> EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs))) {
                 return true;
             }
         }

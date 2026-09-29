@@ -1,30 +1,23 @@
 package com.gtocore.integration.emi.multipage;
 
-import com.gtocore.client.gui.PatternPreview;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.OrderItem;
 
-import com.gtolib.GTOCore;
-import com.gtolib.api.machine.MultiblockDefinition;
-import com.gtolib.utils.FileUtils;
-import com.gtolib.utils.ItemUtils;
-import com.gtolib.utils.iostream.IOStreamDecoder;
-import com.gtolib.utils.iostream.IOStreamEncoder;
-
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
-import com.gregtechceu.gtceu.uiwidgets.patternbuilder.PatternBuilderModel;
-import com.gregtechceu.gtceu.utils.GTUtil;
+import com.gregtechceu.gtceu.integration.emi.multipage.StructurePreviewTrigger;
+import com.gregtechceu.gtceu.uiwidgets.structure.StructurePlans;
+import com.gregtechceu.gtceu.uiwidgets.structure.StructurePreviewWidget;
 
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fml.loading.FMLLoader;
 
 import com.lowdragmc.lowdraglib.emi.ModularEmiRecipe;
 import com.lowdragmc.lowdraglib.emi.ModularForegroundRenderWidget;
@@ -37,12 +30,13 @@ import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.WidgetHolder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> {
 
@@ -54,111 +48,76 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> {
         }
     };
 
-    private static final Widget MULTIBLOCK = new Widget(0, 0, 160, 160);
+    private static final Widget STRUCTURE = new Widget(0, 0, StructurePreviewWidget.WIDTH, StructurePreviewWidget.HEIGHT);
 
     public final MultiblockMachineDefinition definition;
-    public int i;
-    public PatternPreview.MBPattern[] patterns = null;
+    private volatile boolean inputsCollected;
 
     public MultiblockInfoEmiRecipe(MultiblockMachineDefinition definition) {
-        super(() -> MULTIBLOCK);
+        super(() -> STRUCTURE);
         this.definition = definition;
-        widget = () -> PatternPreview.getPatternWidget(this, definition);
-        Consumer<Collection<Item>> action = p -> inputs.add(EmiIngredient.of(p.stream().filter(Objects::nonNull).map(EmiStack::of).toList(), 1));
-        var file = new File(GTOCore.getFile(), "cache/multiblock/" + definition.getName() + "_parts");
-        if (FMLLoader.isProduction() && file.exists() && file.canRead()) {
-            FileUtils.loadFromFile(file, IOStreamDecoder.list(IOStreamDecoder.list(ItemUtils.IO_CODEC))).forEach(action);
-        } else {
-            Collection<Collection<Item>> parts = new ObjectOpenHashSet<>();
-            var patterns = definition.getPatternFactory();
-            var subPatterns = definition.getSubPatternFactory();
-            if (subPatterns != null) patterns = ArrayUtils.addAll(patterns, subPatterns);
-            for (var p : patterns) {
-                var pattern = p.get();
-                if (pattern != null && pattern.predicates != null) {
-                    for (var predicate : pattern.predicates) {
-                        ArrayList<SimplePredicate> predicates = new ArrayList<>(predicate.common);
-                        predicates.addAll(predicate.limited);
-                        for (SimplePredicate simplePredicate : predicates) {
-                            if (simplePredicate == null || simplePredicate.candidates == null) continue;
-                            Set<Item> items = new ReferenceOpenHashSet<>();
-                            for (var itemStack : simplePredicate.getCandidates()) {
-                                var item = itemStack.getItem();
-                                if (item == Items.AIR || item == Items.BARRIER) continue;
-                                items.add(item);
-                            }
-                            if (items.size() > 1) parts.add(items);
-                        }
-                    }
-                }
-            }
-            if (FMLLoader.isProduction()) FileUtils.saveToFile(parts, file, IOStreamEncoder.collection(IOStreamEncoder.collection(ItemUtils.IO_CODEC)));
-            parts.forEach(action);
-        }
-        MultiblockDefinition.of(definition).getPatterns()[0].parts().forEach(i -> super.inputs.add(EmiStack.of(i)));
-    }
-
-    public List<EmiIngredient> getInputs(int i) {
-        if (patterns != null && i >= 0 && patterns.length > i) {
-            return patterns[i].parts.stream()
-                    .map(stack -> (EmiIngredient) EmiStack.of(stack))
-                    .toList();
-        } else {
-            return super.getInputs();
-        }
+        widget = () -> {
+            var structure = StructurePattern.of(definition);
+            return structure != null ? new StructurePreviewWidget(definition, structure, () -> StructurePreviewTrigger.onShown(definition, structure)) :
+                    new Widget(0, 0, StructurePreviewWidget.WIDTH, StructurePreviewWidget.HEIGHT);
+        };
     }
 
     @Override
     public List<EmiIngredient> getInputs() {
-        if (i > 0) {
-            return getInputs(i);
+        if (!inputsCollected) {
+            synchronized (this) {
+                if (!inputsCollected) {
+                    collectInputs();
+                    inputsCollected = true;
+                }
+            }
         }
-        return super.getInputs();
+        return inputs;
     }
 
-    @Nullable
-    public PatternBuilderModel.Builder createPatternBuilder() {
-        if (patterns == null || i < 0 || i >= patterns.length) return null;
-        int from = i;
-        boolean withMain = false;
-        if (i > 0 && definition.getSubPatternFactory() != null) {
-            if (GTUtil.isCtrlDown()) from = 0;
-            else withMain = GTUtil.isShiftDown();
+    private void collectInputs() {
+        var pattern = definition.getPatternFactory()[0].get();
+        if (pattern.predicates != null) {
+            Set<Set<Item>> groups = new ObjectOpenHashSet<>();
+            for (var predicate : pattern.predicates) {
+                addGroups(predicate.common, groups);
+                addGroups(predicate.limited, groups);
+            }
+            for (var group : groups) inputs.add(EmiIngredient.of(group.stream().map(EmiStack::of).toList(), 1));
         }
-        var builder = PatternBuilderModel.builder(definition.asStack()).abilityNames(MultiblockInfoEmiRecipe::abilityName);
-        if (withMain) {
-            if (patterns[0] == null) return null;
-            patterns[0].forEachCell(builder::addCell);
+        var structure = StructurePattern.of(definition);
+        var layout = structure == null ? null : structure.layout(structure.defaultValues());
+        if (layout == null) return;
+        var controller = definition.asItem();
+        var parts = new ArrayList<>(StructurePlans.preview(definition, layout).parts());
+        parts.sort(Comparator.<ItemStack>comparingInt(stack -> stack.getItem() == controller ? 0 : hasBlockEntity(stack.getItem()) ? 1 : 2)
+                .thenComparingInt(stack -> -stack.getCount()));
+        for (var stack : parts) {
+            if (!stack.isEmpty()) inputs.add(EmiStack.of(stack));
         }
-        for (int index = from; index <= i; index++) {
-            if (patterns[index] == null) return null;
-            patterns[index].forEachCell(builder::addCell);
-        }
-        return builder;
     }
 
-    public Component getPatternTitle() {
-        Component title = definition.asStack().getHoverName();
-        if (i > 0) title = Component.empty().append(title).append(" ").append(Component.translatable("gtocore.shape", i));
-        return title;
+    private static void addGroups(List<SimplePredicate> predicates, Set<Set<Item>> groups) {
+        for (var simplePredicate : predicates) {
+            if (simplePredicate == null || simplePredicate.candidates == null) continue;
+            Set<Item> items = new ReferenceOpenHashSet<>();
+            for (var itemStack : simplePredicate.getCandidates()) {
+                var item = itemStack.getItem();
+                if (item == Items.AIR || item == Items.BARRIER) continue;
+                items.add(item);
+            }
+            if (items.size() > 1) groups.add(items);
+        }
     }
 
-    @Nullable
-    private static Component abilityName(PartAbility ability) {
-        var key = "gtocore.part_ability." + ability.getName();
-        return I18n.exists(key) ? Component.translatable(key) : null;
+    private static boolean hasBlockEntity(Item item) {
+        return item instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().hasBlockEntity();
     }
 
     @Override
     public List<EmiStack> getOutputs() {
-        if (definition != null) {
-            var stack = definition.asStack();
-            if (i > 0) stack.setHoverName(Component.empty()
-                    .append(stack.getDisplayName()).append(" ")
-                    .append(Component.translatable("gtocore.shape", i)));
-            return List.of(EmiStack.of(OrderItem.setTarget(GTOItems.ORDER.asStack(), stack)));
-        }
-        return super.getOutputs();
+        return List.of(EmiStack.of(OrderItem.setTarget(GTOItems.ORDER.asStack(), definition.asStack())));
     }
 
     @Override
@@ -197,8 +156,8 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> {
             TEMP_CACHE = null;
         }
 
-        PatternPreview widget = (PatternPreview) this.widget.get();
-        ModularWrapper<PatternPreview> modular = new ModularWrapper<>(widget);
+        var widget = this.widget.get();
+        var modular = new ModularWrapper<>(widget);
         modular.setRecipeWidget(0, 0);
         widgets.add(new CustomModularEmiRecipe(modular, Collections.emptyList()));
         TEMP_CACHE = modular;

@@ -2,6 +2,8 @@ package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.common.data.GTOTickTimeMonitors;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.trait.EnergyContainerTrait;
 import com.gtolib.api.recipe.IdleReason;
@@ -10,6 +12,8 @@ import com.gtolib.utils.MachineUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -34,14 +38,47 @@ import static com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionRea
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@DataGeneratorScanned
 public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMachine {
 
+    public static final PortKey HIGH_ENERGY_OUT = PortKey.of("high_energy_out");
+    public static final PortKey OVERCLOCK_OUT = PortKey.of("overclock_out");
+
+    @RegisterLanguage(cn = "一级高能模块", en = "High-Energy Module I")
+    private static final String HIGH_ENERGY_1_NAME = "gtocore.multiblock.kuangbiao_one.high_energy_1";
+    @RegisterLanguage(cn = "搭建后反应堆等级提升一级、热容量翻倍；二级高能模块搭建在此模块上", en = "Raises the reactor tier by one and doubles its heat capacity; the High-Energy Module II is built onto this module")
+    private static final String HIGH_ENERGY_1_DESC = "gtocore.multiblock.kuangbiao_one.high_energy_1.desc";
+    @RegisterLanguage(cn = "二级高能模块", en = "High-Energy Module II")
+    private static final String HIGH_ENERGY_2_NAME = "gtocore.multiblock.kuangbiao_one.high_energy_2";
+    @RegisterLanguage(cn = "搭建后反应堆等级再提升一级、热容量翻倍；三级高能模块搭建在此模块上", en = "Raises the reactor tier by one more and doubles its heat capacity; the High-Energy Module III is built onto this module")
+    private static final String HIGH_ENERGY_2_DESC = "gtocore.multiblock.kuangbiao_one.high_energy_2.desc";
+    @RegisterLanguage(cn = "三级高能模块", en = "High-Energy Module III")
+    private static final String HIGH_ENERGY_3_NAME = "gtocore.multiblock.kuangbiao_one.high_energy_3";
+    @RegisterLanguage(cn = "搭建后反应堆等级再提升一级、热容量翻倍；四级高能模块搭建在此模块上", en = "Raises the reactor tier by one more and doubles its heat capacity; the High-Energy Module IV is built onto this module")
+    private static final String HIGH_ENERGY_3_DESC = "gtocore.multiblock.kuangbiao_one.high_energy_3.desc";
+    @RegisterLanguage(cn = "四级高能模块", en = "High-Energy Module IV")
+    private static final String HIGH_ENERGY_4_NAME = "gtocore.multiblock.kuangbiao_one.high_energy_4";
+    @RegisterLanguage(cn = "搭建后反应堆等级再提升一级、热容量翻倍，并显示额外光环", en = "Raises the reactor tier by one more, doubles its heat capacity and shows additional light rings")
+    private static final String HIGH_ENERGY_4_DESC = "gtocore.multiblock.kuangbiao_one.high_energy_4.desc";
+    @RegisterLanguage(cn = "超频模块", en = "Overclock Module")
+    private static final String OVERCLOCK_NAME = "gtocore.multiblock.kuangbiao_one.overclock";
+    @RegisterLanguage(cn = "搭建后可在此模块上安装超频仓与线程仓", en = "Allows Overclock Hatches and Thread Hatches to be installed on this module")
+    private static final String OVERCLOCK_DESC = "gtocore.multiblock.kuangbiao_one.overclock.desc";
+
+    public static final ParamKey HIGH_ENERGY_1 = ParamKey.of(HIGH_ENERGY_1_NAME, HIGH_ENERGY_1_DESC);
+    public static final ParamKey HIGH_ENERGY_2 = ParamKey.of(HIGH_ENERGY_2_NAME, HIGH_ENERGY_2_DESC);
+    public static final ParamKey HIGH_ENERGY_3 = ParamKey.of(HIGH_ENERGY_3_NAME, HIGH_ENERGY_3_DESC);
+    public static final ParamKey HIGH_ENERGY_4 = ParamKey.of(HIGH_ENERGY_4_NAME, HIGH_ENERGY_4_DESC);
+    public static final ParamKey OVERCLOCK_MODULE = ParamKey.of(OVERCLOCK_NAME, OVERCLOCK_DESC);
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::updateHeat);
 
     @Getter
     @SyncToClient
     private int color = -1;
+    @Getter
+    @SyncToClient
+    private int highEnergyModules;
     private static final int tier = LuV;
     @SaveToDisk(defaultValue = "0")
     private long heat = 0;
@@ -66,28 +103,16 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
         for (var handler : getCapabilitiesFlat(IO.IN, IEnergyContainer.class)) {
             size++;
         }
-        var bonusTier = calculateBonusTier();
-        energyContainer.resetBasicInfo(calculateEnergyStorageFactor(tier + bonusTier, size));
+        var assembly = getAssembly();
+        highEnergyModules = assembly == null ? 0 : assembly.get(HIGH_ENERGY_1) + assembly.get(HIGH_ENERGY_2) + assembly.get(HIGH_ENERGY_3) + assembly.get(HIGH_ENERGY_4);
+        energyContainer.resetBasicInfo(calculateEnergyStorageFactor(tier + highEnergyModules, size));
         preHeatSubs.initialize(getLevel());
-    }
-
-    private int calculateBonusTier() {
-        if (formeds == null || getSubFormed().length <= 1) {
-            return 0;
-        }
-        int bonusTier;
-        for (bonusTier = 0; bonusTier < getSubFormed().length - 1; bonusTier++) {
-            // the last index is for special uses, ignore it
-            if (!getSubFormed()[bonusTier]) {
-                break;
-            }
-        }
-        return bonusTier;
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
+        highEnergyModules = 0;
         heat = 0;
         energyContainer.resetBasicInfo(0);
         energyContainer.setEnergyStored(0);
@@ -165,6 +190,6 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
 
     @Override
     public int getTier() {
-        return tier + calculateBonusTier();
+        return tier + highEnergyModules;
     }
 }

@@ -28,7 +28,6 @@ import com.gtocore.integration.emi.SpaceModuleGTEMIRecipe;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.machine.MultiblockDefinition;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -193,7 +192,6 @@ public final class Data {
         }
         GTRegistries.RECIPE_TYPES.values().forEach(t -> t.recipes.values().forEach(recipe -> recipe.recipeCategory.addRecipe(recipe)));
         if (GTCEu.Mods.isEMILoaded()) {
-            MultiblockDefinition.init();
             long time = System.currentTimeMillis();
             EmiConfig.logUntranslatedTags = false;
             EmiConfig.workstationLocation = SidebarSide.LEFT;

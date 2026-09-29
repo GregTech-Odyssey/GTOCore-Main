@@ -41,8 +41,20 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
             var module = (SpaceElevatorModuleMachine) m;
             var controller = module.getController();
             if (controller == null || module.getSpaceElevatorTier() <= 7) return 0;
-            return (long) Math.pow(module.isSuper() ? 8 : 4, controller.getCasingTier(GTORecipeDataKeys.POWER_MODULE_TIER) - 1);
+            return parallelLimit(module.isSuper(), controller.getCasingTier(GTORecipeDataKeys.POWER_MODULE_TIER));
         });
+    }
+
+    public static int parallelBase(boolean road) {
+        return road ? 8 : 4;
+    }
+
+    public static long parallelLimit(boolean road, int powerModuleTier) {
+        return (long) Math.pow(parallelBase(road), powerModuleTier - 1);
+    }
+
+    public static double durationMultiplier(double linkMultiplier, int elevatorTier, boolean road) {
+        return Math.sqrt(linkMultiplier / ((elevatorTier - GTValues.ZPM) * (road ? 2 : 1)));
     }
 
     SpaceElevatorModuleMachine(MetaMachineBlockEntity holder, boolean powerModuleTier, ToLongFunction<CustomParallelMultiblockMachine> getParallel) {
@@ -102,6 +114,6 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
         if (controller != null) {
             mul = controller.netMachineCache == null ? 1.0d : controller.netMachineCache.getDurationMultiplier();
         }
-        return Math.sqrt(mul / ((getSpaceElevatorTier() - GTValues.ZPM) * (isSuper() ? 2 : 1)));
+        return durationMultiplier(mul, getSpaceElevatorTier(), isSuper());
     }
 }

@@ -15,6 +15,7 @@ import com.gtolib.utils.explosion.SphereExplosion;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -37,6 +38,12 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
     @RegisterLanguage(cn = "内部压力：", en = "Internal Pressure: ")
     private static final String PRESSURE = "gtocore.machine.stellar_forge.pressure";
 
+    @RegisterLanguage(cn = "魔法模块", en = "Magic Module")
+    private static final String MAGIC_MODULE_NAME = "gtocore.multiblock.stellar_forge.magic_module";
+    @RegisterLanguage(cn = "搭建后可运行产出魔力的配方，输出魔力仓只能安装在此结构上", en = "When built, mana-producing recipes can be run; output mana hatches can only be installed on this structure")
+    private static final String MAGIC_MODULE_DESC = "gtocore.multiblock.stellar_forge.magic_module.desc";
+    public static final ParamKey MAGIC_MODULE = ParamKey.of(MAGIC_MODULE_NAME, MAGIC_MODULE_DESC);
+
     @SaveToDisk(defaultValue = "0")
     private int pressure;
 
@@ -50,7 +57,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
 
             @Override
             public void customText(@NotNull List<Component> textList) {
-                if (getSubFormedAmount() > 0) {
+                if (hasStructurePart(MAGIC_MODULE)) {
                     super.customText(textList);
                 }
             }
@@ -73,7 +80,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
         consecutiveRecipes++;
         var manat = MANATRecipeExtension.getMANAt(recipe);
         if (manat < 0) {
-            if (getSubFormedAmount() == 0) {
+            if (!hasStructurePart(MAGIC_MODULE)) {
                 consecutiveRecipes = 0;
                 return null;
             }

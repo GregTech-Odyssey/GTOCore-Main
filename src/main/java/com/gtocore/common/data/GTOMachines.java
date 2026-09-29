@@ -67,6 +67,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.phys.shapes.Shapes;
 
 import com.hepdd.gtmthings.GTMThings;
 import it.unimi.dsi.fastutil.Function;
@@ -348,6 +349,14 @@ public final class GTOMachines {
             .workableTieredHullRenderer(GTCEu.id("block/generators/boiler/lava"))
             .register();
 
+    public static final MachineDefinition REDSTONE_TIMER = machine("redstone_timer", "红石定时器", RedstoneTimerMachine::new)
+            .nonYAxisRotation()
+            .renderer(RedstoneTimerRenderer::new)
+            .tooltips(GTOMachineTooltips.RedstoneTimerTooltips)
+            .shape(Shapes.box(0, 0, 0, 1, 0.125, 1))
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
     public static final MachineDefinition PERFORMANCE_MONITOR = machine("performance_monitor", "性能监控器", PerformanceMonitorMachine::new)
             .nonYAxisRotation()
             .tooltips(GTOMachineTooltips.PerformanceMonitorMachineTooltips)
@@ -439,7 +448,7 @@ public final class GTOMachines {
             (tier, builder) -> builder
                     .langValue("%s Programmable Hatch".formatted(GTOValues.VNFR[tier]))
                     .allRotation()
-                    .abilities(PartAbility.IMPORT_ITEMS, GTOPartAbility.DUAL_INPUT)
+                    .abilities(PartAbility.IMPORT_ITEMS, PartAbility.DUAL_INPUT)
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/dual_hatch.import")))
                     .tooltips(Component.translatable("gtceu.machine.dual_hatch.import.tooltip"),
                             Component.translatable("gtocore.machine.programmablec_hatch.extra_tooltip.0"),

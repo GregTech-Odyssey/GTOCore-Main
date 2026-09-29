@@ -445,14 +445,11 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
         section(AfterModuleInstallation)
         info("模块分为两种：高能模块与超频模块" translatedTo "There are two types of modules: high-energy modules and overclock modules")
         increase("每多安装一个高能模块，反应堆热容量提升一倍" translatedTo "For each additional high-energy module installed, the reactor's heat capacity is doubled")
-        command("高能模块必须按顺序安装，且不可重复安装相同模块" translatedTo "High-energy modules must be installed in order and the same module cannot be installed repeatedly")
+        command("高能模块逐级搭建：每一级搭建在上一级模块上，缺少前一级时后续模块不生效" translatedTo "High-energy modules are built level by level: each level is built onto the previous one, and later modules take no effect without the previous level")
         command("高能模块总计可提升四次热容量" translatedTo "High-energy modules can increase heat capacity a total of four times")
         increase("超频模块允许安装超频仓/线程仓" translatedTo "Overclock modules allow the installation of overclocking chambers/thread chambers")
         command("超频模块仅允许安装一个" translatedTo "Only one overclock module is allowed to be installed")
-        info("多方块预览中的前四个预览位分别对应前四级高能模块安装后的状态" translatedTo "The first four preview slots in the multiblock preview correspond to the states after installing the first three high-energy modules")
-        info("最后一个预览位对应安装超频模块后的状态" translatedTo "The last preview slot corresponds to the state after installing the overclock module")
-
-        command("若高能模块与超频模块存在冲突，请先安装高能模块，再安装超频模块" translatedTo "If there is a conflict between the high-energy module and the overclock module, please install the high-energy module first, then install the overclock module")
+        info("可在结构配置中选择要预览或搭建的模块" translatedTo "Modules to preview or build can be selected in the structure configuration")
     }
 
     // 狂飙一号巨型聚变反应堆控制电脑
@@ -472,9 +469,8 @@ object GTOMachineTooltipsA : AutoInitialize<GTOMachineTooltipsA>() {
     @JvmField
     val SpaceStationDockingModule = ComponentListSupplier {
         setTranslationPrefix("space_station_docking_module")
-        important("使用高级终端的模块搭建功能来选择该舱的不同形态" translatedTo "Use the module building function of the advanced terminal to select different forms of this chamber")
-        important("仅在成型任意一个形态后，该模块才可正常工作" translatedTo "This module can only function properly after forming any shape")
-        error("无法同时成型多个形态" translatedTo "Cannot form multiple shapes at the same time")
+        important("枢纽有侧接与后接两种形态，在结构配置中选择要预览或搭建的形态" translatedTo "The hub has a side form and a rear form; select the form to preview or build in the structure configuration")
+        important("必须搭建其中一种形态才能成型，两种形态的对接口位置不同" translatedTo "One of the forms must be built for the structure to form; the two forms have different connector positions")
     }
 
     // 大型藻类养殖中心

@@ -198,7 +198,6 @@ public final class GTEMIPlugin implements EmiPlugin {
     public void register(EmiRegistry registry) {
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
 
-        registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
         registry.addCategory(OreProcessingEmiCategory.CATEGORY);
         registry.addCategory(GTOreVeinEmiCategory.CATEGORY);
         registry.addCategory(GTBedrockFluidEmiCategory.CATEGORY);
@@ -211,6 +210,7 @@ public final class GTEMIPlugin implements EmiPlugin {
                 registry.addCategory(GTRecipeEMICategory.CATEGORIES.apply(category));
             }
         });
+        registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
         registry.addRecipeHandler(Wireless.TYPE, ME2in1Helper.createEMIWireless());

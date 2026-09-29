@@ -34,7 +34,6 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.ItemEmiStack;
 import dev.emi.emi.api.stack.TagEmiIngredient;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -42,8 +41,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class GTEmiEncodingHelper {
 
@@ -103,32 +100,12 @@ public class GTEmiEncodingHelper {
 
     public static List<List<GenericStack>> ofInputs(EmiRecipe emiRecipe) {
         if (emiRecipe instanceof MultiblockInfoEmiRecipe recipe) {
-            var layerInputsStream = getProcessedLayerInputs(recipe, recipe.i);
-            if (recipe.i > 0 && recipe.definition.getSubPatternFactory() != null) {
-                if (GTUtil.isShiftDown()) {
-                    layerInputsStream = Stream.concat(getProcessedLayerInputs(recipe, 0), layerInputsStream);
-                }
-                if (GTUtil.isCtrlDown()) {
-                    layerInputsStream = IntStream.rangeClosed(0, recipe.i)
-                            .boxed()
-                            .flatMap(layerIndex -> getProcessedLayerInputs(recipe, layerIndex));
-                }
-            }
-            List<List<GenericStack>> layerInputs = layerInputsStream.toList();
-            AEItemKey controllerKey = AEItemKey.of(recipe.definition.asItem());
-            long controllerCount = 0;
-            for (List<GenericStack> stackList : layerInputs) {
-                for (GenericStack stack : stackList) {
-                    if (controllerKey == stack.what()) {
-                        controllerCount += stack.amount();
-                    }
-                }
-            }
-            if (controllerCount > 1) {
-                return consolidateControllerStacks(layerInputs, controllerKey);
-            }
-
-            return layerInputs;
+            return recipe.getInputs()
+                    .stream()
+                    .map(GTEmiEncodingHelper::bucketAsFluid)
+                    .filter(GTEmiEncodingHelper::isNotHatch)
+                    .map(GTEmiEncodingHelper::intoGenericStack)
+                    .toList();
         }
         var list = new ArrayList<List<GenericStack>>();
         if (GTUtil.isShiftDown() || GTUtil.isCtrlDown()) {
@@ -152,41 +129,11 @@ public class GTEmiEncodingHelper {
         return list;
     }
 
-    private static @NotNull List<List<GenericStack>> consolidateControllerStacks(List<List<GenericStack>> layerInputs, AEItemKey controllerKey) {
-        List<List<GenericStack>> filteredList = new ArrayList<>();
-        boolean controllerKept = false;
-
-        for (List<GenericStack> stackList : layerInputs) {
-            List<GenericStack> newStackList = new ArrayList<>();
-            for (GenericStack stack : stackList) {
-                AEKey key = stack.what();
-                if (!(controllerKey == key)) {
-                    newStackList.add(stack);
-                } else {
-                    if (!controllerKept) {
-                        newStackList.add(new GenericStack(key, 1));
-                        controllerKept = true;
-                    }
-                }
-            }
-            if (!newStackList.isEmpty()) {
-                filteredList.add(newStackList);
-            }
+    private static EmiIngredient bucketAsFluid(EmiIngredient ingredient) {
+        if (ingredient instanceof ItemEmiStack itemStack && itemStack.getKey() instanceof BucketItem bucketItem) {
+            return EmiStack.of(bucketItem.getFluid(), ingredient.getAmount() * 1000);
         }
-        return filteredList;
-    }
-
-    private static Stream<List<GenericStack>> getProcessedLayerInputs(MultiblockInfoEmiRecipe recipe, int layerIndex) {
-        return recipe.getInputs(layerIndex)
-                .stream()
-                .map(emiStack -> {
-                    if (emiStack instanceof ItemEmiStack itemStack && itemStack.getKey() instanceof BucketItem bucketItem) {
-                        return EmiStack.of(bucketItem.getFluid(), emiStack.getAmount() * 1000);
-                    }
-                    return emiStack;
-                })
-                .filter(GTEmiEncodingHelper::isNotHatch)
-                .map(GTEmiEncodingHelper::intoGenericStack);
+        return ingredient;
     }
 
     private static boolean isNotHatch(EmiIngredient ingredient) {

@@ -4,6 +4,8 @@ import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTODamageTypes;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.NoEnergyCustomParallelMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
@@ -12,6 +14,7 @@ import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -43,10 +46,17 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomParallelMultiblockMachine {
 
+    @RegisterLanguage(cn = "炉身层数", en = "Shaft Layers")
+    private static final String LAYERS_NAME = "gtocore.multiblock.leap_forward_one_blast_furnace.layers";
+    @RegisterLanguage(cn = "中段重复层数（2~32），决定并行数", en = "Repeated middle layers (2~32), determines parallels")
+    private static final String LAYERS_DESC = "gtocore.multiblock.leap_forward_one_blast_furnace.layers.desc";
+
+    public static final ParamKey LAYERS = ParamKey.of(LAYERS_NAME, LAYERS_DESC);
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::tickUpdate);
 
@@ -85,11 +95,7 @@ public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomPa
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        height = 0;
-        var container = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.STEEL_FRAME);
-        if (container != null) {
-            height = container;
-        }
+        height = structureParam(LAYERS);
         pos = MachineUtils.getOffsetPos(7, getFrontFacing(), getPos());
         tickSubs.initialize(getLevel());
         heatPositions = getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.BLAST_FURNACE_HEAT, Collections.emptySet());

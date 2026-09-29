@@ -8,24 +8,31 @@ import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
-import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Assembly;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Size;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -49,10 +56,12 @@ import vazkii.botania.api.mana.ManaReceiver;
 
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
+import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
 
+@DataGeneratorScanned
 public class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, IDropSaveMachine, IWailaDisplayProvider {
 
     public static final int MIN_DEPTH = 2;
@@ -62,6 +71,33 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         var block = s.getBlock();
         return block == GTBlocks.STEEL_HULL.get() || block == GTOMachines.VAULT_HATCH.get();
     };
+
+    @RegisterLanguage(cn = "左侧宽度", en = "Left Width")
+    private static final String LEFT_NAME = "gtocore.multiblock.vault.left";
+    @RegisterLanguage(cn = "控制器向左连续的钢机壳/保险库仓数 + 1", en = "Consecutive steel hulls / vault hatches to the left of the controller, plus 1")
+    private static final String LEFT_DESC = "gtocore.multiblock.vault.left.desc";
+    @RegisterLanguage(cn = "右侧宽度", en = "Right Width")
+    private static final String RIGHT_NAME = "gtocore.multiblock.vault.right";
+    @RegisterLanguage(cn = "控制器向右连续的钢机壳/保险库仓数 + 1", en = "Consecutive steel hulls / vault hatches to the right of the controller, plus 1")
+    private static final String RIGHT_DESC = "gtocore.multiblock.vault.right.desc";
+    @RegisterLanguage(cn = "上方高度", en = "Upper Height")
+    private static final String UP_NAME = "gtocore.multiblock.vault.up";
+    @RegisterLanguage(cn = "控制器向上连续的钢机壳/保险库仓数 + 1", en = "Consecutive steel hulls / vault hatches above the controller, plus 1")
+    private static final String UP_DESC = "gtocore.multiblock.vault.up.desc";
+    @RegisterLanguage(cn = "下方高度", en = "Lower Height")
+    private static final String DOWN_NAME = "gtocore.multiblock.vault.down";
+    @RegisterLanguage(cn = "控制器向下连续的钢机壳/保险库仓数 + 1", en = "Consecutive steel hulls / vault hatches below the controller, plus 1")
+    private static final String DOWN_DESC = "gtocore.multiblock.vault.down.desc";
+    @RegisterLanguage(cn = "深度", en = "Depth")
+    private static final String BACK_NAME = "gtocore.multiblock.vault.back";
+    @RegisterLanguage(cn = "控制器向后连续的钢机壳/保险库仓/密封机械方块数 + 1", en = "Consecutive steel hulls / vault hatches / hermetic casings behind the controller, plus 1")
+    private static final String BACK_DESC = "gtocore.multiblock.vault.back.desc";
+
+    public static final ParamKey LEFT_EDGE = ParamKey.of(LEFT_NAME, LEFT_DESC);
+    public static final ParamKey RIGHT_EDGE = ParamKey.of(RIGHT_NAME, RIGHT_DESC);
+    public static final ParamKey UP_EDGE = ParamKey.of(UP_NAME, UP_DESC);
+    public static final ParamKey DOWN_EDGE = ParamKey.of(DOWN_NAME, DOWN_DESC);
+    public static final ParamKey BACK_EDGE = ParamKey.of(BACK_NAME, BACK_DESC);
 
     private int lDist = 0, rDist = 0, uDist = 0, dDist = 0, bDist = 0;
 
@@ -145,107 +181,92 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         return isFormed ? fluidStackHandler : null;
     }
 
-    @Override
-    public Supplier<BlockPattern>[] getPattern() {
-        if (getLevel() != null && updateStructureDimensions()) {
-            if (lDist < 1) lDist = 1;
-            if (rDist < 1) rDist = 1;
-            if (uDist < 1) uDist = 1;
-            if (dDist < 1) dDist = 1;
-            if (bDist < MIN_DEPTH) bDist = MIN_DEPTH;
-            var iWidth = lDist + rDist;
-            var iHeight = uDist + dDist;
-            var width = iWidth + 1;
-            var height = iHeight + 1;
-            var backLayer = new String[height];
-            for (int y = 0; y < height; y++) {
-                var row = new StringBuilder(width);
-                row.repeat("W", width);
-                backLayer[y] = row.toString();
-            }
-            var storageLayer = new String[height];
-            for (int y = 0; y < height; y++) {
-                var row = new StringBuilder(width);
-                for (int x = 0; x < width; x++) {
-                    if (x == 0 || x == iWidth || y == 0 || y == iHeight) {
-                        row.append('W');
-                    } else {
-                        row.append('S');
-                    }
-                }
-                storageLayer[y] = row.toString();
-            }
-            var frontLayer = new String[height];
-            for (int y = 0; y < height; y++) {
-                var row = new StringBuilder(width);
-                for (int x = 0; x < width; x++) {
-                    if (x == lDist && y == dDist) {
-                        row.append('C');
-                    } else {
-                        row.append('W');
-                    }
-                }
-                frontLayer[y] = row.toString();
-            }
+    public static Structure structure(MultiblockMachineDefinition definition) {
+        var hatch = blocks(GTOMachines.VAULT_HATCH.get());
+        var symbols = Symbols.create()
+                .where('C', Predicates.controller(definition))
+                .where('W', Predicates.blocks(GTBlocks.STEEL_HULL.get()).or(hatch))
+                .where('S', GTOPredicates.hermeticCasing());
+        var wallEnd = edge(false);
+        return Structure.root(Piece.sized(MultiblockMEStorageMachine::box))
+                .symbols(symbols)
+                .measure(m -> m.param(LEFT_EDGE).toward(LEFT).until(wallEnd).range(2, MAX_DEPTH + 1))
+                .measure(m -> m.param(RIGHT_EDGE).toward(RIGHT).until(wallEnd).range(2, MAX_DEPTH + 1))
+                .measure(m -> m.param(UP_EDGE).toward(UP).until(wallEnd).range(2, MAX_DEPTH + 1))
+                .measure(m -> m.param(DOWN_EDGE).toward(DOWN).until(wallEnd).range(2, MAX_DEPTH + 1))
+                .measure(m -> m.param(BACK_EDGE).toward(BACK).until(edge(true)).range(MIN_DEPTH + 1, MAX_DEPTH + 1))
+                .limit(hatch, size -> cells(dimensions(size::get)))
+                .build();
+    }
 
-            int interiorWidth = iWidth - 1;
-            int interiorHeight = iHeight - 1;
-            int interiorDepth = bDist - 1;
-            cells = interiorWidth * interiorHeight * interiorDepth;
-            return new Supplier[] { () -> FactoryBlockPattern.start()
-                    .aisle(backLayer)
-                    .aisle(storageLayer).setRepeatable(interiorDepth)
-                    .aisle(frontLayer)
-                    .where('C', Predicates.controller(getDefinition()))
-                    .where('W', Predicates.blocks(GTBlocks.STEEL_HULL.get()).or(blocks(GTOMachines.VAULT_HATCH.get()).setMaxGlobalLimited(cells)))
-                    .where('S', GTOPredicates.hermeticCasing())
-                    .build()
-            };
+    private static TraceabilityPredicate edge(boolean hermetic) {
+        return new TraceabilityPredicate(state -> !isWall(state.getBlockState(), hermetic) || state.getPos().distManhattan(state.controllerPos) > MAX_DEPTH, null, null);
+    }
+
+    private static boolean isWall(BlockState state, boolean hermetic) {
+        if (PREDICATE.test(state)) return true;
+        return hermetic && BlockMap.test(state.getBlock(), BlockMap.HERMETIC_CASING);
+    }
+
+    public static int[] dimensions(ToIntFunction<ParamKey> values) {
+        int left = values.applyAsInt(LEFT_EDGE) - 1;
+        int up = values.applyAsInt(UP_EDGE) - 1;
+        if (left >= MAX_DEPTH || up >= MAX_DEPTH) return new int[] { 1, 1, 1, 1, MIN_DEPTH };
+        int right = Math.min(values.applyAsInt(RIGHT_EDGE) - 1, MAX_DEPTH - left);
+        int down = Math.min(values.applyAsInt(DOWN_EDGE) - 1, MAX_DEPTH - up);
+        return new int[] { left, right, up, down, values.applyAsInt(BACK_EDGE) - 1 };
+    }
+
+    @Nullable
+    public static int[] dimensions(@Nullable Assembly assembly) {
+        if (assembly == null || !assembly.has(BACK_EDGE)) return null;
+        return dimensions(assembly::get);
+    }
+
+    public static int cells(int[] dims) {
+        return (dims[0] + dims[1] - 1) * (dims[2] + dims[3] - 1) * (dims[4] - 1);
+    }
+
+    private static Piece box(Size size) {
+        var dims = dimensions(size::get);
+        int left = dims[0], right = dims[1], up = dims[2], down = dims[3], back = dims[4];
+        int width = left + right + 1;
+        int height = up + down + 1;
+        var backLayer = new String[height];
+        var storageLayer = new String[height];
+        var frontLayer = new String[height];
+        for (int y = 0; y < height; y++) {
+            backLayer[y] = "W".repeat(width);
+            var storage = new StringBuilder(width);
+            var front = new StringBuilder(width);
+            for (int x = 0; x < width; x++) {
+                storage.append(x == 0 || x == width - 1 || y == 0 || y == height - 1 ? 'W' : 'S');
+                front.append(x == right && y == down ? 'C' : 'W');
+            }
+            storageLayer[y] = storage.toString();
+            frontLayer[y] = front.toString();
         }
-        return super.getPattern();
+        var builder = Piece.start(LEFT, UP, FRONT).aisle(backLayer);
+        for (int i = 0; i < back - 1; i++) builder.aisle(storageLayer);
+        return builder.aisle(frontLayer).build();
     }
 
     private boolean updateStructureDimensions() {
-        var world = getLevel();
-        if (world == null) return false;
-        var controllerPos = getPos();
-        var front = getFrontFacing();
-        var back = front.getOpposite();
-        var left = front.getCounterClockWise();
-        var right = left.getOpposite();
-        var up = Direction.UP;
-        var down = Direction.DOWN;
-        lDist = getBlockDistance(world, controllerPos, PREDICATE, left, MAX_DEPTH);
-        if (lDist < 1) return false;
-        rDist = getBlockDistance(world, controllerPos, PREDICATE, right, MAX_DEPTH - lDist);
-        if (rDist < 1) return false;
-        uDist = getBlockDistance(world, controllerPos, PREDICATE, up, MAX_DEPTH);
-        if (uDist < 1) return false;
-        dDist = getBlockDistance(world, controllerPos, PREDICATE, down, MAX_DEPTH - uDist);
-        if (dDist < 1) return false;
-        bDist = getBlockDistance(world, controllerPos, s -> {
-            if (PREDICATE.test(s)) return true;
-            return BlockMap.test(s.getBlock(), BlockMap.HERMETIC_CASING);
-        }, back, MAX_DEPTH);
-        return bDist >= MIN_DEPTH;
-    }
-
-    private static int getBlockDistance(Level world, BlockPos pos, Predicate<BlockState> predicate, Direction direction, int maxDepth) {
-        var mutable = pos.mutable();
-        var distance = 0;
-        for (int i = 1; i <= maxDepth; i++) {
-            if (predicate.test(world.getBlockState(mutable.move(direction)))) {
-                distance = i;
-            } else {
-                break;
-            }
-        }
-        return distance;
+        var dims = dimensions(getAssembly());
+        if (dims == null) return false;
+        lDist = dims[0];
+        rDist = dims[1];
+        uDist = dims[2];
+        dDist = dims[3];
+        bDist = dims[4];
+        cells = cells(dims);
+        return true;
     }
 
     @Override
     public void onStructureFormed() {
         // 容量要在 super 之前算好：部件（保险库仓）在 super 里绑定处理器时会读当前容量
+        updateStructureDimensions();
         refreshCapacity();
         super.onStructureFormed();
         notifyNeighborsUpdate();

@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion.recipe;
 
-import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.RecipeExtension;
 import com.gtocore.common.recipe.condition.GravityCondition;
@@ -24,7 +23,7 @@ public class OrbitalSmeltingFacility extends RecipeExtension implements ICoilMac
     private final CoilTrait coilTrait;
 
     public OrbitalSmeltingFacility(MetaMachineBlockEntity metaMachineBlockEntity) {
-        super(metaMachineBlockEntity, ILargeSpaceStationMachine.twoWayPositionFunction(41));
+        super(metaMachineBlockEntity);
         this.coilTrait = new CoilTrait(this, true, true);
     }
 

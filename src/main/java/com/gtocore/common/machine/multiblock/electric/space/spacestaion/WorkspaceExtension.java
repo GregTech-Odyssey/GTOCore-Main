@@ -1,100 +1,77 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
-import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.GTOMachineProtocols;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
-import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.common.data.GTMachines;
-import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
-import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-
-import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
-import static com.gtocore.api.machine.ILargeSpaceStationMachine.ConnectType.MODULE;
+import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.FRONT;
+import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.LEFT;
+import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.UP;
 import static com.gtocore.common.data.GTOMachines.EXHAUST_FAN;
 
 @DataGeneratorScanned
 public class WorkspaceExtension extends Extension {
 
-    private static final Int2ObjectOpenHashMap<BlockPattern> PATTERNS = new Int2ObjectOpenHashMap<>();
+    @RegisterLanguage(cn = "舱段长度", en = "Segment Length")
+    private static final String LENGTH_NAME = "gtocore.multiblock.space_station_extension_module.length";
+    @RegisterLanguage(cn = "中部重复舱段的数量，决定舱体长度与末端模块接口的位置", en = "Number of repeated middle segments; determines the module length and the position of the far-end module connectors")
+    private static final String LENGTH_DESC = "gtocore.multiblock.space_station_extension_module.length.desc";
 
-    @SaveToDisk(defaultValue = "2")
+    public static final int MIN_LENGTH = 2;
+    public static final int MAX_LENGTH = 9;
+    public static final ParamKey LENGTH = ParamKey.of(LENGTH_NAME, LENGTH_DESC);
+    public static final PortKey IN = PortKey.of("in");
+    public static final PortKey OUT = PortKey.of("out");
+
     @SyncToClient
-    private int length = 2;
+    private int length;
 
     public WorkspaceExtension(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
     }
 
-    @Override
-    public Supplier<BlockPattern>[] getPattern() {
-        return new Supplier[] { () -> patternAtLength(getDefinition(), length) };
+    public int getLength() {
+        return length;
     }
 
     @Override
-    public Set<BlockPos> getModulePositions() {
-        return ILargeSpaceStationMachine.twoWayPositionFunction(17 + 10 + length * 6 - 4).apply(this);
+    public void onStructureFormed() {
+        var assembly = getAssembly();
+        length = assembly == null ? 0 : assembly.get(LENGTH);
+        super.onStructureFormed();
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        length = 0;
+        super.onStructureInvalid();
     }
 
     @Override
     public void afterWorking() {
         super.afterWorking();
         requestCheck();
-    }
-
-    @Override
-    public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
-        super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new IFancyConfigurator() {
-
-            @Override
-            public Component getTitle() {
-                return Component.translatable(REPEAT_LENGTH);
-            }
-
-            @Override
-            public IGuiTexture getIcon() {
-                return WidgetIcons.SETTINGS;
-            }
-
-            /** 重复段长度：新式数值输入（固定上下限 2~9），数值由组件自己从服务端下发；长度变了请求重新检查结构。 */
-            @Override
-            public Widget createConfigurator() {
-                return NumberSettingPage.compact(() -> length, v -> {
-                    int p = (int) v;
-                    if (p == length) return;
-                    requestCheck();
-                    length = p;
-                    // 变了要标记存盘，否则重启丢失
-                    onChanged();
-                }, () -> 2, () -> 9);
-            }
-        });
     }
 
     private static final String[][] BLOCK = {
@@ -163,44 +140,48 @@ public class WorkspaceExtension extends Extension {
             { "          ", "          ", "          ", "          ", "          ", "          ", "          ", "F         ", "          ", "          ", "          ", "F         ", "          ", "          ", "          ", "          ", "          ", "          ", "          " },
     };
 
-    public static BlockPattern patternAtLength(MultiblockMachineDefinition definition, int length) {
-        return PATTERNS.computeIfAbsent(length, l -> {
-            String[][] pattern = new String[19][19];
-            for (int i = 0; i < 19; i++) {
-                for (int j = 0; j < 19; j++) {
-                    pattern[i][j] = HEAD[i][j] +
-                            String.valueOf(BLOCK[i][j]).repeat(l) +
-                            TAIL[i][j];
-                }
-            }
-            var builder = FactoryBlockPattern.start(definition);
-            for (String[] aisle : pattern) {
-                builder = builder.aisle(aisle);
-            }
-
-            return builder.where('A', blocks(GTOBlocks.TITANIUM_ALLOY_FRAME_INTERNAL.get()))
-                    .where('B', controller(definition))
-                    .where('C', blocks(GTOBlocks.ALUMINUM_ALLOY_7050_SUPPORT_MECHANICAL_BLOCK.get()))
-                    .where('c', MODULE.traceabilityPredicate.get())
-                    .where('D', blocks(GTOBlocks.SPACECRAFT_DOCKING_CASING.get()))
-                    .where('E', blocks(GTOBlocks.ALUMINUM_ALLOY_2090_SKIN_MECHANICAL_BLOCK.get()))
-                    .where('F', GTOPredicates.frame(GTOMaterials.StainlessSteel316))
-                    .where('G', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
-                    .where('H', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
-                    .where('I', GTOPredicates.light())
-                    .where('J', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
-                    .where('K', blocks(GTOBlocks.ALUMINUM_ALLOY_8090_SKIN_MECHANICAL_BLOCK.get()))
-                    .where('L', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
-                    .where('M', blocks(GTOBlocks.SPACE_ENGINE_NOZZLE.get()))
-                    .where('N', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
-                    .where('O', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
-                            .or(blocks(EXHAUST_FAN.get())))
-                    .where('p', ISpacePredicateMachine.innerBlockPredicate.get())
-                    .where(' ', any())
-                    .build();
-        });
+    public static Structure structure(MultiblockMachineDefinition definition, int min, int max) {
+        var head = transposed(HEAD).portAfter(OUT).build();
+        var block = transposed(BLOCK).portBefore(IN).portAfter(OUT).build();
+        var tail = transposed(TAIL).portBefore(IN).port('c', GTOMachineProtocols.STATION_RING).build();
+        return Structure.root(head)
+                .symbols(Symbols.create()
+                        .where('A', blocks(GTOBlocks.TITANIUM_ALLOY_FRAME_INTERNAL.get()))
+                        .where('B', controller(definition))
+                        .where('C', blocks(GTOBlocks.ALUMINUM_ALLOY_7050_SUPPORT_MECHANICAL_BLOCK.get()))
+                        .where('D', blocks(GTOBlocks.SPACECRAFT_DOCKING_CASING.get()))
+                        .where('E', blocks(GTOBlocks.ALUMINUM_ALLOY_2090_SKIN_MECHANICAL_BLOCK.get()))
+                        .where('F', GTOPredicates.frame(GTOMaterials.StainlessSteel316))
+                        .where('G', blocks(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK.get()))
+                        .where('H', blocks(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.get()))
+                        .where('I', GTOPredicates.light())
+                        .where('J', blocks(GTOBlocks.SPACE_STATION_CONTROL_CASING.get()))
+                        .where('K', blocks(GTOBlocks.ALUMINUM_ALLOY_8090_SKIN_MECHANICAL_BLOCK.get()))
+                        .where('L', blocks(GTOBlocks.TITANIUM_ALLOY_PROTECTIVE_MECHANICAL_BLOCK.get()))
+                        .where('M', blocks(GTOBlocks.SPACE_ENGINE_NOZZLE.get()))
+                        .where('N', blocks(GTOBlocks.LOAD_BEARING_STRUCTURAL_STEEL_MECHANICAL_BLOCK.get()))
+                        .where('O', blocks(Stream.of(GTMachines.HULL).map(MachineDefinition::get).toArray(MetaMachineBlock[]::new))
+                                .or(blocks(EXHAUST_FAN.get())))
+                        .where('p', ISpacePredicateMachine.innerBlockPredicate.get())
+                        .where(' ', any()))
+                .atPort(OUT, Slot.chain(block, IN, OUT, IN).count(LENGTH, min, max)
+                        .atPort(OUT, Slot.one(tail, IN).atPort(GTOMachineProtocols.STATION_RING, Slot.machines(GTOMachineProtocols.STATION_DOCKING))))
+                .build();
     }
 
-    @RegisterLanguage(cn = "工作区扩展舱长度", en = "Workspace Extension Length")
-    private static final String REPEAT_LENGTH = "gtocore.machine.space_station.workspace_extension.repeat_length";
+    private static Piece.Builder transposed(String[][] part) {
+        var builder = Piece.start(FRONT, UP, LEFT);
+        int strings = part[0].length;
+        int chars = part[0][0].length();
+        for (int a = 0; a < chars; a++) {
+            var aisle = new String[strings];
+            for (int b = 0; b < strings; b++) {
+                var row = new char[part.length];
+                for (int c = 0; c < part.length; c++) row[c] = part[c][b].charAt(a);
+                aisle[b] = new String(row);
+            }
+            builder.aisle(aisle);
+        }
+        return builder;
+    }
 }

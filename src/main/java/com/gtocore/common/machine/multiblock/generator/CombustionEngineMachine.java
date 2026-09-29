@@ -3,6 +3,8 @@ package com.gtocore.common.machine.multiblock.generator;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.InfiniteIntakeHatchPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -10,6 +12,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -40,6 +43,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class CombustionEngineMachine extends ElectricMultiblockMachine {
 
+    public static final ParamKey EXTENSION = ParamKey.of(Lang.EXTENSION_NAME, Lang.EXTENSION_DESC);
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::intake);
 
@@ -78,7 +82,7 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine {
             tankSubs.unsubscribe();
             return;
         }
-        tank.fillInternal(new FluidStack(fluid, (formedAmount * 8000 * 2) + 8000), IFluidHandler.FluidAction.EXECUTE);
+        tank.fillInternal(new FluidStack(fluid, hasStructurePart(EXTENSION) ? 24000 : 8000), IFluidHandler.FluidAction.EXECUTE);
         tankSubs.updateSubscription();
     }
 
@@ -120,8 +124,8 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine {
     //////////////////////////////////////
     @Override
     public long getOverclockVoltage() {
-        if (isOxygenBoosted) return GTValues.V[tier] << (2 + formedAmount * 2);
-        else return GTValues.V[tier] << (1 + formedAmount * 2);
+        int shift = hasStructurePart(EXTENSION) ? 3 : 1;
+        return GTValues.V[tier] << (isOxygenBoosted ? shift + 1 : shift);
     }
 
     @Nullable
@@ -188,5 +192,16 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine {
     @Override
     public int getTier() {
         return this.tier;
+    }
+
+    @DataGeneratorScanned
+    public static final class Lang {
+
+        @RegisterLanguage(cn = "扩展燃烧室", en = "Auxiliary Combustion Chamber")
+        public static final String EXTENSION_NAME = "gtocore.multiblock.combustion_engine.extension";
+        @RegisterLanguage(cn = "搭建后进气量变为 3 倍，最大输出功率变为 4 倍，并可在其中额外安装最多 3 个动力仓", en = "When built, air intake is tripled, maximum power output is quadrupled, and up to 3 additional dynamo hatches can be installed in it")
+        public static final String EXTENSION_DESC = "gtocore.multiblock.combustion_engine.extension.desc";
+
+        private Lang() {}
     }
 }

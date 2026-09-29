@@ -1,7 +1,7 @@
 package com.gtocore.client.renderer.machine;
 
 import com.gtocore.client.renderer.RenderHelper;
-import com.gtocore.client.renderer.StructurePattern;
+import com.gtocore.client.renderer.RingStructureData;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.client.renderer.TextureUpdateRequester;
 import com.gtocore.common.data.GTOBlocks;
@@ -88,11 +88,11 @@ public final class GodforgeRenderer extends WorkableCasingMachineRenderer {
                 .addMapping('3', GTOBlocks.CENTRAL_GRAVITON_FLOW_MODULATOR.get())
                 .addMapping('H', GTOBlocks.SPATIALLY_TRANSCENDENT_GRAVITATIONAL_LENS_BLOCK.get());
 
-        ringOne = ringStructure.assignStructure(StructurePattern.ringOne)
+        ringOne = ringStructure.assignStructure(RingStructureData.ringOne)
                 .build();
-        ringTwo = ringStructure.assignStructure(StructurePattern.ringTwo)
+        ringTwo = ringStructure.assignStructure(RingStructureData.ringTwo)
                 .build();
-        ringThree = ringStructure.assignStructure(StructurePattern.ringThree)
+        ringThree = ringStructure.assignStructure(RingStructureData.ringThree)
                 .build();
 
         textureUpdateRequester = ringStructure.getTextureUpdateRequestor();

@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion.recipe;
 
-import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.RecipeExtension;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -32,7 +31,7 @@ import java.util.List;
 public class SpaceDroneDock extends RecipeExtension {
 
     public SpaceDroneDock(MetaMachineBlockEntity metaMachineBlockEntity) {
-        super(metaMachineBlockEntity, ILargeSpaceStationMachine.twoWayPositionFunction(41));
+        super(metaMachineBlockEntity);
     }
 
     @Override

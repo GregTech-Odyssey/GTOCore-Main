@@ -12,8 +12,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -25,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static com.gregtechceu.gtceu.api.GTValues.UHV;
 import static com.gregtechceu.gtceu.api.GTValues.VA;
@@ -45,17 +42,6 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
 
     public SpaceElevatorConnectorModule(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
-    }
-
-    @Override
-    public Set<BlockPos> getModulePositions() {
-        var pos = getPos();
-        var fFacing = getFrontFacing();
-        var hallwayCenter = pos.relative(fFacing, 2).relative(Direction.DOWN, 15);
-        return Set.of(hallwayCenter.relative(Direction.EAST, 2),
-                hallwayCenter.relative(Direction.WEST, 2),
-                hallwayCenter.relative(Direction.SOUTH, 2),
-                hallwayCenter.relative(Direction.NORTH, 2));
     }
 
     public void registerElevator(SpaceElevatorMachine elevatorMachine, int tier) {

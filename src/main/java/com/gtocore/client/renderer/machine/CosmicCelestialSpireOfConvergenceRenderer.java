@@ -1,6 +1,6 @@
 package com.gtocore.client.renderer.machine;
 
-import com.gtocore.client.renderer.StructurePattern;
+import com.gtocore.client.renderer.RingStructureData;
 import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.client.renderer.TextureUpdateRequester;
 import com.gtocore.common.data.GTOBlocks;
@@ -74,7 +74,7 @@ public class CosmicCelestialSpireOfConvergenceRenderer extends WorkableCasingMac
         StructureVBO ringStructure = (new StructureVBO())
                 .addMapping('X', GTOBlocks.THE_SOLARIS_LENS.get())
                 .addMapping('[', RegistriesUtils.getBlock("botania:bifrost_perm"));
-        vbo = ringStructure.assignStructure(StructurePattern.tinyLight)
+        vbo = ringStructure.assignStructure(RingStructureData.tinyLight)
                 .offset(-1f, 0f, 0f)
                 .build();
 

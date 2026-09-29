@@ -28,6 +28,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.ICoilMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiPart;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -87,6 +88,12 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     @DynamicInitialValue(key = "gtocore.machine.mega_turbine.high_speed_mode_machine_fault", typeKey = DynamicInitialValueTypes.KEY_MULTIPLY, easyValue = "4F", normalValue = "8F", expertValue = "10F", cn = "高速模式机器故障乘数 : %s", en = "High Speed Mode Machine Fault Multiplier : %s Multiplier")
     private static float highSpeedModeMachineFault = 8.0F;
 
+    @RegisterLanguage(cn = "扩展涡轮组", en = "Auxiliary Turbine Array")
+    public static final String EXTENSION_NAME = "gtocore.multiblock.turbine.extension";
+    @RegisterLanguage(cn = "搭建后发电量与转子损耗提高（大型涡轮 2 倍，特大涡轮 3 倍），燃料效率提高（大型涡轮 1.2 倍，特大涡轮 1.3 倍），并可在其中额外安装动力仓", en = "When built, power output and rotor wear increase (2x for large turbines, 3x for mega turbines), fuel efficiency increases (1.2x for large turbines, 1.3x for mega turbines), and additional dynamo hatches can be installed in it")
+    public static final String EXTENSION_DESC = "gtocore.multiblock.turbine.extension.desc";
+    public static final ParamKey EXTENSION = ParamKey.of(EXTENSION_NAME, EXTENSION_DESC);
+
     private final long baseEUOutput;
     private final int tier;
     private final boolean mega;
@@ -99,9 +106,6 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     private ItemPartMachine rotorHatchPartMachine;
     private final ConditionalSubscriptionHandler rotorSubs;
 
-    private double extraOutput = 1;
-    private double extraDamage = 1;
-    private double extraEfficiency = 1;
     double damageBase = 2.2;
     private float accumulatedDamage = 0;
 
@@ -162,17 +166,6 @@ public class TurbineMachine extends ElectricMultiblockMachine {
                 damageBase = Math.max(2.2 - 0.08 * ((MegaTurbine) this).getCasingTier(GTORecipeDataKeys.GLASS_TIER), 1.2);
             }
         }
-        if (formedAmount > 0) {
-            if (mega) {
-                extraOutput = 3;
-                extraDamage = 3;
-                extraEfficiency = 1.3;
-            } else {
-                extraOutput = 2;
-                extraDamage = 2;
-                extraEfficiency = 1.2;
-            }
-        }
     }
 
     @Override
@@ -180,9 +173,6 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         super.onStructureInvalid();
         rotorHolderMachines.clear();
         rotorHatchPartMachine = null;
-        extraOutput = 1;
-        extraDamage = 1;
-        extraEfficiency = 1;
         damageBase = 2.0;
     }
 
@@ -191,7 +181,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         if (getOffsetTimer() % 20 == 0) {
             float damageMultiplier = highSpeedMode ? getHighSpeedModeDamageMultiplier() : 1;
             // RotorHolderPartMachine applies the base damage in super.onWorking().
-            accumulatedDamage += (float) (damageMultiplier * extraDamage) - 1;
+            accumulatedDamage += (float) (damageMultiplier * extensionMultiplier()) - 1;
             if (accumulatedDamage >= 1) {
                 int damageToApply = (int) accumulatedDamage;
                 accumulatedDamage -= damageToApply;
@@ -209,11 +199,21 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         var recipe = getRecipeLogic().getLastRecipe();
         for (IMultiPart part : getParts()) {
             if (highSpeedMode && recipe != null && part instanceof IMaintenanceMachine maintenanceMachine) {
-                maintenanceMachine.calculateMaintenance(maintenanceMachine, (int) (highSpeedModeMachineFault * recipe.duration * extraDamage));
+                maintenanceMachine.calculateMaintenance(maintenanceMachine, (int) (highSpeedModeMachineFault * recipe.duration * extensionMultiplier()));
                 continue;
             }
             if (part instanceof IWorkableMultiPart workableMultiPart) workableMultiPart.afterWorking(this);
         }
+    }
+
+    private double extensionMultiplier() {
+        if (!hasStructurePart(EXTENSION)) return 1;
+        return mega ? 3 : 2;
+    }
+
+    private double extensionEfficiency() {
+        if (!hasStructurePart(EXTENSION)) return 1;
+        return mega ? 1.3 : 1.2;
     }
 
     @Nullable
@@ -247,7 +247,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     private long getVoltage() {
         var rotorHolder = getRotorHolder();
         if (rotorHolder != null && rotorHolder.hasRotor()) {
-            return (long) (baseEUOutput * rotorHolder.getTotalPower() * (highSpeedMode ? getHighSpeedModeOutputMultiplier() : 1L) / 100 * extraOutput);
+            return (long) (baseEUOutput * rotorHolder.getTotalPower() * (highSpeedMode ? getHighSpeedModeOutputMultiplier() : 1L) / 100 * extensionMultiplier());
         }
         return 0;
     }
@@ -269,7 +269,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         if (recipe == null) return null;
         long eut = Math.min(turbineMaxVoltage, recipe.parallels * EUt);
         energyPerTick = eut;
-        recipe.duration = (int) (recipe.duration * rotorHolder.getTotalEfficiency() * extraEfficiency / 100);
+        recipe.duration = (int) (recipe.duration * rotorHolder.getTotalEfficiency() * extensionEfficiency() / 100);
         recipe.setEUt(-eut);
         return recipe;
     }
@@ -423,8 +423,9 @@ public class TurbineMachine extends ElectricMultiblockMachine {
                                 .append(FormatUtil.voltageName(BigDecimal.valueOf(v)))))));
         var rotorHolder = getRotorHolder();
         if (rotorHolder != null && rotorHolder.getRotorEfficiency() > 0) {
-            textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed", FormattingUtil.formatNumbers(getRotorSpeed() * (highSpeedMode ? highSpeedModeOutputMultiplier : 1) * extraOutput), FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed() * (highSpeedMode ? highSpeedModeOutputMultiplier : 1) * extraOutput)));
-            textList.add(Component.translatable("gtceu.multiblock.turbine.efficiency", rotorHolder.getTotalEfficiency() * extraEfficiency));
+            double extension = extensionMultiplier();
+            textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed", FormattingUtil.formatNumbers(getRotorSpeed() * (highSpeedMode ? highSpeedModeOutputMultiplier : 1) * extension), FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed() * (highSpeedMode ? highSpeedModeOutputMultiplier : 1) * extension)));
+            textList.add(Component.translatable("gtceu.multiblock.turbine.efficiency", rotorHolder.getTotalEfficiency() * extensionEfficiency()));
             if (isActive()) {
                 String voltageName = GTValues.VNF[GTUtil.getTierByVoltage(energyPerTick)];
                 textList.add(3, Component.translatable("gtceu.multiblock.turbine.energy_per_tick", FormattingUtil.formatNumbers(energyPerTick), voltageName));

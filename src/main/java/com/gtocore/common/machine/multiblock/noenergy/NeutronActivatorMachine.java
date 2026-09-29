@@ -1,11 +1,12 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
-import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.NeutronAcceleratorPartMachine;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.api.recipe.IdleReason;
@@ -20,6 +21,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -47,8 +49,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@DataGeneratorScanned
 public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implements IExplosionMachine {
 
+    @RegisterLanguage(cn = "加速管层数", en = "Accelerator Tube Layers")
+    public static final String LAYERS_NAME = "gtocore.multiblock.neutron_activator.layers";
+    @RegisterLanguage(cn = "底座与顶盖之间的加速管层数", en = "Number of accelerator tube layers between the base and the top")
+    public static final String LAYERS_DESC = "gtocore.multiblock.neutron_activator.layers.desc";
+    public static final ParamKey LAYERS = ParamKey.of(LAYERS_NAME, LAYERS_DESC);
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::neutronEnergyUpdate);
 
@@ -100,10 +108,7 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
         acceleratorMachines.clear();
         busMachines.clear();
         super.onStructureFormed();
-        var container = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.SPEED_PIPE);
-        if (container != null) {
-            height = container;
-        }
+        height = structureParam(LAYERS);
         neutronEnergySubs.initialize(getLevel());
     }
 

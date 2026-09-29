@@ -1,6 +1,5 @@
 package com.gtocore.common.data.machines;
 
-import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.multiblock.electric.ChiselMachine;
@@ -15,6 +14,8 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -39,7 +40,7 @@ public final class OptionalMachine {
                     .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(9))
                     .tier(MV)
                     .allRotation()
-                    .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, GTOPartAbility.DUAL_INPUT)
+                    .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
                     .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer")))
                     .register() :
             null;
@@ -50,20 +51,21 @@ public final class OptionalMachine {
             .recipeTypes(DUMMY_RECIPES)
             .recipeModifier(GTORecipeModifiers.PARALLEL)
             .block(GTBlocks.CASING_STEEL_SOLID)
-            .pattern(definition -> MultiBlockFileReader.start(definition)
-                    .wherePart('A', blocks(GTBlocks.CASING_STEEL_SOLID.get())
-                            .or(abilities(IMPORT_ITEMS).setMaxGlobalLimited(4))
-                            .or(abilities(EXPORT_ITEMS).setMaxGlobalLimited(1))
-                            .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2))
-                            .or(abilities(MAINTENANCE).setExactLimit(1)))
-                    .where('B', GTOPredicates.frame(GTMaterials.Steel))
-                    .where('C', blocks(GTBlocks.CASING_STEEL_SOLID.get()))
-                    .where('D', blocks(GTBlocks.STEEL_HULL.get()))
-                    .where('E', blocks(GTBlocks.CASING_STEEL_GEARBOX.get()))
-                    .where('F', blocks(Blocks.IRON_BARS))
-                    .where('G', controller(definition))
-                    .where('H', blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))
-                    .where(' ', any())
+            .structure(definition -> Structure
+                    .root(MultiBlockFileReader.piece("carving_center").build())
+                    .symbols(Symbols.create()
+                            .wherePart('A', blocks(GTBlocks.CASING_STEEL_SOLID.get())
+                                    .or(abilities(IMPORT_ITEMS).setMaxGlobalLimited(4))
+                                    .or(abilities(EXPORT_ITEMS).setMaxGlobalLimited(1))
+                                    .or(abilities(INPUT_ENERGY).setMaxGlobalLimited(2))
+                                    .or(abilities(MAINTENANCE).setExactLimit(1)))
+                            .where('B', GTOPredicates.frame(GTMaterials.Steel))
+                            .where('C', blocks(GTBlocks.CASING_STEEL_SOLID.get()))
+                            .where('D', blocks(GTBlocks.STEEL_HULL.get()))
+                            .where('E', blocks(GTBlocks.CASING_STEEL_GEARBOX.get()))
+                            .where('F', blocks(Blocks.IRON_BARS))
+                            .where('G', controller(definition))
+                            .where('H', blocks(GTBlocks.CASING_TEMPERED_GLASS.get())))
                     .build())
             .workableCasingRenderer(GTCEu.id("block/casings/solid/machine_casing_solid_steel"), GTCEu.id("block/multiblock/fusion_reactor"))
             .register() : null;

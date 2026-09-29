@@ -295,7 +295,8 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @Override
     public Object getResourceIdentity() {
-        return cellStorage();
+        var storage = cellStorage();
+        return storage == CellDataStorage.EMPTY ? null : storage;
     }
 
     @Override
