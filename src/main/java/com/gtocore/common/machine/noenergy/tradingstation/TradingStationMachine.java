@@ -1,11 +1,13 @@
 package com.gtocore.common.machine.noenergy.tradingstation;
 
+import com.gtocore.client.QuestTradeClientIntegration;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.data.transaction.manager.TradeData;
 import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
 import com.gtocore.data.transaction.manager.UnlockManager;
+import com.gtocore.integration.Mods;
 
 import com.gtolib.utils.WalletUtils;
 
@@ -92,9 +94,10 @@ import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_TRADE;
  * 界面按 GTM 的 uipro（Ore UI）搭：主页、物品/流体存储、交易解锁各一页，每个商店一个页签，页面元素全部是 uipro 控件。
  * 数据流与 {@code DataCenter} 相同——<b>服务端是唯一权威</b>：
  * <ul>
- * <li>要显示的数值、文字都由服务端取值：{@link TextLine#of}、{@link StatusPanel} 的行、交易格的悬停说明、
+ * <li>要显示的数值、状态和语言无关内容都由服务端取值：{@link TextLine#of}、{@link StatusPanel} 的行、交易格的悬停说明、
  * {@link RichText} 的 {@code textSupplier}（客户端传 null，只等下发）都只在服务端执行，读机器字段、{@link TradingManager}、
- * {@link UnlockManager}、{@link WalletUtils} 这些客户端没有（或不可信）的数据源；</li>
+ * {@link UnlockManager}、{@link WalletUtils} 这些客户端没有（或不可信）的数据源。FTB Quests 条件只下发任务 ID，
+ * 标题由客户端按本地任务书与语言解析；</li>
  * <li>客户端渲染时只读同步下来的值（{@link SyncValue#getValue()}）与两端一致的静态注册数据（{@link TradingManager} 的名字、
  * 图标、条目数量）；</li>
  * <li>会改数据的点击走 {@code setOnServerClick}（如执行交易）；会改变控件树结构的点击走 {@link Button#setOnClick}
@@ -323,8 +326,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
         // 固定页签（与原实现一致：只在第一个商店组里显示）
         List<IFancyUIProvider> fixedTabs = new ArrayList<>();
+        fixedTabs.add(helpTab);
         if (groupSelected == 0) {
-            fixedTabs.add(helpTab);
             fixedTabs.add(itemStorageTab());
             fixedTabs.add(fluidStorageTab());
             fixedTabs.add(new UnlockTab());
@@ -812,7 +815,13 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             button.disabled(this::locked, null);
             addChild(button);
             addSyncValue(SyncValue.of(this::tooltipLines, TOOLTIP_LINES_CODEC, Collections.emptyList())
-                    .onChanged(lines -> button.setHoverTooltips(lines.toArray(Component[]::new))));
+                    .onChanged(lines -> {
+                        List<Component> displayLines = lines;
+                        if (TradingStationMachine.this.isRemote() && Mods.FTBQUESTS.isLoaded()) {
+                            displayLines = QuestTradeClientIntegration.resolveQuestTitles(lines);
+                        }
+                        button.setHoverTooltips(displayLines.toArray(Component[]::new));
+                    }));
         }
 
         /**

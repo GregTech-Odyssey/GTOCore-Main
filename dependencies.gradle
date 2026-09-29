@@ -81,7 +81,7 @@ dependencies {
     modImplementation("dev.shadowsoffire:Apotheosis:${project.minecraft_version}-7.4.8")
 
     // FTB
-    modImplementation("curse.maven:ftb-library-forge-404465:6807424")
+    modImplementation("curse.maven:ftb-library-forge-404465:8226927")
     modImplementation("curse.maven:ftb-ultimine-forge-386134:7880472")
 
     // Farmers Delight
@@ -124,9 +124,9 @@ dependencies {
 
     /* -------------------- Client / Server 运行范围声明 -------------------- */
     // FTB
-    modCompileOnly("curse.maven:ftb-quests-forge-289412:7909594")
-    modClientRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
-    modServerRuntimeOnly("curse.maven:ftb-quests-forge-289412:7909594")
+    modCompileOnly("curse.maven:ftb-quests-forge-289412:8078538")
+    modClientRuntimeOnly("curse.maven:ftb-quests-forge-289412:8078538")
+    modServerRuntimeOnly("curse.maven:ftb-quests-forge-289412:8078538")
 
     modCompileOnly("curse.maven:ftb-teams-forge-404468:7499810")
     modClientRuntimeOnly("curse.maven:ftb-teams-forge-404468:7499810")

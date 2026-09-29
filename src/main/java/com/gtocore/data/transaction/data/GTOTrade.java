@@ -130,9 +130,9 @@ public final class GTOTrade {
                         (data, entry) -> Mods.FTBQUESTS.isLoaded() && QuestTradeIntegration.hasCompletedQuest(data, questId) ? Integer.MAX_VALUE : 0,
                         remaining -> {
                             boolean completed = remaining > 0;
-                            Component quest = Mods.FTBQUESTS.isLoaded() ? QuestTradeIntegration.questName(questId, questIdText) :
-                                    Component.translatable("gtocore.trade.quest_id", questIdText);
-                            return Component.translatable("gtocore.trade.condition.quest", quest,
+                            // 服务端只同步任务 ID；客户端再用本地 FTB Quests 数据解析标题与语言。
+                            Component questIdComponent = Component.translatable("gtocore.trade.quest_id", questIdText);
+                            return Component.translatable("gtocore.trade.condition.quest", questIdComponent,
                                     Component.translatable(completed ? "gtocore.trade.condition.met" : "gtocore.trade.condition.unmet"));
                         })
                 .inputCurrency(currency, amount)
