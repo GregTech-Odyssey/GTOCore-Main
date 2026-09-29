@@ -27,7 +27,7 @@ public class ExpertFluidProcessing {
                 .EUt(30)
                 .duration(450)
                 .save();
-        AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust")
+        AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust1")
                 .chancedOutput(TagPrefix.dust, GTMaterials.Barite, 400, 50)
                 .chancedOutput(TagPrefix.dust, GTOMaterials.SedimentarySludge, 5000, 100)
                 .chancedOutput(TagPrefix.dust, GTOMaterials.MetamorphicSludge, 5000, 100)
@@ -43,7 +43,7 @@ public class ExpertFluidProcessing {
                 .EUt(30)
                 .duration(450)
                 .save();
-        AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust")
+        AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust2")
                 .chancedOutput(TagPrefix.dust, GTMaterials.Barite, 400, 50)
                 .chancedOutput(TagPrefix.dust, GTOMaterials.SedimentarySludge, 5000, 100)
                 .chancedOutput(TagPrefix.dust, GTOMaterials.MetamorphicSludge, 5000, 100)
