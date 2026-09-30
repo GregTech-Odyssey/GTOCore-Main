@@ -16,6 +16,7 @@ import com.gtolib.api.recipe.RecipeType;
 import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 
@@ -32,7 +33,6 @@ import appeng.hooks.IUnique;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -45,9 +45,12 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 public class DataScanningManager {
 
     private static final Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
-    private static final Reference2ReferenceMap<ResearchTag, Set<AEKey>> dataScanningSources = new Reference2ReferenceOpenHashMap<>();
+    private static final Reference2ObjectOpenHashMap<Material, ResearchPoints> materialDataScanningMap = new Reference2ObjectOpenHashMap<>();
+    private static final Reference2ReferenceOpenHashMap<ResearchTag, ObjectOpenCustomHashSet<AEKey>> dataScanningSources = new Reference2ReferenceOpenHashMap<>();
+    private static ObjectArrayList<DataScanningEntry> dataScanningEntries = new ObjectArrayList<>();
 
     private static Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> regMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
+    private static Reference2ObjectOpenHashMap<Material, ResearchPoints> materialRegMap = new Reference2ObjectOpenHashMap<>();
 
     private static final Reference2ObjectMap<UUID, Set<AEKey>> teamUnscannedItems = new Reference2ObjectOpenHashMap<>();
     private static boolean frozen = false;
@@ -59,21 +62,36 @@ public class DataScanningManager {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(points, "points");
 
+        var material = AEChemicalHelper.getMaterial(key);
+        if (material != NULL) {
+            registerDataScanning(material, points);
+            return;
+        }
+
         var previous = regMap.put(key, points);
         if (previous != null) {
             throw new IllegalStateException("Data scanning for key " + key + " is already registered with points: " + previous);
         }
     }
 
-    public static List<DataScanningEntry> getDataScanningEntries() {
-        List<DataScanningEntry> entries = new ArrayList<>(dataScanningMap.size());
-        for (var it = dataScanningMap.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
-            entries.add(new DataScanningEntry(entry.getKey(), entry.getValue()));
+    public static synchronized void registerDataScanning(Material material, ResearchPoints points) {
+        if (frozen) {
+            throw new IllegalStateException("Data scanning registration is frozen");
         }
-        entries.sort(Comparator.comparing((DataScanningEntry entry) -> entry.key().getType().getId().toString())
-                .thenComparing(entry -> entry.key().getId().toString()));
-        return entries;
+        Objects.requireNonNull(material, "material");
+        Objects.requireNonNull(points, "points");
+        if (material == NULL) {
+            throw new IllegalArgumentException("Cannot register data scanning for the null material");
+        }
+
+        var previous = materialRegMap.putIfAbsent(material, points);
+        if (previous != null) {
+            throw new IllegalStateException("Data scanning for material " + material + " is already registered with points: " + previous);
+        }
+    }
+
+    public static List<DataScanningEntry> getDataScanningEntries() {
+        return dataScanningEntries;
     }
 
     public static Set<AEKey> getDataScanningSources(ResearchTag tag) {
@@ -111,7 +129,7 @@ public class DataScanningManager {
                 }
             }
         }
-        return scanDataRaw(key, penalty);
+        return scanDataRaw(key, mat, penalty);
     }
 
     public static ResearchPoints scanData(AEKey key, UUID team, long times, boolean simulate) {
@@ -133,11 +151,15 @@ public class DataScanningManager {
                 }
             }
         }
-        return scanDataRaw(key, effectiveTimes);
+        return scanDataRaw(key, mat, effectiveTimes);
     }
 
     public static ResearchPoints scanDataRaw(AEKey key, float penalty) {
-        var override = dataScanningMap.get(key);
+        return scanDataRaw(key, AEChemicalHelper.getMaterial(key), penalty);
+    }
+
+    private static ResearchPoints scanDataRaw(AEKey key, Material material, float penalty) {
+        var override = material == NULL ? dataScanningMap.get(key) : materialDataScanningMap.get(material);
         if (override != null) {
             return override.copyWithWeight(penalty);
         }
@@ -174,38 +196,92 @@ public class DataScanningManager {
         frozen = true;
         var prof = System.nanoTime();
         dataScanningMap.putAll(regMap);
-        BuiltInRegistries.ITEM.stream().forEach(key -> {
+        materialDataScanningMap.putAll(materialRegMap);
+        dataScanningEntries = new ObjectArrayList<>(dataScanningMap.size() + BuiltInRegistries.ITEM.size() + BuiltInRegistries.FLUID.size());
+        for (var it = dataScanningMap.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
+            dataScanningEntries.add(new DataScanningEntry(entry.getKey(), entry.getValue()));
+        }
+        var generatedMaterialPoints = new Reference2ObjectOpenHashMap<Material, ResearchPoints>();
+        BuiltInRegistries.ITEM.forEach(key -> {
             var aeKey = AEItemKey.of(key);
-            if (!dataScanningMap.containsKey(aeKey)) {
-                var points = scanDataRaw(key);
-                if (points.isEmpty()) {
-                    return;
+            if (aeKey == null) return;
+            var material = AEChemicalHelper.getMaterial(aeKey);
+            if (material != NULL) {
+                var points = materialDataScanningMap.get(material);
+                if (points == null) {
+                    points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(key));
                 }
-                putSearch(aeKey, points);
+                dataScanningEntries.add(new DataScanningEntry(aeKey, points));
+            } else if (!dataScanningMap.containsKey(aeKey)) {
+                var points = scanDataRaw(key);
+                if (!points.isEmpty()) {
+                    dataScanningMap.put(aeKey, points);
+                    dataScanningEntries.add(new DataScanningEntry(aeKey, points));
+                }
             }
         });
-        BuiltInRegistries.FLUID.stream().forEach(key -> {
+        BuiltInRegistries.FLUID.forEach(key -> {
             var aeKey = AEFluidKey.of(key);
-            if (!dataScanningMap.containsKey(aeKey)) {
-                var points = scanDataRaw(key);
-                if (points.isEmpty()) {
-                    return;
+            if (aeKey == null) return;
+            var material = AEChemicalHelper.getMaterial(aeKey);
+            if (material != NULL) {
+                var points = materialDataScanningMap.get(material);
+                if (points == null) {
+                    points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(key));
                 }
-                putSearch(aeKey, points);
+                dataScanningEntries.add(new DataScanningEntry(aeKey, points));
+            } else if (!dataScanningMap.containsKey(aeKey)) {
+                var points = scanDataRaw(key);
+                if (!points.isEmpty()) {
+                    dataScanningMap.put(aeKey, points);
+                    dataScanningEntries.add(new DataScanningEntry(aeKey, points));
+                }
             }
         });
+        materialDataScanningMap.putAll(generatedMaterialPoints);
+        dataScanningEntries.sort(Comparator.comparing((DataScanningEntry entry) -> entry.key().getType().getId().toString())
+                .thenComparing(entry -> entry.key().getId().toString()));
+        rebuildDataScanningSources();
         regMap = null;
+        materialRegMap = null;
         GTOCore.LOGGER.info("Data scanning freeze took {}ms", (System.nanoTime() - prof) / 1_000_000);
     }
 
-    private static void putSearch(AEKey key, ResearchPoints points) {
-        dataScanningMap.put(key, points);
-        for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+    private static ResearchPoints mergeGeneratedMaterialPoints(Reference2ObjectOpenHashMap<Material, ResearchPoints> generatedMaterialPoints,
+                                                               Material material, ResearchPoints points) {
+        var materialPoints = generatedMaterialPoints.get(material);
+        if (materialPoints == null) {
+            generatedMaterialPoints.put(material, points);
+            return points;
+        }
+        // Alternate forms are equivalent targets; retain each domain's best yield without summing forms.
+        mergeMaximumPoints(materialPoints, points);
+        return materialPoints;
+    }
+
+    private static void mergeMaximumPoints(ResearchPoints target, ResearchPoints source) {
+        for (var it = source.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
-            if (entry.getLongValue() <= 0L) {
-                continue;
+            if (entry.getLongValue() > target.getLong(entry.getKey())) {
+                target.put(entry.getKey(), entry.getLongValue());
             }
-            dataScanningSources.computeIfAbsent(entry.getKey(), ignored -> new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY)).add(key);
+        }
+    }
+
+    private static void rebuildDataScanningSources() {
+        dataScanningSources.clear();
+        for (DataScanningEntry entry : dataScanningEntries) {
+            addDataScanningSource(entry.key(), entry.points());
+        }
+    }
+
+    private static void addDataScanningSource(AEKey key, ResearchPoints points) {
+        for (var pointIt = points.reference2LongEntrySet().fastIterator(); pointIt.hasNext();) {
+            var pointEntry = pointIt.next();
+            if (pointEntry.getLongValue() > 0L) {
+                dataScanningSources.computeIfAbsent(pointEntry.getKey(), ignored -> new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY)).add(key);
+            }
         }
     }
 

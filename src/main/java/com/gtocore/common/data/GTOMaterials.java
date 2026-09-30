@@ -346,6 +346,10 @@ public final class GTOMaterials {
     public static Material StarClusterNucleus;
     // 太阳风
     public static Material SolarWind;
+    // 原始氦等离子体 TODO:产线->氦等离子体 + 平衡
+    public static Material PrimordialHeliumPlasma;
+    // 原始老生代铁等离子体 TODO:产线->铁等离子体 + 平衡
+    public static Material PrimordialPaleozoicIronPlasma;
 
     public static Material IronChromiumRedoxFlowBatteryElectrolyte;// iv 2a uev
     public static Material VanadiumRedoxFlowBatteryElectrolyte;// luv 1a uxv

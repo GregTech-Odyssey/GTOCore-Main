@@ -461,7 +461,7 @@ public final class GTOBedrockFluids {
             .biomes(150, BiomeTags.IS_OCEAN));
 
     public static BedrockFluidDefinition HELIUM_PLASMA = create(GTCEu.id("helium_plasma_deposit"), "氦等离子矿藏", builder -> builder
-            .fluid(() -> GTMaterials.Helium.getFluid(FluidStorageKeys.PLASMA))
+            .fluid(() -> GTOMaterials.PrimordialHeliumPlasma.getFluid(FluidStorageKeys.PLASMA))
             .weight(10)
             .yield(10, 14)
             .depletionAmount(1)
@@ -470,7 +470,7 @@ public final class GTOBedrockFluids {
             .dimensions(Collections.singleton(SOLAR_SURFACE)));
 
     public static BedrockFluidDefinition FERRO_PLASMA = create(GTCEu.id("ferro_plasma_deposit"), "铁等离子矿藏", builder -> builder
-            .fluid(() -> GTMaterials.Iron.getFluid(FluidStorageKeys.PLASMA))
+            .fluid(() -> GTOMaterials.PrimordialPaleozoicIronPlasma.getFluid(FluidStorageKeys.PLASMA))
             .weight(1)
             .yield(1, 4)
             .depletionAmount(1)

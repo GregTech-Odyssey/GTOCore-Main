@@ -10,6 +10,8 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIconSet;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.ToolProperty;
 import com.gregtechceu.gtceu.api.fluids.FluidBuilder;
+import com.gregtechceu.gtceu.api.fluids.FluidState;
+import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.item.Rarity;
@@ -1521,6 +1523,18 @@ public final class MaterialA {
                 .temp(24000)
                 .color(0x32d3d3)
                 .iconSet(BRIGHT)
+                .buildAndRegister();
+        PrimordialHeliumPlasma = material("primordial_helium_plasma", "原始氦等离子体")
+                .temp(24000)
+                .color(0x32d3d3)
+                .iconSet(BRIGHT)
+                .fluid(FluidStorageKeys.PLASMA, FluidState.PLASMA)
+                .buildAndRegister();
+        PrimordialPaleozoicIronPlasma = material("primordial_paleozoic_iron_plasma", "原始老生代铁等离子体")
+                .temp(24000)
+                .color(0x32d3d3)
+                .iconSet(BRIGHT)
+                .fluid(FluidStorageKeys.PLASMA, FluidState.PLASMA)
                 .buildAndRegister();
 
         RareEarthMetal = material("rare_earth_metal", "稀土金属")

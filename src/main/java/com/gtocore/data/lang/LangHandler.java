@@ -213,6 +213,7 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.vacuum.tier", "真空等级：%s", "Vacuum Tier: %s");
         addCNEN("gtocore.recipe.restricted_machine", "只能运行在：%s", "Only runnable on: %s");
         addCNEN("gtocore.recipe.heat.temperature", "需要外部热源：%s K", "External heat source is required: %s K");
+        addCNEN("gtocore.recipe.heat.temperature.reverse", "外部热源温度不能超过：%s K", "External heat source temperature cannot exceed: %s K");
         addCNEN("gtocore.recipe.runlimit.count", "运行次数限制：%s", "Run Limit: %s times");
         addCNEN("gtocore.recipe.mana_consumption", "魔力消耗", "Mana Consumption");
         addCNEN("gtocore.recipe.mana_production", "魔力产出", "Mana Production");

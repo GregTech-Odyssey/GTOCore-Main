@@ -3,6 +3,7 @@ package com.gtocore.common.recipe.condition;
 import com.gtocore.api.machine.part.IHeatContainerPart;
 
 import com.gtolib.api.capability.IHeatContainer;
+import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.ICoilMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
@@ -16,18 +17,39 @@ import net.minecraft.network.chat.Component;
 public final class HeatCondition extends RecipeCondition {
 
     private final int temperature;
+    private final boolean machineCheck;
 
     public HeatCondition(int temperature) {
+        this(false, temperature, false);
+    }
+
+    private HeatCondition(boolean isReverse, int temperature, boolean machineCheck) {
+        super(isReverse);
         this.temperature = temperature;
+        this.machineCheck = machineCheck;
+    }
+
+    public static HeatCondition maximumMachineTemperature(int temperature) {
+        return new HeatCondition(true, temperature, true);
     }
 
     @Override
     public Component getTooltips() {
+        if (isReverse) {
+            return Component.translatable("gtocore.recipe.heat.temperature.reverse", temperature);
+        }
         return Component.translatable("gtocore.recipe.heat.temperature", temperature);
     }
 
     @Override
     public boolean testCondition(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
+        if (machineCheck) {
+            if (holder instanceof IHeatContainerMachine machine) {
+                return machine.getHeatContainer().getTemperature() >= temperature;
+            }
+            var container = IHeatContainer.getCapability(holder.self().holder);
+            return container != null && container.getTemperature() >= temperature;
+        }
         if (holder instanceof IMultiController controller) {
             if (holder instanceof ICoilMachine coilMachine && coilMachine.getTemperature() >= temperature) {
                 return true;
