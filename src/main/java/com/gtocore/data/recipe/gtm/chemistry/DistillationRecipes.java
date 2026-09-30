@@ -74,13 +74,13 @@ final class DistillationRecipes {
         DISTILLATION_RECIPES.recipeBuilder("distill_water_large")
                 .inputFluids(Water, 576)
                 .outputFluids(DistilledWater.getFluid(520))
-                .duration(160).EUt(VA[MV]).save();
+                .duration(320).EUt(VA[MV]).save();
 
         DISTILLERY_RECIPES.recipeBuilder("distill_water_small")
                 .inputFluids(Water, 5)
                 .circuitMeta(5)
                 .outputFluids(DistilledWater.getFluid(5))
-                .duration(16).EUt(10).save();
+                .duration(32).EUt(10).save();
 
         DISTILLATION_RECIPES.recipeBuilder("distill_acetone")
                 .inputFluids(Acetone, 1000)

@@ -417,7 +417,7 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.ARC)
             .ingredientConverter(DimensionDataItem.INGREDIENT_CONVERTER)
             .itemConverter(DimensionDataItem.ITEM_CONVERTER)
-            .addDataInfo(data -> I18n.get("ars_nouveau.tier", data.data.getInt(GTORecipeDataKeys.TIER)));
+            .setUiBuilder((recipe, info) -> info.line("gtocore.recipe.simulation_tier", () -> Component.literal(String.valueOf(recipe.data.getInt(GTORecipeDataKeys.TIER)))));
 
     public static final RecipeType SPACE_PROBE_SURFACE_RECEPTION_RECIPES = register("space_probe_surface_reception", "宇宙射线搜集", MULTIBLOCK)
             .setEUIO(IO.IN)
@@ -885,7 +885,7 @@ public final class GTORecipeTypes {
             .setMaxIOSize(0, 0, 1, 1)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.ARC)
-            .addDataInfo(data -> LocalizationUtils.format("ars_nouveau.tier", data.data.getInt(GTORecipeDataKeys.TIER)));
+            .setUiBuilder((recipe, info) -> info.line("gtocore.recipe.tier", () -> Component.literal(String.valueOf(recipe.data.getInt(GTORecipeDataKeys.TIER)))));
 
     public static final RecipeType PHYSICAL_VAPOR_DEPOSITION_RECIPES = register("physical_vapor_deposition", "物理气相沉积", MULTIBLOCK)
             .setEUIO(IO.IN)

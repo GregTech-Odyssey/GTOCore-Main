@@ -36,7 +36,7 @@ public class TesseractClientHandler {
         if (Minecraft.getInstance().player == null) return;
         var item = Minecraft.getInstance().player.getMainHandItem();
         if (TesseractTargetMarker.isTesseractTargetMarker(item)) {
-            var faces = TesseractTargetMarker.getAllPatternFaces(item);
+            var faces = TesseractTargetMarker.getOrderedTargets(item);
             onRenderDirected(event, faces);
         }
         if (!DirectedTesseractMachine.HIGHLIGHTS.isEmpty()) {
@@ -63,12 +63,11 @@ public class TesseractClientHandler {
         poseStack.pushPose();
         {
             var totalLength = faces.size() * 2;
-            for (var face : faces) {
+            for (int i = 0; i < faces.size(); i++) {
+                var face = faces.get(i);
                 if (face.pos().dimension() != level.dimension()) continue;
-                var order = face.order();
-                float percent;
-                if (order < 0) percent = (totalLength + order) / ((float) totalLength * 2);
-                else percent = order / ((float) totalLength * 2);
+                var order = i + 1;
+                float percent = order / ((float) totalLength * 2);
                 Color color = Color.getHSBColor(lerpHue(percent), 1.0f, 1.0f);
 
                 var faceMinX = face.pos().pos().getX() + (face.face() == Direction.EAST ? 1.0 : 0.0);

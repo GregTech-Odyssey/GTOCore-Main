@@ -1,5 +1,6 @@
 package com.gtocore.api.research.techtree.ui;
 
+import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.TeamResearchSavedData;
@@ -50,6 +51,7 @@ import dev.vfyjxf.taffy.style.FlexWrap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -86,6 +88,12 @@ public final class TechNodeDetails {
     private static final String CWU_EUREKA_DESC = "gtocore.research.side_tab.cwu_eureka_desc";
     @RegisterLanguage(cn = "扫描%s以触发尤里卡，提供%s%%研究进度加成", en = "Scan %s to trigger Eureka! and provide %s%% research progress bonus")
     private static final String CWU_NO_EUREKA_DESC = "gtocore.research.side_tab.cwu_eureka_scan_desc";
+    @RegisterLanguage(cn = "扫描此物品以触发尤里卡", en = "Scan this item to trigger Eureka!")
+    private static final String EUREKA_SCAN_HINT = "gtocore.techtree.details.eureka_scan_hint";
+    @RegisterLanguage(cn = "尤里卡已触发", en = "Eureka! triggered")
+    private static final String EUREKA_TRIGGERED = "gtocore.techtree.details.eureka_triggered";
+    @RegisterLanguage(cn = "研究进度加成%s%%", en = "Research progress bonus: %s%%")
+    private static final String EUREKA_BONUS = "gtocore.techtree.details.eureka_bonus";
     @RegisterLanguage(cn = "解锁需求：", en = "Unlock Requirements:")
     private static final String REQUIREMENTS_LABEL = "gtocore.research.side_tab.requirements";
     @RegisterLanguage(cn = "前置节点：", en = "Prerequisites:")
@@ -164,14 +172,17 @@ public final class TechNodeDetails {
         var requirements = node.getRequirements();
         if (requirements != null && (requirements.getCwuNeeded() > 0 || !requirements.getMaterialNeeded().isEmpty())) {
             var section = UIElement.section().addChild(TextLine.translatable(LayoutStyle.AUTO, REQUIREMENTS_LABEL));
-            if (requirements.getCwuNeeded() > 0) section.addChild(cwuBar(node, player));
+            if (requirements.getCwuNeeded() > 0) {
+                section.addChild(cwuBar(node, player));
+                if (requirements.getEurekaItem() != null) section.addChild(eurekaRow(requirements, player));
+            }
             for (var tag : sortedTags(node)) section.addChild(new ResearchTagBar(node, tag, player));
             column.addChild(section);
         }
 
         // 可解锁：配方产物取决于配方数据（两端可能不同），区块与格子照建，由服务端判定显示
         boolean hasRewards = !node.getRecipePrimaryOutputs().isEmpty() || !node.getAdditionalLines().isEmpty();
-        var rewards = UIElement.section().addChildren(TextLine.translatable(LayoutStyle.AUTO, TechNode.UNLOCKABLE_LABEL), new RewardGrid(node));
+        var rewards = UIElement.section().addChildren(TextLine.translatable(LayoutStyle.AUTO, TechNode.UNLOCKABLE_LABEL), new StackGrid(node.getRecipePrimaryOutputs()));
         for (var line : node.getAdditionalLines()) rewards.addChild(Label.of(() -> line, TEXT_WIDTH));
         column.addChild(rewards);
         bindDisplay(column, rewards, () -> hasRewards);
@@ -273,6 +284,21 @@ public final class TechNodeDetails {
             });
         }
         return bar;
+    }
+
+    private static UIElement eurekaRow(ResearchRequirements requirements, Supplier<Player> player) {
+        var eurekaItem = requirements.getEurekaItem();
+        String percent = FormattingUtil.formatNumber2Places(requirements.getEurekaProgress() * 100f);
+        int textWidth = TEXT_WIDTH - UISizes.SLOT - UISizes.SECTION_GAP;
+        var state = Label.of(() -> {
+            var context = context(player.get());
+            return Component.translatable(context != null && context.hasScanned(eurekaItem) ? EUREKA_TRIGGERED : EUREKA_SCAN_HINT);
+        }, textWidth);
+        var bonus = Component.translatable(EUREKA_BONUS, percent);
+        var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.heightAuto().flex(1))
+                .addChildren(state, Label.of(() -> bonus, textWidth));
+        return UIElement.row(LayoutStyle.AUTO).layout(l -> l.heightAuto().gapAll(UISizes.SECTION_GAP).alignCenter())
+                .addChildren(new StackGrid(Collections.singletonList(eurekaItem)), text);
     }
 
     // ==================== 研究点数进度条 ====================
@@ -400,29 +426,29 @@ public final class TechNodeDetails {
         }
     }
 
-    // ==================== 可解锁的配方产物 ====================
+    // ==================== 物品格 ====================
 
     /**
-     * 解锁后得到的配方产物，每行 9 格。一个控件画整组格子：格子数按节点的静态数据定（两端一致），
+     * 一组物品 / 流体（解锁后得到的配方产物、尤里卡物品），每行 9 格。一个控件画整组格子：格子数按静态数据定（两端一致），
      * 格子里的 EMI 物品只在客户端取（服务端没有 EMI 的渲染数据）。左键查配方、右键查用途。
      */
-    private static final class RewardGrid extends UIElement implements IIngredientSlot {
+    private static final class StackGrid extends UIElement implements IIngredientSlot {
 
-        private final TechNode node;
+        private final Collection<AEKey> keys;
         private final int count;
         @Nullable
         private List<EmiStack> stacks;
 
-        private RewardGrid(TechNode node) {
-            this.node = node;
-            this.count = node.getRecipePrimaryOutputs().size();
+        private StackGrid(Collection<AEKey> keys) {
+            this.keys = keys;
+            this.count = keys.size();
             int columns = Math.min(count, UISizes.SLOTS_PER_ROW), rows = (count + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW;
             layout(l -> l.size(columns * UISizes.SLOT, rows * UISizes.SLOT));
         }
 
         @OnlyIn(Dist.CLIENT)
         private List<EmiStack> stacks() {
-            if (stacks == null) stacks = EmiResearchHelper.toEmiStacks(node.getRecipePrimaryOutputs());
+            if (stacks == null) stacks = EmiResearchHelper.toEmiStacks(keys);
             return stacks;
         }
 

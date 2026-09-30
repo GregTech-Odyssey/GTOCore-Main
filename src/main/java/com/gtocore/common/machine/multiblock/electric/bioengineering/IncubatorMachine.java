@@ -63,7 +63,7 @@ public final class IncubatorMachine extends TierCasingMultiblockMachine {
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("ars_nouveau.tier", cleanroomTier));
+        textList.add(Component.translatable("gtocore.tier.value", cleanroomTier));
     }
 
     @Override

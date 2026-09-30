@@ -1,12 +1,14 @@
 package com.gtocore.common.machine.tesseract;
 
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.item.CoordinateCardBehavior;
 
-import com.gtolib.api.machine.part.ItemPartMachine;
 import com.gtolib.api.player.IEnhancedPlayer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -15,6 +17,8 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +37,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEItemKey;
 
+import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +69,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     public TesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.NONE);
+        inventory = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.NONE).setFilter(stack -> stack.is(GTOItems.COORDINATE_CARD.asItem()));
         inventory.storage.setOnContentsChanged(() -> {
             onChanged();
             call = false;
@@ -81,8 +86,38 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     }
 
     @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        IFancyUIMachine.super.attachConfigurators(configuratorPanel);
+        configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(
+                WidgetIcons.HIGHLIGHT, WidgetIcons.HIGHLIGHT, () -> false,
+                (clickData, pressed) -> {
+                    if (clickData.isRemote && getLevel() != null && pos != null) {
+                        AdvancedTesseractMachine.HIGHLIGHTS.add(ImmutableList.of(pos.asLong()), 200);
+                    }
+                })
+                .setTooltipsSupplier(pressed -> Collections.singletonList(Component.translatable(HIGHLIGHT_TEXT))));
+    }
+
+    @Override
     public Widget createUIWidget() {
-        return ItemPartMachine.createSLOTWidget(inventory);
+        var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, () -> inventory.storage.getStackInSlot(0).hashCode(),
+                Component.translatable(TesseractUI.ROW_EMPTY));
+        var row = TesseractUI.row(ItemSlot.of(inventory.storage, 0), targets, 0, TesseractUI.face(targets, 0));
+        var bound = Component.translatable(TesseractUI.VALUE_BOUND, 1, 1);
+        var unbound = Component.translatable(TesseractUI.VALUE_BOUND, 0, 1);
+        return TesseractUI.page(
+                TesseractUI.status(() -> pos == null ? unbound : bound, false, false),
+                TesseractUI.listSection(TesseractUI.SECTION_TARGETS, TesseractUI.column(List.of(row)),
+                        TesseractUI.TARGETS_TOOLTIP, TesseractUI.TARGETS_MARKER_TOOLTIP),
+                TesseractUI.basicPushSection());
+    }
+
+    private List<TesseractUI.Target> cardTargets() {
+        var level = getLevel();
+        var card = inventory.storage.getStackInSlot(0);
+        var cardPos = CoordinateCardBehavior.getStoredCoordinates(card);
+        if (level == null || cardPos == null) return Collections.singletonList(null);
+        return Collections.singletonList(new TesseractUI.Target(GlobalPos.of(level.dimension(), cardPos), null));
     }
 
     @Override
@@ -140,6 +175,18 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     @Override
     public boolean onMarkerInteract(Player player, List<TesseractDirectedTarget> targets) {
+        if (getLevel() == null || getLevel().isClientSide()) return true;
+        TesseractDirectedTarget first = null;
+        for (var target : targets) {
+            if (target.pos().dimension() == getLevel().dimension() && !target.pos().pos().equals(getPos())) {
+                first = target;
+                break;
+            }
+        }
+        if (first == null) {
+            player.displayClientMessage(Component.translatable(targets.isEmpty() ? WRITE_EMPTY_TEXT : WRITE_NO_TARGET_TEXT), true);
+            return true;
+        }
         ItemStack card = GTOItems.COORDINATE_CARD.asItem().getDefaultInstance();
         if (inventory.storage.getStackInSlot(0).isEmpty()) {
             card = ItemStack.EMPTY;
@@ -166,7 +213,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
                 return true;
             }
         }
-        var pos = targets.getFirst().pos().pos();
+        var pos = first.pos().pos();
         CompoundTag posTags = card.getOrCreateTag();
         posTags.putInt("x", pos.getX());
         posTags.putInt("y", pos.getY());

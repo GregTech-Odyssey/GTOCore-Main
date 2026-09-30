@@ -114,7 +114,7 @@ public final class StructureModuleKeys {
 
     @RegisterLanguage(cn = "塔节层数", en = "Tower Layers")
     private static final String DISTILLATION_TOWER_LAYERS_NAME = "gtocore.multiblock.distillation_tower.layers";
-    @RegisterLanguage(cn = "底座与塔顶之间的塔节层数", en = "Number of tower layers between the base and the top")
+    @RegisterLanguage(cn = "第一层塔节与塔顶之间的额外塔节层数", en = "Number of extra tower layers between the first tower layer and the top")
     private static final String DISTILLATION_TOWER_LAYERS_DESC = "gtocore.multiblock.distillation_tower.layers.desc";
     public static final ParamKey DISTILLATION_TOWER_LAYERS = ParamKey.of(DISTILLATION_TOWER_LAYERS_NAME, DISTILLATION_TOWER_LAYERS_DESC);
 

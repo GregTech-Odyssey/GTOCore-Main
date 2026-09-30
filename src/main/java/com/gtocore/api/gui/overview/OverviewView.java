@@ -7,18 +7,17 @@ import com.gregtechceu.gtceu.uipro.ILayoutHost;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.canvas.CanvasControls;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.view.ZoomBar;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.uipro.window.PopupCard;
 import com.gregtechceu.gtceu.uiwidgets.patternbuilder.PatternBuilderPanel;
 import com.gregtechceu.gtceu.uiwidgets.structure.StructurePlans;
-import com.gregtechceu.gtceu.uiwidgets.structure.StructurePreviewScreen;
 import com.gregtechceu.gtceu.uiwidgets.structure.StructureScene;
 
 import net.minecraft.client.Minecraft;
@@ -34,9 +33,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
+import dev.vfyjxf.taffy.style.TaffyPosition;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
@@ -50,11 +48,10 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @OnlyIn(Dist.CLIENT)
-public final class OverviewView extends WidgetGroup implements ILayoutHost, ILocalUI {
+public final class OverviewView extends UIElement implements ILayoutHost, ILocalUI {
 
     static final float FIT = 1.05f;
     private static final int MARGIN = 8;
-    private static final int PERCENT_WIDTH = 32;
     private static final int LEGEND_TEXT = 118;
     private static final int CONNECTED_COLOR = 0xC6C6C6;
     private static final int DETACHED_COLOR = 0xE0685C;
@@ -96,6 +93,8 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
     private final SnapshotWorld world = new SnapshotWorld();
     private final List<StructureScene.Marker> markers = new ArrayList<>();
     private int anchor = -1;
+    private int placedBuilderWidth = -1;
+    private boolean placing;
 
     private final class SnapshotWorld implements BlockGetter {
 
@@ -132,24 +131,17 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
     }
 
     private OverviewView(OverviewWidget owner) {
-        super(0, 0, owner.getSizeWidth(), owner.getSizeHeight());
         this.owner = owner;
+        layout(l -> l.size(owner.getSizeWidth(), owner.getSizeHeight()));
         this.adapter = owner.getAdapter();
         setClientSideWidget();
         var icon = owner.getHost().getDefinition().asStack();
-        scene = new StructureScene(100, 100, true);
-        scene.setBlocked(this::overPanel);
+        scene = new StructureScene("overview", 100, 100, true);
+        scene.setZoomButtons(true);
         scene.setOnMarker(this::onMarker);
         var back = Button.icon(UITheme.ARROW_LEFT).setOnClientClick(owner::requestBack);
         back.setHoverTooltips(OverviewWidget.LANG_BACK);
-        var zoomOut = Button.icon(UITheme.CANVAS_ZOOM_OUT).setOnClientClick(() -> scene.zoomStep(-1));
-        zoomOut.setHoverTooltips(CanvasControls.ZOOM_OUT);
-        var percent = Button.text(PERCENT_WIDTH, UISizes.ICON_BUTTON, scene::percentText).setOnClientClick(scene::resetZoom);
-        percent.setHoverTooltips(StructurePreviewScreen.ZOOM);
-        var zoomIn = Button.icon(UITheme.CANVAS_ZOOM_IN).setOnClientClick(() -> scene.zoomStep(1));
-        zoomIn.setHoverTooltips(CanvasControls.ZOOM_IN);
-        var reset = Button.icon(UITheme.CANVAS_FIT).setOnClientClick(scene::resetView);
-        reset.setHoverTooltips(StructurePreviewScreen.RESET);
+        var tools = ZoomBar.of(scene, false).zoom(true).fit(ZoomBar.RESET).build();
         var close = Button.glyph("×").setOnClientClick(() -> {
             var player = Minecraft.getInstance().player;
             if (player != null) player.closeContainer();
@@ -157,7 +149,7 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
         close.setHoverTooltips(MachineWindow.POPUP_CLOSE);
         var titleRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(back, ItemView.of(icon),
                 TextLine.constant(LayoutStyle.AUTO, Component.translatable(adapter.titleKey())).layout(l -> l.flex(1)),
-                zoomOut, percent, zoomIn, reset, close);
+                tools, close);
         frame = new UIElement().layout(l -> l.column().paddingAll(UISizes.POPUP_PADDING).gapAll(UISizes.GAP));
         frame.setBackground(UITheme.WINDOW);
         frame.addChild(titleRow);
@@ -171,9 +163,8 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
                 truncatedNotice, coarseNotice);
         selector = new OverviewSelector(this, adapter);
         flow = new OverviewBuildFlow(this, owner, adapter);
-        addWidget(frame);
-        addWidget(scene);
-        addWidget(legend);
+        addChildren(frame, scene, legend);
+        place();
     }
 
     public static void attach(OverviewWidget owner) {
@@ -224,14 +215,9 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
     }
 
     @Override
-    public void setSize(Size size) {
-        super.setSize(size);
-        place();
-    }
-
-    @Override
     public void onScreenSizeUpdate(int screenWidth, int screenHeight) {
-        setSize(new Size(screenWidth, screenHeight));
+        layout(l -> l.size(screenWidth, screenHeight));
+        place();
         super.onScreenSizeUpdate(screenWidth, screenHeight);
     }
 
@@ -252,45 +238,53 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
     }
 
     private void place() {
-        if (frame == null) return;
+        if (frame == null || placing) return;
+        placing = true;
+        try {
+            placeChildren();
+        } finally {
+            placing = false;
+        }
+    }
+
+    private void placeChildren() {
         int width = frameWidth(), height = frameHeight();
-        frame.layout(l -> l.size(width, height));
-        frame.setSelfPosition(new Position(MARGIN, MARGIN));
+        frame.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(MARGIN).top(MARGIN).size(width, height));
         int top = MARGIN + UISizes.POPUP_PADDING + UISizes.CONTROL_HEIGHT + UISizes.GAP;
         int left = MARGIN + UISizes.POPUP_PADDING;
         int right = MARGIN + width - UISizes.POPUP_PADDING;
         int bottom = MARGIN + height - UISizes.POPUP_PADDING;
-        scene.setSelfPosition(new Position(left, top));
-        scene.setSize(new Size(right - left, bottom - top));
-        legend.setSelfPosition(new Position(left + UISizes.GAP, bottom - legend.getSizeHeight() - UISizes.GAP));
+        int rightInset = getSizeWidth() - right + UISizes.GAP;
+        int bottomInset = getSizeHeight() - bottom + UISizes.GAP;
+        scene.setPreferredSize(right - left, bottom - top);
+        scene.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(left).top(top));
+        legend.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(left + UISizes.GAP).bottom(bottomInset));
         int cardTop = top + UISizes.GAP;
         int maxHeight = bottom - cardTop - UISizes.GAP;
         if (card != null) {
             card.setMaxHeight(maxHeight);
-            flow.fitConfig(card);
-            card.setSelfPosition(new Position(right - card.getSizeWidth() - UISizes.GAP, cardTop));
+            card.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).right(rightInset).top(cardTop));
         }
         if (builder != null) {
-            builder.setSelfPosition(new Position(right - builder.getSizeWidth() - UISizes.GAP, cardTop));
+            placedBuilderWidth = builder.getSizeWidth();
+            builder.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).right(rightInset).top(cardTop));
             if (builderPopup != null) {
+                int popupInset = rightInset + placedBuilderWidth + UISizes.POPUP_GAP;
                 builderPopup.setMaxHeight(maxHeight);
-                builderPopup.setSelfPosition(new Position(builder.getPositionX() - builderPopup.getSizeWidth() - UISizes.POPUP_GAP, cardTop));
+                builderPopup.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).right(popupInset).top(cardTop));
             }
         }
     }
 
-    private boolean overPanel(double x, double y) {
-        return card != null && card.isMouseOverElement(x, y) || builder != null && builder.isMouseOverElement(x, y) ||
-                builderPopup != null && builderPopup.isMouseOverElement(x, y) || legend.isMouseOverElement(x, y);
-    }
+    @Override
+    public void onContentResized(Widget root) {}
 
     @Override
-    public void onContentResized(Widget root) {
-        if (root == frame || root == card || root == builder || root == builderPopup || root == legend) place();
+    protected void onLayoutFinished() {
+        if (placing) return;
+        if (card != null) flow.fitConfig(card);
+        if (builder != null && builderPopup != null && builder.getSizeWidth() != placedBuilderWidth) place();
     }
-
-    @Override
-    protected void onChildSizeUpdate(@Nullable Widget child) {}
 
     private void apply(OverviewSnapshot next) {
         snapshot = next;
@@ -408,8 +402,8 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
     void setCard(@Nullable Popup popup, Runnable onClose) {
         if (card != null) removeWidget(card);
         card = popup == null ? null : new PopupCard("overview.card", popup, panelMaxHeight(), onClose);
-        if (card != null) addWidget(card);
         place();
+        if (card != null) addChild(card);
     }
 
     void showGhost(Long2ObjectOpenHashMap<BlockState> blocks) {
@@ -450,16 +444,16 @@ public final class OverviewView extends WidgetGroup implements ILayoutHost, ILoc
             card = null;
         }
         builder = panel;
-        addWidget(panel);
         place();
+        addChild(panel);
     }
 
     private void openBuilderPopup(String key, Supplier<Popup> factory) {
         closeBuilderPopup();
         builderPopupKey = key;
         builderPopup = new PopupCard("overview.builder_popup", factory.get(), panelMaxHeight(), this::closeBuilderPopup);
-        addWidget(builderPopup);
         place();
+        addChild(builderPopup);
     }
 
     private void closeBuilderPopup() {

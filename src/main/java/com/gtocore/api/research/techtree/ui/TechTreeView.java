@@ -9,13 +9,13 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.canvas.CanvasControls;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Dock;
 import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.view.ZoomBar;
 import com.gregtechceu.gtceu.uipro.window.CardHost;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 
@@ -79,6 +79,7 @@ public class TechTreeView extends UIElement {
     public static final byte UNLOCKED = 2;
 
     private final TechTreeManager manager;
+    private static final float DEFAULT_SCALE = 0.8f;
     private final CanvasView canvas;
     private final CardHost details;
     private final SyncValue<NodeStates> states;
@@ -118,19 +119,19 @@ public class TechTreeView extends UIElement {
 
         canvas = new CanvasView(canvasId, canvasWidth, canvasHeight);
         details = new CardHost("techtree.details", this::createDetails);
-        canvas.setScene(view -> TechTreeScene.build(view, this))
-                .setInitialView(view -> view.showStart(UISizes.SLOT, false))
-                .setOnItemClick((item, button) -> {
-                    if (button == 0 && item instanceof TechTreeScene.NodeItem node) toggleDetails(node.node());
-                });
-        var locate = CanvasControls.button(UITheme.CANVAS_LOCATE, LOCATE, () -> {
+        canvas.setScene(view -> TechTreeScene.build(view, this)).setOnItemClick((item, button, worldX, worldY) -> {
+            if (button == 0 && item instanceof TechTreeScene.NodeItem node) toggleDetails(node.node());
+        });
+        canvas.setDefaultScale(DEFAULT_SCALE);
+        canvas.setInitialView(view -> view.showStart(UISizes.SLOT, false));
+        var locate = ZoomBar.dockButton(UITheme.CANVAS_LOCATE, LOCATE, () -> {
             var selected = decodeNode(details.getArgument());
             if (selected != null) navigateTo(selected);
         });
         var help = new InfoIcon(InfoIcon.Kind.INFO, Component.translatable(HELP_CLICK),
                 Component.translatable(CanvasView.HELP_PAN), Component.translatable(CanvasView.HELP_ZOOM));
-        canvas.addOverlay(new Dock().addGroup(CanvasControls.of(canvas))
-                .addGroup(CanvasControls.row().addChild(locate))
+        canvas.addOverlay(new Dock().addGroup(ZoomBar.dock(canvas))
+                .addGroup(ZoomBar.dockRow().addChild(locate))
                 .addGroup(help));
         canvas.addFloatingCard(details);
         addChild(canvas);
@@ -257,8 +258,7 @@ public class TechTreeView extends UIElement {
     }
 
     /**
-     * 客户端：把视图移到 {@code node}。在本树里时定位过去（界面刚打开、第一帧还没画时替换初始视图，
-     * 否则首帧会把视图放回起点）；在别的树里时交给 {@link #setOnOtherTree}。
+     * 客户端：把视图移到 {@code node}。在本树里时定位过去；在别的树里时交给 {@link #setOnOtherTree}。
      */
     public void navigateTo(TechNode node) {
         if (node.getManager() != manager) {

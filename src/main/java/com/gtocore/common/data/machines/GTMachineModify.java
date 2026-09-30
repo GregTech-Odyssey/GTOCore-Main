@@ -197,11 +197,15 @@ public final class GTMachineModify {
                         .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(2))
                         .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setExactLimit(1))
                         .or(maint))
+                .where('Z', blocks(CASING_STAINLESS_CLEAN.get())
+                        .or(exportPredicate)
+                        .or(maint))
                 .where('X', blocks(CASING_STAINLESS_CLEAN.get())
                         .or(exportPredicate))
                 .where('#', Predicates.air());
         var base = Piece.start(RIGHT, BACK, UP)
                 .aisle("YSY", "YYY", "YYY")
+                .aisle("ZZZ", "Z#Z", "ZZZ")
                 .portAfter(PortKey.OUT)
                 .build();
         var layer = Piece.start(RIGHT, BACK, UP)
@@ -215,7 +219,7 @@ public final class GTMachineModify {
                 .build();
         return Structure.root(base)
                 .symbols(symbols)
-                .atPort(PortKey.OUT, Towers.layers(layer, top, StructureModuleKeys.DISTILLATION_TOWER_LAYERS, 1, 11))
+                .atPort(PortKey.OUT, Towers.layers(layer, top, StructureModuleKeys.DISTILLATION_TOWER_LAYERS, 0, 10))
                 .build();
     }
 

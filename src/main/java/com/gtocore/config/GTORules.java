@@ -53,6 +53,11 @@ public final class GTORules {
             .name("gtocore.rule.recipes.ore_processing", "矿物处理难度", "Ore Processing Difficulty")
             .desc("gtocore.rule.recipes.ore_processing.desc", "决定矿石处理配方的产出、耗时和耗电。", "Sets the output, duration and energy use of ore processing recipes.")
             .register();
+    public static final DoubleRule RECIPE_DURATION = Rules.doubleRule("recipes.duration_multiplier").group(RECIPES)
+            .defaults(1, 1, 1).range(0.001, 1000)
+            .name("gtocore.rule.recipes.duration_multiplier", "配方时间乘数", "Recipe Duration Multiplier")
+            .desc("gtocore.rule.recipes.duration_multiplier.desc", "全局配方的运行时间都会乘以这个倍数，发电和产魔机器不受影响。", "All recipe durations are multiplied by this factor. EU and mana generators are not affected.")
+            .register();
     public static final IntRule CIRCUIT_ASSEMBLY_LINE_AMOUNT = Rules.intRule("recipes.circuit_assembly_line_amount").group(RECIPES)
             .defaults(3, 3, 4).range(1, 64)
             .name("gtocore.rule.recipes.circuit_assembly_line_amount", "电路装配线电路板需求数量", "Circuit Assembly Line Component Amount")

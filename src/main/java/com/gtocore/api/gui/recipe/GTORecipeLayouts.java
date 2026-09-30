@@ -80,7 +80,7 @@ public final class GTORecipeLayouts {
         return canvas;
     };
 
-    public static final RecipeSlotLayout SINGLE_ROW = slots -> {
+    public static final RecipeSlotLayout SINGLE_ROW = RecipeSlotLayout.fitting(slots -> {
         var inputs = UIElement.row(UISizes.SLOT);
         slots.slots(IO.IN, ItemRecipeInfo.INSTANCE).forEach(inputs::addChild);
         slots.slots(IO.IN, FluidRecipeInfo.INSTANCE).forEach(inputs::addChild);
@@ -89,10 +89,10 @@ public final class GTORecipeLayouts {
         slots.slots(IO.OUT, FluidRecipeInfo.INSTANCE).forEach(outputs::addChild);
         return new UIElement().layout(l -> l.row().paddingAll(PADDING).gapAll(PROGRESS_MARGIN).alignCenter())
                 .addChildren(inputs, slots.progress(), outputs);
-    };
+    });
 
     /** 精密组装：左侧上一行 4 个物品输入、下一行 4 个流体输入，箭头指向右侧的输出。 */
-    public static final RecipeSlotLayout PRECISION_ASSEMBLER = slots -> {
+    public static final RecipeSlotLayout PRECISION_ASSEMBLER = RecipeSlotLayout.fitting(slots -> {
         var inputs = new UIElement().layout(l -> l.column().gapAll(UISizes.SLOT));
         var items = slots.slots(IO.IN, ItemRecipeInfo.INSTANCE);
         if (!items.isEmpty()) inputs.addChild(grid(items, 4));
@@ -100,13 +100,13 @@ public final class GTORecipeLayouts {
         if (!fluids.isEmpty()) inputs.addChild(grid(fluids, 4));
         return new UIElement().layout(l -> l.row().paddingAll(PADDING).gapAll(PROGRESS_MARGIN).alignCenter())
                 .addChildren(inputs, slots.progress(), grid(slots.slots(IO.OUT, ItemRecipeInfo.INSTANCE), 1));
-    };
+    });
 
     /**
      * 大量产出（宇宙模拟、随机虚空采矿）：顶部居中的输入，下面向下落的锤子进度，再往下是每行 {@link #WIDE_COLUMNS} 格的产出网格
      * （物品在前、流体在后），放在最多 {@link #WIDE_VISIBLE_ROWS} 行高的滚动区里——产出多达上百格，整页铺开会超出屏幕。
      */
-    public static final RecipeSlotLayout WIDE_OUTPUT = slots -> {
+    public static final RecipeSlotLayout WIDE_OUTPUT = RecipeSlotLayout.fitting(slots -> {
         var inputs = UIElement.row(UISizes.SLOT);
         for (var cap : slots.capabilities(IO.IN)) slots.slots(IO.IN, cap).forEach(inputs::addChild);
         var outputs = new UIElement().layout(l -> l.column());
@@ -121,5 +121,5 @@ public final class GTORecipeLayouts {
         scroller.addScrollViewChild(outputs);
         return new UIElement().layout(l -> l.column().paddingAll(PADDING).gapAll(UISizes.GAP).alignCenter())
                 .addChildren(inputs, slots.progress(GuiTextures.PROGRESS_BAR_HAMMER, UP_TO_DOWN, RecipeSlots.PROGRESS_SIZE, RecipeSlots.PROGRESS_SIZE), scroller);
-    };
+    });
 }

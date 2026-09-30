@@ -201,6 +201,8 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.spool", "线轴类型：%s", "Spool Type: %s");
         addCNEN("gtocore.recipe.law_cleanroom.display_name", "绝对超净间", "Absolute Clean");
         addCNEN("gtocore.recipe.nano_forge_tier", "纳米锻炉等级：%s", "Nano Forge Tier: %s");
+        addCNEN("gtocore.recipe.simulation_tier", "模拟等级", "Simulation Tier");
+        addCNEN("gtocore.recipe.tier", "等级", "Tier");
         addCNEN("gtocore.recipe.radioactivity", "辐射剂量：%s Sv", "Radiation Dose: %s Sv");
         addCNEN("gtocore.recipe.radioactivity_end", "运行结束时辐射剂量：%s Sv", "Radiation Dose at the End of Operation: %s Sv");
         addCNEN("gtocore.recipe.ray_requirement.1", "需要%snm~%snm波长,%sa.u.以上强度,%s°偏振的光束", "Requires a beam with wavelength %snm~%snm, intensity above %sa.u., and polarization of %s°");
@@ -231,6 +233,7 @@ public final class LangHandler {
         addCNEN("gtocore.tier.base", "基础", "Basic");
         addCNEN("gtocore.tier.ultimate", "终极", "Ultimate");
         addCNEN("gtocore.tier.hermetic_casing", "密封机械方块等级：%s", "Hermetic Casing Tier: %s");
+        addCNEN("gtocore.tier.value", "等级：%s", "Tier: %s");
 
         addCNEN("config.jade.plugin_gtocore.accelerate_provider", "[GTOCore] 加速条", "[GTOCore] Accelerated Bar");
         addCNEN("config.jade.plugin_gtocore.wireless_data_hatch_provider", "[GTOCore] 无线数据", "[GTOCore] Wireless Data");

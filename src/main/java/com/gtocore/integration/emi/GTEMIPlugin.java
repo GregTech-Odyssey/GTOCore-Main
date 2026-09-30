@@ -43,6 +43,7 @@ import com.gregtechceu.gtceu.common.fluid.potion.PotionFluid;
 import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTOreVeinEmiCategory;
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
@@ -101,6 +102,8 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 public final class GTEMIPlugin implements EmiPlugin {
+
+    private static final ResourceLocation SCRY_RITUAL = new ResourceLocation("ars_nouveau", "scry_ritual");
 
     public static void init() {
         RecipeTierPreview.register(ManaTierPreview::of);
@@ -197,6 +200,7 @@ public final class GTEMIPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
+        registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
 
         registry.addCategory(OreProcessingEmiCategory.CATEGORY);
         registry.addCategory(GTOreVeinEmiCategory.CATEGORY);
@@ -304,6 +308,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addIngredientSerializer(EmiTagprefixStack.class, new EmiTagprefixStackSerializer());
         registry.addIngredientSerializer(ResearchTagEmiStack.class, new ResearchTagEmiStackSerializer());
         registry.addIngredientSerializer(TechNodeEmiStack.class, new TechNodeEmiStackSerializer());
+        registry.addIngredientSerializer(FrontLitEmiStack.class, new FrontLitEmiStack.Serializer());
         registry.addGenericStackProvider((Screen screen, int x, int y) -> {
             for (var widget : screen.renderables) {
                 if (widget instanceof EditBox editBox && !editBox.isFocused() && editBox.isMouseOver(x, y)) {

@@ -782,8 +782,8 @@ public final class GTOItems {
     public static final ItemEntry<Item> HYPERCUBE = register("hypercube", "超立方体");
     public static final ItemEntry<Item> ANNIHILATION_CONSTRAINER = register("annihilation_constrainer", "湮灭约束器");
     public static final ItemEntry<Item> SOLAR_LIGHT_SPLITTER = register("solar_light_splitter", "阳光分离器");
-    public static final ItemEntry<Item> CREATE_ULTIMATE_BATTERY = registerTooltip("create_ultimate_battery", "创造电池", () -> Component.literal(I18n.get("ars_nouveau.tier", StringUtils.white_blue(I18n.get("gtocore.tooltip.unknown")))).withStyle(ChatFormatting.GREEN));
-    public static final ItemEntry<Item> SUPRACHRONAL_MAINFRAME_COMPLEX = registerTooltip("suprachronal_mainframe_complex", "创造主机", () -> Component.literal(I18n.get("ars_nouveau.tier", StringUtils.white_blue(I18n.get("gtocore.tooltip.unknown")))).withStyle(ChatFormatting.GREEN));
+    public static final ItemEntry<Item> CREATE_ULTIMATE_BATTERY = registerTooltip("create_ultimate_battery", "创造电池", () -> Component.literal(I18n.get("gtocore.tier.value", StringUtils.white_blue(I18n.get("gtocore.tooltip.unknown")))).withStyle(ChatFormatting.GREEN));
+    public static final ItemEntry<Item> SUPRACHRONAL_MAINFRAME_COMPLEX = registerTooltip("suprachronal_mainframe_complex", "创造主机", () -> Component.literal(I18n.get("gtocore.tier.value", StringUtils.white_blue(I18n.get("gtocore.tooltip.unknown")))).withStyle(ChatFormatting.GREEN));
     public static final ItemEntry<Item> ZERO_POINT_MODULE_FRAGMENTS = register("zero_point_module_fragments", "零点模块碎片");
     public static final ItemEntry<Item> TCETIESEAWEEDEXTRACT = register("tcetieseaweedextract", "鲸鱼座T星E藻类提取物");
     public static final ItemEntry<Item> TCETIEDANDELIONS = register("tcetiedandelions", "鲸鱼座T星E藻类");
@@ -1401,8 +1401,10 @@ public final class GTOItems {
                             "§aShift + Right-Click:§r Clear the mark of this position§r")
                     .addLines("§aShift + 右键空气：§r 清除所有标记§r",
                             "§aShift + Right-Click Air:§r Clear all marks§r")
-                    .addLines("§a左键方块：§r 标记位置 §7(按倒序)§r",
-                            "§aRight-Click:§r Mark Position §7(in reverse order)§r")
+                    .addLines("§a左键方块：§r 按当前模式从末尾添加或移除标记§r",
+                            "§aLeft-Click:§r Add from the end or remove marks, per the current mode§r")
+                    .addLines("§a右键空气：§r 打开界面，调整模式与编辑目标§r",
+                            "§aRight-Click Air:§r Open the interface to change modes and edit targets§r")
                     .addLines("§aShift + 左键超立方体：§r 将当前的标签应用到该超立方体§r",
                             "§aShift + Left-Click Tesseract:§r Apply the current markers to this Tesseract§r")
                     .addLines("§a中键选取键超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r",

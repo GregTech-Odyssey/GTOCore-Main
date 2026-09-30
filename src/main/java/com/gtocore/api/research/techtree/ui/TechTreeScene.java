@@ -5,11 +5,12 @@ import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
+import com.gregtechceu.gtceu.uipro.animation.ColorMath;
+import com.gregtechceu.gtceu.uipro.animation.UIClock;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasItem;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLayer;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLod;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasPainter;
-import com.gregtechceu.gtceu.uipro.canvas.CanvasPulse;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasRect;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasRoute;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
@@ -204,7 +205,7 @@ final class TechTreeScene {
                 case 1 -> style.prerequisiteUnlockedDependencyLine;
                 default -> style.defaultDependencyLine;
             };
-            return highlighted ? CanvasPulse.mix(style.hoveredDependencyLineColor, color) : color;
+            return highlighted ? UIClock.mix(style.hoveredDependencyLineColor, color) : color;
         }
 
         @Override
@@ -267,9 +268,9 @@ final class TechTreeScene {
             byte state = view.state(index);
             int fill, border;
             if (isResearching()) {
-                float t = CanvasPulse.phase();
-                fill = CanvasPulse.lerp(style.researchingNodeFillLow, style.researchingNodeFillHigh, t);
-                border = CanvasPulse.lerp(style.researchingNodeBorderLow, style.researchingNodeBorderHigh, t);
+                float t = UIClock.pulse();
+                fill = ColorMath.lerp(style.researchingNodeFillLow, style.researchingNodeFillHigh, t);
+                border = ColorMath.lerp(style.researchingNodeBorderLow, style.researchingNodeBorderHigh, t);
             } else {
                 switch (state) {
                     case TechTreeView.UNLOCKED -> {
@@ -290,7 +291,7 @@ final class TechTreeScene {
             var selected = view.selectedNode();
             if ((painter.hovered() instanceof NodeItem other && other != this && other.node.prerequisites.contains(node)) ||
                     (selected != null && selected != node && selected.prerequisites.contains(node))) {
-                border = CanvasPulse.mix(style.hoveredDependencyLineColor, border);
+                border = UIClock.mix(style.hoveredDependencyLineColor, border);
             }
             painter.fill(rect, fill);
             painter.outline(rect, BORDER_WIDTH, border);
@@ -316,7 +317,7 @@ final class TechTreeScene {
             if (painter.lod() != CanvasLod.FULL) return;
             var style = TechTreeStyle.get();
             int overlay = view.state(index) == TechTreeView.LOCKED && !isResearching() ? style.lockedNodeOverlay : 0;
-            if (hovered) overlay = overlay == 0 ? style.nodeHoverOverlay : CanvasPulse.lerp(overlay, style.nodeHoverOverlay, 0.5f);
+            if (hovered) overlay = overlay == 0 ? style.nodeHoverOverlay : ColorMath.lerp(overlay, style.nodeHoverOverlay, 0.5f);
             if (overlay != 0) painter.fill(rect.inflate(-painter.atLeastPixel(BORDER_WIDTH)), overlay);
         }
 

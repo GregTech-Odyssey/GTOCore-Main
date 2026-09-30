@@ -2,18 +2,20 @@ package com.gtocore.common.item;
 
 import com.gtocore.common.machine.tesseract.ITesseractMarkerInteractable;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
+import com.gtocore.common.machine.tesseract.TesseractUI;
 
 import com.gtolib.api.network.NetworkPack;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
-import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
+import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -34,17 +36,32 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import com.google.common.collect.ImmutableList;
+import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import static com.gtocore.common.machine.tesseract.ITesseractMarkerInteractable.IMPORT_SUCCESS_TEXT;
 
 @Mod.EventBusSubscriber
-public class TesseractTargetMarker implements IInteractionItem {
+public class TesseractTargetMarker implements IItemUIFactory {
+
+    public static final int LEFT_TAIL = 0;
+    public static final int LEFT_REMOVE = 1;
+    public static final int FACE_CLICKED = 0;
+    public static final int FACE_OPPOSITE = 1;
+    private static final String LEFT_MODE = "left_mode";
+    private static final String FACE_MODE = "face_mode";
+
+    @Override
+    public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
+        return TesseractUI.markerUI(holder, player);
+    }
 
     @Override
     public InteractionResult onItemUseFirst(ItemStack itemStack, UseOnContext context) {
@@ -59,26 +76,24 @@ public class TesseractTargetMarker implements IInteractionItem {
             if (player.isShiftKeyDown()) {
                 if (!removePatternFace(itemStack, level.dimension(), pos, face)) return InteractionResult.PASS;
             } else {
-                addPatternFace(itemStack, level.dimension(), pos, face, true);
+                addPatternFace(itemStack, level.dimension(), pos, recordedFace(itemStack, face), true);
             }
             return InteractionResult.SUCCESS;
         }
-        return IInteractionItem.super.onItemUseFirst(itemStack, context);
+        return IItemUIFactory.super.onItemUseFirst(itemStack, context);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Item item, Level level, Player player, InteractionHand usedHand) {
-        if (player.isShiftKeyDown()) {
-            BlockHitResult bhr = rayTrace(level, player);
-            if (bhr.getType() == HitResult.Type.MISS) {
-                ItemStack itemStack = player.getItemInHand(usedHand);
-                if (isTesseractTargetMarker(itemStack)) {
-                    clearAllPatternFaces(itemStack);
-                    return new InteractionResultHolder<>(InteractionResult.SUCCESS, itemStack);
-                }
-            }
+        ItemStack itemStack = player.getItemInHand(usedHand);
+        if (rayTrace(level, player).getType() != HitResult.Type.MISS || !isTesseractTargetMarker(itemStack)) {
+            return InteractionResultHolder.pass(itemStack);
         }
-        return IInteractionItem.super.use(item, level, player, usedHand);
+        if (player.isShiftKeyDown()) {
+            clearAllPatternFaces(itemStack);
+            return InteractionResultHolder.success(itemStack);
+        }
+        return IItemUIFactory.super.use(item, level, player, usedHand);
     }
 
     @SubscribeEvent
@@ -98,14 +113,16 @@ public class TesseractTargetMarker implements IInteractionItem {
             if (player.isShiftKeyDown()) {
                 if (ILevel.getCachedBlockEntity(level, pos) instanceof MetaMachineBlockEntity mbe &&
                         mbe.getMetaMachine() instanceof ITesseractMarkerInteractable interactable &&
-                        interactable.onMarkerInteract(player, getAllPatternFaces(itemStack))) {
+                        interactable.onMarkerInteract(player, getOrderedTargets(itemStack))) {
                     event.setCancellationResult(InteractionResult.SUCCESS);
                 } else {
                     event.setCancellationResult(InteractionResult.PASS);
                 }
                 return;
+            } else if (getLeftMode(itemStack) == LEFT_REMOVE) {
+                removeBlock(itemStack, level.dimension(), pos);
             } else {
-                addPatternFace(itemStack, level.dimension(), pos, face, false);
+                addPatternFace(itemStack, level.dimension(), pos, recordedFace(itemStack, face), false);
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
         }
@@ -179,17 +196,117 @@ public class TesseractTargetMarker implements IInteractionItem {
         putToNBT(stack, false, new ArrayList<>());
     }
 
-    public static List<TesseractDirectedTarget> getAllPatternFaces(ItemStack stack) {
-        var result = ImmutableList.<TesseractDirectedTarget>builder();
-        var index = 0;
-        for (var pf : getFromNBT(stack, true)) {
-            result.add(new TesseractDirectedTarget(pf.pos(), pf.face(), ++index));
+    public static List<TesseractDirectedTarget> getOrderedTargets(ItemStack stack) {
+        var ordered = ordered(stack);
+        if (ordered.isEmpty()) return Collections.emptyList();
+        var result = new ArrayList<TesseractDirectedTarget>(ordered.size());
+        for (int i = 0; i < ordered.size(); i++) {
+            var face = ordered.get(i);
+            result.add(new TesseractDirectedTarget(face.pos(), face.face(), i + 1));
         }
-        index = 0;
-        for (var pf : getFromNBT(stack, false)) {
-            result.add(new TesseractDirectedTarget(pf.pos(), pf.face(), -(++index)));
+        return result;
+    }
+
+    public static int count(ItemStack stack) {
+        var tag = stack.getTag();
+        if (tag == null) return 0;
+        return tag.getList("positive", 10).size() + tag.getList("negative", 10).size();
+    }
+
+    public static int signature(ItemStack stack) {
+        var tag = stack.getTag();
+        if (tag == null) return 0;
+        return 31 * tag.getList("positive", 10).hashCode() + tag.getList("negative", 10).hashCode();
+    }
+
+    public static boolean isTail(ItemStack stack, int index) {
+        var tag = stack.getTag();
+        return tag != null && index >= tag.getList("positive", 10).size();
+    }
+
+    @Nullable
+    public static Direction getFace(ItemStack stack, int index) {
+        var ordered = ordered(stack);
+        return index >= 0 && index < ordered.size() ? ordered.get(index).face() : null;
+    }
+
+    public static void setFace(ItemStack stack, int index, Direction face) {
+        var ordered = ordered(stack);
+        if (index < 0 || index >= ordered.size()) return;
+        var replaced = new PatternFaceUnindexed(ordered.get(index).pos(), face);
+        if (ordered.contains(replaced)) return;
+        ordered.set(index, replaced);
+        writeOrdered(stack, ordered);
+    }
+
+    public static void move(ItemStack stack, int index, int delta) {
+        var ordered = ordered(stack);
+        int target = index + delta;
+        if (index < 0 || index >= ordered.size() || target < 0 || target >= ordered.size()) return;
+        Collections.swap(ordered, index, target);
+        writeOrdered(stack, ordered);
+    }
+
+    public static void remove(ItemStack stack, int index) {
+        var ordered = ordered(stack);
+        if (index < 0 || index >= ordered.size()) return;
+        ordered.remove(index);
+        writeOrdered(stack, ordered);
+    }
+
+    public static void removeBlock(ItemStack stack, ResourceKey<Level> dimension, BlockPos pos) {
+        var globalPos = GlobalPos.of(dimension, pos);
+        var positive = getFromNBT(stack, true);
+        var negative = getFromNBT(stack, false);
+        boolean removedPositive = positive.removeIf(f -> f.pos().equals(globalPos));
+        boolean removedNegative = negative.removeIf(f -> f.pos().equals(globalPos));
+        if (removedPositive || removedNegative) {
+            putToNBT(stack, true, positive);
+            putToNBT(stack, false, negative);
         }
-        return result.build();
+    }
+
+    public static int getLeftMode(ItemStack stack) {
+        var tag = stack.getTag();
+        return tag == null ? LEFT_TAIL : tag.getInt(LEFT_MODE);
+    }
+
+    public static void setLeftMode(ItemStack stack, int mode) {
+        setMode(stack, LEFT_MODE, mode == LEFT_REMOVE ? LEFT_REMOVE : LEFT_TAIL);
+    }
+
+    public static int getFaceMode(ItemStack stack) {
+        var tag = stack.getTag();
+        return tag == null ? FACE_CLICKED : tag.getInt(FACE_MODE);
+    }
+
+    public static void setFaceMode(ItemStack stack, int mode) {
+        setMode(stack, FACE_MODE, mode == FACE_OPPOSITE ? FACE_OPPOSITE : FACE_CLICKED);
+    }
+
+    private static void setMode(ItemStack stack, String key, int mode) {
+        if (mode == 0) {
+            CompoundTag tag = stack.getTag();
+            if (tag != null) tag.remove(key);
+        } else {
+            stack.getOrCreateTag().putInt(key, mode);
+        }
+    }
+
+    private static Direction recordedFace(ItemStack stack, Direction clicked) {
+        return getFaceMode(stack) == FACE_OPPOSITE ? clicked.getOpposite() : clicked;
+    }
+
+    private static List<PatternFaceUnindexed> ordered(ItemStack stack) {
+        var result = getFromNBT(stack, true);
+        var negative = getFromNBT(stack, false);
+        for (int i = negative.size() - 1; i >= 0; i--) result.add(negative.get(i));
+        return result;
+    }
+
+    private static void writeOrdered(ItemStack stack, List<PatternFaceUnindexed> ordered) {
+        putToNBT(stack, true, ordered);
+        putToNBT(stack, false, new ArrayList<>());
     }
 
     public static void copyConfigFrom(ITesseractMarkerInteractable source, ItemStack target) {

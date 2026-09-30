@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.tesseract;
 
+import com.gtocore.api.gui.ServerRows;
+
 import com.gtolib.api.ae2.AEKeyTypeMap;
 import com.gtolib.api.ae2.IPatternProviderLogic;
 import com.gtolib.api.ae2.PatternProviderTargetCache;
@@ -8,6 +10,7 @@ import com.gtolib.utils.ServerUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
@@ -16,6 +19,13 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.ItemCell;
+import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.Direction;
@@ -23,6 +33,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -32,12 +43,12 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AmountFormat;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.helpers.patternprovider.PatternProviderTarget;
-import appeng.me.helpers.IGridConnectedBlockEntity;
 import appeng.me.storage.CompositeStorage;
 import appeng.me.storage.ExternalStorageFacade;
 
@@ -46,9 +57,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -109,6 +122,87 @@ public class DirectedTesseractMachine extends MetaMachine implements
         targets.addAll(newTargets);
         targets.sort(TesseractDirectedTarget.SORTER);
         blockEntityReference = createBlockEntityReferences(targets.size());
+        onChanged();
+    }
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return widget instanceof MachineWindow window ? createPage(window) : createUIWidget();
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        return createPage(null);
+    }
+
+    private Widget createPage(@Nullable MachineWindow window) {
+        boolean remote = isRemote();
+        var view = new TesseractUI.Targets(this::getLevel, getPos(), this::uiTargets, targets::hashCode, Component.empty());
+        if (window != null) {
+            window.registerPopup(TesseractUI.FACE_POPUP, index -> remote || index < targets.size() ?
+                    TesseractUI.facePopup(view, index, () -> index < targets.size() ? targets.get(index).face() : null, face -> setTargetFace(index, face)) : null);
+        }
+        var rows = new ServerRows<>(remote, ByteStreamCodec.INT_CODEC, () -> indices(targets.size()), targets::size,
+                index -> targetRow(view, index, window), Component.translatable(TesseractUI.DIRECTED_EMPTY));
+        rows.layout(l -> l.paddingTop(1).paddingBottom(1));
+        var pending = new ServerRows<>(remote, ByteStreamCodec.INT_CODEC, () -> indices(unfinishedStacks.size()), unfinishedStacks::size,
+                index -> pendingRow(view, index), null);
+        var status = TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_UNLIMITED, targets.size()), true, true);
+        status.addLine(TesseractUI.LINE_PENDING, () -> hasWorkToDo() ? Component.translatable(TesseractUI.VALUE_PENDING, unfinishedStacks.size()) : Component.translatable(TesseractUI.VALUE_PENDING_NONE))
+                .level(() -> hasWorkToDo() ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL)
+                .tooltip(TesseractUI.PENDING_DETAIL);
+        return TesseractUI.page(status,
+                TesseractUI.listSection(TesseractUI.SECTION_DIRECTED_TARGETS, rows, TesseractUI.DIRECTED_TARGETS_TOOLTIP, TesseractUI.DIRECTED_READ_TOOLTIP),
+                TesseractUI.directedPushSection(targets::size, pending));
+    }
+
+    private UIElement targetRow(TesseractUI.Targets view, int index, @Nullable MachineWindow window) {
+        var number = Component.literal(String.valueOf(index + 1));
+        var badge = TesseractUI.index(() -> number, Component.translatable(TesseractUI.DIRECTED_BADGE, index + 1));
+        var face = TesseractUI.face(view, index);
+        if (window != null) TesseractUI.bindFacePopup(face, window, index);
+        return TesseractUI.row(badge, view, index, face);
+    }
+
+    private void setTargetFace(int index, Direction face) {
+        if (index < 0 || index >= targets.size()) return;
+        var target = targets.get(index);
+        if (target.face() == face) return;
+        targets.set(index, new TesseractDirectedTarget(target.pos(), face, target.order()));
+        onChanged();
+    }
+
+    private UIElement pendingRow(TesseractUI.Targets view, int index) {
+        var text = TextLine.of(0, () -> pendingText(view, index)).setColor(UITheme::panelText);
+        text.layout(l -> l.flex(1));
+        return UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                .addChildren(ItemCell.of(() -> pendingStack(index)), text);
+    }
+
+    private ItemStack pendingStack(int index) {
+        if (index >= unfinishedStacks.size()) return ItemStack.EMPTY;
+        var stack = unfinishedStacks.get(index);
+        return stack.what() instanceof AEItemKey item ? item.toStack() : GenericStack.wrapInItemStack(stack.what(), stack.amount());
+    }
+
+    private Component pendingText(TesseractUI.Targets view, int index) {
+        if (index >= unfinishedStacks.size() || index >= unfinishedPushes.size()) return Component.empty();
+        var stack = unfinishedStacks.get(index);
+        int target = targets.indexOf(unfinishedPushes.get(index));
+        var name = target < 0 ? Component.literal("—") : view.get(target).name();
+        return Component.translatable(TesseractUI.PENDING_ROW, stack.what().formatAmount(stack.amount(), AmountFormat.FULL), target + 1, name);
+    }
+
+    private List<TesseractUI.Target> uiTargets() {
+        var result = new ArrayList<TesseractUI.Target>(targets.size());
+        for (var target : targets) result.add(new TesseractUI.Target(target.pos(), target.face()));
+        return result;
+    }
+
+    private static List<Integer> indices(int count) {
+        var result = new ArrayList<Integer>(count);
+        for (int i = 0; i < count; i++) result.add(i);
+        return result;
     }
 
     @Override
@@ -180,6 +274,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
             var targetAt = targets.get(i);
             var be = getBlockEntity(i);
             var subPushStack = sparseInputs[i];
+            if (subPushStack == null) continue;
             if (be == null) {
                 return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
             }
@@ -217,10 +312,11 @@ public class DirectedTesseractMachine extends MetaMachine implements
 
     @Override
     public boolean onMarkerInteract(Player player, List<TesseractDirectedTarget> targets) {
-        if (targets.isEmpty()) {
-            return false;
-        }
         if (getLevel() == null || getLevel().isClientSide()) {
+            return true;
+        }
+        if (targets.isEmpty()) {
+            player.displayClientMessage(Component.translatable(WRITE_EMPTY_TEXT), true);
             return true;
         }
         setTargets(targets);
@@ -250,9 +346,6 @@ public class DirectedTesseractMachine extends MetaMachine implements
         var be = ILevel.getCachedBlockEntity(dim, target.pos().pos());
         if (be == null) {
             return null;
-        }
-        if (be instanceof IGridConnectedBlockEntity gbe && gbe.getGridNode() != null) {
-            return gbe.getGridNode().getGrid().getStorageService().getInventory();
         }
         var item = be.getCapability(ForgeCapabilities.ITEM_HANDLER, target.face()).map(ExternalStorageFacade::of).orElse(null);
         var fluid = be.getCapability(ForgeCapabilities.FLUID_HANDLER, target.face()).map(ExternalStorageFacade::of).orElse(null);

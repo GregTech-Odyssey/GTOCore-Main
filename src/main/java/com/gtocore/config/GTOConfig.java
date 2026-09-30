@@ -256,12 +256,6 @@ public final class GTOConfig {
         public int meOutputTransferInterval = 20;
 
         @Configurable
-        @Configurable.Comment({ "全局配方的运行时间都会乘以这个倍数", "发电和产魔机器不受影响", "All recipe durations will be multiplied by this factor", "eu gen and mana gen machines are not affected" })
-        @Configurable.DecimalRange(min = 0.001, max = 1000)
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Recipe Duration Multiplier", cn = "配方时间乘数")
-        public double recipeDurationMultiplier = 1;
-
-        @Configurable
         @Configurable.Comment({ "连锁挖掘（不连续模式）时，检查相邻方块的范围", "The range to check adjacent blocks during chain mining (non-continuous mode)" })
         @Configurable.Range(min = 1, max = 20)
         @Configurable.Gui.Slider

@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.tesseract;
 
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.item.CoordinateCardBehavior;
 
 import com.gtolib.api.ae2.IPatternProviderLogic;
 import com.gtolib.api.ae2.PatternProviderTargetCache;
@@ -8,10 +9,8 @@ import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
 import com.gtolib.api.player.IEnhancedPlayer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -20,6 +19,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.BlockPos;
@@ -53,7 +53,6 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -67,8 +66,9 @@ import java.util.function.Supplier;
 public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ICustomCraftingMachine, IMultiTesseract {
 
     public static final Multiset<ImmutableList<Long>> HIGHLIGHTS = HashMultiset.create();
+    public static final int MAX_TARGETS = 20;
 
-    private final WeakReference<BlockEntity>[] blockEntityReference = createBlockEntityReferences(20);
+    private final WeakReference<BlockEntity>[] blockEntityReference = createBlockEntityReferences(MAX_TARGETS);
 
     @SuppressWarnings("unchecked")
     private static WeakReference<BlockEntity>[] createBlockEntityReferences(int size) {
@@ -77,7 +77,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     @SaveToDisk
     @SyncToClient(autoDetect = false)
-    public final List<BlockPos> poss = new ArrayList<>(20);
+    public final List<BlockPos> poss = new ArrayList<>(MAX_TARGETS);
 
     @SaveToDisk
     protected NotifiableItemStackHandler inventory;
@@ -96,12 +96,12 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     public AdvancedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, 20, IO.NONE, IO.NONE);
+        inventory = new NotifiableItemStackHandler(this, MAX_TARGETS, IO.NONE, IO.NONE).setFilter(stack -> stack.is(GTOItems.COORDINATE_CARD.asItem()));
         inventory.storage.setOnContentsChanged(() -> {
             onChanged();
             called = false;
             poss.clear();
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < MAX_TARGETS; i++) {
                 blockEntityReference[i] = null;
                 ItemStack card = inventory.storage.getStackInSlot(i);
                 if (card.isEmpty()) continue;
@@ -121,7 +121,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     @Override
     protected @NotNull InteractionResult onScrewdriverClick(@NotNull Player playerIn, @NotNull InteractionHand hand, @NotNull Direction gridSide, @NotNull BlockHitResult hitResult) {
         if (!super.onScrewdriverClick(playerIn, hand, gridSide, hitResult).shouldSwing()) {
-            roundRobin = !roundRobin;
+            setRoundRobin(!roundRobin);
             playerIn.displayClientMessage(Component.translatable(roundRobin ? "tooltip.ad_astra.distribution_mode.round_robin" : "tooltip.ad_astra.distribution_mode.sequential"), true);
             return InteractionResult.sidedSuccess(playerIn.level().isClientSide);
         }
@@ -141,19 +141,33 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                 .setTooltipsSupplier(pressed -> Collections.singletonList(Component.translatable(HIGHLIGHT_TEXT))));
     }
 
+    private void setRoundRobin(boolean roundRobin) {
+        if (this.roundRobin == roundRobin) return;
+        this.roundRobin = roundRobin;
+        onChanged();
+    }
+
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 18 * 5 + 16, 18 * 4 + 16);
-        var container = new WidgetGroup(4, 4, 18 * 5 + 8, 18 * 4 + 8);
-        int index = 0;
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 5; x++) {
-                container.addWidget(new SlotWidget(inventory.storage, index++, 4 + x * 18, 4 + y * 18, true, true).setBackgroundTexture(GuiTextures.SLOT));
-            }
+        var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, poss::hashCode, Component.translatable(TesseractUI.ROW_EMPTY));
+        var rows = new ArrayList<Widget>(MAX_TARGETS);
+        for (int i = 0; i < MAX_TARGETS; i++) {
+            rows.add(TesseractUI.row(ItemSlot.of(inventory.storage, i), targets, i, TesseractUI.face(targets, i)));
         }
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        group.addWidget(container);
-        return group;
+        return TesseractUI.page(
+                TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_BOUND, poss.size(), MAX_TARGETS), false, false),
+                TesseractUI.listSection(TesseractUI.SECTION_TARGETS, TesseractUI.column(rows), TesseractUI.TARGETS_TOOLTIP, TesseractUI.TARGETS_MARKER_TOOLTIP),
+                TesseractUI.roundRobinSection(() -> roundRobin, this::setRoundRobin));
+    }
+
+    private List<TesseractUI.Target> cardTargets() {
+        var level = getLevel();
+        var result = new ArrayList<TesseractUI.Target>(MAX_TARGETS);
+        for (int i = 0; i < MAX_TARGETS; i++) {
+            var cardPos = level == null ? null : CoordinateCardBehavior.getStoredCoordinates(inventory.storage.getStackInSlot(i));
+            result.add(cardPos == null ? null : new TesseractUI.Target(GlobalPos.of(level.dimension(), cardPos), null));
+        }
+        return result;
     }
 
     @Override
@@ -243,19 +257,25 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     @Override
     public boolean onMarkerInteract(Player player, List<TesseractDirectedTarget> targets) {
-        if (targets.isEmpty()) {
-            return false;
-        }
         if (getLevel() == null || getLevel().isClientSide()) {
+            return true;
+        }
+        if (targets.isEmpty()) {
+            player.displayClientMessage(Component.translatable(WRITE_EMPTY_TEXT), true);
             return true;
         }
         int availableCards = Arrays.stream(inventory.storage.stacks).filter(i -> !i.isEmpty()).toArray().length;
         inventory.storage.clear();
         var iterator = targets.iterator();
         int i = 0;
+        int skipped = 0;
         while (iterator.hasNext()) {
             var target = iterator.next();
-            if (i >= 20) break;
+            if (i >= MAX_TARGETS) break;
+            if (target.pos().dimension() != getLevel().dimension()) {
+                skipped++;
+                continue;
+            }
             var pos = target.pos().pos();
             if (pos.equals(getPos())) {
                 continue;
@@ -301,7 +321,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                 Block.popResource(getLevel(), getPos(), GTOItems.COORDINATE_CARD.asItem().getDefaultInstance());
             }
         }
-        player.displayClientMessage(Component.translatable(WRITE_SUCCESS_TEXT), true);
+        player.displayClientMessage(skipped > 0 ? Component.translatable(WRITE_SKIPPED_TEXT, skipped) : Component.translatable(WRITE_SUCCESS_TEXT), true);
         return true;
     }
 

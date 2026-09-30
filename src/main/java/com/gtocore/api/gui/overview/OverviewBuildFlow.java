@@ -125,7 +125,7 @@ final class OverviewBuildFlow {
         var structure = StructurePattern.of(definition);
         if (structure == null) return;
         var values = StructureBuildFlow.remembered(definition, structure);
-        var excluded = new boolean[structure.tree().nodes().size()];
+        var excluded = new boolean[structure.tree().nodes().length];
         var holder = new Choice[1];
         var config = new StructureConfigView(definition, structure, values, excluded, () -> {
             if (holder[0] != null) holder[0].refreshAt = System.currentTimeMillis() + REFRESH_DELAY_MS;
