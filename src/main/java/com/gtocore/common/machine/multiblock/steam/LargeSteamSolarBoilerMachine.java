@@ -3,7 +3,7 @@ package com.gtocore.common.machine.multiblock.steam;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
@@ -47,7 +47,7 @@ import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Steam;
 
-@Scanned
+@DataGeneratorScanned
 public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine implements IExplosionMachine, IDisplayUIMachine, IEnhancedRecipeLogicMachine, ICustomRecipeLogicHolder {
 
     @RegisterLanguage(cn = "左侧宽度", en = "Left Width")

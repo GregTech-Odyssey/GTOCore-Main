@@ -3,7 +3,7 @@ package com.gtocore.common.machine.multiblock.part.ae;
 import com.gtocore.config.GTORules;
 import com.gtocore.data.CraftingComponents;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.IGTOMufflerMachine;
 import com.gtolib.api.machine.trait.MEOutputItemHandler;
@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@Scanned
+@DataGeneratorScanned
 public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implements IGTOMufflerMachine {
 
     @SaveToDisk

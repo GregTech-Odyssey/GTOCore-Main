@@ -5,7 +5,7 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -73,7 +73,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Scanned
+@DataGeneratorScanned
 public class TurbineMachine extends ElectricMultiblockMachine {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */

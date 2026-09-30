@@ -1,8 +1,8 @@
 package com.gtocore.data;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 
-@Scanned
+@DataGeneratorScanned
 public final class IdleReason extends com.gtolib.api.recipe.IdleReason {
 
     public static final IdleReason ORDERED_ITEM = new IdleReason("gtocore.idle_reason.ordered.item", "未满足物品有序要求", "Item Ordered Not Satisfies");

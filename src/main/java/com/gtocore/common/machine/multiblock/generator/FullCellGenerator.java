@@ -9,7 +9,7 @@ import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
@@ -47,7 +47,7 @@ import java.util.List;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 
-@Scanned
+@DataGeneratorScanned
 public class FullCellGenerator extends ElectricMultiblockMachine {
 
     private static final int MaxCanReleaseParallel = 50;

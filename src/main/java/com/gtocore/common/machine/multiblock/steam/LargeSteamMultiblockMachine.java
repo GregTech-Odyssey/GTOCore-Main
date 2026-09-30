@@ -2,11 +2,8 @@ package com.gtocore.common.machine.multiblock.steam;
 
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
-@Scanned
 public final class LargeSteamMultiblockMachine extends BaseSteamMultiblockMachine {
 
     public LargeSteamMultiblockMachine(MetaMachineBlockEntity holder) {

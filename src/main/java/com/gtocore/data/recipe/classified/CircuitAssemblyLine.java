@@ -5,15 +5,12 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gtocore.common.data.GTORecipeTypes.CIRCUIT_ASSEMBLY_LINE_RECIPES;
 
-@Scanned
 final class CircuitAssemblyLine {
 
     public static void init() {

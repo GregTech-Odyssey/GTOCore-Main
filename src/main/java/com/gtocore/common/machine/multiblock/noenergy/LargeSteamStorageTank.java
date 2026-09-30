@@ -2,8 +2,6 @@ package com.gtocore.common.machine.multiblock.noenergy;
 
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.fluids.PropertyFluidFilter;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -13,7 +11,6 @@ import net.minecraftforge.fluids.FluidStack;
 
 import org.jetbrains.annotations.NotNull;
 
-@Scanned
 public class LargeSteamStorageTank extends MultiblockTankMachine {
 
     public LargeSteamStorageTank(MetaMachineBlockEntity holder, Object... args) {

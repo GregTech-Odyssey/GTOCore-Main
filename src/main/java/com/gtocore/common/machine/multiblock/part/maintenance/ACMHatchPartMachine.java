@@ -2,7 +2,7 @@ package com.gtocore.common.machine.multiblock.part.maintenance;
 
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@Scanned
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IMaintenanceMachine, IMachineLife {

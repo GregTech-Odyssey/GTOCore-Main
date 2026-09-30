@@ -2,7 +2,6 @@ package com.gtocore.common.machine.generator;
 
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -25,7 +24,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@Scanned
 public final class LightningRodMachine extends TieredEnergyMachine {
 
     private TickableSubscription energySubs;

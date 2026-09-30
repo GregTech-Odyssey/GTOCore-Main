@@ -3,7 +3,6 @@ package com.gtocore.common.machine.multiblock.generator;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
 import com.gtolib.api.capability.IExtendWirelessEnergyContainerHolder;
 import com.gtolib.api.machine.feature.multiblock.IArrayMachine;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
@@ -41,7 +40,6 @@ import java.util.UUID;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@Scanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class GeneratorArrayMachine extends StorageMultiblockMachine implements IArrayMachine, IExtendWirelessEnergyContainerHolder {

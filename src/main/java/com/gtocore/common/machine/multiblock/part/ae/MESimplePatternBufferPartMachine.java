@@ -2,11 +2,8 @@ package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
-@Scanned
 public class MESimplePatternBufferPartMachine extends MEPatternBufferPartMachine {
 
     public MESimplePatternBufferPartMachine(MetaMachineBlockEntity holder) {

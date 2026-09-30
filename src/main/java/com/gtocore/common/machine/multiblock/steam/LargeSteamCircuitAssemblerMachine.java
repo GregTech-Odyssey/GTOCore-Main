@@ -2,7 +2,7 @@ package com.gtocore.common.machine.multiblock.steam;
 
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
+import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -28,7 +28,7 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@Scanned
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblockMachine {

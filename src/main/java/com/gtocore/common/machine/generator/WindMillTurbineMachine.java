@@ -3,7 +3,6 @@ package com.gtocore.common.machine.generator;
 import com.gtocore.common.item.KineticRotorItem;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.annotation.Scanned;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.part.ItemPartMachine;
 
@@ -49,7 +48,6 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@Scanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class WindMillTurbineMachine extends TieredEnergyMachine implements IMachineLife, IFancyUIMachine {
