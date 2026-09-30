@@ -68,12 +68,6 @@ public class WorkspaceExtension extends Extension {
         super.onStructureInvalid();
     }
 
-    @Override
-    public void afterWorking() {
-        super.afterWorking();
-        requestCheck();
-    }
-
     private static final String[][] BLOCK = {
             { "      ", "      ", "      ", "      ", "      ", " LpLpp", "      ", "FFFFFF", "      ", "      ", "      ", "FFFFFF", "      ", " LpLpp", "      ", "      ", "      ", "      ", "      " },
             { "      ", "      ", "      ", "      ", "     C", "LLLLLC", "OLLLOC", "LLLLLC", "LLLLLC", "GGGGGC", "LLLLLC", "LLLLLC", "OLLLOC", "LLLLLC", "     C", "      ", "      ", "      ", "      " },

@@ -1,0 +1,9 @@
+{
+  "dimension": "gtocore:solar_surface_orbit",
+  "gravity": 10.0,
+  "oxygen": false,
+  "solar_power": 100,
+  "solar_system": "ad_astra:solar_system",
+  "temperature": 6000,
+  "tier": 8
+}

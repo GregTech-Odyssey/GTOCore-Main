@@ -6,12 +6,18 @@ import net.minecraft.client.renderer.ShaderInstance;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
+import org.joml.Matrix4f;
 
 public final class ScreenSpaceMeshRenderer {
 
     private ScreenSpaceMeshRenderer() {}
 
     public static void render(PoseStack poseStack, VertexBuffer vertexBuffer, RenderType renderType, ShaderInstance shader,
+                              float red, float green, float blue, float alpha) {
+        render(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), vertexBuffer, renderType, shader, red, green, blue, alpha);
+    }
+
+    public static void render(Matrix4f modelViewMatrix, Matrix4f projectionMatrix, VertexBuffer vertexBuffer, RenderType renderType, ShaderInstance shader,
                               float red, float green, float blue, float alpha) {
         if (vertexBuffer == null || shader == null) {
             return;
@@ -22,7 +28,7 @@ public final class ScreenSpaceMeshRenderer {
             RenderSystem.setShader(() -> shader);
             RenderSystem.setShaderColor(red, green, blue, alpha);
             vertexBuffer.bind();
-            vertexBuffer.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), shader);
+            vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, shader);
         } finally {
             VertexBuffer.unbind();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

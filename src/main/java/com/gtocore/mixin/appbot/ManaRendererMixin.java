@@ -20,6 +20,10 @@ public abstract class ManaRendererMixin {
     @Shadow
     private TextureAtlasSprite waterSprite;
 
+    /**
+     * @author GTO
+     * @reason Fixes the mana water sprite not being loaded correctly.
+     */
     @Overwrite
     private void lazyInitSprite() {
         waterSprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(gto$MANA_WATER);

@@ -1,0 +1,8 @@
+{
+  "type": "gtocore:solar_surface_blob",
+  "config": {
+    "state": {
+      "Name": "gtocore:tartarite_ore"
+    }
+  }
+}

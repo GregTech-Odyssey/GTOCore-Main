@@ -66,6 +66,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.common.data.GTItems.*;
 import static com.gregtechceu.gtceu.common.data.GTModels.overrideModel;
 import static com.gtocore.common.item.tarotArcanumRegister.registerTarotArcanum;
@@ -143,7 +144,7 @@ public final class GTOItems {
             .lang("Really MAX Battery")
             .onRegister(attach(new TooltipBehavior(lines -> lines.add(Component.translatable("gtocore.tooltip.item.really_max_battery").withStyle(ChatFormatting.GRAY)))))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
-            .onRegister(attach(ElectricStats.createRechargeableBattery(Long.MAX_VALUE, GTValues.UEV)))
+            .onRegister(attach(ElectricStats.createRechargeableBattery(Long.MAX_VALUE, UEV)))
             .register();
     public static final ItemEntry<ComponentItem> TRANSCENDENT_MAX_BATTERY = item("transcendent_max_battery", "超·终极电池", ComponentItem::create)
             .lang("Transcendent MAX Battery")
@@ -1233,7 +1234,7 @@ public final class GTOItems {
     public static final ItemEntry<ComponentItem> DRONE_ULTIMATE_BATTERY = item("drone_ultimate_battery", "无人机载终极电池", ComponentItem::create)
             .model(overrideModel(GTCEu.id("battery"), 8))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
-            .onRegister(attach(ElectricStats.createRechargeableBattery(4_800_000_000_000L, GTValues.UHV)))
+            .onRegister(attach(ElectricStats.createRechargeableBattery(4_800_000_000_000L, UHV)))
             .tag(CustomTags.UHV_BATTERIES).register();
 
     // 奇怪的45钢钢板

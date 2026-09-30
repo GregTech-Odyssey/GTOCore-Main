@@ -58,6 +58,11 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
     }
 
     @Override
+    public boolean alwaysSearchRecipe() {
+        return true;
+    }
+
+    @Override
     @NotNull
     public GTRecipeType getRecipeType() {
         return GTORecipeTypes.F1A1B;
@@ -94,7 +99,7 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
             var type = f.getFluid().getFluidType();
             var fluidTemp = type.getTemperature();
             var tempDiff = heatContainer.getTemperature() - fluidTemp;
-            if (fluidTemp < 320 && tempDiff > 0) {
+            if (fluidTemp < 320 && tempDiff / 4 > 0) {
                 coolantEfficiency = Math.min(200, (int) (tempDiff / 4));
             } else {
                 coolantEfficiency = 0;
@@ -108,6 +113,6 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
             return null;
         }
         return getRecipeBuilder().duration(20).inputFluids(coolantFluid.get(), 1000)
-                .outputFluids(coolantFluid.get(), 990).build();
+                .outputFluids(coolantFluid.get(), 1000 - coolantEfficiency).build();
     }
 }

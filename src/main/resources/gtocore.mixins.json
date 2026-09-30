@@ -195,6 +195,7 @@
     "gtm.machine.MachineDefinitionMixin",
     "gtm.machine.MaintenanceHatchPartMachineMixin",
     "gtm.machine.MetaMachineMixin",
+    "gtm.machine.SolarHeatCapabilityMixin",
     "gtm.machine.MufflerPartMachineMixin",
     "gtm.machine.MultiblockMachineDefinitionMixin",
     "gtm.machine.PowerSubstationMachineMixin",

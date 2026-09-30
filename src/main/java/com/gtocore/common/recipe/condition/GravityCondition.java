@@ -1,5 +1,6 @@
 package com.gtocore.common.recipe.condition;
 
+import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IGravityPartMachine;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
@@ -35,7 +36,11 @@ public final class GravityCondition extends RecipeCondition {
                 }
             }
         }
-        var planet = PlanetApi.API.getPlanet(holder.self().getLevel());
+        var dim = holder.self().getLevel().dimension();
+        if (dim == GTODimensions.SOLAR_SURFACE) {
+            return !zero;
+        }
+        var planet = PlanetApi.API.getPlanet(dim);
         return planet != null && planet.isSpace() && zero;
     }
 }

@@ -52,11 +52,18 @@ public abstract class WorkableMultiblockMachineMixin extends MultiblockControlle
 
     @Inject(method = "onStructureFormed", at = @At("TAIL"), remap = false)
     private void onPartScan(CallbackInfo ci) {
+        updateSolarDimensions();
         for (var part : parts) {
             if (this instanceof IEnhancedMultiblockMachine enhancedRecipeLogicMachine) {
                 enhancedRecipeLogicMachine.onPartScan(part);
             }
         }
+    }
+
+    @Inject(method = "onStructureInvalid", at = @At("TAIL"), remap = false)
+    private void gto$resetSolarDimensions(CallbackInfo ci) {
+        var heat = getSolarHeatHandler();
+        if (heat != null) heat.updateSolarDimensions(1, 1, 1);
     }
 
     @Override

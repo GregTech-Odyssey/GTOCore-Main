@@ -1509,9 +1509,17 @@ public final class MaterialA {
         Tartarite = material("tartarite", "溶火之石")
                 .dust()
                 .fluid()
+                .temp(24000)
                 .ore()
                 .addOreByproducts(Americium)
                 .color(0xd36232)
+                .iconSet(BRIGHT)
+                .buildAndRegister();
+
+        SolarWind = material("solar_wind", "捕获太阳风")
+                .fluid()
+                .temp(24000)
+                .color(0x32d3d3)
                 .iconSet(BRIGHT)
                 .buildAndRegister();
 

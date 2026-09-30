@@ -21,11 +21,13 @@ public final class GTORenderTypes extends RenderType {
     private static ShaderInstance blackHoleEventHorizonShader;
     private static ShaderInstance dimensionallyTranscendentOverlayShader;
     private static ShaderInstance stellarForgeVortexShader;
+    private static ShaderInstance solarSurfaceVortexShader;
     private static final Map<ResourceLocation, ShaderInstance> SHADERS = new ConcurrentHashMap<>();
 
     private static final ShaderStateShard BLACK_HOLE_EVENT_HORIZON_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(blackHoleEventHorizonShader, "Black hole shader not loaded"));
     private static final ShaderStateShard DIMENSIONALLY_TRANSCENDENT_OVERLAY_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(dimensionallyTranscendentOverlayShader, "Dimensionally transcendent overlay shader not loaded"));
     private static final ShaderStateShard STELLAR_FORGE_VORTEX_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(stellarForgeVortexShader, "Stellar forge vortex shader not loaded"));
+    private static final ShaderStateShard SOLAR_SURFACE_VORTEX_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(solarSurfaceVortexShader, "Solar surface vortex shader not loaded"));
 
     public static final RenderType LIGHT_CYLINDER = RenderType.create("light_cylinder",
             DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, 256, false, false,
@@ -80,6 +82,15 @@ public final class GTORenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
+    public static final RenderType SOLAR_SURFACE_VORTEX = RenderType.create("solar_surface_vortex",
+            DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES, 256, false, false,
+            RenderType.CompositeState.builder()
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setShaderState(SOLAR_SURFACE_VORTEX_SHADER)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
     private GTORenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
                            boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
         super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
@@ -88,6 +99,7 @@ public final class GTORenderTypes extends RenderType {
     public static final ResourceLocation BLACK_HOLE_EVENT_HORIZON_SHADER_LOCATION = GTOCore.id("black_hole_event_horizon");
     public static final ResourceLocation DIMENSIONALLY_TRANSCENDENT_OVERLAY_SHADER_LOCATION = GTOCore.id("dimensionally_transcendent_overlay");
     public static final ResourceLocation STELLAR_FORGE_VORTEX_SHADER_LOCATION = GTOCore.id("stellar_forge_vortex");
+    public static final ResourceLocation SOLAR_SURFACE_VORTEX_SHADER_LOCATION = GTOCore.id("solar_surface_vortex");
 
     public static final ResourceLocation CRUPTIX = GTOCore.id("cruptix");
     public static final ResourceLocation ITEM_RESONANCE_WAVE = GTOCore.id("item_resonance_wave");
@@ -123,6 +135,17 @@ public final class GTORenderTypes extends RenderType {
     @OnlyIn(Dist.CLIENT)
     public static ShaderInstance getStellarForgeVortexShader() {
         return stellarForgeVortexShader;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void setSolarSurfaceVortexShader(ShaderInstance shader) {
+        solarSurfaceVortexShader = shader;
+        SHADERS.put(SOLAR_SURFACE_VORTEX_SHADER_LOCATION, shader);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static ShaderInstance getSolarSurfaceVortexShader() {
+        return solarSurfaceVortexShader;
     }
 
     @OnlyIn(Dist.CLIENT)

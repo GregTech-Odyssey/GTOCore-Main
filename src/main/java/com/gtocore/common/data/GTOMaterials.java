@@ -344,8 +344,8 @@ public final class GTOMaterials {
     public static Material AsteroidFragment;
     // 聚星凝核群
     public static Material StarClusterNucleus;
-    // 烈焰之炽焱
-    public static Material BlazeFlame;
+    // 太阳风
+    public static Material SolarWind;
 
     public static Material IronChromiumRedoxFlowBatteryElectrolyte;// iv 2a uev
     public static Material VanadiumRedoxFlowBatteryElectrolyte;// luv 1a uxv

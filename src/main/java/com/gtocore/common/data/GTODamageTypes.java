@@ -113,5 +113,5 @@ public final class GTODamageTypes {
     @RegisterLanguage(cn = "悲，员工 %s 死于%s %sK的热浪", en = "Sad, employee %s died from a heat wave of %s %sK")
     private static final String MACHINE_HEAT_WAVE_MSG_ID = "gtocore.death.attack.machine_heat_wave";
     @RegisterLanguage(cn = "%s 成为了奔腾炽焱等离子体的一部分", en = "%s became a part of the blazing plasma.")
-    private static final String BLAZING_PLASMA_MSG_ID = "gtocore.death.attack.blazing_plasma";
+    private static final String BLAZING_PLASMA_MSG_ID = "death.attack.blazing_plasma";
 }

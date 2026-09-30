@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 public final class BlazingPyrotheumFluidType extends FluidType {
 
     public BlazingPyrotheumFluidType() {
-        super(Properties.create().fallDistanceModifier(0.0F).motionScale(0.014D).temperature(28000).sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
+        super(Properties.create().fallDistanceModifier(0.0F).motionScale(0.014D).temperature(28000).lightLevel(15).sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
                 .sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY).sound(SoundActions.FLUID_VAPORIZE, SoundEvents.FIRE_EXTINGUISH).descriptionId("fluid.gtocore.blazing_pyrotheum"));
     }
 

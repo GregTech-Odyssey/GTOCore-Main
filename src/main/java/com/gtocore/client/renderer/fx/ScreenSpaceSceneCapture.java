@@ -20,6 +20,16 @@ public final class ScreenSpaceSceneCapture {
     }
 
     public static TextureTarget capture(LevelRenderer levelRenderer) {
+        RenderTarget mainTarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget outputTarget = Minecraft.useShaderTransparency() && levelRenderer.getWeatherTarget() != null ? levelRenderer.getWeatherTarget() : mainTarget;
+        return captureTarget(outputTarget);
+    }
+
+    public static TextureTarget captureMainTarget() {
+        return captureTarget(Minecraft.getInstance().getMainRenderTarget());
+    }
+
+    private static TextureTarget captureTarget(RenderTarget outputTarget) {
         ensureSceneTarget();
         if (sceneTarget == null) {
             return null;
@@ -29,8 +39,6 @@ public final class ScreenSpaceSceneCapture {
         }
 
         Minecraft minecraft = Minecraft.getInstance();
-        RenderTarget mainTarget = minecraft.getMainRenderTarget();
-        RenderTarget outputTarget = Minecraft.useShaderTransparency() && levelRenderer.getWeatherTarget() != null ? levelRenderer.getWeatherTarget() : mainTarget;
         sceneTarget.clear(Minecraft.ON_OSX);
         GlStateManager._glBindFramebuffer(36008, outputTarget.frameBufferId);
         GlStateManager._glBindFramebuffer(36009, sceneTarget.frameBufferId);

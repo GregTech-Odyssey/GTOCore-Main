@@ -23,6 +23,10 @@ public class FXManager {
             ScreenSpaceSceneCapture.beginFrame();
             StellarForgeVortexFX.beginBatchFrame();
         }
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+            // Late refraction needs the completed scene, including translucent fluids and particles.
+            ScreenSpaceSceneCapture.beginFrame();
+        }
         for (AbstractFX fx : FX_LIST) {
             if (!fx.isDiscarded()) {
                 fx.render(event.getStage(), event.getLevelRenderer(), event.getPoseStack(), event.getProjectionMatrix(), event.getPartialTick(), event.getCamera(), event.getFrustum());
@@ -34,6 +38,7 @@ public class FXManager {
     }
 
     public static void tickFXs() {
+        SolarSurfaceFX.beginTick();
         List<AbstractFX> discarded = new ArrayList<>();
         FX_LIST.removeIf(fx -> {
             fx.tick();

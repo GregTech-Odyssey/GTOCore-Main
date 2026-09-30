@@ -8,6 +8,7 @@ import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.BedrockFluidDefinition;
+import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -458,6 +459,24 @@ public final class GTOBedrockFluids {
             .dimensions(overworld())
             .biomes(200, Biomes.DEEP_OCEAN, Biomes.DEEP_COLD_OCEAN, Biomes.DEEP_FROZEN_OCEAN)
             .biomes(150, BiomeTags.IS_OCEAN));
+
+    public static BedrockFluidDefinition HELIUM_PLASMA = create(GTCEu.id("helium_plasma_deposit"), "氦等离子矿藏", builder -> builder
+            .fluid(() -> GTMaterials.Helium.getFluid(FluidStorageKeys.PLASMA))
+            .weight(10)
+            .yield(10, 14)
+            .depletionAmount(1)
+            .depletionChance(100)
+            .depletedYield(2)
+            .dimensions(Collections.singleton(SOLAR_SURFACE)));
+
+    public static BedrockFluidDefinition FERRO_PLASMA = create(GTCEu.id("ferro_plasma_deposit"), "铁等离子矿藏", builder -> builder
+            .fluid(() -> GTMaterials.Iron.getFluid(FluidStorageKeys.PLASMA))
+            .weight(1)
+            .yield(1, 4)
+            .depletionAmount(1)
+            .depletionChance(100)
+            .depletedYield(0)
+            .dimensions(Collections.singleton(SOLAR_SURFACE)));
 
     //////////////////////////////////////
     // ******** NETHER ********//

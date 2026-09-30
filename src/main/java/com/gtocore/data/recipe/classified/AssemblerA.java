@@ -54,7 +54,6 @@ final class AssemblerA {
                 .duration(200)
                 .EUt(7)
                 .save();
-
         ASSEMBLER_RECIPES.builder("heat_detector_cover")
                 .inputItems(TagPrefix.plate, GTMaterials.Steel, 2)
                 .inputItems(TagPrefix.dust, GTMaterials.RedAlloy, 1)

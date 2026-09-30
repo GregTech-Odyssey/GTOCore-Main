@@ -267,6 +267,8 @@ public final class LangHandler {
         addCNEN("biome.gtocore.pluto_biome", "冥王星", "Pluto");
         addCNEN("biome.gtocore.titan_biome", "土卫六", "Titan");
         addCNEN("biome.gtocore.saturn_ring_biome", "土星环", "Saturn Ring");
+        addCNEN("biome.gtocore.solar_surface_biome", "太阳表面", "Solar Surface");
+        addCNEN("biome.gtocore.solar_surface_tartarite_biome", "熔火之渊", "Tartarite Blob");
         addCNEN("biome.gtocore.create", "创造", "Create");
         addCNEN("biome.gtocore.void", "虚空", "Void");
         addCNEN("biome.gtocore.flat", "超平坦", "Superflat");
