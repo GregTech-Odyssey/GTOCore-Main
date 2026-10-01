@@ -34,15 +34,15 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.SubWindowButton;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -111,8 +111,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                         ITierCasingMachine,
                         IMultiblockTraitHolder,
                         IWailaDisplayProvider,
-                        IMachineSubWindows,
-                        IIssueProvider {
+                        IMachineSubWindows {
 
     @SaveToDisk
     @SyncToClient
@@ -169,7 +168,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             var eu = recipe.eut;
             if (eu != 0) {
                 if (!this.useEnergy(eu, false)) {
-                    IdleReason.NO_EU.report(this, eu, 0);
+                    setIdleReason(() -> ActionResult.failInsufficientIn(EURecipeInfo.INSTANCE.getName()).reason());
                     return false;
                 }
             }
@@ -278,7 +277,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (researchRequester == null || selectedNode == null) return null;
         if (isResearchBlocked()) {
-            IdleReason.PREREQUISITES_NOT_RESEARCHED.report(this);
+            IdleReason.PREREQUISITES_NOT_RESEARCHED.setReason(this);
             return null;
         }
         var cwuAvailable = requestCWU(getCWUInputLimit(), true);
@@ -315,7 +314,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 .setWorkingStatus(true, isActive())
                 .setWorkingStatusKeys(LANG_DATA_ACCESS_WARN_ENERGY, LANG_DATA_ACCESS_WARN_ENERGY, "gtceu.multiblock.data_bank.providing")
                 .addEnergyUsageExactLine(energyUsage)
-                .addIssueLines(getRecipeLogic());
+                .addWorkingStatusLine();
         textList.add(Component.translatable(LANG_DATA_ACCESS_USAGE,
                 Component.literal(FormattingUtil.formatNumbers(getExistRecipes().size())).withStyle(ChatFormatting.AQUA),
                 Component.literal(FormattingUtil.formatNumbers(getTotalDataSlots())).withStyle(ChatFormatting.AQUA))
@@ -400,11 +399,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     // ========= 研究（数据访问页用） =========
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (isResearchBlocked()) IdleReason.PREREQUISITES_NOT_RESEARCHED.collect(sink);
-    }
 
     boolean isResearchBlocked() {
         var node = selectedNode;

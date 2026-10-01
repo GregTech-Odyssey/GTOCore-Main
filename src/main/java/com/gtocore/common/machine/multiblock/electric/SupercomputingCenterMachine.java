@@ -22,7 +22,6 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -379,16 +378,10 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
             if (getRecipeLogic().isWorking()) {
                 return requestCWUt(false, cwu);
             } else if (!getRecipeLogic().isSuspend()) {
-                var logic = getRecipeLogic();
-                logic.beginIssueRound(IssueStage.SEARCH);
-                try {
-                    for (var u : getInputUnits()) {
-                        if (logic.checkMatchedRecipeAvailable(u, runRecipe) && logic.isWorking()) {
-                            return requestCWUt(false, cwu);
-                        }
+                for (var u : getInputUnits()) {
+                    if (getRecipeLogic().checkMatchedRecipeAvailable(u, runRecipe) && getRecipeLogic().isWorking()) {
+                        return requestCWUt(false, cwu);
                     }
-                } finally {
-                    logic.endIssueRound();
                 }
             }
         }

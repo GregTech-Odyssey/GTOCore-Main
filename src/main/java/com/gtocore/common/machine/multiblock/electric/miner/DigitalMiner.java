@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.gui.misc.ProspectorMode;
 import com.gregtechceu.gtceu.api.gui.widget.ProspectingMapWidget;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -412,9 +411,20 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
                     .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
             return;
         }
-        MultiblockDisplayText.builder(textList, true)
-                .setWorkingStatusKeys("gtceu.multiblock.idling", "gtceu.multiblock.work_paused", "gtceu.multiblock.large_miner.working")
-                .addIssueLines(getRecipeLogic());
+        if (getRecipeLogic().isDone())
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.done")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)));
+        else if (getRecipeLogic().isWorking())
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.working")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
+        else if (!this.isWorkingEnabled())
+            textList.add(Component.translatable("gtceu.multiblock.work_paused"));
+        if (getRecipeLogic().isInventoryFull())
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.invfull")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+        if (!drainInput(true))
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.needspower")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
         textList.addAll(NewDataAttributes.LEVEL.create(tier).get());
         RecipeLogicProvider.getEUtTooltip(textList, energyPerTick, false, RecipeLogicProvider.getVoltage(getRecipeLogic()));
         textList.add(Component.translatable(PARALLEL, parallelMining));

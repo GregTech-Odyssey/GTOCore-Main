@@ -12,7 +12,9 @@ public enum Difficulty {
     Normal,
     Expert;
 
+    private static final Difficulty CURRENT = values()[RuleManager.preset().defaults().ordinal()];
+
     public static Difficulty current() {
-        return values()[RuleManager.preset().defaults().ordinal()];
+        return CURRENT;
     }
 }

@@ -241,12 +241,12 @@ public final class GTORules {
             .name("gtocore.rule.machines.fluid_pipe_throughput", "流体管道流量倍数", "Fluid Pipe Throughput Multiplier")
             .register();
     public static final IntRule MAINTENANCE_WEAR = Rules.intRule("machines.maintenance_wear").group(MACHINES)
-            .defaults(1, 2, 3).range(0, 100).runtime()
+            .defaults(1, 2, 3).range(0, 100)
             .name("gtocore.rule.machines.maintenance_wear", "维护损耗速度", "Maintenance Wear Rate")
             .desc("gtocore.rule.machines.maintenance_wear.desc", "多方块机器运行时，维护计时累积速度的倍率。", "How fast multiblocks accumulate maintenance time while running.")
             .register();
     public static final BoolRule MAINTENANCE_FAILURES = Rules.boolRule("machines.maintenance_random_failures").group(MACHINES)
-            .defaults(false, true, true).runtime()
+            .defaults(false, true, true)
             .name("gtocore.rule.machines.maintenance_random_failures", "随机维护故障", "Random Maintenance Failures")
             .desc("gtocore.rule.machines.maintenance_random_failures.desc", "开启后，维护计时累积到一定程度时机器会随机出现维护问题。", "Machines randomly develop maintenance problems once enough maintenance time accumulates.")
             .register();
@@ -267,7 +267,7 @@ public final class GTORules {
             .desc("gtocore.rule.machines.muffler.desc", "简单档不产生灰烬；专家档的消声仓等级必须与机器等级匹配，且总会产生灰烬。", "No ash on the easy tier; on the expert tier the muffler tier must match the machine tier and ash is always produced.")
             .register();
     public static final BoolRule POWER_LOSS_SHUTDOWN = Rules.boolRule("machines.power_loss_shutdown").group(MACHINES)
-            .defaults(false, false, true).runtime()
+            .defaults(false, false, true)
             .name("gtocore.rule.machines.power_loss_shutdown", "断电停机", "Shut Down on Power Loss")
             .desc("gtocore.rule.machines.power_loss_shutdown.desc", "开启后，机器断电会直接停机并清空进度；关闭时只回退进度。", "Machines shut down and lose their progress on power loss; otherwise the progress only rolls back.")
             .register();
@@ -282,7 +282,7 @@ public final class GTORules {
             .desc("gtocore.rule.machines.processing_plant_parallel.desc", "加工厂每高一级获得的并行数，安装扩展模块后翻倍。", "Parallels gained per tier by the processing plant, doubled with the extension module.")
             .register();
     public static final IntRule TIME_TWISTER_ENERGY = Rules.intRule("machines.time_twister_energy").group(MACHINES)
-            .defaults(4, 8, 16).range(1, 1024).runtime()
+            .defaults(4, 8, 16).range(1, 1024)
             .name("gtocore.rule.machines.time_twister_energy", "时间扭曲器耗能倍率", "Time Twister Energy Multiplier")
             .desc("gtocore.rule.machines.time_twister_energy.desc", "使用时间扭曲器加速机器时，能量消耗的倍率。", "Energy cost multiplier when accelerating machines with the Time Twister.")
             .register();
@@ -348,27 +348,27 @@ public final class GTORules {
             .register();
 
     public static final BoolRule MOB_ENHANCEMENT = Rules.boolRule("survival.mob_enhancement").group(SURVIVAL)
-            .defaults(false, true, true).runtime()
+            .defaults(false, true, true)
             .name("gtocore.rule.survival.mob_enhancement", "怪物强化", "Mob Enhancement")
             .desc("gtocore.rule.survival.mob_enhancement.desc", "开启后，怪物会按原版难度获得额外强化。", "Mobs gain extra enhancements based on the vanilla difficulty.")
             .register();
     public static final IntRule REGEN_FOOD_THRESHOLD = Rules.intRule("survival.regen_food_threshold").group(SURVIVAL)
-            .defaults(5, 15, 15).range(0, 20).runtime()
+            .defaults(5, 15, 15).range(0, 20)
             .name("gtocore.rule.survival.regen_food_threshold", "额外回血饱食度门槛", "Extra Regeneration Food Threshold")
             .desc("gtocore.rule.survival.regen_food_threshold.desc", "饱食度高于此值时，玩家会周期性额外回复生命。", "Players periodically regain extra health while their food level is above this value.")
             .register();
     public static final IntRule REGEN_FACTOR = Rules.intRule("survival.regen_factor").group(SURVIVAL)
-            .defaults(3, 2, 1).range(1, 100).runtime()
+            .defaults(3, 2, 1).range(1, 100)
             .name("gtocore.rule.survival.regen_factor", "额外回血强度", "Extra Regeneration Strength")
             .desc("gtocore.rule.survival.regen_factor.desc", "数值越大，每次额外回复的生命越多。", "Higher values restore more health each time.")
             .register();
     public static final IntRule ULTIMINE_LIMIT = Rules.intRule("survival.ultimine_limit").group(SURVIVAL)
-            .defaults(64, 32, 16).range(1, 4096).runtime()
+            .defaults(64, 32, 16).range(1, 4096)
             .name("gtocore.rule.survival.ultimine_limit", "连锁挖掘上限", "Ultimine Limit")
             .desc("gtocore.rule.survival.ultimine_limit.desc", "空手或普通物品连锁挖掘的方块上限，挖掘工具为其一半。", "Block limit for ultimining with bare hands or ordinary items; digging tools get half of it.")
             .register();
     public static final LongRule VIRTUAL_COIN_COST = Rules.longRule("survival.virtual_coin_cost").group(SURVIVAL)
-            .defaults(250, 250, 1000).range(1, 1_000_000_000_000L).runtime()
+            .defaults(250, 250, 1000).range(1, 1_000_000_000_000L)
             .name("gtocore.rule.survival.virtual_coin_cost", "虚拟币基础工作量", "Virtual Coin Base Workload")
             .desc("gtocore.rule.survival.virtual_coin_cost.desc", "获得下一枚虚拟币所需工作量的基数。", "Base of the work needed to earn the next virtual coin.")
             .register();

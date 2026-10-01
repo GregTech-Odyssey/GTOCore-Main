@@ -209,7 +209,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         public boolean onRecipeFinish() {
             machine.afterWorking();
             if (lastRecipe != null) {
-                produceOutputs();
+                machine.handleRecipeOutput(lastRecipe);
                 lastRecipe = null;
             }
             if (suspendAfterFinish) {

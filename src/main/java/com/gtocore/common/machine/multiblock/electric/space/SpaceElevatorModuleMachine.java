@@ -8,9 +8,6 @@ import com.gtolib.api.machine.multiblock.CustomParallelMultiblockMachine;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiModule;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -32,7 +29,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine implements IMultiModule<SpaceElevatorMachine>, IIssueProvider {
+public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine implements IMultiModule<SpaceElevatorMachine> {
 
     @Nullable
     @Setter
@@ -82,21 +79,13 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         var controller = getController();
-        if (controller == null) {
-            IdleReason.SPACE_ELEVATOR_NOT_CONNECTED.report(this, IssueStage.MODIFIER, null);
+        if (controller == null || getSpaceElevatorTier() < 8) {
+            (controller == null ? IdleReason.SPACE_ELEVATOR_NOT_CONNECTED : IdleReason.SPACE_ELEVATOR_NOT_RUNNING).setReason(this);
             return null;
         }
-        if (getSpaceElevatorTier() < 8) {
-            IdleReason.SPACE_ELEVATOR_NOT_RUNNING.report(this, IssueStage.MODIFIER, null);
+        if (powerModuleTier && recipe.data.getInt(GTORecipeDataKeys.POWER_MODULE_TIER) > controller.getCasingTier(GTORecipeDataKeys.POWER_MODULE_TIER)) {
+            IdleReason.POWER_MODULE_TIER.setReason(this, recipe.data.getInt(GTORecipeDataKeys.POWER_MODULE_TIER), controller.getCasingTier(GTORecipeDataKeys.POWER_MODULE_TIER));
             return null;
-        }
-        if (powerModuleTier) {
-            int need = recipe.data.getInt(GTORecipeDataKeys.POWER_MODULE_TIER);
-            int have = controller.getCasingTier(GTORecipeDataKeys.POWER_MODULE_TIER);
-            if (need > have) {
-                IdleReason.POWER_MODULE_TIER.report(this, IssueStage.MODIFIER, need, have, null);
-                return null;
-            }
         }
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallel());
         if (recipe == null) return null;
@@ -106,18 +95,12 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
     @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
         if (!super.handleTickRecipe(recipe)) return false;
-        if (getOffsetTimer() % 10 == 0 && getSpaceElevatorTier() < 8) {
-            (controller == null ? IdleReason.SPACE_ELEVATOR_NOT_CONNECTED : IdleReason.SPACE_ELEVATOR_NOT_RUNNING).report(this);
+        if (getOffsetTimer() % 10 == 0) {
+            if (getSpaceElevatorTier() >= 8) return true;
+            (getController() == null ? IdleReason.SPACE_ELEVATOR_NOT_CONNECTED : IdleReason.SPACE_ELEVATOR_NOT_RUNNING).setReason(this);
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed()) return;
-        if (controller == null) IdleReason.SPACE_ELEVATOR_NOT_CONNECTED.collect(sink);
-        else if (getSpaceElevatorTier() < 8) IdleReason.SPACE_ELEVATOR_NOT_RUNNING.collect(sink);
     }
 
     @Override

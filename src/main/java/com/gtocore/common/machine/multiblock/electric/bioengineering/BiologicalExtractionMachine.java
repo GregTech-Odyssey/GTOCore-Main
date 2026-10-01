@@ -7,9 +7,8 @@ import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
@@ -129,7 +128,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
                     redstoneSignalOutput = 15;
                     updateSignal();
                 } else {
-                    reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, 1000, -1, null);
+                    setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
                     return false;
                 }
             }
@@ -139,7 +138,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
                 case 400 -> input(VAPOR_OF_LEVITY);
                 default -> true;
             };
-            if (!ok) reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, 1000, -1, null);
+            if (!ok) setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
             return ok;
         }
         return false;

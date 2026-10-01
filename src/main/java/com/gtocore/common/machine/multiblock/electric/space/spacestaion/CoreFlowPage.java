@@ -2,15 +2,12 @@ package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.common.data.machines.SpaceMultiblock;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
-import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -215,7 +212,7 @@ final class CoreFlowPage {
             super(core::getOffsetTimer, REFRESH_TICKS);
             this.core = core;
             this.shares = core.getModules().size() + 1;
-            this.diagnoser = new RecipeDiagnoser(core, core.cycleRecipe());
+            this.diagnoser = new RecipeDiagnoser(core, core.buildCycleRecipe());
         }
 
         @Override
@@ -231,9 +228,11 @@ final class CoreFlowPage {
         @Override
         protected void refresh(int now) {
             var logic = core.getRecipeLogic();
-            shares = core.getModules().size() + 1;
-            var recipe = core.cycleRecipe();
-            if (recipe != diagnoser.getRecipe()) diagnoser = new RecipeDiagnoser(core, recipe);
+            int count = core.getModules().size() + 1;
+            if (count != shares) {
+                shares = count;
+                diagnoser = new RecipeDiagnoser(core, core.buildCycleRecipe());
+            }
             boolean formed = core.isFormed();
             boolean working = logic.isWorking();
             boolean inCycle = working || logic.isWaiting();
@@ -246,28 +245,24 @@ final class CoreFlowPage {
             energyLines.add(Component.translatable(LANG_ENERGY));
             energyLines.addAll(diagnoser.energyDetail());
             energyDetail = energyLines;
-            refreshStation(formed, working, inCycle, MachineDiagnosis.of(core));
+            refreshStation(formed, working, inCycle);
             refreshServices(formed);
             refreshSegments();
         }
 
-        private void refreshStation(boolean formed, boolean working, boolean inCycle, DiagnosisResult result) {
-            var notInSpace = result.issue(IdleReason.SPACE_STATION_NOT_IN_SPACE.type());
+        private void refreshStation(boolean formed, boolean working, boolean inCycle) {
             IssueView view;
             if (!formed) view = RecipeIssue.UNFORMED.view();
-            else if (notInSpace != null) view = new IssueView(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE), null, notInSpace);
+            else if (!core.isInSpace()) view = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE));
             else if (working) view = core.getReadyCount() < READY_TARGET ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_WARMING)) : RecipeIssue.RUNNING.view();
-            else if (inCycle) view = IssueView.primary(result, RecipeIssue.WAITING.view());
+            else if (inCycle) view = RecipeIssue.WAITING.view();
             else if (!diagnoser.inputsSatisfied()) view = RecipeIssue.INPUT_SHORT.view();
             else if (!diagnoser.energySatisfied()) view = diagnoser.energyIssue().view();
-            else {
-                var primary = result.primary();
-                view = primary != null && primary.isBlocking() ? IssueView.of(primary) : IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
-            }
+            else view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
             stationView = view;
-            station = working ? FlowState.ACTIVE : view.state();
+            station = working ? FlowState.ACTIVE : view.issue().state();
             stationDetail = List.of(Component.translatable(LANG_CORE),
-                    view.description().copy().withStyle(RecipeDiagnoser.style(view.issue())),
+                    Component.translatable(view.issue().descriptionKey()).withStyle(RecipeDiagnoser.style(view.issue())),
                     Component.translatable(LANG_SHARES, shares).withStyle(ChatFormatting.GRAY));
         }
 

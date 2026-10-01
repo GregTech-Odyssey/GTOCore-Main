@@ -8,7 +8,6 @@ import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -56,7 +55,7 @@ public final class HeatExchangerMachine extends NoEnergyMultiblockMachine implem
     public boolean handleRecipeInput(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (super.handleRecipeInput(unit, recipe)) {
             if (!unit.inputFluid(water ? Fluids.WATER : DistilledWater, hs / 40)) {
-                (water ? IdleReason.WATER_SHORT : IdleReason.DISTILLED_WATER_SHORT).report(this, IssueStage.SETUP, hs / 40, -1, recipe.definition);
+                (water ? IdleReason.WATER_SHORT : IdleReason.DISTILLED_WATER_SHORT).setReason(this, hs / 40, -1);
                 doExplosion(Math.min(10, hs / 10000));
                 return false;
             }

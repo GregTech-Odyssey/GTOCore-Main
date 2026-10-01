@@ -8,7 +8,6 @@ import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -84,13 +83,14 @@ public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaD
             deductResult = celestialHandler.deductResource(ANY, anyCost, 1, solaris, lunara, voidflux, stellarm);
         }
 
-        if (deductResult == null) {
-            IdleReason.NOT_APPLICABLE.report(this, IssueStage.CONDITION, recipe);
-            return false;
-        }
-        if (!deductResult.success()) {
-            IdleReason.CELESTIAL_SHORT.report(this, IssueStage.CONDITION, CelestialHandler.cost(solarisCost, lunaraCost, voidfluxCost, stellarmCost, anyCost),
-                    CelestialHandler.available(solarisCost, lunaraCost, voidfluxCost, stellarmCost, solaris, lunara, voidflux, stellarm), recipe);
+        if (deductResult == null || !deductResult.success()) {
+            if (deductResult == null) {
+                IdleReason.NOT_APPLICABLE.setReason(this);
+            } else {
+                long need = solarisCost > 0 ? solarisCost : lunaraCost > 0 ? lunaraCost : voidfluxCost > 0 ? voidfluxCost : stellarmCost > 0 ? stellarmCost : anyCost;
+                long have = solarisCost > 0 ? solaris : lunaraCost > 0 ? lunara : voidfluxCost > 0 ? voidflux : stellarmCost > 0 ? stellarm : solaris + lunara + voidflux + stellarm;
+                IdleReason.CELESTIAL_SHORT.setReason(this, need, have);
+            }
             return false;
         }
         this.solaris = deductResult.solaris();

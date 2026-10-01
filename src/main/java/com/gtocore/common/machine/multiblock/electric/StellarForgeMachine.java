@@ -16,7 +16,6 @@ import com.gtolib.utils.explosion.SphereExplosion;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -84,7 +83,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
         if (manat < 0) {
             if (!hasStructurePart(MAGIC_MODULE)) {
                 consecutiveRecipes = 0;
-                IdleReason.MAGIC_MODULE_MISSING.report(this, IssueStage.MODIFIER, recipe.definition);
+                IdleReason.MAGIC_MODULE_MISSING.setReason(this);
                 return null;
             }
             if (consecutiveRecipes > 1) {

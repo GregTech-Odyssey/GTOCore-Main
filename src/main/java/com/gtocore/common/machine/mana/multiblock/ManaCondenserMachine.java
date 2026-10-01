@@ -11,7 +11,6 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -57,9 +56,8 @@ public final class ManaCondenserMachine extends ManaMultiblockMachine {
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
-        int form = structureParam(FORM);
-        if (form != requiredForm) {
-            IdleReason.MANA_CONDENSER_FORM.report(this, IssueStage.CONDITION, requiredForm, form, recipe);
+        if (structureParam(FORM) != requiredForm) {
+            setIdleReason(IdleReason.MANA_CONDENSER_FORM);
             return false;
         }
         return super.checkConditions(unit, recipe);

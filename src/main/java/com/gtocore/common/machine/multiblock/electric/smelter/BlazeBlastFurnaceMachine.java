@@ -24,11 +24,10 @@ public final class BlazeBlastFurnaceMachine extends CoilCustomParallelMultiblock
     }
 
     private boolean inputFluid(RecipeHandlerUnit unit) {
-        long amount = (1L << Math.max(0, getTier() - 2)) * 10L;
-        if (inputFluid(unit, BLAZE.getRawFluid(), amount)) {
+        if (inputFluid(unit, BLAZE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
             return true;
         }
-        IdleReason.BLAZE_SHORT.report(this, amount, -1);
+        IdleReason.BLAZE_SHORT.setReason(this, (1L << Math.max(0, getTier() - 2)) * 10L, -1);
         return false;
     }
 

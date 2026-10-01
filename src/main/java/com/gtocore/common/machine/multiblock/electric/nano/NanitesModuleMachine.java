@@ -7,9 +7,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiModule;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -28,7 +25,7 @@ import java.util.List;
 
 import static com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage.NO_VALUE;
 
-public final class NanitesModuleMachine extends ElectricMultiblockMachine implements IMultiModule<NanitesIntegratedMachine>, IIssueProvider {
+public final class NanitesModuleMachine extends ElectricMultiblockMachine implements IMultiModule<NanitesIntegratedMachine> {
 
     @Getter
     private NanitesIntegratedMachine controller;
@@ -59,7 +56,7 @@ public final class NanitesModuleMachine extends ElectricMultiblockMachine implem
     @Override
     public GTRecipe fullModifyRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipeDefinition definition) {
         if (controller == null) {
-            IdleReason.NANITES_NOT_CONNECTED.report(this, IssueStage.MODIFIER, definition);
+            IdleReason.NANITES_NOT_CONNECTED.setReason(this);
             return null;
         }
         var recipe = super.fullModifyRecipe(unit, definition);
@@ -72,26 +69,19 @@ public final class NanitesModuleMachine extends ElectricMultiblockMachine implem
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
-        var controller = this.controller;
         if (controller == null) {
-            IdleReason.NANITES_NOT_CONNECTED.report(this, IssueStage.CONDITION, recipe);
+            IdleReason.NANITES_NOT_CONNECTED.setReason(this);
             return false;
         }
-        int temperature = recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP);
-        if (temperature > controller.getTemperature()) {
-            IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.CONDITION, temperature, controller.getTemperature(), recipe);
+        if (recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP) > controller.getTemperature()) {
+            IdleReason.INSUFFICIENT_TEMPERATURE.setReason(this, recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP), controller.getTemperature());
             return false;
         }
         if (recipe.data.getInt(GTORecipeDataKeys.MODULE) != type) {
-            IdleReason.NOT_APPLICABLE.report(this, IssueStage.CONDITION, recipe);
+            IdleReason.NOT_APPLICABLE.setReason(this);
             return false;
         }
         return super.checkConditions(unit, recipe);
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (controller == null) IdleReason.NANITES_NOT_CONNECTED.collect(sink);
     }
 
     @Override
@@ -101,7 +91,7 @@ public final class NanitesModuleMachine extends ElectricMultiblockMachine implem
             textList.add(Component.translatable("gtocore.machine.nanites_module.connected"));
             if (MultiblockPage.isScreenText()) return;
             textList.add(Component.translatable("tooltip.emi.chance.consume", 100 - controller.chance));
-            textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.literal(FormattingUtil.formatNumbers(controller.getTemperature()) + "K").setStyle(Style.EMPTY.withColor(ChatFormatting.RED))));
+            textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.translatable(FormattingUtil.formatNumbers(controller.getTemperature()) + "K").setStyle(Style.EMPTY.withColor(ChatFormatting.RED))));
         } else {
             textList.add(Component.translatable("gtocore.machine.nanites_module.not_connected"));
         }

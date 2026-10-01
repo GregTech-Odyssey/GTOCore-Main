@@ -7,7 +7,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
@@ -68,7 +67,7 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!PlanetApi.API.isSpace(getLevel())) {
-            IdleReason.ONLY_IN_SPACE.report(this, IssueStage.MODIFIER, null);
+            IdleReason.ONLY_IN_SPACE.setReason(this);
             return null;
         }
         recipe = RecipeModifier.perfectOverclocking(this, unit, recipe);
@@ -95,7 +94,7 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
                 for (int i = -4; i < 5; i++) {
                     for (int j = -4; j < 5; j++) {
                         if (!level.canSeeSky(pos.offset(i, 0, j))) {
-                            IdleReason.SKY_OBSTRUCTED.report(this);
+                            IdleReason.SKY_OBSTRUCTED.setReason(this);
                             return false;
                         }
                     }

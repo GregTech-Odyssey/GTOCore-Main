@@ -15,7 +15,6 @@ import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -200,26 +199,19 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
     @Override
     protected @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (recipe.eut != 0) {
-            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, null);
-            return null;
-        }
-        if (maxRate == 0) {
-            IdleReason.MANA_FLOW_TOO_WEAK.report(this, IssueStage.MODIFIER, requiredFlow(recipe), 0, null);
+        if (recipe.eut != 0 || maxRate == 0) {
+            if (recipe.eut != 0) IdleReason.NOT_APPLICABLE.setReason(this);
+            else IdleReason.MANA_FLOW_TOO_WEAK.setReason(this, (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200, 0);
             return null;
         }
         int duration = Math.toIntExact(recipe.duration * MANATRecipeExtension.getMANAt(recipe) / maxRate);
         if (duration > 200) {
-            IdleReason.MANA_FLOW_TOO_WEAK.report(this, IssueStage.MODIFIER, requiredFlow(recipe), maxRate, null);
+            IdleReason.MANA_FLOW_TOO_WEAK.setReason(this, (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200, maxRate);
             return null;
         }
         recipe.duration = 200;
         MANATRecipeExtension.setMANAt(recipe, maxRate);
         return super.getRealRecipe(unit, recipe);
-    }
-
-    private static long requiredFlow(GTRecipe recipe) {
-        return (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200;
     }
 
     @Override

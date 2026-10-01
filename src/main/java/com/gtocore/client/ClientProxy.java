@@ -17,7 +17,6 @@ import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
-import com.gtocore.data.IdleReason;
 import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
@@ -41,7 +40,7 @@ import com.gtolib.api.emi.stack.TagPrefixRenderer;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.data.pack.GTDynamicResourcePack;
-import com.gregtechceu.gtceu.uiwidgets.icon.IssueIcons;
+import com.gregtechceu.gtceu.uiwidgets.icon.IdleReasonIcons;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -126,28 +125,71 @@ public final class ClientProxy extends CommonProxy {
     private static void clientSetup(FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.GELID_CRYOTHEUM.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.FLOWING_GELID_CRYOTHEUM.get(), RenderType.translucent());
-        registerIssueIcons();
+        registerIdleReasonIcons();
     }
 
-    private static void registerIssueIcons() {
-        IssueIcons.register(IdleReason.INVALID_INPUT.type(), WidgetIcons.IDLE_NO_RECIPE);
-        IssueIcons.register(IdleReason.NO_MANA.type(), WidgetIcons.IDLE_NO_MANA);
-        IssueIcons.register(IdleReason.WIRELESS_MANA_SHORT.type(), WidgetIcons.IDLE_NO_MANA);
-        IssueIcons.register(IdleReason.NO_CRANK.type(), WidgetIcons.IDLE_NO_KINETIC);
-        IssueIcons.register(IdleReason.HEAT_SHORT.type(), WidgetIcons.IDLE_LOW_TEMPERATURE);
-        IssueIcons.register(IdleReason.HEAT_ACCUMULATION.type(), WidgetIcons.IDLE_OVERHEAT);
-        IssueIcons.register(IdleReason.BLOCK_TIER_NOT_SATISFIES.type(), WidgetIcons.IDLE_CONDITION);
-        IssueIcons.register(IdleReason.SPACE_SHIELD_NO_LASER.type(), WidgetIcons.IDLE_CONDITION);
-        IssueIcons.register(IdleReason.SPACE_STATION_NO_CORE.type(), WidgetIcons.IDLE_CONDITION);
-        IssueIcons.register(IdleReason.SET_CIRCUIT.type(), WidgetIcons.IDLE_CONDITION);
-        IssueIcons.register(IdleReason.CHARGE.type(), WidgetIcons.IDLE_NO_POWER);
-        IssueIcons.register(IdleReason.OBSTRUCTED_VOLTA.type(), WidgetIcons.STATUS_OBSTRUCTED);
-        IssueIcons.register(IdleReason.MUFFLER_NOT_SUPPORTED.type(), WidgetIcons.STATUS_OBSTRUCTED);
-        IssueIcons.register(IdleReason.MANA_FLOW_TOO_WEAK.type(), WidgetIcons.IDLE_NO_MANA);
-        IssueIcons.register(IdleReason.COIL_NOT_USABLE.type(), WidgetIcons.IDLE_CONDITION);
-        IssueIcons.register(IdleReason.STEAM_VENT_OBSTRUCTED.type(), WidgetIcons.STATUS_OBSTRUCTED);
-        IssueIcons.register(IdleReason.FRAMEWORK_TIER_LIMIT.type(), WidgetIcons.STATUS_INFO);
-        IssueIcons.register(IdleReason.DYSON_SPHERE_COMPLETE.type(), WidgetIcons.STATUS_INFO);
+    private static void registerIdleReasonIcons() {
+        IdleReasonIcons.register("gtocore.idle_reason.no_match", WidgetIcons.IDLE_NO_RECIPE);
+        IdleReasonIcons.register("gtocore.idle_reason.invalid_input", WidgetIcons.IDLE_NO_RECIPE);
+        IdleReasonIcons.register("gtocore.idle_reason.insufficient_energy_buffer", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.issue.charge", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.idle_reason.voltage_tier_not_satisfies", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.idle_reason.block_tier_not_satisfies", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace_multiblock", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_shield_no_laser", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_in_space", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_no_core", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_paused", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_running", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_preparing", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.felling_tool", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.grindball", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.set_circuit", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.no_ores", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.radiation", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.incorrect_direction_volta", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.heat_accumulation", WidgetIcons.IDLE_OVERHEAT);
+        IdleReasonIcons.register("gtocore.idle_reason.muffler_not_supported", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.idle_reason.obstructed_volta", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.idle_reason.lack_material", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.amount_not_enough", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.ordered.item", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.ordered.fluid", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.output_full", WidgetIcons.IDLE_OUTPUT_FULL);
+        IdleReasonIcons.register("gtocore.idle_reason.no_mana", WidgetIcons.IDLE_NO_MANA);
+        IdleReasonIcons.register("gtocore.idle_reason.no_crank", WidgetIcons.IDLE_NO_KINETIC);
+        IdleReasonIcons.register("gtocore.idle_reason.insufficient_temperature", WidgetIcons.IDLE_LOW_TEMPERATURE);
+        IdleReasonIcons.register("gtocore.issue.wireless_eu_short", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.issue.heat_short", WidgetIcons.IDLE_LOW_TEMPERATURE);
+        IdleReasonIcons.register("gtocore.issue.ice_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.blaze_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.water_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.distilled_water_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.hydrogen_reserve_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.helium_reserve_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.celestial_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.dimension_data_missing", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.machine_storage_empty", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.tissue_tier", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.medium_tier", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.processing_tier_mismatch", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.power_module_tier", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.circuit_engraving", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.nanites_not_connected", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.nanites_module_missing", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.magic_module_missing", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.plasma_wings_missing", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.space_elevator_not_connected", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.rotor_mismatch", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.machine.dimensionally_transcendent_plasma_forge.coil", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.issue.steam_vent_obstructed", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.issue.mana_flow_too_weak", WidgetIcons.IDLE_NO_MANA);
+        IdleReasonIcons.register("gtocore.issue.harmony_grid_short", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.machine.space_drone_dock.drone_no_energy", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.issue.heat_full", WidgetIcons.STATUS_INFO);
+        IdleReasonIcons.register("gtocore.issue.dyson_sphere_complete", WidgetIcons.STATUS_INFO);
     }
 
     private static void registerLights(ForgeShimmerReloadEvent e) {

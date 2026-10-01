@@ -14,8 +14,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -45,7 +43,7 @@ import static com.gregtechceu.gtceu.api.GTValues.HV;
 import static com.gregtechceu.gtceu.api.GTValues.V;
 
 @DataGeneratorScanned
-public final class SatelliteControlCenterMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder, IIssueProvider {
+public final class SatelliteControlCenterMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
 
     @RegisterLanguage(en = "Target planet", cn = "目标星球")
     private static final String TARGET = "gtocore.satellite_control_center.target";
@@ -219,17 +217,10 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
                     .duration(6000)
                     .build();
         } else if (getTier() <= GTValues.MV) {
-            IdleReason.VOLTAGE_TIER_NOT_SATISFIES.report(this, HV, getTier());
+            setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES, GTValues.VN[HV], GTValues.VN[getTier()]);
         } else if (launch) {
-            IdleReason.NO_OWNER.report(this);
+            IdleReason.NO_OWNER.setReason(this);
         }
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed()) return;
-        if (getTier() <= GTValues.MV) IdleReason.VOLTAGE_TIER_NOT_SATISFIES.collect(sink, HV, getTier());
-        if (getOwnerUUID() == null) IdleReason.NO_OWNER.collect(sink);
     }
 }

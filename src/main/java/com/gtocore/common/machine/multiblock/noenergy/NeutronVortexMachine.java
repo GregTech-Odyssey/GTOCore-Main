@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IElectricMachine;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -122,12 +121,6 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
     @Override
     public boolean handleTickRecipe(@NotNull GTRecipe recipe) {
         return true;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (isEnergyMode()) return;
-        super.collectIssues(sink);
     }
 
     @Override

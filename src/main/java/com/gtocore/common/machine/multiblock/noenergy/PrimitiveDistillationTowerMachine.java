@@ -14,7 +14,6 @@ import com.gregtechceu.gtceu.api.machine.feature.IDummyEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistillationTower;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -68,20 +67,20 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
             var a = heatMachineA.getHeatContainer().getTemperature();
             var b = heatMachineB.getHeatContainer().getTemperature();
             if (b < 400) {
-                IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.MODIFIER, 400, (long) b, null);
+                IdleReason.INSUFFICIENT_TEMPERATURE.setReason(this, 400, (long) b);
                 return null;
             }
             recipe.duration = (int) (recipe.duration * getDurationMultiplier(a, b));
             return recipe;
         }
-        IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.MODIFIER, 400, -1, null);
+        setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE, 400, -1);
         return null;
     }
 
     @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
         if (heatMachineA == null || heatMachineB == null) {
-            IdleReason.INSUFFICIENT_TEMPERATURE.report(this, 400, -1);
+            IdleReason.INSUFFICIENT_TEMPERATURE.setReason(this, 400, -1);
             return false;
         }
         var a = heatMachineA.getHeatContainer().getTemperature();
@@ -90,7 +89,7 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
             if (getOffsetTimer() % 2 == 0 && a < b - 100) heatMachineA.getHeatContainer().addHeatUnrestricted(1, false);
             return true;
         } else {
-            IdleReason.HEAT_SHORT.report(this, 1, heatMachineB.getHeatContainer().getCurrentHeat());
+            IdleReason.HEAT_SHORT.setReason(this, 1, heatMachineB.getHeatContainer().getCurrentHeat());
             return false;
         }
     }

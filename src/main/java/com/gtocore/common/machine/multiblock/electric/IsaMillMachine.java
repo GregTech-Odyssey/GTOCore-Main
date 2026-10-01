@@ -9,9 +9,6 @@ import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
@@ -26,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class IsaMillMachine extends ElectricMultiblockMachine implements IIssueProvider {
+public final class IsaMillMachine extends ElectricMultiblockMachine {
 
     private BallHatchPartMachine ballHatchPartMachine;
 
@@ -56,8 +53,7 @@ public final class IsaMillMachine extends ElectricMultiblockMachine implements I
         CustomItemStackHandler storage = ballHatchPartMachine.getInventory().storage;
         ItemStack item = storage.getStackInSlot(0);
         int tier = BallHatchPartMachine.GRINDBALL.getOrDefault(item.getItem(), 0);
-        int need = recipe.data.getInt(GTORecipeDataKeys.GRINDBALL);
-        if (tier == need) {
+        if (tier == recipe.data.getInt(GTORecipeDataKeys.GRINDBALL)) {
             var level = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, item) + 1;
             int damage = item.getDamageValue() + MathUtil.saturatedCast(recipe.parallels / level) + 1;
             if (damage < item.getMaxDamage()) {
@@ -67,13 +63,7 @@ public final class IsaMillMachine extends ElectricMultiblockMachine implements I
             }
             return recipe;
         }
-        IdleReason.GRIND_BALL.report(this, IssueStage.MODIFIER, need, tier, recipe.definition);
+        setIdleReason(IdleReason.GRIND_BALL);
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        var hatch = ballHatchPartMachine;
-        if (hatch != null && hatch.getInventory().storage.getStackInSlot(0).isEmpty()) IdleReason.GRIND_BALL.collect(sink);
     }
 }

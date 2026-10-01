@@ -3,20 +3,20 @@ package com.gtocore.common.machine.multiblock.noenergy;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTORecipeDataKeys;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
-import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
-import com.gregtechceu.gtceu.api.machine.issue.MachineIssue;
+import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -31,12 +31,12 @@ import com.gregtechceu.gtceu.uipro.flow.FlowChart;
 import com.gregtechceu.gtceu.uipro.flow.FlowNode;
 import com.gregtechceu.gtceu.uipro.flow.FlowParts;
 import com.gregtechceu.gtceu.uipro.flow.FlowState;
-import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueLine;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueView;
+import com.gregtechceu.gtceu.uiwidgets.flow.RecipeDiagnoser;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeIssue;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -403,7 +403,18 @@ public final class NeutronActivatorFlowPage {
         return component.copy().withStyle(ChatFormatting.GRAY);
     }
 
-    private static final class Status extends ThrottledStatus {
+    private static boolean voidsAllOutputs(IVoidable machine, @Nullable GTRecipe recipe) {
+        boolean items = recipe == null || !recipe.itemOutputs.isEmpty();
+        boolean fluids = recipe == null || !recipe.fluidOutputs.isEmpty();
+        return (!items || machine.canVoidRecipeOutputs(ItemRecipeInfo.INSTANCE)) && (!fluids || machine.canVoidRecipeOutputs(FluidRecipeInfo.INSTANCE));
+    }
+
+    private static Component sentence(IssueView view, @Nullable String description) {
+        var key = description != null ? description : view.issue().descriptionKey();
+        return Component.translatable(key).withStyle(RecipeDiagnoser.style(view.issue()));
+    }
+
+    private static final class Status {
 
         private static final Component NONE = Component.literal("—");
 
@@ -411,6 +422,8 @@ public final class NeutronActivatorFlowPage {
         @Nullable
         private final NeutronVortexMachine vortex;
 
+        private boolean refreshed;
+        private int refreshedAt;
         private boolean progressRefreshed;
         private int progressAt;
         private boolean sampled;
@@ -465,231 +478,230 @@ public final class NeutronActivatorFlowPage {
         private Component usageText = NONE, voltageText = NONE;
 
         private Status(NeutronActivatorMachine machine) {
-            super(machine::getOffsetTimer, REFRESH_TICKS);
             this.machine = machine;
             this.vortex = machine instanceof NeutronVortexMachine v ? v : null;
         }
 
         IssueView acceleratorView() {
-            update();
+            refresh();
             return acceleratorView;
         }
 
         FlowState acceleratorState() {
-            update();
+            refresh();
             return acceleratorState;
         }
 
         List<Component> acceleratorDetail() {
-            update();
+            refresh();
             return acceleratorDetail;
         }
 
         Component installedText() {
-            update();
+            refresh();
             return installedText;
         }
 
         Component poweredText() {
-            update();
+            refresh();
             return poweredText;
         }
 
         Component gainText() {
-            update();
+            refresh();
             return gainText;
         }
 
         IssueView kineticView() {
-            update();
+            refresh();
             return kineticView;
         }
 
         FlowState kineticState() {
-            update();
+            refresh();
             return kineticState;
         }
 
         List<Component> kineticDetail() {
-            update();
+            refresh();
             return kineticDetail;
         }
 
         ProgressBar.Progress kinetic() {
-            update();
+            refresh();
             return kinetic;
         }
 
         ProgressBar.Callout explosionCallout() {
-            update();
+            refresh();
             return explosionCallout;
         }
 
         ProgressBar.Range window() {
-            update();
+            refresh();
             return window;
         }
 
         Component targetText() {
-            update();
+            refresh();
             return targetText;
         }
 
         Component netText() {
-            update();
+            refresh();
             return netText;
         }
 
         Level netLevel() {
-            update();
+            refresh();
             return netLevel;
         }
 
         IssueView lossView() {
-            update();
+            refresh();
             return lossView;
         }
 
         FlowState lossState() {
-            update();
+            refresh();
             return lossState;
         }
 
         List<Component> lossDetail() {
-            update();
+            refresh();
             return lossDetail;
         }
 
         Component decayText() {
-            update();
+            refresh();
             return decayText;
         }
 
         Level decayLevel() {
-            update();
+            refresh();
             return decayLevel;
         }
 
         Component moderatorText() {
-            update();
+            refresh();
             return moderatorText;
         }
 
         Component absorbText() {
-            update();
+            refresh();
             return absorbText;
         }
 
         IssueView inputView() {
-            update();
+            refresh();
             return inputView;
         }
 
         FlowState inputState() {
-            update();
+            refresh();
             return inputView.state();
         }
 
         List<Component> inputDetail() {
-            update();
+            refresh();
             return inputDetail;
         }
 
         Component inputUnitsText() {
-            update();
+            refresh();
             return inputUnitsText;
         }
 
         IssueView outputView() {
-            update();
+            refresh();
             return outputView;
         }
 
         FlowState outputState() {
-            update();
+            refresh();
             return outputView.state();
         }
 
         List<Component> outputDetail() {
-            update();
+            refresh();
             return outputDetail;
         }
 
         Component outputUnitsText() {
-            update();
+            refresh();
             return outputUnitsText;
         }
 
         IssueView recipeView() {
-            update();
+            refresh();
             return recipeView;
         }
 
         FlowState recipeState() {
-            update();
+            refresh();
             return recipeState;
         }
 
         List<Component> recipeDetail() {
-            update();
+            refresh();
             return recipeDetail;
         }
 
         ProgressBar.Progress progress() {
-            update();
+            refresh();
             return progress;
         }
 
         Component drainText() {
-            update();
+            refresh();
             return drainText;
         }
 
         Component durationText() {
-            update();
+            refresh();
             return durationText;
         }
 
         IssueView energyView() {
-            update();
+            refresh();
             return energyView;
         }
 
         FlowState energyState() {
-            update();
+            refresh();
             return energyView.state();
         }
 
         List<Component> energyDetail() {
-            update();
+            refresh();
             return energyDetail;
         }
 
         Component usageText() {
-            update();
+            refresh();
             return usageText;
         }
 
         Component voltageText() {
-            update();
+            refresh();
             return voltageText;
         }
 
         ProgressBar.Progress buffer() {
-            update();
+            refresh();
             return buffer;
         }
 
-        @Override
-        protected void onAccess(int now) {
-            if (progressRefreshed && now >= progressAt && now - progressAt < PROGRESS_TICKS) return;
-            progressRefreshed = true;
-            progressAt = now;
-            refreshProgress();
-        }
-
-        @Override
-        protected void refresh(int now) {
+        private void refresh() {
+            int now = machine.getOffsetTimer();
+            if (!progressRefreshed || now < progressAt || now - progressAt >= PROGRESS_TICKS) {
+                progressRefreshed = true;
+                progressAt = now;
+                refreshProgress();
+            }
+            if (refreshed && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) return;
+            refreshed = true;
+            refreshedAt = now;
             refreshStates(now);
         }
 
@@ -726,20 +738,19 @@ public final class NeutronActivatorFlowPage {
             var logic = machine.getRecipeLogic();
             boolean working = logic.isWorking();
             boolean waiting = logic.isWaiting();
-            var result = MachineDiagnosis.of(machine);
-            var range = working || waiting ? null : result.issue(IdleReason.NEUTRON_EV_RANGE.type());
-            boolean starved = waiting && result.has(IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.type());
+            Component reason = working ? null : logic.getIdleReason();
+            boolean neutronReason = reason == IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.reason();
             boolean auto = vortex != null && vortex.isEnergyMode();
             int ev = machine.getEV();
             refreshRate(ev, now);
-            refreshTarget(logic.isActive() ? logic.getLastRecipe() : null, range);
+            refreshTarget(logic.isActive() ? logic.getLastRecipe() : null, !working && !waiting && neutronReason);
             double efficiency = machine.getEfficiencyFactor();
             boolean accelerating = refreshAccelerators(formed, auto, efficiency);
-            refreshKinetic(formed, auto, working, starved, ev);
+            refreshKinetic(formed, auto, working, waiting && neutronReason, ev);
             refreshLoss(formed, auto, accelerating, ev);
-            refreshInput(formed, working || waiting, range != null, result);
-            refreshOutput(formed, working, result);
-            refreshRecipe(formed, auto, working, waiting, starved, range != null, result, efficiency);
+            refreshInput(formed, working || waiting, neutronReason);
+            refreshOutput(formed, working, reason);
+            refreshRecipe(formed, auto, working, waiting, neutronReason, reason, efficiency);
             if (vortex != null) refreshEnergy(formed, auto, working);
         }
 
@@ -764,7 +775,7 @@ public final class NeutronActivatorFlowPage {
             sampleAt = now;
         }
 
-        private void refreshTarget(@Nullable GTRecipe running, @Nullable MachineIssue range) {
+        private void refreshTarget(@Nullable GTRecipe running, boolean waitingForRange) {
             int min, max, evt;
             boolean fromRunning = false;
             if (running != null) {
@@ -772,9 +783,9 @@ public final class NeutronActivatorFlowPage {
                 max = running.data.getInt(GTORecipeDataKeys.EV_MAX);
                 evt = running.data.getInt(GTORecipeDataKeys.EVT);
                 fromRunning = true;
-            } else if (range != null) {
-                min = NeutronActivatorMachine.rangeMin(range.a());
-                max = NeutronActivatorMachine.rangeMax(range.a());
+            } else if (waitingForRange) {
+                min = machine.targetMin;
+                max = machine.targetMax;
                 evt = machine.targetEvt;
             } else {
                 min = max = -1;
@@ -837,7 +848,7 @@ public final class NeutronActivatorFlowPage {
             gainText = formed && !auto ? Component.translatable(LANG_ABOUT, rate(gain)) : NONE;
             lines.add(gray(Component.translatable(LANG_ACC_RULE, percent(efficiency))));
             lines.add(gray(Component.translatable(LANG_ACC_ESTIMATE)));
-            lines.add(FlowIssueViews.sentence(acceleratorView, description));
+            lines.add(sentence(acceleratorView, description));
             acceleratorDetail = lines;
             return formed && !auto && powered > 0;
         }
@@ -865,16 +876,14 @@ public final class NeutronActivatorFlowPage {
                 boolean empty = ev <= 0;
                 view = IssueView.of(RecipeIssue.IDLE, Component.translatable(empty ? LANG_KE_EMPTY : LANG_KE_NO_TARGET));
                 description = empty ? LANG_KE_EMPTY_DESC : LANG_KE_NO_TARGET_DESC;
-            } else if (!NeutronActivatorMachine.inRange(ev, targetMin, targetMax)) {
-                if ((long) ev <= (long) targetMin * MEV) {
-                    boolean rising = hasRate && netRate > 0;
-                    view = rising ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_LOW_RISING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_LOW));
-                    description = LANG_KE_LOW_DESC;
-                } else {
-                    boolean falling = hasRate && netRate < 0;
-                    view = falling ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_HIGH_FALLING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_HIGH));
-                    description = LANG_KE_HIGH_DESC;
-                }
+            } else if ((long) ev <= (long) targetMin * MEV) {
+                boolean rising = hasRate && netRate > 0;
+                view = rising ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_LOW_RISING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_LOW));
+                description = LANG_KE_LOW_DESC;
+            } else if ((long) ev >= (long) targetMax * MEV) {
+                boolean falling = hasRate && netRate < 0;
+                view = falling ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_HIGH_FALLING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_HIGH));
+                description = LANG_KE_HIGH_DESC;
             } else {
                 view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_KE_IN_RANGE));
                 description = LANG_KE_IN_RANGE_DESC;
@@ -895,7 +904,7 @@ public final class NeutronActivatorFlowPage {
             lines.add(gray(Component.translatable(LANG_KE_EXPLOSION_LINE)));
             var sensor = machine.getSensor();
             if (formed && sensor != null) lines.add(gray(Component.translatable(LANG_KE_SENSOR_LINE, sensor.getRedstoneSignalOutput())));
-            lines.add(FlowIssueViews.sentence(view, description));
+            lines.add(sentence(view, description));
             kineticDetail = lines;
         }
 
@@ -941,13 +950,12 @@ public final class NeutronActivatorFlowPage {
             lines.add(Component.translatable(LANG_LOSS));
             lines.add(gray(Component.translatable(auto ? LANG_LOSS_RULE_AUTO : LANG_LOSS_RULE_DECAY)));
             lines.add(gray(Component.translatable(LANG_LOSS_RULE_ABSORB)));
-            lines.add(FlowIssueViews.sentence(lossView, description));
+            lines.add(sentence(lossView, description));
             lossDetail = lines;
         }
 
-        private void refreshInput(boolean formed, boolean active, boolean rangeReason, DiagnosisResult result) {
+        private void refreshInput(boolean formed, boolean active, boolean neutronReason) {
             int units = formed ? machine.getInputUnits().size() : 0;
-            IssueView problem = formed && units > 0 && !active && !rangeReason ? FlowIssueViews.inputProblem(result) : null;
             String description;
             if (!formed) {
                 inputView = RecipeIssue.OFFLINE.view();
@@ -958,35 +966,36 @@ public final class NeutronActivatorFlowPage {
             } else if (active) {
                 inputView = IssueView.of(RecipeIssue.RUNNING, Component.translatable(LANG_INPUT_LOADED));
                 description = null;
-            } else if (rangeReason) {
+            } else if (neutronReason) {
                 inputView = IssueView.of(RecipeIssue.INPUT_STOCKED, Component.translatable(LANG_INPUT_MATCHED));
                 description = LANG_INPUT_MATCHED_DESC;
-            } else if (problem != null) {
-                inputView = problem;
-                description = null;
             } else {
                 inputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_INPUT_WAITING));
                 description = null;
             }
             inputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            inputDetail = List.of(Component.translatable(LANG_INPUT), FlowIssueViews.sentence(inputView, description));
+            inputDetail = List.of(Component.translatable(LANG_INPUT), sentence(inputView, description));
         }
 
-        private void refreshOutput(boolean formed, boolean working, DiagnosisResult result) {
+        private void refreshOutput(boolean formed, boolean working, @Nullable Component reason) {
             int units = formed ? machine.getOutputUnits().size() : 0;
+            boolean full = reason == IdleReason.OUTPUT_FULL.reason() || reason == IdleReason.INSUFFICIENT_OUT.reason();
+            boolean voiding = voidsAllOutputs(machine, machine.getRecipeLogic().getLastRecipe());
             String description = null;
-            if (!formed) {
-                outputView = RecipeIssue.OFFLINE.view();
-            } else {
-                var view = FlowIssueViews.output(result, machine, working, units);
-                outputView = view != null ? view : IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
-                if (outputView.issue() == RecipeIssue.OUTPUT_VOIDED && units == 0) description = LANG_OUTPUT_VOID_ALL_DESC;
-            }
+            if (!formed) outputView = RecipeIssue.OFFLINE.view();
+            else if (voiding && units == 0) {
+                outputView = RecipeIssue.OUTPUT_VOIDED.view();
+                description = LANG_OUTPUT_VOID_ALL_DESC;
+            } else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
+            else if (voiding) outputView = working ? RecipeIssue.OUTPUT_VOID_OVERFLOW_ACTIVE.view() : RecipeIssue.OUTPUT_VOID_OVERFLOW.view();
+            else if (working) outputView = RecipeIssue.OUTPUT_ACTIVE.view();
+            else if (full) outputView = RecipeIssue.OUTPUT_FULL.view();
+            else outputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
             outputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            outputDetail = List.of(Component.translatable(LANG_OUTPUT), FlowIssueViews.sentence(outputView, description));
+            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, description));
         }
 
-        private void refreshRecipe(boolean formed, boolean auto, boolean working, boolean waiting, boolean starved, boolean rangeReason, DiagnosisResult result, double efficiency) {
+        private void refreshRecipe(boolean formed, boolean auto, boolean working, boolean waiting, boolean neutronReason, @Nullable Component reason, double efficiency) {
             var logic = machine.getRecipeLogic();
             String description = null;
             if (!formed) {
@@ -995,14 +1004,13 @@ public final class NeutronActivatorFlowPage {
                 recipeView = RecipeIssue.DISABLED.view();
             } else if (working) {
                 recipeView = RecipeIssue.RUNNING.view();
-            } else if (starved) {
-                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_STARVED));
-                description = LANG_KE_STARVED_DESC;
-            } else if (rangeReason) {
-                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_RECIPE_RANGE));
-                description = hasTarget && targetMin >= 0 && (long) machine.getEV() >= (long) targetMax * MEV ? LANG_KE_HIGH_DESC : LANG_KE_LOW_DESC;
+            } else if (neutronReason) {
+                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(waiting ? LANG_KE_STARVED : LANG_RECIPE_RANGE));
+                description = waiting ? LANG_KE_STARVED_DESC : hasTarget && targetMin >= 0 && (long) machine.getEV() >= (long) targetMax * MEV ? LANG_KE_HIGH_DESC : LANG_KE_LOW_DESC;
+            } else if (waiting) {
+                recipeView = IssueView.of(RecipeIssue.WAITING, reason);
             } else {
-                recipeView = IssueView.primary(result, waiting ? RecipeIssue.WAITING.view() : RecipeIssue.IDLE.view());
+                recipeView = IssueView.of(RecipeIssue.IDLE, reason);
             }
             recipeState = working ? FlowState.ACTIVE : recipeView.state();
             boolean drains = machine.consumesKineticEnergy();
@@ -1021,7 +1029,7 @@ public final class NeutronActivatorFlowPage {
             } else {
                 lines.add(gray(Component.translatable(LANG_RECIPE_NO_DRAIN_RULE)));
             }
-            lines.add(FlowIssueViews.sentence(recipeView, description));
+            lines.add(description != null ? Component.translatable(description).withStyle(RecipeDiagnoser.style(recipeView.issue())) : recipeView.text().copy().withStyle(RecipeDiagnoser.style(recipeView.issue())));
             recipeDetail = lines;
         }
 
@@ -1045,7 +1053,7 @@ public final class NeutronActivatorFlowPage {
             usageText = formed && auto && usage > 0 ? Component.literal(FormattingUtil.formatNumbers(usage) + " EU/t") : NONE;
             voltageText = formed && capacity > 0 ? Component.literal(GTValues.VN[GTUtil.getTierByVoltage(voltage)]) : NONE;
             energyDetail = List.of(Component.translatable(LANG_ENERGY), gray(Component.translatable(LANG_ENERGY_RULE)),
-                    gray(Component.translatable(LANG_RECIPE_AUTO_RULE)), FlowIssueViews.sentence(energyView, description));
+                    gray(Component.translatable(LANG_RECIPE_AUTO_RULE)), sentence(energyView, description));
         }
     }
 }

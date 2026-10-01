@@ -12,7 +12,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -44,16 +43,16 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!isWorkspaceReady()) {
-            reportWorkspaceNotReady(this);
+            setIdleReason(this::getWorkspaceNotReadyReason);
             return null;
         }
         if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
-            IdleReason.INSUFFICIENT_CLEANROOM.report(this, IssueStage.MODIFIER, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), core.getTypes().size(), null);
+            IdleReason.INSUFFICIENT_CLEANROOM.setReason(this, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), core.getTypes().size());
             return null;
         }
         if (recipe.definition.recipeType == GTORecipeTypes.BIO_RESEARCH_RECIPES) {
             if (!isWorkspaceReady()) {
-                reportWorkspaceNotReady(this);
+                setIdleReason(this::getWorkspaceNotReadyReason);
                 return null;
             }
             return RecipeModifier.OVERCLOCKING.applyModifier(this, unit, recipe);
@@ -78,7 +77,7 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
         var result = super.handleTickRecipe(recipe);
         var intensity = recipe.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END);
         if (getProgress() == getMaxProgress() - 1 && intensity > 0 && outside(intensity)) {
-            IdleReason.RADIATION.report(this, intensity, radioactivityTrait.getRecipeRadioactivity());
+            IdleReason.RADIATION.setReason(this, intensity, radioactivityTrait.getRecipeRadioactivity());
             return false;
         }
         return result;

@@ -89,7 +89,7 @@ public class ManaHeaterMachine extends SimpleManaMachine implements IHeatContain
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (heatContainer.currentHeat + 80 >= heatContainer.maxHeat) {
-            IdleReason.HEAT_FULL.report(this, heatContainer.currentHeat, heatContainer.maxHeat);
+            IdleReason.HEAT_FULL.setReason(this, heatContainer.currentHeat, heatContainer.maxHeat);
             return null;
         }
         return getRecipeBuilder().duration(20).MANAt(16).build();

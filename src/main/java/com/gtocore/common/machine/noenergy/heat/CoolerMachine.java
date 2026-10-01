@@ -81,14 +81,12 @@ public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatC
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        long heat = heatContainer.getCurrentHeat();
-        if (heat < 8) {
-            IdleReason.HEAT_SHORT.report(this, 8, heat);
+        if (heatContainer.getCurrentHeat() < 8) {
+            setIdleReason(IdleReason.HEAT_SHORT, 8, heatContainer.getCurrentHeat());
             return null;
         }
-        long water = unit.getFluidAmount(true, Fluids.WATER)[0];
-        if (water < 1000) {
-            IdleReason.WATER_SHORT.report(this, 1000, water);
+        if (unit.getFluidAmount(true, Fluids.WATER)[0] < 1000) {
+            setIdleReason(IdleReason.WATER_SHORT, 1000, unit.getFluidAmount(true, Fluids.WATER)[0]);
             return null;
         }
         return getRecipeBuilder().duration(20).inputFluids(Fluids.WATER, 1000).outputFluids(Fluids.WATER, 990).build();

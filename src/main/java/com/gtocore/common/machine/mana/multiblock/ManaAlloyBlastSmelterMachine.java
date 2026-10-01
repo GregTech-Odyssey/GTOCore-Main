@@ -9,7 +9,6 @@ import com.gtolib.api.misc.ManaContainerList;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -110,7 +109,7 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
                 updateSignal();
             }
             if (removeMana(mana, 1, false) == mana) return true;
-            IdleReason.NO_MANA.report(this, mana, getManaContainer().getCurrentMana());
+            IdleReason.NO_MANA.setReason(this, mana, getManaContainer().getCurrentMana());
             return false;
         }
         return false;
@@ -119,7 +118,7 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
     @Override
     public boolean handleRecipeInput(RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (removeMana(mana, 1, false) != mana) {
-            IdleReason.NO_MANA.report(this, IssueStage.SETUP, mana, getManaContainer().getCurrentMana(), recipe.definition);
+            IdleReason.NO_MANA.setReason(this, mana, getManaContainer().getCurrentMana());
             return false;
         }
         return super.handleRecipeInput(unit, recipe);

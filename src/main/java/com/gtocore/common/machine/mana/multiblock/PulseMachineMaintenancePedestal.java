@@ -95,11 +95,6 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
         return true;
     }
 
-    @Override
-    public boolean hasDiagnosisTab() {
-        return false;
-    }
-
     public void addProblem(MetaMachine machine, Runnable resolution) {
         problems.put(machine, resolution);
     }

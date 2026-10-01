@@ -4,7 +4,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.data.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
@@ -40,10 +39,8 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
     @Overwrite(remap = false)
     public static @Nullable GTRecipe recipeModifier(IRecipeHandlerHolder machine, RecipeHandlerUnit unit, GTRecipe recipe) {
         if (machine instanceof LargeBoilerMachine largeBoilerMachine) {
-            int need = recipe.data.getInt(GTORecipeDataKeys.TEMPERATURE);
-            int have = largeBoilerMachine.getCurrentTemperature() + 274;
-            if (need > have) {
-                IdleReason.INSUFFICIENT_TEMPERATURE.report(machine, IssueStage.MODIFIER, need, have, recipe.definition);
+            if (recipe.data.getInt(GTORecipeDataKeys.TEMPERATURE) > largeBoilerMachine.getCurrentTemperature() + 274) {
+                IdleReason.INSUFFICIENT_TEMPERATURE.setReason(machine, recipe.data.getInt(GTORecipeDataKeys.TEMPERATURE), largeBoilerMachine.getCurrentTemperature() + 274);
                 return null;
             }
             double duration = recipe.duration * 1600.0D / largeBoilerMachine.maxTemperature;
@@ -57,7 +54,7 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
             recipe.duration = (int) duration;
             return recipe;
         }
-        IdleReason.NOT_APPLICABLE.report(machine, IssueStage.MODIFIER, recipe.definition);
+        IdleReason.NOT_APPLICABLE.setReason(machine);
         return null;
     }
 }

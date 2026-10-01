@@ -8,7 +8,6 @@ import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
@@ -67,12 +66,12 @@ public final class PhotovoltaicSailControllerMachine extends AbstractPhotovoltai
     protected @Nullable GTRecipeDefinition createGenerationRecipe(Level level, RecipeHandlerUnit unit, int basic) {
         int water = basic / 4;
         if (!unit.matchFluid(GTMaterials.DistilledWater.getFluid(), water)) {
-            IdleReason.DISTILLED_WATER_SHORT.report(this, water, -1);
+            IdleReason.DISTILLED_WATER_SHORT.setReason(this, water, -1);
             return null;
         }
         int eut = basic << 4;
         if (eut == 0) {
-            reportIssue(GTIssues.NO_SUNLIGHT);
+            IdleReason.NO_SUNLIGHT.setReason(this);
             return null;
         }
         return buildGenerationRecipe(getRecipeBuilder().duration(20).inputFluids(GTMaterials.DistilledWater.getFluid(), water), eut);

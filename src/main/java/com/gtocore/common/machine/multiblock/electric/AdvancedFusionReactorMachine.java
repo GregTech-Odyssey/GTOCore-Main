@@ -6,12 +6,12 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.trait.EnergyContainerTrait;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -129,16 +129,14 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @Nullable
     public GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long eu_to_start = recipe.data.getLong(GTRecipeDataKeys.EU_TO_START);
-        long capacity = energyContainer.getEnergyCapacity();
-        if (eu_to_start > capacity) {
-            reportIssue(GTIssues.START_ENERGY_CAPACITY, eu_to_start, capacity);
+        if (eu_to_start > energyContainer.getEnergyCapacity()) {
+            setIdleReason(IdleReason.START_ENERGY_CAPACITY, eu_to_start, energyContainer.getEnergyCapacity());
             return null;
         }
         long heatDiff = eu_to_start - heat;
         if (heatDiff > 0) {
-            long stored = energyContainer.getEnergyStored();
-            if (stored < heatDiff) {
-                reportIssue(GTIssues.START_ENERGY_SHORT, heatDiff, stored);
+            if (energyContainer.getEnergyStored() < heatDiff) {
+                setIdleReason(IdleReason.START_ENERGY_SHORT, heatDiff, energyContainer.getEnergyStored());
                 return null;
             }
             energyContainer.removeEnergy(heatDiff);

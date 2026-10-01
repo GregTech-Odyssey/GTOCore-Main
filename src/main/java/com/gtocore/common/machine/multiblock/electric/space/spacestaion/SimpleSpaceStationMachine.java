@@ -12,7 +12,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -60,8 +59,6 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
 
     @SaveToDisk(defaultValue = "8")
     private int waterAmountPerHatch = 8;
-    @Nullable
-    private GTRecipeDefinition diagnosisRecipe;
 
     public SimpleSpaceStationMachine(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
@@ -162,7 +159,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (!isInSpace()) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.report(this);
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
             return null;
         }
         return roundRecipe();
@@ -172,17 +169,6 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
         return inputFluids(getRecipeBuilder().duration(200).EUt(VA[EV]))
                 .outputFluids(FlocculationWasteSolution.getFluid(30))
                 .build();
-    }
-
-    @Override
-    public void collectStationIssues(IssueSink sink) {
-        if (getLevel() != null && !isInSpace()) IdleReason.SPACE_STATION_NOT_IN_SPACE.collect(sink);
-    }
-
-    @Override
-    public GTRecipeDefinition getDiagnosisRecipe() {
-        if (diagnosisRecipe == null) diagnosisRecipe = roundRecipe();
-        return diagnosisRecipe;
     }
 
     boolean isInSpace() {

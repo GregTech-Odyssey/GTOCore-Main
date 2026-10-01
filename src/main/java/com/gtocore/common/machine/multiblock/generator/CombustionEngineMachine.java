@@ -14,16 +14,10 @@ import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -44,13 +38,12 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.BiPredicate;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class CombustionEngineMachine extends ElectricMultiblockMachine implements IIssueProvider {
+public final class CombustionEngineMachine extends ElectricMultiblockMachine {
 
     public static final ParamKey EXTENSION = ParamKey.of(Lang.EXTENSION_NAME, Lang.EXTENSION_DESC);
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
@@ -65,13 +58,12 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine imp
     @SaveToDisk
     private final NotifiableFluidTank tank;
     private final ConditionalSubscriptionHandler tankSubs;
-    private boolean intakeObstructed;
 
     public CombustionEngineMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder);
         this.tier = tier;
         this.tank = new NotifiableFluidTank(this, 1, 128000, IO.IN, IO.NONE);
-        tankSubs = new ConditionalSubscriptionHandler(this, generatorIntakeMonitor, 20, this::canIntake);
+        tankSubs = new ConditionalSubscriptionHandler(this, generatorIntakeMonitor, 20, () -> isFormed && !isIntakesObstructed());
     }
 
     @Override
@@ -108,22 +100,6 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine imp
         tankSubs.initialize(getLevel());
     }
 
-    private boolean canIntake() {
-        intakeObstructed = isFormed && isIntakesObstructed();
-        return isFormed && !intakeObstructed;
-    }
-
-    @Override
-    public boolean findRecipe(GTRecipeType type, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle, @Nullable GTRecipeDefinition lockedRecipe) {
-        if (intakeObstructed) reportIssue(GTIssues.INTAKE_OBSTRUCTED, IssueStage.SEARCH, IO.NONE, null, -1, 0, 0, null);
-        return super.findRecipe(type, canHandle, lockedRecipe);
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (isFormed && (intakeObstructed || isIntakesObstructed())) sink.accept(GTIssues.INTAKE_OBSTRUCTED);
-    }
-
     private boolean isIntakesObstructed() {
         if (getLevel() == null) return false;
         Direction facing = getFrontFacing();
@@ -158,24 +134,16 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine imp
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long EUt = recipe.getOutputEUt();
-        if (EUt <= 0) {
-            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, recipe.definition);
-            return null;
+        if (EUt > 0 && unit.matchFluid(LUBRICANT_STACK) && !isIntakesObstructed()) {
+            recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, getOverclockVoltage() / EUt);
+            if (recipe == null) return null;
+            if (isOxygenBoosted) {
+                recipe.setEUt(-((long) (recipe.getOutputEUt() * (isExtreme() ? 2 : 1.5))));
+            }
+            return recipe;
         }
-        if (!unit.matchFluid(LUBRICANT_STACK)) {
-            reportIssue(GTIssues.NO_LUBRICANT);
-            return null;
-        }
-        if (isIntakesObstructed()) {
-            reportIssue(GTIssues.INTAKE_OBSTRUCTED);
-            return null;
-        }
-        recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, getOverclockVoltage() / EUt);
-        if (recipe == null) return null;
-        if (isOxygenBoosted) {
-            recipe.setEUt(-((long) (recipe.getOutputEUt() * (isExtreme() ? 2 : 1.5))));
-        }
-        return recipe;
+        (EUt <= 0 ? IdleReason.NOT_APPLICABLE : !unit.matchFluid(LUBRICANT_STACK) ? IdleReason.NO_LUBRICANT : IdleReason.INTAKE_OBSTRUCTED).setReason(this);
+        return null;
     }
 
     @Override
@@ -184,7 +152,7 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine imp
         long totalContinuousRunningTime = recipeLogic.getTotalContinuousRunningTime();
         if ((totalContinuousRunningTime == 1 || totalContinuousRunningTime % 72 == 0)) {
             if (!inputFluid(LUBRICANT_STACK)) {
-                reportIssue(GTIssues.NO_LUBRICANT);
+                IdleReason.NO_LUBRICANT.setReason(this);
                 return false;
             }
         }
@@ -222,7 +190,7 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine imp
     @Override
     public void attachTooltips(TooltipsPanel tooltipsPanel) {
         super.attachTooltips(tooltipsPanel);
-        tooltipsPanel.attachTooltips(IFancyTooltip.covering(GTIssues.INTAKE_OBSTRUCTED, new Basic(() -> WidgetIcons.STATUS_OBSTRUCTED, () -> List.of(Component.translatable("gtceu.multiblock.large_combustion_engine.obstructed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED))), this::isIntakesObstructed, () -> null)));
+        tooltipsPanel.attachTooltips(IFancyTooltip.covering("gtceu.issue.intake_obstructed", new Basic(() -> WidgetIcons.STATUS_OBSTRUCTED, () -> List.of(Component.translatable("gtceu.multiblock.large_combustion_engine.obstructed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED))), this::isIntakesObstructed, () -> null)));
     }
 
     @Override

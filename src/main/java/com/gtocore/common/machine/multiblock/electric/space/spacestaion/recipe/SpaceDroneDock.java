@@ -11,7 +11,6 @@ import com.gtolib.api.data.Galaxy;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.item.capability.ElectricItem;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -64,7 +63,7 @@ public class SpaceDroneDock extends RecipeExtension {
             }
         });
         if (!hasInput.get() || costEU.value == null || costEU.value.compareTo(BigInteger.ZERO) <= 0) {
-            IdleReason.DRONE_NO_ENERGY.report(this, IssueStage.MODIFIER, definition);
+            IdleReason.DRONE_NO_ENERGY.setReason(this);
             return null;
         }
         var recipe = definition.toRuntime();

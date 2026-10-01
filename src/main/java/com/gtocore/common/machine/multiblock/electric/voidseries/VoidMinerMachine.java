@@ -13,14 +13,10 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 
 import net.minecraft.network.chat.Component;
@@ -35,7 +31,7 @@ import java.util.List;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.DrillingFluid;
 import static net.minecraft.network.chat.Component.translatable;
 
-public final class VoidMinerMachine extends StorageMultiblockMachine implements ICustomRecipeLogicHolder, IIssueProvider {
+public final class VoidMinerMachine extends StorageMultiblockMachine implements ICustomRecipeLogicHolder {
 
     private ResourceKey<Level> dim;
 
@@ -80,31 +76,25 @@ public final class VoidMinerMachine extends StorageMultiblockMachine implements 
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (dim == null || isEmpty()) {
-            if (machineStorage.updateEmpty()) IdleReason.DIMENSION_DATA_MISSING.report(this);
-            else IdleReason.NO_ORES.report(this);
+        if (dim == null) {
+            (isEmpty() ? IdleReason.DIMENSION_DATA_MISSING : IdleReason.NO_ORES).setReason(this);
             return null;
         }
-        if (getTier() <= 3) {
-            reportIssue(GTIssues.LOW_VOLTAGE, null, IO.IN, EURecipeInfo.INSTANCE, -1, GTValues.EV, getTier(), null);
-            return null;
+        if (!isEmpty() && getTier() > 3) {
+            if (unit.matchFluid(DrillingFluid.getFluid(), 1000)) {
+                var builder = getRecipeBuilder();
+                builder.EUt(GTValues.VA[getTier()]);
+                builder.inputFluids(DrillingFluid.getFluid(), 1000);
+                builder.outputItems(getItems());
+                return builder.build();
+            }
+            setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
+        } else if (isEmpty()) {
+            IdleReason.DIMENSION_DATA_MISSING.setReason(this);
+        } else {
+            IdleReason.VOLTAGE_TIER_NOT_SATISFIES.setReason(this, GTValues.VN[GTValues.EV], GTValues.VN[getTier()]);
         }
-        if (unit.matchFluid(DrillingFluid.getFluid(), 1000)) {
-            var builder = getRecipeBuilder();
-            builder.EUt(GTValues.VA[getTier()]);
-            builder.inputFluids(DrillingFluid.getFluid(), 1000);
-            builder.outputItems(getItems());
-            return builder.build();
-        }
-        reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, 1000, -1, null);
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed() || dim != null) return;
-        if (machineStorage.updateEmpty()) IdleReason.DIMENSION_DATA_MISSING.collect(sink);
-        else IdleReason.NO_ORES.collect(sink);
     }
 
     @Override

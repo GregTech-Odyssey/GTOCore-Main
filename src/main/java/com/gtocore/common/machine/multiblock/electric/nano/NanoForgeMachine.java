@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -100,9 +99,8 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         int tier = getEffectiveTier();
-        int need = recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER);
-        if (need > tier) {
-            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, need, tier, recipe.definition);
+        if (recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER) > tier) {
+            IdleReason.BLOCK_TIER_NOT_SATISFIES.setReason(this, recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER), tier);
             return null;
         }
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallel() * (1L << (tier - recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER))));

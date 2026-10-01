@@ -15,7 +15,6 @@ import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -28,6 +27,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -304,9 +304,20 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
 
     private void addDisplayText(List<Component> textList) {
         textList.add(Component.translatable("gtocore.digital_miner.to_be_mined").append(String.valueOf(getRecipeLogic().getOreAmount())));
-        MultiblockDisplayText.builder(textList, true)
-                .setWorkingStatusKeys("gtceu.multiblock.idling", "gtceu.multiblock.work_paused", "gtceu.multiblock.large_miner.working")
-                .addIssueLines(getRecipeLogic());
+        if (getRecipeLogic().isDone())
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.done")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)));
+        else if (getRecipeLogic().isWorking())
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.working")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
+        else if (!this.isWorkingEnabled())
+            textList.add(Component.translatable("gtceu.multiblock.work_paused"));
+        if (getRecipeLogic().isInventoryFull())
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.invfull")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+        if (!drainInput(true))
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.needspower")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
     }
 
     //////////////////////////////////////

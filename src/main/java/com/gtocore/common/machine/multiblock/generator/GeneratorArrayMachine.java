@@ -17,7 +17,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -133,7 +132,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         if (isEmpty()) {
-            IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.MODIFIER, recipe.definition);
+            IdleReason.MACHINE_STORAGE_EMPTY.setReason(this);
             return null;
         }
         int a = machineStorage.storage.getStackInSlot(0).getCount();
@@ -151,7 +150,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
                 }
                 return recipe;
             }
-            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, recipe.definition);
+            IdleReason.NOT_APPLICABLE.setReason(this);
         }
         return null;
     }

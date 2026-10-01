@@ -943,7 +943,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
             case 12 -> recipe = getForcedRarityUpRecipe(unit);
             case 13 -> recipe = getForcedAddSocketRecipe(unit);
             case 14 -> recipe = getForcedMosaicGemRecipe(unit);
-            default -> IdleReason.SET_CIRCUIT.report(this);
+            default -> IdleReason.SET_CIRCUIT.setReason(this);
         }
         return recipe;
     }

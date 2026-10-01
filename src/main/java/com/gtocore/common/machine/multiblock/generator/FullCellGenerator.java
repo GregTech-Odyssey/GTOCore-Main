@@ -20,12 +20,10 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
@@ -150,7 +148,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         // membrane bonus
         var membraneInfo = findMembraneInfo(unit);
         if (membraneInfo == null) {
-            IdleReason.LACK_MATERIAL.report(this, IssueStage.MODIFIER, recipe.definition);
+            setIdleReason(IdleReason.LACK_MATERIAL);
             return null;
         }
         updateAbsorptionEfficiency(membraneInfo, accumulatedEfficiencyDecay);
@@ -172,7 +170,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
             }
         }
         if (electrolytesExisting == null) {
-            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+            setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
             return null;
         }
 
@@ -332,7 +330,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
             }
         });
         if (!hasMembrane.value) {
-            IdleReason.LACK_MATERIAL.report(this, IssueStage.MODIFIER, recipe.definition);
+            setIdleReason(IdleReason.LACK_MATERIAL);
             return null;
         }
         if (GTValues.RNG.nextFloat() < GTORules.FUEL_CELL_CONSUME.get()) {

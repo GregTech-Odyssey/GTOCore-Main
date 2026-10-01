@@ -1,15 +1,11 @@
 package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
@@ -25,7 +21,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class GreenhouseMachine extends ElectricMultiblockMachine implements IIssueProvider {
+public final class GreenhouseMachine extends ElectricMultiblockMachine {
 
     public GreenhouseMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -59,15 +55,10 @@ public final class GreenhouseMachine extends ElectricMultiblockMachine implement
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         getGreenhouseLight();
         if (SkyLight == 0) {
-            reportIssue(GTIssues.NO_SUNLIGHT, IssueStage.CONDITION, IO.NONE, null, -1, 0, 0, recipe);
+            IdleReason.NO_SUNLIGHT.setReason(this);
             return false;
         }
         return super.checkConditions(unit, recipe);
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (SkyLight == 0) sink.accept(GTIssues.NO_SUNLIGHT);
     }
 
     @Override

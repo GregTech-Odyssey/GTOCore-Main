@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
@@ -245,12 +244,12 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
         int tier = getEffectiveTier();
         if (tier < 2) {
             if (recipe.getInputEUt() > 30719) {
-                IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, recipe.getInputEUt() > 491519 ? 3 : 2, tier, recipe.definition);
+                IdleReason.BLOCK_TIER_NOT_SATISFIES.setReason(this, recipe.getInputEUt() > 491519 ? 3 : 2, tier);
                 return null;
             }
         } else if (tier < 3) {
             if (recipe.getInputEUt() > 491519) {
-                IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, 3, tier, recipe.definition);
+                IdleReason.BLOCK_TIER_NOT_SATISFIES.setReason(this, 3, tier);
                 return null;
             }
         }

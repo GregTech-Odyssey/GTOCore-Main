@@ -15,8 +15,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -214,16 +212,6 @@ public class RecipeExportTab implements IFancyUIProvider {
     @Override
     public List<Component> getTabTooltips() {
         return Collections.singletonList(Component.translatable(TAB_NAME));
-    }
-
-    @Override
-    public @Nullable MetaMachine getIssueMachine() {
-        return holder instanceof MetaMachine machine ? machine : null;
-    }
-
-    @Override
-    public void attachTooltips(TooltipsPanel tooltipsPanel) {
-        if (holder instanceof MetaMachine machine) tooltipsPanel.attachRecipeLogics(machine);
     }
 
     private static boolean isConvertibleDataItem(ItemStack stack, ItemStack expectedTierItem) {

@@ -1,10 +1,10 @@
 package com.gtocore.common.machine.multiblock.electric.adventure;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -53,7 +53,7 @@ public final class BossSummonerMachine extends ElectricMultiblockMachine impleme
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (getOverclockVoltage() < 1) {
-            reportIssue(GTIssues.NO_ENERGY_HATCH);
+            IdleReason.NO_ENERGY_HATCH.setReason(this);
             return null;
         }
         return getRecipeBuilder().duration(Math.max(5, 400 / (getTier() + 1))).EUt(getOverclockVoltage()).build();

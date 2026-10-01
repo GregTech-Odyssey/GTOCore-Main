@@ -124,22 +124,6 @@ public record CelestialHandler(long maxCapacity) {
         return new ResourceResult(true, solaris, lunara, voidflux, stellarm);
     }
 
-    public static long cost(int solarisCost, int lunaraCost, int voidfluxCost, int stellarmCost, int anyCost) {
-        if (solarisCost > 0) return solarisCost;
-        if (lunaraCost > 0) return lunaraCost;
-        if (voidfluxCost > 0) return voidfluxCost;
-        if (stellarmCost > 0) return stellarmCost;
-        return anyCost;
-    }
-
-    public static long available(int solarisCost, int lunaraCost, int voidfluxCost, int stellarmCost, long solaris, long lunara, long voidflux, long stellarm) {
-        if (solarisCost > 0) return solaris;
-        if (lunaraCost > 0) return lunara;
-        if (voidfluxCost > 0) return voidflux;
-        if (stellarmCost > 0) return stellarm;
-        return solaris + lunara + voidflux + stellarm;
-    }
-
     public record ResourceResult(boolean success, long solaris, long lunara, long voidflux, long stellarm) {}
 
     public record Resource(long solaris, long lunara, long voidflux, long stellarm) {}

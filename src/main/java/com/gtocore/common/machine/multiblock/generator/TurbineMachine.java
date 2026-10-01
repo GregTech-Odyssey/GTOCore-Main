@@ -27,12 +27,9 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.ICoilMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -259,17 +256,13 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         RotorHolderPartMachine rotorHolder = getRotorHolder();
         long EUt = recipe.getOutputEUt();
-        if (EUt <= 0) {
-            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, recipe.definition);
-            return null;
-        }
-        if (rotorHolder == null) {
-            reportIssue(GTIssues.ROTOR_MISSING, IssueStage.MODIFIER, IO.NONE, null, -1, 0, 0, recipe.definition);
+        if (rotorHolder == null || EUt <= 0) {
+            (EUt <= 0 ? IdleReason.NOT_APPLICABLE : IdleReason.ROTOR_MISSING).setReason(this);
             return null;
         }
         int rotorSpeed = getRotorSpeed();
         if (rotorSpeed < 0) {
-            IdleReason.ROTOR_MISMATCH.report(this, IssueStage.MODIFIER, recipe.definition);
+            IdleReason.ROTOR_MISMATCH.setReason(this);
             return null;
         }
         int maxSpeed = rotorHolder.getMaxRotorHolderSpeed();

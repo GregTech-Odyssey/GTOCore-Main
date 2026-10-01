@@ -6,10 +6,8 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -75,12 +73,7 @@ public class SpaceShieldHatch extends MultiblockPartMachine implements ISpaceWor
     }
 
     @Override
-    public void reportWorkspaceNotReady(IRecipeHandlerHolder holder) {
-        IdleReason.SPACE_SHIELD_NO_LASER.report(holder);
-    }
-
-    @Override
-    public void collectWorkspaceIssues(IssueSink sink) {
-        IdleReason.SPACE_SHIELD_NO_LASER.collect(sink);
+    public Component getWorkspaceNotReadyReason() {
+        return IdleReason.SPACE_SHIELD_NO_LASER.reason();
     }
 }

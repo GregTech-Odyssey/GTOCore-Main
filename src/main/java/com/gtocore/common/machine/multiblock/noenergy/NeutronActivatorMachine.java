@@ -4,12 +4,12 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.NeutronAcceleratorPartMachine;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 import com.gtolib.utils.NumberUtils;
 
@@ -20,9 +20,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -52,7 +49,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @DataGeneratorScanned
-public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implements IExplosionMachine, IIssueProvider {
+public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implements IExplosionMachine {
 
     @RegisterLanguage(cn = "加速管层数", en = "Accelerator Tube Layers")
     public static final String LAYERS_NAME = "gtocore.multiblock.neutron_activator.layers";
@@ -131,38 +128,14 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         recordTarget(recipe);
-        int min = recipe.data.getInt(GTORecipeDataKeys.EV_MIN);
-        int max = recipe.data.getInt(GTORecipeDataKeys.EV_MAX);
-        if (inRange(eV, min, max)) {
+        if ((eV > recipe.data.getInt(GTORecipeDataKeys.EV_MIN) * 1000000 && eV < recipe.data.getInt(GTORecipeDataKeys.EV_MAX) * 1000000)) {
             recipe = GTORecipeModifiers.parallel(this, unit, recipe);
             if (recipe == null) return null;
             recipe.duration = (int) Math.round(Math.max(recipe.duration * getEfficiencyFactor(), 1));
             return recipe;
         }
-        IdleReason.NEUTRON_EV_RANGE.report(this, IssueStage.MODIFIER, packRange(min, max), eV, null);
+        setIdleReason(IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES);
         return null;
-    }
-
-    static boolean inRange(int ev, int minMeV, int maxMeV) {
-        return ev > minMeV * 1000000 && ev < maxMeV * 1000000;
-    }
-
-    public static long packRange(int minMeV, int maxMeV) {
-        return ((long) minMeV << 32) | (maxMeV & 0xFFFFFFFFL);
-    }
-
-    public static int rangeMin(long packed) {
-        return (int) (packed >> 32);
-    }
-
-    public static int rangeMax(long packed) {
-        return (int) packed;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed() || targetMax <= 0 || getRecipeLogic().isWorking()) return;
-        if (!inRange(eV, targetMin, targetMax)) IdleReason.NEUTRON_EV_RANGE.collect(sink, packRange(targetMin, targetMax), eV);
     }
 
     void recordTarget(GTRecipe recipe) {
@@ -175,7 +148,7 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
     public boolean handleTickRecipe(GTRecipe recipe) {
         int evt = (int) (recipe.data.getInt(GTORecipeDataKeys.EVT) * 1000 * getEVtMultiplier());
         if (eV < evt) {
-            IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.report(this, evt, eV);
+            setIdleReason(IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES);
             return false;
         } else {
             eV -= evt;

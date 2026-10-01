@@ -11,7 +11,6 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -92,7 +91,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
                         "gtocore.machine.analysis")
                 .addEnergyUsageLine(energyContainer)
                 .addEnergyTierLine(tier)
-                .addIssueLines(recipeLogic)
+                .addWorkingStatusLine()
                 .addProgressLineOnlyPercent(recipeLogic.getProgressPercent());
     }
 
@@ -136,7 +135,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
             });
         }
         if (researchPoints == null) {
-            IdleReason.LACK_MATERIAL.report(this, IssueStage.MODIFIER, recipe.definition);
+            IdleReason.LACK_MATERIAL.setReason(this);
             return null;
         }
         return super.getRealRecipe(unit, recipe);

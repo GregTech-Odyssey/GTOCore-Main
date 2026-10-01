@@ -7,7 +7,6 @@ import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
@@ -41,12 +40,11 @@ public final class DysonSphereLaunchSiloMachine extends ElectricMultiblockMachin
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!GTODimensions.isPlanet(getDimension())) {
-            IdleReason.ONLY_ON_PLANET.report(this, IssueStage.MODIFIER, null);
+            IdleReason.ONLY_ON_PLANET.setReason(this);
             return null;
         }
-        int count = DysonSphereSavaedData.getDimensionData(getDimension()).leftInt();
-        if (count >= 100000) {
-            IdleReason.DYSON_SPHERE_COMPLETE.report(this, IssueStage.MODIFIER, count, 0, null);
+        if (DysonSphereSavaedData.getDimensionData(getDimension()).leftInt() >= 100000) {
+            IdleReason.DYSON_SPHERE_COMPLETE.setReason(this, DysonSphereSavaedData.getDimensionData(getDimension()).leftInt());
             return null;
         }
         int integer = GTODimensions.getPlanetDistances(getDimension());

@@ -12,9 +12,6 @@ import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.item.IGTTool;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
@@ -32,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 @DataGeneratorScanned
-public final class TreeGrowthSimulator extends StorageMultiblockMachine implements IIssueProvider {
+public final class TreeGrowthSimulator extends StorageMultiblockMachine {
 
     @RegisterLanguage(cn = "斧 / 链锯", en = "Axe / Chainsaw")
     private static final String SLOT_LABEL = "gtocore.machine.tree_growth_simulator.slot";
@@ -63,12 +60,12 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine implemen
             if (isElectric) {
                 var electricStack = GTCapabilityHelper.getElectricItem(stack);
                 if (electricStack == null) {
-                    IdleReason.FELLING_TOOL.report(this, IssueStage.MODIFIER, recipe.definition);
+                    setIdleReason(IdleReason.FELLING_TOOL);
                     return null;
                 }
                 int eu = 256 * (1 << tier);
                 if (electricStack.getCharge() < eu) {
-                    IdleReason.CHARGE.report(this, IssueStage.MODIFIER, eu, electricStack.getCharge(), recipe.definition);
+                    setIdleReason(IdleReason.CHARGE, eu, electricStack.getCharge());
                     return null;
                 } else {
                     electricStack.discharge(eu * (1L << tier), electricStack.getTier(), true, false, false);
@@ -78,7 +75,7 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine implemen
                 int damage = stack.getDamageValue();
                 if (damage >= stack.getMaxDamage()) {
                     machineStorage.setStackInSlot(0, ItemStack.EMPTY);
-                    IdleReason.FELLING_TOOL.report(this, IssueStage.MODIFIER, recipe.definition);
+                    setIdleReason(IdleReason.FELLING_TOOL);
                     return null;
                 }
                 var level = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack) + 1;
@@ -96,25 +93,8 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine implemen
             }
             return RecipeModifier.overclocking(this, unit, recipe);
         }
-        IdleReason.FELLING_TOOL.report(this, IssueStage.MODIFIER, recipe.definition);
+        setIdleReason(IdleReason.FELLING_TOOL);
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        ItemStack stack = getStorageStack();
-        if (!(stack.getItem() instanceof IGTTool item)) {
-            IdleReason.FELLING_TOOL.collect(sink);
-            return;
-        }
-        if (!item.isElectric()) return;
-        var electricStack = GTCapabilityHelper.getElectricItem(stack);
-        if (electricStack == null) {
-            IdleReason.FELLING_TOOL.collect(sink);
-            return;
-        }
-        int eu = 256 * (1 << tier);
-        if (electricStack.getCharge() < eu) IdleReason.CHARGE.collect(sink, eu, electricStack.getCharge());
     }
 
     @Override

@@ -4,17 +4,16 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.FluidRenderUtils;
 
 import com.gtolib.api.machine.feature.multiblock.IFluidRendererMachine;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.ChatFormatting;
@@ -85,13 +84,13 @@ public final class ClarifierPurificationUnitMachine extends WaterPurificationUni
         eut = 0;
         if (count > 100) {
             if (!simulateOutputItem(GTOItems.SCRAP.asItem(), count / 20)) {
-                reportIssue(GTIssues.OUTPUT_FULL, null, IO.OUT, ItemRecipeInfo.INSTANCE, -1, 0, 0, null);
+                IdleReason.INSUFFICIENT_OUT.setReason(this);
                 return 0;
             }
             if (inputFluid(AIR, count * 10000L) && inputFluid(Fluids.WATER, (200L + GTValues.RNG.nextInt(100)) * 1000) && outputItem(GTOItems.SCRAP.asItem(), count / 20)) {
                 count = 0;
             } else {
-                reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, null);
+                setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
                 return 0;
             }
         }

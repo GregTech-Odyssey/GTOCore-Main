@@ -40,12 +40,12 @@ public final class ChiselMachine extends CustomParallelMultiblockMachine impleme
         if (c.get() > 0 && item.get() != null) {
             List<Item> list = ChiselGroupLookup.getBlocksInGroup(item.get());
             if (list.isEmpty()) {
-                IdleReason.INVALID_INPUT.report(this);
+                IdleReason.INVALID_INPUT.setReason(this);
                 return null;
             }
             Item output = list.get(Math.min(list.size(), c.get()) - 1);
             if (output == null) {
-                IdleReason.INVALID_INPUT.report(this);
+                IdleReason.INVALID_INPUT.setReason(this);
                 return null;
             }
             RecipeBuilder builder = getRecipeBuilder().duration(20).EUt(30);
@@ -53,7 +53,7 @@ public final class ChiselMachine extends CustomParallelMultiblockMachine impleme
             builder.outputItems(output);
             return builder.build();
         }
-        if (item.get() != null) IdleReason.SET_CIRCUIT.report(this);
+        if (item.get() != null) IdleReason.SET_CIRCUIT.setReason(this);
         return null;
     }
 }

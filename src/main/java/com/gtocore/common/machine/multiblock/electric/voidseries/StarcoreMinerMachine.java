@@ -42,7 +42,7 @@ public final class StarcoreMinerMachine extends ElectricMultiblockMachine implem
             builder.outputItems(TagPrefix.ore, material, 65536);
         }
         if (builder.getItemOutputs().isEmpty()) {
-            IdleReason.NO_ORES.report(this);
+            setIdleReason(IdleReason.NO_ORES);
             return null;
         }
         return builder.build();

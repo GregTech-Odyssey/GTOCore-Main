@@ -13,9 +13,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.MachineProtocol;
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -308,8 +305,7 @@ final class ElevatorFlowPage {
             diagnoser.diagnoseEnergy(formed, working, machine.getEnergyContainer(), machine.getMaxVoltage(), tier);
             usageText = Component.translatable(LANG_EUT, FormattingUtil.formatNumbers(diagnoser.getEUt()));
             usageLevel = formed && diagnoser.energyIssue().isProblem() ? Level.ERROR : Level.NORMAL;
-            var result = MachineDiagnosis.of(machine);
-            computationView = IssueView.of(result, GTIssues.NO_CWU, working ? RecipeIssue.RUNNING.view() : RecipeIssue.IDLE.view());
+            computationView = working ? RecipeIssue.RUNNING.view() : RecipeIssue.IDLE.view();
             voltageOk = formed && tier >= SpaceElevatorMachine.REQUIRED_TIER;
             voltageText = formed ? Component.literal(GTValues.VN[Math.max(0, Math.min(GTValues.MAX, tier))]) : FlowParts.DASH;
             var energyLines = new ArrayList<Component>(diagnoser.energyDetail().size() + 2);
@@ -321,7 +317,7 @@ final class ElevatorFlowPage {
             powerModuleText = powerTier > 0 ? Component.literal("MK " + powerTier) : FlowParts.DASH;
             long cwu = SpaceElevatorMachine.computationDemand(planned, machine.exCWUt());
             computationText = Component.translatable(LANG_CWU, FormattingUtil.formatNumbers(cwu));
-            refreshCore(formed, working, cwu, result);
+            refreshCore(formed, working, tier, cwu, logic.isWaiting() ? null : working ? null : logic.getIdleReason());
             refreshSpool(formed);
             refreshOrbit(formed);
             var link = machine.getNetMachineCache();
@@ -331,20 +327,21 @@ final class ElevatorFlowPage {
             if (road) mega.refresh(machine, working, moduleTier, powerTier, multiplier);
         }
 
-        private void refreshCore(boolean formed, boolean working, long cwu, DiagnosisResult result) {
+        private void refreshCore(boolean formed, boolean working, int tier, long cwu, Component reason) {
             IssueView view;
-            var tierIssue = result.issue(GTIssues.LOW_VOLTAGE);
             if (!formed) view = RecipeIssue.UNFORMED.view();
-            else if (!working && tierIssue != null && tierIssue.a() == SpaceElevatorMachine.REQUIRED_TIER) {
-                view = new IssueView(RecipeIssue.LOW_VOLTAGE, Component.translatable(LANG_LOW_TIER, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]), null, tierIssue);
+            else if (tier < SpaceElevatorMachine.REQUIRED_TIER) {
+                view = IssueView.of(RecipeIssue.LOW_VOLTAGE, Component.translatable(LANG_LOW_TIER, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]));
             } else if (working) view = RecipeIssue.RUNNING.view();
+            else if (machine.getRecipeLogic().isWaiting()) view = RecipeIssue.WAITING.view();
             else if (!diagnoser.energySatisfied()) view = diagnoser.energyIssue().view();
-            else view = IssueView.primary(result, machine.getRecipeLogic().isWaiting() ? RecipeIssue.WAITING.view() : IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY)));
+            else if (reason != null) view = IssueView.of(RecipeIssue.CONDITION, reason);
+            else view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
             coreView = view;
-            core = working ? FlowState.ACTIVE : view.state();
+            core = working ? FlowState.ACTIVE : view.issue().state();
             var lines = new ArrayList<Component>(4);
             lines.add(machine.getDefinition().asStack().getHoverName());
-            lines.add(view.description().copy().withStyle(RecipeDiagnoser.style(view.issue())));
+            lines.add((reason != null && !working ? reason.copy() : Component.translatable(view.issue().descriptionKey())).withStyle(RecipeDiagnoser.style(view.issue())));
             lines.add(Component.translatable(LANG_CORE_DESC, Component.literal(FormattingUtil.formatNumbers(diagnoser.getEUt()) + " EU/t"),
                     Component.translatable(LANG_CWU, FormattingUtil.formatNumbers(cwu))).withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable(LANG_TIER_DESC, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]).withStyle(ChatFormatting.GRAY));

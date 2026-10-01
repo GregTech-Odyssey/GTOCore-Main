@@ -53,7 +53,7 @@ public class SpaceStationRecipes {
                 .inputItems(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.asItem(), 16)
                 .build();
         for (Dimension dimension : Dimension.all()) {
-            if (dimension == Dimension.OVERWORLD || !dimension.isWithinGalaxy()) {
+            if (dimension == Dimension.OVERWORLD || !dimension.hasOrbitDimension()) {
                 continue;
             }
             SpaceStationBuilder.builder("orbit_space_station_" + dimension.getLocation().getPath())

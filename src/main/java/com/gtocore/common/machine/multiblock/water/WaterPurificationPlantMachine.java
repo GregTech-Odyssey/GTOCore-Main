@@ -1,19 +1,17 @@
 package com.gtocore.common.machine.multiblock.water;
 
 import com.gtocore.common.data.GTOMaterials;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueLines;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -127,7 +125,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     public void onWaiting() {
         for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
             if (entry.getBooleanValue()) {
-                entry.getKey().getRecipeLogic().setWaiting(IdleReason.PLANT_WAITING.type(), 0, 0);
+                entry.getKey().getRecipeLogic().setWaiting(getRecipeLogic().getIdleReason());
             }
         }
         super.onWaiting();
@@ -177,7 +175,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             if (entry.getBooleanValue()) {
                 component.append(Component.translatable("gtceu.multiblock.running").append("\n").append(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(entry.getKey().eut), Component.literal(GTValues.VNF[GTUtil.getTierByVoltage(entry.getKey().eut)]))));
             } else {
-                component.append(IssueLines.headline(entry.getKey().getRecipeLogic().getIssueSnapshot()));
+                component.append(Component.translatable("gtceu.multiblock.idling"));
             }
             textList.add(component);
         }
@@ -207,9 +205,8 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     @Nullable
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         long eut = 0;
-        long stored = getEnergyContainer().getEnergyStored();
-        if (stored < 1000) {
-            IdleReason.INSUFFICIENT_ENERGY_BUFFER.report(this, 1000, stored);
+        if (getEnergyContainer().getEnergyStored() < 1000) {
+            IdleReason.INSUFFICIENT_ENERGY_BUFFER.setReason(this, 1000, getEnergyContainer().getEnergyStored());
             return null;
         }
         availableEu = getOverclockVoltage();
@@ -218,22 +215,16 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             entry.setValue(false);
             var machine = entry.getKey();
             if (machine.isFormed() && !machine.isRemoved()) {
-                var logic = machine.getRecipeLogic();
-                if (logic.isIdle()) {
-                    logic.beginIssueRound(IssueStage.SEARCH);
-                    try {
-                        for (var u : machine.getInputUnits()) {
-                            long eu = machine.prepareRecipe(u);
-                            if (eu > 0) {
-                                entry.setValue(true);
-                                machine.unit = u;
-                                availableEu -= eu;
-                                eut += eu;
-                                break;
-                            }
+                if (machine.getRecipeLogic().isIdle()) {
+                    for (var u : machine.getInputUnits()) {
+                        long eu = machine.prepareRecipe(u);
+                        if (eu > 0) {
+                            entry.setValue(true);
+                            machine.unit = u;
+                            availableEu -= eu;
+                            eut += eu;
+                            break;
                         }
-                    } finally {
-                        logic.endIssueRound();
                     }
                 }
             } else {

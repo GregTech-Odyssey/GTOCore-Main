@@ -8,15 +8,11 @@ import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluid;
@@ -91,9 +87,8 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        long heat = heatContainer.getCurrentHeat();
-        if (heat < 8) {
-            IdleReason.HEAT_SHORT.report(this, 8, heat);
+        if (heatContainer.getCurrentHeat() < 8) {
+            setIdleReason(IdleReason.HEAT_SHORT, 8, heatContainer.getCurrentHeat());
             return null;
         }
         ObjHolder<Fluid> coolantFluid = new ObjHolder<>();
@@ -108,15 +103,14 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
                 coolantEfficiency = Math.min(200, (int) (tempDiff / 4));
             } else {
                 coolantEfficiency = 0;
-                if (fluidTemp < 320) IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.INPUT, fluidTemp + 1L, (long) heatContainer.getTemperature(), null);
-                else IdleReason.INVALID_INPUT.report(this);
+                if (fluidTemp < 320) setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE, fluidTemp + 1L, (long) heatContainer.getTemperature());
+                else setIdleReason(IdleReason.INVALID_INPUT);
                 return false;
             }
             coolantFluid.set(f.getFluid());
             return true;
         });
         if (coolantFluid.get() == null) {
-            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, 1000, -1, null);
             return null;
         }
         return getRecipeBuilder().duration(20).inputFluids(coolantFluid.get(), 1000)

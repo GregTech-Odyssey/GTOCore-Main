@@ -109,7 +109,6 @@ public final class GTOPredicates {
                 predicate = predicate.or(Predicates.abilities(PartAbility.OUTPUT_ENERGY).setMaxGlobalLimited(2).setPreviewCount(0)).or(Predicates.abilities(PartAbility.OUTPUT_LASER).setMaxGlobalLimited(2).setPreviewCount(1));
                 break;
             }
-            if (type.isHasResearchSlot()) predicate = predicate.or(Predicates.abilities(PartAbility.OPTICAL_DATA_RECEPTION).setMaxGlobalLimited(1));
         }
         return predicate;
     }

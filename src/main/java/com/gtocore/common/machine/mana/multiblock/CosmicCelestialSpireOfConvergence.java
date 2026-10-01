@@ -13,7 +13,6 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -89,10 +88,11 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
             parallel = (this.solaris + this.lunara + this.voidflux + this.stellarm) / anyCost;
         if (parallel == 0) {
             if (solarisCost <= 0 && lunaraCost <= 0 && voidfluxCost <= 0 && stellarmCost <= 0 && anyCost <= 0) {
-                IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, null);
+                IdleReason.NOT_APPLICABLE.setReason(this);
             } else {
-                IdleReason.CELESTIAL_SHORT.report(this, IssueStage.MODIFIER, CelestialHandler.cost(solarisCost, lunaraCost, voidfluxCost, stellarmCost, anyCost),
-                        CelestialHandler.available(solarisCost, lunaraCost, voidfluxCost, stellarmCost, this.solaris, this.lunara, this.voidflux, this.stellarm), null);
+                long need = solarisCost > 0 ? solarisCost : lunaraCost > 0 ? lunaraCost : voidfluxCost > 0 ? voidfluxCost : stellarmCost > 0 ? stellarmCost : anyCost;
+                long have = solarisCost > 0 ? this.solaris : lunaraCost > 0 ? this.lunara : voidfluxCost > 0 ? this.voidflux : stellarmCost > 0 ? this.stellarm : this.solaris + this.lunara + this.voidflux + this.stellarm;
+                IdleReason.CELESTIAL_SHORT.setReason(this, need, have);
             }
             return null;
         }

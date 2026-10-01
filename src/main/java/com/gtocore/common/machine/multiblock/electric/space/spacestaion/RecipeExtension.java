@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
-import com.gtocore.data.IdleReason;
+import com.gtocore.data.techtree.MachinesNode;
 
 import com.gtolib.api.machine.feature.multiblock.ICrossRecipeElectricMachine;
 import com.gtolib.api.machine.trait.CrossRecipeTrait;
@@ -11,12 +11,13 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+
+import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
@@ -83,11 +84,11 @@ public class RecipeExtension extends Extension implements ICrossRecipeElectricMa
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!isWorkspaceReady()) {
-            reportWorkspaceNotReady(this);
+            setIdleReason(this::getWorkspaceNotReadyReason);
             return null;
         }
         if (hasLaserInput && !core.hasLaserBoost()) {
-            IdleReason.TECH_NODE_LOCKED.report(this, IssueStage.MODIFIER, null);
+            setIdleReason(Component.translatable("gtocore.recipe.require_technode", MachinesNode.LaserSpaceEngineering.getDisplayName()));
             return null;
         }
 

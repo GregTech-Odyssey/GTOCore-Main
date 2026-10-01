@@ -6,9 +6,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -17,7 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import org.jetbrains.annotations.Nullable;
 
-public final class BedrockDrillingRigMachine extends ElectricMultiblockMachine implements IIssueProvider {
+public final class BedrockDrillingRigMachine extends ElectricMultiblockMachine {
 
     public BedrockDrillingRigMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -39,15 +36,9 @@ public final class BedrockDrillingRigMachine extends ElectricMultiblockMachine i
             }
         }
         if (!value) {
-            IdleReason.NO_BEDROCK.report(this, IssueStage.CONDITION, recipe);
+            IdleReason.NO_BEDROCK.setReason(this);
             return false;
         }
         return super.checkConditions(unit, recipe);
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        Level level = getLevel();
-        if (level != null && isFormed() && level.getBlockState(getPos().offset(0, -9, 0)).getBlock() != Blocks.BEDROCK) IdleReason.NO_BEDROCK.collect(sink);
     }
 }

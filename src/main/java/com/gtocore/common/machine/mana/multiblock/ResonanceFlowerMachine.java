@@ -10,11 +10,10 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
@@ -194,13 +193,13 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             if (!resonanceFluid.isEmpty()) {
                 int amount = scaleElementalAmount(resonanceFluid.getAmount());
                 boolean consumed = amount == resonanceFluid.getAmount() ? inputFluid(resonanceFluid) : inputFluid(new FluidStack(resonanceFluid.getFluid(), amount, resonanceFluid.getTag()));
-                if (!consumed) reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, amount, -1, null);
+                if (!consumed) setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
                 return consumed;
             }
             if (!resonanceItem.isEmpty()) {
                 int count = scaleElementalAmount(resonanceItem.getCount());
                 boolean consumed = count == resonanceItem.getCount() ? inputItem(resonanceItem) : inputItem(resonanceItem.copyWithCount(count));
-                if (!consumed) reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, ItemRecipeInfo.INSTANCE, -1, count, -1, null);
+                if (!consumed) setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
                 return consumed;
             }
         }

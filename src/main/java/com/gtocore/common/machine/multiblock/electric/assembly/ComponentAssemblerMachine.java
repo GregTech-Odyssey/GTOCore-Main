@@ -8,7 +8,6 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -37,9 +36,8 @@ public class ComponentAssemblerMachine extends TierCasingMultiblockMachine {
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        int need = recipe.data.getInt(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER);
-        if (need > casingTier) {
-            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, need, casingTier, recipe.definition);
+        if (recipe.data.getInt(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER) > casingTier) {
+            setIdleReason(IdleReason.BLOCK_TIER_NOT_SATISFIES, recipe.data.getInt(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER), casingTier);
             return null;
         }
         return super.getRealRecipe(unit, recipe);

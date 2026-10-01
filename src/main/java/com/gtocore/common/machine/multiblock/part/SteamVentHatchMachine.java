@@ -5,9 +5,6 @@ import com.gtocore.data.IdleReason;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExhaustVentMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -29,7 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class SteamVentHatchMachine extends WorkableMultiblockPartMachine implements IExhaustVentMachine, IIssueProvider {
+public class SteamVentHatchMachine extends WorkableMultiblockPartMachine implements IExhaustVentMachine {
 
     @SaveToDisk(defaultValue = "false")
     private boolean needsVenting;
@@ -75,15 +72,10 @@ public class SteamVentHatchMachine extends WorkableMultiblockPartMachine impleme
     @Nullable
     public GTRecipe modifyRecipe(IWorkableMultiController controller, RecipeHandlerUnit unit, GTRecipe recipe) {
         if (needsVenting && isVentingBlocked()) {
-            IdleReason.STEAM_VENT_OBSTRUCTED.report(controller, IssueStage.MODIFIER, recipe.definition);
+            IdleReason.STEAM_VENT_OBSTRUCTED.setReason(controller);
             return null;
         }
         return recipe;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (needsVenting && isVentingBlocked()) IdleReason.STEAM_VENT_OBSTRUCTED.collect(sink);
     }
 
     @Override

@@ -11,11 +11,8 @@ import com.gtolib.api.recipe.IdleReason;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.MachineIssue;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.ChatFormatting;
@@ -181,28 +178,11 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     }
 
     @Override
-    public void reportWorkspaceNotReady(IRecipeHandlerHolder holder) {
-        long pos = getPos().asLong();
-        if (getRecipeLogic().isWorking()) IdleReason.SPACE_STATION_PREPARING.report(holder, pos, Math.min(ready * 10, 100));
-        else if (!isWorkingEnabled()) IdleReason.SPACE_STATION_PAUSED.report(holder, pos, 0);
-        else IdleReason.SPACE_STATION_NOT_RUNNING.report(holder, pos, stoppedCause());
-    }
-
-    @Override
-    public void collectWorkspaceIssues(IssueSink sink) {
-        sink.accept(workspaceIssue());
-    }
-
-    private MachineIssue workspaceIssue() {
-        long pos = getPos().asLong();
-        if (getRecipeLogic().isWorking()) return IdleReason.SPACE_STATION_PREPARING.issue(pos, Math.min(ready * 10, 100));
-        if (!isWorkingEnabled()) return IdleReason.SPACE_STATION_PAUSED.issue(pos, 0);
-        return IdleReason.SPACE_STATION_NOT_RUNNING.issue(pos, stoppedCause());
-    }
-
-    private long stoppedCause() {
-        var primary = getRecipeLogic().getIssueSnapshot().primary();
-        return primary == null ? 0 : primary.type().networkId() + 1;
+    public Component getWorkspaceNotReadyReason() {
+        String pos = getPos().toShortString();
+        if (getRecipeLogic().isWorking()) return IdleReason.SPACE_STATION_PREPARING.reason(pos, Math.min(ready * 10, 100));
+        if (!isWorkingEnabled()) return IdleReason.SPACE_STATION_PAUSED.reason(pos);
+        return IdleReason.SPACE_STATION_NOT_RUNNING.reason(pos, getRecipeLogic().getIdleReason());
     }
 
     @Override

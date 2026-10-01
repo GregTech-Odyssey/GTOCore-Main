@@ -105,7 +105,7 @@ public class FishingGroundMachine extends ElectricMultiblockMachine implements I
                 return builder.build();
             }
         } else {
-            IdleReason.SET_CIRCUIT.report(this);
+            IdleReason.SET_CIRCUIT.setReason(this);
         }
         return null;
     }

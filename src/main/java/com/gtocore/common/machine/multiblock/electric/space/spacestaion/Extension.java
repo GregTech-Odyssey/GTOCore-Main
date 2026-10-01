@@ -5,8 +5,6 @@ import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
@@ -54,17 +52,8 @@ public class Extension extends AbstractSpaceStation implements ILargeSpaceStatio
     }
 
     @Override
-    public void reportWorkspaceNotReady(IRecipeHandlerHolder holder) {
-        var root = core;
-        if (root == null) IdleReason.SPACE_STATION_NO_CORE.report(holder, getPos().asLong(), 0);
-        else root.reportWorkspaceNotReady(holder);
-    }
-
-    @Override
-    public void collectWorkspaceIssues(IssueSink sink) {
-        var root = core;
-        if (root == null) IdleReason.SPACE_STATION_NO_CORE.collect(sink, getPos().asLong(), 0);
-        else root.collectWorkspaceIssues(sink);
+    public Component getWorkspaceNotReadyReason() {
+        return core == null ? IdleReason.SPACE_STATION_NO_CORE.reason(getPos().toShortString()) : core.getWorkspaceNotReadyReason();
     }
 
     @Override

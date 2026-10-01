@@ -89,18 +89,18 @@ public final class DysonSphereReceivingStationMcahine extends ElectricMultiblock
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        int integer = GTODimensions.getPlanetDistances(getDimension());
-        if (integer == 0) {
-            IdleReason.ONLY_ON_PLANET.report(this);
-            return null;
-        }
         if (DysonSphereSavaedData.getDimensionUse(getDimension())) {
-            IdleReason.DYSON_SPHERE_IN_USE.report(this);
+            IdleReason.DYSON_SPHERE_IN_USE.setReason(this);
             return null;
         }
         IntIntImmutablePair pair = DysonSphereSavaedData.getDimensionData(getDimension());
         if (pair.leftInt() < 1) {
-            IdleReason.DYSON_SPHERE_EMPTY.report(this);
+            IdleReason.DYSON_SPHERE_EMPTY.setReason(this);
+            return null;
+        }
+        int integer = GTODimensions.getPlanetDistances(getDimension());
+        if (integer == 0) {
+            IdleReason.ONLY_ON_PLANET.setReason(this);
             return null;
         }
         return getRecipeBuilder().duration(20)

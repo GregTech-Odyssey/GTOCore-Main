@@ -1,15 +1,12 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.common.data.machines.GTOMachineProtocols;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
-import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -245,7 +242,7 @@ public final class SpaceStationFlowPage {
         node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY), new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.energyIssue().view())),
                 StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, () -> status.usageText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status.live(() -> status.powerText))
-                        .bindLevel(status.live(status::powerLevel)),
+                        .bindLevel(status.live(() -> diagnoser.energyIssue() == RecipeIssue.LOW_POWER ? Level.ERROR : Level.NORMAL)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText)).bindLevel(status.live(status::voltageLevel)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_REQUIRED_TIER, () -> status.requiredTierText),
                 ProgressBar.of(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.buffer)).percent());
@@ -361,15 +358,9 @@ public final class SpaceStationFlowPage {
             };
         }
 
-        private Level powerLevel() {
-            var issue = diagnoser.energyIssue();
-            if (issue == RecipeIssue.LOW_POWER) return Level.ERROR;
-            return issue == RecipeIssue.POWER_LIMITED ? Level.WARNING : Level.NORMAL;
-        }
-
         private Level voltageLevel() {
             if (diagnoser.energyTier() < 0) return Level.NORMAL;
-            return diagnoser.voltageLevel();
+            return diagnoser.energyIssue() == RecipeIssue.LOW_VOLTAGE ? Level.ERROR : Level.GOOD;
         }
 
         @Override
@@ -426,7 +417,7 @@ public final class SpaceStationFlowPage {
             energyDetail = energyLines;
             refreshWater(formed, working);
             refreshInputDetails();
-            refreshStation(formed, working, inCycle, MachineDiagnosis.of(machine));
+            refreshStation(formed, working, inCycle);
             refreshEnvironment(formed, working);
         }
 
@@ -456,16 +447,15 @@ public final class SpaceStationFlowPage {
             }
         }
 
-        private void refreshStation(boolean formed, boolean working, boolean inCycle, DiagnosisResult result) {
+        private void refreshStation(boolean formed, boolean working, boolean inCycle) {
             var logic = machine.getRecipeLogic();
-            var notInSpace = result.issue(IdleReason.SPACE_STATION_NOT_IN_SPACE.type());
             IssueView view;
             Component sentence;
             if (!formed) {
                 view = RecipeIssue.UNFORMED.view();
                 sentence = null;
-            } else if (notInSpace != null) {
-                view = new IssueView(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE), null, notInSpace);
+            } else if (!machine.isInSpace()) {
+                view = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE));
                 sentence = Component.translatable(LANG_NOT_IN_SPACE_DESC);
             } else if (!logic.isWorkingEnabled()) {
                 view = RecipeIssue.DISABLED.view();
@@ -480,7 +470,7 @@ public final class SpaceStationFlowPage {
                     sentence = null;
                 }
             } else if (inCycle) {
-                view = IssueView.primary(result, RecipeIssue.WAITING.view());
+                view = RecipeIssue.WAITING.view();
                 sentence = null;
             } else if (!diagnoser.inputsSatisfied()) {
                 view = firstInputProblem();
@@ -492,16 +482,15 @@ public final class SpaceStationFlowPage {
                 view = firstOutputProblem();
                 sentence = null;
             } else {
-                var primary = result.primary();
-                view = primary != null && primary.isBlocking() ? IssueView.of(primary) : IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
+                view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
                 sentence = null;
             }
             stationView = view;
-            station = working ? FlowState.ACTIVE : view.state();
+            station = working ? FlowState.ACTIVE : view.issue().state();
             var lines = new ArrayList<Component>(4);
             lines.add(Component.translatable(LANG_STATION));
             var style = RecipeDiagnoser.style(view.issue());
-            lines.add((sentence != null ? sentence.copy() : view.description().copy()).withStyle(style));
+            lines.add((sentence != null ? sentence.copy() : Component.translatable(view.issue().descriptionKey())).withStyle(style));
             if (formed && !diagnoser.inputsSatisfied()) lines.add(Component.translatable(LANG_MISSING, missingNames()).withStyle(style));
             stationDetail = lines;
         }

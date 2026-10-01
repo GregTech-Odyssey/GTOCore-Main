@@ -54,13 +54,9 @@ public final class AdvancedInfiniteDrillLogic extends VeinDrillLogic implements 
     @Nullable
     @Override
     protected GTRecipe buildDrillRecipe() {
-        var machine = getMachine();
-        if (machine.isEmpty()) {
-            IdleReason.DRILL_HEAD_MISSING.report(machine);
-            return null;
-        }
-        if (!machine.canRunnable()) {
-            IdleReason.INSUFFICIENT_TEMPERATURE.report(machine, AdvancedInfiniteDrillMachine.RUNNING_HEAT, machine.getCurrentHeat());
+        if (getMachine().isEmpty() || !getMachine().canRunnable()) {
+            if (getMachine().isEmpty()) IdleReason.DRILL_HEAD_MISSING.setReason(getMachine());
+            else IdleReason.INSUFFICIENT_TEMPERATURE.setReason(getMachine(), AdvancedInfiniteDrillMachine.RUNNING_HEAT, getMachine().getCurrentHeat());
             return null;
         }
         if (!veinFluids.isEmpty()) {

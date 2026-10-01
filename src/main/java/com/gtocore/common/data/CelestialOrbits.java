@@ -49,6 +49,10 @@ public final class CelestialOrbits {
     }
 
     public static void position(long seed, CelestialBody body, double ticks, double[] out) {
+        if (body.isStar()) {
+            out[0] = out[1] = out[2] = 0;
+            return;
+        }
         var primary = body.getPrimary();
         double radius;
         if (primary != null) {

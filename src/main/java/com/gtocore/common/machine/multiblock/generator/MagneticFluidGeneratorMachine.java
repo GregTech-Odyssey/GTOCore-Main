@@ -13,7 +13,6 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.ITieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -79,7 +78,7 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (outputTier < 1) {
-            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, -1, getCasingTier(GTORecipeDataKeys.GLASS_TIER), recipe.definition);
+            IdleReason.BLOCK_TIER_NOT_SATISFIES.setReason(this, -1, getCasingTier(GTORecipeDataKeys.GLASS_TIER));
             return null;
         }
         boolean extension = hasStructurePart(EXTENSION);

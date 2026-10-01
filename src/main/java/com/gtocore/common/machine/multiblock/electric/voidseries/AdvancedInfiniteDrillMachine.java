@@ -15,8 +15,6 @@ import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -40,7 +38,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @DataGeneratorScanned
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine implements IIssueProvider {
+public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine {
 
     @RegisterLanguage(cn = "钻头", en = "Drill Head")
     private static final String SLOT_LABEL = "gtocore.machine.advanced_infinite_driller.slot";
@@ -113,18 +111,11 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
                 process = 0;
                 currentHeat = 300;
                 machineStorage.setStackInSlot(0, ItemStack.EMPTY);
-                getRecipeLogic().interruptRecipe(IdleReason.DRILL_HEAD_MISSING.type(), 0, 0);
+                getRecipeLogic().interruptRecipe(IdleReason.DRILL_HEAD_MISSING.reason());
             }
         } else if (process > 0) {
             process--;
         }
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed()) return;
-        if (isEmpty()) IdleReason.DRILL_HEAD_MISSING.collect(sink);
-        else if (!canRunnable()) IdleReason.INSUFFICIENT_TEMPERATURE.collect(sink, RUNNING_HEAT, currentHeat);
     }
 
     @Override

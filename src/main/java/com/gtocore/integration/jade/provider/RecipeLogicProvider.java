@@ -18,15 +18,13 @@ import com.gregtechceu.gtceu.api.machine.SimpleGeneratorMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDummyEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueLines;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
-import com.gregtechceu.gtceu.integration.jade.IssueJade;
+import com.gregtechceu.gtceu.integration.jade.IdleReasonJade;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 import com.gregtechceu.gtceu.utils.PosUtils;
@@ -57,7 +55,7 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
     @RegisterLanguage(cn = "产能 %s §cA §a@ %s §f(%s§f)", en = "Energy Production %s §cA §a@ %s §f(%s§f)")
     private static final String ENERGY_PRODUCTION = "gtocore.machine.energy_production";
 
-    public static final ResourceLocation UID = GTCEu.id("recipe_logic_provider");
+    private static final ResourceLocation UID = GTCEu.id("recipe_logic_provider");
     private static final String UID_KEY = UID.toString();
     private static final String CONTROLLABLE_KEY = GTCEu.id("controllable_provider").toString();
 
@@ -72,8 +70,8 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
         if (capData.getBoolean("notLoaded")) {
             tooltip.add(Component.translatable(LOADED).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
-        var issue = capData.getCompound(UID_KEY).getCompound("null");
-        if (!issue.isEmpty()) IssueJade.append(tooltip, withoutCovered(capData, issue), blockAccessor.showDetails());
+        var reason = capData.getCompound(UID_KEY).getCompound("null");
+        if (!reason.isEmpty() && !hidesReason(capData, reason)) IdleReasonJade.append(tooltip, reason, blockAccessor.showDetails());
         if (capData.getBoolean("Working")) {
             var recipeInfo = capData.getCompound("Recipe");
             if (!recipeInfo.isEmpty()) {
@@ -147,21 +145,9 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
         }
     }
 
-    private static CompoundTag withoutCovered(CompoundTag data, CompoundTag issue) {
-        var snapshot = IssueJade.read(issue);
-        if (snapshot == null) return issue;
-        var shown = IssueLines.shown(snapshot);
-        if (shown == null) return issue;
-        var type = shown.type();
-        if ((type == GTIssues.UNFORMED && data.getBoolean("hasError")) || (type == GTIssues.PAUSED && isDisabled(data))) {
-            var copy = issue.copy();
-            copy.remove(IssueJade.KEY);
-            return copy;
-        }
-        return issue;
-    }
-
-    private static boolean isDisabled(CompoundTag data) {
+    private static boolean hidesReason(CompoundTag data, CompoundTag reason) {
+        if (data.getBoolean("hasError")) return true;
+        if (reason.getInt(IdleReasonJade.STATUS_KEY) != RecipeLogic.SUSPEND) return false;
         var controllable = data.getCompound(CONTROLLABLE_KEY).getCompound("null");
         return controllable.contains("WorkingEnabled") && !controllable.getBoolean("WorkingEnabled");
     }
@@ -185,19 +171,25 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
             }
             if (machineBlock.metaMachine instanceof IRecipeLogicMachine recipeLogicMachine) {
                 var capability = recipeLogicMachine.getRecipeLogic();
-                if (capability == null) return;
-                if (machineBlock.getLevel() instanceof ServerLevel level && level.getServer().isSameThread()) {
-                    var issue = new CompoundTag();
-                    IssueJade.write(issue, capability);
-                    if (!issue.isEmpty()) {
-                        var data = new CompoundTag();
-                        data.put("null", issue);
-                        compoundTag.put(UID_KEY, data);
-                    }
+                var reason = new CompoundTag();
+                IdleReasonJade.write(reason, capability);
+                if (!reason.isEmpty()) {
+                    var data = new CompoundTag();
+                    data.put("null", reason);
+                    compoundTag.put(UID_KEY, data);
                 }
-                if (capability.isWorking()) {
-                    compoundTag.putBoolean("Working", true);
-                    compoundTag.put("Recipe", getRecipeInfo(capability));
+                if (capability.isIdle() && capability.getIdleReason() != null) {
+                    compoundTag.putString("reason", Component.Serializer.toJson(capability.getIdleReason()));
+                } else if (capability.isWaiting()) {
+                    if (!capability.getFancyTooltip().isEmpty()) {
+                        compoundTag.putString("reason", Component.Serializer.toJson(capability.getFancyTooltip().getFirst()));
+                    } else if (capability.getIdleReason() != null) {
+                        compoundTag.putString("reason", Component.Serializer.toJson(capability.getIdleReason()));
+                    }
+                } else {
+                    compoundTag.putBoolean("Working", capability.isWorking());
+                    var recipeInfo = getRecipeInfo(capability);
+                    compoundTag.put("Recipe", recipeInfo);
                 }
             }
         }

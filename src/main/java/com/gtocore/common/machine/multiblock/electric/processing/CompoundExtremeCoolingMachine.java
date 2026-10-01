@@ -12,9 +12,6 @@ import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -44,7 +41,7 @@ import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 @DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMachine implements IIssueProvider {
+public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMachine {
 
     @RegisterLanguage(cn = "等离子冷凝翼", en = "Plasma Condensing Wings")
     private static final String WINGS_NAME = "gtocore.multiblock.compound_extreme_cooling_unit.wings";
@@ -71,22 +68,11 @@ public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMa
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
-        if (recipe.recipeType == GTORecipeTypes.PLASMA_CONDENSER_RECIPES) {
-            if (getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES) {
-                IdleReason.NOT_APPLICABLE.report(this, IssueStage.CONDITION, recipe);
-                return false;
-            }
-            if (!hasStructurePart(PLASMA_WINGS)) {
-                IdleReason.PLASMA_WINGS_MISSING.report(this, IssueStage.CONDITION, recipe);
-                return false;
-            }
+        if (recipe.recipeType == GTORecipeTypes.PLASMA_CONDENSER_RECIPES && (!hasStructurePart(PLASMA_WINGS) || getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES)) {
+            (getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES ? IdleReason.NOT_APPLICABLE : IdleReason.PLASMA_WINGS_MISSING).setReason(this);
+            return false;
         }
         return super.checkConditions(unit, recipe);
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (getRecipeType() == GTORecipeTypes.PLASMA_CONDENSER_RECIPES && !hasStructurePart(PLASMA_WINGS)) IdleReason.PLASMA_WINGS_MISSING.collect(sink);
     }
 
     @Override

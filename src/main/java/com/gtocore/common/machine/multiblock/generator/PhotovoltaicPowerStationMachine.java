@@ -77,7 +77,7 @@ public final class PhotovoltaicPowerStationMachine extends AbstractPhotovoltaicM
     protected @Nullable GTRecipeDefinition createGenerationRecipe(Level level, RecipeHandlerUnit unit, int basic) {
         int eut = (int) (basic * (GTODimensions.isVoid(level.dimension()) ? 14 : GTOUtils.getSunIntensity(level.getDayTime()) * 15 / 100 * (level.isRaining() ? (level.isThundering() ? 0.3f : 0.7f) : 1)));
         if (eut == 0) {
-            IdleReason.DAYTIME_ONLY.report(this);
+            IdleReason.DAYTIME_ONLY.setReason(this);
             return null;
         }
         return buildGenerationRecipe(getRecipeBuilder().duration(20), eut);

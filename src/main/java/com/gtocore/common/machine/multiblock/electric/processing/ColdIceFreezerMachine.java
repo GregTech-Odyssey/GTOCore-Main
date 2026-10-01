@@ -46,11 +46,10 @@ public final class ColdIceFreezerMachine extends CustomParallelMultiblockMachine
     }
 
     private boolean inputFluid(@Nullable RecipeHandlerUnit unit) {
-        long amount = (1L << Math.max(0, getTier() - 2)) * 10L;
-        if (inputFluid(unit, ICE.getRawFluid(), amount)) {
+        if (inputFluid(unit, ICE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
             return true;
         }
-        IdleReason.ICE_SHORT.report(this, amount, -1);
+        IdleReason.ICE_SHORT.setReason(this, (1L << Math.max(0, getTier() - 2)) * 10L, -1);
         return false;
     }
 

@@ -10,9 +10,6 @@ import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
 import com.gtolib.api.machine.trait.MultiblockTrait;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -27,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 @DataGeneratorScanned
-public class RadioactivityTrait extends MultiblockTrait implements IIssueProvider {
+public class RadioactivityTrait extends MultiblockTrait {
 
     @RegisterLanguage(cn = "辐射剂量", en = "Radiation Dose")
     private static final String DOSE = "gtocore.machine.radioactivity_trait.dose";
@@ -68,24 +65,11 @@ public class RadioactivityTrait extends MultiblockTrait implements IIssueProvide
     @Override
     public GTRecipe modifyRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         recipeRadioactivity = recipe.data.getInt(GTORecipeDataKeys.RADIOACTIVITY);
-        if (recipeRadioactivity > 0) {
-            int current = getRecipeRadioactivity();
-            if (outside(recipeRadioactivity, current)) {
-                IdleReason.RADIATION.report(machine, IssueStage.MODIFIER, recipeRadioactivity, current, recipe.definition);
-                return null;
-            }
+        if (recipeRadioactivity > 0 && outside()) {
+            IdleReason.RADIATION.setReason(machine);
+            return null;
         }
         return recipe;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        var recipe = IdleReason.issueRecipe(machine);
-        if (recipe == null) return;
-        int need = recipe.data.getInt(GTORecipeDataKeys.RADIOACTIVITY);
-        if (need <= 0) return;
-        int current = getRecipeRadioactivity();
-        if (outside(need, current)) IdleReason.RADIATION.collect(sink, need, current);
     }
 
     @Override
@@ -102,7 +86,8 @@ public class RadioactivityTrait extends MultiblockTrait implements IIssueProvide
         return radioactivity;
     }
 
-    private static boolean outside(int need, int radioactivity) {
-        return radioactivity > need + 5 || radioactivity < need - 5;
+    private boolean outside() {
+        int radioactivity = getRecipeRadioactivity();
+        return radioactivity > recipeRadioactivity + 5 || radioactivity < recipeRadioactivity - 5;
     }
 }

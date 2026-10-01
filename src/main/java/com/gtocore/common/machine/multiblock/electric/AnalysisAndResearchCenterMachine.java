@@ -100,7 +100,7 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
                         "gtocore.machine.analysis")
                 .addEnergyUsageLine(energyContainer)
                 .addEnergyTierLine(tier)
-                .addIssueLines(recipeLogic)
+                .addWorkingStatusLine()
                 .addProgressLineOnlyPercent(recipeLogic.getProgressPercent());
     }
 

@@ -7,7 +7,6 @@ import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -56,7 +55,7 @@ public class AlchemyCauldron extends SimpleManaMachine implements IHeatContainer
     public GTRecipe doModifyRecipe(RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         int temperature = recipe.data.getInt(GTORecipeDataKeys.TEMPERATURE);
         if (temperature > 0 && temperature > heatContainer.getTemperature()) {
-            IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.MODIFIER, temperature, (long) heatContainer.getTemperature(), null);
+            IdleReason.INSUFFICIENT_TEMPERATURE.setReason(this, temperature, (long) heatContainer.getTemperature());
             return null;
         }
         boolean param = false;
@@ -77,7 +76,7 @@ public class AlchemyCauldron extends SimpleManaMachine implements IHeatContainer
         if (super.handleTickRecipe(recipe)) {
             if (getOffsetTimer() % 20 == 0) {
                 if (heatContainer.removeHeatUnrestricted(1, false) == 1) return true;
-                IdleReason.HEAT_SHORT.report(this, 1, heatContainer.currentHeat);
+                IdleReason.HEAT_SHORT.setReason(this, 1, heatContainer.currentHeat);
                 return false;
             }
             return true;

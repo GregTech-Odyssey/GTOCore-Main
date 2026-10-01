@@ -62,9 +62,12 @@ public final class BoilWaterMachine extends SimpleNoEnergyMachine implements IHe
     @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
         if (super.handleTickRecipe(recipe)) {
-            if (getOffsetTimer() % 10 != 0 || heatContainer.removeHeatUnrestricted(1, false) == 1) return true;
-            IdleReason.HEAT_SHORT.report(this, 1, heatContainer.getCurrentHeat());
-            return false;
+            if (getOffsetTimer() % 10 == 0) {
+                if (heatContainer.removeHeatUnrestricted(1, false) == 1) return true;
+                IdleReason.HEAT_SHORT.setReason(this, 1, heatContainer.getCurrentHeat());
+                return false;
+            }
+            return true;
         }
         return false;
     }
@@ -72,7 +75,7 @@ public final class BoilWaterMachine extends SimpleNoEnergyMachine implements IHe
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (heatContainer.getTemperature() < 360) {
-            IdleReason.INSUFFICIENT_TEMPERATURE.report(this, 360, (long) heatContainer.getTemperature());
+            setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE, 360, (long) heatContainer.getTemperature());
             return null;
         }
         return getRecipeBuilder().duration(20).inputFluids(Fluids.WATER, 6).outputFluids(GTMaterials.Steam, (int) (960 * heatContainer.getTemperature() / 600)).build();

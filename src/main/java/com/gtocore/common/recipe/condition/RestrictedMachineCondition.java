@@ -3,13 +3,9 @@ package com.gtocore.common.recipe.condition;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
-import com.gregtechceu.gtceu.api.machine.issue.IssueType;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
@@ -43,16 +39,6 @@ public final class RestrictedMachineCondition extends RecipeCondition {
         }
         MachineDefinition machineDefinition = definition;
         return Component.translatable("gtocore.recipe.restricted_machine", machineDefinition == null ? "null" : Component.translatable(machineDefinition.getDescriptionId()));
-    }
-
-    @Override
-    public IssueType getIssueType() {
-        return GTIssues.NOT_APPLICABLE;
-    }
-
-    @Override
-    public void reportFailure(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe, int index) {
-        holder.reportIssue(GTIssues.NOT_APPLICABLE, IssueStage.CONDITION, IO.NONE, null, index, 0, 0, recipe);
     }
 
     @Override

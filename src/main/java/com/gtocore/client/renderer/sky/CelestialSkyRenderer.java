@@ -65,7 +65,8 @@ public final class CelestialSkyRenderer {
     @Nullable
     private static CelestialBody observer(ClientLevel level) {
         var dimension = Dimension.getIncludingOrbits(level.dimension());
-        return dimension != null ? dimension.getBody() : null;
+        var body = dimension != null ? dimension.getBody() : null;
+        return body != null && !body.isStar() ? body : null;
     }
 
     private static boolean inOrbit(ClientLevel level) {
@@ -115,7 +116,7 @@ public final class CelestialSkyRenderer {
             count = put(count, null, VANILLA_MOON_HALF, 0, 180, 0, 0);
         }
         for (var body : CelestialBody.all()) {
-            if (body == observer || body.getGalaxy() != galaxy || !visibleFrom(observer, body, vanillaSky)) continue;
+            if (body == observer || body.isStar() || body.getGalaxy() != galaxy || !visibleFrom(observer, body, vanillaSky)) continue;
             CelestialOrbits.position(seed, body, ticks, TARGET);
             double dx = TARGET[0] - OBSERVER[0], dy = TARGET[1] - OBSERVER[1], dz = TARGET[2] - OBSERVER[2];
             double horizontal = Math.hypot(dx, dy);

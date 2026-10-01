@@ -14,14 +14,9 @@ import com.gtolib.api.machine.trait.IFluidDrillLogic;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +30,7 @@ import static com.gregtechceu.gtceu.api.GTValues.VA;
 import static com.gregtechceu.gtceu.common.data.GTItems.PROGRAMMED_CIRCUIT;
 import static net.minecraft.network.chat.Component.translatable;
 
-public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine implements IFluidDrillLogic, ICustomRecipeLogicHolder, IIssueProvider {
+public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine implements IFluidDrillLogic, ICustomRecipeLogicHolder {
 
     private List<FluidStack> fluidStacks;
     private DrillingControlCenterMachine cache;
@@ -84,8 +79,7 @@ public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (fluidStacks == null) {
-            if (machineStorage.updateEmpty()) IdleReason.DIMENSION_DATA_MISSING.report(this);
-            else IdleReason.NO_BEDROCK_FLUIDS.report(this);
+            (isEmpty() ? IdleReason.DIMENSION_DATA_MISSING : IdleReason.NO_BEDROCK_FLUIDS).setReason(this);
             return null;
         }
         if (getOverclockVoltage() > VA[GTValues.LuV] && !isEmpty()) {
@@ -100,18 +94,11 @@ public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine 
                 builder.outputFluids(fluidStack);
                 return builder.build();
             }
-            IdleReason.SET_CIRCUIT.report(this);
-        } else if (!machineStorage.updateEmpty()) {
-            reportIssue(GTIssues.LOW_VOLTAGE, null, IO.IN, EURecipeInfo.INSTANCE, -1, GTValues.ZPM, getTier(), null);
+            IdleReason.SET_CIRCUIT.setReason(this);
+        } else if (!isEmpty()) {
+            IdleReason.VOLTAGE_TIER_NOT_SATISFIES.setReason(this, GTValues.VN[GTValues.ZPM], GTValues.VN[getTier()]);
         }
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed() || fluidStacks != null) return;
-        if (machineStorage.updateEmpty()) IdleReason.DIMENSION_DATA_MISSING.collect(sink);
-        else IdleReason.NO_BEDROCK_FLUIDS.collect(sink);
     }
 
     @Override

@@ -5,11 +5,10 @@ import com.gtocore.data.IdleReason;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -58,9 +57,9 @@ public final class ThermalPowerPumpMachine extends NoEnergyMultiblockMachine imp
             if (production > 0) {
                 return getRecipeBuilder().duration(20).inputFluids(STEAM, production).outputFluids(Fluids.WATER, production).build();
             }
-            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, 0, null);
+            setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
         } else {
-            IdleReason.BIOME_UNSUITABLE.report(this);
+            IdleReason.BIOME_UNSUITABLE.setReason(this);
         }
         return null;
     }

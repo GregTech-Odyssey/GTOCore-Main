@@ -1,24 +1,18 @@
 package com.gtocore.common.recipe.condition;
 
-import com.gtocore.data.IdleReason;
-
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IGravityPartMachine;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
-import com.gregtechceu.gtceu.api.machine.issue.IssueType;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.network.chat.Component;
 
 import earth.terrarium.adastra.api.planets.PlanetApi;
-import org.jetbrains.annotations.Nullable;
 
 public final class GravityCondition extends RecipeCondition {
 
@@ -31,34 +25,6 @@ public final class GravityCondition extends RecipeCondition {
     @Override
     public Component getTooltips() {
         return Component.translatable("gtocore.condition." + (zero ? "zero_" : "") + "gravity");
-    }
-
-    @Override
-    public IssueType getIssueType() {
-        return IdleReason.GRAVITY.type();
-    }
-
-    @Override
-    public void reportFailure(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe, int index) {
-        holder.reportIssue(IdleReason.GRAVITY.type(), IssueStage.CONDITION, IO.NONE, null, index, zero ? 0 : 100, -1, recipe);
-    }
-
-    @Override
-    public @Nullable Component describeCurrent(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
-        int gravity = currentGravity(holder);
-        if (gravity < 0) return Component.translatable("gtocore.issue.current.no_gravity_hatch");
-        return Component.translatable("gtocore.issue.current.gravity", gravity);
-    }
-
-    private static int currentGravity(IRecipeHandlerHolder holder) {
-        if (holder instanceof MultiblockControllerMachine controllerMachine) {
-            for (IMultiPart part : controllerMachine.getParts()) {
-                if (part instanceof IGravityPartMachine gravityPart) return gravityPart.getCurrentGravity();
-            }
-        }
-        if (holder.self().getLevel().dimension() == GTODimensions.SOLAR_SURFACE) return 100;
-        var planet = PlanetApi.API.getPlanet(holder.self().getLevel());
-        return planet != null && planet.isSpace() ? 0 : -1;
     }
 
     @Override

@@ -13,9 +13,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Assembly;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
@@ -52,7 +49,7 @@ import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Steam;
 
 @DataGeneratorScanned
-public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine implements IExplosionMachine, IDisplayUIMachine, IEnhancedRecipeLogicMachine, ICustomRecipeLogicHolder, IIssueProvider {
+public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine implements IExplosionMachine, IDisplayUIMachine, IEnhancedRecipeLogicMachine, ICustomRecipeLogicHolder {
 
     @RegisterLanguage(cn = "左侧宽度", en = "Left Width")
     private static final String LEFT_NAME = "gtocore.multiblock.large_steam_solar_boiler.left";
@@ -170,7 +167,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
     private boolean isAppropriateDimensionAndTime(Level world) {
         if (GTODimensions.isVoid(world.dimension())) return true;
         if (!world.isDay()) {
-            IdleReason.DAYTIME_ONLY.report(this);
+            IdleReason.DAYTIME_ONLY.setReason(this);
             return false;
         }
         return true;
@@ -190,7 +187,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
 
         if (waterAmount <= 0 || steamAmount <= 0) return null;
         if (!matchFluid(Fluids.WATER, waterAmount)) {
-            IdleReason.WATER_SHORT.report(this, waterAmount, -1);
+            IdleReason.WATER_SHORT.setReason(this, waterAmount, -1);
             doExplosion(2);
             return null;
         }
@@ -228,17 +225,9 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
             if (sunlit > 0) {
                 return createNextRecipe();
             }
-            reportIssue(GTIssues.NO_SUNLIGHT);
+            IdleReason.NO_SUNLIGHT.setReason(this);
         }
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        Level level = getLevel();
-        if (level == null || !isFormed()) return;
-        if (!GTODimensions.isVoid(level.dimension()) && !level.isDay()) IdleReason.DAYTIME_ONLY.collect(sink);
-        else if (sunlit <= 0) sink.accept(GTIssues.NO_SUNLIGHT);
     }
 
     @Override

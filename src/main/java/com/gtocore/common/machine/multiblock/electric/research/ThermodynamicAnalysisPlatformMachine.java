@@ -102,9 +102,8 @@ public class ThermodynamicAnalysisPlatformMachine extends ElectricMultiblockMach
         if (highTempInterface == null || lowTempInterface == null || dataHolder == null) {
             return null;
         }
-        double difference = getAbsTempDifference();
-        if (difference > 10) {
-            IdleReason.THERMAL_ZONE_TEMP_DIFFERENCE.report(this, 10, (long) Math.ceil(difference));
+        if (getAbsTempDifference() > 10) {
+            IdleReason.THERMAL_ZONE_TEMP_DIFFERENCE.setReason(this, 10, (long) Math.ceil(getAbsTempDifference()));
             return null;
         }
         return RecipeBuilder.ofRaw().duration(600).EUt(VA[ZPM]).build();

@@ -25,8 +25,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -58,7 +56,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @DataGeneratorScanned
-public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder, IMachineSubWindows, IIssueProvider {
+public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder, IMachineSubWindows {
 
     private static final String WINDOW_OVERVIEW = "overview";
     public static final int REQUIRED_TIER = GTValues.UV;
@@ -299,14 +297,9 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
         if (getTier() >= REQUIRED_TIER) {
             return getRecipeBuilder().duration(CYCLE_TICKS).CWUt((int) computationDemand(getTier(), exCWUt())).EUt(GTValues.VA[getTier()]).build();
         } else {
-            IdleReason.VOLTAGE_TIER_NOT_SATISFIES.report(this, REQUIRED_TIER, getTier());
+            setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES, GTValues.VN[REQUIRED_TIER], GTValues.VN[getTier()]);
         }
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (isFormed() && getTier() < REQUIRED_TIER) IdleReason.VOLTAGE_TIER_NOT_SATISFIES.collect(sink, REQUIRED_TIER, getTier());
     }
 
     @Override

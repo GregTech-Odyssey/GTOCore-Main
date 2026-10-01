@@ -19,11 +19,10 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
@@ -306,7 +305,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
                 if (data != null) {
                     var casingTier = getCasingTier(MACHINING_CONTROL_MODULE_TIER);
                     if (casingTier < data.tier() && casingTier < 3) {
-                        IdleReason.TISSUE_TIER.report(this, Math.min(3, data.tier()), casingTier);
+                        IdleReason.TISSUE_TIER.setReason(this, Math.min(3, data.tier()), casingTier);
                         return false;
                     }
                     int amount1 = (int) Math.min(64, amount);
@@ -337,16 +336,16 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
         }
         var tissueData = TISSUE_MATERIALS_TIER.get(tissue);
         if (tissueData == null) {
-            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, ItemRecipeInfo.INSTANCE, -1, -1, -1, null);
+            setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
             return null;
         }
         var mediumTier = BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.get(mediumMaterial);
         if (mediumTier == null) {
-            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, null);
+            setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
             return null;
         }
         if (mediumTier.tier < tissueData.tier) {
-            IdleReason.MEDIUM_TIER.report(this, tissueData.tier(), mediumTier.tier);
+            IdleReason.MEDIUM_TIER.setReason(this, tissueData.tier(), mediumTier.tier);
             return null;
         }
         var builder = RecipeBuilder.ofRaw().duration(20);

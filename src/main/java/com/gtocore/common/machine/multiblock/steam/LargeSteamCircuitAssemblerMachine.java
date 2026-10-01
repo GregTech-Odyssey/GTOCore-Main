@@ -8,9 +8,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -43,7 +40,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblockMachine implements IIssueProvider {
+public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblockMachine {
 
     @SaveToDisk(defaultValue = "true")
     private boolean isMultiMode = true;
@@ -69,9 +66,8 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
     @Nullable
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        int need = GTORules.STEAM_CIRCUIT_ENGRAVING.get();
-        if (count < need) {
-            IdleReason.CIRCUIT_ENGRAVING.report(this, IssueStage.MODIFIER, need, count, recipe.definition);
+        if (count < GTORules.STEAM_CIRCUIT_ENGRAVING.get()) {
+            IdleReason.CIRCUIT_ENGRAVING.setReason(this, GTORules.STEAM_CIRCUIT_ENGRAVING.get(), count);
             return null;
         }
         var content = recipe.itemOutputs.getFirst();
@@ -88,14 +84,8 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
                 return super.getRealRecipe(unit, recipe);
             }
         }
-        IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, recipe.definition);
+        IdleReason.NOT_APPLICABLE.setReason(this);
         return null;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        int need = GTORules.STEAM_CIRCUIT_ENGRAVING.get();
-        if (count < need) IdleReason.CIRCUIT_ENGRAVING.collect(sink, need, count);
     }
 
     @RegisterLanguage(cn = "增产模式 : ", en = "Is Multiply Mode Enabled : ")

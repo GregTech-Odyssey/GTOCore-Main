@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -69,10 +68,6 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     @Getter
     private boolean dirty = false;
-    @Nullable
-    private GTRecipeDefinition cycleRecipe;
-    private long cycleEUt;
-    private int cycleShares;
 
     @Override
     public void markDirty(boolean dirty) {
@@ -252,8 +247,8 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (!isInSpace()) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.report(this);
+        if (!PlanetApi.API.isSpace(getLevel())) {
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
             return null;
         }
         if (dirty) {
@@ -264,30 +259,6 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
             if (machine instanceof IRecipeLogicMachine r) r.getRecipeLogic().updateTickSubscription();
         }
         return buildCycleRecipe();
-    }
-
-    @Override
-    public void collectStationIssues(IssueSink sink) {
-        if (getLevel() != null && !isInSpace()) IdleReason.SPACE_STATION_NOT_IN_SPACE.collect(sink);
-    }
-
-    @Override
-    public GTRecipeDefinition getDiagnosisRecipe() {
-        return cycleRecipe();
-    }
-
-    GTRecipeDefinition cycleRecipe() {
-        long eut = getEUt();
-        for (ILargeSpaceStationMachine machine : subMachinesFlat) {
-            if (machine.isFormed()) eut += machine.getEUt();
-        }
-        int shares = subMachinesFlat.size() + 1;
-        if (cycleRecipe == null || eut != cycleEUt || shares != cycleShares) {
-            cycleEUt = eut;
-            cycleShares = shares;
-            cycleRecipe = buildCycleRecipe();
-        }
-        return cycleRecipe;
     }
 
     @Override

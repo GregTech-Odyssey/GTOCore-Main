@@ -4,20 +4,17 @@ import com.gtocore.common.machine.multiblock.part.LargeSteamHatchPartMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.steam.SteamEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.CleanroomMachine;
@@ -113,8 +110,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long eut = recipe.getInputEUt();
-        long max = this.eut << euMultiplier;
-        if (eut <= max) {
+        if (eut <= (this.eut << euMultiplier)) {
             recipe = ParallelLogic.accurateParallel(this, unit, recipe, maxParallels);
             if (recipe == null) return null;
             recipe.duration = (int) (recipe.duration * durationMultiplier);
@@ -125,7 +121,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
             }
             return recipe;
         }
-        reportIssue(GTIssues.LOW_POWER, IssueStage.MODIFIER, IO.IN, EURecipeInfo.INSTANCE, -1, eut, max, recipe.definition);
+        IdleReason.LOW_POWER.setReason(this, eut, this.eut << euMultiplier);
         return null;
     }
 

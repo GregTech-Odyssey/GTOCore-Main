@@ -10,9 +10,6 @@ import com.gtolib.api.machine.multiblock.CoilMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -32,7 +29,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @DataGeneratorScanned
-public final class DrawingTowerMachine extends CoilMultiblockMachine implements IIssueProvider {
+public final class DrawingTowerMachine extends CoilMultiblockMachine {
 
     @RegisterLanguage(cn = "拉丝段层数", en = "Drawing Layers")
     public static final String LAYERS_NAME = "gtocore.multiblock.drawing_tower.layers";
@@ -94,7 +91,7 @@ public final class DrawingTowerMachine extends CoilMultiblockMachine implements 
             recipe.duration = (int) (recipe.duration * reduction);
             return ParallelLogic.accurateParallel(this, unit, recipe, parallels);
         }
-        IdleReason.SPOOL.report(this, IssueStage.MODIFIER, recipe.data.getInt(GTORecipeDataKeys.SPOOL), tier, recipe.definition);
+        IdleReason.SPOOL.setReason(this);
         return null;
     }
 
@@ -105,12 +102,6 @@ public final class DrawingTowerMachine extends CoilMultiblockMachine implements 
         textList.add(Component.translatable("gtocore.machine.height", height));
         textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", reduction));
         textList.add(Component.translatable("gtocore.machine.parallel", parallels));
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        var hatch = spoolHatchPartMachine;
-        if (hatch != null && hatch.getInventory().storage.getStackInSlot(0).isEmpty()) IdleReason.SPOOL.collect(sink);
     }
 
     @Override

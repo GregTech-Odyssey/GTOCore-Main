@@ -3,16 +3,14 @@ package com.gtocore.common.machine.multiblock.electric.research;
 import com.gtocore.common.machine.multiblock.part.research.DataGenerateHolderMachine;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -83,14 +81,14 @@ public class SyntheticDataAssemblyPlantMachine extends ElectricMultiblockMachine
                 .setWorkingStatusKeys("gtceu.multiblock.idling", "gtceu.multiblock.work_paused", "gtocore.machine.assembling")
                 .addEnergyUsageLine(energyContainer)
                 .addEnergyTierLine(tier)
-                .addIssueLines(recipeLogic)
+                .addWorkingStatusLine()
                 .addProgressLineOnlyPercent(recipeLogic.getProgressPercent());
     }
 
     @Override
     public boolean matchRecipeOutput(GTRecipe recipe) {
         if (!objectHolder.getDataItem(false).hasTag()) return true;
-        reportIssue(GTIssues.OUTPUT_FULL, IssueStage.OUTPUT, IO.OUT, ItemRecipeInfo.INSTANCE, -1, 0, 0, recipe.definition);
+        IdleReason.INSUFFICIENT_OUT.setReason(this);
         return false;
     }
 

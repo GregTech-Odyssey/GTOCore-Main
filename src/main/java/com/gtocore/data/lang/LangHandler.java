@@ -95,16 +95,9 @@ public final class LangHandler {
         TechTreeManager.TREE_LANG.forEach(LangHandler::addCNEN);
         GTOTickTimeMonitors.LANG.forEach(LangHandler::addCNEN);
         for (var reason : IdleReason.values()) {
-            for (var lang : reason.getLang()) addCNEN(lang.key(), lang.cn(), lang.en());
+            if (reason.getEn() != null) addCNEN(reason.getKey(), reason.getCn(), reason.getEn());
+            if (reason.getDescEn() != null) addCNEN(reason.getDescKey(), reason.getDescCn(), reason.getDescEn());
         }
-        addCNEN("gtocore.issue.current.vacuum", "当前真空等级：%s", "Current vacuum tier: %s");
-        addCNEN("gtocore.issue.current.gravity", "当前重力：%s%%", "Current gravity: %s%%");
-        addCNEN("gtocore.issue.current.no_gravity_hatch", "未安装重力控制维护仓", "No gravity control hatch installed");
-        addCNEN("gtocore.issue.current.temperature", "当前温度：%s K", "Current temperature: %s K");
-        addCNEN("gtocore.issue.current.beam", "当前最佳光束平均强度：%s", "Best matching beam average intensity: %s");
-        addCNEN("gtocore.issue.current.no_beam", "未接收到符合要求的光束", "No matching beam received");
-        addCNEN("gtocore.issue.current.galaxy", "当前星系：%s", "Current galaxy: %s");
-        addCNEN("gtocore.issue.current.tech_node_locked", "未解锁科技节点：%s", "Tech node not unlocked: %s");
 
         for (var l : ExtendedLangs.values()) {
             addCN(l.getTranslationKey(), l.getChineseText());

@@ -13,7 +13,6 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -114,27 +113,16 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
     @Override
     default GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (!PlanetApi.API.isSpace(getLevel())) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.report(this);
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
             return null;
         }
         if (getRoot() == null || !getRoot().isWorkspaceReady()) {
-            reportWorkspaceNotReady(this);
+            setIdleReason(this::getWorkspaceNotReadyReason);
             return null;
         }
 
         return ((IEnhancedRecipeLogicMachine) self()).getRecipeBuilder().duration(200)
                 .build();
-    }
-
-    @Override
-    default void collectStationIssues(IssueSink sink) {
-        var level = getLevel();
-        if (level == null) return;
-        if (!PlanetApi.API.isSpace(level)) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.collect(sink);
-        } else if (getRoot() == null || !getRoot().isWorkspaceReady()) {
-            collectWorkspaceIssues(sink);
-        }
     }
 
     default void customText(@NotNull List<Component> list) {

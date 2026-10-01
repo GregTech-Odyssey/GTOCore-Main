@@ -8,9 +8,6 @@ import com.gtolib.api.machine.multiblock.CoilCrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -31,7 +28,7 @@ import vazkii.botania.client.core.proxy.ClientProxy;
 
 import java.util.List;
 
-public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCrossRecipeMultiblockMachine implements IIssueProvider {
+public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCrossRecipeMultiblockMachine {
 
     public DimensionallyTranscendentPlasmaForgeMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true, false, false, MachineUtils::getHatchParallel);
@@ -46,16 +43,12 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (recipe.definition.recipeType == GTORecipeTypes.STELLAR_FORGE_RECIPES) {
             if (getCoilType() != CoilType.URUIUM) {
-                IdleReason.COIL_NOT_USABLE.report(this, IssueStage.MODIFIER, recipe.definition);
+                IdleReason.COIL_NOT_USABLE.setReason(this);
                 return null;
             }
-        } else {
-            int need = recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP);
-            int have = getTemperature();
-            if (need > have) {
-                IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.MODIFIER, need, have, recipe.definition);
-                return null;
-            }
+        } else if (recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP) > getTemperature()) {
+            setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE, recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP), getTemperature());
+            return null;
         }
         return super.getRealRecipe(unit, recipe);
     }
@@ -63,11 +56,9 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
     @Override
     public void customText(@NotNull List<Component> textList) {
         if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.literal(FormattingUtil.formatNumbers(getTemperature()) + "K").withStyle(ChatFormatting.BLUE)));
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (getRecipeType() == GTORecipeTypes.STELLAR_FORGE_RECIPES && getCoilType() != CoilType.URUIUM) IdleReason.COIL_NOT_USABLE.collect(sink);
+        if (getRecipeType() == GTORecipeTypes.STELLAR_FORGE_RECIPES && getCoilType() != CoilType.URUIUM) {
+            textList.add(Component.translatable("gtocore.machine.dimensionally_transcendent_plasma_forge.coil").withStyle(ChatFormatting.RED));
+        }
     }
 
     @Override

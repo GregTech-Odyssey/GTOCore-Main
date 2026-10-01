@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -97,7 +96,7 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
             if (recipe == null) return null;
             return super.getRealRecipe(unit, recipe);
         }
-        IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.MODIFIER, recipe.definition);
+        IdleReason.MACHINE_STORAGE_EMPTY.setReason(this);
         return null;
     }
 

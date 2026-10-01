@@ -281,12 +281,12 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (getLevel() instanceof ServerLevel serverLevel) {
             if (getTier() < 1) {
-                IdleReason.VOLTAGE_TIER_NOT_SATISFIES.report(this, 1, getTier());
+                setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES, GTValues.VN[1], GTValues.VN[getTier()]);
                 return null;
             }
             int c = unit.getCircuit(false);
             if (c != 1 && c != 2) {
-                IdleReason.SET_CIRCUIT.report(this);
+                setIdleReason(IdleReason.SET_CIRCUIT);
                 return null;
             }
             Player player = getFakePlayer(serverLevel);

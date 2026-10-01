@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -99,11 +98,6 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         chance = Math.min(100, (int) (getStorageStack().getCount() * MATERIAL_MAP.get(material)));
     }
 
-    public static Component moduleName(long module) {
-        var definition = MODULE_MAP.get((int) module);
-        return definition == null ? Component.literal("—") : Component.translatable(definition.getDescriptionId());
-    }
-
     static void trimRecipe(GTRecipe recipe, int chance) {
         if (GTValues.RNG.nextInt(100) < chance) {
             recipe.itemInputs = RecipeHelper.trimLast(recipe.itemInputs, recipe.itemInputs.size() - 1);
@@ -113,16 +107,16 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
 
     @Override
     public GTRecipe fullModifyRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipeDefinition definition) {
-        int need = definition.data.getInt(GTORecipeDataKeys.MODULE);
-        if (module.contains(need)) {
+        if (module.contains(definition.data.getInt(GTORecipeDataKeys.MODULE))) {
             var recipe = super.fullModifyRecipe(unit, definition);
             if (recipe != null) {
                 trimRecipe(recipe, chance);
                 return recipe;
             }
-            return null;
+        } else {
+            var moduleDefinition = MODULE_MAP.get(definition.data.getInt(GTORecipeDataKeys.MODULE));
+            IdleReason.NANITES_MODULE_MISSING.setReason(this, moduleDefinition == null ? Component.literal("—") : Component.translatable(moduleDefinition.getDescriptionId()));
         }
-        IdleReason.NANITES_MODULE_MISSING.report(this, IssueStage.MODIFIER, need, 0, definition);
         return null;
     }
 

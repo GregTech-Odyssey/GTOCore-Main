@@ -7,12 +7,11 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
@@ -130,25 +129,25 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
         var config = ConfigHolder.INSTANCE.machines;
         if (config.orderedAssemblyLineItems) {
             if (!checkItemInputs(recipe)) {
-                IdleReason.ORDERED_ITEM.report(this, null, -1, -1, recipe.definition);
+                setIdleReason(IdleReason.ORDERED_ITEM);
                 return false;
             }
         } else {
             var items = RecipeHelper.copyContents(recipe.itemInputs, 1);
             if (!unit.handleRecipeItem(IO.IN, recipe, items, true)) {
-                reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, ItemRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+                setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
                 return false;
             }
         }
         if (config.orderedAssemblyLineFluids) {
             if (!checkFluidInputs(recipe)) {
-                IdleReason.ORDERED_FLUID.report(this, null, -1, -1, recipe.definition);
+                setIdleReason(IdleReason.ORDERED_FLUID);
                 return false;
             }
         } else {
             var fluids = RecipeHelper.copyContents(recipe.fluidInputs, 1);
             if (unit.handleRecipeFluid(IO.IN, recipe, fluids, true)) return true;
-            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+            setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
             return false;
         }
         return true;
@@ -160,23 +159,24 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
         var fluids = RecipeHelper.copyAndRoll(recipe, recipe.fluidInputs);
         if (ConfigHolder.INSTANCE.machines.orderedAssemblyLineItems) {
             if (!consumeOrderedItemInputs(items)) {
-                IdleReason.ORDERED_ITEM.report(this, IssueStage.SETUP, -1, -1, recipe.definition);
+                setIdleReason(IdleReason.ORDERED_ITEM);
                 return false;
             }
         } else {
             if (!unit.handleRecipeItem(IO.IN, recipe, items, false)) {
-                reportIssue(GTIssues.INPUT_SHORT, IssueStage.SETUP, IO.IN, ItemRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+                setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
                 return false;
             }
         }
         if (ConfigHolder.INSTANCE.machines.orderedAssemblyLineFluids) {
             if (consumeOrderedFluidInputs(fluids)) return true;
-            IdleReason.ORDERED_FLUID.report(this, IssueStage.SETUP, -1, -1, recipe.definition);
+            setIdleReason(IdleReason.ORDERED_FLUID);
+            return false;
+        } else {
+            if (unit.handleRecipeFluid(IO.IN, recipe, fluids, false)) return true;
+            setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
             return false;
         }
-        if (unit.handleRecipeFluid(IO.IN, recipe, fluids, false)) return true;
-        reportIssue(GTIssues.INPUT_SHORT, IssueStage.SETUP, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
-        return false;
     }
 
     private boolean consumeOrderedItemInputs(List<Content<ItemIngredient>> items) {

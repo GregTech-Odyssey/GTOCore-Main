@@ -1,15 +1,17 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
-import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
-import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
+import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -23,11 +25,11 @@ import com.gregtechceu.gtceu.uipro.flow.FlowChart;
 import com.gregtechceu.gtceu.uipro.flow.FlowNode;
 import com.gregtechceu.gtceu.uipro.flow.FlowParts;
 import com.gregtechceu.gtceu.uipro.flow.FlowState;
-import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueLine;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueView;
+import com.gregtechceu.gtceu.uiwidgets.flow.RecipeDiagnoser;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeIssue;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -40,6 +42,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -151,6 +154,8 @@ public final class HarmonyFlowPage {
     private static final String LANG_NO_OWNER_DESC = "gtocore.machine.eye_of_harmony.flow.no_owner.desc";
     @RegisterLanguage(cn = "储能不足", en = "Insufficient")
     private static final String LANG_EU_SHORT = "gtocore.machine.eye_of_harmony.flow.eu_short";
+    @RegisterLanguage(cn = "电网储能不高于当前电路下的最低启动耗能，任何配方都无法启动。", en = "The grid holds no more than the minimum startup energy for the current circuit; no recipe can start.")
+    private static final String LANG_EU_SHORT_DESC = "gtocore.machine.eye_of_harmony.flow.eu_short.desc";
     @RegisterLanguage(cn = "电网储能高于最低启动耗能；高等级配方倍率更大，所需能量更多。", en = "The grid holds more than the minimum startup energy; higher-tier recipes use a larger multiplier and need more.")
     private static final String LANG_EU_READY_DESC = "gtocore.machine.eye_of_harmony.flow.eu_ready.desc";
     @RegisterLanguage(cn = "配方启动时，一次性从所有者的无线电网扣除启动耗能；运行期间不再耗电。", en = "When a recipe starts, the startup energy is taken from the owner's wireless grid at once; nothing more is drawn while it runs.")
@@ -164,10 +169,22 @@ public final class HarmonyFlowPage {
     @RegisterLanguage(cn = "当前电路下的最低启动耗能（配方倍率 1）：%s EU", en = "Minimum startup energy for the current circuit (multiplier 1): %s EU")
     private static final String LANG_EU_CURRENT = "gtocore.machine.eye_of_harmony.flow.eu_current";
 
+    @RegisterLanguage(cn = "氢不足", en = "Hydrogen Short")
+    private static final String LANG_RECIPE_H_SHORT = "gtocore.machine.eye_of_harmony.flow.recipe_h_short";
+    @RegisterLanguage(cn = "氦不足", en = "Helium Short")
+    private static final String LANG_RECIPE_HE_SHORT = "gtocore.machine.eye_of_harmony.flow.recipe_he_short";
+    @RegisterLanguage(cn = "电网不足", en = "Grid Short")
+    private static final String LANG_RECIPE_EU_SHORT = "gtocore.machine.eye_of_harmony.flow.recipe_eu_short";
     @RegisterLanguage(cn = "启动条件：机器有所有者，且已设置编程电路；", en = "Start conditions: the machine has an owner and a programmed circuit is set;")
     private static final String LANG_RECIPE_RULE_START = "gtocore.machine.eye_of_harmony.flow.recipe_rule_start";
     @RegisterLanguage(cn = "氢、氦储量各不低于 1,024 KB，无线电网储能大于启动耗能。", en = "hydrogen and helium reserves each hold at least 1,024 KB, and the wireless grid holds more than the startup energy.")
     private static final String LANG_RECIPE_RULE_START_2 = "gtocore.machine.eye_of_harmony.flow.recipe_rule_start_2";
+    @RegisterLanguage(cn = "配方等级高于模拟等级，需先提升模拟等级。", en = "The recipe tier is above the simulation tier; raise the simulation tier first.")
+    private static final String LANG_RECIPE_TIER_DESC = "gtocore.machine.eye_of_harmony.flow.recipe_tier.desc";
+    @RegisterLanguage(cn = "氢储量低于 1,024 KB，配方无法启动。", en = "The hydrogen reserve is below 1,024 KB; no recipe can start.")
+    private static final String LANG_RECIPE_H_SHORT_DESC = "gtocore.machine.eye_of_harmony.flow.recipe_h_short.desc";
+    @RegisterLanguage(cn = "氦储量低于 1,024 KB，配方无法启动。", en = "The helium reserve is below 1,024 KB; no recipe can start.")
+    private static final String LANG_RECIPE_HE_SHORT_DESC = "gtocore.machine.eye_of_harmony.flow.recipe_he_short.desc";
     @RegisterLanguage(cn = "启动时扣除氢、氦各 1,024 KB，并从无线电网扣除启动耗能。", en = "At start, 1,024 KB each of hydrogen and helium are consumed and the startup energy is taken from the wireless grid.")
     private static final String LANG_RECIPE_RULE_COST = "gtocore.machine.eye_of_harmony.flow.recipe_rule_cost";
     @RegisterLanguage(cn = "只能运行等级不高于模拟等级的配方。", en = "Only recipes whose tier does not exceed the simulation tier can run.")
@@ -297,15 +314,21 @@ public final class HarmonyFlowPage {
         return component.copy().withStyle(ChatFormatting.GRAY);
     }
 
-    private static IssueView labeled(IssueView view, Component label) {
-        return new IssueView(view.issue(), label, view.stateOverride(), view.source());
+    private static boolean voidsAllOutputs(IVoidable machine, @Nullable GTRecipe recipe) {
+        boolean items = recipe == null || !recipe.itemOutputs.isEmpty();
+        boolean fluids = recipe == null || !recipe.fluidOutputs.isEmpty();
+        return (!items || machine.canVoidRecipeOutputs(ItemRecipeInfo.INSTANCE)) && (!fluids || machine.canVoidRecipeOutputs(FluidRecipeInfo.INSTANCE));
+    }
+
+    private static Component sentence(IssueView view, @Nullable String description) {
+        var key = description != null ? description : view.issue().descriptionKey();
+        return Component.translatable(key).withStyle(RecipeDiagnoser.style(view.issue()));
     }
 
     private static final class Reserve {
 
         private final HarmonyMachine machine;
         private final boolean hydrogen;
-        private final IdleReason shortage;
         private final Component fluidName;
         private final Status status;
         private IssueView view = RecipeIssue.OFFLINE.view();
@@ -318,7 +341,6 @@ public final class HarmonyFlowPage {
         private Reserve(HarmonyMachine machine, boolean hydrogen, Status status) {
             this.machine = machine;
             this.hydrogen = hydrogen;
-            this.shortage = hydrogen ? IdleReason.HYDROGEN_RESERVE_SHORT : IdleReason.HELIUM_RESERVE_SHORT;
             this.status = status;
             this.fluidName = new FluidStack(hydrogen ? HarmonyMachine.HYDROGEN : HarmonyMachine.HELIUM, 1).getDisplayName();
         }
@@ -328,38 +350,38 @@ public final class HarmonyFlowPage {
         }
 
         IssueView view() {
-            status.update();
+            status.refresh();
             return view;
         }
 
         FlowState state() {
-            status.update();
+            status.refresh();
             return view.state();
         }
 
         List<Component> detail() {
-            status.update();
+            status.refresh();
             return detail;
         }
 
         ProgressBar.Progress progress() {
-            status.update();
+            status.refresh();
             return progress;
         }
 
         Component runsText() {
-            status.update();
+            status.refresh();
             return runsText;
         }
 
         Level runsLevel() {
-            status.update();
+            status.refresh();
             return runsLevel;
         }
 
-        private void refresh(boolean formed, DiagnosisResult result) {
+        private void refresh(boolean formed) {
             long amount = amount();
-            boolean enough = !result.has(shortage.type());
+            boolean enough = amount >= HarmonyMachine.FLUID_PER_RUN;
             String description;
             if (!formed) {
                 view = RecipeIssue.OFFLINE.view();
@@ -368,7 +390,7 @@ public final class HarmonyFlowPage {
                 view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_FLUID_OK));
                 description = LANG_FLUID_OK_DESC;
             } else {
-                view = labeled(IssueView.of(result, shortage.type(), RecipeIssue.INPUT_SHORT.view()), Component.translatable(LANG_FLUID_SHORT));
+                view = IssueView.of(RecipeIssue.INPUT_SHORT, Component.translatable(LANG_FLUID_SHORT));
                 description = LANG_FLUID_SHORT_DESC;
             }
             if (amount != shown) {
@@ -381,11 +403,11 @@ public final class HarmonyFlowPage {
                     gray(Component.translatable(LANG_FLUID_CURRENT, FormattingUtil.formatBuckets(amount))),
                     gray(Component.translatable(LANG_FLUID_RULE_DRAW, fluidName)),
                     gray(Component.translatable(LANG_FLUID_RULE_COST)),
-                    FlowIssueViews.sentence(view, description));
+                    sentence(view, description));
         }
     }
 
-    private static final class Status extends ThrottledStatus {
+    private static final class Status {
 
         private static final Component NONE = Component.literal("—");
 
@@ -393,6 +415,8 @@ public final class HarmonyFlowPage {
         private final Reserve hydrogen;
         private final Reserve helium;
 
+        private boolean refreshed;
+        private int refreshedAt;
         private boolean progressRefreshed;
         private int progressAt;
         private int shownProgress = -1, shownMaxProgress = -1;
@@ -427,177 +451,185 @@ public final class HarmonyFlowPage {
         private Component allowedText = NONE;
 
         private Status(HarmonyMachine machine) {
-            super(machine::getOffsetTimer, REFRESH_TICKS);
             this.machine = machine;
             this.hydrogen = new Reserve(machine, true, this);
             this.helium = new Reserve(machine, false, this);
         }
 
         IssueView inputView() {
-            update();
+            refresh();
             return inputView;
         }
 
         FlowState inputState() {
-            update();
+            refresh();
             return inputView.state();
         }
 
         List<Component> inputDetail() {
-            update();
+            refresh();
             return inputDetail;
         }
 
         Component inputUnitsText() {
-            update();
+            refresh();
             return inputUnitsText;
         }
 
         IssueView outputView() {
-            update();
+            refresh();
             return outputView;
         }
 
         FlowState outputState() {
-            update();
+            refresh();
             return outputView.state();
         }
 
         List<Component> outputDetail() {
-            update();
+            refresh();
             return outputDetail;
         }
 
         Component outputUnitsText() {
-            update();
+            refresh();
             return outputUnitsText;
         }
 
         IssueView overclockView() {
-            update();
+            refresh();
             return overclockView;
         }
 
         FlowState overclockState() {
-            update();
+            refresh();
             return overclockView.state();
         }
 
         List<Component> overclockDetail() {
-            update();
+            refresh();
             return overclockDetail;
         }
 
         Component circuitText() {
-            update();
+            refresh();
             return circuitText;
         }
 
         Component durationText() {
-            update();
+            refresh();
             return durationText;
         }
 
         Component energyFactorText() {
-            update();
+            refresh();
             return energyFactorText;
         }
 
         Component startupText() {
-            update();
+            refresh();
             return startupText;
         }
 
         IssueView recipeView() {
-            update();
+            refresh();
             return recipeView;
         }
 
         FlowState recipeState() {
-            update();
+            refresh();
             return recipeState;
         }
 
         List<Component> recipeDetail() {
-            update();
+            refresh();
             return recipeDetail;
         }
 
         ProgressBar.Progress progress() {
-            update();
+            refresh();
             return progress;
         }
 
         Component recipeTierText() {
-            update();
+            refresh();
             return recipeTierText;
         }
 
         Component runEnergyText() {
-            update();
+            refresh();
             return runEnergyText;
         }
 
         IssueView energyView() {
-            update();
+            refresh();
             return energyView;
         }
 
         FlowState energyState() {
-            update();
+            refresh();
             return energyView.state();
         }
 
         List<Component> energyDetail() {
-            update();
+            refresh();
             return energyDetail;
         }
 
         Component ownerText() {
-            update();
+            refresh();
             return ownerText;
         }
 
         Component storedText() {
-            update();
+            refresh();
             return storedText;
         }
 
         Level storedLevel() {
-            update();
+            refresh();
             return storedLevel;
         }
 
         IssueView tierView() {
-            update();
+            refresh();
             return tierView;
         }
 
         FlowState tierState() {
-            update();
+            refresh();
             return tierView.state();
         }
 
         List<Component> tierDetail() {
-            update();
+            refresh();
             return tierDetail;
         }
 
         ProgressBar.Progress advance() {
-            update();
+            refresh();
             return advance;
         }
 
         Component allowedText() {
-            update();
+            refresh();
             return allowedText;
         }
 
-        @Override
-        protected void onAccess(int now) {
-            if (progressRefreshed && now >= progressAt && now - progressAt < PROGRESS_TICKS) return;
-            progressRefreshed = true;
-            progressAt = now;
+        private void refresh() {
+            int now = machine.getOffsetTimer();
+            if (!progressRefreshed || now < progressAt || now - progressAt >= PROGRESS_TICKS) {
+                progressRefreshed = true;
+                progressAt = now;
+                refreshProgress();
+            }
+            if (refreshed && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) return;
+            refreshed = true;
+            refreshedAt = now;
+            refreshStates();
+        }
+
+        private void refreshProgress() {
             var logic = machine.getRecipeLogic();
             int value = 0, max = 0;
             if (logic.isActive() && logic.getMaxProgress() > 0) {
@@ -611,67 +643,66 @@ public final class HarmonyFlowPage {
             }
         }
 
-        @Override
-        protected void refresh(int now) {
+        private void refreshStates() {
             boolean formed = machine.isFormed();
             var logic = machine.getRecipeLogic();
             boolean working = logic.isWorking();
-            var result = MachineDiagnosis.of(machine);
             var running = logic.isActive() ? logic.getLastRecipe() : null;
-            var target = result.recipe();
-            boolean hasRecipe = running != null || target != null;
-            int recipeTier = running != null ? running.data.getInt(GTORecipeDataKeys.TIER) : target != null ? target.data.getInt(GTORecipeDataKeys.TIER) : 0;
+            int recipeTier = running != null ? running.data.getInt(GTORecipeDataKeys.TIER) : 0;
             int oc = machine.getOverclock();
-            boolean owned = machine.hasOwner();
+            boolean owned = machine.getUUID() != null;
             var container = owned ? machine.getWirelessEnergyContainer() : null;
             BigInteger stored = container != null ? container.getStorage() : BigInteger.ZERO;
             BigInteger minimum = machine.getStartupEnergy();
-            hydrogen.refresh(formed, result);
-            helium.refresh(formed, result);
-            refreshInput(formed, working || logic.isWaiting(), result);
-            refreshOutput(formed, working, result);
-            refreshOverclock(formed, oc, minimum, result);
-            refreshEnergy(formed, owned, oc, stored, minimum, result);
-            refreshRecipe(formed, working, hasRecipe, recipeTier, oc, result);
-            refreshTier(formed, working, working && recipeTier == machine.getTier(), result);
+            boolean energyEnough = container != null && oc > 0 && stored.compareTo(minimum) > 0;
+            hydrogen.refresh(formed);
+            helium.refresh(formed);
+            refreshInput(formed, working || logic.isWaiting());
+            refreshOutput(formed, working, working ? null : logic.getIdleReason());
+            refreshOverclock(formed, oc, minimum);
+            refreshEnergy(formed, owned, oc, stored, minimum, energyEnough);
+            refreshRecipe(formed, working, running != null, recipeTier, oc, owned, energyEnough, working ? null : logic.getIdleReason());
+            refreshTier(formed, working && recipeTier == machine.getTier());
         }
 
-        private void refreshInput(boolean formed, boolean active, DiagnosisResult result) {
+        private void refreshInput(boolean formed, boolean active) {
             int units = formed ? machine.getInputUnits().size() : 0;
-            IssueView problem = formed && units > 0 && !active ? FlowIssueViews.inputProblem(result) : null;
             if (!formed) inputView = RecipeIssue.OFFLINE.view();
             else if (units == 0) inputView = RecipeIssue.NO_INPUT_HATCH.view();
             else if (active) inputView = IssueView.of(RecipeIssue.RUNNING, Component.translatable(LANG_INPUT_LOADED));
-            else if (problem != null) inputView = problem;
             else inputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_INPUT_WAITING));
             inputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            inputDetail = List.of(Component.translatable(LANG_INPUT), gray(Component.translatable(LANG_INPUT_RULE)), FlowIssueViews.sentence(inputView, null));
+            inputDetail = List.of(Component.translatable(LANG_INPUT), gray(Component.translatable(LANG_INPUT_RULE)), sentence(inputView, null));
         }
 
-        private void refreshOutput(boolean formed, boolean working, DiagnosisResult result) {
+        private void refreshOutput(boolean formed, boolean working, @Nullable Component reason) {
             int units = formed ? machine.getOutputUnits().size() : 0;
+            boolean full = reason == IdleReason.OUTPUT_FULL.reason() || reason == IdleReason.INSUFFICIENT_OUT.reason();
+            boolean voiding = voidsAllOutputs(machine, machine.getRecipeLogic().getLastRecipe());
             String description = null;
-            if (!formed) {
-                outputView = RecipeIssue.OFFLINE.view();
-            } else {
-                var view = FlowIssueViews.output(result, machine, working, units);
-                outputView = view != null ? view : IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
-                if (outputView.issue() == RecipeIssue.OUTPUT_VOIDED && units == 0) description = LANG_OUTPUT_VOID_ALL_DESC;
-            }
+            if (!formed) outputView = RecipeIssue.OFFLINE.view();
+            else if (voiding && units == 0) {
+                outputView = RecipeIssue.OUTPUT_VOIDED.view();
+                description = LANG_OUTPUT_VOID_ALL_DESC;
+            } else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
+            else if (voiding) outputView = working ? RecipeIssue.OUTPUT_VOID_OVERFLOW_ACTIVE.view() : RecipeIssue.OUTPUT_VOID_OVERFLOW.view();
+            else if (working) outputView = RecipeIssue.OUTPUT_ACTIVE.view();
+            else if (full) outputView = RecipeIssue.OUTPUT_FULL.view();
+            else outputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
             outputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            outputDetail = List.of(Component.translatable(LANG_OUTPUT), FlowIssueViews.sentence(outputView, description));
+            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, description));
         }
 
-        private void refreshOverclock(boolean formed, int oc, BigInteger minimum, DiagnosisResult result) {
+        private void refreshOverclock(boolean formed, int oc, BigInteger minimum) {
             String description;
             if (!formed) {
                 overclockView = RecipeIssue.OFFLINE.view();
                 description = null;
-            } else if (oc <= 0) {
-                overclockView = labeled(IssueView.of(result, IdleReason.SET_CIRCUIT.type(), RecipeIssue.CONDITION.view()), Component.translatable(LANG_OC_NONE));
+            } else if (oc == 0) {
+                overclockView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_OC_NONE));
                 description = LANG_OC_NONE_DESC;
             } else {
-                var label = oc <= 1 ? Component.translatable(LANG_OC_ZERO) : Component.translatable(LANG_OC_COUNT, oc - 1);
+                var label = oc == 1 ? Component.translatable(LANG_OC_ZERO) : Component.translatable(LANG_OC_COUNT, oc - 1);
                 overclockView = IssueView.of(RecipeIssue.OK, label);
                 description = LANG_OC_SET_DESC;
             }
@@ -683,31 +714,30 @@ public final class HarmonyFlowPage {
             overclockDetail = List.of(Component.translatable(LANG_OVERCLOCK),
                     gray(Component.translatable(LANG_OC_RULE_CIRCUIT)),
                     gray(Component.translatable(LANG_OC_RULE_EFFECT)),
-                    FlowIssueViews.sentence(overclockView, description));
+                    sentence(overclockView, description));
         }
 
-        private void refreshEnergy(boolean formed, boolean owned, int oc, BigInteger stored, BigInteger minimum, DiagnosisResult result) {
+        private void refreshEnergy(boolean formed, boolean owned, int oc, BigInteger stored, BigInteger minimum, boolean enough) {
             String description;
-            boolean gridShort = result.has(IdleReason.HARMONY_GRID_SHORT.type());
             if (!formed) {
                 energyView = RecipeIssue.OFFLINE.view();
                 description = null;
-            } else if (result.has(IdleReason.NO_OWNER.type())) {
-                energyView = labeled(IssueView.of(result, IdleReason.NO_OWNER.type(), RecipeIssue.CONDITION.view()), Component.translatable(LANG_NO_OWNER));
+            } else if (!owned) {
+                energyView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_NO_OWNER));
                 description = LANG_NO_OWNER_DESC;
-            } else if (oc <= 0) {
+            } else if (oc == 0) {
                 energyView = RecipeIssue.IDLE.view();
                 description = LANG_OC_NONE_DESC;
-            } else if (gridShort) {
-                energyView = labeled(IssueView.of(result, IdleReason.HARMONY_GRID_SHORT.type(), RecipeIssue.LOW_POWER.view()), Component.translatable(LANG_EU_SHORT));
-                description = null;
+            } else if (!enough) {
+                energyView = IssueView.of(RecipeIssue.LOW_POWER, Component.translatable(LANG_EU_SHORT));
+                description = LANG_EU_SHORT_DESC;
             } else {
                 energyView = RecipeIssue.ENERGY_READY.view();
                 description = LANG_EU_READY_DESC;
             }
             ownerText = formed && owned ? TeamUtil.getName(machine.getLevel(), machine.getUUID()) : NONE;
             storedText = formed && owned ? eu(stored) : NONE;
-            storedLevel = !formed || !owned || oc == 0 ? Level.NORMAL : gridShort ? Level.ERROR : Level.GOOD;
+            storedLevel = !formed || !owned || oc == 0 ? Level.NORMAL : enough ? Level.GOOD : Level.ERROR;
             var lines = new ArrayList<Component>(7);
             lines.add(Component.translatable(LANG_ENERGY));
             lines.add(gray(Component.translatable(LANG_EU_RULE_DRAW)));
@@ -715,30 +745,57 @@ public final class HarmonyFlowPage {
             lines.add(gray(Component.translatable(LANG_EU_RULE_MULTIPLIER)));
             lines.add(gray(Component.translatable(LANG_EU_RULE_STRICT)));
             if (formed && oc > 0) lines.add(gray(Component.translatable(LANG_EU_CURRENT, FormattingUtil.formatNumbers(minimum))));
-            lines.add(FlowIssueViews.sentence(energyView, description));
+            lines.add(sentence(energyView, description));
             energyDetail = lines;
         }
 
-        private void refreshRecipe(boolean formed, boolean working, boolean hasRecipe, int recipeTier, int oc, DiagnosisResult result) {
+        private void refreshRecipe(boolean formed, boolean working, boolean hasRecipe, int recipeTier, int oc, boolean owned, boolean energyEnough, @Nullable Component reason) {
             var logic = machine.getRecipeLogic();
-            if (!formed) recipeView = RecipeIssue.UNFORMED.view();
-            else if (!logic.isWorkingEnabled()) recipeView = RecipeIssue.DISABLED.view();
-            else if (working) recipeView = RecipeIssue.RUNNING.view();
-            else recipeView = IssueView.primary(result, logic.isWaiting() ? RecipeIssue.WAITING.view() : RecipeIssue.IDLE.view());
+            String description = null;
+            if (!formed) {
+                recipeView = RecipeIssue.UNFORMED.view();
+            } else if (!logic.isWorkingEnabled()) {
+                recipeView = RecipeIssue.DISABLED.view();
+            } else if (working) {
+                recipeView = RecipeIssue.RUNNING.view();
+            } else if (!owned) {
+                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_NO_OWNER));
+                description = LANG_NO_OWNER_DESC;
+            } else if (oc == 0) {
+                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_OC_NONE));
+                description = LANG_OC_NONE_DESC;
+            } else if (machine.getHydrogen() < HarmonyMachine.FLUID_PER_RUN) {
+                recipeView = IssueView.of(RecipeIssue.INPUT_SHORT, Component.translatable(LANG_RECIPE_H_SHORT));
+                description = LANG_RECIPE_H_SHORT_DESC;
+            } else if (machine.getHelium() < HarmonyMachine.FLUID_PER_RUN) {
+                recipeView = IssueView.of(RecipeIssue.INPUT_SHORT, Component.translatable(LANG_RECIPE_HE_SHORT));
+                description = LANG_RECIPE_HE_SHORT_DESC;
+            } else if (!energyEnough) {
+                recipeView = IssueView.of(RecipeIssue.LOW_POWER, Component.translatable(LANG_RECIPE_EU_SHORT));
+                description = LANG_EU_SHORT_DESC;
+            } else if (reason == com.gtocore.data.IdleReason.SIMULATION_TIER.reason()) {
+                recipeView = IssueView.of(RecipeIssue.CONDITION, reason);
+                description = LANG_RECIPE_TIER_DESC;
+            } else if (logic.isWaiting()) {
+                recipeView = IssueView.of(RecipeIssue.WAITING, reason);
+            } else {
+                recipeView = IssueView.of(RecipeIssue.IDLE, reason);
+            }
             recipeState = working ? FlowState.ACTIVE : recipeView.state();
             recipeTierText = formed && hasRecipe ? Component.translatable(LANG_TIER_VALUE, recipeTier) : NONE;
-            runEnergyText = formed && hasRecipe && oc > 0 ? eu(HarmonyMachine.recipeEnergy(oc, recipeTier)) : NONE;
-            var lines = new ArrayList<Component>(6);
+            runEnergyText = formed && hasRecipe && oc > 0 ? eu(machine.getStartupEnergy().multiply(BigInteger.valueOf(HarmonyMachine.recipeMultiplier(recipeTier)))) : NONE;
+            var lines = new ArrayList<Component>(5);
             lines.add(Component.translatable(LANG_RECIPE));
             lines.add(gray(Component.translatable(LANG_RECIPE_RULE_START)));
             lines.add(gray(Component.translatable(LANG_RECIPE_RULE_START_2)));
             lines.add(gray(Component.translatable(LANG_RECIPE_RULE_COST)));
             lines.add(gray(Component.translatable(LANG_RECIPE_RULE_TIER)));
-            lines.add(FlowIssueViews.sentence(recipeView, null));
+            lines.add(description != null ? Component.translatable(description).withStyle(RecipeDiagnoser.style(recipeView.issue())) :
+                    recipeView.text().copy().withStyle(RecipeDiagnoser.style(recipeView.issue())));
             recipeDetail = lines;
         }
 
-        private void refreshTier(boolean formed, boolean working, boolean counting, DiagnosisResult result) {
+        private void refreshTier(boolean formed, boolean counting) {
             int tier = machine.getTier();
             int needed = HarmonyMachine.runsToAdvance(tier);
             int count = machine.getTierCount();
@@ -748,17 +805,9 @@ public final class HarmonyFlowPage {
                 advance = new ProgressBar.Progress(count, needed, 0);
             }
             var label = Component.translatable(LANG_TIER_VALUE, tier);
-            String description = counting ? LANG_TIER_COUNTING_DESC : LANG_TIER_IDLE_DESC;
-            if (!formed) {
-                tierView = RecipeIssue.OFFLINE.view();
-            } else if (counting) {
-                tierView = IssueView.of(RecipeIssue.RUNNING, label);
-            } else if (!working && result.has(IdleReason.SIMULATION_TIER.type())) {
-                tierView = labeled(IssueView.of(result, IdleReason.SIMULATION_TIER.type(), RecipeIssue.CONDITION.view()), label);
-                description = null;
-            } else {
-                tierView = IssueView.of(RecipeIssue.OK, label);
-            }
+            if (!formed) tierView = RecipeIssue.OFFLINE.view();
+            else if (counting) tierView = IssueView.of(RecipeIssue.RUNNING, label);
+            else tierView = IssueView.of(RecipeIssue.OK, label);
             allowedText = formed ? Component.translatable(LANG_TIER_MIN, tier) : NONE;
             tierDetail = List.of(Component.translatable(LANG_TIER),
                     gray(Component.translatable(LANG_RECIPE_RULE_TIER)),
@@ -766,7 +815,7 @@ public final class HarmonyFlowPage {
                     gray(Component.translatable(LANG_TIER_RULE_ADVANCE, needed)),
                     gray(Component.translatable(LANG_TIER_RULE_HIGHER)),
                     gray(Component.translatable(LANG_TIER_REMAINING, Math.max(0, needed - count))),
-                    FlowIssueViews.sentence(tierView, description));
+                    Component.translatable(counting ? LANG_TIER_COUNTING_DESC : LANG_TIER_IDLE_DESC).withStyle(RecipeDiagnoser.style(tierView.issue())));
         }
     }
 }

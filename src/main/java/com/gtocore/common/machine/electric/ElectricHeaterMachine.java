@@ -118,7 +118,7 @@ public final class ElectricHeaterMachine extends WorkableTieredMachine implement
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (heatContainer.currentHeat + 16 >= heatContainer.maxHeat) {
-            IdleReason.HEAT_FULL.report(this, heatContainer.currentHeat, heatContainer.maxHeat);
+            IdleReason.HEAT_FULL.setReason(this, heatContainer.currentHeat, heatContainer.maxHeat);
             return null;
         }
         return RecipeBuilder.ofRaw().duration(20).EUt(30).build();

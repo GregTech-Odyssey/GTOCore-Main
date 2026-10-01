@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.monitor;
 
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent;
-import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.mana.feature.IManaEnergyMachine;
@@ -16,10 +15,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineModifyDrops;
-import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
-import com.gregtechceu.gtceu.api.machine.issue.IssueLines;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSnapshot;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -69,7 +64,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class MonitorMachine extends AbstractInfoProviderMonitor implements IMachineModifyDrops {
@@ -99,12 +93,6 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
             .put(index++, DisplayRegistry.MACHINE_RECIPE_OUTPUT_FLUID_3)
             .put(index++, DisplayRegistry.MACHINE_MANTENANCE)
             .build();
-    private static final Set<ResourceLocation> PROVIDERS = Set.of(
-            GTCEu.id("electric_container_provider"),
-            GTCEu.id("workable_provider"),
-            RecipeLogicProvider.UID,
-            GTCEu.id("recipe_output_info"),
-            GTCEu.id("maintenance_info"));
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
     private boolean isCardChange;
@@ -188,7 +176,6 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
                 return new Component[0];
             }
             pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
-            providers = null;
             isCardChange = false;
         }
         if (pos == null) {
@@ -286,11 +273,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
                 };
             }
             if (providers == null) {
-                var list = new ArrayList<IServerDataProvider<BlockAccessor>>();
-                for (var provider : WailaCommonRegistration.INSTANCE.getBlockNBTProviders(tile)) {
-                    if (PROVIDERS.contains(provider.getUid())) list.add(provider);
-                }
-                providers = list;
+                providers = WailaCommonRegistration.INSTANCE.getBlockNBTProviders(tile);
             }
             if (!providers.isEmpty()) {
 
@@ -474,18 +457,16 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
                 }
 
             }
-        } else if (tile instanceof MetaMachineBlockEntity mbe && mbe.getMetaMachine() instanceof IRecipeLogicMachine machine && machine.getRecipeLogic() != null) {
-            var snapshot = machine.getRecipeLogic().getIssueSnapshot();
-            if (IssueLines.visible(snapshot) && !coveredByMaintenance(snapshot, capData)) {
-                components[0] = IssueLines.headlineOffThread(snapshot);
+        } else {
+            var reason = capData.getString("reason");
+            if (!reason.isEmpty()) {
+                var c = Component.Serializer.fromJson(reason);
+                if (c != null) {
+                    components[0] = c.withStyle(ChatFormatting.GRAY);
+                }
             }
         }
         return components;
-    }
-
-    private static boolean coveredByMaintenance(IssueSnapshot snapshot, CompoundTag tags) {
-        var shown = IssueLines.shown(snapshot);
-        return shown != null && shown.type() == GTIssues.MAINTENANCE && tags.getCompound(GTCEu.id("maintenance_info").toString()).getCompound("null").getBoolean("hasProblems");
     }
 
     private static Component[] getRecipeOutputComponents(CompoundTag tags) {

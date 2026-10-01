@@ -9,9 +9,6 @@ import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
-import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -36,7 +33,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IExtendWirelessEnergyContainerHolder, IIssueProvider {
+public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IExtendWirelessEnergyContainerHolder {
 
     private static final BigInteger BASE = BigInteger.valueOf(5277655810867200L);
 
@@ -115,7 +112,8 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     BigInteger getStartupEnergy() {
-        return startupEnergy(oc);
+        if (oc == 0) return BigInteger.ZERO;
+        return BASE.multiply(BigInteger.ONE.shiftLeft(3 * oc - 1));
     }
 
     @Override
@@ -127,44 +125,31 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     @Nullable
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        int recipeTier = recipe.data.getInt(GTORecipeDataKeys.TIER);
-        if (!hasOwner()) {
-            IdleReason.NO_OWNER.report(this, IssueStage.MODIFIER, null);
+        if (tier < recipe.data.getInt(GTORecipeDataKeys.TIER)) {
+            setIdleReason(IdleReason.SIMULATION_TIER);
+            return null;
+        }
+        if (getUUID() != null && hydrogen >= FLUID_PER_RUN && helium >= FLUID_PER_RUN && oc > 0) {
+            var container = getWirelessEnergyContainer();
+            if (container == null) {
+                IdleReason.HARMONY_GRID_SHORT.setReason(this, FormattingUtil.formatNumbers(getRecipeEnergy(recipe)));
+                return null;
+            }
+            if (container.getStorage().compareTo(getRecipeEnergy(recipe)) > 0) {
+                recipe.duration = recipe.duration >> (oc - 1);
+                return recipe;
+            }
+            IdleReason.HARMONY_GRID_SHORT.setReason(this, FormattingUtil.formatNumbers(getRecipeEnergy(recipe)));
+        } else if (getUUID() == null) {
+            IdleReason.NO_OWNER.setReason(this);
         } else if (oc <= 0) {
-            IdleReason.SET_CIRCUIT.report(this, IssueStage.MODIFIER, null);
+            IdleReason.SET_CIRCUIT.setReason(this);
         } else if (hydrogen < FLUID_PER_RUN) {
-            IdleReason.HYDROGEN_RESERVE_SHORT.report(this, IssueStage.MODIFIER, FLUID_PER_RUN, hydrogen, null);
-        } else if (helium < FLUID_PER_RUN) {
-            IdleReason.HELIUM_RESERVE_SHORT.report(this, IssueStage.MODIFIER, FLUID_PER_RUN, helium, null);
-        } else if (tier < recipeTier) {
-            IdleReason.SIMULATION_TIER.report(this, IssueStage.MODIFIER, recipeTier, tier, null);
-        } else if (!gridAllows(recipeTier)) {
-            IdleReason.HARMONY_GRID_SHORT.report(this, IssueStage.MODIFIER, recipeTier, oc, null);
+            IdleReason.HYDROGEN_RESERVE_SHORT.setReason(this, FLUID_PER_RUN, hydrogen);
         } else {
-            recipe.duration = recipe.duration >> (oc - 1);
-            return recipe;
+            IdleReason.HELIUM_RESERVE_SHORT.setReason(this, FLUID_PER_RUN, helium);
         }
         return null;
-    }
-
-    boolean hasOwner() {
-        return getUUID() != null;
-    }
-
-    private boolean gridAllows(int recipeTier) {
-        var container = getWirelessEnergyContainer();
-        return container != null && container.getStorage().compareTo(recipeEnergy(oc, recipeTier)) > 0;
-    }
-
-    @Override
-    public void collectIssues(IssueSink sink) {
-        if (!isFormed()) return;
-        boolean owner = hasOwner();
-        if (!owner) IdleReason.NO_OWNER.collect(sink);
-        if (oc <= 0) IdleReason.SET_CIRCUIT.collect(sink);
-        if (hydrogen < FLUID_PER_RUN) IdleReason.HYDROGEN_RESERVE_SHORT.collect(sink, FLUID_PER_RUN, hydrogen);
-        if (helium < FLUID_PER_RUN) IdleReason.HELIUM_RESERVE_SHORT.collect(sink, FLUID_PER_RUN, helium);
-        if (owner && oc > 0 && !gridAllows(1)) IdleReason.HARMONY_GRID_SHORT.collect(sink, 1, oc);
     }
 
     @Override
@@ -184,16 +169,7 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     private BigInteger getRecipeEnergy(GTRecipe recipe) {
-        return recipeEnergy(oc, recipe.data.getInt(GTORecipeDataKeys.TIER));
-    }
-
-    public static BigInteger startupEnergy(int oc) {
-        if (oc <= 0) return BigInteger.ZERO;
-        return BASE.multiply(BigInteger.ONE.shiftLeft(3 * oc - 1));
-    }
-
-    public static BigInteger recipeEnergy(int oc, int recipeTier) {
-        return startupEnergy(oc).multiply(BigInteger.valueOf(recipeMultiplier(recipeTier)));
+        return getStartupEnergy().multiply(BigInteger.valueOf(recipeMultiplier(recipe.data.getInt(GTORecipeDataKeys.TIER))));
     }
 
     @Override

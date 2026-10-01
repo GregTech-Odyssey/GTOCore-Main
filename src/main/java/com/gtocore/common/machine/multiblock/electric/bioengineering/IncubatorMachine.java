@@ -8,7 +8,6 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -77,7 +76,7 @@ public final class IncubatorMachine extends TierCasingMultiblockMachine {
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > cleanroomTier) {
-            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.CONDITION, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), cleanroomTier, recipe);
+            setIdleReason(IdleReason.BLOCK_TIER_NOT_SATISFIES, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), cleanroomTier);
             return false;
         }
         return super.checkConditions(unit, recipe);

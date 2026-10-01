@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -89,7 +88,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
         if (recipe.data.containsKey(GTORecipeDataKeys.NEUTRON_FLUX)) {
             var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
             if (neutronFluxkeV < neededNeutronFlux) {
-                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.report(this, IssueStage.MODIFIER, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000), recipe.definition);
+                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.setReason(this, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000));
                 return null;
             }
             recipe.parallels = Math.min(recipe.parallels, 2048);
@@ -112,7 +111,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
             neutronFluxkeV = Math.max(0, neutronFluxkeV + change);
             var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
             if (neutronFluxkeV < neededNeutronFlux) {
-                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.report(this, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000));
+                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.setReason(this, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000));
                 return false;
             }
             recipeHeat = getRecipeHeat(recipe);
