@@ -1,5 +1,7 @@
 package com.gtocore.mixin.ae2.eae;
 
+import com.gtocore.integration.ae.hooks.ITagPriorityListExtension;
+
 import net.minecraft.Util;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -19,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(TagPriorityList.class)
-public abstract class TagPriorityListMixin {
+public abstract class TagPriorityListMixin implements ITagPriorityListExtension {
 
     @Mutable
     @Shadow(remap = false)
@@ -87,5 +89,10 @@ public abstract class TagPriorityListMixin {
         if (gtocore$isEmpty) return true;
         if (gto$underlyingMemory == null) return false;
         return gto$underlyingMemory.contains(input.getUid());
+    }
+
+    @Override
+    public boolean gtocore$isReady() {
+        return gtocore$isEmpty || gto$underlyingMemory != null;
     }
 }

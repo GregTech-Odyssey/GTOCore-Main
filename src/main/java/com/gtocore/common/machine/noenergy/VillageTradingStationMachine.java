@@ -3,14 +3,14 @@ package com.gtocore.common.machine.noenergy;
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IAutoOutputItem;
@@ -23,7 +23,20 @@ import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
+import com.gregtechceu.gtceu.uipro.Horizontal;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.IconToggle;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.cover.CoverTab;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
@@ -38,11 +51,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.layout.Layout;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +59,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongFunction;
+import java.util.function.LongSupplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -57,6 +68,7 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.common.data.GTItems.*;
 import static com.gtocore.common.data.GTOItems.*;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class VillageTradingStationMachine extends MetaMachine implements IAutoOutputItem, IFancyUIMachine, IMachineLife {
@@ -403,22 +415,62 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     // *********** UI实现 *********** //
     /////////////////////////////////////
 
+    @RegisterLanguage(cn = "已锁定：村民不可取出，可选择交易并启动", en = "Locked: the villager cannot be removed; trades can be selected and started")
+    private static final String LOCKED = "gtocore.machine.village_trading_station.ui.locked";
+    @RegisterLanguage(cn = "未锁定：可放入或取出村民，锁定后读取其交易", en = "Unlocked: the villager can be inserted or removed; locking reads its trades")
+    private static final String UNLOCKED = "gtocore.machine.village_trading_station.ui.unlocked";
+    @RegisterLanguage(cn = "需要先放入村民", en = "Insert a villager first")
+    private static final String NEED_VILLAGER = "gtocore.machine.village_trading_station.ui.need_villager";
+    @RegisterLanguage(cn = "由当前选中的交易决定", en = "Determined by the selected trade")
+    private static final String RECIPE_SLOT = "gtocore.machine.village_trading_station.ui.recipe_slot";
+    @RegisterLanguage(cn = "切换到下一个交易", en = "Switch to the next trade")
+    private static final String NEXT_TRADE = "gtocore.machine.village_trading_station.ui.next_trade";
+    @RegisterLanguage(cn = "需要锁定村民且未启动交易", en = "Requires a locked villager with trading stopped")
+    private static final String NEXT_UNAVAILABLE = "gtocore.machine.village_trading_station.ui.next_unavailable";
+    @RegisterLanguage(cn = "交易已启动：每 10 秒使用输入物品自动交易", en = "Trading active: trades automatically with input items every 10 seconds")
+    private static final String TRADING = "gtocore.machine.village_trading_station.ui.trading";
+    @RegisterLanguage(cn = "交易未启动", en = "Trading stopped")
+    private static final String NOT_TRADING = "gtocore.machine.village_trading_station.ui.not_trading";
+    @RegisterLanguage(cn = "需要先锁定村民", en = "Lock the villager first")
+    private static final String NEED_LOCK = "gtocore.machine.village_trading_station.ui.need_lock";
+    @RegisterLanguage(cn = "已交易次数（补货时清零）", en = "Trades used (reset on restock)")
+    private static final String USES = "gtocore.machine.village_trading_station.ui.uses";
+    @RegisterLanguage(cn = "最大交易次数", en = "Maximum trades")
+    private static final String MAX_USES = "gtocore.machine.village_trading_station.ui.max_uses";
+    @RegisterLanguage(cn = "补货与交易强化", en = "Restock and Trade Enhancement")
+    private static final String ENHANCE_SECTION = "gtocore.machine.village_trading_station.ui.enhance_section";
+    @RegisterLanguage(cn = "交易次数上限", en = "Trade Limit")
+    private static final String UPGRADE_SECTION = "gtocore.machine.village_trading_station.ui.upgrade_section";
+    @RegisterLanguage(cn = "提升上限", en = "Raise Limit")
+    private static final String UPGRADE = "gtocore.machine.village_trading_station.ui.upgrade";
+    @RegisterLanguage(cn = "提升", en = "Raise")
+    private static final String UPGRADE_BUTTON = "gtocore.machine.village_trading_station.ui.upgrade_button";
+    @RegisterLanguage(cn = "消耗场发生器，提升左侧村民当前交易的最大交易次数，每个提升 1 次", en = "Consumes field generators to raise the maximum uses of the selected trade of the villager on the left, by 1 each")
+    private static final String UPGRADE_TIP = "gtocore.machine.village_trading_station.ui.upgrade_tip";
+    @RegisterLanguage(cn = "需要锁定村民并选择交易、未达上限且放入对应的场发生器", en = "Requires a locked villager with a selected trade below the limit, and the matching field generator")
+    private static final String UPGRADE_UNAVAILABLE = "gtocore.machine.village_trading_station.ui.upgrade_unavailable";
+    @RegisterLanguage(cn = "需要锁定村民并选择交易", en = "Lock the villager and select a trade")
+    private static final String NO_TRADE = "gtocore.machine.village_trading_station.ui.no_trade";
+    @RegisterLanguage(cn = "提升 %s 次后上限为 %s", en = "+%s, new limit %s")
+    private static final String UPGRADE_PREVIEW = "gtocore.machine.village_trading_station.ui.upgrade_preview";
+
+    private static final String ENHANCE = "gtocore.machine.village_trading_station.enhance";
+    private static final String INCREASE = "gtocore.machine.village_trading_station.increase";
+    private static final String UPPER_LIMIT = "gtocore.machine.village_trading_station.upper_limit";
+    private static final String REPLENISHMENT_INTERVAL = "gtocore.machine.village_trading_station.replenishment_interval";
+    private static final String TRADING_MULTIPLE = "gtocore.machine.village_trading_station.trading_multiple";
+
+    private static final int UPGRADE_SLOT = 9;
+    private static final int MAX_UPGRADED_USES = 256;
+    private static final ItemStack[] FIELD_GENERATOR_STACKS = new ItemStack[FIELD_GENERATOR.length];
+
+    static {
+        for (int i = 0; i < FIELD_GENERATOR.length; i++) FIELD_GENERATOR_STACKS[i] = FIELD_GENERATOR[i].getDefaultInstance();
+    }
+
     @Override
     public Widget createUIWidget() {
-        final int width = 336;
-        final int height = 144;
-        var group = new WidgetGroup(0, 0, width + 8, height + 8);
-
-        WidgetGroup groupTitle = new DraggableScrollableWidgetGroup(4, 4, width, height)
-                .setBackground(GuiTextures.DISPLAY);
-
-        groupTitle.addWidget(new ComponentPanelWidget(4, 5,
-                GTOMachineTooltips.VillageTradingStationIntroduction::apply)
-                .setMaxWidthLimit(width - 8));
-
-        group.addWidget(groupTitle);
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        return MachineDisplay.page(this, GTOMachineTooltips.VillageTradingStationIntroduction::apply);
     }
 
     @Override
@@ -438,32 +490,11 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
                 return Component.translatable(getDefinition().getDescriptionId());
             }
 
-            static final int width = 192;
-            static final int height = 144;
-
             @Override
             public Widget createMainPage(FancyMachineUIWidget widget) {
-                var group = new WidgetGroup(0, 0, width + 8, height + 8);
-
-                WidgetGroup mainGroup = new DraggableScrollableWidgetGroup(4, 4, width, height)
-                        .setBackground(GuiTextures.DISPLAY);
-                mainGroup.addWidget(getVillagerGroups());
-
-                group.addWidget(mainGroup);
-                group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-                return group;
-            }
-
-            private WidgetGroup getVillagerGroups() {
-                int xSize = 18;
-                int groupXSize = xSize * 9;
-                int startX = (width - groupXSize) / 2;
-                int startY = 16;
-                WidgetGroup group = new WidgetGroup(startX, startY, groupXSize, 128);
-                for (int i = 0; i < 9; i++) {
-                    group.addWidget(VillagerGroup(i, i * xSize));
-                }
-                return group;
+                var row = new UIElement().layout(l -> l.row());
+                for (int i = 0; i < UPGRADE_SLOT; i++) row.addChild(villagerColumn(i));
+                return MachineDisplay.column().addChild(row);
             }
         });
 
@@ -480,146 +511,141 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
                 return Component.empty();
             }
 
-            static final int width = 192;
-            static final int height = 144;
-
             @Override
             public Widget createMainPage(FancyMachineUIWidget widget) {
-                var group = new WidgetGroup(0, 0, width + 8, height + 8);
-
-                WidgetGroup mainGroup = new DraggableScrollableWidgetGroup(4, 4, width, height)
-                        .setBackground(GuiTextures.DISPLAY);
-
-                WidgetGroup villagerGroups = new WidgetGroup(15, 16, 162, 128);
-                villagerGroups.addWidget(VillagerGroup(9, 0));
-
-                mainGroup.addWidget(villagerGroups);
-                mainGroup.addWidget(getUpgradeGroup());
-                mainGroup.addWidget(getEnhanceGroup());
-
-                group.addWidget(mainGroup);
-
-                group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-                return group;
-            }
-
-            private WidgetGroup getUpgradeGroup() {
-                WidgetGroup villagerGroup = new WidgetGroup(22 + 15, 18 * 5 - 9 + 16, 150, 50);
-
-                VillagerRecipe[] recipes = villagersDataset[9];
-                villagerGroup.addWidget(new ComponentPanelWidget(20, 0,
-                        (textList) -> {
-                            if (recipes != null && isLocked(9) && recipes.length > 0 && selected[9] < recipes.length) {
-                                int upGread = recipes[selected[9]].maxUses / 32;
-                                if (recipes[selected[9]].maxUses < 256) {
-                                    ItemStack item = FIELD_GENERATOR[upGread].getDefaultInstance();
-                                    int count = Math.min(getMaxPossibleTrades(upgrade, item, ItemStack.EMPTY), (upGread + 1) * 32 - recipes[selected[9]].maxUses);
-                                    textList.add(ComponentPanelWidget.withButton(
-                                            Component.literal("[ + " + count + " → " + (recipes[selected[9]].maxUses + count) + " ]"), "add_max_uses"));
-                                    textList.add(Component.translatable("gtocore.machine.village_trading_station.increase", item.getDisplayName()));
-                                } else {
-                                    textList.add(Component.empty());
-                                    textList.add(Component.translatable("gtocore.machine.village_trading_station.upper_limit"));
-                                }
-                            }
-                        }).clickHandler((a, b) -> {
-                            if (recipes != null && isLocked(9) && recipes.length > 0 && selected[9] < recipes.length) {
-                                int upGread = recipes[selected[9]].maxUses / 32;
-                                if (recipes[selected[9]].maxUses < 256) {
-                                    ItemStack item = FIELD_GENERATOR[upGread].getDefaultInstance();
-                                    int count = Math.min(getMaxPossibleTrades(upgrade, item, ItemStack.EMPTY), (upGread + 1) * 32 - recipes[selected[9]].maxUses);
-                                    if (count > 0) {
-                                        deductItems(upgrade, item, count);
-                                        villagersDataset[9][selected[9]].maxUses += count;
-                                        syncUsesAndMaxUsesToVillagerItem(9);
-                                    }
-                                }
-                            }
-                        }).setMaxWidthLimit(120));
-
-                villagerGroup.addWidget(new SlotWidget(upgrade, 0, 0, 0)
-                        .setBackgroundTexture(GuiTextures.SLOT));
-
-                return villagerGroup;
-            }
-
-            private WidgetGroup getEnhanceGroup() {
-                WidgetGroup villagerGroup = new WidgetGroup(22 + 15, 18 - 9 + 16, 150, 100);
-
-                villagerGroup.addWidget(new ComponentPanelWidget(0, 9,
-                        (textList) -> {
-                            if (tire < 12) {
-                                textList.add(Component.literal("     ")
-                                        .append(Component.translatable("gtocore.machine.village_trading_station.enhance",
-                                                ENHANCE_ITEMS[tire + 1].getDefaultInstance().getDisplayName())));
-                            } else {
-                                textList.add(Component.literal("     ")
-                                        .append(Component.translatable("gtocore.machine.village_trading_station.upper_limit")));
-                            }
-                            textList.add(Component.translatable("gtocore.machine.village_trading_station.replenishment_interval", replenishmentInterval));
-                            textList.add(Component.translatable("gtocore.machine.village_trading_station.trading_multiple", tradingMultiple));
-                        }).setMaxWidthLimit(120));
-
-                villagerGroup.addWidget(new SlotWidget(enhance, 0, 0, 0)
-                        .setBackgroundTexture(GuiTextures.SLOT));
-
-                return villagerGroup;
+                var right = UIElement.column(LayoutStyle.AUTO).layout(l -> l.flex(1).gapAll(UISizes.SECTION_GAP))
+                        .addChildren(createEnhanceSection(), createUpgradeSection());
+                var row = new UIElement().layout(l -> l.row().gapAll(UISizes.SECTION_GAP)).addChildren(villagerColumn(UPGRADE_SLOT), right);
+                return MachineDisplay.column().addChild(row);
             }
         });
 
         CoverTab.attach(sideTabs, this);
     }
 
-    private WidgetGroup VillagerGroup(int slot, int X) {
-        WidgetGroup villagerGroup = new WidgetGroup(X, 0, 18, 128);
-        villagerGroup.setLayout(Layout.VERTICAL_CENTER);
+    private UIElement createEnhanceSection() {
+        var controls = ControlPanel.of(this);
+        controls.addSlot(ItemSlot.of(enhance, 0), ENHANCE_SECTION, MultiblockPage.cached(() -> tire, VillageTradingStationMachine::enhanceText));
+        controls.add(sectionLine(() -> replenishmentInterval, value -> Component.translatable(REPLENISHMENT_INTERVAL, value)));
+        controls.add(sectionLine(() -> tradingMultiple, value -> Component.translatable(TRADING_MULTIPLE, value)));
+        return controls.build();
+    }
 
-        // 锁定按钮
-        villagerGroup.addWidget(new ComponentPanelWidget(0, 2,
-                (textList) -> textList.add(ComponentPanelWidget.withButton(
-                        isLocked(slot) ? Component.literal("\uD83D\uDD12") : Component.literal("\uD83D\uDD13"),
-                        String.valueOf(slot))))
-                .clickHandler((a, b) -> setLocked(Integer.parseInt(a))));
+    private UIElement createUpgradeSection() {
+        var controls = ControlPanel.of(this);
+        controls.addSlot(ItemSlot.of(upgrade, 0), UPGRADE_SECTION, MultiblockPage.cached(this::upgradeState, VillageTradingStationMachine::upgradeHintText));
+        controls.add(sectionLine(this::upgradeState, VillageTradingStationMachine::upgradePreviewText));
+        controls.addServerButton(UPGRADE, UPGRADE_BUTTON, this::upgradeMaxUses, UPGRADE_TIP).disabled(() -> !canUpgrade(), UPGRADE_UNAVAILABLE);
+        return controls.build();
+    }
 
-        // 村民槽位
-        villagerGroup.addWidget(new SlotWidget(villagers, slot, 0, 18 - 6, true, true)
-                .setBackground(GuiTextures.SLOT));
+    private static TextLine sectionLine(LongSupplier value, LongFunction<Component> format) {
+        return TextLine.of(LayoutStyle.AUTO, MultiblockPage.cached(value, format)).bindClientColor(UITheme::panelText);
+    }
 
-        // 配方输入1、输入2、输出槽位
+    private UIElement villagerColumn(int slot) {
+        var column = UIElement.column(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+
+        column.addChild(IconToggle.of(WidgetIcons.ACCESS_PRIVATE, () -> isLocked(slot), locked -> {
+            if (locked == isLocked(slot)) return;
+            setLocked(slot);
+            onChanged();
+        }).onOffTooltips(LOCKED, UNLOCKED).disabled(() -> !isLocked(slot) && villagers.getStackInSlot(slot).isEmpty(), NEED_VILLAGER));
+
+        column.addChild(ItemSlot.of(villagers, slot));
+
         for (int j = 0; j < 3; j++) {
-            SlotWidget itemWidget = new SlotWidget(RecipesHandler, 3 * slot + j, 0, 18 * (j + 2) - 6)
-                    .setCanPutItems(false).setCanTakeItems(false)
-                    .setBackgroundTexture(GTOGuiTextures.VILLAGER_RECIPE_SLOTS[j]);
-            villagerGroup.addWidget(itemWidget);
+            column.addChild(ItemSlot.display(RecipesHandler, 3 * slot + j, RECIPE_SLOT)
+                    .setBackgroundTexture(GTOGuiTextures.VILLAGER_RECIPE_SLOTS[j]));
         }
 
-        // 切换配方按钮
-        villagerGroup.addWidget(new ComponentPanelWidget(0, 2 + 18 * 5 - 6,
-                (textList) -> textList.add(ComponentPanelWidget.withButton(
-                        Component.literal("\uD83D\uDD01"), String.valueOf(slot))))
-                .clickHandler((a, b) -> selectedNext(Integer.parseInt(a))));
+        var next = Button.glyph(">")
+                .setOnServerClick(() -> {
+                    selectedNext(slot);
+                    onChanged();
+                })
+                .disabled(() -> !isLocked(slot) || isStartUp(slot), NEXT_UNAVAILABLE);
+        next.tooltips(NEXT_TRADE);
+        column.addChild(next);
 
-        // 启动交易按钮
-        villagerGroup.addWidget(new ComponentPanelWidget(0, 2 + 18 * 5 + 6,
-                (textList) -> textList.add(ComponentPanelWidget.withButton(
-                        isStartUp(slot) ? Component.literal("\uD83D\uDD12") : Component.literal("\uD83D\uDD13"),
-                        String.valueOf(slot))))
-                .clickHandler((a, b) -> setStartUp(Integer.parseInt(a))));
+        column.addChild(IconToggle.of(WidgetIcons.POWER_ON, () -> isStartUp(slot), on -> {
+            if (on == isStartUp(slot)) return;
+            setStartUp(slot);
+            onChanged();
+        }).onOffTooltips(TRADING, NOT_TRADING).disabled(() -> !isLocked(slot), NEED_LOCK));
 
-        // 交易次数显示
-        villagerGroup.addWidget(new ComponentPanelWidget(0, 2 + 18 * 5 + 18,
-                (textList) -> {
-                    VillagerRecipe[] recipes = villagersDataset[slot];
-                    if (recipes != null && isLocked(slot) && recipes.length > 0 && selected[slot] < recipes.length) {
-                        VillagerRecipe recipe = recipes[selected[slot]];
-                        textList.add(Component.literal(String.valueOf(recipe.uses)));
-                        textList.add(Component.literal(String.valueOf(recipe.maxUses)));
-                    } else {
-                        textList.add(Component.literal("0"));
-                        textList.add(Component.literal("0"));
-                    }
-                }));
-        return villagerGroup;
+        var uses = TextLine.of(UISizes.SLOT_SIZE, MultiblockPage.cached(() -> recipeUses(slot), VillageTradingStationMachine::countText)).setTextAlign(Horizontal.CENTER);
+        uses.setHoverTooltips(USES);
+        var maxUses = TextLine.of(UISizes.SLOT_SIZE, MultiblockPage.cached(() -> recipeMaxUses(slot), VillageTradingStationMachine::countText)).setTextAlign(Horizontal.CENTER);
+        maxUses.setHoverTooltips(MAX_USES);
+        return column.addChildren(uses, maxUses);
+    }
+
+    @Nullable
+    private VillagerRecipe currentRecipe(int slot) {
+        VillagerRecipe[] recipes = villagersDataset[slot];
+        if (recipes != null && isLocked(slot) && recipes.length > 0 && selected[slot] < recipes.length) return recipes[selected[slot]];
+        return null;
+    }
+
+    private long recipeUses(int slot) {
+        VillagerRecipe recipe = currentRecipe(slot);
+        return recipe == null ? 0 : recipe.uses;
+    }
+
+    private long recipeMaxUses(int slot) {
+        VillagerRecipe recipe = currentRecipe(slot);
+        return recipe == null ? 0 : recipe.maxUses;
+    }
+
+    private static Component countText(long value) {
+        return Component.literal(String.valueOf(value));
+    }
+
+    private static Component enhanceText(long tier) {
+        if (tier < ENHANCE_ITEMS.length - 1) return Component.translatable(ENHANCE, ENHANCE_ITEMS[(int) tier + 1].getDefaultInstance().getDisplayName());
+        return Component.translatable(UPPER_LIMIT);
+    }
+
+    private long upgradeState() {
+        VillagerRecipe recipe = currentRecipe(UPGRADE_SLOT);
+        if (recipe == null) return -1;
+        if (recipe.maxUses >= MAX_UPGRADED_USES) return -2;
+        int tier = recipe.maxUses / 32;
+        int count = Math.min(getMaxPossibleTrades(upgrade, FIELD_GENERATOR_STACKS[tier], ItemStack.EMPTY), (tier + 1) * 32 - recipe.maxUses);
+        return (long) tier << 48 | (long) count << 24 | (recipe.maxUses + count);
+    }
+
+    private boolean canUpgrade() {
+        long state = upgradeState();
+        return state >= 0 && (state >>> 24 & 0xFFFFFF) > 0;
+    }
+
+    private static Component upgradeHintText(long state) {
+        if (state == -1) return Component.translatable(NO_TRADE);
+        if (state == -2) return Component.translatable(UPPER_LIMIT);
+        return Component.translatable(INCREASE, FIELD_GENERATOR_STACKS[(int) (state >>> 48)].getDisplayName());
+    }
+
+    private static Component upgradePreviewText(long state) {
+        if (state < 0) return Component.empty();
+        return Component.translatable(UPGRADE_PREVIEW, state >>> 24 & 0xFFFFFF, state & 0xFFFFFF);
+    }
+
+    private void upgradeMaxUses() {
+        VillagerRecipe[] recipes = villagersDataset[UPGRADE_SLOT];
+        if (recipes != null && isLocked(UPGRADE_SLOT) && recipes.length > 0 && selected[UPGRADE_SLOT] < recipes.length) {
+            int upGread = recipes[selected[UPGRADE_SLOT]].maxUses / 32;
+            if (recipes[selected[UPGRADE_SLOT]].maxUses < MAX_UPGRADED_USES) {
+                ItemStack item = FIELD_GENERATOR[upGread].getDefaultInstance();
+                int count = Math.min(getMaxPossibleTrades(upgrade, item, ItemStack.EMPTY), (upGread + 1) * 32 - recipes[selected[UPGRADE_SLOT]].maxUses);
+                if (count > 0) {
+                    deductItems(upgrade, item, count);
+                    villagersDataset[UPGRADE_SLOT][selected[UPGRADE_SLOT]].maxUses += count;
+                    syncUsesAndMaxUsesToVillagerItem(UPGRADE_SLOT);
+                }
+            }
+        }
     }
 
     /////////////////////////////////////

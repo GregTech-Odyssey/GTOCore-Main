@@ -1,19 +1,24 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion.recipe;
 
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.RecipeExtension;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.data.Galaxy;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.item.capability.ElectricItem;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.uipro.Level;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -59,7 +64,7 @@ public class SpaceDroneDock extends RecipeExtension {
             }
         });
         if (!hasInput.get() || costEU.value == null || costEU.value.compareTo(BigInteger.ZERO) <= 0) {
-            setIdleReason(Component.translatable(DRONE_NO_ENERGY));
+            IdleReason.DRONE_NO_ENERGY.report(this, IssueStage.MODIFIER, definition);
             return null;
         }
         var recipe = definition.toRuntime();
@@ -91,7 +96,19 @@ public class SpaceDroneDock extends RecipeExtension {
             list.add(Component.translatable(NOT_IN_SPACETIME_DOMAIN));
             return;
         }
-        list.add(Component.translatable(CURRENT_GALAXY, Component.translatable("gtolib.galaxy.name." + galaxy.name())));
+        if (!MultiblockPage.isScreenText()) list.add(Component.translatable(CURRENT_GALAXY, Component.translatable(galaxy.getTranslationKey())));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(CURRENT_GALAXY, MultiblockPage.cachedRef(this::currentGalaxy, galaxy -> Component.translatable(galaxy.getTranslationKey()))).bindLevel(() -> currentGalaxy() == Galaxy.NONE ? Level.WARNING : Level.NORMAL);
+    }
+
+    private Galaxy currentGalaxy() {
+        if (getLevel() == null) return Galaxy.NONE;
+        var galaxy = GTODimensions.getGalaxy(getLevel().dimension());
+        return galaxy == null ? Galaxy.NONE : galaxy;
     }
 
     @RegisterLanguage(cn = "当前空间站所在星系：%s", en = "Current Space Station Galaxy: %s")

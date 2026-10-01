@@ -1,7 +1,5 @@
 package com.gtocore.common.machine.tesseract;
 
-import com.gtocore.api.gui.ServerRows;
-
 import com.gtolib.api.ae2.AEKeyTypeMap;
 import com.gtolib.api.ae2.IPatternProviderLogic;
 import com.gtolib.api.ae2.PatternProviderTargetCache;
@@ -19,9 +17,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemCell;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.ServerList;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -142,15 +141,15 @@ public class DirectedTesseractMachine extends MetaMachine implements
             window.registerPopup(TesseractUI.FACE_POPUP, index -> remote || index < targets.size() ?
                     TesseractUI.facePopup(view, index, () -> index < targets.size() ? targets.get(index).face() : null, face -> setTargetFace(index, face)) : null);
         }
-        var rows = new ServerRows<>(remote, ByteStreamCodec.INT_CODEC, () -> indices(targets.size()), targets::size,
-                index -> targetRow(view, index, window), Component.translatable(TesseractUI.DIRECTED_EMPTY));
+        var rows = ServerList.of(ByteStreamCodec.INT_CODEC, () -> indices(targets.size()), index -> targetRow(view, index, window))
+                .version(targets::size).emptyText(TesseractUI.DIRECTED_EMPTY);
         rows.layout(l -> l.paddingTop(1).paddingBottom(1));
-        var pending = new ServerRows<>(remote, ByteStreamCodec.INT_CODEC, () -> indices(unfinishedStacks.size()), unfinishedStacks::size,
-                index -> pendingRow(view, index), null);
+        var pending = ServerList.of(ByteStreamCodec.INT_CODEC, () -> indices(unfinishedStacks.size()), index -> pendingRow(view, index))
+                .version(unfinishedStacks::size);
         var status = TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_UNLIMITED, targets.size()), true, true);
         status.addLine(TesseractUI.LINE_PENDING, () -> hasWorkToDo() ? Component.translatable(TesseractUI.VALUE_PENDING, unfinishedStacks.size()) : Component.translatable(TesseractUI.VALUE_PENDING_NONE))
-                .level(() -> hasWorkToDo() ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL)
-                .tooltip(TesseractUI.PENDING_DETAIL);
+                .bindLevel(() -> hasWorkToDo() ? Level.WARNING : Level.NORMAL)
+                .tooltips(TesseractUI.PENDING_DETAIL);
         return TesseractUI.page(status,
                 TesseractUI.listSection(TesseractUI.SECTION_DIRECTED_TARGETS, rows, TesseractUI.DIRECTED_TARGETS_TOOLTIP, TesseractUI.DIRECTED_READ_TOOLTIP),
                 TesseractUI.directedPushSection(targets::size, pending));
@@ -173,9 +172,9 @@ public class DirectedTesseractMachine extends MetaMachine implements
     }
 
     private UIElement pendingRow(TesseractUI.Targets view, int index) {
-        var text = TextLine.of(0, () -> pendingText(view, index)).setColor(UITheme::panelText);
+        var text = TextLine.of(0, () -> pendingText(view, index)).bindClientColor(UITheme::panelText);
         text.layout(l -> l.flex(1));
-        return UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+        return UIElement.centeredRow(UISizes.SLOT_SIZE)
                 .addChildren(ItemCell.of(() -> pendingStack(index)), text);
     }
 

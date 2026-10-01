@@ -40,7 +40,7 @@ public class AEItemConfigWidget extends ConfigWidget {
     }
 
     @Override
-    boolean listAutoPull() {
+    boolean isListAutoPull() {
         return itemList.isAutoPull();
     }
 }

@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.trait;
 
 import com.gtocore.common.machine.multiblock.electric.voidseries.AdvancedInfiniteDrillMachine;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.impl.DrillingControlCenterMachine;
 import com.gtolib.api.machine.trait.IFluidDrillLogic;
@@ -53,7 +54,15 @@ public final class AdvancedInfiniteDrillLogic extends VeinDrillLogic implements 
     @Nullable
     @Override
     protected GTRecipe buildDrillRecipe() {
-        if (getMachine().isEmpty() || !getMachine().canRunnable()) return null;
+        var machine = getMachine();
+        if (machine.isEmpty()) {
+            IdleReason.DRILL_HEAD_MISSING.report(machine);
+            return null;
+        }
+        if (!machine.canRunnable()) {
+            IdleReason.INSUFFICIENT_TEMPERATURE.report(machine, AdvancedInfiniteDrillMachine.RUNNING_HEAT, machine.getCurrentHeat());
+            return null;
+        }
         if (!veinFluids.isEmpty()) {
             var builder = RecipeBuilder.ofRaw().duration(MAX_PROGRESS).EUt(20000);
             veinFluids.reference2IntEntrySet().fastForEach(e -> builder.outputFluids(e.getKey(), e.getIntValue()));

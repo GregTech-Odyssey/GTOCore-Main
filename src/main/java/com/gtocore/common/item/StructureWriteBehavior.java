@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -104,7 +105,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
             var export = Button.translatable(LayoutStyle.AUTO, EXPORT).setVariant(UITheme.ButtonVariant.CONFIRM)
                     .disabled(() -> getPos(holder.getHeld()) == null, NO_AREA)
                     .setOnServerClick(() -> exportLog(holder));
-            return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP))
+            return Form.page()
                     .addChildren(status, UIElement.section().addChildren(mode, rotate), export);
         }).noInventory().createUI(entityPlayer);
     }

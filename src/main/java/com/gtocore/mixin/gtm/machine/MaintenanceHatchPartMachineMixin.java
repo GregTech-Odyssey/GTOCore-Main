@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -99,7 +100,7 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
     @Overwrite(remap = false)
     public @Nullable GTRecipe modifyRecipe(IWorkableMultiController controller, RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (hasMaintenanceProblems()) {
-            IdleReason.MAINTENANCE_BROKEN.reason(controller);
+            IdleReason.MAINTENANCE_BROKEN.report(controller, IssueStage.MODIFIER, recipe.definition);
             return null;
         }
         var durationMultiplier = getDurationMultiplier();

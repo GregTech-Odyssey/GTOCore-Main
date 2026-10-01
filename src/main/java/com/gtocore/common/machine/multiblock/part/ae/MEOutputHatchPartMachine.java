@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 
@@ -100,6 +101,6 @@ public class MEOutputHatchPartMachine extends StatusTrackedMEPartMachine {
 
     /** 页面："等待输出"网格（每行 9 格，只读）。 */
     private UIElement buildPage() {
-        return MEPartUI.page().addChild(MEPartUI.waitingList("me.output_hatch.waiting", this.internalBuffer, true, null));
+        return Form.page().addChild(MEPartUI.waitingList("me.output_hatch.waiting", this.internalBuffer, true, null));
     }
 }

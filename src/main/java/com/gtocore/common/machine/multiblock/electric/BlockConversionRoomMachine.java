@@ -4,6 +4,8 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.part.BlockBusPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -16,6 +18,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -34,7 +37,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@DataGeneratorScanned
 public final class BlockConversionRoomMachine extends StorageMultiblockMachine implements ICustomRecipeLogicHolder {
+
+    @RegisterLanguage(cn = "转换模拟卡", en = "Conversion Simulation Card")
+    private static final String SLOT_LABEL = "gtocore.machine.block_conversion_room.slot";
 
     private static final List<int[]> poses1 = new ArrayList<>();
     private static final List<int[]> poses2 = new ArrayList<>();
@@ -146,7 +153,13 @@ public final class BlockConversionRoomMachine extends StorageMultiblockMachine i
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.block_conversion_room.am", getConversionAmount()));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.block_conversion_room.am", getConversionAmount()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.block_conversion_room.am", MultiblockPage.numberText(this::getConversionAmount, ""));
     }
 
     // 用来冒充巨构的代码，有了巨构记得改
@@ -164,5 +177,15 @@ public final class BlockConversionRoomMachine extends StorageMultiblockMachine i
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         return getRecipeBuilder().duration(400).EUt(GTValues.V[getTier()]).build();
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { GTOItems.CONVERSION_SIMULATE_CARD.asStack() };
     }
 }

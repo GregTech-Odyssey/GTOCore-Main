@@ -1,11 +1,12 @@
 package com.gtocore.common.machine.multiblock.electric.smelter;
 
+import com.gtocore.data.IdleReason;
+
 import com.gtolib.api.machine.multiblock.CoilCustomParallelMultiblockMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -23,10 +24,11 @@ public final class BlazeBlastFurnaceMachine extends CoilCustomParallelMultiblock
     }
 
     private boolean inputFluid(RecipeHandlerUnit unit) {
-        if (inputFluid(unit, BLAZE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
+        long amount = (1L << Math.max(0, getTier() - 2)) * 10L;
+        if (inputFluid(unit, BLAZE.getRawFluid(), amount)) {
             return true;
         }
-        setIdleReason(() -> ActionResult.failInsufficientIn(BLAZE.getDisplayName()).reason());
+        IdleReason.BLAZE_SHORT.report(this, amount, -1);
         return false;
     }
 

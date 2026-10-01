@@ -238,7 +238,7 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 166, this, entityPlayer).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, this, entityPlayer);
     }
 
     @Override

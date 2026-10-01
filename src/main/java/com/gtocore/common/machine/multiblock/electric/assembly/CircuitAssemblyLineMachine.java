@@ -2,6 +2,8 @@ package com.gtocore.common.machine.multiblock.electric.assembly;
 
 import com.gtocore.common.data.GTOItems;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 import com.gtolib.utils.ItemUtils;
 
@@ -21,7 +23,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
+@DataGeneratorScanned
 public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
+
+    @RegisterLanguage(cn = "电路组装机器人", en = "Circuit Assembly Robot")
+    private static final String SLOT_LABEL = "gtocore.machine.circuit_assembly_line.slot";
 
     private int inputEUt;
 
@@ -77,5 +83,10 @@ public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
             if (recipe == null) return null;
         }
         return super.getRealRecipe(unit, recipe);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
     }
 }

@@ -26,7 +26,7 @@ final class BlockLang {
         }) {
             var cnName = dim.getCn();
             var cnSuffix = !cnName.isEmpty() && cnName.charAt(cnName.length() - 1) == '星' ? "仪" : "星球仪";
-            addCNEN("block.ad_astra." + dim.name().toLowerCase() + "_globe", dim.getCn() + cnSuffix, dim.getEn() + " Globe");
+            addCNEN("block.ad_astra." + dim.getLocation().getPath() + "_globe", dim.getCn() + cnSuffix, dim.getEn() + " Globe");
         }
         addCNEN("block.ad_astra.saturn_globe", "土星仪", "Saturn Globe");
     }

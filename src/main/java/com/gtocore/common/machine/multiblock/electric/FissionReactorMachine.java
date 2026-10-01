@@ -6,6 +6,8 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
@@ -21,6 +23,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -36,10 +39,22 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@DataGeneratorScanned
 public final class FissionReactorMachine extends ElectricMultiblockMachine implements IExplosionMachine, IParallelMachine {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::HeatUpdate);
+
+    @RegisterLanguage(cn = "燃料组件数量", en = "Fuel Components")
+    private static final String FUEL_COUNT = "gtocore.machine.fission_reactor.fuel_count";
+    @RegisterLanguage(cn = "燃料组件相邻数", en = "Fuel Component Adjacency")
+    private static final String FUEL_ADJACENT = "gtocore.machine.fission_reactor.fuel_adjacent";
+    @RegisterLanguage(cn = "冷却组件数量", en = "Cooling Components")
+    private static final String COOLER_COUNT = "gtocore.machine.fission_reactor.cooler_count";
+    @RegisterLanguage(cn = "冷却组件相邻数", en = "Cooling Component Adjacency")
+    private static final String COOLER_ADJACENT = "gtocore.machine.fission_reactor.cooler_adjacent";
+    @RegisterLanguage(cn = "堆温", en = "Reactor Temperature")
+    private static final String TEMPERATURE = "gtocore.machine.fission_reactor.temperature";
 
     private static final Fluid DistilledWater = GTMaterials.DistilledWater.getFluid();
     private static final Fluid Steam = GTMaterials.Steam.getFluid();
@@ -181,10 +196,22 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("gtocore.machine.fission_reactor.fuel", fuel, heatAdjacent - 1));
         textList.add(Component.translatable("gtocore.machine.fission_reactor.cooler", cooler, coolerAdjacent));
         textList.add(Component.translatable("gtocore.machine.fission_reactor.heat", heat));
         textList.add(Component.translatable("gtocore.machine.fission_reactor.damaged", damaged).append("%"));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addNumber(FUEL_COUNT, () -> fuel, "");
+        page.addNumber(FUEL_ADJACENT, () -> heatAdjacent - 1, "");
+        page.addNumber(COOLER_COUNT, () -> cooler, "");
+        page.addNumber(COOLER_ADJACENT, () -> coolerAdjacent, "");
+        page.addNumber(TEMPERATURE, () -> heat, "K");
+        page.addReading("gtocore.machine.fission_reactor.damaged", MultiblockPage.percentText(() -> damaged));
     }
 
     @Override

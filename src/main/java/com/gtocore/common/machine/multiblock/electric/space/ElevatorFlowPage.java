@@ -13,9 +13,13 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.MachineProtocol;
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
@@ -28,25 +32,22 @@ import com.gregtechceu.gtceu.uipro.flow.FlowState;
 import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uipro.styletemplate.WidgetIconAtlas;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueLine;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueView;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeDiagnoser;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeIssue;
-import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import dev.vfyjxf.taffy.style.AlignContent;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @DataGeneratorScanned
@@ -130,16 +131,14 @@ final class ElevatorFlowPage {
     static Widget create(SpaceElevatorMachine machine, FancyMachineUIWidget window) {
         boolean road = machine instanceof SuperSpaceElevatorMachine;
         var status = new Status(machine, road);
-        var chart = new FlowChart(UISizes.FLOW_GUTTER, COLUMN_WIDTH, COLUMN_WIDTH, COLUMN_WIDTH, SIDE_WIDTH);
-        var energyState = status.live(() -> status.diagnoser.energyIssue().state());
-        IGuiTexture energyIcon = UITheme.switching(() -> energyState.get() == FlowState.ACTIVE || energyState.get() == FlowState.READY,
-                new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_OFF), new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_ON));
-        var energy = inputNode(chart, 0, ItemView.of(energyIcon), LANG_ENERGY, energyState, status.live(() -> status.energyDetail),
+        var chart = new FlowChart(UISizes.FLOW_GUTTER_WIDTH, COLUMN_WIDTH, COLUMN_WIDTH, COLUMN_WIDTH, SIDE_WIDTH);
+        var energy = inputNode(chart, 0, node -> ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY,
+                status.live(() -> status.diagnoser.energyIssue().state()), status.live(() -> status.energyDetail),
                 status.live(() -> status.usageText), status.live(() -> status.usageLevel), status.live(() -> status.diagnoser.energyIssue().view()));
-        var computation = inputNode(chart, 1, ItemView.of(GTResearchMachines.COMPUTATION_HATCH_RECEIVER.asStack()), LANG_COMPUTATION,
-                status.live(() -> status.core), status.live(() -> status.coreDetail), status.live(() -> status.computationText), () -> StatusLine.Level.NORMAL,
+        var computation = inputNode(chart, 1, node -> ItemView.of(GTResearchMachines.COMPUTATION_HATCH_RECEIVER.asStack()), LANG_COMPUTATION,
+                status.live(() -> status.core), status.live(() -> status.coreDetail), status.live(() -> status.computationText), () -> Level.NORMAL,
                 status.live(() -> status.computationView));
-        var spool = inputNode(chart, 2, ItemView.of(GTOItems.NANOTUBE_SPOOL.asStack()), LANG_SPOOL, status.live(() -> status.spool),
+        var spool = inputNode(chart, 2, node -> ItemView.of(GTOItems.NANOTUBE_SPOOL.asStack()), LANG_SPOOL, status.live(() -> status.spool),
                 status.live(() -> status.spoolDetail), status.live(() -> status.spoolText), status.live(() -> status.spoolLevel), status.live(() -> status.spoolView));
         var core = coreNode(chart, machine, status);
         var orbit = orbitNode(chart, status);
@@ -156,17 +155,14 @@ final class ElevatorFlowPage {
         return UIElement.column(LayoutStyle.AUTO).addChild(chart.toView(window, false, machine.getDefinition().getId().toString()));
     }
 
-    private static FlowNode inputNode(FlowChart chart, int column, Widget icon, String name, Supplier<FlowState> state, Supplier<List<Component>> detail,
-                                      Supplier<Component> value, Supplier<StatusLine.Level> level, Supplier<IssueView> issue) {
-        var node = chart.node(0, column).state(state).detail(detail);
-        node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(FlowParts.centered(icon), TextLine.translatable(LayoutStyle.AUTO, name).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, value).alignCenter().level(level), new IssueLine(LayoutStyle.AUTO, null, issue));
-        return node;
+    private static FlowNode inputNode(FlowChart chart, int column, Function<FlowNode, Widget> icon, String name, Supplier<FlowState> state,
+                                      Supplier<List<Component>> detail, Supplier<Component> value, Supplier<Level> level, Supplier<IssueView> issue) {
+        var node = chart.node(0, column).bindState(state).bindDetail(detail);
+        return FlowParts.slotBody(node, icon.apply(node), TextLine.translatable(LayoutStyle.AUTO, name), value, level, issue);
     }
 
     private static FlowNode orbitNode(FlowChart chart, Status status) {
-        var node = chart.node(1, 3).state(status.live(() -> status.orbit)).detail(status.live(() -> status.orbitDetail));
+        var node = chart.node(1, 3).bindState(status.live(() -> status.orbit)).bindDetail(status.live(() -> status.orbitDetail));
         node.addChildren(FlowParts.header(ItemView.of(SpaceMultiblock.SPACE_ELEVATOR_CONNECTOR_MODULE.asStack()), LANG_ORBIT),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.orbitView)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_MULTIPLIER, status.live(() -> status.orbitText)));
@@ -174,22 +170,22 @@ final class ElevatorFlowPage {
     }
 
     private static FlowNode coreNode(FlowChart chart, SpaceElevatorMachine machine, Status status) {
-        var node = chart.node(1, 0, 3).state(status.live(() -> status.core)).detail(status.live(() -> status.coreDetail));
+        var node = chart.node(1, 0, 3).bindState(status.live(() -> status.core)).bindDetail(status.live(() -> status.coreDetail));
         node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_RUN),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.coreView)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText))
-                        .level(status.live(() -> status.voltageOk ? StatusLine.Level.GOOD : StatusLine.Level.ERROR)),
+                        .bindLevel(status.live(() -> status.voltageOk ? Level.GOOD : Level.ERROR)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_POWER_MODULE, status.live(() -> status.powerModuleText)),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.progress)));
+                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.progress)));
         return node;
     }
 
     private static FlowNode moduleNode(FlowChart chart, Status status, Group group, int column, int span, String title, ItemStack icon) {
-        var node = chart.node(2, column, span).state(status.live(() -> group.state)).detail(status.live(() -> group.detail));
+        var node = chart.node(2, column, span).bindState(status.live(() -> group.state)).bindDetail(status.live(() -> group.detail));
         node.addChildren(FlowParts.header(ItemView.of(icon), title),
                 StatusLine.of(LayoutStyle.AUTO, LANG_INSTALLED, status.live(() -> group.installedText)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_ATTACHED, status.live(() -> group.attachedText))
-                        .level(status.live(() -> group.allAttached ? StatusLine.Level.GOOD : StatusLine.Level.ERROR)),
+                        .bindLevel(status.live(() -> group.allAttached ? Level.GOOD : Level.ERROR)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_PARALLEL, status.live(() -> group.parallelText)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_DURATION, status.live(() -> group.durationText)));
         if (!group.mega) node.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_HINT_SHORT).setColor(UITheme.TEXT_SECONDARY));
@@ -268,8 +264,8 @@ final class ElevatorFlowPage {
         private Component powerModuleText = FlowParts.DASH, computationText = FlowParts.DASH;
         private Component spoolText = FlowParts.DASH;
         private IssueView spoolView = RecipeIssue.IDLE.view();
-        private StatusLine.Level spoolLevel = StatusLine.Level.NORMAL;
-        private StatusLine.Level usageLevel = StatusLine.Level.NORMAL;
+        private Level spoolLevel = Level.NORMAL;
+        private Level usageLevel = Level.NORMAL;
         private IssueView computationView = RecipeIssue.IDLE.view();
         private FlowState spool = FlowState.IDLE;
         private List<Component> spoolDetail = Collections.emptyList();
@@ -311,8 +307,9 @@ final class ElevatorFlowPage {
             if (planned != diagnoserTier) diagnoser = diagnoser(planned);
             diagnoser.diagnoseEnergy(formed, working, machine.getEnergyContainer(), machine.getMaxVoltage(), tier);
             usageText = Component.translatable(LANG_EUT, FormattingUtil.formatNumbers(diagnoser.getEUt()));
-            usageLevel = formed && diagnoser.energyIssue().isProblem() ? StatusLine.Level.ERROR : StatusLine.Level.NORMAL;
-            computationView = working ? RecipeIssue.RUNNING.view() : RecipeIssue.IDLE.view();
+            usageLevel = formed && diagnoser.energyIssue().isProblem() ? Level.ERROR : Level.NORMAL;
+            var result = MachineDiagnosis.of(machine);
+            computationView = IssueView.of(result, GTIssues.NO_CWU, working ? RecipeIssue.RUNNING.view() : RecipeIssue.IDLE.view());
             voltageOk = formed && tier >= SpaceElevatorMachine.REQUIRED_TIER;
             voltageText = formed ? Component.literal(GTValues.VN[Math.max(0, Math.min(GTValues.MAX, tier))]) : FlowParts.DASH;
             var energyLines = new ArrayList<Component>(diagnoser.energyDetail().size() + 2);
@@ -324,7 +321,7 @@ final class ElevatorFlowPage {
             powerModuleText = powerTier > 0 ? Component.literal("MK " + powerTier) : FlowParts.DASH;
             long cwu = SpaceElevatorMachine.computationDemand(planned, machine.exCWUt());
             computationText = Component.translatable(LANG_CWU, FormattingUtil.formatNumbers(cwu));
-            refreshCore(formed, working, tier, cwu, logic.isWaiting() ? null : working ? null : logic.getIdleReason());
+            refreshCore(formed, working, cwu, result);
             refreshSpool(formed);
             refreshOrbit(formed);
             var link = machine.getNetMachineCache();
@@ -334,21 +331,20 @@ final class ElevatorFlowPage {
             if (road) mega.refresh(machine, working, moduleTier, powerTier, multiplier);
         }
 
-        private void refreshCore(boolean formed, boolean working, int tier, long cwu, Component reason) {
+        private void refreshCore(boolean formed, boolean working, long cwu, DiagnosisResult result) {
             IssueView view;
+            var tierIssue = result.issue(GTIssues.LOW_VOLTAGE);
             if (!formed) view = RecipeIssue.UNFORMED.view();
-            else if (tier < SpaceElevatorMachine.REQUIRED_TIER) {
-                view = IssueView.of(RecipeIssue.LOW_VOLTAGE, Component.translatable(LANG_LOW_TIER, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]));
+            else if (!working && tierIssue != null && tierIssue.a() == SpaceElevatorMachine.REQUIRED_TIER) {
+                view = new IssueView(RecipeIssue.LOW_VOLTAGE, Component.translatable(LANG_LOW_TIER, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]), null, tierIssue);
             } else if (working) view = RecipeIssue.RUNNING.view();
-            else if (machine.getRecipeLogic().isWaiting()) view = RecipeIssue.WAITING.view();
             else if (!diagnoser.energySatisfied()) view = diagnoser.energyIssue().view();
-            else if (reason != null) view = IssueView.of(RecipeIssue.CONDITION, reason);
-            else view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
+            else view = IssueView.primary(result, machine.getRecipeLogic().isWaiting() ? RecipeIssue.WAITING.view() : IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY)));
             coreView = view;
-            core = working ? FlowState.ACTIVE : view.issue().state();
+            core = working ? FlowState.ACTIVE : view.state();
             var lines = new ArrayList<Component>(4);
             lines.add(machine.getDefinition().asStack().getHoverName());
-            lines.add((reason != null && !working ? reason.copy() : Component.translatable(view.issue().descriptionKey())).withStyle(RecipeDiagnoser.style(view.issue())));
+            lines.add(view.description().copy().withStyle(RecipeDiagnoser.style(view.issue())));
             lines.add(Component.translatable(LANG_CORE_DESC, Component.literal(FormattingUtil.formatNumbers(diagnoser.getEUt()) + " EU/t"),
                     Component.translatable(LANG_CWU, FormattingUtil.formatNumbers(cwu))).withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable(LANG_TIER_DESC, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]).withStyle(ChatFormatting.GRAY));
@@ -359,7 +355,7 @@ final class ElevatorFlowPage {
             int count = machine.getSpoolCount(), max = machine.getMaxSpoolCount();
             spoolText = ratio(count, max);
             spool = !formed ? FlowState.IDLE : count >= max ? FlowState.READY : FlowState.WARNING;
-            spoolLevel = count >= max ? StatusLine.Level.GOOD : StatusLine.Level.NORMAL;
+            spoolLevel = count >= max ? Level.GOOD : Level.NORMAL;
             spoolView = count >= max ? IssueView.of(RecipeIssue.OK, Component.translatable(LANG_SPOOL_FULL)) :
                     machine.getRecipeLogic().isWorking() ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_SPOOL_FILLING)) :
                             IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_SPOOL_MISSING, max - count));

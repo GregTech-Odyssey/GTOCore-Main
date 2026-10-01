@@ -9,8 +9,8 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -91,7 +91,7 @@ public final class WirelessConfiguratorUI {
         // 目标网络：状态面板（目标网络 / 所有者 / 成员）
         var target = new StatusPanel();
         // 最近 3 秒内的操作结果优先显示在第一行
-        target.addLine(TARGET, () -> ctx.stateText(() -> selectedLine(ctx, hand))).level(() -> ctx.stateLevel(() -> selectedLevel(ctx, hand)));
+        target.addLine(TARGET, () -> ctx.stateText(() -> selectedLine(ctx, hand))).bindLevel(() -> ctx.stateLevel(() -> selectedLevel(ctx, hand)));
         target.addLine(WirelessMachineUI.LINE_OWNER, () -> WirelessMachineUI.ownerValue(ctx, selected(ctx, hand)));
         target.addLine(WirelessMachineUI.LINE_MEMBERS, () -> WirelessMachineUI.memberValue(selected(ctx, hand)));
         root.addChild(target);
@@ -106,8 +106,8 @@ public final class WirelessConfiguratorUI {
                 from -> clear(ctx, hand),
                 null, null));
         root.addChild(UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, HINT).setColor(UITheme::textSecondary),
-                TextLine.translatable(LayoutStyle.AUTO, HINT_SNEAK).setColor(UITheme::textSecondary)));
+                TextLine.translatable(LayoutStyle.AUTO, HINT).bindClientColor(UITheme::textSecondary),
+                TextLine.translatable(LayoutStyle.AUTO, HINT_SNEAK).bindClientColor(UITheme::textSecondary)));
         return root;
     }
 
@@ -130,9 +130,9 @@ public final class WirelessConfiguratorUI {
     }
 
     /** 目标网络一行的图标：未选择为说明，网络不存在为错误，已选中为正常。 */
-    private static StatusLine.Level selectedLevel(WirelessUIContext ctx, InteractionHand hand) {
-        if (selectedId(ctx, hand).isEmpty()) return StatusLine.Level.NORMAL;
-        return selected(ctx, hand) == null ? StatusLine.Level.ERROR : StatusLine.Level.GOOD;
+    private static Level selectedLevel(WirelessUIContext ctx, InteractionHand hand) {
+        if (selectedId(ctx, hand).isEmpty()) return Level.NORMAL;
+        return selected(ctx, hand) == null ? Level.ERROR : Level.GOOD;
     }
 
     /** 服务端：把网络写入手中的配置器。 */

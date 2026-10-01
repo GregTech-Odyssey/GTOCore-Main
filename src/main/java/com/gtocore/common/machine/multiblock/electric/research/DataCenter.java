@@ -12,6 +12,7 @@ import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccessor;
+import com.gtocore.data.IdleReason;
 import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.integration.jade.GTOJadePlugin;
 
@@ -33,28 +34,29 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.SubWindowButton;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.DataBankMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -76,7 +78,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datastream.data.Data;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -98,7 +99,6 @@ import snownee.jade.api.ui.IElementHelper;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.gregtechceu.gtceu.api.GTValues.LuV;
@@ -111,7 +111,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                         ITierCasingMachine,
                         IMultiblockTraitHolder,
                         IWailaDisplayProvider,
-                        IMachineSubWindows {
+                        IMachineSubWindows,
+                        IIssueProvider {
 
     @SaveToDisk
     @SyncToClient
@@ -168,7 +169,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             var eu = recipe.eut;
             if (eu != 0) {
                 if (!this.useEnergy(eu, false)) {
-                    setIdleReason(() -> ActionResult.failInsufficientIn(EURecipeInfo.INSTANCE.getName()).reason());
+                    IdleReason.NO_EU.report(this, eu, 0);
                     return false;
                 }
             }
@@ -198,9 +199,9 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
      * 是否正在研究由服务端判定、经按钮所在区块的同步值下发；点击只在服务端执行，研究发起人是点按钮的玩家。
      */
     private void attachResearchButton(UIElement section, TechNode node) {
-        var researching = section.addSyncValue(SyncValue.of(() -> selectedNode == node, ByteStreamCodec.BOOLEAN_CODEC, false));
-        var button = Button.text(LayoutStyle.AUTO, () -> Component.translatable(researching.getValue() ? LANG_DATA_ACCESS_RESEARCHING : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
-                .setVariant(() -> researching.getValue() ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
+        var researching = section.addSyncValue(SyncValue.ofBool(() -> selectedNode == node));
+        var button = Button.of(LayoutStyle.AUTO).bindClientText(() -> Component.translatable(researching.getValue() ? LANG_DATA_ACCESS_RESEARCHING : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+                .bindClientVariant(() -> researching.getValue() ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(() -> {
                     var gui = section.getGui();
                     if (gui == null || gui.entityPlayer == null) return;
@@ -277,7 +278,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (researchRequester == null || selectedNode == null) return null;
         if (isResearchBlocked()) {
-            setIdleReason(PREREQUISITES_IDLE_REASON);
+            IdleReason.PREREQUISITES_NOT_RESEARCHED.report(this);
             return null;
         }
         var cwuAvailable = requestCWU(getCWUInputLimit(), true);
@@ -314,7 +315,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 .setWorkingStatus(true, isActive())
                 .setWorkingStatusKeys(LANG_DATA_ACCESS_WARN_ENERGY, LANG_DATA_ACCESS_WARN_ENERGY, "gtceu.multiblock.data_bank.providing")
                 .addEnergyUsageExactLine(energyUsage)
-                .addWorkingStatusLine();
+                .addIssueLines(getRecipeLogic());
         textList.add(Component.translatable(LANG_DATA_ACCESS_USAGE,
                 Component.literal(FormattingUtil.formatNumbers(getExistRecipes().size())).withStyle(ChatFormatting.AQUA),
                 Component.literal(FormattingUtil.formatNumbers(getTotalDataSlots())).withStyle(ChatFormatting.AQUA))
@@ -400,7 +401,10 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
     // ========= 研究（数据访问页用） =========
 
-    private static final Supplier<Component> PREREQUISITES_IDLE_REASON = () -> Component.translatable(DataCenter.LANG_PREREQUISITES_NOT_RESEARCHED);
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (isResearchBlocked()) IdleReason.PREREQUISITES_NOT_RESEARCHED.collect(sink);
+    }
 
     boolean isResearchBlocked() {
         var node = selectedNode;
@@ -468,7 +472,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             var stats = new DataAccessStats(machine);
             // 数据物品滚动区的滚动条伸在槽位右侧：玩家背包与槽位对齐
             if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
-            var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+            var page = Form.page();
 
             // 数据物品区块：先隐藏，槽建好后有槽才显示（两端都在得知槽数后执行）
             var dataBlock = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));
@@ -481,11 +485,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 case DataAccessStats.CHANGED -> LANG_STATE_CHANGED;
                 case DataAccessStats.NO_HATCH -> LANG_STATE_NO_HATCH;
                 default -> LANG_STATE_OK;
-            })).level(() -> switch (stats.state(slots.count())) {
-                case DataAccessStats.UNFORMED -> StatusLine.Level.ERROR;
-                case DataAccessStats.CHANGED, DataAccessStats.NO_HATCH -> StatusLine.Level.WARNING;
-                default -> StatusLine.Level.GOOD;
-            }).detail(() -> switch (stats.state(slots.count())) {
+            })).bindLevel(() -> switch (stats.state(slots.count())) {
+                case DataAccessStats.UNFORMED -> Level.ERROR;
+                case DataAccessStats.CHANGED, DataAccessStats.NO_HATCH -> Level.WARNING;
+                default -> Level.GOOD;
+            }).bindDetail(() -> switch (stats.state(slots.count())) {
                 case DataAccessStats.UNFORMED -> Component.translatable(LANG_DATA_ACCESS_UNFORMED);
                 case DataAccessStats.CHANGED -> Component.translatable(LANG_DATA_ACCESS_REFRESH);
                 case DataAccessStats.NO_HATCH -> Component.translatable(LANG_DATA_ACCESS_EMPTY);
@@ -498,18 +502,18 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             status.addLine(TechNodeLine.server(LANG_LINE_RESEARCH, () -> machine.selectedNode, (clicker, node) -> {
                 if (clicker instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.open(serverPlayer, machine, WINDOW_TECH_TREE);
             }))
-                    .level(() -> {
-                        if (machine.selectedNode == null) return StatusLine.Level.NORMAL;
-                        return machine.isActive() ? StatusLine.Level.GOOD : StatusLine.Level.WARNING;
+                    .bindLevel(() -> {
+                        if (machine.selectedNode == null) return Level.NORMAL;
+                        return machine.isActive() ? Level.GOOD : Level.WARNING;
                     })
-                    .detail(() -> {
+                    .bindDetail(() -> {
                         if (machine.selectedNode == null || machine.isActive()) return Component.empty();
                         return Component.translatable(machine.isResearchBlocked() ? LANG_PREREQUISITES_NOT_RESEARCHED : LANG_RESEARCH_IDLE);
                     });
             page.addChild(status);
 
             // 研究：进度条只在研究中显示（服务端判定、下发；同步值挂在父元素上，隐藏的元素自己收不到更新）
-            var progress = new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_RESEARCH_PROGRESS), UITheme.STATUS_ONLINE, machine::researchProgress);
+            var progress = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_RESEARCH_PROGRESS), UITheme.STATUS_ONLINE, machine::researchProgress);
             boolean researching = !remote && machine.selectedNode != null;
             progress.setDisplay(researching);
             var techTree = Button.translatable(LayoutStyle.AUTO, LANG_TECH_TREE_WINDOW)
@@ -525,11 +529,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     .layout(l -> l.flex(1));
             var research = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(progress,
                     UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(techTree, cancel));
-            research.addSyncValue(SyncValue.of(() -> machine.selectedNode != null, ByteStreamCodec.BOOLEAN_CODEC, researching).onChanged(progress::setDisplay));
+            research.addSyncValue(SyncValue.ofBool(() -> machine.selectedNode != null, researching).onChanged(progress::setDisplay));
             page.addChild(research);
 
-            var scroller = new ScrollerView("research.data_access", UISizes.SLOT_ROW_WIDTH, UISizes.SLOT)
-                    .adaptiveWidth().adaptiveHeight(DATA_MAX_ROWS * UISizes.SLOT);
+            var scroller = new ScrollerView("research.data_access", UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE)
+                    .adaptiveWidth().setAdaptiveHeight(DATA_MAX_ROWS * UISizes.SLOT_SIZE);
             scroller.addScrollViewChild(slots);
             dataBlock.addChildren(TextLine.translatable(LayoutStyle.AUTO, LANG_DATA_ITEMS), scroller);
             page.addChild(dataBlock);
@@ -672,7 +676,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             building = true;
             try {
                 for (int i = 0; i < slots; i++) {
-                    var slot = new ItemSlot(backing, i, true, true);
+                    var slot = ItemSlot.of(backing, i, true, true);
                     slot.setItemHook(new DataItemDisplay());
                     addChild(slot);
                 }

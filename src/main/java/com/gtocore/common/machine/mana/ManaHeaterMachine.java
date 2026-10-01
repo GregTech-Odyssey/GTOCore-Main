@@ -2,6 +2,7 @@ package com.gtocore.common.machine.mana;
 
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.heat.HeatHandler;
 import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
@@ -87,7 +88,10 @@ public class ManaHeaterMachine extends SimpleManaMachine implements IHeatContain
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (heatContainer.currentHeat + 80 >= heatContainer.maxHeat) return null;
+        if (heatContainer.currentHeat + 80 >= heatContainer.maxHeat) {
+            IdleReason.HEAT_FULL.report(this, heatContainer.currentHeat, heatContainer.maxHeat);
+            return null;
+        }
         return getRecipeBuilder().duration(20).MANAt(16).build();
     }
 }

@@ -17,6 +17,8 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureBuild;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.network.RequestThrottle;
+import com.gregtechceu.gtceu.uipro.data.RPC;
+import com.gregtechceu.gtceu.uipro.data.UIChannel;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -25,10 +27,13 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Unit;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Size;
@@ -37,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 @DataGeneratorScanned
-public final class OverviewWidget extends WidgetGroup {
+public final class OverviewWidget extends WidgetGroup implements UIChannel.Host {
 
     @RegisterLanguage(cn = "正常运行", en = "Connected")
     public static final String LANG_LEGEND_OK = "gtocore.overview.legend.ok";
@@ -76,11 +81,21 @@ public final class OverviewWidget extends WidgetGroup {
     @RegisterLanguage(cn = "方块数据超出上限，仅显示结构外形", en = "The block data exceeds the display limit; only structure outlines are shown")
     public static final String LANG_COARSE = "gtocore.overview.coarse";
 
-    private static final int SNAPSHOT = 0x5B01;
-    private static final int BUILD = 0x5B02;
-    private static final int BACK = 0x5B03;
+    private static final int SNAPSHOT = 3;
     private static final int MAX_VALUES = 64;
     private static final RequestThrottle BUILD_THROTTLE = new RequestThrottle(20);
+    private static final ByteStreamCodec<BuildRequest> BUILD_REQUEST = ByteStreamCodec.of((buf, request) -> {
+        buf.writeVarInt(request.anchor());
+        buf.writeResourceLocation(request.definition());
+        buf.writeVarIntArray(request.values());
+        buf.writeBlockPos(request.port());
+        buf.writeEnum(request.front());
+        buf.writeEnum(request.up());
+        buf.writeVarInt(request.upload());
+    }, buf -> new BuildRequest(buf.readVarInt(), buf.readResourceLocation(), buf.readVarIntArray(MAX_VALUES), buf.readBlockPos(),
+            buf.readEnum(Direction.class), buf.readEnum(Direction.class), buf.readVarInt()));
+
+    private record BuildRequest(int anchor, ResourceLocation definition, int[] values, BlockPos port, Direction front, Direction up, int upload) {}
 
     private final MultiblockControllerMachine host;
     private final OverviewAdapter adapter;
@@ -91,11 +106,23 @@ public final class OverviewWidget extends WidgetGroup {
     private OverviewSnapshot snapshot;
     @Nullable
     private Consumer<OverviewSnapshot> sink;
+    private final UIChannel channel = new UIChannel(this);
+    private final RPC<BuildRequest> buildRequest;
+    private final RPC<Unit> backRequest;
 
     public OverviewWidget(MultiblockControllerMachine host, OverviewAdapter adapter) {
         super(0, 0, 320, 240);
         this.host = host;
         this.adapter = adapter;
+        buildRequest = addRPC(BUILD_REQUEST, this::serverBuild);
+        backRequest = addRPC(player -> {
+            if (player instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.openMachine(serverPlayer, host);
+        });
+    }
+
+    @Override
+    public UIChannel getChannel() {
+        return channel;
     }
 
     public static SubWindowButton button(IMachineSubWindows machine, String key, MultiblockMachineDefinition definition, OverviewAdapter adapter) {
@@ -119,6 +146,7 @@ public final class OverviewWidget extends WidgetGroup {
     @Override
     public void initWidget() {
         super.initWidget();
+        channel.prime();
         if (isRemote()) OverviewView.attach(this);
         else if (gui != null) gui.registerCloseListener(this::releaseScan);
     }
@@ -142,6 +170,7 @@ public final class OverviewWidget extends WidgetGroup {
     @Override
     public void writeInitialData(FriendlyByteBuf buffer) {
         super.writeInitialData(buffer);
+        channel.writeInitialData(buffer);
         var current = scan();
         sentVersion = current.version();
         current.payload().write(buffer);
@@ -150,12 +179,14 @@ public final class OverviewWidget extends WidgetGroup {
     @Override
     public void readInitialData(FriendlyByteBuf buffer) {
         super.readInitialData(buffer);
+        channel.readInitialData(buffer);
         receive(OverviewSnapshot.read(buffer));
     }
 
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
+        channel.detectAndSendChanges();
         var current = scan();
         current.tick();
         if (current.version() == sentVersion) return;
@@ -166,7 +197,7 @@ public final class OverviewWidget extends WidgetGroup {
     @Override
     public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
         if (id == SNAPSHOT) receive(OverviewSnapshot.read(buffer));
-        else super.readUpdateInfo(id, buffer);
+        else if (!channel.readUpdateInfo(id, buffer)) super.readUpdateInfo(id, buffer);
     }
 
     private void receive(OverviewSnapshot next) {
@@ -175,41 +206,22 @@ public final class OverviewWidget extends WidgetGroup {
     }
 
     public void requestBuild(int anchor, MultiblockMachineDefinition definition, int[] values, OverviewDocking.DockPose pose, int upload) {
-        writeClientAction(BUILD, buf -> {
-            buf.writeVarInt(anchor);
-            buf.writeResourceLocation(definition.getId());
-            buf.writeVarIntArray(values);
-            buf.writeBlockPos(pose.port());
-            buf.writeEnum(pose.front());
-            buf.writeEnum(pose.up());
-            buf.writeVarInt(upload);
-        });
+        buildRequest.send(new BuildRequest(anchor, definition.getId(), values, pose.port(), pose.front(), pose.up(), upload));
     }
 
     public void requestBack() {
-        writeClientAction(BACK, buf -> {});
+        backRequest.send(Unit.INSTANCE);
     }
 
     @Override
     public void handleClientAction(int id, FriendlyByteBuf buffer) {
-        if (!(gui.entityPlayer instanceof ServerPlayer player)) return;
-        if (id == BACK) {
-            MachineSubWindowFactory.openMachine(player, host);
-            return;
-        }
-        if (id != BUILD) {
-            super.handleClientAction(id, buffer);
-            return;
-        }
-        int anchorIndex = buffer.readVarInt();
-        var definitionId = buffer.readResourceLocation();
-        var values = buffer.readVarIntArray(MAX_VALUES);
-        var port = buffer.readBlockPos();
-        var front = buffer.readEnum(Direction.class);
-        var up = buffer.readEnum(Direction.class);
-        int upload = buffer.readVarInt();
-        if (!BUILD_THROTTLE.tryAcquire(player) || !player.mayBuild()) return;
-        build(player, anchorIndex, definitionId, values, port, front, up, upload);
+        if (!channel.handleClientAction(id, buffer)) super.handleClientAction(id, buffer);
+    }
+
+    private void serverBuild(@Nullable Player player, BuildRequest request) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        if (!BUILD_THROTTLE.tryAcquire(serverPlayer) || !serverPlayer.mayBuild()) return;
+        build(serverPlayer, request.anchor(), request.definition(), request.values(), request.port(), request.front(), request.up(), request.upload());
     }
 
     private void build(ServerPlayer player, int anchorIndex, ResourceLocation id, int[] values, BlockPos port, Direction front, Direction up, int upload) {

@@ -55,7 +55,7 @@ public class AELimitFluidConfigWidget extends AEFluidConfigWidget {
 
     /// 数量下限 0：0 就是"禁止"（查表时按 -1 记）
     @Override
-    public long minAmount() {
+    public long getMinAmount() {
         return 0;
     }
 

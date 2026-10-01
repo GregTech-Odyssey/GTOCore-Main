@@ -46,6 +46,9 @@ import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartM
 @ParametersAreNonnullByDefault
 public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartMachine implements IMachineLife, IDataStickInteractable, IWailaDisplayProvider {
 
+    private static final String JADE_BOUND = "bound";
+    private static final String JADE_POS = "pos";
+
     private ProxySlotRecipeHandler proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
     @SaveToDisk
     @SyncToClient
@@ -91,24 +94,38 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     public void setBuffer(@Nullable BlockPos pos) {
         bufferResolved = true;
+        bind(findBuffer(pos));
+    }
+
+    @Nullable
+    private MEPatternBufferPartMachine findBuffer(@Nullable BlockPos pos) {
         var level = getLevel();
-        if (level == null || pos == null) {
-            buffer = null;
-        } else if (MetaMachine.getMachine(level, pos) instanceof MEPatternBufferPartMachine machine) {
-            proxySlotRecipeHandler = new ProxySlotRecipeHandler(this, machine);
-            bufferPos = pos;
-            buffer = machine;
-            machine.addProxy(this);
-            if (!isRemote()) {
-                proxySlotRecipeHandler.updateProxy(machine);
-                for (var controller : getControllers()) {
-                    controller.requestCheck();
-                }
-            }
-        } else {
-            buffer = null;
+        if (level == null || pos == null) return null;
+        return MetaMachine.getMachine(level, pos) instanceof MEPatternBufferPartMachine machine ? machine : null;
+    }
+
+    private void bind(@Nullable MEPatternBufferPartMachine target) {
+        var previous = buffer;
+        if (previous != null && previous != target) previous.removeProxy(this);
+        buffer = target;
+        if (target == null) {
+            proxySlotRecipeHandler.updateProxy(null);
+            return;
         }
-        if (buffer == null) proxySlotRecipeHandler.updateProxy(null);
+        proxySlotRecipeHandler = new ProxySlotRecipeHandler(this, target);
+        bufferPos = target.getPos();
+        target.addProxy(this);
+        if (!isRemote()) {
+            proxySlotRecipeHandler.updateProxy(target);
+            for (var controller : getControllers()) {
+                controller.requestCheck();
+            }
+        }
+    }
+
+    @Nullable
+    public BlockPos getBufferPos() {
+        return bufferPos;
     }
 
     @Nullable
@@ -139,27 +156,26 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     @Override
     public InteractionResult onDataStickUse(Player player, ItemStack dataStick) {
-        if (dataStick.hasTag()) {
-            assert dataStick.getTag() != null;
-            if (dataStick.getTag().contains("pos", Tag.TAG_INT_ARRAY)) {
-                var posArray = dataStick.getOrCreateTag().getIntArray("pos");
-                var bufferPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                setBuffer(bufferPos);
-                return InteractionResult.SUCCESS;
-            }
-        }
-        return InteractionResult.PASS;
+        var tag = dataStick.getTag();
+        if (tag == null || !tag.contains(MEPatternBufferPartMachine.DATA_STICK_POS, Tag.TAG_INT_ARRAY)) return InteractionResult.PASS;
+        var posArray = tag.getIntArray(MEPatternBufferPartMachine.DATA_STICK_POS);
+        if (posArray.length < 3) return InteractionResult.PASS;
+        var target = findBuffer(new BlockPos(posArray[0], posArray[1], posArray[2]));
+        if (target == null) return InteractionResult.PASS;
+        bufferResolved = true;
+        bind(target);
+        return InteractionResult.SUCCESS;
     }
 
     @Override
     public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
-        if (!data.getBoolean("formed")) return;
-        if (!data.getBoolean("bound")) {
+        if (!data.getBoolean(MEPatternBufferPartMachine.JADE_FORMED)) return;
+        if (!data.getBoolean(JADE_BOUND)) {
             iTooltip.add(Component.translatable("gtceu.top.buffer_not_bound").withStyle(ChatFormatting.RED));
             return;
         }
 
-        int[] pos = data.getIntArray("pos");
+        int[] pos = data.getIntArray(JADE_POS);
         iTooltip.add(Component.translatable("gtceu.top.buffer_bound_pos", pos[0], pos[1], pos[2])
                 .withStyle(TooltipHelper.RAINBOW_HSL_SLOW));
 
@@ -169,19 +185,19 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     @Override
     public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
         if (!isFormed()) {
-            data.putBoolean("formed", false);
+            data.putBoolean(MEPatternBufferPartMachine.JADE_FORMED, false);
             return;
         }
-        data.putBoolean("formed", true);
+        data.putBoolean(MEPatternBufferPartMachine.JADE_FORMED, true);
         var buffer = getBuffer();
         if (buffer == null) {
-            data.putBoolean("bound", false);
+            data.putBoolean(JADE_BOUND, false);
             return;
         }
-        data.putBoolean("bound", true);
+        data.putBoolean(JADE_BOUND, true);
 
         var pos = buffer.getPos();
-        data.putIntArray("pos", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+        data.putIntArray(JADE_POS, new int[] { pos.getX(), pos.getY(), pos.getZ() });
         writeBufferTag(data, buffer);
     }
 }

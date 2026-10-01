@@ -5,9 +5,11 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.AbstractSpaceStation;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.gui.ParallelConfigurator;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
+import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 import com.gtolib.api.machine.trait.CustomParallelTrait;
@@ -23,6 +25,9 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -30,8 +35,8 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.CleanroomMachine;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -42,12 +47,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class ProcessingPlantMachine extends StorageMultiblockMachine implements IParallelMachine, ITierCasingMachine {
+public final class ProcessingPlantMachine extends StorageMultiblockMachine implements IParallelMachine, ITierCasingMachine, IIssueProvider {
 
     private static final Set<GTRecipeType> RECIPE_TYPES = Set.of(
             GTRecipeTypes.BENDER_RECIPES,
@@ -138,9 +144,33 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
     }
 
     @Override
+    public boolean findRecipe(GTRecipeType type, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle, @Nullable GTRecipeDefinition lockedRecipe) {
+        if (machineStorage.updateEmpty()) IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.SEARCH, null);
+        return super.findRecipe(type, canHandle, lockedRecipe);
+    }
+
+    @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
-        if (mismatched || isEmpty()) return false;
+        if (isEmpty()) {
+            IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.CONDITION, recipe);
+            return false;
+        }
+        if (mismatched) {
+            IdleReason.PROCESSING_TIER_MISMATCH.report(this, IssueStage.CONDITION, storedMachineTier(), tier, recipe);
+            return false;
+        }
         return super.checkConditions(unit, recipe);
+    }
+
+    private int storedMachineTier() {
+        return machineStorage.storage.getStackInSlot(0).getItem() instanceof MetaMachineItem item ? item.getDefinition().getTier() : -1;
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (!isFormed()) return;
+        if (machineStorage.updateEmpty()) IdleReason.MACHINE_STORAGE_EMPTY.collect(sink);
+        else if (mismatched) IdleReason.PROCESSING_TIER_MISMATCH.collect(sink, storedMachineTier(), tier);
     }
 
     @Nullable
@@ -151,6 +181,8 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
             if (recipe == null) return null;
             return RecipeModifier.overclocking(this, unit, recipe, false, 0.9, 0.8, 0.5);
         }
+        if (machineStorage.updateEmpty()) IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.MODIFIER, recipe.definition);
+        else IdleReason.PROCESSING_TIER_MISMATCH.report(this, IssueStage.MODIFIER, storedMachineTier(), tier, recipe.definition);
         return null;
     }
 
@@ -192,8 +224,13 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        MachineUtils.addRecipeTypeText(textList, this);
-        if (mismatched) textList.add(Component.translatable("gtocore.machine.processing_plant.mismatched").withStyle(ChatFormatting.RED));
+        if (!MultiblockPage.isScreenText()) MachineUtils.addRecipeTypeText(textList, this);
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtceu.gui.machinemode", MultiblockPage.recipeTypeText(this, ProcessingArrayMachine.NO_MACHINE));
     }
 
     @Override
@@ -243,5 +280,10 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
     @Override
     public Reference2IntMap<TierDataKey> getCasingTiers() {
         return tierCasingTrait.getCasingTiers();
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return IStorageMultiblock.SLOT_MACHINE;
     }
 }

@@ -7,12 +7,16 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
@@ -126,23 +130,26 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
         var config = ConfigHolder.INSTANCE.machines;
         if (config.orderedAssemblyLineItems) {
             if (!checkItemInputs(recipe)) {
-                setIdleReason(IdleReason.ORDERED_ITEM);
+                IdleReason.ORDERED_ITEM.report(this, null, -1, -1, recipe.definition);
                 return false;
             }
         } else {
             var items = RecipeHelper.copyContents(recipe.itemInputs, 1);
             if (!unit.handleRecipeItem(IO.IN, recipe, items, true)) {
+                reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, ItemRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
                 return false;
             }
         }
         if (config.orderedAssemblyLineFluids) {
             if (!checkFluidInputs(recipe)) {
-                setIdleReason(IdleReason.ORDERED_FLUID);
+                IdleReason.ORDERED_FLUID.report(this, null, -1, -1, recipe.definition);
                 return false;
             }
         } else {
             var fluids = RecipeHelper.copyContents(recipe.fluidInputs, 1);
-            return unit.handleRecipeFluid(IO.IN, recipe, fluids, true);
+            if (unit.handleRecipeFluid(IO.IN, recipe, fluids, true)) return true;
+            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+            return false;
         }
         return true;
     }
@@ -153,18 +160,23 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
         var fluids = RecipeHelper.copyAndRoll(recipe, recipe.fluidInputs);
         if (ConfigHolder.INSTANCE.machines.orderedAssemblyLineItems) {
             if (!consumeOrderedItemInputs(items)) {
+                IdleReason.ORDERED_ITEM.report(this, IssueStage.SETUP, -1, -1, recipe.definition);
                 return false;
             }
         } else {
             if (!unit.handleRecipeItem(IO.IN, recipe, items, false)) {
+                reportIssue(GTIssues.INPUT_SHORT, IssueStage.SETUP, IO.IN, ItemRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
                 return false;
             }
         }
         if (ConfigHolder.INSTANCE.machines.orderedAssemblyLineFluids) {
-            return consumeOrderedFluidInputs(fluids);
-        } else {
-            return unit.handleRecipeFluid(IO.IN, recipe, fluids, false);
+            if (consumeOrderedFluidInputs(fluids)) return true;
+            IdleReason.ORDERED_FLUID.report(this, IssueStage.SETUP, -1, -1, recipe.definition);
+            return false;
         }
+        if (unit.handleRecipeFluid(IO.IN, recipe, fluids, false)) return true;
+        reportIssue(GTIssues.INPUT_SHORT, IssueStage.SETUP, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+        return false;
     }
 
     private boolean consumeOrderedItemInputs(List<Content<ItemIngredient>> items) {

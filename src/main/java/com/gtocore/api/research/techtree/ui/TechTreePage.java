@@ -40,11 +40,11 @@ import java.util.function.Supplier;
 public final class TechTreePage {
 
     /** 研究窗口里画布的最小默认尺寸：20 × 10 格；屏幕大时按屏幕撑大（见 {@code CanvasView.fillScreen}）。 */
-    public static final int CANVAS_WIDTH = 20 * UISizes.SLOT;
-    public static final int CANVAS_HEIGHT = 10 * UISizes.SLOT;
+    public static final int CANVAS_WIDTH = 20 * UISizes.SLOT_SIZE;
+    public static final int CANVAS_HEIGHT = 10 * UISizes.SLOT_SIZE;
     /// 撑大的上限：40 × 24 格
-    private static final int CANVAS_MAX_WIDTH = 40 * UISizes.SLOT;
-    private static final int CANVAS_MAX_HEIGHT = 24 * UISizes.SLOT;
+    private static final int CANVAS_MAX_WIDTH = 40 * UISizes.SLOT_SIZE;
+    private static final int CANVAS_MAX_HEIGHT = 24 * UISizes.SLOT_SIZE;
     /// 研究窗口里画布以外占的宽：窗口左右内边距（详情卡片浮在画布里，不另占宽度）
     private static final int RESERVED_WIDTH = 2 * UISizes.WINDOW_PADDING_X;
     /// 画布以外占的高：顶上标签栏 + 窗口上下内边距 + 标题栏与间距
@@ -256,7 +256,7 @@ public final class TechTreePage {
         view.getCanvas().fillScreen(RESERVED_WIDTH, RESERVED_HEIGHT, CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT);
         if (!(widget instanceof MachineWindow window)) return view;
         tabs.window = window;
-        view.setOnOtherTree(node -> {
+        view.setOnClientOtherTree(node -> {
             var target = tabs.tabOf(node.getManager());
             if (target == null) return;
             tabs.pendingFocus = node;

@@ -5,8 +5,8 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
 import com.gregtechceu.gtceu.api.gui.misc.IGhostFluidTarget;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.integration.ae2.utils.AEUtil;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
@@ -20,6 +20,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
 import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AmountFormat;
 import appeng.api.stacks.GenericStack;
 
 import com.lowdragmc.lowdraglib.gui.ingredient.Target;
@@ -30,8 +31,6 @@ import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
-import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawStringFixedCorner;
 
 public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhostFluidTarget {
 
@@ -56,10 +55,8 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
             if (!stack.isEmpty()) {
                 DrawerHelper.drawFluidForGui(graphics, FluidHelperImpl.toFluidStack(stack), config.amount(), stackX,
                         stackY, 16, 16);
-                if (parentWidget.showAmount()) {
-                    String amountStr = FormattingUtil.formatNumberReadable(config.amount(), true,
-                            FormattingUtil.DECIMAL_FORMAT_0F, "B");
-                    drawStringFixedCorner(graphics, amountStr, stackX + 17, stackY + 17, 16777215, true, 0.5f);
+                if (parentWidget.isAmountShown()) {
+                    UIText.drawItemCount(graphics, config.what().formatAmount(config.amount(), AmountFormat.SLOT_LARGE_FONT), stackX, stackY);
                 }
             }
         }
@@ -69,9 +66,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 DrawerHelper.drawFluidForGui(graphics, FluidHelperImpl.toFluidStack(stack), stock.amount(), stackX,
                         stackY + 18, 16,
                         16);
-                String amountStr = FormattingUtil.formatNumberReadable(stock.amount(), true,
-                        FormattingUtil.DECIMAL_FORMAT_0F, "B");
-                drawStringFixedCorner(graphics, amountStr, stackX + 17, stackY + 18 + 17, 16777215, true, 0.5f);
+                UIText.drawItemCount(graphics, stock.what().formatAmount(stock.amount(), AmountFormat.SLOT_LARGE_FONT), stackX, stackY + 18);
             }
         }
 
@@ -91,7 +86,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 // Right click to clear
                 writeClientAction(REMOVE_ID, buf -> {});
 
-                if (parentWidget.showAmount()) {
+                if (parentWidget.isAmountShown()) {
                     this.parentWidget.disableAmountClient();
                 }
             } else if (button == 0) {
@@ -138,7 +133,7 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
             case AMOUNT_CHANGE_ID -> {
                 int amt = buffer.readInt();
                 // 与数量面板同一套校验（客户端可以伪造）
-                if (amt < this.parentWidget.minAmount() || !this.parentWidget.canSetAmount(this.index)) return;
+                if (amt < this.parentWidget.getMinAmount() || !this.parentWidget.canSetAmount(this.index)) return;
                 slot.setConfig(new GenericStack(slot.getConfig().what(), amt));
                 this.parentWidget.notifyConfigChanged();
                 writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeInt(amt));

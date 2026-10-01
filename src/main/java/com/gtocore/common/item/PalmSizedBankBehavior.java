@@ -16,8 +16,8 @@ import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.RichText;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.TextPane;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
@@ -38,7 +38,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.fastcollection.fastutil.O2LOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -91,8 +90,8 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
     /// 左右两栏时每栏的宽度（内容宽 162 减去一个间距后对半分）
     private static final int HALF_WIDTH = (UISizes.CONTENT_WIDTH - UISizes.GAP) / 2;
     /// 列表滚动区的高度：首选高度与自动增高上限
-    private static final int LIST_HEIGHT = UISizes.SLOT * 4;
-    private static final int LIST_MAX_HEIGHT = UISizes.SLOT * 7;
+    private static final int LIST_HEIGHT = UISizes.SLOT_SIZE * 4;
+    private static final int LIST_MAX_HEIGHT = UISizes.SLOT_SIZE * 7;
 
     private static @NotNull MutableComponent trans(int id, Object... args) {
         if (args.length == 1 && args[0] instanceof Object[]) args = (Object[]) args[0];
@@ -145,8 +144,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        return new ModularUI(176, 166, holder, player)
-                .widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, holder, player);
     }
 
     @Override
@@ -169,7 +167,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
         boolean remote = player.level().isClientSide;
 
         // 钱包是否存在：服务端判定、下发；"钱包不存在"那行按同步值显隐（隐藏的元素自己收不到更新，同步值挂在页面上）
-        var hasWallet = page.addSyncValue(SyncValue.of(() -> WalletUtils.hasWallet(player), ByteStreamCodec.BOOLEAN_CODEC, false));
+        var hasWallet = page.addSyncValue(SyncValue.ofBool(() -> WalletUtils.hasWallet(player)));
 
         page.addChild(BankTab.textPane("gtocore.bank.intro", UISizes.CONTENT_WIDTH, UISizes.TEXT_HEIGHT * 4, UISizes.TEXT_HEIGHT * 8, remote,
                 list -> {
@@ -182,7 +180,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
         var status = new StatusPanel();
         status.addSentence(() -> trans(6, player.getName().getString()));
         status.addSentence(() -> trans(7, player.getUUID().toString()));
-        var missing = status.addSentence(() -> trans(9)).level(() -> StatusLine.Level.WARNING);
+        var missing = status.addSentence(() -> trans(9)).bindLevel(() -> com.gregtechceu.gtceu.uipro.Level.WARNING);
         // 服务端这份直接按权威值摆好（客户端那份等初始数据下发后由 onChanged 校正；
         // 服务端的 SyncValue.writeInitial 不触发 onChanged，所以这里要自己设一次）
         missing.setDisplay(!remote && !WalletUtils.hasWallet(player));
@@ -301,9 +299,9 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                 // 金额与服务端对齐：上限是当前货币余额（服务端取值下发），确认转账也只在服务端执行。
                 // 建页时两端都会取一次上下限：客户端取不到余额，先报"无上限"（真实上界随初始数据下发）；
                 // 写入时服务端再按余额夹一次，客户端改不出超过余额的金额。
-                var field = new NumberField(HALF_WIDTH, () -> amount,
+                var field = NumberField.ofLong(HALF_WIDTH, () -> amount,
                         value -> amount = Math.clamp(value, 0L, Math.max(0L, amountLimit(player, currency))),
-                        () -> 0L, () -> amountLimit(player, currency), NumberField.DEFAULT_STEPS)
+                        () -> 0L, () -> amountLimit(player, currency))
                         .layout(l -> l.flex(1));
                 page.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
                         field,
@@ -547,11 +545,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                     serverClick.accept(data);
                 });
             }
-            var scroller = new ScrollerView(id, width, height).adaptiveHeight(maxHeight);
-            scroller.setBackground(UITheme.STATUS_PANEL);
-            scroller.layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
-            scroller.addScrollViewChild(rich);
-            return scroller;
+            return TextPane.status(id, width, height, rich).setAdaptiveHeight(maxHeight);
         }
 
         /** 两栏并排时各自吃掉一半宽度（滚动区不是 {@link UIElement}，只能改它自己的布局样式）。 */

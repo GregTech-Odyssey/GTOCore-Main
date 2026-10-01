@@ -10,7 +10,6 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
-import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
@@ -20,16 +19,15 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTSoundEntries;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.RichText;
+import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -37,8 +35,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -46,7 +43,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -93,12 +90,27 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
-        algaeAccessHatch.setObserve(true);
+        if (algaeAccessHatch != null) algaeAccessHatch.setObserve(true);
+        if (MultiblockPage.isScreenText()) return;
         for (Algae algae : Algae.values()) {
             long amount = algaeAccessHatch != null ? algaeAccessHatch.getAvailableStacks().get(algae.aeKey()) : 0;
             list.add(Component.empty().append(algae.getDisplayName())
                     .append(Component.literal(" x " + FormattingUtil.formatNumbers(amount))));
         }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        algaeLine(page, "gtocore.algae.short.BlueAlgae", Algae.BlueAlgae);
+        algaeLine(page, "gtocore.algae.short.BrownAlgae", Algae.BrownAlgae);
+        algaeLine(page, "gtocore.algae.short.GoldAlgae", Algae.GoldAlgae);
+        algaeLine(page, "gtocore.algae.short.GreenAlgae", Algae.GreenAlgae);
+        algaeLine(page, "gtocore.algae.short.RedAlgae", Algae.RedAlgae);
+    }
+
+    private void algaeLine(MultiblockPage page, String labelKey, Algae algae) {
+        page.addNumber(labelKey, () -> algaeAccessHatch != null ? algaeAccessHatch.getAvailableStacks().get(algae.aeKey()) : 0, "");
     }
 
     @Override
@@ -253,36 +265,20 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
         private static final int CHART_HEIGHT = 40;
 
         private StatisticWidget() {
-            layout(l -> l.column().gapAll(UISizes.GAP).paddingAll(UITheme.PANEL_PADDING));
+            layout(l -> l.column().gapAll(UISizes.GAP).paddingAll(UISizes.PANEL_PADDING));
             setBackground(UITheme.STATUS_PANEL);
-            var selector = new RichText();
-            selector.textSupplier(LargeAlgaeFarm.this.isRemote() ? null : l -> l.add(
-                    Component.translatable("config.jade.display_mode").append(" ")
-                            .append(Arrays.stream(Algae.values()).map(algae -> {
-                                MutableComponent m = ((MutableComponent) algae.getDisplayName());
-                                if (algae == selectedAlgae) {
-                                    m.withStyle(ChatFormatting.UNDERLINE);
-                                }
-                                return ComponentPanelWidget.withButton(m, "select_algae_" + algae.ordinal());
-                            }).collect(GTOUtils.joiningComponent(Component.literal(" "))))));
-            selector.clickHandler(this::handleDisplayClick);
+            var algaeValues = Algae.values();
+            var selector = ButtonGroup.singleIcons(algaeValues.length, i -> new ItemStackTexture(algaeValues[i].aeKey().getItem()),
+                    () -> selectedAlgae.ordinal(), i -> selectedAlgae = algaeValues[i])
+                    .optionTooltips(i -> Collections.singletonList(algaeValues[i].getDisplayName()));
             addChildren(selector, new Chart());
-        }
-
-        private void handleDisplayClick(String componentData, ClickData clickData) {
-            if (componentData.startsWith("select_algae_")) {
-                int ordinal = Integer.parseInt(componentData.substring("select_algae_".length()));
-                selectedAlgae = Algae.values()[ordinal];
-            } else {
-                LargeAlgaeFarm.this.handleDisplayClick(componentData, clickData);
-            }
         }
 
         /** 折线图：宽度铺满区块内容，高 {@link #CHART_HEIGHT}。 */
         private final class Chart extends Widget {
 
             private Chart() {
-                super(0, 0, UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING, CHART_HEIGHT);
+                super(0, 0, UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING, CHART_HEIGHT);
             }
 
             @Override

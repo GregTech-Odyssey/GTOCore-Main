@@ -7,25 +7,31 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.CustomParallelMultiblockMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
+import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +39,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+@DataGeneratorScanned
 public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine implements IStorageMultiblock, IExplosionMachine {
+
+    @RegisterLanguage(cn = "中子反射板", en = "Neutron Reflector")
+    private static final String SLOT_LABEL = "gtocore.machine.fast_neutron_breeder_reactor.slot";
+
+    @RegisterLanguage(cn = "当前温度", en = "Current Temperature")
+    private static final String TEMPERATURE = "gtocore.machine.fast_neutron_breeder_reactor.temperature";
+    @RegisterLanguage(cn = "当前中子通量", en = "Current Neutron Flux")
+    private static final String NEUTRON_FLUX = "gtocore.machine.fast_neutron_breeder_reactor.neutron_flux";
+    @RegisterLanguage(cn = "配方每秒升温", en = "Recipe Temperature Increase Per Second")
+    private static final String HEAT_PER_SECOND = "gtocore.machine.fast_neutron_breeder_reactor.heat_per_second";
 
     @SaveToDisk
     private final NotifiableItemStackHandler machineStorage;
@@ -72,7 +89,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
         if (recipe.data.containsKey(GTORecipeDataKeys.NEUTRON_FLUX)) {
             var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
             if (neutronFluxkeV < neededNeutronFlux) {
-                setIdleReason(Component.translatable("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies"));
+                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.report(this, IssueStage.MODIFIER, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000), recipe.definition);
                 return null;
             }
             recipe.parallels = Math.min(recipe.parallels, 2048);
@@ -89,18 +106,13 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     }
 
     @Override
-    public @NotNull UIElement createUIWidget() {
-        return IStorageMultiblock.super.createUIWidget(super.createUIWidget());
-    }
-
-    @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
         if (getRecipeLogic().getLastRecipe() != null && getOffsetTimer() % 20 == 0) {
             var change = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX_CHANGE);
             neutronFluxkeV = Math.max(0, neutronFluxkeV + change);
             var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
             if (neutronFluxkeV < neededNeutronFlux) {
-                setIdleReason(Component.translatable("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies"));
+                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.report(this, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000));
                 return false;
             }
             recipeHeat = getRecipeHeat(recipe);
@@ -157,9 +169,18 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("gtocore.machine.current_temperature", FormattingUtil.formatNumber2Places(temperature)));
         textList.add(Component.translatable("gtocore.machine.neutron_flux", FormattingUtil.formatNumber2Places(neutronFluxkeV)));
         textList.add(Component.translatable("gtocore.machine.temp.per_second", FormattingUtil.formatNumber2Places(recipeHeat)));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addDecimal(TEMPERATURE, () -> temperature, "K");
+        page.addDecimal(NEUTRON_FLUX, () -> neutronFluxkeV, "keV");
+        page.addDecimal(HEAT_PER_SECOND, () -> recipeHeat, "K");
     }
 
     private double getRecipeHeat(GTRecipe recipe) {
@@ -242,5 +263,21 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
             GTOUtils.fastRemoveBlock(level, machine.getPos(), false, false);
             doExplosion(20);
         }
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        addStorageSlot(controls);
+        super.addControls(controls);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { GTItems.NEUTRON_REFLECTOR.asStack() };
     }
 }

@@ -52,11 +52,11 @@ public class SpaceStationRecipes {
                 .inputItems(GTOTagPrefix.frameGt, GTOMaterials.StainlessSteelGC4, 16)
                 .inputItems(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK.asItem(), 16)
                 .build();
-        for (Dimension dimension : Dimension.values()) {
+        for (Dimension dimension : Dimension.all()) {
             if (dimension == Dimension.OVERWORLD || !dimension.isWithinGalaxy()) {
                 continue;
             }
-            SpaceStationBuilder.builder("orbit_space_station_" + dimension.name().toLowerCase())
+            SpaceStationBuilder.builder("orbit_space_station_" + dimension.getLocation().getPath())
                     .dimension(dimension)
                     .inputItems(SpaceMultiblock.SPACE_STATION.asItem())
                     .inputItems(GTBlocks.CASING_STAINLESS_CLEAN.asItem(), 344)

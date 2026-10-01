@@ -3901,6 +3901,26 @@ final class Assembler {
                 .duration(400)
                 .save();
 
+        ASSEMBLER_RECIPES.builder("me_tag_filter_input_bus_part_machine")
+                .inputItems("gtceu:me_input_bus")
+                .inputItems(GTItems.TAG_FILTER, 16)
+                .inputItems(GTItems.SMART_ITEM_FILTER, 16)
+                .outputItems(GTAEMachines.ME_TAG_FILTER_INPUT_BUS.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 576)
+                .EUt(480)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("me_tag_filter_input_hatch_part_machine")
+                .inputItems("gtceu:me_input_hatch")
+                .inputItems(GTItems.FLUID_FILTER, 16)
+                .inputItems(GTItems.SMART_ITEM_FILTER, 16)
+                .outputItems(GTAEMachines.ME_TAG_FILTER_INPUT_HATCH.asItem())
+                .inputFluids(GTMaterials.SolderingAlloy, 576)
+                .EUt(480)
+                .duration(400)
+                .save();
+
         ASSEMBLER_RECIPES.builder("abs_white_casing")
                 .inputItems(TagPrefix.frameGt, GTMaterials.Europium)
                 .inputItems(TagPrefix.plate, GTOMaterials.Abs, 6)

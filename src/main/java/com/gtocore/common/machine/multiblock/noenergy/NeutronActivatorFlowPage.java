@@ -3,23 +3,24 @@ package com.gtocore.common.machine.multiblock.noenergy;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
+import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
+import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
+import com.gregtechceu.gtceu.api.machine.issue.MachineIssue;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
@@ -28,16 +29,15 @@ import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.flow.FlowChart;
 import com.gregtechceu.gtceu.uipro.flow.FlowNode;
+import com.gregtechceu.gtceu.uipro.flow.FlowParts;
 import com.gregtechceu.gtceu.uipro.flow.FlowState;
+import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uipro.styletemplate.WidgetIconAtlas;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueLine;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueView;
-import com.gregtechceu.gtceu.uiwidgets.flow.RecipeDiagnoser;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeIssue;
-import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -45,7 +45,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
@@ -312,25 +311,13 @@ public final class NeutronActivatorFlowPage {
     }
 
     private static ProgressBar kineticBar(Status status) {
-        return new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_ENERGY_BAR), UITheme.FLOW_CYAN_LIGHT, status::kinetic)
-                .currentOnly().unit("eV").range(status::window, RANGE_COLOR).marker(NeutronActivatorMachine.EXPLOSION_EV, EXPLOSION_COLOR, status::explosionCallout);
-    }
-
-    private static UIElement header(IGuiTexture icon, String title) {
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(ItemView.of(icon), TextLine.translatable(0, title).layout(l -> l.flex(1)));
-        return header;
-    }
-
-    private static UIElement header(ItemStack icon, String title) {
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(ItemView.of(icon), TextLine.translatable(0, title).layout(l -> l.flex(1)));
-        return header;
+        return ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_ENERGY_BAR), UITheme.FLOW_CYAN_LIGHT, status::kinetic)
+                .currentOnly().setUnit("eV").bindRange(status::window, RANGE_COLOR).addMarker(NeutronActivatorMachine.EXPLOSION_EV, EXPLOSION_COLOR, status::explosionCallout);
     }
 
     private static FlowNode acceleratorNode(FlowChart chart, Status status) {
-        var node = chart.node(0, 0).state(status::acceleratorState).detail(status::acceleratorDetail);
-        node.addChildren(header(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asStack(), LANG_ACCELERATOR),
+        var node = chart.node(0, 0).bindState(status::acceleratorState).bindDetail(status::acceleratorDetail);
+        node.addChildren(FlowParts.header(ItemView.of(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asStack()), LANG_ACCELERATOR),
                 new IssueLine(LayoutStyle.AUTO, null, status::acceleratorView),
                 StatusLine.of(LayoutStyle.AUTO, LANG_INSTALLED, status::installedText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_POWERED, status::poweredText),
@@ -339,70 +326,64 @@ public final class NeutronActivatorFlowPage {
     }
 
     private static FlowNode kineticNode(FlowChart chart, Status status) {
-        var node = chart.node(0, 1).state(status::kineticState).detail(status::kineticDetail);
-        node.addChildren(header(new ItemStack(GTOBlocks.SPEEDING_PIPE.get()), LANG_KINETIC),
+        var node = chart.node(0, 1).bindState(status::kineticState).bindDetail(status::kineticDetail);
+        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(GTOBlocks.SPEEDING_PIPE.get())), LANG_KINETIC),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::kineticView),
                 kineticBar(status),
                 StatusLine.of(LayoutStyle.AUTO, LANG_TARGET, status::targetText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_NET, status::netText).level(status::netLevel));
+                StatusLine.of(LayoutStyle.AUTO, LANG_NET, status::netText).bindLevel(status::netLevel));
         return node;
     }
 
     private static FlowNode lossNode(FlowChart chart, Status status) {
-        var node = chart.node(0, 2).state(status::lossState).detail(status::lossDetail);
-        node.addChildren(header(ChemicalHelper.get(TagPrefix.dust, GTMaterials.Graphite), LANG_LOSS),
+        var node = chart.node(0, 2).bindState(status::lossState).bindDetail(status::lossDetail);
+        node.addChildren(FlowParts.header(ItemView.of(ChemicalHelper.get(TagPrefix.dust, GTMaterials.Graphite)), LANG_LOSS),
                 new IssueLine(LayoutStyle.AUTO, null, status::lossView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_DECAY, status::decayText).level(status::decayLevel),
+                StatusLine.of(LayoutStyle.AUTO, LANG_DECAY, status::decayText).bindLevel(status::decayLevel),
                 StatusLine.of(LayoutStyle.AUTO, LANG_MODERATOR, status::moderatorText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_ABSORB, status::absorbText));
         return node;
     }
 
     private static FlowNode inputNode(FlowChart chart, Status status) {
-        var node = chart.node(1, 0).state(status::inputState).detail(status::inputDetail);
-        node.addChildren(header(GTMachines.ITEM_IMPORT_BUS[GTValues.LV].asStack(), LANG_INPUT),
+        var node = chart.node(1, 0).bindState(status::inputState).bindDetail(status::inputDetail);
+        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_IMPORT_BUS[GTValues.LV].asStack()), LANG_INPUT),
                 new IssueLine(LayoutStyle.AUTO, null, status::inputView),
                 StatusLine.of(LayoutStyle.AUTO, LANG_INPUT_UNITS, status::inputUnitsText));
         return node;
     }
 
     private static FlowNode recipeNode(FlowChart chart, NeutronActivatorMachine machine, Status status) {
-        var node = chart.node(1, 1).state(status::recipeState).detail(status::recipeDetail);
-        node.addChildren(header(machine.getDefinition().asStack(), LANG_RECIPE),
+        var node = chart.node(1, 1).bindState(status::recipeState).bindDetail(status::recipeDetail);
+        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_RECIPE),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::recipeView),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status::progress),
+                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status::progress),
                 StatusLine.of(LayoutStyle.AUTO, LANG_DRAIN, status::drainText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_DURATION, status::durationText));
         return node;
     }
 
     private static FlowNode outputNode(FlowChart chart, Status status) {
-        var node = chart.node(1, 2).state(status::outputState).detail(status::outputDetail);
-        node.addChildren(header(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asStack(), LANG_OUTPUT),
+        var node = chart.node(1, 2).bindState(status::outputState).bindDetail(status::outputDetail);
+        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asStack()), LANG_OUTPUT),
                 new IssueLine(LayoutStyle.AUTO, null, status::outputView),
                 StatusLine.of(LayoutStyle.AUTO, LANG_OUTPUT_UNITS, status::outputUnitsText));
         return node;
     }
 
     private static FlowNode energyNode(FlowChart chart, Status status) {
-        var node = chart.node(2, 1).state(status::energyState).detail(status::energyDetail);
-        IGuiTexture icon = UITheme.switching(() -> isLit(node.getFlowState()), new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_OFF),
-                new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_ON));
+        var node = chart.node(2, 1).bindState(status::energyState).bindDetail(status::energyDetail);
         var vortex = status.vortex;
         var toggle = Switch.of(vortex::isEnergySwitchOn, vortex::setEnergySwitch)
                 .disabled(() -> !vortex.hasEnergyReceiver(), LANG_NO_RECEIVER);
-        node.addChildren(header(icon, LANG_ENERGY),
-                UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY),
+                UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                         .addChildren(TextLine.translatable(0, LANG_ENERGY_SWITCH).layout(l -> l.flex(1)), toggle),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::energyView),
                 StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, status::usageText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status::voltageText),
-                new ProgressBar(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status::buffer).percent());
+                ProgressBar.of(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status::buffer).percent());
         return node;
-    }
-
-    private static boolean isLit(FlowState state) {
-        return state == FlowState.ACTIVE || state == FlowState.READY;
     }
 
     private static Component rate(long perSecond) {
@@ -422,18 +403,7 @@ public final class NeutronActivatorFlowPage {
         return component.copy().withStyle(ChatFormatting.GRAY);
     }
 
-    private static boolean voidsAllOutputs(IVoidable machine, @Nullable GTRecipe recipe) {
-        boolean items = recipe == null || !recipe.itemOutputs.isEmpty();
-        boolean fluids = recipe == null || !recipe.fluidOutputs.isEmpty();
-        return (!items || machine.canVoidRecipeOutputs(ItemRecipeInfo.INSTANCE)) && (!fluids || machine.canVoidRecipeOutputs(FluidRecipeInfo.INSTANCE));
-    }
-
-    private static Component sentence(IssueView view, @Nullable String description) {
-        var key = description != null ? description : view.issue().descriptionKey();
-        return Component.translatable(key).withStyle(RecipeDiagnoser.style(view.issue()));
-    }
-
-    private static final class Status {
+    private static final class Status extends ThrottledStatus {
 
         private static final Component NONE = Component.literal("—");
 
@@ -441,8 +411,6 @@ public final class NeutronActivatorFlowPage {
         @Nullable
         private final NeutronVortexMachine vortex;
 
-        private boolean refreshed;
-        private int refreshedAt;
         private boolean progressRefreshed;
         private int progressAt;
         private boolean sampled;
@@ -472,13 +440,13 @@ public final class NeutronActivatorFlowPage {
         private FlowState kineticState = FlowState.IDLE;
         private List<Component> kineticDetail = Collections.emptyList();
         private Component targetText = NONE, netText = NONE;
-        private StatusLine.Level netLevel = StatusLine.Level.NORMAL;
+        private Level netLevel = Level.NORMAL;
 
         private IssueView lossView = RecipeIssue.OFFLINE.view();
         private FlowState lossState = FlowState.IDLE;
         private List<Component> lossDetail = Collections.emptyList();
         private Component decayText = NONE, moderatorText = NONE, absorbText = NONE;
-        private StatusLine.Level decayLevel = StatusLine.Level.NORMAL;
+        private Level decayLevel = Level.NORMAL;
 
         private IssueView inputView = RecipeIssue.OFFLINE.view();
         private List<Component> inputDetail = Collections.emptyList();
@@ -497,230 +465,231 @@ public final class NeutronActivatorFlowPage {
         private Component usageText = NONE, voltageText = NONE;
 
         private Status(NeutronActivatorMachine machine) {
+            super(machine::getOffsetTimer, REFRESH_TICKS);
             this.machine = machine;
             this.vortex = machine instanceof NeutronVortexMachine v ? v : null;
         }
 
         IssueView acceleratorView() {
-            refresh();
+            update();
             return acceleratorView;
         }
 
         FlowState acceleratorState() {
-            refresh();
+            update();
             return acceleratorState;
         }
 
         List<Component> acceleratorDetail() {
-            refresh();
+            update();
             return acceleratorDetail;
         }
 
         Component installedText() {
-            refresh();
+            update();
             return installedText;
         }
 
         Component poweredText() {
-            refresh();
+            update();
             return poweredText;
         }
 
         Component gainText() {
-            refresh();
+            update();
             return gainText;
         }
 
         IssueView kineticView() {
-            refresh();
+            update();
             return kineticView;
         }
 
         FlowState kineticState() {
-            refresh();
+            update();
             return kineticState;
         }
 
         List<Component> kineticDetail() {
-            refresh();
+            update();
             return kineticDetail;
         }
 
         ProgressBar.Progress kinetic() {
-            refresh();
+            update();
             return kinetic;
         }
 
         ProgressBar.Callout explosionCallout() {
-            refresh();
+            update();
             return explosionCallout;
         }
 
         ProgressBar.Range window() {
-            refresh();
+            update();
             return window;
         }
 
         Component targetText() {
-            refresh();
+            update();
             return targetText;
         }
 
         Component netText() {
-            refresh();
+            update();
             return netText;
         }
 
-        StatusLine.Level netLevel() {
-            refresh();
+        Level netLevel() {
+            update();
             return netLevel;
         }
 
         IssueView lossView() {
-            refresh();
+            update();
             return lossView;
         }
 
         FlowState lossState() {
-            refresh();
+            update();
             return lossState;
         }
 
         List<Component> lossDetail() {
-            refresh();
+            update();
             return lossDetail;
         }
 
         Component decayText() {
-            refresh();
+            update();
             return decayText;
         }
 
-        StatusLine.Level decayLevel() {
-            refresh();
+        Level decayLevel() {
+            update();
             return decayLevel;
         }
 
         Component moderatorText() {
-            refresh();
+            update();
             return moderatorText;
         }
 
         Component absorbText() {
-            refresh();
+            update();
             return absorbText;
         }
 
         IssueView inputView() {
-            refresh();
+            update();
             return inputView;
         }
 
         FlowState inputState() {
-            refresh();
+            update();
             return inputView.state();
         }
 
         List<Component> inputDetail() {
-            refresh();
+            update();
             return inputDetail;
         }
 
         Component inputUnitsText() {
-            refresh();
+            update();
             return inputUnitsText;
         }
 
         IssueView outputView() {
-            refresh();
+            update();
             return outputView;
         }
 
         FlowState outputState() {
-            refresh();
+            update();
             return outputView.state();
         }
 
         List<Component> outputDetail() {
-            refresh();
+            update();
             return outputDetail;
         }
 
         Component outputUnitsText() {
-            refresh();
+            update();
             return outputUnitsText;
         }
 
         IssueView recipeView() {
-            refresh();
+            update();
             return recipeView;
         }
 
         FlowState recipeState() {
-            refresh();
+            update();
             return recipeState;
         }
 
         List<Component> recipeDetail() {
-            refresh();
+            update();
             return recipeDetail;
         }
 
         ProgressBar.Progress progress() {
-            refresh();
+            update();
             return progress;
         }
 
         Component drainText() {
-            refresh();
+            update();
             return drainText;
         }
 
         Component durationText() {
-            refresh();
+            update();
             return durationText;
         }
 
         IssueView energyView() {
-            refresh();
+            update();
             return energyView;
         }
 
         FlowState energyState() {
-            refresh();
+            update();
             return energyView.state();
         }
 
         List<Component> energyDetail() {
-            refresh();
+            update();
             return energyDetail;
         }
 
         Component usageText() {
-            refresh();
+            update();
             return usageText;
         }
 
         Component voltageText() {
-            refresh();
+            update();
             return voltageText;
         }
 
         ProgressBar.Progress buffer() {
-            refresh();
+            update();
             return buffer;
         }
 
-        private void refresh() {
-            int now = machine.getOffsetTimer();
-            if (!progressRefreshed || now < progressAt || now - progressAt >= PROGRESS_TICKS) {
-                progressRefreshed = true;
-                progressAt = now;
-                refreshProgress();
-            }
-            if (refreshed && now >= refreshedAt && now - refreshedAt < REFRESH_TICKS) return;
-            refreshed = true;
-            refreshedAt = now;
+        @Override
+        protected void onAccess(int now) {
+            if (progressRefreshed && now >= progressAt && now - progressAt < PROGRESS_TICKS) return;
+            progressRefreshed = true;
+            progressAt = now;
+            refreshProgress();
+        }
+
+        @Override
+        protected void refresh(int now) {
             refreshStates(now);
         }
 
@@ -757,19 +726,20 @@ public final class NeutronActivatorFlowPage {
             var logic = machine.getRecipeLogic();
             boolean working = logic.isWorking();
             boolean waiting = logic.isWaiting();
-            Component reason = working ? null : logic.getIdleReason();
-            boolean neutronReason = reason == IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.reason();
+            var result = MachineDiagnosis.of(machine);
+            var range = working || waiting ? null : result.issue(IdleReason.NEUTRON_EV_RANGE.type());
+            boolean starved = waiting && result.has(IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.type());
             boolean auto = vortex != null && vortex.isEnergyMode();
             int ev = machine.getEV();
             refreshRate(ev, now);
-            refreshTarget(logic.isActive() ? logic.getLastRecipe() : null, !working && !waiting && neutronReason);
+            refreshTarget(logic.isActive() ? logic.getLastRecipe() : null, range);
             double efficiency = machine.getEfficiencyFactor();
             boolean accelerating = refreshAccelerators(formed, auto, efficiency);
-            refreshKinetic(formed, auto, working, waiting && neutronReason, ev);
+            refreshKinetic(formed, auto, working, starved, ev);
             refreshLoss(formed, auto, accelerating, ev);
-            refreshInput(formed, working || waiting, neutronReason);
-            refreshOutput(formed, working, reason);
-            refreshRecipe(formed, auto, working, waiting, neutronReason, reason, efficiency);
+            refreshInput(formed, working || waiting, range != null, result);
+            refreshOutput(formed, working, result);
+            refreshRecipe(formed, auto, working, waiting, starved, range != null, result, efficiency);
             if (vortex != null) refreshEnergy(formed, auto, working);
         }
 
@@ -781,7 +751,7 @@ public final class NeutronActivatorFlowPage {
             detail.add(Component.translatable(LANG_CALLOUT_NOW, energy(ev, "eV"), energy(remaining, "eV")));
             if (rising) detail.add(Component.translatable(LANG_CALLOUT_ETA, rate(netRate), Math.max(1, (remaining + netRate - 1) / netRate)));
             detail.add(gray(Component.translatable(LANG_CALLOUT_HINT)));
-            return new ProgressBar.Callout(ProgressBar.Callout.DANGER, Component.translatable(LANG_CALLOUT_TITLE), detail);
+            return ProgressBar.Callout.of(Level.ERROR, Component.translatable(LANG_CALLOUT_TITLE), detail);
         }
 
         private void refreshRate(int ev, int now) {
@@ -794,7 +764,7 @@ public final class NeutronActivatorFlowPage {
             sampleAt = now;
         }
 
-        private void refreshTarget(@Nullable GTRecipe running, boolean waitingForRange) {
+        private void refreshTarget(@Nullable GTRecipe running, @Nullable MachineIssue range) {
             int min, max, evt;
             boolean fromRunning = false;
             if (running != null) {
@@ -802,9 +772,9 @@ public final class NeutronActivatorFlowPage {
                 max = running.data.getInt(GTORecipeDataKeys.EV_MAX);
                 evt = running.data.getInt(GTORecipeDataKeys.EVT);
                 fromRunning = true;
-            } else if (waitingForRange) {
-                min = machine.targetMin;
-                max = machine.targetMax;
+            } else if (range != null) {
+                min = NeutronActivatorMachine.rangeMin(range.a());
+                max = NeutronActivatorMachine.rangeMax(range.a());
                 evt = machine.targetEvt;
             } else {
                 min = max = -1;
@@ -867,7 +837,7 @@ public final class NeutronActivatorFlowPage {
             gainText = formed && !auto ? Component.translatable(LANG_ABOUT, rate(gain)) : NONE;
             lines.add(gray(Component.translatable(LANG_ACC_RULE, percent(efficiency))));
             lines.add(gray(Component.translatable(LANG_ACC_ESTIMATE)));
-            lines.add(sentence(acceleratorView, description));
+            lines.add(FlowIssueViews.sentence(acceleratorView, description));
             acceleratorDetail = lines;
             return formed && !auto && powered > 0;
         }
@@ -895,14 +865,16 @@ public final class NeutronActivatorFlowPage {
                 boolean empty = ev <= 0;
                 view = IssueView.of(RecipeIssue.IDLE, Component.translatable(empty ? LANG_KE_EMPTY : LANG_KE_NO_TARGET));
                 description = empty ? LANG_KE_EMPTY_DESC : LANG_KE_NO_TARGET_DESC;
-            } else if ((long) ev <= (long) targetMin * MEV) {
-                boolean rising = hasRate && netRate > 0;
-                view = rising ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_LOW_RISING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_LOW));
-                description = LANG_KE_LOW_DESC;
-            } else if ((long) ev >= (long) targetMax * MEV) {
-                boolean falling = hasRate && netRate < 0;
-                view = falling ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_HIGH_FALLING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_HIGH));
-                description = LANG_KE_HIGH_DESC;
+            } else if (!NeutronActivatorMachine.inRange(ev, targetMin, targetMax)) {
+                if ((long) ev <= (long) targetMin * MEV) {
+                    boolean rising = hasRate && netRate > 0;
+                    view = rising ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_LOW_RISING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_LOW));
+                    description = LANG_KE_LOW_DESC;
+                } else {
+                    boolean falling = hasRate && netRate < 0;
+                    view = falling ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_KE_HIGH_FALLING)) : IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_HIGH));
+                    description = LANG_KE_HIGH_DESC;
+                }
             } else {
                 view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_KE_IN_RANGE));
                 description = LANG_KE_IN_RANGE_DESC;
@@ -923,15 +895,15 @@ public final class NeutronActivatorFlowPage {
             lines.add(gray(Component.translatable(LANG_KE_EXPLOSION_LINE)));
             var sensor = machine.getSensor();
             if (formed && sensor != null) lines.add(gray(Component.translatable(LANG_KE_SENSOR_LINE, sensor.getRedstoneSignalOutput())));
-            lines.add(sentence(view, description));
+            lines.add(FlowIssueViews.sentence(view, description));
             kineticDetail = lines;
         }
 
-        private StatusLine.Level netLevel(int ev) {
-            if (!hasRate || !hasTarget || netRate == 0) return StatusLine.Level.NORMAL;
-            if ((long) ev <= (long) targetMin * MEV) return netRate > 0 ? StatusLine.Level.GOOD : StatusLine.Level.WARNING;
-            if ((long) ev >= (long) targetMax * MEV) return netRate < 0 ? StatusLine.Level.GOOD : StatusLine.Level.WARNING;
-            return StatusLine.Level.NORMAL;
+        private Level netLevel(int ev) {
+            if (!hasRate || !hasTarget || netRate == 0) return Level.NORMAL;
+            if ((long) ev <= (long) targetMin * MEV) return netRate > 0 ? Level.GOOD : Level.WARNING;
+            if ((long) ev >= (long) targetMax * MEV) return netRate < 0 ? Level.GOOD : Level.WARNING;
+            return Level.NORMAL;
         }
 
         private void refreshLoss(boolean formed, boolean auto, boolean accelerating, int ev) {
@@ -962,19 +934,20 @@ public final class NeutronActivatorFlowPage {
             }
             lossState = lossView.state();
             decayText = !formed ? NONE : decaying ? rate(-NeutronActivatorMachine.DECAY_EV_PER_SECOND) : Component.translatable(LANG_PAUSED);
-            decayLevel = decaying ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL;
+            decayLevel = decaying ? Level.WARNING : Level.NORMAL;
             moderatorText = formed ? Component.translatable(LANG_COUNT, moderators) : NONE;
             absorbText = formed ? energy((long) moderators * NeutronActivatorMachine.MODERATOR_EV, "eV") : NONE;
             var lines = new ArrayList<Component>(5);
             lines.add(Component.translatable(LANG_LOSS));
             lines.add(gray(Component.translatable(auto ? LANG_LOSS_RULE_AUTO : LANG_LOSS_RULE_DECAY)));
             lines.add(gray(Component.translatable(LANG_LOSS_RULE_ABSORB)));
-            lines.add(sentence(lossView, description));
+            lines.add(FlowIssueViews.sentence(lossView, description));
             lossDetail = lines;
         }
 
-        private void refreshInput(boolean formed, boolean active, boolean neutronReason) {
+        private void refreshInput(boolean formed, boolean active, boolean rangeReason, DiagnosisResult result) {
             int units = formed ? machine.getInputUnits().size() : 0;
+            IssueView problem = formed && units > 0 && !active && !rangeReason ? FlowIssueViews.inputProblem(result) : null;
             String description;
             if (!formed) {
                 inputView = RecipeIssue.OFFLINE.view();
@@ -985,36 +958,35 @@ public final class NeutronActivatorFlowPage {
             } else if (active) {
                 inputView = IssueView.of(RecipeIssue.RUNNING, Component.translatable(LANG_INPUT_LOADED));
                 description = null;
-            } else if (neutronReason) {
+            } else if (rangeReason) {
                 inputView = IssueView.of(RecipeIssue.INPUT_STOCKED, Component.translatable(LANG_INPUT_MATCHED));
                 description = LANG_INPUT_MATCHED_DESC;
+            } else if (problem != null) {
+                inputView = problem;
+                description = null;
             } else {
                 inputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_INPUT_WAITING));
                 description = null;
             }
             inputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            inputDetail = List.of(Component.translatable(LANG_INPUT), sentence(inputView, description));
+            inputDetail = List.of(Component.translatable(LANG_INPUT), FlowIssueViews.sentence(inputView, description));
         }
 
-        private void refreshOutput(boolean formed, boolean working, @Nullable Component reason) {
+        private void refreshOutput(boolean formed, boolean working, DiagnosisResult result) {
             int units = formed ? machine.getOutputUnits().size() : 0;
-            boolean full = reason == IdleReason.OUTPUT_FULL.reason() || reason == IdleReason.INSUFFICIENT_OUT.reason();
-            boolean voiding = voidsAllOutputs(machine, machine.getRecipeLogic().getLastRecipe());
             String description = null;
-            if (!formed) outputView = RecipeIssue.OFFLINE.view();
-            else if (voiding && units == 0) {
-                outputView = RecipeIssue.OUTPUT_VOIDED.view();
-                description = LANG_OUTPUT_VOID_ALL_DESC;
-            } else if (units == 0) outputView = RecipeIssue.NO_OUTPUT_HATCH.view();
-            else if (voiding) outputView = working ? RecipeIssue.OUTPUT_VOID_OVERFLOW_ACTIVE.view() : RecipeIssue.OUTPUT_VOID_OVERFLOW.view();
-            else if (working) outputView = RecipeIssue.OUTPUT_ACTIVE.view();
-            else if (full) outputView = RecipeIssue.OUTPUT_FULL.view();
-            else outputView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
+            if (!formed) {
+                outputView = RecipeIssue.OFFLINE.view();
+            } else {
+                var view = FlowIssueViews.output(result, machine, working, units);
+                outputView = view != null ? view : IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OUTPUT_IDLE));
+                if (outputView.issue() == RecipeIssue.OUTPUT_VOIDED && units == 0) description = LANG_OUTPUT_VOID_ALL_DESC;
+            }
             outputUnitsText = formed ? Component.literal(Integer.toString(units)) : NONE;
-            outputDetail = List.of(Component.translatable(LANG_OUTPUT), sentence(outputView, description));
+            outputDetail = List.of(Component.translatable(LANG_OUTPUT), FlowIssueViews.sentence(outputView, description));
         }
 
-        private void refreshRecipe(boolean formed, boolean auto, boolean working, boolean waiting, boolean neutronReason, @Nullable Component reason, double efficiency) {
+        private void refreshRecipe(boolean formed, boolean auto, boolean working, boolean waiting, boolean starved, boolean rangeReason, DiagnosisResult result, double efficiency) {
             var logic = machine.getRecipeLogic();
             String description = null;
             if (!formed) {
@@ -1023,13 +995,14 @@ public final class NeutronActivatorFlowPage {
                 recipeView = RecipeIssue.DISABLED.view();
             } else if (working) {
                 recipeView = RecipeIssue.RUNNING.view();
-            } else if (neutronReason) {
-                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(waiting ? LANG_KE_STARVED : LANG_RECIPE_RANGE));
-                description = waiting ? LANG_KE_STARVED_DESC : hasTarget && targetMin >= 0 && (long) machine.getEV() >= (long) targetMax * MEV ? LANG_KE_HIGH_DESC : LANG_KE_LOW_DESC;
-            } else if (waiting) {
-                recipeView = IssueView.of(RecipeIssue.WAITING, reason);
+            } else if (starved) {
+                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_KE_STARVED));
+                description = LANG_KE_STARVED_DESC;
+            } else if (rangeReason) {
+                recipeView = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_RECIPE_RANGE));
+                description = hasTarget && targetMin >= 0 && (long) machine.getEV() >= (long) targetMax * MEV ? LANG_KE_HIGH_DESC : LANG_KE_LOW_DESC;
             } else {
-                recipeView = IssueView.of(RecipeIssue.IDLE, reason);
+                recipeView = IssueView.primary(result, waiting ? RecipeIssue.WAITING.view() : RecipeIssue.IDLE.view());
             }
             recipeState = working ? FlowState.ACTIVE : recipeView.state();
             boolean drains = machine.consumesKineticEnergy();
@@ -1048,7 +1021,7 @@ public final class NeutronActivatorFlowPage {
             } else {
                 lines.add(gray(Component.translatable(LANG_RECIPE_NO_DRAIN_RULE)));
             }
-            lines.add(description != null ? Component.translatable(description).withStyle(RecipeDiagnoser.style(recipeView.issue())) : recipeView.text().copy().withStyle(RecipeDiagnoser.style(recipeView.issue())));
+            lines.add(FlowIssueViews.sentence(recipeView, description));
             recipeDetail = lines;
         }
 
@@ -1072,7 +1045,7 @@ public final class NeutronActivatorFlowPage {
             usageText = formed && auto && usage > 0 ? Component.literal(FormattingUtil.formatNumbers(usage) + " EU/t") : NONE;
             voltageText = formed && capacity > 0 ? Component.literal(GTValues.VN[GTUtil.getTierByVoltage(voltage)]) : NONE;
             energyDetail = List.of(Component.translatable(LANG_ENERGY), gray(Component.translatable(LANG_ENERGY_RULE)),
-                    gray(Component.translatable(LANG_RECIPE_AUTO_RULE)), sentence(energyView, description));
+                    gray(Component.translatable(LANG_RECIPE_AUTO_RULE)), FlowIssueViews.sentence(energyView, description));
         }
     }
 }

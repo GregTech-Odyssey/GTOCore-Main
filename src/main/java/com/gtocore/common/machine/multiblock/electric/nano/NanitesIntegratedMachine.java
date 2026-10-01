@@ -4,7 +4,10 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.MultiBlockC;
+import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.CoilCrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
@@ -15,13 +18,15 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 
@@ -34,7 +39,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
+@DataGeneratorScanned
 public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMachine implements IStorageMultiblock {
+
+    @RegisterLanguage(cn = "损失概率", en = "Consumption Chance")
+    static final String CONSUME_CHANCE = "gtocore.machine.nanites_integrated_processing_center.consume_chance";
 
     private static final Int2ObjectOpenHashMap<MachineDefinition> MODULE_MAP = new Int2ObjectOpenHashMap<>();
 
@@ -90,6 +99,11 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         chance = Math.min(100, (int) (getStorageStack().getCount() * MATERIAL_MAP.get(material)));
     }
 
+    public static Component moduleName(long module) {
+        var definition = MODULE_MAP.get((int) module);
+        return definition == null ? Component.literal("—") : Component.translatable(definition.getDescriptionId());
+    }
+
     static void trimRecipe(GTRecipe recipe, int chance) {
         if (GTValues.RNG.nextInt(100) < chance) {
             recipe.itemInputs = RecipeHelper.trimLast(recipe.itemInputs, recipe.itemInputs.size() - 1);
@@ -99,13 +113,16 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
 
     @Override
     public GTRecipe fullModifyRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipeDefinition definition) {
-        if (module.contains(definition.data.getInt(GTORecipeDataKeys.MODULE))) {
+        int need = definition.data.getInt(GTORecipeDataKeys.MODULE);
+        if (module.contains(need)) {
             var recipe = super.fullModifyRecipe(unit, definition);
             if (recipe != null) {
                 trimRecipe(recipe, chance);
                 return recipe;
             }
+            return null;
         }
+        IdleReason.NANITES_MODULE_MISSING.report(this, IssueStage.MODIFIER, need, 0, definition);
         return null;
     }
 
@@ -119,7 +136,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("tooltip.emi.chance.consume", Math.max(100 - chance, 0)));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("tooltip.emi.chance.consume", Math.max(100 - chance, 0)));
         if (module.isEmpty()) {
             textList.add(Component.translatable("gtocore.machine.nanites_integrated_processing_center.not_connected"));
         } else {
@@ -129,13 +146,24 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
     }
 
     @Override
-    @NotNull
-    public UIElement createUIWidget() {
-        return createUIWidget(super.createUIWidget());
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(CONSUME_CHANCE, MultiblockPage.percentText(() -> Math.max(100 - chance, 0)));
     }
 
     @Override
     public NotifiableItemStackHandler getMachineStorage() {
         return this.machineStorage;
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        addStorageSlot(controls);
+        super.addControls(controls);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return IStorageMultiblock.SLOT_NANITES;
     }
 }

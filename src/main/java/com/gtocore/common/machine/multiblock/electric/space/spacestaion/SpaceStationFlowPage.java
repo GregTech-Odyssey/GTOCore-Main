@@ -1,15 +1,19 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.common.data.machines.GTOMachineProtocols;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
+import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
@@ -23,12 +27,10 @@ import com.gregtechceu.gtceu.uipro.flow.FlowState;
 import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uipro.styletemplate.WidgetIconAtlas;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueLine;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueView;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeDiagnoser;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeIssue;
-import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -38,9 +40,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import dev.vfyjxf.taffy.style.AlignContent;
 import earth.terrarium.adastra.common.registry.ModBlocks;
 
 import java.util.ArrayList;
@@ -201,7 +201,7 @@ public final class SpaceStationFlowPage {
         int[] widths = new int[columns + 1];
         Arrays.fill(widths, COLUMN_WIDTH);
         widths[columns] = ENVIRONMENT_WIDTH;
-        var chart = new FlowChart(UISizes.FLOW_GUTTER, widths);
+        var chart = new FlowChart(UISizes.FLOW_GUTTER_WIDTH, widths);
         var station = stationNode(chart, machine, status, columns);
         var environment = environmentNode(chart, status, columns);
         chart.link(station, environment).follow(environment);
@@ -222,43 +222,38 @@ public final class SpaceStationFlowPage {
     }
 
     private static FlowNode stationNode(FlowChart chart, SimpleSpaceStationMachine machine, Status status, int columns) {
-        var node = chart.node(1, 1, columns - 1).state(status.live(() -> status.station)).detail(status.live(() -> status.stationDetail));
+        var node = chart.node(1, 1, columns - 1).bindState(status.live(() -> status.station)).bindDetail(status.live(() -> status.stationDetail));
         node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_STATION),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.stationView)),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness))
-                        .percent().detail(() -> Status.READINESS_HINT));
+                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
+                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness))
+                        .percent().bindDetail(() -> Status.READINESS_HINT));
         return node;
     }
 
     private static FlowNode inputNode(FlowChart chart, Status status, int index, boolean remote) {
         var diagnoser = status.diagnoser;
-        var node = chart.node(0, index).state(status.live(() -> diagnoser.inputIssue(index).state())).detail(status.live(() -> status.inputDetails.get(index)));
-        node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(FlowParts.centered(FlowParts.fluidSlot(remote ? null : diagnoser.inputStack(index))),
-                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.inputName(index)).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.inputAmount(index)).alignCenter().level(status.live(() -> diagnoser.inputIssue(index).state().level())),
-                new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.inputIssue(index).view())));
-        return node;
+        var node = chart.node(0, index).bindState(status.live(() -> diagnoser.inputIssue(index).state())).bindDetail(status.live(() -> status.inputDetails.get(index)));
+        return FlowParts.slotBody(node, FlowParts.fluidSlot(remote ? null : diagnoser.inputStack(index)),
+                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.inputName(index)), () -> diagnoser.inputAmount(index),
+                status.live(() -> diagnoser.inputIssue(index).state().getLevel()), status.live(() -> diagnoser.inputIssue(index).view()));
     }
 
     private static FlowNode energyNode(FlowChart chart, Status status) {
         var diagnoser = status.diagnoser;
-        var node = chart.node(1, 0).state(status.live(() -> diagnoser.energyIssue().state())).detail(status.live(() -> status.energyDetail));
-        IGuiTexture icon = UITheme.switching(() -> isLit(node.getFlowState()), new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_OFF),
-                new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_ON));
-        node.addChildren(FlowParts.header(ItemView.of(icon), LANG_ENERGY), new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.energyIssue().view())),
+        var node = chart.node(1, 0).bindState(status.live(() -> diagnoser.energyIssue().state())).bindDetail(status.live(() -> status.energyDetail));
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY), new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.energyIssue().view())),
                 StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, () -> status.usageText),
                 StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status.live(() -> status.powerText))
-                        .level(status.live(() -> diagnoser.energyIssue() == RecipeIssue.LOW_POWER ? StatusLine.Level.ERROR : StatusLine.Level.NORMAL)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText)).level(status.live(status::voltageLevel)),
+                        .bindLevel(status.live(status::powerLevel)),
+                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText)).bindLevel(status.live(status::voltageLevel)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_REQUIRED_TIER, () -> status.requiredTierText),
-                new ProgressBar(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.buffer)).percent());
+                ProgressBar.of(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.buffer)).percent());
         return node;
     }
 
     private static FlowNode environmentNode(FlowChart chart, Status status, int column) {
-        var node = chart.node(1, column).state(status.live(() -> status.environment)).detail(status.live(() -> status.environmentDetail));
+        var node = chart.node(1, column).bindState(status.live(() -> status.environment)).bindDetail(status.live(() -> status.environmentDetail));
         node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), LANG_ENVIRONMENT),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_OXYGEN), status.live(() -> status.oxygenView)),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_TEMPERATURE), status.live(() -> status.temperatureView)),
@@ -268,37 +263,30 @@ public final class SpaceStationFlowPage {
         return node;
     }
 
-    private static boolean isLit(FlowState state) {
-        return state == FlowState.ACTIVE || state == FlowState.READY;
-    }
-
     private static FlowNode outputNode(FlowChart chart, Status status, int column, int index, boolean remote) {
         var diagnoser = status.diagnoser;
-        var node = chart.node(2, column).state(status.live(() -> diagnoser.outputIssue(index).state())).detail(status.live(() -> diagnoser.outputDetail(index)));
-        node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(FlowParts.centered(FlowParts.fluidSlot(remote ? null : diagnoser.outputStack(index))),
-                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.outputName(index)).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.outputAmount(index)).alignCenter().level(status.live(() -> diagnoser.outputIssue(index).state().level())),
-                new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.outputIssue(index).view())));
-        return node;
+        var node = chart.node(2, column).bindState(status.live(() -> diagnoser.outputIssue(index).state())).bindDetail(status.live(() -> diagnoser.outputDetail(index)));
+        return FlowParts.slotBody(node, FlowParts.fluidSlot(remote ? null : diagnoser.outputStack(index)),
+                TextLine.of(LayoutStyle.AUTO, () -> diagnoser.outputName(index)), () -> diagnoser.outputAmount(index),
+                status.live(() -> diagnoser.outputIssue(index).state().getLevel()), status.live(() -> diagnoser.outputIssue(index).view()));
     }
 
     private static FlowNode waterNode(FlowChart chart, SimpleSpaceStationMachine machine, Status status, int span, boolean remote) {
-        var node = chart.node(2, 0, span).state(status.live(() -> status.waterState)).detail(status.live(() -> status.waterDetail));
-        var header = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+        var node = chart.node(2, 0, span).bindState(status.live(() -> status.waterState)).bindDetail(status.live(() -> status.waterDetail));
+        var header = UIElement.centeredRow(UISizes.SLOT_SIZE);
         header.addChildren(FlowParts.fluidSlot(remote ? null : DistilledWater.getFluid(1)), TextLine.translatable(0, LANG_WATER).layout(l -> l.flex(1)));
-        int fieldWidth = chart.spanWidth(span) - 2 * UISizes.FLOW_NODE_PADDING - LABEL_WIDTH - UISizes.GAP;
-        var field = NumberField.of(fieldWidth, machine::getWaterAmountPerHatch, value -> machine.setWaterAmountPerHatch((int) value), 0, SimpleSpaceStationMachine.MAX_WATER_PER_HATCH);
+        int fieldWidth = chart.widthFor(span) - 2 * UISizes.FLOW_NODE_PADDING - LABEL_WIDTH - UISizes.GAP;
+        var field = NumberField.ofInt(fieldWidth, machine::getWaterAmountPerHatch, machine::setWaterAmountPerHatch, 0, SimpleSpaceStationMachine.MAX_WATER_PER_HATCH);
         field.setHoverTooltips(Component.translatable(LANG_PER_HATCH_TOOLTIP));
-        var amountRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
-                .addChildren(TextLine.translatable(LABEL_WIDTH, LANG_PER_HATCH).setColor(UITheme::textSecondary), field);
+        var amountRow = UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
+                .addChildren(TextLine.translatable(LABEL_WIDTH, LANG_PER_HATCH).bindClientColor(UITheme::textSecondary), field);
         node.addChildren(header,
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.waterView)),
                 amountRow,
                 StatusLine.of(LayoutStyle.AUTO, LANG_HATCHES, status.live(() -> status.hatchesText)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_SAILS, status.live(() -> status.sailsText))
-                        .level(status.live(() -> status.sailsFormed > 0 ? StatusLine.Level.GOOD : StatusLine.Level.NORMAL)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_PER_SECOND, status.live(() -> status.rateText)).level(status.live(() -> status.waterState.level())));
+                        .bindLevel(status.live(() -> status.sailsFormed > 0 ? Level.GOOD : Level.NORMAL)),
+                StatusLine.of(LayoutStyle.AUTO, LANG_PER_SECOND, status.live(() -> status.rateText)).bindLevel(status.live(() -> status.waterState.getLevel())));
         return node;
     }
 
@@ -373,9 +361,15 @@ public final class SpaceStationFlowPage {
             };
         }
 
-        private StatusLine.Level voltageLevel() {
-            if (diagnoser.energyTier() < 0) return StatusLine.Level.NORMAL;
-            return diagnoser.energyIssue() == RecipeIssue.LOW_VOLTAGE ? StatusLine.Level.ERROR : StatusLine.Level.GOOD;
+        private Level powerLevel() {
+            var issue = diagnoser.energyIssue();
+            if (issue == RecipeIssue.LOW_POWER) return Level.ERROR;
+            return issue == RecipeIssue.POWER_LIMITED ? Level.WARNING : Level.NORMAL;
+        }
+
+        private Level voltageLevel() {
+            if (diagnoser.energyTier() < 0) return Level.NORMAL;
+            return diagnoser.voltageLevel();
         }
 
         @Override
@@ -432,7 +426,7 @@ public final class SpaceStationFlowPage {
             energyDetail = energyLines;
             refreshWater(formed, working);
             refreshInputDetails();
-            refreshStation(formed, working, inCycle);
+            refreshStation(formed, working, inCycle, MachineDiagnosis.of(machine));
             refreshEnvironment(formed, working);
         }
 
@@ -462,15 +456,16 @@ public final class SpaceStationFlowPage {
             }
         }
 
-        private void refreshStation(boolean formed, boolean working, boolean inCycle) {
+        private void refreshStation(boolean formed, boolean working, boolean inCycle, DiagnosisResult result) {
             var logic = machine.getRecipeLogic();
+            var notInSpace = result.issue(IdleReason.SPACE_STATION_NOT_IN_SPACE.type());
             IssueView view;
             Component sentence;
             if (!formed) {
                 view = RecipeIssue.UNFORMED.view();
                 sentence = null;
-            } else if (!machine.isInSpace()) {
-                view = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE));
+            } else if (notInSpace != null) {
+                view = new IssueView(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE), null, notInSpace);
                 sentence = Component.translatable(LANG_NOT_IN_SPACE_DESC);
             } else if (!logic.isWorkingEnabled()) {
                 view = RecipeIssue.DISABLED.view();
@@ -485,7 +480,7 @@ public final class SpaceStationFlowPage {
                     sentence = null;
                 }
             } else if (inCycle) {
-                view = RecipeIssue.WAITING.view();
+                view = IssueView.primary(result, RecipeIssue.WAITING.view());
                 sentence = null;
             } else if (!diagnoser.inputsSatisfied()) {
                 view = firstInputProblem();
@@ -497,15 +492,16 @@ public final class SpaceStationFlowPage {
                 view = firstOutputProblem();
                 sentence = null;
             } else {
-                view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
+                var primary = result.primary();
+                view = primary != null && primary.isBlocking() ? IssueView.of(primary) : IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
                 sentence = null;
             }
             stationView = view;
-            station = working ? FlowState.ACTIVE : view.issue().state();
+            station = working ? FlowState.ACTIVE : view.state();
             var lines = new ArrayList<Component>(4);
             lines.add(Component.translatable(LANG_STATION));
             var style = RecipeDiagnoser.style(view.issue());
-            lines.add((sentence != null ? sentence.copy() : Component.translatable(view.issue().descriptionKey())).withStyle(style));
+            lines.add((sentence != null ? sentence.copy() : view.description().copy()).withStyle(style));
             if (formed && !diagnoser.inputsSatisfied()) lines.add(Component.translatable(LANG_MISSING, missingNames()).withStyle(style));
             stationDetail = lines;
         }

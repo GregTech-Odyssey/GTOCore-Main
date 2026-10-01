@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.item.capability.ElectricItem;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
+import com.hepdd.gtmthings.utils.BigIntegerUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -68,7 +70,10 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
             container = energyInterfacePartMachine.getWirelessEnergyContainer();
             if (container == null) return null;
             storage = container.getStorage();
-            if (storage.signum() < 1) return null;
+            if (storage.signum() < 1) {
+                IdleReason.WIRELESS_EU_SHORT.report(this, -1, 0);
+                return null;
+            }
         }
         ObjHolder<BigInteger> eu = new ObjHolder<>(BigInteger.ZERO);
         RecipeBuilder builder = getRecipeBuilder();
@@ -115,7 +120,7 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
 
             if (container != null) {
                 if (storage.compareTo(eu.value) < 0) {
-                    setIdleReason(IdleReason.NO_EU);
+                    IdleReason.WIRELESS_EU_SHORT.report(this, BigIntegerUtils.getLongValue(eu.value), BigIntegerUtils.getLongValue(storage));
                     return null;
                 }
                 container.setStorage(storage.subtract(eu.value));
@@ -123,7 +128,7 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
             } else {
                 var voltage = getOverclockVoltage();
                 if (voltage <= 0) {
-                    setIdleReason(IdleReason.NO_EU);
+                    reportIssue(GTIssues.NO_ENERGY_HATCH);
                     return null;
                 }
                 return builder.EUt(voltage).duration(Math.max(1, eu.value.divide(BigInteger.valueOf(voltage)).intValue())).build();

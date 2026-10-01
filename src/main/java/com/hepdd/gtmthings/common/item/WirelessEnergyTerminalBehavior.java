@@ -6,9 +6,8 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.RichText;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.TextPane;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
-import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
 import net.minecraft.network.chat.Component;
@@ -36,11 +35,8 @@ public class WirelessEnergyTerminalBehavior implements IItemUIFactory {
             var text = new RichText().justify(".");
             text.textSupplier(monitor.isRemote() ? null : monitor::addDisplayText);
             text.clickHandler(monitor::handleClick);
-            var scroller = new ScrollerView("wireless_energy_terminal.display", DISPLAY_TEXT_WIDTH + 2 * UITheme.PANEL_PADDING + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT);
-            scroller.setBackground(UITheme.STATUS_PANEL);
-            scroller.layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
-            scroller.addScrollViewChild(text);
-            scroller.adaptiveHeight(window.isRemote() ? MachineWindow.clientPageHeightLimit(false) : Integer.MAX_VALUE / 4);
+            var scroller = TextPane.status("wireless_energy_terminal.display", DISPLAY_TEXT_WIDTH + 2 * UISizes.PANEL_PADDING + ScrollerView.SCROLL_BAR_SPACE,
+                    UISizes.MACHINE_PAGE_HEIGHT, text).setAdaptiveHeight(Integer.MAX_VALUE / 4).fitPage();
             return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
         }).noInventory().noScroll().createUI(entityPlayer);
     }

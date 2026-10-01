@@ -11,8 +11,8 @@ import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -21,7 +21,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
-import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -61,6 +60,8 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
 
     @SaveToDisk(defaultValue = "8")
     private int waterAmountPerHatch = 8;
+    @Nullable
+    private GTRecipeDefinition diagnosisRecipe;
 
     public SimpleSpaceStationMachine(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
@@ -161,7 +162,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (!isInSpace()) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.report(this);
             return null;
         }
         return roundRecipe();
@@ -171,6 +172,17 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
         return inputFluids(getRecipeBuilder().duration(200).EUt(VA[EV]))
                 .outputFluids(FlocculationWasteSolution.getFluid(30))
                 .build();
+    }
+
+    @Override
+    public void collectStationIssues(IssueSink sink) {
+        if (getLevel() != null && !isInSpace()) IdleReason.SPACE_STATION_NOT_IN_SPACE.collect(sink);
+    }
+
+    @Override
+    public GTRecipeDefinition getDiagnosisRecipe() {
+        if (diagnosisRecipe == null) diagnosisRecipe = roundRecipe();
+        return diagnosisRecipe;
     }
 
     boolean isInSpace() {
@@ -196,12 +208,6 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Nullable
     List<RecipeHandlerUnit> getSupplyHatches() {
         return outputDistilledWaterHatchesList;
-    }
-
-    @Override
-    public void attachSideTabs(TabsWidget sideTabs) {
-        super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(0, DetailsTab.display(this));
     }
 
     @Override

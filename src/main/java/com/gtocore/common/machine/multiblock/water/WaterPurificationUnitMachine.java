@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTSoundEntries;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -27,6 +28,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage.NO_VALUE;
 
 @MethodsReturnNonnullByDefault
 abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultiblockMachine implements IIWirelessInteractor<WaterPurificationPlantMachine>, IDataInfoProvider {
@@ -142,7 +145,14 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
 
     /// 运行时信息，机器 GUI 与便携式扫描仪共用
     void addWorkingText(List<Component> textList) {
-        textList.add(successChanceText(getSuccessChance()));
+        if (!MultiblockPage.isScreenText()) textList.add(successChanceText(getSuccessChance()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(WaterPurificationPlantMachine.SUCCESS_CHANCE, MultiblockPage.cached(() -> getRecipeLogic().isWorking() ? Double.doubleToLongBits(Math.min(getSuccessChance(), 100)) : -1,
+                bits -> bits == -1 ? NO_VALUE : Component.literal(FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits)) + "%")));
     }
 
     static Component successChanceText(double chance) {
@@ -199,7 +209,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         public boolean onRecipeFinish() {
             machine.afterWorking();
             if (lastRecipe != null) {
-                machine.handleRecipeOutput(lastRecipe);
+                produceOutputs();
                 lastRecipe = null;
             }
             if (suspendAfterFinish) {

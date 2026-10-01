@@ -2,7 +2,10 @@ package com.gtocore.common.machine.multiblock.electric.voidseries;
 
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.machine.trait.AdvancedInfiniteDrillLogic;
+import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -12,8 +15,12 @@ import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.Level;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -30,17 +37,27 @@ import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine {
+public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine implements IIssueProvider {
+
+    @RegisterLanguage(cn = "钻头", en = "Drill Head")
+    private static final String SLOT_LABEL = "gtocore.machine.advanced_infinite_driller.slot";
 
     private static final FluidStack DISTILLED_WATER = GTMaterials.DistilledWater.getFluid(20000);
     private static final FluidStack OXYGEN = GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID, 20000);
     private static final FluidStack HELIUM = GTMaterials.Helium.getFluid(FluidStorageKeys.LIQUID, 20000);
     private static final Map<Material, Integer> HEAT_MAP = Map.of(GTOMaterials.Neutron, 1);
 
-    private static final int RUNNING_HEAT = 2000;
+    public static final int RUNNING_HEAT = 2000;
     private static final int MAX_HEAT = 10000;
+
+    @RegisterLanguage(cn = "工作范围", en = "Working Area")
+    private static final String WORKING_AREA = "gtocore.machine.advanced_infinite_driller.working_area";
+    @RegisterLanguage(cn = "当前温度", en = "Current Temperature")
+    private static final String CURRENT_HEAT = "gtocore.machine.advanced_infinite_driller.current_heat";
+    private static final Component WORKING_AREA_TEXT = Component.literal("5x5");
     @Getter
     @SaveToDisk(defaultValue = "300")
     private int currentHeat = 300;
@@ -96,11 +113,18 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
                 process = 0;
                 currentHeat = 300;
                 machineStorage.setStackInSlot(0, ItemStack.EMPTY);
-                getRecipeLogic().interruptRecipe();
+                getRecipeLogic().interruptRecipe(IdleReason.DRILL_HEAD_MISSING.type(), 0, 0);
             }
         } else if (process > 0) {
             process--;
         }
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (!isFormed()) return;
+        if (isEmpty()) IdleReason.DRILL_HEAD_MISSING.collect(sink);
+        else if (!canRunnable()) IdleReason.INSUFFICIENT_TEMPERATURE.collect(sink, RUNNING_HEAT, currentHeat);
     }
 
     @Override
@@ -120,10 +144,13 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
         if (isEmpty()) {
             textList.add(Component.translatable("gtocore.machine.advanced_infinite_driller.not_fluid_head").withStyle(ChatFormatting.RED));
         } else {
-            textList.add(Component.translatable("gtceu.universal.tooltip.working_area", 5, 5));
+            boolean screen = MultiblockPage.isScreenText();
+            if (!screen) textList.add(Component.translatable("gtceu.universal.tooltip.working_area", 5, 5));
             textList.add(Component.translatable("gtocore.machine.advanced_infinite_driller.heat", MAX_HEAT, RUNNING_HEAT));
-            textList.add(Component.translatable("gtocore.machine.current_temperature", currentHeat));
-            textList.add(Component.translatable("gtocore.machine.fission_reactor.damaged", FormattingUtil.formatNumber2Places(process / 200.0F * 100)).append("%"));
+            if (!screen) {
+                textList.add(Component.translatable("gtocore.machine.current_temperature", currentHeat));
+                textList.add(Component.translatable("gtocore.machine.fission_reactor.damaged", FormattingUtil.formatNumber2Places(process / 200.0F * 100)).append("%"));
+            }
             var fluids = getRecipeLogic().getVeinFluids();
             if (!fluids.isEmpty()) {
                 fluids.forEach((fluid, produced) -> {
@@ -136,6 +163,20 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
                 textList.add(Component.translatable("gtceu.multiblock.fluid_rig.drilled_fluid", noFluid).withStyle(ChatFormatting.GRAY));
             }
         }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(WORKING_AREA, () -> WORKING_AREA_TEXT);
+        page.addLine(CURRENT_HEAT, MultiblockPage.numberText(() -> currentHeat, "K")).bindLevel(this::heatLevel);
+        page.addReading("gtocore.machine.fission_reactor.damaged", MultiblockPage.cached(() -> process, value -> Component.literal(FormattingUtil.formatNumber2Places(value / 200.0F * 100) + "%")))
+                .bindLevel(() -> process > 0 ? Level.WARNING : Level.NORMAL);
+    }
+
+    private Level heatLevel() {
+        if (currentHeat > MAX_HEAT) return Level.ERROR;
+        return currentHeat >= RUNNING_HEAT ? Level.GOOD : Level.WARNING;
     }
 
     public int getRate() {
@@ -167,5 +208,10 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
 
     public boolean canRunnable() {
         return currentHeat >= RUNNING_HEAT;
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
     }
 }

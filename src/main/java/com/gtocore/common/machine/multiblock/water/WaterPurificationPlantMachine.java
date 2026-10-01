@@ -1,7 +1,10 @@
 package com.gtocore.common.machine.multiblock.water;
 
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.ClientUtil;
@@ -9,11 +12,14 @@ import com.gtolib.utils.ClientUtil;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueLines;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -23,8 +29,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.material.Fluid;
 
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import it.unimi.dsi.fastutil.objects.Object2BooleanRBTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanSortedMap;
 import org.jetbrains.annotations.Nullable;
@@ -36,9 +40,17 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class WaterPurificationPlantMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder, IDataInfoProvider {
+
+    @RegisterLanguage(cn = "链接范围", en = "Link Range")
+    private static final String LINK_RANGE = "gtocore.machine.water_purification_plant.link_range";
+    @RegisterLanguage(cn = "在世界中显示可自动链接净化单元控制器的范围（半径 32 格）", en = "Shows in the world the range within which purification unit controllers are linked automatically (radius 32 blocks)")
+    private static final String LINK_RANGE_TOOLTIP = "gtocore.machine.water_purification_plant.link_range.tooltip";
+    @RegisterLanguage(cn = "成功率", en = "Success Chance")
+    static final String SUCCESS_CHANCE = "gtocore.machine.water_purification_unit.success_chance.label";
 
     static final int DURATION = 2400;
 
@@ -115,7 +127,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     public void onWaiting() {
         for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
             if (entry.getBooleanValue()) {
-                entry.getKey().getRecipeLogic().setWaiting(getRecipeLogic().getIdleReason());
+                entry.getKey().getRecipeLogic().setWaiting(IdleReason.PLANT_WAITING.type(), 0, 0);
             }
         }
         super.onWaiting();
@@ -150,9 +162,9 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     }
 
     @Override
-    public void customText(List<Component> textList) {
-        super.customText(textList);
-        textList.add(ComponentPanelWidget.withButton(Component.translatable("gtocore.digital_miner.show_range"), "show"));
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addClientButton(LINK_RANGE, "gtocore.digital_miner.show_range", () -> ClientUtil.highlighting(getPos(), 32), LINK_RANGE_TOOLTIP);
     }
 
     @Override
@@ -165,7 +177,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             if (entry.getBooleanValue()) {
                 component.append(Component.translatable("gtceu.multiblock.running").append("\n").append(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(entry.getKey().eut), Component.literal(GTValues.VNF[GTUtil.getTierByVoltage(entry.getKey().eut)]))));
             } else {
-                component.append(Component.translatable("gtceu.multiblock.idling"));
+                component.append(IssueLines.headline(entry.getKey().getRecipeLogic().getIssueSnapshot()));
             }
             textList.add(component);
         }
@@ -192,33 +204,36 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     }
 
     @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (clickData.isRemote && "show".equals(componentData)) {
-            ClientUtil.highlighting(getPos(), 32);
-        }
-    }
-
-    @Override
     @Nullable
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         long eut = 0;
-        if (getEnergyContainer().getEnergyStored() < 1000) return null;
+        long stored = getEnergyContainer().getEnergyStored();
+        if (stored < 1000) {
+            IdleReason.INSUFFICIENT_ENERGY_BUFFER.report(this, 1000, stored);
+            return null;
+        }
         availableEu = getOverclockVoltage();
         for (var it = waterPurificationUnitMachineMap.object2BooleanEntrySet().iterator(); it.hasNext();) {
             var entry = it.next();
             entry.setValue(false);
             var machine = entry.getKey();
             if (machine.isFormed() && !machine.isRemoved()) {
-                if (machine.getRecipeLogic().isIdle()) {
-                    for (var u : machine.getInputUnits()) {
-                        long eu = machine.prepareRecipe(u);
-                        if (eu > 0) {
-                            entry.setValue(true);
-                            machine.unit = u;
-                            availableEu -= eu;
-                            eut += eu;
-                            break;
+                var logic = machine.getRecipeLogic();
+                if (logic.isIdle()) {
+                    logic.beginIssueRound(IssueStage.SEARCH);
+                    try {
+                        for (var u : machine.getInputUnits()) {
+                            long eu = machine.prepareRecipe(u);
+                            if (eu > 0) {
+                                entry.setValue(true);
+                                machine.unit = u;
+                                availableEu -= eu;
+                                eut += eu;
+                                break;
+                            }
                         }
+                    } finally {
+                        logic.endIssueRound();
                     }
                 }
             } else {

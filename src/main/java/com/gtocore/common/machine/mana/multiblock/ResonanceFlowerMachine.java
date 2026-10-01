@@ -3,17 +3,24 @@ package com.gtocore.common.machine.mana.multiblock;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -39,10 +46,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static com.lowdragmc.lowdraglib.LDLib.random;
 
+@DataGeneratorScanned
 public class ResonanceFlowerMachine extends ManaMultiblockMachine implements IStorageMultiblock, IDropSaveMachine {
+
+    @RegisterLanguage(cn = "下界之星 / 稳定核心", en = "Nether Star / Stabilizer Core")
+    private static final String SLOT_LABEL = "gtocore.machine.resonance_flower.slot";
 
     // 进度表最多保留的配方条数
     private static final int MAX_SIZE = 10;
@@ -127,11 +140,6 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         return machineStorage;
     }
 
-    @Override
-    public @NotNull UIElement createUIWidget() {
-        return IStorageMultiblock.super.createUIWidget(super.createUIWidget());
-    }
-
     /**
      * 只计算「这条配方此刻该跑成什么样」：等级给出时长减免与并行上限，其余交给
      * {@link ParallelLogic} 依据内容库存与持续消耗继续收紧。
@@ -185,13 +193,15 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             // 元素消耗波动：一次脉冲吃多少随系数缩放（至少 1 个），系数失控时消耗随之暴涨
             if (!resonanceFluid.isEmpty()) {
                 int amount = scaleElementalAmount(resonanceFluid.getAmount());
-                if (amount == resonanceFluid.getAmount()) return inputFluid(resonanceFluid);
-                return inputFluid(new FluidStack(resonanceFluid.getFluid(), amount, resonanceFluid.getTag()));
+                boolean consumed = amount == resonanceFluid.getAmount() ? inputFluid(resonanceFluid) : inputFluid(new FluidStack(resonanceFluid.getFluid(), amount, resonanceFluid.getTag()));
+                if (!consumed) reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, amount, -1, null);
+                return consumed;
             }
             if (!resonanceItem.isEmpty()) {
                 int count = scaleElementalAmount(resonanceItem.getCount());
-                if (count == resonanceItem.getCount()) return inputItem(resonanceItem);
-                return inputItem(resonanceItem.copyWithCount(count));
+                boolean consumed = count == resonanceItem.getCount() ? inputItem(resonanceItem) : inputItem(resonanceItem.copyWithCount(count));
+                if (!consumed) reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, ItemRecipeInfo.INSTANCE, -1, count, -1, null);
+                return consumed;
             }
         }
         return true;
@@ -218,12 +228,25 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
                     Component.literal(FormattingUtil.formatNumbers(getTimeMultiplier(tier) * 100.0F)).withStyle(ChatFormatting.GREEN),
                     Component.literal(FormattingUtil.formatNumbers(getMaxParallel(tier))).withStyle(ChatFormatting.GREEN)));
         }
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("gtocore.machine.resonance_flower.stable_operation_times",
                 Component.literal(Integer.toString(stableTime)).withStyle(ChatFormatting.AQUA)));
         textList.add(Component.translatable("gtocore.machine.resonance_flower.time_fluctuation_coefficient",
                 Component.literal(String.format("%.3f", timeFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
         textList.add(Component.translatable("gtocore.machine.resonance_flower.elemental_fluctuation_coefficient",
                 Component.literal(String.format("%.3f", elementalFluctuationCoefficient)).withStyle(ChatFormatting.AQUA)));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.resonance_flower.stable_operation_times", MultiblockPage.numberText(() -> stableTime, ""));
+        page.addReading("gtocore.machine.resonance_flower.time_fluctuation_coefficient", coefficientText(() -> timeFluctuationCoefficient));
+        page.addReading("gtocore.machine.resonance_flower.elemental_fluctuation_coefficient", coefficientText(() -> elementalFluctuationCoefficient));
+    }
+
+    private static Supplier<Component> coefficientText(DoubleSupplier value) {
+        return MultiblockPage.cached(() -> Double.doubleToLongBits(value.getAsDouble()), bits -> Component.literal(String.format("%.3f", Double.longBitsToDouble(bits))));
     }
 
     /** 最近一次运行配方的显示名：优先取产物名，取不到就退回注册 id。 */
@@ -493,5 +516,21 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             this.tier = tier;
             this.frequency = frequency;
         }
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        addStorageSlot(controls);
+        super.addControls(controls);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { Items.NETHER_STAR.getDefaultInstance(), GTOItems.STABILIZER_CORE.asStack() };
     }
 }

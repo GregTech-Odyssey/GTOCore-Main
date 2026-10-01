@@ -22,9 +22,10 @@ import com.gregtechceu.gtceu.api.transfer.item.SingleCustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.network.chat.Component;
@@ -147,6 +148,10 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     private static final String MUFFLER_TOOLTIP_KEY_EXPERT = "gtocore.machine.me_muffler_part.muffler_tooltip_expert";
     @RegisterLanguage(cn = "放入相同等级的集控核心以增幅概率", en = "Insert a Control Core of the same level to increase the probability")
     private static final String AMPLIFIER_TOOLTIP_KEY = "gtocore.machine.me_muffler_part.apm_tooltip";
+    @RegisterLanguage(cn = "消声仓", en = "Muffler Hatch")
+    private static final String MUFFLER_SLOT = "gtocore.machine.me_muffler_part.muffler_slot";
+    @RegisterLanguage(cn = "集控核心", en = "Control Core")
+    private static final String AMPLIFIER_SLOT = "gtocore.machine.me_muffler_part.amplifier_slot";
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
@@ -165,11 +170,13 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
         var status = new StatusPanel();
         status.addSentence(() -> Component.translatable("gtceu.muffler.recovery_tooltip", recoveryChance));
         var muffler = ItemSlot.of(mufflerHatchInv.storage, 0);
-        muffler.setHoverTooltips(Component.translatable(GTORules.MUFFLER_TIER.isExpert() ? MUFFLER_TOOLTIP_KEY_EXPERT : MUFFLER_TOOLTIP_KEY));
+        muffler.tooltips(GTORules.MUFFLER_TIER.isExpert() ? MUFFLER_TOOLTIP_KEY_EXPERT : MUFFLER_TOOLTIP_KEY);
         var amplifier = ItemSlot.of(amplifierInv.storage, 0);
-        amplifier.setHoverTooltips(Component.translatable(AMPLIFIER_TOOLTIP_KEY));
-        var slots = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(muffler, amplifier);
-        return MEPartUI.page().addChildren(status, slots, MEPartUI.waitingList("me.muffler.waiting", this.internalBuffer, false, null));
+        amplifier.tooltips(AMPLIFIER_TOOLTIP_KEY);
+        var controls = ControlPanel.of(this);
+        controls.addSlot(muffler, MUFFLER_SLOT, ControlPanel.contentName(mufflerHatchInv.storage, 0));
+        controls.addSlot(amplifier, AMPLIFIER_SLOT, ControlPanel.contentName(amplifierInv.storage, 0));
+        return Form.page().addChildren(status, controls.build(), MEPartUI.waitingList("me.muffler.waiting", this.internalBuffer, false, null));
     }
 
     @Override

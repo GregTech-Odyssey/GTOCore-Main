@@ -167,11 +167,11 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     @Override
     public Widget createUIWidget() {
         // 与其他总线、仓一样分两区：上面放入槽、存储物品（只取）、取出一组按钮，下面状态面板（物品、存储数量）
-        var importSlot = new ItemSlot(createImportItems(), 0, false, true);
+        var importSlot = ItemSlot.of(createImportItems(), 0, false, true);
         importSlot.setBackgroundTexture(new GuiTextureGroup(UITheme.ITEM_SLOT, GuiTextures.IN_SLOT_OVERLAY));
-        var storedSlot = new ItemSlot(inventory, 0, false, false);
+        var storedSlot = ItemSlot.of(inventory, 0, false, false);
         storedSlot.setItemHook(s -> s.copyWithCount((int) Math.min(inventory.getCount(), s.getMaxStackSize())));
-        var extract = Button.icon(UITheme.ARROW_DOWN, UISizes.SLOT);
+        var extract = Button.icon(UISizes.SLOT_SIZE, UITheme.ARROW_DOWN);
         extract.setOnServerClick(() -> extractStack(extract.getGui() == null ? null : extract.getGui().entityPlayer));
         extract.setHoverTooltips(HatchViews.EXTRACT_STACK);
         var status = new StatusPanel();

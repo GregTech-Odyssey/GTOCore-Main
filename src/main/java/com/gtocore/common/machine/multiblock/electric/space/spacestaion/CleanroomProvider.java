@@ -2,6 +2,8 @@ package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.common.machine.multiblock.part.maintenance.CMHatchPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.machine.impl.part.DroneHatchPartMachine;
@@ -12,6 +14,8 @@ import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.uipro.Level;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -27,7 +31,11 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gtocore.common.machine.multiblock.part.maintenance.ModularHatchPartMachine.CLEANROOM_NOT_SET;
 import static com.gtocore.common.machine.multiblock.part.maintenance.ModularHatchPartMachine.CURRENT_CLEANROOM;
 
+@DataGeneratorScanned
 public class CleanroomProvider extends Extension implements IDroneControlCenterMachine, ISpaceServiceMachine {
+
+    @RegisterLanguage(cn = "超净环境", en = "Cleanroom")
+    private static final String CLEANROOM = "gtocore.machine.space_cleanroom_provider.cleanroom";
 
     private @Nullable ICleanroomProvider cleanroomType = null;
     private final List<DroneHatchPartMachine> droneHatchPartMachine = new ArrayList<>();
@@ -99,9 +107,17 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
-        list.add(Component.translatable(CURRENT_CLEANROOM));
-        list.add(getCurrentCleanroom().withStyle(ChatFormatting.GREEN));
+        if (!MultiblockPage.isScreenText()) {
+            list.add(Component.translatable(CURRENT_CLEANROOM));
+            list.add(getCurrentCleanroom().withStyle(ChatFormatting.GREEN));
+        }
         IDroneControlCenterMachine.super.addCustomText(list);
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(CLEANROOM, MultiblockPage.cachedRef(() -> cleanroomType, type -> getCurrentCleanroom())).bindLevel(() -> cleanroomType == null || cleanroomType.getTypes().isEmpty() ? Level.WARNING : Level.NORMAL);
     }
 
     private MutableComponent getCurrentCleanroom() {

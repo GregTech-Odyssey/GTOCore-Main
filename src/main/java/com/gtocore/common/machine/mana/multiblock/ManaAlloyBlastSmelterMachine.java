@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.mana.multiblock;
 
+import com.gtocore.data.IdleReason;
+
 import com.gtolib.api.machine.mana.feature.IManaMultiblock;
 import com.gtolib.api.machine.mana.trait.ManaTrait;
 import com.gtolib.api.machine.multiblock.CoilCustomParallelMultiblockMachine;
@@ -7,8 +9,10 @@ import com.gtolib.api.misc.ManaContainerList;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -105,14 +109,20 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
                 time = 200;
                 updateSignal();
             }
-            return removeMana(mana, 1, false) == mana;
+            if (removeMana(mana, 1, false) == mana) return true;
+            IdleReason.NO_MANA.report(this, mana, getManaContainer().getCurrentMana());
+            return false;
         }
         return false;
     }
 
     @Override
     public boolean handleRecipeInput(RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        return removeMana(mana, 1, false) == mana && super.handleRecipeInput(unit, recipe);
+        if (removeMana(mana, 1, false) != mana) {
+            IdleReason.NO_MANA.report(this, IssueStage.SETUP, mana, getManaContainer().getCurrentMana(), recipe.definition);
+            return false;
+        }
+        return super.handleRecipeInput(unit, recipe);
     }
 
     @Override
@@ -125,7 +135,13 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.recipe.mana_consumption").append(": ").append(String.valueOf(mana)));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.recipe.mana_consumption").append(": ").append(String.valueOf(mana)));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addNumber("gtocore.recipe.mana_consumption", () -> mana, "");
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.gtocore.common.item.misc;
 
+import com.gtolib.api.player.OrganTier;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -14,16 +16,14 @@ import java.util.List;
  */
 public final class TierOrganItem extends OrganItemBase {
 
-    public static final int MAX_TIER = 4;
+    private final OrganTier tier;
 
-    private final int tier;
-
-    public TierOrganItem(int tier, Properties properties, OrganType organType) {
+    public TierOrganItem(OrganTier tier, Properties properties, OrganType organType) {
         super(properties, organType);
         this.tier = tier;
     }
 
-    public int getTier() {
+    public OrganTier getTier() {
         return tier;
     }
 

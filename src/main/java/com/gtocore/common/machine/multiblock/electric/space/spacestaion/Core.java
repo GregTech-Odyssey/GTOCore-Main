@@ -5,6 +5,8 @@ import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.IWirelessDimensionProvider;
 import com.gtolib.api.machine.trait.TierCasingTrait;
@@ -15,16 +17,16 @@ import com.gtolib.api.recipe.TierDataKey;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
-import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
@@ -51,9 +53,12 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.DistilledWater;
 import static com.gtocore.common.data.GTOMaterials.FlocculationWasteSolution;
 import static com.gtocore.data.techtree.MachinesNode.LaserSpaceEngineering;
 
+@DataGeneratorScanned
 public class Core extends AbstractSpaceStation implements ILargeSpaceStationMachine, IWirelessDimensionProvider, IMachineSubWindows {
 
     private static final String WINDOW_OVERVIEW = "station_overview";
+    @RegisterLanguage(cn = "核心舱", en = "Core Module")
+    public static final String CORE_MODULE = "gtocore.machine.spacestation.core_module";
 
     @Getter
     private final Map<Class<? extends ISpaceServiceMachine>, ISpaceServiceMachine> serviceMachineMap = new Reference2ObjectOpenHashMap<>();
@@ -64,6 +69,10 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     @Getter
     private boolean dirty = false;
+    @Nullable
+    private GTRecipeDefinition cycleRecipe;
+    private long cycleEUt;
+    private int cycleShares;
 
     @Override
     public void markDirty(boolean dirty) {
@@ -133,9 +142,27 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
+        if (MultiblockPage.isScreenText()) return;
         list.add(Component.translatable("gui.ae2.PowerUsageRate", "%s EU/t".formatted(FormattingUtil.formatNumbers(getEUt()))).withStyle(ChatFormatting.YELLOW));
-        list.add(Component.translatable("gtocore.machine.spacestation.energy_consumption.total", FormattingUtil.formatNumbers(Optional.ofNullable(getRecipeLogic().getLastRecipe()).map(GTRecipe::getInputEUt).orElse(0L))).withStyle(ChatFormatting.GOLD));
+        list.add(Component.translatable("gtocore.machine.spacestation.energy_consumption.total", FormattingUtil.formatNumbers(getTotalEUt())).withStyle(ChatFormatting.GOLD));
         list.add(Component.translatable("gtocore.machine.spacestation.module_count", subMachinesFlat.size()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gui.ae2.PowerUsageRate", MultiblockPage.numberText(this::getEUt, "EU/t"));
+        page.addReading("gtocore.machine.spacestation.energy_consumption.total", MultiblockPage.numberText(this::getTotalEUt, ""));
+        page.addReading("gtocore.machine.spacestation.module_count", MultiblockPage.numberText(this::getModuleCount, ""));
+    }
+
+    public long getTotalEUt() {
+        GTRecipe recipe = getRecipeLogic().getLastRecipe();
+        return recipe == null ? 0 : recipe.getInputEUt();
+    }
+
+    public int getModuleCount() {
+        return subMachinesFlat.size();
     }
 
     @Override
@@ -170,12 +197,6 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
         return CoreFlowPage.create(this, widget);
-    }
-
-    @Override
-    public void attachSideTabs(TabsWidget sideTabs) {
-        super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(0, DetailsTab.display(this));
     }
 
     @Override
@@ -231,8 +252,8 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (!PlanetApi.API.isSpace(getLevel())) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
+        if (!isInSpace()) {
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.report(this);
             return null;
         }
         if (dirty) {
@@ -243,6 +264,30 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
             if (machine instanceof IRecipeLogicMachine r) r.getRecipeLogic().updateTickSubscription();
         }
         return buildCycleRecipe();
+    }
+
+    @Override
+    public void collectStationIssues(IssueSink sink) {
+        if (getLevel() != null && !isInSpace()) IdleReason.SPACE_STATION_NOT_IN_SPACE.collect(sink);
+    }
+
+    @Override
+    public GTRecipeDefinition getDiagnosisRecipe() {
+        return cycleRecipe();
+    }
+
+    GTRecipeDefinition cycleRecipe() {
+        long eut = getEUt();
+        for (ILargeSpaceStationMachine machine : subMachinesFlat) {
+            if (machine.isFormed()) eut += machine.getEUt();
+        }
+        int shares = subMachinesFlat.size() + 1;
+        if (cycleRecipe == null || eut != cycleEUt || shares != cycleShares) {
+            cycleEUt = eut;
+            cycleShares = shares;
+            cycleRecipe = buildCycleRecipe();
+        }
+        return cycleRecipe;
     }
 
     @Override

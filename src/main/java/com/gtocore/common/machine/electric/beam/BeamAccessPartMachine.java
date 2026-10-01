@@ -94,7 +94,7 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
 
     @Override
     public Widget createUIWidget() {
-        return MachineDisplay.page(this, this::addDisplayText, null);
+        return MachineDisplay.page(this, this::addDisplayText);
     }
 
     private void addDisplayText(List<Component> textList) {

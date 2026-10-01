@@ -8,6 +8,7 @@ import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayout;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlots;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
@@ -39,11 +40,11 @@ public final class GTORecipeLayouts {
         place(canvas, slots.progress(COMPONENT_ASSEMBLY_LINE_1, LEFT_TO_RIGHT, 72, 40), 57, 4);
         place(canvas, slots.progress(COMPONENT_ASSEMBLY_LINE_2, DOWN_TO_UP, 3, 12), 118, 10);
         var items = slots.slots(IO.IN, ItemRecipeInfo.INSTANCE);
-        for (int i = 0; i < items.size(); i++) place(canvas, items.get(i), 3 + (i % 3) * UISizes.SLOT, 4 + (i / 3) * UISizes.SLOT);
+        for (int i = 0; i < items.size(); i++) place(canvas, items.get(i), 3 + (i % 3) * UISizes.SLOT_SIZE, 4 + (i / 3) * UISizes.SLOT_SIZE);
         var fluids = slots.slots(IO.IN, FluidRecipeInfo.INSTANCE);
-        for (int i = 0; i < fluids.size(); i++) place(canvas, fluids.get(i), 74 + (i % 3) * UISizes.SLOT, 22 + (i / 3) * UISizes.SLOT);
+        for (int i = 0; i < fluids.size(); i++) place(canvas, fluids.get(i), 74 + (i % 3) * UISizes.SLOT_SIZE, 22 + (i / 3) * UISizes.SLOT_SIZE);
         var outputs = slots.slots(IO.OUT, ItemRecipeInfo.INSTANCE);
-        for (int i = 0; i < outputs.size(); i++) place(canvas, outputs.get(i), 129, 4 + i * UISizes.SLOT);
+        for (int i = 0; i < outputs.size(); i++) place(canvas, outputs.get(i), 129, 4 + i * UISizes.SLOT_SIZE);
         return canvas;
     };
 
@@ -61,11 +62,11 @@ public final class GTORecipeLayouts {
         int y = 4;
         for (var slot : slots.slots(io, ItemRecipeInfo.INSTANCE)) {
             place(canvas, slot, x, y);
-            y += UISizes.SLOT;
+            y += UISizes.SLOT_SIZE;
         }
         for (var slot : slots.slots(io, FluidRecipeInfo.INSTANCE)) {
             place(canvas, slot, x, y);
-            y += UISizes.SLOT;
+            y += UISizes.SLOT_SIZE;
         }
     }
 
@@ -81,10 +82,10 @@ public final class GTORecipeLayouts {
     };
 
     public static final RecipeSlotLayout SINGLE_ROW = RecipeSlotLayout.fitting(slots -> {
-        var inputs = UIElement.row(UISizes.SLOT);
+        var inputs = UIElement.row(UISizes.SLOT_SIZE);
         slots.slots(IO.IN, ItemRecipeInfo.INSTANCE).forEach(inputs::addChild);
         slots.slots(IO.IN, FluidRecipeInfo.INSTANCE).forEach(inputs::addChild);
-        var outputs = UIElement.row(UISizes.SLOT);
+        var outputs = UIElement.row(UISizes.SLOT_SIZE);
         slots.slots(IO.OUT, ItemRecipeInfo.INSTANCE).forEach(outputs::addChild);
         slots.slots(IO.OUT, FluidRecipeInfo.INSTANCE).forEach(outputs::addChild);
         return new UIElement().layout(l -> l.row().paddingAll(PADDING).gapAll(PROGRESS_MARGIN).alignCenter())
@@ -93,13 +94,13 @@ public final class GTORecipeLayouts {
 
     /** 精密组装：左侧上一行 4 个物品输入、下一行 4 个流体输入，箭头指向右侧的输出。 */
     public static final RecipeSlotLayout PRECISION_ASSEMBLER = RecipeSlotLayout.fitting(slots -> {
-        var inputs = new UIElement().layout(l -> l.column().gapAll(UISizes.SLOT));
+        var inputs = new UIElement().layout(l -> l.column().gapAll(UISizes.SLOT_SIZE));
         var items = slots.slots(IO.IN, ItemRecipeInfo.INSTANCE);
-        if (!items.isEmpty()) inputs.addChild(grid(items, 4));
+        if (!items.isEmpty()) inputs.addChild(SlotGrid.of(4, items));
         var fluids = slots.slots(IO.IN, FluidRecipeInfo.INSTANCE);
-        if (!fluids.isEmpty()) inputs.addChild(grid(fluids, 4));
+        if (!fluids.isEmpty()) inputs.addChild(SlotGrid.of(4, fluids));
         return new UIElement().layout(l -> l.row().paddingAll(PADDING).gapAll(PROGRESS_MARGIN).alignCenter())
-                .addChildren(inputs, slots.progress(), grid(slots.slots(IO.OUT, ItemRecipeInfo.INSTANCE), 1));
+                .addChildren(inputs, slots.progress(), SlotGrid.of(1, slots.slots(IO.OUT, ItemRecipeInfo.INSTANCE)));
     });
 
     /**
@@ -107,16 +108,16 @@ public final class GTORecipeLayouts {
      * （物品在前、流体在后），放在最多 {@link #WIDE_VISIBLE_ROWS} 行高的滚动区里——产出多达上百格，整页铺开会超出屏幕。
      */
     public static final RecipeSlotLayout WIDE_OUTPUT = RecipeSlotLayout.fitting(slots -> {
-        var inputs = UIElement.row(UISizes.SLOT);
+        var inputs = UIElement.row(UISizes.SLOT_SIZE);
         for (var cap : slots.capabilities(IO.IN)) slots.slots(IO.IN, cap).forEach(inputs::addChild);
         var outputs = new UIElement().layout(l -> l.column());
         for (var cap : slots.capabilities(IO.OUT)) {
             var capSlots = slots.slots(IO.OUT, cap);
-            if (!capSlots.isEmpty()) outputs.addChild(grid(capSlots, WIDE_COLUMNS));
+            if (!capSlots.isEmpty()) outputs.addChild(SlotGrid.of(WIDE_COLUMNS, capSlots));
         }
         // 宽度留出滚动条位置，否则最后一列被滚动条压住
-        var scroller = new ScrollerView("gtocore_recipe_wide_output", WIDE_COLUMNS * UISizes.SLOT + ScrollerView.SCROLL_BAR_SPACE, UISizes.SLOT)
-                .adaptiveHeight(WIDE_VISIBLE_ROWS * UISizes.SLOT);
+        var scroller = new ScrollerView("gtocore_recipe_wide_output", WIDE_COLUMNS * UISizes.SLOT_SIZE + ScrollerView.SCROLL_BAR_SPACE, UISizes.SLOT_SIZE)
+                .setAdaptiveHeight(WIDE_VISIBLE_ROWS * UISizes.SLOT_SIZE);
         scroller.setResizable(false);
         scroller.addScrollViewChild(outputs);
         return new UIElement().layout(l -> l.column().paddingAll(PADDING).gapAll(UISizes.GAP).alignCenter())

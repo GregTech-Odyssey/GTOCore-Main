@@ -15,8 +15,9 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -249,7 +250,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
         var status = new StatusPanel();
         status.addLine(LINE_ENERGY, () -> controller == null || isRemoved() ? Component.translatable(VALUE_NO_CONTROLLER) :
                 Component.literal(FormattingUtil.formatNumbers(getEnergyStored()) + " / " + FormattingUtil.formatNumbers(getEnergyCapacity()) + " EU"))
-                .level(() -> controller == null || isRemoved() ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL);
-        return MEPartUI.page().addChild(status);
+                .bindLevel(() -> controller == null || isRemoved() ? Level.WARNING : Level.NORMAL);
+        return Form.page().addChild(status);
     }
 }

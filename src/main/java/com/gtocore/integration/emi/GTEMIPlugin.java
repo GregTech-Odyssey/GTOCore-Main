@@ -98,7 +98,6 @@ import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.integration.emi.BotaniaEmiPlugin;
 import vectorwing.farmersdelight.FarmersDelight;
 
-import java.util.Arrays;
 import java.util.function.Consumer;
 
 public final class GTEMIPlugin implements EmiPlugin {
@@ -190,7 +189,7 @@ public final class GTEMIPlugin implements EmiPlugin {
     // 用于在 EMI 中注册维度数据的变体
     private static void registerDimensionDataVariants(EmiRegistry registry) {
         var previousDimensionData = EmiStack.of(GTOItems.DIMENSION_DATA.asItem());
-        for (ResourceLocation layer : Arrays.stream(Dimension.values()).filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
+        for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
             var dimensionData = EmiStack.of(GTOItems.DIMENSION_DATA.get().getDimensionData(layer));
             registry.addEmiStackAfter(dimensionData, previousDimensionData);
             previousDimensionData = dimensionData;

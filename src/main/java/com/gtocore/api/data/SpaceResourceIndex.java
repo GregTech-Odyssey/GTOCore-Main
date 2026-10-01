@@ -102,7 +102,7 @@ public final class SpaceResourceIndex {
     /** 太空浮游物质收集：产出的是粉末等成品物品，按物品登记，不牵连同材料的矿石。 */
     public static void addDebris(int circuit, Item minDrone, Galaxy galaxy, ItemLike output, int chance, int chanceBoost) {
         if (!ENABLED) return;
-        Component name = Component.translatable("gtolib.galaxy.name." + galaxy.name());
+        Component name = Component.translatable(galaxy.getTranslationKey());
         add(BY_ITEM, output.asItem(), new Entry(Type.DEBRIS, circuit, minDrone, null, name, chance, chanceBoost));
     }
 

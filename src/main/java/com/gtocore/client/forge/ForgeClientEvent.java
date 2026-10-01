@@ -12,6 +12,7 @@ import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
 import com.gtocore.client.overlay.WirelessAEClientHandler;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
+import com.gtocore.client.screen.starmap.StarMapScreen;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.StructureDetectBehavior;
@@ -53,9 +54,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
@@ -64,6 +67,7 @@ import com.hepdd.gtmthings.common.block.machine.electric.WirelessEnergyMonitor;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
+import earth.terrarium.adastra.client.screens.PlanetsScreen;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import snownee.jade.util.Color;
@@ -249,6 +253,19 @@ public final class ForgeClientEvent {
                 return;
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void replacePlanetsScreen(ScreenEvent.Opening event) {
+        if (event.getNewScreen() instanceof PlanetsScreen screen) event.setNewScreen(StarMapScreen.create(screen.getMenu()));
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void styleStarMapTooltip(RenderTooltipEvent.Color event) {
+        if (!(Minecraft.getInstance().screen instanceof StarMapScreen)) return;
+        event.setBackground(0xF80E1430);
+        event.setBorderStart(0xFF3A5190);
+        event.setBorderEnd(0xFF243360);
     }
 
     @SubscribeEvent

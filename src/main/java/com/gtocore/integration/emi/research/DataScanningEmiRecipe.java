@@ -8,16 +8,19 @@ import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.client.renderer.RenderUtil;
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.integration.emi.EmiPageLayout;
 
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayouts;
 import com.gregtechceu.gtceu.common.data.GTMachines;
+import com.gregtechceu.gtceu.integration.emi.recipe.EmiPageLayout;
+import com.gregtechceu.gtceu.integration.emi.recipe.EmiPageSizes;
 import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.animation.UIClock;
+import com.gregtechceu.gtceu.uipro.render.UILayers;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.recipe.RecipeSpecPanel;
@@ -26,7 +29,6 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -113,9 +115,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
     private final @Nullable TechNode eurekaNode;
     private final @Nullable TechNodeEmiStack eurekaOutput;
     private final List<EmiStack> outputs;
-    private final Size[] pagedSizes = new Size[6];
-    private @Nullable Size compactSize;
-    private int pagedButtons = -1;
+    private final EmiPageSizes sizes = new EmiPageSizes(this::measure);
 
     private DataScanningEmiRecipe(AEKey key, EmiStack input, List<EmiStack> researchOutputs, @Nullable TechNode eurekaNode) {
         this.key = key;
@@ -218,63 +218,34 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         return outputs;
     }
 
-    private GTRecipeWidget.PageFrame pagedFrame(int fillHeight, int buttons) {
-        return new GTRecipeWidget.PageFrame(EmiPageLayout.minPageWidth(), fillHeight, buttons, true);
-    }
-
-    private Size pagedSize(int buttons) {
-        if (buttons >= pagedSizes.length) return measure(pagedFrame(0, buttons));
-        var size = pagedSizes[buttons];
-        if (size == null) pagedSizes[buttons] = size = measure(pagedFrame(0, buttons));
-        return size;
-    }
-
-    private Size compactSize() {
-        var size = compactSize;
-        if (size == null) compactSize = size = measure(GTRecipeWidget.PageFrame.COMPACT);
-        return size;
-    }
-
     private Size measure(GTRecipeWidget.PageFrame frame) {
         var page = new Page(frame);
         return new Size(page.getSizeWidth(), page.getSizeHeight());
     }
 
-    private int pagedDisplayWidth(int buttons) {
-        return EmiPageLayout.displayWidth(pagedSize(buttons).width, buttons);
-    }
-
     @Override
     public int getPagedWidth() {
-        int buttons = EmiPageLayout.sideButtons(this);
-        pagedButtons = buttons;
-        return pagedDisplayWidth(buttons);
+        return sizes.getPagedWidth(this);
     }
 
     @Override
     public int getPagedHeight() {
-        return pagedSize(Math.max(pagedButtons, 0)).height;
+        return sizes.getPagedHeight();
     }
 
     @Override
     public int getDisplayWidth() {
-        return compactSize().width;
+        return sizes.getCompactSize().width;
     }
 
     @Override
     public int getDisplayHeight() {
-        return compactSize().height;
+        return sizes.getCompactSize().height;
     }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
-        GTRecipeWidget.PageFrame frame;
-        if (pagedButtons >= 0 && EmiPageLayout.claimPagedGroup(widgets, pagedDisplayWidth(pagedButtons))) {
-            frame = pagedFrame(widgets.getHeight(), pagedButtons);
-        } else {
-            frame = GTRecipeWidget.PageFrame.COMPACT;
-        }
-        var page = new Page(frame);
+        var page = new Page(sizes.frameFor(widgets));
         var modular = new ModularWrapper<>(page);
         modular.setRecipeWidget(0, 0);
         synchronized (ModularEmiRecipe.CACHE_OPENED) {
@@ -330,7 +301,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
     }
 
     private static long cycleTime() {
-        return Util.getMillis() % SCAN_CYCLE;
+        return UIClock.millis() % SCAN_CYCLE;
     }
 
     private static int logarithmicFill(long amount) {
@@ -388,7 +359,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         private Page(GTRecipeWidget.PageFrame frame) {
             this.frame = frame;
             int artWidth = eurekaOutput == null ? BASE_WIDTH : EUREKA_X + EUREKA_WIDTH;
-            int width = Math.max(artWidth + 2 * RecipeSlotLayouts.PADDING + 2 * UITheme.PANEL_PADDING, frame.minWidth());
+            int width = Math.max(artWidth + 2 * RecipeSlotLayouts.PADDING + 2 * UISizes.PANEL_PADDING, frame.minWidth());
             int pageWidth = width + (width & 1);
             layout(l -> l.column().width(pageWidth).minHeight(frame.fillHeight()).gapAll(UISizes.SECTION_GAP));
             setClientSideWidget();
@@ -402,7 +373,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             var slotArea = new UIElement().layout(l -> l.row().paddingAll(RecipeSlotLayouts.PADDING)).addChild(art);
 
             var stage = new UIElement().layout(l -> l.column().flexGrow(1).alignCenter().justifyContent(AlignContent.CENTER)
-                    .paddingHorizontal(UITheme.PANEL_PADDING));
+                    .paddingHorizontal(UISizes.PANEL_PADDING));
             stage.setBackground(UITheme.PANEL);
             stage.addChild(slotArea);
             addChild(stage);
@@ -410,7 +381,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             if (!researchOutputs.isEmpty()) {
                 var entries = new ArrayList<SlotAmountGrid.Entry>(researchOutputs.size());
                 for (var output : researchOutputs) {
-                    var hole = new ImageWidget(0, 0, UISizes.SLOT, UISizes.SLOT, UITheme.ITEM_SLOT);
+                    var hole = new ImageWidget(0, 0, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE, UITheme.ITEM_SLOT);
                     pointSlots.add(hole);
                     int color = ((ResearchTagEmiStack) output).tag.getColor();
                     entries.add(new SlotAmountGrid.Entry(hole, Component.literal(FormattingUtil.formatNumbers(output.getAmount())), color));
@@ -458,7 +429,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
     private static final class ScanBeam extends UIElement {
 
         private ScanBeam() {
-            layout(l -> l.size(UISizes.SLOT, UISizes.SLOT));
+            layout(l -> l.size(UISizes.SLOT_SIZE, UISizes.SLOT_SIZE));
         }
 
         @Override
@@ -467,12 +438,12 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
             long time = cycleTime();
             if (time >= SCAN_SWEEP) return;
-            int x = getPositionX() + 1, width = UISizes.SLOT - 2;
-            int top = getPositionY() + 1, span = UISizes.SLOT - 2;
+            int x = getPositionX() + 1, width = UISizes.SLOT_SIZE - 2;
+            int top = getPositionY() + 1, span = UISizes.SLOT_SIZE - 2;
             int beam = top + (int) (span * time / SCAN_SWEEP);
             var pose = graphics.pose();
             pose.pushPose();
-            pose.translate(0, 0, UITheme.OVERLAY_Z);
+            pose.translate(0, 0, UILayers.OVERLAY);
             for (int i = 1; i <= BEAM_TRAIL && beam - i >= top; i++) {
                 int alpha = BEAM_TRAIL_ALPHA * (BEAM_TRAIL + 1 - i) / (BEAM_TRAIL + 1);
                 graphics.fill(x, beam - i, x + width, beam - i + 1, alpha << 24 | BEAM_COLOR);

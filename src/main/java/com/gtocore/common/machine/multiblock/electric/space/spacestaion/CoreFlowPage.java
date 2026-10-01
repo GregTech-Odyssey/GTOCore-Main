@@ -2,13 +2,17 @@ package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
 import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtocore.common.data.machines.SpaceMultiblock;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.issue.DiagnosisResult;
+import com.gregtechceu.gtceu.api.machine.issue.MachineDiagnosis;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
@@ -21,21 +25,17 @@ import com.gregtechceu.gtceu.uipro.flow.FlowState;
 import com.gregtechceu.gtceu.uipro.flow.ThrottledStatus;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uipro.styletemplate.WidgetIconAtlas;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueLine;
 import com.gregtechceu.gtceu.uiwidgets.flow.IssueView;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeDiagnoser;
 import com.gregtechceu.gtceu.uiwidgets.flow.RecipeIssue;
-import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import dev.vfyjxf.taffy.style.AlignContent;
 import earth.terrarium.adastra.common.registry.ModBlocks;
 
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ final class CoreFlowPage {
         int[] widths = new int[columns + 1];
         Arrays.fill(widths, COLUMN_WIDTH);
         widths[columns] = SIDE_WIDTH;
-        var chart = new FlowChart(UISizes.FLOW_GUTTER, widths);
+        var chart = new FlowChart(UISizes.FLOW_GUTTER_WIDTH, widths);
         var station = stationNode(chart, core, status, columns);
         for (int i = 0; i < inputs; i++) chart.link(inputNode(chart, status, i, remote), station);
         chart.link(energyNode(chart, status), station);
@@ -133,43 +133,35 @@ final class CoreFlowPage {
     }
 
     private static FlowNode stationNode(FlowChart chart, Core core, Status status, int columns) {
-        var node = chart.node(1, 1, columns - 1).state(status.live(() -> status.station)).detail(status.live(() -> status.stationDetail));
+        var node = chart.node(1, 1, columns - 1).bindState(status.live(() -> status.station)).bindDetail(status.live(() -> status.stationDetail));
         node.addChildren(FlowParts.header(ItemView.of(core.getDefinition().asStack()), LANG_CORE),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.stationView)),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
-                new ProgressBar(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness)).percent());
+                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
+                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness)).percent());
         return node;
     }
 
     private static FlowNode inputNode(FlowChart chart, Status status, int index, boolean remote) {
-        var node = chart.node(0, index).state(status.live(() -> status.diagnoser.inputIssue(index).state()))
-                .detail(status.live(() -> status.diagnoser.inputDetail(index)));
-        node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(FlowParts.centered(FlowParts.fluidSlot(remote ? null : status.diagnoser.inputStack(index))),
-                TextLine.of(LayoutStyle.AUTO, () -> status.diagnoser.inputName(index)).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, () -> status.diagnoser.inputAmount(index)).alignCenter()
-                        .level(status.live(() -> status.diagnoser.inputIssue(index).state().level())),
-                new IssueLine(LayoutStyle.AUTO, null, status.live(() -> status.diagnoser.inputIssue(index).view())));
-        return node;
+        var node = chart.node(0, index).bindState(status.live(() -> status.diagnoser.inputIssue(index).state()))
+                .bindDetail(status.live(() -> status.diagnoser.inputDetail(index)));
+        return FlowParts.slotBody(node, FlowParts.fluidSlot(remote ? null : status.diagnoser.inputStack(index)),
+                TextLine.of(LayoutStyle.AUTO, () -> status.diagnoser.inputName(index)), () -> status.diagnoser.inputAmount(index),
+                status.live(() -> status.diagnoser.inputIssue(index).state().getLevel()),
+                status.live(() -> status.diagnoser.inputIssue(index).view()));
     }
 
     private static FlowNode outputNode(FlowChart chart, Status status, int column, int index, boolean remote) {
-        var node = chart.node(2, column).state(status.live(() -> status.diagnoser.outputIssue(index).state()))
-                .detail(status.live(() -> status.diagnoser.outputDetail(index)));
-        node.layout(l -> l.justifyContent(AlignContent.CENTER));
-        node.addChildren(FlowParts.centered(FlowParts.fluidSlot(remote ? null : status.diagnoser.outputStack(index))),
-                TextLine.of(LayoutStyle.AUTO, () -> status.diagnoser.outputName(index)).alignCenter(),
-                TextLine.of(LayoutStyle.AUTO, () -> status.diagnoser.outputAmount(index)).alignCenter()
-                        .level(status.live(() -> status.diagnoser.outputIssue(index).state().level())),
-                new IssueLine(LayoutStyle.AUTO, null, status.live(() -> status.diagnoser.outputIssue(index).view())));
-        return node;
+        var node = chart.node(2, column).bindState(status.live(() -> status.diagnoser.outputIssue(index).state()))
+                .bindDetail(status.live(() -> status.diagnoser.outputDetail(index)));
+        return FlowParts.slotBody(node, FlowParts.fluidSlot(remote ? null : status.diagnoser.outputStack(index)),
+                TextLine.of(LayoutStyle.AUTO, () -> status.diagnoser.outputName(index)), () -> status.diagnoser.outputAmount(index),
+                status.live(() -> status.diagnoser.outputIssue(index).state().getLevel()),
+                status.live(() -> status.diagnoser.outputIssue(index).view()));
     }
 
     private static FlowNode energyNode(FlowChart chart, Status status) {
-        var node = chart.node(1, 0).state(status.live(() -> status.diagnoser.energyIssue().state())).detail(status.live(() -> status.energyDetail));
-        IGuiTexture icon = UITheme.switching(() -> node.getFlowState() == FlowState.ACTIVE || node.getFlowState() == FlowState.READY,
-                new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_OFF), new WidgetIconAtlas.PixelExact(WidgetIcons.ENERGY_ON));
-        node.addChildren(FlowParts.header(ItemView.of(icon), LANG_ENERGY),
+        var node = chart.node(1, 0).bindState(status.live(() -> status.diagnoser.energyIssue().state())).bindDetail(status.live(() -> status.energyDetail));
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY),
                 new IssueLine(LayoutStyle.AUTO, null, status.live(() -> status.diagnoser.energyIssue().view())),
                 StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, status.live(() -> status.usageText)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status.live(() -> status.powerText)),
@@ -178,7 +170,7 @@ final class CoreFlowPage {
     }
 
     private static FlowNode servicesNode(FlowChart chart, Status status, int column) {
-        var node = chart.node(1, column).state(status.live(() -> status.services));
+        var node = chart.node(1, column).bindState(status.live(() -> status.services));
         node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), LANG_SERVICES),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_CLEAN), status.live(() -> status.cleanView)),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_ELEVATOR), status.live(() -> status.elevatorView)),
@@ -187,11 +179,11 @@ final class CoreFlowPage {
     }
 
     private static FlowNode segmentsNode(FlowChart chart, Status status, int column, int span) {
-        var node = chart.node(2, column, span).state(status.live(() -> status.segments)).detail(status.live(() -> status.segmentsDetail));
+        var node = chart.node(2, column, span).bindState(status.live(() -> status.segments)).bindDetail(status.live(() -> status.segmentsDetail));
         node.addChildren(FlowParts.header(ItemView.of(SpaceMultiblock.SPACE_STATION_DOCKING_MODULE.asStack()), LANG_SEGMENTS),
                 StatusLine.of(LayoutStyle.AUTO, LANG_ATTACHED, status.live(() -> status.attachedText)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_FORMED, status.live(() -> status.formedText))
-                        .level(status.live(() -> status.allFormed ? StatusLine.Level.GOOD : StatusLine.Level.ERROR)),
+                        .bindLevel(status.live(() -> status.allFormed ? Level.GOOD : Level.ERROR)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_CONNECTORS, status.live(() -> status.connectorText)),
                 StatusLine.of(LayoutStyle.AUTO, LANG_FUNCTIONAL, status.live(() -> status.functionalText)),
                 TextLine.translatable(LayoutStyle.AUTO, LANG_HINT).setColor(UITheme.TEXT_SECONDARY));
@@ -223,7 +215,7 @@ final class CoreFlowPage {
             super(core::getOffsetTimer, REFRESH_TICKS);
             this.core = core;
             this.shares = core.getModules().size() + 1;
-            this.diagnoser = new RecipeDiagnoser(core, core.buildCycleRecipe());
+            this.diagnoser = new RecipeDiagnoser(core, core.cycleRecipe());
         }
 
         @Override
@@ -239,11 +231,9 @@ final class CoreFlowPage {
         @Override
         protected void refresh(int now) {
             var logic = core.getRecipeLogic();
-            int count = core.getModules().size() + 1;
-            if (count != shares) {
-                shares = count;
-                diagnoser = new RecipeDiagnoser(core, core.buildCycleRecipe());
-            }
+            shares = core.getModules().size() + 1;
+            var recipe = core.cycleRecipe();
+            if (recipe != diagnoser.getRecipe()) diagnoser = new RecipeDiagnoser(core, recipe);
             boolean formed = core.isFormed();
             boolean working = logic.isWorking();
             boolean inCycle = working || logic.isWaiting();
@@ -256,24 +246,28 @@ final class CoreFlowPage {
             energyLines.add(Component.translatable(LANG_ENERGY));
             energyLines.addAll(diagnoser.energyDetail());
             energyDetail = energyLines;
-            refreshStation(formed, working, inCycle);
+            refreshStation(formed, working, inCycle, MachineDiagnosis.of(core));
             refreshServices(formed);
             refreshSegments();
         }
 
-        private void refreshStation(boolean formed, boolean working, boolean inCycle) {
+        private void refreshStation(boolean formed, boolean working, boolean inCycle, DiagnosisResult result) {
+            var notInSpace = result.issue(IdleReason.SPACE_STATION_NOT_IN_SPACE.type());
             IssueView view;
             if (!formed) view = RecipeIssue.UNFORMED.view();
-            else if (!core.isInSpace()) view = IssueView.of(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE));
+            else if (notInSpace != null) view = new IssueView(RecipeIssue.CONDITION, Component.translatable(LANG_NOT_IN_SPACE), null, notInSpace);
             else if (working) view = core.getReadyCount() < READY_TARGET ? IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_WARMING)) : RecipeIssue.RUNNING.view();
-            else if (inCycle) view = RecipeIssue.WAITING.view();
+            else if (inCycle) view = IssueView.primary(result, RecipeIssue.WAITING.view());
             else if (!diagnoser.inputsSatisfied()) view = RecipeIssue.INPUT_SHORT.view();
             else if (!diagnoser.energySatisfied()) view = diagnoser.energyIssue().view();
-            else view = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
+            else {
+                var primary = result.primary();
+                view = primary != null && primary.isBlocking() ? IssueView.of(primary) : IssueView.of(RecipeIssue.OK, Component.translatable(LANG_READY));
+            }
             stationView = view;
-            station = working ? FlowState.ACTIVE : view.issue().state();
+            station = working ? FlowState.ACTIVE : view.state();
             stationDetail = List.of(Component.translatable(LANG_CORE),
-                    Component.translatable(view.issue().descriptionKey()).withStyle(RecipeDiagnoser.style(view.issue())),
+                    view.description().copy().withStyle(RecipeDiagnoser.style(view.issue())),
                     Component.translatable(LANG_SHARES, shares).withStyle(ChatFormatting.GRAY));
         }
 

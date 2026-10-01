@@ -2,17 +2,21 @@ package com.gtocore.common.machine.multiblock.electric.smelter;
 
 import com.gtocore.common.block.CoilType;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.CoilCrossRecipeMultiblockMachine;
-import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.sound.AutoReleasedSound;
 import com.gregtechceu.gtceu.common.data.GTRecipeDataKeys;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -27,7 +31,7 @@ import vazkii.botania.client.core.proxy.ClientProxy;
 
 import java.util.List;
 
-public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCrossRecipeMultiblockMachine {
+public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCrossRecipeMultiblockMachine implements IIssueProvider {
 
     public DimensionallyTranscendentPlasmaForgeMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true, false, false, MachineUtils::getHatchParallel);
@@ -42,22 +46,33 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (recipe.definition.recipeType == GTORecipeTypes.STELLAR_FORGE_RECIPES) {
             if (getCoilType() != CoilType.URUIUM) {
-                setIdleReason(() -> Component.translatable("gtocore.machine.dimensionally_transcendent_plasma_forge.coil"));
+                IdleReason.COIL_NOT_USABLE.report(this, IssueStage.MODIFIER, recipe.definition);
                 return null;
             }
-        } else if (recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP) > getTemperature()) {
-            setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE);
-            return null;
+        } else {
+            int need = recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP);
+            int have = getTemperature();
+            if (need > have) {
+                IdleReason.INSUFFICIENT_TEMPERATURE.report(this, IssueStage.MODIFIER, need, have, recipe.definition);
+                return null;
+            }
         }
         return super.getRealRecipe(unit, recipe);
     }
 
     @Override
     public void customText(@NotNull List<Component> textList) {
-        textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.literal(FormattingUtil.formatNumbers(getTemperature()) + "K").withStyle(ChatFormatting.BLUE)));
-        if (getRecipeType() == GTORecipeTypes.STELLAR_FORGE_RECIPES && getCoilType() != CoilType.URUIUM) {
-            textList.add(Component.translatable("gtocore.machine.dimensionally_transcendent_plasma_forge.coil").withStyle(ChatFormatting.RED));
-        }
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.literal(FormattingUtil.formatNumbers(getTemperature()) + "K").withStyle(ChatFormatting.BLUE)));
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (getRecipeType() == GTORecipeTypes.STELLAR_FORGE_RECIPES && getCoilType() != CoilType.URUIUM) IdleReason.COIL_NOT_USABLE.collect(sink);
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        page.addReading("gtceu.multiblock.blast_furnace.max_temperature", MultiblockPage.numberText(this::getTemperature, "K"));
     }
 
     @Override

@@ -157,19 +157,19 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     @Override
     public Widget createUIWidget() {
         var tanks = fluidInventory.getStorages();
-        var grid = UIElement.column(UISizes.SLOTS_PER_ROW * UISizes.SLOT);
+        var grid = UIElement.column(UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE);
         for (int start = 0; start < SLOT_COUNT; start += UISizes.SLOTS_PER_ROW) {
-            var items = UIElement.row(UISizes.SLOT);
-            var fluids = UIElement.row(UISizes.SLOT);
+            var items = UIElement.row(UISizes.SLOT_SIZE);
+            var fluids = UIElement.row(UISizes.SLOT_SIZE);
             for (int i = start; i < Math.min(SLOT_COUNT, start + UISizes.SLOTS_PER_ROW); i++) {
                 items.addChild(ItemSlot.of(inventory.storage, i));
-                fluids.addChild(new FluidSlot(tanks[i], 0, true, true));
+                fluids.addChild(FluidSlot.of(tanks[i], 0, true, true));
             }
             grid.addChild(items);
             grid.addChild(fluids);
         }
-        int height = HatchViews.MAX_GRID_ROWS * UISizes.SLOT;
-        var scroller = new ScrollerView("virtual_ingredient_provider.slots", UISizes.CONTENT_WIDTH, height).adaptiveWidth().adaptiveHeight(height);
+        int height = HatchViews.MAX_GRID_ROWS * UISizes.SLOT_SIZE;
+        var scroller = new ScrollerView("virtual_ingredient_provider.slots", UISizes.CONTENT_WIDTH, height).adaptiveWidth().setAdaptiveHeight(height);
         scroller.addScrollViewChild(grid);
         var status = new StatusPanel();
         status.addLine(CONFIGURED, new ConfiguredText());

@@ -1,18 +1,17 @@
 package com.gtocore.common.machine.noenergy.heat;
 
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.heat.HeatHandler;
 import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
-import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -82,12 +81,14 @@ public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatC
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (heatContainer.getCurrentHeat() < 8) {
-            setIdleReason(IdleReason.INSUFFICIENT_TEMPERATURE);
+        long heat = heatContainer.getCurrentHeat();
+        if (heat < 8) {
+            IdleReason.HEAT_SHORT.report(this, 8, heat);
             return null;
         }
-        if (unit.getFluidAmount(true, Fluids.WATER)[0] < 1000) {
-            setIdleReason(ActionResult.failInsufficientIn(Fluids.WATER.getFluidType().getDescription()));
+        long water = unit.getFluidAmount(true, Fluids.WATER)[0];
+        if (water < 1000) {
+            IdleReason.WATER_SHORT.report(this, 1000, water);
             return null;
         }
         return getRecipeBuilder().duration(20).inputFluids(Fluids.WATER, 1000).outputFluids(Fluids.WATER, 990).build();

@@ -2,13 +2,13 @@ package com.gtocore.common.item;
 
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 
 import com.gtolib.api.item.IMachineUpgraderBehavior;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 
-import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,6 +19,9 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.function.Supplier;
+
+import static com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine.INTERNAL_INVENTORY;
+import static com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine.PATTERN_INVENTORY;
 
 public enum PatternBufferUpgraderBehavior implements IMachineUpgraderBehavior {
 
@@ -39,16 +42,20 @@ public enum PatternBufferUpgraderBehavior implements IMachineUpgraderBehavior {
         var tile = world.getBlockEntity(pos);
         if (tile instanceof MetaMachineBlockEntity mbe &&
                 mbe.getMetaMachine() instanceof MEPatternBufferPartMachine machine) {
+            var target = PatternBufferType.of(upgradeTo.get());
+            if (target == null || !machine.getType().canUpgradeTo(target)) return InteractionResult.PASS;
 
             var originState = world.getBlockState(pos);
             var state = copyBlockStateProperties(originState, upgradeTo.get().get().defaultBlockState());
 
             BlockEntity upgradedTile = upgradeTo.get().get().newBlockEntity(pos, state);
             if (upgradedTile instanceof MetaMachineBlockEntity upgradedMbe &&
-                    upgradedMbe.getMetaMachine() instanceof MEPatternBufferPartMachine upgradedMachine &&
-                    machine.getMaxPatternCount() < upgradedMachine.getMaxPatternCount()) {
+                    upgradedMbe.getMetaMachine() instanceof MEPatternBufferPartMachine upgradedMachine) {
 
-                replaceBlockEntityWithNBTHook(world, pos, tile, upgradedTile, state, (contents) -> operateContentsNBT(contents, machine.getMaxPatternCount(), upgradedMachine.getMaxPatternCount()));
+                replaceBlockEntityWithNBTHook(world, pos, tile, upgradedTile, state, contents -> growContents(contents, upgradedTile.serializeNBT(), machine.getMaxPatternCount()));
+                for (int i = 0; i < machine.getMaxPatternCount(); i++) {
+                    upgradedMachine.getPatternInventory().setStackInSlot(i, machine.getPatternInventory().getStackInSlot(i).copy());
+                }
                 state.getBlock().setPlacedBy(context.getLevel(), pos, state, context.getPlayer(), context.getItemInHand());
 
                 ItemStack replaced = machine.getDefinition().asStack();
@@ -63,15 +70,11 @@ public enum PatternBufferUpgraderBehavior implements IMachineUpgraderBehavior {
         return InteractionResult.PASS;
     }
 
-    private static void operateContentsNBT(CompoundTag contents, int oldSize, int newSize) {
-        contents.getCompound("patternInventory").putInt("size", newSize);
-        for (int i = oldSize; i < newSize; i++) {
-            CompoundTag innerTag = new CompoundTag();
-            innerTag.put("t", ByteTag.valueOf((byte) 0));
-            CompoundTag tag = new CompoundTag();
-            tag.put("t", ByteTag.valueOf((byte) 11));
-            tag.put("p", innerTag);
-            contents.getList("internalInventory", Tag.TAG_COMPOUND).add(tag);
-        }
+    private static void growContents(CompoundTag contents, CompoundTag empty, int oldSize) {
+        contents.put(PATTERN_INVENTORY, empty.getCompound(PATTERN_INVENTORY).copy());
+        var slots = contents.getList(INTERNAL_INVENTORY, Tag.TAG_COMPOUND);
+        var emptySlots = empty.getList(INTERNAL_INVENTORY, Tag.TAG_COMPOUND);
+        for (int i = oldSize; i < emptySlots.size(); i++) slots.add(emptySlots.get(i).copy());
+        contents.put(INTERNAL_INVENTORY, slots);
     }
 }

@@ -15,19 +15,26 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.RPC;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
@@ -54,8 +61,6 @@ import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.mojang.blaze3d.systems.RenderSystem;
-import dev.vfyjxf.taffy.style.FlexWrap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import org.jetbrains.annotations.Nullable;
@@ -148,38 +153,38 @@ public class RecipeExportTab implements IFancyUIProvider {
         var grid = new RecipeGrid(holder, player, player.level().isClientSide);
         // 配方网格右侧常显滚动条：玩家背包与网格、数据物品槽对齐，只有滚动条伸出来
         if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
-        var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+        var page = Form.page();
 
         // 筛选：只影响本端显示，搜索框是纯客户端控件（两端都建，不参与同步）
-        var search = new TextField(LayoutStyle.AUTO, () -> grid.search, grid::setSearch)
-                .setPlaceholder(() -> Component.translatable(SEARCH_TOOLTIP));
-        search.setHoverTooltips(Component.translatable(SEARCH_TOOLTIP));
+        var search = TextField.of(LayoutStyle.AUTO, () -> grid.search, grid::setSearch)
+                .bindClientPlaceholder(() -> Component.translatable(SEARCH_TOOLTIP));
+        search.tooltips(SEARCH_TOOLTIP);
         search.getInput().setMaxStringLength(SEARCH_MAX_LENGTH);
         search.setClientSideWidget();
         var filter = UIElement.section().addChild(search);
 
         // 固定高度、常显滚动条：搜索时格子数变化，窗口不跟着伸缩跳动（右下角仍可拖拽缩放）
-        var scroller = new ScrollerView("research.recipe_export", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, GRID_ROWS * UISizes.SLOT)
-                .verticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
+        var scroller = new ScrollerView("research.recipe_export", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, GRID_ROWS * UISizes.SLOT_SIZE)
+                .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
         scroller.addScrollViewChild(grid);
         page.addChild(UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(filter, scroller));
 
         // 当前选择：状态面板 + 紧贴其下的整行导出按钮。没选中时整块禁用，选中了但缺数据物品时按钮禁用（原因不同）
         var status = new StatusPanel();
-        status.addLine(LINE_UNLOCKED, grid::unlockedText);
-        status.addLine(LINE_SELECTED, grid::selectedName).icon(grid::selectedOutputIcon);
-        status.addLine(LINE_DATA_ITEM, grid::selectedDataItemName).icon(grid::selectedDataItemIcon)
-                .level(() -> {
-                    if (grid.selectedEntry() == null) return StatusLine.Level.NORMAL;
-                    return grid.hasSelectedDataItem() ? StatusLine.Level.GOOD : StatusLine.Level.WARNING;
+        status.addLine(LINE_UNLOCKED, grid::getUnlockedText);
+        status.addLine(LINE_SELECTED, grid::getSelectedName).bindIcon(grid::getSelectedOutputIcon);
+        status.addLine(LINE_DATA_ITEM, grid::getSelectedDataItemName).bindIcon(grid::getSelectedDataItemIcon)
+                .bindLevel(() -> {
+                    if (grid.getSelectedEntry() == null) return Level.NORMAL;
+                    return grid.hasSelectedDataItem() ? Level.GOOD : Level.WARNING;
                 })
-                .detail(() -> grid.selectedEntry() != null && !grid.hasSelectedDataItem() ? Component.translatable(NO_DATA_ITEM) : Component.empty());
+                .bindDetail(() -> grid.getSelectedEntry() != null && !grid.hasSelectedDataItem() ? Component.translatable(NO_DATA_ITEM) : Component.empty());
         var export = Button.translatable(LayoutStyle.AUTO, EXPORT_BUTTON)
                 .setVariant(UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(grid::exportSelected)
-                .disabled(() -> grid.selectedEntry() != null && !grid.hasSelectedDataItem(), NO_DATA_ITEM);
+                .disabled(() -> grid.getSelectedEntry() != null && !grid.hasSelectedDataItem(), NO_DATA_ITEM);
         var selection = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(status, export);
-        selection.disabled(() -> grid.selectedEntry() == null, SELECT_FIRST);
+        selection.disabled(() -> grid.getSelectedEntry() == null, SELECT_FIRST);
         page.addChild(selection);
 
         // 数据物品：输入可取可放，导出只能取
@@ -193,11 +198,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
     /** 每行 9 格的物品槽；槽数取机器的物品栏（两端相同）。 */
     private static UIElement slotGrid(ICustomItemStackHandler handler, boolean canPut) {
-        var grid = new UIElement().layout(l -> l.row().flexWrap(FlexWrap.WRAP).width(UISizes.SLOT_ROW_WIDTH));
-        for (int slot = 0; slot < handler.getSlots(); slot++) {
-            grid.addChild(new ItemSlot(handler, slot, true, canPut));
-        }
-        return grid;
+        return SlotGrid.of(UISizes.SLOTS_PER_ROW, handler.getSlots(), slot -> ItemSlot.of(handler, slot, true, canPut));
     }
 
     @Override
@@ -213,6 +214,16 @@ public class RecipeExportTab implements IFancyUIProvider {
     @Override
     public List<Component> getTabTooltips() {
         return Collections.singletonList(Component.translatable(TAB_NAME));
+    }
+
+    @Override
+    public @Nullable MetaMachine getIssueMachine() {
+        return holder instanceof MetaMachine machine ? machine : null;
+    }
+
+    @Override
+    public void attachTooltips(TooltipsPanel tooltipsPanel) {
+        if (holder instanceof MetaMachine machine) tooltipsPanel.attachRecipeLogics(machine);
     }
 
     private static boolean isConvertibleDataItem(ItemStack stack, ItemStack expectedTierItem) {
@@ -262,8 +273,6 @@ public class RecipeExportTab implements IFancyUIProvider {
      */
     private static final class RecipeGrid extends UIElement implements IIngredientSlot {
 
-        /// 客户端请求：点击第 n 个条目。避开 WidgetGroup 自用的 1（子控件路由）
-        private static final int ACTION_CLICK = 0x5B01;
         /// 位图最多每隔多少 tick 重算一次（"已含有"取决于数据访问仓内容，没有修改计数可用）
         private static final int REFRESH_TICKS = 20;
 
@@ -274,6 +283,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         private final List<Entry> entries = new ArrayList<>();
         private final SyncValue<BitSet> flags;
         private final SyncValue<Integer> selected;
+        private final RPC<Integer> click;
 
         // ---- 服务端 ----
         @Nullable
@@ -306,9 +316,11 @@ public class RecipeExportTab implements IFancyUIProvider {
             this.holder = holder;
             this.player = player;
             this.remote = remote;
-            layout(l -> l.size(UISizes.SLOT_ROW_WIDTH, UISizes.SLOT));
+            layout(l -> l.size(UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE));
             this.flags = addSyncValue(SyncValue.of(this::currentFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
             this.selected = addSyncValue(SyncValue.ofInt(this::selectedChecked, -1));
+            this.click = addRPC(ByteStreamCodec.INT_CODEC, (clicker, index) -> clickEntry(index))
+                    .validate(index -> index >= 0 && index < entries.size());
             if (!remote) collectEntries();
         }
 
@@ -436,7 +448,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
 
         @Nullable
-        Entry selectedEntry() {
+        Entry getSelectedEntry() {
             int index = selectedChecked();
             return index < 0 ? null : entries.get(index);
         }
@@ -465,18 +477,18 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
 
         /** 已选配方主产物的图标（状态行里显示，服务端取值下发）。 */
-        ItemStack selectedOutputIcon() {
+        ItemStack getSelectedOutputIcon() {
             updateMemo();
             return memoOutput;
         }
 
         /** 已选配方所需数据物品的图标。 */
-        ItemStack selectedDataItemIcon() {
+        ItemStack getSelectedDataItemIcon() {
             updateMemo();
             return memoTierItem;
         }
 
-        Component unlockedText() {
+        Component getUnlockedText() {
             currentFlags();
             if (unlockedCount != unlockedTextCount) {
                 unlockedTextCount = unlockedCount;
@@ -485,12 +497,12 @@ public class RecipeExportTab implements IFancyUIProvider {
             return unlockedText;
         }
 
-        Component selectedName() {
+        Component getSelectedName() {
             updateMemo();
             return memoName;
         }
 
-        Component selectedDataItemName() {
+        Component getSelectedDataItemName() {
             updateMemo();
             return memoTierItem.isEmpty() ? Component.literal(NO_VALUE) : memoTierItem.getHoverName();
         }
@@ -502,21 +514,14 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         /** 服务端：导出已选配方（导出按钮、再次点击已选格子）。条件不满足时什么也不做。 */
         void exportSelected() {
-            var entry = selectedEntry();
+            var entry = getSelectedEntry();
             if (entry == null || entry.node == null || entry.recipe == null) return;
             var tierItem = entry.node.getTierItem();
             if (!hasConvertibleDataItem(holder.getDataItemStorage(), tierItem)) return;
             holder.exportSelectedRecipe(tierItem, entry.recipe);
         }
 
-        @Override
-        public void handleClientAction(int id, FriendlyByteBuf buffer) {
-            if (id != ACTION_CLICK) {
-                super.handleClientAction(id, buffer);
-                return;
-            }
-            int index = buffer.readVarInt();
-            if (index < 0 || index >= entries.size()) return;
+        private void clickEntry(int index) {
             // 客户端的解锁状态可能滞后：只按最新数据校验被点的这一条
             if (!isUnlockedNow(entries.get(index))) return;
             if (selectedChecked() == index) exportSelected();
@@ -553,7 +558,7 @@ public class RecipeExportTab implements IFancyUIProvider {
             // 未含有的在前；同组保持科技树顺序（归并排序是稳定的）
             IntArrays.mergeSort(visible.elements(), 0, visible.size(), (a, b) -> Boolean.compare(included(a), included(b)));
             int rows = Math.max(1, (visible.size() + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW);
-            layout(l -> l.height(rows * UISizes.SLOT));
+            layout(l -> l.height(rows * UISizes.SLOT_SIZE));
             tooltipIndex = -1;
             positionOf = -2;
         }
@@ -579,7 +584,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         /** 鼠标下的条目下标（视口外、空格为 -1）。 */
         private int entryAt(double mouseX, double mouseY) {
             if (!isMouseOverElement(mouseX, mouseY) || !inViewport(mouseX, mouseY)) return -1;
-            int column = (int) (mouseX - getPositionX()) / UISizes.SLOT, row = (int) (mouseY - getPositionY()) / UISizes.SLOT;
+            int column = (int) (mouseX - getPositionX()) / UISizes.SLOT_SIZE, row = (int) (mouseY - getPositionY()) / UISizes.SLOT_SIZE;
             if (column < 0 || column >= UISizes.SLOTS_PER_ROW || row < 0) return -1;
             int k = row * UISizes.SLOTS_PER_ROW + column;
             return k < visible.size() ? visible.getInt(k) : -1;
@@ -603,7 +608,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         /// 一行格子（顶边 y）是否完整落在视口里
         private boolean isRowInViewport(int y) {
             var scroller = scroller();
-            return scroller == null || (y >= scroller.getPositionY() && y + UISizes.SLOT <= scroller.getPositionY() + scroller.getSizeHeight());
+            return scroller == null || (y >= scroller.getPositionY() && y + UISizes.SLOT_SIZE <= scroller.getPositionY() + scroller.getSizeHeight());
         }
 
         @Override
@@ -614,8 +619,8 @@ public class RecipeExportTab implements IFancyUIProvider {
             var font = Minecraft.getInstance().font;
             if (visible.isEmpty()) {
                 var key = search.isBlank() ? EMPTY_RECIPES : FILTER_EMPTY_RECIPES;
-                graphics.drawString(font, UITheme.clip(font, Component.translatable(key).getString(), getSizeWidth()),
-                        x0, y0 + (UISizes.SLOT - 8) / 2, UITheme.TEXT_SECONDARY, false);
+                graphics.drawString(font, UIText.fit(Component.translatable(key).getString(), getSizeWidth()),
+                        x0, UIText.centerY(y0, UISizes.SLOT_SIZE), UITheme.TEXT_SECONDARY, false);
                 return;
             }
             // 只画视口里的行
@@ -623,25 +628,21 @@ public class RecipeExportTab implements IFancyUIProvider {
             int top = scroller == null ? Integer.MIN_VALUE : scroller.getPositionY();
             int bottom = scroller == null ? Integer.MAX_VALUE : top + scroller.getSizeHeight();
             int hovered = entryAt(mouseX, mouseY);
-            int firstRow = top <= y0 ? 0 : (top - y0) / UISizes.SLOT;
+            int firstRow = top <= y0 ? 0 : (top - y0) / UISizes.SLOT_SIZE;
             int from = Math.min(visible.size(), firstRow * UISizes.SLOTS_PER_ROW);
             for (int k = from; k < visible.size(); k++) {
-                int x = x0 + k % UISizes.SLOTS_PER_ROW * UISizes.SLOT, y = y0 + k / UISizes.SLOTS_PER_ROW * UISizes.SLOT;
+                int x = x0 + k % UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE, y = y0 + k / UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
                 if (y >= bottom) break;
                 int index = visible.getInt(k);
                 var entry = entries.get(index);
-                UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT, UISizes.SLOT);
+                UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
                 if (entry.output != null) AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x + 1, y + 1, entry.output);
                 else graphics.drawString(font, "?", x + 6, y + 5, UITheme.TEXT, false);
                 if (included(index)) {
                     StackSizeRenderer.renderSizeLabel(graphics, font, x + 1, y + 17 - font.lineHeight * 0.5f,
                             INCLUDED_LABEL, 0.5f, true, true);
                 }
-                if (index == hovered) {
-                    RenderSystem.colorMask(true, true, true, false);
-                    graphics.fill(x + 1, y + 1, x + UISizes.SLOT - 1, y + UISizes.SLOT - 1, 200, UITheme.SLOT_HOVER_OVERLAY);
-                    RenderSystem.colorMask(true, true, true, true);
-                }
+                if (index == hovered) UIDraw.hoverOverlay(graphics, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
             }
         }
 
@@ -652,8 +653,8 @@ public class RecipeExportTab implements IFancyUIProvider {
             // 选中框画在前景层，外扩的 1 像素不被相邻格子盖住；滚出视口时不画
             int k = selectedPosition();
             if (k >= 0) {
-                int x = getPositionX() + k % UISizes.SLOTS_PER_ROW * UISizes.SLOT, y = getPositionY() + k / UISizes.SLOTS_PER_ROW * UISizes.SLOT;
-                if (isRowInViewport(y)) UITheme.drawSelection(graphics, x, y, UISizes.SLOT, UISizes.SLOT);
+                int x = getPositionX() + k % UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE, y = getPositionY() + k / UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
+                if (isRowInViewport(y)) UIDraw.selectionFrame(graphics, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
             }
             int hovered = entryAt(mouseX, mouseY);
             if (hovered < 0 || gui == null || gui.getModularUIGui() == null) return;
@@ -693,7 +694,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             int index = entryAt(mouseX, mouseY);
             if (index < 0 || button != 0) return super.mouseClicked(mouseX, mouseY, button);
-            writeClientAction(ACTION_CLICK, buffer -> buffer.writeVarInt(index));
+            click.send(index);
             playButtonClickSound();
             return true;
         }

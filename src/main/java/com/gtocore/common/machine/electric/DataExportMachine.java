@@ -51,7 +51,7 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 166, this, entityPlayer).widget(new MachineWindow(new RecipeExportTab(this)));
+        return MachineWindow.createUI(new RecipeExportTab(this), this, entityPlayer);
     }
 
     @Override

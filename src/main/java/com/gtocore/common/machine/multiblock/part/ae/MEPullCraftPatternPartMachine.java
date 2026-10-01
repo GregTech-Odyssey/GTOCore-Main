@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -273,6 +274,6 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
         section.addChildren(
                 MEPatternPartUI.labeledRow(section.getContentWidth(), PULL_MODE, PULL_MODE_TOOLTIP,
                         Switch.of(() -> pullModes[index], enabled -> setPullMode(index, enabled))),
-                MEPartUI.numberRow(PULL_THRESHOLD, threshold, PULL_THRESHOLD_TOOLTIP));
+                Form.numberRow(PULL_THRESHOLD, threshold, PULL_THRESHOLD_TOOLTIP));
     }
 }

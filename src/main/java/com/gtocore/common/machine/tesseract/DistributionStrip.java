@@ -1,24 +1,25 @@
 package com.gtocore.common.machine.tesseract;
 
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.animation.UIClock;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
-import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.render.UIPixels;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 
 import java.util.function.BooleanSupplier;
 
 public final class DistributionStrip extends UIElement {
 
     private static final int BARS = 4;
+    private static final String[] LABELS = { "1", "2", "3", "4" };
     private static final int HEIGHT = UISizes.PROGRESS_BAR_HEIGHT;
     private static final long CYCLE_MS = 4000;
     private static final float FILL_SHARE = 0.8F;
@@ -29,7 +30,7 @@ public final class DistributionStrip extends UIElement {
 
     public DistributionStrip(BooleanSupplier roundRobin) {
         layout(l -> l.height(HEIGHT));
-        this.roundRobin = addSyncValue(SyncValue.of(roundRobin::getAsBoolean, ByteStreamCodec.BOOLEAN_CODEC, false));
+        this.roundRobin = addSyncValue(SyncValue.ofBool(roundRobin));
     }
 
     @Override
@@ -37,16 +38,16 @@ public final class DistributionStrip extends UIElement {
     public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int x = getPositionX(), y = getPositionY(), width = getSizeWidth();
         int barWidth = (width - (BARS - 1) * UISizes.GAP) / BARS;
-        float phase = Math.min(1F, (Util.getMillis() % CYCLE_MS) / (CYCLE_MS * FILL_SHARE));
+        float phase = Math.min(1F, (UIClock.millis() % CYCLE_MS) / (CYCLE_MS * FILL_SHARE));
         boolean even = roundRobin.getValue();
         var font = Minecraft.getInstance().font;
         for (int i = 0; i < BARS; i++) {
             int bx = x + i * (barWidth + UISizes.GAP);
             float ratio = even ? phase * ROUND_ROBIN_TOTAL : Math.max(0F, Math.min(1F, phase * SEQUENTIAL_TOTAL - i));
-            ProgressBar.drawTrack(graphics, bx, y, barWidth, HEIGHT);
-            ProgressBar.drawFill(graphics, bx, y, barWidth, HEIGHT, 0, ratio, UITheme.FLOW_GREEN_MID);
-            var label = String.valueOf(i + 1);
-            graphics.drawString(font, label, bx + (barWidth - font.width(label)) / 2, y + (HEIGHT - 8) / 2, UITheme.TEXT, false);
+            UIDraw.progressTrack(graphics, bx, y, barWidth, HEIGHT);
+            UIDraw.progressFill(graphics, bx, y, barWidth, HEIGHT, 0, ratio, UITheme.FLOW_GREEN_MID);
+            var label = LABELS[i];
+            UIText.drawLeft(graphics, label, UIPixels.center(bx, barWidth, font.width(label)), UIText.centerY(y, HEIGHT), UITheme.TEXT);
         }
         super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
     }

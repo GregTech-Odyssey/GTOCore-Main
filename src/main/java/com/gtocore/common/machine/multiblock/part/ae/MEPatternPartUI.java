@@ -5,7 +5,10 @@ import com.gtocore.eio_travel.logic.TravelUtils;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.data.UIChannel;
 import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.Indicator;
 import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
@@ -13,7 +16,7 @@ import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.PageView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.Stepper;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
@@ -79,12 +82,12 @@ public final class MEPatternPartUI {
      * 名称为空时输入框里灰字显示机器名——AE 在没有自定义名称时用的就是它。
      */
     public static UIElement header(MEPatternPartMachine<?> machine, int width) {
-        var nameField = new TextField(0, machine::getCustomName, name -> {
+        var nameField = TextField.of(0, machine::getCustomName, name -> {
             machine.setCustomName(name);
             TravelUtils.requireResync(Objects.requireNonNull(machine.getLevel()));
         });
         nameField.layout(l -> l.flexGrow(1));
-        nameField.setPlaceholder(() -> machine.getDefinition().asItem().getDescription());
+        nameField.bindClientPlaceholder(() -> machine.getDefinition().asItem().getDescription());
         nameField.setHoverTooltips(Component.translatable(MEPatternPartMachine.AE_NAME));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(onlineIndicator(machine::getOnlineField), nameField);
@@ -99,14 +102,13 @@ public final class MEPatternPartUI {
 
     /** 底栏：左侧翻页（多于一页时），右侧附加按钮。两者都没有时返回 null。 */
     @Nullable
-    public static UIElement footer(MEPatternPartMachine<?> machine, int width, Widget... actions) {
+    public static UIElement footer(MEPatternPartMachine<?> machine, int width, PageView pageView, Widget... actions) {
         int pages = pageCount(machine);
         if (pages <= 1 && actions.length == 0) return null;
-        var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter());
+        var row = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width));
         if (pages > 1) {
-            var pageField = machine.getNewPageField();
             IntFunction<String> format = page -> (page + 1) + "/" + pages;
-            row.addChild(new Stepper(UISizes.VALUE_WIDTH, pageField::get, page -> machine.selectPage(page, pages), 0, pages - 1, false, format));
+            row.addChild(Stepper.of(UISizes.VALUE_WIDTH, pageView::getPage, pageView::selectPage, 0, pages - 1).setFormatter(format));
         }
         row.addChild(UIElement.flexSpacer());
         row.addChildren(actions);
@@ -125,29 +127,22 @@ public final class MEPatternPartUI {
         int slotCount = machine.getMaxPatternCount();
         int rows = Math.max(1, Math.min(ROWS_PER_PAGE, (slotCount + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW));
         boolean empty = slotCount == 0 && emptyPageText != null;
-        int height = empty ? StatusPanel.heightFor(1) : gridHeaderHeight + rows * UISizes.SLOT;
-        var pages = new PageView(width, height, machine.getNewPageField(), () -> {});
+        int height = empty ? StatusPanel.heightFor(1) : gridHeaderHeight + rows * UISizes.SLOT_SIZE;
+        var pages = new PageView(width, height);
         for (int pageStart = 0; pageStart < slotCount; pageStart += SLOTS_PER_PAGE) {
             int start = pageStart;
             int end = Math.min(slotCount, pageStart + SLOTS_PER_PAGE);
             pages.addPage(page -> {
                 page.layout(l -> l.alignCenter().gapAll(UISizes.GAP));
                 if (gridHeader != null) gridHeader.accept(page);
-                var grid = UIElement.column(UISizes.SLOT_ROW_WIDTH);
-                for (int rowStart = start; rowStart < end; rowStart += UISizes.SLOTS_PER_ROW) {
-                    var row = UIElement.row(UISizes.SLOT);
-                    for (int index = rowStart; index < Math.min(end, rowStart + UISizes.SLOTS_PER_ROW); index++) {
-                        row.addChild(machine.createPatternSlot(index));
-                    }
-                    grid.addChild(row);
-                }
-                page.addChild(grid);
+                page.addChild(SlotGrid.of(UISizes.SLOTS_PER_ROW, end - start, i -> machine.createPatternSlot(start + i))
+                        .layout(l -> l.width(UISizes.SLOT_ROW_WIDTH)));
             });
         }
         if (empty) {
             pages.addPage(page -> {
                 var status = new StatusPanel(page.getContentWidth());
-                status.addSentence(emptyPageText).level(() -> StatusLine.Level.WARNING);
+                status.addSentence(emptyPageText).bindLevel(() -> Level.WARNING);
                 page.addChild(status);
             });
         }
@@ -159,7 +154,7 @@ public final class MEPatternPartUI {
     /** 面板区块：深灰面板，先放一行标题，调用方再往里加内容。 */
     public static UIElement section(UIElement parent, String titleKey) {
         var section = UIElement.section(parent.getContentWidth());
-        section.addChild(Label.translatable(titleKey, section.getContentWidth()).setColor(UITheme::panelText));
+        section.addChild(Label.translatable(section.getContentWidth(), titleKey).bindClientColor(UITheme::panelText));
         parent.addChild(section);
         return section;
     }
@@ -167,7 +162,7 @@ public final class MEPatternPartUI {
     /** 按每行 9 个排布 {@code count} 个槽，槽由 {@code slotFactory} 按序号创建。 */
     public static void slotRows(UIElement section, int count, java.util.function.IntFunction<Widget> slotFactory) {
         for (int rowStart = 0; rowStart < count; rowStart += UISizes.SLOTS_PER_ROW) {
-            var row = UIElement.row(UISizes.SLOT);
+            var row = UIElement.row(UISizes.SLOT_SIZE);
             for (int i = rowStart; i < Math.min(count, rowStart + UISizes.SLOTS_PER_ROW); i++) {
                 row.addChild(slotFactory.apply(i));
             }
@@ -188,9 +183,9 @@ public final class MEPatternPartUI {
      * 越过 32 回到 -1。
      */
     public static UIElement circuitRow(Widget circuitSlot, IntSupplier circuit, IntConsumer setCircuit) {
-        var stepper = new Stepper(UISizes.VALUE_WIDTH, circuit, setCircuit, NO_CIRCUIT, MAX_CIRCUIT, true, String::valueOf);
+        var stepper = Stepper.of(UISizes.VALUE_WIDTH, circuit, setCircuit, NO_CIRCUIT, MAX_CIRCUIT).wrap().setFormatter(String::valueOf);
         stepper.setHoverTooltips(MEPatternPartMachine.CIRCUIT_HINT);
-        return UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter())
+        return UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(circuitSlot, stepper, InfoIcon.info(MEPatternPartMachine.CIRCUIT_NONE));
     }
 
@@ -211,29 +206,24 @@ public final class MEPatternPartUI {
 
     /** 整数输入（标准数值输入 {@link NumberField}），写入值在 [{@code min}, int 上限]；{@code width} 为 0 时由父元素拉伸。 */
     public static NumberField intField(int width, IntSupplier getter, IntConsumer setter, int min) {
-        return NumberField.of(width == 0 ? LayoutStyle.AUTO : width, getter::getAsInt, value -> setter.accept((int) value), min, Integer.MAX_VALUE);
+        return NumberField.ofInt(width == 0 ? LayoutStyle.AUTO : width, getter, setter, min, Integer.MAX_VALUE);
     }
 
     /** 长整数输入（标准数值输入 {@link NumberField}），写入值不小于 {@code min}；{@code width} 为 0 时由父元素拉伸。 */
     public static NumberField longField(int width, LongSupplier getter, LongConsumer setter, long min) {
-        return NumberField.of(width == 0 ? LayoutStyle.AUTO : width, getter, setter, min, Long.MAX_VALUE);
+        return NumberField.ofLong(width == 0 ? LayoutStyle.AUTO : width, getter, setter, min, Long.MAX_VALUE);
     }
 
     /** 一行"说明文字 …… 控件"，控件靠右；用在面板区块里。 */
     public static UIElement labeledRow(int width, String key, @Nullable String tooltipKey, Widget control) {
-        var label = Label.translatable(key, width - control.getSizeWidth() - UISizes.GAP).setColor(UITheme::panelText);
-        if (tooltipKey != null) label.setHoverTooltips(tooltipKey);
-        return UIElement.row(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight()))
-                .layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter())
-                .addChildren(label, UIElement.flexSpacer(), control);
+        return tooltipKey == null ? labeledRow(width, key, control) : labeledRow(width, key, control, tooltipKey);
     }
 
     /** 同上，说明文字的悬浮提示可以有多行（每个键一行）。 */
     public static UIElement labeledRow(int width, String key, Widget control, String... tooltipKeys) {
-        var label = Label.translatable(key, width - control.getSizeWidth() - UISizes.GAP).setColor(UITheme::panelText);
+        var label = Label.translatable(width - control.getSizeWidth() - UISizes.GAP, key).bindClientColor(UITheme::panelText);
         if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
-        return UIElement.row(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight()))
-                .layout(l -> l.width(width).gapAll(UISizes.GAP).alignCenter())
+        return UIElement.centeredRow(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight())).layout(l -> l.width(width))
                 .addChildren(label, UIElement.flexSpacer(), control);
     }
 
@@ -244,54 +234,58 @@ public final class MEPatternPartUI {
         return new MissingVirtualInputOverlay(child, missing);
     }
 
-    private static final class MissingVirtualInputOverlay extends WidgetGroup {
+    private static final class MissingVirtualInputOverlay extends WidgetGroup implements UIChannel.Host {
 
-        // 不能用 1、2：WidgetGroup 用它们转发子控件的更新
-        private static final int MISSING_UPDATE_ID = 0x5B01;
         private static final int MISSING_FILL = 0x66FF0000;
         private static final int MISSING_BORDER = 0xFFFF0000;
 
-        private final BooleanSupplier missingSupplier;
+        private final UIChannel channel = new UIChannel(this);
         private boolean missing;
 
         private MissingVirtualInputOverlay(Widget child, BooleanSupplier missingSupplier) {
-            super(0, 0, UISizes.SLOT, UISizes.SLOT);
-            this.missingSupplier = missingSupplier;
+            super(0, 0, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
+            addSyncValue(SyncValue.ofBool(missingSupplier).onChanged(value -> missing = value));
             addWidget(child);
+        }
+
+        @Override
+        public UIChannel getChannel() {
+            return channel;
+        }
+
+        @Override
+        public void initWidget() {
+            super.initWidget();
+            channel.prime();
         }
 
         @Override
         public void writeInitialData(FriendlyByteBuf buffer) {
             super.writeInitialData(buffer);
-            if (!isClientSideWidget) {
-                missing = missingSupplier.getAsBoolean();
-                buffer.writeBoolean(missing);
-            }
+            channel.writeInitialData(buffer);
         }
 
         @Override
         public void readInitialData(FriendlyByteBuf buffer) {
             super.readInitialData(buffer);
-            // 与写入端同一条件：服务端写了，客户端就必须读，否则后续控件的初始数据全部错位
-            if (!isClientSideWidget) missing = buffer.readBoolean();
+            channel.readInitialData(buffer);
         }
 
         @Override
         public void detectAndSendChanges() {
             super.detectAndSendChanges();
-            if (isClientSideWidget) return;
-            var current = missingSupplier.getAsBoolean();
-            if (current != missing) {
-                missing = current;
-                writeUpdateInfo(MISSING_UPDATE_ID, buf -> buf.writeBoolean(current));
-            }
+            channel.detectAndSendChanges();
         }
 
         @Override
         @OnlyIn(Dist.CLIENT)
         public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
-            if (id == MISSING_UPDATE_ID) missing = buffer.readBoolean();
-            else super.readUpdateInfo(id, buffer);
+            if (!channel.readUpdateInfo(id, buffer)) super.readUpdateInfo(id, buffer);
+        }
+
+        @Override
+        public void handleClientAction(int id, FriendlyByteBuf buffer) {
+            if (!channel.handleClientAction(id, buffer)) super.handleClientAction(id, buffer);
         }
 
         @Override

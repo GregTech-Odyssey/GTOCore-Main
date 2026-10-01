@@ -29,15 +29,18 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.data.UICodecs;
+import com.gregtechceu.gtceu.uipro.data.UIStructure;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.RichText;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -80,8 +83,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static com.gtocore.common.item.GregMembershipCardItem.getSharedUuids;
 import static com.gtocore.common.item.GregMembershipCardItem.getSingleUuid;
@@ -237,27 +243,27 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         page.addChild(memberSection());
         page.addChild(shopGroupSection());
         page.addChild(Button.translatable(LayoutStyle.AUTO, OPEN_HELP)
-                .setOnClick(clickData -> openPage(widget, helpTab)));
+                .setOnClientClick(() -> openPage(widget, helpTab)));
         return page;
     }
 
     /** 会员卡槽 + 刷新按钮（贴图与名字两端相同），下面一行会员信息由服务端取值下发。 */
     private Widget memberSection() {
         var section = UIElement.section(UISizes.CONTENT_WIDTH);
-        var card = new ItemSlot(cardHandler, 0, true, true);
+        var card = ItemSlot.of(cardHandler, 0, true, true);
         card.setHoverTooltips(trans(11));
         var refresh = Button.translatable(LayoutStyle.AUTO, "↻").layout(l -> l.flex(1));
         refresh.setHoverTooltips(trans(8));
         refresh.setOnServerClick(clickData -> refreshMembership(refresh));
-        var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+        var row = UIElement.centeredRow(UISizes.SLOT_SIZE);
         row.addChildren(card, refresh);
         section.addChild(row);
 
         // 会员信息：文字、等级、悬停说明都在服务端取值（客户端只显示下发的内容）
         var status = new StatusPanel();
         status.addSentence(this::memberText)
-                .level(() -> uuid == null ? StatusLine.Level.WARNING : StatusLine.Level.GOOD)
-                .detail(this::sharedText);
+                .bindLevel(() -> uuid == null ? Level.WARNING : Level.GOOD)
+                .bindDetail(this::sharedText);
         section.addChild(status);
         return section;
     }
@@ -268,8 +274,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         var group = currentGroup();
         var name = TextLine.of(LayoutStyle.AUTO, this::currentGroupName);
         name.layout(l -> l.flex(1));
-        var header = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        header.addChildren(new ItemView(group == null ? IGuiTexture.EMPTY : group.getTexture1(), UISizes.SLOT), name);
+        var header = UIElement.centeredRow(UISizes.SLOT_SIZE);
+        header.addChildren(ItemView.of(UISizes.SLOT_SIZE, group == null ? IGuiTexture.EMPTY : group.getTexture1()), name);
         section.addChild(header);
         section.addChild(shopGroupSwitcher());
         return section;
@@ -279,7 +285,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private Widget shopGroupSwitcher() {
         // 宽度按区块内宽（区块左右各有内边距），一行 8 个图标
         var grid = new UIElement().layout(l -> l.row().flexWrap(FlexWrap.WRAP).gapAll(UISizes.GAP)
-                .width(UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING));
+                .width(UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING));
         for (int index = 0; index < TradingManager.INSTANCE.getGroupCount(); index++) {
             grid.addChild(shopGroupButton(index));
         }
@@ -290,19 +296,17 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         var group = TradingManager.INSTANCE.getShopGroup(index);
         var cell = new UIElement().layout(l -> l.size(Button.ICON_SIZE, Button.ICON_SIZE));
         if (group == null) return cell;
-        var selected = cell.addSyncValue(SyncValue.of(() -> groupSelected == index, ByteStreamCodec.BOOLEAN_CODEC, false));
+        var selected = cell.addSyncValue(SyncValue.ofBool(() -> groupSelected == index));
         cell.addChild(Button.icon(group.getTexture2())
-                .setVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
-                .setOnClick(clickData -> selectShopGroup(cell, index))
+                .bindClientVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
+                .setOnServerClick(() -> selectShopGroup(cell, index))
+                .setOnClientClick(() -> selectShopGroup(cell, index))
                 .bindTooltip(() -> Component.translatable(group.getName())));
         return cell;
     }
 
-    /** 两端同步跳转到指定页，与点击顶部页签的行为一致。 */
     private static void openPage(FancyMachineUIWidget widget, IFancyUIProvider page) {
-        var tabs = widget.getSideTabsWidget();
-        tabs.selectTab(page);
-        tabs.getOnTabClick().accept(page);
+        if (widget instanceof MachineWindow window) window.selectTab(page);
     }
 
     /** 服务端：使用说明（内容固定，取一次存下来，避免每刻重建整表文字）。 */
@@ -339,23 +343,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         shopTabs.forEach(sideTabs::attachSubTab);
         CoverTab.attach(sideTabs, this);
 
-        sideTabs.setOnTabSwitch((oldTab, newTab) -> {
-            if (newTab instanceof ShopTab shopTab) {
-                // 只允许选择当前组的商店页签
-                if (shopTab.groupIndex == groupSelected) {
-                    shopSelected = shopTab.shopIndex;
-                } else {
-                    shopSelected = -1;
-                    sideTabs.selectTab(sideTabs.getMainTab());
-                }
-            } else {
-                shopSelected = -1;
-            }
-            sideTabs.detectAndSendChanges();
-
-            var modularUI = sideTabs.getGui();
-            if (modularUI != null && modularUI.getModularUIGui() != null) modularUI.getModularUIGui().init();
-        });
+        sideTabs.setOnTabSwitch((oldTab, newTab) -> shopSelected = newTab instanceof ShopTab shopTab && shopTab.groupIndex == groupSelected ? shopTab.shopIndex : -1);
 
         if (shopSelected != -1 && shopSelected < shopTabs.size()) {
             sideTabs.selectTab(shopTabs.get(shopSelected));
@@ -381,17 +369,13 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     private final class HelpTab implements IFancyUIProvider {
 
-        private static final int SERVER_HEIGHT_LIMIT = Integer.MAX_VALUE / 4;
-
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var text = new RichText();
             text.textSupplier(isRemote() ? null : TradingStationMachine.this::helpText);
-            var scroller = new ScrollerView("trading_station.help", UISizes.CONTENT_WIDTH, UISizes.SLOT)
-                    .setResizable(false)
-                    .layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
+            var scroller = ScrollerView.page("trading_station.help", UISizes.CONTENT_WIDTH)
+                    .contentLayout(l -> l.paddingAll(UISizes.PANEL_PADDING));
             scroller.addScrollViewChild(text);
-            scroller.adaptiveHeight(widget.isRemote() ? MachineWindow.clientPageHeightLimit(false) : SERVER_HEIGHT_LIMIT);
             scroller.setBackground(UITheme.STATUS_PANEL);
             return UIElement.column(UISizes.CONTENT_WIDTH).addChild(scroller);
         }
@@ -426,14 +410,14 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             @Override
             public Widget createMainPage(FancyMachineUIWidget widget) {
                 if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
-                var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+                var page = Form.page();
                 page.addChild(TextLine.translatable(LayoutStyle.AUTO, "gtocore.trading_station.item_storage"));
                 var scroller = new ScrollerView("trading_station.items", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
-                        .adaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
-                        .verticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
+                        .setAdaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
+                        .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
                 scroller.addScrollViewChild(storageGrid(inputItem.getSlots(), outputItem.getSlots(),
-                        index -> new ItemSlot(inputItem, index, true, true),
-                        index -> new ItemSlot(outputItem, index, true, false)));
+                        index -> ItemSlot.of(inputItem, index, true, true),
+                        index -> ItemSlot.of(outputItem, index, true, false)));
                 page.addChild(scroller);
                 return page;
             }
@@ -462,14 +446,14 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             @Override
             public Widget createMainPage(FancyMachineUIWidget widget) {
                 if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
-                var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+                var page = Form.page();
                 page.addChild(TextLine.translatable(LayoutStyle.AUTO, "gtocore.trading_station.fluid_storage"));
                 var scroller = new ScrollerView("trading_station.fluids", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
-                        .adaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
-                        .verticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
+                        .setAdaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
+                        .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
                 scroller.addScrollViewChild(storageGrid(inputFluid.getTanks(), outputFluid.getTanks(),
-                        index -> new FluidSlot(inputFluid, index, true, true),
-                        index -> new FluidSlot(outputFluid, index, true, true)));
+                        index -> FluidSlot.of(inputFluid, index, true, true),
+                        index -> FluidSlot.of(outputFluid, index, true, true)));
                 page.addChild(scroller);
                 return page;
             }
@@ -501,13 +485,13 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < STORAGE_PER_ROW; col++) {
                 int index = row * STORAGE_PER_ROW + col;
-                grid.addChild(index < inputCount ? inputSlot.apply(index) : UIElement.spacer(UISizes.SLOT, UISizes.SLOT));
+                grid.addChild(index < inputCount ? inputSlot.apply(index) : UIElement.spacer(UISizes.SLOT_SIZE, UISizes.SLOT_SIZE));
             }
             // 中间空一列，输入与输出分开
-            grid.addChild(UIElement.spacer(UISizes.SLOT, UISizes.SLOT));
+            grid.addChild(UIElement.spacer(UISizes.SLOT_SIZE, UISizes.SLOT_SIZE));
             for (int col = 0; col < STORAGE_PER_ROW; col++) {
                 int index = row * STORAGE_PER_ROW + col;
-                grid.addChild(index < outputCount ? outputSlot.apply(index) : UIElement.spacer(UISizes.SLOT, UISizes.SLOT));
+                grid.addChild(index < outputCount ? outputSlot.apply(index) : UIElement.spacer(UISizes.SLOT_SIZE, UISizes.SLOT_SIZE));
             }
         }
         return grid;
@@ -529,7 +513,13 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private UnlockTab() {
             grid = new TradeGrid(-1, -1, UNLOCK_COLUMNS, UNLOCK_PER_PAGE,
                     () -> selectedKey == null ? 0 : UnlockManager.INSTANCE.getEntryTradeCount(selectedKey),
-                    index -> selectedKey == null ? null : UnlockManager.INSTANCE.getTradeEntry(selectedKey, index));
+                    index -> selectedKey == null ? null : UnlockManager.INSTANCE.getTradeEntry(selectedKey, index),
+                    () -> selectedKey == null ? "" : selectedKey, key -> selectedKey = key.isEmpty() ? null : key, UnlockTab::isKnownKey);
+        }
+
+        private static boolean isKnownKey(String key) {
+            var keys = UnlockManager.INSTANCE.getKeySet();
+            return keys != null && keys.contains(key);
         }
 
         @Override
@@ -547,8 +537,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         /** 解锁项列表：条目名与数量取两端一致的注册数据，选中状态由服务端下发。 */
         private Widget keyListView() {
             var scroller = new ScrollerView("trading_station.unlock", UISizes.SLOT_ROW_WIDTH, KEY_LIST_HEIGHT)
-                    .adaptiveHeight(KEY_LIST_HEIGHT)
-                    .layoutContent(l -> l.gapAll(UISizes.GAP));
+                    .setAdaptiveHeight(KEY_LIST_HEIGHT)
+                    .contentLayout(l -> l.gapAll(UISizes.GAP));
             var keys = UnlockManager.INSTANCE.getKeySet();
             if (keys != null) {
                 for (String key : keys) scroller.addScrollViewChild(keyButton(key));
@@ -558,18 +548,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
         private Widget keyButton(String key) {
             var cell = new UIElement();
-            var selected = cell.addSyncValue(SyncValue.of(() -> key.equals(selectedKey), ByteStreamCodec.BOOLEAN_CODEC, false));
+            var selected = cell.addSyncValue(SyncValue.ofBool(() -> key.equals(selectedKey)));
             cell.addChild(Button.translatable(LayoutStyle.AUTO, key)
-                    .setVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
-                    .setOnClick(clickData -> selectKey(key)));
+                    .bindClientVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
+                    .setOnClientClick(() -> grid.selectKey(key)));
             return cell;
-        }
-
-        /** 选中解锁项：换掉整片交易格（结构变化，两端各执行一次），页码回到第一页。 */
-        private void selectKey(String key) {
-            if (key.equals(selectedKey)) return;
-            selectedKey = key;
-            grid.reset();
         }
 
         /** 服务端：当前解锁项的名字（没选时占位）。 */
@@ -610,7 +593,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             this.shop = shop;
             this.grid = new TradeGrid(groupIndex, shopIndex, SHOP_COLUMNS, SHOP_PER_PAGE,
                     () -> TradingManager.INSTANCE.getTradeCount(groupIndex, shopIndex),
-                    index -> TradingManager.INSTANCE.getTradeEntryByIndices(groupIndex, shopIndex, index));
+                    index -> TradingManager.INSTANCE.getTradeEntryByIndices(groupIndex, shopIndex, index),
+                    () -> "", key -> {}, String::isEmpty);
         }
 
         @Override
@@ -626,8 +610,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private Widget shopStatus() {
             var status = new StatusPanel();
             status.addSentence(this::shopName)
-                    .level(() -> shopUnlocked(groupIndex, shopIndex) ? StatusLine.Level.GOOD : StatusLine.Level.ERROR)
-                    .detail(this::shopDetail);
+                    .bindLevel(() -> shopUnlocked(groupIndex, shopIndex) ? Level.GOOD : Level.ERROR)
+                    .bindDetail(this::shopDetail);
             var currencies = shop.getCurrencies();
             if (currencies != null && !currencies.isEmpty()) {
                 // 每行一个货币 → 行的顺序就是子控件顺序，而 LDLib 的点击/初始数据都按"父控件的子控件下标"路由，
@@ -678,8 +662,6 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     /**
      * 交易格网格：每页 {@code perPage} 格（{@code perRow} 列 × 若干行）。
-     * 换页、换解锁项会换掉整片格子（控件树结构变化），所以那些点击用 {@link Button#setOnClick}：两端各重建一次
-     * 同样的结构（只依据静态注册数据），格子里显示的数值仍由服务端算。
      */
     private final class TradeGrid extends UIElement {
 
@@ -690,16 +672,27 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private final int perPage;
         private final IntSupplier totalCount;
         private final IntFunction<TradeEntry> entryAt;
+        private final Supplier<String> currentKey;
+        private final Consumer<String> applyKey;
+        private final Predicate<String> isValidKey;
+        private final UIStructure<GridState> state;
         private int pageSelected;
 
-        private TradeGrid(int groupIndex, int shopIndex, int perRow, int perPage, IntSupplier totalCount, IntFunction<TradeEntry> entryAt) {
+        private TradeGrid(int groupIndex, int shopIndex, int perRow, int perPage, IntSupplier totalCount, IntFunction<TradeEntry> entryAt,
+                          Supplier<String> currentKey, Consumer<String> applyKey, Predicate<String> isValidKey) {
             this.groupIndex = groupIndex;
             this.shopIndex = shopIndex;
             this.perRow = perRow;
             this.perPage = perPage;
             this.totalCount = totalCount;
             this.entryAt = entryAt;
+            this.currentKey = currentKey;
+            this.applyKey = applyKey;
+            this.isValidKey = isValidKey;
             layout(l -> l.column().gapAll(UISizes.GAP));
+            state = addStructure(GRID_STATE, () -> new GridState(currentKey.get(), pageSelected))
+                    .validate(this::isValidState)
+                    .apply(this::applyState);
             rebuild();
         }
 
@@ -708,17 +701,25 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             return Math.max(1, (totalCount.getAsInt() + perPage - 1) / perPage);
         }
 
-        /** 翻页（两端各执行一次）。 */
         private void changePage(int delta) {
-            int next = Mth.clamp(pageSelected + delta, 0, totalPages() - 1);
-            if (next == pageSelected) return;
-            pageSelected = next;
-            rebuild();
+            var target = state.getTarget();
+            int next = Mth.clamp(target.page() + delta, 0, totalPages() - 1);
+            state.request(new GridState(target.key(), next));
         }
 
-        /** 回到第一页并重建（换解锁项时两端各执行一次）。 */
-        private void reset() {
-            pageSelected = 0;
+        private void selectKey(String key) {
+            state.request(new GridState(key, 0));
+        }
+
+        private boolean isValidState(GridState target) {
+            if (!target.key().isEmpty() && !isValidKey.test(target.key())) return false;
+            if (!target.key().equals(currentKey.get())) return target.page() == 0;
+            return target.page() >= 0 && target.page() < totalPages();
+        }
+
+        private void applyState(GridState target) {
+            applyKey.accept(target.key());
+            pageSelected = target.page();
             rebuild();
         }
 
@@ -728,11 +729,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             int start = pageSelected * perPage;
             int count = totalCount.getAsInt();
             for (int row = 0; row < Math.max(1, perPage / perRow); row++) {
-                var line = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP));
+                var line = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.GAP));
                 for (int col = 0; col < perRow; col++) {
                     int index = start + row * perRow + col;
                     var entry = index < count ? entryAt.apply(index) : null;
-                    line.addChild(entry == null ? UIElement.spacer(UISizes.SLOT, UISizes.SLOT) :
+                    line.addChild(entry == null ? UIElement.spacer(UISizes.SLOT_SIZE, UISizes.SLOT_SIZE) :
                             new TradeCell(groupIndex, shopIndex, entry));
                 }
                 addChild(line);
@@ -741,15 +742,15 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
         /** 翻页行：[←] 页码 [→]，页码文字与两端禁用状态都由服务端算。 */
         private Widget pageRow() {
-            var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+            var row = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
             var label = TextLine.of(LayoutStyle.AUTO, this::pageText);
             label.layout(l -> l.flex(1));
             row.addChildren(Button.icon(UITheme.ARROW_LEFT)
-                    .setOnClick(clickData -> changePage(-1))
+                    .setOnClientClick(() -> changePage(-1))
                     .disabled(() -> pageSelected <= 0, null),
                     label,
                     Button.icon(UITheme.ARROW_RIGHT)
-                            .setOnClick(clickData -> changePage(1))
+                            .setOnClientClick(() -> changePage(1))
                             .disabled(() -> pageSelected + 1 >= totalPages(), null));
             return row;
         }
@@ -809,8 +810,8 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             this.cachedConditionCounts = new int[entry.conditions().size()];
             this.cachedConditionLines = new Component[entry.conditions().size()];
             Arrays.fill(cachedConditionCounts, Integer.MIN_VALUE);
-            layout(l -> l.size(UISizes.SLOT, UISizes.SLOT));
-            var button = Button.icon(entry.texture(), UISizes.SLOT);
+            layout(l -> l.size(UISizes.SLOT_SIZE, UISizes.SLOT_SIZE));
+            var button = Button.icon(UISizes.SLOT_SIZE, entry.texture());
             button.setOnServerClick(this::executeTrade);
             button.disabled(this::locked, null);
             addChild(button);
@@ -994,6 +995,14 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private boolean entryUnlocked(TradeEntry entry) {
         return WalletUtils.containsTagValueInWallet(uuid, getLevel(), UNLOCK_TRADE, entry.unlockCondition());
     }
+
+    private record GridState(String key, int page) {}
+
+    private static final int MAX_UNLOCK_KEY_LENGTH = 256;
+    private static final ByteStreamCodec<GridState> GRID_STATE = ByteStreamCodec.composite(
+            UICodecs.utf(MAX_UNLOCK_KEY_LENGTH), GridState::key,
+            ByteStreamCodec.INT_CODEC, GridState::page,
+            GridState::new);
 
     private static Component unlockName(@Nullable String key) {
         return key == null ? NO_VALUE : Component.translatable(key);

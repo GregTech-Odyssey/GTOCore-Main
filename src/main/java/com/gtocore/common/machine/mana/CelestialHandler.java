@@ -2,7 +2,6 @@ package com.gtocore.common.machine.mana;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 
-import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 
 import net.minecraft.world.level.Level;
@@ -46,12 +45,10 @@ public record CelestialHandler(long maxCapacity) {
         } else if (GTODimensions.isVoid(dim)) {
             return Mode.VOID;
         }
-        return switch (Dimension.from(dim)) {
-            case OTHERSIDE -> Mode.OTHERSIDE;
-            case ALFHEIM -> Mode.ALFHEIM;
-            case THE_END -> Mode.END;
-            default -> Mode.OVERWORLD;
-        };
+        if (dim == GTODimensions.OTHERSIDE) return Mode.OTHERSIDE;
+        if (dim == GTODimensions.ALFHEIM) return Mode.ALFHEIM;
+        if (dim == GTODimensions.THE_END) return Mode.END;
+        return Mode.OVERWORLD;
     }
 
     public Resource increase(Level world, int multiple, long solaris, long lunara, long voidflux, long stellarm, Mode mode) {
@@ -125,6 +122,22 @@ public record CelestialHandler(long maxCapacity) {
             return new ResourceResult(false, solaris, lunara, voidflux, stellarm);
         }
         return new ResourceResult(true, solaris, lunara, voidflux, stellarm);
+    }
+
+    public static long cost(int solarisCost, int lunaraCost, int voidfluxCost, int stellarmCost, int anyCost) {
+        if (solarisCost > 0) return solarisCost;
+        if (lunaraCost > 0) return lunaraCost;
+        if (voidfluxCost > 0) return voidfluxCost;
+        if (stellarmCost > 0) return stellarmCost;
+        return anyCost;
+    }
+
+    public static long available(int solarisCost, int lunaraCost, int voidfluxCost, int stellarmCost, long solaris, long lunara, long voidflux, long stellarm) {
+        if (solarisCost > 0) return solaris;
+        if (lunaraCost > 0) return lunara;
+        if (voidfluxCost > 0) return voidflux;
+        if (stellarmCost > 0) return stellarm;
+        return solaris + lunara + voidflux + stellarm;
     }
 
     public record ResourceResult(boolean success, long solaris, long lunara, long voidflux, long stellarm) {}

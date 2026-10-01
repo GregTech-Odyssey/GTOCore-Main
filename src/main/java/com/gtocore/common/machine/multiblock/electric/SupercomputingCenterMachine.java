@@ -9,6 +9,8 @@ import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchBr
 import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchComputationPartMachine;
 import com.gtocore.common.machine.multiblock.part.research.computer.ExResearchCoolerPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -20,6 +22,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -29,6 +32,8 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCABridgePartM
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComponentPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComputationPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCACoolerPartMachine;
+import com.gregtechceu.gtceu.uipro.Level;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
@@ -61,7 +66,18 @@ import static com.gtocore.common.data.GTOMaterials.*;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@DataGeneratorScanned
 public final class SupercomputingCenterMachine extends StorageMultiblockMachine implements IOpticalComputationProvider {
+
+    @RegisterLanguage(cn = "主机", en = "Mainframe")
+    private static final String SLOT_LABEL = "gtocore.machine.supercomputing_center.slot";
+
+    @RegisterLanguage(cn = "桥接", en = "Bridging")
+    private static final String BRIDGING = "gtocore.machine.supercomputing_center.bridging";
+    @RegisterLanguage(cn = "组件总能耗", en = "Component Energy Usage")
+    private static final String ENERGY_CONSUMPTION = "gtocore.machine.supercomputing_center.energy_consumption";
+    @RegisterLanguage(cn = "冷却液需求", en = "Coolant Needed")
+    private static final String COOLANT = "gtocore.machine.supercomputing_center.coolant";
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor cwutMonitor = holder.monitorTick(GTOTickTimeMonitors.CWUT_MODIFICATION, this::maxCWUtModificationUpdate);
@@ -363,10 +379,16 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
             if (getRecipeLogic().isWorking()) {
                 return requestCWUt(false, cwu);
             } else if (!getRecipeLogic().isSuspend()) {
-                for (var u : getInputUnits()) {
-                    if (getRecipeLogic().checkMatchedRecipeAvailable(u, runRecipe) && getRecipeLogic().isWorking()) {
-                        return requestCWUt(false, cwu);
+                var logic = getRecipeLogic();
+                logic.beginIssueRound(IssueStage.SEARCH);
+                try {
+                    for (var u : getInputUnits()) {
+                        if (logic.checkMatchedRecipeAvailable(u, runRecipe) && logic.isWorking()) {
+                            return requestCWUt(false, cwu);
+                        }
                     }
+                } finally {
+                    logic.endIssueRound();
                 }
             }
         }
@@ -441,16 +463,42 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.tier.value", machineTier));
-        textList.add(Component.translatable(canBridge ? "gtceu.multiblock.hpca.info_bridging_enabled" : "gtceu.multiblock.hpca.info_bridging_disabled").withStyle(canBridge ? ChatFormatting.GREEN : ChatFormatting.RED));
-        textList.add(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(maxEUt), GTValues.VNF[GTUtil.getTierByVoltage(maxEUt)]).withStyle(ChatFormatting.YELLOW));
-        textList.add(Component.translatable("gtceu.multiblock.hpca.computation", Component.literal(cacheCWUt + " / " + getAdjustedMaxCWU()).append(Component.literal(" CWU/t")).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
-        textList.add(Component.translatable("gtocore.machine.cwut_modification", ((double) maxCWUtModification / 10000)).withStyle(ChatFormatting.AQUA));
-        textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_coolant_required", Component.literal(coolingAmountRequired + " / " + coolingAmountProvided + "  " + coolantAmount).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+        if (!MultiblockPage.isScreenText()) {
+            textList.add(Component.translatable("gtocore.tier.value", machineTier));
+            textList.add(Component.translatable(canBridge ? "gtceu.multiblock.hpca.info_bridging_enabled" : "gtceu.multiblock.hpca.info_bridging_disabled").withStyle(canBridge ? ChatFormatting.GREEN : ChatFormatting.RED));
+            textList.add(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(maxEUt), GTValues.VNF[GTUtil.getTierByVoltage(maxEUt)]).withStyle(ChatFormatting.YELLOW));
+            textList.add(Component.translatable("gtceu.multiblock.hpca.computation", Component.literal(cacheCWUt + " / " + getAdjustedMaxCWU()).append(Component.literal(" CWU/t")).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+            textList.add(Component.translatable("gtocore.machine.cwut_modification", ((double) maxCWUtModification / 10000)).withStyle(ChatFormatting.AQUA));
+            textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_coolant_required", Component.literal(coolingAmountRequired + " / " + coolingAmountProvided + "  " + coolantAmount).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+        }
         textList.add(Component.translatable("gtocore.machine.components_list").withStyle(ChatFormatting.YELLOW));
         for (var it = componentsMap.reference2IntEntrySet().fastIterator(); it.hasNext();) {
             var entries = it.next();
             textList.add(Component.literal(" - ").append(entries.getKey().gtolib$getReadOnlyStack().getDisplayName()).append(Component.literal(" x" + entries.getIntValue())).withStyle(ChatFormatting.GRAY));
         }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.tier.value", MultiblockPage.numberText(() -> machineTier, ""));
+        page.addOnOff(BRIDGING, () -> canBridge).bindLevel(() -> canBridge ? Level.GOOD : Level.ERROR);
+        page.addLine(ENERGY_CONSUMPTION, MultiblockPage.cached(() -> maxEUt,
+                eut -> Component.literal(FormattingUtil.formatNumbers(eut) + " EU/t (" + GTValues.VNF[GTUtil.getTierByVoltage(eut)] + "§r)")));
+        page.addReading("gtceu.multiblock.hpca.computation", MultiblockPage.fractionText(() -> cacheCWUt, this::getAdjustedMaxCWU, "CWU/t"));
+        page.addReading("gtocore.machine.cwut_modification", MultiblockPage.decimalText(() -> maxCWUtModification / 10000D, ""));
+        page.addReading("gtceu.multiblock.hpca.info_max_cooling_demand", MultiblockPage.numberText(() -> coolingAmountRequired, ""));
+        page.addReading("gtceu.multiblock.hpca.info_max_cooling_available", MultiblockPage.numberText(() -> coolingAmountProvided, ""));
+        page.addNumber(COOLANT, () -> coolantAmount, "mB/t");
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { GTOItems.BIOWARE_MAINFRAME.asStack(), GTOItems.SUPRACAUSAL_MAINFRAME.asStack() };
     }
 }

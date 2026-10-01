@@ -13,6 +13,6 @@ public enum Difficulty {
     Expert;
 
     public static Difficulty current() {
-        return values()[RuleManager.preset().ordinal()];
+        return values()[RuleManager.preset().defaults().ordinal()];
     }
 }

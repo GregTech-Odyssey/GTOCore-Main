@@ -7,10 +7,10 @@ import com.gtolib.api.item.tool.ae2.patternTool.Ae2BaseProcessingPattern;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
 import net.minecraft.core.BlockPos;
@@ -80,21 +80,20 @@ public final class PatternModifierProBehavior implements IItemUIFactory {
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        return new HeldItemPage(holder, window -> UIElement.column(LayoutStyle.AUTO)
-                .layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP))
+        return new HeldItemPage(holder, window -> Form.page()
                 .addChildren(
-                        Label.translatable("gtocore.patternModifierPro.0", UISizes.CONTENT_WIDTH),
+                        Label.translatable(UISizes.CONTENT_WIDTH, "gtocore.patternModifierPro.0"),
                         UIElement.section().addChildren(
-                                CoverUIs.inlineNumberRow(MULTIPLIER, field(holder, KEY_SCALE, 1, Integer.MAX_VALUE), MULTIPLIER_TIP),
-                                CoverUIs.inlineNumberRow(DIVIDER, field(holder, KEY_DIV_SCALE, 1, Integer.MAX_VALUE), DIVIDER_TIP),
-                                CoverUIs.inlineNumberRow(MAX_ITEM, field(holder, KEY_MAX_ITEM, LIMIT, LIMIT), MAX_ITEM_TIP),
-                                CoverUIs.inlineNumberRow(MAX_FLUID, field(holder, KEY_MAX_FLUID, LIMIT, LIMIT), MAX_FLUID_TIP),
-                                CoverUIs.inlineNumberRow(CYCLES, field(holder, KEY_CYCLES, 1, MAX_CYCLES), CYCLES_TIP))))
+                                Form.inlineNumberRow(MULTIPLIER, field(holder, KEY_SCALE, 1, Integer.MAX_VALUE), MULTIPLIER_TIP),
+                                Form.inlineNumberRow(DIVIDER, field(holder, KEY_DIV_SCALE, 1, Integer.MAX_VALUE), DIVIDER_TIP),
+                                Form.inlineNumberRow(MAX_ITEM, field(holder, KEY_MAX_ITEM, LIMIT, LIMIT), MAX_ITEM_TIP),
+                                Form.inlineNumberRow(MAX_FLUID, field(holder, KEY_MAX_FLUID, LIMIT, LIMIT), MAX_FLUID_TIP),
+                                Form.inlineNumberRow(CYCLES, field(holder, KEY_CYCLES, 1, MAX_CYCLES), CYCLES_TIP))))
                 .noInventory().createUI(player);
     }
 
     private static NumberField field(HeldItemUIFactory.HeldItemHolder holder, String key, long defaultValue, long max) {
-        return NumberField.of(LayoutStyle.AUTO, () -> get(holder.getHeld(), key, defaultValue),
+        return NumberField.ofLong(LayoutStyle.AUTO, () -> get(holder.getHeld(), key, defaultValue),
                 value -> holder.getHeld().getOrCreateTag().putLong(key, Math.clamp(value, 1L, max)), 1, max);
     }
 

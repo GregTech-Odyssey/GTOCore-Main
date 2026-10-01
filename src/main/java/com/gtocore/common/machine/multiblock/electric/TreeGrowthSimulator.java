@@ -12,9 +12,13 @@ import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.item.IGTTool;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
@@ -28,10 +32,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 @DataGeneratorScanned
-public final class TreeGrowthSimulator extends StorageMultiblockMachine {
+public final class TreeGrowthSimulator extends StorageMultiblockMachine implements IIssueProvider {
+
+    @RegisterLanguage(cn = "斧 / 链锯", en = "Axe / Chainsaw")
+    private static final String SLOT_LABEL = "gtocore.machine.tree_growth_simulator.slot";
 
     @RegisterLanguage(cn = "主产物产出%s%%", en = "Main Output %s%%")
     private static final String MAIN = "gtocore.machine.main_output";
+    @RegisterLanguage(cn = "主产物产出", en = "Main Output")
+    private static final String MAIN_NAME = "gtocore.machine.tree_growth_simulator.main_output";
 
     private int output = 1;
     private float speed = 1;
@@ -54,12 +63,12 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
             if (isElectric) {
                 var electricStack = GTCapabilityHelper.getElectricItem(stack);
                 if (electricStack == null) {
-                    setIdleReason(IdleReason.FELLING_TOOL);
+                    IdleReason.FELLING_TOOL.report(this, IssueStage.MODIFIER, recipe.definition);
                     return null;
                 }
                 int eu = 256 * (1 << tier);
                 if (electricStack.getCharge() < eu) {
-                    setIdleReason(IdleReason.CHARGE);
+                    IdleReason.CHARGE.report(this, IssueStage.MODIFIER, eu, electricStack.getCharge(), recipe.definition);
                     return null;
                 } else {
                     electricStack.discharge(eu * (1L << tier), electricStack.getTier(), true, false, false);
@@ -69,7 +78,7 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
                 int damage = stack.getDamageValue();
                 if (damage >= stack.getMaxDamage()) {
                     machineStorage.setStackInSlot(0, ItemStack.EMPTY);
-                    setIdleReason(IdleReason.FELLING_TOOL);
+                    IdleReason.FELLING_TOOL.report(this, IssueStage.MODIFIER, recipe.definition);
                     return null;
                 }
                 var level = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack) + 1;
@@ -87,8 +96,25 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
             }
             return RecipeModifier.overclocking(this, unit, recipe);
         }
-        setIdleReason(IdleReason.FELLING_TOOL);
+        IdleReason.FELLING_TOOL.report(this, IssueStage.MODIFIER, recipe.definition);
         return null;
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        ItemStack stack = getStorageStack();
+        if (!(stack.getItem() instanceof IGTTool item)) {
+            IdleReason.FELLING_TOOL.collect(sink);
+            return;
+        }
+        if (!item.isElectric()) return;
+        var electricStack = GTCapabilityHelper.getElectricItem(stack);
+        if (electricStack == null) {
+            IdleReason.FELLING_TOOL.collect(sink);
+            return;
+        }
+        int eu = 256 * (1 << tier);
+        if (electricStack.getCharge() < eu) IdleReason.CHARGE.collect(sink, eu, electricStack.getCharge());
     }
 
     @Override
@@ -114,7 +140,21 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable(MAIN, output * 100));
         textList.add(Component.translatable("jade.horseStat.speed", "x " + FormattingUtil.formatNumbers(speed)));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(MAIN_NAME, MultiblockPage.percentText(() -> output * 100L));
+        page.addReading("jade.horseStat.speed", MultiblockPage.cached(() -> Float.floatToIntBits(speed),
+                bits -> Component.literal("x " + FormattingUtil.formatNumber2Places(Float.intBitsToFloat((int) bits)))));
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
     }
 }

@@ -4,41 +4,17 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
-import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
-import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.RichText;
-import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
-import com.gregtechceu.gtceu.uipro.elements.TextField;
-import com.gregtechceu.gtceu.uipro.elements.TextLine;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
-import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uiwidgets.filter.TagLookupView;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.tags.TagKey;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public interface ITagFilterMachine extends IDropSaveMachine {
 
@@ -102,121 +78,24 @@ public interface ITagFilterMachine extends IDropSaveMachine {
         @RegisterLanguage(cn = "仅用于查询，不影响过滤结果", en = "For lookup only; does not affect filtering")
         private static final String LOOKUP_ONLY = "gtocore.machine.tag_filter.lookup_only";
 
-        /// 标签列表最多显示几行，再多滚动（行距与状态行相同）
-        private static final int TAG_LIST_MAX_LINES = 6;
-
         private TagFilterUI() {}
 
         public static UIElement create(ITagFilterMachine machine) {
             boolean isItem = machine.isItemFilter();
-            return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP)).addChildren(
-                    filterSection(machine, WHITELIST, "tag_filter.whitelist", isItem, machine::getTagWhite, machine::setTagWhite),
-                    filterSection(machine, BLACKLIST, "tag_filter.blacklist", isItem, machine::getTagBlack, machine::setTagBlack));
+            return Form.page().addChildren(
+                    filterSection(WHITELIST, "tag_filter.whitelist", isItem, machine::getTagWhite, machine::setTagWhite),
+                    filterSection(BLACKLIST, "tag_filter.blacklist", isItem, machine::getTagBlack, machine::setTagBlack));
         }
 
         /**
          * 一个名单的区块：标题、"输入框 + 虚拟槽"一行、槽里内容的标签列表。
          * {@code scrollerId} 是标签列表滚动区的固定 id（锁定高度按它记）。
          */
-        private static UIElement filterSection(ITagFilterMachine machine, String titleKey, String scrollerId, boolean isItem, Supplier<String> getter, Consumer<String> setter) {
-            var tags = new TagList();
-            Widget slot;
-            if (isItem) {
-                var handler = new ItemStackTransfer(1);
-                handler.setOnContentsChanged(tags::markDirty);
-                tags.source = () -> handler.getStackInSlot(0).getTags().map(t -> t);
-                var itemSlot = new PhantomItemSlot(handler, 0).xeiPhantom();
-                // 只用来查标签，记一个就够
-                itemSlot.setMaxStackSize(1);
-                slot = itemSlot;
-            } else {
-                var tank = new CustomFluidTank(1);
-                tank.setOnContentsChanged(tags::markDirty);
-                tags.source = () -> tank.getFluid().getFluid().defaultFluidState().getTags().map(t -> t);
-                slot = new PhantomFluidSlot(tank, 0, tank::getFluid, tank::setFluid).xeiPhantom();
-            }
-            slot.setHoverTooltips(isItem ? LOOKUP_ITEM : LOOKUP_FLUID, LOOKUP_ONLY);
-
-            var field = new TextField(0, getter, setter);
-            field.layout(l -> l.flexGrow(1));
-            var inputRow = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(field, slot);
-
-            var text = new RichText();
-            // 文字只由服务端取值下发（客户端不自己算，与多方块显示窗相同）
-            text.textSupplier(machine.self().isRemote() ? null : tags::appendLines);
-            text.clickHandler((tag, click) -> onTagClicked(tags, setter, tag, click));
-            var scroller = new ScrollerView(scrollerId, UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING, StatusLine.HEIGHT)
-                    .adaptiveHeight(TAG_LIST_MAX_LINES * StatusLine.HEIGHT + 2 * UITheme.PANEL_PADDING)
-                    .layoutContent(l -> l.paddingAll(UITheme.PANEL_PADDING));
-            // 标签可点（左键填入、右键复制），用可操作区块的底，不用只读的状态显示窗
-            scroller.setBackground(UITheme.PANEL);
-            scroller.addScrollViewChild(text);
-            var tagList = UIElement.column(LayoutStyle.AUTO).addChild(scroller);
-            // 槽里没东西（或没有标签）时不占位置；是否显示由服务端判定、经区块的同步值下发，两端控件树不变
-            tagList.setDisplay(false);
-
-            var section = UIElement.section(LayoutStyle.AUTO);
-            section.addSyncValue(SyncValue.of(tags::hasTags, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(tagList::setDisplay));
-            var title = TextLine.translatable(0, titleKey).setColor(UITheme::panelText);
-            title.layout(l -> l.flex(1));
-            var titleRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
-                    .addChildren(title, InfoIcon.info("gtocore.machine.tag_filter.tooltip.0", "gtocore.machine.tag_filter.tooltip.1"));
-            return section.addChildren(titleRow, inputRow, tagList);
-        }
-
-        /** 点击标签：两端各调用一次。客户端右键复制；服务端左键把标签填进名单（先确认它确实是槽里内容的标签）。 */
-        private static void onTagClicked(TagList tags, Consumer<String> setter, String tag, ClickData click) {
-            if (click.isRemote) {
-                if (click.button == 1) copyToClipboard(tag);
-            } else if (click.button == 0 && tags.contains(tag)) {
-                setter.accept(tag);
-            }
-        }
-
-        @OnlyIn(Dist.CLIENT)
-        private static void copyToClipboard(String text) {
-            Minecraft.getInstance().keyboardHandler.setClipboard(text);
-        }
-
-        /** 服务端：虚拟槽里内容的标签，只在槽内容变化后重算一次。 */
-        private static final class TagList {
-
-            private Supplier<Stream<TagKey<?>>> source = Stream::empty;
-            private boolean dirty = true;
-            private List<String> tags = Collections.emptyList();
-            private List<Component> lines = Collections.emptyList();
-
-            void markDirty() {
-                dirty = true;
-            }
-
-            private void refresh() {
-                if (!dirty) return;
-                dirty = false;
-                var names = source.get().map(tag -> tag.location().toString()).toList();
-                var hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("cover.tag_filter.tag_entry.tooltip"));
-                var newLines = new ArrayList<Component>(names.size());
-                for (var name : names) {
-                    newLines.add(ComponentPanelWidget.withButton(Component.literal(name), name).copy().withStyle(s -> s.withHoverEvent(hover)));
-                }
-                tags = names;
-                lines = newLines;
-            }
-
-            boolean hasTags() {
-                refresh();
-                return !tags.isEmpty();
-            }
-
-            boolean contains(String tag) {
-                refresh();
-                return tags.contains(tag);
-            }
-
-            void appendLines(List<Component> out) {
-                refresh();
-                out.addAll(lines);
-            }
+        private static UIElement filterSection(String titleKey, String scrollerId, boolean isItem, Supplier<String> getter, Consumer<String> setter) {
+            var lookup = isItem ? TagLookupView.items(scrollerId, getter, setter, setter, LOOKUP_ITEM, LOOKUP_ONLY) :
+                    TagLookupView.fluids(scrollerId, getter, setter, setter, LOOKUP_FLUID, LOOKUP_ONLY);
+            var titleRow = Form.controlRow(titleKey, InfoIcon.info("gtocore.machine.tag_filter.tooltip.0", "gtocore.machine.tag_filter.tooltip.1"));
+            return UIElement.section(LayoutStyle.AUTO).addChildren(titleRow, lookup);
         }
     }
 }

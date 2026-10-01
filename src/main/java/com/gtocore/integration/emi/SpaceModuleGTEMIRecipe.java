@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.Rect2i;
@@ -29,9 +30,11 @@ import com.lowdragmc.lowdraglib.utils.Size;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.widget.SlotWidget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -44,6 +47,12 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     private final EmiIngredient selectedDrone;
     private final EmiIngredient selectedFuel;
     private final List<EmiIngredient> possibleInputs;
+    private final EmiRecipeCategory category;
+    private final GTEMIRecipe[] encodingViews;
+    @Nullable
+    private GTRecipeDefinition hintRecipe;
+    @Nullable
+    private ClientTooltipComponent droneHint, fuelHint;
 
     public static void addGroupedRecipes(Iterable<GTRecipeDefinition> recipes, EmiRecipeCategory category,
                                          Consumer<SpaceModuleGTEMIRecipe> consumer) {
@@ -51,11 +60,26 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
         for (GTRecipeDefinition recipe : recipes) {
             grouped.computeIfAbsent(RecipeOutputKey.of(recipe), key -> new ArrayList<>()).add(recipe);
         }
-        grouped.values().forEach(group -> consumer.accept(new SpaceModuleGTEMIRecipe(group, category)));
+        for (var group : grouped.values()) {
+            group.sort(Comparator.comparingInt(SpaceModuleGTEMIRecipe::droneRank).thenComparing(Comparator.comparingInt((GTRecipeDefinition recipe) -> recipe.duration).reversed()));
+            consumer.accept(new SpaceModuleGTEMIRecipe(group, category));
+        }
+    }
+
+    private static int droneRank(GTRecipeDefinition recipe) {
+        for (var content : recipe.itemInputs) {
+            if (!(content.inner instanceof ItemIngredient ingredient)) continue;
+            for (int i = 0; i < RocketFuels.drones.length; i++) {
+                if (ingredient.testItem(RocketFuels.drones[i])) return i;
+            }
+        }
+        return Integer.MAX_VALUE;
     }
 
     public SpaceModuleGTEMIRecipe(List<GTRecipeDefinition> variants, EmiRecipeCategory category) {
         super(variants.getFirst(), category);
+        this.category = category;
+        this.encodingViews = new GTEMIRecipe[variants.size()];
         this.variants = List.copyOf(variants);
         this.selectedRecipe = variants.getFirst();
         this.selectedDrone = new SelectedIngredient(() -> getDrone(selectedRecipe));
@@ -80,6 +104,58 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
             addIfAbsent(fuels, getFuel(variant).copy().setAmount(10_000));
         }
         return List.of(EmiIngredient.of(drones), EmiIngredient.of(fuels));
+    }
+
+    @Override
+    public GTRecipeDefinition getEncodingRecipe() {
+        return selectedRecipe;
+    }
+
+    @Override
+    public List<EmiIngredient> getEncodingInputs() {
+        return encodingView().getEncodingInputs();
+    }
+
+    @Override
+    public List<EmiIngredient> getEncodingCatalysts() {
+        return encodingView().getEncodingCatalysts();
+    }
+
+    private GTEMIRecipe encodingView() {
+        int index = variants.indexOf(selectedRecipe);
+        var view = encodingViews[index];
+        if (view == null) encodingViews[index] = view = new GTEMIRecipe(selectedRecipe, category);
+        return view;
+    }
+
+    @Override
+    protected void decorateSlot(SlotWidget slotWidget, EmiIngredient ingredient) {
+        if (ingredient == selectedDrone && hasAlternative(true)) {
+            slotWidget.appendTooltip(() -> wheelHint(true));
+        } else if (ingredient == selectedFuel && hasAlternative(false)) {
+            slotWidget.appendTooltip(() -> wheelHint(false));
+        }
+    }
+
+    private ClientTooltipComponent wheelHint(boolean drone) {
+        if (hintRecipe != selectedRecipe) {
+            hintRecipe = selectedRecipe;
+            droneHint = fuelHint = null;
+        }
+        var hint = drone ? droneHint : fuelHint;
+        if (hint == null) {
+            hint = createWheelHint(drone);
+            if (drone) droneHint = hint;
+            else fuelHint = hint;
+        }
+        return hint;
+    }
+
+    private ClientTooltipComponent createWheelHint(boolean drone) {
+        var matching = matchingVariants(drone);
+        var text = Component.translatable(drone ? "gtocore.emi.space_elevator.wheel_drone" : "gtocore.emi.space_elevator.wheel_fuel",
+                matching.indexOf(selectedRecipe) + 1, matching.size()).withStyle(ChatFormatting.GOLD);
+        return ClientTooltipComponent.create(text.getVisualOrderText());
     }
 
     private static void addIfAbsent(ArrayList<EmiIngredient> ingredients, EmiIngredient candidate) {
@@ -157,11 +233,11 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
         if (target == null) return;
         int slotX = target.getPosition().x - recipeWidget.getPosition().x;
         int slotY = target.getPosition().y - recipeWidget.getPosition().y;
-        int size = Button.ICON_SIZE, gap = UISizes.GAP, centerY = slotY + (UISizes.SLOT - size) / 2, centerX = slotX + (UISizes.SLOT - size) / 2;
+        int size = Button.ICON_SIZE, gap = UISizes.GAP, centerY = slotY + (UISizes.SLOT_SIZE - size) / 2, centerX = slotX + (UISizes.SLOT_SIZE - size) / 2;
         // 每组候选：{ 高一级按钮的位置, 低一级按钮的位置 }
         int[][][] candidates = {
-                { { centerX, slotY - size - gap }, { centerX, slotY + UISizes.SLOT + gap } },
-                { { slotX + UISizes.SLOT + gap, centerY }, { slotX - size - gap, centerY } } };
+                { { centerX, slotY - size - gap }, { centerX, slotY + UISizes.SLOT_SIZE + gap } },
+                { { slotX + UISizes.SLOT_SIZE + gap, centerY }, { slotX - size - gap, centerY } } };
         var stage = stageArea(recipeWidget);
         for (int[][] pair : candidates) {
             var up = new Rect2i(pair[0][0], pair[0][1], size, size);
@@ -184,7 +260,7 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
         button.disabled(() -> neighbor(drone, direction) == null, up ? "gtceu.uipro.stepper.at_max" : "gtceu.uipro.stepper.at_min");
         String key = drone ? (up ? "gtocore.emi.space_elevator.next_drone" : "gtocore.emi.space_elevator.prev_drone") :
                 (up ? "gtocore.emi.space_elevator.next_fuel" : "gtocore.emi.space_elevator.prev_fuel");
-        button.setHoverTooltips(Component.translatable(key));
+        button.tooltips(key);
         return button;
     }
 
@@ -194,7 +270,7 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
         private final java.util.function.DoubleConsumer onWheel;
 
         private VariantWheel(java.util.function.DoubleConsumer onWheel) {
-            super(0, 0, UISizes.SLOT, UISizes.SLOT);
+            super(0, 0, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
             this.onWheel = onWheel;
         }
 
@@ -252,14 +328,19 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     /** 另一种输入不变时，当前方案的相邻方案（按方案顺序，即等级高低）；没有时为 null。 */
     @Nullable
     private GTRecipeDefinition neighbor(boolean drone, int direction) {
+        var matching = matchingVariants(drone);
+        int index = matching.indexOf(selectedRecipe) + direction;
+        return index >= 0 && index < matching.size() ? matching.get(index) : null;
+    }
+
+    private List<GTRecipeDefinition> matchingVariants(boolean drone) {
         var matching = new ArrayList<GTRecipeDefinition>(variants.size());
         EmiIngredient fixed = drone ? getFuel(selectedRecipe) : getDrone(selectedRecipe);
         for (GTRecipeDefinition variant : variants) {
             EmiIngredient ingredient = drone ? getFuel(variant) : getDrone(variant);
             if (sameIngredient(ingredient, fixed)) matching.add(variant);
         }
-        int index = matching.indexOf(selectedRecipe) + direction;
-        return index >= 0 && index < matching.size() ? matching.get(index) : null;
+        return matching;
     }
 
     private boolean hasAlternative(boolean drone) {

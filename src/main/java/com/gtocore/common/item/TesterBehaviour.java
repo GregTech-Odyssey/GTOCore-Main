@@ -24,7 +24,7 @@ public class TesterBehaviour implements IItemUIFactory, IFancyUIProvider {
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        return new ModularUI(176, 166, holder, player).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, holder, player);
     }
 
     @Override

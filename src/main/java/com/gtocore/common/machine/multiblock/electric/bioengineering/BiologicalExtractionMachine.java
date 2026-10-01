@@ -7,9 +7,13 @@ import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -125,15 +129,18 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
                     redstoneSignalOutput = 15;
                     updateSignal();
                 } else {
+                    reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, 1000, -1, null);
                     return false;
                 }
             }
-            return switch ((int) getRecipeLogic().getTotalContinuousRunningTime()) {
+            boolean ok = switch ((int) getRecipeLogic().getTotalContinuousRunningTime()) {
                 case 100 -> input(CLOUD_SEED_CONCENTRATED);
                 case 300 -> input(FIRE_WATER);
                 case 400 -> input(VAPOR_OF_LEVITY);
                 default -> true;
             };
+            if (!ok) reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, 1000, -1, null);
+            return ok;
         }
         return false;
     }
@@ -162,7 +169,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.total_time", getRecipeLogic().getTotalContinuousRunningTime()));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.total_time", getRecipeLogic().getTotalContinuousRunningTime()));
         if (!isActive()) return;
         if (getRecipeLogic().getTotalContinuousRunningTime() < 100) {
             textList.add(Component.translatable("gtocore.machine.need", CLOUD_SEED_CONCENTRATED.getDisplayName()));
@@ -171,6 +178,12 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
         } else if (getRecipeLogic().getTotalContinuousRunningTime() < 400) {
             textList.add(Component.translatable("gtocore.machine.need", VAPOR_OF_LEVITY.getDisplayName()));
         }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.total_time", MultiblockPage.numberText(() -> getRecipeLogic().getTotalContinuousRunningTime(), ""));
     }
 
     @Override

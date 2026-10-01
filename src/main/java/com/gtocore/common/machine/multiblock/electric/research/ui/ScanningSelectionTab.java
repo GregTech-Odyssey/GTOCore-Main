@@ -364,7 +364,11 @@ public class ScanningSelectionTab implements IFancyUIProvider {
 
         private static <C extends Collection<AEKey>> C readKeys(FriendlyByteBuf buffer, IntFunction<C> collectionFactory) {
             int size = buffer.readVarInt();
-            C collection = collectionFactory.apply(size);
+            if (size < 0 || size > Math.min(MAX_KEY_PACKET_COUNT, buffer.readableBytes())) {
+                buffer.skipBytes(buffer.readableBytes());
+                return collectionFactory.apply(0);
+            }
+            C collection = collectionFactory.apply(Math.min(size, 256));
             for (int i = 0; i < size; i++) {
                 AEKey key = AEKey.readKey(buffer);
                 if (key != null) {

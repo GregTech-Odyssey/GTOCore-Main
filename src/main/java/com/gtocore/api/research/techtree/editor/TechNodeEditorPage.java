@@ -10,6 +10,7 @@ import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.RPC;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
@@ -20,12 +21,13 @@ import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.Stepper;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -63,9 +65,7 @@ public final class TechNodeEditorPage {
     /// 前置节点、研究点数各自最多几行
     private static final int MAX_ROWS = 12;
     private static final int WIDTH = 2 * UISizes.SLOT_ROW_WIDTH;
-    private static final int VIEW_HEIGHT = 8 * UISizes.SLOT;
-    /// 客户端请求：追加前置节点（参数：节点编码）；避开 WidgetGroup 自用的 1、2 与同步值的 0x5A00 段
-    private static final int ACTION_ADD_PREREQUISITE = 0x5B10;
+    private static final int VIEW_HEIGHT = 8 * UISizes.SLOT_SIZE;
 
     private TechNodeEditorPage() {}
 
@@ -76,7 +76,8 @@ public final class TechNodeEditorPage {
 
         var managers = managers();
         column.addChild(section("Tech tree", ButtonGroup.singleIcons(managers.size(), i -> managers.get(i).getIcon(),
-                i -> TechTreeManager.getTreeName(managers.get(i)), () -> state.manager, i -> state.manager = i)));
+                () -> state.manager, i -> state.manager = i)
+                .optionTooltips(i -> Collections.singletonList(TechTreeManager.getTreeName(managers.get(i))))));
 
         column.addChild(section("Node ID", text(() -> state.nodeId, v -> state.nodeId = v)));
         column.addChild(section("Name (CN / EN)", text(() -> state.chineseName, v -> state.chineseName = v),
@@ -85,9 +86,9 @@ public final class TechNodeEditorPage {
                 text(() -> state.englishDescription, v -> state.englishDescription = v)));
 
         // 图标：物品或流体，有流体时用流体
-        var icon = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(
-                new PhantomItemSlot(state.icon, 0).xeiPhantom(),
-                new PhantomFluidSlot(null, 0, () -> state.iconFluid, v -> state.iconFluid = v).xeiPhantom(),
+        var icon = UIElement.centeredRow(UISizes.SLOT_SIZE).addChildren(
+                PhantomItemSlot.of(state.icon, 0).xeiPhantom(),
+                PhantomFluidSlot.of(null, 0, () -> state.iconFluid, v -> state.iconFluid = v).xeiPhantom(),
                 TextLine.constant(LayoutStyle.AUTO, Component.literal("Item, or fluid (fluid wins)")).layout(l -> l.flex(1)));
         column.addChild(section("Icon", icon));
 
@@ -95,25 +96,25 @@ public final class TechNodeEditorPage {
         for (int i = 0; i < MAX_ROWS; i++) prerequisites.addChild(prerequisiteRow(prerequisites, state, i));
         column.addChild(prerequisites);
 
-        column.addChild(section("CWU needed", new NumberField(LayoutStyle.AUTO, () -> state.cwuNeeded, v -> state.cwuNeeded = v,
-                () -> 0, () -> Long.MAX_VALUE, 1, 64, 4096, 262144)));
+        column.addChild(section("CWU needed", NumberField.ofLong(LayoutStyle.AUTO, () -> state.cwuNeeded, v -> state.cwuNeeded = v,
+                0, Long.MAX_VALUE).setSteps(1, 64, 4096, 262144)));
 
         var tags = tagNames();
-        var add = Button.text(LayoutStyle.AUTO, () -> "Add research points").setOnServerClick(() -> addMaterial(state, tags))
+        var add = Button.of(LayoutStyle.AUTO).bindClientText(() -> "Add research points").setOnServerClick(() -> addMaterial(state, tags))
                 .disabled(() -> state.materials.size() >= Math.min(MAX_ROWS, tags.size()), null);
         var materials = section("Research points", add);
         for (int i = 0; i < MAX_ROWS; i++) materials.addChild(materialRow(materials, state, tags, i));
         column.addChild(materials);
 
-        var eureka = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(
-                new PhantomItemSlot(state.eureka, 0).xeiPhantom(),
+        var eureka = UIElement.centeredRow(UISizes.SLOT_SIZE).addChildren(
+                PhantomItemSlot.of(state.eureka, 0).xeiPhantom(),
                 TextLine.constant(LayoutStyle.AUTO, Component.literal("Progress %")).layout(l -> l.flex(1)),
-                new Stepper(UISizes.VALUE_WIDTH, () -> state.eurekaPercent, v -> state.eurekaPercent = v, 0, 100, false, v -> v + "%"));
+                Stepper.of(UISizes.VALUE_WIDTH, () -> state.eurekaPercent, v -> state.eurekaPercent = v, 0, 100).setFormatter(v -> v + "%"));
         column.addChild(section("Eureka item", eureka));
 
         column.addChild(section("Output", ButtonGroup.single(2, i -> Component.literal(i == 0 ? "Java" : "Kotlin"),
                 () -> state.kotlin ? 1 : 0, i -> state.kotlin = i == 1).horizontal()));
-        column.addChild(Button.text(LayoutStyle.AUTO, () -> "Export to log").setVariant(UITheme.ButtonVariant.CONFIRM)
+        column.addChild(Button.of(LayoutStyle.AUTO).bindClientText(() -> "Export to log").setVariant(UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(() -> exportToLog(state)));
 
         var scroller = new ScrollerView("techtree.editor", WIDTH + ScrollerView.SCROLL_BAR_SPACE, VIEW_HEIGHT);
@@ -128,12 +129,12 @@ public final class TechNodeEditorPage {
     }
 
     private static TextField text(Supplier<String> getter, Consumer<String> setter) {
-        return new TextField(LayoutStyle.AUTO, getter, value -> setter.accept(value.length() > 512 ? value.substring(0, 512) : value));
+        return TextField.of(LayoutStyle.AUTO, getter, value -> setter.accept(value.length() > 512 ? value.substring(0, 512) : value));
     }
 
     /** 第 {@code index} 行前置节点：名称 + 删除；行数由服务端下发，客户端据此显隐。 */
     private static UIElement prerequisiteRow(UIElement parent, State state, int index) {
-        var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+        var row = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
         var name = TextLine.of(LayoutStyle.AUTO, () -> index < state.prerequisites.size() ?
                 Component.literal(state.prerequisites.get(index)) : Component.empty()).layout(l -> l.flex(1));
         var remove = Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER).setOnServerClick(() -> {
@@ -146,15 +147,14 @@ public final class TechNodeEditorPage {
 
     /** 第 {@code index} 行研究点数：领域（步进切换）+ 数量 + 删除。 */
     private static UIElement materialRow(UIElement parent, State state, List<String> tags, int index) {
-        var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        var tag = new Stepper(3 * UISizes.BUTTON_WIDTH / 2, () -> index < state.materials.size() ? Math.max(0, tags.indexOf(state.materials.get(index).tag)) : 0,
-                v -> {
-                    if (index < state.materials.size() && v >= 0 && v < tags.size()) state.materials.get(index).tag = tags.get(v);
-                }, 0, Math.max(0, tags.size() - 1), true, tags::get);
-        var amount = new NumberField(LayoutStyle.AUTO, () -> index < state.materials.size() ? state.materials.get(index).amount : 1,
+        var row = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
+        var tag = Stepper.of(3 * UISizes.BUTTON_WIDTH / 2, () -> index < state.materials.size() ? Math.max(0, tags.indexOf(state.materials.get(index).tag)) : 0, v -> {
+            if (index < state.materials.size() && v >= 0 && v < tags.size()) state.materials.get(index).tag = tags.get(v);
+        }, 0, Math.max(0, tags.size() - 1)).wrap().setFormatter(tags::get);
+        var amount = NumberField.ofLong(LayoutStyle.AUTO, () -> index < state.materials.size() ? state.materials.get(index).amount : 1,
                 v -> {
                     if (index < state.materials.size()) state.materials.get(index).amount = v;
-                }, () -> 1, () -> Long.MAX_VALUE).layout(l -> l.flex(1));
+                }, 1, Long.MAX_VALUE).layout(l -> l.flex(1));
         var remove = Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER).setOnServerClick(() -> {
             if (index < state.materials.size()) state.materials.remove(index);
         });
@@ -169,7 +169,7 @@ public final class TechNodeEditorPage {
      */
     private static void bindDisplay(UIElement parent, UIElement row, BooleanSupplier shown) {
         row.setDisplay(false);
-        parent.addSyncValue(SyncValue.of(shown::getAsBoolean, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(row::setDisplay));
+        parent.addSyncValue(SyncValue.ofBool(shown).onChanged(row::setDisplay));
     }
 
     private static void addMaterial(State state, List<String> tags) {
@@ -188,12 +188,14 @@ public final class TechNodeEditorPage {
     private static final class PrerequisiteDrop extends UIElement implements IGhostIngredientTarget {
 
         private final State state;
+        private final RPC<Integer> add;
 
         private PrerequisiteDrop(State state) {
             this.state = state;
-            layout(l -> l.height(UISizes.SLOT));
+            this.add = addRPC(ByteStreamCodec.INT_CODEC, (player, code) -> addPrerequisite(code));
+            layout(l -> l.height(UISizes.SLOT_SIZE));
             setBackground(UITheme.ITEM_SLOT);
-            setHoverTooltips(Component.literal("Drop a tech node from EMI to append it"));
+            tooltips(Component.literal("Drop a tech node from EMI to append it"));
         }
 
         @Override
@@ -210,18 +212,13 @@ public final class TechNodeEditorPage {
 
                 @Override
                 public void accept(@NotNull Object ignored) {
-                    writeClientAction(ACTION_ADD_PREREQUISITE, buf -> buf.writeVarInt(code));
+                    add.send(code);
                 }
             });
         }
 
-        @Override
-        public void handleClientAction(int id, FriendlyByteBuf buffer) {
-            if (id != ACTION_ADD_PREREQUISITE) {
-                super.handleClientAction(id, buffer);
-                return;
-            }
-            TechNode node = TechTreeView.decodeNode(buffer.readVarInt());
+        private void addPrerequisite(int code) {
+            TechNode node = TechTreeView.decodeNode(code);
             if (node == null || state.prerequisites.size() >= MAX_ROWS) return;
             String entry = node.getManager().getId() + "/" + node.name;
             if (!state.prerequisites.contains(entry)) state.prerequisites.add(entry);
@@ -231,9 +228,8 @@ public final class TechNodeEditorPage {
         @OnlyIn(Dist.CLIENT)
         public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            UITheme.drawCenteredText(graphics, "+ drop tech node", getPositionX() + getSizeWidth() / 2, getPositionY() + 5,
-                    getSizeWidth() - 4, UITheme.TEXT, false);
-            UITheme.drawXeiPhantom(graphics, getPositionX(), getPositionY(), UISizes.SLOT, UISizes.SLOT, false);
+            UIText.drawCentered(graphics, "+ drop tech node", getPositionX() + getSizeWidth() / 2, getPositionY() + 5, getSizeWidth() - 4, UITheme.TEXT);
+            UIDraw.xeiPhantomMark(graphics, getPositionX(), getPositionY(), UISizes.SLOT_SIZE, UISizes.SLOT_SIZE, false);
         }
     }
 

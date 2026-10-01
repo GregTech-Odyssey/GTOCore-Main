@@ -15,15 +15,18 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
 import com.gregtechceu.gtceu.uipro.elements.SlotButton;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.render.UILayers;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -40,14 +43,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEKey;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
-import dev.vfyjxf.taffy.style.FlexWrap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -78,8 +78,6 @@ import java.util.function.Supplier;
 @DataGeneratorScanned
 public final class TechNodeDetails {
 
-    @RegisterLanguage(cn = "[数据等级%s]", en = "[Tier %s]")
-    public static final String TIER_LABEL = "gtocore.research.side_tab.tier";
     @RegisterLanguage(cn = "该等级的节点解锁的配方数据需要%s导出", en = "Unlocking recipes at this tier requires %s to export")
     private static final String TIER_DESC = "gtocore.research.side_tab.tier_desc";
     @RegisterLanguage(cn = "CWU", en = "CWU")
@@ -103,7 +101,7 @@ public final class TechNodeDetails {
     @RegisterLanguage(cn = "状态", en = "State")
     private static final String STATE = "gtocore.techtree.details.state";
     @RegisterLanguage(cn = "数据等级", en = "Data tier")
-    private static final String TIER = "gtocore.techtree.details.tier";
+    static final String TIER = "gtocore.techtree.details.tier";
     @RegisterLanguage(cn = "前置科技尚未全部解锁", en = "Not all prerequisites are unlocked yet")
     private static final String LOCKED_REASON = "gtocore.techtree.details.locked_reason";
     @RegisterLanguage(cn = "前置科技已全部解锁，满足解锁需求即可解锁", en = "All prerequisites are unlocked; meet the requirements to unlock it")
@@ -133,39 +131,38 @@ public final class TechNodeDetails {
         var state = new StateMemo(node);
 
         var name = TextLine.constant(LayoutStyle.AUTO, node.getDisplayName()).layout(l -> l.flex(1));
-        var header = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter())
+        var header = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(new NodeSlot(node, player, null), name);
         column.addChild(header);
 
         var status = new StatusPanel();
         status.addLine(STATE, () -> Component.translatable(TechTreeView.stateKey(state.get(player.get()))))
-                .level(() -> switch (state.get(player.get())) {
-                    case TechTreeView.UNLOCKED -> StatusLine.Level.GOOD;
-                    case TechTreeView.AVAILABLE -> StatusLine.Level.WARNING;
-                    default -> StatusLine.Level.ERROR;
+                .bindLevel(() -> switch (state.get(player.get())) {
+                    case TechTreeView.UNLOCKED -> Level.GOOD;
+                    case TechTreeView.AVAILABLE -> Level.WARNING;
+                    default -> Level.ERROR;
                 })
-                .detail(() -> switch (state.get(player.get())) {
+                .bindDetail(() -> switch (state.get(player.get())) {
                     case TechTreeView.UNLOCKED -> Component.empty();
                     case TechTreeView.AVAILABLE -> Component.translatable(AVAILABLE_REASON);
                     default -> Component.translatable(LOCKED_REASON);
                 });
         var tierLine = status.addLine(TIER, () -> Component.literal(Integer.toString(node.getTier())));
         var tierItem = node.getTierItem();
-        if (!tierItem.isEmpty()) tierLine.detail(() -> Component.translatable(TIER_DESC, tierItem.getHoverName()));
+        if (!tierItem.isEmpty()) tierLine.bindDetail(() -> Component.translatable(TIER_DESC, tierItem.getHoverName()));
         column.addChild(status);
 
         // 说明：有没有取决于语言表（两端可能不同），区块照建，由服务端判定显示
         boolean hasDesc = node.desc() != null;
-        var descSection = UIElement.section().addChild(Label.of(() -> {
+        var descSection = UIElement.section().addChild(Label.of(TEXT_WIDTH, () -> {
             var desc = node.desc();
             return desc == null ? Component.empty() : desc;
-        }, TEXT_WIDTH));
+        }));
         column.addChild(descSection);
         bindDisplay(column, descSection, () -> hasDesc);
 
         if (!node.prerequisites.isEmpty()) {
-            var slots = UIElement.row(LayoutStyle.AUTO).layout(l -> l.heightAuto().flexWrap(FlexWrap.WRAP).maxWidth(UISizes.SLOT_ROW_WIDTH));
-            for (var prerequisite : node.prerequisites) slots.addChild(new NodeSlot(prerequisite, player, navigator));
+            var slots = SlotGrid.of(UISizes.SLOTS_PER_ROW, node.prerequisites.size(), i -> new NodeSlot(node.prerequisites.get(i), player, navigator));
             column.addChild(UIElement.section().addChildren(TextLine.translatable(LayoutStyle.AUTO, PREREQUISITES_LABEL), slots));
         }
 
@@ -183,7 +180,7 @@ public final class TechNodeDetails {
         // 可解锁：配方产物取决于配方数据（两端可能不同），区块与格子照建，由服务端判定显示
         boolean hasRewards = !node.getRecipePrimaryOutputs().isEmpty() || !node.getAdditionalLines().isEmpty();
         var rewards = UIElement.section().addChildren(TextLine.translatable(LayoutStyle.AUTO, TechNode.UNLOCKABLE_LABEL), new StackGrid(node.getRecipePrimaryOutputs()));
-        for (var line : node.getAdditionalLines()) rewards.addChild(Label.of(() -> line, TEXT_WIDTH));
+        for (var line : node.getAdditionalLines()) rewards.addChild(Label.of(TEXT_WIDTH, () -> line));
         column.addChild(rewards);
         bindDisplay(column, rewards, () -> hasRewards);
 
@@ -211,7 +208,7 @@ public final class TechNodeDetails {
      */
     private static void bindDisplay(UIElement parent, UIElement section, BooleanSupplier shown) {
         section.setDisplay(false);
-        parent.addSyncValue(SyncValue.of(shown::getAsBoolean, ByteStreamCodec.BOOLEAN_CODEC, false).onChanged(section::setDisplay));
+        parent.addSyncValue(SyncValue.ofBool(shown).onChanged(section::setDisplay));
     }
 
     /**
@@ -269,7 +266,7 @@ public final class TechNodeDetails {
         var requirements = node.getRequirements();
         var eurekaItem = requirements.getEurekaItem();
         int bonus = Math.round(requirements.getEurekaProgress() * 1000);
-        var bar = new ProgressBar(LayoutStyle.AUTO, Component.translatable(CWU_LABEL), TechTreeStyle.get().cwuBarFill, () -> {
+        var bar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(CWU_LABEL), TechTreeStyle.get().cwuBarFill, () -> {
             var context = context(player.get());
             if (context == null) return ProgressBar.Progress.EMPTY;
             boolean eureka = eurekaItem != null && context.hasScanned(eurekaItem);
@@ -277,7 +274,7 @@ public final class TechNodeDetails {
         });
         if (eurekaItem != null) {
             String percent = FormattingUtil.formatNumber2Places(requirements.getEurekaProgress() * 100f);
-            bar.detail(() -> {
+            bar.bindDetail(() -> {
                 var context = context(player.get());
                 return context != null && context.hasScanned(eurekaItem) ? Component.translatable(CWU_EUREKA_DESC, percent) :
                         Component.translatable(CWU_NO_EUREKA_DESC, eurekaItem.getDisplayName(), percent);
@@ -289,14 +286,14 @@ public final class TechNodeDetails {
     private static UIElement eurekaRow(ResearchRequirements requirements, Supplier<Player> player) {
         var eurekaItem = requirements.getEurekaItem();
         String percent = FormattingUtil.formatNumber2Places(requirements.getEurekaProgress() * 100f);
-        int textWidth = TEXT_WIDTH - UISizes.SLOT - UISizes.SECTION_GAP;
-        var state = Label.of(() -> {
+        int textWidth = TEXT_WIDTH - UISizes.SLOT_SIZE - UISizes.SECTION_GAP;
+        var state = Label.of(textWidth, () -> {
             var context = context(player.get());
             return Component.translatable(context != null && context.hasScanned(eurekaItem) ? EUREKA_TRIGGERED : EUREKA_SCAN_HINT);
-        }, textWidth);
+        });
         var bonus = Component.translatable(EUREKA_BONUS, percent);
         var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.heightAuto().flex(1))
-                .addChildren(state, Label.of(() -> bonus, textWidth));
+                .addChildren(state, Label.of(textWidth, () -> bonus));
         return UIElement.row(LayoutStyle.AUTO).layout(l -> l.heightAuto().gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(new StackGrid(Collections.singletonList(eurekaItem)), text);
     }
@@ -313,7 +310,7 @@ public final class TechNodeDetails {
             super(LayoutStyle.AUTO, tag.getDisplayName(), tag.getColor(), progress(node, tag, player));
             this.tag = tag;
             this.needed = node.getRequirements().getMaterialNeeded().getLong(tag);
-            detail(() -> Component.translatable(TAG_HINT));
+            bindDetail(() -> Component.translatable(TAG_HINT));
         }
 
         private static Supplier<Progress> progress(TechNode node, ResearchTag tag, Supplier<Player> player) {
@@ -373,7 +370,7 @@ public final class TechNodeDetails {
             int x = getPositionX(), y = getPositionY();
             var pose = graphics.pose();
             pose.pushPose();
-            pose.translate(0, 0, 200);
+            pose.translate(0, 0, UILayers.ITEM_OVERLAY);
             graphics.fill(x + 1, y + 1, x + SIZE - 1, y + SIZE - 1, TechTreeStyle.get().lockedNodeOverlay);
             pose.popPose();
         }
@@ -443,7 +440,7 @@ public final class TechNodeDetails {
             this.keys = keys;
             this.count = keys.size();
             int columns = Math.min(count, UISizes.SLOTS_PER_ROW), rows = (count + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW;
-            layout(l -> l.size(columns * UISizes.SLOT, rows * UISizes.SLOT));
+            layout(l -> l.size(columns * UISizes.SLOT_SIZE, rows * UISizes.SLOT_SIZE));
         }
 
         @OnlyIn(Dist.CLIENT)
@@ -455,7 +452,7 @@ public final class TechNodeDetails {
         /** 鼠标下的格子序号，不在格子上为 -1。 */
         private int slotAt(double mouseX, double mouseY) {
             if (!isMouseOverElement(mouseX, mouseY)) return -1;
-            int column = (int) (mouseX - getPositionX()) / UISizes.SLOT, row = (int) (mouseY - getPositionY()) / UISizes.SLOT;
+            int column = (int) (mouseX - getPositionX()) / UISizes.SLOT_SIZE, row = (int) (mouseY - getPositionY()) / UISizes.SLOT_SIZE;
             int index = row * UISizes.SLOTS_PER_ROW + column;
             return column < UISizes.SLOTS_PER_ROW && index < count ? index : -1;
         }
@@ -475,15 +472,10 @@ public final class TechNodeDetails {
             var list = stacks();
             int hovered = slotAt(mouseX, mouseY);
             for (int i = 0; i < count; i++) {
-                int x = getPositionX() + i % UISizes.SLOTS_PER_ROW * UISizes.SLOT, y = getPositionY() + i / UISizes.SLOTS_PER_ROW * UISizes.SLOT;
-                UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT, UISizes.SLOT);
+                int x = getPositionX() + i % UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE, y = getPositionY() + i / UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
+                UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
                 if (i < list.size()) list.get(i).render(graphics, x + 1, y + 1, partialTicks, EmiIngredient.RENDER_ICON);
-                if (i == hovered) {
-                    // 与物品槽的悬停一样：盖在物品上，只写颜色不写透明度
-                    RenderSystem.colorMask(true, true, true, false);
-                    graphics.fill(x + 1, y + 1, x + UISizes.SLOT - 1, y + UISizes.SLOT - 1, 200, UITheme.SLOT_HOVER_OVERLAY);
-                    RenderSystem.colorMask(true, true, true, true);
-                }
+                if (i == hovered) UIDraw.hoverOverlay(graphics, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
             }
         }
 

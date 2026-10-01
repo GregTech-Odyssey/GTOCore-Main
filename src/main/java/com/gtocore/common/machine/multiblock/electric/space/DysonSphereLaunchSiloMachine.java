@@ -1,11 +1,13 @@
 package com.gtocore.common.machine.multiblock.electric.space;
 
 import com.gtocore.common.saved.DysonSphereSavaedData;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
@@ -38,8 +40,15 @@ public final class DysonSphereLaunchSiloMachine extends ElectricMultiblockMachin
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        if (!GTODimensions.isPlanet(getDimension())) return null;
-        if (DysonSphereSavaedData.getDimensionData(getDimension()).leftInt() >= 100000) return null;
+        if (!GTODimensions.isPlanet(getDimension())) {
+            IdleReason.ONLY_ON_PLANET.report(this, IssueStage.MODIFIER, null);
+            return null;
+        }
+        int count = DysonSphereSavaedData.getDimensionData(getDimension()).leftInt();
+        if (count >= 100000) {
+            IdleReason.DYSON_SPHERE_COMPLETE.report(this, IssueStage.MODIFIER, count, 0, null);
+            return null;
+        }
         int integer = GTODimensions.getPlanetDistances(getDimension());
         if (integer > 0) recipe.duration = recipe.duration * integer / 4;
         return RecipeModifier.overclocking(this, unit, recipe, false, 1, 1, 0.85);

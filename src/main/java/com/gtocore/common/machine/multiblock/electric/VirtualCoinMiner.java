@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -68,7 +69,7 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable(LANG_ACCUMULATED_COINS, FormattingUtil.formatNumbers(VirtualCoinSavedData.getTimesHasRun(getOwnerUUID())))
                 .withStyle(s -> s.withColor(GradientColor.RAINBOW)));
         textList.add(Component.translatable(LANG_CWU_TO_NEXT_COIN,
@@ -78,6 +79,14 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
         textList.add(Component.translatable(LANG_UNCOMMITTED_CWU_BUFFER,
                 Component.literal(FormattingUtil.formatNumbers(cwuBuffer)).withStyle(ChatFormatting.WHITE))
                 .withStyle(ChatFormatting.GRAY));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addNumber(LANG_ACCUMULATED_COINS_NAME, () -> VirtualCoinSavedData.getTimesHasRun(getOwnerUUID()), "");
+        page.addNumber(LANG_CWU_TO_NEXT_COIN_NAME, () -> VirtualCoinSavedData.getNextCoinNeeded(getOwnerUUID()), "CWU");
+        page.addNumber(LANG_UNCOMMITTED_CWU_BUFFER_NAME, () -> cwuBuffer, "CWU");
     }
 
     @Override
@@ -148,4 +157,10 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
     public static final String LANG_ACCUMULATED_COINS = "gtocore.machine.virtual_coin_miner.accumulated_coins";
     @RegisterLanguage(cn = "下一枚虚拟金币:%sCWU", en = "CWU needed for next coin: %s CWU")
     public static final String LANG_CWU_TO_NEXT_COIN = "gtocore.machine.virtual_coin_miner.cwu_to_next_coin";
+    @RegisterLanguage(cn = "累计虚拟金币", en = "Accumulated Virtual Coins")
+    private static final String LANG_ACCUMULATED_COINS_NAME = "gtocore.machine.virtual_coin_miner.accumulated_coins_name";
+    @RegisterLanguage(cn = "下一枚虚拟金币所需算力", en = "CWU Needed for Next Coin")
+    private static final String LANG_CWU_TO_NEXT_COIN_NAME = "gtocore.machine.virtual_coin_miner.cwu_to_next_coin_name";
+    @RegisterLanguage(cn = "未提交算力缓存", en = "Uncommitted CWU Buffer")
+    private static final String LANG_UNCOMMITTED_CWU_BUFFER_NAME = "gtocore.machine.virtual_coin_miner.cwu_buffer_name";
 }

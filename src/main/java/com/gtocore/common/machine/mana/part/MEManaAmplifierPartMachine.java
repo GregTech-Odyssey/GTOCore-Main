@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -94,10 +95,10 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
     private UIElement buildPage() {
         var section = UIElement.section();
         section.addChildren(
-                MEPartUI.numberRow(LANG_MAX_MANA, MEPatternPartUI.longField(0, this::getCurrent, this::setMaxMana, min)),
-                MEPartUI.controlRow(LANG_USE_MANA, Switch.of(() -> useMana, enabled -> useMana = enabled)),
-                MEPartUI.controlRow(LANG_USE_SOURCE, Switch.of(() -> useSource, enabled -> useSource = enabled)));
-        return MEPartUI.page().addChild(section);
+                Form.numberRow(LANG_MAX_MANA, MEPatternPartUI.longField(0, this::getCurrent, this::setMaxMana, min)),
+                Form.controlRow(LANG_USE_MANA, Switch.of(() -> useMana, enabled -> useMana = enabled)),
+                Form.controlRow(LANG_USE_SOURCE, Switch.of(() -> useSource, enabled -> useSource = enabled)));
+        return Form.page().addChild(section);
     }
 
     private void setMaxMana(long amount) {

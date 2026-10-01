@@ -26,11 +26,12 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
@@ -38,10 +39,12 @@ import com.gregtechceu.gtceu.uipro.window.Popup;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +64,7 @@ import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.widget.*;
-import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
+import com.lowdragmc.lowdraglib.side.item.forge.ItemTransferHelperImpl;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -76,12 +79,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 @DataGeneratorScanned
 public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachine {
 
     private List<IPatternDetails> cachedPatterns;
+    @Nullable
+    private GTRecipeType resolvedRecipeType;
     private boolean dirty = true;
     private boolean lock = false;
     private int scannedPatterns = 0;
@@ -97,27 +101,21 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     @SaveToDisk
     private final CustomItemStackHandler blacklistedItems;
     @SaveToDisk
-    private final ItemStackTransfer blacklistedItemsStorageTransfer;
-    @SaveToDisk
     private final CustomFluidTank[] blacklistedFluids;
     @SaveToDisk
     private final CustomItemStackHandler blacklistedAltProcessableMachines;
-    @SaveToDisk
-    private final ItemStackTransfer blacklistedAltProcessableMachinesStorageTransfer;
     private final Int2ReferenceOpenHashMap<Material> blacklistedMaterials = new Int2ReferenceOpenHashMap<>();
     private final ReferenceOpenHashSet<Material> blacklistedMaterialSet = new ReferenceOpenHashSet<>();
     private final IntSet blacklistedAltProcessableItemIds = new IntOpenHashSet();
     private final IntSet blacklistedAltProcessableFluidIds = new IntOpenHashSet();
     private final RecipeHandlerUnit sharedSearchHandlers;
 
-    public MEWildcardPatternBufferPartMachine(@NotNull MetaMachineBlockEntity holder) {
-        super(holder, 1);
+    public MEWildcardPatternBufferPartMachine(@NotNull MetaMachineBlockEntity holder, @NotNull PatternBufferType type) {
+        super(holder, type);
 
         blacklistedItems = new CustomItemStackHandler(18);
-        blacklistedItemsStorageTransfer = new ItemStackTransfer(36);
         blacklistedFluids = new CustomFluidTank[18];
         blacklistedAltProcessableMachines = new CustomItemStackHandler(6);
-        blacklistedAltProcessableMachinesStorageTransfer = new ItemStackTransfer(6);
         Arrays.setAll(blacklistedFluids, i -> new CustomFluidTank(1));
 
         shareInventory.addChangedListener(this::requestPatternUpdate);
@@ -266,59 +264,35 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
      * 开销大约为1.5ms~2ms每次调用
      */
     private void rebuildCacheIfNeeded(List<IPatternDetails> patterns) {
-        if (dirty || cachedPatterns == null) {
-            dirty = false;
-            // profiler start
-            long nanos = System.nanoTime();
-            AtomicLong substitutingIngredients = new AtomicLong();
-            AtomicLong validatingPatterns = new AtomicLong();
-
-            // var patterns = super.getAvailablePatterns();
-            var newPatterns = new ArrayList<IPatternDetails>();
-            var templates = new WildcardPatternTemplate[patterns.size()];
-            var searchContext = new SearchContext();
-
-            long startSubstituting = System.nanoTime();
-            for (int i = 0; i < patterns.size(); i++) {
-                var p = patterns.get(i);
-                if (p instanceof AEProcessingPattern processingPattern) {
-                    templates[i] = new WildcardPatternTemplate(processingPattern);
-                }
+        if (!dirty && cachedPatterns != null) return;
+        dirty = false;
+        resolvedRecipeType = null;
+        boolean profile = GTOConfig.INSTANCE.devMode.aeLog;
+        long nanos = profile ? System.nanoTime() : 0;
+        var newPatterns = new ArrayList<IPatternDetails>();
+        var templates = new WildcardPatternTemplate[patterns.size()];
+        var searchContext = new SearchContext();
+        for (int i = 0; i < patterns.size(); i++) {
+            if (patterns.get(i) instanceof AEProcessingPattern processingPattern) {
+                templates[i] = new WildcardPatternTemplate(processingPattern);
             }
-            substitutingIngredients.addAndGet(System.nanoTime() - startSubstituting);
-
-            GTCEuAPI.materialManager.getRegisteredMaterials().forEach(material -> {
-                if (blacklistedMaterialSet.contains(material)) return;
-                for (int i = 0; i < patterns.size(); i++) {
-                    var template = templates[i];
-                    if (template == null) continue;
-
-                    long startSubstituting1 = System.nanoTime();
-                    var inputMap = template.tryBuildSearchMap(material, searchContext);
-                    var output = template.tryResolveOutputs(material);
-                    substitutingIngredients.addAndGet(System.nanoTime() - startSubstituting1);
-                    if (inputMap == null || output == null) continue;
-
-                    long startValidating1 = System.nanoTime();
-                    var detail = validatePattern(inputMap, output);
-                    if (detail != null) {
-                        var converted = IParallelPatternDetails.of(convertPattern(detail, 0), getLevel(), 1);
-                        newPatterns.add(converted);
-                    }
-                    validatingPatterns.addAndGet(System.nanoTime() - startValidating1);
-                }
-            });
-            cachedPatterns = newPatterns;
-            scannedPatterns = cachedPatterns.size();
-            if (GTOConfig.INSTANCE.devMode.aeLog) {
-                GTOCore.LOGGER.info("MEWildcardPatternBufferPartMachine recalculated patterns: {} patterns in {} ms",
-                        scannedPatterns, (System.nanoTime() - nanos) / 1_000_000.0);
-                GTOCore.LOGGER.info("  substituting ingredients took {} ms ({})%",
-                        substitutingIngredients.get() / 1_000_000.0, substitutingIngredients.get() * 100.0 / (System.nanoTime() - nanos));
-                GTOCore.LOGGER.info("  validating patterns took {} ms ({})%",
-                        validatingPatterns.get() / 1_000_000.0, validatingPatterns.get() * 100.0 / (System.nanoTime() - nanos));
+        }
+        for (var material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+            if (blacklistedMaterialSet.contains(material)) continue;
+            for (var template : templates) {
+                if (template == null) continue;
+                var inputMap = template.tryBuildSearchMap(material, searchContext);
+                var output = template.tryResolveOutputs(material);
+                if (inputMap == null || output == null) continue;
+                var detail = validatePattern(inputMap, output);
+                if (detail != null) newPatterns.add(IParallelPatternDetails.of(convertPattern(detail, 0), getLevel(), 1));
             }
-            // profiler end
+        }
+        cachedPatterns = newPatterns;
+        scannedPatterns = newPatterns.size();
+        if (profile) {
+            GTOCore.LOGGER.info("MEWildcardPatternBufferPartMachine recalculated patterns: {} patterns in {} ms",
+                    scannedPatterns, (System.nanoTime() - nanos) / 1_000_000.0);
         }
     }
 
@@ -342,12 +316,12 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         patternPriority = tag.getInt("patternPriority");
         maxFluidsOutput = tag.getInt("maxFluidsOutput");
         maxItemsOutput = tag.getInt("maxItemsOutput");
-        blacklistedItemsStorageTransfer.deserializeNBT(tag.getCompound("blacklistedItems"));
+        loadStacks(blacklistedItems, tag.getCompound("blacklistedItems"));
         var fluidsTag = tag.getList("blacklistedFluids", 10);
         for (int i = 0; i < fluidsTag.size(); i++) {
             blacklistedFluids[i].deserializeNBT(fluidsTag.getCompound(i));
         }
-        blacklistedAltProcessableMachinesStorageTransfer.deserializeNBT(tag.getCompound("blacklistedAltProcessableMachines"));
+        loadStacks(blacklistedAltProcessableMachines, tag.getCompound("blacklistedAltProcessableMachines"));
         loadBlacklistData();
     }
 
@@ -357,13 +331,25 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         tag.putInt("patternPriority", patternPriority);
         tag.putInt("maxFluidsOutput", maxFluidsOutput);
         tag.putInt("maxItemsOutput", maxItemsOutput);
-        tag.put("blacklistedItems", blacklistedItemsStorageTransfer.serializeNBT());
+        tag.put("blacklistedItems", saveStacks(blacklistedItems));
         var fluidsTag = new ListTag();
         for (var tank : blacklistedFluids) {
             fluidsTag.add(tank.serializeNBT());
         }
         tag.put("blacklistedFluids", fluidsTag);
-        tag.put("blacklistedAltProcessableMachines", blacklistedAltProcessableMachinesStorageTransfer.serializeNBT());
+        tag.put("blacklistedAltProcessableMachines", saveStacks(blacklistedAltProcessableMachines));
+    }
+
+    private static CompoundTag saveStacks(CustomItemStackHandler handler) {
+        var stacks = NonNullList.withSize(handler.getSlots(), ItemStack.EMPTY);
+        for (int i = 0; i < stacks.size(); i++) stacks.set(i, handler.getStackInSlot(i));
+        return ContainerHelper.saveAllItems(new CompoundTag(), stacks);
+    }
+
+    private static void loadStacks(CustomItemStackHandler handler, CompoundTag tag) {
+        var stacks = NonNullList.withSize(handler.getSlots(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, stacks);
+        for (int i = 0; i < stacks.size(); i++) handler.setStackInSlot(i, stacks.get(i));
     }
 
     private @NotNull List<@NotNull IPatternDetails> readInv() {
@@ -383,13 +369,14 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
 
     private AEProcessingPattern validatePattern(IntLongMap inputMap, GenericStack[] sparseOutput) {
         ObjHolder<GTRecipeDefinition> valid = new ObjHolder<>();
-        if (recipeType == null) {
+        var searchType = getEffectiveRecipeType();
+        if (searchType == null) {
             if (!getRecipeTypes().isEmpty()) {
                 for (var rt : getRecipeTypes()) {
                     if (rt.search(inputMap, r -> {
                         if (checkProb(r)) {
                             valid.value = r;
-                            recipeType = r.recipeType;
+                            resolvedRecipeType = r.recipeType;
                             return true;
                         }
                         return false;
@@ -397,7 +384,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 }
             }
         } else {
-            recipeType.search(inputMap, r -> {
+            searchType.search(inputMap, r -> {
                 if (checkProb(r)) {
                     valid.value = r;
                     return true;
@@ -571,9 +558,15 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         }
     }
 
+    @Override
+    public @Nullable GTRecipeType getEffectiveRecipeType() {
+        return recipeType != null ? recipeType : resolvedRecipeType;
+    }
+
     private @Nullable GTRecipeType getCurrentSearchType() {
-        if (recipeType != null) {
-            return recipeType;
+        var type = getEffectiveRecipeType();
+        if (type != null) {
+            return type;
         }
         var recipeTypes = getRecipeTypes();
         return recipeTypes.isEmpty() ? null : recipeTypes.getFirst();
@@ -592,7 +585,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     protected void buildGridHeader(@NotNull UIElement page) {
         var status = new StatusPanel(page.getContentWidth());
         status.addLine(LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS, () -> Component.translatable(LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS_VALUE, scannedPatterns))
-                .level(() -> scannedPatterns > 0 ? StatusLine.Level.GOOD : StatusLine.Level.NORMAL);
+                .bindLevel(() -> scannedPatterns > 0 ? Level.GOOD : Level.NORMAL);
         page.addChild(status);
     }
 
@@ -610,13 +603,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         root.addChild(settings);
         int inner = settings.getContentWidth();
         settings.addChildren(
-                MEPartUI.numberRow(LANG_WILDCARD_PATTERN_BUFFER_PRIORITY,
+                Form.numberRow(LANG_WILDCARD_PATTERN_BUFFER_PRIORITY,
                         MEPatternPartUI.intField(0, this::getPatternPriority, this::setPatternPriority, Integer.MIN_VALUE),
                         LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC),
-                MEPartUI.numberRow(LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES,
+                Form.numberRow(LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES,
                         MEPatternPartUI.intField(0, this::getMaxFluidsOutput, this::setMaxFluidsOutput, 0),
                         LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES_DESC, LANG_WILDCARD_PATTERN_BUFFER_MAX_FLUID_OUTPUT_TYPES_EXAMPLE),
-                MEPartUI.numberRow(LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES,
+                Form.numberRow(LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES,
                         MEPatternPartUI.intField(0, this::getMaxItemsOutput, this::setMaxItemsOutput, 0),
                         LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES_DESC, LANG_WILDCARD_PATTERN_BUFFER_MAX_ITEM_OUTPUT_TYPES_EXAMPLE),
                 MEPatternPartUI.labeledRow(inner, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST,
@@ -642,7 +635,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private Widget createItemBlacklistSlot(int finalIndex) {
-        return new PhantomItemSlot(blacklistedItemsStorageTransfer, finalIndex) {
+        return new PhantomItemSlot(ItemTransferHelperImpl.toItemTransfer(blacklistedItems), finalIndex) {
 
             @Override
             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -659,15 +652,12 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                     // held is empty,right click,middle click
                     // -> clear slot
                     fillPhantomSlot(slot, ItemStack.EMPTY);
-                    blacklistedItems.setStackInSlot(finalIndex, ItemStack.EMPTY);
                     loadBlacklistData();
                 } else if (materialSlot == GTMaterials.NULL) {   // slot is empty
                     if (!blacklistedMaterials.containsValue(materialHeld)) {
                         // held is not empty and item not in other slot
                         // -> add to slot
                         fillPhantomSlot(slot, stackHeld);
-                        var itemStack = stackHeld.copy();
-                        blacklistedItems.setStackInSlot(finalIndex, itemStack);
                         loadBlacklistData();
                     }
                 } else {
@@ -677,8 +667,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                             // item not in other slot
                             // -> change the slot
                             fillPhantomSlot(slot, stackHeld);
-                            var itemStack = stackHeld.copy();
-                            blacklistedItems.setStackInSlot(finalIndex, itemStack);
                             loadBlacklistData();
                         }
                     }
@@ -741,7 +729,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private Widget createMachineBlacklistSlot(int finalIndex) {
-        return new PhantomItemSlot(blacklistedAltProcessableMachinesStorageTransfer, finalIndex) {
+        return new PhantomItemSlot(ItemTransferHelperImpl.toItemTransfer(blacklistedAltProcessableMachines), finalIndex) {
 
             @Override
             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -756,7 +744,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                     // held is empty,right click,middle click
                     // -> clear slot
                     fillPhantomSlot(slot, ItemStack.EMPTY);
-                    blacklistedAltProcessableMachines.setStackInSlot(finalIndex, ItemStack.EMPTY);
                     loadBlacklistData();
                 } else if (stackSlot.isEmpty()) {   // slot is empty
                     if (heldIsMachine &&
@@ -764,8 +751,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                         // held is not empty and item not in other slot
                         // -> add to slot
                         fillPhantomSlot(slot, stackHeld);
-                        var itemStack = stackHeld.copy();
-                        blacklistedAltProcessableMachines.setStackInSlot(finalIndex, itemStack);
                         loadBlacklistData();
                     }
                 } else {
@@ -775,8 +760,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                         // item not in other slot
                         // -> change the slot
                         fillPhantomSlot(slot, stackHeld);
-                        var itemStack = stackHeld.copy();
-                        blacklistedAltProcessableMachines.setStackInSlot(finalIndex, itemStack);
                         loadBlacklistData();
                     }
                 }

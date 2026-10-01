@@ -5,23 +5,24 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.RecipeExtension;
 import com.gtocore.common.machine.trait.RadioactivityTrait;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IMultiblockTraitHolder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -43,16 +44,16 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (!isWorkspaceReady()) {
-            setIdleReason(this::getWorkspaceNotReadyReason);
+            reportWorkspaceNotReady(this);
             return null;
         }
         if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
-            setIdleReason(Component.translatable(LANGUAGE_INSUFFICIENT_CLEANROOM));
+            IdleReason.INSUFFICIENT_CLEANROOM.report(this, IssueStage.MODIFIER, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), core.getTypes().size(), null);
             return null;
         }
         if (recipe.definition.recipeType == GTORecipeTypes.BIO_RESEARCH_RECIPES) {
             if (!isWorkspaceReady()) {
-                setIdleReason(this::getWorkspaceNotReadyReason);
+                reportWorkspaceNotReady(this);
                 return null;
             }
             return RecipeModifier.OVERCLOCKING.applyModifier(this, unit, recipe);
@@ -62,18 +63,14 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
 
     @Override
     public void customText(@NotNull List<Component> list) {
-        list.add(Component.translatable(LANGUAGE_SPACE_RADIATION_INTENSITY, radioactivity)
-                .append(ComponentPanelWidget.withButton(Component.literal(" [-]"), "Sub"))
-                .append(ComponentPanelWidget.withButton(Component.literal(" [+]"), "Add")));
+        if (!MultiblockPage.isScreenText()) list.add(Component.translatable(LANGUAGE_SPACE_RADIATION_INTENSITY, radioactivity));
         super.customText(list);
     }
 
     @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            var amount = clickData.isCtrlClick ? 40 : (clickData.isShiftClick ? 8 : 1);
-            radioactivity = Mth.clamp(radioactivity + ("Add".equals(componentData) ? amount : -amount), 0, 80);
-        }
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addInt(LANGUAGE_RADIATION_INTENSITY_CONTROL, () -> radioactivity, value -> radioactivity = value, 0, 80);
     }
 
     @Override
@@ -81,7 +78,7 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
         var result = super.handleTickRecipe(recipe);
         var intensity = recipe.data.getInt(GTORecipeDataKeys.RADIOACTIVITY_END);
         if (getProgress() == getMaxProgress() - 1 && intensity > 0 && outside(intensity)) {
-            com.gtocore.data.IdleReason.RADIATION.setReason(this);
+            IdleReason.RADIATION.report(this, intensity, radioactivityTrait.getRecipeRadioactivity());
             return false;
         }
         return result;
@@ -119,4 +116,6 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     private static final String LANGUAGE_INSUFFICIENT_CLEANROOM = "gtocore.machine.space_bio_research_module.insufficient_cleanroom";
     @RegisterLanguage(cn = "宇宙辐射强度: %s Sv", en = "Space Radiation Intensity: %s Sv")
     private static final String LANGUAGE_SPACE_RADIATION_INTENSITY = "gtocore.machine.space_bio_research_module.space_radiation_intensity";
+    @RegisterLanguage(cn = "宇宙辐射强度（Sv）", en = "Space Radiation Intensity (Sv)")
+    private static final String LANGUAGE_RADIATION_INTENSITY_CONTROL = "gtocore.machine.space_bio_research_module.radiation_intensity_control";
 }

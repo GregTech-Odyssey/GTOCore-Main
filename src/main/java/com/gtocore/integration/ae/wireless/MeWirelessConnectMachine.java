@@ -7,7 +7,6 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.core.Direction;
@@ -112,7 +111,7 @@ public class MeWirelessConnectMachine extends MetaMachine implements WirelessMac
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(UISizes.WINDOW_WIDTH, UISizes.WINDOW_WIDTH, this, entityPlayer).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, this, entityPlayer);
     }
 
     @Override

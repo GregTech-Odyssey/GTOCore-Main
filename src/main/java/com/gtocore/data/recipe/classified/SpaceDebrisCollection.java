@@ -81,7 +81,7 @@ final class SpaceDebrisCollection {
             SpaceResourceIndex.addDebris(circuitMeta, drones[0], galaxy, output.item, output.chancePer100Milli, output.chanceBoostPer100Milli);
         }
         for (int i = 0; i < drones.length; i++) {
-            var builder = SPACE_DEBRIS_COLLECTION_RECIPES.builder("cosmic_pile_" + galaxy.name().toLowerCase() + "_drone_mk" + i)
+            var builder = SPACE_DEBRIS_COLLECTION_RECIPES.builder("cosmic_pile_" + galaxy.getName().toLowerCase() + "_drone_mk" + i)
                     .EUt(VA[ZPM] / 2)
                     .duration(time * ((int) Math.pow(1.5, i)))
                     .addCondition(new GalaxyCondition(galaxy));

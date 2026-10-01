@@ -61,9 +61,9 @@ public final class VirtualItemProviderBehavior implements IAddInformation, IItem
             var name = TextLine.of(0, () -> {
                 var stack = handler.getStackInSlot(0);
                 return stack.isEmpty() ? Component.translatable(EMPTY) : stack.getHoverName();
-            }).setColor(UITheme::panelText);
+            }).bindClientColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
-            var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(ItemSlot.of(handler, 0), name);
+            var row = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(ItemSlot.of(handler, 0), name);
             return UIElement.section(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChild(row);
         });
     }

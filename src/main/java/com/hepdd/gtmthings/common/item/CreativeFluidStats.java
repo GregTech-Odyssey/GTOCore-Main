@@ -10,13 +10,13 @@ import com.gregtechceu.gtceu.api.item.component.forge.IComponentCapability;
 import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
 import net.minecraft.nbt.CompoundTag;
@@ -87,22 +87,22 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
         return HeldItemPage.create(holder, entityPlayer, window -> {
             var tank = new CustomFluidTank(1000);
             tank.setFluid(getStored(holder.getHeld()));
-            var slot = new PhantomFluidSlot(tank, 0, () -> getStored(holder.getHeld()), fluid -> {
+            var slot = PhantomFluidSlot.of(tank, 0, () -> getStored(holder.getHeld()), fluid -> {
                 tank.setFluid(fluid.isEmpty() ? FluidStack.EMPTY : new FluidStack(fluid, 1000));
                 if (!holder.isRemote()) setStored(holder.getHeld(), fluid);
             }).xeiPhantom();
             var name = TextLine.of(0, () -> {
                 var fluid = getStored(holder.getHeld());
                 return fluid.isEmpty() ? Component.translatable(EMPTY) : fluid.getDisplayName();
-            }).setColor(UITheme::panelText);
+            }).bindClientColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
-            var capacity = new NumberField(LayoutStyle.AUTO, () -> getCapacity(holder.getHeld()),
-                    value -> setCapacity(holder.getHeld(), (int) Math.clamp(value, 1L, Integer.MAX_VALUE)), () -> 1L, () -> Integer.MAX_VALUE);
+            var capacity = NumberField.ofInt(LayoutStyle.AUTO, () -> getCapacity(holder.getHeld()),
+                    value -> setCapacity(holder.getHeld(), Math.max(1, value)), 1, Integer.MAX_VALUE);
             capacity.disabled(() -> !getAccurate(holder.getHeld()), ACCURATE_OFF);
             return UIElement.section(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChildren(
-                    UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(slot, name),
-                    CoverUIs.controlRow(ACCURATE, Switch.of(() -> getAccurate(holder.getHeld()), value -> setAccurate(holder.getHeld(), value)), ACCURATE_TIP),
-                    CoverUIs.inlineNumberRow(CAPACITY, capacity));
+                    UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(slot, name),
+                    Form.controlRow(ACCURATE, Switch.of(() -> getAccurate(holder.getHeld()), value -> setAccurate(holder.getHeld(), value)), ACCURATE_TIP),
+                    Form.inlineNumberRow(CAPACITY, capacity));
         });
     }
 

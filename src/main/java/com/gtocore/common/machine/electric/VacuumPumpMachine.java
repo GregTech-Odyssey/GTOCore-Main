@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.electric;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.feature.IVacuumMachine;
 
@@ -10,6 +11,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
@@ -73,7 +75,11 @@ public final class VacuumPumpMachine extends SimpleTieredMachine implements IVac
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
-        return getTier() == recipe.data.getInt(GTORecipeDataKeys.TIER) && super.checkConditions(unit, recipe);
+        if (getTier() != recipe.data.getInt(GTORecipeDataKeys.TIER)) {
+            IdleReason.NOT_APPLICABLE.report(this, IssueStage.CONDITION, recipe);
+            return false;
+        }
+        return super.checkConditions(unit, recipe);
     }
 
     @Override

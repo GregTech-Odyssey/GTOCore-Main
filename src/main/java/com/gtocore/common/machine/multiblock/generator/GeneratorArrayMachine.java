@@ -2,9 +2,13 @@ package com.gtocore.common.machine.multiblock.generator;
 
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IExtendWirelessEnergyContainerHolder;
 import com.gtolib.api.machine.feature.multiblock.IArrayMachine;
+import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 import com.gtolib.utils.GTOUtils;
 
@@ -13,12 +17,15 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -29,8 +36,6 @@ import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -40,9 +45,15 @@ import java.util.UUID;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class GeneratorArrayMachine extends StorageMultiblockMachine implements IArrayMachine, IExtendWirelessEnergyContainerHolder {
+
+    @RegisterLanguage(cn = "无线电网模式", en = "Wireless Network Mode")
+    private static final String WIRELESS_MODE = "gtocore.machine.generator_array.wireless_mode";
+    @RegisterLanguage(cn = "无线发电", en = "Wireless Output")
+    private static final String WIRELESS_OUTPUT = "gtocore.machine.generator_array.wireless_output";
 
     private WirelessEnergyContainer WirelessEnergyContainerCache;
     private MachineDefinition machineDefinitionCache;
@@ -121,7 +132,10 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     @Nullable
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (isEmpty()) return null;
+        if (isEmpty()) {
+            IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.MODIFIER, recipe.definition);
+            return null;
+        }
         int a = machineStorage.storage.getStackInSlot(0).getCount();
         if (a > 0) {
             long EUt = recipe.getOutputEUt();
@@ -137,6 +151,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
                 }
                 return recipe;
             }
+            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, recipe.definition);
         }
         return null;
     }
@@ -144,7 +159,8 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.generator_array.wireless").append(ComponentPanelWidget.withButton(Component.literal("[").append(isw ? Component.translatable("gtocore.machine.on") : Component.translatable("gtocore.machine.off")).append(Component.literal("]")), "wireless_switch")));
+        if (MultiblockPage.isScreenText()) return;
+        textList.add(Component.translatable("gtocore.machine.generator_array.wireless").append(" ").append(isw ? Component.translatable("gtocore.machine.on") : Component.translatable("gtocore.machine.off")));
         if (isActive() && isw) {
             GTRecipe r = getRecipeLogic().getLastRecipe();
             if (r != null) {
@@ -154,14 +170,20 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     }
 
     @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            if ("wireless_switch".equals(componentData)) {
-                isw = !isw;
-                eut = 0;
-                requestCheck();
-            } else super.handleDisplayClick(componentData, clickData);
-        }
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(WIRELESS_OUTPUT, MultiblockPage.cached(() -> isw && isActive() && getRecipeLogic().getLastRecipe() != null ? eut : 0,
+                value -> Component.literal(FormattingUtil.formatNumbers(value) + " EU/t (" + GTValues.VNF[GTUtil.getFloorTierByVoltage(value)] + "§r)")));
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addToggle(WIRELESS_MODE, () -> isw, value -> {
+            isw = value;
+            eut = 0;
+            requestCheck();
+        });
     }
 
     @Override
@@ -212,5 +234,10 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     @Override
     public MachineDefinition getMachineDefinitionCache() {
         return this.machineDefinitionCache;
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return IStorageMultiblock.SLOT_GENERATOR;
     }
 }

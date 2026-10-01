@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.render.UIClip;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -174,9 +175,9 @@ public final class HeatThermometer extends UIElement {
         RenderSystem.enableBlend();
         drawShell(graphics, x, y, shaftHeight, 0);
         if (filled > 0) {
-            enableScissor(graphics, x + 5, columnBottom - filled, 6, filled);
+            UIClip.push(graphics, x + 5, columnBottom - filled, 6, filled);
             graphics.blit(SPECTRUM, x + 5, columnTop, 6, columnHeight, 0, 0, 6, 128, 8, 128);
-            graphics.disableScissor();
+            UIClip.pop(graphics);
             graphics.blit(ATLAS, x, y + CAP_HEIGHT + shaftHeight, WIDTH, BULB_HEIGHT, 0, 20, WIDTH, BULB_HEIGHT, 48, 34);
         }
         drawShell(graphics, x, y, shaftHeight, 16);

@@ -206,7 +206,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     public boolean addUnlockedDimension(ResourceKey<Level> dimensionId) {
         var dim = GTODimensions.getDimensionIncludingOrbits(dimensionId);
         if (dim == null) return false;
-        var r = unlockedDimensions.add(dim.ordinal());
+        var r = unlockedDimensions.add(dim.getId());
         if (r) TeamResearchSavedData.INSTANCE.setDirty(true);
         return r;
     }
@@ -214,6 +214,6 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     public boolean hasUnlockedDimension(ResourceKey<Level> dimensionId) {
         var dim = GTODimensions.getDimensionIncludingOrbits(dimensionId);
         if (dim == null) return false;
-        return unlockedDimensions.contains(dim.ordinal());
+        return unlockedDimensions.contains(dim.getId());
     }
 }

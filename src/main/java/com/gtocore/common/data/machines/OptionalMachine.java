@@ -3,7 +3,7 @@ package com.gtocore.common.data.machines;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.multiblock.electric.ChiselMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MESimplePatternBufferPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
@@ -13,10 +13,8 @@ import com.gtolib.utils.MultiBlockFileReader;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
-import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -26,8 +24,8 @@ import static com.gregtechceu.gtceu.api.GTValues.MV;
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.common.data.GTRecipeTypes.DUMMY_RECIPES;
-import static com.gtocore.utils.register.MachineRegisterUtils.machine;
 import static com.gtocore.utils.register.MachineRegisterUtils.multiblock;
+import static com.gtolib.api.registries.GTORegistration.GTO;
 
 public final class OptionalMachine {
 
@@ -35,13 +33,12 @@ public final class OptionalMachine {
 
     public static final MachineDefinition ME_SIMPLE_PATTERN_BUFFER = GTCEu.isDev() || GTORules.SIMPLE_PATTERN_BUFFER_SLOTS.get() > 0 ?
 
-            machine("me_simple_pattern_buffer", "ME简单样板总成", MESimplePatternBufferPartMachine::new)
-                    .langValue("ME Simple Pattern Buffer")
-                    .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(9))
+            PatternBufferType.builder(GTO, "me_simple_pattern_buffer")
+                    .name("ME简单样板总成", "ME Simple Pattern Buffer")
+                    .slots(GTORules.SIMPLE_PATTERN_BUFFER_SLOTS::get)
                     .tier(MV)
-                    .allRotation()
-                    .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
-                    .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer")))
+                    .noWireless()
+                    .upgradable()
                     .register() :
             null;
 

@@ -28,6 +28,7 @@ import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -142,10 +143,10 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
     UIElement buildPage() {
         var section = UIElement.section();
-        section.addChild(MEPartUI.numberRow("gui.ae2.Priority", MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
+        section.addChild(Form.numberRow("gui.ae2.Priority", MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
                 "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
         addTransferButton(section);
-        return MEPartUI.page().addChild(section);
+        return Form.page().addChild(section);
     }
 
     final void addTransferButton(UIElement section) {
@@ -405,12 +406,12 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         @Override
         UIElement buildPage() {
             var section = UIElement.section();
-            section.addChild(MEPartUI.numberRow(LANG_RATE_SETTING, MEPatternPartUI.longField(0, () -> rate, value -> {
+            section.addChild(Form.numberRow(LANG_RATE_SETTING, MEPatternPartUI.longField(0, () -> rate, value -> {
                 rate = value;
                 onChanged();
             }, 0L)));
             addTransferButton(section);
-            return MEPartUI.page().addChild(section);
+            return Form.page().addChild(section);
         }
 
         @Override
@@ -888,9 +889,9 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         private UIElement limitRow(boolean output) {
-            var controls = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+            var controls = UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                     .addChildren(limitSwitch(output), configButton(output));
-            return MEPartUI.controlRow(output ? LANG_OUTPUT_LIMIT : LANG_INPUT_LIMIT, controls,
+            return Form.controlRow(output ? LANG_OUTPUT_LIMIT : LANG_INPUT_LIMIT, controls,
                     output ? LANG_OUTPUT_LIMIT_TOOLTIP : LANG_INPUT_LIMIT_TOOLTIP);
         }
 
@@ -915,7 +916,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
          */
         private void buildConfigPanel(UIElement column) {
             var hint = MEPatternPartUI.section(column, LANG_CONFIG);
-            hint.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_CONFIG_HINT).setColor(UITheme::panelText));
+            hint.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_CONFIG_HINT).bindClientColor(UITheme::panelText));
             MEPatternPartUI.section(column, LANG_CONFIG_ITEMS).addChild(configGrid(true));
             MEPatternPartUI.section(column, LANG_CONFIG_FLUIDS).addChild(configGrid(false));
         }

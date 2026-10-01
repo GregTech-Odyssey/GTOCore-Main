@@ -90,7 +90,7 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
         private final EmiStack tag;
 
         private ResearchTagSlot(EmiStack tag) {
-            super(0, 0, UISizes.SLOT, UISizes.SLOT, UITheme.ITEM_SLOT);
+            super(0, 0, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE, UITheme.ITEM_SLOT);
             this.tag = tag;
         }
 

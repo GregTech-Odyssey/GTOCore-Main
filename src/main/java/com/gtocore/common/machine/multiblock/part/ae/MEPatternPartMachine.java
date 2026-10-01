@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.api.gui.GTOGuiTextures;
-import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.multiblock.part.ae.widget.slot.MEPatternViewSlotWidget;
 import com.gtocore.eio_travel.logic.TravelSavedData;
 import com.gtocore.eio_travel.logic.TravelUtils;
@@ -29,13 +28,14 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ConfirmButton;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.utils.TaskHandler;
-import com.gregtechceu.gtceu.utils.asm.EmptyMethodChecker;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -70,7 +70,6 @@ import com.gto.datasynclib.AbstractDataSerializable;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.listener.IntNotifiableHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
@@ -81,6 +80,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -116,6 +116,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     public static final String CIRCUIT_NONE = "gtocore.pattern_part.circuit_none";
     @RegisterLanguage(cn = "电路由右侧的编号设置，不能直接放取", en = "The circuit is set by the number on the right; it cannot be placed or taken directly")
     public static final String CIRCUIT_READ_ONLY = "gtocore.pattern_part.circuit_read_only";
+    @RegisterLanguage(cn = "此槽已缓存配方", en = "Recipe cached in this slot")
+    private static final String RECIPE_CACHED = "gtocore.pattern_buffer.cache";
     @RegisterLanguage(cn = "重置缓存", en = "Recache")
     public static final String CLEAR_MACHINE_RECIPE_CACHE = "gtceu.ae.pattern_part_machine.clear_machine_recipe_cache";
     @RegisterLanguage(cn = "重置机器的所有配方缓存，不会改变样板的任何数据内容", en = "Clear all recipe cache of the machine, will not change any data content in pattern")
@@ -130,6 +132,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     // 拆下后物品 NBT 的键：p 样板、n 显示名、i 内部槽（每项一个 ByteArrayTag，LDLib 时代为 CompoundTag）、
     // dv 写入时的 DataSyncLib 数据版本（旧物品没有，按当前版本读取）
+    public static final String PATTERN_INVENTORY = "patternInventory";
+    public static final String INTERNAL_INVENTORY = "internalInventory";
     private static final String ITEM_PATTERNS = "p";
     private static final String ITEM_NAME = "n";
     private static final String ITEM_SLOTS = "i";
@@ -137,11 +141,10 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     // ==================== 持久化 ====================
 
-    @SaveToDisk(key = "patternInventory")
-    @SyncToClient
+    @SaveToDisk(key = PATTERN_INVENTORY)
     private final CustomItemStackHandler patternInventory;
 
-    @SaveToDisk(key = "internalInventory")
+    @SaveToDisk(key = INTERNAL_INVENTORY)
     private final AbstractInternalSlot[] internalInventory;
 
     @SyncToClient
@@ -162,12 +165,6 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     private boolean needPatternSync;
     @Nullable
     private TickableSubscription updateSubs;
-    @Nullable
-    private Boolean hasClearButtons;
-
-    /// 当前页码；翻页按钮在服务端改它，经机器同步驱动两端的 {@link com.gregtechceu.gtceu.uipro.elements.PageView} 重建
-    @SyncToClient
-    private final IntNotifiableHolder newPageField = IntNotifiableHolder.create();
 
     protected MEPatternPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
         super(holder, IO.IN);
@@ -197,6 +194,11 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     /** 样板槽悬浮提示的附加行。 */
     @Nullable
     public Component appendHoverTooltips(int index) {
+        return null;
+    }
+
+    @Nullable
+    protected BooleanSupplier recipeCachedFlag(int index) {
         return null;
     }
 
@@ -286,12 +288,6 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     @Override
     public InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!isRemote()) {
-            // 重新下发当前页码，保证刚打开的界面落在服务端记录的那一页
-            newPageField.set(newPageField.get());
-            newPageField.markAsChanged();
-            syncToClient();
-        }
         return IInteractedMachine.super.onUse(state, world, pos, player, hand, hit);
     }
 
@@ -372,10 +368,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @Override
     public PatternContainerGroup getTerminalGroup() {
         if (isFormed()) return formedGroup(customName);
-        var itemKey = AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem());
-        var description = customName.isEmpty() ? GTAEMachines.ME_PATTERN_BUFFER.get().getDefinition().asItem().getDescription() :
-                Component.literal(customName);
-        return new PatternContainerGroup(itemKey, description, Collections.emptyList());
+        var description = customName.isEmpty() ? getDefinition().asItem().getDescription() : Component.literal(customName);
+        return new PatternContainerGroup(AEItemKey.of(getDefinition().asItem()), description, Collections.emptyList());
     }
 
     @Override
@@ -418,7 +412,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         List<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
                 List.of(recipeMachine.getAvailableRecipeTypes()) : Collections.emptyList();
         var extraSuffix = customName.startsWith("+") ? customName.substring(1).strip() : "";
-        return PatternContainerGroupHelper.getSearchName(controller.self(), extraSuffix, null, availableRecipeTypes);
+        return PatternContainerGroupHelper.getSearchName(controller.self(), extraSuffix, groupRecipeType(), availableRecipeTypes);
     }
 
     // ==================== 其他接口 ====================
@@ -478,7 +472,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     /** 使用新式机器外壳（{@link MachineWindow}）。 */
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(UISizes.WINDOW_WIDTH, UISizes.WINDOW_WIDTH, this, entityPlayer).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, this, entityPlayer);
     }
 
     /**
@@ -522,15 +516,14 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         int width = root.getContentWidth();
         var pages = MEPatternPartUI.patternPages(this, width, this::buildGridHeader, gridHeaderHeight(), () -> Component.translatable(NOT_SIMPLE));
         root.addChild(pages);
-        pages.refresh();
 
-        Widget[] actions = hasClearButtons() ? new Widget[] {
+        Widget[] actions = hasRecipeCacheButtons() ? new Widget[] {
                 Button.translatable(UISizes.BUTTON_WIDTH, CLEAR_MACHINE_RECIPE_CACHE).setOnServerClick(this::clearMachineRecipeCache)
-                        .setHoverTooltips(CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP),
-                Button.translatable(UISizes.BUTTON_WIDTH, CLEAR_PATTERN_RECIPE_CACHE).setOnServerClick(this::clearPatternRecipeCache)
-                        .setVariant(UITheme.ButtonVariant.DANGER).setHoverTooltips(CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP)
+                        .tooltips(CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP),
+                ConfirmButton.translatable(UISizes.BUTTON_WIDTH, CLEAR_PATTERN_RECIPE_CACHE).setOnServerConfirm(this::clearPatternRecipeCache)
+                        .setVariant(UITheme.ButtonVariant.DANGER).tooltips(CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP)
         } : new Widget[0];
-        var footer = MEPatternPartUI.footer(this, width, actions);
+        var footer = MEPatternPartUI.footer(this, width, pages, actions);
         if (footer != null) root.addChild(footer);
     }
 
@@ -549,23 +542,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         return 0;
     }
 
-    void selectPage(int page, int pageCount) {
-        newPageField.set(Math.max(0, Math.min(page, pageCount - 1)));
-        newPageField.markAsChanged();
-        syncToClient();
-    }
-
-    /** 子类实现了两个清缓存方法时才显示清缓存按钮。 */
-    private boolean hasClearButtons() {
-        if (hasClearButtons == null) {
-            try {
-                hasClearButtons = EmptyMethodChecker.hasMethodBody(getClass().getMethod("clearMachineRecipeCache")) &&
-                        EmptyMethodChecker.hasMethodBody(getClass().getMethod("clearPatternRecipeCache"));
-            } catch (NoSuchMethodException e) {
-                hasClearButtons = false;
-            }
-        }
-        return hasClearButtons;
+    protected boolean hasRecipeCacheButtons() {
+        return false;
     }
 
     public MEPatternViewSlotWidget createPatternSlotWidget(int index) {
@@ -574,8 +552,11 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     public MEPatternViewSlotWidget createPatternSlot(int index) {
         var slot = createPatternSlotWidget(index);
+        var cachedFlag = recipeCachedFlag(index);
+        var cached = cachedFlag == null ? null : slot.addSyncValue(SyncValue.ofBool(cachedFlag));
         slot.getInner().setChangeListener(() -> onPatternChange(index));
         slot.getInner().setOnAddedTooltips((s, tooltips) -> {
+            if (cached != null && cached.getValue()) tooltips.add(Component.translatable(RECIPE_CACHED));
             var tooltip = appendHoverTooltips(index);
             if (tooltip != null) tooltips.add(tooltip);
             if (supportsSlotConfig() && !patternInventory.getStackInSlot(index).isEmpty()) tooltips.add(Component.translatable(SLOT_CONFIG_HINT).withStyle(ChatFormatting.GRAY));
@@ -662,10 +643,6 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         this.showInTravelNetwork = showInTravelNetwork;
     }
 
-    public IntNotifiableHolder getNewPageField() {
-        return newPageField;
-    }
-
     // ==================== 内部类 ====================
 
     public abstract static class AbstractInternalSlot extends AbstractDataSerializable {
@@ -699,6 +676,11 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         @Override
         public ItemStack getStackInSlot(int slotIndex) {
             return machine.patternInventory.getStackInSlot(slotIndex);
+        }
+
+        @Override
+        public boolean isItemValid(int slotIndex, ItemStack stack) {
+            return machine.patternInventory.isItemValid(slotIndex, stack);
         }
 
         @Override

@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
-import com.gtocore.api.gui.ServerRows;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.techtree.ui.TechNodeDetails;
@@ -20,19 +19,20 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.common.machine.owner.MachineOwner;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ConfirmButton;
 import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.ServerList;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
@@ -66,9 +66,7 @@ public final class DataCenterAggregationUI {
 
     private static final int CARD_WIDTH = UISizes.CONTENT_WIDTH;
     private static final int GRID_WIDTH = 2 * CARD_WIDTH + UISizes.SECTION_GAP;
-    private static final int SERVER_HEIGHT_LIMIT = Integer.MAX_VALUE / 4;
     private static final int HEAVY_REFRESH_TICKS = 20;
-    private static final int CONFIRM_TICKS = 60;
     private static final Component NONE = Component.literal(DataCenter.NO_VALUE);
 
     @RegisterLanguage(cn = "数据中心总览", en = "Data Center Overview")
@@ -168,18 +166,18 @@ public final class DataCenterAggregationUI {
 
     private enum State {
 
-        RESEARCHING(STATE_RESEARCHING, StatusLine.Level.GOOD),
-        PAUSED(STATE_PAUSED, StatusLine.Level.WARNING),
-        IDLE(STATE_IDLE, StatusLine.Level.NORMAL),
-        UNFORMED(DataCenter.LANG_STATE_UNFORMED, StatusLine.Level.ERROR),
-        UNLOADED(STATE_UNLOADED, StatusLine.Level.WARNING),
-        MISSING(STATE_MISSING, StatusLine.Level.ERROR),
-        NO_ACCESS(STATE_NO_ACCESS, StatusLine.Level.ERROR);
+        RESEARCHING(STATE_RESEARCHING, Level.GOOD),
+        PAUSED(STATE_PAUSED, Level.WARNING),
+        IDLE(STATE_IDLE, Level.NORMAL),
+        UNFORMED(DataCenter.LANG_STATE_UNFORMED, Level.ERROR),
+        UNLOADED(STATE_UNLOADED, Level.WARNING),
+        MISSING(STATE_MISSING, Level.ERROR),
+        NO_ACCESS(STATE_NO_ACCESS, Level.ERROR);
 
         private final Component text;
-        private final StatusLine.Level level;
+        private final Level level;
 
-        State(String key, StatusLine.Level level) {
+        State(String key, Level level) {
             this.text = Component.translatable(key);
             this.level = level;
         }
@@ -286,7 +284,6 @@ public final class DataCenterAggregationUI {
         private boolean bindingsRead;
         private int version;
         private int refreshedTick = Integer.MIN_VALUE;
-        private int confirmUntil = Integer.MIN_VALUE;
         private int researchingCount;
         private int pausedCount;
         private int idleCount;
@@ -371,19 +368,10 @@ public final class DataCenterAggregationUI {
             return server == null ? null : entries.get(binding);
         }
 
-        private boolean isConfirming() {
-            return server != null && server.getTickCount() < confirmUntil;
-        }
-
         private void unbindAll() {
-            if (server == null) return;
-            if (isConfirming()) {
-                confirmUntil = Integer.MIN_VALUE;
-                DataCenterAggregationTerminal.unbindAll(stack());
-                invalidate();
-            } else if (!bindings().isEmpty()) {
-                confirmUntil = server.getTickCount() + CONFIRM_TICKS;
-            }
+            if (server == null || bindings().isEmpty()) return;
+            DataCenterAggregationTerminal.unbindAll(stack());
+            invalidate();
         }
 
         private void unbind(Binding binding) {
@@ -426,9 +414,9 @@ public final class DataCenterAggregationUI {
 
         private void attachResearchSection(UIElement section, TechNode node) {
             var count = section.addSyncValue(SyncValue.ofInt(() -> researchingCount(node), 0));
-            var button = Button.text(LayoutStyle.AUTO, () -> count.getValue() > 0 ? Component.translatable(RESEARCHING_ON, count.getValue()).getString() :
+            var button = Button.of(LayoutStyle.AUTO).bindClientText(() -> count.getValue() > 0 ? Component.translatable(RESEARCHING_ON, count.getValue()).getString() :
                     Component.translatable(DataCenter.LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
-                    .setVariant(() -> count.getValue() > 0 ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
+                    .bindClientVariant(() -> count.getValue() > 0 ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
                     .setOnServerClick(() -> toggleResearch(node))
                     .bindTooltip(() -> Component.translatable(researchingCount(node) > 0 ? TIP_CANCEL : TIP_LAUNCH));
             button.disabled(() -> TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(player), node), TechNodeDetails.ALREADY_UNLOCKED);
@@ -478,12 +466,12 @@ public final class DataCenterAggregationUI {
             var summary = new StatusPanel();
             summary.addLine(LINE_BOUND, context::boundText);
             summary.addLine(LINE_RESEARCHING, context::researchingText)
-                    .level(() -> {
+                    .bindLevel(() -> {
                         context.refresh();
-                        if (context.pausedCount > 0) return StatusLine.Level.WARNING;
-                        return context.researchingCount > 0 ? StatusLine.Level.GOOD : StatusLine.Level.NORMAL;
+                        if (context.pausedCount > 0) return Level.WARNING;
+                        return context.researchingCount > 0 ? Level.GOOD : Level.NORMAL;
                     })
-                    .detail(() -> {
+                    .bindDetail(() -> {
                         context.refresh();
                         return context.pausedCount > 0 ? Component.translatable(DETAIL_PAUSED, context.pausedCount) : Component.empty();
                     });
@@ -494,28 +482,24 @@ public final class DataCenterAggregationUI {
             });
             page.addChild(summary);
 
-            var confirming = SyncValue.of(context::isConfirming, ByteStreamCodec.BOOLEAN_CODEC, false);
-            var unbindAll = Button.text(LayoutStyle.AUTO, () -> Component.translatable(confirming.getValue() ? UNBIND_ALL_CONFIRM : UNBIND_ALL).getString())
-                    .setVariant(UITheme.ButtonVariant.DANGER)
-                    .setOnServerClick(context::unbindAll)
+            var unbindAll = ConfirmButton.translatable(LayoutStyle.AUTO, UNBIND_ALL, UNBIND_ALL_CONFIRM)
+                    .setOnServerConfirm(context::unbindAll)
                     .disabled(() -> context.bindings().isEmpty(), NOTHING_BOUND);
             unbindAll.layout(l -> l.width(UISizes.BUTTON_WIDTH * 3 / 2));
             unbindAll.setHoverTooltips(Component.translatable(UNBIND_ALL_TIP));
-            var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-            header.addSyncValue(confirming);
+            var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
             var title = TextLine.translatable(0, HEADER_CARDS);
             title.layout(l -> l.flex(1));
             header.addChildren(title, InfoIcon.info(HELP_TASK, HELP_PARALLEL, HELP_CAPACITY, HELP_DISPATCH), unbindAll);
             page.addChild(header);
 
-            var cards = new ServerRows<>(remote, BINDING_CODEC, context::bindings, context::version,
-                    binding -> card(context, binding, remote, focus), Component.translatable(EMPTY));
-            cards.layout(l -> l.row().flexWrap(FlexWrap.WRAP).width(GRID_WIDTH).gapAll(UISizes.SECTION_GAP));
+            var cards = ServerList.of(BINDING_CODEC, context::bindings, binding -> card(context, binding, remote, focus))
+                    .version(context::version).emptyText(EMPTY)
+                    .rowsLayout(l -> l.row().flexWrap(FlexWrap.WRAP).width(GRID_WIDTH).gapAll(UISizes.SECTION_GAP));
             page.addChild(cards);
 
-            var scroller = new ScrollerView("data_center_aggregation.page", GRID_WIDTH, UISizes.SLOT).adaptiveWidth().setResizable(false);
+            var scroller = ScrollerView.page("data_center_aggregation.page", GRID_WIDTH).adaptiveWidth();
             scroller.addScrollViewChild(page);
-            scroller.adaptiveHeight(remote ? MachineWindow.clientPageHeightLimit(false) : SERVER_HEIGHT_LIMIT);
             return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
         }
 
@@ -547,7 +531,7 @@ public final class DataCenterAggregationUI {
         unbind.setHoverTooltips(Component.translatable(UNBIND_TIP));
         var location = TextLine.constant(0, DataCenterAggregationTerminal.location(binding));
         location.layout(l -> l.flex(1));
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
+        var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
         header.addChildren(ItemView.of(ExResearchMachines.DATA_CENTER.asStack()), location, unbind);
         card.addChild(header);
 
@@ -555,10 +539,10 @@ public final class DataCenterAggregationUI {
         status.addLine(DataCenter.LANG_LINE_STATE, () -> {
             var entry = context.entry(binding);
             return entry == null ? NONE : entry.state.text;
-        }).level(() -> {
+        }).bindLevel(() -> {
             var entry = context.entry(binding);
-            return entry == null ? StatusLine.Level.NORMAL : entry.state.level;
-        }).detail(() -> {
+            return entry == null ? Level.NORMAL : entry.state.level;
+        }).bindDetail(() -> {
             var entry = context.entry(binding);
             return entry == null ? Component.empty() : entry.detailText;
         });
@@ -573,13 +557,13 @@ public final class DataCenterAggregationUI {
         status.addLine(DataCenter.LANG_LINE_MAX_CWU, () -> {
             var entry = context.entry(binding);
             return entry == null ? NONE : entry.maxCwuText;
-        }).detail(() -> {
+        }).bindDetail(() -> {
             var entry = context.entry(binding);
             return entry == null || entry.machine == null ? Component.empty() : entry.capacityText;
         });
         card.addChild(status);
 
-        var progress = new ProgressBar(LayoutStyle.AUTO, Component.translatable(DataCenter.LANG_RESEARCH_PROGRESS), UITheme.STATUS_ONLINE, () -> {
+        var progress = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(DataCenter.LANG_RESEARCH_PROGRESS), UITheme.STATUS_ONLINE, () -> {
             var entry = context.entry(binding);
             return entry == null || entry.machine == null || entry.node == null ? ProgressBar.Progress.EMPTY : entry.machine.researchProgress();
         });
@@ -601,10 +585,10 @@ public final class DataCenterAggregationUI {
             researching = entry != null && entry.machine != null && entry.node != null;
         }
         research.setDisplay(researching);
-        card.addSyncValue(SyncValue.of(() -> {
+        card.addSyncValue(SyncValue.ofBool(() -> {
             var entry = context.entry(binding);
             return entry != null && entry.machine != null && entry.node != null;
-        }, ByteStreamCodec.BOOLEAN_CODEC, researching).onChanged(research::setDisplay));
+        }, researching).onChanged(research::setDisplay));
         card.addChild(research);
         return card;
     }

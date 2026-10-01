@@ -8,8 +8,11 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.material.Fluid;
@@ -72,7 +75,9 @@ public final class DissolvingTankMachine extends ElectricMultiblockMachine imple
                 }
                 return recipe;
             }
+            return null;
         }
+        reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, 1, -1, -1, recipe.definition);
         return null;
     }
 }

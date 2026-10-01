@@ -6,6 +6,8 @@ import com.gtocore.common.data.GTOOrganItems;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.data.tag.Tags;
 
+import com.gtolib.api.player.OrganTier;
+
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
@@ -108,13 +110,13 @@ final class BiochemicalExtraction {
                 .save();
         BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart")
                 .inputItems(Items.GOAT_SPAWN_EGG)
-                .outputItems(GTOOrganItems.tierOrgan(OrganType.HEART, 0))
+                .outputItems(GTOOrganItems.tierOrgan(OrganType.HEART, OrganTier.SPROUT))
                 .EUt(1920)
                 .duration(400)
                 .save();
         BIOCHEMICAL_EXTRACTION_RECIPES.builder("tier_0_heart1")
                 .inputItems(Items.SHEEP_SPAWN_EGG)
-                .outputItems(GTOOrganItems.tierOrgan(OrganType.HEART, 0))
+                .outputItems(GTOOrganItems.tierOrgan(OrganType.HEART, OrganTier.SPROUT))
                 .EUt(1920)
                 .duration(400)
                 .save();

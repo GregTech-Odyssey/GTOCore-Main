@@ -9,6 +9,8 @@ import com.gtolib.api.recipe.RecipeBuilder;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.DimensionMarker;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.uipro.render.UILayers;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.client.Minecraft;
@@ -24,7 +26,6 @@ import java.util.function.Consumer;
 final class SatelliteEmiRecipe extends GTEMIRecipe {
 
     private static final int TIER_COLOR = 0xFFFFFFFF;
-    private static final int TIER_Z = 200;
 
     private final ResourceLocation id;
     private final DimensionMarker marker;
@@ -78,12 +79,10 @@ final class SatelliteEmiRecipe extends GTEMIRecipe {
         public void drawOverlay(GuiGraphics draw, int mouseX, int mouseY, float delta) {
             super.drawOverlay(draw, mouseX, mouseY, delta);
             var font = Minecraft.getInstance().font;
-            float scale = UISizes.SMALL_TEXT_SCALE;
             var pose = draw.pose();
             pose.pushPose();
-            pose.translate(x + UISizes.SLOT - 1 - font.width(tier) * scale, y + UISizes.SLOT - 1 - UISizes.SMALL_TEXT_HEIGHT, TIER_Z);
-            pose.scale(scale, scale, 1);
-            draw.drawString(font, tier, 0, 0, TIER_COLOR, true);
+            pose.translate(0, 0, UILayers.ITEM_OVERLAY);
+            draw.drawString(font, tier, x + UISizes.SLOT_SIZE - 1 - font.width(tier), y + UISizes.SLOT_SIZE - 1 - UIText.GLYPH_HEIGHT, TIER_COLOR, true);
             pose.popPose();
         }
     }

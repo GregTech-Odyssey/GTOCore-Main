@@ -9,6 +9,7 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 
@@ -62,7 +63,13 @@ public final class MolecularAssemblyFactoryMachine extends AbstractMEPatternAsse
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable(THREAD_COUNT, getThreads()));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable(THREAD_COUNT, getThreads()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(THREAD_COUNT, MultiblockPage.numberText(this::getThreads, ""));
     }
 
     @Override

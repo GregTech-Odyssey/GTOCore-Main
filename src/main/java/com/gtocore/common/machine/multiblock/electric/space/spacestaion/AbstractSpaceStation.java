@@ -11,8 +11,12 @@ import com.gtolib.api.recipe.IdleReason;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.MachineIssue;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -177,11 +181,28 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     }
 
     @Override
-    public Component getWorkspaceNotReadyReason() {
-        String pos = getPos().toShortString();
-        if (getRecipeLogic().isWorking()) return IdleReason.SPACE_STATION_PREPARING.reason(pos, Math.min(ready * 10, 100));
-        if (!isWorkingEnabled()) return IdleReason.SPACE_STATION_PAUSED.reason(pos);
-        return IdleReason.SPACE_STATION_NOT_RUNNING.reason(pos, getRecipeLogic().getIdleReason());
+    public void reportWorkspaceNotReady(IRecipeHandlerHolder holder) {
+        long pos = getPos().asLong();
+        if (getRecipeLogic().isWorking()) IdleReason.SPACE_STATION_PREPARING.report(holder, pos, Math.min(ready * 10, 100));
+        else if (!isWorkingEnabled()) IdleReason.SPACE_STATION_PAUSED.report(holder, pos, 0);
+        else IdleReason.SPACE_STATION_NOT_RUNNING.report(holder, pos, stoppedCause());
+    }
+
+    @Override
+    public void collectWorkspaceIssues(IssueSink sink) {
+        sink.accept(workspaceIssue());
+    }
+
+    private MachineIssue workspaceIssue() {
+        long pos = getPos().asLong();
+        if (getRecipeLogic().isWorking()) return IdleReason.SPACE_STATION_PREPARING.issue(pos, Math.min(ready * 10, 100));
+        if (!isWorkingEnabled()) return IdleReason.SPACE_STATION_PAUSED.issue(pos, 0);
+        return IdleReason.SPACE_STATION_NOT_RUNNING.issue(pos, stoppedCause());
+    }
+
+    private long stoppedCause() {
+        var primary = getRecipeLogic().getIssueSnapshot().primary();
+        return primary == null ? 0 : primary.type().networkId() + 1;
     }
 
     @Override
@@ -193,7 +214,13 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
-        if (shouldShowReadyText) list.add(Component.translatable("gtocore.machine.spacestation.ready", Math.min(ready * 10, 100)).withStyle(ChatFormatting.YELLOW));
+        if (shouldShowReadyText && !MultiblockPage.isScreenText()) list.add(Component.translatable("gtocore.machine.spacestation.ready", Math.min(ready * 10, 100)).withStyle(ChatFormatting.YELLOW));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        if (shouldShowReadyText) page.addReading("gtocore.machine.spacestation.ready", MultiblockPage.numberText(() -> Math.min(ready * 10, 100), ""));
     }
 
     @Override

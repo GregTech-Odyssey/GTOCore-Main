@@ -4,6 +4,7 @@ import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -26,15 +27,19 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.ICoilMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.item.TurbineRotorBehaviour;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.RotorHolderPartMachine;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.PercentField;
@@ -43,6 +48,7 @@ import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -70,6 +76,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+
+import static com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage.NO_VALUE;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -251,9 +259,19 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         RotorHolderPartMachine rotorHolder = getRotorHolder();
         long EUt = recipe.getOutputEUt();
-        if (rotorHolder == null || EUt <= 0) return null;
+        if (EUt <= 0) {
+            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, recipe.definition);
+            return null;
+        }
+        if (rotorHolder == null) {
+            reportIssue(GTIssues.ROTOR_MISSING, IssueStage.MODIFIER, IO.NONE, null, -1, 0, 0, recipe.definition);
+            return null;
+        }
         int rotorSpeed = getRotorSpeed();
-        if (rotorSpeed < 0) return null;
+        if (rotorSpeed < 0) {
+            IdleReason.ROTOR_MISMATCH.report(this, IssueStage.MODIFIER, recipe.definition);
+            return null;
+        }
         int maxSpeed = rotorHolder.getMaxRotorHolderSpeed();
         long turbineMaxVoltage = Math.min(getOverclockVoltage(), (long) (getVoltage() * Math.pow((double) Math.min(maxSpeed, rotorSpeed) / maxSpeed, 2)));
         recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, turbineMaxVoltage / EUt);
@@ -345,7 +363,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         var reset = Button.translatable(LayoutStyle.AUTO, RESET).setOnServerClick(() -> setHighSpeedFactor(1.0f));
         // 两种锁定原因分两层：外层转子缺失 / 材料不一致，内层转子仍在转动（每个元素只能设一次禁用）
         var controls = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, ADJUST_FACTOR).setColor(UITheme::text), factor, reset)
+                .addChildren(TextLine.translatable(LayoutStyle.AUTO, ADJUST_FACTOR).bindClientColor(UITheme::text), factor, reset)
                 .disabled(this::isAnyRotorSpinning, ROTOR_SPINNING);
         var guarded = UIElement.column(LayoutStyle.AUTO).addChildren(controls)
                 .disabled(() -> !hasMatchingRotors(), ROTOR_MISMATCH);
@@ -404,8 +422,59 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     }
 
     @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(ESTIMATED_MAX_OUTPUT_LABEL, MultiblockPage.cached(this::getVoltage, v -> Component.literal(FormattingUtil.formatNumbers(v) + " EU/t")))
+                .bindDetail(MultiblockPage.cached(this::getVoltage, v -> Component.empty()
+                        .append(Component.literal(FormatUtil.voltageAmperage(BigDecimal.valueOf(v)).toEngineeringString()).append("A "))
+                        .append(FormatUtil.voltageName(BigDecimal.valueOf(v)))));
+        page.addLine(ROTOR_SPEED, new Supplier<>() {
+
+            private double lastSpeed = Double.NaN;
+            private double lastMax = Double.NaN;
+            private Component text = NO_VALUE;
+
+            @Override
+            public Component get() {
+                var rotorHolder = getRotorHolder();
+                if (rotorHolder == null || rotorHolder.getRotorEfficiency() <= 0) {
+                    lastSpeed = Double.NaN;
+                    lastMax = Double.NaN;
+                    return text = NO_VALUE;
+                }
+                double multiplier = (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extensionMultiplier();
+                double speed = getRotorSpeed() * multiplier;
+                double max = rotorHolder.getMaxRotorHolderSpeed() * multiplier;
+                if (speed != lastSpeed || max != lastMax) {
+                    lastSpeed = speed;
+                    lastMax = max;
+                    text = Component.literal(FormattingUtil.formatNumbers(speed) + " / " + FormattingUtil.formatNumbers(max) + " RPM");
+                }
+                return text;
+            }
+        });
+        page.addLine(TURBINE_EFFICIENCY, MultiblockPage.cached(() -> {
+            var rotorHolder = getRotorHolder();
+            return rotorHolder == null || rotorHolder.getRotorEfficiency() <= 0 ? -1 : Double.doubleToLongBits(rotorHolder.getTotalEfficiency() * extensionEfficiency());
+        }, bits -> bits == -1 ? NO_VALUE : Component.literal(FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits)) + "%")));
+        if (!mega) {
+            page.addLine(ROTOR_DURABILITY, MultiblockPage.cached(this::rotorDurability, durability -> durability < 0 ? NO_VALUE : Component.literal(durability + "%")))
+                    .bindLevel(() -> {
+                        long durability = rotorDurability();
+                        return durability >= 0 && durability <= 10 ? Level.ERROR : Level.NORMAL;
+                    });
+        }
+    }
+
+    private long rotorDurability() {
+        var rotorHolder = getRotorHolder();
+        return rotorHolder == null || rotorHolder.getRotorEfficiency() <= 0 ? -1 : rotorHolder.getRotorDurabilityPercent();
+    }
+
+    @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         var v = getVoltage();
         textList.add(Component.translatable(ESTIMATED_MAX_OUTPUT, FormattingUtil.formatNumbers(v))
                 .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
@@ -482,8 +551,18 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         }
 
         @Override
+        public void addScreenReadouts(MultiblockPage page) {
+            super.addScreenReadouts(page);
+            page.addNumber(COIL_TIER, this::getCoilTier, "");
+            page.addLine(LAUNCH_SPEED_BONUS, MultiblockPage.percentText(() -> getCoilTier() * 20L));
+            page.addLine(DAMAGE_BASE, MultiblockPage.cached(() -> GTORules.MEGA_TURBINE_REGULATOR.get() ? Double.doubleToLongBits(damageBase) : -1,
+                    bits -> bits == -1 ? NO_VALUE : Component.literal(FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits))))).tooltips(DESC5);
+        }
+
+        @Override
         public void customText(List<Component> textList) {
             super.customText(textList);
+            if (MultiblockPage.isScreenText()) return;
             textList.add(Component.translatable(COIL_BONUS, getCoilTier(), getCoilTier() * 20));
             if (GTORules.MEGA_TURBINE_REGULATOR.get())
                 textList.add(Component.translatable(GLASS_BONUS, getCasingTier(GTORecipeDataKeys.GLASS_TIER), FormattingUtil.formatNumber2Places(damageBase)));
@@ -507,6 +586,20 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     public static final String DAMAGE_MULTIPLIER = "gtocore.machine.mega_turbine.expert.damage_multiplier";
     @RegisterLanguage(cn = "预计最大输出：%s EU/t", en = "Estimated Max Output: %s EU/t")
     public static final String ESTIMATED_MAX_OUTPUT = "gtocore.machine.mega_turbine.expert.estimated_max_output";
+    @RegisterLanguage(cn = "预计最大输出", en = "Estimated Max Output")
+    private static final String ESTIMATED_MAX_OUTPUT_LABEL = "gtocore.machine.turbine.estimated_max_output";
+    @RegisterLanguage(cn = "转子转速", en = "Rotor Speed")
+    private static final String ROTOR_SPEED = "gtocore.machine.turbine.rotor_speed";
+    @RegisterLanguage(cn = "涡轮效率", en = "Turbine Efficiency")
+    private static final String TURBINE_EFFICIENCY = "gtocore.machine.turbine.efficiency";
+    @RegisterLanguage(cn = "转子耐久度", en = "Rotor Durability")
+    private static final String ROTOR_DURABILITY = "gtocore.machine.turbine.rotor_durability";
+    @RegisterLanguage(cn = "线圈等级", en = "Coil Tier")
+    private static final String COIL_TIER = "gtocore.machine.mega_turbine.coil_tier.value";
+    @RegisterLanguage(cn = "转子启动增速", en = "Rotor Launch Speed Bonus")
+    private static final String LAUNCH_SPEED_BONUS = "gtocore.machine.mega_turbine.launch_speed_bonus";
+    @RegisterLanguage(cn = "转子损坏乘数加成", en = "Rotor Damage Multiplier Bonus")
+    private static final String DAMAGE_BASE = "gtocore.machine.mega_turbine.damage_base";
     @RegisterLanguage(cn = "专家模式下，允许调节高速模式下的输出乘数。", en = "In Expert Mode, allows adjustment of the output multiplier in High Speed Mode.")
     public static final String DESC1 = "gtocore.machine.mega_turbine.expert.desc.1";
     @RegisterLanguage(cn = "不过，调节输出乘数会同时大幅牺牲转子寿命。", en = "However, adjusting the output multiplier will also significantly sacrifice rotor durability.")

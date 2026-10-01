@@ -13,11 +13,15 @@ import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.data.transaction.data.TradeLang;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.adastra.TravelSource;
 import com.gtolib.api.annotation.component_builder.TranslationKeyProvider;
+import com.gtolib.api.data.CelestialBody;
 import com.gtolib.api.data.Dimension;
+import com.gtolib.api.data.Galaxy;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.api.lang.SimplifiedChineseLanguageProvider;
 import com.gtolib.api.lang.TraditionalChineseLanguageProvider;
+import com.gtolib.api.player.OrganTier;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.registries.GTOMachineBuilder;
@@ -38,7 +42,6 @@ import gto_ae.core.localization.ExtendedLangs;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public final class LangHandler {
@@ -73,6 +76,7 @@ public final class LangHandler {
         GTORecipeCategories.LANG.forEach((k, v) -> addCNEN("gtceu.recipe.category." + k, v));
         GTOFluidStorageKey.initLang();
         for (var type : OrganType.VALUES) addCNEN(type.translationKey, type.cn, type.en);
+        for (var tier : OrganTier.all()) addCNEN(tier.getTranslationKey(), tier.getCn(), tier.getEn());
         GTOMachineBuilder.LANG.forEach(LangHandler::addCNEN);
         MultiblockBuilder.LANG.forEach(LangHandler::addCNEN);
         Tooltips.LANG.forEach(LangHandler::addCNEN);
@@ -90,16 +94,21 @@ public final class LangHandler {
         TechTreeManager.NODE_LANG.forEach(LangHandler::addCNEN);
         TechTreeManager.TREE_LANG.forEach(LangHandler::addCNEN);
         GTOTickTimeMonitors.LANG.forEach(LangHandler::addCNEN);
-        for (var reasons : IdleReason.values()) {
-            if (reasons.getEn() == null) continue;
-            addCNEN(reasons.getKey(), reasons.getCn(), reasons.getEn());
+        for (var reason : IdleReason.values()) {
+            for (var lang : reason.getLang()) addCNEN(lang.key(), lang.cn(), lang.en());
         }
+        addCNEN("gtocore.issue.current.vacuum", "当前真空等级：%s", "Current vacuum tier: %s");
+        addCNEN("gtocore.issue.current.gravity", "当前重力：%s%%", "Current gravity: %s%%");
+        addCNEN("gtocore.issue.current.no_gravity_hatch", "未安装重力控制维护仓", "No gravity control hatch installed");
+        addCNEN("gtocore.issue.current.temperature", "当前温度：%s K", "Current temperature: %s K");
+        addCNEN("gtocore.issue.current.beam", "当前最佳光束平均强度：%s", "Best matching beam average intensity: %s");
+        addCNEN("gtocore.issue.current.no_beam", "未接收到符合要求的光束", "No matching beam received");
+        addCNEN("gtocore.issue.current.galaxy", "当前星系：%s", "Current galaxy: %s");
+        addCNEN("gtocore.issue.current.tech_node_locked", "未解锁科技节点：%s", "Tech node not unlocked: %s");
 
         for (var l : ExtendedLangs.values()) {
             addCN(l.getTranslationKey(), l.getChineseText());
         }
-
-        Arrays.stream(Dimension.values()).forEach(d -> addCNEN(d.getKey(), d.getCn(), d.getEn()));
 
         addCN("entity.gtocore.task_entity", "任务执行实体");
         addCN("itemGroup.gtocore.block", "GTO | 方块");
@@ -139,6 +148,7 @@ public final class LangHandler {
         addCNEN("selectWorld.gto_difficulty.tooltip.easy", "简单模式：游戏流程的各环节（资源获取，制作，自动化等）均有大量简化，游戏难度低。", "Easy Mode: All aspects of the game process (resource acquisition, crafting, automation, etc.) are greatly simplified, making the game easier. ");
         addCNEN("selectWorld.gto_difficulty.tooltip.normal", "普通模式：标准的GTO体验，机制玩法均为默认设定。", "Normal Mode: Standard GTO experience, with all mechanics and gameplay set to default. ");
         addCNEN("selectWorld.gto_difficulty.tooltip.expert", "专家模式：具有更难的游戏机制和更复杂的配方，适合寻求挑战的玩家。", "Expert Mode: Features more difficult game mechanics and complex recipes, suitable for players seeking a challenge. ");
+        addCNEN("selectWorld.gto_difficulty.tooltip.custom", "自定义模式：每一项规则都可以单独修改，未修改的规则使用普通模式的数值。", "Custom Mode: Every rule can be changed individually; unchanged rules use the Normal mode values. ");
         addCNEN("selectWorld.gto_difficulty.tooltip.generic", "具体机制可在GTO Wiki上查看。", "Specific mechanics can be found on the GTO Wiki.");
 
         addCNEN("gtocore.pattern.blocking_mode", "容器有任何内容时阻止插入", "Block insertion when the container has any content");
@@ -273,22 +283,26 @@ public final class LangHandler {
         addCNEN("biome.gtocore.create", "创造", "Create");
         addCNEN("biome.gtocore.void", "虚空", "Void");
         addCNEN("biome.gtocore.flat", "超平坦", "Superflat");
-        addCNEN("planet.gtocore.barnarda_c", "巴纳德 C", "Barnarda C");
-        addCNEN("planet.gtocore.barnarda_c_orbit", "巴纳德 C轨道", "Barnarda C Orbit");
-        addCNEN("planet.gtocore.ceres", "谷神星", "Ceres");
-        addCNEN("planet.gtocore.ceres_orbit", "谷神星轨道", "Ceres Orbit");
-        addCNEN("planet.gtocore.enceladus", "土卫二", "Enceladus");
-        addCNEN("planet.gtocore.enceladus_orbit", "土卫二轨道", "Enceladus Orbit");
-        addCNEN("planet.gtocore.ganymede", "木卫三", "Ganymede");
-        addCNEN("planet.gtocore.ganymede_orbit", "木卫三轨道", "Ganymede Orbit");
-        addCNEN("planet.gtocore.io", "木卫一", "Io");
-        addCNEN("planet.gtocore.io_orbit", "木卫一轨道", "Io Orbit");
-        addCNEN("planet.gtocore.pluto", "冥王星", "Pluto");
-        addCNEN("planet.gtocore.pluto_orbit", "冥王星轨道", "Pluto Orbit");
-        addCNEN("planet.gtocore.titan", "土卫六", "Titan");
-        addCNEN("planet.gtocore.titan_orbit", "土卫六轨道", "Titan Orbit");
-        addCNEN("gui.ad_astra.text.barnarda", "巴纳德", "Barnarda");
-        addCNEN("planet.gtocore.saturn_ring", "土星环", "Saturn Ring");
+        for (var galaxy : Galaxy.all()) {
+            addCNEN(galaxy.getTranslationKey(), galaxy.getCn(), galaxy.getEn());
+            if (galaxy == Galaxy.NONE) continue;
+            var solarSystem = galaxy.getSolarSystem();
+            addCNEN("solar_system." + solarSystem.getNamespace() + "." + solarSystem.getPath(), galaxy.getCn(), galaxy.getEn());
+        }
+        for (var source : TravelSource.all()) addCNEN(source.getTranslationKey(), source.getCn(), source.getEn());
+        for (var body : CelestialBody.all()) {
+            if (body.getTranslationKey() != null) addCNEN(body.getTranslationKey(), body.getCn(), body.getEn());
+        }
+        for (var dim : Dimension.all()) {
+            var location = dim.getLocation();
+            addCNEN(dim.getKey(), dim.getCn(), dim.getEn());
+            addCNEN(location.getPath() + "." + location.getNamespace() + ".name", dim.getCn(), dim.getEn());
+            var orbit = dim.hasOrbitDimension() ? dim.getOrbit().location() : null;
+            if (orbit != null) addCNEN(orbit.getPath() + "." + orbit.getNamespace() + ".name", dim.getOrbitCn(), dim.getOrbitEn());
+            if (dim.getEnvironment() == null || !GTOCore.MOD_ID.equals(location.getNamespace())) continue;
+            addCNEN("planet." + location.getNamespace() + "." + location.getPath(), dim.getCn(), dim.getEn());
+            if (orbit != null) addCNEN("planet." + orbit.getNamespace() + "." + orbit.getPath(), dim.getOrbitCn(), dim.getOrbitEn());
+        }
 
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density", "§d电解液能量密度：§r%s EU/mB", "§dElectrolyte Energy Density:§r %s EU/mB");
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density.va", "§d相当于：§r%s @ §b%s§rA/mB", "§dEquivalent to§r %s @ §b%sA§r/mB");
@@ -333,27 +347,7 @@ public final class LangHandler {
         addCNEN("gtocore.bar.heat", "温度", "Heat");
         addCNEN("gtocore.bar.occupancy", "占用率", "Occupancy");
 
-        addCNEN("gtocore.player.organ.info_exclamation", "关于：", "About : ");
-        addCNEN("gtocore.player.organ.that_is_your", "这是你的", "That is your ");
-        addCNEN("gtocore.player.organ.dont_take_it_all_down", "千万不要全部拿下来", "Don't take it all down");
-        addCNEN("gtocore.player.organ.precision_very_high", "精度高，可以装载大部分部件", "Precision is high, can load most parts");
-        addCNEN("gtocore.player.organ.precision_very_low", "精度低。只能装载小部分部件", "Precision is low,  can load only small parts");
-        addCNEN("gtocore.player.organ.even_make_die", "甚至致死", "Even make you die");
-        addCNEN("gtocore.player.organ.can_modifier_your_body", "可以修改你的身体部件", "It can Modify your body");
-        addCNEN("gtocore.player.organ.name.attribute_tag", "属性标签", "Attribute Tags");
-        addCNEN("gtocore.player.organ.name.visceral_editor", "器官改造", "Visceral Editor");
-        addCNEN("gtocore.player.organ.trans2open", "设为启用", "set to enable");
-        addCNEN("gtocore.player.organ.trans2close", "设为禁用", "set to disable");
         addCNEN("gtocore.player.organ.you_wing_is_broken", "你的翅膀已损坏", "Your wing is broken");
-        addCNEN("gtocore.player.organ.time_left", "剩余时长: %s 小时 %s 秒", "%s hours %s second time left");
-        addCNEN("gtocore.player.organ.you_wing_need_to_charge", "你的翅膀需要充电", "Your wing need to charge");
-        addCNEN("gtocore.player.organ.power", "功率", "power");
-        addCNEN("gtocore.player.organ.need_precision_level", "需要精度等级%s级的仪器", "Need Precision Level %s Tool");
-        addCNEN("gtocore.player.organ.name.function", "定制功能", "Costume Your Function");
-        addCNEN("gtocore.player.organ.name.effect", "效果", "Effect");
-        addCNEN("gtocore.player.organ.name.change", "更改", "Change");
-
-        addCNEN("gtocore.player.organ.name.other", "其它", "Other");
 
         addCNEN("gtocore.satellite_control_center.emi.launch_satellite", "发射卫星", "Launch Satellite");
 
@@ -551,6 +545,8 @@ public final class LangHandler {
         addCNEN("gtocore.emi.space_elevator.prev_drone", "查看上一级无人机配方", "View previous tier drone recipe");
         addCNEN("gtocore.emi.space_elevator.next_fuel", "查看下一级燃料配方", "View next tier fuel recipe");
         addCNEN("gtocore.emi.space_elevator.prev_fuel", "查看上一级燃料配方", "View previous tier fuel recipe");
+        addCNEN("gtocore.emi.space_elevator.wheel_drone", "滚轮切换无人机等级（%s/%s）", "Scroll to switch drone tier (%s/%s)");
+        addCNEN("gtocore.emi.space_elevator.wheel_fuel", "滚轮切换燃料（%s/%s）", "Scroll to switch fuel (%s/%s)");
 
         addCNEN("emi.category.gtocore.alfheim_entry_requirements", "亚尔夫海姆准入条件", "Alfheim Access Requirements");
         addCNEN("gtocore.entry_alfheim.0.c", "§a你已完全满足进入亚尔夫海姆的条件", "§aYou have fully met the requirements to enter Alfheim");
@@ -563,42 +559,6 @@ public final class LangHandler {
                 "The mists enshroud the realm, and the hour of Alfheim’s gate-opening draws nigh. A new chapter unfolds—only those who quaff the mead of the Kvasir’s Mead and gather the Twelve Ancient Relics may tread this secret domain. All who seek to trespass by craft or ruse shall not be borne by heaven and earth. For the Law of the Cosmos descends: whosoever dares to breach these halls without the sacred covenant shall perish, body and soul alike.");
         addCNEN("message.mythicbotany.alfheim_overworld_only", "§c你只能在主世界进入亚尔夫海姆！", "§cYou can only enter Alfheim in the Overworld!");
 
-        // 折跃卷轴维度翻译
-        addCNEN("alfheim.mythicbotany.name", "亚尔夫海姆", "Alfheim");
-        addCNEN("ancient_world.gtocore.name", "远古世界", "Ancient World");
-        addCNEN("barnarda_c.gtocore.name", "巴纳德C", "Barnarda C");
-        addCNEN("barnarda_c_orbit.gtocore.name", "巴纳德 C轨道", "Barnarda C Orbit");
-        addCNEN("ceres.gtocore.name", "谷神星", "Ceres");
-        addCNEN("ceres_orbit.gtocore.name", "谷神星轨道", "Ceres Orbit");
-        addCNEN("create.gtocore.name", "创造", "Create");
-        addCNEN("earth_orbit.ad_astra.name", "地球轨道", "Earth Orbit");
-        addCNEN("enceladus.gtocore.name", "土卫二", "Enceladus");
-        addCNEN("enceladus_orbit.gtocore.name", "土卫二轨道", "Enceladus Orbit");
-        addCNEN("ganymede.gtocore.name", "木卫三", "Ganymede");
-        addCNEN("ganymede_orbit.gtocore.name", "木卫三轨道", "Ganymede Orbit");
-        addCNEN("glacio.ad_astra.name", "霜原星", "Glacio");
-        addCNEN("glacio_orbit.ad_astra.name", "霜原星轨道", "Glacio Orbit");
-        addCNEN("io.gtocore.name", "木卫一", "Io");
-        addCNEN("io_orbit.gtocore.name", "木卫一轨道", "Io Orbit");
-        addCNEN("mars.ad_astra.name", "火星", "Mars");
-        addCNEN("mars_orbit.ad_astra.name", "火星轨道", "Mars Orbit");
-        addCNEN("mercury.ad_astra.name", "水星", "Mercury");
-        addCNEN("mercury_orbit.ad_astra.name", "水星轨道", "Mercury Orbit");
-        addCNEN("moon.ad_astra.name", "月球", "Moon");
-        addCNEN("moon_orbit.ad_astra.name", "月球轨道", "Moon Orbit");
-        addCNEN("otherside.deeperdarker.name", "幽冥", "Otherside");
-        addCNEN("overworld.minecraft.name", "主世界", "Overworld");
-        addCNEN("pluto.gtocore.name", "冥王星", "Pluto");
-        addCNEN("pluto_orbit.gtocore.name", "冥王星轨道", "Pluto Orbit");
-        addCNEN("the_end.minecraft.name", "末地", "The End");
-        addCNEN("the_nether.minecraft.name", "下界", "The Nether");
-        addCNEN("titan.gtocore.name", "土卫六", "Titan");
-        addCNEN("titan_orbit.gtocore.name", "土卫六轨道", "Titan Orbit");
-        addCNEN("venus.ad_astra.name", "金星", "Venus");
-        addCNEN("venus_orbit.ad_astra.name", "金星轨道", "Venus Orbit");
-        addCNEN("flat.gtocore.name", "超平坦", "Flat");
-        addCNEN("void.gtocore.name", "虚空", "Void");
-        addCNEN("saturn_ring.gtocore.name", "土星环", "Saturn Ring");
         addCNEN("spatial_storage.ae2.name", "封闭空间", "Spatial Storage");
 
         addCNEN("tag.fluid.gtocore.purify_water", "净化水", "Purify Water");

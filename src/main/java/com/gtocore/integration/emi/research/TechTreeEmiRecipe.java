@@ -8,10 +8,10 @@ import com.gtocore.api.research.techtree.ui.TechTreeView;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.item.TechTreeViewer;
-import com.gtocore.integration.emi.EmiPageLayout;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.integration.emi.recipe.EmiPageLayout;
 import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.ILocalUI;
@@ -46,7 +46,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
 
     private static final Widget PLACEHOLDER = new Widget(0, 0, 0, 0);
     private static final int DETAILS_WIDTH = UISizes.POPUP_CONTENT_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
-    private static final int COMPACT_HEIGHT = 8 * UISizes.SLOT;
+    private static final int COMPACT_HEIGHT = 8 * UISizes.SLOT_SIZE;
     private static final GTRecipeWidget.PageFrame COMPACT_FRAME = new GTRecipeWidget.PageFrame(DETAILS_WIDTH, COMPACT_HEIGHT, 0, false);
 
     public static final EmiRecipeCategory CATEGORY = new EmiRecipeCategory(

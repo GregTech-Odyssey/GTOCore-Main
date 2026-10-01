@@ -47,8 +47,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
 
-import java.util.Arrays;
-
 public final class GTOCommands {
 
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -68,7 +66,8 @@ public final class GTOCommands {
                     return 1;
                 })))
                 .then(Commands.literal("space")
-                        .then(Commands.literal("planet").then(Commands.literal("unlock").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("id", StringArgumentType.greedyString()).suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(Dimension.values()).filter(Dimension::isWithinGalaxy).map(Dimension::getLocation).map(ResourceLocation::toString), builder)).executes(ctx -> {
+                        .then(StarMapCommand.create())
+                        .then(Commands.literal("planet").then(Commands.literal("unlock").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("id", StringArgumentType.greedyString()).suggests((context, builder) -> SharedSuggestionProvider.suggest(Dimension.all().stream().filter(Dimension::isWithinGalaxy).map(Dimension::getLocation).map(ResourceLocation::toString), builder)).executes(ctx -> {
                             ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
                             var id = GTODimensions.getDimensionKey(RLUtils.parse(StringArgumentType.getString(ctx, "id")));
                             PlanetManagement.unlock(player.getUUID(), id);
@@ -76,7 +75,7 @@ public final class GTOCommands {
                             return 1;
                         })))))
                         .then(Commands.literal("dyson").then(Commands.literal("info").executes(ctx -> {
-                            DysonSphereSavaedData.INSTANCE.getDysonLaunchData().forEach((g, p) -> ctx.getSource().sendSuccess(() -> Component.literal("\nGalaxy: ").append(g.name()).append("\nCount: " + p).append("\nDamage: " + DysonSphereSavaedData.INSTANCE.getDysonDamageData().getOrDefault(g, 0)).append("\nIn use: " + DysonSphereSavaedData.INSTANCE.getDysonUse().getOrDefault(g, false)), false));
+                            DysonSphereSavaedData.INSTANCE.getDysonLaunchData().forEach((g, p) -> ctx.getSource().sendSuccess(() -> Component.literal("\nGalaxy: ").append(g.getName()).append("\nCount: " + p).append("\nDamage: " + DysonSphereSavaedData.INSTANCE.getDysonDamageData().getOrDefault(g, 0)).append("\nIn use: " + DysonSphereSavaedData.INSTANCE.getDysonUse().getOrDefault(g, false)), false));
                             return 1;
                         })).then(Commands.literal("clean").requires(source -> source.hasPermission(2)).executes(ctx -> {
                             DysonSphereSavaedData.INSTANCE.getDysonLaunchData().clear();

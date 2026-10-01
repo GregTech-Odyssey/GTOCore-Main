@@ -23,7 +23,6 @@ import com.gregtechceu.gtceu.utils.TaskHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -78,7 +77,7 @@ public final class PhotovoltaicPowerStationMachine extends AbstractPhotovoltaicM
     protected @Nullable GTRecipeDefinition createGenerationRecipe(Level level, RecipeHandlerUnit unit, int basic) {
         int eut = (int) (basic * (GTODimensions.isVoid(level.dimension()) ? 14 : GTOUtils.getSunIntensity(level.getDayTime()) * 15 / 100 * (level.isRaining() ? (level.isThundering() ? 0.3f : 0.7f) : 1)));
         if (eut == 0) {
-            setIdleReason(Component.translatable("recipe.condition.daytime.day.tooltip"));
+            IdleReason.DAYTIME_ONLY.report(this);
             return null;
         }
         return buildGenerationRecipe(getRecipeBuilder().duration(20), eut);

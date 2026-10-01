@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
@@ -46,7 +46,9 @@ public final class MEPartUI {
     public static Widget mainPage(BooleanSupplier online, Component title, FancyMachineUIWidget widget, UIElement page) {
         if (widget instanceof MachineWindow window) {
             window.setTitleContent(width -> header(online, title, width));
-            return page;
+            var scroller = ScrollerView.page("me_part.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
+            scroller.addScrollViewChild(page);
+            return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
         }
         return UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP))
                 .addChildren(header(online, title, UISizes.CONTENT_WIDTH), page);
@@ -57,14 +59,9 @@ public final class MEPartUI {
         return mainPage(machine::getOnlineField, machine.getTitle(), widget, page);
     }
 
-    /** 页面：标准内容宽的一列，区块间距 {@link UISizes#SECTION_GAP}。 */
-    public static UIElement page() {
-        return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
-    }
-
     /** 标题栏中段：网络在线指示灯 + 机器名（吃满剩余宽度）。 */
     private static UIElement header(BooleanSupplier online, Component title, int width) {
-        var name = TextLine.constant(0, title).setColor(UITheme::text);
+        var name = TextLine.constant(0, title).bindClientColor(UITheme::text);
         name.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
                 .addChildren(MEPatternPartUI.onlineIndicator(online), name);
@@ -75,36 +72,17 @@ public final class MEPartUI {
      * {@code scrollerId} 是滚动区的固定 id（锁定高度按它记）。
      */
     public static UIElement waitingList(String scrollerId, KeyStorage storage, boolean fluid, @Nullable String titleKey) {
-        var scroller = new ScrollerView(scrollerId, UISizes.SLOT_ROW_WIDTH, UISizes.SLOT)
-                .adaptiveWidth().adaptiveHeight(WAITING_MAX_ROWS * UISizes.SLOT);
+        var scroller = new ScrollerView(scrollerId, UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE)
+                .adaptiveWidth().setAdaptiveHeight(WAITING_MAX_ROWS * UISizes.SLOT_SIZE);
         scroller.addScrollViewChild(new AEStackGrid(storage, fluid, WAITING_MIN_ROWS));
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, titleKey == null ? "gtceu.gui.waiting_list" : titleKey).setColor(UITheme::text),
+                TextLine.translatable(LayoutStyle.AUTO, titleKey == null ? "gtceu.gui.waiting_list" : titleKey).bindClientColor(UITheme::text),
                 scroller);
     }
 
     /** 区块里一行"说明 …… [数值输入框]"：输入框标准按钮宽，说明悬停显示 {@code tooltipKeys}。 */
     public static UIElement fieldRow(String labelKey, TextField field, String... tooltipKeys) {
         field.layout(l -> l.width(UISizes.BUTTON_WIDTH));
-        return controlRow(labelKey, field, tooltipKeys);
-    }
-
-    /**
-     * 区块里的数值设置：上一行说明（悬停显示 {@code tooltipKeys}），下一行整宽的标准数值输入。
-     * 数值输入两侧有加减按钮，和说明挤在一行时输入框太窄，所以分两行。
-     */
-    public static UIElement numberRow(String labelKey, NumberField field, String... tooltipKeys) {
-        var label = TextLine.translatable(LayoutStyle.AUTO, labelKey).setColor(UITheme::panelText);
-        if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
-        return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(label, field);
-    }
-
-    /** 区块里一行"说明 …… [控件]"（开关、输入框等靠右），说明悬停显示 {@code tooltipKeys}。 */
-    public static UIElement controlRow(String labelKey, Widget control, String... tooltipKeys) {
-        var label = TextLine.translatable(0, labelKey).setColor(UITheme::panelText);
-        label.layout(l -> l.flex(1));
-        if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
-        return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
-                .addChildren(label, control);
+        return Form.controlRow(labelKey, field, tooltipKeys);
     }
 }

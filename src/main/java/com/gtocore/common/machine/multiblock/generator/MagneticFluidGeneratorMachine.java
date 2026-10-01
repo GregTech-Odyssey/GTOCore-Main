@@ -7,11 +7,13 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.impl.part.VoidEnergyHatch;
 import com.gtolib.api.machine.impl.part.WirelessEnergyHatchPartMachine;
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.ITieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -76,7 +78,10 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     @Nullable
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        if (outputTier < 1) return null;
+        if (outputTier < 1) {
+            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, -1, getCasingTier(GTORecipeDataKeys.GLASS_TIER), recipe.definition);
+            return null;
+        }
         boolean extension = hasStructurePart(EXTENSION);
         long parallel = (extension ? 256 : 64) * (laser ? (long) Math.pow(extension ? 4 : 2, outputTier - 1) : 1);
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);

@@ -19,6 +19,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -196,7 +197,7 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
-        return MEPartUI.mainPage(this, widget, MEPartUI.page().addChild(createUIWidget()));
+        return MEPartUI.mainPage(this, widget, Form.page().addChild(createUIWidget()));
     }
 
     /** 配置网格：每行 9 格（上：配置 / 下：库存）。 */

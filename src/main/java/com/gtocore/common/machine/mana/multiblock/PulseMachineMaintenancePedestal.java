@@ -16,6 +16,8 @@ import com.gtolib.utils.ClientUtil;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -26,8 +28,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
@@ -95,6 +95,11 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
         return true;
     }
 
+    @Override
+    public boolean hasDiagnosisTab() {
+        return false;
+    }
+
     public void addProblem(MetaMachine machine, Runnable resolution) {
         problems.put(machine, resolution);
     }
@@ -142,19 +147,28 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable(TIMES, totalResolvedProblems).withStyle(ChatFormatting.GREEN));
-        textList.add(ComponentPanelWidget.withButton(
-                Component.translatable("gtocore.digital_miner.show_range").append("(" + RANGE_RADIUS + ")"),
-                "show"));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable(TIMES, totalResolvedProblems).withStyle(ChatFormatting.GREEN));
     }
 
     @Override
-    public void handleDisplayClick(@NotNull String componentData, ClickData clickData) {
-        if (clickData.isRemote && componentData.equals("show")) {
-            ClientUtil.highlighting(getPos().above(5), RANGE_RADIUS);
-        }
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(TIMES, MultiblockPage.numberText(() -> totalResolvedProblems, ""));
+        page.addNumber(RADIUS, () -> RANGE_RADIUS, "");
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addClientButton(RANGE, "gtocore.digital_miner.show_range", () -> ClientUtil.highlighting(getPos().above(5), RANGE_RADIUS), RANGE_TOOLTIP);
     }
 
     @RegisterLanguage(cn = "总分发维护用魔力：%s 次", en = "Total mana used for maintenance: %s times")
     public static final String TIMES = "gtocore.pulse_machine_maintenance.times";
+    @RegisterLanguage(cn = "维护半径", en = "Maintenance Radius")
+    private static final String RADIUS = "gtocore.machine.pulse_machine_maintenance_pedestal.radius";
+    @RegisterLanguage(cn = "维护范围", en = "Maintenance Range")
+    private static final String RANGE = "gtocore.machine.pulse_machine_maintenance_pedestal.range";
+    @RegisterLanguage(cn = "在世界中高亮显示维护范围", en = "Highlights the maintenance range in the world")
+    private static final String RANGE_TOOLTIP = "gtocore.machine.pulse_machine_maintenance_pedestal.range.tooltip";
 }

@@ -36,6 +36,11 @@ public class SpaceElevatorDataModuleMachine extends SpaceElevatorModuleMachine {
         this.researchTagPartMachine = null;
     }
 
+    @Override
+    public boolean hasDiagnosisTab() {
+        return false;
+    }
+
     private int getWorksPerProducedData() {
         return GTORules.SPACE_DATA_WORKS.get() * 4 / (3 + getSpaceElevatorTier());
     }

@@ -6,13 +6,14 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -23,10 +24,7 @@ import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -40,7 +38,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IMaintenanceMachine, IMachineLife {
 
-    private static final float DURATION_ACTION_AMOUNT = 0.01F;
+    private static final double DURATION_STEP = 0.01;
+
+    @RegisterLanguage(cn = "处理耗时倍率", en = "Duration Multiplier")
+    private static final String DURATION = "gtocore.machine.maintenance_hatch.duration_multiplier";
 
     @SaveToDisk(defaultValue = "1.0")
     @SyncToClient
@@ -106,49 +107,14 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
         return BigDecimal.valueOf(result).setScale(2, RoundingMode.HALF_UP).floatValue();
     }
 
-    protected void incInternalMultiplier(int multiplier) {
-        float newDurationMultiplier = durationMultiplier + DURATION_ACTION_AMOUNT * multiplier;
-        if (newDurationMultiplier >= GTORules.CONFIGURABLE_MAINTENANCE_MAX.get()) {
-            durationMultiplier = GTORules.CONFIGURABLE_MAINTENANCE_MAX.get();
-            return;
-        }
-        durationMultiplier = newDurationMultiplier;
-    }
-
-    protected void decInternalMultiplier(int multiplier) {
-        float newDurationMultiplier = durationMultiplier - DURATION_ACTION_AMOUNT * multiplier;
-        if (newDurationMultiplier <= GTORules.CONFIGURABLE_MAINTENANCE_MIN.get()) {
-            durationMultiplier = GTORules.CONFIGURABLE_MAINTENANCE_MIN.get();
-            return;
-        }
-        durationMultiplier = newDurationMultiplier;
-    }
-
     @Override
     public Widget createUIWidget() {
-        WidgetGroup group;
-        group = new WidgetGroup(0, 0, 150, 70);
-        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 150 - 8, 70 - 8).setBackground(GuiTextures.DISPLAY)
-                .addWidget(new ComponentPanelWidget(4, 5, list -> {
-                    list.add(getTextWidgetText(this::getDurationMultiplier));
-                    var buttonText = Component.translatable("gtceu.maintenance.configurable_duration.modify");
-                    buttonText.append(" ");
-                    buttonText.append(ComponentPanelWidget.withButton(Component.literal("[-]"), "sub"));
-                    buttonText.append(" ");
-                    buttonText.append(ComponentPanelWidget.withButton(Component.literal("[+]"), "add"));
-                    list.add(buttonText);
-                }).setMaxWidthLimit(150 - 8 - 8 - 4).clickHandler((componentData, clickData) -> {
-                    if (!clickData.isRemote) {
-                        int multiplier = clickData.isCtrlClick ? 100 : clickData.isShiftClick ? 10 : 1;
-                        if ("sub".equals(componentData)) {
-                            decInternalMultiplier(multiplier);
-                        } else if ("add".equals(componentData)) {
-                            incInternalMultiplier(multiplier);
-                        }
-                    }
-                })));
-        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        return group;
+        return MachineDisplay.page(this, list -> list.add(getTextWidgetText(this::getDurationMultiplier)), this::addMaintenanceControls);
+    }
+
+    protected void addMaintenanceControls(ControlPanel controls) {
+        controls.addDecimal(DURATION, () -> durationMultiplier, value -> durationMultiplier = (float) value,
+                () -> GTORules.CONFIGURABLE_MAINTENANCE_MIN.get(), () -> GTORules.CONFIGURABLE_MAINTENANCE_MAX.get(), DURATION_STEP);
     }
 
     protected static Component getTextWidgetText(Supplier<Float> multiplier) {

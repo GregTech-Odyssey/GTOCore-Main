@@ -83,7 +83,7 @@ public final class DysonSphereSavaedData extends SavedData {
         ListTag listTag = new ListTag();
         dysonLaunchData.forEach((g, i) -> {
             CompoundTag tag = new CompoundTag();
-            tag.putString(GALAXY, g.name());
+            tag.putString(GALAXY, g.getName());
             tag.putInt(DYSON_COUNT, i);
             tag.putInt(DYSON_DAMAGE, dysonDamageData.getOrDefault(g, 0));
             tag.putBoolean(DYSON_USE, dysonUse.getOrDefault(g, false));

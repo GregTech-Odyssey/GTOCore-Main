@@ -24,7 +24,7 @@ import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.player.IEnhancedPlayer;
-import com.gtolib.api.player.OrganInventory;
+import com.gtolib.api.player.OrganEffects;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -378,6 +378,7 @@ public final class ForgeCommonEvent {
             WirelessSync.pushTo(player);
             TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
+            CelestialSavedData.sync(player);
         }
     }
 
@@ -637,8 +638,7 @@ public final class ForgeCommonEvent {
     private static boolean isPlayerInvincible(ServerPlayer player) {
         if (player.getAbilities().invulnerable || player.isCreative()) return true;
         if (TechTreeSavedData.isUnlocked(player, BaseNodes.CyberneticExoskeleton)) {
-            OrganInventory organs = IEnhancedPlayer.of(player).getPlayerData().organs;
-            return organs.getSetTier() >= 4;
+            return OrganEffects.INVINCIBILITY.isActive(IEnhancedPlayer.of(player).getPlayerData().organs);
         }
         return false;
     }

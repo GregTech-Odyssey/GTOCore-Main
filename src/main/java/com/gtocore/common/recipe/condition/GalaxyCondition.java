@@ -24,10 +24,10 @@ import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public class GalaxyCondition extends DimensionCondition {
 
@@ -41,7 +41,7 @@ public class GalaxyCondition extends DimensionCondition {
 
     @Override
     public Component getTooltips() {
-        return Component.translatable("gtocore.condition.within_galaxy", Component.translatable("gtolib.galaxy.name." + galaxy.name()));
+        return Component.translatable("gtocore.condition.within_galaxy", Component.translatable(galaxy.getTranslationKey()));
     }
 
     /** 配方页：一句说明，并以展示槽轮流显示该星系各维度的标志物品。 */
@@ -80,11 +80,19 @@ public class GalaxyCondition extends DimensionCondition {
         if (dimensions != null && dimensions.length > 0) {
             return dimensions;
         }
-        return dimensions = Stream.of(Dimension.values()).filter(d -> d.getGalaxy() == galaxy)
+        return dimensions = Dimension.all().stream().filter(d -> d.getGalaxy() == galaxy)
                 .map(Dimension::getLocation)
                 .map(GTRegistries.DIMENSION_MARKERS::get)
                 .filter(Objects::nonNull)
                 .toArray(DimensionMarker[]::new);
+    }
+
+    @Override
+    public @Nullable Component describeCurrent(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
+        Level level = holder.self().getLevel();
+        if (level == null) return null;
+        var current = GTODimensions.getGalaxy(level.dimension());
+        return Component.translatable("gtocore.issue.current.galaxy", Component.translatable((current == null ? Galaxy.NONE : current).getTranslationKey()));
     }
 
     @Override

@@ -8,6 +8,8 @@ import com.gtocore.common.machine.multiblock.electric.space.spacestaion.SpaceEle
 import com.gtocore.config.GTORules;
 import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.adastra.PlanetTravel;
+import com.gtolib.api.adastra.TravelSource;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.data.GTODimensions;
@@ -21,14 +23,14 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
-import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -45,8 +47,6 @@ import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
-import earth.terrarium.adastra.common.menus.base.PlanetsMenuProvider;
-import earth.terrarium.botarium.common.menu.MenuHooks;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,10 +58,11 @@ import java.util.Optional;
 import java.util.Set;
 
 @DataGeneratorScanned
-public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder, IMachineSubWindows {
+public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements IIWirelessInteractor<SpaceElevatorConnectorModule>, ICustomRecipeLogicHolder, IMachineSubWindows, IIssueProvider {
 
     private static final String WINDOW_OVERVIEW = "overview";
     public static final int REQUIRED_TIER = GTValues.UV;
+    public static final int TRAVEL_TIER = 8;
     public static final int CYCLE_TICKS = 400;
     private static final int CWU_PER_TIER = 128;
 
@@ -200,8 +201,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
         configuratorPanel.attachConfigurators(new IFancyConfiguratorButton.Toggle(GTOGuiTextures.PLANET_OFF, GTOGuiTextures.PLANET_ON, getRecipeLogic()::isWorking, (clickData, pressed) -> {
             if (!clickData.isRemote && getRecipeLogic().isWorking() && configuratorPanel.getGui() != null && configuratorPanel.getGui().entityPlayer instanceof ServerPlayer player) {
                 PlanetManagement.unlock(player.getUUID(), GTODimensions.BARNARDA_C);
-                player.addTag("spaceelevatorst");
-                MenuHooks.openMenu(player, new PlanetsMenuProvider());
+                PlanetTravel.open(player, new PlanetTravel(TravelSource.SPACE_ELEVATOR, TRAVEL_TIER));
             }
         }).setTooltipsSupplier(pressed -> List.of(Component.translatable("gtocore.machine.space_elevator.set_out"))));
         configuratorPanel.attachConfigurators(OverviewWidget.button(this, WINDOW_OVERVIEW, getDefinition(), ElevatorOverviewAdapter.of(this)));
@@ -216,12 +216,6 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
         return ElevatorFlowPage.create(this, widget);
-    }
-
-    @Override
-    public void attachSideTabs(TabsWidget sideTabs) {
-        super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(0, DetailsTab.display(this));
     }
 
     @Override
@@ -305,9 +299,14 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
         if (getTier() >= REQUIRED_TIER) {
             return getRecipeBuilder().duration(CYCLE_TICKS).CWUt((int) computationDemand(getTier(), exCWUt())).EUt(GTValues.VA[getTier()]).build();
         } else {
-            setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES);
+            IdleReason.VOLTAGE_TIER_NOT_SATISFIES.report(this, REQUIRED_TIER, getTier());
         }
         return null;
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (isFormed() && getTier() < REQUIRED_TIER) IdleReason.VOLTAGE_TIER_NOT_SATISFIES.collect(sink, REQUIRED_TIER, getTier());
     }
 
     @Override

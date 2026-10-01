@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.electric;
 
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.capability.IHeatContainer;
 import com.gtolib.api.machine.heat.HeatHandler;
@@ -116,7 +117,10 @@ public final class ElectricHeaterMachine extends WorkableTieredMachine implement
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (heatContainer.currentHeat + 16 >= heatContainer.maxHeat) return null;
+        if (heatContainer.currentHeat + 16 >= heatContainer.maxHeat) {
+            IdleReason.HEAT_FULL.report(this, heatContainer.currentHeat, heatContainer.maxHeat);
+            return null;
+        }
         return RecipeBuilder.ofRaw().duration(20).EUt(30).build();
     }
 }

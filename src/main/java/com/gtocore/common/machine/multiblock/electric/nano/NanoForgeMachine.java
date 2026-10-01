@@ -10,13 +10,16 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
+import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -30,6 +33,7 @@ import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -96,7 +100,9 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         int tier = getEffectiveTier();
-        if (recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER) > tier) {
+        int need = recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER);
+        if (need > tier) {
+            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, need, tier, recipe.definition);
             return null;
         }
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallel() * (1L << (tier - recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER))));
@@ -145,9 +151,18 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable(STRUCTURE_TIER, structureTier));
         textList.add(Component.translatable(SWARM_TIER, machineTier));
         textList.add(Component.translatable(EFFECTIVE_TIER, getEffectiveTier()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(STRUCTURE_TIER, MultiblockPage.numberText(() -> structureTier, ""));
+        page.addReading(SWARM_TIER, MultiblockPage.numberText(() -> machineTier, ""));
+        page.addReading(EFFECTIVE_TIER, MultiblockPage.numberText(this::getEffectiveTier, ""));
     }
 
     public static Structure structure(MultiblockMachineDefinition definition) {
@@ -238,5 +253,10 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     @Override
     public long getMinParallel() {
         return Math.min(IParallelMachine.MIN_PARALLEL, getMaxParallel());
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return IStorageMultiblock.SLOT_NANITES;
     }
 }

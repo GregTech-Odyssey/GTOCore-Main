@@ -8,6 +8,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.utils.NumberUtils;
 
+import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
@@ -18,13 +19,13 @@ import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -43,8 +44,6 @@ import com.buuz135.functionalstorage.block.FluidDrawerBlock;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
@@ -69,6 +68,9 @@ import java.util.List;
  */
 @DataGeneratorScanned
 public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IStorageMultiblock, IFancyUIMachine, IDisplayUIMachine {
+
+    @RegisterLanguage(cn = "超级箱 / 超级缸", en = "Super Chest / Super Tank")
+    private static final String SLOT_LABEL = "gtocore.machine.drawer_storage.slot";
 
     /// 主机槽（超级箱/缸）的数量上限
     public static final int CONTROLLER_LIMIT = 64;
@@ -95,9 +97,8 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public static final String OVERFLOW = "gtocore.machine.drawer_storage.overflow";
     @RegisterLanguage(cn = "开启后，放不下的内容（超过每种类容量，或种类已满放不进新种类）会被直接销毁，调用方不会收回", en = "When enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned")
     public static final String OVERFLOW_TOOLTIP = "gtocore.machine.drawer_storage.overflow.tooltip";
-
-    /// 溢出销毁开关的按钮键
-    private static final String OVERFLOW_BUTTON = "voidOverflow";
+    @RegisterLanguage(cn = "溢出销毁", en = "Overflow Voiding")
+    private static final String OVERFLOW_LABEL = "gtocore.machine.drawer_storage.overflow.label";
 
     /// 主机槽（超级箱/缸）：一格，最多 {@link #CONTROLLER_LIMIT} 个
     @SaveToDisk
@@ -367,12 +368,15 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     /// 显示窗那一套：主页是机器的状态显示窗，主机槽（超级箱/缸）跟在下方（和通用工厂一样）
     @Override
     public UIElement createUIWidget() {
-        return IStorageMultiblock.super.createUIWidget(MachineDisplay.page(this));
+        var controls = ControlPanel.of(this);
+        addStorageSlot(controls);
+        controls.addToggle(OVERFLOW_LABEL, () -> voidOverflow, value -> voidOverflow = value, OVERFLOW_TOOLTIP);
+        return MachineDisplay.page(this).addChild(controls.build());
     }
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(198, 208, this, entityPlayer).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, this, entityPlayer);
     }
 
     @Override
@@ -403,21 +407,6 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         textList.add(Component.translatable(TYPES,
                 FormattingUtil.formatNumbers(getKeyMap().size()),
                 FormattingUtil.formatNumbers(types)).withStyle(ChatFormatting.GRAY));
-        textList.add(Component.translatable(OVERFLOW, ComponentPanelWidget.withButton(
-                Component.translatable(voidOverflow ? "gtocore.machine.on" : "gtocore.machine.off"), OVERFLOW_BUTTON))
-                .withStyle(ChatFormatting.GRAY)
-                .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        Component.translatable(OVERFLOW_TOOLTIP).withStyle(ChatFormatting.YELLOW)))));
-    }
-
-    @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote && OVERFLOW_BUTTON.equals(componentData)) {
-            voidOverflow = !voidOverflow;
-            onChanged();
-            return;
-        }
-        IDisplayUIMachine.super.handleDisplayClick(componentData, clickData);
     }
 
     /// 主机与密封的总加成开根号（显示用）
@@ -458,5 +447,15 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
                         (double) Math.max(0, compoundTag.getLong("controllerMultiplier"))))));
         iTooltip.add(Component.translatable(OVERFLOW,
                 Component.translatable(compoundTag.getBoolean("voidOverflow") ? "gtocore.machine.on" : "gtocore.machine.off")));
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { GTMachines.SUPER_CHEST[GTValues.LV].asStack(), GTMachines.SUPER_TANK[GTValues.LV].asStack() };
     }
 }

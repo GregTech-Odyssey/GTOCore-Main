@@ -24,7 +24,6 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -37,13 +36,12 @@ import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
+import appeng.core.definitions.AEItems;
 import appeng.items.materials.StorageComponentItem;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,12 +52,15 @@ import java.util.UUID;
 /**
  * ME 磁盘箱子：ME 磁盘存储器的单方块版本。一个槽放存储组件（1k…256M，最多 {@link #COMPONENT_LIMIT} 个），
  * 组件字节之和就是容量；存储直接用存储访问仓那一套（{@link CellDataStorage} + 数据索引 UUID + 按字节卡容量），
- * 数据索引可以选玩家或机器（显示窗里点一下切换），显示窗里还有一个「存储转移」按钮，
+ * 数据索引可以选玩家或机器，显示窗里还有一个「存储转移」按钮，
  * 口径与存储访问仓一致：把网络里其它 ME 存储的内容全部搬进本箱。
  */
 @DataGeneratorScanned
 public final class MEDiskBoxMachine extends MetaMachine
                                     implements IGridConnectedMachine, MEStorage, IStorageProvider, IStorageMultiblock, IFancyUIMachine, IDropSaveMachine {
+
+    @RegisterLanguage(cn = "存储组件", en = "Storage Component")
+    private static final String SLOT_LABEL = "gtocore.machine.me_disk_box.slot";
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meStorageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::tickUpdate);
@@ -68,13 +69,11 @@ public final class MEDiskBoxMachine extends MetaMachine
     public static final int COMPONENT_LIMIT = 64;
     /// 数据索引位置（与 ME 存储器共用同一套文案）
     private static final String MODE = "gtocore.machine.me_storage.mode";
-    /// 数据索引开关的按钮键
-    private static final String SWITCH = "switch";
-    /// 存储转移按钮的键
-    private static final String TRANSFER_BUTTON = "transfer";
     /// 存储转移的文案与存储访问仓共用，注册在 MachineLang
     private static final String TRANSFER = "gtocore.machine.storage_transfer";
     private static final String TRANSFER_TOOLTIP = "gtocore.machine.storage_transfer.tooltip";
+    @RegisterLanguage(cn = "执行", en = "Run")
+    private static final String TRANSFER_RUN = "gtocore.machine.me_disk_box.transfer_run";
 
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
@@ -358,20 +357,21 @@ public final class MEDiskBoxMachine extends MetaMachine
     /// 显示窗那一套：主页是状态显示窗，组件槽挂在下方（和通用工厂一样）
     @Override
     public Widget createUIWidget() {
-        return IStorageMultiblock.super.createUIWidget(MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick));
+        return MachineDisplay.page(this, this::addDisplayText, controls -> {
+            addStorageSlot(controls);
+            controls.addChoice(MODE, 2, i -> Component.translatable(i == 0 ? "config.gtceu.option.machines" : "gtceu.ownership.name.player"),
+                    () -> player ? 1 : 0, i -> setPlayer(i == 1));
+            controls.addServerButton(TRANSFER, TRANSFER_RUN, this::transferFromNetwork, TRANSFER_TOOLTIP);
+        });
     }
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(198, 208, this, entityPlayer).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, this, entityPlayer);
     }
 
     public void addDisplayText(List<Component> textList) {
         var data = cellStorage();
-        textList.add(Component.translatable(MODE).append(ComponentPanelWidget.withButton(
-                Component.literal("[").append(player ? Component.translatable("gtceu.ownership.name.player") :
-                        Component.translatable("config.gtceu.option.machines")).append("]"),
-                SWITCH)));
         if (capacity < 1) {
             textList.add(Component.translatable(NO_COMPONENTS).withStyle(ChatFormatting.GRAY));
         }
@@ -386,20 +386,6 @@ public final class MEDiskBoxMachine extends MetaMachine
                 .withStyle(ChatFormatting.GRAY));
         textList.add(Component.literal(String.valueOf(map == null ? 0 : map.size())).withStyle(ChatFormatting.AQUA)
                 .append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
-        textList.add(ComponentPanelWidget.withButton(
-                Component.literal("[").append(Component.translatable(TRANSFER)).append("]"), TRANSFER_BUTTON)
-                .copy().withStyle(ChatFormatting.GRAY)
-                .withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        Component.translatable(TRANSFER_TOOLTIP).withStyle(ChatFormatting.YELLOW)))));
-    }
-
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (clickData.isRemote) return;
-        if (SWITCH.equals(componentData)) {
-            setPlayer(!player);
-        } else if (TRANSFER_BUTTON.equals(componentData)) {
-            transferFromNetwork();
-        }
     }
 
     // ==================== 拆机保存 ====================
@@ -424,5 +410,16 @@ public final class MEDiskBoxMachine extends MetaMachine
     public void loadFromItem(CompoundTag tag) {
         if (tag.hasUUID("uuid")) uuid = tag.getUUID("uuid");
         dataStorage = null;
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { AEItems.CELL_COMPONENT_1K.stack(), AEItems.CELL_COMPONENT_4K.stack(), AEItems.CELL_COMPONENT_16K.stack(),
+                AEItems.CELL_COMPONENT_64K.stack(), AEItems.CELL_COMPONENT_256K.stack() };
     }
 }

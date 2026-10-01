@@ -5,6 +5,9 @@ import com.gtocore.api.machine.ILargeSpaceStationMachine;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 
@@ -51,8 +54,17 @@ public class Conjunction extends AbstractSpaceStation implements ILargeSpaceStat
     }
 
     @Override
-    public Component getWorkspaceNotReadyReason() {
-        return core == null ? IdleReason.SPACE_STATION_NO_CORE.reason(getPos().toShortString()) : core.getWorkspaceNotReadyReason();
+    public void reportWorkspaceNotReady(IRecipeHandlerHolder holder) {
+        var root = core;
+        if (root == null) IdleReason.SPACE_STATION_NO_CORE.report(holder, getPos().asLong(), 0);
+        else root.reportWorkspaceNotReady(holder);
+    }
+
+    @Override
+    public void collectWorkspaceIssues(IssueSink sink) {
+        var root = core;
+        if (root == null) IdleReason.SPACE_STATION_NO_CORE.collect(sink, getPos().asLong(), 0);
+        else root.collectWorkspaceIssues(sink);
     }
 
     @Override
@@ -84,5 +96,11 @@ public class Conjunction extends AbstractSpaceStation implements ILargeSpaceStat
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
         ILargeSpaceStationMachine.super.customText(list);
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        addStationReadouts(page);
     }
 }

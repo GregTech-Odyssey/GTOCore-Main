@@ -17,11 +17,13 @@ import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import appeng.api.stacks.AEKey;
@@ -29,8 +31,6 @@ import appeng.api.stacks.AEKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +43,7 @@ import java.util.UUID;
 public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements IBindable, IDropSaveMachine, IStorageMultiblock {
 
     public static final long infinite = 1000000000000L; // 1T
-    @RegisterLanguage(en = "Data Index Position: ", cn = "数据索引位置：")
+    @RegisterLanguage(en = "Data Index Position", cn = "数据索引位置")
     private static final String MODE = "gtocore.machine.me_storage.mode";
     @SaveToDisk
     private final NotifiableItemStackHandler machineStorage;
@@ -138,13 +138,19 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
 
     @Override
     public UIElement createUIWidget() {
-        return createUIWidget(super.createUIWidget());
+        var controls = ControlPanel.of(this);
+        addStorageSlot(controls);
+        controls.addChoice(MODE, 2, i -> Component.translatable(i == 0 ? "config.gtceu.option.machines" : "gtceu.ownership.name.player"),
+                () -> player ? 1 : 0, i -> {
+                    player = i == 1;
+                    onMachineChanged();
+                });
+        return super.createUIWidget().addChild(controls.build());
     }
 
     @Override
     public void addDisplayText(List<Component> textList) {
         super.addDisplayText(textList);
-        textList.add(Component.translatable(MODE).append(ComponentPanelWidget.withButton(Component.literal("[").append(player ? Component.translatable("gtceu.ownership.name.player") : Component.translatable("config.gtceu.option.machines")).append("]"), "switch")));
         if (accessPartMachine != null) {
             if (getOffsetTimer() % 10 == 0) accessPartMachine.setObserve(true);
             textList.add(Component.translatable("gui.ae2.BytesUsed", NumberUtils.numberText(accessPartMachine.getBytes()).append(" / ").append(accessPartMachine.isInfinite() ? StringUtils.full_color("infinity") : NumberUtils.formatDouble(accessPartMachine.getCapacity())).withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
@@ -163,16 +169,6 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
                 });
                 list.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
                 list.forEach(entry -> textList.add(entry.getKey().getDisplayName().copy().append(": ").append(NumberUtils.numberText(entry.getValue().doubleValue())).withStyle(ChatFormatting.GRAY)));
-            }
-        }
-    }
-
-    @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            if ("switch".equals(componentData)) {
-                player = !player;
-                onMachineChanged();
             }
         }
     }
@@ -208,5 +204,15 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     @Override
     public NotifiableItemStackHandler getMachineStorage() {
         return this.machineStorage;
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return GTOItems.INFINITE_CELL_COMPONENT.asItem().getDescriptionId();
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { GTOItems.INFINITE_CELL_COMPONENT.asStack() };
     }
 }

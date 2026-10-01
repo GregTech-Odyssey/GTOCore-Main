@@ -4,6 +4,7 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
 
 import com.gregtechceu.gtceu.api.gui.misc.IGhostItemTarget;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,10 +15,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AmountFormat;
 import appeng.api.stacks.GenericStack;
 
 import com.lowdragmc.lowdraglib.gui.ingredient.Target;
-import com.lowdragmc.lowdraglib.gui.util.TextFormattingUtil;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawItemStack;
-import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawStringFixedCorner;
 
 public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhostItemTarget {
 
@@ -48,16 +48,14 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
             ItemStack stack = config.what() instanceof AEItemKey key ? new ItemStack(key.getItem()) : ItemStack.EMPTY;
             drawItemStack(graphics, stack, stackX, stackY, 0xFFFFFFFF, null);
 
-            if (parentWidget.showAmount()) {
-                String amountStr = TextFormattingUtil.formatLongToCompactString(config.amount(), 4);
-                drawStringFixedCorner(graphics, amountStr, stackX + 17, stackY + 17, 16777215, true, 0.5f);
+            if (parentWidget.isAmountShown()) {
+                UIText.drawItemCount(graphics, config.what().formatAmount(config.amount(), AmountFormat.SLOT_LARGE_FONT), stackX, stackY);
             }
         }
         if (stock != null) {
             ItemStack stack = stock.what() instanceof AEItemKey key ? new ItemStack(key.getItem()) : ItemStack.EMPTY;
             drawItemStack(graphics, stack, stackX, stackY + 18, 0xFFFFFFFF, null);
-            String amountStr = TextFormattingUtil.formatLongToCompactString(stock.amount(), 4);
-            drawStringFixedCorner(graphics, amountStr, stackX + 17, stackY + 18 + 17, 16777215, true, 0.5f);
+            UIText.drawItemCount(graphics, stock.what().formatAmount(stock.amount(), AmountFormat.SLOT_LARGE_FONT), stackX, stackY + 18);
         }
         drawStates(graphics, mouseX, mouseY);
     }
@@ -73,7 +71,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
             if (button == 1) {
                 writeClientAction(REMOVE_ID, buf -> {});
 
-                if (parentWidget.showAmount()) {
+                if (parentWidget.isAmountShown()) {
                     this.parentWidget.disableAmountClient();
                 }
             } else if (button == 0) {
@@ -121,7 +119,7 @@ public class AEItemConfigSlotWidget extends AEConfigSlotWidget implements IGhost
             case AMOUNT_CHANGE_ID -> {
                 long amt = buffer.readVarLong();
                 // 与数量面板同一套校验（客户端可以伪造）
-                if (amt < this.parentWidget.minAmount() || !this.parentWidget.canSetAmount(this.index)) return;
+                if (amt < this.parentWidget.getMinAmount() || !this.parentWidget.canSetAmount(this.index)) return;
                 slot.setConfig(new GenericStack(slot.getConfig().what(), amt));
                 this.parentWidget.notifyConfigChanged();
                 writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeVarLong(amt));

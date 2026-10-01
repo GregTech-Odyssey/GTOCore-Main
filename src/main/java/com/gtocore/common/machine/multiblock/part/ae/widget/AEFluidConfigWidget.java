@@ -41,7 +41,7 @@ public class AEFluidConfigWidget extends ConfigWidget {
     }
 
     @Override
-    boolean listAutoPull() {
+    boolean isListAutoPull() {
         return fluidList.isAutoPull();
     }
 }

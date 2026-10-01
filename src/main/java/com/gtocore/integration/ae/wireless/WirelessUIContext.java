@@ -1,6 +1,6 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.Level;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -86,9 +86,9 @@ final class WirelessUIContext {
     }
 
     /** 状态行等级：有最近的操作结果时成功为正常、失败为错误，否则取 {@code normal}。 */
-    StatusLine.Level stateLevel(Supplier<StatusLine.Level> normal) {
+    Level stateLevel(Supplier<Level> normal) {
         var result = recentResult();
         if (result == null) return normal.get();
-        return result.ok() ? StatusLine.Level.GOOD : StatusLine.Level.ERROR;
+        return result.ok() ? Level.GOOD : Level.ERROR;
     }
 }

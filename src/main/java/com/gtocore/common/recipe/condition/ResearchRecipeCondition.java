@@ -2,17 +2,23 @@ package com.gtocore.common.recipe.condition;
 
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.data.IdleReason;
 import com.gtocore.integration.emi.research.EmiResearchHelper;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gregtechceu.gtceu.api.capability.IDataAccessHatch;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
+import com.gregtechceu.gtceu.api.machine.issue.IssueType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
+import com.gregtechceu.gtceu.common.recipe.condition.ResearchCondition;
 import com.gregtechceu.gtceu.integration.xei.handlers.item.CycleItemStackHandler;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.recipe.RecipeDisplaySlots;
@@ -25,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -75,6 +82,38 @@ public class ResearchRecipeCondition extends RecipeCondition {
             return slot;
         }
         return RecipeDisplaySlots.item(dataStack, IngredientIO.CATALYST);
+    }
+
+    @Override
+    public IssueType getIssueType() {
+        return requiresNode ? IdleReason.TECH_NODE_LOCKED.type() : GTIssues.RESEARCH;
+    }
+
+    @Override
+    public void reportFailure(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe, int index) {
+        if (requiresNode) holder.reportIssue(IdleReason.TECH_NODE_LOCKED.type(), IssueStage.CONDITION, IO.NONE, null, index, 0, 0, recipe);
+        else holder.reportIssue(GTIssues.RESEARCH, IssueStage.CONDITION, IO.NONE, null, index, 0, -1, recipe);
+    }
+
+    @Override
+    public @Nullable Component describeCurrent(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
+        if (requiresNode) {
+            var owner = holder.self().getOwner();
+            if (owner != null && TechTreeSavedData.isUnlocked(owner.getUUID(), techNode)) return null;
+            return Component.translatable("gtocore.issue.current.tech_node_locked", techNode.getDisplayName());
+        }
+        if (testCondition(holder, unit, recipe)) return null;
+        return ResearchCondition.reasonText(hasDataHatch(holder) ? 2 : 1);
+    }
+
+    private static boolean hasDataHatch(IRecipeHandlerHolder holder) {
+        if (holder instanceof IDataAccessHatch) return true;
+        if (holder instanceof IMultiController controller) {
+            for (var p : controller.getParts()) {
+                if (p instanceof IDataAccessHatch) return true;
+            }
+        }
+        return false;
     }
 
     @Override

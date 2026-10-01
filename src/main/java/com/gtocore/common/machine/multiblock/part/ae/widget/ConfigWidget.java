@@ -4,7 +4,6 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEConfigSlotWid
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
-import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
@@ -84,7 +83,7 @@ public abstract class ConfigWidget extends WidgetGroup {
         int width = AmountSetWidget.WIDTH;
         int centerX = cell.x + CELL_WIDTH / 2;
         int x = centerX - width / 2;
-        int y = cell.y + UISizes.SLOT + UITheme.POPUP_NOTCH;
+        int y = cell.y + UISizes.SLOT_SIZE + UISizes.POPUP_NOTCH_HEIGHT;
         var gui = getGui();
         if (width <= getSizeWidth()) {
             x = Math.max(0, Math.min(x, getSizeWidth() - width));
@@ -100,7 +99,7 @@ public abstract class ConfigWidget extends WidgetGroup {
             }
         }
         // 尖角对准格子中心，但不伸进面板的圆角
-        int margin = UITheme.POPUP_NOTCH + 2;
+        int margin = UISizes.POPUP_NOTCH_HEIGHT + 2;
         this.amountSetWidget.setNotchX(Math.max(margin, Math.min(width - margin, centerX - x)));
         this.amountSetWidget.setSelfPosition(new Position(x, y));
     }
@@ -180,7 +179,7 @@ public abstract class ConfigWidget extends WidgetGroup {
      * 配置数量的下限：数量面板调节器的最小值，服务端写入数量时也按它校验。
      * 默认 1；可配置存储访问仓的限制格为 0（0 表示禁止，查表时按 -1 记）。
      */
-    public long minAmount() {
+    public long getMinAmount() {
         return 1;
     }
 
@@ -190,7 +189,7 @@ public abstract class ConfigWidget extends WidgetGroup {
     @Override
     public void writeInitialData(FriendlyByteBuf buffer) {
         super.writeInitialData(buffer);
-        autoPull = listAutoPull();
+        autoPull = isListAutoPull();
         buffer.writeBoolean(autoPull);
     }
 
@@ -203,20 +202,20 @@ public abstract class ConfigWidget extends WidgetGroup {
     public abstract boolean hasStackInConfig(GenericStack stack);
 
     /** 配置列表此刻是否自动拉取（服务端数据，经 {@link #isAutoPull} 下发）。 */
-    abstract boolean listAutoPull();
+    abstract boolean isListAutoPull();
 
     /**
      * 是否自动拉取：服务端直接读列表；客户端读服务端下发的值——库存总线/仓的自动拉取开关只存在服务端，
      * 直接在客户端读永远是关闭，配置格的禁用显示就不准。
      */
     public final boolean isAutoPull() {
-        return isRemote() ? autoPull : listAutoPull();
+        return isRemote() ? autoPull : isListAutoPull();
     }
 
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-        boolean currentAutoPull = listAutoPull();
+        boolean currentAutoPull = isListAutoPull();
         if (currentAutoPull != autoPull) {
             autoPull = currentAutoPull;
             writeUpdateInfo(AUTO_PULL_ID, buf -> buf.writeBoolean(currentAutoPull));
@@ -301,7 +300,7 @@ public abstract class ConfigWidget extends WidgetGroup {
         return false;
     }
 
-    public boolean showAmount() {
+    public boolean isAmountShown() {
         return showAmount;
     }
 }

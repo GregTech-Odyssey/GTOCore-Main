@@ -12,6 +12,8 @@ import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -19,6 +21,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -32,7 +35,7 @@ import java.util.List;
 import static com.gtocore.data.IdleReason.INCORRECT_DIRECTION_VOLTA;
 import static com.gtocore.data.IdleReason.OBSTRUCTED_VOLTA;
 
-public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachine implements IManaMultiblock, ICustomHighlightMachine, ICustomRecipeLogicHolder {
+public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachine implements IManaMultiblock, ICustomHighlightMachine, ICustomRecipeLogicHolder, IIssueProvider {
 
     protected final int basicRate;
 
@@ -91,20 +94,20 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
     private boolean canSeeSky(Level level) {
         BlockPos pos = updateHighlightArea();
         if (pos == null) {
-            setIdleReason(INCORRECT_DIRECTION_VOLTA);
+            INCORRECT_DIRECTION_VOLTA.report(this);
             idleReason = INCORRECT_DIRECTION_VOLTA;
             return false;
         }
         for (BlockPos checkPos : BlockPos.betweenClosed(highlightStartPos_1, highlightEndPos_1)) {
             if (!level.canSeeSky(new BlockPos(checkPos.getX(), pos.getY() + 1, checkPos.getZ()))) {
-                setIdleReason(OBSTRUCTED_VOLTA);
+                OBSTRUCTED_VOLTA.report(this);
                 idleReason = OBSTRUCTED_VOLTA;
                 return false;
             }
         }
         for (BlockPos checkPos : BlockPos.betweenClosed(highlightStartPos_2, highlightEndPos_2)) {
             if (!level.canSeeSky(new BlockPos(checkPos.getX(), pos.getY() + 1, checkPos.getZ()))) {
-                setIdleReason(OBSTRUCTED_VOLTA);
+                OBSTRUCTED_VOLTA.report(this);
                 idleReason = OBSTRUCTED_VOLTA;
                 return false;
             }
@@ -150,7 +153,7 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
         if (level != null) {
             IdleReason environment = checkEnvironment();
             if (environment != null) {
-                setIdleReason(environment);
+                environment.report(this);
                 return null;
             }
             boolean canSeeSky;
@@ -162,7 +165,8 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
                 refreshSky = 10;
             }
             if (!canSeeSky) {
-                setIdleReason(idleReason);
+                var reason = idleReason;
+                if (reason != null) reason.report(this);
                 return null;
             }
             return createGenerationRecipe(level, unit, (int) (basicRate * PlanetApi.API.getSolarPower(level)));
@@ -173,5 +177,26 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
     @Override
     public boolean alwaysSearchRecipe() {
         return true;
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        IdleReason environment = checkEnvironment();
+        if (environment != null) {
+            environment.collect(sink);
+            return;
+        }
+        var reason = idleReason;
+        if (!canSeeSky && reason != null) reason.collect(sink);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return BotaniaBlocks.motifDaybloom.asItem().getDescriptionId();
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { new ItemStack(BotaniaBlocks.motifDaybloom) };
     }
 }

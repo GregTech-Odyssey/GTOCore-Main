@@ -20,7 +20,9 @@ final class OrganTooltipsClient {
     /** 本地玩家身上的器官（由服务端同步）；还没进入世界时为 null。 */
     @Nullable
     static OrganInventory localOrgans() {
-        var player = Minecraft.getInstance().player;
+        var mc = Minecraft.getInstance();
+        if (!mc.isSameThread()) return null;
+        var player = mc.player;
         return player instanceof IEnhancedPlayer enhanced ? enhanced.getPlayerData().organs : null;
     }
 }

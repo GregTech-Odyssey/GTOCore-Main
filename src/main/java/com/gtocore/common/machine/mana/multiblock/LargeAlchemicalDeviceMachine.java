@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -145,8 +146,14 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", timeReduction()));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", timeReduction()));
         if (hasStructurePart(EXTENSION)) textList.add(Component.translatable("gtocore.machine.alchemical_device.2"));
         else textList.add(Component.translatable("gtocore.machine.alchemical_device.1"));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.duration_multiplier.tooltip", MultiblockPage.decimalText(this::timeReduction, ""));
     }
 }

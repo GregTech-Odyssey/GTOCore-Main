@@ -1,15 +1,21 @@
 package com.gtocore.common.recipe.condition;
 
 import com.gtocore.common.machine.electric.beam.BeamAccessPartMachine;
+import com.gtocore.data.IdleReason;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
+import com.gregtechceu.gtceu.api.machine.issue.IssueType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 
@@ -54,6 +60,37 @@ public final class BeamCondition extends RecipeCondition {
         if (hasPolarization) {
             info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.polarization", polarization));
         }
+    }
+
+    @Override
+    public IssueType getIssueType() {
+        return IdleReason.BEAM_INTENSITY.type();
+    }
+
+    @Override
+    public void reportFailure(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe, int index) {
+        holder.reportIssue(IdleReason.BEAM_INTENSITY.type(), IssueStage.CONDITION, IO.NONE, null, index, minIntensity, -1, recipe);
+    }
+
+    @Override
+    public @Nullable Component describeCurrent(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
+        if (!(holder instanceof IMultiController controller)) return null;
+        var samples = new HashMap<BeamAccessPartMachine.BeamKey, long[]>();
+        for (var part : controller.getParts()) {
+            if (part instanceof BeamAccessPartMachine receiver) receiver.collectRecentIntensitySamples(samples);
+        }
+        int minimumWavelength = Math.min(minWavelength, maxWavelength);
+        int maximumWavelength = Math.max(minWavelength, maxWavelength);
+        float requiredPolarization = normalizePolarizationDegrees(polarization);
+        long best = -1;
+        for (var entry : samples.entrySet()) {
+            var key = entry.getKey();
+            if (key.waveLength() < minimumWavelength || key.waveLength() > maximumWavelength) continue;
+            if (hasPolarization && Float.compare(key.polarization(), requiredPolarization) != 0) continue;
+            best = Math.max(best, average(entry.getValue()));
+        }
+        if (best < 0) return Component.translatable("gtocore.issue.current.no_beam");
+        return Component.translatable("gtocore.issue.current.beam", best);
     }
 
     @Override

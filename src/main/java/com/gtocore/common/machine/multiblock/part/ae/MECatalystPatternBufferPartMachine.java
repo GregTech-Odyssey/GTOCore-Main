@@ -9,13 +9,13 @@ import org.jetbrains.annotations.NotNull;
 
 public final class MECatalystPatternBufferPartMachine extends MEPatternBufferPartMachine {
 
-    public MECatalystPatternBufferPartMachine(MetaMachineBlockEntity holder) {
-        super(holder, 36);
+    public MECatalystPatternBufferPartMachine(MetaMachineBlockEntity holder, PatternBufferType type) {
+        super(holder, type);
     }
 
     @Override
     @NotNull
     NotifiableNotConsumableItemHandler createShareInventory() {
-        return new NotifiableCatalystHandler(this, 9, false);
+        return new NotifiableCatalystHandler(this, SHARE_SLOTS, false);
     }
 }

@@ -140,14 +140,14 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
         scene.setZoomButtons(true);
         scene.setOnMarker(this::onMarker);
         var back = Button.icon(UITheme.ARROW_LEFT).setOnClientClick(owner::requestBack);
-        back.setHoverTooltips(OverviewWidget.LANG_BACK);
+        back.tooltips(OverviewWidget.LANG_BACK);
         var tools = ZoomBar.of(scene, false).zoom(true).fit(ZoomBar.RESET).build();
         var close = Button.glyph("×").setOnClientClick(() -> {
             var player = Minecraft.getInstance().player;
             if (player != null) player.closeContainer();
         });
-        close.setHoverTooltips(MachineWindow.POPUP_CLOSE);
-        var titleRow = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(back, ItemView.of(icon),
+        close.tooltips(MachineWindow.POPUP_CLOSE);
+        var titleRow = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(back, ItemView.of(icon),
                 TextLine.constant(LayoutStyle.AUTO, Component.translatable(adapter.titleKey())).layout(l -> l.flex(1)),
                 tools, close);
         frame = new UIElement().layout(l -> l.column().paddingAll(UISizes.POPUP_PADDING).gapAll(UISizes.GAP));
@@ -174,7 +174,7 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
     }
 
     private static UIElement legendRow(Widget swatch, String key) {
-        return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+        return UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                 .addChildren(swatch, TextLine.translatable(LEGEND_TEXT, key).setColor(UITheme.PANEL_TEXT));
     }
 
@@ -230,7 +230,7 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
     }
 
     int panelMaxHeight() {
-        return Math.max(UISizes.SLOT, frameHeight() - UISizes.CONTROL_HEIGHT - 3 * UISizes.GAP - 2 * UISizes.POPUP_PADDING);
+        return Math.max(UISizes.SLOT_SIZE, frameHeight() - UISizes.CONTROL_HEIGHT - 3 * UISizes.GAP - 2 * UISizes.POPUP_PADDING);
     }
 
     BlockGetter world() {

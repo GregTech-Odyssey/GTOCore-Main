@@ -10,8 +10,8 @@ import com.gregtechceu.gtceu.api.cover.IUICover;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.PercentField;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
@@ -71,13 +71,13 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
 
     @Override
     public Widget createUIWidget() {
-        var duration = new PercentField(LayoutStyle.AUTO, () -> durationMultiplier, this::setDurationMultiplier,
-                () -> MIN_DURATION_MULTIPLIER, () -> MAX_MULTIPLIER, MIN_DURATION_MULTIPLIER, 100, 1000, 10000);
-        var energy = new PercentField(LayoutStyle.AUTO, () -> energyMultiplier, this::setEnergyMultiplier,
-                () -> MIN_ENERGY_MULTIPLIER, () -> MAX_MULTIPLIER, PercentField.DEFAULT_STEP, 1, 10, 100);
-        return CoverUIs.page().addChild(UIElement.section().addChildren(
-                CoverUIs.numberRow("gtocore.cover.creative_power_amplifier.duration", duration),
-                CoverUIs.numberRow("gtocore.cover.creative_power_amplifier.energy", energy)));
+        var duration = PercentField.of(LayoutStyle.AUTO, () -> durationMultiplier, this::setDurationMultiplier,
+                MIN_DURATION_MULTIPLIER, MAX_MULTIPLIER, MIN_DURATION_MULTIPLIER, 100, 1000, 10000);
+        var energy = PercentField.of(LayoutStyle.AUTO, () -> energyMultiplier, this::setEnergyMultiplier,
+                MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER, PercentField.DEFAULT_STEP, 1, 10, 100);
+        return Form.page().addChild(UIElement.section().addChildren(
+                Form.numberRow("gtocore.cover.creative_power_amplifier.duration", duration),
+                Form.numberRow("gtocore.cover.creative_power_amplifier.energy", energy)));
     }
 
     private void setDurationMultiplier(double durationMultiplier) {

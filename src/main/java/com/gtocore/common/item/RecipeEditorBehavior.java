@@ -35,15 +35,16 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -196,7 +197,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
-        return new ModularUI(176, 166, holder, entityPlayer).widget(new MachineWindow(this));
+        return MachineWindow.createUI(this, holder, entityPlayer);
     }
 
     /**
@@ -205,20 +206,20 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
      */
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
-        var page = UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH).gapAll(UISizes.SECTION_GAP));
+        var page = Form.page();
         page.addChild(slotArea());
         if (isGT) {
             var section = UIElement.section();
             section.addChildren(
-                    textRow("ID", new TextField(UISizes.BUTTON_WIDTH * 2, () -> machine.id, id -> machine.id = id)),
-                    CoverUIs.inlineNumberRow("Circuit", NumberField.of(LayoutStyle.AUTO, () -> machine.circuit, value -> machine.circuit = (int) value, 0, 32)),
-                    CoverUIs.inlineNumberRow("EUt", NumberField.of(LayoutStyle.AUTO, () -> machine.eut, value -> machine.eut = value, -Long.MAX_VALUE, Long.MAX_VALUE)),
-                    CoverUIs.inlineNumberRow("Duration", NumberField.of(LayoutStyle.AUTO, () -> machine.duration, value -> machine.duration = (int) value, 0, Integer.MAX_VALUE)),
-                    CoverUIs.inlineNumberRow("FurnaceTemp", NumberField.of(LayoutStyle.AUTO, () -> machine.temp, value -> machine.temp = (int) value, 0, Integer.MAX_VALUE)),
-                    CoverUIs.inlineNumberRow("MANAt", NumberField.of(LayoutStyle.AUTO, () -> machine.manat, value -> machine.manat = (int) value, Integer.MIN_VALUE, Integer.MAX_VALUE)));
+                    textRow("ID", TextField.of(UISizes.BUTTON_WIDTH * 2, () -> machine.id, id -> machine.id = id)),
+                    Form.inlineNumberRow("Circuit", NumberField.ofInt(LayoutStyle.AUTO, () -> machine.circuit, value -> machine.circuit = value, 0, 32)),
+                    Form.inlineNumberRow("EUt", NumberField.ofLong(LayoutStyle.AUTO, () -> machine.eut, value -> machine.eut = value, -Long.MAX_VALUE, Long.MAX_VALUE)),
+                    Form.inlineNumberRow("Duration", NumberField.ofInt(LayoutStyle.AUTO, () -> machine.duration, value -> machine.duration = value, 0, Integer.MAX_VALUE)),
+                    Form.inlineNumberRow("FurnaceTemp", NumberField.ofInt(LayoutStyle.AUTO, () -> machine.temp, value -> machine.temp = value, 0, Integer.MAX_VALUE)),
+                    Form.inlineNumberRow("MANAt", NumberField.ofInt(LayoutStyle.AUTO, () -> machine.manat, value -> machine.manat = value, Integer.MIN_VALUE, Integer.MAX_VALUE)));
             page.addChild(section);
         }
-        page.addChild(Button.text(LayoutStyle.AUTO, () -> "Export").setOnServerClick(this::exportRecipe));
+        page.addChild(Button.of(LayoutStyle.AUTO).bindClientText(() -> "Export").setOnServerClick(this::exportRecipe));
         return page;
     }
 
@@ -230,7 +231,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
     private UIElement slotArea() {
         var inputs = slotSide(machine.importItems, machine.importFluids, false);
         var outputs = slotSide(machine.exportItems, machine.exportFluids, true);
-        int sideWidth = Math.max(inputs.getLayoutStyle().declaredWidth(), outputs.getLayoutStyle().declaredWidth());
+        int sideWidth = Math.max(inputs.getLayoutStyle().getDeclaredWidth(), outputs.getLayoutStyle().getDeclaredWidth());
         inputs.layout(l -> l.width(sideWidth));
         outputs.layout(l -> l.width(sideWidth));
         var progress = new ProgressWidget(ProgressWidget.JEIProgress, 0, 0, RecipeSlots.PROGRESS_SIZE, RecipeSlots.PROGRESS_SIZE, machine.recipeType.getRecipeUI().getProgressBarTexture());
@@ -246,7 +247,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
         var itemSlots = new ArrayList<Widget>(items.getSlots());
         var transfer = ItemTransferHelperImpl.toItemTransfer(items);
         for (int i = 0; i < items.getSlots(); i++) {
-            var slot = new PhantomItemSlot(transfer, i).xeiPhantom();
+            var slot = PhantomItemSlot.of(transfer, i).xeiPhantom();
             addOverlay(slot, ui.getSlotOverlay(output, ItemRecipeInfo.INSTANCE, i == items.getSlots() - 1));
             itemSlots.add(slot);
         }
@@ -254,15 +255,15 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
         if (isGT) {
             for (int i = 0; i < fluids.getTanks(); i++) {
                 int tank = i;
-                var slot = new PhantomFluidSlot(fluids, tank, () -> fluids.getFluidInTank(tank), fluid -> fluids.setFluidInTank(tank, fluid)).xeiPhantom();
+                var slot = PhantomFluidSlot.of(fluids, tank, () -> fluids.getFluidInTank(tank), fluid -> fluids.setFluidInTank(tank, fluid)).xeiPhantom();
                 addOverlay(slot, ui.getSlotOverlay(output, FluidRecipeInfo.INSTANCE, i == fluids.getTanks() - 1));
                 fluidSlots.add(slot);
             }
         }
         int columns = Math.min(RecipeSlotLayouts.SIDE_COLUMNS, Math.max(itemSlots.size(), fluidSlots.size()));
-        var side = new UIElement().layout(l -> l.column().width(columns * UISizes.SLOT).alignCenter());
-        if (!itemSlots.isEmpty()) side.addChild(RecipeSlotLayouts.grid(itemSlots, RecipeSlotLayouts.SIDE_COLUMNS));
-        if (!fluidSlots.isEmpty()) side.addChild(RecipeSlotLayouts.grid(fluidSlots, RecipeSlotLayouts.SIDE_COLUMNS));
+        var side = new UIElement().layout(l -> l.column().width(columns * UISizes.SLOT_SIZE).alignCenter());
+        if (!itemSlots.isEmpty()) side.addChild(SlotGrid.of(RecipeSlotLayouts.SIDE_COLUMNS, itemSlots));
+        if (!fluidSlots.isEmpty()) side.addChild(SlotGrid.of(RecipeSlotLayouts.SIDE_COLUMNS, fluidSlots));
         return side;
     }
 
@@ -272,9 +273,9 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
 
     /** 区块里一行"名称 …… [输入框]"（开发工具，名称不翻译）。 */
     private static UIElement textRow(String label, TextField field) {
-        var name = TextLine.constant(0, Component.literal(label)).setColor(UITheme::panelText);
+        var name = TextLine.constant(0, Component.literal(label)).bindClientColor(UITheme::panelText);
         name.layout(l -> l.flex(1));
-        return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(name, field);
+        return UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(name, field);
     }
 
     /** 把当前内容导出成配方代码（GT 配方构建器或工作台有序合成），写进日志。只在服务端执行。 */

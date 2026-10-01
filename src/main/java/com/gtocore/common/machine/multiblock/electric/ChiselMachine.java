@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gtocore.data.IdleReason;
+
 import com.gtolib.api.machine.multiblock.CustomParallelMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
 
@@ -37,14 +39,21 @@ public final class ChiselMachine extends CustomParallelMultiblockMachine impleme
         });
         if (c.get() > 0 && item.get() != null) {
             List<Item> list = ChiselGroupLookup.getBlocksInGroup(item.get());
-            if (list.isEmpty()) return null;
+            if (list.isEmpty()) {
+                IdleReason.INVALID_INPUT.report(this);
+                return null;
+            }
             Item output = list.get(Math.min(list.size(), c.get()) - 1);
-            if (output == null) return null;
+            if (output == null) {
+                IdleReason.INVALID_INPUT.report(this);
+                return null;
+            }
             RecipeBuilder builder = getRecipeBuilder().duration(20).EUt(30);
             builder.inputItems(item.get());
             builder.outputItems(output);
             return builder.build();
         }
+        if (item.get() != null) IdleReason.SET_CIRCUIT.report(this);
         return null;
     }
 }

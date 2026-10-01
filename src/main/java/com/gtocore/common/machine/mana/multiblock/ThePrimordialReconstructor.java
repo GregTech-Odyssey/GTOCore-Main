@@ -3,6 +3,7 @@ package com.gtocore.common.machine.mana.multiblock;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.AffixCanvas;
 import com.gtocore.common.item.ApothItem;
+import com.gtocore.data.IdleReason;
 import com.gtocore.data.record.EnchantmentRecord;
 
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -12,6 +13,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -95,8 +97,14 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.model", circuit));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.model", circuit));
         textList.add(Component.translatable("gtocore.machine.the_primordial_reconstructor.mode." + circuit));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.model", MultiblockPage.numberText(() -> circuit, ""));
     }
 
     /**
@@ -935,6 +943,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
             case 12 -> recipe = getForcedRarityUpRecipe(unit);
             case 13 -> recipe = getForcedAddSocketRecipe(unit);
             case 14 -> recipe = getForcedMosaicGemRecipe(unit);
+            default -> IdleReason.SET_CIRCUIT.report(this);
         }
         return recipe;
     }

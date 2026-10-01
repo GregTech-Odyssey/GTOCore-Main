@@ -1,6 +1,7 @@
 package com.gtocore.api.machine;
 
 import com.gtocore.client.forge.ForgeClientEvent;
+import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.AbstractSpaceStation;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.Core;
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.ISpacePredicateMachine;
@@ -8,14 +9,18 @@ import com.gtocore.common.machine.multiblock.electric.space.spacestaion.ISpacePr
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
 import com.gtolib.api.machine.feature.multiblock.ICustomHighlightMachine;
+import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uipro.Level;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -109,11 +114,11 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
     @Override
     default GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (!PlanetApi.API.isSpace(getLevel())) {
-            IdleReason.SPACE_STATION_NOT_IN_SPACE.setReason(this);
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.report(this);
             return null;
         }
         if (getRoot() == null || !getRoot().isWorkspaceReady()) {
-            setIdleReason(this::getWorkspaceNotReadyReason);
+            reportWorkspaceNotReady(this);
             return null;
         }
 
@@ -121,12 +126,38 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
                 .build();
     }
 
+    @Override
+    default void collectStationIssues(IssueSink sink) {
+        var level = getLevel();
+        if (level == null) return;
+        if (!PlanetApi.API.isSpace(level)) {
+            IdleReason.SPACE_STATION_NOT_IN_SPACE.collect(sink);
+        } else if (getRoot() == null || !getRoot().isWorkspaceReady()) {
+            collectWorkspaceIssues(sink);
+        }
+    }
+
     default void customText(@NotNull List<Component> list) {
-        list.add(Component.translatable("gui.ae2.PowerUsageRate", "%s EU/t".formatted(FormattingUtil.formatNumbers(getEUt()))).withStyle(ChatFormatting.YELLOW));
+        boolean screen = MultiblockPage.isScreenText();
+        if (!screen) list.add(Component.translatable("gui.ae2.PowerUsageRate", "%s EU/t".formatted(FormattingUtil.formatNumbers(getEUt()))).withStyle(ChatFormatting.YELLOW));
         if (getRoot() != null) {
-            list.add(Component.translatable("gui.ae2.AttachedTo", "[" + getRoot().getPos().toShortString() + "]"));
+            if (!screen) list.add(Component.translatable("gui.ae2.AttachedTo", "[" + getRoot().getPos().toShortString() + "]"));
             getRoot().customText(list);
-        } else list.add(Component.translatable("theoneprobe.ae2.p2p_unlinked"));
+        } else if (!screen) list.add(Component.translatable("theoneprobe.ae2.p2p_unlinked"));
+    }
+
+    default void addStationReadouts(MultiblockPage page) {
+        page.addReading("gui.ae2.PowerUsageRate", MultiblockPage.numberText(this::getEUt, "EU/t"));
+        page.addLine(Core.CORE_MODULE, MultiblockPage.cached(() -> getRoot() == null ? Long.MAX_VALUE : getRoot().getPos().asLong(),
+                pos -> pos == Long.MAX_VALUE ? Component.translatable("theoneprobe.ae2.p2p_unlinked") : Component.literal("[" + BlockPos.of(pos).toShortString() + "]")))
+                .bindLevel(() -> getRoot() == null ? Level.WARNING : Level.NORMAL)
+                .bindDetail(MultiblockPage.cached(() -> getRoot() == null ? 0 : getRoot().getEUt(),
+                        eut -> eut == 0 ? Component.empty() : Component.translatable("gui.ae2.PowerUsageRate", FormattingUtil.formatNumbers(eut) + " EU/t")));
+        page.addReading("gtocore.machine.spacestation.ready", MultiblockPage.numberText(() -> getRoot() == null ? 0 : Math.min(getRoot().getReadyCount() * 10, 100), ""));
+        page.addReading(TierCasingTrait.getTierTranslationKey(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER.name),
+                MultiblockPage.numberText(() -> getRoot() == null ? 0 : getRoot().getCasingTiers().getInt(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER), ""));
+        page.addReading("gtocore.machine.spacestation.energy_consumption.total", MultiblockPage.numberText(() -> getRoot() == null ? 0 : getRoot().getTotalEUt(), ""));
+        page.addReading("gtocore.machine.spacestation.module_count", MultiblockPage.numberText(() -> getRoot() == null ? 0 : getRoot().getModuleCount(), ""));
     }
 
     enum ConnectType {

@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.machine.multiblock.part.SpoolHatchPartMachine;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -9,11 +10,15 @@ import com.gtolib.api.machine.multiblock.CoilMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -27,7 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @DataGeneratorScanned
-public final class DrawingTowerMachine extends CoilMultiblockMachine {
+public final class DrawingTowerMachine extends CoilMultiblockMachine implements IIssueProvider {
 
     @RegisterLanguage(cn = "拉丝段层数", en = "Drawing Layers")
     public static final String LAYERS_NAME = "gtocore.multiblock.drawing_tower.layers";
@@ -89,15 +94,31 @@ public final class DrawingTowerMachine extends CoilMultiblockMachine {
             recipe.duration = (int) (recipe.duration * reduction);
             return ParallelLogic.accurateParallel(this, unit, recipe, parallels);
         }
+        IdleReason.SPOOL.report(this, IssueStage.MODIFIER, recipe.data.getInt(GTORecipeDataKeys.SPOOL), tier, recipe.definition);
         return null;
     }
 
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("gtocore.machine.height", height));
         textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", reduction));
         textList.add(Component.translatable("gtocore.machine.parallel", parallels));
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        var hatch = spoolHatchPartMachine;
+        if (hatch != null && hatch.getInventory().storage.getStackInSlot(0).isEmpty()) IdleReason.SPOOL.collect(sink);
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.height", MultiblockPage.numberText(() -> height, ""));
+        page.addReading("gtocore.machine.duration_multiplier.tooltip", MultiblockPage.decimalText(() -> reduction, ""));
+        page.addReading("gtocore.machine.parallel", MultiblockPage.numberText(() -> parallels, ""));
     }
 
     private static int getItemTier(ItemStack item) {

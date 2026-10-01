@@ -13,14 +13,13 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiModule;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -72,16 +71,16 @@ public class BioOscillationElectricStimulator extends ElectricMultiblockMachine 
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable(BUTTON_SET_ELECTRICAL_STIMULATION, FormattingUtil.formatNumber2Places(stimulationLevel / 10f)).append(ComponentPanelWidget.withButton(Component.literal(" [-]"), "Sub")).append(ComponentPanelWidget.withButton(Component.literal(" [+]"), "Add")));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable(BUTTON_SET_ELECTRICAL_STIMULATION, FormattingUtil.formatNumber2Places(stimulationLevel / 10f)));
     }
 
     @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            var amount = clickData.isCtrlClick ? 100 : (clickData.isShiftClick ? 10 : 1);
-            stimulationLevel = Mth.clamp(stimulationLevel + ("Add".equals(componentData) ? amount : -amount), 0, 1000);
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addDecimal(STIMULATION_INTENSITY, () -> stimulationLevel / 10.0, value -> {
+            stimulationLevel = (int) Math.round(value * 10);
             getRecipeLogic().updateTickSubscription();
-        }
+        }, 0, 100, 0.1);
     }
 
     @RegisterLanguage(cn = "组织等级：§b%s§r", en = "Tissue tier: §b%s§r")
@@ -132,6 +131,18 @@ public class BioOscillationElectricStimulator extends ElectricMultiblockMachine 
     public static final String BUTTON_SET_ELECTRICAL_STIMULATION = "gtocore.biooscillation.button.set.electrical.stimulation";
     @RegisterLanguage(cn = "通过界面调整电刺激强度，范围为0%%至100%%；每次完整的电刺激过程持续%s秒", en = "Adjust the electrical stimulation intensity through the interface, ranging from 0% to 100%; each complete electrical stimulation process lasts for %s seconds")
     public static final String BUTTON_SET_ELECTRICAL_STIMULATION_DESC = "gtocore.biooscillation.button.set.electrical.stimulation.desc";
+    @RegisterLanguage(cn = "电刺激强度（%%）", en = "Electrical Stimulation Intensity (%%)")
+    private static final String STIMULATION_INTENSITY = "gtocore.biooscillation.stimulation_intensity";
+    @RegisterLanguage(cn = "当前生物组织", en = "Current Biological Tissue")
+    static final String TISSUE_LABEL = "gtocore.biooscillation.tissue";
+    @RegisterLanguage(cn = "生长阶段", en = "Growth Stage")
+    static final String TISSUE_STAGE_LABEL = "gtocore.biooscillation.tissue.stage";
+    @RegisterLanguage(cn = "培养液营养可用率", en = "Culture Medium Nutrient Availability")
+    static final String NUTRIENT_AVAILABILITY_LABEL = "gtocore.biooscillation.nutrient_availability";
+    @RegisterLanguage(cn = "培养液清空阈值（%%）", en = "Culture Medium Clearing Threshold (%%)")
+    static final String NUTRIENT_THRESHOLD_LABEL = "gtocore.biooscillation.nutrient_threshold";
+    @RegisterLanguage(cn = "营养可用率低于该值时，培养液将被清空", en = "When nutrient availability falls below this value, the culture medium is cleared")
+    static final String NUTRIENT_THRESHOLD_TOOLTIP = "gtocore.biooscillation.nutrient_threshold.tooltip";
 
     @Override
     public void addedToController(@NotNull IMultiController controller) {

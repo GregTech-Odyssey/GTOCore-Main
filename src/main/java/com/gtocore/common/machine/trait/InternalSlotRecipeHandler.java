@@ -157,7 +157,7 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         protected GTRecipeType getEffectiveRecipeType(GTRecipeType recipeType) {
-            final var type = slot.machine.recipeType;
+            final var type = slot.machine.getEffectiveRecipeType();
             if (type != null && type != recipeType) {
                 return type;
             }

@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
@@ -132,14 +133,25 @@ public class DataFormTestingPlantMachine extends ElectricMultiblockMachine imple
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
+        boolean screen = MultiblockPage.isScreenText();
         if (mode == Mode.TESTING) {
             textList.add(Component.translatable(LANG_TESTING));
+            if (screen) return;
             textList.add(Component.translatable(LANG_TESTING_FRAGMENTATION, fragmentation));
             textList.add(Component.translatable(LANG_TESTING_PROGRESS, currentKey == null ? Component.translatable("gtocore.data.empty") : currentKey.getDisplayName()));
         } else if (mode == Mode.ANALYZING) {
             textList.add(Component.translatable(LANG_ANALYZING));
+            if (screen) return;
             textList.add(Component.translatable(LANG_EXPECTED_TOTAL_DATA, FormattingUtil.formatNumberReadable(points)));
         }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(LANG_TESTING_FRAGMENTATION, MultiblockPage.numberText(() -> fragmentation, ""));
+        page.addReading(LANG_TESTING_PROGRESS, MultiblockPage.cachedRef(() -> currentKey, key -> key == null ? Component.translatable("gtocore.data.empty") : key.getDisplayName()));
+        page.addReading(LANG_EXPECTED_TOTAL_DATA, MultiblockPage.cached(() -> points, value -> Component.literal(FormattingUtil.formatNumberReadable(value))));
     }
 
     public long insert(AEKey what, long amount, Actionable act) {

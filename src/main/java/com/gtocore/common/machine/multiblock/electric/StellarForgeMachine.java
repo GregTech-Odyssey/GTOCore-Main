@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -15,6 +16,7 @@ import com.gtolib.utils.explosion.SphereExplosion;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -82,6 +84,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
         if (manat < 0) {
             if (!hasStructurePart(MAGIC_MODULE)) {
                 consecutiveRecipes = 0;
+                IdleReason.MAGIC_MODULE_MISSING.report(this, IssueStage.MODIFIER, recipe.definition);
                 return null;
             }
             if (consecutiveRecipes > 1) {

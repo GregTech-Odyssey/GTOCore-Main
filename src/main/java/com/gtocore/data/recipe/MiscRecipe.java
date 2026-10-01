@@ -44,8 +44,6 @@ import net.minecraftforge.fluids.FluidStack;
 
 import earth.terrarium.adastra.common.registry.ModItems;
 
-import java.util.Arrays;
-
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTItems.*;
@@ -57,7 +55,7 @@ public final class MiscRecipe {
 
     public static void init() {
         int i = 0;
-        for (ResourceLocation layer : Arrays.stream(Dimension.values()).filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
+        for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
             i++;
             ItemStack stack = GTOItems.DIMENSION_DATA.get().getDimensionData(layer);
             int tier = DimensionDataItem.getDimensionMarker(stack).tier + 1;
@@ -73,7 +71,7 @@ public final class MiscRecipe {
 
         }
         int i1 = 0;
-        for (ResourceLocation hasGlobe : Arrays.stream(Dimension.values()).filter(d -> d.canGenerate() && d.isWithinGalaxy()).map(Dimension::getLocation).toList()) {
+        for (ResourceLocation hasGlobe : Dimension.all().stream().filter(d -> d.canGenerate() && d.isWithinGalaxy()).map(Dimension::getLocation).toList()) {
 
             Item globe = hasGlobe.getPath().equals("overworld") ? ModItems.EARTH_GLOBE.get() :
                     RegistriesUtils.getItem("ad_astra:" + hasGlobe.getPath() + "_globe");

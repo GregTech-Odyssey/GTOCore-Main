@@ -4,6 +4,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.part.ae.*;
+import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.common.machine.noenergy.MEDiskBoxMachine;
 import com.gtocore.common.machine.noenergy.VirtualIngredientProviderMachine;
 import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
@@ -21,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gtocore.utils.register.MachineRegisterUtils.machine;
 import static com.gtolib.api.registries.GTORegistration.GTM;
+import static com.gtolib.api.registries.GTORegistration.GTO;
 
 public final class GTAEMachines {
 
@@ -141,6 +143,36 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .register();
 
+    public static final MachineDefinition ME_TAG_FILTER_INPUT_BUS = machine("me_tag_filter_input_bus", "ME标签过滤输入总线", METagFilterInputBusPartMachine::new)
+            .langValue("ME Tag Filter Input Bus")
+            .tier(EV)
+            .abilities(PartAbility.IMPORT_ITEMS)
+            .allRotation()
+            .renderer(() -> new OverlayTieredMachineRenderer(EV, GTCEu.id("block/machine/part/me_item_bus.import")))
+            .tooltips(Component.translatable("gtceu.machine.item_bus.import.tooltip"),
+                    Component.translatable("gtceu.machine.me.item_import.tooltip"))
+            .tooltipsText("Automatically configures up to 18 networked item types matching the tags, most abundant first", "按标签自动配置网络中储量最多的至多18种物品")
+            .tooltipsText("A configured type is kept until it runs out in both the network and the bus", "已配置的种类在网络和总线内都耗尽前不会更换")
+            .tooltips(Component.translatable("gtceu.machine.me.copy_paste.tooltip"),
+                    Component.translatable("gtceu.part_sharing.enabled"))
+            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+            .register();
+
+    public static final MachineDefinition ME_TAG_FILTER_INPUT_HATCH = machine("me_tag_filter_input_hatch", "ME标签过滤输入仓", METagFilterInputHatchPartMachine::new)
+            .langValue("ME Tag Filter Input Hatch")
+            .tier(EV)
+            .abilities(PartAbility.IMPORT_FLUIDS)
+            .allRotation()
+            .renderer(() -> new OverlayTieredMachineRenderer(EV, GTCEu.id("block/machine/part/me_fluid_hatch.import")))
+            .tooltips(Component.translatable("gtceu.machine.fluid_hatch.import.tooltip"),
+                    Component.translatable("gtceu.machine.me.fluid_import.tooltip"))
+            .tooltipsText("Automatically configures up to 18 networked fluid types matching the tags, most abundant first", "按标签自动配置网络中储量最多的至多18种流体")
+            .tooltipsText("A configured type is kept until it runs out in both the network and the hatch", "已配置的种类在网络和仓内都耗尽前不会更换")
+            .tooltips(Component.translatable("gtceu.machine.me.copy_paste.tooltip"),
+                    Component.translatable("gtceu.part_sharing.enabled"))
+            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+            .register();
+
     public static final MachineDefinition ME_REQUESTABLE_INPUT_BUS_MACHINE = machine("me_requestable_input_bus_machine", "ME可请求输入总线", MERequestableInputBusMachine::new)
             .langValue("ME Requestable Input Bus")
             .tooltips(GTOMachineTooltips.meRequestableInputBusTooltips)
@@ -204,46 +236,36 @@ public final class GTAEMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 
-    public static final MachineDefinition ME_CATALYST_ME_PATTERN_BUFFER = machine("me_catalyst_pattern_buffer", "ME催化剂样板总成", MECatalystPatternBufferPartMachine::new)
-            .langValue("ME Catalyst Pattern Buffer")
-            .tooltips(GTOMachineTooltips.MeCatalystPatternBufferTooltips)
-            .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(36))
-            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+    public static final MachineDefinition ME_CATALYST_ME_PATTERN_BUFFER = PatternBufferType.builder(GTO, "me_catalyst_pattern_buffer")
+            .name("ME催化剂样板总成", "ME Catalyst Pattern Buffer")
+            .slots(36)
             .tier(ZPM)
-            .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
-            .renderer(() -> new OverlayTieredMachineRenderer(ZPM, GTCEu.id("block/machine/part/me_pattern_buffer")))
+            .machine(MECatalystPatternBufferPartMachine::new)
+            .tooltips(GTOMachineTooltips.MeCatalystPatternBufferTooltips)
             .register();
 
-    public static final MachineDefinition ME_WILDCARD_PATTERN_BUFFER = machine("me_wildcard_pattern_buffer", "ME通配符样板总成", MEWildcardPatternBufferPartMachine::new)
-            .langValue("ME Wildcard Pattern Buffer")
+    public static final MachineDefinition ME_WILDCARD_PATTERN_BUFFER = PatternBufferType.builder(GTO, "me_wildcard_pattern_buffer")
+            .name("ME通配符样板总成", "ME Wildcard Pattern Buffer")
+            .slots(1)
+            .tier(UHV)
+            .texture(GTOCore.id("block/machine/part/me_pattern_buffer_red"))
+            .machine(MEWildcardPatternBufferPartMachine::new)
             .tooltips(GTOMachineTooltips.MeWildcardPatternBufferTooltips)
-            .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(1))
-            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
-            .tier(UHV)
-            .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
-            .renderer(() -> new OverlayTieredMachineRenderer(UHV, GTOCore.id("block/machine/part/me_pattern_buffer_red")))
+            .noRecipeCacheButtons()
             .register();
 
-    public static final MachineDefinition ME_EXTEND_PATTERN_BUFFER = machine("me_extend_pattern_buffer", "ME扩展样板总成", h -> new MEPatternBufferPartMachine(h, 108))
-            .langValue("ME Extend Pattern Buffer")
+    public static final MachineDefinition ME_EXTEND_PATTERN_BUFFER = PatternBufferType.builder(GTO, "me_extend_pattern_buffer")
+            .name("ME扩展样板总成", "ME Extend Pattern Buffer")
+            .slots(108)
             .tier(UV)
-            .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(108))
-            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
-            .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
-            .renderer(() -> new OverlayTieredMachineRenderer(UV, GTCEu.id("block/machine/part/me_pattern_buffer")))
+            .upgradable()
             .register();
 
-    public static final MachineDefinition ME_EXTEND_PATTERN_BUFFER_ULTRA = machine("me_extend_pattern_buffer_ultra", "ME扩展样板总成 Ultra", h -> new MEPatternBufferPartMachine(h, 324))
-            .langValue("ME Extend Pattern Buffer Ultra")
-            .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(324))
-            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+    public static final MachineDefinition ME_EXTEND_PATTERN_BUFFER_ULTRA = PatternBufferType.builder(GTO, "me_extend_pattern_buffer_ultra")
+            .name("ME扩展样板总成 Ultra", "ME Extend Pattern Buffer Ultra")
+            .slots(324)
             .tier(UHV)
-            .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
-            .renderer(() -> new OverlayTieredMachineRenderer(UHV, GTCEu.id("block/machine/part/me_pattern_buffer")))
+            .upgradable()
             .register();
 
     public static final MachineDefinition MUFFLER_HATCH_ME = machine("me_muffler_hatch", "ME消声仓", MEMufflerHatchPartMachine::new)
@@ -350,17 +372,11 @@ public final class GTAEMachines {
             .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
             .register();
 
-    public static final MachineDefinition ME_PATTERN_BUFFER = GTM
-            .machine("me_pattern_buffer", h -> new MEPatternBufferPartMachine(h, 36))
+    public static final MachineDefinition ME_PATTERN_BUFFER = PatternBufferType.builder(GTM, "me_pattern_buffer")
+            .name("ME样板总成", "ME Pattern Buffer")
+            .slots(36)
             .tier(LuV)
-            .allRotation()
-            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
-            .allRotation()
-            .overlayTieredHullRenderer("me_pattern_buffer")
-            .langValue("ME Pattern Buffer")
-            .genLang("ME样板总成")
-            .tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(36))
-            .tooltips(GTOMachineTooltips.AutoConnectMETooltips)
+            .upgradable()
             .register();
 
     public static final MachineDefinition ME_PATTERN_BUFFER_PROXY = GTM

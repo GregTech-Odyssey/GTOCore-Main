@@ -6,6 +6,7 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
+import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 
@@ -15,11 +16,16 @@ import dev.toma.configuration.config.Configurable;
 import dev.toma.configuration.config.UpdateRestrictions;
 import dev.toma.configuration.config.format.ConfigFormats;
 import dev.toma.configuration.config.io.ConfigIO;
+import dev.toma.configuration.config.validate.NumberRange;
 import dev.toma.configuration.config.value.ConfigValue;
+import dev.toma.configuration.config.value.INumericValue;
 import dev.toma.configuration.config.value.ObjectValue;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
+
+import java.util.Map;
+import java.util.Objects;
 
 import static dev.toma.configuration.config.ConfigHolder.getConfig;
 
@@ -160,6 +166,7 @@ public final class GTOConfig {
             ConfigHolder.INSTANCE.gameplay.hazardsEnabled = false;
         }
         ConfigHolder.INSTANCE.dev.debug = INSTANCE.devMode.dev;
+        syncGTMConfigFile();
 
         MultiblockControllerMachine.sendMessage = INSTANCE.misc.sendMultiblockErrorMessages;
 
@@ -167,6 +174,37 @@ public final class GTOConfig {
     }
 
     public static void init() {}
+
+    private static void syncGTMConfigFile() {
+        getConfig(GTCEu.MOD_ID).ifPresent(config -> {
+            if (syncConfigValues(config.getValueMap(), ConfigHolder.INSTANCE)) ConfigIO.saveClientValues(config);
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean syncConfigValues(Map<String, ConfigValue<?>> values, Object owner) {
+        boolean changed = false;
+        for (var value : values.values()) {
+            Object memory;
+            try {
+                memory = owner.getClass().getField(value.getId()).get(owner);
+            } catch (ReflectiveOperationException e) {
+                continue;
+            }
+            if (value instanceof ObjectValue object) {
+                changed |= syncConfigValues(object.getActiveValue(), memory);
+            } else if (!Objects.deepEquals(value.getActiveValue(), memory) && isWithinRange(value, memory)) {
+                ((ConfigValue<Object>) value).forceSetValue(memory);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static boolean isWithinRange(ConfigValue<?> value, Object memory) {
+        return !(value instanceof INumericValue<?> numeric) || ((NumberRange) numeric.getRange()).isWithinRange((Number) memory);
+    }
 
     public static <T> void set(String fieldName, T value) {
         if (fieldName.contains(".")) {

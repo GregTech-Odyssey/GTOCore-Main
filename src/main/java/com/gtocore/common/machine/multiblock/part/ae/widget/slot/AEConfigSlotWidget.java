@@ -7,7 +7,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.uipro.ElementState;
-import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -31,8 +31,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget.drawSelectionOverlay;
 
 @DataGeneratorScanned
 public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
@@ -62,6 +60,7 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        if (this.select) UIDraw.selectionFrame(graphics, getPosition().x, getPosition().y, 18, 18);
         super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
         IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
         boolean overConfig = mouseOverConfig(mouseX, mouseY);
@@ -110,27 +109,24 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
     }
 
     /**
-     * 上下两格的底图：{@code slot} 是物品槽或流体槽的标准底图；上格可从 EMI 拖入时画下箭头标记（{@link UITheme#drawXeiPhantom}）。
-     * 点不了的格子不压暗，保持原色、叠统一的禁用斜纹（{@link UITheme#drawDisabled}）。
+     * 上下两格的底图：{@code slot} 是物品槽或流体槽的标准底图；上格可从 EMI 拖入时画下箭头标记（{@link UIDraw#xeiPhantomMark}）。
+     * 点不了的格子不压暗，保持原色、叠统一的禁用斜纹（{@link UIDraw#disabledHatch}）。
      */
     @OnlyIn(Dist.CLIENT)
     void drawSlots(GuiGraphics graphics, int mouseX, int mouseY, IGuiTexture slot, boolean darkSlot) {
         Position position = getPosition();
         slot.draw(graphics, mouseX, mouseY, position.x, position.y, 18, 18);
-        if (isXeiPhantom()) UITheme.drawXeiPhantom(graphics, position.x, position.y, 18, 18, darkSlot);
+        if (isXeiPhantom()) UIDraw.xeiPhantomMark(graphics, position.x, position.y, 18, 18, darkSlot);
         slot.draw(graphics, mouseX, mouseY, position.x, position.y + 18, 18, 18);
-        if (this.select) UITheme.drawSelection(graphics, position.x, position.y, 18, 18);
     }
 
     /** 内容画完后：只读格叠斜纹；可操作的上格悬停时高亮。 */
     @OnlyIn(Dist.CLIENT)
     void drawStates(GuiGraphics graphics, int mouseX, int mouseY) {
         Position position = getPosition();
-        if (isConfigDisabled()) UITheme.drawDisabled(graphics, position.x, position.y, 18, 18);
-        if (isStockDisabled()) UITheme.drawDisabled(graphics, position.x, position.y + 18, 18, 18);
-        if (mouseOverConfig(mouseX, mouseY) && !isConfigDisabled()) {
-            drawSelectionOverlay(graphics, position.x + 1, position.y + 1, 16, 16);
-        }
+        if (isConfigDisabled()) UIDraw.disabledHatch(graphics, position.x, position.y, 18, 18);
+        if (isStockDisabled()) UIDraw.disabledHatch(graphics, position.x, position.y + 18, 18, 18);
+        if (mouseOverConfig(mouseX, mouseY) && !isConfigDisabled()) UIDraw.hoverOverlay(graphics, position.x, position.y, 18, 18);
     }
 
     boolean mouseOverConfig(double mouseX, double mouseY) {

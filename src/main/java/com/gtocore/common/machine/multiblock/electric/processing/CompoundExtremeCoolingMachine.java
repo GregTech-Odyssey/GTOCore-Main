@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.electric.processing;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -11,6 +12,9 @@ import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -23,6 +27,8 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.Level;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -38,7 +44,7 @@ import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 @DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMachine {
+public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMachine implements IIssueProvider {
 
     @RegisterLanguage(cn = "等离子冷凝翼", en = "Plasma Condensing Wings")
     private static final String WINGS_NAME = "gtocore.multiblock.compound_extreme_cooling_unit.wings";
@@ -48,6 +54,12 @@ public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMa
     private static final String WINGS_BUILT = "gtocore.multiblock.compound_extreme_cooling_unit.wings.built";
     @RegisterLanguage(cn = "等离子冷凝翼：未搭建，无法运行等离子冷凝配方", en = "Plasma Condensing Wings: Not built; plasma condensing recipes are unavailable")
     private static final String WINGS_MISSING = "gtocore.multiblock.compound_extreme_cooling_unit.wings.missing";
+    @RegisterLanguage(cn = "已搭建", en = "Built")
+    private static final String WINGS_BUILT_VALUE = "gtocore.multiblock.compound_extreme_cooling_unit.wings.built_value";
+    @RegisterLanguage(cn = "未搭建", en = "Not built")
+    private static final String WINGS_MISSING_VALUE = "gtocore.multiblock.compound_extreme_cooling_unit.wings.missing_value";
+    private static final Component BUILT_TEXT = Component.translatable(WINGS_BUILT_VALUE);
+    private static final Component MISSING_TEXT = Component.translatable(WINGS_MISSING_VALUE);
 
     public static final ParamKey PLASMA_WINGS = ParamKey.of(WINGS_NAME, WINGS_DESC);
     private static final PortKey WING_OUT = PortKey.of("wing_out");
@@ -59,14 +71,41 @@ public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMa
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
-        if (recipe.recipeType == GTORecipeTypes.PLASMA_CONDENSER_RECIPES && (!hasStructurePart(PLASMA_WINGS) || getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES)) return false;
+        if (recipe.recipeType == GTORecipeTypes.PLASMA_CONDENSER_RECIPES) {
+            if (getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES) {
+                IdleReason.NOT_APPLICABLE.report(this, IssueStage.CONDITION, recipe);
+                return false;
+            }
+            if (!hasStructurePart(PLASMA_WINGS)) {
+                IdleReason.PLASMA_WINGS_MISSING.report(this, IssueStage.CONDITION, recipe);
+                return false;
+            }
+        }
         return super.checkConditions(unit, recipe);
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (getRecipeType() == GTORecipeTypes.PLASMA_CONDENSER_RECIPES && !hasStructurePart(PLASMA_WINGS)) IdleReason.PLASMA_WINGS_MISSING.collect(sink);
     }
 
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable(hasStructurePart(PLASMA_WINGS) ? WINGS_BUILT : WINGS_MISSING));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable(hasStructurePart(PLASMA_WINGS) ? WINGS_BUILT : WINGS_MISSING));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(WINGS_NAME, () -> hasStructurePart(PLASMA_WINGS) ? BUILT_TEXT : MISSING_TEXT)
+                .bindLevel(this::wingsLevel)
+                .tooltips(WINGS_DESC);
+    }
+
+    private Level wingsLevel() {
+        if (hasStructurePart(PLASMA_WINGS)) return Level.GOOD;
+        return getRecipeType() == GTORecipeTypes.PLASMA_CONDENSER_RECIPES ? Level.WARNING : Level.NORMAL;
     }
 
     public static Structure structure(MultiblockMachineDefinition definition) {

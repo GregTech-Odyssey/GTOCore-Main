@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 
@@ -126,7 +127,7 @@ public class MEDualOutputPartMachine extends StatusTrackedMEPartMachine {
 
     /** 页面：物品、流体两块"等待输出"网格（每行 9 格，只读）。 */
     private UIElement buildPage() {
-        return MEPartUI.page().addChildren(
+        return Form.page().addChildren(
                 MEPartUI.waitingList("me.dual_output.items", this.internalBuffer, false, WAITING_ITEMS),
                 MEPartUI.waitingList("me.dual_output.fluids", this.internalTankBuffer, true, WAITING_FLUIDS));
     }

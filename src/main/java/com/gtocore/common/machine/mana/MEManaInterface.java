@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -174,10 +175,10 @@ public final class MEManaInterface extends MetaMachine implements
     /** 页面：AE 优先级（悬停看提取 / 存入优先级说明）。 */
     private UIElement buildPage() {
         var section = UIElement.section();
-        section.addChild(MEPartUI.numberRow("gui.ae2.Priority",
+        section.addChild(Form.numberRow("gui.ae2.Priority",
                 MEPatternPartUI.intField(0, this::getPriority, value -> setPriority(Math.min(value, PRIORITY_LIMIT)), -PRIORITY_LIMIT),
                 "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
-        return MEPartUI.page().addChild(section);
+        return Form.page().addChild(section);
     }
 
     private void setPriority(int integer) {

@@ -1,5 +1,17 @@
 {
-  "tier_separator_color": "#40000000",
+  "tier": {
+    "band_even": "#FFC4C4C4",
+    "band_odd": "#FFB6B6B6",
+    "header_even": "#FFB0B0B0",
+    "header_odd": "#FFA0A0A0",
+    "header_shade": "#FF555555",
+    "header_divider": "#FF8B8B8B",
+    "header_text": "#FF404040"
+  },
+  "grid": {
+    "line": "#26FFFFFF",
+    "cross": "#66FFFFFF"
+  },
   "hovered_dependency_line_color": "#FFFFC83D",
   "node": {
     "locked_fill": "#FF8B8B8B",
@@ -17,10 +29,10 @@
     "hover_overlay": "#50FFFFFF"
   },
   "dependency_lines": {
-    "default": "#FF8A8A8A",
+    "default": "#FF6E6E6E",
     "node_unlocked": "#FF3E8E2E",
     "node_available": "#FFC49A1A",
-    "prerequisite_unlocked": "#FF5C5C5C"
+    "prerequisite_unlocked": "#FF4C4C4C"
   },
   "details": {
     "cwu_bar_fill": "#FF6FD0C8"

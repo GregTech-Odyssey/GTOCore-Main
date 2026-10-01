@@ -12,7 +12,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.network.chat.Component;
@@ -57,8 +56,7 @@ public enum MEWirelessMachineConfigurator implements IItemUIFactory, IAddInforma
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
         if (entityPlayer instanceof ServerPlayer player) WirelessSync.pushTo(player);
-        return new ModularUI(UISizes.WINDOW_WIDTH, UISizes.WINDOW_WIDTH, holder, entityPlayer)
-                .widget(new MachineWindow(WirelessConfiguratorUI.provider(entityPlayer, holder.hand)));
+        return MachineWindow.createUI(WirelessConfiguratorUI.provider(entityPlayer, holder.hand), holder, entityPlayer);
     }
 
     @Override

@@ -6,10 +6,10 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTOOrganItems;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.item.misc.OrganType;
-import com.gtocore.common.item.misc.TierOrganItem;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.player.OrganTier;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
@@ -57,11 +57,11 @@ public final class OrganRecipes {
                 'D', GTItems.FIELD_GENERATOR_EV.asStack(),
                 'E', new MaterialEntry(TagPrefix.ingot, GTMaterials.Titanium));
 
-        // 1~4 级身体器官：器官等级 n 用电压 2n（MV / EV / LuV / UHV）的部件，场发生器低一级
-        for (int organTier = 1; organTier <= TierOrganItem.MAX_TIER; organTier++) {
-            int tier = organTier << 1;
+        for (var organTier : OrganTier.all()) {
+            if (!organTier.isCraftable()) continue;
+            int tier = organTier.getCraftVoltage();
             // 1 级是 MV，还没有自动化，用量减半
-            int shift = organTier == 1 ? GTORules.RECIPE_TIER.level() - 1 : GTORules.RECIPE_TIER.level();
+            int shift = organTier == OrganTier.STANDARD ? GTORules.RECIPE_TIER.level() - 1 : GTORules.RECIPE_TIER.level();
             var motor = (Item) GTCraftingComponents.MOTOR.get(tier);
             var conveyor = (Item) GTCraftingComponents.CONVEYOR.get(tier);
             var pump = (Item) GTCraftingComponents.PUMP.get(tier);

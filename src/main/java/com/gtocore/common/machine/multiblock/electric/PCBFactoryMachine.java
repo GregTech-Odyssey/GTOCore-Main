@@ -8,14 +8,17 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
+import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
@@ -26,6 +29,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -56,6 +60,10 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
     private static final String SWARM_TIER = "gtocore.pcb_factory.swarm_tier";
     @RegisterLanguage(cn = "生效等级：%s（取结构等级与纳米蜂群等级中的较低者）", en = "Effective Tier: %s (lower of structure tier and nanoswarm tier)")
     private static final String EFFECTIVE_TIER = "gtocore.pcb_factory.effective_tier";
+    @RegisterLanguage(cn = "生效等级", en = "Effective Tier")
+    private static final String EFFECTIVE_TIER_NAME = "gtocore.machine.pcb_factory.effective_tier";
+    @RegisterLanguage(cn = "取结构等级与纳米蜂群等级中的较低者", en = "The lower of the structure tier and the nanoswarm tier")
+    private static final String EFFECTIVE_TIER_DESC = "gtocore.machine.pcb_factory.effective_tier.desc";
 
     @RegisterLanguage(cn = "二级扩展结构", en = "Tier 2 Extension")
     private static final String TIER2_NAME = "gtocore.multiblock.pcb_factory.tier2";
@@ -236,9 +244,15 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
     public GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         int tier = getEffectiveTier();
         if (tier < 2) {
-            if (recipe.getInputEUt() > 30719) return null;
+            if (recipe.getInputEUt() > 30719) {
+                IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, recipe.getInputEUt() > 491519 ? 3 : 2, tier, recipe.definition);
+                return null;
+            }
         } else if (tier < 3) {
-            if (recipe.getInputEUt() > 491519) return null;
+            if (recipe.getInputEUt() > 491519) {
+                IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.MODIFIER, 3, tier, recipe.definition);
+                return null;
+            }
         }
         recipe = GTORecipeModifiers.parallel(this, unit, recipe);
         if (recipe == null) return null;
@@ -248,8 +262,22 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable(STRUCTURE_TIER, structureTier));
         textList.add(Component.translatable(SWARM_TIER, machineTier));
         textList.add(Component.translatable(EFFECTIVE_TIER, getEffectiveTier()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(STRUCTURE_TIER, MultiblockPage.numberText(() -> structureTier, ""));
+        page.addReading(SWARM_TIER, MultiblockPage.numberText(() -> machineTier, ""));
+        page.addNumber(EFFECTIVE_TIER_NAME, this::getEffectiveTier, "").tooltips(EFFECTIVE_TIER_DESC);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return IStorageMultiblock.SLOT_NANITES;
     }
 }

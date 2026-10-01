@@ -37,11 +37,11 @@ public final class OrderItem implements IItemUIFactory, ICustomDescriptionId {
             var name = TextLine.of(0, () -> {
                 var target = getTarget(holder.getHeld());
                 return target.isEmpty() ? Component.translatable(NO_TARGET) : target.getHoverName();
-            }).setColor(UITheme::panelText);
+            }).bindClientColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
-            var slot = new PhantomItemSlot(new TargetSlot(holder), 0).xeiPhantom();
-            slot.setHoverTooltips(Component.translatable(TARGET));
-            var row = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(slot, name);
+            var slot = PhantomItemSlot.of(new TargetSlot(holder), 0).xeiPhantom();
+            slot.tooltips(TARGET);
+            var row = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter()).addChildren(slot, name);
             return UIElement.section(LayoutStyle.AUTO).layout(l -> l.minWidth(UISizes.CONTENT_WIDTH)).addChild(row);
         });
     }

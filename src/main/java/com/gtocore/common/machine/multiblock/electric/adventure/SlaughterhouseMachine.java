@@ -6,6 +6,8 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.item.ItemStackSet;
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
@@ -21,6 +23,8 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -34,6 +38,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -47,8 +52,6 @@ import appeng.util.Platform;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hollingsworth.arsnouveau.common.items.MobJarItem;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import dev.shadowsoffire.apotheosis.adventure.AdventureConfig;
 import dev.shadowsoffire.apotheosis.adventure.boss.ApothBoss;
 import dev.shadowsoffire.apotheosis.adventure.boss.BossRegistry;
@@ -67,9 +70,16 @@ import java.util.Set;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class SlaughterhouseMachine extends StorageMultiblockMachine implements ITierCasingMachine, ICustomRecipeLogicHolder {
+
+    @RegisterLanguage(cn = "刷怪蛋 / 生物罐 / Boss 召唤物", en = "Spawn Egg / Mob Jar / Boss Summoner")
+    private static final String SLOT_LABEL = "gtocore.machine.slaughterhouse.slot";
+
+    @RegisterLanguage(cn = "所用武器", en = "Weapon")
+    private static final String WEAPON = "gtocore.machine.slaughterhouse.weapon";
 
     private int attackDamage;
     private DamageSource damageSource;
@@ -190,9 +200,22 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("item.gtceu.tool.tooltip.attack_damage", attackDamage));
         textList.add(Component.translatable("gtocore.machine.slaughterhouse.active_weapon", activeWeapon.getDisplayName()));
-        textList.add(Component.translatable("gtocore.machine.slaughterhouse.filter_nbt").append(ComponentPanelWidget.withButton(Component.literal("[").append(filterNbt ? Component.translatable("gtocore.machine.on") : Component.translatable("gtocore.machine.off")).append(Component.literal("]")), "filter_nbt")));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("item.gtceu.tool.tooltip.attack_damage", MultiblockPage.numberText(() -> attackDamage, ""));
+        page.addLine(WEAPON, MultiblockPage.cachedRef(() -> activeWeapon, weapon -> weapon.isEmpty() ? Component.translatable("gtocore.data.empty") : weapon.getHoverName()));
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addToggle("gtocore.machine.slaughterhouse.filter_nbt", () -> filterNbt, value -> filterNbt = value);
     }
 
     @Override
@@ -209,17 +232,6 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
                 entity.kill();
         }
         super.onWorking();
-    }
-
-    @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            if (componentData.equals("filter_nbt")) {
-                filterNbt = !filterNbt;
-            } else {
-                super.handleDisplayClick(componentData, clickData);
-            }
-        }
     }
 
     private void getAllDeathLoot(Player player, ServerLevel level, LivingEntity entity, DamageSource source, LootParams.Builder lootParams, Set<ItemStack> itemStacks, int multiplier) {
@@ -269,12 +281,12 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (getLevel() instanceof ServerLevel serverLevel) {
             if (getTier() < 1) {
-                setIdleReason(IdleReason.VOLTAGE_TIER_NOT_SATISFIES);
+                IdleReason.VOLTAGE_TIER_NOT_SATISFIES.report(this, 1, getTier());
                 return null;
             }
             int c = unit.getCircuit(false);
             if (c != 1 && c != 2) {
-                setIdleReason(IdleReason.SET_CIRCUIT);
+                IdleReason.SET_CIRCUIT.report(this);
                 return null;
             }
             Player player = getFakePlayer(serverLevel);
@@ -333,5 +345,15 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     @Override
     public boolean alwaysSearchRecipe() {
         return true;
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { Items.ZOMBIE_SPAWN_EGG.getDefaultInstance(), Items.SKELETON_SPAWN_EGG.getDefaultInstance(), Items.CREEPER_SPAWN_EGG.getDefaultInstance() };
     }
 }

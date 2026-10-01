@@ -4,8 +4,14 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -19,7 +25,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class GreenhouseMachine extends ElectricMultiblockMachine {
+public final class GreenhouseMachine extends ElectricMultiblockMachine implements IIssueProvider {
 
     public GreenhouseMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -53,9 +59,15 @@ public final class GreenhouseMachine extends ElectricMultiblockMachine {
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         getGreenhouseLight();
         if (SkyLight == 0) {
+            reportIssue(GTIssues.NO_SUNLIGHT, IssueStage.CONDITION, IO.NONE, null, -1, 0, 0, recipe);
             return false;
         }
         return super.checkConditions(unit, recipe);
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (SkyLight == 0) sink.accept(GTIssues.NO_SUNLIGHT);
     }
 
     @Override
@@ -78,6 +90,12 @@ public final class GreenhouseMachine extends ElectricMultiblockMachine {
         if (getOffsetTimer() % 10 == 0) {
             getGreenhouseLight();
         }
-        textList.add(Component.translatable("gtocore.machine.greenhouse.SkyLight", SkyLight));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.greenhouse.SkyLight", SkyLight));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.greenhouse.SkyLight", MultiblockPage.numberText(() -> SkyLight, ""));
     }
 }

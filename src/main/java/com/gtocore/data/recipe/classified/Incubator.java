@@ -5,6 +5,7 @@ import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.player.OrganTier;
 import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -764,7 +765,7 @@ final class Incubator {
         INCUBATOR_RECIPES.builder("bio_cardiomyocyte_cluster")
                 .inputItems(GTItems.STEM_CELLS, 16)
                 .inputItems(GTOItems.BIOLOGICAL_CELLS, 4)
-                .inputItems(GTOOrganItems.tierOrgan(OrganType.HEART, 0), 1024)
+                .inputItems(GTOOrganItems.tierOrgan(OrganType.HEART, OrganTier.SPROUT), 1024)
                 .chancedOutput(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.asItem(), 300, 300)
                 .inputFluids(GTMaterials.Mutagen, 1000)
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)

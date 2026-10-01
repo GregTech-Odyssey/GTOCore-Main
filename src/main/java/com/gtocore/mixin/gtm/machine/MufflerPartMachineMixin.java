@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
@@ -255,6 +256,11 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
         var count = item.getCount();
         if (count == 0) return false;
         return count == 64 || item.getItem() != ItemMap.ASH.getItem();
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        IGTOMufflerMachine.collectMufflerIssues(this, sink);
     }
 
     @Override

@@ -3,12 +3,14 @@ package com.gtocore.api.gui.overview;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.uipro.ElementState;
+import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.Popup;
@@ -141,8 +143,8 @@ final class OverviewSelector {
                         page = Math.min(pages - 1, page + 1);
                         open();
                     }).disabled(() -> page >= pages - 1, null);
-                    section.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(prev,
-                            TextLine.constant(LayoutStyle.AUTO, Component.literal((page + 1) + " / " + pages)).alignCenter().layout(l -> l.flex(1)), next));
+                    section.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(prev,
+                            TextLine.constant(LayoutStyle.AUTO, Component.literal((page + 1) + " / " + pages)).setTextAlign(Horizontal.CENTER).layout(l -> l.flex(1)), next));
                 }
             }
             column.addChild(section);
@@ -170,7 +172,7 @@ final class OverviewSelector {
                         (float) Math.sqrt(dx * dx + dy * dy + dz * dz) * OverviewView.FIT);
             }
             addChild(thumb);
-            addChild(Label.of(definition.asStack()::getHoverName, TILE - 2));
+            addChild(Label.of(TILE - 2, definition.asStack()::getHoverName));
         }
 
         @Override
@@ -178,7 +180,7 @@ final class OverviewSelector {
             int x = getPositionX(), y = getPositionY(), w = getSizeWidth(), h = getSizeHeight();
             graphics.fill(x, y, x + w, y + h, enabled && isMouseOverElement(mouseX, mouseY) ? TILE_HOVER : TILE_IDLE);
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            if (!enabled) UITheme.drawDisabled(graphics, x, y, w, h);
+            if (!enabled) UIDraw.disabledHatch(graphics, x, y, w, h);
         }
 
         @Override

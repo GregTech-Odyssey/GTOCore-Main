@@ -1,20 +1,21 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.capability.IExtendWirelessEnergyContainerHolder;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
-import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
-import com.gregtechceu.gtceu.uiwidgets.display.DetailsTab;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -35,7 +36,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IExtendWirelessEnergyContainerHolder {
+public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IExtendWirelessEnergyContainerHolder, IIssueProvider {
 
     private static final BigInteger BASE = BigInteger.valueOf(5277655810867200L);
 
@@ -61,7 +62,6 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     private void update() {
-        oc = 0;
         long[] a = getFluidAmount(true, HYDROGEN, HELIUM);
         if (inputFluid(HYDROGEN, a[0])) {
             hydrogen += a[0];
@@ -69,14 +69,19 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
         if (inputFluid(HELIUM, a[1])) {
             helium += a[1];
         }
+        int circuit = 0;
         if (matchCircuit(4)) {
-            oc = 4;
+            circuit = 4;
         } else if (matchCircuit(3)) {
-            oc = 3;
+            circuit = 3;
         } else if (matchCircuit(2)) {
-            oc = 2;
+            circuit = 2;
         } else if (matchCircuit(1)) {
-            oc = 1;
+            circuit = 1;
+        }
+        if (circuit != oc) {
+            oc = circuit;
+            getRecipeLogic().updateTickSubscription();
         }
         tickSubs.updateSubscription();
     }
@@ -110,8 +115,7 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     BigInteger getStartupEnergy() {
-        if (oc == 0) return BigInteger.ZERO;
-        return BASE.multiply(BigInteger.ONE.shiftLeft(3 * oc - 1));
+        return startupEnergy(oc);
     }
 
     @Override
@@ -123,20 +127,44 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     @Nullable
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (tier < recipe.data.getInt(GTORecipeDataKeys.TIER)) {
-            setIdleReason(com.gtocore.data.IdleReason.SIMULATION_TIER);
-            return null;
-        }
-        if (getUUID() != null && hydrogen >= FLUID_PER_RUN && helium >= FLUID_PER_RUN && oc > 0) {
-            var container = getWirelessEnergyContainer();
-            if (container == null) return null;
-            if (container.getStorage().compareTo(getRecipeEnergy(recipe)) > 0) {
-                recipe.duration = recipe.duration >> (oc - 1);
-                return recipe;
-            }
-            setIdleReason(IdleReason.NO_EU);
+        int recipeTier = recipe.data.getInt(GTORecipeDataKeys.TIER);
+        if (!hasOwner()) {
+            IdleReason.NO_OWNER.report(this, IssueStage.MODIFIER, null);
+        } else if (oc <= 0) {
+            IdleReason.SET_CIRCUIT.report(this, IssueStage.MODIFIER, null);
+        } else if (hydrogen < FLUID_PER_RUN) {
+            IdleReason.HYDROGEN_RESERVE_SHORT.report(this, IssueStage.MODIFIER, FLUID_PER_RUN, hydrogen, null);
+        } else if (helium < FLUID_PER_RUN) {
+            IdleReason.HELIUM_RESERVE_SHORT.report(this, IssueStage.MODIFIER, FLUID_PER_RUN, helium, null);
+        } else if (tier < recipeTier) {
+            IdleReason.SIMULATION_TIER.report(this, IssueStage.MODIFIER, recipeTier, tier, null);
+        } else if (!gridAllows(recipeTier)) {
+            IdleReason.HARMONY_GRID_SHORT.report(this, IssueStage.MODIFIER, recipeTier, oc, null);
+        } else {
+            recipe.duration = recipe.duration >> (oc - 1);
+            return recipe;
         }
         return null;
+    }
+
+    boolean hasOwner() {
+        return getUUID() != null;
+    }
+
+    private boolean gridAllows(int recipeTier) {
+        var container = getWirelessEnergyContainer();
+        return container != null && container.getStorage().compareTo(recipeEnergy(oc, recipeTier)) > 0;
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (!isFormed()) return;
+        boolean owner = hasOwner();
+        if (!owner) IdleReason.NO_OWNER.collect(sink);
+        if (oc <= 0) IdleReason.SET_CIRCUIT.collect(sink);
+        if (hydrogen < FLUID_PER_RUN) IdleReason.HYDROGEN_RESERVE_SHORT.collect(sink, FLUID_PER_RUN, hydrogen);
+        if (helium < FLUID_PER_RUN) IdleReason.HELIUM_RESERVE_SHORT.collect(sink, FLUID_PER_RUN, helium);
+        if (owner && oc > 0 && !gridAllows(1)) IdleReason.HARMONY_GRID_SHORT.collect(sink, 1, oc);
     }
 
     @Override
@@ -156,13 +184,16 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     private BigInteger getRecipeEnergy(GTRecipe recipe) {
-        return getStartupEnergy().multiply(BigInteger.valueOf(recipeMultiplier(recipe.data.getInt(GTORecipeDataKeys.TIER))));
+        return recipeEnergy(oc, recipe.data.getInt(GTORecipeDataKeys.TIER));
     }
 
-    @Override
-    public void attachSideTabs(TabsWidget sideTabs) {
-        super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(0, DetailsTab.display(this));
+    public static BigInteger startupEnergy(int oc) {
+        if (oc <= 0) return BigInteger.ZERO;
+        return BASE.multiply(BigInteger.ONE.shiftLeft(3 * oc - 1));
+    }
+
+    public static BigInteger recipeEnergy(int oc, int recipeTier) {
+        return startupEnergy(oc).multiply(BigInteger.valueOf(recipeMultiplier(recipeTier)));
     }
 
     @Override

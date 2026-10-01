@@ -18,11 +18,14 @@ import com.gregtechceu.gtceu.api.gui.misc.ProspectorMode;
 import com.gregtechceu.gtceu.api.gui.widget.ProspectingMapWidget;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.item.ItemFilterBehaviour;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.RPC;
+import com.gregtechceu.gtceu.uipro.data.UIChannel;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.ChatFormatting;
@@ -32,11 +35,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
@@ -405,20 +412,9 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
                     .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
             return;
         }
-        if (getRecipeLogic().isDone())
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.done")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)));
-        else if (getRecipeLogic().isWorking())
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.working")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
-        else if (!this.isWorkingEnabled())
-            textList.add(Component.translatable("gtceu.multiblock.work_paused"));
-        if (getRecipeLogic().isInventoryFull())
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.invfull")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
-        if (!drainInput(true))
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.needspower")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+        MultiblockDisplayText.builder(textList, true)
+                .setWorkingStatusKeys("gtceu.multiblock.idling", "gtceu.multiblock.work_paused", "gtceu.multiblock.large_miner.working")
+                .addIssueLines(getRecipeLogic());
         textList.addAll(NewDataAttributes.LEVEL.create(tier).get());
         RecipeLogicProvider.getEUtTooltip(textList, energyPerTick, false, RecipeLogicProvider.getVoltage(getRecipeLogic()));
         textList.add(Component.translatable(PARALLEL, parallelMining));
@@ -476,17 +472,29 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
         return new AABB(pos1, pos2);
     }
 
-    private class ProspectorMap extends ProspectingMapWidget {
+    private record MiningRange(int xOffset, int zOffset, int xRadialLength, int zRadialLength) {}
+
+    private static final ByteStreamCodec<MiningRange> MINING_RANGE = ByteStreamCodec.composite(
+            ByteStreamCodec.INT_CODEC, MiningRange::xOffset,
+            ByteStreamCodec.INT_CODEC, MiningRange::zOffset,
+            ByteStreamCodec.INT_CODEC, MiningRange::xRadialLength,
+            ByteStreamCodec.INT_CODEC, MiningRange::zRadialLength,
+            MiningRange::new);
+
+    private class ProspectorMap extends ProspectingMapWidget implements UIChannel.Host {
 
         final Widget parent;
         boolean isDragging = false;
         double startX = 0, startY = 0;
         double lastX = 0, lastY = 0;
         WaypointItem startWaypoint = null;
+        private final UIChannel channel = new UIChannel(this);
+        private final RPC<MiningRange> rangeRequest;
 
         ProspectorMap(int x, int y, int width, int height, int radius, ProspectorMode<?> mode, int scale, Widget parent) {
             super(x, y, width, height, radius, mode, scale);
             this.parent = parent;
+            this.rangeRequest = addRPC(MINING_RANGE, (player, range) -> serverSetRange(range));
             this.itemList.setVisible(false).setActive(false);
             this.getContainedWidgets(false).stream()
                     .filter(w -> !(w instanceof ImageWidget))
@@ -545,16 +553,7 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
                     if (zRadialLength > maxRadius * 2 + 1) zRadialLength = maxRadius * 2 + 1;
                     if (Math.abs(xOffset) > maxRadius) xOffset = xOffset > 0 ? maxRadius : -maxRadius;
                     if (Math.abs(zOffset) > maxRadius) zOffset = zOffset > 0 ? maxRadius : -maxRadius;
-                    final int finalXOffset = xOffset;
-                    final int finalZOffset = zOffset;
-                    final int finalXRadialLength = xRadialLength;
-                    final int finalZRadialLength = zRadialLength;
-                    writeClientAction(16, buf -> {
-                        buf.writeInt(finalXOffset);
-                        buf.writeInt(finalZOffset);
-                        buf.writeInt(finalXRadialLength);
-                        buf.writeInt(finalZRadialLength);
-                    });
+                    rangeRequest.send(new MiningRange(xOffset, zOffset, xRadialLength, zRadialLength));
                     startWaypoint = null;
                     return true;
                 }
@@ -562,18 +561,54 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
             return super.mouseReleased(mouseX, mouseY, button);
         }
 
+        private void serverSetRange(MiningRange range) {
+            int maxLength = maxRadius * 2 + 1;
+            xOffset = Mth.clamp(range.xOffset(), -maxRadius, maxRadius);
+            zOffset = Mth.clamp(range.zOffset(), -maxRadius, maxRadius);
+            xRadialLength = Mth.clamp(range.xRadialLength(), 0, maxLength);
+            zRadialLength = Mth.clamp(range.zRadialLength(), 0, maxLength);
+            resetRecipe();
+            parent.detectAndSendChanges();
+        }
+
+        @Override
+        public UIChannel getChannel() {
+            return channel;
+        }
+
+        @Override
+        public void initWidget() {
+            super.initWidget();
+            channel.prime();
+        }
+
+        @Override
+        public void writeInitialData(FriendlyByteBuf buffer) {
+            super.writeInitialData(buffer);
+            channel.writeInitialData(buffer);
+        }
+
+        @Override
+        public void readInitialData(FriendlyByteBuf buffer) {
+            super.readInitialData(buffer);
+            channel.readInitialData(buffer);
+        }
+
+        @Override
+        public void detectAndSendChanges() {
+            super.detectAndSendChanges();
+            channel.detectAndSendChanges();
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
+            if (!channel.readUpdateInfo(id, buffer)) super.readUpdateInfo(id, buffer);
+        }
+
         @Override
         public void handleClientAction(int id, FriendlyByteBuf buffer) {
-            if (id == 16) {
-                xOffset = buffer.readInt();
-                zOffset = buffer.readInt();
-                xRadialLength = buffer.readInt();
-                zRadialLength = buffer.readInt();
-                resetRecipe();
-                parent.detectAndSendChanges();
-                return;
-            }
-            super.readUpdateInfo(id, buffer);
+            if (!channel.handleClientAction(id, buffer)) super.handleClientAction(id, buffer);
         }
     }
 }

@@ -7,6 +7,7 @@ import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gregtechceu.gtceu.uipro.animation.ColorMath;
 import com.gregtechceu.gtceu.uipro.animation.UIClock;
+import com.gregtechceu.gtceu.uipro.canvas.CanvasGrid;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasItem;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLayer;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLod;
@@ -15,11 +16,14 @@ import com.gregtechceu.gtceu.uipro.canvas.CanvasRect;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasRoute;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
 import com.gregtechceu.gtceu.uipro.canvas.ItemLayer;
-import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.render.UIPixels;
+import com.gregtechceu.gtceu.uipro.render.UIText;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -33,7 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 科技树在画布上的内容（只在客户端建）：从下往上依次是数据等级分区线、依赖连线、节点。
+ * 科技树在画布上的内容（只在客户端建）。
  * 坐标就是 {@link TechTreeLayout} 的布局坐标（世界单位），节点 {@link #NODE_SIZE} 见方；连线的走法由布局算好（{@link TechTreeAutoLayout}）。
  * <p>
  * 节点状态：已解锁、可解锁（静态高亮）、未解锁；另外数据中心正在研究的节点用青色呼吸，全树只有它会动，一眼能找到。
@@ -45,9 +49,10 @@ final class TechTreeScene {
     private static final int ICON_OFFSET = (NODE_SIZE - ICON_SIZE) / 2;
     private static final float LINE_WIDTH = 2;
     private static final float BORDER_WIDTH = 1;
-    /// 分区线与分区标题超出节点范围的距离
     private static final float TIER_MARGIN = 20;
-    private static final float TIER_DASH = 6, TIER_GAP = 4;
+    private static final int TIER_HEADER_HEIGHT = 12;
+    private static final float TIER_HEADER_WORLD = 12;
+    private static final int TIER_CROSS_ARM = 3;
 
     private TechTreeScene() {}
 
@@ -71,57 +76,173 @@ final class TechTreeScene {
             items.add(new NodeItem(view, node, i, TechTreeView.encodeNode(node), nodeRect(manager, node)));
         }
         for (var item : items.items()) item.resolvePrerequisites(indices);
-        canvas.addLayer(new TierLayer(layout, items.bounds()));
+        var tiers = new TierBands(canvas, layout, items.bounds());
+        canvas.addLayer(tiers.bands);
         canvas.addLayer(new EdgeLayer(view, layout, indices));
         canvas.addLayer(items);
+        canvas.addLayer(tiers.headers);
     }
 
     // ==================== 数据等级分区 ====================
 
-    /** 相邻两个数据等级之间一条竖直虚线，每个等级区域上方写"数据等级 N"。 */
-    private static final class TierLayer implements CanvasLayer {
+    /** 数据等级分区：整个画布按等级切成竖向色带（首尾两条延伸到无穷），深浅交替；标题条始终贴在视口顶部，文字按 1 倍像素画。 */
+    private static final class TierBands {
 
+        private final CanvasView canvas;
         private final List<TechTreeLayout.TierRegion> regions;
-        /// 分区线的横坐标（布局在分界处的通道里留好的位置，不与连线的竖段重合）
-        private final int[] separators;
-        /// 各分区的标题，建层时生成一次
+        private final float[] separators;
         private final Component[] labels;
+        private final Component[] shortLabels;
         @Nullable
         private final CanvasRect bounds;
-        private final float top, bottom;
 
-        private TierLayer(TechTreeLayout layout, @Nullable CanvasRect nodes) {
+        private TierBands(CanvasView canvas, TechTreeLayout layout, @Nullable CanvasRect nodes) {
+            this.canvas = canvas;
             this.regions = layout.tierRegions();
-            this.separators = layout.tierSeparators().toIntArray();
-            this.labels = new Component[regions.size()];
-            for (int i = 0; i < labels.length; i++) labels[i] = Component.translatable(TechNodeDetails.TIER_LABEL, regions.get(i).tier());
-            this.top = nodes == null ? 0 : nodes.y() - TIER_MARGIN;
-            this.bottom = nodes == null ? 0 : nodes.bottom() + TIER_MARGIN / 2;
-            // 标题在节点上方，算进内容范围（适应全部时不被切掉）
-            this.bounds = nodes == null || regions.size() < 2 ? null : CanvasRect.of(nodes.x(), top, nodes.width(), bottom - top);
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void draw(CanvasPainter painter, @Nullable CanvasItem hovered) {
-            if (regions.size() < 2) return;
-            var style = TechTreeStyle.get();
-            for (int x : separators) painter.dashedVLine(x, top, bottom, painter.px(1), TIER_DASH, TIER_GAP, style.tierSeparatorColor);
-            if (painter.lod() != CanvasLod.FULL) return;
-            painter.flush();
-            var font = Minecraft.getInstance().font;
-            var graphics = painter.graphics();
-            for (int i = 0; i < labels.length; i++) {
-                var region = regions.get(i);
-                if (!painter.isVisible(region.minX(), top, region.maxX() + NODE_SIZE - region.minX(), TIER_MARGIN)) continue;
-                graphics.drawString(font, labels[i], region.minX(), (int) top, UITheme.TEXT_SECONDARY, false);
+            int count = regions.size();
+            this.separators = new float[Math.max(0, count - 1)];
+            for (int i = 0; i < separators.length; i++) separators[i] = layout.tierSeparators().getInt(i);
+            this.labels = new Component[count];
+            this.shortLabels = new Component[count];
+            for (int i = 0; i < count; i++) {
+                String tier = Integer.toString(regions.get(i).tier());
+                labels[i] = Component.translatable(TechNodeDetails.TIER).append(" " + tier);
+                shortLabels[i] = Component.literal(tier);
             }
+            this.bounds = nodes == null || count < 2 ? null :
+                    CanvasRect.of(nodes.x(), nodes.y() - TIER_MARGIN - TIER_HEADER_WORLD, nodes.width(), nodes.height() + 2 * TIER_MARGIN + TIER_HEADER_WORLD);
         }
 
-        @Override
+        @OnlyIn(Dist.CLIENT)
+        private void toScreen(CanvasPainter painter) {
+            float scale = painter.scale();
+            var view = canvas.visibleRect();
+            var pose = painter.graphics().pose();
+            pose.scale(1 / scale, 1 / scale, 1);
+            pose.translate(-UIPixels.snap(canvas.viewportX() - view.x() * scale), -UIPixels.snap(canvas.viewportY() - view.y() * scale), 0);
+        }
+
+        private boolean shown() {
+            return bounds != null;
+        }
+
+        private int[] laneEdges(float scale, CanvasRect view, int vx, int vw) {
+            int count = regions.size();
+            int[] xs = new int[count + 1];
+            xs[0] = vx;
+            xs[count] = vx + vw;
+            for (int i = 1; i < count; i++) xs[i] = Mth.clamp(Math.round(vx + (separators[i - 1] - view.x()) * scale), vx, vx + vw);
+            return xs;
+        }
+
+        private final CanvasLayer bands = new CanvasLayer() {
+
+            @Override
+            @OnlyIn(Dist.CLIENT)
+            public void draw(CanvasPainter painter, @Nullable CanvasItem hovered) {
+                var style = TechTreeStyle.get();
+                var pose = painter.graphics().pose();
+                var view = canvas.visibleRect();
+                int vx = canvas.viewportX(), vy = canvas.viewportY(), vw = canvas.viewportWidth(), vh = canvas.viewportHeight();
+                painter.flush();
+                pose.pushPose();
+                toScreen(painter);
+                if (shown()) {
+                    int[] xs = laneEdges(painter.scale(), view, vx, vw);
+                    for (int i = 0; i < regions.size(); i++) {
+                        painter.fill(xs[i], vy, xs[i + 1], vy + vh, (i & 1) == 0 ? style.tierBandEven : style.tierBandOdd);
+                    }
+                    painter.flush();
+                }
+                Backdrop.draw(painter, style, view, vx, vy, vw, vh);
+                pose.popPose();
+            }
+
+            @Override
+            @Nullable
+            public CanvasRect bounds() {
+                return bounds;
+            }
+        };
+
+        private final CanvasLayer headers = new CanvasLayer() {
+
+            @Override
+            @OnlyIn(Dist.CLIENT)
+            public void draw(CanvasPainter painter, @Nullable CanvasItem hovered) {
+                if (!shown()) return;
+                var style = TechTreeStyle.get();
+                var graphics = painter.graphics();
+                var pose = graphics.pose();
+                var font = Minecraft.getInstance().font;
+                int vx = canvas.viewportX(), vy = canvas.viewportY(), vw = canvas.viewportWidth(), visibleRight = vx + canvas.unobstructedWidth();
+                painter.flush();
+                pose.pushPose();
+                toScreen(painter);
+                int count = regions.size();
+                int[] xs = laneEdges(painter.scale(), canvas.visibleRect(), vx, vw);
+                for (int i = 0; i < count; i++) {
+                    painter.fill(xs[i], vy, xs[i + 1], vy + TIER_HEADER_HEIGHT, (i & 1) == 0 ? style.tierHeaderEven : style.tierHeaderOdd);
+                    if (i > 0 && xs[i] > vx && xs[i] < vx + vw) painter.fill(xs[i], vy, xs[i] + 1, vy + TIER_HEADER_HEIGHT - 1, style.tierHeaderDivider);
+                }
+                painter.fill(vx, vy + TIER_HEADER_HEIGHT - 1, vx + vw, vy + TIER_HEADER_HEIGHT, style.tierHeaderShade);
+                painter.flush();
+                boolean first = true;
+                for (int i = 0; i < count; i++) {
+                    int left = xs[i] + 1, right = Math.min(xs[i + 1] - 1, visibleRight);
+                    if (right - left < 4) continue;
+                    var label = first && font.width(labels[i]) + 4 <= right - left ? labels[i] : shortLabels[i];
+                    first = false;
+                    int textWidth = font.width(label);
+                    if (textWidth + 2 > right - left) continue;
+                    UIText.drawLeft(graphics, label, left + (right - left - textWidth + 1) / 2, UIText.centerY(vy, TIER_HEADER_HEIGHT), style.tierHeaderText);
+                }
+                pose.popPose();
+            }
+        };
+    }
+
+    /** 背景几何网格：两级大格（细格不画）的线与交点十字，都比底色亮；依赖连线比底色暗，两者不会混。 */
+    private static final class Backdrop {
+
+        private static final int MAX_CROSSES = 4096;
         @Nullable
-        public CanvasRect bounds() {
-            return bounds;
+        private static TechTreeStyle gridStyle;
+        @Nullable
+        private static CanvasGrid grid;
+
+        @OnlyIn(Dist.CLIENT)
+        static void draw(CanvasPainter painter, TechTreeStyle style, CanvasRect view, int vx, int vy, int vw, int vh) {
+            if (gridStyle != style || grid == null) {
+                gridStyle = style;
+                grid = new CanvasGrid(UISizes.CANVAS_GRID_SIZE, UISizes.CANVAS_GRID_MIN_PIXELS, 4, style.gridLine & 0xFFFFFF, style.gridLine);
+            }
+            float scale = painter.scale(), ox = view.x(), oy = view.y();
+            grid.draw(painter, scale, ox, oy, vx, vy, vw, vh);
+            int lineAlpha = Math.max(1, style.gridLine >>> 24), crossAlpha = style.gridCross >>> 24;
+            for (var level : grid.levels(scale)) {
+                int alpha = crossAlpha * (level.color() >>> 24) / lineAlpha;
+                if (alpha <= 0) continue;
+                int color = alpha << 24 | (style.gridCross & 0xFFFFFF);
+                float cell = level.cellSize();
+                long firstX = (long) Math.floor(ox / cell), lastX = (long) Math.ceil((ox + view.width()) / cell);
+                long firstY = (long) Math.floor(oy / cell), lastY = (long) Math.ceil((oy + view.height()) / cell);
+                if ((lastX - firstX + 1) * (lastY - firstY + 1) > MAX_CROSSES) continue;
+                int skip = level.skipEvery();
+                for (long i = firstX; i <= lastX; i++) {
+                    float sx = UIPixels.snap(vx + (i * cell - ox) * scale);
+                    if (sx - TIER_CROSS_ARM < vx || sx + TIER_CROSS_ARM >= vx + vw) continue;
+                    for (long j = firstY; j <= lastY; j++) {
+                        if (skip > 0 && Math.floorMod(i, skip) == 0 && Math.floorMod(j, skip) == 0) continue;
+                        float sy = UIPixels.snap(vy + (j * cell - oy) * scale);
+                        if (sy - TIER_CROSS_ARM < vy || sy + TIER_CROSS_ARM >= vy + vh) continue;
+                        painter.fill(sx - TIER_CROSS_ARM, sy, sx, sy + 1, color);
+                        painter.fill(sx + 1, sy, sx + 1 + TIER_CROSS_ARM, sy + 1, color);
+                        painter.fill(sx, sy - TIER_CROSS_ARM, sx + 1, sy + 1 + TIER_CROSS_ARM, color);
+                    }
+                }
+            }
+            painter.flush();
         }
     }
 

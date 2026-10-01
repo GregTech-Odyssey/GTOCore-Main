@@ -3,6 +3,7 @@ package com.gtocore.client;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechNodeToast;
 import com.gtocore.api.research.techtree.ui.TechTreeBrowser;
+import com.gtocore.common.data.CelestialOrbits;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.integration.ae.hooks.ICraftAmountMenu;
@@ -69,6 +70,8 @@ public final class Message {
             }
         }
     }
+
+    public static final NetworkPack CELESTIAL_SEED_S2C = NetworkPack.registerS2C("celestialSeedS2C", (p, b) -> CelestialOrbits.setClientSeed(b.readLong()));
 
     public static final NetworkPack OPEN_TECH_TREE_C2S = NetworkPack.registerC2S("openTechTreeC2S", (p, b) -> TechTreeBrowser.open(p, b.readVarInt()));
 

@@ -2,13 +2,13 @@ package com.gtocore.common.machine.multiblock.electric.processing;
 
 import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.CustomParallelMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -46,10 +46,11 @@ public final class ColdIceFreezerMachine extends CustomParallelMultiblockMachine
     }
 
     private boolean inputFluid(@Nullable RecipeHandlerUnit unit) {
-        if (inputFluid(unit, ICE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
+        long amount = (1L << Math.max(0, getTier() - 2)) * 10L;
+        if (inputFluid(unit, ICE.getRawFluid(), amount)) {
             return true;
         }
-        setIdleReason(() -> ActionResult.failInsufficientIn(ICE.getDisplayName()).reason());
+        IdleReason.ICE_SHORT.report(this, amount, -1);
         return false;
     }
 

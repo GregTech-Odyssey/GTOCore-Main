@@ -19,6 +19,7 @@ import com.gtocore.config.GTOConfig;
 import com.gtocore.config.SparkRange;
 import com.gtocore.data.Data;
 import com.gtocore.data.Datagen;
+import com.gtocore.data.IdleReason;
 import com.gtocore.data.lootTables.tool.GTONumberProviders;
 import com.gtocore.eio_travel.api.TravelRegistry;
 import com.gtocore.eio_travel.client.travel.TravelAnchorRenderers;
@@ -112,6 +113,7 @@ public class CommonProxy {
     }
 
     private static void init() {
+        IdleReason.init();
         GTOCodecs.init();
         GTOCreativeModeTabs.init();
         GTOEntityTypes.init();

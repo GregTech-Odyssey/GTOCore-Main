@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 
@@ -22,7 +23,12 @@ public final class LargeChemicalReactorMachine extends CoilMultiblockMachine {
 
     @Override
     public void customText(@NotNull List<Component> textList) {
-        textList.add(Component.translatable("gtceu.multiblock.multi_furnace.heating_coil_level", getCoilTier() + 1));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtceu.multiblock.multi_furnace.heating_coil_level", getCoilTier() + 1));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        page.addReading("gtceu.multiblock.multi_furnace.heating_coil_level", MultiblockPage.numberText(() -> getCoilTier() + 1, ""));
     }
 
     @Nullable

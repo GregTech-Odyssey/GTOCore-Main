@@ -109,7 +109,7 @@ public class GTEmiEncodingHelper {
         }
         var list = new ArrayList<List<GenericStack>>();
         if (GTUtil.isShiftDown() || GTUtil.isCtrlDown()) {
-            emiRecipe.getCatalysts()
+            (emiRecipe instanceof GTEMIRecipe gtRecipe ? gtRecipe.getEncodingCatalysts() : emiRecipe.getCatalysts())
                     .stream()
                     .map(s -> intoGenericStack(s, GTUtil.isCtrlDown()))
                     .forEach(list::add);
@@ -122,7 +122,7 @@ public class GTEmiEncodingHelper {
                 list.add(List.of(new GenericStack(AEItemKey.of(fluidProvider), 1)));
             }
         }
-        emiRecipe.getInputs()
+        (emiRecipe instanceof GTEMIRecipe gtRecipe ? gtRecipe.getEncodingInputs() : emiRecipe.getInputs())
                 .stream()
                 .map(GTEmiEncodingHelper::intoGenericStack)
                 .forEach(list::add);

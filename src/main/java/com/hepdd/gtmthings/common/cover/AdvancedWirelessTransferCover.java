@@ -15,7 +15,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
 import com.gregtechceu.gtceu.core.ILevel;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.utils.GTTransferUtils;
@@ -206,14 +206,14 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     @Override
     public Widget createUIWidget() {
         var status = new StatusPanel();
-        status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).level(this::connectionLevel);
+        status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).bindLevel(this::connectionLevel);
         status.addLine("gtocore.cover.advanced_wireless_transfer.target",
                 new Memo<>(() -> isBound() ? target.get() : null, be -> be.getBlockState().getBlock().getName()));
         status.addLine("gtocore.cover.advanced_wireless_transfer.position",
                 new Memo<>(() -> targetPos, pos -> Component.literal(pos.toShortString())));
         status.addLine("gtocore.cover.advanced_wireless_transfer.dimension",
                 new Memo<>(() -> dimensionId, Component::literal));
-        return CoverUIs.page().addChildren(status,
+        return Form.page().addChildren(status,
                 CoverUIs.filterSection(transferType == TRANSFER_ITEM ? filterHandlerItem : filterHandlerFluid));
     }
 
@@ -230,9 +230,9 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         return isConnected() ? CONNECTED : UNAVAILABLE;
     }
 
-    private StatusLine.Level connectionLevel() {
-        if (!isBound()) return StatusLine.Level.WARNING;
-        return isConnected() ? StatusLine.Level.GOOD : StatusLine.Level.ERROR;
+    private com.gregtechceu.gtceu.uipro.Level connectionLevel() {
+        if (!isBound()) return com.gregtechceu.gtceu.uipro.Level.WARNING;
+        return isConnected() ? com.gregtechceu.gtceu.uipro.Level.GOOD : com.gregtechceu.gtceu.uipro.Level.ERROR;
     }
 
     private static final Component NONE = Component.literal("—");

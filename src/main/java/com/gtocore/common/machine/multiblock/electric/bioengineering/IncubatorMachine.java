@@ -8,9 +8,11 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -63,13 +65,19 @@ public final class IncubatorMachine extends TierCasingMultiblockMachine {
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.tier.value", cleanroomTier));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.tier.value", cleanroomTier));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.tier.value", MultiblockPage.numberText(() -> cleanroomTier, ""));
     }
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > cleanroomTier) {
-            setIdleReason(IdleReason.BLOCK_TIER_NOT_SATISFIES);
+            IdleReason.BLOCK_TIER_NOT_SATISFIES.report(this, IssueStage.CONDITION, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), cleanroomTier, recipe);
             return false;
         }
         return super.checkConditions(unit, recipe);

@@ -5,6 +5,7 @@ import com.gtocore.utils.Caches;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
@@ -34,7 +35,7 @@ public class METagFilterStockBusPartMachine extends MEStockingBusPartMachine imp
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
-        return MEPartUI.mainPage(this, widget, MEPartUI.page().addChildren(TagFilterUI.create(this), createUIWidget()));
+        return MEPartUI.mainPage(this, widget, Form.page().addChildren(TagFilterUI.create(this), createUIWidget()));
     }
 
     @Override

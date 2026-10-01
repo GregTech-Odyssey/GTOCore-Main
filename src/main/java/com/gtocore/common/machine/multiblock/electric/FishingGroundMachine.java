@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
 import com.gtocore.common.data.GTOLoots;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.item.ItemStackSet;
@@ -103,6 +104,8 @@ public class FishingGroundMachine extends ElectricMultiblockMachine implements I
                 });
                 return builder.build();
             }
+        } else {
+            IdleReason.SET_CIRCUIT.report(this);
         }
         return null;
     }

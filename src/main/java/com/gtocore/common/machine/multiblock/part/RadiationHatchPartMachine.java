@@ -4,6 +4,8 @@ import com.gtocore.api.machine.part.IRadiationHatch;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.RecipeHelper;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -15,30 +17,32 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
 import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class RadiationHatchPartMachine extends MultiblockPartMachine implements IMachineLife, IRadiationHatch {
+
+    @RegisterLanguage(cn = "放射源", en = "Radiation Source")
+    private static final String SOURCE = "gtocore.machine.radiation_hatch.source";
+
+    @RegisterLanguage(cn = "抑制量（Sv）", en = "Inhibition Amount (Sv)")
+    private static final String INHIBITION = "gtocore.machine.radiation_hatch.inhibition";
 
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
@@ -113,22 +117,16 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
 
     @Override
     public Widget createUIWidget() {
-        // 状态显示窗下方右对齐放放射源槽
-        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick)
-                .addChild(UIElement.row(UISizes.SLOT).addChildren(UIElement.flexSpacer(), ItemSlot.of(inventory.storage, 0)));
+        return MachineDisplay.page(this, this::addDisplayText, controls -> {
+            controls.addSlot(inventory.storage, 0, SOURCE);
+            controls.addInt(INHIBITION, () -> inhibitionDose, value -> inhibitionDose = value, 0, 40);
+        });
     }
 
     private void addDisplayText(List<Component> textList) {
-        textList.add(Component.translatable("gtocore.machine.radiation_hatch.inhibition_dose", inhibitionDose).append(ComponentPanelWidget.withButton(Component.literal(" [-]"), "Sub")).append(ComponentPanelWidget.withButton(Component.literal(" [+]"), "Add")));
+        textList.add(Component.translatable("gtocore.machine.radiation_hatch.inhibition_dose", inhibitionDose));
         textList.add(Component.translatable("gtocore.recipe.radioactivity", radioactivity));
         textList.add(Component.translatable("gtocore.machine.radiation_hatch.time", time, initialTime));
-    }
-
-    private void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            var amount = clickData.isCtrlClick ? 40 : (clickData.isShiftClick ? 8 : 1);
-            inhibitionDose = Mth.clamp(inhibitionDose + ("Add".equals(componentData) ? amount : -amount), 0, 40);
-        }
     }
 
     @Override

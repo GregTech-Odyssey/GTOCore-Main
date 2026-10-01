@@ -7,16 +7,15 @@ import com.gtolib.utils.RLUtils;
 import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.IconToggle;
 import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -59,18 +58,18 @@ public class ApotheosisGemFilter implements ItemFilter {
         for (var holder : RarityRegistry.INSTANCE.getOrderedRarities()) {
             var r = holder.get();
             var toggle = IconToggle.of(new ItemStackTexture(r.getMaterial()), () -> rarity == r, on -> setRarity(on ? r : null));
-            toggle.setHoverTooltips(r.toComponent());
+            toggle.tooltips(r.toComponent());
             rarities.addChild(toggle);
         }
-        var typeSlot = new PhantomItemSlot(new GemTypeSlot(), 0).xeiPhantom();
+        var typeSlot = PhantomItemSlot.of(new GemTypeSlot(), 0).xeiPhantom();
         typeSlot.setMaxStackSize(1);
         typeSlot.setClearSlotOnRightClick(true);
-        typeSlot.setHoverTooltips(Component.translatable(TYPE_DESC));
-        var typeRow = UIElement.row(UISizes.SLOT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
-                .addChildren(CoverUIs.label(TYPE_FILTER_DESC, TYPE_DESC), typeSlot);
+        typeSlot.tooltips(TYPE_DESC);
+        var typeRow = UIElement.centeredRow(UISizes.SLOT_SIZE)
+                .addChildren(Form.label(TYPE_FILTER_DESC, TYPE_DESC), typeSlot);
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                CoverUIs.controlRow("cover.filter.blacklist.enabled", Switch.of(this::isBlackList, this::setBlackList)),
-                TextLine.translatable(LayoutStyle.AUTO, RARITY_DESC).setColor(UITheme::panelText),
+                Form.controlRow("cover.filter.blacklist.enabled", Switch.of(this::isBlackList, this::setBlackList)),
+                TextLine.translatable(LayoutStyle.AUTO, RARITY_DESC).bindClientColor(UITheme::panelText),
                 rarities,
                 typeRow);
     }

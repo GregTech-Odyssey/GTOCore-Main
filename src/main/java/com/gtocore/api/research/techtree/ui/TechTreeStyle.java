@@ -15,7 +15,7 @@ import com.google.gson.JsonObject;
 import java.io.Reader;
 
 /**
- * 科技树画布内容（节点、连线、分区线、节点悬停提示）的配色，可由资源包 {@code gtocore:ui/techtree.json} 覆盖。
+ * 科技树画布内容（节点、连线、节点悬停提示）的配色，可由资源包 {@code gtocore:ui/techtree.json} 覆盖。
  * <p>
  * 窗口、面板、按钮、进度条等界面外观由框架主题（{@code UITheme}）统一决定，这里只管科技树自己的内容。
  * 默认值按亮色界面取：大面积颜色不比窗口底色 #C6C6C6 暗太多，状态色用深一档的绿 / 金，与框架状态色一致。
@@ -39,7 +39,15 @@ public final class TechTreeStyle {
         }
     };
 
-    public final int tierSeparatorColor;
+    public final int tierBandEven;
+    public final int tierBandOdd;
+    public final int tierHeaderEven;
+    public final int tierHeaderOdd;
+    public final int tierHeaderShade;
+    public final int tierHeaderDivider;
+    public final int tierHeaderText;
+    public final int gridLine;
+    public final int gridCross;
     public final int hoveredDependencyLineColor;
     public final int lockedNodeFill;
     public final int availableNodeFill;
@@ -73,7 +81,17 @@ public final class TechTreeStyle {
         JsonObject text = object(root, "text");
         JsonObject details = object(root, "details");
 
-        tierSeparatorColor = color(root, "tier_separator_color", 0x40000000);
+        JsonObject tier = object(root, "tier");
+        tierBandEven = color(tier, "band_even", 0xFFC4C4C4);
+        tierBandOdd = color(tier, "band_odd", 0xFFB6B6B6);
+        tierHeaderEven = color(tier, "header_even", 0xFFB0B0B0);
+        tierHeaderOdd = color(tier, "header_odd", 0xFFA0A0A0);
+        tierHeaderShade = color(tier, "header_shade", 0xFF555555);
+        tierHeaderDivider = color(tier, "header_divider", 0xFF8B8B8B);
+        tierHeaderText = color(tier, "header_text", 0xFF404040);
+        JsonObject grid = object(root, "grid");
+        gridLine = color(grid, "line", 0x26FFFFFF);
+        gridCross = color(grid, "cross", 0x66FFFFFF);
         hoveredDependencyLineColor = color(root, "hovered_dependency_line_color", 0xFFFFC83D);
         lockedNodeFill = color(node, "locked_fill", 0xFF8B8B8B);
         availableNodeFill = color(node, "available_fill", 0xFFD9C98C);
@@ -88,10 +106,10 @@ public final class TechTreeStyle {
         lockedNodeOverlay = color(node, "locked_overlay", 0x80A0A0A0);
         nodeIconFallback = color(node, "icon_fallback", 0xFF202020);
         nodeHoverOverlay = color(node, "hover_overlay", 0x50FFFFFF);
-        defaultDependencyLine = color(lines, "default", 0xFF8A8A8A);
+        defaultDependencyLine = color(lines, "default", 0xFF6E6E6E);
         unlockedDependencyLine = color(lines, "node_unlocked", 0xFF3E8E2E);
         availableDependencyLine = color(lines, "node_available", 0xFFC49A1A);
-        prerequisiteUnlockedDependencyLine = color(lines, "prerequisite_unlocked", 0xFF5C5C5C);
+        prerequisiteUnlockedDependencyLine = color(lines, "prerequisite_unlocked", 0xFF4C4C4C);
         cwuBarFill = color(details, "cwu_bar_fill", 0xFF6FD0C8);
         tooltipDescription = color(text, "widget_tooltip_description", 0xFFAAAAAA);
         tooltipPrerequisites = color(text, "widget_tooltip_prerequisites", 0xFFFFFF55);

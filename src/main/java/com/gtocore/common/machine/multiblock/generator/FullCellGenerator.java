@@ -20,13 +20,18 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -46,6 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
+import static com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage.NO_VALUE;
 
 @DataGeneratorScanned
 public class FullCellGenerator extends ElectricMultiblockMachine {
@@ -144,7 +150,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         // membrane bonus
         var membraneInfo = findMembraneInfo(unit);
         if (membraneInfo == null) {
-            setIdleReason(IdleReason.INVALID_INPUT);
+            IdleReason.LACK_MATERIAL.report(this, IssueStage.MODIFIER, recipe.definition);
             return null;
         }
         updateAbsorptionEfficiency(membraneInfo, accumulatedEfficiencyDecay);
@@ -165,7 +171,10 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
                 break;
             }
         }
-        if (electrolytesExisting == null) return null;
+        if (electrolytesExisting == null) {
+            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, recipe.definition);
+            return null;
+        }
 
         // parallel calculation
         long euPermB = Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.get(electrolytesExisting);
@@ -198,9 +207,18 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading(FUEL_EFFICIENCY, MultiblockPage.cached(() -> isGenerator ? -1 : Double.doubleToLongBits(bonusEfficiency),
+                bits -> bits == -1 ? NO_VALUE : Component.literal(FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits) * 100) + "%")));
+        page.addReading(EFFICIENCY_DECAY, MultiblockPage.cached(() -> isGenerator ? -1 : Double.doubleToLongBits(accumulatedEfficiencyDecay),
+                bits -> bits == -1 ? NO_VALUE : Component.literal(DECIMAL_FORMAT_4F.format((1 - Double.longBitsToDouble(bits)) * 100) + "%")));
+    }
+
+    @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        if (!isGenerator) {
+        if (!isGenerator && !MultiblockPage.isScreenText()) {
             textList.add(
                     Component.translatable(FUEL_EFFICIENCY, FormattingUtil.formatNumber2Places(bonusEfficiency * 100) + "%"));
             textList.add(
@@ -314,7 +332,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
             }
         });
         if (!hasMembrane.value) {
-            setIdleReason(IdleReason.INVALID_INPUT);
+            IdleReason.LACK_MATERIAL.report(this, IssueStage.MODIFIER, recipe.definition);
             return null;
         }
         if (GTValues.RNG.nextFloat() < GTORules.FUEL_CELL_CONSUME.get()) {

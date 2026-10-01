@@ -5,6 +5,7 @@ import com.gtocore.client.renderer.StructureVBO;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.mana.CelestialHandler;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.GTOValues;
 import com.gtolib.utils.ClientUtil;
@@ -12,24 +13,24 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -86,7 +87,15 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
         else if (stellarmCost > 0) parallel = this.stellarm / stellarmCost;
         else if (anyCost > 0)
             parallel = (this.solaris + this.lunara + this.voidflux + this.stellarm) / anyCost;
-        if (parallel == 0) return null;
+        if (parallel == 0) {
+            if (solarisCost <= 0 && lunaraCost <= 0 && voidfluxCost <= 0 && stellarmCost <= 0 && anyCost <= 0) {
+                IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, null);
+            } else {
+                IdleReason.CELESTIAL_SHORT.report(this, IssueStage.MODIFIER, CelestialHandler.cost(solarisCost, lunaraCost, voidfluxCost, stellarmCost, anyCost),
+                        CelestialHandler.available(solarisCost, lunaraCost, voidfluxCost, stellarmCost, this.solaris, this.lunara, this.voidflux, this.stellarm), null);
+            }
+            return null;
+        }
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);
 
         if (recipe == null) return null;
@@ -117,14 +126,11 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         if (isFormed()) {
             textList.add(Component.translatable("gtocore.machine.oc_amount", accelerate)
                     .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             Component.translatable("gtocore.machine.steam_parallel_machine.oc")))));
-
-            textList.add(Component.translatable("gtocore.machine.steam_parallel_machine.modification_oc")
-                    .append(ComponentPanelWidget.withButton(Component.literal("[-] "), "ocSub"))
-                    .append(ComponentPanelWidget.withButton(Component.literal("[+]"), "ocAdd")));
         }
 
         if (this.solaris > 0)
@@ -138,10 +144,19 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
     }
 
     @Override
-    public void handleDisplayClick(@NotNull String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            accelerate = (short) Mth.clamp(accelerate + ("ocAdd".equals(componentData) ? 1 : -1), 0, 4);
-        }
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.celestial_condenser.solaris", MultiblockPage.numberText(() -> solaris, ""));
+        page.addReading("gtocore.celestial_condenser.lunara", MultiblockPage.numberText(() -> lunara, ""));
+        page.addReading("gtocore.celestial_condenser.voidflux", MultiblockPage.numberText(() -> voidflux, ""));
+        page.addReading("gtocore.celestial_condenser.stellarm", MultiblockPage.numberText(() -> stellarm, ""));
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addInt("gtocore.machine.steam_parallel_machine.oc_amount", () -> accelerate, value -> accelerate = (short) value, 0, 4, "gtocore.machine.steam_parallel_machine.oc")
+                .disabled(() -> !isFormed(), MultiblockPage.STATE_UNFORMED);
     }
 
     @Override

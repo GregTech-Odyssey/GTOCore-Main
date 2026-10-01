@@ -40,7 +40,7 @@ public final class TechNodeLine extends StatusLine {
             var current = node.get();
             return current == null ? -1 : TechTreeView.encodeNode(current);
         }, -1));
-        onClick(Component.translatable(LOCATE).withStyle(ChatFormatting.GRAY), () -> node.get() != null, player -> {
+        setOnServerClick(Component.translatable(LOCATE).withStyle(ChatFormatting.GRAY), () -> node.get() != null, player -> {
             var current = node.get();
             if (current != null && serverTarget != null) serverTarget.accept(player, current);
         });

@@ -10,6 +10,7 @@ import com.gtolib.utils.MathUtil;
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
@@ -94,11 +95,20 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
         if (maxTier > 0) {
+            if (MultiblockPage.isScreenText()) return;
             list.add(Component.translatable(SPACE_ELEVATOR_CONNECTED_TEXT, maxTier));
             list.add(Component.translatable(SPACE_ELEVATOR_TIME_COST_MULTIPLIER_TEXT, FormattingUtil.formatNumber2Places(getDurationMultiplier())));
         } else {
             list.add(Component.translatable(SPACE_ELEVATOR_NOT_CONNECTED_TEXT));
         }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(MAX_POWER_MODULE_TIER, MultiblockPage.numberText(() -> maxTier, ""));
+        page.addLine(TIME_COST_MULTIPLIER, MultiblockPage.cached(() -> Double.doubleToLongBits(getDurationMultiplier()),
+                bits -> Component.literal("×" + FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits)))));
     }
 
     @Override
@@ -133,4 +143,8 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
     public static final String SPACE_ELEVATOR_NOT_CONNECTED_TEXT = "spacestation.space_elevator.not_connected";
     @RegisterLanguage(cn = "未连接到当前星球的空间站", en = "Not Connected to Space Station of Current Planet")
     public static final String SPACE_ELEVATOR_NOT_CONNECTED_CURRENT_PLANET_TEXT = "spacestation.space_elevator.not_connected_current_planet";
+    @RegisterLanguage(cn = "太空电梯动力模块最高等级", en = "Space Elevator Max Power Module Tier")
+    private static final String MAX_POWER_MODULE_TIER = "gtocore.machine.space_elevator_connector.max_power_module_tier";
+    @RegisterLanguage(cn = "耗时乘数增益", en = "Time Cost Multiplier Gain")
+    private static final String TIME_COST_MULTIPLIER = "gtocore.machine.space_elevator_connector.time_cost_multiplier";
 }

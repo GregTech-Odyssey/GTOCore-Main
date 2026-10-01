@@ -6,9 +6,9 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureBuild;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -54,7 +54,7 @@ final class OverviewBuildFlow {
         final MultiblockMachineDefinition definition;
         final int[] values;
         final StructureConfigView config;
-        final WidgetGroup parts = new WidgetGroup(0, 0, PARTS_PER_ROW * UISizes.SLOT, UISizes.SLOT);
+        final WidgetGroup parts = new WidgetGroup(0, 0, PARTS_PER_ROW * UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
         List<OverviewDocking.DockPose> poses = Collections.emptyList();
         int pose;
         long refreshAt;
@@ -105,7 +105,7 @@ final class OverviewBuildFlow {
     void fitConfig(PopupCard card) {
         var current = choice;
         if (current == null || current.config.getParent() == null) return;
-        current.config.fitViewHeight(card.contentLimit() - current.config.getParent().getSizeHeight() + current.config.viewHeight());
+        current.config.fitViewHeight(card.getContentLimit() - current.config.getParent().getSizeHeight() + current.config.viewHeight());
     }
 
     void tick() {
@@ -125,7 +125,7 @@ final class OverviewBuildFlow {
         var structure = StructurePattern.of(definition);
         if (structure == null) return;
         var values = StructureBuildFlow.remembered(definition, structure);
-        var excluded = new boolean[structure.tree().nodes().length];
+        var excluded = StructureConfigView.defaultExcluded(structure.tree(), values);
         var holder = new Choice[1];
         var config = new StructureConfigView(definition, structure, values, excluded, () -> {
             if (holder[0] != null) holder[0].refreshAt = System.currentTimeMillis() + REFRESH_DELAY_MS;
@@ -148,11 +148,11 @@ final class OverviewBuildFlow {
                 current.pose++;
                 refreshGhost();
             }).disabled(() -> current.poses.size() < 2, OverviewWidget.LANG_SINGLE);
-            rotate.setHoverTooltips(OverviewWidget.LANG_ROTATE_TOOLTIP);
-            column.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(
+            rotate.tooltips(OverviewWidget.LANG_ROTATE_TOOLTIP);
+            column.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(
                     TextLine.of(LayoutStyle.AUTO, () -> current.poses.isEmpty() ? Component.translatable(OverviewWidget.LANG_BLOCKED) :
                             Component.translatable(OverviewWidget.LANG_ORIENTATION, Math.floorMod(current.pose, current.poses.size()) + 1, current.poses.size()))
-                            .level(() -> current.poses.isEmpty() ? StatusLine.Level.ERROR : StatusLine.Level.NORMAL).layout(l -> l.flex(1)),
+                            .bindLevel(() -> current.poses.isEmpty() ? Level.ERROR : Level.NORMAL).layout(l -> l.flex(1)),
                     rotate));
             column.addChild(current.config);
             var partsSection = UIElement.section();
@@ -165,7 +165,7 @@ final class OverviewBuildFlow {
                     .setVariant(UITheme.ButtonVariant.CONFIRM)
                     .disabled(() -> current.current() == null || current.config.listLayout() == null, OverviewWidget.LANG_BLOCKED)
                     .setOnClientClick(this::openBuilder);
-            column.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChildren(project, build));
+            column.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(project, build));
         });
         view.setCard(popup, this::backToSelector);
     }
@@ -216,11 +216,11 @@ final class OverviewBuildFlow {
         var slots = PartSlots.create(StructurePlans.preview(current.definition, listed).parts());
         for (int i = 0; i < slots.size(); i++) {
             var slot = slots.get(i);
-            slot.setSelfPosition(new Position((i % PARTS_PER_ROW) * UISizes.SLOT, (i / PARTS_PER_ROW) * UISizes.SLOT));
+            slot.setSelfPosition(new Position((i % PARTS_PER_ROW) * UISizes.SLOT_SIZE, (i / PARTS_PER_ROW) * UISizes.SLOT_SIZE));
             current.parts.addWidget(slot);
         }
         int rows = Math.max(1, (slots.size() + PARTS_PER_ROW - 1) / PARTS_PER_ROW);
-        current.parts.setSize(new Size(PARTS_PER_ROW * UISizes.SLOT, rows * UISizes.SLOT));
+        current.parts.setSize(new Size(PARTS_PER_ROW * UISizes.SLOT_SIZE, rows * UISizes.SLOT_SIZE));
         UIElement.markLayoutDirty(current.parts);
     }
 

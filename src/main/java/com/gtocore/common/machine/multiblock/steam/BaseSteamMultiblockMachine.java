@@ -2,41 +2,53 @@ package com.gtocore.common.machine.multiblock.steam;
 
 import com.gtocore.common.machine.multiblock.part.LargeSteamHatchPartMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.utils.MachineUtils;
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.steam.SteamEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.CleanroomMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.util.Mth;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
+
+    @RegisterLanguage(cn = "超频次数", en = "Overclocks")
+    private static final String OC_AMOUNT = "gtocore.machine.steam_parallel_machine.oc_amount";
+    @RegisterLanguage(cn = "需要支持超频的大型蒸汽仓", en = "Requires a large steam hatch that supports overclocking")
+    private static final String OC_UNAVAILABLE = "gtocore.machine.steam_parallel_machine.oc_unavailable";
 
     protected int maxOCamount;
     private int euMultiplier;
@@ -101,7 +113,8 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long eut = recipe.getInputEUt();
-        if (eut <= (this.eut << euMultiplier)) {
+        long max = this.eut << euMultiplier;
+        if (eut <= max) {
             recipe = ParallelLogic.accurateParallel(this, unit, recipe, maxParallels);
             if (recipe == null) return null;
             recipe.duration = (int) (recipe.duration * durationMultiplier);
@@ -112,6 +125,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
             }
             return recipe;
         }
+        reportIssue(GTIssues.LOW_POWER, IssueStage.MODIFIER, IO.IN, EURecipeInfo.INSTANCE, -1, eut, max, recipe.definition);
         return null;
     }
 
@@ -122,18 +136,19 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
             textList.add(Component.translatable("gtocore.machine.oc_amount", amountOC)
                     .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             Component.translatable("gtocore.machine.steam_parallel_machine.oc")))));
-
-            textList.add(Component.translatable("gtocore.machine.steam_parallel_machine.modification_oc")
-                    .append(ComponentPanelWidget.withButton(Component.literal("[-] "), "ocSub"))
-                    .append(ComponentPanelWidget.withButton(Component.literal("[+]"), "ocAdd")));
         }
     }
 
     @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote && maxOCamount > 0) {
-            amountOC = Mth.clamp(amountOC + ("ocAdd".equals(componentData) ? 1 : -1), 0, maxOCamount);
-        }
+    public void addControls(ControlPanel controls) {
+        if (!oc()) return;
+        controls.addInt(OC_AMOUNT, () -> amountOC, value -> amountOC = value, () -> 0, () -> maxOCamount, "gtocore.machine.steam_parallel_machine.oc")
+                .disabled(() -> maxOCamount <= 0, OC_UNAVAILABLE);
+    }
+
+    @Override
+    protected void attachExtraConfigurators(ConfiguratorPanel configuratorPanel) {
+        MachineUtils.attachStructureCheckConfigurators(configuratorPanel, this);
     }
 
     @Override

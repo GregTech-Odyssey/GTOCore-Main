@@ -1,14 +1,17 @@
 package com.gtocore.common.machine.multiblock.electric.space;
 
 import com.gtocore.common.saved.DysonSphereSavaedData;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -64,7 +67,10 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        if (!PlanetApi.API.isSpace(getLevel())) return null;
+        if (!PlanetApi.API.isSpace(getLevel())) {
+            IdleReason.ONLY_IN_SPACE.report(this, IssueStage.MODIFIER, null);
+            return null;
+        }
         recipe = RecipeModifier.perfectOverclocking(this, unit, recipe);
         if (recipe == null) return null;
         if (!DysonSphereSavaedData.getDimensionUse(getDimension())) {
@@ -89,6 +95,7 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
                 for (int i = -4; i < 5; i++) {
                     for (int j = -4; j < 5; j++) {
                         if (!level.canSeeSky(pos.offset(i, 0, j))) {
+                            IdleReason.SKY_OBSTRUCTED.report(this);
                             return false;
                         }
                     }
@@ -103,6 +110,12 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        textList.add(Component.translatable("gtocore.machine.dyson_sphere.amount", DysonSphereSavaedData.getDimensionData(getDimension()).leftInt()));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.dyson_sphere.amount", DysonSphereSavaedData.getDimensionData(getDimension()).leftInt()));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.dyson_sphere.amount", MultiblockPage.numberText(() -> DysonSphereSavaedData.getDimensionLaunchData(getDimension()), ""));
     }
 }

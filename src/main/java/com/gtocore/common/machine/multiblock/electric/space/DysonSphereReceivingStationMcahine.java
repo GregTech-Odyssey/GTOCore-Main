@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.space;
 
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.saved.DysonSphereSavaedData;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -12,6 +13,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -65,6 +67,7 @@ public final class DysonSphereReceivingStationMcahine extends ElectricMultiblock
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         IntIntImmutablePair pair = DysonSphereSavaedData.getDimensionData(getDimension());
         textList.add(Component.translatable("gtocore.machine.dyson_sphere.amount", pair.leftInt()));
         textList.add(Component.translatable("gtocore.machine.dyson_sphere.voltage", (pair.leftInt() > 0 ? getOverclockVoltage() : 0)));
@@ -72,12 +75,34 @@ public final class DysonSphereReceivingStationMcahine extends ElectricMultiblock
     }
 
     @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.dyson_sphere.amount", MultiblockPage.numberText(() -> DysonSphereSavaedData.getDimensionLaunchData(getDimension()), ""));
+        page.addReading("gtocore.machine.dyson_sphere.voltage", MultiblockPage.numberText(() -> DysonSphereSavaedData.getDimensionLaunchData(getDimension()) > 0 ? getOverclockVoltage() : 0, ""));
+        page.addReading("gtocore.machine.fission_reactor.damaged", MultiblockPage.percentText(this::getDamage))
+                .bindLevel(() -> getDamage() > 60 ? com.gregtechceu.gtceu.uipro.Level.WARNING : com.gregtechceu.gtceu.uipro.Level.NORMAL);
+    }
+
+    private int getDamage() {
+        return DysonSphereSavaedData.getDimensionData(getDimension()).rightInt();
+    }
+
+    @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (DysonSphereSavaedData.getDimensionUse(getDimension())) return null;
-        IntIntImmutablePair pair = DysonSphereSavaedData.getDimensionData(getDimension());
-        if (pair.leftInt() < 1) return null;
         int integer = GTODimensions.getPlanetDistances(getDimension());
-        if (integer == 0) return null;
+        if (integer == 0) {
+            IdleReason.ONLY_ON_PLANET.report(this);
+            return null;
+        }
+        if (DysonSphereSavaedData.getDimensionUse(getDimension())) {
+            IdleReason.DYSON_SPHERE_IN_USE.report(this);
+            return null;
+        }
+        IntIntImmutablePair pair = DysonSphereSavaedData.getDimensionData(getDimension());
+        if (pair.leftInt() < 1) {
+            IdleReason.DYSON_SPHERE_EMPTY.report(this);
+            return null;
+        }
         return getRecipeBuilder().duration(20)
                 .CWUt(Math.max(1, pair.leftInt() * integer / 10))
                 .EUt(-GTValues.V[GTValues.MAX] * pair.leftInt() * (50 - Math.max(0, pair.rightInt() - 60)) / 50)

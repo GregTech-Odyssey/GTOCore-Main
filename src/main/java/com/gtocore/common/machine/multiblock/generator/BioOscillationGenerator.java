@@ -4,6 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.machine.multiblock.part.ConnectingRodHatch;
 import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -18,24 +19,27 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 
 import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,6 +51,7 @@ import java.util.List;
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Biomass;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.SamariumMagnetic;
+import static com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage.NO_VALUE;
 import static com.gtocore.common.data.GTOItems.*;
 import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.common.data.GTORecipeDataKeys.ENERGY_CONTROL_MODULE_TIER;
@@ -301,7 +306,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
                 if (data != null) {
                     var casingTier = getCasingTier(MACHINING_CONTROL_MODULE_TIER);
                     if (casingTier < data.tier() && casingTier < 3) {
-                        setIdleReason(Component.translatable(BioOscillationElectricStimulator.IDLE_REASON_TISSUE_TIER, Math.min(3, data.tier()), casingTier));
+                        IdleReason.TISSUE_TIER.report(this, Math.min(3, data.tier()), casingTier);
                         return false;
                     }
                     int amount1 = (int) Math.min(64, amount);
@@ -332,14 +337,16 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
         }
         var tissueData = TISSUE_MATERIALS_TIER.get(tissue);
         if (tissueData == null) {
+            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, ItemRecipeInfo.INSTANCE, -1, -1, -1, null);
             return null;
         }
         var mediumTier = BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.get(mediumMaterial);
         if (mediumTier == null) {
+            reportIssue(GTIssues.INPUT_SHORT, null, IO.IN, FluidRecipeInfo.INSTANCE, -1, -1, -1, null);
             return null;
         }
         if (mediumTier.tier < tissueData.tier) {
-            setIdleReason(Component.translatable(BioOscillationElectricStimulator.IDLE_REASON_MEDIUM_TIER, tissueData.tier(), mediumTier));
+            IdleReason.MEDIUM_TIER.report(this, tissueData.tier(), mediumTier.tier);
             return null;
         }
         var builder = RecipeBuilder.ofRaw().duration(20);
@@ -365,8 +372,56 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     }
 
     @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(BioOscillationElectricStimulator.TISSUE_LABEL, MultiblockPage.cached(this::tissueKey, key -> key < 0 || tissue == null ? NO_VALUE : tissue.getDescription()));
+        page.addLine(BioOscillationElectricStimulator.TISSUE_STAGE_LABEL, MultiblockPage.cached(this::tissueStageKey, key -> key < 0 ? NO_VALUE : tissueStageText()));
+        page.addLine(BioOscillationElectricStimulator.NUTRIENT_AVAILABILITY_LABEL, MultiblockPage.cached(() -> mediumMaterial == null ? Long.MAX_VALUE : mediumUsage,
+                usage -> usage == Long.MAX_VALUE ? NO_VALUE : Component.literal(FormattingUtil.formatNumber2Places(usage / 10f) + "%")));
+    }
+
+    private long tissueKey() {
+        var tissueData = tissue == null ? null : TISSUE_MATERIALS_TIER.get(tissue);
+        return tissueData == null ? -1 : tissueData.tier();
+    }
+
+    private long tissueStageKey() {
+        var stage = getTissueStage();
+        var tissueData = tissue == null ? null : TISSUE_MATERIALS_TIER.get(tissue);
+        if (stage == null || tissueData == null) return -1;
+        return ((long) tissueData.tier() << 40) | ((long) stage.ordinal() << 32) | ((int) tissuePoints & 0xFFFFFFFFL);
+    }
+
+    private Component tissueStageText() {
+        var stage = getTissueStage();
+        var tissueData = tissue == null ? null : TISSUE_MATERIALS_TIER.get(tissue);
+        if (stage == null || tissueData == null) return NO_VALUE;
+        int nextStagePoints = switch (stage) {
+            case JUVENILE -> tissueData.stage1Points();
+            case ADULT -> tissueData.stage2Points();
+            case MATURE -> tissueData.stage3Points();
+            case ELDERLY -> tissueData.stage4Points();
+        };
+        return stage.getStageComponent().copy().append(" (" + FormattingUtil.formatNumbers((int) tissuePoints) + "/" + FormattingUtil.formatNumbers(nextStagePoints) + ")");
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        super.addControls(controls);
+        controls.addDecimal(BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_LABEL, () -> mediumUsageThreshold / 10.0,
+                value -> mediumUsageThreshold = (short) Math.round(value * 10), 0, 100, 0.1, BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_TOOLTIP);
+    }
+
+    @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
+        if (!MultiblockPage.isScreenText()) mainText(textList);
+        if (remainingBoostTicks > 0 && remainingBoostFactor > 0) {
+            textList.add(Component.translatable(BioOscillationElectricStimulator.ELECTRICAL_STIMULATION, remainingBoostFactor, remainingBoostTicks));
+        }
+    }
+
+    private void mainText(List<Component> textList) {
         st:
         if (tissue != null) {
             textList.add(Component.translatable(BioOscillationElectricStimulator.CURRENT_TISSUE, tissue.getDescription()));
@@ -388,18 +443,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
         if (mediumMaterial != null) {
             textList.add(Component.translatable(BioOscillationElectricStimulator.CURRENT_MEDIUM_NUTRIENT_AVAILABILITY, (FormattingUtil.formatNumber2Places(mediumUsage / 10f))));
         }
-        textList.add(Component.translatable(BioOscillationElectricStimulator.MEDIUM_NUTRIENT_AVAILABILITY_THRESHOLD, mediumUsageThreshold / 10f).append(ComponentPanelWidget.withButton(Component.literal(" [-]"), "Sub")).append(ComponentPanelWidget.withButton(Component.literal(" [+]"), "Add")));
-        if (remainingBoostTicks > 0 && remainingBoostFactor > 0) {
-            textList.add(Component.translatable(BioOscillationElectricStimulator.ELECTRICAL_STIMULATION, remainingBoostFactor, remainingBoostTicks));
-        }
-    }
-
-    @Override
-    public void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            var amount = clickData.isCtrlClick ? 100 : (clickData.isShiftClick ? 10 : 1);
-            mediumUsageThreshold = (short) Mth.clamp(mediumUsageThreshold + ("Add".equals(componentData) ? amount : -amount), 0, 1000);
-        }
+        textList.add(Component.translatable(BioOscillationElectricStimulator.MEDIUM_NUTRIENT_AVAILABILITY_THRESHOLD, mediumUsageThreshold / 10f));
     }
 
     @Override

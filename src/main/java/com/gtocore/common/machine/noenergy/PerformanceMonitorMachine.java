@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -46,10 +47,7 @@ public final class PerformanceMonitorMachine extends MetaMachine implements IFan
     }
 
     private void handleDisplayClick(String componentData, ClickData clickData) {
-        if (componentData.equals("grid")) {
-            grid = !grid;
-            textListCache = null;
-        } else if (clickData.isRemote) {
+        if (clickData.isRemote) {
             if (componentData.isEmpty()) return;
             String[] parts = PATTERN.split(componentData);
             if (parts.length == 4) {
@@ -61,12 +59,17 @@ public final class PerformanceMonitorMachine extends MetaMachine implements IFan
 
     @Override
     public Widget createUIWidget() {
-        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick);
+        var controls = ControlPanel.of(this);
+        controls.addChoice("gtocore.digital_miner.show_range", 2, i -> Component.translatable(i == 0 ? "config.gtceu.option.machines" : GRID),
+                () -> grid ? 1 : 0, i -> {
+                    grid = i == 1;
+                    textListCache = null;
+                });
+        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick).addChild(controls.build());
     }
 
     private void addDisplayText(@NotNull List<Component> textList) {
         if (isRemote()) return;
-        textList.add(Component.translatable("gtocore.digital_miner.show_range").append(ComponentPanelWidget.withButton(Component.translatable(grid ? GRID : "config.gtceu.option.machines"), "grid")));
         if (grid) {
             AEGridProvider.OBSERVE = true;
             if (textListCache == null || holder.getOffsetTimer() % 80 == 0) {

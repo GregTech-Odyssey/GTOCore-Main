@@ -1,11 +1,10 @@
 package com.gtocore.common.machine.mana.multiblock;
 
 import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.data.IdleReason;
 import com.gtocore.integration.botania.IClientPylon;
 import com.gtocore.utils.StxckUtil;
 
-import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IManaContainer;
 import com.gtolib.api.machine.ManaDistributorMachine;
 import com.gtolib.api.machine.mana.trait.ManaTrait;
@@ -16,6 +15,7 @@ import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IItemRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
@@ -58,7 +59,6 @@ import java.util.function.Supplier;
 
 import static com.gtolib.api.recipe.lookup.MapIngredient.ITEM_CONVERTER;
 
-@DataGeneratorScanned
 public class ManaFlowAssembler extends ManaMultiblockMachine {
 
     private static final DataComponentKey<AtomicInteger> MAX_RATE = DataComponentKey.createNoCodec("maxRate");
@@ -174,6 +174,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         for (var trait : getMultiblockTraits()) {
             if (!(trait instanceof ManaTrait)) trait.customText(textList);
         }
+        if (MultiblockPage.isScreenText()) return;
         var manaText = Component.literal("∞");
         if (!inWorldManaContainer.hasCreativePool()) {
             manaText = Component.literal(FormattingUtil.formatNumbers(manaContainerList.getCurrentMana()))
@@ -185,17 +186,40 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         textList.add(Component.translatable("gtocore.machine.mana_consumption", consumptionText));
     }
 
+    private static final Component INFINITE_MANA = Component.literal("∞");
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        for (var trait : getMultiblockTraits()) {
+            if (!(trait instanceof ManaTrait)) trait.addScreenReadouts(page);
+        }
+        var stored = MultiblockPage.fractionText(() -> manaContainerList.getCurrentMana(), () -> manaContainerList.getMaxMana(), "");
+        page.addReading("gtocore.machine.mana_stored", () -> inWorldManaContainer.hasCreativePool() ? INFINITE_MANA : stored.get());
+        page.addReading("gtocore.machine.mana_consumption", MultiblockPage.numberText(() -> manaContainerList.getMaxIORate(), "/t"));
+    }
+
     @Override
     protected @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (recipe.eut != 0 || maxRate == 0) return null;
+        if (recipe.eut != 0) {
+            IdleReason.NOT_APPLICABLE.report(this, IssueStage.MODIFIER, null);
+            return null;
+        }
+        if (maxRate == 0) {
+            IdleReason.MANA_FLOW_TOO_WEAK.report(this, IssueStage.MODIFIER, requiredFlow(recipe), 0, null);
+            return null;
+        }
         int duration = Math.toIntExact(recipe.duration * MANATRecipeExtension.getMANAt(recipe) / maxRate);
         if (duration > 200) {
-            setIdleReason(() -> Component.translatable(MANA_FLOW_TOO_WEAK));
+            IdleReason.MANA_FLOW_TOO_WEAK.report(this, IssueStage.MODIFIER, requiredFlow(recipe), maxRate, null);
             return null;
         }
         recipe.duration = 200;
         MANATRecipeExtension.setMANAt(recipe, maxRate);
         return super.getRealRecipe(unit, recipe);
+    }
+
+    private static long requiredFlow(GTRecipe recipe) {
+        return (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200;
     }
 
     @Override
@@ -432,7 +456,4 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
             return data;
         }, blocks);
     }
-
-    @RegisterLanguage(cn = "魔力流太弱了", en = "Mana flow is too weak")
-    public static final String MANA_FLOW_TOO_WEAK = "gtocore.machine.mana_flow_assembler.mana_flow_too_weak";
 }

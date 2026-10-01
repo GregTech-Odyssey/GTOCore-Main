@@ -8,6 +8,7 @@ import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
+import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
@@ -119,16 +120,17 @@ public class TechTreeView extends UIElement {
 
         canvas = new CanvasView(canvasId, canvasWidth, canvasHeight);
         details = new CardHost("techtree.details", this::createDetails);
-        canvas.setScene(view -> TechTreeScene.build(view, this)).setOnItemClick((item, button, worldX, worldY) -> {
+        canvas.setScene(view -> TechTreeScene.build(view, this)).setOnClientItemClick((item, button, worldX, worldY) -> {
             if (button == 0 && item instanceof TechTreeScene.NodeItem node) toggleDetails(node.node());
         });
+        canvas.setGrid(null);
         canvas.setDefaultScale(DEFAULT_SCALE);
-        canvas.setInitialView(view -> view.showStart(UISizes.SLOT, false));
+        canvas.setInitialView(view -> view.showStart(UISizes.SLOT_SIZE, false));
         var locate = ZoomBar.dockButton(UITheme.CANVAS_LOCATE, LOCATE, () -> {
             var selected = decodeNode(details.getArgument());
             if (selected != null) navigateTo(selected);
         });
-        var help = new InfoIcon(InfoIcon.Kind.INFO, Component.translatable(HELP_CLICK),
+        var help = InfoIcon.of(Level.NORMAL, Component.translatable(HELP_CLICK),
                 Component.translatable(CanvasView.HELP_PAN), Component.translatable(CanvasView.HELP_ZOOM));
         canvas.addOverlay(new Dock().addGroup(ZoomBar.dock(canvas))
                 .addGroup(ZoomBar.dockRow().addChild(locate))
@@ -203,7 +205,7 @@ public class TechTreeView extends UIElement {
     }
 
     /** 要跳到的节点在别的树里（客户端）：由使用方切到那棵树。 */
-    public TechTreeView setOnOtherTree(Consumer<TechNode> onOtherTree) {
+    public TechTreeView setOnClientOtherTree(Consumer<TechNode> onOtherTree) {
         this.onOtherTree = onOtherTree;
         return this;
     }

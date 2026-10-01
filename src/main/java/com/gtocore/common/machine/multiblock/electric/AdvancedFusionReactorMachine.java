@@ -6,12 +6,12 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.api.machine.trait.EnergyContainerTrait;
-import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -19,6 +19,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTRecipeDataKeys;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -64,6 +65,10 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     private static final String OVERCLOCK_NAME = "gtocore.multiblock.kuangbiao_one.overclock";
     @RegisterLanguage(cn = "搭建后可在此模块上安装超频仓与线程仓", en = "Allows Overclock Hatches and Thread Hatches to be installed on this module")
     private static final String OVERCLOCK_DESC = "gtocore.multiblock.kuangbiao_one.overclock.desc";
+    @RegisterLanguage(cn = "反应堆储能", en = "Reactor Energy Buffer")
+    private static final String ENERGY_BUFFER = "gtocore.machine.kuangbiao_one.energy_buffer";
+    @RegisterLanguage(cn = "热量", en = "Heat")
+    private static final String HEAT = "gtocore.machine.kuangbiao_one.heat";
 
     public static final ParamKey HIGH_ENERGY_1 = ParamKey.of(HIGH_ENERGY_1_NAME, HIGH_ENERGY_1_DESC);
     public static final ParamKey HIGH_ENERGY_2 = ParamKey.of(HIGH_ENERGY_2_NAME, HIGH_ENERGY_2_DESC);
@@ -124,14 +129,16 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @Nullable
     public GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long eu_to_start = recipe.data.getLong(GTRecipeDataKeys.EU_TO_START);
-        if (eu_to_start > energyContainer.getEnergyCapacity()) {
-            setIdleReason(IdleReason.INSUFFICIENT_ENERGY_BUFFER);
+        long capacity = energyContainer.getEnergyCapacity();
+        if (eu_to_start > capacity) {
+            reportIssue(GTIssues.START_ENERGY_CAPACITY, eu_to_start, capacity);
             return null;
         }
         long heatDiff = eu_to_start - heat;
         if (heatDiff > 0) {
-            if (energyContainer.getEnergyStored() < heatDiff) {
-                setIdleReason(IdleReason.INSUFFICIENT_ENERGY_BUFFER);
+            long stored = energyContainer.getEnergyStored();
+            if (stored < heatDiff) {
+                reportIssue(GTIssues.START_ENERGY_SHORT, heatDiff, stored);
                 return null;
             }
             energyContainer.removeEnergy(heatDiff);
@@ -174,8 +181,16 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("gtceu.multiblock.fusion_reactor.energy", this.energyContainer.getEnergyStored(), this.energyContainer.getEnergyCapacity()));
         textList.add(Component.translatable("gtceu.multiblock.fusion_reactor.heat", heat));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(ENERGY_BUFFER, MultiblockPage.fractionText(() -> energyContainer.getEnergyStored(), () -> energyContainer.getEnergyCapacity(), "EU"));
+        page.addNumber(HEAT, () -> heat, "");
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.gtocore.integration.jade;
 
+import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -8,16 +9,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyMap;
 
 import snownee.jade.api.ITooltip;
+import snownee.jade.api.fluid.JadeFluidObject;
 
 /**
  * Jade 里展示一批「AE 物品键 → 数量」：服务端把键自己的 tag 与数量写进机器数据，客户端按本地语言渲染
  * 小图标 + 名称，所以物品名不会固定成服务端语言。
- * <p>
- * NBT 形状与 {@code MEPatternBufferPartMachine} 的 {@code writeBufferTag}/{@code readBufferTag} 一致。
  */
 public final class AEKeyTooltip {
 
@@ -27,7 +29,7 @@ public final class AEKeyTooltip {
 
     private AEKeyTooltip() {}
 
-    public static void write(CompoundTag data, String name, AEKeyMap<AEItemKey> keys) {
+    public static void write(CompoundTag data, String name, AEKeyMap<? extends AEKey> keys) {
         if (keys.isEmpty()) return;
         var list = new ListTag();
         for (var entry : keys) {
@@ -56,6 +58,24 @@ public final class AEKeyTooltip {
                     .append(Component.literal(FormattingUtil.formatNumbers(amount)).withStyle(ChatFormatting.DARK_PURPLE))
                     .append(Component.literal("× ").withStyle(ChatFormatting.WHITE))
                     .append(key.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
+        }
+    }
+
+    public static void readFluids(ITooltip tooltip, CompoundTag data, String name) {
+        var list = data.getList(name, Tag.TAG_COMPOUND);
+        if (list.isEmpty()) return;
+        for (Tag t : list) {
+            if (!(t instanceof CompoundTag tag)) continue;
+            var key = AEFluidKey.fromTag(tag);
+            if (key == null) continue;
+            var amount = tag.getLong(AMOUNT);
+            if (amount < 1) continue;
+            tooltip.add(GTElementHelper.smallFluid(JadeFluidObject.of(key.getFluid())));
+            tooltip.append(Component.literal(" ")
+                    .append(Component.literal(FormattingUtil.formatBuckets(amount)))
+                    .withStyle(ChatFormatting.DARK_PURPLE)
+                    .append(Component.literal(" ").withStyle(ChatFormatting.WHITE))
+                    .append(key.getDisplayName().copy().withStyle(ChatFormatting.DARK_AQUA)));
         }
     }
 }

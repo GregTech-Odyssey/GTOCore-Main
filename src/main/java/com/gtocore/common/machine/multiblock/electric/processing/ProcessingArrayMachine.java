@@ -1,7 +1,10 @@
 package com.gtocore.common.machine.multiblock.electric.processing;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.item.MachineItemStackHandler;
 import com.gtolib.api.machine.feature.multiblock.IArrayMachine;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
@@ -13,6 +16,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -21,6 +25,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -37,9 +42,13 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class ProcessingArrayMachine extends TierCasingMultiblockMachine implements IParallelMachine, IArrayMachine {
+
+    @RegisterLanguage(cn = "未放入机器", en = "No machine inserted")
+    static final String NO_MACHINE = "gtocore.machine.processing_array.no_machine";
 
     private MachineDefinition machineDefinitionCache;
     @Getter
@@ -88,13 +97,20 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
             if (recipe == null) return null;
             return super.getRealRecipe(unit, recipe);
         }
+        IdleReason.MACHINE_STORAGE_EMPTY.report(this, IssueStage.MODIFIER, recipe.definition);
         return null;
     }
 
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        MachineUtils.addRecipeTypeText(textList, this);
+        if (!MultiblockPage.isScreenText()) MachineUtils.addRecipeTypeText(textList, this);
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtceu.gui.machinemode", MultiblockPage.recipeTypeText(this, NO_MACHINE));
     }
 
     public static Block getCasingState(int tier) {

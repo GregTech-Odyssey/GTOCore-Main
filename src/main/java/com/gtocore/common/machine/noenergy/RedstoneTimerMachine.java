@@ -11,13 +11,12 @@ import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -372,20 +371,20 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
         settingsChanged();
     }
 
-    private void setInterval(long value) {
+    private void setInterval(int value) {
         interval = clampTicks(value);
         pausedElapsed %= period();
         settingsChanged();
     }
 
-    private void setDuration(long value) {
+    private void setDuration(int value) {
         duration = clampTicks(value);
         pausedElapsed %= period();
         settingsChanged();
     }
 
-    private void setStrength(long value) {
-        strength = (int) Math.max(1, Math.min(15, value));
+    private void setStrength(int value) {
+        strength = Math.max(1, Math.min(15, value));
         onChanged();
         if (output) notifyRedstone();
     }
@@ -418,9 +417,9 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
         return Component.translatable(enabled ? STATE_PAUSED : STATE_DISABLED);
     }
 
-    private StatusLine.Level stateLevel() {
-        if (running) return StatusLine.Level.GOOD;
-        return enabled ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL;
+    private com.gregtechceu.gtceu.uipro.Level stateLevel() {
+        if (running) return com.gregtechceu.gtceu.uipro.Level.GOOD;
+        return enabled ? com.gregtechceu.gtceu.uipro.Level.WARNING : com.gregtechceu.gtceu.uipro.Level.NORMAL;
     }
 
     private Component stateDetail() {
@@ -457,33 +456,33 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     @Override
     public Widget createUIWidget() {
         var status = new StatusPanel();
-        status.addLine(LINE_STATE, this::stateText).level(this::stateLevel).detail(this::stateDetail);
+        status.addLine(LINE_STATE, this::stateText).bindLevel(this::stateLevel).bindDetail(this::stateDetail);
         status.addLine(LINE_NEXT, this::nextText);
         status.addLine(LINE_REMAINING, this::remainingText);
         status.addLine(LINE_SIGNAL, this::signalText);
-        var cycle = new ProgressBar(LayoutStyle.AUTO, Component.translatable(PROGRESS_CYCLE), UITheme.FLOW_AMBER_LIGHT, this::progress)
-                .range(() -> new ProgressBar.Range(interval, period()), UITheme.FLOW_RED_MID);
+        var cycle = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(PROGRESS_CYCLE), UITheme.FLOW_AMBER_LIGHT, this::progress)
+                .bindRange(() -> new ProgressBar.Range(interval, period()), UITheme.FLOW_RED_MID);
         cycle.setHoverTooltips(PROGRESS_TOOLTIP);
         var restart = Button.translatable(LayoutStyle.AUTO, BUTTON_RESTART)
                 .setOnServerClick(this::restart)
                 .disabled(() -> !running, REASON_NOT_RUNNING);
         restart.setHoverTooltips(BUTTON_RESTART_TOOLTIP);
 
-        var timing = CoverUIs.section(SECTION_TIMING).addChildren(
-                CoverUIs.inlineNumberRow(ROW_INTERVAL, new NumberField(LayoutStyle.AUTO, () -> interval, this::setInterval,
-                        () -> 1, () -> MAX_TICKS, TICK_STEPS), ROW_INTERVAL_TOOLTIP),
-                CoverUIs.inlineNumberRow(ROW_DURATION, new NumberField(LayoutStyle.AUTO, () -> duration, this::setDuration,
-                        () -> 1, () -> MAX_TICKS, TICK_STEPS), ROW_DURATION_TOOLTIP),
-                CoverUIs.inlineNumberRow(ROW_STRENGTH, NumberField.of(LayoutStyle.AUTO, () -> strength, this::setStrength, 1, 15)));
+        var timing = Form.section(SECTION_TIMING).addChildren(
+                Form.inlineNumberRow(ROW_INTERVAL, NumberField.ofInt(LayoutStyle.AUTO, () -> interval, this::setInterval, 1, MAX_TICKS)
+                        .setSteps(TICK_STEPS), ROW_INTERVAL_TOOLTIP),
+                Form.inlineNumberRow(ROW_DURATION, NumberField.ofInt(LayoutStyle.AUTO, () -> duration, this::setDuration, 1, MAX_TICKS)
+                        .setSteps(TICK_STEPS), ROW_DURATION_TOOLTIP),
+                Form.inlineNumberRow(ROW_STRENGTH, NumberField.ofInt(LayoutStyle.AUTO, () -> strength, this::setStrength, 1, 15)));
 
         String[] modes = { MODE_ALWAYS, MODE_WITH_SIGNAL, MODE_WITHOUT_SIGNAL };
         var modeGroup = ButtonGroup.single(modes.length, i -> Component.translatable(modes[i]), () -> controlMode, this::setControlMode);
         modeGroup.setHoverTooltips(MODE_TOOLTIP);
-        var operation = CoverUIs.section(SECTION_OPERATION).addChildren(
+        var operation = Form.section(SECTION_OPERATION).addChildren(
                 modeGroup,
-                CoverUIs.controlRow(ROW_KEEP, Switch.of(() -> keepProgress, this::setKeepProgress)
+                Form.controlRow(ROW_KEEP, Switch.of(() -> keepProgress, this::setKeepProgress)
                         .disabled(() -> controlMode == ALWAYS, REASON_ALWAYS), ROW_KEEP_TOOLTIP));
 
-        return CoverUIs.page().addChildren(status, cycle, restart, timing, operation);
+        return Form.page().addChildren(status, cycle, restart, timing, operation);
     }
 }

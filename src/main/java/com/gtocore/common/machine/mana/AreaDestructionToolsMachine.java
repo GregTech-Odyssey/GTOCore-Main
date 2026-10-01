@@ -3,6 +3,8 @@ package com.gtocore.common.machine.mana;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.explosion.AreaExplosion;
 import com.gtolib.utils.explosion.ChunkExplosion;
 import com.gtolib.utils.explosion.CylinderExplosion;
@@ -16,6 +18,9 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.uipro.elements.ConfirmButton;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.inventory.SlotGridView;
 
@@ -28,8 +33,7 @@ import net.minecraft.world.level.Level;
 import appeng.core.definitions.AEItems;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 import java.util.List;
 
@@ -37,9 +41,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import static com.gtocore.common.item.CoordinateCardBehavior.getStoredCoordinates;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
+
+    @RegisterLanguage(cn = "爆炸物", en = "Explosives")
+    private static final String EXPLOSIVES = "gtocore.machine.area_destruction_tools.explosives";
+
+    @RegisterLanguage(cn = "引爆", en = "Detonate")
+    private static final String DETONATE = "gtocore.machine.area_destruction_tools.detonate";
 
     @SaveToDisk
     private final NotifiableItemStackHandler inventory;
@@ -120,27 +131,21 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
         }
     }
 
-    // 创建UI组件
     @Override
     public Widget createUIWidget() {
-        // 状态显示窗下方是 3×3 库存
-        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick).addChild(SlotGridView.items(inventory.storage));
+        return MachineDisplay.page(this, this::addDisplayText, controls -> {
+            controls.addGrid(EXPLOSIVES, SlotGridView.items(inventory.storage));
+            var detonate = ConfirmButton.translatable(UISizes.BUTTON_WIDTH, DETONATE).setOnServerConfirm(() -> {
+                triggerExplosion();
+                onChanged();
+            });
+            controls.add(Form.controlRow("gtocore.machine.area_destruction_tools.detonate_instruction", detonate));
+        });
     }
 
     private void addDisplayText(List<Component> textList) {
-        textList.add(Component.translatable("gtocore.machine.area_destruction_tools.detonate_instruction")
-                .append(ComponentPanelWidget.withButton(Component.literal(" [\uD83D\uDCA5]"), "detonate")));
-
         textList.add(Component.translatable("gtocore.machine.area_destruction_tools.model." + model));
         textList.add(Component.translatable("gtocore.machine.area_destruction_tools.explosive_yield", explosiveYield));
-    }
-
-    private void handleDisplayClick(String componentData, ClickData clickData) {
-        if (!clickData.isRemote) {
-            if ("detonate".equals(componentData)) {
-                triggerExplosion();
-            }
-        }
     }
 
     public int countBlocksInCube(BlockPos pos1, BlockPos pos2) {

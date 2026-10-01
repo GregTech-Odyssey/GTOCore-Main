@@ -1,8 +1,13 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gtocore.data.IdleReason;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IExhaustVentMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
+import com.gregtechceu.gtceu.api.machine.issue.IIssueProvider;
+import com.gregtechceu.gtceu.api.machine.issue.IssueSink;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -10,7 +15,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -25,7 +29,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class SteamVentHatchMachine extends WorkableMultiblockPartMachine implements IExhaustVentMachine {
+public class SteamVentHatchMachine extends WorkableMultiblockPartMachine implements IExhaustVentMachine, IIssueProvider {
 
     @SaveToDisk(defaultValue = "false")
     private boolean needsVenting;
@@ -71,10 +75,15 @@ public class SteamVentHatchMachine extends WorkableMultiblockPartMachine impleme
     @Nullable
     public GTRecipe modifyRecipe(IWorkableMultiController controller, RecipeHandlerUnit unit, GTRecipe recipe) {
         if (needsVenting && isVentingBlocked()) {
-            controller.setIdleReason(Component.translatable("gtceu.recipe_logic.condition_fails").append(": ").append(Component.translatable("recipe.condition.steam_vent.tooltip")));
+            IdleReason.STEAM_VENT_OBSTRUCTED.report(controller, IssueStage.MODIFIER, recipe.definition);
             return null;
         }
         return recipe;
+    }
+
+    @Override
+    public void collectIssues(IssueSink sink) {
+        if (needsVenting && isVentingBlocked()) IdleReason.STEAM_VENT_OBSTRUCTED.collect(sink);
     }
 
     @Override

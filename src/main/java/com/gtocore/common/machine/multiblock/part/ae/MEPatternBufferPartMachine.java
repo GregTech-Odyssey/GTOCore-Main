@@ -3,9 +3,8 @@ package com.gtocore.common.machine.multiblock.part.ae;
 import com.gtocore.api.gui.configurators.MultiMachineModeFancyConfigurator;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.GTORecipes;
-import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.trait.InternalSlotRecipeHandler;
-import com.gtocore.integration.ae.PatternContainerGroupHelper;
+import com.gtocore.integration.jade.AEKeyTooltip;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -40,7 +39,6 @@ import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
-import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -48,9 +46,7 @@ import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -66,7 +62,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.crafting.IPatternDetails;
-import appeng.api.implementations.blockentities.PatternContainerGroup;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.*;
 import appeng.api.storage.MEStorage;
@@ -84,6 +79,7 @@ import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.util.DataCodecs;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.gto.recipesearch.IntLongMap;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiStack;
@@ -95,10 +91,9 @@ import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
-import snownee.jade.api.fluid.JadeFluidObject;
-import snownee.jade.api.ui.IElementHelper;
 
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -106,9 +101,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBufferPartMachine.InternalSlot> implements IDataStickInteractable, IWailaDisplayProvider {
-
-    @RegisterLanguage(cn = "此槽已缓存配方", en = "Recipe cached in this slot")
-    private static final String CACHE = "gtocore.pattern_buffer.cache";
 
     @RegisterLanguage(cn = "此样板物品输入槽", en = "The item input slots of this pattern")
     public static final String ITEM_SPECIAL = "gtceu.ae.pattern_part_machine.ITEM_SPECIAL";
@@ -165,11 +157,23 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         var blockPos = buf.readBlockPos();
         var slot = buf.readVarInt();
         var recipeId = buf.readResourceLocation();
-        if (player.level().getBlockEntity(blockPos) instanceof MetaMachineBlockEntity blockEntity &&
-                blockEntity.getMetaMachine() instanceof MEPatternBufferPartMachine machine) {
-            machine.setSlotRecipeId(slot, recipeId);
-        }
+        if (!(player.containerMenu instanceof ModularUIContainer container) || !(container.getModularUI().holder instanceof MEPatternBufferPartMachine machine)) return;
+        if (machine.isRemoved() || machine.getLevel() != player.level() || !machine.getPos().equals(blockPos)) return;
+        if (slot < 0 || slot >= machine.getMaxPatternCount() || machine.getPatternInventory().getStackInSlot(slot).isEmpty()) return;
+        if (RecipeBuilder.get(recipeId) == null) return;
+        machine.setSlotRecipeId(slot, recipeId);
     });
+
+    static final int SHARE_SLOTS = 9;
+    static final int SHARE_TANK_CAPACITY = 64000;
+    static final String DATA_STICK_POS = "pos";
+    static final String JADE_FORMED = "formed";
+    static final String JADE_PROXIES = "proxies";
+    static final String JADE_ITEMS = "items";
+    static final String JADE_FLUIDS = "fluids";
+    private static final String ITEM_SHARE_INVENTORY = "si";
+    private static final String ITEM_SHARE_TANKS = "st";
+    private static final String ITEM_CIRCUIT = "ci";
 
     @Override
     public @Nullable GTRecipeType gto$getRecipeType() {
@@ -190,8 +194,6 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @Getter
     public GTRecipeType recipeType = null;
 
-    @SyncToClient
-    private final boolean[] caches;
     @SaveToDisk
     public final NotifiableNotConsumableItemHandler shareInventory;
     @SaveToDisk
@@ -210,11 +212,14 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @SaveToDisk(defaultValue = "0")
     private int priority = 0;
 
-    public MEPatternBufferPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
-        super(holder, maxPatternCount);
-        this.caches = new boolean[maxPatternCount];
+    @Getter
+    private final PatternBufferType type;
+
+    public MEPatternBufferPartMachine(MetaMachineBlockEntity holder, PatternBufferType type) {
+        super(holder, type.getSlots());
+        this.type = type;
         this.shareInventory = createShareInventory();
-        this.shareTank = new NotifiableNotConsumableFluidHandler(this, 9, 64000);
+        this.shareTank = createShareTank();
         this.circuitInventorySimulated = CircuitHandler.create(this);
         this.internalRecipeHandler = new InternalSlotRecipeHandler(this, getInternalInventory());
     }
@@ -227,9 +232,23 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     NotifiableNotConsumableItemHandler createShareInventory() {
-        var h = new NotifiableNotConsumableItemHandler(this, 9, IO.NONE);
+        var h = new NotifiableNotConsumableItemHandler(this, SHARE_SLOTS, IO.NONE);
         h.setFilter(stack -> !(stack.getItem() instanceof EncodedPatternItem));
         return h;
+    }
+
+    NotifiableNotConsumableFluidHandler createShareTank() {
+        return new NotifiableNotConsumableFluidHandler(this, SHARE_SLOTS, SHARE_TANK_CAPACITY);
+    }
+
+    @Override
+    public boolean allowWirelessConnection() {
+        return type.isWireless();
+    }
+
+    @Override
+    protected boolean hasRecipeCacheButtons() {
+        return type.hasRecipeCacheButtons();
     }
 
     @Override
@@ -239,11 +258,11 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     @Override
     public boolean patternFilter(ItemStack stack) {
-        if (stack.getOrCreateTag().tags.get("recipe") instanceof StringTag stringTag) {
+        if (!isRemote() && stack.getOrCreateTag().tags.get("recipe") instanceof StringTag stringTag) {
             var recipe = RecipeBuilder.get(RLUtils.parse(stringTag.getAsString()));
             if (recipe != null) {
                 if (recipeType == null) {
-                    if (!recipeTypes.isEmpty() && !RecipeType.available(recipe.recipeType, recipeTypes.toArray(new GTRecipeType[0]))) return false;
+                    if (!recipeTypes.isEmpty() && !RecipeType.available(recipe.recipeType, recipeTypes.toArray(new GTRecipeType[0])) && !isUsableByProxies(recipe.recipeType)) return false;
                 } else if (!RecipeType.available(recipe.recipeType, recipeType)) {
                     return false;
                 }
@@ -287,6 +306,10 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     /// 缓存配方的类型是否还有机器能跑（主机器或任一镜像的机器）；有镜像未加载或未成型时无法判断，视为能跑
     public boolean isRecipeTypeUsable(GTRecipeType type) {
         if (recipeTypes.isEmpty() || recipeTypes.contains(type)) return true;
+        return isUsableByProxies(type);
+    }
+
+    private boolean isUsableByProxies(GTRecipeType type) {
         if (proxyMachines.size() < proxies.size()) return true;
         for (var proxy : proxyMachines) {
             var controllers = proxy.getControllers();
@@ -296,10 +319,6 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
             }
         }
         return false;
-    }
-
-    private Set<MEPatternBufferProxyPartMachine> getProxies() {
-        return proxyMachines;
     }
 
     private void refundAll(ClickData clickData) {
@@ -397,7 +416,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     public @Nullable IPatternDetails decodePattern(ItemStack stack, int index) {
         var pattern = super.decodePattern(stack, index);
         if (pattern == null) return null;
-        if (!caches[index]) {
+        if (getInternalInventory()[index].recipe == null) {
             MEPatternVirtualInputHelper.readRecipeTag(stack, getInternalInventory()[index]::setRecipe);
         }
         return pattern;
@@ -415,12 +434,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     @Override
-    @Nullable
-    public Component appendHoverTooltips(int index) {
-        if (caches[index]) {
-            return Component.translatable(CACHE);
-        }
-        return null;
+    protected BooleanSupplier recipeCachedFlag(int index) {
+        var slot = getInternalInventory()[index];
+        return () -> slot.recipe != null;
     }
 
     // ==================== 单槽配方 ====================
@@ -478,14 +494,14 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
                 circuit -> circuitStorage.setStackInSlot(0, MEPatternPartUI.circuitStack(circuit))));
 
         var recipe = MEPatternPartUI.section(column, RECIPE_SPECIAL);
-        var recipeField = new TextField(0, () -> {
+        var recipeField = TextField.of(0, () -> {
             var recipeId = getSlotRecipeId(index);
             return recipeId == null ? "" : recipeId.toString();
         }, text -> setSlotRecipeId(index, ResourceLocation.tryParse(text))).setRightClickClear(true);
         recipeField.layout(l -> l.flexGrow(1));
         recipeField.setHoverTooltips(Component.translatable(ADD_RECIPE_MSG));
         // 样板槽为空时整行只读（没有样板物品可写配方）：查看、输入、清除三个控件一起叠斜纹，悬停说明原因
-        recipe.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(recipe.getContentWidth()).gapAll(UISizes.GAP).alignCenter())
+        recipe.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).layout(l -> l.width(recipe.getContentWidth()))
                 .disabled(() -> getPatternInventory().getStackInSlot(index).isEmpty(), PATTERN_REQUIRED).addChildren(
                         Button.glyph("?")
                                 .bindTooltip(() -> Component.translatable(getSlotRecipeId(index) != null ? VIEW_RECIPE : NO_RECIPE))
@@ -500,7 +516,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
                                     slot.setRecipe(null);
                                     onChanged();
                                 })
-                                .setHoverTooltips(CLEAR_RECIPE_SLOT)));
+                                .tooltips(CLEAR_RECIPE_SLOT)));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -534,41 +550,13 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         if (player != null) player.displayClientMessage(Component.translatable(RECIPE_NOT_IN_EMI, recipeId.toString()), true);
     }
 
-    @Override
-    public PatternContainerGroup getTerminalGroup() {
-        if (isFormed()) {
-            IMultiController controller = getController();
-            Collection<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
-                    Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : Collections.emptyList();
-            return PatternContainerGroupHelper.forPatternBuffer(
-                    controller.self(), this, getCustomName(), recipeType, availableRecipeTypes);
-        } else {
-            if (!getCustomName().isEmpty()) {
-                return new PatternContainerGroup(AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem()), Component.literal(getCustomName()), Collections.emptyList());
-            } else {
-                return new PatternContainerGroup(AEItemKey.of(GTAEMachines.ME_PATTERN_BUFFER.asItem()), GTAEMachines.ME_PATTERN_BUFFER.get().getDefinition().asItem().getDescription(), Collections.emptyList());
-            }
-        }
+    public @Nullable GTRecipeType getEffectiveRecipeType() {
+        return recipeType;
     }
 
     @Override
     protected GTRecipeType groupRecipeType() {
         return recipeType;
-    }
-
-    @Override
-    public Component gto$getTerminalGroupSearchName() {
-        if (!isFormed()) {
-            return getTerminalGroup().name();
-        }
-        if (!getCustomName().isEmpty() && !getCustomName().startsWith("+")) {
-            return Component.literal(getCustomName());
-        }
-        IMultiController controller = getController();
-        Collection<GTRecipeType> availableRecipeTypes = controller instanceof IRecipeLogicMachine recipeMachine ?
-                Arrays.asList(recipeMachine.getAvailableRecipeTypes()) : Collections.emptyList();
-        String extraSuffix = getCustomName().startsWith("+") ? getCustomName().substring(1).strip() : "";
-        return PatternContainerGroupHelper.getSearchName(controller.self(), extraSuffix, recipeType, availableRecipeTypes);
     }
 
     @Override
@@ -584,49 +572,49 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @Override
     public void saveToItem(CompoundTag tag) {
         super.saveToItem(tag);
-        tag.put("si", shareInventory.storage.serializeNBT());
+        tag.put(ITEM_SHARE_INVENTORY, shareInventory.storage.serializeNBT());
         ListTag tanks = new ListTag();
         for (var tank : shareTank.getStorages()) {
             tanks.add(tank.serializeNBT());
         }
-        tag.put("st", tanks);
-        tag.put("ci", circuitInventorySimulated.storage.serializeNBT());
+        tag.put(ITEM_SHARE_TANKS, tanks);
+        tag.put(ITEM_CIRCUIT, circuitInventorySimulated.storage.serializeNBT());
     }
 
     @Override
     public void loadFromItem(CompoundTag tag) {
         super.loadFromItem(tag);
-        shareInventory.storage.deserializeNBT(tag.get("si"));
-        ListTag tanks = tag.getList("st", Tag.TAG_COMPOUND);
+        shareInventory.storage.deserializeNBT(tag.get(ITEM_SHARE_INVENTORY));
+        ListTag tanks = tag.getList(ITEM_SHARE_TANKS, Tag.TAG_COMPOUND);
         for (int i = 0; i < tanks.size(); i++) {
             shareTank.getStorages()[i].deserializeNBT(tanks.getCompound(i));
         }
-        circuitInventorySimulated.storage.deserializeNBT(tag.get("ci"));
+        circuitInventorySimulated.storage.deserializeNBT(tag.get(ITEM_CIRCUIT));
     }
 
     @Override
     public InteractionResult onDataStickShiftUse(Player player, ItemStack dataStick) {
-        dataStick.getOrCreateTag().putIntArray("pos", new int[] { getPos().getX(), getPos().getY(), getPos().getZ() });
+        dataStick.getOrCreateTag().putIntArray(DATA_STICK_POS, new int[] { getPos().getX(), getPos().getY(), getPos().getZ() });
         return InteractionResult.SUCCESS;
     }
 
     @Override
     public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
-        if (!data.getBoolean("formed")) return;
-        var proxies = data.getInt("proxies");
-        if (proxies > 0) iTooltip.add(Component.translatable("gtceu.top.proxies_bound", data.getInt("proxies")).withStyle(TooltipHelper.RAINBOW_HSL_SLOW));
+        if (!data.getBoolean(JADE_FORMED)) return;
+        var proxies = data.getInt(JADE_PROXIES);
+        if (proxies > 0) iTooltip.add(Component.translatable("gtceu.top.proxies_bound", proxies).withStyle(TooltipHelper.RAINBOW_HSL_SLOW));
         readBufferTag(iTooltip, data);
     }
 
     @Override
     public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
         if (!isFormed()) {
-            data.putBoolean("formed", false);
+            data.putBoolean(JADE_FORMED, false);
             return;
         }
-        data.putBoolean("formed", true);
-        var proxies = getProxies().size();
-        if (proxies > 0) data.putInt("proxies", proxies);
+        data.putBoolean(JADE_FORMED, true);
+        var proxies = proxyMachines.size();
+        if (proxies > 0) data.putInt(JADE_PROXIES, proxies);
         writeBufferTag(data, this);
     }
 
@@ -660,58 +648,13 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
             slot.itemInventory.fastForEach(items::insert);
             slot.fluidInventory.fastForEach(fluids::insert);
         }
-
-        ListTag itemsTag = new ListTag();
-        for (var entry : items) {
-            var ct = entry.getKey().toTag();
-            ct.putLong("real", entry.getLongValue());
-            itemsTag.add(ct);
-        }
-        if (!itemsTag.isEmpty()) data.put("items", itemsTag);
-
-        ListTag fluidsTag = new ListTag();
-        for (var entry : fluids) {
-            var ct = entry.getKey().toTag();
-            ct.putLong("real", entry.getLongValue());
-            fluidsTag.add(ct);
-        }
-        if (!fluidsTag.isEmpty()) data.put("fluids", fluidsTag);
+        AEKeyTooltip.write(data, JADE_ITEMS, items);
+        AEKeyTooltip.write(data, JADE_FLUIDS, fluids);
     }
 
     static void readBufferTag(ITooltip iTooltip, CompoundTag data) {
-        IElementHelper helper = iTooltip.getElementHelper();
-
-        ListTag itemsTag = data.getList("items", Tag.TAG_COMPOUND);
-        for (Tag t : itemsTag) {
-            if (!(t instanceof CompoundTag ct)) continue;
-            var stack = AEItemKey.fromTag(ct);
-            if (stack == null) continue;
-            var amount = ct.getLong("real");
-            if (amount > 0) {
-                iTooltip.add(helper.smallItem(stack.getReadOnlyStack()));
-                Component text = Component.literal(" ")
-                        .append(Component.literal(String.valueOf(amount)).withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("× ").withStyle(ChatFormatting.WHITE))
-                        .append(stack.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
-                iTooltip.append(text);
-            }
-        }
-        ListTag fluidsTag = data.getList("fluids", Tag.TAG_COMPOUND);
-        for (Tag t : fluidsTag) {
-            if (!(t instanceof CompoundTag ct)) continue;
-            var stack = AEFluidKey.fromTag(ct);
-            if (stack == null) continue;
-            var amount = ct.getLong("real");
-            if (amount > 0) {
-                iTooltip.add(GTElementHelper.smallFluid(JadeFluidObject.of(stack.getFluid())));
-                Component text = Component.literal(" ")
-                        .append(Component.literal(FormattingUtil.formatBuckets(amount)))
-                        .withStyle(ChatFormatting.DARK_PURPLE)
-                        .append(Component.literal(" ").withStyle(ChatFormatting.WHITE))
-                        .append(stack.getDisplayName().copy().withStyle(ChatFormatting.DARK_AQUA));
-                iTooltip.append(text);
-            }
-        }
+        AEKeyTooltip.read(iTooltip, data, JADE_ITEMS);
+        AEKeyTooltip.readFluids(iTooltip, data, JADE_FLUIDS);
     }
 
     public static final class InternalSlot extends AbstractRecipeInternalSlot implements IFieldDataHolder {
@@ -746,7 +689,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
             this.machine = machine;
             this.index = index;
             this.shareInventory = machine.createShareInventory();
-            this.shareTank = new NotifiableNotConsumableFluidHandler(machine, 9, 64000);
+            this.shareTank = machine.createShareTank();
             this.circuitInventory = CircuitHandler.create(machine);
             this.inputSink = new InputSink(this);
             this.lockableInventory = new LockableItemStackHandler(shareInventory.storage);
@@ -801,10 +744,8 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
             if (!shouldLockRecipe) return;
             if (recipe != null && recipe.registered && (machine.recipeType == null || GTRecipeType.available(recipe.recipeType, machine.recipeType))) {
                 this.recipe = recipe;
-                machine.caches[index] = true;
             } else {
                 this.recipe = null;
-                machine.caches[index] = false;
             }
         }
 

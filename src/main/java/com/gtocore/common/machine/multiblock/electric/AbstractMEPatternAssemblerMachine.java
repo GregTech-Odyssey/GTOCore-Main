@@ -9,10 +9,14 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.issue.GTIssues;
+import com.gregtechceu.gtceu.api.machine.issue.IssueStage;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 
 import net.minecraft.nbt.CompoundTag;
 
@@ -100,8 +104,12 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         long maxEUt = getOverclockVoltage();
-        if (maxEUt == 0) return null;
+        if (maxEUt == 0) {
+            reportIssue(GTIssues.NO_ENERGY_HATCH);
+            return null;
+        }
         if (!plannedOutputs.isEmpty()) {
+            reportIssue(GTIssues.OUTPUT_FULL, IssueStage.OUTPUT, IO.OUT, ItemRecipeInfo.INSTANCE, -1, 0, 0, null);
             requestRetry();
             return null;
         }

@@ -1,35 +1,35 @@
 package com.gtocore.common.machine.tesseract;
 
-import com.gtocore.api.gui.ServerRows;
 import com.gtocore.common.item.TesseractTargetMarker;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.GTODimensions;
 
+import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncItem;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
-import com.gregtechceu.gtceu.uipro.elements.StatusLine;
+import com.gregtechceu.gtceu.uipro.elements.ServerList;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 import com.gregtechceu.gtceu.uiwidgets.side.FaceNet;
 import com.gregtechceu.gtceu.uiwidgets.side.FacePicker;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,9 +70,8 @@ public final class TesseractUI {
     public static final int SELF = 6;
     public static final int MISSING_DIMENSION = 7;
 
-    public static final int LIST_WIDTH = UISizes.CONTENT_WIDTH - 2 * UITheme.PANEL_PADDING;
-    public static final int MARKER_PAGE_WIDTH = UISizes.CONTENT_WIDTH + 2 * UISizes.SLOT;
-    private static final int PAGE_HEIGHT_LIMIT = Integer.MAX_VALUE / 4;
+    public static final int LIST_WIDTH = UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING;
+    public static final int MARKER_PAGE_WIDTH = UISizes.CONTENT_WIDTH + 2 * UISizes.SLOT_SIZE;
     private static final int REFRESH_TICKS = 5;
     public static final String FACE_POPUP = "tesseract.face";
 
@@ -362,7 +361,7 @@ public final class TesseractUI {
 
         private Row(Entry entry) {
             this.entry = entry;
-            layout(l -> l.row().height(UISizes.SLOT).gapAll(UISizes.GAP).alignCenter().paddingLeft(ACCENT + 1).paddingRight(UISizes.GAP));
+            layout(l -> l.row().height(UISizes.SLOT_SIZE).gapAll(UISizes.GAP).alignCenter().paddingLeft(ACCENT + 1).paddingRight(UISizes.GAP));
         }
 
         @Override
@@ -370,7 +369,7 @@ public final class TesseractUI {
         public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             int x = getPositionX(), y = getPositionY();
             graphics.fill(x, y, x + getSizeWidth(), y + getSizeHeight(), UITheme.LIST_ROW_FILL);
-            int accent = entry.accentColor();
+            int accent = entry.getAccentColor();
             if (accent != 0) graphics.fill(x, y, x + ACCENT, y + getSizeHeight(), accent);
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
         }
@@ -381,7 +380,7 @@ public final class TesseractUI {
     }
 
     public static TextLine index(Supplier<Component> text, Component... tooltips) {
-        var label = TextLine.of(INDEX_WIDTH, text).setColor(UITheme::textSecondary).styled().alignCenter();
+        var label = TextLine.of(INDEX_WIDTH, text).bindClientColor(UITheme::textSecondary).styled().setTextAlign(Horizontal.CENTER);
         if (tooltips.length > 0) label.setHoverTooltips(tooltips);
         return label;
     }
@@ -399,8 +398,8 @@ public final class TesseractUI {
         private final SyncValue<Integer> state;
 
         private Entry(Targets targets, int index) {
-            layout(l -> l.width(0).height(UISizes.SLOT).flex(1));
-            this.icon = addSyncValue(SyncValue.of(() -> SyncItem.of(targets.get(index).icon()), SyncItem.CODEC, SyncItem.EMPTY));
+            layout(l -> l.width(0).height(UISizes.SLOT_SIZE).flex(1));
+            this.icon = addSyncValue(SyncValue.ofItem(() -> targets.get(index).icon()));
             this.name = addSyncValue(SyncValue.ofComponent(() -> targets.get(index).name()).onChanged(value -> applyTooltip()));
             this.location = addSyncValue(SyncValue.ofComponent(() -> targets.get(index).location()).onChanged(value -> applyTooltip()));
             this.state = addSyncValue(SyncValue.ofInt(() -> targets.get(index).state(), EMPTY).onChanged(value -> applyTooltip()));
@@ -424,7 +423,7 @@ public final class TesseractUI {
             setHoverTooltips(lines);
         }
 
-        private int accentColor() {
+        private int getAccentColor() {
             return switch (state.getValue()) {
                 case EMPTY -> 0;
                 case ITEM, FLUID, BOTH -> UITheme.STATUS_ONLINE;
@@ -443,25 +442,19 @@ public final class TesseractUI {
         @Override
         @OnlyIn(Dist.CLIENT)
         public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            var font = Minecraft.getInstance().font;
             int x = getPositionX(), y = getPositionY(), width = getSizeWidth();
             int current = state.getValue();
             if (current == EMPTY) {
-                var text = UITheme.clip(font, name.getValue().getString(), width);
-                graphics.drawString(font, text, x, y + (UISizes.SLOT - 8) / 2, UITheme.TEXT_SECONDARY, false);
+                var text = UIText.fit(name.getValue().getString(), width);
+                UIText.drawLeft(graphics, text, x, UIText.centerY(y, UISizes.SLOT_SIZE), UITheme.TEXT_SECONDARY);
                 super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
                 return;
             }
             var stack = icon.getValue().stack();
             if (!stack.isEmpty()) graphics.renderItem(stack, x, y + 1);
             int textWidth = width - TEXT_X;
-            graphics.drawString(font, UITheme.clip(font, name.getValue().getString(), textWidth), x + TEXT_X, y + 1, UITheme.PANEL_TEXT, false);
-            float scale = UISizes.SMALL_TEXT_SCALE;
-            graphics.pose().pushPose();
-            graphics.pose().translate(x + TEXT_X, y + 11, 0);
-            graphics.pose().scale(scale, scale, 1);
-            graphics.drawString(font, UITheme.clip(font, location.getValue().getString(), (int) (textWidth / scale)), 0, 0, UITheme.TEXT_SECONDARY, false);
-            graphics.pose().popPose();
+            UIText.drawLeft(graphics, UIText.fit(name.getValue().getString(), textWidth), x + TEXT_X, y, UITheme.PANEL_TEXT);
+            UIText.drawLeft(graphics, UIText.fit(location.getValue().getString(), textWidth), x + TEXT_X, y + UISizes.TEXT_HEIGHT, UITheme.TEXT_SECONDARY);
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
         }
     }
@@ -472,25 +465,24 @@ public final class TesseractUI {
         var panel = new StatusPanel();
         panel.addLine(LINE_BOUND, bound);
         var cross = Component.translatable(crossDimension ? VALUE_SUPPORTED : VALUE_UNSUPPORTED);
-        panel.addLine(LINE_CROSS, () -> cross).level(() -> crossDimension ? StatusLine.Level.GOOD : StatusLine.Level.NORMAL)
-                .tooltip(crossDimension ? CROSS_SUPPORTED_DETAIL : CROSS_UNSUPPORTED_DETAIL);
+        panel.addLine(LINE_CROSS, () -> cross).bindLevel(() -> crossDimension ? com.gregtechceu.gtceu.uipro.Level.GOOD : com.gregtechceu.gtceu.uipro.Level.NORMAL)
+                .tooltips(crossDimension ? CROSS_SUPPORTED_DETAIL : CROSS_UNSUPPORTED_DETAIL);
         var access = Component.translatable(perTargetFace ? VALUE_PER_TARGET : VALUE_FOLLOW);
-        panel.addLine(LINE_ACCESS, () -> access).tooltip(perTargetFace ? ACCESS_PER_TARGET_DETAIL : ACCESS_FOLLOW_DETAIL);
+        panel.addLine(LINE_ACCESS, () -> access).tooltips(perTargetFace ? ACCESS_PER_TARGET_DETAIL : ACCESS_FOLLOW_DETAIL);
         return panel;
     }
 
     public static UIElement listSection(String titleKey, Widget list, String... tooltipKeys) {
-        var title = TextLine.translatable(0, titleKey).setColor(UITheme::panelText);
+        var title = TextLine.translatable(0, titleKey).bindClientColor(UITheme::panelText);
         title.layout(l -> l.flex(1));
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter()).addChild(title);
+        var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChild(title);
         if (tooltipKeys.length > 0) header.addChild(InfoIcon.info(tooltipKeys));
         return UIElement.section().addChildren(header, list);
     }
 
     public static Widget page(Widget... children) {
-        var scroller = new ScrollerView("tesseract.page", UISizes.CONTENT_WIDTH, UISizes.SLOT).adaptiveWidth().setResizable(false)
-                .fitPage().adaptiveHeight(PAGE_HEIGHT_LIMIT);
-        scroller.addScrollViewChild(CoverUIs.page().addChildren(children));
+        var scroller = ScrollerView.page("tesseract.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
+        scroller.addScrollViewChild(Form.page().addChildren(children));
         return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
     }
 
@@ -501,16 +493,16 @@ public final class TesseractUI {
     }
 
     public static UIElement basicPushSection() {
-        return CoverUIs.section(SECTION_PUSH).addChild(Label.translatable(PUSH_BASIC, LIST_WIDTH).setColor(UITheme::panelText));
+        return Form.section(SECTION_PUSH).addChild(Label.translatable(LIST_WIDTH, PUSH_BASIC).bindClientColor(UITheme::panelText));
     }
 
     public static UIElement roundRobinSection(BooleanSupplier roundRobin, Consumer<Boolean> setRoundRobin) {
         var modes = ButtonGroup.single(2, i -> Component.translatable(i == 0 ? MODE_SEQUENTIAL : MODE_ROUND_ROBIN),
                 () -> roundRobin.getAsBoolean() ? 1 : 0, i -> setRoundRobin.accept(i == 1)).horizontal();
         modes.setHoverTooltips(MODE_TOOLTIP);
-        var description = Label.of(() -> Component.translatable(roundRobin.getAsBoolean() ? DESC_ROUND_ROBIN : DESC_SEQUENTIAL), LIST_WIDTH)
-                .setColor(UITheme::panelText);
-        return CoverUIs.section(SECTION_PUSH).addChildren(modes, new DistributionStrip(roundRobin), description);
+        var description = Label.of(LIST_WIDTH, () -> Component.translatable(roundRobin.getAsBoolean() ? DESC_ROUND_ROBIN : DESC_SEQUENTIAL))
+                .bindClientColor(UITheme::panelText);
+        return Form.section(SECTION_PUSH).addChildren(modes, new DistributionStrip(roundRobin), description);
     }
 
     public static UIElement directedPushSection(IntSupplier targetCount, Widget pending) {
@@ -519,10 +511,10 @@ public final class TesseractUI {
         var dispatch = Component.translatable(VALUE_DISPATCH);
         var full = Component.translatable(VALUE_FULL);
         rules.addLine(RULE_PATTERN, () -> pattern);
-        rules.addLine(RULE_DISPATCH, () -> dispatch).tooltip(DISPATCH_DETAIL);
-        rules.addLine(RULE_ACCEPT, () -> Component.translatable(VALUE_ACCEPT, targetCount.getAsInt())).tooltip(ACCEPT_DETAIL);
-        rules.addLine(RULE_FULL, () -> full).tooltip(FULL_DETAIL);
-        return CoverUIs.section(SECTION_PUSH).addChildren(rules, pending);
+        rules.addLine(RULE_DISPATCH, () -> dispatch).tooltips(DISPATCH_DETAIL);
+        rules.addLine(RULE_ACCEPT, () -> Component.translatable(VALUE_ACCEPT, targetCount.getAsInt())).tooltips(ACCEPT_DETAIL);
+        rules.addLine(RULE_FULL, () -> full).tooltips(FULL_DETAIL);
+        return Form.section(SECTION_PUSH).addChildren(rules, pending);
     }
 
     public static ModularUI markerUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
@@ -543,29 +535,29 @@ public final class TesseractUI {
         var face = ButtonGroup.single(2, i -> Component.translatable(i == 0 ? MARKER_FACE_CLICKED : MARKER_FACE_OPPOSITE),
                 () -> TesseractTargetMarker.getFaceMode(held.get()), i -> TesseractTargetMarker.setFaceMode(held.get(), i)).horizontal();
         face.setHoverTooltips(MARKER_FACE_TOOLTIP);
-        var modes = CoverUIs.section(MARKER_SECTION_MODE).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, MARKER_LEFT).setColor(UITheme::textSecondary), left,
-                TextLine.translatable(LayoutStyle.AUTO, MARKER_FACE).setColor(UITheme::textSecondary), face);
+        var modes = Form.section(MARKER_SECTION_MODE).addChildren(
+                TextLine.translatable(LayoutStyle.AUTO, MARKER_LEFT).bindClientColor(UITheme::textSecondary), left,
+                TextLine.translatable(LayoutStyle.AUTO, MARKER_FACE).bindClientColor(UITheme::textSecondary), face);
 
-        var count = TextLine.of(0, () -> Component.translatable(MARKER_TARGETS, TesseractTargetMarker.count(held.get()))).setColor(UITheme::panelText);
+        var count = TextLine.of(0, () -> Component.translatable(MARKER_TARGETS, TesseractTargetMarker.count(held.get()))).bindClientColor(UITheme::panelText);
         count.layout(l -> l.flex(1));
         var clear = Button.translatable(UISizes.BUTTON_WIDTH, MARKER_CLEAR).setVariant(UITheme.ButtonVariant.DANGER)
                 .setOnServerClick(() -> TesseractTargetMarker.clearAllPatternFaces(held.get()))
                 .disabled(() -> TesseractTargetMarker.count(held.get()) == 0, REASON_EMPTY);
-        var header = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+        var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                 .addChildren(count, InfoIcon.info(MARKER_HELP_ADD, MARKER_HELP_REMOVE, MARKER_HELP_WRITE, MARKER_HELP_READ), clear);
-        var rows = new ServerRows<>(remote, ByteStreamCodec.INT_CODEC, () -> indices(TesseractTargetMarker.count(held.get())),
-                () -> TesseractTargetMarker.count(held.get()), index -> markerRow(window, held, targets, index), Component.translatable(MARKER_EMPTY));
+        var rows = ServerList.of(ByteStreamCodec.INT_CODEC, () -> indices(TesseractTargetMarker.count(held.get())), index -> markerRow(window, held, targets, index))
+                .version(() -> TesseractTargetMarker.count(held.get())).emptyText(MARKER_EMPTY);
         rows.layout(l -> l.paddingTop(1).paddingBottom(1));
         var list = UIElement.section().addChildren(header, rows);
 
         var preview = new StatusPanel();
         preview.addLine(PREVIEW_DIRECTED, () -> Component.translatable(PREVIEW_TARGETS, TesseractTargetMarker.count(held.get())))
-                .tooltip(PREVIEW_DIRECTED_DETAIL);
-        preview.addLine(PREVIEW_ADVANCED, () -> advancedPreview(holder)).level(() -> skipped(holder) > 0 ? StatusLine.Level.WARNING : StatusLine.Level.NORMAL)
-                .tooltip(PREVIEW_ADVANCED_DETAIL);
+                .tooltips(PREVIEW_DIRECTED_DETAIL);
+        preview.addLine(PREVIEW_ADVANCED, () -> advancedPreview(holder)).bindLevel(() -> skipped(holder) > 0 ? com.gregtechceu.gtceu.uipro.Level.WARNING : com.gregtechceu.gtceu.uipro.Level.NORMAL)
+                .tooltips(PREVIEW_ADVANCED_DETAIL);
         preview.addLine(PREVIEW_BASIC, () -> Component.translatable(sameDimension(holder) > 0 ? PREVIEW_FIRST : PREVIEW_NONE))
-                .tooltip(PREVIEW_BASIC_DETAIL);
+                .tooltips(PREVIEW_BASIC_DETAIL);
 
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(MARKER_PAGE_WIDTH).gapAll(UISizes.SECTION_GAP))
                 .addChildren(modes, list, preview);
@@ -594,7 +586,7 @@ public final class TesseractUI {
     public static Popup facePopup(Targets targets, int index, Supplier<Direction> current, Consumer<Direction> select) {
         return Popup.of(() -> targets.get(index).icon(), () -> Component.translatable(POPUP_TITLE, index + 1, targets.get(index).name()),
                 content -> content.addChildren(FacePicker.grid(current, select),
-                        Label.translatable(POPUP_HINT, UISizes.POPUP_CONTENT_WIDTH).setColor(UITheme::panelText)));
+                        Label.translatable(UISizes.POPUP_CONTENT_WIDTH, POPUP_HINT).bindClientColor(UITheme::panelText)));
     }
 
     public static void bindFacePopup(FaceNet face, MachineWindow window, int index) {

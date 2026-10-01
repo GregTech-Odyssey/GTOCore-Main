@@ -20,6 +20,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -198,9 +199,18 @@ public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomPa
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
         textList.add(Component.translatable("gtocore.machine.height", height));
         textList.add(Component.translatable("gtceu.multiblock.hpca.temperature", temperature));
         textList.add(Component.translatable("gtocore.machine.total_time.duration", FormattingUtil.formatNumbers(duration)));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addReading("gtocore.machine.height", MultiblockPage.numberText(() -> height, ""));
+        page.addReading("gtceu.multiblock.hpca.temperature", MultiblockPage.numberText(() -> temperature, "K"));
+        page.addReading("gtocore.machine.total_time.duration", MultiblockPage.decimalText(() -> duration, ""));
     }
 
     @OnlyIn(Dist.CLIENT)

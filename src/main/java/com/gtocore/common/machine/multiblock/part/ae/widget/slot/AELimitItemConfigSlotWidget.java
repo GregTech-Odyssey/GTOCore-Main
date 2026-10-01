@@ -2,8 +2,9 @@ package com.gtocore.common.machine.multiblock.part.ae.widget.slot;
 
 import com.gtocore.common.machine.multiblock.part.ae.widget.ConfigWidget;
 
-import com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,15 +14,14 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AmountFormat;
 import appeng.api.stacks.GenericStack;
 
-import com.lowdragmc.lowdraglib.gui.util.TextFormattingUtil;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import org.jetbrains.annotations.NotNull;
 
 import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawItemStack;
-import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawStringFixedCorner;
 
 /**
  * 限制配置用的物品格：只有 18×18 的配置槽，没有 {@link AEItemConfigSlotWidget} 那格"库存"下半格
@@ -47,19 +47,15 @@ public class AELimitItemConfigSlotWidget extends AEItemConfigSlotWidget {
         IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
         GenericStack config = slot.getConfig();
         UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, position.x, position.y, 18, 18);
-        if (isXeiPhantom()) UITheme.drawXeiPhantom(graphics, position.x, position.y, 18, 18, false);
+        if (isXeiPhantom()) UIDraw.xeiPhantomMark(graphics, position.x, position.y, 18, 18, false);
         if (config != null) {
             ItemStack stack = config.what() instanceof AEItemKey key ? new ItemStack(key.getItem()) : ItemStack.EMPTY;
             drawItemStack(graphics, stack, position.x + 1, position.y + 1, 0xFFFFFFFF, null);
-            String amountStr = TextFormattingUtil.formatLongToCompactString(config.amount(), 4);
-            drawStringFixedCorner(graphics, amountStr, position.x + 18, position.y + 18, 16777215, true, 0.5f);
+            UIText.drawItemCount(graphics, config.what().formatAmount(config.amount(), AmountFormat.SLOT_LARGE_FONT), position.x + 1, position.y + 1);
         }
-        // 只画配置半格的状态：禁用斜纹、悬停高亮、选中框
-        if (isConfigDisabled()) UITheme.drawDisabled(graphics, position.x, position.y, 18, 18);
-        if (mouseOverConfig(mouseX, mouseY) && !isConfigDisabled()) {
-            AEListGridWidget.drawSelectionOverlay(graphics, position.x + 1, position.y + 1, 16, 16);
-        }
-        if (this.select) UITheme.drawSelection(graphics, position.x, position.y, 18, 18);
+        // 只画配置半格的状态：禁用斜纹、悬停高亮
+        if (isConfigDisabled()) UIDraw.disabledHatch(graphics, position.x, position.y, 18, 18);
+        if (mouseOverConfig(mouseX, mouseY) && !isConfigDisabled()) UIDraw.hoverOverlay(graphics, position.x, position.y, 18, 18);
     }
 
     /// 整格都是配置槽：可拖入的范围、滚轮判定都用整格

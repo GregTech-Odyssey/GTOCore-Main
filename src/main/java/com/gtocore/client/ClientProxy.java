@@ -17,6 +17,7 @@ import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
+import com.gtocore.data.IdleReason;
 import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
@@ -40,7 +41,7 @@ import com.gtolib.api.emi.stack.TagPrefixRenderer;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.data.pack.GTDynamicResourcePack;
-import com.gregtechceu.gtceu.uiwidgets.icon.IdleReasonIcons;
+import com.gregtechceu.gtceu.uiwidgets.icon.IssueIcons;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -125,41 +126,28 @@ public final class ClientProxy extends CommonProxy {
     private static void clientSetup(FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.GELID_CRYOTHEUM.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.FLOWING_GELID_CRYOTHEUM.get(), RenderType.translucent());
-        registerIdleReasonIcons();
+        registerIssueIcons();
     }
 
-    private static void registerIdleReasonIcons() {
-        IdleReasonIcons.register("gtocore.idle_reason.no_match", WidgetIcons.IDLE_NO_RECIPE);
-        IdleReasonIcons.register("gtocore.idle_reason.invalid_input", WidgetIcons.IDLE_NO_RECIPE);
-        IdleReasonIcons.register("gtocore.idle_reason.insufficient_energy_buffer", WidgetIcons.IDLE_NO_POWER);
-        IdleReasonIcons.register("gtocore.idle_reason.charge", WidgetIcons.IDLE_NO_POWER);
-        IdleReasonIcons.register("gtocore.idle_reason.voltage_tier_not_satisfies", WidgetIcons.IDLE_LOW_TIER);
-        IdleReasonIcons.register("gtocore.idle_reason.block_tier_not_satisfies", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace_multiblock", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_shield_no_laser", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_in_space", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_station_no_core", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_station_paused", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_running", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.space_station_preparing", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.felling_tool", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.grindball", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.set_circuit", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.no_ores", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.radiation", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.incorrect_direction_volta", WidgetIcons.IDLE_CONDITION);
-        IdleReasonIcons.register("gtocore.idle_reason.heat_accumulation", WidgetIcons.IDLE_OVERHEAT);
-        IdleReasonIcons.register("gtocore.idle_reason.muffler_not_supported", WidgetIcons.STATUS_OBSTRUCTED);
-        IdleReasonIcons.register("gtocore.idle_reason.obstructed_volta", WidgetIcons.STATUS_OBSTRUCTED);
-        IdleReasonIcons.register("gtocore.idle_reason.lack_material", WidgetIcons.IDLE_INPUT_SHORT);
-        IdleReasonIcons.register("gtocore.idle_reason.amount_not_enough", WidgetIcons.IDLE_INPUT_SHORT);
-        IdleReasonIcons.register("gtocore.idle_reason.ordered", WidgetIcons.IDLE_INPUT_SHORT);
-        IdleReasonIcons.register("gtocore.idle_reason.output_full", WidgetIcons.IDLE_OUTPUT_FULL);
-        IdleReasonIcons.register("gtocore.idle_reason.no_mana", WidgetIcons.IDLE_NO_MANA);
-        IdleReasonIcons.register("gtocore.idle_reason.no_crank", WidgetIcons.IDLE_NO_KINETIC);
-        IdleReasonIcons.register("gtocore.idle_reason.insufficient_temperature", WidgetIcons.IDLE_LOW_TEMPERATURE);
+    private static void registerIssueIcons() {
+        IssueIcons.register(IdleReason.INVALID_INPUT.type(), WidgetIcons.IDLE_NO_RECIPE);
+        IssueIcons.register(IdleReason.NO_MANA.type(), WidgetIcons.IDLE_NO_MANA);
+        IssueIcons.register(IdleReason.WIRELESS_MANA_SHORT.type(), WidgetIcons.IDLE_NO_MANA);
+        IssueIcons.register(IdleReason.NO_CRANK.type(), WidgetIcons.IDLE_NO_KINETIC);
+        IssueIcons.register(IdleReason.HEAT_SHORT.type(), WidgetIcons.IDLE_LOW_TEMPERATURE);
+        IssueIcons.register(IdleReason.HEAT_ACCUMULATION.type(), WidgetIcons.IDLE_OVERHEAT);
+        IssueIcons.register(IdleReason.BLOCK_TIER_NOT_SATISFIES.type(), WidgetIcons.IDLE_CONDITION);
+        IssueIcons.register(IdleReason.SPACE_SHIELD_NO_LASER.type(), WidgetIcons.IDLE_CONDITION);
+        IssueIcons.register(IdleReason.SPACE_STATION_NO_CORE.type(), WidgetIcons.IDLE_CONDITION);
+        IssueIcons.register(IdleReason.SET_CIRCUIT.type(), WidgetIcons.IDLE_CONDITION);
+        IssueIcons.register(IdleReason.CHARGE.type(), WidgetIcons.IDLE_NO_POWER);
+        IssueIcons.register(IdleReason.OBSTRUCTED_VOLTA.type(), WidgetIcons.STATUS_OBSTRUCTED);
+        IssueIcons.register(IdleReason.MUFFLER_NOT_SUPPORTED.type(), WidgetIcons.STATUS_OBSTRUCTED);
+        IssueIcons.register(IdleReason.MANA_FLOW_TOO_WEAK.type(), WidgetIcons.IDLE_NO_MANA);
+        IssueIcons.register(IdleReason.COIL_NOT_USABLE.type(), WidgetIcons.IDLE_CONDITION);
+        IssueIcons.register(IdleReason.STEAM_VENT_OBSTRUCTED.type(), WidgetIcons.STATUS_OBSTRUCTED);
+        IssueIcons.register(IdleReason.FRAMEWORK_TIER_LIMIT.type(), WidgetIcons.STATUS_INFO);
+        IssueIcons.register(IdleReason.DYSON_SPHERE_COMPLETE.type(), WidgetIcons.STATUS_INFO);
     }
 
     private static void registerLights(ForgeShimmerReloadEvent e) {
