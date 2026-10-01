@@ -628,7 +628,7 @@ final class AssemblyLine {
                 .inputItems("gtceu:normal_optical_pipe", 32)
                 .inputItems(TagPrefix.pipeTinyFluid, GTMaterials.StainlessSteel, 32)
                 .inputItems(GTItems.CRYSTAL_SYSTEM_ON_CHIP, 32)
-                .inputItems(GTOItems.CELL_COMPONENT_64M, 2)
+                .inputItems(GTOItems.CELL_COMPONENT_16M, 8)
                 .inputItems(TagPrefix.foil, GTMaterials.Trinium, 32)
                 .outputItems(ExResearchMachines.DATA_CENTER)
                 .inputFluids(GTMaterials.SolderingAlloy, 1152)
