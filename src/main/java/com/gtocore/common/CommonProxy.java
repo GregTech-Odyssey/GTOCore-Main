@@ -2,6 +2,7 @@ package com.gtocore.common;
 
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.api.gui.HeatThermometer;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeCommands;
@@ -48,6 +49,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.common.data.GTMaterialBlocks;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
 import com.gregtechceu.gtceu.uipro.utils.NumberExpressions;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -137,6 +139,7 @@ public class CommonProxy {
         PlayerAttributes.init();
         // 调节器（数值输入）的简写与算式：两端都要注册，解析在服务端做（解析器自带位数、指数、位移上限）
         NumberExpressions.setEvaluator(AdvMathExpParser::parse);
+        event.enqueueWork(() -> MachineWindow.registerRightAccessory(GTOCore.id("heat_thermometer"), HeatThermometer::new));
 
         FusionReactorMachine.registerFusionTier(GTValues.UHV, " (MKIV)");
         FusionReactorMachine.registerFusionTier(GTValues.UEV, " (MKV)");

@@ -84,7 +84,7 @@ public final class GTOMaterialFlags {
     public static final MaterialFlag HAS_NANOSCALE_FORM = new MaterialFlag.Builder("has_nanoscale_form")
             .build();
 
-    public static final MaterialFlag EXPERT_EXCLUSIVE = new MaterialFlag.Builder("expert_exclusive")
+    public static final MaterialFlag FLUID_TIER_EXCLUSIVE = new MaterialFlag.Builder("expert_exclusive")
             .build();
 
     public static final MaterialFlag DISABLE_GEM_RECIPES = new MaterialFlag.Builder("disable_gem_recipes")

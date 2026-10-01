@@ -35,6 +35,10 @@ public class FXManager {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
             StellarForgeVortexFX.flushBatch(event.getLevelRenderer());
         }
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+            ScreenSpaceSceneCapture.beginFrame();
+            SolarStormFX.render(event);
+        }
     }
 
     public static void tickFXs() {
@@ -52,7 +56,8 @@ public class FXManager {
         if (!discarded.isEmpty()) {
             KEYED_FX.entrySet().removeIf(entry -> discarded.contains(entry.getValue()) || entry.getValue().isDiscarded());
         }
-        if (FX_LIST.isEmpty()) {
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        if (FX_LIST.isEmpty() && (!SolarStormFX.isSolarSurface(level) || level.getRainLevel(1.0F) <= 0.001F)) {
             ScreenSpaceSceneCapture.release();
         }
     }
@@ -82,5 +87,6 @@ public class FXManager {
         KEYED_FX.clear();
         discarded.forEach(AbstractFX::onDiscard);
         ScreenSpaceSceneCapture.release();
+        SolarStormFX.release();
     }
 }

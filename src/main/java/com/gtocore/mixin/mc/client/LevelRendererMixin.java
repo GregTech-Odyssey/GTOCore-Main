@@ -1,5 +1,6 @@
 package com.gtocore.mixin.mc.client;
 
+import com.gtocore.client.renderer.fx.SolarStormFX;
 import com.gtocore.client.renderer.item.ItemCountRenderer;
 import com.gtocore.utils.StxckUtil;
 
@@ -10,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,6 +20,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
+
+    @Inject(method = { "renderSnowAndRain", "tickRain" }, at = @At("HEAD"), cancellable = true)
+    private void replaceSolarRain(CallbackInfo ci) {
+        if (SolarStormFX.isSolarSurface(Minecraft.getInstance().level)) ci.cancel();
+    }
+
+    @ModifyExpressionValue(method = "renderSky", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
+    private float preserveSolarSkyBrightness(float rain) {
+        return SolarStormFX.isSolarSurface(Minecraft.getInstance().level) ? 0.0F : rain;
+    }
 
     @Inject(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
     private void renderItemCount(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo ci) {

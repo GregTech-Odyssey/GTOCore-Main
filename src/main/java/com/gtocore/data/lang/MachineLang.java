@@ -119,6 +119,13 @@ final class MachineLang {
         addCNEN("gtocore.machine.advanced_infinite_driller.not_fluid_head", "无钻头", "No drill head");
         addCNEN("gtocore.machine.advanced_infinite_driller.heat", "最大温度: %s K / 工作温度: %s K", "Max Temperature: %s K / Operating Temperature: %s K");
         addCNEN("gtocore.machine.current_temperature", "当前温度: %s K", "Current Temperature: %s K");
+        addCNEN("gtocore.machine.thermometer.ambient", "环境温度：%s K", "Ambient Temperature: %s K");
+        addCNEN("gtocore.machine.thermometer.conductivity", "导热率：%s HU/(t·K)", "Thermal Conductivity: %s HU/(t·K)");
+        addCNEN("gtocore.machine.thermometer.cooldown", "自然散热系数：%s HU/(t·√K)", "Natural Cooling Coefficient: %s HU/(t·√K)");
+        addCNEN("gtocore.machine.thermometer.change", "实时温变：%s K/s（最近 1 秒）", "Temperature Change: %s K/s (last second)");
+        addCNEN("gtocore.machine.thermometer.heat", "当前热量：%s HU", "Stored Heat: %s HU");
+        addCNEN("gtocore.machine.thermometer.scale", "刻度范围：0 ～ %s K", "Scale: 0–%s K");
+        addCNEN("gtocore.machine.thermometer.explosion", "温度上限（红线）：%s K", "Explosion Threshold (red line): %s K");
         addCNEN("gtocore.machine.neutron_flux", "当前中子通量: %s keV", "Current Neutron Flux: %s keV");
         addCNEN("gtocore.machine.temp.per_second", "配方每秒升温: %s K", "Recipe Temperature Increase Per Second: %s K");
         addCNEN("gtocore.recipe.neutron_flux.k", "最小中子通量: %s keV", "Minimum Neutron Flux: %s keV");

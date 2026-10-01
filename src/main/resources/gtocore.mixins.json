@@ -45,6 +45,8 @@
     "mc.ItemRendererMixin",
     "mc.OpenContainerMixin",
     "mc.client.ClientPacketListenerMixin",
+    "mc.client.ClientLevelMixin",
+    "mc.client.FogRendererMixin",
     "mc.client.LevelRendererMixin",
     "merequester.NumberFieldMixin",
     "mousetweaks.GuiContainerHandlerMixin",

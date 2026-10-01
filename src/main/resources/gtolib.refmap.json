@@ -354,7 +354,11 @@
     },
     "com/gtocore/mixin/mc/client/LevelRendererMixin": {
       "renderEntity": "Lnet/minecraft/client/renderer/LevelRenderer;m_109517_(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;)V",
-      "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V": "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;m_114384_(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"
+      "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V": "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;m_114384_(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+      "tickRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109693_(Lnet/minecraft/client/Camera;)V",
+      "renderSnowAndRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109703_(Lnet/minecraft/client/renderer/LightTexture;FDDD)V",
+      "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
     },
     "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
       "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -383,6 +387,19 @@
     },
     "com/gtocore/mixin/ae2/screen/PatternEncodingTermScreenMixin": {
       "mouseClicked": "Lappeng/client/gui/me/items/PatternEncodingTermScreen;m_6375_(DDI)Z"
+    },
+    "com/gtocore/mixin/mc/client/ClientLevelMixin": {
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+      "getSkyColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_171660_(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyFlashTime()I": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104819_()I",
+      "getSkyDarken": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104805_(F)F",
+      "getCloudColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104808_(F)Lnet/minecraft/world/phys/Vec3;"
+    },
+    "com/gtocore/mixin/mc/client/FogRendererMixin": {
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
+      "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V"
     }
   },
   "data": {
@@ -741,7 +758,11 @@
       },
       "com/gtocore/mixin/mc/client/LevelRendererMixin": {
         "renderEntity": "Lnet/minecraft/client/renderer/LevelRenderer;m_109517_(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;)V",
-        "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V": "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;m_114384_(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"
+        "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V": "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;m_114384_(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+        "tickRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109693_(Lnet/minecraft/client/Camera;)V",
+        "renderSnowAndRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109703_(Lnet/minecraft/client/renderer/LightTexture;FDDD)V",
+        "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
       },
       "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
         "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -770,6 +791,19 @@
       },
       "com/gtocore/mixin/ae2/screen/PatternEncodingTermScreenMixin": {
         "mouseClicked": "Lappeng/client/gui/me/items/PatternEncodingTermScreen;m_6375_(DDI)Z"
+      },
+      "com/gtocore/mixin/mc/client/ClientLevelMixin": {
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+        "getSkyColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_171660_(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyFlashTime()I": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104819_()I",
+        "getSkyDarken": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104805_(F)F",
+        "getCloudColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104808_(F)Lnet/minecraft/world/phys/Vec3;"
+      },
+      "com/gtocore/mixin/mc/client/FogRendererMixin": {
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
+        "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V"
       }
     }
   }

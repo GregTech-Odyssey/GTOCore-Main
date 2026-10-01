@@ -1524,15 +1524,15 @@ public final class MaterialA {
                 .color(0x32d3d3)
                 .iconSet(BRIGHT)
                 .buildAndRegister();
-        PrimordialHeliumPlasma = material("primordial_helium_plasma", "原始氦等离子体")
+        PrimordialHeliumPlasma = material("primordial_helium", "恒星聚变氦")
                 .temp(24000)
-                .color(0x32d3d3)
+                .color(0xddd388)
                 .iconSet(BRIGHT)
                 .fluid(FluidStorageKeys.PLASMA, FluidState.PLASMA)
                 .buildAndRegister();
-        PrimordialPaleozoicIronPlasma = material("primordial_paleozoic_iron_plasma", "原始老生代铁等离子体")
+        PrimordialPaleozoicIronPlasma = material("primordial_paleozoic_iron", "恒星聚变铁")
                 .temp(24000)
-                .color(0x32d3d3)
+                .color(0xe2a3d3)
                 .iconSet(BRIGHT)
                 .fluid(FluidStorageKeys.PLASMA, FluidState.PLASMA)
                 .buildAndRegister();

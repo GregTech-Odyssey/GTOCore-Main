@@ -1,0 +1,20 @@
+{
+  "vertex": "gtocore:solar_storm_heat",
+  "fragment": "gtocore:solar_storm_heat",
+  "attributes": ["Position", "UV0"],
+  "samplers": [{ "name": "DiffuseSampler" }, { "name": "DepthSampler" }],
+  "uniforms": [
+    {
+      "name": "InverseViewProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    { "name": "ScreenSize", "type": "float", "count": 2, "values": [1, 1] },
+    { "name": "CameraHeight", "type": "float", "count": 1, "values": [0] },
+    { "name": "GroundHeight", "type": "float", "count": 1, "values": [63] },
+    { "name": "ViewDistance", "type": "float", "count": 1, "values": [256] },
+    { "name": "Time", "type": "float", "count": 1, "values": [0] },
+    { "name": "Strength", "type": "float", "count": 1, "values": [0] }
+  ]
+}
