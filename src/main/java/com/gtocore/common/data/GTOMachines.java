@@ -285,7 +285,7 @@ public final class GTOMachines {
     public static final MachineDefinition HEATER = machine("heater", "加热器", HeaterMachine::new)
             .tier(ULV)
             .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("heater"), GTRecipeTypes.STEAM_BOILER_RECIPES))
-            .recipeType(GTRecipeTypes.DUMMY_RECIPES)
+            .recipeType(GTRecipeTypes.STEAM_BOILER_RECIPES)
             .noRecipeModifier()
             .nonYAxisRotation()
             .tooltips(GTOMachineTooltips.HeaterMachineTooltips)
@@ -647,7 +647,7 @@ public final class GTOMachines {
             .renderer(() -> new OverlaySteamMachineRenderer(GTCEu.id("block/machine/part/" + "steam_hatch")))
             .tooltips(Component.translatable("gtceu.universal.tooltip.fluid_storage_capacity", FormattingUtil.formatNumbers(1048576000)),
                     Component.translatable(LargeSteamHatchPartMachine.ACCEPTED_FLUID).append(GTOMaterials.SupercriticalSteam.getFluid(1).getDisplayName()),
-                    Component.translatable(LargeSteamHatchPartMachine.CONVERSION_RATE, Component.literal("0.25").withStyle(ChatFormatting.GREEN)))
+                    Component.translatable(LargeSteamHatchPartMachine.CONVERSION_RATE, Component.literal("0.125").withStyle(ChatFormatting.GREEN)))
             .allowCoverOnFront(true)
             .register();
 

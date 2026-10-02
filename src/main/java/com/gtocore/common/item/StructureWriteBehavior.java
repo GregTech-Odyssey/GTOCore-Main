@@ -5,7 +5,7 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.pattern.DebugBlockPattern;
+import com.gtolib.api.pattern.StructureScan;
 import com.gtolib.utils.*;
 import com.gtolib.utils.iostream.IOStreamCodec;
 
@@ -80,7 +80,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
                                  ItemStack stack,
                                  String partId,
                                  Block partBlock,
-                                 DebugBlockPattern pattern,
+                                 StructureScan pattern,
                                  RelativeDirection[] directions) {}
 
     @Override
@@ -93,7 +93,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
                 return Component.literal((1 + pos[1].getX() - pos[0].getX()) + " × " + (1 + pos[1].getY() - pos[0].getY()) + " × " + (1 + pos[1].getZ() - pos[0].getZ()));
             });
             status.addLine(ORDER, () -> {
-                var dirs = DebugBlockPattern.getDir(getDir(holder.getHeld()));
+                var dirs = StructureScan.getDir(getDir(holder.getHeld()));
                 return Component.literal("C:" + dirs[0].name() + "  S:" + dirs[1].name() + "  A:" + dirs[2].name());
             });
             var mode = ButtonGroup.single(2, i -> Component.translatable(i == 0 ? MODE_BIND : MODE_EXPORT),
@@ -132,8 +132,8 @@ public final class StructureWriteBehavior implements IItemUIFactory {
         }
 
         Direction direction = getDir(stack);
-        RelativeDirection[] directions = DebugBlockPattern.getDir(direction);
-        DebugBlockPattern pattern = new DebugBlockPattern(
+        RelativeDirection[] directions = StructureScan.getDir(direction);
+        StructureScan pattern = new StructureScan(
                 holder.getPlayer().level(),
                 bounds[0].getX(),
                 bounds[0].getY(),

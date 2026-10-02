@@ -13,7 +13,6 @@ import com.gtolib.utils.iostream.IOStreamEncoder;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
-import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.integration.emi.multipage.StructurePreviewTrigger;
@@ -87,7 +86,7 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
 
     private Widget createWidget(GTRecipeWidget.PageFrame frame) {
         int width = frame.minWidth(), height = frame.fillHeight();
-        var structure = StructurePattern.of(definition);
+        var structure = definition.displayStructure();
         if (structure == null) return new Widget(0, 0, width, height);
         var preview = new StructurePreviewWidget(definition, structure, width, height, () -> openFull(structure));
         return frame.card() ? new Card(frame, preview) : preview;
@@ -192,7 +191,7 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
 
     private CachedInputs computeInputs() {
         Set<Set<Item>> groups = new ObjectOpenHashSet<>();
-        var structure = StructurePattern.of(definition);
+        var structure = definition.displayStructure();
         if (structure != null) {
             for (var predicate : structure.predicates()) {
                 addGroups(predicate.common, groups);

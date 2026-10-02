@@ -143,3 +143,10 @@
    - **为什么**：`DataComponentMap`（经 `gtceu$getCapabilities()` Mixin 注入）绑定在 `Level` 实例字段上，**随 Level 对象一起被 GC**。用它存储的世界级数据在维度卸载时自动释放，无需（也严禁）依赖 `LevelEvent.Unload` / `ServerStoppedEvent` / 机器 `onUnload` 等回调手动删除——避免漏删、脏数据残留与内存泄露；重复存取的 entry 也不需手工清理。
    - **做法**：声明 `DataComponentKey<T> KEY = DataComponentKey.createNoCodec("...")`，用 `ILevel.getCapability(level, KEY)` / `ILevel.setCapability(level, KEY, value)` 读写。参考 `BeamManager`：数据对象持有 `Level` 字段，`get(Level)` 里 `getCapability` 若无则 `new` 并 `setCapability`，`getIfPresent(Level)` 只读不创建。
    - **注意**：capability 需要 `Level` **实例**（非 `ResourceKey<Level>`）才能定位；纯按维度 key 的全局快照（如客户端网络同步缓存、断开时需显式清空的短命数据）不适用此模式，可保留维度 Map，但必须明确其生命周期并在适当回调清理。
+
+### 数据包与重载
+
+37. **本项目的 Minecraft 数据包是固定的，配方、标签等内容大部分通过代码注册，不需要支持数据包重载（`/reload`）。**
+   - **不写重载适配**：不为重载监听 `AddReloadListenerEvent`、`TagsUpdatedEvent`、`RecipesUpdatedEvent` 等事件，也不为此添加版本号、脏标记或重复计算。
+   - **派生数据一次构建**：由注册表、配方、标签计算出的缓存与索引，在加载完成后构建一次，之后视为不可变。
+   - **审查不以此为问题**：「重载后数据过期」不作为代码审查意见提出。

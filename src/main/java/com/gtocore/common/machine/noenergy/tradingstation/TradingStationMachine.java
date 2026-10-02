@@ -46,8 +46,8 @@ import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
-import com.gregtechceu.gtceu.uiwidgets.cover.CoverTab;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.side.SideOverviewTab;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -341,7 +341,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         List<IFancyUIProvider> shopTabs = shopTabs();
         fixedTabs.forEach(sideTabs::attachSubTab);
         shopTabs.forEach(sideTabs::attachSubTab);
-        CoverTab.attach(sideTabs, this);
+        SideOverviewTab.attach(sideTabs, this);
 
         sideTabs.setOnTabSwitch((oldTab, newTab) -> shopSelected = newTab instanceof ShopTab shopTab && shopTab.groupIndex == groupSelected ? shopTab.shopIndex : -1);
 

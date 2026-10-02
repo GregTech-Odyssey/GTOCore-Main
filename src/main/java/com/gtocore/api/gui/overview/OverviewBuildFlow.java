@@ -4,7 +4,6 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.BuildUpload;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureBuild;
-import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -122,7 +121,7 @@ final class OverviewBuildFlow {
     }
 
     void choose(MultiblockMachineDefinition definition) {
-        var structure = StructurePattern.of(definition);
+        var structure = definition.displayStructure();
         if (structure == null) return;
         var values = StructureBuildFlow.remembered(definition, structure);
         var excluded = StructureConfigView.defaultExcluded(structure.tree(), values);

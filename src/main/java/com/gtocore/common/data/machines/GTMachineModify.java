@@ -40,9 +40,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.Locale;
-import java.util.function.Function;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
@@ -107,16 +105,12 @@ public final class GTMachineModify {
     }
 
     private static void replaceStructures() {
-        setStructure(GTMultiMachines.STEAM_GRINDER, GTMachineModify::steamGrinder);
-        setStructure(GTMultiMachines.STEAM_OVEN, GTMachineModify::steamOven);
-        setStructure(GTMultiMachines.PRIMITIVE_BLAST_FURNACE, GTMachineModify::primitiveBlastFurnace);
-        setStructure(GTMultiMachines.LARGE_BOILER_BRONZE, GTMachineModify::largeBoilerBronze);
-        setStructure(GTMultiMachines.DISTILLATION_TOWER, GTMachineModify::distillationTower);
-        setStructure(GTMultiMachines.ELECTRIC_BLAST_FURNACE, GTMachineModify::electricBlastFurnace);
-    }
-
-    private static void setStructure(MultiblockMachineDefinition machine, Function<MultiblockMachineDefinition, Structure> structure) {
-        machine.setPatternFactory(Collections.singletonList(definition -> structure.apply(definition).toPattern(definition)));
+        GTMultiMachines.STEAM_GRINDER.setStructure(GTMachineModify::steamGrinder);
+        GTMultiMachines.STEAM_OVEN.setStructure(GTMachineModify::steamOven);
+        GTMultiMachines.PRIMITIVE_BLAST_FURNACE.setStructure(GTMachineModify::primitiveBlastFurnace);
+        GTMultiMachines.LARGE_BOILER_BRONZE.setStructure(GTMachineModify::largeBoilerBronze);
+        GTMultiMachines.DISTILLATION_TOWER.setStructure(GTMachineModify::distillationTower);
+        GTMultiMachines.ELECTRIC_BLAST_FURNACE.setStructure(GTMachineModify::electricBlastFurnace);
     }
 
     private static Structure steamGrinder(MultiblockMachineDefinition definition) {

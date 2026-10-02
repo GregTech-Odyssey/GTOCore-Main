@@ -19,7 +19,7 @@ import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IRotorHolderMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
-import com.gregtechceu.gtceu.api.pattern.BlockPattern;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
@@ -354,7 +354,7 @@ public final class GTOPredicates {
     }
 
     static {
-        BlockPattern.addWhitelistBlockEntity(ManaPoolBlockEntity.class);
+        Structure.addWhitelistBlockEntity(ManaPoolBlockEntity.class);
     }
 
     public static final class DataKeys {

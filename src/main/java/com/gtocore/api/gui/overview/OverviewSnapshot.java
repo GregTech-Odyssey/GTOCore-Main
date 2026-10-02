@@ -2,7 +2,6 @@ package com.gtocore.api.gui.overview;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
-import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 
 import net.minecraft.core.BlockPos;
@@ -53,7 +52,7 @@ public record OverviewSnapshot(List<Module> modules, List<Anchor> anchors, byte 
         @Nullable
         public Layout layout() {
             var definition = definition();
-            var structure = definition == null ? null : StructurePattern.of(definition);
+            var structure = definition == null ? null : definition.displayStructure();
             return structure == null ? null : structure.layout(values);
         }
 

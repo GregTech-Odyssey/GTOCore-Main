@@ -310,6 +310,11 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         }
 
         @Override
+        public void refreshPriority() {
+            this.priority = 10000;
+        }
+
+        @Override
         public RecipeHandlerUnit wrapper(Collection<IRecipeHandler> handlers) {
             return new ProgrammableRHL(IO.IN, part, handlers);
         }

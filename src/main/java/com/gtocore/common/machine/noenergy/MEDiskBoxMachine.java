@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy;
 
 import com.gtocore.common.data.GTOTickTimeMonitors;
+import com.gtocore.common.machine.multiblock.part.ae.IndexedStorages;
 
 import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -102,8 +103,6 @@ public final class MEDiskBoxMachine extends MetaMachine
     private CellDataStorage dataStorage;
     private boolean dirty;
     private boolean observe;
-    /// 存储转移进行中：这期间自己的 extract 一律为 0，网络取物只能从别的存储拿
-    private boolean transferring;
 
     public MEDiskBoxMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -263,7 +262,8 @@ public final class MEDiskBoxMachine extends MetaMachine
         ensureIndex();
         var data = cellStorage();
         if (data == CellDataStorage.EMPTY) return 0;
-        amount = (long) Math.min(capacity - data.getBytes(), amount);
+        double free = capacity - data.getBytes();
+        if (amount > free) amount = IndexedStorages.limitByBytes(amount, free, what.getAmountPerByte());
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
             var map = data.getStoredMap();
@@ -279,7 +279,6 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @Override
     public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
-        if (transferring) return 0;
         var data = cellStorage();
         if (data == CellDataStorage.EMPTY) return 0;
         var map = data.getStoredMap();
@@ -310,7 +309,7 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     // ==================== 存储转移 ====================
 
-    /// 存储转移（与存储访问仓同口径）：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处
+    /// 存储转移（与存储访问仓同口径）：把网络里其它真实存储的内容搬进本箱，装不下的留在原处
     private void transferFromNetwork() {
         if (isRemote() || !isOnline) return;
         ensureIndex();
@@ -318,38 +317,9 @@ public final class MEDiskBoxMachine extends MetaMachine
         if (data == CellDataStorage.EMPTY) return;
         var grid = getMainNode().getGrid();
         if (grid == null) return;
-        var network = grid.getStorageService().getInventory();
-        var networkContent = new KeyCounter();
-        network.getAvailableStacks(networkContent);
-        if (networkContent.isEmpty()) return;
-        var source = IActionSource.ofMachine(this);
-        transferring = true;
-        try {
-            for (var entry : networkContent) {
-                var what = entry.getKey();
-                if (what == null) continue;
-                // 网络清单里包含本箱自己，减掉自己已有的那部分才只搬别人的
-                long want = entry.getLongValue() - getOwnAmount(what);
-                if (want < 1) continue;
-                long possible = insert(what, want, Actionable.SIMULATE, source);
-                if (possible < 1) continue;
-                long extracted = network.extract(what, possible, Actionable.MODULATE, source);
-                if (extracted < 1) continue;
-                long inserted = insert(what, extracted, Actionable.MODULATE, source);
-                if (inserted < extracted) network.insert(what, extracted - inserted, Actionable.MODULATE, source);
-            }
-        } finally {
-            transferring = false;
-        }
+        double used = IndexedStorages.transferFromNetwork(grid, this, this, capacity - data.getBytes(), IActionSource.ofMachine(this));
+        data.setBytes(data.getBytes() + used);
         onChanged();
-    }
-
-    /// 本箱自己存了多少
-    private long getOwnAmount(AEKey what) {
-        var data = cellStorage();
-        if (data == CellDataStorage.EMPTY) return 0;
-        var map = data.getStoredMap();
-        return map == null ? 0 : map.getAmount(what);
     }
 
     // ==================== 界面 ====================

@@ -1485,7 +1485,7 @@
   "block.gtocore.ulv_assembler": "Primitive Assembler§r",
   "block.gtocore.ulv_chemical_reactor": "Primitive Chemical Reactor§r",
   "block.gtocore.ulv_fluid_solidifier": "Primitive Fluid Solidifier§r",
-  "block.gtocore.ulv_hermetic_casing": "Hermetic Casing ",
+  "block.gtocore.ulv_hermetic_casing": "Hermetic Casing 0",
   "block.gtocore.ulv_lathe": "Primitive Lathe§r",
   "block.gtocore.ulv_loom": "Primitive Loom§r",
   "block.gtocore.ulv_mana_machine_hull": "Primitive Mana Machine Hull",

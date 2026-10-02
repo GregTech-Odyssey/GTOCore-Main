@@ -1,7 +1,6 @@
 package com.gtocore.api.gui.overview;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.uipro.ElementState;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -86,7 +85,7 @@ final class OverviewSelector {
     private boolean fits(MultiblockMachineDefinition definition) {
         if (fits.containsKey(definition)) return fits.getBoolean(definition);
         boolean result = false;
-        var structure = StructurePattern.of(definition);
+        var structure = definition.displayStructure();
         var data = view.selected();
         if (structure != null && data != null) {
             var layout = structure.layout(StructureBuildFlow.remembered(definition, structure));
@@ -163,7 +162,7 @@ final class OverviewSelector {
             this.enabled = enabled;
             this.onClick = onClick;
             layout(l -> l.column().width(TILE).alignCenter().gapAll(1).paddingBottom(1));
-            var structure = StructurePattern.of(definition);
+            var structure = definition.displayStructure();
             var layout = structure == null ? null : structure.layout(structure.defaultValues());
             var thumb = new StructureScene(THUMB, THUMB, false);
             if (layout != null) {

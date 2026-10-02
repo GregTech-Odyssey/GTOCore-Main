@@ -4,7 +4,6 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Assembly;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
-import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -90,7 +89,7 @@ final class OverviewCapture {
             var pending = queue.poll();
             var machine = pending.machine;
             var definition = machine.getDefinition();
-            var structure = definition.hasStructure() && definition.getPatternFactory()[0].get() instanceof StructurePattern pattern ? pattern.getStructure() : null;
+            var structure = definition.getStructure();
             if (structure == null) continue;
             assembly = machine.isFormed() ? machine.getAssembly() : null;
             values = assembly != null ? structure.valuesOf(assembly) : structure.defaultValues();

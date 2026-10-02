@@ -184,6 +184,7 @@ public final class MEManaInterface extends MetaMachine implements
     private void setPriority(int integer) {
         if (integer != this.priority) {
             this.priority = integer;
+            onChanged();
             if (getMainNode() != null) IStorageProvider.requestUpdate(getMainNode());
         }
     }

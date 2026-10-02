@@ -97,7 +97,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     @Setter
     boolean check;
     boolean dirty = false;
-    boolean transferring;
 
     @Setter
     @Getter
@@ -159,32 +158,10 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         if (isRemote() || uuid == null || !isOnline) return;
         var grid = getMainNode().getGrid();
         if (grid == null) return;
-        var network = grid.getStorageService().getInventory();
-        var networkContent = new KeyCounter();
-        network.getAvailableStacks(networkContent);
-        if (networkContent.isEmpty()) return;
-        var source = IActionSource.ofMachine(this);
-        transferring = true;
-        try {
-            for (var entry : networkContent) {
-                var what = entry.getKey();
-                if (what == null) continue;
-                long want = entry.getLongValue() - getOwnAmount(what);
-                if (want < 1) continue;
-                long possible = insert(what, want, Actionable.SIMULATE, source);
-                if (possible < 1) continue;
-                long extracted = network.extract(what, possible, Actionable.MODULATE, source);
-                if (extracted < 1) continue;
-                long inserted = insert(what, extracted, Actionable.MODULATE, source);
-                if (inserted < extracted) network.insert(what, extracted - inserted, Actionable.MODULATE, source);
-            }
-        } finally {
-            transferring = false;
-        }
+        double used = IndexedStorages.transferFromNetwork(grid, this, this, isInfinite ? Double.POSITIVE_INFINITY : capacity - getBytes(), IActionSource.ofMachine(this));
+        if (!isInfinite) addBytes(used);
         onChanged();
     }
-
-    abstract long getOwnAmount(AEKey what);
 
     private void setPriority(long priority) {
         current = Math.clamp(priority, PRIORITY_MIN, PRIORITY_MAX);
@@ -221,6 +198,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     public abstract int getTypes();
 
     public abstract double getBytes();
+
+    abstract void addBytes(double bytes);
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
@@ -259,14 +238,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         @Override
         public Object getResourceIdentity() {
             return getCellStorage();
-        }
-
-        @Override
-        long getOwnAmount(AEKey what) {
-            var data = getCellStorage();
-            if (data == CellDataStorage.EMPTY) return 0;
-            var map = data.getStoredMap();
-            return map == null ? 0 : map.getAmount(what);
         }
 
         @Override
@@ -321,6 +292,12 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             }
         }
 
+        @Override
+        void addBytes(double bytes) {
+            var data = getCellStorage();
+            if (data != CellDataStorage.EMPTY) data.setBytes(data.getBytes() + bytes);
+        }
+
         protected CellDataStorage getCellStorage() {
             if (dataStorage != null) return dataStorage;
             if (uuid == null || isRemote()) return CellDataStorage.EMPTY;
@@ -339,7 +316,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return 0;
             if (!isInfinite) {
-                amount = (long) Math.min(capacity - data.getBytes(), amount);
+                double free = capacity - data.getBytes();
+                if (amount > free) amount = IndexedStorages.limitByBytes(amount, free, what.getAmountPerByte());
             }
             if (amount < 1) return 0;
             if (mode == Actionable.MODULATE) {
@@ -356,7 +334,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         @Override
         public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
-            if (this.transferring) return 0;
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return 0;
             var map = data.getStoredMap();
@@ -543,14 +520,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
-        long getOwnAmount(AEKey what) {
-            var data = getCellStorage();
-            if (data == BigCellDataStorage.EMPTY) return 0;
-            var map = data.getStoredMap();
-            return map == null ? 0 : map.getLongAmount(what);
-        }
-
-        @Override
         public void setUUID(UUID uuid) {
             this.uuid = uuid;
             dataStorage = null;
@@ -602,6 +571,12 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             }
         }
 
+        @Override
+        void addBytes(double bytes) {
+            var data = getCellStorage();
+            if (data != BigCellDataStorage.EMPTY) data.setBytes(data.getBytes() + bytes);
+        }
+
         public BigCellDataStorage getCellStorage() {
             if (dataStorage != null) return dataStorage;
             if (uuid == null || isRemote()) return BigCellDataStorage.EMPTY;
@@ -620,7 +595,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             var data = getCellStorage();
             if (data == BigCellDataStorage.EMPTY) return 0;
             if (!isInfinite) {
-                amount = (long) Math.min(capacity - data.getBytes(), amount);
+                double free = capacity - data.getBytes();
+                if (amount > free) amount = IndexedStorages.limitByBytes(amount, free, what.getAmountPerByte());
             }
             if (amount < 1) return 0;
             if (mode == Actionable.MODULATE) {
@@ -637,7 +613,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         @Override
         public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
-            if (this.transferring) return 0;
             var data = getCellStorage();
             if (data == BigCellDataStorage.EMPTY) return 0;
             var map = data.getStoredMap();
@@ -768,7 +743,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             var data = getCellStorage();
             if (data == CellDataStorage.EMPTY) return 0;
             if (!isInfinite) {
-                amount = (long) Math.min(capacity - data.getBytes(), amount);
+                double free = capacity - data.getBytes();
+                if (amount > free) amount = IndexedStorages.limitByBytes(amount, free, what.getAmountPerByte());
             }
             if (amount < 1) return 0;
             if (mode != Actionable.MODULATE) {
@@ -787,6 +763,13 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             return inserted;
         }
 
+        private long storedAmount(AEKey what) {
+            var data = getCellStorage();
+            if (data == CellDataStorage.EMPTY) return 0;
+            var map = data.getStoredMap();
+            return map == null ? 0 : map.getAmount(what);
+        }
+
         private long insertLimit(AEKey what) {
             if (!inputLimitEnabled) return Long.MAX_VALUE;
             long limit = inputLimits.getAmount(what);
@@ -799,7 +782,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (inputLimitEnabled) {
                 long limit = inputLimits.getAmount(what);
                 if (limit == FORBIDDEN) return false;
-                if (limit > 0 && getOwnAmount(what) >= limit) return false;
+                if (limit > 0 && storedAmount(what) >= limit) return false;
             }
             return super.isPreferredStorageFor(what, source);
         }
@@ -807,7 +790,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         @Override
         public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (!outputLimitEnabled) return super.extract(what, amount, mode, source);
-            if (this.transferring) return 0;
             long limit = outputLimits.getAmount(what);
             if (limit == FORBIDDEN) return super.extract(what, amount, mode, source);
             var data = getCellStorage();

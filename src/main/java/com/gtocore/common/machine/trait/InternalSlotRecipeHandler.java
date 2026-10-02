@@ -60,6 +60,11 @@ public final class InternalSlotRecipeHandler {
             this.priority = IFilteredHandler.HIGH;
         }
 
+        @Override
+        public void refreshPriority() {
+            this.priority = IFilteredHandler.HIGH;
+        }
+
         protected abstract @Nullable GTRecipeDefinition getCachedRecipe();
 
         protected abstract void clearCachedRecipe();

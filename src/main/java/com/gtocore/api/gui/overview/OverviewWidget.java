@@ -14,7 +14,6 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.BuildUpload;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PlayerSupply;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureBuild;
-import com.gregtechceu.gtceu.api.machine.multiblockpro.StructurePattern;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.network.RequestThrottle;
 import com.gregtechceu.gtceu.uipro.data.RPC;
@@ -238,7 +237,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
             player.sendSystemMessage(Component.translatable(LANG_STALE));
             return;
         }
-        var structure = StructurePattern.of(definition);
+        var structure = definition.displayStructure();
         var layout = structure == null ? null : structure.layout(values);
         var choices = layout == null ? null : BuildUpload.take(player, upload, definition, values, layout.cells().size());
         if (choices == null) {

@@ -455,9 +455,9 @@ final class StellarForge {
                 .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem(), 16)
                 .chancedOutput(GTOMaterials.Mana.getFluid(14400), 7000, 10)
                 .circuitMeta(1)
+                .MANAt(-50000000)
                 .EUt(31457280)
                 .duration(80)
-                .MANAt(-50000000)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)
                 .save();
@@ -466,9 +466,9 @@ final class StellarForge {
                 .inputItems(GTOBlocks.LEPTONIC_CHARGE.asItem(), 16)
                 .chancedOutput(GTOMaterials.Mana.getFluid(57600), 7000, 10)
                 .circuitMeta(2)
+                .MANAt(-400000000)
                 .EUt(31457280)
                 .duration(80)
-                .MANAt(-400000000)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 2)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)
                 .save();
@@ -477,9 +477,9 @@ final class StellarForge {
                 .inputItems(GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem(), 16)
                 .chancedOutput(GTOMaterials.Mana.getFluid(307200), 7000, 10)
                 .circuitMeta(3)
+                .MANAt(-3200000000L)
                 .EUt(31457280)
                 .duration(80)
-                .MANAt(-3200000000L)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 3)
                 .category(GTORecipeCategories.STELLER_MANA_PRODUCING)
                 .save();

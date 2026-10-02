@@ -50,6 +50,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
 
     private final ManaTrait manaTrait;
 
+    @SaveToDisk(defaultValue = "0")
     private int consecutiveRecipes;
 
     public StellarForgeMachine(MetaMachineBlockEntity holder) {
