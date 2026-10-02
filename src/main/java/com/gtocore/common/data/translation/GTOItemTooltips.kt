@@ -166,15 +166,27 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         section("内置能量核心，无需额外供电，可持续运行 730 标准日。" translatedTo "Built-in energy core, no external power required, can operate continuously for 730 standard days.")
         guide("右键打开银行界面，支持存款、取款及向其他认证账户转账。" translatedTo "Right-click to open the bank interface, supporting deposit, withdrawal, and transfer to other certified accounts.")
         highlight("请勿向未认证账户转账，星际金融法对跨境诈骗有严格处罚。" translatedTo "Do not transfer to uncertified accounts; interstellar financial laws have strict penalties for cross-border fraud.") {
-            color(
-                0xFF5555
-            )
+            color(0xFF5555)
         }
     }
 
-    // Modification
+    // 保持注册顺序，翻译前缀与行号由各 builder 独立管理。
     fun initLanguage() {
         GTItems.INFINITE_SPRAY_CAN.asItem().setTooltips(InfiniteSprayCanTooltips)
+        registerNetworkDeviceTooltips()
+        registerSmallStorageCellTooltips()
+        registerCraftingUnitTooltips()
+        registerChargeBombTooltips()
+        registerLargeStorageCellTooltips()
+        registerMagicStorageTooltips()
+        registerUtilityItemTooltips()
+        registerMufflerTooltips()
+        registerGtmThingsItemTooltips()
+        registerMachineTooltips()
+        registerTissueTooltips()
+    }
+
+    private fun registerNetworkDeviceTooltips() {
         AEParts.STORAGE_BUS.asItem().setTooltips(
             ComponentListSupplier {
                 setTranslationPrefix("storage_bus")
@@ -209,7 +221,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 }.editionByGTONormal(),
             )
         }
+    }
 
+    private fun registerSmallStorageCellTooltips() {
         listOf(
             AEItems.ITEM_CELL_1K.asItem(),
             AEItems.ITEM_CELL_4K.asItem(),
@@ -220,14 +234,11 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
             AEItems.FLUID_CELL_16K.asItem(),
             AEItems.FLUID_CELL_64K.asItem(),
         ).forEach {
-            it.setTooltips(
-                ComponentListSupplier {
-                    setTranslationPrefix("me_storage_cell")
-
-                    highlight("存储容量最高是原来的二倍" translatedTo "Storage capacity is doubled compared to the original")
-                }.editionByGTONormal(),
-            )
+            it.setTooltips(storageCellTooltips(false))
         }
+    }
+
+    private fun registerCraftingUnitTooltips() {
         listOf(
             AEBlocks.CRAFTING_STORAGE_1K,
             AEBlocks.CRAFTING_STORAGE_4K,
@@ -241,7 +252,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
             val type = it.block().type
             it.asItem().setTooltips(
                 ComponentListSupplier {
-                    setTranslationPrefix("crafting_storage_" + type.acceleratorThreads + "_" + type.storageBytes)
+                    setTranslationPrefix("crafting_storage_${type.acceleratorThreads}_${type.storageBytes}")
 
                     info("提供§b${type.acceleratorThreads}§r并行处理" translatedTo "Provides §b${type.acceleratorThreads}§r parallel processing")
                     if (type.storageBytes > 0) {
@@ -250,37 +261,45 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 }.editionByGTONormal(),
             )
         }
-        val bomb = { block: Block, activateItem: Item ->
-            block.asItem().setTooltips(
-                ComponentListSupplier {
-                    setTranslationPrefix("charge_bomb")
+    }
 
-                    if (GTCEu.isDataGen() || !GTOConfig.INSTANCE.gamePlay.disableChargeBomb) {
-                        info(translatable("gtocore.tooltip.item.activate_by", activateItem.description))
-                        info("也可以把它喂给热爆花..." translatedTo "It can also be fed to entropinnyum flowers...")
-                    } else {
-                        error(translatable("gtocore.tooltip.item.charge_bomb.disabled"))
-                    }
-                },
-            )
-        }
-        bomb(GTOBlocks.NAQUADRIA_CHARGE.get(), GTItems.QUANTUM_STAR.asItem())
-        bomb(GTOBlocks.LEPTONIC_CHARGE.get(), GTItems.GRAVI_STAR.asItem())
-        bomb(GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.get(), GTOItems.UNSTABLE_STAR.asItem())
+    private fun registerChargeBombTooltips() {
+        registerChargeBomb(GTOBlocks.NAQUADRIA_CHARGE.get(), GTItems.QUANTUM_STAR.asItem())
+        registerChargeBomb(GTOBlocks.LEPTONIC_CHARGE.get(), GTItems.GRAVI_STAR.asItem())
+        registerChargeBomb(GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.get(), GTOItems.UNSTABLE_STAR.asItem())
+    }
 
+    private fun registerChargeBomb(block: Block, activateItem: Item) {
+        block.asItem().setTooltips(
+            ComponentListSupplier {
+                setTranslationPrefix("charge_bomb")
+                if (GTCEu.isDataGen() || !GTOConfig.INSTANCE.gamePlay.disableChargeBomb) {
+                    info(translatable("gtocore.tooltip.item.activate_by", activateItem.description))
+                    info("也可以把它喂给热爆花..." translatedTo "It can also be fed to entropinnyum flowers...")
+                } else {
+                    error(translatable("gtocore.tooltip.item.charge_bomb.disabled"))
+                }
+            }
+        )
+    }
+
+    private fun registerLargeStorageCellTooltips() {
         listOf(AEItems.ITEM_CELL_256K.asItem(), AEItems.FLUID_CELL_256K.asItem()).forEach {
-            it.setTooltips(
-                ComponentListSupplier {
-                    setTranslationPrefix("me_storage_cell")
-
-                    highlight("存储容量最高是原来的二倍" translatedTo "Storage capacity is doubled compared to the original")
-                    content("你走到了单个存储元件的尽头" translatedTo "You've reached the end of a single storage cell")
-                    increase(ComponentSlang.RecommendedToUse("ME存储器 (多方块结构)" translatedTo "ME Storage (MultiBlock)"))
-                    increase("他最高可以实现不限类型的无限存储" translatedTo "It can even store unlimited amounts of items and fluids without type limit")
-                }.editionByGTONormal(),
-            )
+            it.setTooltips(storageCellTooltips(true))
         }
+    }
 
+    private fun storageCellTooltips(includeExpansionAdvice: Boolean): ComponentListSupplier = ComponentListSupplier {
+        setTranslationPrefix("me_storage_cell")
+        highlight("存储容量最高是原来的二倍" translatedTo "Storage capacity is doubled compared to the original")
+        if (includeExpansionAdvice) {
+            content("你走到了单个存储元件的尽头" translatedTo "You've reached the end of a single storage cell")
+            increase(ComponentSlang.RecommendedToUse("ME存储器 (多方块结构)" translatedTo "ME Storage (MultiBlock)"))
+            increase("他最高可以实现不限类型的无限存储" translatedTo "It can even store unlimited amounts of items and fluids without type limit")
+        }
+    }.editionByGTONormal()
+
+    private fun registerMagicStorageTooltips() {
         fabulousPool.asItem().setTooltips(
             ComponentListSupplier {
                 setTranslationPrefix("fabulous_pool")
@@ -295,7 +314,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 content("能存一千普通罐子的魔源" translatedTo "Can hold the source of one thousand regular jars")
             },
         )
+    }
 
+    private fun registerUtilityItemTooltips() {
         listOf(AEItems.CERTUS_QUARTZ_KNIFE.asItem(), AEItems.NETHER_QUARTZ_KNIFE.asItem()).forEach {
             it.setTooltips(
                 ComponentListSupplier {
@@ -340,7 +361,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 highlight("要不试试放入AE2样板？" translatedTo "How about slotting in an AE2 pattern?")
             }.editionByGTONormal(),
         )
+    }
 
+    private fun registerMufflerTooltips() {
         GTMachines.MUFFLER_HATCH.forEach {
             it?.asItem()?.setTooltips(
                 ComponentListSupplier {
@@ -354,7 +377,9 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 }.editionByGTONormal(),
             )
         }
+    }
 
+    private fun registerGtmThingsItemTooltips() {
         CustomItems.PROGRAMMABLE_COVER.get().setTooltips(
             ComponentListSupplier {
                 setTranslationPrefix("programmable_cover")
@@ -374,45 +399,43 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 }.editionByGTONormal(),
             )
         }
+    }
 
+    private fun registerMachineTooltips() {
         CustomMachines.ME_EXPORT_BUFFER.setTooltipBuilder { _, components ->
-            components.addAll(
-                ComponentListSupplier {
-                    addTranslatable("gtceu.machine.dual_hatch.export.tooltip")
-                    addTranslatable("gtceu.machine.me.export.tooltip")
-                    addTranslatable("gtceu.part_sharing.enabled")
-                    add(GTOMachineTooltips.AutoConnectMETooltips)
-                }.editionByGTONormal().get(),
-            )
+            ComponentListSupplier {
+                addTranslatable("gtceu.machine.dual_hatch.export.tooltip")
+                addTranslatable("gtceu.machine.me.export.tooltip")
+                addTranslatable("gtceu.part_sharing.enabled")
+                add(GTOMachineTooltips.AutoConnectMETooltips)
+            }.editionByGTONormal().apply(components)
         }
 
         GTMultiMachines.POWER_SUBSTATION.setTooltipBuilder { _, components ->
-            components.addAll(
-                ComponentListSupplier {
-                    addTranslatable("gtocore.lang.power_substation.tooltip.0")
-                    addTranslatable("gtocore.lang.power_substation.tooltip.1")
-                    addTranslatable("gtocore.lang.power_substation.tooltip.2")
-                }.editionByGTONormal().get(),
-            )
+            ComponentListSupplier {
+                addTranslatable("gtocore.lang.power_substation.tooltip.0")
+                addTranslatable("gtocore.lang.power_substation.tooltip.1")
+                addTranslatable("gtocore.lang.power_substation.tooltip.2")
+            }.editionByGTONormal().apply(components)
         }
 
         GTMachines.STEAM_HATCH.setTooltipBuilder { _, components ->
-            components.addAll(
-                ComponentListSupplier {
-                    addTranslatable(
-                        "gtceu.universal.tooltip.fluid_storage_capacity",
-                        FormattingUtil.formatNumbers(SteamHatchPartMachine.INITIAL_TANK_CAPACITY)
-                    )
-                    addTranslatable("gtceu.machine.steam.steam_hatch.tooltip")
-                    addTranslatable(
-                        "gtocore.machine.conversion_rate",
-                        Component.literal(FormattingUtil.formatNumbers(SteamParallelMultiblockMachine.CONVERSION_RATE))
-                            .withStyle(ChatFormatting.RED)
-                    )
-                }.get(),
-            )
+            ComponentListSupplier {
+                addTranslatable(
+                    "gtceu.universal.tooltip.fluid_storage_capacity",
+                    FormattingUtil.formatNumbers(SteamHatchPartMachine.INITIAL_TANK_CAPACITY)
+                )
+                addTranslatable("gtceu.machine.steam.steam_hatch.tooltip")
+                addTranslatable(
+                    "gtocore.machine.conversion_rate",
+                    Component.literal(FormattingUtil.formatNumbers(SteamParallelMultiblockMachine.CONVERSION_RATE))
+                        .withStyle(ChatFormatting.RED)
+                )
+            }.apply(components)
         }
+    }
 
+    private fun registerTissueTooltips() {
         listOf(
             GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.get(),
             GTOItems.MUTANT_CARDIOMYOCYTE_CLUSTER.get(),
@@ -421,10 +444,7 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
             GTOItems.AWAKENED_DRAGON_HEART.get(),
         ).forEach {
             val data = BioOscillationGenerator.TISSUE_MATERIALS_TIER[it]!!
-            val medium =
-                BioOscillationGenerator.BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.entries.filter { mediumTier -> mediumTier.value.tier == data.tier }
-                    .map { mediumTier -> mediumTier.key.localizedName }.firstOrNull()?.toComponentSupplier()
-                    ?: ("未知培养基" translatedTo "Unknown Medium")
+            val medium = mediumTooltip(data.tier)
             it.setTooltips(
                 ComponentListSupplier {
                     setTranslationPrefix("cardiomyocyte_cluster")
@@ -473,5 +493,12 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                 },
             )
         }
+    }
+
+    private fun mediumTooltip(tier: Int): ComponentSupplier {
+        val medium = BioOscillationGenerator.BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.entries
+            .firstOrNull { it.value.tier == tier }
+            ?.key?.localizedName
+        return medium?.toComponentSupplier() ?: ("未知培养基" translatedTo "Unknown Medium")
     }
 }
