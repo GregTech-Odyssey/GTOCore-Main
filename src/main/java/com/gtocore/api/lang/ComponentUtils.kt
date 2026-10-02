@@ -16,26 +16,38 @@ import dev.shadowsoffire.placebo.color.GradientColor
 
 import java.util.function.Supplier
 
-class ComponentListSupplier(var list: MutableList<ComponentSupplier> = mutableListOf()) : Supplier<@JvmSuppressWildcards List<Component>> {
+class ComponentListSupplier(
+    var list: MutableList<ComponentSupplier> = mutableListOf()
+) : Supplier<@JvmSuppressWildcards List<Component>> {
     var translationPrefix: String = ""
         private set
     var line: Int = 0
 
     override fun get(): List<Component> {
-        val result = list.map { it.get() }
+        val result = ArrayList<Component>(list.size)
+        for (supplier in list) {
+            result.add(supplier.get())
+        }
         return result
     }
+
     fun getSupplier(): Supplier<List<Component>> = this
-    fun getArray(): Array<Component> = get().toTypedArray()
+
+    fun getArray(): Array<Component> {
+        val suppliers = list.iterator()
+        return Array(list.size) { suppliers.next().get() }
+    }
 
     fun add(component: ComponentSupplier, style: ComponentSupplier.() -> ComponentSupplier = { this }) {
-        val styledComponent = style(component)
-        list.add(styledComponent)
+        list.add(style(component))
         line += 1
     }
+
     fun add(other: ComponentListSupplier) {
+        // 批量拼接不推进翻译行号；现有翻译键依赖此规则。
         list.addAll(other.list)
     }
+
     fun add(other: ComponentListSupplier, style: ComponentSupplier.() -> ComponentSupplier = { this }) {
         for (supplier in other.list) {
             add(supplier, style)
@@ -43,24 +55,21 @@ class ComponentListSupplier(var list: MutableList<ComponentSupplier> = mutableLi
     }
 
     fun addTranslatable(key: String, vararg args: Any?, style: ComponentSupplier.() -> ComponentSupplier = { this }) {
-        add(translatable(key, *args), style)
+        add((::translatable)(key, args), style)
     }
 
     fun apply(tooltips: MutableList<Component>) {
         tooltips.addAll(get())
     }
 
-    // ////////////////////////////////
-    // ****** 翻译前缀 ******//
-    // //////////////////////////////
+    // 翻译键与行号
     fun setTranslationPrefix(prefix: String) {
         this.translationPrefix = prefix
     }
 
     infix fun String.translatedTo(other: String): ComponentSupplier {
         if (this@translatedTo == other) return this.toLiteralSupplier()
-        val prefix = if (translationPrefix.isNotEmpty()) "${NewDataAttributes.PREFIX}.$translationPrefix.$line" else "${NewDataAttributes.PREFIX}.$line"
-        val translationKey = TranslationKeyProvider.getTranslationKey(this@translatedTo, other, prefix)
+        val translationKey = translationKey(this@translatedTo, other)
         return Component.translatable(translationKey).toComponentSupplier()
     }
 
@@ -75,14 +84,20 @@ class ComponentListSupplier(var list: MutableList<ComponentSupplier> = mutableLi
 
     fun String.translatedWithArgs(en: String, vararg args: Any?): ComponentSupplier {
         if (this@translatedWithArgs == en) return this.toLiteralSupplier()
-        val prefix = if (translationPrefix.isNotEmpty()) "${NewDataAttributes.PREFIX}.$translationPrefix.$line" else "${NewDataAttributes.PREFIX}.$line"
-        val translationKey = TranslationKeyProvider.getTranslationKey(this@translatedWithArgs, en, prefix)
-        return Component.translatable(translationKey, *args).toComponentSupplier()
+        val translationKey = translationKey(this@translatedWithArgs, en)
+        return translatableWithArguments(translationKey, args)
     }
 
-    // ////////////////////////////////
-    // ****** 便捷指令 ******//
-    // //////////////////////////////
+    private fun translationKey(cn: String, en: String): String {
+        val prefix = if (translationPrefix.isNotEmpty()) {
+            "${NewDataAttributes.PREFIX}.$translationPrefix.$line"
+        } else {
+            "${NewDataAttributes.PREFIX}.$line"
+        }
+        return TranslationKeyProvider.getTranslationKey(cn, en, prefix)
+    }
+
+    // 编辑标记
     fun editionByGTONormal(): ComponentListSupplier = this.apply {
         add(ComponentSlang.GTOSignal_Edition_ByGTONormal)
     }
@@ -90,6 +105,7 @@ class ComponentListSupplier(var list: MutableList<ComponentSupplier> = mutableLi
         add(ComponentSlang.GTOSignal_Edition_ByGTORemix)
     }
 }
+
 fun ComponentListSupplier(op: ComponentListSupplier.() -> Unit): ComponentListSupplier {
     val supplier = ComponentListSupplier()
     supplier.op()
@@ -97,24 +113,30 @@ fun ComponentListSupplier(op: ComponentListSupplier.() -> Unit): ComponentListSu
     return supplier
 }
 
-class ComponentSupplier(var component: Component, private val delayed: MutableList<(MutableComponent) -> Unit> = mutableListOf(), private val transform: MutableList<(ComponentSupplier) -> ComponentSupplier> = mutableListOf()) : Supplier<Component> {
+class ComponentSupplier(
+    var component: Component,
+    private val delayed: MutableList<(MutableComponent) -> Unit> = mutableListOf(),
+    private val transform: MutableList<(ComponentSupplier) -> ComponentSupplier> = mutableListOf()
+) : Supplier<Component> {
     override fun get(): MutableComponent {
         var supplier = this
-        // 先应用所有的transform变换
-        transform.forEach { transformation ->
+        // 变换先执行；延迟样式应用到变换结果的副本，不修改模板组件。
+        for (transformation in transform) {
             supplier = transformation(supplier)
         }
         val result = supplier.component.copy()
-        // 再应用所有的delayed操作
-        supplier.delayed.forEach { it(result) }
+        for (operation in supplier.delayed) {
+            operation(result)
+        }
         return result
     }
+
     fun apply(tooltips: MutableList<Component>) {
         tooltips.add(get())
     }
 
     operator fun plus(other: ComponentSupplier): ComponentSupplier {
-        val newSupplier = ComponentSupplier(component, delayed.toMutableList(), transform.toMutableList())
+        val newSupplier = copySupplier()
         newSupplier.delayed.add { result ->
             result.append(other.get())
         }
@@ -122,21 +144,21 @@ class ComponentSupplier(var component: Component, private val delayed: MutableLi
     }
 
     private fun operatorComponent(op: MutableComponent.() -> Unit): ComponentSupplier {
-        val newSupplier = ComponentSupplier(component, delayed.toMutableList(), transform.toMutableList())
+        val newSupplier = copySupplier()
         newSupplier.delayed.add { result ->
             op.invoke(result)
         }
         return newSupplier
     }
     private fun transformComponent(trans: (ComponentSupplier) -> ComponentSupplier): ComponentSupplier {
-        val newSupplier = ComponentSupplier(component, delayed.toMutableList(), transform.toMutableList())
+        val newSupplier = copySupplier()
         newSupplier.transform.add(trans)
         return newSupplier
     }
 
-    // ////////////////////////////////
-    // ****** 颜色 ******//
-    // //////////////////////////////
+    private fun copySupplier() = ComponentSupplier(component, delayed.toMutableList(), transform.toMutableList())
+
+    // 颜色（动态颜色仍在 get() 时求值）
     fun gray(): ComponentSupplier = operatorComponent {
         withStyle { it.withColor(ChatFormatting.GRAY) }
     }
@@ -205,9 +227,7 @@ class ComponentSupplier(var component: Component, private val delayed: MutableLi
         withStyle { it.withColor(int) }
     }
 
-    // ////////////////////////////////
-    // ****** 滚动 ******//
-    // //////////////////////////////
+    // 滚动文字
     fun scrollSuprachronal(): ComponentSupplier = transformComponent { supplier ->
         StringUtils.white_blue(supplier.component.string).toLiteralSupplier()
     }
@@ -227,37 +247,33 @@ class ComponentSupplier(var component: Component, private val delayed: MutableLi
         StringUtils.dark_purplish_red(supplier.component.string).toLiteralSupplier()
     }
 
-    // ////////////////////////////////
-    // ****** 格式 ******//
-    // //////////////////////////////
-    fun italic(): ComponentSupplier {
-        operatorComponent { withStyle(ChatFormatting.ITALIC) }
-        return this
-    }
-    fun bold(): ComponentSupplier {
-        operatorComponent { withStyle(ChatFormatting.BOLD) }
-        return this
-    }
-    fun underline(): ComponentSupplier {
-        operatorComponent { withStyle(ChatFormatting.UNDERLINE) }
-        return this
-    }
-    fun strikethrough(): ComponentSupplier {
-        operatorComponent { withStyle(ChatFormatting.STRIKETHROUGH) }
-        return this
-    }
-    fun obfuscated(): ComponentSupplier {
-        operatorComponent { withStyle(ChatFormatting.OBFUSCATED) }
-        return this
-    }
-    fun reset(): ComponentSupplier {
-        operatorComponent { withStyle(ChatFormatting.RESET) }
-        return this
-    }
+    // 格式操作与颜色操作一样返回独立的 supplier。
+    fun italic(): ComponentSupplier = operatorComponent { withStyle(ChatFormatting.ITALIC) }
+
+    fun bold(): ComponentSupplier = operatorComponent { withStyle(ChatFormatting.BOLD) }
+
+    fun underline(): ComponentSupplier = operatorComponent { withStyle(ChatFormatting.UNDERLINE) }
+
+    fun strikethrough(): ComponentSupplier = operatorComponent { withStyle(ChatFormatting.STRIKETHROUGH) }
+
+    fun obfuscated(): ComponentSupplier = operatorComponent { withStyle(ChatFormatting.OBFUSCATED) }
+
+    fun reset(): ComponentSupplier = operatorComponent { withStyle(ChatFormatting.RESET) }
 }
+
 fun Component.toComponentSupplier() = ComponentSupplier(this.copy())
 fun <T> T.toLiteralSupplier() = (Component.literal(this.toString())).toComponentSupplier()
-fun translatable(key: String, vararg args: Any?) = Component.translatable(key, *args).toComponentSupplier()
+fun translatable(key: String, vararg args: Any?) = translatableWithArguments(key, args)
+
+private fun translatableWithArguments(key: String, args: Array<out Any?>): ComponentSupplier {
+    // 保留参数快照，避免调用方后续修改数组影响已构建的提示。
+    val component = if (args.isEmpty()) {
+        Component.translatable(key)
+    } else {
+        Component.translatable(key, *args)
+    }
+    return component.toComponentSupplier()
+}
 infix fun String.translatedTo(other: String): ComponentSupplier {
     val translationKey = TranslationKeyProvider.getTranslationKey(this, other)
     return Component.translatable(translationKey).toComponentSupplier()
