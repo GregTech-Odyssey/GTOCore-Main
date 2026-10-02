@@ -1,16 +1,19 @@
 package com.gtocore.common.item
 
+import com.gregtechceu.gtceu.api.item.ComponentItem
 import net.minecraft.client.color.item.ItemColor
-import net.minecraft.world.item.Item
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 
-import com.gregtechceu.gtceu.api.item.ComponentItem
-
-open class ColoringItems protected constructor(properties: Item.Properties, private val itemColor: Int, private val tintLayer: Int) : ComponentItem(properties) {
+open class ColoringItems protected constructor(
+    properties: Properties,
+    private val itemColor: Int,
+    private val tintLayer: Int
+) : ComponentItem(properties) {
     companion object {
         @JvmStatic
-        fun create(properties: Item.Properties, color: Int, tintLayer: Int): ColoringItems = ColoringItems(properties, color, tintLayer)
+        fun create(properties: Properties, itemColor: Int, tintLayer: Int): ColoringItems =
+            ColoringItems(properties, itemColor, tintLayer)
 
         @JvmStatic
         @OnlyIn(Dist.CLIENT)

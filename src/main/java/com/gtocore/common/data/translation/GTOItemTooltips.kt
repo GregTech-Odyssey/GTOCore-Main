@@ -1,28 +1,5 @@
 package com.gtocore.common.data.translation
 
-import com.gtocore.api.lang.ComponentListSupplier
-import com.gtocore.api.lang.toComponentSupplier
-import com.gtocore.api.lang.toLiteralSupplier
-import com.gtocore.api.lang.translatable
-import com.gtocore.api.lang.translatedTo
-import com.gtocore.api.misc.AutoInitialize
-import com.gtocore.common.data.GTOBlocks
-import com.gtocore.common.data.GTOItems
-import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator
-import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator
-import com.gtocore.config.GTOConfig
-import com.gtocore.config.GTORules
-import com.gtocore.utils.setTooltips
-
-import net.minecraft.ChatFormatting
-import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.Items
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
-import net.minecraftforge.registries.ForgeRegistries
-
 import appeng.core.definitions.AEBlocks
 import appeng.core.definitions.AEItems
 import appeng.core.definitions.AEParts
@@ -35,12 +12,24 @@ import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines
 import com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine
 import com.gregtechceu.gtceu.utils.FormattingUtil
+import com.gtocore.api.lang.*
+import com.gtocore.api.misc.AutoInitialize
+import com.gtocore.common.data.GTOBlocks
+import com.gtocore.common.data.GTOItems
+import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator
+import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator
+import com.gtocore.config.GTOConfig
+import com.gtocore.utils.setTooltips
 import com.hepdd.gtmthings.data.CustomItems
 import com.hepdd.gtmthings.data.CustomMachines
 import dev.shadowsoffire.apotheosis.adventure.Adventure
 import earth.terrarium.adastra.common.registry.ModBlocks
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import vazkii.botania.common.block.BotaniaBlocks.fabulousPool
-
 import kotlin.math.min
 
 object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
@@ -176,7 +165,11 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         section("采用量子加密技术，账户信息无法被破解或篡改，安全等级达到星系标准。" translatedTo "Uses quantum encryption technology; account information cannot be hacked or tampered with, meeting galactic security standards.")
         section("内置能量核心，无需额外供电，可持续运行 730 标准日。" translatedTo "Built-in energy core, no external power required, can operate continuously for 730 standard days.")
         guide("右键打开银行界面，支持存款、取款及向其他认证账户转账。" translatedTo "Right-click to open the bank interface, supporting deposit, withdrawal, and transfer to other certified accounts.")
-        highlight("请勿向未认证账户转账，星际金融法对跨境诈骗有严格处罚。" translatedTo "Do not transfer to uncertified accounts; interstellar financial laws have strict penalties for cross-border fraud.") { color(0xFF5555) }
+        highlight("请勿向未认证账户转账，星际金融法对跨境诈骗有严格处罚。" translatedTo "Do not transfer to uncertified accounts; interstellar financial laws have strict penalties for cross-border fraud.") {
+            color(
+                0xFF5555
+            )
+        }
     }
 
     // Modification
@@ -200,7 +193,11 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
 
         EPPItemAndBlock.PATTERN_MODIFIER.asItem().setTooltips(PatternModifierTooltips)
 
-        listOf(EPPItemAndBlock.TAG_STORAGE_BUS.asItem(), EPPItemAndBlock.MOD_STORAGE_BUS.asItem(), EPPItemAndBlock.PRECISE_STORAGE_BUS).forEach {
+        listOf(
+            EPPItemAndBlock.TAG_STORAGE_BUS.asItem(),
+            EPPItemAndBlock.MOD_STORAGE_BUS.asItem(),
+            EPPItemAndBlock.PRECISE_STORAGE_BUS
+        ).forEach {
             it.setTooltips(
                 ComponentListSupplier {
                     setTranslationPrefix("pattern_modifier")
@@ -402,9 +399,16 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
         GTMachines.STEAM_HATCH.setTooltipBuilder { _, components ->
             components.addAll(
                 ComponentListSupplier {
-                    addTranslatable("gtceu.universal.tooltip.fluid_storage_capacity", FormattingUtil.formatNumbers(SteamHatchPartMachine.INITIAL_TANK_CAPACITY))
+                    addTranslatable(
+                        "gtceu.universal.tooltip.fluid_storage_capacity",
+                        FormattingUtil.formatNumbers(SteamHatchPartMachine.INITIAL_TANK_CAPACITY)
+                    )
                     addTranslatable("gtceu.machine.steam.steam_hatch.tooltip")
-                    addTranslatable("gtocore.machine.conversion_rate", Component.literal(FormattingUtil.formatNumbers(SteamParallelMultiblockMachine.CONVERSION_RATE)).withStyle(ChatFormatting.RED))
+                    addTranslatable(
+                        "gtocore.machine.conversion_rate",
+                        Component.literal(FormattingUtil.formatNumbers(SteamParallelMultiblockMachine.CONVERSION_RATE))
+                            .withStyle(ChatFormatting.RED)
+                    )
                 }.get(),
             )
         }
@@ -441,10 +445,14 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                     info(
                         translatable(
                             BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS,
-                            Component.literal(data.electrodeStimulationFactors()[0].toString()).withStyle(ChatFormatting.AQUA),
-                            Component.literal(data.electrodeStimulationFactors()[1].toString()).withStyle(ChatFormatting.GREEN),
-                            Component.literal(data.electrodeStimulationFactors()[2].toString()).withStyle(ChatFormatting.YELLOW),
-                            Component.literal(data.electrodeStimulationFactors()[3].toString()).withStyle(ChatFormatting.GOLD),
+                            Component.literal(data.electrodeStimulationFactors()[0].toString())
+                                .withStyle(ChatFormatting.AQUA),
+                            Component.literal(data.electrodeStimulationFactors()[1].toString())
+                                .withStyle(ChatFormatting.GREEN),
+                            Component.literal(data.electrodeStimulationFactors()[2].toString())
+                                .withStyle(ChatFormatting.YELLOW),
+                            Component.literal(data.electrodeStimulationFactors()[3].toString())
+                                .withStyle(ChatFormatting.GOLD),
                         ),
                     )
                     info(translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC))
@@ -456,7 +464,12 @@ object GTOItemTooltips : AutoInitialize<GTOItemTooltips>() {
                         ),
                     )
                     info(translatable(BioOscillationElectricStimulator.TISSUE_MEDIUM_REQUIREMENT, medium.get()))
-                    info(translatable(BioOscillationElectricStimulator.TISSUE_RUNNING_CONTROL_BLOCK_TIER, min(data.tier, 3)))
+                    info(
+                        translatable(
+                            BioOscillationElectricStimulator.TISSUE_RUNNING_CONTROL_BLOCK_TIER,
+                            min(data.tier, 3)
+                        )
+                    )
                 },
             )
         }

@@ -20,8 +20,10 @@ import com.gtocore.common.data.GTOMaterials
 object CraftingComponents {
     @JvmField
     var BUFFER: CraftingComponent? = null
+
     @JvmField
     var FLUID_REGULATOR: CraftingComponent? = null
+
     @JvmField
     var INTEGRATED_CONTROL_CORE: CraftingComponent? = null
 
@@ -92,140 +94,60 @@ object CraftingComponents {
             add(14 to MaterialEntry(TagPrefix.wireGtSingle, GTOMaterials.Uruium))
         }
 
-        WIRE_QUAD.apply {
-            add(10 to MaterialEntry(TagPrefix.wireGtQuadruple, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.wireGtQuadruple, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.wireGtQuadruple, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.wireGtQuadruple, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.wireGtQuadruple, GTOMaterials.CosmicNeutronium))
+        listOf(
+            WIRE_QUAD to TagPrefix.wireGtQuadruple,
+            WIRE_OCT to TagPrefix.wireGtOctal,
+            WIRE_HEX to TagPrefix.wireGtHex,
+            CABLE to TagPrefix.cableGtSingle,
+            CABLE_DOUBLE to TagPrefix.cableGtDouble,
+            CABLE_QUAD to TagPrefix.cableGtDouble,
+            WIRE_ELECTRIC to TagPrefix.cableGtQuadruple,
+            CABLE_OCT to TagPrefix.cableGtOctal,
+            CABLE_HEX to TagPrefix.cableGtHex,
+        ).forEach {
+            it.first.apply {
+                add(10 to MaterialEntry(it.second, GTOMaterials.Mithril))
+                add(11 to MaterialEntry(it.second, GTMaterials.Neutronium))
+                add(12 to MaterialEntry(it.second, GTOMaterials.Taranium))
+                add(13 to MaterialEntry(it.second, GTOMaterials.CrystalMatrix))
+                add(14 to MaterialEntry(it.second, GTOMaterials.CosmicNeutronium))
+            }
         }
 
-        WIRE_OCT.apply {
-            add(10 to MaterialEntry(TagPrefix.wireGtOctal, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.wireGtOctal, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.wireGtOctal, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.wireGtOctal, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.wireGtOctal, GTOMaterials.CosmicNeutronium))
+        listOf(
+            CABLE_TIER_UP to (TagPrefix.cableGtSingle to TagPrefix.wireGtSingle),
+            CABLE_TIER_UP_DOUBLE to (TagPrefix.cableGtDouble to TagPrefix.wireGtDouble),
+            CABLE_TIER_UP_QUAD to (TagPrefix.cableGtQuadruple to TagPrefix.wireGtQuadruple),
+            CABLE_TIER_UP_OCT to (TagPrefix.cableGtOctal to TagPrefix.wireGtOctal),
+            CABLE_TIER_UP_HEX to (TagPrefix.cableGtHex to TagPrefix.wireGtHex),
+        ).forEach {
+            it.first.apply {
+                add(9 to MaterialEntry(it.second.first, GTOMaterials.Mithril))
+                add(10 to MaterialEntry(it.second.first, GTMaterials.Neutronium))
+                add(11 to MaterialEntry(it.second.first, GTOMaterials.Taranium))
+                add(12 to MaterialEntry(it.second.first, GTOMaterials.CrystalMatrix))
+                add(13 to MaterialEntry(it.second.first, GTOMaterials.CosmicNeutronium))
+                add(14 to MaterialEntry(it.second.second, GTOMaterials.SpaceTime))
+            }
         }
 
-        WIRE_HEX.apply {
-            add(10 to MaterialEntry(TagPrefix.wireGtHex, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.wireGtHex, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.wireGtHex, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.wireGtHex, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.wireGtHex, GTOMaterials.CosmicNeutronium))
-        }
-
-        CABLE.apply {
-            add(10 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.cableGtSingle, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.CosmicNeutronium))
-        }
-
-        CABLE_DOUBLE.apply {
-            add(10 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.cableGtDouble, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.CosmicNeutronium))
-        }
-
-        CABLE_QUAD.apply {
-            add(10 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.cableGtDouble, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.CosmicNeutronium))
-        }
-
-        WIRE_ELECTRIC.apply {
-            add(10 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.cableGtQuadruple, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.CosmicNeutronium))
-        }
-
-        CABLE_OCT.apply {
-            add(10 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.cableGtOctal, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.CosmicNeutronium))
-        }
-
-        CABLE_HEX.apply {
-            add(10 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.Mithril))
-            add(11 to MaterialEntry(TagPrefix.cableGtHex, GTMaterials.Neutronium))
-            add(12 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.Taranium))
-            add(13 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.CrystalMatrix))
-            add(14 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium))
-        }
-
-        CABLE_TIER_UP.apply {
-            add(9 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.Mithril))
-            add(10 to MaterialEntry(TagPrefix.cableGtSingle, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.Taranium))
-            add(12 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.CrystalMatrix))
-            add(13 to MaterialEntry(TagPrefix.cableGtSingle, GTOMaterials.CosmicNeutronium))
-            add(14 to MaterialEntry(TagPrefix.wireGtSingle, GTOMaterials.SpaceTime))
-        }
-
-        CABLE_TIER_UP_DOUBLE.apply {
-            add(9 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.Mithril))
-            add(10 to MaterialEntry(TagPrefix.cableGtDouble, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.Taranium))
-            add(12 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.CrystalMatrix))
-            add(13 to MaterialEntry(TagPrefix.cableGtDouble, GTOMaterials.CosmicNeutronium))
-            add(14 to MaterialEntry(TagPrefix.wireGtDouble, GTOMaterials.SpaceTime))
-        }
-
-        CABLE_TIER_UP_QUAD.apply {
-            add(9 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.Mithril))
-            add(10 to MaterialEntry(TagPrefix.cableGtQuadruple, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.Taranium))
-            add(12 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.CrystalMatrix))
-            add(13 to MaterialEntry(TagPrefix.cableGtQuadruple, GTOMaterials.CosmicNeutronium))
-            add(14 to MaterialEntry(TagPrefix.wireGtQuadruple, GTOMaterials.SpaceTime))
-        }
-
-        CABLE_TIER_UP_OCT.apply {
-            add(9 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.Mithril))
-            add(10 to MaterialEntry(TagPrefix.cableGtOctal, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.Taranium))
-            add(12 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.CrystalMatrix))
-            add(13 to MaterialEntry(TagPrefix.cableGtOctal, GTOMaterials.CosmicNeutronium))
-            add(14 to MaterialEntry(TagPrefix.wireGtOctal, GTOMaterials.SpaceTime))
-        }
-
-        CABLE_TIER_UP_HEX.apply {
-            add(9 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.Mithril))
-            add(10 to MaterialEntry(TagPrefix.cableGtHex, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.Taranium))
-            add(12 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.CrystalMatrix))
-            add(13 to MaterialEntry(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium))
-            add(14 to MaterialEntry(TagPrefix.wireGtHex, GTOMaterials.SpaceTime))
-        }
-
-        PIPE_NORMAL.apply {
-            add(9 to MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.Neutronium))
-            add(10 to MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.pipeNormalFluid, GTOMaterials.Enderium))
-            add(12 to MaterialEntry(TagPrefix.pipeNormalFluid, GTOMaterials.Enderium))
-            add(13 to MaterialEntry(TagPrefix.pipeNormalFluid, GTOMaterials.HeavyQuarkDegenerateMatter))
-            add(14 to MaterialEntry(TagPrefix.pipeNormalFluid, GTOMaterials.HeavyQuarkDegenerateMatter))
+        listOf(
+            PIPE_NORMAL to TagPrefix.pipeNormalFluid,
+            PIPE_LARGE to TagPrefix.pipeLargeFluid,
+            PIPE_NONUPLE to TagPrefix.pipeNonupleFluid,
+        ).forEach {
+            it.first.apply {
+                add(9 to MaterialEntry(it.second, GTMaterials.Neutronium))
+                add(10 to MaterialEntry(it.second, GTMaterials.Neutronium))
+                add(11 to MaterialEntry(it.second, GTOMaterials.Enderium))
+                add(12 to MaterialEntry(it.second, GTOMaterials.Enderium))
+                add(13 to MaterialEntry(it.second, GTOMaterials.HeavyQuarkDegenerateMatter))
+                add(14 to MaterialEntry(it.second, GTOMaterials.HeavyQuarkDegenerateMatter))
+            }
         }
 
         PIPE_LARGE.apply {
             add(7 to MaterialEntry(TagPrefix.pipeLargeFluid, GTMaterials.Iridium))
-            add(9 to MaterialEntry(TagPrefix.pipeLargeFluid, GTMaterials.Neutronium))
-            add(10 to MaterialEntry(TagPrefix.pipeLargeFluid, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.pipeLargeFluid, GTOMaterials.Enderium))
-            add(12 to MaterialEntry(TagPrefix.pipeLargeFluid, GTOMaterials.Enderium))
-            add(13 to MaterialEntry(TagPrefix.pipeLargeFluid, GTOMaterials.HeavyQuarkDegenerateMatter))
-            add(14 to MaterialEntry(TagPrefix.pipeLargeFluid, GTOMaterials.HeavyQuarkDegenerateMatter))
         }
 
         PIPE_NONUPLE.apply {
@@ -233,12 +155,6 @@ object CraftingComponents {
             add(1 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Bronze))
             add(2 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Steel))
             add(3 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.StainlessSteel))
-            add(9 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Neutronium))
-            add(10 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Neutronium))
-            add(11 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTOMaterials.Enderium))
-            add(12 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTOMaterials.Enderium))
-            add(13 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTOMaterials.HeavyQuarkDegenerateMatter))
-            add(14 to MaterialEntry(TagPrefix.pipeNonupleFluid, GTOMaterials.HeavyQuarkDegenerateMatter))
         }
 
         GLASS.apply {
