@@ -24,9 +24,10 @@ GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，
 
 - 首次编辑或审查 Java/Kotlin 代码前，必须打开 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 的相关章节；完成修改后按实际 diff 再检查一次。它是本仓性能与正确性约束，不是可选建议。
 - 集合、Map/Set、遍历、复制、热路径分配或并发改动：读取“术语”“容器规范”“非容器规范”。
+- 异常处理、同步执行的状态切换或公共方法/API 设计：读取“非容器规范”。
 - `CustomItemStackHandler`：读取“物品库存 IO”。
 - DataSyncLib、codec、持久化或网络同步：读取对应的编解码、网络与存盘章节。
-- `createCustomRecipe` 或 `RecipeHandlerUnit`：读取“配方逻辑”。
+- 配方搜索、机器配方扩展、`RecipeLogic` / `RecipeLogicExt`、`createCustomRecipe` 或 `RecipeHandlerUnit`：读取“配方逻辑”。
 - Level/维度级缓存、连接表或注册表：读取“世界级数据存储”。
 - 改动跨越多个领域或无法判断适用范围时，读取全文。优先跟随仓库已有实现和容器类型，不另造平行模式。
 
