@@ -30,6 +30,10 @@ import javax.annotation.Nullable;
 
 public class InteractiveImageWidget extends Widget {
 
+    private static final int UPDATE_BORDER = 1;
+    private static final int UPDATE_TEXT = 2;
+    private static final int ACTION_IMAGE_CLICK = 3;
+
     @Getter
     @NumberRange(range = { -100.0, 100.0 })
     private int border;
@@ -92,7 +96,7 @@ public class InteractiveImageWidget extends Widget {
             this.border = border;
             this.borderColor = color;
             if (!isRemote()) {
-                writeUpdateInfo(1, this::writeBorderData);
+                writeUpdateInfo(UPDATE_BORDER, this::writeBorderData);
             }
         }
         return this;
@@ -100,11 +104,7 @@ public class InteractiveImageWidget extends Widget {
 
     public InteractiveImageWidget textSupplier(@Nullable Consumer<List<Component>> textSupplier) {
         this.textSupplier = textSupplier;
-        // 仅服务端初始化文本（客户端不执行）
-        if (textSupplier != null && !isRemote()) {
-            this.lastText.clear();
-            textSupplier.accept(this.lastText);
-        }
+        refreshTextOnServer();
         return this;
     }
 
@@ -117,26 +117,23 @@ public class InteractiveImageWidget extends Widget {
     public void writeInitialData(FriendlyByteBuf buffer) {
         super.writeInitialData(buffer);
         writeBorderData(buffer);
-        buffer.writeVarInt(lastText.size());
-        for (Component text : lastText) {
-            buffer.writeComponent(text);
-        }
+        writeTextData(buffer);
     }
 
     @Override
     public void readInitialData(FriendlyByteBuf buffer) {
         super.readInitialData(buffer);
         readBorderData(buffer);
-        lastText.clear();
-        int count = buffer.readVarInt();
-        for (int i = 0; i < count; i++) {
-            lastText.add(buffer.readComponent());
-        }
+        readTextData(buffer);
     }
 
     @Override
     public void initWidget() {
         super.initWidget();
+        refreshTextOnServer();
+    }
+
+    private void refreshTextOnServer() {
         if (textSupplier != null && !isRemote()) {
             lastText.clear();
             textSupplier.accept(lastText);
@@ -146,49 +143,54 @@ public class InteractiveImageWidget extends Widget {
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-        if (textSupplier != null && !isRemote()) {
-            List<Component> newText = new ArrayList<>();
-            textSupplier.accept(newText);
-            if (!lastText.equals(newText)) {
-                lastText = newText;
-                writeUpdateInfo(2, buf -> {
-                    buf.writeVarInt(lastText.size());
-                    for (Component text : lastText) {
-                        buf.writeComponent(text);
-                    }
-                });
-            }
+        if (textSupplier == null || isRemote()) {
+            return;
         }
+
+        var newText = new ArrayList<Component>();
+        textSupplier.accept(newText);
+        if (lastText.equals(newText)) {
+            return;
+        }
+        lastText = newText;
+        writeUpdateInfo(UPDATE_TEXT, this::writeTextData);
     }
 
     @Override
     public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
         switch (id) {
-            case 1:
-                readBorderData(buffer);
-                break;
-            case 2:
-                lastText.clear();
-                int count = buffer.readVarInt();
-                for (int i = 0; i < count; i++) {
-                    lastText.add(buffer.readComponent());
-                }
-                break;
-            default:
-                super.readUpdateInfo(id, buffer);
+            case UPDATE_BORDER -> readBorderData(buffer);
+            case UPDATE_TEXT -> readTextData(buffer);
+            default -> super.readUpdateInfo(id, buffer);
         }
     }
 
     @Override
     public void handleClientAction(int id, FriendlyByteBuf buffer) {
-        if (id == 3) {
-            ClickData clickData = ClickData.readFromBuf(buffer);
-            String componentData = buffer.readUtf();
-            if (clickHandler != null) {
-                clickHandler.accept(componentData, clickData);
-            } else {
-                super.handleClientAction(id, buffer);
-            }
+        if (id != ACTION_IMAGE_CLICK) {
+            return;
+        }
+        ClickData clickData = ClickData.readFromBuf(buffer);
+        String componentData = buffer.readUtf();
+        if (clickHandler != null) {
+            clickHandler.accept(componentData, clickData);
+        } else {
+            super.handleClientAction(id, buffer);
+        }
+    }
+
+    private void writeTextData(FriendlyByteBuf buffer) {
+        buffer.writeVarInt(lastText.size());
+        for (Component text : lastText) {
+            buffer.writeComponent(text);
+        }
+    }
+
+    private void readTextData(FriendlyByteBuf buffer) {
+        lastText.clear();
+        int count = buffer.readVarInt();
+        for (int i = 0; i < count; i++) {
+            lastText.add(buffer.readComponent());
         }
     }
 
@@ -240,7 +242,7 @@ public class InteractiveImageWidget extends Widget {
                 clickHandler.accept(data, clickData);
             }
 
-            writeClientAction(3, buf -> {
+            writeClientAction(ACTION_IMAGE_CLICK, buf -> {
                 clickData.writeToBuf(buf);
                 buf.writeUtf(data);
             });
@@ -255,6 +257,7 @@ public class InteractiveImageWidget extends Widget {
     private boolean isMouseOver(int mouseX, int mouseY) {
         Position absolutePos = getPosition();
         Size size = getSize();
-        return mouseX >= absolutePos.x && mouseX <= absolutePos.x + size.width && mouseY >= absolutePos.y && mouseY <= absolutePos.y + size.height;
+        return mouseX >= absolutePos.x && mouseX <= absolutePos.x + size.width
+                && mouseY >= absolutePos.y && mouseY <= absolutePos.y + size.height;
     }
 }
