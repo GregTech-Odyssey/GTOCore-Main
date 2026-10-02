@@ -6,6 +6,8 @@ import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
+import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineResult;
+import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineState;
 
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -308,9 +310,10 @@ public class GTOCodecs {
     public final DataSyncCodec<KeyCounter> KEY_COUNTER_SYNC_CODEC = DataSyncCodec.register(KeyCounter.class, KEY_COUNTER_STREAM_CODEC, KEY_COUNTER_DATA_CODEC);
 
     public static void init() {
-        // 其余类型均已由字段处 DataSyncCodec.register(...) 一步注册到全局；
-        // 仅 ScanningRecipeExtion.AEKEYDATACRYSTAL 是 CombinedCodec.composite 构建（不注册），在此用实例方法补注册。
+        // 字段处使用 register(...) 的类型已注册；composite(...) 构建的自定义类型在此集中注册。
         ScanningRecipeExtion.AEKEYDATACRYSTAL_CODEC.register(ScanningRecipeExtion.AEKeyDataCrystal.class);
         ResonanceFlowerMachine.addCodec();
+        SlotMachineResult.addCodec();
+        SlotMachineState.addCodec();
     }
 }

@@ -2,6 +2,7 @@ package com.gtocore.data.transaction.data.trade;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.api.gui.StackTexture;
+import com.gtocore.data.transaction.data.CoinExchange;
 import com.gtocore.data.transaction.manager.TradeData;
 import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
@@ -24,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gtocore.common.data.GTOMachines.SLOT_MACHINE;
 import static com.gtocore.common.data.GTOMachines.TRADING_STATION;
-import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.data.transaction.data.TradeLang.TECH_OPERATOR_COIN;
 import static com.gtocore.data.transaction.data.TradeLang.addTradeLang;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
@@ -52,11 +53,10 @@ public final class WelcomeGroup {
                 Set.of(TECH_OPERATOR_COIN),
                 new ItemStackTexture(ChemicalHelper.get(GTOTagPrefix.COIN, Neutronium)));
 
-        Material[] materials = { Copper, Cupronickel, Silver, Gold, Osmium, Naquadah, Neutronium, Adamantine, Infinity, Neutron };
-
-        for (int i = 0; i < materials.length; i++) {
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, createCoinExchangeTrade(materials[i], i));
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, createCoinWithdrawTrade(materials[i], i));
+        for (int i = 0; i < CoinExchange.TYPE_COUNT; i++) {
+            Material material = CoinExchange.material(i);
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, createCoinExchangeTrade(material, i));
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, createCoinWithdrawTrade(material, i));
         }
 
         int ShopIndex2 = TradingManager.INSTANCE.addShopByGroupIndex(
@@ -89,6 +89,13 @@ public final class WelcomeGroup {
                     .outputItem(TRADING_STATION[i + 1].asStack())
                     .build());
         }
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                .texture(new StackTexture(SLOT_MACHINE.asStack()))
+                .unlockCondition(UNLOCK_BASE)
+                .inputCurrency(TECH_OPERATOR_COIN, 5)
+                .outputItem(SLOT_MACHINE.asStack())
+                .build());
     }
 
     public static TradeEntry createCoinExchangeTrade(Material material, int tier) {
@@ -98,7 +105,7 @@ public final class WelcomeGroup {
                 .description(List.of(Component.translatable("gtocore.trade_group.exchanged", Component.translatable("gtocore.currency." + TECH_OPERATOR_COIN), Coin.getDisplayName())))
                 .unlockCondition(UNLOCK_BASE)
                 .inputItem(Coin)
-                .outputCurrency(TECH_OPERATOR_COIN, 1L << (tier * 3))
+                .outputCurrency(TECH_OPERATOR_COIN, CoinExchange.value(tier))
                 .build();
     }
 
@@ -108,7 +115,7 @@ public final class WelcomeGroup {
                 .texture(new ItemStackTexture(Coin))
                 .description(List.of(Component.translatable("gtocore.trade_group.exchanged", Coin.getDisplayName(), Component.translatable("gtocore.currency." + TECH_OPERATOR_COIN))))
                 .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 1L << (tier * 3))
+                .inputCurrency(TECH_OPERATOR_COIN, CoinExchange.value(tier))
                 .outputItem(Coin)
                 .build();
     }

@@ -23,6 +23,7 @@ import com.gtocore.common.machine.multiblock.part.voiding.*;
 import com.gtocore.common.machine.noenergy.*;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeploymentMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
+import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
@@ -1213,6 +1214,13 @@ public final class GTOMachines {
                     .modelRenderer(() -> GTOCore.id("block/machine/trading_station"))
                     .register(),
             GTValues.tiersBetween(1, 8));
+
+    public static final MachineDefinition SLOT_MACHINE = machine("slot_machine", "老虎机", SlotMachine::new)
+            .langValue("Slot Machine")
+            .tooltipBuilder((stack, list) -> GTOMachineTooltips.SlotMachineTooltips.apply(list))
+            .nonYAxisRotation()
+            .modelRenderer(() -> GTOCore.id("block/machine/slot_machine"))
+            .register();
 
     public static final MachineDefinition[] DIGITAL_MINER = registerTieredMachines("digital_miner", tier -> "%s数字型采矿机%s".formatted(GTOValues.VLVHCN[tier], VLVT[tier]), SingleDigitalMiner::new,
             (tier, builder) -> builder

@@ -7,6 +7,7 @@ import com.gtocore.api.lang.toLiteralSupplier
 import com.gtocore.api.lang.translatable
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine
+import com.gtocore.common.machine.noenergy.slotMachine.SlotSymbol
 import com.gtocore.config.GTORules
 
 import net.minecraft.network.chat.Component
@@ -365,6 +366,42 @@ object GTOMachineTooltips {
 
         highlight("效率、规模、自动化 —— 格雷科技贸易站，重新定义星际贸易！" translatedTo "Efficiency, Scale, Automation – Greg Technology Trading Station, Redefining Interstellar Trade!") { rainbowSlow() }
         highlight("准备好，让你的贸易帝国腾飞吧！" translatedTo "Get ready to let your trade empire soar!") { rainbowSlow() }
+    }
+
+    // 老虎机 - 物品描述、玩法说明与完整赔付表
+    @JvmField
+    val SlotMachineTooltips = ComponentListSupplier {
+        setTranslationPrefix("slot_machine")
+
+        miraculousTools("老虎机" translatedTo "Slot Machine")
+        section("三列卷轴，五条中奖线" translatedTo "Three reels, five paylines")
+
+        section("赔付表" translatedTo "Pay Table")
+        info("以下为单条中奖线的奖励倍率，×0 表示该线不中奖" translatedTo "Multipliers below apply to one payline; ×0 means that line pays nothing")
+        for (symbol in SlotSymbol.entries) {
+            if (symbol.wild()) continue
+            content(
+                "%s：左侧二连 ×%s / 三连 ×%s".translatedWithArgs(
+                    "%s: Left pair ×%s / Triple ×%s",
+                    Component.translatable(symbol.translateKey()),
+                    symbol.twoMatchMultiplier(),
+                    symbol.threeMatchMultiplier(),
+                ),
+            )
+        }
+        content(
+            "蜂蜜瓶：百搭符号；三瓶蜂蜜按下界之星三连，奖励 ×%s".translatedWithArgs(
+                "Honey Bottle: wild symbol; three bottles pay as a Nether Star triple, ×%s",
+                SlotSymbol.NETHER_STAR.threeMatchMultiplier(),
+            ),
+        )
+
+        section("中奖规则" translatedTo "Winning Rules")
+        content("五条中奖线为上、中、下三条横线及两条对角线，竖列不计奖" translatedTo "The five paylines are the top, middle and bottom rows and both diagonals; vertical columns do not pay")
+        content("沿中奖线从最左列连续匹配，只有右侧二连不中奖" translatedTo "Matches must start at the leftmost reel along a payline; a pair made of the right two reels alone does not pay")
+        content("同一条线三连优先，不叠加该线的二连奖励；不同中奖线的奖励相加" translatedTo "A triple takes priority over a pair on the same line and the pair is not added on top; payouts from different paylines add together")
+        content("蜂蜜瓶可替代任何普通符号：一瓶蜂蜜配两个相同符号，或两瓶蜂蜜配一个符号，都按该符号的三连赔付" translatedTo "A Honey Bottle substitutes for any regular symbol: one bottle with two matching symbols, or two bottles with one symbol, both pay that symbol's triple")
+        highlight("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还" translatedTo "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately") { gold() }
     }
 
     // 样板内容管理终端
