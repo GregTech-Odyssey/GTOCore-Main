@@ -5,12 +5,10 @@ import com.gtocore.common.cover.HeatInterfaceCover;
 import com.gtolib.GTOCore;
 import com.gtolib.api.capability.IHeatContainer;
 import com.gtolib.api.machine.heat.HeatHandler;
-import com.gtolib.api.machine.heat.SolarHeatHandler;
 import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.render.UIClip;
@@ -127,8 +125,9 @@ public final class HeatThermometer extends UIElement {
         double ambient = heat.getAmbientTemperature();
         long current = heat.getCurrentHeat(), maximum = heat.getMaxTemperature();
         // Solar multiblock controllers explicitly suppress HeatHandler.doExplosion().
-        long explosion = heat instanceof HeatHandler && machine instanceof IExplosionMachine &&
-                !(heat instanceof SolarHeatHandler && machine instanceof IMultiController) ? Math.max(0, maximum) : 0;
+        long explosion = heat instanceof HeatHandler h &&
+                machine instanceof IExplosionMachine &&
+                h.isAllowExplosion() ? Math.max(0, maximum) : 0;
         if (sampled.enabled() && sampled.temperature() == temperature && sampled.capacity() == capacity &&
                 sampled.transfer() == transfer && sampled.cooldown() == cooldown && sampled.ambient() == ambient &&
                 sampled.change() == temperatureChange && sampled.heat() == current && sampled.maximum() == maximum &&
@@ -147,12 +146,11 @@ public final class HeatThermometer extends UIElement {
     @Nullable
     private static IHeatContainer heatContainer(MetaMachine machine) {
         if (machine instanceof IHeatContainerMachine thermal && thermal.testHeatCapability(null)) {
-            var heat = thermal.getHeatContainer();
-            if (heat != HeatHandler.EMPTY) return heat;
+            return thermal.getHeatContainer();
         }
         // Cover capability lives on the holder; a machine's EMPTY container can mask it.
         var coverHeat = machine.getCoverContainer().getGTCapability(IHeatContainer.class, null);
-        return coverHeat instanceof IHeatContainer heat && heat != HeatHandler.EMPTY ? heat : null;
+        return coverHeat instanceof IHeatContainer heat ? heat : null;
     }
 
     private double scale(Reading value) {

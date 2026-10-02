@@ -1,27 +1,29 @@
 package com.gtocore.mixin.gtm.machine;
 
-import com.gtocore.common.recipe.condition.HeatCondition;
-import com.gtocore.common.recipe.condition.SpaceWorkspaceCondition;
-
+import com.gtolib.api.capability.IHeatContainer;
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
 import com.gtolib.api.machine.feature.ISpaceWorkspaceMachine;
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.machine.heat.SolarHeatHandler;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.capability.GTCapability;
+import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 
+import net.minecraft.core.Direction;
+
 import com.gto.datasynclib.datastream.data.StringMapData;
-import earth.terrarium.adastra.api.planets.PlanetApi;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings("AddedMixinMembersNamePattern")
 @org.spongepowered.asm.mixin.Mixin(com.gregtechceu.gtceu.api.machine.WorkableTieredMachine.class)
-public abstract class WorkableTieredMachineMixin extends MetaMachine implements IWorkInSpaceMachine, IEnhancedRecipeLogicMachine {
+public abstract class WorkableTieredMachineMixin extends TieredEnergyMachine implements IWorkInSpaceMachine, IEnhancedRecipeLogicMachine {
 
     @Unique
     private static final RecipeCondition[] GTO$EMPTY_RECIPE_CONDITIONS = new RecipeCondition[0];
@@ -35,8 +37,20 @@ public abstract class WorkableTieredMachineMixin extends MetaMachine implements 
     @Unique
     private RecipeCondition[] gto$additionalRecipeConditions = GTO$EMPTY_RECIPE_CONDITIONS;
 
-    public WorkableTieredMachineMixin(MetaMachineBlockEntity holder) {
-        super(holder);
+    public WorkableTieredMachineMixin(MetaMachineBlockEntity holder, int tier, Object... args) {
+        super(holder, tier, args);
+    }
+
+    // TieredEnergyMachine's class method takes precedence over the heat interface's default method.
+    @Override
+    public @Nullable <T> Object getGTCapability(@NotNull Class<T> cap, @Nullable Direction side) {
+        if (cap == IHeatContainer.class) {
+            var heat = getHeatContainer();
+            if (heat != null) {
+                return testHeatCapability(side) ? heat : GTCapability.EMPTY;
+            }
+        }
+        return super.getGTCapability(cap, side);
     }
 
     @Override
@@ -73,11 +87,10 @@ public abstract class WorkableTieredMachineMixin extends MetaMachine implements 
     public void readCustomSaveData(StringMapData data, int dataVersion) {
         super.readCustomSaveData(data, dataVersion);
         var heatData = data.get("gto$solarHeat");
-        if (heatData == null || heatData.isNull()) return;
         if (gto$solarHeat == null) {
-            gto$solarHeat = new SolarHeatHandler(getHolder());
-            gto$solarHeat.setSideIOCondition(side -> true);
+            gto$solarHeat = new SolarHeatHandler.SimpleSolarHeatHandler(getHolder());
         }
+        if (heatData == null || heatData.isNull()) return;
         gto$solarHeat.getFieldDataManager().readFromData(heatData, dataVersion);
     }
 
@@ -85,18 +98,11 @@ public abstract class WorkableTieredMachineMixin extends MetaMachine implements 
     private void gto$loadSolarHeat(CallbackInfo ci) {
         if (isOnSolarSurface()) {
             if (gto$solarHeat == null) {
-                gto$solarHeat = new SolarHeatHandler(getHolder());
-                gto$solarHeat.setSideIOCondition(side -> true);
+                gto$solarHeat = new SolarHeatHandler.SimpleSolarHeatHandler(getHolder());
             }
             gto$solarHeat.onLoad();
-            gto$additionalRecipeConditions = PlanetApi.API.isSpace(self().getLevel()) ?
-                    new RecipeCondition[] { HeatCondition.maximumMachineTemperature(800), new SpaceWorkspaceCondition(this) } :
-                    new RecipeCondition[] { HeatCondition.maximumMachineTemperature(800) };
-        } else if (PlanetApi.API.isSpace(self().getLevel())) {
-            gto$additionalRecipeConditions = new RecipeCondition[] { new SpaceWorkspaceCondition(this) };
-        } else {
-            gto$additionalRecipeConditions = GTO$EMPTY_RECIPE_CONDITIONS;
         }
+        gto$additionalRecipeConditions = IWorkInSpaceMachine.getAdditionalRecipeConditionsForMachine(this).toArray(new RecipeCondition[0]);
     }
 
     @Inject(method = "onUnload", at = @At("HEAD"), remap = false)

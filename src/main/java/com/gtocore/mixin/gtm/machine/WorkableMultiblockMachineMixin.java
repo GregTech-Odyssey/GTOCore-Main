@@ -1,8 +1,5 @@
 package com.gtocore.mixin.gtm.machine;
 
-import com.gtocore.common.recipe.condition.HeatCondition;
-import com.gtocore.common.recipe.condition.SpaceWorkspaceCondition;
-
 import com.gtolib.api.machine.feature.IEnhancedRecipeLogicMachine;
 import com.gtolib.api.machine.feature.ISpaceWorkspaceMachine;
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
@@ -21,7 +18,6 @@ import net.minecraft.server.level.ServerLevel;
 
 import com.gto.datasynclib.datastream.data.StringMapData;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
-import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(WorkableMultiblockMachine.class)
 public abstract class WorkableMultiblockMachineMixin extends MultiblockControllerMachine implements IWorkInSpaceMachine, IEnhancedRecipeLogicMachine {
 
@@ -87,11 +84,10 @@ public abstract class WorkableMultiblockMachineMixin extends MultiblockControlle
     public void readCustomSaveData(StringMapData data, int dataVersion) {
         super.readCustomSaveData(data, dataVersion);
         var heatData = data.get("gto$solarHeat");
-        if (heatData == null || heatData.isNull()) return;
         if (gto$solarHeat == null) {
-            gto$solarHeat = new SolarHeatHandler(getHolder());
-            gto$solarHeat.setSideIOCondition(side -> true);
+            gto$solarHeat = new SolarHeatHandler.MultiblockSolarHeatHandler(getHolder());
         }
+        if (heatData == null || heatData.isNull()) return;
         gto$solarHeat.getFieldDataManager().readFromData(heatData, dataVersion);
     }
 
@@ -104,18 +100,11 @@ public abstract class WorkableMultiblockMachineMixin extends MultiblockControlle
         super.onLoad();
         if (isOnSolarSurface()) {
             if (gto$solarHeat == null) {
-                gto$solarHeat = new SolarHeatHandler(getHolder());
-                gto$solarHeat.setSideIOCondition(side -> true);
+                gto$solarHeat = new SolarHeatHandler.MultiblockSolarHeatHandler(getHolder());
             }
             gto$solarHeat.onLoad();
-            gto$additionalRecipeConditions = PlanetApi.API.isSpace(self().getLevel()) ?
-                    new RecipeCondition[] { HeatCondition.maximumMachineTemperature(1800), new SpaceWorkspaceCondition(this) } :
-                    new RecipeCondition[] { HeatCondition.maximumMachineTemperature(1800) };
-        } else if (PlanetApi.API.isSpace(self().getLevel())) {
-            gto$additionalRecipeConditions = new RecipeCondition[] { new SpaceWorkspaceCondition(this) };
-        } else {
-            gto$additionalRecipeConditions = GTO$EMPTY_RECIPE_CONDITIONS;
         }
+        gto$additionalRecipeConditions = IWorkInSpaceMachine.getAdditionalRecipeConditionsForMachine(this).toArray(new RecipeCondition[0]);
     }
 
     @Inject(method = "onUnload", at = @At("HEAD"), remap = false)
@@ -136,7 +125,7 @@ public abstract class WorkableMultiblockMachineMixin extends MultiblockControlle
     @Inject(method = "onStructureInvalid", at = @At("TAIL"), remap = false)
     private void gto$resetSolarDimensions(CallbackInfo ci) {
         var heat = getSolarHeatHandler();
-        if (heat != null) heat.updateSolarDimensions(1, 1, 1);
+        if (heat instanceof SolarHeatHandler.MultiblockSolarHeatHandler h) h.updateSolarDimensions(1, 1, 1);
     }
 
     @Override

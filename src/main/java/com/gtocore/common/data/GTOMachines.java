@@ -8,6 +8,7 @@ import com.gtocore.common.data.machines.*;
 import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
+import com.gtocore.common.machine.dev.CreativeHeatProviderMachine;
 import com.gtocore.common.machine.dev.TestReportOutput;
 import com.gtocore.common.machine.electric.DataExportMachine;
 import com.gtocore.common.machine.electric.ElectricHeaterMachine;
@@ -899,6 +900,13 @@ public final class GTOMachines {
             .recipeType(GTORecipeTypes.RADIATION_HATCH_RECIPES)
             .allRotation()
             .abilities(GTOPartAbility.RADIATION_HATCH)
+            .overlayTieredHullRenderer("radiation_hatch")
+            .allowCoverOnFront(false)
+            .register();
+
+    public static final MachineDefinition CREATIVE_HEAT_SOURCE = machine("creative_heat_source", "创造恒温热源", CreativeHeatProviderMachine::new)
+            .tier(MAX)
+            .allRotation()
             .overlayTieredHullRenderer("radiation_hatch")
             .allowCoverOnFront(false)
             .register();

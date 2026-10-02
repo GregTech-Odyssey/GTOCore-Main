@@ -362,7 +362,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var type = what.getType();
         if (!isFormed || (this.type != null && type != this.type)) return 0;
-        var amountPerCapacity = type == ITEM ? 24 : type.getAmountPerByte() / 8;
+        var amountPerCapacity = getAmountPerCapacity(type);
         amount = Math.min(amountPerCapacity * (capacity - storage), amount);
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
@@ -406,8 +406,10 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         if (ints.length != 0) iTooltip.add(Component.translatable("gtceu.multiblock.dimensions.1", ints[0], ints[1], ints[2]));
         var capacity = compoundTag.getLong("capacity");
         var storage = compoundTag.getLong("storage");
-        iTooltip.add(Component.translatable("gtocore.lang.template.capacity.-990262758", FormattingUtil.formatNumbers(capacity)));
-        iTooltip.add(Component.translatable("ae2.gto_extension.craft_used_percent", FormattingUtil.formatNumbers(storage * 100D / capacity)));
+        var displayedCapacity = type == null ? FormattingUtil.formatNumbers(capacity) :
+                type.formatAmount(capacity * getAmountPerCapacity(type), AmountFormat.FULL);
+        iTooltip.add(Component.translatable("gtocore.lang.template.capacity.-990262758", displayedCapacity));
+        iTooltip.add(Component.translatable("ae2.gto_extension.craft_used_percent", FormattingUtil.formatNumbers(capacity > 0 ? storage * 100D / capacity : 0)));
     }
 
     @Override
@@ -419,6 +421,11 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     }
 
     private static final AEKeyType ITEM = AEKeyType.items();
+
+    /** 每个内部容量单位可存入的实际数量，与插入上限和 Jade 显示共用。 */
+    private static long getAmountPerCapacity(AEKeyType type) {
+        return type == ITEM ? 24 : type.getAmountPerByte() / 8;
+    }
 
     private static double getCapacityUsage(AEKeyType type, long amount) {
         if (type == ITEM) return (double) amount / 24;

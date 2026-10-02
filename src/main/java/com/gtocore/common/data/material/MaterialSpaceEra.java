@@ -542,7 +542,7 @@ public class MaterialSpaceEra {
                 .flags(GENERATE_SMALL_DUST, GENERATE_TINY_DUST, DISABLE_DECOMPOSITION)
                 .buildAndRegister();
 
-        Cruptix = material("cruptix", "克鲁普提克斯")
+        Cruptix = material("cruptix", "库普缇斯熔渣")
                 .ingot().fluid()
                 .color(0x7a4c9a)
                 .secondaryColor(0xaa7aca)
