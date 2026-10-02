@@ -62,6 +62,10 @@ final class StarMapModel {
             return moon >= 0;
         }
 
+        boolean centralStar() {
+            return dimensionKey() == GTODimensions.SOLAR_SURFACE;
+        }
+
         ResourceKey<Level> dimensionKey() {
             return planet.dimension();
         }
@@ -85,6 +89,8 @@ final class StarMapModel {
         final IntArrayList ringMoons = new IntArrayList();
         final List<Body> bodies = new ArrayList<>();
         final List<Anchor> anchors = new ArrayList<>();
+        @Nullable
+        Body centralStar;
         float cx, cy, radius;
 
         private SystemInfo(ResourceLocation id, @Nullable Galaxy galaxy) {
@@ -157,6 +163,7 @@ final class StarMapModel {
                 var placed = new Body(model.bodies.size(), body.planet(), body.dimension(), system, body.requiredTier(), body.ring(), body.order(),
                         body.angle(), body.moon(), body.parentAngle(), body.orbitRadius(), body.icon(), body.name(), body.stations());
                 system.bodies.set(i, placed);
+                if (placed.centralStar()) system.centralStar = placed;
                 model.bodies.add(placed);
                 if (body.dimensionKey() == here || body.orbit() == here) model.current = placed;
             }
@@ -165,7 +172,7 @@ final class StarMapModel {
             model.focus = model.current.system();
         } else {
             var galaxy = GTODimensions.getGalaxy(here);
-            model.focus = model.systems.isEmpty() ? null : model.systems.get(0);
+            model.focus = model.systems.isEmpty() ? null : model.systems.getFirst();
             for (var system : model.systems) {
                 if (galaxy != null && system.galaxy == galaxy) model.focus = system;
             }
@@ -176,11 +183,15 @@ final class StarMapModel {
     private static void layoutSystem(SystemInfo system, List<Candidate> pending, PlanetsMenu menu) {
         int nextRing = 0;
         for (var entry : pending) {
-            if (entry.system == system) nextRing = Math.max(nextRing, entry.ring);
+            if (entry.system == system && entry.planet.dimension() != GTODimensions.SOLAR_SURFACE) nextRing = Math.max(nextRing, entry.ring);
         }
         var byRing = new Object2ObjectLinkedOpenHashMap<Integer, List<Candidate>>();
         for (var entry : pending) {
             if (entry.system != system) continue;
+            if (entry.planet.dimension() == GTODimensions.SOLAR_SURFACE) {
+                system.bodies.add(body(entry, system, -1, 0, -1, 0, 0, menu));
+                continue;
+            }
             if (entry.ring <= 0) entry.ring = ++nextRing;
             byRing.computeIfAbsent(entry.ring, r -> new ArrayList<>()).add(entry);
         }

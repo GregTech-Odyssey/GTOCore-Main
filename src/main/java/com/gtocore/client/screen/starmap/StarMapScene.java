@@ -75,6 +75,7 @@ final class StarMapScene {
     }
 
     static StarMapDraw.Sprite sprite(StarMapModel.Body body) {
+        if (body.centralStar()) return StarMapDraw.star(StarMapDraw.texture(body.system().star, FALLBACK_STAR), STAR_TEXELS);
         return StarMapDraw.planet(StarMapDraw.texture(body.icon(), StarMapModel.fallbackIcon()), texels(body));
     }
 
@@ -107,11 +108,13 @@ final class StarMapScene {
     }
 
     static float x(StarMapModel.Body body, float scale) {
+        if (body.centralStar()) return body.system().cx;
         if (!body.satellite()) return body.system().cx + (float) Math.cos(body.angle()) * ringRadius(body.system(), body.order());
         return parentX(body, scale) + (float) Math.cos(body.angle()) * moonDistance(body, scale);
     }
 
     static float y(StarMapModel.Body body, float scale) {
+        if (body.centralStar()) return body.system().cy;
         if (!body.satellite()) return body.system().cy + (float) Math.sin(body.angle()) * ringRadius(body.system(), body.order()) * StarMapModel.TILT;
         return parentY(body, scale) + (float) Math.sin(body.angle()) * moonDistance(body, scale) * StarMapModel.TILT;
     }
@@ -149,8 +152,10 @@ final class StarMapScene {
                     int orbit = selected ? color : lit ? StarMapDraw.mix(ORBIT, color, 0.5f) : scale < FOLD_SCALE ? ORBIT_FAR : ORBIT;
                     StarMapDraw.ellipse(graphics, cx, cy, ringRadius(system, order) * scale, StarMapModel.TILT, orbit, lit ? 2 : 3, pen.clip);
                 }
-                var star = StarMapDraw.star(StarMapDraw.texture(system.star, FALLBACK_STAR), STAR_TEXELS);
-                StarMapDraw.sprite(graphics, star, cx, cy, pixels(star, scale), 1);
+                if (system.centralStar == null) {
+                    var star = StarMapDraw.star(StarMapDraw.texture(system.star, FALLBACK_STAR), STAR_TEXELS);
+                    StarMapDraw.sprite(graphics, star, cx, cy, pixels(star, scale), 1);
+                }
                 int top = cy - Math.round(system.radius * StarMapModel.TILT * scale) - 22;
                 StarMapDraw.text(graphics, system.name, cx, top, color);
                 if (scale >= FOLD_SCALE) {
