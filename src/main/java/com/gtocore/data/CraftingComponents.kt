@@ -328,7 +328,7 @@ object CraftingComponents {
             add(14 to GTMachines.BUFFER[14])
         }
 
-        FLUID_REGULATOR = CraftingComponent.of(GTItems.FLUID_REGULATOR_LV).apply {
+        FLUID_REGULATOR = CraftingComponent.of(GTItems.FLUID_REGULATOR_LV.asItem()).apply {
             add(1 to GTItems.FLUID_REGULATOR_LV)
             add(2 to GTItems.FLUID_REGULATOR_MV)
             add(3 to GTItems.FLUID_REGULATOR_HV)
@@ -344,7 +344,7 @@ object CraftingComponents {
             add(13 to GTItems.FLUID_REGULATOR_OpV)
         }
 
-        INTEGRATED_CONTROL_CORE = CraftingComponent.of(GTOItems.INTEGRATED_CONTROL_CORE_UV).apply {
+        INTEGRATED_CONTROL_CORE = CraftingComponent.of(GTOItems.INTEGRATED_CONTROL_CORE_UV.asItem()).apply {
             add(8 to GTOItems.INTEGRATED_CONTROL_CORE_UV)
             add(9 to GTOItems.INTEGRATED_CONTROL_CORE_UHV)
             add(10 to GTOItems.INTEGRATED_CONTROL_CORE_UEV)
