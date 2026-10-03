@@ -5,6 +5,7 @@ import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.capability.IHeatContainer;
 import com.gtolib.api.machine.heat.HeatHandler;
+import com.gtolib.api.machine.heat.MultiblockHeatHandler;
 import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -34,6 +35,10 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
     @Shadow(remap = false)
     @Final
     public int heatSpeed;
+
+    @Shadow(remap = false)
+    private int currentTemperature;
+
     @org.spongepowered.asm.mixin.Unique
     @SaveToDisk
     private HeatHandler gto$heatContainer;
@@ -44,7 +49,7 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
 
     @Inject(method = "<init>", at = @org.spongepowered.asm.mixin.injection.At("RETURN"), remap = false)
     private void init(MetaMachineBlockEntity holder, int maxTemperature, int heatSpeed, Object[] args, CallbackInfo ci) {
-        gto$heatContainer = new HeatHandler(holder, maxTemperature, 2, heatSpeed / 4f, 0);
+        gto$heatContainer = new MultiblockHeatHandler(holder, this, maxTemperature, 2, heatSpeed / 4f, 0);
         gto$heatContainer.setAllowExplosion(false);
     }
 
@@ -52,6 +57,14 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
     public void onLoad() {
         super.onLoad();
         gto$heatContainer.onLoad();
+    }
+
+    @Inject(method = "updateCurrentTemperature", at = @org.spongepowered.asm.mixin.injection.At("RETURN"), remap = false)
+    private void updateCurrentTemperature(CallbackInfo ci) {
+        if (gto$heatContainer != null) {
+            var heatDelta = gto$heatContainer.currentHeat - currentTemperature * gto$heatContainer.heatCapacity;
+            gto$heatContainer.currentHeat = (long) (gto$heatContainer.currentHeat - (heatDelta / 2));
+        }
     }
 
     @Override
