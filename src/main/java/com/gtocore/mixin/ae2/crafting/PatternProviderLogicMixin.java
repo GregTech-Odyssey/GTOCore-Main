@@ -21,9 +21,11 @@ import appeng.api.implementations.blockentities.PatternContainerGroup;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
+import appeng.api.storage.MEStorage;
 import appeng.core.localization.GuiText;
 import appeng.helpers.patternprovider.PatternProviderLogic;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
@@ -49,6 +51,9 @@ import java.util.function.Supplier;
 
 @Mixin(value = PatternProviderLogic.class, remap = false)
 public abstract class PatternProviderLogicMixin implements IPatternProviderLogic {
+
+    @Unique
+    private static final Map<MEStorage, AEItemKey> gtocore$nonContainPatternLocks = new WeakHashMap<>();
 
     @Unique
     private final Long2ObjectOpenHashMap<IPatternDetails> gtolib$cachePatternPos = new Long2ObjectOpenHashMap<>();
@@ -208,16 +213,40 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
                         if (result.needBreak()) return result;
                     } else {
                         var target = PatternProviderTargetCache.find(adjBe, this, adjBeSide, actionSource, 0);
-                        if (target == null || target.containsPatternInput(patternInputs)) continue;
-                        var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
-                        if (result.success()) success.value = true;
+                        if (target == null || gtocore$isTargetBlocked(target, patternDetails, setting)) continue;
+
+                        var result = gtolib$pushTarget(
+                                patternDetails,
+                                inputHolder,
+                                pushPatternSuccess,
+                                canPush,
+                                direction,
+                                target,
+                                true);
+
+                        if (result.success()) {
+                            gtocore$rememberTargetPattern(target, patternDetails, setting);
+                            success.value = true;
+                        }
                         if (result.needBreak()) return result;
                     }
                 } else {
                     var target = findAdapter(direction);
-                    if (target == null || target.containsPatternInput(patternInputs)) continue;
-                    var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
-                    if (result.success()) success.value = true;
+                    if (target == null || gtocore$isTargetBlocked(target, patternDetails, setting)) continue;
+
+                    var result = gtolib$pushTarget(
+                            patternDetails,
+                            inputHolder,
+                            pushPatternSuccess,
+                            canPush,
+                            direction,
+                            target,
+                            true);
+
+                    if (result.success()) {
+                        gtocore$rememberTargetPattern(target, patternDetails, setting);
+                        success.value = true;
+                    }
                     if (result.needBreak()) return result;
                 }
             }
@@ -279,6 +308,54 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
             break;
         }
         return success ? PushResult.SUCCESS : PushResult.REJECTED;
+    }
+
+    @Unique
+    private boolean gtocore$isTargetBlocked(
+                                            PatternProviderTarget target,
+                                            IPatternDetails patternDetails,
+                                            BlockingType setting) {
+        if (setting != BlockingType.NON_CONTAIN || !(target instanceof PatternProviderTargetCache.WrapMeStorage storageTarget)) {
+            return target.containsPatternInput(patternInputs);
+        }
+
+        var storage = storageTarget.storage();
+
+        if (gtocore$isStorageEmpty(storage)) {
+            gtocore$nonContainPatternLocks.remove(storage);
+            return false;
+        }
+
+        var activePattern = gtocore$nonContainPatternLocks.get(storage);
+
+        if (activePattern == null) {
+            return true;
+        }
+
+        return !activePattern.equals(patternDetails.getDefinition());
+    }
+
+    @Unique
+    private static void gtocore$rememberTargetPattern(
+                                                      PatternProviderTarget target,
+                                                      IPatternDetails patternDetails,
+                                                      BlockingType setting) {
+        if (setting == BlockingType.NON_CONTAIN && target instanceof PatternProviderTargetCache.WrapMeStorage storageTarget) {
+            gtocore$nonContainPatternLocks.put(
+                    storageTarget.storage(),
+                    patternDetails.getDefinition());
+        }
+    }
+
+    @Unique
+    private static boolean gtocore$isStorageEmpty(MEStorage storage) {
+        for (var entry : storage.getAvailableStacks()) {
+            if (entry.getLongValue() > 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
