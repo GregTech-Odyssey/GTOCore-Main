@@ -50,6 +50,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix
 import com.gregtechceu.gtceu.common.data.GTBlocks
 import com.gregtechceu.gtceu.common.data.GTItems
+import com.gregtechceu.gtceu.common.data.GTMachines
 import com.gregtechceu.gtceu.common.data.GTMaterials
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.FUSION_REACTOR
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.LARGE_CHEMICAL_REACTOR
@@ -355,7 +356,7 @@ object BaseNodes : AutoInitialize<BaseNodes>() {
             ResearchRequirements.Builder()
                 .setCWUNeeded(64 * 20 * 960L)
                 .addMaterialNeeded(MATERIAL, 768)
-                .setEurekaItem(RegistriesUtils.getItem("gtocore:accelerated_pipeline"), 0.8F)
+                .setEurekaItem(GTMachines.WORLD_ACCELERATOR[ZPM], 0.8F)
                 .build(),
         )
         .tier(2)
