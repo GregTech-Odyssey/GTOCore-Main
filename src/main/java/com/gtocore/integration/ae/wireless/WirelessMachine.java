@@ -1,5 +1,7 @@
 package com.gtocore.integration.ae.wireless;
 
+import com.gtocore.integration.ae.SolarStormConnections;
+
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
@@ -20,8 +22,9 @@ import java.util.Objects;
 /**
  * 可加入 GTO 无线 ME 网络的机器（ME 无线连接机、各种 ME 部件）。
  * <p>
- * 拓扑：每个网络一个虚拟 hub 节点（{@link WirelessHub}），每台成员机器只维护自己到 hub 的<strong>一条</strong>连接，
- * 同网所有成员因此处在同一个 AE 网格里。没有源/子节点之分，没有分配表、没有周期扫描。
+ * 拓扑：每个网络有虚拟 hub（{@link WirelessHub}），太阳表面成员连接到本地 hub；
+ * 每台成员机器只维护自己到 hub 的<strong>一条</strong>连接。无风暴时所有成员处于同一个 AE 网格，
+ * 风暴期间太阳表面形成独立的本地网格。没有源/子节点之分，没有分配表、没有周期扫描。
  * <p>
  * 生命周期：
  * <ul>
@@ -49,6 +52,8 @@ public interface WirelessMachine extends IGridConnectedMachine {
     String KEY_STATE_NO_PERMISSION = "gtocore.wireless.state.no_permission";
     @RegisterLanguage(cn = "无线网络数据不可用", en = "Wireless network data unavailable")
     String KEY_STATE_UNAVAILABLE = "gtocore.wireless.state.unavailable";
+    @RegisterLanguage(cn = "太阳风暴：跨维度连接已暂停，维度内网络仍可用", en = "Solar storm: interdimensional links suspended; local network remains available")
+    String KEY_STATE_STORM_ISOLATED = "gtocore.wireless.state.storm_isolated";
 
     /** 无线连接状态（服务端计算），界面指示灯与 Jade 共用。 */
     enum LinkState {
@@ -62,7 +67,9 @@ public interface WirelessMachine extends IGridConnectedMachine {
         /** 机器所有者无权使用该网络，未连接。 */
         NO_PERMISSION,
         /** 无线网络数据不可用（存档文件损坏或版本过新），未连接，id 保留。 */
-        UNAVAILABLE;
+        UNAVAILABLE,
+        /** 太阳风暴暂停跨维度边，本地 hub 和成员绑定保留。 */
+        STORM_ISOLATED;
 
         public Component describe() {
             return switch (this) {
@@ -71,6 +78,7 @@ public interface WirelessMachine extends IGridConnectedMachine {
                 case OFFLINE -> Component.translatable(KEY_STATE_OFFLINE);
                 case NO_PERMISSION -> Component.translatable(KEY_STATE_NO_PERMISSION);
                 case UNAVAILABLE -> Component.translatable(KEY_STATE_UNAVAILABLE);
+                case STORM_ISOLATED -> Component.translatable(KEY_STATE_STORM_ISOLATED);
             };
         }
     }
@@ -134,7 +142,7 @@ public interface WirelessMachine extends IGridConnectedMachine {
         if (node == null) return;
         var hub = WirelessHub.getOrCreate(server, id);
         if (hub.isConnected(node)) return;
-        GridHelper.createConnection(node, hub.node());
+        GridHelper.createConnection(node, hub.node(node.getLevel()));
     }
 
     /**
@@ -148,10 +156,10 @@ public interface WirelessMachine extends IGridConnectedMachine {
 
     /** 拆掉本机到当前网络 hub 的连接（从节点的连接表里现找，不持有句柄）。只用于主动离开或换网。 */
     default void detachWireless() {
-        var hub = WirelessHub.get(getWirelessNetworkId());
+        var hub = WirelessHub.get(self().getLevel().getServer(), getWirelessNetworkId());
         var node = getMainNode().getNode();
         if (hub == null || node == null) return;
-        var hubNode = hub.node();
+        var hubNode = hub.existingNode(node.getLevel());
         for (var connection : node.getConnections()) {
             if (connection.getOtherSide(node) == hubNode) {
                 connection.destroy();
@@ -212,7 +220,7 @@ public interface WirelessMachine extends IGridConnectedMachine {
 
     /** 是否已有一条连到当前网络 hub 的边。 */
     default boolean isWirelessLinked() {
-        var hub = WirelessHub.get(getWirelessNetworkId());
+        var hub = WirelessHub.get(self().getLevel().getServer(), getWirelessNetworkId());
         var node = getMainNode().getNode();
         return hub != null && node != null && hub.isConnected(node);
     }
@@ -223,7 +231,8 @@ public interface WirelessMachine extends IGridConnectedMachine {
         var network = getWirelessNetwork();
         if (network == null) return LinkState.OFFLINE;
         if (!ownerCanUse(network)) return LinkState.NO_PERMISSION;
-        return isWirelessLinked() && getMainNode().isOnline() ? LinkState.ONLINE : LinkState.OFFLINE;
+        if (!isWirelessLinked() || !getMainNode().isOnline()) return LinkState.OFFLINE;
+        return SolarStormConnections.isSolarSurface(self().getLevel()) && SolarStormConnections.isStormActive(self().getLevel()) ? LinkState.STORM_ISOLATED : LinkState.ONLINE;
     }
 
     /** 服务端：无线数据是否可用。 */

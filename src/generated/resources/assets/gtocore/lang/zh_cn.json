@@ -8374,6 +8374,7 @@
   "gtocore.wireless.state.offline": "已加入无线网络，但 ME 网络离线",
   "gtocore.wireless.state.online": "无线连接正常，ME 网络在线",
   "gtocore.wireless.state.standalone": "未加入无线网络",
+  "gtocore.wireless.state.storm_isolated": "太阳风暴：跨维度连接已暂停，维度内网络仍可用",
   "gtocore.wireless.state.unavailable": "无线网络数据不可用",
   "gtocore.wireless.status.limit_reached": "你创建的网络已达上限（64 个）",
   "gtocore.wireless.status.name_invalid": "名称须为 1～32 个字符",

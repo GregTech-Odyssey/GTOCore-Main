@@ -174,14 +174,14 @@ public final class WirelessNetworks extends SavedData {
         if (network == null) return WirelessStatus.NOT_FOUND;
         if (!network.canUse(player.getUUID())) return WirelessStatus.NO_PERMISSION_NETWORK;
         var affected = WirelessSync.usersOf(player.server, network);
-        var hub = WirelessHub.get(id);
+        var hub = WirelessHub.get(player.server, id);
         if (hub != null) {
             for (var member : hub.members()) {
                 member.setWirelessNetworkId("");
                 member.markWirelessChanged();
             }
         }
-        WirelessHub.destroy(id);
+        WirelessHub.destroy(player.server, id);
         networks.remove(id);
         favorites.values().removeIf(id::equals);
         changed();

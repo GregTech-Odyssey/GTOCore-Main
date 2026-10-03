@@ -400,6 +400,13 @@
       "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
       "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
       "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V"
+    },
+    "com/gtocore/mixin/mc/ServerLevelWeatherMixin": {
+      "resetWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184097_()V",
+      "setWeatherParameters": "Lnet/minecraft/server/level/ServerLevel;m_8606_(IIZZ)V",
+      "advanceWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184096_()V",
+      "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V": "Lnet/minecraft/world/level/storage/ServerLevelData;m_5565_(Z)V",
+      "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;"
     }
   },
   "data": {
@@ -804,6 +811,13 @@
         "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
         "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
         "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V"
+      },
+      "com/gtocore/mixin/mc/ServerLevelWeatherMixin": {
+        "resetWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184097_()V",
+        "setWeatherParameters": "Lnet/minecraft/server/level/ServerLevel;m_8606_(IIZZ)V",
+        "advanceWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184096_()V",
+        "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V": "Lnet/minecraft/world/level/storage/ServerLevelData;m_5565_(Z)V",
+        "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;"
       }
     }
   }

@@ -714,7 +714,7 @@ public final class GTOMachines {
             .overlayTieredHullRenderer("neutron_sensor")
             .register();
 
-    public static final MachineDefinition ADVANCED_HEAT_HATCH = machine("advanced_heat_hatch", "高级导热仓", h -> new HeatHatchPartMachine(h, 3600, 2, 4))
+    public static final MachineDefinition ADVANCED_HEAT_HATCH = machine("advanced_heat_hatch", "高级导热仓", h -> new HeatHatchPartMachine(h, 3600, 2, 4, false))
             .allRotation()
             .abilities(PartAbility.UTILITY, HEAT_CONDUCTION)
             .tooltips(GTOMachineTooltips.TempInterfaceTooltips)

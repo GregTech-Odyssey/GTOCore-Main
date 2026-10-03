@@ -8246,6 +8246,7 @@
   "gtocore.wireless.state.offline": "Joined, but the ME network is offline",
   "gtocore.wireless.state.online": "Wireless link up, ME network online",
   "gtocore.wireless.state.standalone": "Not in a wireless network",
+  "gtocore.wireless.state.storm_isolated": "Solar storm: interdimensional links suspended; local network remains available",
   "gtocore.wireless.state.unavailable": "Wireless network data unavailable",
   "gtocore.wireless.status.limit_reached": "You have reached the limit of 64 networks",
   "gtocore.wireless.status.name_invalid": "Name must be 1-32 characters",

@@ -93,7 +93,7 @@ public final class WirelessConfiguratorUI {
         // 最近 3 秒内的操作结果优先显示在第一行
         target.addLine(TARGET, () -> ctx.stateText(() -> selectedLine(ctx, hand))).bindLevel(() -> ctx.stateLevel(() -> selectedLevel(ctx, hand)));
         target.addLine(WirelessMachineUI.LINE_OWNER, () -> WirelessMachineUI.ownerValue(ctx, selected(ctx, hand)));
-        target.addLine(WirelessMachineUI.LINE_MEMBERS, () -> WirelessMachineUI.memberValue(selected(ctx, hand)));
+        target.addLine(WirelessMachineUI.LINE_MEMBERS, () -> WirelessMachineUI.memberValue(ctx, selected(ctx, hand)));
         root.addChild(target);
 
         // 列表以外的高度：状态面板 3 行 + 网络区块固定部分 + 底部两行说明，各隔一个区块间距

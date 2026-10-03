@@ -96,7 +96,8 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
         cleanroomModuleInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
         cleanroomModuleInv.setFilter(stack -> Wrapper.CLEAN_CHECK.containsKey(stack.getItem()));
         cleanroomModuleInv.addChangedListener(this::onConditionChange);
-        heatContainer = new HeatHandler(holder, MAX_TEMPERATURE, 4, 8, 0.01);
+        heatContainer = new HeatHandler(holder, MAX_TEMPERATURE, 4, 8, 0);
+        heatContainer.setAllowExplosion(false);
         heatContainer.setSideIOCondition(s -> s == getFrontFacing());
         heatContainer.addChangedListener(() -> {
             if (temperatureMode) heatContainer.setCurrentHeat(activeTemperature);
@@ -225,7 +226,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
 
     private void setActiveTemperature(int activeTemperature) {
         this.activeTemperature = Mth.clamp(activeTemperature, MIN_TEMPERATURE, MAX_TEMPERATURE);
-        heatContainer.setCurrentHeat(activeTemperature);
+        heatContainer.setCurrentHeat((long) (activeTemperature * heatContainer.getHeatCapacity()));
     }
 
     @Override

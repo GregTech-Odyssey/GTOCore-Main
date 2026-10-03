@@ -258,7 +258,8 @@ public final class WirelessMachineUI {
                 Indicator.State.of(UITheme.STATUS_ONLINE, WirelessMachine.KEY_STATE_ONLINE),
                 Indicator.State.of(UITheme.STATUS_OFFLINE, WirelessMachine.KEY_STATE_OFFLINE),
                 Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_NO_PERMISSION),
-                Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_UNAVAILABLE));
+                Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_UNAVAILABLE),
+                Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_STORM_ISOLATED));
         var line = TextLine.of(0, text).bindClientColor(color);
         line.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
@@ -457,7 +458,7 @@ public final class WirelessMachineUI {
         var scroller = ServerList.of(MemberKey.CODEC, () -> memberKeys(ctx, machine), MemberRow::new)
                 .version(() -> memberVersion(ctx, machine)).rowHeight(MEMBER_ROW_HEIGHT).maxRows(memberRows).scroll(membersId, LIST_WIDTH);
         members.addChildren(TextLine.of(LayoutStyle.AUTO, () -> {
-            var hub = WirelessHub.get(machine.getWirelessNetworkId());
+            var hub = WirelessHub.get(ctx.serverPlayer().server, machine.getWirelessNetworkId());
             return Component.translatable(MEMBERS, hub == null || !canView(ctx, machine) ? 0 : hub.memberCount());
         }).bindClientColor(UITheme::panelText), scroller);
         column.addChild(members);
@@ -487,8 +488,8 @@ public final class WirelessMachineUI {
     }
 
     private static boolean isConflict(WirelessMachine machine) {
-        var hub = WirelessHub.get(machine.getWirelessNetworkId());
-        return hub != null && hub.controllerState() == ControllerState.CONTROLLER_CONFLICT;
+        var node = machine.getMainNode().getNode();
+        return node != null && node.getGrid().getPathingService().getControllerState() == ControllerState.CONTROLLER_CONFLICT;
     }
 
     // ==================== 成员行 ====================
@@ -543,7 +544,7 @@ public final class WirelessMachineUI {
     }
 
     private static List<MemberKey> memberKeys(WirelessUIContext ctx, WirelessMachine machine) {
-        var hub = WirelessHub.get(machine.getWirelessNetworkId());
+        var hub = WirelessHub.get(ctx.serverPlayer().server, machine.getWirelessNetworkId());
         if (hub == null || !canView(ctx, machine)) return List.of();
         return hub.members().stream()
                 .map(member -> {
@@ -558,7 +559,7 @@ public final class WirelessMachineUI {
 
     /** 成员列表的版本：成员构成或查看权限变化时变化，列表只在这时重建。 */
     private static int memberVersion(WirelessUIContext ctx, WirelessMachine machine) {
-        var hub = WirelessHub.get(machine.getWirelessNetworkId());
+        var hub = WirelessHub.get(ctx.serverPlayer().server, machine.getWirelessNetworkId());
         if (hub == null) return 0;
         return 31 * hub.membershipStamp() + (canView(ctx, machine) ? 1 : 0);
     }
@@ -641,7 +642,7 @@ public final class WirelessMachineUI {
                 .bindDetail(() -> stateDetail(ctx, machine));
         if (withNetwork) panel.addLine(LINE_NETWORK, () -> networkName(ctx, machine));
         panel.addLine(LINE_OWNER, () -> ownerValue(ctx, viewableNetwork(ctx, machine)));
-        panel.addLine(LINE_MEMBERS, () -> memberValue(viewableNetwork(ctx, machine)));
+        panel.addLine(LINE_MEMBERS, () -> memberValue(ctx, viewableNetwork(ctx, machine)));
         return panel;
     }
 
@@ -659,9 +660,9 @@ public final class WirelessMachineUI {
     }
 
     /** 状态面板"成员"的值（已连上的成员数）；{@code network} 为 null 时为"—"。 */
-    static Component memberValue(@Nullable WirelessNetwork network) {
+    static Component memberValue(WirelessUIContext ctx, @Nullable WirelessNetwork network) {
         if (network == null) return Component.literal(NO_VALUE);
-        var hub = WirelessHub.get(network.id());
+        var hub = WirelessHub.get(ctx.serverPlayer().server, network.id());
         return Component.literal(String.valueOf(hub == null ? 0 : hub.memberCount()));
     }
 
@@ -675,6 +676,7 @@ public final class WirelessMachineUI {
             case OFFLINE -> STATE_OFFLINE;
             case NO_PERMISSION -> STATE_NO_PERMISSION;
             case UNAVAILABLE -> STATE_UNAVAILABLE;
+            case STORM_ISOLATED -> WirelessMachine.KEY_STATE_STORM_ISOLATED;
         });
     }
 
@@ -686,7 +688,7 @@ public final class WirelessMachineUI {
             case STANDALONE -> Level.NORMAL;
             case ONLINE -> Level.GOOD;
             case OFFLINE -> Level.ERROR;
-            case NO_PERMISSION, UNAVAILABLE -> Level.WARNING;
+            case NO_PERMISSION, UNAVAILABLE, STORM_ISOLATED -> Level.WARNING;
         };
     }
 

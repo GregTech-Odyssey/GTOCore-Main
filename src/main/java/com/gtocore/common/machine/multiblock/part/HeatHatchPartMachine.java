@@ -19,9 +19,14 @@ public class HeatHatchPartMachine extends MultiblockPartMachine implements IHeat
     private final HeatHandler heatContainer;
 
     public HeatHatchPartMachine(MetaMachineBlockEntity holder, long maxTemperature, double heatCapacity, double baseTransferRate) {
+        this(holder, maxTemperature, heatCapacity, baseTransferRate, true);
+    }
+
+    public HeatHatchPartMachine(MetaMachineBlockEntity holder, long maxTemperature, double heatCapacity, double baseTransferRate, boolean allowExplosion) {
         super(holder);
         heatContainer = new HeatHandler(holder, maxTemperature, heatCapacity, baseTransferRate, 0.01);
         heatContainer.setSideIOCondition(s -> s == getFrontFacing());
+        heatContainer.setAllowExplosion(allowExplosion);
         heatContainer.addChangedListener(() -> {
             for (var c : getControllers()) {
                 if (c instanceof IRecipeLogicMachine machine) machine.getRecipeLogic().updateTickSubscription();
