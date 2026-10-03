@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
@@ -28,14 +27,10 @@ public final class ExResearchManager {
 
     public static @Nullable AEKey getMainItemOutput(GTRecipeDefinition recipe) {
         if (!recipe.itemOutputs.isEmpty()) {
-            var ingredient = recipe.itemOutputs.getFirst().inner;
-            ItemStack stack = ingredient.getInnerItemStack().copy();
-            return AEItemKey.of(stack);
+            return recipe.itemOutputs.ingredient(0).displayKey() instanceof AEItemKey key ? key : null;
         }
         if (!recipe.fluidOutputs.isEmpty()) {
-            var ingredient = recipe.fluidOutputs.getFirst().inner;
-            FluidStack stack = ingredient.getFluidStack();
-            return AEFluidKey.of(stack);
+            return recipe.fluidOutputs.ingredient(0).displayKey() instanceof AEFluidKey key ? key : null;
         }
         return null;
     }

@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -35,7 +36,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.common.registry.ModBlocks;
@@ -44,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.ObjLongConsumer;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.DistilledWater;
 
@@ -302,7 +304,7 @@ public final class SpaceStationFlowPage {
         private final Fluid water = DistilledWater.getFluid();
         private final Component usageText;
         private final Component requiredTierText;
-        private final ObjLongConsumer<FluidStack> waterCollector;
+        private final IRecipeHandler.KeyVisitor waterCollector;
         private long[] unitWater = new long[0];
         private long[] unitScratch = new long[0];
         private int collectingUnit;
@@ -350,11 +352,12 @@ public final class SpaceStationFlowPage {
             this.usageText = Component.literal(FormattingUtil.formatNumbers(diagnoser.getEUt()));
             this.requiredTierText = Component.literal(GTValues.VN[diagnoser.getTier()]);
             this.inputDetails = new ArrayList<>(Collections.nCopies(diagnoser.inputCount(), Collections.emptyList()));
-            this.waterCollector = (stack, amount) -> {
-                if (stack.getFluid() == water) {
+            this.waterCollector = (key, amount) -> {
+                if (key instanceof AEFluidKey fluidKey && fluidKey.getFluid() == water) {
                     long sum = unitWater[collectingUnit] + amount;
                     unitWater[collectingUnit] = sum < 0 ? Long.MAX_VALUE : sum;
                 }
+                return false;
             };
         }
 
@@ -655,7 +658,7 @@ public final class SpaceStationFlowPage {
             for (int u = 0; u < count; u++) {
                 unitWater[u] = 0;
                 collectingUnit = u;
-                units.get(u).fastForEachFluids(true, waterCollector);
+                units.get(u).forEachKey(AEKeyType.fluids(), true, waterCollector);
                 total += unitWater[u];
             }
             return total < 0 ? Long.MAX_VALUE : total;

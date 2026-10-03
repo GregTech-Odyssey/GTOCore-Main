@@ -6,11 +6,13 @@ import com.gtocore.common.machine.multiblock.part.IDataAccessHatchMachineAccesso
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
 
 import net.minecraft.world.item.Item;
+
+import appeng.api.stacks.AEItemKey;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,7 +39,7 @@ public class DataAccessHatchMachineMixin extends TieredPartMachine implements ID
 
     @Shadow(remap = false)
     @Final
-    public NotifiableItemStackHandler importItems;
+    public NotifiableInventory<AEItemKey> importItems;
 
     @Shadow(remap = false)
     @Final
@@ -49,7 +51,8 @@ public class DataAccessHatchMachineMixin extends TieredPartMachine implements ID
 
     @Inject(method = "<init>", at = @At("TAIL"), remap = false)
     private void init(MetaMachineBlockEntity holder, int tier, boolean isCreative, CallbackInfo ci) {
-        importItems.setFilter(i -> gtolib$DATA.getOrDefault(i.getItem(), 0) <= tier);
+        var base = importItems.storage.getFilter();
+        importItems.setFilter(k -> k instanceof AEItemKey itemKey && (base == null || base.matches(k)) && gtolib$DATA.getOrDefault(itemKey.getItem(), 0) <= tier);
     }
 
     @Inject(method = "getInventorySize", at = @At("TAIL"), remap = false, cancellable = true)
@@ -71,7 +74,7 @@ public class DataAccessHatchMachineMixin extends TieredPartMachine implements ID
     }
 
     @Override
-    public NotifiableItemStackHandler gtocore$getImportItems() {
+    public NotifiableInventory<AEItemKey> gtocore$getImportItems() {
         return importItems;
     }
 

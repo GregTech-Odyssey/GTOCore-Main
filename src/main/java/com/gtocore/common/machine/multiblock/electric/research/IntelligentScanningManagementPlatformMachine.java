@@ -19,17 +19,16 @@ import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-
-import net.minecraft.world.item.ItemStack;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 
@@ -149,17 +148,18 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        ObjHolder<ItemStack> d = new ObjHolder<>();
-        unit.fastForEachItems(true, (stack, amount) -> {
-            if (stack.getItem() instanceof DataCrystalItem dataCrystalItem && (d.get() == null || dataCrystalItem.tier > ((DataCrystalItem) d.get().getItem()).tier)) {
-                d.set(stack);
+        ObjHolder<AEItemKey> d = new ObjHolder<>();
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            if (key instanceof AEItemKey itemKey && itemKey.getItem() instanceof DataCrystalItem dataCrystalItem && (d.get() == null || dataCrystalItem.tier > ((DataCrystalItem) d.get().getItem()).tier)) {
+                d.set(itemKey);
             }
+            return false;
         });
-        var stack = d.get();
-        if (stack == null) return null;
-        var remaining = DataCrystalItem.getRemainingCapacity(stack);
-        var input = stack.copyWithCount(1);
-        var output = stack.copyWithCount(1);
+        var crystal = d.get();
+        if (crystal == null) return null;
+        var input = crystal.toStack(1);
+        var output = crystal.toStack(1);
+        var remaining = DataCrystalItem.getRemainingCapacity(input);
         var team = TeamUtil.getTeamUUID(getOwnerUUID());
         var keyCounter = new KeyCounter();
         var recipe = RecipeBuilder.ofRaw().inputItems(input);
@@ -202,7 +202,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                         actualAmount = me.extract(k, turns,
                                 Actionable.SIMULATE, IActionSource.ofMachine(scanningProxyPartMachine));
                     }
-                    recipe.inputItems(ItemIngredient.of(itemKey.item, actualAmount));
+                    recipe.inputItems(KeyIngredient.item(itemKey.getItem()), actualAmount);
                 } else if (k instanceof AEFluidKey fluidKey) {
                     if (me != null) {
                         actualAmount = me.extract(k, turns * 1000,
@@ -237,7 +237,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                 }
                 if (remaining >= occupy) {
                     if (k instanceof AEItemKey itemKey) {
-                        recipe.inputItems(ItemIngredient.of(itemKey.item, 1));
+                        recipe.inputItems(KeyIngredient.item(itemKey.getItem()), 1L);
                     } else if (k instanceof AEFluidKey fluidKey) {
                         recipe.inputFluids(fluidKey.getFluid(), 1000);
                     }

@@ -17,8 +17,8 @@ import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.StringConverter;
 
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -36,9 +36,10 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import appeng.api.behaviors.ContainerItemStrategies;
-import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 
@@ -50,7 +51,7 @@ import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
 public final class GTOCommands {
 
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal(GTOCore.MOD_ID)
+        var root = Commands.literal(GTOCore.MOD_ID)
                 .then(Commands.literal("gc").executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal("Start garbage cleanup"), false);
                     GTOUtils.gc();
@@ -119,7 +120,9 @@ public final class GTOCommands {
                 }))
                 .then(TechTreeCommands.register())
                 .then(ResarchTagCommands.register())
-                .then(ResarchTagCommands.registerScan()));
+                .then(ResarchTagCommands.registerScan());
+        if (!FMLEnvironment.production) root.then(GridDemoCommand.create());
+        dispatcher.register(root);
     }
 
     private static int toggleVoidWorldTime(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {
@@ -144,7 +147,7 @@ public final class GTOCommands {
             return;
         }
         GenericStack contained = ContainerItemStrategies.getContainedStack(stack);
-        AEKey key = contained == null ? AEItemKey.of(stack) : contained.what();
+        AEKey key = contained == null ? Keys.item(stack) : contained.what();
         ItemStack cell = EPPItemAndBlock.INFINITY_CELL.getRecordCell(key);
         if (!player.getInventory().add(cell)) {
             player.drop(cell, false);
@@ -163,7 +166,7 @@ public final class GTOCommands {
     private static void hand(ServerPlayer player) {
         player.sendSystemMessage(Component.literal("Item in hand:"));
         ItemStack stack = player.getMainHandItem();
-        String s = StringConverter.fromItem(ItemIngredient.of(stack), 1);
+        String s = stack.isEmpty() ? null : StringConverter.fromItem(KeyIngredient.of(stack), stack.getCount(), 1);
         if (s != null) {
             player.sendSystemMessage(copy(Component.literal(s).withStyle(ChatFormatting.DARK_BLUE)));
         }
@@ -176,7 +179,7 @@ public final class GTOCommands {
         if (stack.getItem() instanceof BucketItem bucketItem) {
             player.sendSystemMessage(Component.literal("Held fluid:"));
             Fluid fluid = bucketItem.getFluid();
-            String f = StringConverter.fromFluid(FluidIngredient.of(fluid, 1000), false);
+            String f = fluid == Fluids.EMPTY ? null : StringConverter.fromFluid(KeyIngredient.fluid(fluid), 1000, false);
             if (f != null) {
                 player.sendSystemMessage(copy(Component.literal(f).withStyle(ChatFormatting.AQUA)));
             }

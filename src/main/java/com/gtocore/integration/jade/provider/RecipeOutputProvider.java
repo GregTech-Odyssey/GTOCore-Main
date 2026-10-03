@@ -11,9 +11,8 @@ import com.gtolib.utils.ItemUtils;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
 import com.gregtechceu.gtceu.integration.jade.provider.CapabilityBlockProvider;
 
@@ -31,8 +30,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.fluids.FluidStack;
 
-import com.gto.fastcollection.fastutil.O2LOpenCustomCacheHashMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenCustomHashMap;
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
+
+import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
@@ -59,41 +61,31 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
         if (recipeLogic.isWorking()) {
             data.putBoolean("Working", recipeLogic.isWorking());
             if (recipeLogic.machine.getRecipeType() == GTORecipeTypes.RANDOM_ORE_RECIPES) return;
-            Object2LongOpenCustomHashMap<Content<ItemIngredient>> items = new O2LOpenCustomCacheHashMap<>(ContentBuilder.HASH_STRATEGY);
-            Object2LongOpenCustomHashMap<Content<FluidIngredient>> fluids = new O2LOpenCustomCacheHashMap<>(ContentBuilder.HASH_STRATEGY);
+            Object2LongLinkedOpenHashMap<OutputKey> items = new Object2LongLinkedOpenHashMap<>();
+            Object2LongLinkedOpenHashMap<OutputKey> fluids = new Object2LongLinkedOpenHashMap<>();
             if (recipeLogic.machine instanceof ICrossRecipeMachine recipeMachine && !recipeMachine.getThreads().isEmpty()) {
                 recipeMachine.getThreads().forEach(t -> {
                     var recipe = t.getRecipe();
-                    for (var content : recipe.itemOutputs) {
-                        items.addTo(content, content.amount);
-                    }
-                    for (var content : recipe.fluidOutputs) {
-                        fluids.addTo(content, content.amount);
-                    }
+                    collect(items, recipe, recipe.itemOutputs);
+                    collect(fluids, recipe, recipe.fluidOutputs);
                 });
             } else {
                 var recipe = recipeLogic.getLastRecipe();
                 if (recipe == null) return;
-                for (var content : recipe.itemOutputs) {
-                    items.addTo(content, content.amount);
-                }
-
-                for (var content : recipe.fluidOutputs) {
-                    fluids.addTo(content, content.amount);
-                }
+                collect(items, recipe, recipe.itemOutputs);
+                collect(fluids, recipe, recipe.fluidOutputs);
             }
             if (!items.isEmpty()) {
                 ListTag itemTags = new ListTag();
                 items.object2LongEntrySet().forEach(entry -> {
+                    var output = entry.getKey();
+                    if (!(output.key() instanceof AEItemKey key)) return;
                     var nbt = new CompoundTag();
-                    var ingredient = entry.getKey().inner;
-                    var stack = ingredient.getInnerItemStack();
-                    if (stack.isEmpty()) return;
-                    nbt.putInt("c", entry.getKey().chance);
-                    nbt.putString("id", ItemUtils.getId(stack));
+                    nbt.putInt("c", output.chance());
+                    nbt.putString("id", ItemUtils.getId(key.getItem()));
                     nbt.putLong("a", entry.getLongValue());
-                    if (stack.hasTag()) {
-                        nbt.put("tag", stack.getTag());
+                    if (key.hasTag()) {
+                        nbt.put("tag", key.copyTag());
                     }
                     itemTags.add(nbt);
                 });
@@ -102,15 +94,14 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
             if (!fluids.isEmpty()) {
                 ListTag fluidTags = new ListTag();
                 fluids.object2LongEntrySet().forEach(entry -> {
+                    var output = entry.getKey();
+                    if (!(output.key() instanceof AEFluidKey key)) return;
                     var nbt = new CompoundTag();
-                    var ingredient = entry.getKey().inner;
-                    var fluid = ingredient.getFluid();
-                    if (fluid == null) return;
-                    nbt.putInt("c", entry.getKey().chance);
-                    nbt.putString("FluidName", FluidUtils.getId(fluid));
+                    nbt.putInt("c", output.chance());
+                    nbt.putString("FluidName", FluidUtils.getId(key.getFluid()));
                     nbt.putLong("a", entry.getLongValue());
-                    if (ingredient.nbt != null) {
-                        nbt.put("tag", ingredient.nbt);
+                    if (key.hasTag()) {
+                        nbt.put("tag", key.copyTag());
                     }
                     fluidTags.add(nbt);
                 });
@@ -118,6 +109,18 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
             }
         }
     }
+
+    private static void collect(Object2LongLinkedOpenHashMap<OutputKey> map, GTRecipe recipe, ContentList contents) {
+        for (int i = 0, n = contents.size(); i < n; i++) {
+            var key = contents.ingredient(i).displayKey();
+            if (key == null) continue;
+            var output = new OutputKey(key, contents.chance(i), contents.boost(i));
+            long sum = map.getLong(output) + contents.effective(i, recipe.scale);
+            map.put(output, sum < 0 ? Long.MAX_VALUE : sum);
+        }
+    }
+
+    private record OutputKey(AEKey key, int chance, int boost) {}
 
     @Override
     protected void addTooltip(CompoundTag capData, ITooltip tooltip, Player player, BlockAccessor block, BlockEntity blockEntity, IPluginConfig config) {
@@ -159,7 +162,7 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
                 boolean estimated = chance < ContentBuilder.maxChance;
                 long count = tag.getLong("a");
                 if (estimated) {
-                    count = Math.max(1, count * chance / ContentBuilder.maxChance);
+                    count = Math.max(1, count / ContentBuilder.maxChance * chance + count % ContentBuilder.maxChance * chance / ContentBuilder.maxChance);
                 }
                 iTooltip.add(helper.smallItem(stack));
                 Component text = Component.literal(" ")
@@ -180,7 +183,7 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
                 boolean estimated = chance < ContentBuilder.maxChance;
                 long count = tag.getLong("a");
                 if (estimated) {
-                    count = Math.max(1, count * chance / ContentBuilder.maxChance);
+                    count = Math.max(1, count / ContentBuilder.maxChance * chance + count % ContentBuilder.maxChance * chance / ContentBuilder.maxChance);
                 }
                 iTooltip.add(GTElementHelper.smallFluid(getFluid(stack)));
                 Component text = Component.literal(" ")

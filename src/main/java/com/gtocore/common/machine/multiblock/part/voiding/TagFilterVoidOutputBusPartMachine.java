@@ -6,20 +6,17 @@ import com.gtocore.utils.Caches;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.utils.GTUtil;
-
-import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
+import appeng.api.storage.AEKeyFilter;
 import appeng.util.prioritylist.IPartitionList;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
-import java.util.function.Predicate;
-
-public final class TagFilterVoidOutputBusPartMachine extends VoidOutputBusPartMachine implements ITagFilterMachine, Predicate<ItemStack> {
+public final class TagFilterVoidOutputBusPartMachine extends VoidOutputBusPartMachine implements ITagFilterMachine, AEKeyFilter {
 
     @Getter
     @SaveToDisk(defaultValue = "")
@@ -35,15 +32,16 @@ public final class TagFilterVoidOutputBusPartMachine extends VoidOutputBusPartMa
     }
 
     @Override
-    public boolean test(ItemStack stack) {
+    public boolean matches(AEKey key) {
+        if (!(key instanceof AEItemKey itemKey)) return false;
         if (filter == null) filter = Caches.getTagPriorityList(tagWhite, tagBlack);
-        return filter.isListed(AEItemKey.of(stack.getItem()));
+        return filter.isListed(AEItemKey.of(itemKey.getItem()));
     }
 
     private void onSlotChanged() {
         filter = null;
         if (tagWhite.isBlank() && tagBlack.isBlank()) {
-            handler.setFilter(GTUtil.FAVORABLE);
+            handler.setFilter(null);
         } else {
             handler.setFilter(this);
         }

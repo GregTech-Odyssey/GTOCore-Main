@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.BlockPos;
@@ -76,8 +77,11 @@ public final class SpaceProbeSurfaceReceptionMachine extends ElectricMultiblockM
             double number = (double) DysonSphereSavaedData.getDimensionData(getDimension()).leftInt() / 100;
             if (number > 1) {
                 use = true;
-                var content = recipe.fluidOutputs.getFirst();
-                recipe.fluidOutputs = List.of(content.copy((long) number));
+                var outputs = recipe.fluidOutputs;
+                if (!outputs.isEmpty()) {
+                    var first = outputs.range(0, 1);
+                    recipe.fluidOutputs = first.chance(0) == 0 ? first : first.withAmount(0, Keys.multiply(first.amount(0), (long) number));
+                }
                 return recipe;
             }
         }

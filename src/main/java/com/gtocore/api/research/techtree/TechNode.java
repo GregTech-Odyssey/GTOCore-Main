@@ -7,7 +7,10 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -108,11 +111,11 @@ public final class TechNode {
     private static AEKey getMainOutput(GTRecipeDefinition recipe) {
         var outputs0 = recipe.itemOutputs;
         if (!outputs0.isEmpty()) {
-            return AEItemKey.of(outputs0.getFirst().inner.getInnerItemStack());
+            return outputs0.ingredient(0).displayKey() instanceof AEItemKey key ? key : null;
         }
         var outputs1 = recipe.fluidOutputs;
         if (!outputs1.isEmpty()) {
-            return AEFluidKey.of(outputs1.getFirst().inner.getFluidStack());
+            return outputs1.ingredient(0).displayKey() instanceof AEFluidKey key ? key : null;
         }
         return null;
     }
@@ -127,13 +130,19 @@ public final class TechNode {
     private static MutableComponent getMainOutputText(GTRecipeDefinition recipe) {
         var outputs0 = recipe.itemOutputs;
         if (!outputs0.isEmpty()) {
-            return outputs0.getFirst().getName();
+            return contentName(outputs0);
         }
         var outputs1 = recipe.fluidOutputs;
         if (!outputs1.isEmpty()) {
-            return outputs1.getFirst().getName();
+            return contentName(outputs1);
         }
         return Component.empty();
+    }
+
+    private static MutableComponent contentName(ContentList list) {
+        var ingredient = list.ingredient(0);
+        Component name = (ingredient.kind == KeyIngredient.BASE || ingredient.kind == KeyIngredient.EXACT) && ingredient.key() instanceof AEItemKey key ? Keys.displayStack(key).getDisplayName() : ingredient.getName();
+        return Component.literal(list.amount(0) + "× ").append(name);
     }
 
     public ArrayList<Component> getRewardLinesWithHeader() {

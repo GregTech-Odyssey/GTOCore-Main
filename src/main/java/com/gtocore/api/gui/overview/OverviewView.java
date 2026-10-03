@@ -25,6 +25,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -290,12 +291,16 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
         snapshot = next;
         var connected = new Long2ObjectOpenHashMap<BlockState>();
         var detached = new Long2ObjectOpenHashMap<BlockState>();
+        var owners = new Long2ObjectOpenHashMap<StructureScene.PartOwner>();
         boolean coarse = next.coarse();
         for (var module : next.modules()) {
             var into = module.state() == OverviewSnapshot.CONNECTED ? connected : detached;
             var moduleLayout = layoutOf(module);
-            if (coarse) collectOutline(module, moduleLayout, into);
-            else module.collect(moduleLayout, into);
+            if (coarse) collectOutline(module, moduleLayout, into, owners);
+            else {
+                module.collect(moduleLayout, into);
+                collectOwners(module, moduleLayout, owners);
+            }
         }
         var keys = connected.keySet().iterator();
         while (keys.hasNext()) detached.remove(keys.nextLong());
@@ -318,8 +323,8 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
         }
         float dx = maxX - minX + 1, dy = maxY - minY + 1, dz = maxZ - minZ + 1;
         float zoom = all.isEmpty() ? -1 : Math.max(MIN_ZOOM, (float) Math.sqrt(dx * dx + dy * dy + dz * dz) * FIT);
-        scene.show(connected, StructureScene.ALL_LAYERS, zoom);
-        scene.setOverlay(OVERLAY_DETACHED, detached, red(DETACHED_COLOR), green(DETACHED_COLOR), blue(DETACHED_COLOR), 1);
+        scene.show(connected, owners, StructureScene.ALL_LAYERS, zoom);
+        scene.setOverlay(OVERLAY_DETACHED, detached, owners, red(DETACHED_COLOR), green(DETACHED_COLOR), blue(DETACHED_COLOR), 1);
         truncatedNotice.setDisplay(next.truncated());
         coarseNotice.setDisplay(coarse);
         legend.markLayoutDirty();
@@ -338,12 +343,31 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
         return layout;
     }
 
-    private static void collectOutline(OverviewSnapshot.Module module, @Nullable Layout layout, Long2ObjectOpenHashMap<BlockState> into) {
+    private static void collectOutline(OverviewSnapshot.Module module, @Nullable Layout layout, Long2ObjectOpenHashMap<BlockState> into,
+                                       Long2ObjectOpenHashMap<StructureScene.PartOwner> owners) {
         var definition = module.definition();
         if (definition == null || layout == null) return;
         var items = StructurePlans.preview(definition, layout).items();
-        into.putAll(StructureBlocks.worldBlocks(layout, items, module.pos(), module.front(), module.up(), module.flip()));
-        into.put(module.pos().asLong(), OverviewDocking.controllerState(definition, module.front(), module.up()));
+        var blocks = StructureBlocks.worldBlocks(layout, items, module.pos(), module.front(), module.up(), module.flip());
+        var controller = OverviewDocking.controllerState(definition, module.front(), module.up());
+        var owner = new StructureScene.PartOwner(module.pos().asLong(), controller);
+        for (var it = blocks.long2ObjectEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
+            if (entry.getValue().hasBlockEntity()) owners.put(entry.getLongKey(), owner);
+        }
+        into.putAll(blocks);
+        into.put(module.pos().asLong(), controller);
+    }
+
+    private static void collectOwners(OverviewSnapshot.Module module, @Nullable Layout layout, Long2ObjectOpenHashMap<StructureScene.PartOwner> into) {
+        if (layout == null || module.owners().isEmpty()) return;
+        var cursor = new BlockPos.MutableBlockPos();
+        int cells = layout.cells().size();
+        for (var owner : module.owners()) {
+            if (owner.cell() >= cells) continue;
+            long pos = layout.worldPos(module.pos(), owner.cell(), module.front(), module.up(), module.flip(), cursor).asLong();
+            into.put(pos, new StructureScene.PartOwner(owner.controller(), Block.stateById(owner.state())));
+        }
     }
 
     private static float red(int color) {

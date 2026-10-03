@@ -10,9 +10,12 @@ import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.item.armor.PowerlessJetpack;
 
 import net.minecraft.world.level.material.Fluid;
+
+import appeng.api.stacks.AEFluidKey;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -61,14 +64,15 @@ public class FuelCell {
             }
         }
 
-        PowerlessJetpack.FUELS.forEach((fluidStack, duration) -> {
-            Fluid fluid = fluidStack.getFluid();
-            if (fluid == null) return;
+        PowerlessJetpack.FUELS.forEach((fuel, duration) -> {
+            if (!(fuel.ingredient().key() instanceof AEFluidKey key)) return;
+            Fluid fluid = key.getFluid();
+            int amount = Keys.saturatedInt(fuel.amount());
             long totalEu = (long) duration * 4;
             FUEL_CELL_ENERGY_ABSORPTION_RECIPES.recipeBuilder(FluidUtils.getIdLocation(fluid).getPath())
                     .notConsumable(TagUtils.createTGItemTag("membrane_electrodes"))
-                    .inputFluids(Oxygen.getFluid(FluidStorageKeys.LIQUID), fluidStack.getAmount())
-                    .inputFluids(fluid, fluidStack.getAmount())
+                    .inputFluids(Oxygen.getFluid(FluidStorageKeys.LIQUID), amount)
+                    .inputFluids(fluid, amount)
                     .EUt(1)
                     .duration(20)
                     .addData(GTORecipeDataKeys.CONVERTED_ENERGY, totalEu)

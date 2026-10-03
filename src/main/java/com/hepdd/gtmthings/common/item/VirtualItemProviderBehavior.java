@@ -5,7 +5,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -20,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.items.IItemHandlerModifiable;
 
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -68,7 +68,7 @@ public final class VirtualItemProviderBehavior implements IAddInformation, IItem
         });
     }
 
-    private static class ItemHandler implements ICustomItemStackHandler {
+    private static class ItemHandler implements IItemHandlerModifiable {
 
         private ItemStack getItem() {
             return entityPlayer.getItemInHand(hand);

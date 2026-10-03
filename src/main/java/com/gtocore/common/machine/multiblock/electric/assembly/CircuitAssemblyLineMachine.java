@@ -9,12 +9,12 @@ import com.gtolib.utils.ItemUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -38,17 +38,17 @@ public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
     }
 
     @Override
-    public @NotNull NotifiableItemStackHandler createMachineStorage(Predicate<ItemStack> filter) {
-        NotifiableItemStackHandler storage = new NotifiableItemStackHandler(
-                this, 1, IO.IN, IO.BOTH, slots -> new CustomItemStackHandler(1) {
+    public @NotNull NotifiableStackInventory createMachineStorage(Predicate<ItemStack> filter) {
+        NotifiableStackInventory storage = new NotifiableStackInventory(
+                this, new StackInventory(1) {
 
                     @Override
                     public void onContentsChanged(int slot) {
                         super.onContentsChanged(slot);
                         onMachineChanged();
                     }
-                });
-        storage.setFilter(filter);
+                }, IO.IN, IO.BOTH);
+        storage.storage.setFilter(filter);
         return storage;
     }
 

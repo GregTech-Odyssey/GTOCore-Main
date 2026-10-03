@@ -1,11 +1,13 @@
 package com.hepdd.gtmthings.api.machine.fancyconfigurator;
 
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfigurator;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.uiwidgets.inventory.SlotGridView;
 
 import net.minecraft.network.chat.Component;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -19,7 +21,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class InventoryFancyConfigurator implements IFancyConfigurator {
 
-    private final CustomItemStackHandler inventory;
+    private final KeyInventory<AEItemKey> inventory;
 
     @Getter
     private final Component title;
@@ -28,7 +30,7 @@ public class InventoryFancyConfigurator implements IFancyConfigurator {
     @Setter
     private List<Component> tooltips = Collections.emptyList();
 
-    public InventoryFancyConfigurator(CustomItemStackHandler inventory, Component title) {
+    public InventoryFancyConfigurator(KeyInventory<AEItemKey> inventory, Component title) {
         this.inventory = inventory;
         this.title = title;
     }

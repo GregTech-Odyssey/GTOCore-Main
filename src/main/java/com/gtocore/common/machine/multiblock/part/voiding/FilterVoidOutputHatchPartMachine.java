@@ -7,16 +7,18 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
-import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraftforge.fluids.FluidStack;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKey;
+import appeng.api.storage.AEKeyFilter;
 import appeng.hooks.IUnique;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -27,13 +29,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.function.Predicate;
 
-public final class FilterVoidOutputHatchPartMachine extends VoidOutputHatchPartMachine implements Predicate<FluidStack> {
+public final class FilterVoidOutputHatchPartMachine extends VoidOutputHatchPartMachine implements AEKeyFilter {
 
     @Getter
     @SaveToDisk
-    private final CustomFluidTank[] tanks = new CustomFluidTank[81];
+    private final KeyInventory<AEFluidKey> tanks = KeyInventory.fluids(81, 1);
 
     @Setter
     @Getter
@@ -44,14 +45,12 @@ public final class FilterVoidOutputHatchPartMachine extends VoidOutputHatchPartM
 
     public FilterVoidOutputHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.MV);
-        for (int i = 0; i < tanks.length; i++) {
-            tanks[i] = new CustomFluidTank(1);
-        }
     }
 
     @Override
-    public boolean test(FluidStack stack) {
-        var id = ((IUnique) stack.getFluid()).ae2$getUid();
+    public boolean matches(AEKey key) {
+        if (!(key instanceof AEFluidKey fluidKey)) return false;
+        var id = ((IUnique) fluidKey.getFluid()).ae2$getUid();
         if (reverse) {
             return !ids.contains(id);
         } else {
@@ -61,14 +60,14 @@ public final class FilterVoidOutputHatchPartMachine extends VoidOutputHatchPartM
 
     private void onSlotChanged() {
         ids.clear();
-        for (CustomFluidTank tank : tanks) {
-            var stack = tank.getFluid();
-            if (!stack.isEmpty()) {
-                ids.add(((IUnique) stack.getFluid()).ae2$getUid());
+        for (int i = 0; i < tanks.size(); i++) {
+            var key = tanks.keyAt(i);
+            if (key != null) {
+                ids.add(((IUnique) key.getFluid()).ae2$getUid());
             }
         }
         if (ids.isEmpty()) {
-            handler.setFilter(GTUtil.FAVORABLE);
+            handler.setFilter(null);
         } else {
             handler.setFilter(this);
         }
@@ -93,11 +92,12 @@ public final class FilterVoidOutputHatchPartMachine extends VoidOutputHatchPartM
         int colSize = 9;
         var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * colSize + 16);
         var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * colSize + 8);
+        var adapter = new ForgeFluidAdapter(tanks);
         int index = 0;
         for (int y = 0; y < colSize; y++) {
             for (int x = 0; x < rowSize; x++) {
                 int finalIndex = index++;
-                container.addWidget(new PhantomFluidWidget(this.tanks[finalIndex], finalIndex, 4 + x * 18, 4 + y * 18, 18, 18, () -> this.tanks[finalIndex].getFluid(), (fluid -> tanks[finalIndex].setFluid(fluid.isEmpty() ? FluidStack.EMPTY : ICustomFluidStackHandler.copy(fluid, 1000)))).setChangeListener(this::onSlotChanged).setShowAmount(false).setBackground(GuiTextures.FLUID_SLOT));
+                container.addWidget(new PhantomFluidWidget(adapter, finalIndex, 4 + x * 18, 4 + y * 18, 18, 18, () -> adapter.getFluidInTank(finalIndex), (fluid -> tanks.set(finalIndex, Keys.fluid(fluid), 1000))).setChangeListener(this::onSlotChanged).setShowAmount(false).setBackground(GuiTextures.FLUID_SLOT));
             }
         }
         container.setBackground(GuiTextures.BACKGROUND_INVERSE);

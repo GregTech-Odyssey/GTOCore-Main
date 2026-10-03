@@ -13,7 +13,8 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.animation.UIClock;
@@ -41,6 +42,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -116,7 +119,7 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     private SlotMachineState state = new SlotMachineState();
     // 硬币槽随机器存盘，槽里没换完的硬币不能丢。
     @SaveToDisk
-    private final CustomItemStackHandler depositInventory = new CustomItemStackHandler();
+    private final KeyInventory<AEItemKey> depositInventory = KeyInventory.items(1);
     private final Runnable machineTick = this::tickMachine;
 
     @SaveToDisk(defaultValue = "true")
@@ -140,7 +143,7 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     public SlotMachine(MetaMachineBlockEntity holder, SlotMachineRules rules) {
         super(holder);
         this.rules = rules;
-        depositInventory.setOnContentsChanged(this::onDepositInventoryChanged);
+        depositInventory.setOnChanged(this::onDepositInventoryChanged);
         syncViewFromState();
     }
 
@@ -241,19 +244,19 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     }
 
     private boolean canDeposit() {
-        int tier = CoinExchange.tierOf(depositInventory.getStackInSlot(0));
+        int tier = CoinExchange.tierOf(Keys.displayStack(depositInventory.keyAt(0)));
         return tier >= 0 && Long.MAX_VALUE - state.balance() >= CoinExchange.value(tier);
     }
 
     private void depositCredits() {
-        ItemStack stack = depositInventory.getStackInSlot(0);
-        int tier = CoinExchange.tierOf(stack);
+        var key = depositInventory.keyAt(0);
+        int tier = CoinExchange.tierOf(Keys.displayStack(key));
         if (tier < 0) return;
         long value = CoinExchange.value(tier);
         // 只接收能完整入账的硬币，不能吞掉一枚高面值币后只加剩余额度。
-        int amount = (int) Math.min(stack.getCount(), (Long.MAX_VALUE - state.balance()) / value);
+        long amount = Math.min(depositInventory.amountAt(0), (Long.MAX_VALUE - state.balance()) / value);
         if (amount <= 0) return;
-        int deposited = depositInventory.extract(0, stack, amount, false);
+        long deposited = depositInventory.extract(0, key, amount, false);
         if (deposited > 0) {
             state.addCredits(deposited * value);
             syncAndMarkChanged();

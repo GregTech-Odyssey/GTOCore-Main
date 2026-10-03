@@ -16,7 +16,9 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -51,6 +53,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidUtil;
 
 import appeng.api.client.AEKeyRendering;
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.client.gui.me.common.StackSizeRenderer;
 
@@ -195,8 +199,9 @@ public class RecipeExportTab implements IFancyUIProvider {
     }
 
     /** 每行 9 格的物品槽；槽数取机器的物品栏（两端相同）。 */
-    private static UIElement slotGrid(ICustomItemStackHandler handler, boolean canPut) {
-        return SlotGrid.of(UISizes.SLOTS_PER_ROW, handler.getSlots(), slot -> ItemSlot.of(handler, slot, true, canPut));
+    private static UIElement slotGrid(KeyInventory<AEItemKey> inventory, boolean canPut) {
+        var handler = new MenuItemAdapter(inventory);
+        return SlotGrid.of(UISizes.SLOTS_PER_ROW, inventory.size(), slot -> ItemSlot.of(handler, slot, true, canPut));
     }
 
     @Override
@@ -214,15 +219,14 @@ public class RecipeExportTab implements IFancyUIProvider {
         return Collections.singletonList(Component.translatable(TAB_NAME));
     }
 
-    private static boolean isConvertibleDataItem(ItemStack stack, ItemStack expectedTierItem) {
-        return !stack.isEmpty() &&
-                stack.is(expectedTierItem.getItem());
+    private static boolean isConvertibleDataItem(@Nullable AEItemKey key, ItemStack expectedTierItem) {
+        return key != null && key.getItem() == expectedTierItem.getItem();
     }
 
     /** 输入物品栏里是否有可写入的该种数据物品（与 {@link DataItemHolder#exportSelectedRecipe} 的判定相同）。 */
-    private static boolean hasConvertibleDataItem(ICustomItemStackHandler input, ItemStack tierItem) {
-        for (int slot = 0; slot < input.getSlots(); slot++) {
-            if (isConvertibleDataItem(input.getStackInSlot(slot), tierItem)) return true;
+    private static boolean hasConvertibleDataItem(KeyInventory<AEItemKey> input, ItemStack tierItem) {
+        for (int slot = 0; slot < input.size(); slot++) {
+            if (isConvertibleDataItem(input.keyAt(slot), tierItem)) return true;
         }
         return false;
     }
@@ -459,8 +463,12 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         /** 配方主产物的图标：物品本身，流体用装满它的桶（没有桶的流体不显示）。 */
         private static ItemStack mainOutputIcon(GTRecipeDefinition recipe) {
-            if (!recipe.itemOutputs.isEmpty()) return recipe.itemOutputs.getFirst().inner.getInnerItemStack();
-            if (!recipe.fluidOutputs.isEmpty()) return FluidUtil.getFilledBucket(recipe.fluidOutputs.getFirst().inner.getFluidStack());
+            if (!recipe.itemOutputs.isEmpty()) {
+                return recipe.itemOutputs.ingredient(0).displayKey() instanceof AEItemKey key ? key.toStack() : ItemStack.EMPTY;
+            }
+            if (!recipe.fluidOutputs.isEmpty()) {
+                return recipe.fluidOutputs.ingredient(0).displayKey() instanceof AEFluidKey key ? FluidUtil.getFilledBucket(Keys.toFluidStack(key, recipe.fluidOutputs.amount(0))) : ItemStack.EMPTY;
+            }
             return ItemStack.EMPTY;
         }
 
@@ -699,41 +707,34 @@ public class RecipeExportTab implements IFancyUIProvider {
 
     public interface DataItemHolder {
 
-        ICustomItemStackHandler getDataItemStorage();
+        KeyInventory<AEItemKey> getDataItemStorage();
 
-        ICustomItemStackHandler getDataOutputStorage();
+        KeyInventory<AEItemKey> getDataOutputStorage();
 
         default void exportSelectedRecipe(ItemStack dataStack, GTRecipeDefinition recipe) {
-            ICustomItemStackHandler input = getDataItemStorage();
-            ICustomItemStackHandler output = getDataOutputStorage();
+            KeyInventory<AEItemKey> input = getDataItemStorage();
+            KeyInventory<AEItemKey> output = getDataOutputStorage();
 
-            for (int slot = 0; slot < input.getSlots(); slot++) {
-                ItemStack stackInSlot = input.getStackInSlot(slot);
-                if (!isConvertibleDataItem(stackInSlot, dataStack)) {
+            for (int slot = 0; slot < input.size(); slot++) {
+                AEItemKey key = input.keyAt(slot);
+                if (!isConvertibleDataItem(key, dataStack)) {
                     continue;
                 }
 
-                ItemStack exported = stackInSlot.copyWithCount(1);
+                ItemStack exported = key.toStack(1);
                 ResearchManager.writeResearchToNBT(exported.getOrCreateTag(), recipe.id.toString(), recipe.recipeType);
-                ItemStack remainder = insertIntoAny(output, exported, false);
-                int inserted = exported.getCount() - remainder.getCount();
+                AEItemKey exportedKey = Keys.item(exported);
+                if (exportedKey == null) continue;
+                long inserted = output.insert(exportedKey, 1, false);
                 if (inserted <= 0) {
                     continue;
                 }
-                input.extractItem(slot, inserted, false);
+                input.extract(slot, key, inserted, false);
             }
         }
 
         default Set<GTRecipeDefinition> getExistRecipes() {
             return Collections.emptySet();
         }
-    }
-
-    private static ItemStack insertIntoAny(ICustomItemStackHandler handler, ItemStack stack, boolean simulate) {
-        ItemStack remaining = stack;
-        for (int slot = 0; slot < handler.getSlots() && !remaining.isEmpty(); slot++) {
-            remaining = handler.insertItem(slot, remaining, simulate);
-        }
-        return remaining;
     }
 }

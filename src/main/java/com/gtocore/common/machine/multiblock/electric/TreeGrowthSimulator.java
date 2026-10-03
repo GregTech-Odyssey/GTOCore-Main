@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -74,7 +75,7 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
             if (!isElectric || GTValues.RNG.nextInt(10) == 0) {
                 int damage = stack.getDamageValue();
                 if (damage >= stack.getMaxDamage()) {
-                    machineStorage.setStackInSlot(0, ItemStack.EMPTY);
+                    machineStorage.storage.setStackInSlot(0, ItemStack.EMPTY);
                     setIdleReason(IdleReason.FELLING_TOOL);
                     return null;
                 }
@@ -84,12 +85,7 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
             recipe.duration = (int) (recipe.duration / speed);
             if (output > 1) {
                 var contents = recipe.itemOutputs;
-                var content = contents.get(0).copy(2);
-                if (contents.size() > 1) {
-                    recipe.itemOutputs = List.of(content, contents.get(1));
-                } else {
-                    recipe.itemOutputs = List.of(content);
-                }
+                recipe.itemOutputs = contents.range(0, 2).withAmount(0, Keys.multiply(contents.amount(0), 2));
             }
             return RecipeModifier.overclocking(this, unit, recipe);
         }

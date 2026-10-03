@@ -1056,6 +1056,7 @@ public final class GTOMachines {
             .allRotation()
             .abilities(PartAbility.IMPORT_ITEMS, GTOPartAbility.ITEMS_INPUT_BUS)
             .tooltipsKey("gtceu.part_sharing.enabled")
+            .tooltipBuilder(GTMachineUtils.CHEST_TOOLTIPS)
             .renderer(() -> new OverlayTieredMachineRenderer(ZPM, GTCEu.id("block/machine/part/item_bus.import")))
             .register();
 

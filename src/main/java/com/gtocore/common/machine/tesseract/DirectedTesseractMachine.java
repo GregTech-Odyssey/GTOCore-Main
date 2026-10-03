@@ -7,6 +7,7 @@ import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
 import com.gtolib.utils.ServerUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
@@ -14,8 +15,7 @@ import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -40,6 +40,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AmountFormat;
@@ -79,9 +80,9 @@ public class DirectedTesseractMachine extends MetaMachine implements
     public static final Multiset<ImmutableList<TesseractDirectedTarget>> HIGHLIGHTS = HashMultiset.create();
 
     @Getter
-    private final List<ICustomItemStackHandler> itemHandlers = new ArrayList<>(20);
+    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items();
     @Getter
-    private final List<ICustomFluidStackHandler> fluidHandlers = new ArrayList<>(20);
+    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids();
 
     @Getter
     @Setter
@@ -121,7 +122,18 @@ public class DirectedTesseractMachine extends MetaMachine implements
         targets.addAll(newTargets);
         targets.sort(TesseractDirectedTarget.SORTER);
         blockEntityReference = createBlockEntityReferences(targets.size());
+        clearDirectionCache();
         onChanged();
+    }
+
+    @Override
+    public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return collectItemHandler(side);
+    }
+
+    @Override
+    public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return collectFluidHandler(side);
     }
 
     @Override
@@ -168,6 +180,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
         var target = targets.get(index);
         if (target.face() == face) return;
         targets.set(index, new TesseractDirectedTarget(target.pos(), face, target.order()));
+        clearDirectionCache();
         onChanged();
     }
 
@@ -202,6 +215,22 @@ public class DirectedTesseractMachine extends MetaMachine implements
         var result = new ArrayList<Integer>(count);
         for (int i = 0; i < count; i++) result.add(i);
         return result;
+    }
+
+    @Override
+    public void clearDirectionCache() {
+        super.clearDirectionCache();
+        if (itemCaps != null) {
+            itemCaps.invalidate();
+            fluidCaps.invalidate();
+        }
+    }
+
+    @Override
+    public void onCoverUpdate(@Nullable CoverBehavior coverBehavior, Direction side) {
+        super.onCoverUpdate(coverBehavior, side);
+        itemCaps.invalidate(side);
+        fluidCaps.invalidate(side);
     }
 
     @Override

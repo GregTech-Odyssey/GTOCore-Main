@@ -16,9 +16,10 @@ import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -36,11 +37,9 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -52,7 +51,6 @@ import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.layout.Align;
 import dev.shadowsoffire.placebo.util.EnchantmentUtils;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -68,7 +66,9 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::absorbXpOrb);
 
     @SaveToDisk
-    private final NotifiableFluidTank experienceTank;
+    private final NotifiableInventory<AEFluidKey> experienceTank;
+    private final AEFluidKey xpKey;
+    private final XpJuiceHandler xpHandler = new XpJuiceHandler();
     @SaveToDisk(defaultValue = "0")
     @Getter
     private int currentConfigAmount = 0;
@@ -83,17 +83,9 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
 
     public ExperienceObelisk(MetaMachineBlockEntity holder) {
         super(holder);
-        experienceTank = new NotifiableFluidTank(this, 1, Integer.MAX_VALUE, IO.NONE, IO.BOTH) {
-
-            @Override
-            public int fillInternal(FluidStack resource, FluidAction action) {
-                if (resource.getFluid().is(XP_JUICE_TAG)) {
-                    return super.fillInternal(new FluidStack(XP_JUICE.getSource(), resource.getAmount()), action);
-                }
-                return super.fillInternal(resource, action);
-            }
-        };
-        experienceTank.setFilter(f -> f.getFluid() == XP_JUICE.getSource());
+        experienceTank = NotifiableInventory.fluids(this, 1, Integer.MAX_VALUE, IO.NONE, IO.BOTH);
+        experienceTank.setFilter(k -> k instanceof AEFluidKey f && f.getFluid() == XP_JUICE.getSource());
+        xpKey = AEFluidKey.of(XP_JUICE.getSource());
         tickSubs = new ConditionalSubscriptionHandler(this, manaMonitor, 20, this::isVacuumHopperMode);
     }
 
@@ -105,7 +97,7 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         var xpOrbs = world.getEntitiesOfClass(ExperienceOrb.class, aabb);
         for (var xpOrb : xpOrbs) {
             int juiceAmount = xpOrb.getValue();
-            int xpAbsorbed = experienceTank.fill(new FluidStack(XP_JUICE.getSource(), xpToFluid(juiceAmount)), IFluidHandler.FluidAction.EXECUTE);
+            int xpAbsorbed = (int) experienceTank.insert(xpKey, xpToFluid(juiceAmount), false);
             if (xpAbsorbed > 0) {
                 xpOrb.discard();
                 int remainingXp = xpOrb.getValue() - xpAbsorbed;
@@ -135,11 +127,17 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     }
 
     @Override
-    public @Nullable <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.FLUID_HANDLER) {
-            return LazyOptional.of(() -> experienceTank).cast();
-        }
-        return null;
+    public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return xpHandler;
+    }
+
+    private int storedFluid() {
+        return (int) experienceTank.storage.amountAt(0);
+    }
+
+    private int drainFluid(long amount) {
+        var key = experienceTank.storage.keyAt(0);
+        return key == null ? 0 : (int) experienceTank.storage.extract(0, key, amount, false);
     }
 
     @Override
@@ -162,7 +160,7 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
 
         // 切换等级/经验点模式
         widgets.addWidget(createLevelsModeToggleButton());
-        widgets.addWidget(new LabelWidget(20, 44, () -> Component.translatable(LANG_STORED_EXPERIENCE, EnchantmentUtils.getLevelForExperience(fluidToXp(experienceTank.getFluidInTank(0).getAmount()))).getString()));
+        widgets.addWidget(new LabelWidget(20, 44, () -> Component.translatable(LANG_STORED_EXPERIENCE, EnchantmentUtils.getLevelForExperience(fluidToXp(storedFluid()))).getString()));
 
         // 经验转移按钮
         widgets.addWidget(createTransferConfiguredButton(entityPlayer, true, 0));
@@ -223,7 +221,7 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     }
 
     private ButtonWidget createTransferAllButton(Player player, boolean toPlayer, int x) {
-        IntSupplier amountSupplier = toPlayer ? () -> fluidToXp(experienceTank.getFluidInTank(0).getAmount()) : () -> -getExperiencePoints(player);
+        IntSupplier amountSupplier = toPlayer ? () -> fluidToXp(storedFluid()) : () -> -getExperiencePoints(player);
         var button = createTransferButton(player, amountSupplier, x);
         if (toPlayer) {
             button.setButtonTexture(GuiTextures.BUTTON_RIGHT.copy().rotate(45));
@@ -274,14 +272,14 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
                             int beforeAdd = getExperiencePoints(player);
                             EnchantmentUtils.chargeExperience(player, -amount);
                             int afterAdd = getExperiencePoints(player);
-                            int drained = fluidToXp(experienceTank.drain(xpToFluid(afterAdd - beforeAdd), IFluidHandler.FluidAction.EXECUTE).getAmount());
+                            int drained = fluidToXp(drainFluid(xpToFluid(afterAdd - beforeAdd)));
                             if (drained < canTransfer) {
                                 EnchantmentUtils.chargeExperience(player, canTransfer - drained);
                             }
                         } else {
-                            canTransfer = fluidToXp(experienceTank.fill(new FluidStack(XP_JUICE.getSource(), xpToFluid(-canTransfer)), IFluidHandler.FluidAction.SIMULATE));
+                            canTransfer = fluidToXp((int) experienceTank.insert(xpKey, xpToFluid(-canTransfer), true));
                             if (EnchantmentUtils.chargeExperience(player, canTransfer)) {
-                                experienceTank.fill(new FluidStack(XP_JUICE.getSource(), xpToFluid(canTransfer)), IFluidHandler.FluidAction.EXECUTE);
+                                experienceTank.insert(xpKey, xpToFluid(canTransfer), false);
                             }
                         }
                     }
@@ -292,11 +290,10 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         return new ButtonWidget(x, 60, 16, 16,
                 (clickData -> {
                     if (player instanceof ServerPlayer) {
-                        int value = experienceTank.getFluidInTank(0).getAmount();
-                        int extracted = experienceTank.drain(value, IFluidHandler.FluidAction.EXECUTE).getAmount();
+                        int extracted = drainFluid(storedFluid());
                         int remainingExp = repairPlayerItems(player, extracted, extracted);
                         if (remainingExp > 0) {
-                            experienceTank.fill(new FluidStack(XP_JUICE.getSource(), remainingExp), IFluidHandler.FluidAction.EXECUTE);
+                            experienceTank.insert(xpKey, remainingExp, false);
                         }
                     }
                 }))
@@ -330,14 +327,71 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     @Override
     public void saveToItem(CompoundTag tag) {
         IDropSaveMachine.super.saveToItem(tag);
-        tag.putInt("xp", experienceTank.getFluidInTank(0).getAmount());
+        tag.putInt("xp", storedFluid());
     }
 
     @Override
     public void loadFromItem(CompoundTag tag) {
         IDropSaveMachine.super.loadFromItem(tag);
         int xpAmount = tag.getInt("xp");
-        experienceTank.setFluidInTank(0, new FluidStack(XP_JUICE.getSource(), xpAmount));
+        experienceTank.storage.set(0, xpKey, xpAmount);
+    }
+
+    private final class XpJuiceHandler implements IKeyHandler<AEFluidKey> {
+
+        private AEFluidKey normalize(AEFluidKey key) {
+            return key.getFluid().is(XP_JUICE_TAG) ? xpKey : key;
+        }
+
+        @Override
+        public AEKeyType keyType() {
+            return AEKeyType.fluids();
+        }
+
+        @Override
+        public int size() {
+            return experienceTank.size();
+        }
+
+        @Override
+        public @Nullable AEFluidKey keyAt(int slot) {
+            return experienceTank.keyAt(slot);
+        }
+
+        @Override
+        public long amountAt(int slot) {
+            return experienceTank.amountAt(slot);
+        }
+
+        @Override
+        public long slotLimit(int slot) {
+            return experienceTank.slotLimit(slot);
+        }
+
+        @Override
+        public long insert(int slot, AEFluidKey key, long amount, boolean simulate) {
+            return experienceTank.insert(slot, normalize(key), amount, simulate);
+        }
+
+        @Override
+        public long extract(int slot, AEFluidKey key, long amount, boolean simulate) {
+            return experienceTank.extract(slot, key, amount, simulate);
+        }
+
+        @Override
+        public long insert(AEFluidKey key, long amount, boolean simulate) {
+            return experienceTank.insert(normalize(key), amount, simulate);
+        }
+
+        @Override
+        public long extract(AEFluidKey key, long amount, boolean simulate) {
+            return experienceTank.extract(key, amount, simulate);
+        }
+
+        @Override
+        public IKeyHandler<AEFluidKey> unrestricted() {
+            return experienceTank.unrestricted();
+        }
     }
 
     private void setCurrentConfigAmount(int integer) {

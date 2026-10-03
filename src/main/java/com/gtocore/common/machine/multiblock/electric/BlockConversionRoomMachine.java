@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
@@ -27,6 +27,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
@@ -137,14 +139,15 @@ public final class BlockConversionRoomMachine extends StorageMultiblockMachine i
 
     // 用来冒充巨构的代码，有了巨构记得改
     private int convertBlockBusContents(BlockBusPartMachine blockBusPartMachine, int leftAmount) {
-        CustomItemStackHandler stackTransfer = blockBusPartMachine.getInventory().storage;
-        var slots = stackTransfer.getSlots();
+        KeyInventory<AEItemKey> stackTransfer = blockBusPartMachine.getInventory().storage;
+        var slots = stackTransfer.size();
         for (int i = 0; leftAmount > 0 && i < slots; i++) {
-            ItemStack itemStack = stackTransfer.getStackInSlot(i);
-            if (itemStack.getItem() instanceof BlockItem blockItem && COV_RECIPE.containsKey(blockItem.getBlock())) {
-                int count = itemStack.getCount();
-                leftAmount -= count;
-                stackTransfer.setStackInSlot(i, new ItemStack(COV_RECIPE.get(blockItem.getBlock()).asItem(), count));
+            long count = stackTransfer.amountAt(i);
+            if (count <= 0) continue;
+            var key = stackTransfer.keyAt(i);
+            if (key != null && key.getItem() instanceof BlockItem blockItem && COV_RECIPE.containsKey(blockItem.getBlock())) {
+                leftAmount -= (int) Math.min(count, Integer.MAX_VALUE);
+                stackTransfer.set(i, AEItemKey.of(COV_RECIPE.get(blockItem.getBlock()).asItem()), count);
             }
         }
         return leftAmount;

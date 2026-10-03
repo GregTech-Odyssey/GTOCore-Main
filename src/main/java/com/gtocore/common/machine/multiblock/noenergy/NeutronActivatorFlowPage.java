@@ -919,10 +919,10 @@ public final class NeutronActivatorFlowPage {
             int moderators = 0;
             if (formed) {
                 for (var bus : machine.getModeratorBuses()) {
-                    var inventory = bus.getInventory();
-                    for (int i = 0; i < inventory.getSlots(); i++) {
-                        var stack = inventory.getStackInSlot(i);
-                        if (NeutronActivatorMachine.isModerator(stack)) moderators += stack.getCount();
+                    var inventory = bus.getInventory().storage;
+                    for (int i = 0; i < inventory.size(); i++) {
+                        var key = inventory.keyAt(i);
+                        if (key != null && NeutronActivatorMachine.isModerator(key)) moderators += (int) inventory.amountAt(i);
                     }
                 }
             }

@@ -2,7 +2,9 @@ package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.eio_travel.logic.TravelUtils;
 
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -30,6 +32,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -173,7 +178,16 @@ public final class MEPatternPartUI {
     /** 流体槽行（标准 {@link FluidSlot}）；{@code decorator} 可设置每个槽的状态或给它套一层叠加显示。 */
     public static void fluidSlots(UIElement section, IFluidHandler[] fluidHandlers, @Nullable BiFunction<Integer, FluidSlot, Widget> decorator) {
         slotRows(section, fluidHandlers.length, i -> {
-            var tank = FluidSlot.of(fluidHandlers[i]);
+            var handler = fluidHandlers[i];
+            var tank = FluidSlot.of(handler, handler.getTanks() > i ? i : 0, true, true);
+            return decorator == null ? tank : decorator.apply(i, tank);
+        });
+    }
+
+    public static void fluidSlots(UIElement section, KeyInventory<AEFluidKey> tanks, @Nullable BiFunction<Integer, FluidSlot, Widget> decorator) {
+        var handler = new ForgeFluidAdapter(tanks);
+        slotRows(section, tanks.size(), i -> {
+            var tank = FluidSlot.of(handler, i, true, true);
             return decorator == null ? tank : decorator.apply(i, tank);
         });
     }
@@ -194,14 +208,22 @@ public final class MEPatternPartUI {
         return stack.isEmpty() ? NO_CIRCUIT : IntCircuitBehaviour.getCircuitConfiguration(stack);
     }
 
+    public static int circuitOf(KeyInventory<AEItemKey> circuitInventory) {
+        return Circuits.get(circuitInventory, 0);
+    }
+
     /** 编号 → 电路物品，小于 0 为空。 */
     public static ItemStack circuitStack(int circuit) {
         return circuit < 0 ? ItemStack.EMPTY : IntCircuitBehaviour.stack(Math.min(circuit, MAX_CIRCUIT));
     }
 
+    public static void setCircuit(KeyInventory<AEItemKey> circuitInventory, int circuit) {
+        Circuits.set(circuitInventory, 0, Math.min(circuit, MAX_CIRCUIT));
+    }
+
     /** 电路槽只作展示（由步进器设置），标为只读。 */
-    public static ItemSlot readOnlyCircuitSlot(CustomItemStackHandler circuitHandler) {
-        return ItemSlot.display(circuitHandler, 0, MEPatternPartMachine.CIRCUIT_READ_ONLY);
+    public static ItemSlot readOnlyCircuitSlot(KeyInventory<AEItemKey> circuitInventory) {
+        return ItemSlot.display(circuitInventory, 0, MEPatternPartMachine.CIRCUIT_READ_ONLY);
     }
 
     /** 整数输入（标准数值输入 {@link NumberField}），写入值在 [{@code min}, int 上限]；{@code width} 为 0 时由父元素拉伸。 */

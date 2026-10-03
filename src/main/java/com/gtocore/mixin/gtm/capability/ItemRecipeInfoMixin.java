@@ -6,16 +6,16 @@ import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.item.TagPrefixItem;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.ChanceLogic;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.recipe.ui.GTRecipeTypeUI;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
@@ -36,16 +36,19 @@ public abstract class ItemRecipeInfoMixin {
 
     @Inject(method = "applyWidgetInfo", at = @At("TAIL"), remap = false)
     private void gto$applyContentInfo(Widget widget, int index, boolean isXEI, IO io, GTRecipeTypeUI.RecipeHolder recipeHolder,
-                                      GTRecipeType recipeType, GTRecipeDefinition recipe, Content<ItemIngredient> content,
+                                      GTRecipeType recipeType, GTRecipeDefinition recipe, ContentList contents, int contentIndex,
                                       Object storage, int recipeTier, int chanceTier, CallbackInfo ci) {
-        if (!(widget instanceof SlotWidget slot) || content == null) return;
-        if (io == IO.IN && content.inner.getInnerItemStack().getItem() instanceof TagPrefixItem item && item.tagPrefix == GTOTagPrefix.CATALYST) {
+        if (!(widget instanceof SlotWidget slot) || contents == null || contentIndex < 0 || contentIndex >= contents.size()) return;
+        if (io == IO.IN && contents.ingredient(contentIndex).displayKey() instanceof AEItemKey key && key.getItem() instanceof TagPrefixItem item && item.tagPrefix == GTOTagPrefix.CATALYST) {
             slot.setIngredientIO(IngredientIO.CATALYST);
             slot.setXEIChance(0);
         }
+        int chance = contents.chance(contentIndex);
+        int boost = contents.boost(contentIndex);
+        long amount = contents.amount(contentIndex);
         slot.setOnAddedTooltips((w, tooltips) -> {
-            GTRecipeWidget.setConsumedChance(content, ChanceLogic.OR, tooltips, recipeTier, chanceTier, recipe.chanceFunction);
-            tooltips.add(Component.translatable("gui.tooltips.ae2.Amount", content.amount).withStyle(ChatFormatting.GRAY));
+            GTRecipeWidget.setConsumedChance(chance, boost, tooltips, recipeTier, chanceTier, recipe.chanceFunction);
+            tooltips.add(Component.translatable("gui.tooltips.ae2.Amount", amount).withStyle(ChatFormatting.GRAY));
         });
     }
 }

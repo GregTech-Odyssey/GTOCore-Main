@@ -5,20 +5,15 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistinctPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInfiniteSource;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
-import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
+import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
@@ -27,19 +22,17 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import appeng.api.stacks.AEItemKey;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.hepdd.gtmthings.api.misc.UnlimitedItemStackTransfer;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Position;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -53,57 +46,51 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
     private final int ITEM_SIZE = 5;
 
     @Getter
-    @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
-    @Nullable
-    protected TickableSubscription autoIOSubs;
-
-    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
-    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoKeep);
+    private final NotifiableInfiniteSource<AEItemKey> inventory;
     @Getter
     @SaveToDisk
-    protected final NotifiableItemStackHandler circuitInventory;
+    protected final NotifiableInventory<AEItemKey> circuitInventory;
     @SaveToDisk
-    private final CustomItemStackHandler creativeStorage;
+    private final KeyInventory<AEItemKey> creativeStorage;
     protected ArrayList<Item> lstItem;
 
     @Getter
     @SaveToDisk
     private boolean isDistinct = false;
 
-    public CreativeInputBusPartMachine(MetaMachineBlockEntity holder, Function<Integer, CustomItemStackHandler> transferFactory) {
+    public CreativeInputBusPartMachine(MetaMachineBlockEntity holder, Function<Integer, KeyInventory<AEItemKey>> transferFactory) {
         super(holder, GTValues.MAX, IO.IN);
+        this.creativeStorage = transferFactory.apply(this.getInventorySize());
         this.inventory = createInventory();
         this.circuitInventory = CircuitHandler.create(this);
-        this.creativeStorage = transferFactory.apply(this.getInventorySize());
         this.lstItem = new ArrayList<>();
     }
 
     public CreativeInputBusPartMachine(MetaMachineBlockEntity holder) {
-        this(holder, CustomItemStackHandler::new);
+        this(holder, KeyInventory::items);
     }
 
     protected int getInventorySize() {
         return ITEM_SIZE * ITEM_SIZE;
     }
 
-    protected NotifiableItemStackHandler createInventory() {
-        return new InfinityItemStackHandler(this, getInventorySize(), io, io, UnlimitedItemStackTransfer::new);
+    protected NotifiableInfiniteSource<AEItemKey> createInventory() {
+        return new NotifiableInfiniteSource<>(this, creativeStorage, io, io, false);
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
+        lstItem.clear();
         for (int i = 0; i < this.getInventorySize(); i++) {
-            ItemStack is = this.creativeStorage.getStackInSlot(i);
-            if (!is.isEmpty()) {
-                lstItem.add(is.getItem());
+            var key = this.creativeStorage.keyAt(i);
+            if (key != null) {
+                lstItem.add(key.getItem());
             }
         }
         if (isDistinct) {
             getHandlerUnit().setDistinct(true);
         }
-        updateInventorySubscription();
     }
 
     @Override
@@ -115,27 +102,6 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
     @Override
     public void onPaintingColorChanged(int color) {
         getHandlerUnit().setColor(color, true);
-    }
-
-    protected void autoKeep() {
-        for (int i = 0; i < this.getInventorySize(); i++) {
-            ItemStack is = this.creativeStorage.getStackInSlot(i);
-            if (!getInventory().storage.stacks[i].is(is.getItem())) {
-                var newItem = is.copy();
-                newItem.setCount(Integer.MAX_VALUE);
-                getInventory().storage.setStackInSlot(i, newItem);
-            }
-        }
-        updateInventorySubscription();
-    }
-
-    protected void updateInventorySubscription() {
-        if (!lstItem.isEmpty()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
-        } else if (autoIOSubs != null) {
-            autoIOSubs.unsubscribe();
-            autoIOSubs = null;
-        }
     }
 
     @Override
@@ -161,11 +127,12 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
         var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * colSize + 16);
         var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * colSize + 8);
         int index = 0;
+        var storageAdapter = new MenuItemAdapter(this.creativeStorage);
         for (int y = 0; y < colSize; y++) {
             for (int x = 0; x < rowSize; x++) {
                 int finalIndex = index++;
                 container.addWidget(
-                        new PhantomSlotWidget(this.creativeStorage, finalIndex, 4 + x * 18, 4 + y * 18) {
+                        new PhantomSlotWidget(storageAdapter, finalIndex, 4 + x * 18, 4 + y * 18) {
 
                             @Override
                             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -182,8 +149,6 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
                                                                                                      // slot
                                     lstItem.remove(stackSlot.getItem());
                                     fillPhantomSlot(slot, ItemStack.EMPTY);
-                                    getInventory().setStackInSlot(finalIndex, ItemStack.EMPTY);
-                                    updateInventorySubscription();
                                 } else if (stackSlot.isEmpty()) {   // slot is empty
                                     if (!stackHeld.isEmpty() && !lstItem.contains(stackHeld.getItem())) { // held is not
                                                                                                           // empty and
@@ -193,10 +158,6 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
                                                                                                           // slot
                                         lstItem.add(stackHeld.getItem());
                                         fillPhantomSlot(slot, stackHeld);
-                                        var itemStack = stackHeld.copy();
-                                        itemStack.setCount(Integer.MAX_VALUE);
-                                        getInventory().setStackInSlot(finalIndex, itemStack);
-                                        updateInventorySubscription();
                                     }
                                 } else {
                                     if (!areItemsEqual(stackSlot, stackHeld)) {  // slot item not equal to held item
@@ -205,10 +166,6 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
                                             lstItem.remove(stackSlot.getItem());
                                             lstItem.add(stackHeld.getItem());
                                             fillPhantomSlot(slot, stackHeld);
-                                            var itemStack = stackHeld.copy();
-                                            itemStack.setCount(Integer.MAX_VALUE);
-                                            getInventory().setStackInSlot(finalIndex, itemStack);
-                                            updateInventorySubscription();
                                         }
                                     }
                                 }
@@ -261,17 +218,5 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
         group.addWidget(container);
 
         return group;
-    }
-
-    private static class InfinityItemStackHandler extends NotifiableItemStackHandler {
-
-        public InfinityItemStackHandler(MetaMachine machine, int slots, IO handlerIO, IO capabilityIO, IntFunction<CustomItemStackHandler> storageFactory) {
-            super(machine, slots, handlerIO, capabilityIO, storageFactory);
-        }
-
-        @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> left, boolean simulate) {
-            return super.handleRecipeItem(io, recipe, left, true);
-        }
     }
 }

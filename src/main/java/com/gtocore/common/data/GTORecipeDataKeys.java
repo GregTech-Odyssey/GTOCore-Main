@@ -19,6 +19,10 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Boolean> SPECIAL = register("special", DataSyncCodec.BOOLEAN_CODEC);
     public static final DataComponentKey<Integer> TIER = register("tier", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Long> EU = register("eu", DataSyncCodec.LONG_CODEC);
+    public static final DataComponentKey<Long> WIRELESS_EU_HI = register("wireless_eu_hi", DataSyncCodec.LONG_CODEC);
+    public static final DataComponentKey<Long> WIRELESS_EU_LO = register("wireless_eu_lo", DataSyncCodec.LONG_CODEC);
+    public static final DataComponentKey<Long> WIRELESS_EUT = register("wireless_eut", DataSyncCodec.LONG_CODEC);
+    public static final DataComponentKey<Integer> WIRELESS_SETTLE_TICKS = register("wireless_settle_ticks", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> TEMPERATURE = register("temperature", DataSyncCodec.INT_CODEC);
 
     public static final DataComponentKey<Long> CONVERTED_ENERGY = register("convertedEnergy", DataSyncCodec.LONG_CODEC);

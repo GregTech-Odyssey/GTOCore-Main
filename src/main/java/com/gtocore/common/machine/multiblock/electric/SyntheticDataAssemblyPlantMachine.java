@@ -110,7 +110,10 @@ public class SyntheticDataAssemblyPlantMachine extends ElectricMultiblockMachine
 
         ItemStack outputItem = ItemStack.EMPTY;
         var contents = getRecipeLogic().getLastRecipe().itemOutputs;
-        if (!contents.isEmpty()) outputItem = contents.getFirst().inner.getInnerItemStack().copy();
+        if (!contents.isEmpty()) {
+            var items = contents.ingredient(0).getItems();
+            if (items.length > 0) outputItem = items[0].copy();
+        }
         if (!outputItem.isEmpty()) objectHolder.setDataItem(outputItem);
 
         objectHolder.setLocked(false);

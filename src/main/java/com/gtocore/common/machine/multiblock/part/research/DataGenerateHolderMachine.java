@@ -9,9 +9,10 @@ import com.gregtechceu.gtceu.api.gui.widget.BlockableSlotWidget;
 import com.gregtechceu.gtceu.api.item.component.IDataItem;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -52,18 +53,18 @@ public class DataGenerateHolderMachine extends MultiblockPartMachine implements 
     }
 
     public void setDataItem(@NotNull ItemStack dataItem) {
-        heldItems.setStackInSlot(EMPTY_SLOT, dataItem);
+        heldItems.storage.setStackInSlot(EMPTY_SLOT, dataItem);
     }
 
-    public @NotNull NotifiableItemStackHandler getAsHandler() {
+    public @NotNull NotifiableStackInventory getAsHandler() {
         return heldItems;
     }
 
     @NotNull
     private ItemStack getHeldItem(int slot, boolean remove) {
-        ItemStack stackInSlot = heldItems.getStackInSlot(slot);
+        ItemStack stackInSlot = heldItems.storage.getStackInSlot(slot);
         if (remove && !stackInSlot.isEmpty()) {
-            heldItems.setStackInSlot(slot, ItemStack.EMPTY);
+            heldItems.storage.setStackInSlot(slot, ItemStack.EMPTY);
         }
         return stackInSlot;
     }
@@ -78,40 +79,41 @@ public class DataGenerateHolderMachine extends MultiblockPartMachine implements 
         WidgetGroup group = new WidgetGroup(new Position(0, 0));
         int centerX = 65;
         int centerY = 48;
+        var handler = new ForgeStackAdapter(heldItems.storage, () -> true, () -> !isLocked());
         group.addWidget(new ImageWidget(centerX - 33, centerY - 21, 84, 60, GTOGuiTextures.PROGRESS_BAR_DATA_GENERATE_BASE))
 
-                .addWidget(new BlockableSlotWidget(heldItems, CATALYST_SLOT_1, 0, centerY - 39)
+                .addWidget(new BlockableSlotWidget(handler, CATALYST_SLOT_1, 0, centerY - 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GuiTextures.MOLECULAR_OVERLAY_1))
-                .addWidget(new BlockableSlotWidget(heldItems, CATALYST_SLOT_2, 0, centerY + 39)
+                .addWidget(new BlockableSlotWidget(handler, CATALYST_SLOT_2, 0, centerY + 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GuiTextures.MOLECULAR_OVERLAY_1))
-                .addWidget(new BlockableSlotWidget(heldItems, EMPTY_SLOT, centerX, centerY)
+                .addWidget(new BlockableSlotWidget(handler, EMPTY_SLOT, centerX, centerY)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GuiTextures.DATA_ORB_OVERLAY))
 
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[0], centerX - 33, centerY - 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[0], centerX - 33, centerY - 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[1], centerX - 11, centerY - 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[1], centerX - 11, centerY - 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[2], centerX + 11, centerY - 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[2], centerX + 11, centerY - 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[3], centerX + 33, centerY - 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[3], centerX + 33, centerY - 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[4], centerX + 33, centerY + 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[4], centerX + 33, centerY + 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[5], centerX + 11, centerY + 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[5], centerX + 11, centerY + 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[6], centerX - 11, centerY + 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[6], centerX - 11, centerY + 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
-                .addWidget(new BlockableSlotWidget(heldItems, DATA_SLOT[7], centerX - 33, centerY + 39)
+                .addWidget(new BlockableSlotWidget(handler, DATA_SLOT[7], centerX - 33, centerY + 39)
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY));
 
@@ -127,19 +129,13 @@ public class DataGenerateHolderMachine extends MultiblockPartMachine implements 
         }
     }
 
-    private static class DataGenerateHolder extends NotifiableItemStackHandler {
+    private static class DataGenerateHolder extends NotifiableStackInventory {
 
         private final DataGenerateHolderMachine machine;
 
         private DataGenerateHolder(DataGenerateHolderMachine machine) {
-            super(machine, 11, IO.IN, IO.BOTH, DataGenerateHolderMachine.DataGenerateHolder.MyCustomItemStackHandler::new);
+            super(machine, new Slots(), IO.IN, IO.BOTH);
             this.machine = machine;
-        }
-
-        // 各槽位容量限制
-        @Override
-        public int getSlotLimit(int slot) {
-            return 1;
         }
 
         // 防止在锁定状态下提取物品
@@ -148,42 +144,43 @@ public class DataGenerateHolderMachine extends MultiblockPartMachine implements 
             return !machine.isLocked() && super.canCapOutput();
         }
 
-        // 槽位物品验证
-        @Override
-        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            if (stack.isEmpty()) return true;
+        private static final class Slots extends StackInventory {
 
-            // 检查是否为数据物品
-            boolean isExDataItem = false;
-            boolean isDataItem = false;
-            boolean hasExNBT = false;
-            boolean hasNBT = false;
-            boolean emptyNBT = false;
-            if (stack.getItem() instanceof DataCrystalItem) {
-                isExDataItem = true;
-                hasExNBT = stack.hasTag();
-                if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains("empty_crystal", CompoundTag.TAG_COMPOUND))
-                    emptyNBT = true;
-            } else if (stack.getItem() instanceof IDataItem) {
-                isDataItem = true;
-                hasNBT = !stack.hasTag();
+            private Slots() {
+                super(11);
             }
 
-            if (slot == EMPTY_SLOT) return hasNBT;
-            else if (slot >= 3 && slot <= 10) return hasExNBT && !emptyNBT;
-            else if (slot == CATALYST_SLOT_1 || slot == CATALYST_SLOT_2) return !isExDataItem && !isDataItem;
-            else return super.isItemValid(slot, stack);
-        }
-
-        private static final class MyCustomItemStackHandler extends CustomItemStackHandler {
-
-            private MyCustomItemStackHandler(int size) {
-                super(size);
-            }
-
+            // 各槽位容量限制
             @Override
             public int getSlotLimit(int slot) {
                 return 1;
+            }
+
+            // 槽位物品验证
+            @Override
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+                if (stack.isEmpty()) return true;
+
+                // 检查是否为数据物品
+                boolean isExDataItem = false;
+                boolean isDataItem = false;
+                boolean hasExNBT = false;
+                boolean hasNBT = false;
+                boolean emptyNBT = false;
+                if (stack.getItem() instanceof DataCrystalItem) {
+                    isExDataItem = true;
+                    hasExNBT = stack.hasTag();
+                    if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains("empty_crystal", CompoundTag.TAG_COMPOUND))
+                        emptyNBT = true;
+                } else if (stack.getItem() instanceof IDataItem) {
+                    isDataItem = true;
+                    hasNBT = !stack.hasTag();
+                }
+
+                if (slot == EMPTY_SLOT) return hasNBT;
+                else if (slot >= 3 && slot <= 10) return hasExNBT && !emptyNBT;
+                else if (slot == CATALYST_SLOT_1 || slot == CATALYST_SLOT_2) return !isExDataItem && !isDataItem;
+                else return super.isItemValid(slot, stack);
             }
         }
     }

@@ -165,7 +165,7 @@ public final class PatternContainerGroupHelper {
     private static MutableComponent getMachineName(MetaMachine machine) {
         var title = Component.translatable(machine.getDefinition().getDescriptionId());
         if (machine instanceof ProcessingPlantMachine processingPlantMachine) {
-            ItemStack stack = processingPlantMachine.getMachineStorage().getStackInSlot(0);
+            ItemStack stack = processingPlantMachine.getMachineStorage().storage.getStackInSlot(0);
             if (stack.getItem() instanceof MetaMachineItem metaMachineItem) {
                 return title.copy()
                         .append(" - ")

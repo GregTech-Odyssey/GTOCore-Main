@@ -17,7 +17,7 @@ import com.gregtechceu.gtceu.api.data.chemical.material.properties.*;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -30,6 +30,7 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -400,25 +401,27 @@ final class GTOMaterialRecipeHandler {
             }
             Fluid molten = material.getFluid(FluidStorageKeys.MOLTEN);
             Fluid liquid = material.getFluid();
-            FluidIngredient N2 = FluidIngredient.of(GTMaterials.Nitrogen.getFluid(4 * mass));
-            FluidIngredient N2HP = FluidIngredient.of(GTOMaterials.HighPressureNitrogen.getFluid(5 * mass));
+            FluidStack N2 = GTMaterials.Nitrogen.getFluid(4 * mass);
+            FluidStack N2HP = GTOMaterials.HighPressureNitrogen.getFluid(5 * mass);
 
-            FluidIngredient inert = material.hasProperty(PropertyKey.BLAST) ? Optional.ofNullable(material.getProperty(PropertyKey.BLAST).getGasTier())
+            FluidStack inertStack = material.hasProperty(PropertyKey.BLAST) ? Optional.ofNullable(material.getProperty(PropertyKey.BLAST).getGasTier())
                     .map(BlastProperty.GasTier::getFluid)
-                    .map(fs -> fs.copy(fs.amount * mass / 500 + 30 + mass))
+                    .map(fs -> new FluidStack(fs, (int) ((long) fs.getAmount() * mass / 500 + 30 + mass)))
                     .orElse(N2) : N2;
-            FluidIngredient inertHighPressure = material.hasProperty(PropertyKey.BLAST) ?
+            KeyIngredient inert = KeyIngredient.of(inertStack);
+            long inertAmount = inertStack.getAmount();
+            FluidStack inertHighPressure = material.hasProperty(PropertyKey.BLAST) ?
                     Optional.ofNullable(material.getProperty(PropertyKey.BLAST).getGasTier())
                             .map(BlastProperty.GasTier::getFluid)
                             .map(fs -> {
                                 Fluid fluid = fs.getFluid();
                                 int amount = fs.getAmount() * mass / 450 + 40 + mass / 5 * 6;
                                 if (inertGas2HighPressureCache.containsKey(fluid)) {
-                                    return FluidIngredient.of(inertGas2HighPressureCache.get(fluid), amount);
+                                    return new FluidStack(inertGas2HighPressureCache.get(fluid), amount);
                                 }
                                 Fluid HP = GTCEuAPI.materialManager.getRegisteredMaterials().stream().filter(m -> m.hasFluid() && m.getFluid() == fluid).findAny().orElseThrow().getFluid(GTOFluidStorageKey.HIGH_PRESSURE_GAS);
                                 inertGas2HighPressureCache.put(fluid, HP);
-                                return FluidIngredient.of(HP, amount);
+                                return new FluidStack(HP, amount);
                             })
                             .orElse(N2HP) :
                     N2HP;
@@ -426,7 +429,7 @@ final class GTOMaterialRecipeHandler {
                     .inputFluids(material.getFluid(L))
                     .inputFluids(inertHighPressure)
                     .outputItems(dustStack)
-                    .outputFluids(inert)
+                    .outputFluids(inert, inertAmount)
                     .duration(mass / 2 + 1).EUt(VA[LV] / 2)
                     .category(GTORecipeCategories.CONDENSE_FLUID_TO_DUST)
                     .save();
@@ -436,7 +439,7 @@ final class GTOMaterialRecipeHandler {
                         .inputFluids(molten, L)
                         .inputFluids(inertHighPressure)
                         .outputItems(dustStack)
-                        .outputFluids(inert)
+                        .outputFluids(inert, inertAmount)
                         .duration((int) (mass * 1.5f)).EUt(GTOUtils.getVoltageMultiplier(material))
                         .circuitMeta(1)
                         .category(GTORecipeCategories.CONDENSE_MOLTEN_TO_DUST);
@@ -444,7 +447,7 @@ final class GTOMaterialRecipeHandler {
                         .inputFluids(molten, L)
                         .inputFluids(inertHighPressure)
                         .outputFluids(liquid, L)
-                        .outputFluids(inert)
+                        .outputFluids(inert, inertAmount)
                         .duration((int) (mass * 2.5f)).EUt(GTOUtils.getVoltageMultiplier(material))
                         .circuitMeta(2)
                         .category(GTORecipeCategories.CONDENSE_MOLTEN_TO_DUST);
@@ -697,7 +700,7 @@ final class GTOMaterialRecipeHandler {
                 .EUt(EUt);
 
         if (gasTier != null) {
-            FluidIngredient gas = property.getGasTier().getFluid();
+            FluidStack gas = property.getGasTier().getFluid();
 
             blastBuilder.copy("blast_" + material.getName())
                     .circuitMeta(1)

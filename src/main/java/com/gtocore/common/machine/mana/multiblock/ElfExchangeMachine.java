@@ -11,11 +11,11 @@ import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 
 import net.minecraft.server.level.ServerLevel;
@@ -80,7 +80,7 @@ public class ElfExchangeMachine extends ManaMultiblockMachine implements ICustom
             }
             IntHolder nbt = new IntHolder();
             builder.MANAt(10 * maxParallel);
-            builder.inputItems(ItemIngredient.of(GOLD_INGOT, maxParallel));
+            builder.inputItems(KeyIngredient.item(GOLD_INGOT), maxParallel);
             var parallel = Math.min(1024, maxParallel);
             var multiplier = maxParallel / parallel;
             GTOLoots.modifyLoot = false;

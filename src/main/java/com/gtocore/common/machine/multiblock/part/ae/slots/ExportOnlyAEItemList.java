@@ -1,41 +1,34 @@
 package com.gtocore.common.machine.multiblock.part.ae.slots;
 
-import com.gtolib.api.recipe.RecipeType;
-import com.gtolib.api.recipe.lookup.IIngredientConvertible;
-import com.gtolib.utils.MathUtil;
-
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.handler.IItemRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlotList;
-import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
-
-import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.GenericStack;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
-@Getter
-public class ExportOnlyAEItemList extends NotifiableContentHandler implements IItemRecipeHandler, ICustomItemStackHandler, IConfigurableSlotList {
+public class ExportOnlyAEItemList extends NotifiableContentHandler implements IRecipeHandler, IKeyHandler<AEItemKey>, IConfigurableSlotList {
 
+    @Getter
     @SaveToDisk
     final ExportOnlyAEItemSlot[] inventory;
+    private final long[] taken;
+    private final AEItemKey[] takenKeys;
 
     public ExportOnlyAEItemList(MetaMachine holder, int slots) {
         this(holder, slots, ExportOnlyAEItemSlot::new);
@@ -44,6 +37,8 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements II
     ExportOnlyAEItemList(MetaMachine holder, int slots, Supplier<ExportOnlyAEItemSlot> slotFactory) {
         super(holder, IO.IN);
         this.inventory = new ExportOnlyAEItemSlot[slots];
+        this.taken = new long[slots];
+        this.takenKeys = new AEItemKey[slots];
         for (int i = 0; i < slots; i++) {
             this.inventory[i] = slotFactory.get();
             this.inventory[i].setHandler(this);
@@ -61,129 +56,165 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements II
         return true;
     }
 
-    @Override
-    public int getSlotLimit(int slot) {
-        return Integer.MAX_VALUE;
+    boolean prepare() {
+        return true;
     }
 
-    @Override
-    public boolean isItemValid(int i, @NotNull ItemStack itemStack) {
+    boolean accepts(boolean consume) {
         return true;
     }
 
     @Override
-    public int getSlots() {
-        return inventory.length;
-    }
-
-    @Override
-    public void setStackInSlot(int slot, @NotNull ItemStack stack) {}
-
-    @NotNull
-    @Override
-    public ItemStack getStackInSlot(int slot) {
-        return this.inventory[slot].getStack();
-    }
-
-    @NotNull
-    @Override
-    public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-        return stack;
-    }
-
-    @Override
-    public @NotNull ItemStack extractItem(int i, int i1, boolean b) {
-        return ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack extractItemInternal(int slot, int amount, boolean simulate) {
-        var inv = inventory[slot];
-        var stack = inv.getStack();
-        if (stack.isEmpty()) return ItemStack.EMPTY;
-        amount = MathUtil.saturatedCast(inv.extract(amount, simulate, true));
-        if (amount < 1) return ItemStack.EMPTY;
-        return stack.copyWithCount(amount);
-    }
-
-    protected boolean acceptsIngredient(Content<ItemIngredient> contentItemIngredient) {
+    public boolean handlesItems() {
         return true;
     }
 
     @Override
-    public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-        if (io == IO.IN) {
-            boolean changed = false;
-            for (var it = items.iterator(); it.hasNext();) {
-                var ingredient = it.next();
-                if (ingredient.isEmpty()) {
-                    it.remove();
-                    continue;
-                }
-                if (!acceptsIngredient(ingredient)) {
-                    continue;
-                }
-                for (var i : inventory) {
-                    GenericStack stored = i.stock;
-                    if (stored == null) continue;
-                    long count = stored.amount();
-                    if (count == 0) continue;
-                    if (stored.what() instanceof AEItemKey itemKey && ingredient.inner.testAeKay(itemKey)) {
-                        var extracted = i.extract(ingredient.amount, simulate, false);
-                        if (extracted > 0) {
-                            changed = true;
-                            ingredient.shrink(extracted);
-                            if (ingredient.amount <= 0) {
-                                it.remove();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (!simulate && changed) {
-                onContentsChanged();
-            }
-        }
-        return items.isEmpty();
-    }
-
-    @Override
-    public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
+    public long available(AEKeyType type, KeyIngredient ingredient) {
+        if (type != AEKeyType.items() || !prepare()) return 0;
+        long total = 0;
         for (var i : inventory) {
             if (i.config == null) continue;
-            var stock = i.stock;
-            if (stock == null || stock.amount() == 0) continue;
-            if (function.test(i.getReadOnlyStack(), stock.amount())) return true;
+            var key = i.key();
+            if (key != null && ingredient.test(key)) {
+                long a = i.stock.amount();
+                total = total + a < 0 ? Long.MAX_VALUE : total + a;
+            }
+        }
+        return total;
+    }
+
+    @Override
+    public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
+        if (type != AEKeyType.items() || !accepts(consume) || !prepare()) return 0;
+        long got = 0;
+        for (int s = 0; s < inventory.length && got < need; s++) {
+            var slot = inventory[s];
+            var key = slot.key();
+            if (key == null || !ingredient.test(key)) continue;
+            long free = slot.stock.amount() - reserved(plan, member, s, false);
+            if (free <= 0) continue;
+            long t = Math.min(free, need - got);
+            plan.logCustom(member, s, entry, t, type, consume, false);
+            got += t;
+        }
+        return got;
+    }
+
+    @Override
+    public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
+        if (type != AEKeyType.items()) return true;
+        int n = inventory.length;
+        for (int s = 0; s < n; s++) {
+            taken[s] = 0;
+            takenKeys[s] = null;
+        }
+        for (int i = 0; i < plan.logSize(); i++) {
+            if (plan.logMember(i) == member && !plan.logIsFluid(i) && plan.logConsumes(i)) taken[plan.logToken(i)] += plan.logAmount(i);
+        }
+        boolean changed = false;
+        for (int s = 0; s < n; s++) {
+            long want = taken[s];
+            if (want <= 0) continue;
+            var slot = inventory[s];
+            var key = slot.key();
+            long got = key == null ? 0 : slot.extract(want, false, false);
+            takenKeys[s] = key;
+            taken[s] = got;
+            if (got < want) {
+                restore(s);
+                return false;
+            }
+            changed = true;
+        }
+        if (changed) onContentsChanged();
+        return true;
+    }
+
+    @Override
+    public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
+        if (type != AEKeyType.items()) return;
+        if (restore(inventory.length - 1)) onContentsChanged();
+    }
+
+    private boolean restore(int last) {
+        boolean changed = false;
+        for (int s = 0; s <= last; s++) {
+            var key = takenKeys[s];
+            long t = taken[s];
+            taken[s] = 0;
+            takenKeys[s] = null;
+            if (key != null && t > 0) {
+                inventory[s].restore(key, t);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    private static long reserved(PlanScratch plan, int member, int slot, boolean consumeOnly) {
+        long r = 0;
+        for (int i = 0; i < plan.logSize(); i++) {
+            if (plan.logMember(i) == member && plan.logToken(i) == slot && !plan.logIsFluid(i) && (!consumeOnly || plan.logConsumes(i))) r += plan.logAmount(i);
+        }
+        return r;
+    }
+
+    @Override
+    public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
+        if (type != AEKeyType.items() || !prepare()) return false;
+        for (var i : inventory) {
+            if (i.config == null) continue;
+            var key = i.key();
+            if (key != null && visitor.visit(key, i.stock.amount())) return true;
         }
         return false;
     }
 
     @Override
-    public void fastForEachItems(ObjLongConsumer<ItemStack> function) {
+    public void fillSearchMap(@NotNull GTRecipeType type, @NotNull IntLongMap map) {
+        if (!prepare()) return;
         for (var i : inventory) {
             if (i.config == null) continue;
-            var stock = i.stock;
-            if (stock == null || stock.amount() == 0) continue;
-            function.accept(i.getReadOnlyStack(), stock.amount());
+            var key = i.key();
+            if (key != null) type.convertKey(key, i.stock.amount(), map);
         }
     }
 
     @Override
-    public void fillSearchMap(@NotNull GTRecipeType type, @NotNull IntLongMap map) {
-        boolean specialConverter = ((RecipeType) type).specialConverter;
-        for (var i : inventory) {
-            if (i.config == null) continue;
-            var stock = i.stock;
-            if (stock == null || stock.amount() == 0) continue;
-            if (stock.what() instanceof AEItemKey itemKey) {
-                if (specialConverter) {
-                    type.convertItem(i.getReadOnlyStack(), stock.amount(), map);
-                } else {
-                    ((IIngredientConvertible) (Object) itemKey).gtolib$convert(stock.amount(), map);
-                }
-            }
-        }
+    public AEKeyType keyType() {
+        return AEKeyType.items();
+    }
+
+    @Override
+    public int size() {
+        return inventory.length;
+    }
+
+    @Override
+    public @Nullable AEItemKey keyAt(int slot) {
+        return inventory[slot].key();
+    }
+
+    @Override
+    public long amountAt(int slot) {
+        var s = inventory[slot];
+        return s.key() == null ? 0 : s.stock.amount();
+    }
+
+    @Override
+    public long slotLimit(int slot) {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
+    public long insert(int slot, AEItemKey key, long amount, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public long extract(int slot, AEItemKey key, long amount, boolean simulate) {
+        return 0;
     }
 
     @Override
@@ -198,6 +229,11 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements II
 
     public boolean isAutoPull() {
         return false;
+    }
+
+    @Override
+    public boolean isLossyRollback() {
+        return isStocking();
     }
 
     public boolean isStocking() {

@@ -16,6 +16,6 @@ public final class MECatalystPatternBufferPartMachine extends MEPatternBufferPar
     @Override
     @NotNull
     NotifiableNotConsumableItemHandler createShareInventory() {
-        return new NotifiableCatalystHandler(this, SHARE_SLOTS, false);
+        return NotifiableCatalystHandler.shared(this, SHARE_SLOTS);
     }
 }

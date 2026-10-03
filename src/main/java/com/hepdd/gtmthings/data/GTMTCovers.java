@@ -1,5 +1,7 @@
 package com.hepdd.gtmthings.data;
 
+import com.gtocore.common.wireless.energy.WirelessReceiveCover;
+
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -60,7 +62,7 @@ public class GTMTCovers {
         return Arrays.stream(tiers).mapToObj(tier -> {
             var name = id + "." + GTValues.VN[tier].toLowerCase(Locale.ROOT);
             return register(name,
-                    (holder, coverable, side) -> new WirelessEnergyReceiveCover(holder, coverable, side, tier, amperage),
+                    (holder, coverable, side) -> new WirelessReceiveCover(holder, coverable, side, tier, amperage),
                     new SimpleCoverRenderer(GTMThings.id("block/cover/overlay_" + (amperage == 1 ? "" : "4a_") + "wireless_energy_receive")));
         }).toArray(CoverDefinition[]::new);
     }

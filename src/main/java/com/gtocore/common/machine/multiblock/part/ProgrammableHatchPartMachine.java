@@ -14,26 +14,29 @@ import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
 import com.gregtechceu.gtceu.api.machine.trait.IRecipeHandlerTrait;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DualHatchPartMachine;
+import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
 
-import appeng.api.config.Actionable;
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -41,6 +44,7 @@ import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,9 +69,9 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     }
 
     @Override
-    protected @NotNull NotifiableItemStackHandler createInventory(Object @NotNull... args) {
-        return new NotifiableItemStackHandler(this, getInventorySize(), io)
-                .setFilter(itemStack -> !isConfiguredVirtualProvider(itemStack));
+    protected @NotNull NotifiableInventory<AEItemKey> createInventory(Object @NotNull... args) {
+        return NotifiableInventory.items(this, getInventorySize(), io)
+                .setFilter(key -> !(key instanceof AEItemKey itemKey && isConfiguredVirtualProvider(itemKey.getReadOnlyStack())));
     }
 
     public static boolean isConfiguredVirtualProvider(ItemStack stack) {
@@ -78,11 +82,11 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     }
 
     @Override
-    protected @NotNull NotifiableItemStackHandler createCircuitItemHandler(Object... args) {
+    protected @NotNull NotifiableInventory<AEItemKey> createCircuitItemHandler(Object... args) {
         if (args.length > 0 && args[0] instanceof IO io && io == IO.IN) {
             return new ProgrammableCircuitHandler(this);
         } else {
-            return NotifiableItemStackHandler.empty(this);
+            return NotifiableInventory.empty(this, AEKeyType.items());
         }
     }
 
@@ -128,7 +132,14 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     @Override
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
-        configuratorPanel.attachConfigurators(new FancyTankConfigurator(fluidTank.getStorages(), Component.translatable("gui.gtceu.share_tank.title")));
+        configuratorPanel.attachConfigurators(new FancyTankConfigurator(fluidTank.storage, Component.translatable("gui.gtceu.share_tank.title")) {
+
+            @Override
+            public Widget createConfigurator() {
+                var adapter = new ForgeFluidAdapter(fluidTank.clearOnDrainView);
+                return SlotGrid.square(1, i -> FluidSlot.of(adapter, i, true, true));
+            }
+        });
     }
 
     @Override
@@ -182,10 +193,12 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
     @Override
     public void setProgrammable(boolean programmable) {}
 
-    private static final class ProgrammableFluidHandler extends NotifiableFluidTank {
+    private static final class ProgrammableFluidHandler extends NotifiableInventory<AEFluidKey> {
+
+        private final IKeyHandler<AEFluidKey> clearOnDrainView = new ClearOnDrainView(storage);
 
         public ProgrammableFluidHandler(MetaMachine machine) {
-            super(machine, Collections.singletonList(new FluidTank()), IO.IN, IO.NONE);
+            super(machine, KeyInventory.fluids(1, 1000), IO.IN, IO.NONE);
         }
 
         @Override
@@ -194,26 +207,31 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         }
 
         @Override
-        public @NotNull FluidStack getFluidInTank(int tank) {
-            return FluidStack.EMPTY;
+        public @Nullable KeyInventory<?> storage(AEKeyType type) {
+            return null;
         }
 
         @Override
-        public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
-            if (simulate && io == IO.IN) {
-                var stored = this.storages[0].getFluid();
-                if (!stored.isEmpty()) {
-                    var it = fluids.iterator();
-                    while (it.hasNext()) {
-                        var content = it.next();
-                        if (content.chance == 0 && content.inner.test(stored)) {
-                            it.remove();
-                            break;
-                        }
-                    }
-                }
-            }
-            return fluids.isEmpty();
+        public boolean handlesFluids() {
+            return true;
+        }
+
+        @Override
+        public long available(AEKeyType type, KeyIngredient ingredient) {
+            if (type != AEKeyType.fluids() || storage.amountAt(0) <= 0) return 0;
+            return ingredient.test(storage.uidAt(0), storage.rawKeyAt(0)) ? Long.MAX_VALUE : 0;
+        }
+
+        @Override
+        public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
+            return !consume && available(type, ingredient) > 0 ? need : 0;
+        }
+
+        @Override
+        public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
+            if (type != AEKeyType.fluids()) return false;
+            long amount = storage.amountAt(0);
+            return amount > 0 && visitor.visit(storage.rawKeyAt(0), amount);
         }
 
         @Override
@@ -221,35 +239,83 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             getSearchMap(type).setTo(target);
         }
 
-        private static final class FluidTank extends CustomFluidTank {
+        private void setVirtualFluid(@Nullable AEFluidKey key, long amount) {
+            storage.set(0, key, amount);
+        }
+    }
 
-            private FluidTank() {
-                super(1000);
-            }
+    private static final class ClearOnDrainView implements IKeyHandler<AEFluidKey> {
 
-            @Override
-            public int fill(FluidStack resource, FluidAction action) {
-                return 0;
-            }
+        private final KeyInventory<AEFluidKey> tank;
 
-            @Override
-            public FluidStack drain(FluidStack resource, FluidAction action) {
-                setFluid(FluidStack.EMPTY);
-                return action.execute() ? FluidStack.EMPTY : resource;
-            }
+        private ClearOnDrainView(KeyInventory<AEFluidKey> tank) {
+            this.tank = tank;
+        }
 
-            @Override
-            public FluidStack drain(int maxDrain, FluidAction action) {
-                setFluid(FluidStack.EMPTY);
-                return action.execute() ? FluidStack.EMPTY : new FluidStack(fluid, maxDrain);
+        @Override
+        public AEKeyType keyType() {
+            return AEKeyType.fluids();
+        }
+
+        @Override
+        public int size() {
+            return tank.size();
+        }
+
+        @Override
+        public @Nullable AEFluidKey keyAt(int slot) {
+            return tank.keyAt(slot);
+        }
+
+        @Override
+        public long amountAt(int slot) {
+            return tank.amountAt(slot);
+        }
+
+        @Override
+        public long slotLimit(int slot) {
+            return tank.slotLimit(slot);
+        }
+
+        @Override
+        public long insert(int slot, AEFluidKey key, long amount, boolean simulate) {
+            return 0;
+        }
+
+        @Override
+        public long extract(int slot, AEFluidKey key, long amount, boolean simulate) {
+            if (amount <= 0 || tank.amountAt(slot) <= 0) return 0;
+            if (simulate) return amount;
+            tank.set(slot, null, 0);
+            return 0;
+        }
+
+        @Override
+        public long insert(AEFluidKey key, long amount, boolean simulate) {
+            return 0;
+        }
+
+        @Override
+        public long extract(AEFluidKey key, long amount, boolean simulate) {
+            for (int i = 0; i < tank.size(); i++) {
+                if (tank.amountAt(i) > 0) return extract(i, key, amount, simulate);
             }
+            return 0;
         }
     }
 
     public static class ProgrammableCircuitHandler extends CircuitHandler {
 
+        private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
+        private static final Item VIRTUAL_FLUID_PROVIDER = CustomItems.VIRTUAL_FLUID_PROVIDER.asItem();
+        private final IProgrammableMachine programmable;
+        @Nullable
+        private final ProgrammableHatchPartMachine part;
+
         public ProgrammableCircuitHandler(MetaMachine machine) {
-            super(machine, IO.IN, s -> new ProgrammableHandler(machine));
+            super(machine, IO.IN);
+            this.programmable = (IProgrammableMachine) machine;
+            this.part = machine instanceof ProgrammableHatchPartMachine partMachine ? partMachine : null;
         }
 
         @Override
@@ -257,45 +323,29 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             getSearchMap(type).setTo(target);
         }
 
-        private static class ProgrammableHandler extends ItemStackHandler {
+        @Override
+        public long insert(int slot, AEItemKey key, long amount, boolean simulate) {
+            return 0;
+        }
 
-            private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
-            private static final Item VIRTUAL_FLUID_PROVIDER = CustomItems.VIRTUAL_FLUID_PROVIDER.asItem();
-            private final IProgrammableMachine machine;
-            private final ProgrammableHatchPartMachine part;
-
-            private ProgrammableHandler(Object machine) {
-                super(1);
-                this.machine = (IProgrammableMachine) machine;
-                if (machine instanceof ProgrammableHatchPartMachine partMachine) {
-                    this.part = partMachine;
-                } else {
-                    this.part = null;
+        @Override
+        public long insert(AEItemKey key, long amount, boolean simulate) {
+            if (amount <= 0 || !canCapInput() || !programmable.isProgrammable()) return 0;
+            var item = key.getItem();
+            if (item == VIRTUAL_ITEM_PROVIDER && VirtualProviderData.hasData(key.getReadOnlyStack())) {
+                if (!simulate) {
+                    var virtual = VirtualProviderData.getVirtualItem(key.getReadOnlyStack());
+                    storage.set(0, Keys.item(virtual), virtual.getCount());
                 }
-            }
-
-            @Override
-            public int insertExternal(AEItemKey itemKey, int amount, Actionable mode) {
-                if (machine.isProgrammable()) {
-                    if (itemKey.item == VIRTUAL_ITEM_PROVIDER && VirtualProviderData.hasData(itemKey.getReadOnlyStack())) {
-                        if (!mode.isSimulate()) {
-                            setStackInSlot(0, VirtualProviderData.getVirtualItem(itemKey.getReadOnlyStack()));
-                        }
-                        return amount;
-                    } else if (part != null && itemKey.item == VIRTUAL_FLUID_PROVIDER && VirtualProviderData.hasData(itemKey.getReadOnlyStack())) {
-                        if (!mode.isSimulate()) {
-                            part.fluidTank.setFluidInTank(0, VirtualProviderData.getVirtualFluid(itemKey.getReadOnlyStack()));
-                        }
-                        return amount;
-                    }
+                return 1;
+            } else if (part != null && item == VIRTUAL_FLUID_PROVIDER && VirtualProviderData.hasData(key.getReadOnlyStack())) {
+                if (!simulate) {
+                    var virtual = VirtualProviderData.getVirtualFluid(key.getReadOnlyStack());
+                    part.fluidTank.setVirtualFluid(Keys.fluid(virtual), virtual.getAmount());
                 }
-                return 0;
+                return 1;
             }
-
-            @Override
-            public int insert(int slot, @NotNull ItemStack stack, int count, boolean simulate) {
-                return 0;
-            }
+            return 0;
         }
     }
 

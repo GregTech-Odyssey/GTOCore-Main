@@ -21,12 +21,12 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -35,6 +35,10 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -300,8 +304,9 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (tissue == null) {
-            unit.forEachItems(true, (stack, amount) -> {
-                var data = TISSUE_MATERIALS_TIER.get(stack.getItem());
+            unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+                var item = ((AEItemKey) key).getItem();
+                var data = TISSUE_MATERIALS_TIER.get(item);
                 if (data != null) {
                     var casingTier = getCasingTier(MACHINING_CONTROL_MODULE_TIER);
                     if (casingTier < data.tier() && casingTier < 3) {
@@ -309,8 +314,8 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
                         return false;
                     }
                     int amount1 = (int) Math.min(64, amount);
-                    if (unit.inputItem(stack.getItem(), amount1)) {
-                        tissue = stack.getItem();
+                    if (unit.inputItem(item, amount1)) {
+                        tissue = item;
                         tissuePoints = 0;
                         tissueAmount = amount1;
                         return true;
@@ -320,11 +325,12 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
             });
         }
         if (mediumMaterial == null) {
-            unit.forEachFluids(true, (fluid, amount) -> {
-                var material = ChemicalHelper.getMaterial(fluid.getFluid());
+            unit.forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+                var fluid = ((AEFluidKey) key).getFluid();
+                var material = ChemicalHelper.getMaterial(fluid);
                 if (BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.containsKey(material)) {
                     int amount1 = (int) Math.min(MAX_MEDIUM_AMOUNT, amount);
-                    if (unit.inputFluid(fluid.getFluid(), amount1)) {
+                    if (unit.inputFluid(fluid, amount1)) {
                         mediumMaterial = material;
                         mediumAmount = amount1;
                         mediumUsage = 1000;
@@ -355,7 +361,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
         }
         var rod = connectingRodHatch != null ? connectingRodHatch.getRodMaterial() : null;
         if (rod != null) {
-            builder.inputItems(ItemIngredient.of(ChemicalHelper.get(GTOTagPrefix.CONNECTING_ROD, rod).getItem()), 1);
+            builder.inputItems(KeyIngredient.item(ChemicalHelper.getItem(GTOTagPrefix.CONNECTING_ROD, rod)), 1L);
         }
         return builder.build();
     }

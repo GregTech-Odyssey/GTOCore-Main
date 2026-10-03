@@ -13,14 +13,18 @@ import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.item.capability.ElectricItem;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
@@ -28,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 @DataGeneratorScanned
@@ -45,33 +48,30 @@ public class SpaceDroneDock extends RecipeExtension {
         BooleanHolder hasInput = new BooleanHolder();
         ObjHolder<BigInteger> costEU = new ObjHolder<>();
         ObjHolder<ItemStack> outputHolder = new ObjHolder<>();
-        ObjHolder<ItemStack> inputHolder = new ObjHolder<>();
-        ItemIngredient chargeable = definition.itemInputs.getFirst().inner;
-        unit.fastForEachItems(true, (stack, amount) -> {
-            if (hasInput.get()) return;
-            ItemStack output = stack.copyWithCount(1);
-            ItemStack input = stack.copyWithCount(1);
-            if (GTCapabilityHelper.getElectricItem(output) instanceof ElectricItem electricItem && chargeable.test(output)) {
+        ObjHolder<AEItemKey> inputHolder = new ObjHolder<>();
+        KeyIngredient chargeable = definition.itemInputs.ingredient(0);
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            if (!(key instanceof AEItemKey itemKey) || !chargeable.test(itemKey)) return false;
+            ItemStack output = itemKey.toStack(1);
+            if (GTCapabilityHelper.getElectricItem(output) instanceof ElectricItem electricItem) {
                 var change = BigInteger.valueOf(electricItem.getCharge());
                 if (change.compareTo(BigInteger.ZERO) > 0) {
                     costEU.value = change;
                     electricItem.setCharge(0);
-                    inputHolder.value = input;
+                    inputHolder.value = itemKey;
                     outputHolder.value = output;
                     hasInput.set(true);
+                    return true;
                 }
             }
+            return false;
         });
         if (!hasInput.get() || costEU.value == null || costEU.value.compareTo(BigInteger.ZERO) <= 0) {
             IdleReason.DRONE_NO_ENERGY.setReason(this);
             return null;
         }
         var recipe = definition.toRuntime();
-        var newInput = new ArrayList<>(recipe.itemInputs);
-        // ObjectList<Content> newOutput = new ArrayList<>(recipe.outputs.get(ItemRecipeInfo.INSTANCE));
-        newInput.removeFirst();
-        recipe.itemInputs = newInput;
-        // recipe.outputs.put(ItemRecipeInfo.INSTANCE, newOutput);
+        recipe.itemInputs = recipe.itemInputs.range(1, recipe.itemInputs.size());
 
         maxParallel = Math.max(1, costEU.value.divide(BigInteger.valueOf(600_000)).longValue());
         // "0.1 + 6.384 / (1.632 + (消耗的电量(单位：GEU))) ^ 4"
@@ -80,8 +80,9 @@ public class SpaceDroneDock extends RecipeExtension {
         recipe.duration = (int) (recipe.duration * (0.1 + 6.384 / base / base));
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, maxParallel);
         if (recipe == null) return null;
-        unit.inputItem(inputHolder.value);
-        outputItem(outputHolder.value);
+        unit.inputItem(inputHolder.value, 1);
+        var outputKey = Keys.item(outputHolder.value);
+        if (outputKey != null) output(outputKey, 1);
 
         return recipe;
     }

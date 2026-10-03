@@ -7,7 +7,9 @@ import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemComponent;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.item.component.forge.IComponentCapability;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -85,11 +87,13 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
         return HeldItemPage.create(holder, entityPlayer, window -> {
-            var tank = new CustomFluidTank(1000);
-            tank.setFluid(getStored(holder.getHeld()));
-            var slot = PhantomFluidSlot.of(tank, 0, () -> getStored(holder.getHeld()), fluid -> {
-                tank.setFluid(fluid.isEmpty() ? FluidStack.EMPTY : new FluidStack(fluid, 1000));
-                if (!holder.isRemote()) setStored(holder.getHeld(), fluid);
+            var tank = KeyInventory.fluids(1, 1000);
+            var stored = Keys.fluid(getStored(holder.getHeld()));
+            if (stored != null) tank.set(0, stored, 1000);
+            var slot = PhantomFluidSlot.of(new ForgeFluidAdapter(tank), 0, () -> getStored(holder.getHeld()), fluid -> {
+                var key = Keys.fluid(fluid);
+                tank.set(0, key, key == null ? 0 : 1000);
+                if (!holder.isRemote()) setStored(holder.getHeld(), key == null ? FluidStack.EMPTY : fluid);
             }).xeiPhantom();
             var name = TextLine.of(0, () -> {
                 var fluid = getStored(holder.getHeld());

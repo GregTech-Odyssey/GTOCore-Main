@@ -35,7 +35,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.SubWindowButton;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
@@ -43,8 +43,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.DataBankMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachine;
@@ -75,6 +76,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.items.IItemHandlerModifiable;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -124,17 +128,17 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private long cwutCache = 0L;
     private final TierCasingTrait tierCasingTrait;
 
-    private final ReferenceList<NotifiableItemStackHandler> dataAccessHandlers = new ReferenceArrayList<>();
+    private final ReferenceList<NotifiableInventory<AEItemKey>> dataAccessHandlers = new ReferenceArrayList<>();
 
     @SaveToDisk
-    private final NotifiableItemStackHandler inpur;
+    private final NotifiableInventory<AEItemKey> inpur;
     @SaveToDisk
-    private final NotifiableItemStackHandler output;
+    private final NotifiableInventory<AEItemKey> output;
 
     public DataCenter(MetaMachineBlockEntity holder) {
         super(holder);
-        inpur = new NotifiableItemStackHandler(this, 9, IO.NONE, IO.BOTH);
-        output = new NotifiableItemStackHandler(this, 9, IO.NONE, IO.BOTH);
+        inpur = NotifiableInventory.items(this, 9, IO.NONE, IO.BOTH);
+        output = NotifiableInventory.items(this, 9, IO.NONE, IO.BOTH);
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.GLASS_TIER);
     }
 
@@ -142,7 +146,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         var handlers = getDataAccessHandlers();
         int totalSlots = 0;
         for (var handler : handlers) {
-            totalSlots += handler.getSlots();
+            totalSlots += handler.storage.size();
         }
         return totalSlots;
     }
@@ -229,7 +233,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         getRecipeLogic().resetRecipeLogic();
     }
 
-    private List<NotifiableItemStackHandler> getDataAccessHandlers() {
+    private List<NotifiableInventory<AEItemKey>> getDataAccessHandlers() {
         if (!isFormed()) {
             return Collections.emptyList();
         }
@@ -352,13 +356,13 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     @Override
-    public ICustomItemStackHandler getDataItemStorage() {
-        return inpur;
+    public KeyInventory<AEItemKey> getDataItemStorage() {
+        return inpur.storage;
     }
 
     @Override
-    public ICustomItemStackHandler getDataOutputStorage() {
-        return output;
+    public KeyInventory<AEItemKey> getDataOutputStorage() {
+        return output.storage;
     }
 
     @Override
@@ -666,11 +670,11 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
 
         private void build(int slots) {
             count = slots;
-            ICustomItemStackHandler backing = remote ? new ClientMirror(slots, handler) : handler;
+            ClientMirror mirror = remote ? new ClientMirror(slots, handler) : null;
             building = true;
             try {
                 for (int i = 0; i < slots; i++) {
-                    var slot = ItemSlot.of(backing, i, true, true);
+                    var slot = mirror != null ? ItemSlot.of(mirror, i, true, true) : ItemSlot.of(handler, i, true, true);
                     slot.setItemHook(new DataItemDisplay());
                     addChild(slot);
                 }
@@ -731,7 +735,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
      * 客户端数据槽的本地镜像：内容由原版容器同步写入。放入判定与上限问本端的数据访问仓（能对上时），
      * 只影响客户端的点击预测，最终以服务端为准。
      */
-    private static final class ClientMirror extends CustomItemStackHandler {
+    private static final class ClientMirror extends StackInventory {
 
         private final CombinedDataAccessHatchHandler local;
 
@@ -801,7 +805,14 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         return new ModularUI(176, 166, this, player).widget(window.setBackToMachine(this));
     }
 
-    private record CombinedDataAccessHatchHandler(DataCenter machine) implements ICustomItemStackHandler {
+    private static final class CombinedDataAccessHatchHandler implements IItemHandlerModifiable {
+
+        private final DataCenter machine;
+        private final Map<KeyInventory<AEItemKey>, MenuItemAdapter> adapters = new IdentityHashMap<>();
+
+        private CombinedDataAccessHatchHandler(DataCenter machine) {
+            this.machine = machine;
+        }
 
         @Override
         public void setStackInSlot(int slot, @NotNull ItemStack stack) {
@@ -852,16 +863,17 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             }
             int cursor = slot;
             for (var handler : machine.getDataAccessHandlers()) {
-                int slots = handler.getSlots();
+                var storage = handler.storage;
+                int slots = storage.size();
                 if (cursor < slots) {
-                    return new SlotReference(handler, cursor);
+                    return new SlotReference(adapters.computeIfAbsent(storage, MenuItemAdapter::new), cursor);
                 }
                 cursor -= slots;
             }
             return null;
         }
 
-        private record SlotReference(ICustomItemStackHandler handler, int slot) {}
+        private record SlotReference(MenuItemAdapter handler, int slot) {}
     }
 
     /// 数据物品网格默认最多显示几行，再多滚动（右下角可拖拽缩放）

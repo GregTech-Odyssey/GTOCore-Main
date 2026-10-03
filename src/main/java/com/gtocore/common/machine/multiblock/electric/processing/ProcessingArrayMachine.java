@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -53,7 +53,7 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
     @Getter
     @SyncToClient
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableStackInventory inventory;
     private final int arrayTier;
 
     public ProcessingArrayMachine(MetaMachineBlockEntity holder, int tier) {
@@ -62,9 +62,9 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
         inventory = createMachineStorage();
     }
 
-    private NotifiableItemStackHandler createMachineStorage() {
-        NotifiableItemStackHandler storage = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, slots -> new MachineItemStackHandler(() -> getMachineLimit(arrayTier)));
-        storage.setFilter(i -> storageFilter(i, getCasingTier(GTORecipeDataKeys.GLASS_TIER)));
+    private NotifiableStackInventory createMachineStorage() {
+        NotifiableStackInventory storage = new NotifiableStackInventory(this, new MachineItemStackHandler(() -> getMachineLimit(arrayTier)), IO.NONE, IO.BOTH);
+        storage.storage.setFilter(i -> storageFilter(i, getCasingTier(GTORecipeDataKeys.GLASS_TIER)));
         storage.addChangedListener(this::onStorageChanged);
         return storage;
     }
@@ -91,7 +91,7 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
     @Override
     @Nullable
     public GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (!inventory.getStackInSlot(0).isEmpty()) {
+        if (!inventory.storage.getStackInSlot(0).isEmpty()) {
             recipe = ParallelLogic.accurateParallel(this, unit, recipe, getMaxParallel());
             if (recipe == null) return null;
             return super.getRealRecipe(unit, recipe);
@@ -122,7 +122,7 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
 
     @Override
     public long getMaxParallel() {
-        return Math.clamp(inventory.getStackInSlot(0).getCount(), 1, getMachineLimit(arrayTier));
+        return Math.clamp(inventory.storage.getStackInSlot(0).getCount(), 1, getMachineLimit(arrayTier));
     }
 
     @Override
@@ -132,7 +132,7 @@ public final class ProcessingArrayMachine extends TierCasingMultiblockMachine im
 
     @Override
     public Item getStorageItem() {
-        return inventory.getStackInSlot(0).getItem();
+        return inventory.storage.getStackInSlot(0).getItem();
     }
 
     @Override

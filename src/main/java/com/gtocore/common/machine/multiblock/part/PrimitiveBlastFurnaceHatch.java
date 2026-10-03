@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.ItemHandlerProxyTrait;
+import com.gregtechceu.gtceu.api.machine.trait.InventoryProxyTrait;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
@@ -17,6 +17,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +35,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
 
-    private final ItemHandlerProxyTrait inputInventory, outputInventory;
+    private final InventoryProxyTrait<AEItemKey> inputInventory, outputInventory;
     @Nullable
     private TickableSubscription autoIOSubs;
 
@@ -43,8 +46,8 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
 
     public PrimitiveBlastFurnaceHatch(MetaMachineBlockEntity holder) {
         super(holder);
-        this.inputInventory = new ItemHandlerProxyTrait(this, IO.IN);
-        this.outputInventory = new ItemHandlerProxyTrait(this, IO.OUT);
+        this.inputInventory = new InventoryProxyTrait<>(this, AEKeyType.items(), IO.IN);
+        this.outputInventory = new InventoryProxyTrait<>(this, AEKeyType.items(), IO.OUT);
     }
 
     //////////////////////////////////////

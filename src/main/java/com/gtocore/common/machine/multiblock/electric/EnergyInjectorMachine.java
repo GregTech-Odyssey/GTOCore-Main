@@ -1,16 +1,22 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.SettleResult;
+import com.gtocore.api.wireless.energy.U126;
+import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.wireless.energy.WirelessIdle;
+import com.gtocore.data.IdleReason;
+
 import com.gtolib.api.machine.impl.part.WirelessEnergyInterfacePartMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
-import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
-import com.gtolib.api.wireless.ExtendWirelessEnergyContainer;
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.item.capability.ElectricItem;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -18,13 +24,17 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.energy.IEnergyStorage;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.util.holder.ObjHolder;
-import com.hepdd.gtmthings.utils.BigIntegerUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 
 public final class EnergyInjectorMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
+
+    private static final int[] SETTLE_SPANS = { 0, 20, 200, 1200, 6000 };
 
     private WirelessEnergyInterfacePartMachine energyInterfacePartMachine;
 
@@ -63,22 +73,17 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        ExtendWirelessEnergyContainer container = null;
-        BigInteger storage = null;
-        if (energyInterfacePartMachine != null) {
-            container = energyInterfacePartMachine.getWirelessEnergyContainer();
-            if (container == null) return null;
-            storage = container.getStorage();
-            if (storage.signum() < 1) {
-                IdleReason.WIRELESS_EU_SHORT.setReason(this, -1, 0);
-                return null;
-            }
+        EnergyPort port = energyInterfacePartMachine == null ? null : energyInterfacePartMachine.getPort();
+        if (port != null && !port.isOpen(getTier())) {
+            WirelessIdle.report(this, port.account().isNone() ? SettleResult.NO_ACCOUNT : SettleResult.NO_COVERAGE, port, getTier(), 0);
+            return null;
         }
         ObjHolder<BigInteger> eu = new ObjHolder<>(BigInteger.ZERO);
         RecipeBuilder builder = getRecipeBuilder();
-        unit.fastForEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var itemKey = (AEItemKey) key;
             int count = MathUtil.saturatedCast(amount);
-            ItemStack output = stack.copyWithCount(count);
+            ItemStack output = itemKey.toStack(count);
             boolean processed = false;
 
             if (GTCapabilityHelper.getElectricItem(output) instanceof ElectricItem electricItem && electricItem.getTier() <= getTier()) {
@@ -112,18 +117,23 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
 
             if (processed) {
                 builder.outputItems(output);
-                builder.inputItems(stack.getItem(), count);
+                builder.inputItems(itemKey.getItem(), count);
             }
+            return false;
         });
         if (eu.value.compareTo(BigInteger.ZERO) > 0) {
 
-            if (container != null) {
-                if (storage.compareTo(eu.value) < 0) {
-                    IdleReason.WIRELESS_EU_SHORT.setReason(this, BigIntegerUtils.getLongValue(eu.value), BigIntegerUtils.getLongValue(storage));
-                    return null;
+            if (port != null) {
+                long hi = U126.hi(eu.value);
+                long lo = U126.lo(eu.value);
+                var result = SettleResult.NO_TRANSFER;
+                for (int span : SETTLE_SPANS) {
+                    result = port.checkSettle(hi, lo, getTier(), span);
+                    if (result.ok()) return builder.duration(Math.max(1, span)).addData(GTORecipeDataKeys.WIRELESS_EU_HI, hi).addData(GTORecipeDataKeys.WIRELESS_EU_LO, lo).addData(GTORecipeDataKeys.WIRELESS_SETTLE_TICKS, span).build();
+                    if (result != SettleResult.NO_TRANSFER) break;
                 }
-                container.setStorage(storage.subtract(eu.value));
-                return builder.duration(1).build();
+                WirelessIdle.report(this, result, port, getTier(), eu.value.doubleValue());
+                return null;
             } else {
                 var voltage = getOverclockVoltage();
                 if (voltage <= 0) {
@@ -134,5 +144,14 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean handleRecipeInput(RecipeHandlerUnit unit, GTRecipe recipe) {
+        long hi = recipe.data.getLong(GTORecipeDataKeys.WIRELESS_EU_HI);
+        long lo = recipe.data.getLong(GTORecipeDataKeys.WIRELESS_EU_LO);
+        if (hi == 0 && lo == 0) return super.handleRecipeInput(unit, recipe);
+        var port = energyInterfacePartMachine == null ? null : energyInterfacePartMachine.getPort();
+        return port != null && port.settleThen(hi, lo, getTier(), recipe.data.getInt(GTORecipeDataKeys.WIRELESS_SETTLE_TICKS), () -> super.handleRecipeInput(unit, recipe));
     }
 }

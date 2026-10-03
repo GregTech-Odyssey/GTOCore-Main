@@ -6,7 +6,6 @@ import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.recipe.RecipeHelper;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -14,15 +13,15 @@ import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -47,7 +46,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -93,7 +91,7 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
         Arrays.fill(fluxRequirements = new float[capacity], 0);
         Arrays.fill(dirtySlots = new boolean[capacity], true);
         Arrays.fill(outputStacks = new ItemStack[capacity], ItemStack.EMPTY);
-        inventory = new StackHandler(this, capacity);
+        inventory = new StackHandler(capacity);
         handlerListIn = RecipeHandlerUnit.of(IO.IN, inventory);
     }
 
@@ -119,13 +117,13 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
                 neutronFluxChange += outputStacks[i].getCount();
                 time[i] -= 5;
                 if (time[i] <= 0) {
-                    inventory.setStackInSlot(i, outputStacks[i]);
+                    inventory.storage.setStackInSlot(i, outputStacks[i]);
                     outputStacks[i] = ItemStack.EMPTY;
                     continue;
                 }
             }
             if (dirtySlots[i]) {
-                handlerListIn.findRecipe(GTORecipeTypes.NEUTRON_IRRADIATION_RECIPES, (u, r) -> handlerListIn.handleRecipeItem(IO.IN, r.toRuntime(), RecipeHelper.copyContents(r.itemInputs, 1), false));
+                handlerListIn.findRecipe(GTORecipeTypes.NEUTRON_IRRADIATION_RECIPES, (u, r) -> startIrradiation(r));
                 dirtySlots[i] = false;
             }
         }
@@ -142,26 +140,28 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
         return false;
     }
 
-    private CustomItemStackHandler createCustomHandler(int capacity) {
-        return new CustomItemStackHandler(capacity) {
-
-            @Override
-            public void onContentsChanged(int slot) {
-                super.onContentsChanged(slot);
-                dirtySlots[slot] = true;
-                if (inventory.handling || isRemote()) return;
-                outputStacks[slot] = ItemStack.EMPTY;
-                time[slot] = 0;
-                initialTime[slot] = 0;
-                fluxRequirements[slot] = 0;
-                inventory.onContentsChanged();
+    private boolean startIrradiation(GTRecipeDefinition recipe) {
+        var inputs = recipe.itemInputs;
+        if (inputs.size() == 0) return true;
+        var ingredient = inputs.ingredient(0);
+        var stacks = inventory.storage.stacks;
+        for (int slot = 0; slot < capacity; ++slot) {
+            if (!outputStacks[slot].isEmpty()) continue;
+            ItemStack stored = stacks[slot];
+            int count = stored.getCount();
+            if (count == 0) continue;
+            if (!ingredient.test(stored)) return false;
+            var output = recipe.itemOutputs;
+            if (output.size() > 0) {
+                outputStacks[slot] = Keys.toStack(output.outputKey(0), count);
+                time[slot] = recipe.duration;
+                initialTime[slot] = recipe.duration;
+                fluxRequirements[slot] = (int) recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
             }
-
-            @Override
-            public int getSlotLimit(int slot) {
-                return 1;
-            }
-        };
+            inventory.storage.markAsChanged();
+            return count >= inputs.amount(0);
+        }
+        return false;
     }
 
     @Override
@@ -181,12 +181,13 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
                 if (getOffsetTimer() % 10 == 0) requestSync();
             }
         };
+        var handler = new ForgeStackAdapter(inventory.storage);
         int index = 0;
         for (int y = 0; y < colSize; y++) {
             for (int x = 0; x < rowSize; x++) {
                 int slot = index;
                 var x1 = 4 + x * (18 + 6);
-                container.addWidget(new SlotWidget(inventory.storage, index++, x1, 4 + y * 18, true, true)
+                container.addWidget(new SlotWidget(handler, index++, x1, 4 + y * 18, true, true)
                         .setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(IngredientIO.INPUT)
                         .setOnAddedTooltips((s, tooltips) -> {
                             if (!outputStacks[slot].isEmpty()) {
@@ -234,82 +235,46 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
         return group;
     }
 
-    private static final class StackHandler extends NotifiableItemStackHandler {
+    private final class Slots extends StackInventory {
 
-        boolean handling;
-
-        private StackHandler(NeutronIrradiationPartMachine machine, int capacity) {
-            super(machine, capacity, IO.IN, IO.BOTH, machine::createCustomHandler);
+        private Slots(int size) {
+            super(size);
         }
 
         @Override
-        public NeutronIrradiationPartMachine getMachine() {
-            return (NeutronIrradiationPartMachine) super.getMachine();
+        public void onContentsChanged(int slot) {
+            super.onContentsChanged(slot);
+            dirtySlots[slot] = true;
+            if (isRemote()) return;
+            outputStacks[slot] = ItemStack.EMPTY;
+            time[slot] = 0;
+            initialTime[slot] = 0;
+            fluxRequirements[slot] = 0;
         }
 
         @Override
         public int getSlotLimit(int slot) {
             return 1;
         }
+    }
 
-        @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-            handling = true;
-            boolean changed = false;
-            var size = storage.size;
-            var ingredient = items.getFirst();
-            if (ingredient.isEmpty()) {
-                return true;
-            }
-            if (io == IO.IN) {
-                for (int slot = 0; slot < size; ++slot) {
-                    if (!getMachine().outputStacks[slot].isEmpty()) {
-                        continue;
-                    }
-                    ItemStack stored = storage.stacks[slot];
-                    int count = stored.getCount();
-                    if (count == 0) continue;
-                    if (ingredient.inner.test(stored)) {
-                        changed = true;
-                        ingredient.shrink(count);
-                        if (!simulate) {
-                            var output = recipe.itemOutputs;
-                            if (!output.isEmpty()) {
-                                getMachine().outputStacks[slot] = output.getFirst().inner.getInnerItemStack().copyWithCount(count);
-                                getMachine().time[slot] = recipe.duration;
-                                getMachine().initialTime[slot] = recipe.duration;
-                                getMachine().fluxRequirements[slot] = (int) recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
-                                // getMachine().fluxRequirements[slot] =
-                                // recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
-                            }
-                        }
-                        if (ingredient.amount <= 0) {
-                            items.removeFirst();
-                        }
-                    }
-                    break;
-                }
-            }
-            handling = false;
-            if (changed) storage.markAsChanged();
-            return items.isEmpty();
-        }
+    private final class StackHandler extends NotifiableStackInventory {
 
-        @Override
-        public void onContentsChanged() {
-            super.onContentsChanged();
+        private StackHandler(int capacity) {
+            super(NeutronIrradiationPartMachine.this, new Slots(capacity), IO.IN, IO.BOTH);
         }
 
         @Override
         public void fillSearchMap(GTRecipeType type, IntLongMap map) {
+            var stacks = storage.stacks;
             for (int i = 0; i < storage.size; ++i) {
-                if (!getMachine().outputStacks[i].isEmpty()) {
+                if (!outputStacks[i].isEmpty()) {
                     continue;
                 }
-                var stack = storage.stacks[i];
+                var stack = stacks[i];
                 var amount = stack.getCount();
                 if (amount > 0) {
-                    type.convertItem(stack, amount, map);
+                    type.convertKey(Keys.item(stack), amount, map);
                 }
             }
         }

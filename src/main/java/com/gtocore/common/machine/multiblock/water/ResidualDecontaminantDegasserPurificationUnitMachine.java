@@ -12,6 +12,9 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fluids.FluidStack;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.IntHolder;
 
@@ -85,15 +88,17 @@ public final class ResidualDecontaminantDegasserPurificationUnitMachine extends 
         super.onWorking();
         if (!failed && getOffsetTimer() % 20 == 0) {
             IntHolder nonEmpty = new IntHolder();
-            fastForEachFluids(true, (stack, amount) -> {
-                if (stack.getFluid() == WaterPurificationPlantMachine.GradePurifiedWater6) return;
+            forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+                var fluid = ((AEFluidKey) key).getFluid();
+                if (fluid == WaterPurificationPlantMachine.GradePurifiedWater6) return false;
                 nonEmpty.value++;
-                if (!fluidStack.isEmpty() && fluidStack.getFluid() == stack.getFluid() && fluidStack.getAmount() <= amount) {
+                if (!fluidStack.isEmpty() && fluidStack.getFluid() == fluid && fluidStack.getAmount() <= amount) {
                     successful = true;
                 } else {
                     failed = true;
                 }
-                inputFluid(stack.getFluid(), amount);
+                inputFluid(fluid, amount);
+                return false;
             });
             if (fluidStack.isEmpty() && nonEmpty.value == 0) successful = true;
         }

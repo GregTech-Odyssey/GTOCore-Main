@@ -9,9 +9,10 @@ import com.gregtechceu.gtceu.api.gui.widget.BlockableSlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -51,7 +52,7 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
         clearInventory(this.heldItems.storage);
     }
 
-    public @NotNull NotifiableItemStackHandler getAsHandler() {
+    public @NotNull NotifiableStackInventory getAsHandler() {
         return heldItems;
     }
 
@@ -62,7 +63,7 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
         int centerY = 55;
         group.addWidget(new ImageWidget(centerX - 40, centerY - 28 - 16, 98, 74 + 32, GTOGuiTextures.PROGRESS_BAR_RESEARCH_BASE))
 
-                .addWidget(new BlockableSlotWidget(heldItems, EMPTY_SLOT, centerX, centerY, true, io.support(IO.IN))
+                .addWidget(new BlockableSlotWidget(new ForgeStackAdapter(heldItems.storage, () -> true, () -> !isLocked()), EMPTY_SLOT, centerX, centerY, true, io.support(IO.IN))
                         .setIsBlocked(this::isLocked)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY));
 
@@ -88,20 +89,13 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
         });
     }
 
-    private static class ResearchHolder extends NotifiableItemStackHandler {
+    private static class ResearchHolder extends NotifiableStackInventory {
 
         private final ResearchHolderMachine machine;
 
         private ResearchHolder(ResearchHolderMachine machine) {
-            super(machine, 1, IO.IN, IO.BOTH, MyCustomItemStackHandler::new);
+            super(machine, new Slots(), IO.IN, IO.BOTH);
             this.machine = machine;
-        }
-
-        // 各槽位容量限制
-        @Override
-        public int getSlotLimit(int slot) {
-            if (slot == EMPTY_SLOT) return 1;
-            else return super.getSlotLimit(slot);
         }
 
         // 防止在锁定状态下提取物品
@@ -110,24 +104,25 @@ public class ResearchHolderMachine extends MultiblockPartMachine implements IMac
             return !machine.isLocked() && super.canCapOutput();
         }
 
-        // 槽位物品验证
-        @Override
-        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            if (stack.isEmpty()) return true;
-            if (slot == EMPTY_SLOT) return stack.getItem() instanceof DataCrystalItem;
-            else return super.isItemValid(slot, stack);
-        }
+        private static final class Slots extends StackInventory {
 
-        private static final class MyCustomItemStackHandler extends CustomItemStackHandler {
-
-            private MyCustomItemStackHandler(int size) {
-                super(size);
+            private Slots() {
+                super(1);
             }
 
+            // 各槽位容量限制
             @Override
             public int getSlotLimit(int slot) {
                 if (slot == EMPTY_SLOT) return 1;
                 else return super.getSlotLimit(slot);
+            }
+
+            // 槽位物品验证
+            @Override
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+                if (stack.isEmpty()) return true;
+                if (slot == EMPTY_SLOT) return stack.getItem() instanceof DataCrystalItem;
+                else return super.isItemValid(slot, stack);
             }
         }
     }

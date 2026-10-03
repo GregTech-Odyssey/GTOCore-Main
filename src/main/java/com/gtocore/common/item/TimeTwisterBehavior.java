@@ -1,5 +1,7 @@
 package com.gtocore.common.item;
 
+import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.PortKind;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.entity.TaskEntity;
 import com.gtocore.config.GTORules;
@@ -8,7 +10,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.feature.IManaContainerMachine;
 import com.gtolib.api.recipe.extension.MANATRecipeExtension;
-import com.gtolib.api.wireless.ExtendWirelessEnergyContainer;
 import com.gtolib.api.wireless.WirelessManaContainer;
 import com.gtolib.utils.RLUtils;
 
@@ -40,7 +41,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
 
-import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
@@ -66,6 +66,8 @@ public final class TimeTwisterBehavior implements IInteractionItem {
 
     public static final TimeTwisterBehavior INSTANCE = new TimeTwisterBehavior();
     public static final int TASK_DURATION = 100;
+    private static final BigInteger CONTINUOUS_COST = BigInteger.valueOf(819200);
+    private static final BigInteger SINGLE_COST = BigInteger.valueOf(8192);
     private static final String HUD_COST_KEY = "time_twister_cost";
     private static final String HUD_IS_MANA_KEY = "time_twister_is_mana";
     private static final String HUD_CONSUMPTION_KEY = "time_twister_consumption";
@@ -85,20 +87,20 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
         if (isBlackListed(context.getLevel().getBlockState(context.getClickedPos()).getBlock())) return InteractionResult.PASS;
-        ExtendWirelessEnergyContainer euContainer = (ExtendWirelessEnergyContainer) WirelessEnergyContainer.getOrCreateContainer(context.getPlayer().getUUID());
-        WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(context.getPlayer().getUUID());
-        if (player.isShiftKeyDown() && euContainer.removeEnergy(819200, null) == 819200) {
+        var port = EnergyPort.forPlayer(PortKind.TIME_TWISTER, player);
+        WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(player.getUUID());
+        if (player.isShiftKeyDown() && port.settle(CONTINUOUS_COST, 0, 0).ok()) {
             if (isBlockEntity(context)) {
-                context.getLevel().addFreshEntity(new TaskEntity(context.getLevel(), context.getClickedPos(), e -> tick(euContainer, manaContainer, e, context, false)));
+                context.getLevel().addFreshEntity(new TaskEntity(context.getLevel(), context.getClickedPos(), e -> tick(port, manaContainer, e, context, false)));
             } else {
-                context.getLevel().addFreshEntity(new TaskEntity(context.getLevel(), context.getClickedPos(), e -> tick(euContainer, manaContainer, e, context, true)));
+                context.getLevel().addFreshEntity(new TaskEntity(context.getLevel(), context.getClickedPos(), e -> tick(port, manaContainer, e, context, true)));
             }
-        } else if (euContainer.removeEnergy(8192, null) == 8192) {
+        } else if (port.settle(SINGLE_COST, 0, 0).ok()) {
             if (isBlockEntity(context)) {
                 tickBlock(context.getLevel(), context.getClickedPos(), 0);
                 player.displayClientMessage(Component.translatable(CONSUMED_EU, 8192, 200), true);
                 return InteractionResult.CONSUME;
-            } else if (tickGT(euContainer, manaContainer, context, false) != null) {
+            } else if (tickGT(port, manaContainer, context, false) != null) {
                 return InteractionResult.CONSUME;
             }
         }
@@ -110,17 +112,17 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         var item = player.getMainHandItem();
         if (item.getItem() != GTOItems.TIME_TWISTER.asItem()) return;
         if (isBlackListed(blockAccessor.getBlock())) return;
-        ExtendWirelessEnergyContainer euContainer = (ExtendWirelessEnergyContainer) WirelessEnergyContainer.getOrCreateContainer(player.getUUID());
+        var port = EnergyPort.forPlayer(PortKind.TIME_TWISTER, player);
         WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(player.getUUID());
 
         var blockEntity = blockAccessor.getBlockEntity();
         var machine = blockEntity instanceof MetaMachineBlockEntity ? ((MetaMachineBlockEntity) blockEntity).metaMachine : null;
         RecipeLogic recipeLogic = GTCapabilityHelper.getRecipeLogic(blockEntity);
         GTRecipe recipe = recipeLogic == null ? null : recipeLogic.getLastRecipe();
-        BigInteger euOrMana = tickGT(euContainer, manaContainer, new UseOnContext(
+        BigInteger euOrMana = tickGT(port, manaContainer, new UseOnContext(
                 player, InteractionHand.MAIN_HAND, blockAccessor.getHitResult()), true);
         boolean isMana = machine instanceof IManaContainerMachine;
-        var storage = isMana ? manaContainer.getStorage() : euContainer.getStorage();
+        var storage = isMana ? manaContainer.getStorage() : storageOf(port);
         if (euOrMana == null && storage.compareTo(BigInteger.ZERO) <= 0) {
             return;
         }
@@ -128,7 +130,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
             euOrMana = player.isShiftKeyDown() ? BigInteger.valueOf(819200L) : BigInteger.valueOf(8192L);
         }
         if (player.isShiftKeyDown() && euOrMana != null && machine != null && recipeLogic != null && recipe != null) {
-            var totalCost = estimateContinuousCostFast(recipeLogic, recipe, euContainer, manaContainer, isMana);
+            var totalCost = estimateContinuousCostFast(recipeLogic, recipe, port, manaContainer, isMana);
             if (totalCost != null) {
                 euOrMana = totalCost;
             }
@@ -143,7 +145,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
     }
 
     private static @Nullable BigInteger estimateContinuousCostFast(RecipeLogic recipeLogic, GTRecipe recipe,
-                                                                   ExtendWirelessEnergyContainer euContainer,
+                                                                   EnergyPort port,
                                                                    WirelessManaContainer manaContainer,
                                                                    boolean isMana) {
         BigInteger unitCost = getUnitCost(recipe, isMana);
@@ -155,10 +157,10 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         int firstRemaining = Math.max(duration - recipeLogic.getProgress(), 0);
         if (firstRemaining == 0) firstRemaining = duration;
 
-        BigInteger storage = isMana ? manaContainer.getStorage() : euContainer.getStorage();
+        BigInteger storage = isMana ? manaContainer.getStorage() : storageOf(port);
         if (storage.compareTo(unitCost) < 0) return null;
 
-        int maxPerTickByRate = isMana ? Integer.MAX_VALUE : Math.max(BigInteger.valueOf(euContainer.getRate()).divide(unitCost).intValue(), 0);
+        int maxPerTickByRate = isMana ? Integer.MAX_VALUE : Math.max(BigInteger.valueOf(port.account().rate()).divide(unitCost).intValue(), 0);
         if (maxPerTickByRate == 0) return null;
 
         int energyTicksLeft = storage.divide(unitCost).intValue();
@@ -245,7 +247,11 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         }
     }
 
-    private static @Nullable BigInteger tickGT(ExtendWirelessEnergyContainer euContainer, WirelessManaContainer manaContainer, UseOnContext context, boolean simulate) {
+    private static BigInteger storageOf(EnergyPort port) {
+        return BigInteger.valueOf((long) Math.min(Long.MAX_VALUE, port.reachableStorage(0)));
+    }
+
+    private static @Nullable BigInteger tickGT(EnergyPort port, WirelessManaContainer manaContainer, UseOnContext context, boolean simulate) {
         RecipeLogic recipeLogic = GTCapabilityHelper.getRecipeLogic(context.getLevel().getBlockEntity(context.getClickedPos()));
         if (recipeLogic == null || !recipeLogic.isWorking()) {
             return null;
@@ -264,12 +270,12 @@ public final class TimeTwisterBehavior implements IInteractionItem {
             if (eut.compareTo(BigInteger.ZERO) <= 0) return null;
             eut = eut.multiply(BigInteger.valueOf(energyMultiplier));
 
-            var limit = euContainer.getStorage().min(BigInteger.valueOf(euContainer.getRate()));
+            var limit = storageOf(port).min(BigInteger.valueOf(port.account().rate()));
             if (limit.compareTo(eut) < 0) return null;
             var tick = limit.divide(eut).min(BigInteger.valueOf(maxReducedDuration));
             var usedEU = eut.multiply(tick);
             if (!simulate) {
-                euContainer.setStorage(euContainer.getStorage().subtract(usedEU));
+                if (!port.settle(usedEU, 0, 0).ok()) return null;
                 recipeLogic.setProgress(recipeLogic.getProgress() + tick.intValue());
                 if (context.getPlayer() == null) return null;
                 context.getPlayer().displayClientMessage(Component.translatable(CONSUMED_EU, FormattingUtil.formatNumbers(usedEU), tick), true);
@@ -310,7 +316,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         return block instanceof EntityBlock && level.getBlockEntity(pos) != null;
     }
 
-    private static void tick(ExtendWirelessEnergyContainer euContainer, WirelessManaContainer manaContainer, TaskEntity entity, UseOnContext context, boolean gt) {
+    private static void tick(EnergyPort port, WirelessManaContainer manaContainer, TaskEntity entity, UseOnContext context, boolean gt) {
         if (entity.tickCount > TASK_DURATION) {
             entity.discard();
             if (!gt) {
@@ -319,7 +325,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
             }
             return;
         }
-        if (gt) tickGT(euContainer, manaContainer, context, false);
+        if (gt) tickGT(port, manaContainer, context, false);
         else tickBlock(context.getLevel(), context.getClickedPos(), entity.tickCount);
     }
 

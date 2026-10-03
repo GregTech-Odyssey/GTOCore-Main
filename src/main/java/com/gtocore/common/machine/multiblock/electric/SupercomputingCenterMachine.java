@@ -26,7 +26,7 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCABridgePartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComponentPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComputationPartMachine;
@@ -43,6 +43,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -398,27 +400,28 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
                 int max = (machineTier == 2) ? 40000 : 160000;
                 maxCWUtModification -= (int) ((Math.pow(maxCWUtModification - 4000, 2) / 500000) * (0.8 / (Math.log(maxCWUtModification + 600000) - Math.log(10000))));
                 if ((maxCWUtModification <= max) && (ThermalConductorHatchPart != null)) {
-                    CustomItemStackHandler stackTransfer = ThermalConductorHatchPart.getInventory().storage;
-                    for (int i = 0; i < stackTransfer.getSlots(); i++) {
-                        ItemStack itemStack = stackTransfer.getStackInSlot(i);
-                        Item valueItem = MFPCs.get(itemStack.getItem());
+                    KeyInventory<AEItemKey> stackTransfer = ThermalConductorHatchPart.getInventory().storage;
+                    int slots = stackTransfer.size();
+                    for (int i = 0; i < slots; i++) {
+                        AEItemKey key = stackTransfer.keyAt(i);
+                        Item valueItem = key == null ? null : MFPCs.get(key.getItem());
                         if (valueItem != null) {
-                            int count = itemStack.getCount();
-                            int index = getIndexForItem(itemStack.getItem());
+                            int count = (int) Math.min(stackTransfer.amountAt(i), Integer.MAX_VALUE);
+                            int index = getIndexForItem(key.getItem());
                             int consumption = Math.min(count, (max - maxCWUtModification) / N_MFPCs[index] + 1);
-                            stackTransfer.setStackInSlot(i, itemStack.copyWithCount(count - consumption));
+                            stackTransfer.set(i, key, count - consumption);
                             maxCWUtModification += N_MFPCs[index] * consumption;
-                            for (int j = 0; j < stackTransfer.getSlots(); j++) {
-                                if (stackTransfer.getStackInSlot(j).getItem() == valueItem) {
-                                    int count2 = stackTransfer.getStackInSlot(j).getCount();
+                            for (int j = 0; j < slots; j++) {
+                                AEItemKey slotKey = stackTransfer.keyAt(j);
+                                if (slotKey != null && slotKey.getItem() == valueItem) {
+                                    long count2 = stackTransfer.amountAt(j);
                                     if (count2 + consumption <= 64) {
-                                        stackTransfer.setStackInSlot(j, new ItemStack(valueItem, count2 + consumption));
+                                        stackTransfer.set(j, AEItemKey.of(valueItem), count2 + consumption);
                                         break;
                                     }
                                 }
-                                if (stackTransfer.getStackInSlot(j).isEmpty()) {
-                                    ItemStack convertedStack = new ItemStack(valueItem, consumption);
-                                    stackTransfer.setStackInSlot(j, convertedStack);
+                                if (slotKey == null) {
+                                    stackTransfer.set(j, AEItemKey.of(valueItem), consumption);
                                     break;
                                 }
                             }

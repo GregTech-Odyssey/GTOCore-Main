@@ -4,6 +4,7 @@ import com.gtocore.integration.ae.hooks.IAEKeyExtension;
 
 import com.gtolib.api.fluid.IFluid;
 import com.gtolib.api.recipe.lookup.IIngredientConvertible;
+import com.gtolib.api.recipe.lookup.MapIngredient;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
@@ -39,7 +40,7 @@ public abstract class AEFluidKeyMixin implements IIngredientConvertible, IAEKeyE
 
     @Override
     public void gtolib$convert(long amount, IntLongMap map) {
-        map.add(((IFluid) fluid).gtolib$getMapFluid(), amount);
+        MapIngredient.convertFluid((AEFluidKey) (Object) this, amount, map);
     }
 
     @Unique

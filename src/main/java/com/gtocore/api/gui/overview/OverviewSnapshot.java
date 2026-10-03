@@ -42,7 +42,9 @@ public record OverviewSnapshot(List<Module> modules, List<Anchor> anchors, byte 
     private static final int READ_SLACK = 1024;
     public static final Payload EMPTY_PAYLOAD = EMPTY.encode();
 
-    public record Module(BlockPos pos, ResourceLocation id, Direction front, Direction up, boolean flip, int[] values, byte state, int[] blocks) {
+    public record Owner(int cell, long controller, int state) {}
+
+    public record Module(BlockPos pos, ResourceLocation id, Direction front, Direction up, boolean flip, int[] values, byte state, int[] blocks, List<Owner> owners) {
 
         @Nullable
         public MultiblockMachineDefinition definition() {
@@ -128,7 +130,15 @@ public record OverviewSnapshot(List<Module> modules, List<Anchor> anchors, byte 
             buf.writeBoolean(module.flip);
             buf.writeVarIntArray(module.values);
             buf.writeByte(module.state);
-            if (withBlocks) writePacked(buf, module.blocks);
+            if (withBlocks) {
+                writePacked(buf, module.blocks);
+                buf.writeVarInt(module.owners.size());
+                for (var owner : module.owners) {
+                    buf.writeVarInt(owner.cell);
+                    buf.writeLong(owner.controller);
+                    buf.writeVarInt(owner.state);
+                }
+            }
         }
         buf.writeVarInt(anchors.size());
         for (var anchor : anchors) {
@@ -148,8 +158,15 @@ public record OverviewSnapshot(List<Module> modules, List<Anchor> anchors, byte 
         int moduleCount = buf.readVarInt();
         var modules = new ArrayList<Module>(Math.min(moduleCount, OverviewCapture.MAX_MODULES));
         for (int i = 0; i < moduleCount; i++) {
-            modules.add(new Module(buf.readBlockPos(), buf.readResourceLocation(), buf.readEnum(Direction.class), buf.readEnum(Direction.class), buf.readBoolean(),
-                    buf.readVarIntArray(MAX_VALUES), buf.readByte(), coarse ? NO_BLOCKS : readPacked(buf)));
+            var pos = buf.readBlockPos();
+            var id = buf.readResourceLocation();
+            var front = buf.readEnum(Direction.class);
+            var up = buf.readEnum(Direction.class);
+            boolean flip = buf.readBoolean();
+            var values = buf.readVarIntArray(MAX_VALUES);
+            byte state = buf.readByte();
+            var blocks = coarse ? NO_BLOCKS : readPacked(buf);
+            modules.add(new Module(pos, id, front, up, flip, values, state, blocks, coarse ? Collections.emptyList() : readOwners(buf, blocks.length)));
         }
         int anchorCount = buf.readVarInt();
         var anchors = new ArrayList<Anchor>(Math.min(anchorCount, 256));
@@ -182,6 +199,21 @@ public record OverviewSnapshot(List<Module> modules, List<Anchor> anchors, byte 
             inflater.end();
         }
         return readRaw(new FriendlyByteBuf(Unpooled.wrappedBuffer(bytes)));
+    }
+
+    private static List<Owner> readOwners(FriendlyByteBuf buf, int cells) {
+        int count = buf.readVarInt();
+        if (count < 0 || count > cells) throw new IllegalStateException("bad overview owners " + count);
+        if (count == 0) return Collections.emptyList();
+        var owners = new ArrayList<Owner>(count);
+        for (int i = 0; i < count; i++) {
+            int cell = buf.readVarInt();
+            long controller = buf.readLong();
+            int state = buf.readVarInt();
+            if (cell < 0 || cell >= cells) throw new IllegalStateException("bad overview owner cell " + cell);
+            owners.add(new Owner(cell, controller, state));
+        }
+        return owners;
     }
 
     private static int bits(int paletteSize) {

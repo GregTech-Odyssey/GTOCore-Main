@@ -5,7 +5,7 @@ import com.gtocore.common.data.GTOMachines;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.uipro.styletemplate.MachineEra;
@@ -13,6 +13,9 @@ import com.gregtechceu.gtceu.uipro.styletemplate.MachineEra;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,8 +34,8 @@ public class SteamFluidHatchPartMachine extends FluidHatchPartMachine {
     }
 
     @Override
-    protected @NotNull NotifiableItemStackHandler createCircuitItemHandler(Object @NotNull... args) {
-        return NotifiableItemStackHandler.empty(this);
+    protected @NotNull NotifiableInventory<AEItemKey> createCircuitItemHandler(Object @NotNull... args) {
+        return NotifiableInventory.empty(this, AEKeyType.items());
     }
 
     @Override
@@ -57,8 +60,10 @@ public class SteamFluidHatchPartMachine extends FluidHatchPartMachine {
                 newMachine.setFrontFacing(this.getFrontFacing());
                 newMachine.setUpwardsFacing(this.getUpwardsFacing());
                 newMachine.setPaintingColor(this.getPaintingColor());
-                for (int i = 0; i < this.tank.getTanks(); i++) {
-                    newMachine.tank.setFluidInTank(i, this.tank.getFluidInTank(i));
+                var from = this.tank.storage;
+                var to = newMachine.tank.storage;
+                for (int i = 0; i < from.size() && i < to.size(); i++) {
+                    to.set(i, from.keyAt(i), from.amountAt(i));
                 }
             }
         }

@@ -14,11 +14,12 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.SingleCustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -31,9 +32,11 @@ import com.gregtechceu.gtceu.utils.TaskHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.IGridNodeListener;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -50,9 +53,9 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     @SaveToDisk
     private final KeyStorage internalBuffer;
     @SaveToDisk
-    private final NotifiableItemStackHandler mufflerHatchInv;
+    private final NotifiableInventory<AEItemKey> mufflerHatchInv;
     @SaveToDisk
-    private final NotifiableItemStackHandler amplifierInv;
+    private final NotifiableInventory<AEItemKey> amplifierInv;
     private final MEOutputItemHandler handler;
 
     @SyncToClient
@@ -64,32 +67,29 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
         super(holder, IO.NONE);
         internalBuffer = new KeyStorage();
         handler = new MEOutputItemHandler(this, internalBuffer);
-        mufflerHatchInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
-        mufflerHatchInv.setFilter(stack -> Wrapper.MUFFLER_HATCH.containsKey(stack.getItem()));
+        mufflerHatchInv = NotifiableInventory.items(this, KeyInventory.items(1, 1, true), IO.NONE, IO.BOTH);
+        mufflerHatchInv.setFilter(key -> key instanceof AEItemKey k && Wrapper.MUFFLER_HATCH.containsKey(k.getItem()));
         mufflerHatchInv.addChangedListener(this::onMufflerChange);
-        amplifierInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH) {
-
-            @Override
-            public int getSlotLimit(int slot) {
-                return GTORules.ME_MUFFLER_MAX.get();
-            }
-        };
-        amplifierInv.setFilter(stack -> Wrapper.AMPLIFIER_TIER_MAP.containsKey(stack.getItem()));
+        amplifierInv = NotifiableInventory.items(this, KeyInventory.items(1, GTORules.ME_MUFFLER_MAX.get(), true), IO.NONE, IO.BOTH);
+        amplifierInv.setFilter(key -> key instanceof AEItemKey k && Wrapper.AMPLIFIER_TIER_MAP.containsKey(k.getItem()));
         amplifierInv.addChangedListener(this::onMufflerChange);
     }
 
     private void onMufflerChange() {
-        var amplifierIs = amplifierInv.getStackInSlot(0);
-        var item = mufflerHatchInv.getStackInSlot(0).getItem();
+        var amplifierKey = amplifierInv.storage.keyAt(0);
+        var amplifierItem = amplifierKey == null ? Items.AIR : amplifierKey.getItem();
+        int amplifierCount = (int) amplifierInv.storage.amountAt(0);
+        var mufflerKey = mufflerHatchInv.storage.keyAt(0);
+        var item = mufflerKey == null ? Items.AIR : mufflerKey.getItem();
         recoveryChance = 0;
         muffler_tier = tier;
         if (Wrapper.MUFFLER_HATCH.containsKey(item)) {
             muffler_tier = Wrapper.MUFFLER_HATCH.get(item);
         }
-        if (Objects.equals(Wrapper.AMPLIFIER_TIER_MAP.get(amplifierIs.getItem()), Wrapper.MUFFLER_HATCH.get(item))) {
+        if (Objects.equals(Wrapper.AMPLIFIER_TIER_MAP.get(amplifierItem), Wrapper.MUFFLER_HATCH.get(item))) {
             var recoveryChanceMin = muffler_tier * 10;
             var recoveryChanceMax = recoveryChanceMin * muffler_tier;
-            recoveryChance = (recoveryChanceMax - recoveryChanceMin) * (amplifierIs.getCount() - GTORules.ME_MUFFLER_MIN.get()) / Math.max(1, GTORules.ME_MUFFLER_MAX.get() - GTORules.ME_MUFFLER_MIN.get());
+            recoveryChance = (recoveryChanceMax - recoveryChanceMin) * (amplifierCount - GTORules.ME_MUFFLER_MIN.get()) / Math.max(1, GTORules.ME_MUFFLER_MAX.get() - GTORules.ME_MUFFLER_MIN.get());
             recoveryChance += recoveryChanceMin;
             recoveryChance = Math.max(recoveryChance, recoveryChanceMin);
         } else {
@@ -182,7 +182,8 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     @Override
     public void recoverItemsTable(ItemStack recoveryItems) {
         if (!workingEnabled) return;
-        handler.insertItem(0, recoveryItems, false);
+        var key = Keys.item(recoveryItems);
+        if (key != null) handler.insert(key, recoveryItems.getCount(), false);
     }
 
     @Override

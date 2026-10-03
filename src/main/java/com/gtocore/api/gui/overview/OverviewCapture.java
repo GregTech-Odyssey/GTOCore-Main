@@ -1,6 +1,8 @@
 package com.gtocore.api.gui.overview;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Assembly;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Layout;
@@ -17,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 final class OverviewCapture {
@@ -47,6 +50,7 @@ final class OverviewCapture {
     private Assembly assembly;
     private int[] values = new int[0];
     private int[] blocks = new int[0];
+    private List<OverviewSnapshot.Owner> owners = Collections.emptyList();
     private Direction front = Direction.NORTH, up = Direction.NORTH;
     private boolean flip, connected;
     private int index, count;
@@ -119,6 +123,7 @@ final class OverviewCapture {
                 blocks = new int[cells];
             }
             own.clear();
+            owners = Collections.emptyList();
             total += cells;
             index = 0;
             count = 0;
@@ -143,17 +148,25 @@ final class OverviewCapture {
         if (!state.hasBlockEntity()) return;
         var found = MetaMachine.getMachine(level, pos);
         if (found == null) return;
+        if (found instanceof IMultiPart part && !(found instanceof IMultiController) && part.isFormed()) {
+            var owner = part.getController();
+            if (owner != null) {
+                if (owners.isEmpty()) owners = new ArrayList<>();
+                owners.add(new OverviewSnapshot.Owner(i, owner.self().getPos().asLong(), Block.getId(owner.self().getBlockState())));
+            }
+        }
         var child = adapter.child(machine, found);
         if (child != null && child != machine && visited.add(child.getPos().asLong())) queue.add(new Pending(child, machine, connected));
     }
 
     private void complete(MultiblockControllerMachine machine) {
         byte state = connected ? OverviewSnapshot.CONNECTED : OverviewSnapshot.DETACHED;
-        modules.add(new OverviewSnapshot.Module(machine.getPos().immutable(), machine.getDefinition().getId(), front, up, flip, values, state, blocks));
+        modules.add(new OverviewSnapshot.Module(machine.getPos().immutable(), machine.getDefinition().getId(), front, up, flip, values, state, blocks, owners));
         signature = signature * 31 + machine.getPos().asLong();
         signature = signature * 31 + state;
         signature = signature * 31 + Arrays.hashCode(values);
         signature = signature * 31 + Arrays.hashCode(blocks);
+        signature = signature * 31 + owners.hashCode();
         if (assembly != null && connected && count > 0) {
             var centroid = new double[] { cx / count, cy / count, cz / count };
             int before = anchors.size();

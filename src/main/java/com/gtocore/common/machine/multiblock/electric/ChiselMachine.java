@@ -7,12 +7,14 @@ import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 
 import net.minecraft.world.item.Item;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.periut.chisel.block.ChiselGroupLookup;
@@ -30,12 +32,14 @@ public final class ChiselMachine extends CustomParallelMultiblockMachine impleme
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         AtomicInteger c = new AtomicInteger();
         ObjHolder<Item> item = new ObjHolder<>();
-        unit.fastForEachItems(false, (stack, amount) -> {
-            if (stack.is(GTItems.PROGRAMMED_CIRCUIT.get())) {
-                c.addAndGet(IntCircuitBehaviour.getCircuitConfiguration(stack));
+        unit.forEachKey(AEKeyType.items(), false, (key, amount) -> {
+            var itemKey = (AEItemKey) key;
+            if (itemKey.getItem() == Circuits.item()) {
+                c.addAndGet(Math.max(0, Circuits.configOf(itemKey)));
             } else {
-                item.set(stack.getItem());
+                item.set(itemKey.getItem());
             }
+            return false;
         });
         if (c.get() > 0 && item.get() != null) {
             List<Item> list = ChiselGroupLookup.getBlocksInGroup(item.get());

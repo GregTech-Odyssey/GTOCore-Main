@@ -18,10 +18,9 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
@@ -77,7 +76,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
 
     @SyncToClient
     @SaveToDisk
-    private final NotifiableItemStackHandler machineStorage;
+    private final NotifiableStackInventory machineStorage;
 
     public NanitesIntegratedMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true, false, true, MachineUtils::getHatchParallel);
@@ -100,8 +99,8 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
 
     static void trimRecipe(GTRecipe recipe, int chance) {
         if (GTValues.RNG.nextInt(100) < chance) {
-            recipe.itemInputs = RecipeHelper.trimLast(recipe.itemInputs, recipe.itemInputs.size() - 1);
-            recipe.itemOutputs = RecipeHelper.trimLast(recipe.itemOutputs, recipe.itemOutputs.size() - 1);
+            recipe.itemInputs = recipe.itemInputs.trimLast(recipe.itemInputs.size() - 1);
+            recipe.itemOutputs = recipe.itemOutputs.trimLast(recipe.itemOutputs.size() - 1);
         }
     }
 
@@ -146,7 +145,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
     }
 
     @Override
-    public NotifiableItemStackHandler getMachineStorage() {
+    public NotifiableStackInventory getMachineStorage() {
         return this.machineStorage;
     }
 

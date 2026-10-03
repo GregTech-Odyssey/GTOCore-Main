@@ -10,7 +10,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.multiblock.IMEStockingPart;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlotList;
 
@@ -21,7 +21,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.config.Actionable;
@@ -239,8 +238,9 @@ public class MEStockingHatchPartMachine extends MEInputHatchPartMachine implemen
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("AutoPull", true);
         tag.putBoolean("DistinctBuses", isDistinct());
-        if (!circuitInventory.storage.getStackInSlot(0).isEmpty()) {
-            tag.putByte("GhostCircuit", (byte) IntCircuitBehaviour.getCircuitConfiguration(circuitInventory.storage.getStackInSlot(0)));
+        int circuit = Circuits.get(circuitInventory.storage, 0);
+        if (circuit >= 0) {
+            tag.putByte("GhostCircuit", (byte) circuit);
         }
         return tag;
     }
@@ -254,9 +254,10 @@ public class MEStockingHatchPartMachine extends MEInputHatchPartMachine implemen
                 setDistinct(tag.getBoolean("DistinctBuses"));
             }
             if (tag.contains("GhostCircuit")) {
-                circuitInventory.setStackInSlot(0, IntCircuitBehaviour.stack(tag.getByte("GhostCircuit")));
+                int circuit = tag.getByte("GhostCircuit");
+                Circuits.set(circuitInventory.storage, 0, circuit <= Circuits.MAX ? circuit : -1);
             } else {
-                circuitInventory.setStackInSlot(0, ItemStack.EMPTY);
+                Circuits.set(circuitInventory.storage, 0, -1);
             }
             return;
         }

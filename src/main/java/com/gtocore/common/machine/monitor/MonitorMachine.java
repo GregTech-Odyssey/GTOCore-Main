@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineModifyDrops;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
@@ -45,6 +45,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.google.common.collect.ImmutableBiMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -94,7 +96,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
             .put(index++, DisplayRegistry.MACHINE_MANTENANCE)
             .build();
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableInventory<AEItemKey> inventory;
     private boolean isCardChange;
 
     public MonitorMachine(MetaMachineBlockEntity holder) {
@@ -107,10 +109,10 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
         this((MetaMachineBlockEntity) o);
     }
 
-    private NotifiableItemStackHandler createInventoryItemHandler() {
-        NotifiableItemStackHandler storage = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.NONE);
-        storage.setFilter(i -> {
-            var tag = i.getTag();
+    private NotifiableInventory<AEItemKey> createInventoryItemHandler() {
+        NotifiableInventory<AEItemKey> storage = NotifiableInventory.items(this, 1, IO.NONE, IO.NONE);
+        storage.setFilter(k -> {
+            var tag = k instanceof AEItemKey itemKey ? itemKey.getTag() : null;
             return tag != null && tag.getBoolean("machine");
         });
         return storage;
@@ -167,8 +169,8 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
 
     public Component[] getComponentArray() {
         if (isCardChange) {
-            ItemStack card = inventory.storage.getStackInSlot(0);
-            if (card.isEmpty()) {
+            var card = inventory.storage.keyAt(0);
+            if (card == null) {
                 return new Component[0];
             }
             CompoundTag posTags = card.getTag();

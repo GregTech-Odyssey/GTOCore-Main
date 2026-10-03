@@ -19,7 +19,7 @@ import com.gregtechceu.gtceu.api.gui.widget.ProspectingMapWidget;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.item.ItemFilterBehaviour;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -66,7 +66,7 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
     // ===================== UI相关方法 =====================
     private static final int BORDER_WIDTH = 3;
     @SaveToDisk
-    protected final CustomItemStackHandler filterInventory;
+    protected final StackInventory filterInventory;
     @SaveToDisk
     public IDigitalMiner.FluidMode fluidMode = IDigitalMiner.FluidMode.Harvest;
     @Nullable
@@ -143,8 +143,8 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
 
     // ===================== 交互相关方法 =====================
 
-    protected CustomItemStackHandler createFilterItemHandler() {
-        var transfer = new CustomItemStackHandler();
+    protected StackInventory createFilterItemHandler() {
+        var transfer = new StackInventory();
         transfer.setFilter(
                 item -> item.getItem() instanceof ComponentItem componentItem &&
                         componentItem.getComponents().stream().anyMatch(c -> c instanceof ItemFilterBehaviour));

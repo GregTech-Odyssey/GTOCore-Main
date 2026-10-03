@@ -4,21 +4,16 @@ import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.electric.research.IntelligentScanningManagementPlatformMachine;
 
-import com.gtolib.api.recipe.RecipeType;
-import com.gtolib.api.recipe.lookup.IIngredientConvertible;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 
@@ -38,7 +33,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 
@@ -62,6 +57,8 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
     @Getter
     private Set<AEKey> cachedKeys;
+    private AEKey[] keyArray = NO_KEYS;
+    private static final AEKey[] NO_KEYS = new AEKey[0];
 
     public IntelligentScanningProxyPartMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -81,6 +78,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
             var grid = getMainNode().getGrid();
             if (grid == null) {
                 cachedKeys = null;
+                keyArray = NO_KEYS;
                 return;
             }
             var stack = grid.getStorageService().getCachedInventory();
@@ -104,6 +102,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
             } else {
                 cachedKeys = null;
             }
+            keyArray = cachedKeys == null ? NO_KEYS : cachedKeys.toArray(NO_KEYS);
             if (getController() instanceof IntelligentScanningManagementPlatformMachine managementPlatform) {
                 managementPlatform.reloadAvailableAEKeys();
             }
@@ -148,6 +147,9 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
     private static class ScanningContentHandler extends NotifiableContentHandler {
 
+        private final Undo itemUndo = new Undo();
+        private final Undo fluidUndo = new Undo();
+
         protected ScanningContentHandler(IntelligentScanningProxyPartMachine machine) {
             super(machine, IO.IN);
         }
@@ -162,81 +164,104 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
         }
 
         @Override
-        public boolean canHandleFluid() {
+        public boolean handlesFluids() {
             return true;
         }
 
         @Override
-        public boolean canHandleItem() {
+        public boolean handlesItems() {
+            return true;
+        }
+
+        private static boolean ofType(AEKey key, AEKeyType type) {
+            return type == AEKeyType.items() ? key instanceof AEItemKey : key instanceof AEFluidKey;
+        }
+
+        @Override
+        public long available(AEKeyType type, KeyIngredient ingredient) {
+            var grid = getMachine().getMainNode().getGrid();
+            if (grid == null) return 0;
+            var stored = grid.getStorageService().getCachedInventory();
+            long total = 0;
+            for (var key : getMachine().keyArray) {
+                if (ofType(key, type) && ingredient.test(key)) {
+                    long t = total + stored.get(key);
+                    total = t < 0 ? Long.MAX_VALUE : t;
+                }
+            }
+            return total;
+        }
+
+        @Override
+        public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
+            var grid = getMachine().getMainNode().getGrid();
+            if (grid == null) return 0;
+            var stored = grid.getStorageService().getCachedInventory();
+            var keys = getMachine().keyArray;
+            long got = 0;
+            for (int s = 0; s < keys.length && got < need; s++) {
+                var key = keys[s];
+                if (!ofType(key, type) || !ingredient.test(key)) continue;
+                long free = stored.get(key) - plan.reservedOn(member, s);
+                if (free <= 0) continue;
+                long t = Math.min(free, need - got);
+                plan.logCustom(member, s, entry, t, type, consume, false);
+                got += t;
+            }
+            return got;
+        }
+
+        @Override
+        public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
+            boolean fluid = type == AEKeyType.fluids();
+            var undo = fluid ? fluidUndo : itemUndo;
+            undo.size = 0;
+            var machine = getMachine();
+            var grid = machine.getMainNode().getGrid();
+            if (grid == null) return false;
+            var ae = grid.getStorageService().getInventory();
+            var source = IActionSource.ofMachine(machine);
+            var keys = machine.keyArray;
+            boolean changed = false;
+            for (int i = 0; i < plan.logSize(); i++) {
+                if (plan.logMember(i) != member || plan.logIsFluid(i) != fluid || !plan.logConsumes(i)) continue;
+                int token = plan.logToken(i);
+                long amount = plan.logAmount(i);
+                if (token >= keys.length) {
+                    undo.revert(ae, source);
+                    return false;
+                }
+                var key = keys[token];
+                long extracted = ae.extract(key, amount, Actionable.MODULATE, source);
+                if (extracted > 0) {
+                    changed = true;
+                    undo.add(key, extracted);
+                }
+                if (extracted < amount) {
+                    undo.revert(ae, source);
+                    return false;
+                }
+            }
+            if (changed) onContentsChanged();
             return true;
         }
 
         @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-            if (io == IO.IN) {
-                boolean changed = false;
-                var grid = getMachine().getMainNode().getGrid();
-                if (grid == null) return false;
-                var ae = grid.getStorageService().getInventory();
-                for (var it = items.iterator(); it.hasNext();) {
-                    var ingredient = it.next();
-                    if (ingredient.isEmpty()) {
-                        it.remove();
-                        continue;
-                    }
-                    for (var i : getMachine().cachedKeys) {
-                        if (i instanceof AEItemKey itemKey && ingredient.inner.testAeKay(itemKey)) {
-                            var extracted = ae.extract(i, ingredient.amount, simulate ? Actionable.SIMULATE : Actionable.MODULATE, IActionSource.ofMachine(getMachine()));
-                            if (extracted > 0) {
-                                changed = true;
-                                ingredient.shrink(extracted);
-                                if (ingredient.amount <= 0) {
-                                    it.remove();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!simulate && changed) {
-                    onContentsChanged();
-                }
-            }
-            return items.isEmpty();
+        public boolean isLossyRollback() {
+            return true;
         }
 
         @Override
-        public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
-            if (io == IO.IN) {
-                boolean changed = false;
-                var grid = getMachine().getMainNode().getGrid();
-                if (grid == null) return false;
-                var ae = grid.getStorageService().getInventory();
-                for (var it = fluids.iterator(); it.hasNext();) {
-                    var ingredient = it.next();
-                    if (ingredient.isEmpty()) {
-                        it.remove();
-                        continue;
-                    }
-                    for (var i : getMachine().cachedKeys) {
-                        if (i instanceof AEFluidKey fluidKey && ingredient.inner.testAeKay(fluidKey)) {
-                            var extracted = ae.extract(i, ingredient.amount, simulate ? Actionable.SIMULATE : Actionable.MODULATE, IActionSource.ofMachine(getMachine()));
-                            if (extracted > 0) {
-                                changed = true;
-                                ingredient.shrink(extracted);
-                                if (ingredient.amount <= 0) {
-                                    it.remove();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!simulate && changed) {
-                    onContentsChanged();
-                }
+        public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
+            var undo = type == AEKeyType.fluids() ? fluidUndo : itemUndo;
+            var machine = getMachine();
+            var grid = machine.getMainNode().getGrid();
+            if (grid == null) {
+                undo.size = 0;
+                return;
             }
-            return fluids.isEmpty();
+            undo.revert(grid.getStorageService().getInventory(), IActionSource.ofMachine(machine));
+            onContentsChanged();
         }
 
         @Override
@@ -245,26 +270,43 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
             if (machine.isOnline()) {
                 var grid = machine.getMainNode().getGrid();
                 if (grid == null) return;
-                AEKeyMap<AEKey> keyMap = null;
-                boolean specialConverter = ((RecipeType) type).specialConverter;
-                for (var stock : machine.cachedKeys) {
-                    if (keyMap == null) {
-                        keyMap = grid.getStorageService().getCachedInventory().getMap();
-                        if (keyMap.isEmpty()) return;
+                KeyCounter stored = null;
+                for (var stock : machine.keyArray) {
+                    if (stored == null) {
+                        stored = grid.getStorageService().getCachedInventory();
+                        if (stored.isEmpty()) return;
                     }
-                    var amount = keyMap.getAmount(stock);
+                    var amount = stored.get(stock);
                     if (amount < 1) continue;
-                    if (specialConverter) {
-                        if (stock instanceof AEItemKey i) {
-                            type.convertItem(i.getReadOnlyStack(), amount, map);
-                        } else if (stock instanceof AEFluidKey f) {
-                            type.convertFluid(f.getReadOnlyStack(), amount, map);
-                        }
-                    } else {
-                        ((IIngredientConvertible) stock).gtolib$convert(amount, map);
-                    }
+                    type.convertKey(stock, amount, map);
                 }
             }
+        }
+    }
+
+    private static final class Undo {
+
+        private AEKey[] keys = NO_KEYS;
+        private long[] amounts = new long[0];
+        private int size;
+
+        private void add(AEKey key, long amount) {
+            if (size == keys.length) {
+                int n = Math.max(4, size << 1);
+                keys = Arrays.copyOf(keys, n);
+                amounts = Arrays.copyOf(amounts, n);
+            }
+            keys[size] = key;
+            amounts[size] = amount;
+            size++;
+        }
+
+        private void revert(MEStorage ae, IActionSource source) {
+            for (int i = 0; i < size; i++) {
+                ae.insert(keys[i], amounts[i], Actionable.MODULATE, source);
+                keys[i] = null;
+            }
+            size = 0;
         }
     }
 }

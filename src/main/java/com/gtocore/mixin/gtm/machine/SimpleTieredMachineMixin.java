@@ -11,11 +11,13 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 
 import net.minecraft.nbt.CompoundTag;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
@@ -55,15 +57,15 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     }
 
     @Inject(method = "createCircuitItemHandler", at = @At("HEAD"), remap = false, cancellable = true)
-    private void createCircuitItemHandler(Object[] args, CallbackInfoReturnable<NotifiableItemStackHandler> cir) {
+    private void createCircuitItemHandler(Object[] args, CallbackInfoReturnable<NotifiableInventory<AEItemKey>> cir) {
         cir.setReturnValue(new ProgrammableHatchPartMachine.ProgrammableCircuitHandler(this));
     }
 
     @Override
-    protected @NotNull NotifiableItemStackHandler createImportItemHandler(Object @NotNull... args) {
-        var handler = new NotifiableItemStackHandler(this, getRecipeType().getMaxInputs(ItemRecipeInfo.INSTANCE), IO.IN)
-                .setFilter(i -> !ProgrammableHatchPartMachine.isConfiguredVirtualProvider(i));
-        if (handler.storage.size == 0) handler.setAvailable(false);
+    protected @NotNull NotifiableInventory<AEItemKey> createImportItemHandler(Object @NotNull... args) {
+        var handler = NotifiableInventory.items(this, getRecipeType().getMaxInputs(ItemRecipeInfo.INSTANCE), IO.IN)
+                .setFilter(k -> !(k instanceof AEItemKey itemKey && ProgrammableHatchPartMachine.isConfiguredVirtualProvider(itemKey.getReadOnlyStack())));
+        if (handler.storage.size() == 0) handler.setAvailable(false);
         return handler;
     }
 

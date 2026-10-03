@@ -24,6 +24,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.hepdd.gtmthings.utils.TeamUtil;
@@ -51,7 +52,9 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
         data.dataCrystal = ItemStack.EMPTY;
         data.item = ItemStack.EMPTY;
         data.team = team;
-        u.forEachItems(false, (stack, amount) -> {
+        u.forEachKey(AEKeyType.items(), false, (key, amount) -> {
+            if (!(key instanceof AEItemKey itemKey)) return false;
+            var stack = itemKey.getReadOnlyStack();
             var item = stack.getItem();
             var isMold = item instanceof DataCrystalItem;
             if (isMold && data.dataCrystal.isEmpty()) {
@@ -69,9 +72,9 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
             return false;
         });
         if (data.fluidStack.isEmpty()) {
-            u.forEachFluids(false, (stack, amount) -> {
-                if (data.fluidStack.isEmpty() && amount >= 1000) {
-                    data.fluidStack = stack;
+            u.forEachKey(AEKeyType.fluids(), false, (key, amount) -> {
+                if (data.fluidStack.isEmpty() && amount >= 1000 && key instanceof AEFluidKey fluidKey) {
+                    data.fluidStack = fluidKey.getReadOnlyStack();
                 }
                 if (data.found()) {
                     var recipe = data.buildRecipe();
@@ -88,8 +91,11 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
 
     @Override
     public void afterWorking() {
-        forEachItems(true, (stack, amount) -> {
-            CompoundTag tag = stack.getTag();
+        ObjHolder<AEItemKey> unlocked = new ObjHolder<>();
+        long[] unlockedAmount = new long[1];
+        forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            if (!(key instanceof AEItemKey itemKey)) return false;
+            CompoundTag tag = itemKey.getTag();
             if (tag != null) {
                 String planet = tag.getString("planet");
                 if (!planet.isEmpty()) {
@@ -98,12 +104,14 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                     if (PlanetManagement.isUnlocked(uuid, dim)) return false;
                     PlanetManagement.unlock(uuid, dim);
                     ExResearchManager.triggerPlanetaryResearch(uuid, dim);
-                    stack.setCount(0);
+                    unlocked.value = itemKey;
+                    unlockedAmount[0] = amount;
                     return true;
                 }
             }
             return false;
         });
+        if (unlocked.value != null) inputItem(unlocked.value, unlockedAmount[0]);
         super.afterWorking();
     }
 

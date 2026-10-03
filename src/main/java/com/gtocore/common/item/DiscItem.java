@@ -9,7 +9,7 @@ import com.gtolib.utils.FluidUtils;
 import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RLUtils;
 
-import com.gregtechceu.gtceu.core.mixins.StrictNBTIngredientAccessor;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
@@ -19,12 +19,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -43,29 +44,26 @@ public final class DiscItem extends Item implements IPlaceholder<Object, ItemSta
 
     private static final Object2IntOpenHashMap<String> NBTS = new O2IOpenCacheHashMap<>();
 
-    public static final IngredientConverter<Ingredient> INGREDIENT_CONVERTER = (ingredient, amount, map) -> {
-        if (ingredient instanceof StrictNBTIngredientAccessor nbtIngredient) {
-            var nbt = nbtIngredient.getStack().getTag();
-            if (nbt != null && nbtIngredient.getStack().getItem() == DATA_DISC) {
-                if (nbt.tags.get("n") instanceof StringTag stringTag) {
-                    var in = NBTS.getInt(stringTag.getAsString());
-                    map.add(in, amount);
-                    return;
-                }
+    public static final IngredientConverter<KeyIngredient> INGREDIENT_CONVERTER = (ingredient, amount, map) -> {
+        if (ingredient.kind == KeyIngredient.EXACT && ingredient.key() instanceof AEItemKey itemKey && itemKey.getItem() == DATA_DISC) {
+            var nbt = itemKey.getTag();
+            if (nbt != null && nbt.tags.get("n") instanceof StringTag stringTag) {
+                map.add(NBTS.getInt(stringTag.getAsString()), amount);
+                return;
             }
         }
         MapIngredient.INGREDIENT_CONVERTER.convert(ingredient, amount, map);
     };
 
-    public static final IngredientConverter<ItemStack> ITEM_CONVERTER = (stack, amount, map) -> {
-        var nbt = stack.getTag();
-        if (nbt != null && stack.getItem() == DATA_DISC) {
-            if (nbt.tags.get("n") instanceof StringTag stringTag) {
+    public static final IngredientConverter<AEItemKey> ITEM_CONVERTER = (itemKey, amount, map) -> {
+        if (itemKey.getItem() == DATA_DISC) {
+            var nbt = itemKey.getTag();
+            if (nbt != null && nbt.tags.get("n") instanceof StringTag stringTag) {
                 map.add(NBTS.getInt(stringTag.getAsString()), amount);
                 return;
             }
         }
-        MapIngredient.ITEM_CONVERTER.convert(stack, amount, map);
+        MapIngredient.ITEM_CONVERTER.convert(itemKey, amount, map);
     };
 
     public DiscItem(Properties properties) {

@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -53,7 +53,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class WindMillTurbineMachine extends TieredEnergyMachine implements IMachineLife, IFancyUIMachine {
 
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableStackInventory inventory;
     @Getter
     @SaveToDisk(defaultValue = "0")
     @SyncToClient
@@ -88,9 +88,9 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
         return GTORules.WIND_MILL_AMPERAGE.get();
     }
 
-    private NotifiableItemStackHandler createMachineStorage() {
-        var storage = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH);
-        storage.setFilter(i -> i.getItem() instanceof KineticRotorItem);
+    private NotifiableStackInventory createMachineStorage() {
+        var storage = new NotifiableStackInventory(this, 1, IO.NONE, IO.BOTH);
+        storage.storage.setFilter(i -> i.getItem() instanceof KineticRotorItem);
         storage.addChangedListener(this::requestSync);
         return storage;
     }

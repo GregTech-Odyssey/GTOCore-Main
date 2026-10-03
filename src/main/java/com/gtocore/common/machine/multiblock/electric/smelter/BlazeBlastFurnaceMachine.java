@@ -11,20 +11,20 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
-import net.minecraftforge.fluids.FluidStack;
+import net.minecraft.world.level.material.Fluid;
 
 import org.jetbrains.annotations.NotNull;
 
 public final class BlazeBlastFurnaceMachine extends CoilCustomParallelMultiblockMachine {
 
-    private static final FluidStack BLAZE = GTMaterials.Blaze.getFluid(1);
+    private static final Fluid BLAZE = GTMaterials.Blaze.getFluid();
 
     public BlazeBlastFurnaceMachine(MetaMachineBlockEntity holder) {
         super(holder, true, true, m -> 64);
     }
 
     private boolean inputFluid(RecipeHandlerUnit unit) {
-        if (inputFluid(unit, BLAZE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
+        if (inputFluid(unit, BLAZE, (1L << Math.max(0, getTier() - 2)) * 10L)) {
             return true;
         }
         IdleReason.BLAZE_SHORT.setReason(this, (1L << Math.max(0, getTier() - 2)) * 10L, -1);

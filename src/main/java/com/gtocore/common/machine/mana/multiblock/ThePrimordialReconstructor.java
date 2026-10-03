@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
@@ -23,6 +24,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.util.holder.IntHolder;
 import com.gto.datasynclib.util.holder.LongHolder;
@@ -114,7 +118,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         RecipeBuilder disassembleRecipeBuilder = getRecipeBuilder();
         List<ItemStack> inputsItems = new ArrayList<>();
         List<ItemStack> outputsItems = new ArrayList<>();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             if (hasApotheosisData(stack) || hasEquipmentEnchantments(stack)) {
                 if (disassembleEquipment(stack, inputsItems, outputsItems)) {
                     inputsItems.add(stack);
@@ -350,8 +355,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         ObjHolder<Item> essence = new ObjHolder<>();
         LongHolder count = new LongHolder();
 
-        unit.forEachItems(true, (stack, amount) -> {
-            Item stackItem = stack.getItem();
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            Item stackItem = ((AEItemKey) key).getItem();
             if (essence.value == null) {
                 var enchantment = ENCHANTMENT_ITEM_MAP.get(stackItem);
                 if (enchantment != null)
@@ -383,7 +388,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         RecipeBuilder mergeRecipeBuilder = getRecipeBuilder();
         List<EnchantmentLevel> allEnchantments = new ArrayList<>();
         IntHolder totalBooks = new IntHolder(0);
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             if (stack.is(Items.ENCHANTED_BOOK)) {
                 Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(stack);
                 if (!enchantments.isEmpty()) {
@@ -482,8 +488,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         RecipeBuilder affixCanvasLoadRecipeBuilder = getRecipeBuilder();
 
         Set<Item> uniqueItems = new ReferenceOpenHashSet<>();
-        unit.forEachItems(true, (stack, amount) -> {
-            Item stackItem = stack.getItem();
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            Item stackItem = ((AEItemKey) key).getItem();
             var affix = AFFIX_ITEM_MAP.get(stackItem);
             if (affix != null) uniqueItems.add(stackItem);
             return false;
@@ -514,7 +520,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         RecipeBuilder gemSynthesisRecipeBuilder = getRecipeBuilder();
 
         Object2IntOpenHashMap<GemKey> gemCounts = new O2IOpenCacheHashMap<>();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             if (stack.getItem() == Adventure.Items.GEM.get()) {
                 GemInstance gem = GemInstance.unsocketed(stack);
                 if (gem.isValidUnsocketed()) {
@@ -567,7 +574,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         List<ItemStack> inputsItems = new ArrayList<>();
         LongHolder totalDustCount = new LongHolder(0);
 
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             if (stack.getItem() == Adventure.Items.GEM.get()) {
                 int stackDust = stack.getCount() * RARITY_TO_DUST_COUNT.getOrDefault(getRarityId(getGemRarity(stack)), 1);
                 inputsItems.add(stack);
@@ -597,7 +605,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
 
         ObjHolder<ItemStack> enchantedBook = new ObjHolder<>();
         ObjHolder<ItemStack> nonEnchantedItem = new ObjHolder<>();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             Item stackItem = stack.getItem();
             if (stackItem == GTItems.PROGRAMMED_CIRCUIT.asItem()) return false;
             if (enchantedBook.value == null && stack.is(Items.ENCHANTED_BOOK)) {
@@ -657,7 +666,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
 
         ObjHolder<ItemStack> affixCanvas = new ObjHolder<>();
         ObjHolder<ItemStack> nonAffixItem = new ObjHolder<>();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             Item stackItem = stack.getItem();
             if (stackItem == GTItems.PROGRAMMED_CIRCUIT.asItem()) return false;
             if (affixCanvas.value == null && stackItem == GTOItems.AFFIX_CANVAS.asItem()) {
@@ -711,7 +721,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
 
         ObjHolder<ItemStack> rarityUpItem = new ObjHolder<>();
         ObjHolder<ItemStack> materialItem = new ObjHolder<>();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             Item stackItem = stack.getItem();
             if (stackItem == GTItems.PROGRAMMED_CIRCUIT.asItem() || stackItem == Adventure.Items.SIGIL_OF_REBIRTH.get())
                 return false;
@@ -754,7 +765,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
 
         ObjHolder<ItemStack> addSocketItem = new ObjHolder<>();
         IntHolder sigilCount = new IntHolder();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             Item stackItem = stack.getItem();
             if (stackItem == GTItems.PROGRAMMED_CIRCUIT.asItem()) return false;
             if (stackItem == Adventure.Items.SIGIL_OF_SOCKETING.get()) {
@@ -795,7 +807,8 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
 
         ObjHolder<ItemStack> addGemItem = new ObjHolder<>();
         List<ItemStack> gemItems = new ArrayList<>();
-        unit.forEachItems(true, (stack, amount) -> {
+        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, amount);
             Item stackItem = stack.getItem();
             if (stackItem == GTItems.PROGRAMMED_CIRCUIT.asItem()) return false;
             if (addGemItem.value == null && stackItem != Adventure.Items.GEM.get())

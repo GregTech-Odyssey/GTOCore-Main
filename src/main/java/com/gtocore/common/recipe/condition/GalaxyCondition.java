@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.recipe.condition.DimensionCondition;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -19,6 +18,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.items.ItemStackHandler;
 
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -54,7 +54,7 @@ public class GalaxyCondition extends DimensionCondition {
     public Widget createDimensionSlot() {
         if (getDimensions().length == 0) return super.createDimensionSlot();
         Supplier<DimensionMarker> dimSupplier = () -> getDimensions()[Math.toIntExact((System.currentTimeMillis() / 1000) % getDimensions().length)];
-        CustomItemStackHandler handler = new CustomItemStackHandler(1);
+        ItemStackHandler handler = new ItemStackHandler(1);
         var slot = new ItemSlot(handler, 0, false, false) {
 
             @Override

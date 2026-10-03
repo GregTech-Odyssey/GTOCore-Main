@@ -15,10 +15,6 @@ import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.gui.widget.TankWidget;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.integration.xei.entry.fluid.FluidEntryList;
@@ -26,7 +22,11 @@ import com.gregtechceu.gtceu.integration.xei.entry.fluid.FluidStackList;
 import com.gregtechceu.gtceu.integration.xei.entry.item.ItemEntryList;
 import com.gregtechceu.gtceu.integration.xei.entry.item.ItemStackList;
 import com.gregtechceu.gtceu.integration.xei.handlers.fluid.CycleFluidEntryHandler;
+import com.gregtechceu.gtceu.integration.xei.handlers.fluid.CycleFluidStackHandler;
 import com.gregtechceu.gtceu.integration.xei.handlers.item.CycleItemEntryHandler;
+import com.gregtechceu.gtceu.integration.xei.handlers.item.CycleItemStackHandler;
+import com.gregtechceu.gtceu.integration.xei.widgets.GTOreByProduct;
+import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.client.Minecraft;
@@ -60,7 +60,7 @@ final class OreByProductWrapper {
     private static final ImmutableList<ItemStack> ALWAYS_MACHINES = ImmutableList.of(
             // GTMachines.MACERATOR[GTValues.LV].asStack(),
             MultiBlockC.STEAM_CRUSHER.asStack(), GTMachines.MACERATOR[GTValues.LV].asStack(), GTMachines.CENTRIFUGE[GTValues.LV].asStack(), GTMachines.ORE_WASHER[GTValues.LV].asStack(), GTMachines.THERMAL_CENTRIFUGE[GTValues.LV].asStack(), GTMachines.MACERATOR[GTValues.LV].asStack(), GTMachines.MACERATOR[GTValues.LV].asStack(), GTMachines.CENTRIFUGE[GTValues.LV].asStack());
-    private final Int2ObjectMap<Content<ItemIngredient>> chances = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<GTOreByProduct.Chance> chances = new Int2ObjectOpenHashMap<>();
     @Getter
     private final List<ItemEntryList> itemInputs = new ArrayList<>();
     @Getter
@@ -258,15 +258,15 @@ final class OreByProductWrapper {
 
     public void getTooltip(int slotIndex, List<Component> tooltips) {
         if (chances.containsKey(slotIndex)) {
-            Content<ItemIngredient> entry = chances.get(slotIndex);
-            float chance = 100 * (float) entry.chance / ContentBuilder.maxChance;
-            float boost = entry.tierChanceBoost / 100.0F;
+            GTOreByProduct.Chance entry = chances.get(slotIndex);
+            float chance = 100 * (float) entry.chance() / ContentBuilder.maxChance;
+            float boost = entry.boost() / 100.0F;
             tooltips.add(FormattingUtil.formatPercentage2Places("gtceu.gui.content.chance_base", chance));
             tooltips.add(FormattingUtil.formatPercentage2Places("gtceu.gui.content.chance_tier_boost_plus", boost));
         }
     }
 
-    public Content<ItemIngredient> getChance(int slot) {
+    public GTOreByProduct.Chance getChance(int slot) {
         return chances.get(slot);
     }
 
@@ -312,7 +312,7 @@ final class OreByProductWrapper {
     private void addChance(int base, int tier) {
         // this is solely for the chance overlay and tooltip, neither of which care
         // about the ItemStack
-        chances.put(currentSlot - 1, new Content<>(ItemIngredient.EMPTY, base, tier));
+        chances.put(currentSlot - 1, new GTOreByProduct.Chance(base, tier));
     }
 
     // make the code less :weary:
@@ -418,15 +418,17 @@ class OreByProductWidget extends WidgetGroup {
             itemStackGroup.addWidget(new SlotWidget(itemInputsHandler, i / 2, ITEM_INPUT_LOCATIONS.get(i), ITEM_INPUT_LOCATIONS.get(i + 1)).setCanTakeItems(false).setCanPutItems(false).setIngredientIO(IngredientIO.INPUT).setOnAddedTooltips((slot, tooltips) -> recipeWrapper.getTooltip(finalI / 2, tooltips)).setBackground((IGuiTexture) null));
         }
         NonNullList<ItemStack> itemOutputs = recipeWrapper.getItemOutputs();
-        CustomItemStackHandler itemOutputsHandler = new CustomItemStackHandler(itemOutputs);
+        List<List<ItemStack>> outputLists = new ArrayList<>(itemOutputs.size());
+        for (var stack : itemOutputs) outputLists.add(List.of(stack));
+        CycleItemStackHandler itemOutputsHandler = new CycleItemStackHandler(outputLists);
         for (int i = 0; i < ITEM_OUTPUT_LOCATIONS.size(); i += 2) {
             int slotIndex = i / 2;
             float xeiChance = 1.0F;
-            Content<ItemIngredient> chance = recipeWrapper.getChance(i / 2 + itemInputs.size());
+            GTOreByProduct.Chance chance = recipeWrapper.getChance(i / 2 + itemInputs.size());
             IGuiTexture overlay = null;
             if (chance != null) {
-                xeiChance = (float) chance.chance / ContentBuilder.maxChance;
-                overlay = chance.createOverlay(false, 0, 0, null);
+                xeiChance = (float) chance.chance() / ContentBuilder.maxChance;
+                overlay = GTRecipeWidget.contentOverlay(chance.chance(), chance.boost(), -1, 0, 0, null);
             }
             if (itemOutputs.get(slotIndex).isEmpty()) {
                 itemOutputExists.add(false);
@@ -441,7 +443,7 @@ class OreByProductWidget extends WidgetGroup {
         for (int i = 0; i < FLUID_LOCATIONS.size(); i += 2) {
             int slotIndex = i / 2;
             if (!fluidInputs.get(slotIndex).isEmpty()) {
-                var tank = new TankWidget(new CustomFluidTank(fluidInputsHandler.getFluidInTank(slotIndex)), FLUID_LOCATIONS.get(i), FLUID_LOCATIONS.get(i + 1), false, false).setIngredientIO(IngredientIO.INPUT).setBackground(GuiTextures.FLUID_SLOT).setShowAmount(false);
+                var tank = new TankWidget(new CycleFluidStackHandler(List.of(List.of(fluidInputsHandler.getFluidInTank(slotIndex)))), FLUID_LOCATIONS.get(i), FLUID_LOCATIONS.get(i + 1), false, false).setIngredientIO(IngredientIO.INPUT).setBackground(GuiTextures.FLUID_SLOT).setShowAmount(false);
                 fluidStackGroup.addWidget(tank);
             }
         }

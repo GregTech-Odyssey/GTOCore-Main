@@ -9,12 +9,15 @@ import com.gtolib.utils.ItemUtils;
 
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeBuilder;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
@@ -53,11 +56,10 @@ public final class GenerateDisassembly {
             GTOCore.LOGGER.error("配方{}没有输出", recipeBuilder.getId());
             return;
         }
-        var outIng = c.getFirst().inner;
-        var output = outIng.getItem();
-        if (output.isEmpty()) return;
-        var item = output.getItem();
-        var amount = outIng.getAmount();
+        var outIng = c.ingredient(0);
+        if (outIng.kind != KeyIngredient.BASE || !(outIng.key() instanceof AEItemKey outKey)) return;
+        var item = outKey.getItem();
+        var amount = Keys.saturatedInt(c.amount(0));
         if (recipeBuilder.getRecipeType() == LASER_WELDER_RECIPES && !(item instanceof MetaMachineItem)) {
             return;
         }
@@ -78,37 +80,43 @@ public final class GenerateDisassembly {
         boolean hasOutput = false;
         var itemList = recipeBuilder.getItemInputs();
         var fluidList = recipeBuilder.getFluidInputs();
-        for (var content : itemList) {
-            if (content.chance == Content.MAX_CHANCE) {
-                var input = content.inner;
-                Ingredient inner = input.inner;
+        for (int i = 0, n = itemList.size(); i < n; i++) {
+            if (itemList.chance(i) != ContentList.MAX_CHANCE) continue;
+            var input = itemList.ingredient(i);
+            long count = itemList.amount(i);
+            if (input.kind == KeyIngredient.BASE) {
+                builder.outputItems(input, count);
+                hasOutput = true;
+            } else if (input.kind == KeyIngredient.TAG && input.tag() != null) {
+                Integer c1 = Tags.CIRCUITS_ARRAY.get(input.itemTagKey());
+                if (c1 != null) builder.outputItems(GTOItems.UNIVERSAL_CIRCUIT[c1].get(), Keys.saturatedInt(count));
+            } else if (input.source() != null) {
                 a:
-                for (Ingredient.Value value : inner.values) {
+                for (Ingredient.Value value : input.source().values) {
                     if (value instanceof Ingredient.ItemValue itemValue) {
                         Collection<ItemStack> stacks = itemValue.getItems();
                         if (stacks.size() == 1) {
                             for (ItemStack stack : stacks) {
                                 if (!stack.isEmpty() && !stack.hasTag()) {
-                                    builder.outputItems(input);
+                                    builder.outputItems(input, count);
                                     hasOutput = true;
                                     break a;
                                 }
                             }
                         }
                     } else if (value instanceof Ingredient.TagValue tagValue) {
-                        Integer i = Tags.CIRCUITS_ARRAY.get(tagValue.tag);
-                        if (i != null) {
-                            builder.outputItems(GTOItems.UNIVERSAL_CIRCUIT[i].get(), input.getAmount());
+                        Integer c1 = Tags.CIRCUITS_ARRAY.get(tagValue.tag);
+                        if (c1 != null) {
+                            builder.outputItems(GTOItems.UNIVERSAL_CIRCUIT[c1].get(), Keys.saturatedInt(count));
                             break;
                         }
                     }
                 }
             }
         }
-        for (var content : fluidList) {
-            FluidIngredient fluid = content.inner;
-            if (content.chance == Content.MAX_CHANCE && !fluid.isEmpty()) {
-                builder.outputFluids(fluid);
+        for (int i = 0, n = fluidList.size(); i < n; i++) {
+            if (fluidList.chance(i) == ContentList.MAX_CHANCE) {
+                builder.outputFluids(fluidList.ingredient(i), fluidList.amount(i));
                 hasOutput = true;
             }
         }

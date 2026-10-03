@@ -5,11 +5,8 @@ import com.gtocore.api.data.RocketFuels;
 import com.gtolib.api.recipe.ContentBuilder;
 
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayouts;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -22,6 +19,11 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.fluids.capability.templates.EmptyFluidHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.wrapper.EmptyHandler;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.lowdragmc.lowdraglib.gui.ingredient.IRecipeIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -67,10 +69,11 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     }
 
     private static int droneRank(GTRecipeDefinition recipe) {
-        for (var content : recipe.itemInputs) {
-            if (!(content.inner instanceof ItemIngredient ingredient)) continue;
+        var inputs = recipe.itemInputs;
+        for (int j = 0; j < inputs.size(); j++) {
+            var ingredient = inputs.ingredient(j);
             for (int i = 0; i < RocketFuels.drones.length; i++) {
-                if (ingredient.testItem(RocketFuels.drones[i])) return i;
+                if (ingredient.test(AEItemKey.of(RocketFuels.drones[i]))) return i;
             }
         }
         return Integer.MAX_VALUE;
@@ -178,18 +181,18 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     }
 
     private void initRecipeOutputs() {
-        recipe.itemOutputs.forEach(content -> {
-            if (content.inner instanceof ItemIngredient ingredient) {
-                float chance = (float) content.chance / ContentBuilder.maxChance;
-                outputs.add((EmiStack) getEmiIngredient(ingredient, false).setChance(chance));
-            }
-        });
-        recipe.fluidOutputs.forEach(content -> {
-            if (content.inner instanceof FluidIngredient ingredient && ingredient.getFluid() != null) {
-                float chance = (float) content.chance / ContentBuilder.maxChance;
-                outputs.add(EmiStack.of(ingredient.getFluid(), ingredient.nbt, ingredient.amount).setChance(chance));
-            }
-        });
+        var itemOutputs = recipe.itemOutputs;
+        for (int i = 0; i < itemOutputs.size(); i++) {
+            var stack = getEmiStack(itemOutputs.ingredient(i), itemOutputs.amount(i));
+            if (stack.isEmpty()) continue;
+            outputs.add(stack.setChance((float) itemOutputs.chance(i) / ContentBuilder.maxChance));
+        }
+        var fluidOutputs = recipe.fluidOutputs;
+        for (int i = 0; i < fluidOutputs.size(); i++) {
+            if (!(fluidOutputs.ingredient(i).displayKey() instanceof AEFluidKey)) continue;
+            float chance = (float) fluidOutputs.chance(i) / ContentBuilder.maxChance;
+            outputs.add(getEmiStack(fluidOutputs.ingredient(i), fluidOutputs.amount(i)).setChance(chance));
+        }
     }
 
     /** 所有方案里最大的页面尺寸：切换方案时页面大小不变。 */
@@ -367,7 +370,7 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     private static void clearIngredientSlots(GTRecipeWidget widget) {
         for (Widget child : widget.getContainedWidgets(true)) {
             if (child instanceof com.gregtechceu.gtceu.api.gui.widget.SlotWidget slot) {
-                slot.setHandlerSlot(ICustomItemStackHandler.EMPTY, 0);
+                slot.setHandlerSlot((IItemHandlerModifiable) EmptyHandler.INSTANCE, 0);
                 slot.setDrawHoverOverlay(false).setDrawHoverTips(false);
             } else if (child instanceof com.gregtechceu.gtceu.api.gui.widget.TankWidget tank) {
                 tank.setFluidTank(EmptyFluidHandler.INSTANCE);
@@ -377,19 +380,22 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     }
 
     private static EmiIngredient getDrone(GTRecipeDefinition recipe) {
-        for (var content : recipe.itemInputs) {
-            if (!(content.inner instanceof ItemIngredient ingredient)) continue;
+        var inputs = recipe.itemInputs;
+        for (int i = 0; i < inputs.size(); i++) {
+            var ingredient = inputs.ingredient(i);
             for (Item drone : RocketFuels.drones) {
-                if (ingredient.testItem(drone)) return getEmiIngredient(ingredient, true);
+                if (ingredient.test(AEItemKey.of(drone))) return getEmiIngredient(ingredient, inputs.amount(i), true);
             }
         }
         return EmiStack.EMPTY;
     }
 
     private static EmiIngredient getFuel(GTRecipeDefinition recipe) {
-        for (var content : recipe.fluidInputs) {
-            if (content.inner instanceof FluidIngredient ingredient && ingredient.getFluid() != null) {
-                return EmiStack.of(ingredient.getFluid(), ingredient.nbt, ingredient.amount);
+        var inputs = recipe.fluidInputs;
+        for (int i = 0; i < inputs.size(); i++) {
+            var ingredient = inputs.ingredient(i);
+            if (ingredient.displayKey() instanceof AEFluidKey) {
+                return getEmiStack(ingredient, inputs.amount(i));
             }
         }
         return EmiStack.EMPTY;
@@ -401,8 +407,8 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
 
     private record RecipeContentKey(Object ingredient, long amount, int chance, int tierChanceBoost) {
 
-        private static RecipeContentKey of(Content<?> content) {
-            return new RecipeContentKey(content.inner, content.amount, content.chance, content.tierChanceBoost);
+        private static RecipeContentKey of(ContentList contents, int i) {
+            return new RecipeContentKey(contents.ingredient(i), contents.amount(i), contents.chance(i), contents.boost(i));
         }
     }
 
@@ -411,8 +417,8 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
         private static RecipeOutputKey of(GTRecipeDefinition recipe) {
             var items = new ArrayList<RecipeContentKey>(recipe.itemOutputs.size());
             var fluids = new ArrayList<RecipeContentKey>(recipe.fluidOutputs.size());
-            recipe.itemOutputs.forEach(content -> items.add(RecipeContentKey.of(content)));
-            recipe.fluidOutputs.forEach(content -> fluids.add(RecipeContentKey.of(content)));
+            for (int i = 0; i < recipe.itemOutputs.size(); i++) items.add(RecipeContentKey.of(recipe.itemOutputs, i));
+            for (int i = 0; i < recipe.fluidOutputs.size(); i++) fluids.add(RecipeContentKey.of(recipe.fluidOutputs, i));
             return new RecipeOutputKey(List.copyOf(items), List.copyOf(fluids));
         }
     }

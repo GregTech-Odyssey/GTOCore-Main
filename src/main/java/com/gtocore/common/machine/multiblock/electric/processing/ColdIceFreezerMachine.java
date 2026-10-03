@@ -12,7 +12,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
-import net.minecraftforge.fluids.FluidStack;
+import net.minecraft.world.level.material.Fluid;
 
 import com.gto.datasynclib.annotations.SyncToClient;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class ColdIceFreezerMachine extends CustomParallelMultiblockMachine {
 
-    private static final FluidStack ICE = GTMaterials.Ice.getFluid(1);
+    private static final Fluid ICE = GTMaterials.Ice.getFluid();
 
     @SyncToClient(listener = "onAtomizationModuleChanged")
     private boolean atomizationModule;
@@ -46,7 +46,7 @@ public final class ColdIceFreezerMachine extends CustomParallelMultiblockMachine
     }
 
     private boolean inputFluid(@Nullable RecipeHandlerUnit unit) {
-        if (inputFluid(unit, ICE.getRawFluid(), (1L << Math.max(0, getTier() - 2)) * 10L)) {
+        if (inputFluid(unit, ICE, (1L << Math.max(0, getTier() - 2)) * 10L)) {
             return true;
         }
         IdleReason.ICE_SHORT.setReason(this, (1L << Math.max(0, getTier() - 2)) * 10L, -1);

@@ -1,5 +1,8 @@
 package com.gtocore.data.transaction.manager;
 
+import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.PortKind;
+
 import com.gtolib.api.wireless.WirelessManaContainer;
 import com.gtolib.utils.WalletUtils;
 
@@ -15,7 +18,6 @@ import net.minecraftforge.fluids.FluidStack;
 
 import com.google.common.collect.ImmutableList;
 import com.gto.fastcollection.fastutil.O2LOpenCacheHashMap;
-import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 
 import java.math.BigInteger;
@@ -108,9 +110,10 @@ public record TradeEntry(
         }
         if (inputCurrencies == 0) return 0;
 
-        int inputEnergy = inputGroup().energy().equals(BigInteger.ZERO) ? Integer.MAX_VALUE : WirelessEnergyContainer.getOrCreateContainer(data.teamUUID()).getStorage()
-                .divide(inputGroup().energy())
-                .min(BigInteger.valueOf(Integer.MAX_VALUE)).intValueExact();
+        int inputEnergy = Integer.MAX_VALUE;
+        if (inputGroup().energy().signum() > 0 || outputGroup().energy().signum() > 0) {
+            inputEnergy = energyLimit(energyPort(data, serverLevel), Math.min(Math.min(inputItem, inputFluid), Math.min(outputFluid, inputCurrencies)));
+        }
         if (inputEnergy == 0) return 0;
 
         int inputMana = inputGroup().mana().equals(BigInteger.ZERO) ? Integer.MAX_VALUE : WirelessManaContainer.getOrCreateContainer(data.teamUUID()).getStorage()
@@ -121,14 +124,47 @@ public record TradeEntry(
         return Math.min(Math.min(Math.min(inputItem, inputFluid), Math.min(outputFluid, inputCurrencies)), Math.min(inputEnergy, inputMana));
     }
 
+    private static EnergyPort energyPort(TradeData data, ServerLevel level) {
+        return EnergyPort.forTeam(PortKind.TRADE, data.teamUUID(), level);
+    }
+
+    private int energyLimit(EnergyPort port, int upper) {
+        int low = 0, high = Math.max(0, upper);
+        while (low < high) {
+            int mid = low + (high - low + 1) / 2;
+            if (energyFits(port, mid)) low = mid;
+            else high = mid - 1;
+        }
+        return low;
+    }
+
+    private boolean energyFits(EnergyPort port, int multiplier) {
+        var k = BigInteger.valueOf(multiplier);
+        if (inputGroup().energy().signum() > 0 && !port.checkSettle(inputGroup().energy().multiply(k), 0, 0).ok()) return false;
+        return outputGroup().energy().signum() <= 0 || port.canDepositLump(outputGroup().energy().multiply(k), 0);
+    }
+
+    private boolean settleEnergy(EnergyPort port, int multiplier) {
+        var k = BigInteger.valueOf(multiplier);
+        boolean paid = inputGroup().energy().signum() > 0;
+        if (paid && !port.settle(inputGroup().energy().multiply(k), 0, 0).ok()) return false;
+        if (outputGroup().energy().signum() > 0 && !port.depositLump(outputGroup().energy().multiply(k), 0)) {
+            if (paid) port.refund();
+            return false;
+        }
+        return true;
+    }
+
     /**
      * 按实际交易次数扣除输入并发放输出。
      *
      * @param data       当前交易所使用的玩家、库存和世界数据
      * @param multiplier 已通过检查的实际交易次数
+     * @return 电网结算失败时返回 {@code false}，此时没有任何资源被改动
      */
-    private void executeInputOutput(TradeData data, int multiplier) {
-        if (!(data.level() instanceof ServerLevel serverLevel)) return;
+    private boolean executeInputOutput(TradeData data, int multiplier) {
+        if (!(data.level() instanceof ServerLevel serverLevel)) return false;
+        if (!settleEnergy(energyPort(data, serverLevel), multiplier)) return false;
 
         if (!inputGroup().items().isEmpty()) {
             deductMultipliedItems(data.inputItem(), inputGroup().items(), multiplier);
@@ -148,14 +184,6 @@ public record TradeEntry(
         if (!outputGroup().currencies().isEmpty()) {
             outputGroup().currencies().forEach((currencyId, singleAmount) -> WalletUtils.addCurrency(data.uuid(), serverLevel, currencyId, singleAmount * multiplier));
         }
-        if (!inputGroup().energy().equals(BigInteger.ZERO)) {
-            WirelessEnergyContainer energyContainer = WirelessEnergyContainer.getOrCreateContainer(data.teamUUID());
-            energyContainer.setStorage(energyContainer.getStorage().subtract(inputGroup().energy().multiply(BigInteger.valueOf(multiplier))));
-        }
-        if (!outputGroup().energy().equals(BigInteger.ZERO)) {
-            WirelessEnergyContainer energyContainer = WirelessEnergyContainer.getOrCreateContainer(data.teamUUID());
-            energyContainer.setStorage(energyContainer.getStorage().add(outputGroup().energy().multiply(BigInteger.valueOf(multiplier))));
-        }
         if (!inputGroup().mana().equals(BigInteger.ZERO)) {
             WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(data.teamUUID());
             manaContainer.setStorage(manaContainer.getStorage().subtract(inputGroup().mana().multiply(BigInteger.valueOf(multiplier))));
@@ -164,6 +192,7 @@ public record TradeEntry(
             WirelessManaContainer manaContainer = WirelessManaContainer.getOrCreateContainer(data.teamUUID());
             manaContainer.setStorage(manaContainer.getStorage().add(outputGroup().mana().multiply(BigInteger.valueOf(multiplier))));
         }
+        return true;
     }
 
     /**
@@ -189,11 +218,10 @@ public record TradeEntry(
     public void executeTrade(TradeData data, int requestedMultiplier) {
         if (!(data.level() instanceof ServerLevel)) return;
         int finalMultiplier = Math.min(check(data), requestedMultiplier);
-        if (finalMultiplier <= 0) {
+        if (finalMultiplier <= 0 || !executeInputOutput(data, finalMultiplier)) {
             data.level().playSound(null, data.pos(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.8F, 1.4F);
             return;
         }
-        executeInputOutput(data, finalMultiplier);
         if (onExecute != null) {
             onExecute.run(data, this, finalMultiplier);
         }

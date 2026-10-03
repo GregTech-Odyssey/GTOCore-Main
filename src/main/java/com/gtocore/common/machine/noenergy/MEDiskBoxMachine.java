@@ -14,7 +14,7 @@ import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
@@ -83,7 +83,7 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     /// 组件槽（1 格，最多 {@link #COMPONENT_LIMIT} 个存储组件）
     @SaveToDisk
-    private final NotifiableItemStackHandler componentStorage;
+    private final NotifiableStackInventory componentStorage;
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
     /// 机器模式下的数据索引；玩家模式用玩家的 UUID
@@ -114,7 +114,7 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     /// 组件槽就是 {@link IStorageMultiblock} 的机器存储槽
     @Override
-    public NotifiableItemStackHandler getMachineStorage() {
+    public NotifiableStackInventory getMachineStorage() {
         return componentStorage;
     }
 
@@ -152,8 +152,9 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     private void refreshCapacity() {
         long total = 0;
-        for (int i = 0, slots = componentStorage.getSlots(); i < slots; i++) {
-            var stack = componentStorage.getStackInSlot(i);
+        var storage = componentStorage.storage;
+        for (int i = 0, slots = storage.getSlots(); i < slots; i++) {
+            var stack = storage.getStackInSlot(i);
             long term = componentBytes(stack);
             if (term < 1) continue;
             total = term > Long.MAX_VALUE / stack.getCount() ? Long.MAX_VALUE : total + term * stack.getCount();
@@ -346,7 +347,7 @@ public final class MEDiskBoxMachine extends MetaMachine
             textList.add(Component.translatable(NO_COMPONENTS).withStyle(ChatFormatting.GRAY));
         }
         textList.add(Component.translatable(COMPONENTS,
-                FormattingUtil.formatNumbers(componentStorage.getStackInSlot(0).getCount()),
+                FormattingUtil.formatNumbers(componentStorage.storage.getStackInSlot(0).getCount()),
                 NumberUtils.formatDouble(capacity)).withStyle(ChatFormatting.GRAY));
         // 数据索引还没建（机器模式还没存过东西）时按已用 0 算，用量与种类这一行照样显示
         var map = data == CellDataStorage.EMPTY ? null : data.getStoredMap();

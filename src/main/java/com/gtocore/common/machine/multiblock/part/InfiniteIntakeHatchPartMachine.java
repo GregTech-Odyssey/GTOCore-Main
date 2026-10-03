@@ -5,11 +5,11 @@ import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeBuilder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.common.recipe.condition.DimensionCondition;
 import com.gregtechceu.gtceu.utils.TaskHandler;
@@ -28,8 +28,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -48,7 +49,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::intake);
     @SaveToDisk
-    private final NotifiableFluidTank tank;
+    private final NotifiableInventory<AEFluidKey> tank;
 
     @SyncToClient(scheduleUpdate = true)
     private boolean isWorking;
@@ -57,7 +58,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
 
     public InfiniteIntakeHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.ULV, IO.IN);
-        this.tank = new NotifiableFluidTank(this, 1, 256000, IO.IN, IO.NONE);
+        this.tank = NotifiableInventory.fluids(this, 1, 256000, IO.IN, IO.NONE);
         tank.addChangedListener(this::updateTankSubscription);
     }
 
@@ -66,8 +67,8 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
             if (condition instanceof DimensionCondition dimensionCondition) {
                 var dim = dimensionCondition.dimension;
                 var fluids = recipeBuilder.getFluidOutputs();
-                if (!fluids.isEmpty()) {
-                    AIR_MAP.put(dim, fluids.getFirst().inner.getFluid());
+                if (fluids.size() > 0 && fluids.ingredient(0).outputKey() instanceof AEFluidKey key) {
+                    AIR_MAP.put(dim, key.getFluid());
                     break;
                 }
             }
@@ -76,7 +77,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
 
     @Override
     @Nullable
-    public ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 
@@ -152,7 +153,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
             unsubscribe();
             return;
         }
-        if (tank.fillInternal(new FluidStack(fluid, 8000), IFluidHandler.FluidAction.EXECUTE) == 0) {
+        if (tank.storage.insert(AEFluidKey.of(fluid), 8000, false) == 0) {
             unsubscribe();
         } else {
             updateTankSubscription();

@@ -19,7 +19,6 @@ public class GTOTickTimeMonitors {
     public final TickTimeMonitor.Entry THREAD_RECIPE_LOGIC = create("thread_recipe_logic", "多线程配方逻辑", RecipeLogic.SEARCH_MAX_INTERVAL);
 
     public final TickTimeMonitor.Entry HEAT_CONDUCTION = create("heat_conduction", "热传导");
-    public final TickTimeMonitor.Entry WIRELESS_ENERGY = create("wireless_energy", "无线能量抽取");
     // 物品 / 流体分开两个 entry：MEDualOutputPartMachine 同一个方块实体上两个 trait 都要监控，
     // 共用一个 entry 的话后注册的会拿到前一个的监控器（task 是前一个的，自己那份永远不跑）。
     public final TickTimeMonitor.Entry ME_OUTPUT_ITEM = create("me_output_item", "ME 物品输出");

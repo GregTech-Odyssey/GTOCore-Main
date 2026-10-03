@@ -1,12 +1,19 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.api.transfer.fluid.LockableIFluidHandler;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyHandlerView;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,51 +25,58 @@ import org.jetbrains.annotations.Nullable;
  */
 final class MEVirtualInputState {
 
-    private final CustomItemStackHandler itemStorage;
-    private final CustomFluidTank[] fluidStorage;
-    private final CustomItemStackHandler circuitStorage;
-    private final LockableItemStackHandler[] itemUiHandlers;
-    private final LockableIFluidHandler[] fluidUiHandlers;
+    private final KeyInventory<AEItemKey> itemStorage;
+    private final KeyInventory<AEFluidKey> fluidStorage;
+    private final KeyInventory<AEItemKey> circuitStorage;
+    private final LockableItems[] itemUiHandlers;
+    private final LockableKeys<AEFluidKey>[] fluidLocks;
+    private final IFluidHandler[] fluidUiHandlers;
 
     private int virtualItemSlots;
     private int virtualFluidSlots;
     private boolean virtualCircuit;
 
-    MEVirtualInputState(CustomItemStackHandler itemStorage, CustomFluidTank[] fluidStorage,
-                        CustomItemStackHandler circuitStorage) {
+    @SuppressWarnings("unchecked")
+    MEVirtualInputState(KeyInventory<AEItemKey> itemStorage, KeyInventory<AEFluidKey> fluidStorage,
+                        KeyInventory<AEItemKey> circuitStorage) {
         this.itemStorage = itemStorage;
         this.fluidStorage = fluidStorage;
         this.circuitStorage = circuitStorage;
-        this.itemUiHandlers = new LockableItemStackHandler[itemStorage.getSlots()];
-        for (int i = 0; i < itemStorage.getSlots(); i++) {
-            this.itemUiHandlers[i] = new LockableItemStackHandler(itemStorage);
+        var menuAdapter = new MenuItemAdapter(itemStorage);
+        this.itemUiHandlers = new LockableItems[itemStorage.size()];
+        for (int i = 0; i < itemUiHandlers.length; i++) {
+            this.itemUiHandlers[i] = new LockableItems(menuAdapter);
         }
-        this.fluidUiHandlers = new LockableIFluidHandler[fluidStorage.length];
-        for (int i = 0; i < fluidStorage.length; i++) {
-            this.fluidUiHandlers[i] = new LockableIFluidHandler(fluidStorage[i]);
+        int tanks = fluidStorage.size();
+        this.fluidLocks = new LockableKeys[tanks];
+        this.fluidUiHandlers = new IFluidHandler[tanks];
+        for (int i = 0; i < tanks; i++) {
+            var lock = new LockableKeys<>(fluidStorage);
+            this.fluidLocks[i] = lock;
+            this.fluidUiHandlers[i] = new ForgeFluidAdapter(lock);
         }
     }
 
-    void setVirtualItem(int slot, @NotNull ItemStack stack) {
+    void setVirtualItem(int slot, AEItemKey key, long amount) {
         virtualItemSlots |= 1 << slot;
         itemUiHandlers[slot].setLock(true);
-        itemStorage.setStackInSlot(slot, stack);
+        itemStorage.set(slot, key, amount);
     }
 
-    void setVirtualFluid(int slot, @NotNull FluidStack fluid) {
+    void setVirtualFluid(int slot, AEFluidKey key, long amount) {
         virtualFluidSlots |= 1 << slot;
-        fluidUiHandlers[slot].setLock(true);
-        fluidStorage[slot].setFluid(fluid);
+        fluidLocks[slot].setLock(true);
+        fluidStorage.set(slot, key, amount);
     }
 
-    void setVirtualCircuit(@NotNull ItemStack circuit) {
+    void setVirtualCircuit(AEItemKey circuit) {
         virtualCircuit = true;
-        circuitStorage.setStackInSlot(0, circuit);
+        circuitStorage.set(0, circuit, 1);
     }
 
-    void setManualCircuit(@NotNull ItemStack circuit) {
+    void setManualCircuit(int configuration) {
         virtualCircuit = false;
-        circuitStorage.setStackInSlot(0, circuit);
+        Circuits.set(circuitStorage, 0, Math.min(configuration, Circuits.MAX));
     }
 
     boolean isVirtualCircuit() {
@@ -83,23 +97,23 @@ final class MEVirtualInputState {
      */
     void clearVirtualInputs() {
         int itemSlots = virtualItemSlots;
-        for (int slot = 0; slot < itemStorage.getSlots(); slot++) {
+        for (int slot = 0; slot < itemStorage.size(); slot++) {
             if ((itemSlots & (1 << slot)) != 0) {
-                itemStorage.setStackInSlot(slot, ItemStack.EMPTY);
+                itemStorage.set(slot, null, 0);
                 itemUiHandlers[slot].setLock(false);
             }
         }
 
         int fluidSlots = virtualFluidSlots;
-        for (int slot = 0; slot < fluidStorage.length; slot++) {
+        for (int slot = 0; slot < fluidStorage.size(); slot++) {
             if ((fluidSlots & (1 << slot)) != 0) {
-                fluidStorage[slot].setFluid(FluidStack.EMPTY);
-                fluidUiHandlers[slot].setLock(false);
+                fluidStorage.set(slot, null, 0);
+                fluidLocks[slot].setLock(false);
             }
         }
 
         if (virtualCircuit) {
-            circuitStorage.setStackInSlot(0, ItemStack.EMPTY);
+            circuitStorage.set(0, null, 0);
         }
 
         virtualItemSlots = 0;
@@ -112,41 +126,114 @@ final class MEVirtualInputState {
      * missing NBT entry must not leave an old virtual value behind.
      */
     void resetForDeserialize() {
-        for (int slot = 0; slot < itemStorage.getSlots(); slot++) {
-            itemStorage.setStackInSlot(slot, ItemStack.EMPTY);
-            itemUiHandlers[slot].setLock(false);
+        itemStorage.clear();
+        for (var handler : itemUiHandlers) {
+            handler.setLock(false);
         }
-        for (int slot = 0; slot < fluidStorage.length; slot++) {
-            fluidStorage[slot].setFluid(FluidStack.EMPTY);
-            fluidUiHandlers[slot].setLock(false);
+        fluidStorage.clear();
+        for (var lock : fluidLocks) {
+            lock.setLock(false);
         }
-        circuitStorage.setStackInSlot(0, ItemStack.EMPTY);
+        circuitStorage.set(0, null, 0);
         virtualItemSlots = 0;
         virtualFluidSlots = 0;
         virtualCircuit = false;
     }
 
     @Nullable
-    CustomItemStackHandler createPersistentItemStorage() {
-        CustomItemStackHandler persistent = null;
-        for (int slot = 0; slot < itemStorage.getSlots(); slot++) {
+    KeyInventory<AEItemKey> createPersistentItemStorage() {
+        KeyInventory<AEItemKey> persistent = null;
+        for (int slot = 0; slot < itemStorage.size(); slot++) {
             if (isVirtualItemSlot(slot)) continue;
-            ItemStack stack = itemStorage.getStackInSlot(slot);
-            if (stack.isEmpty()) continue;
+            var key = itemStorage.keyAt(slot);
+            if (key == null) continue;
             if (persistent == null) {
-                persistent = new CustomItemStackHandler(itemStorage.getSlots());
-                persistent.isInputLimited = itemStorage.isInputLimited;
+                persistent = KeyInventory.items(itemStorage.size());
+                persistent.setUniqueKeys(itemStorage.isUniqueKeys());
             }
-            persistent.setStackInSlot(slot, stack.copy());
+            persistent.set(slot, key, itemStorage.amountAt(slot));
         }
         return persistent;
     }
 
-    LockableItemStackHandler[] getItemUiHandlers() {
+    IItemHandlerModifiable[] getItemUiHandlers() {
         return itemUiHandlers;
     }
 
-    LockableIFluidHandler[] getFluidUiHandlers() {
+    IFluidHandler[] getFluidUiHandlers() {
         return fluidUiHandlers;
+    }
+
+    static final class LockableItems implements IItemHandlerModifiable {
+
+        private final IItemHandlerModifiable delegate;
+        private boolean lock;
+
+        LockableItems(IItemHandlerModifiable delegate) {
+            this.delegate = delegate;
+        }
+
+        LockableItems setLock(boolean lock) {
+            this.lock = lock;
+            return this;
+        }
+
+        @Override
+        public int getSlots() {
+            return delegate.getSlots();
+        }
+
+        @Override
+        public @NotNull ItemStack getStackInSlot(int slot) {
+            return delegate.getStackInSlot(slot);
+        }
+
+        @Override
+        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+            return lock ? stack : delegate.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return lock ? ItemStack.EMPTY : delegate.extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return delegate.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            return !lock && delegate.isItemValid(slot, stack);
+        }
+
+        @Override
+        public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+            if (!lock) delegate.setStackInSlot(slot, stack);
+        }
+    }
+
+    static final class LockableKeys<K extends AEKey> extends KeyHandlerView<K> {
+
+        private boolean lock;
+
+        LockableKeys(IKeyHandler<K> delegate) {
+            super(delegate);
+        }
+
+        void setLock(boolean lock) {
+            this.lock = lock;
+        }
+
+        @Override
+        protected boolean canInsert(K key) {
+            return !lock;
+        }
+
+        @Override
+        protected boolean canExtract(K key) {
+            return !lock;
+        }
     }
 }

@@ -25,8 +25,6 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.VoidFluidHandler;
 
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import lombok.Getter;
@@ -47,7 +45,7 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
 
     @NotNull
     @Getter
-    private final List<IFluidHandler> fluidOutputs = new ArrayList<>();
+    private final List<RecipeHandlerUnit> fluidOutputs = new ArrayList<>();
 
     private IHeatContainerPart heatMachineA;
     private IHeatContainerPart heatMachineB;
@@ -166,7 +164,7 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
     }
 
     private boolean layerMissing(int index) {
-        return index >= fluidOutputs.size() || fluidOutputs.get(index) instanceof VoidFluidHandler;
+        return index >= fluidOutputs.size() || fluidOutputs.get(index) == IDistillationTower.VOID_LAYER;
     }
 
     @Override

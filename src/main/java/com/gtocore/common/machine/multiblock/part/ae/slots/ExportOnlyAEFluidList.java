@@ -1,40 +1,34 @@
 package com.gtocore.common.machine.multiblock.part.ae.slots;
 
-import com.gtolib.api.recipe.RecipeType;
-import com.gtolib.api.recipe.lookup.IIngredientConvertible;
-import com.gtolib.utils.MathUtil;
-
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.handler.IFluidRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlotList;
-import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
-
-import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
-@Getter
-public class ExportOnlyAEFluidList extends NotifiableContentHandler implements IFluidRecipeHandler, ICustomFluidStackHandler, IConfigurableSlotList {
+public class ExportOnlyAEFluidList extends NotifiableContentHandler implements IRecipeHandler, IKeyHandler<AEFluidKey>, IConfigurableSlotList {
 
+    @Getter
     @SaveToDisk
     final ExportOnlyAEFluidSlot[] inventory;
+    private final long[] taken;
+    private final AEFluidKey[] takenKeys;
 
     public ExportOnlyAEFluidList(MetaMachine machine, int slots) {
         this(machine, slots, ExportOnlyAEFluidSlot::new);
@@ -43,6 +37,8 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
     ExportOnlyAEFluidList(MetaMachine machine, int slots, Supplier<ExportOnlyAEFluidSlot> slotFactory) {
         super(machine, IO.IN);
         this.inventory = new ExportOnlyAEFluidSlot[slots];
+        this.taken = new long[slots];
+        this.takenKeys = new AEFluidKey[slots];
         for (int i = 0; i < slots; i++) {
             this.inventory[i] = slotFactory.get();
             this.inventory[i].setHandler(this);
@@ -60,143 +56,165 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
         return true;
     }
 
-    @Override
-    public int getTanks() {
-        return inventory.length;
+    boolean prepare() {
+        return true;
     }
 
-    @NotNull
-    @Override
-    public FluidStack getFluidInTank(int tank) {
-        return inventory[tank].getStack();
-    }
-
-    @Override
-    public int getTankCapacity(int i) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public boolean isFluidValid(int i, @NotNull FluidStack fluidStack) {
+    boolean accepts(boolean consume) {
         return true;
     }
 
     @Override
-    public void setFluidInTank(int tank, @NotNull FluidStack fluidStack) {}
-
-    @Override
-    public int fill(FluidStack resource, FluidAction action) {
-        return 0;
-    }
-
-    @Override
-    public @NotNull FluidStack drain(FluidStack fluidStack, FluidAction fluidAction) {
-        return FluidStack.EMPTY;
-    }
-
-    @Override
-    public @NotNull FluidStack drain(int i, FluidAction fluidAction) {
-        return FluidStack.EMPTY;
-    }
-
-    @Override
-    public boolean supportsFill(int tank) {
-        return false;
-    }
-
-    @Override
-    public FluidStack drainInternal(FluidStack resource, FluidAction action) {
-        var amount = resource.getAmount();
-        if (amount < 1) return FluidStack.EMPTY;
-        var drained = 0;
-        var simulate = action.simulate();
-        for (var storage : inventory) {
-            if (storage.stock != null && storage.stock.what() instanceof AEFluidKey fluidKey && fluidKey.matches(resource)) {
-                drained += MathUtil.saturatedCast(storage.extract(amount - drained, simulate, true));
-                if (drained >= amount) break;
-            }
-        }
-        return drained > 0 ? ICustomFluidStackHandler.copy(resource, drained) : FluidStack.EMPTY;
-    }
-
-    protected boolean acceptsIngredient(Content<FluidIngredient> contentFluidIngredient) {
+    public boolean handlesFluids() {
         return true;
     }
 
     @Override
-    public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
-        if (io == IO.IN) {
-            boolean changed = false;
-            for (var it = fluids.iterator(); it.hasNext();) {
-                var ingredient = it.next();
-                if (ingredient.isEmpty()) {
-                    it.remove();
-                    continue;
-                }
-                if (!acceptsIngredient(ingredient)) {
-                    continue;
-                }
-                for (var i : inventory) {
-                    var stored = i.stock;
-                    if (stored == null) continue;
-                    long amount = stored.amount();
-                    if (amount == 0) continue;
-                    if (stored.what() instanceof AEFluidKey fluidKey && ingredient.inner.testAeKay(fluidKey)) {
-                        var drained = i.extract(ingredient.amount, simulate, false);
-                        if (drained > 0) {
-                            changed = true;
-                            ingredient.shrink(drained);
-                            if (ingredient.amount <= 0) {
-                                it.remove();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (!simulate && changed) {
-                onContentsChanged();
+    public long available(AEKeyType type, KeyIngredient ingredient) {
+        if (type != AEKeyType.fluids() || !prepare()) return 0;
+        long total = 0;
+        for (var i : inventory) {
+            if (i.config == null) continue;
+            var key = i.key();
+            if (key != null && ingredient.test(key)) {
+                long a = i.stock.amount();
+                total = total + a < 0 ? Long.MAX_VALUE : total + a;
             }
         }
-        return fluids.isEmpty();
+        return total;
     }
 
     @Override
-    public boolean forEachFluids(ObjLongPredicate<FluidStack> function) {
+    public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
+        if (type != AEKeyType.fluids() || !accepts(consume) || !prepare()) return 0;
+        long got = 0;
+        for (int s = 0; s < inventory.length && got < need; s++) {
+            var slot = inventory[s];
+            var key = slot.key();
+            if (key == null || !ingredient.test(key)) continue;
+            long free = slot.stock.amount() - reserved(plan, member, s, false);
+            if (free <= 0) continue;
+            long t = Math.min(free, need - got);
+            plan.logCustom(member, s, entry, t, type, consume, false);
+            got += t;
+        }
+        return got;
+    }
+
+    @Override
+    public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
+        if (type != AEKeyType.fluids()) return true;
+        int n = inventory.length;
+        for (int s = 0; s < n; s++) {
+            taken[s] = 0;
+            takenKeys[s] = null;
+        }
+        for (int i = 0; i < plan.logSize(); i++) {
+            if (plan.logMember(i) == member && plan.logIsFluid(i) && plan.logConsumes(i)) taken[plan.logToken(i)] += plan.logAmount(i);
+        }
+        boolean changed = false;
+        for (int s = 0; s < n; s++) {
+            long want = taken[s];
+            if (want <= 0) continue;
+            var slot = inventory[s];
+            var key = slot.key();
+            long got = key == null ? 0 : slot.extract(want, false, false);
+            takenKeys[s] = key;
+            taken[s] = got;
+            if (got < want) {
+                restore(s);
+                return false;
+            }
+            changed = true;
+        }
+        if (changed) onContentsChanged();
+        return true;
+    }
+
+    @Override
+    public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
+        if (type != AEKeyType.fluids()) return;
+        if (restore(inventory.length - 1)) onContentsChanged();
+    }
+
+    private boolean restore(int last) {
+        boolean changed = false;
+        for (int s = 0; s <= last; s++) {
+            var key = takenKeys[s];
+            long t = taken[s];
+            taken[s] = 0;
+            takenKeys[s] = null;
+            if (key != null && t > 0) {
+                inventory[s].restore(key, t);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    private static long reserved(PlanScratch plan, int member, int slot, boolean consumeOnly) {
+        long r = 0;
+        for (int i = 0; i < plan.logSize(); i++) {
+            if (plan.logMember(i) == member && plan.logToken(i) == slot && plan.logIsFluid(i) && (!consumeOnly || plan.logConsumes(i))) r += plan.logAmount(i);
+        }
+        return r;
+    }
+
+    @Override
+    public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
+        if (type != AEKeyType.fluids() || !prepare()) return false;
         for (var i : inventory) {
             if (i.config == null) continue;
-            var stock = i.stock;
-            if (stock == null || stock.amount() == 0) continue;
-            if (function.test(i.getReadOnlyStack(), stock.amount())) return true;
+            var key = i.key();
+            if (key != null && visitor.visit(key, i.stock.amount())) return true;
         }
         return false;
-    }
-
-    @Override
-    public void fastForEachFluids(ObjLongConsumer<FluidStack> function) {
-        for (var i : inventory) {
-            if (i.config == null) continue;
-            var stock = i.stock;
-            if (stock == null || stock.amount() == 0) continue;
-            function.accept(i.getReadOnlyStack(), stock.amount());
-        }
     }
 
     @Override
     public void fillSearchMap(@NotNull GTRecipeType type, @NotNull IntLongMap map) {
-        boolean specialConverter = ((RecipeType) type).specialConverter;
+        if (!prepare()) return;
         for (var i : inventory) {
             if (i.config == null) continue;
-            var stock = i.stock;
-            if (stock == null || stock.amount() == 0) continue;
-            if (stock.what() instanceof AEFluidKey fluidKey) {
-                if (specialConverter) {
-                    type.convertFluid(i.getReadOnlyStack(), stock.amount(), map);
-                } else {
-                    ((IIngredientConvertible) (Object) fluidKey).gtolib$convert(stock.amount(), map);
-                }
-            }
+            var key = i.key();
+            if (key != null) type.convertKey(key, i.stock.amount(), map);
         }
+    }
+
+    @Override
+    public AEKeyType keyType() {
+        return AEKeyType.fluids();
+    }
+
+    @Override
+    public int size() {
+        return inventory.length;
+    }
+
+    @Override
+    public @Nullable AEFluidKey keyAt(int slot) {
+        return inventory[slot].key();
+    }
+
+    @Override
+    public long amountAt(int slot) {
+        var s = inventory[slot];
+        return s.key() == null ? 0 : s.stock.amount();
+    }
+
+    @Override
+    public long slotLimit(int slot) {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
+    public long insert(int slot, AEFluidKey key, long amount, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public long extract(int slot, AEFluidKey key, long amount, boolean simulate) {
+        return 0;
     }
 
     @Override
@@ -211,6 +229,11 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     public boolean isAutoPull() {
         return false;
+    }
+
+    @Override
+    public boolean isLossyRollback() {
+        return isStocking();
     }
 
     public boolean isStocking() {

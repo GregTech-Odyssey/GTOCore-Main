@@ -1,12 +1,17 @@
 package com.gtocore.common.machine.multiblock.generator;
 
+import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.EnergyPortTrait;
+import com.gtocore.api.wireless.energy.PortKind;
+import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.common.wireless.energy.PortPriorityUI;
+import com.gtocore.common.wireless.energy.WirelessIdle;
 import com.gtocore.config.GTORules;
 import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.capability.IExtendWirelessEnergyContainerHolder;
 import com.gtolib.api.machine.feature.multiblock.IArrayMachine;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
@@ -19,6 +24,7 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
@@ -34,10 +40,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
+import com.hepdd.gtmthings.api.capability.IBindable;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -47,14 +52,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class GeneratorArrayMachine extends StorageMultiblockMachine implements IArrayMachine, IExtendWirelessEnergyContainerHolder {
+public final class GeneratorArrayMachine extends StorageMultiblockMachine implements IArrayMachine, IBindable {
 
     @RegisterLanguage(cn = "无线电网模式", en = "Wireless Network Mode")
     private static final String WIRELESS_MODE = "gtocore.machine.generator_array.wireless_mode";
     @RegisterLanguage(cn = "无线发电", en = "Wireless Output")
     private static final String WIRELESS_OUTPUT = "gtocore.machine.generator_array.wireless_output";
 
-    private WirelessEnergyContainer WirelessEnergyContainerCache;
+    @SaveToDisk
+    private final EnergyPortTrait portTrait;
+    private final EnergyPort port;
     private MachineDefinition machineDefinitionCache;
     @SaveToDisk(defaultValue = "false")
     private boolean isw;
@@ -67,6 +74,8 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
 
     public GeneratorArrayMachine(MetaMachineBlockEntity holder) {
         super(holder, GTORules.GENERATOR_ARRAY_LIMIT.get(), GeneratorArrayMachine::filter);
+        this.portTrait = new EnergyPortTrait(this, PortKind.GENERATOR_ARRAY, 0);
+        this.port = portTrait.port();
     }
 
     private static boolean filter(ItemStack itemStack) {
@@ -106,21 +115,16 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     @Override
     public boolean handleTickRecipe(GTRecipe recipe) {
         if (isw) {
-            if (eut > 0) {
-                var container = getWirelessEnergyContainer();
-                if (container != null) {
-                    int loss = container.getLoss();
-                    container.setLoss(loss + GTORules.GENERATOR_ARRAY_LOSS.get() * 10);
-                    container.addEnergy(eut, this);
-                    container.setLoss(loss);
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return super.handleTickRecipe(recipe);
+            long output = recipe.data.getLong(GTORecipeDataKeys.WIRELESS_EUT);
+            return output > 0 && port.depositAll(output, getTier());
         }
-        return true;
+        return super.handleTickRecipe(recipe);
+    }
+
+    @Override
+    public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
+        super.beforeWorking(unit, recipe);
+        eut = isw ? recipe.data.getLong(GTORecipeDataKeys.WIRELESS_EUT) : 0;
     }
 
     @Override
@@ -139,14 +143,14 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
         if (a > 0) {
             long EUt = recipe.getOutputEUt();
             if (EUt > 0) {
-                recipe.itemOutputs = Collections.emptyList();
-                recipe.fluidOutputs = Collections.emptyList();
+                recipe.itemOutputs = ContentList.EMPTY;
+                recipe.fluidOutputs = ContentList.EMPTY;
                 recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, (long) (GTORules.GENERATOR_ARRAY_MULTIPLY.get() * GTValues.V[getOverclockTier()] * a * GTOUtils.getGeneratorAmperage(getTier()) / EUt));
                 if (recipe == null) return null;
                 recipe.duration = recipe.duration * GTOUtils.getGeneratorEfficiency(recipe.definition.recipeType, getTier()) / 100;
                 if (isw) {
                     recipe.setEUt(0);
-                    eut = EUt * recipe.parallels;
+                    recipe.data.put(GTORecipeDataKeys.WIRELESS_EUT, EUt * recipe.parallels);
                 }
                 return recipe;
             }
@@ -180,9 +184,11 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
         super.addControls(controls);
         controls.addToggle(WIRELESS_MODE, () -> isw, value -> {
             isw = value;
+            if (!value) port.release();
             eut = 0;
             requestCheck();
         });
+        PortPriorityUI.addTo(controls, portTrait::getPriority, portTrait::setPriority).disabled(() -> !isw, PortPriorityUI.WIRELESS_ONLY);
     }
 
     @Override
@@ -203,7 +209,10 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
 
     @Override
     public boolean matchTickRecipe(GTRecipe recipe) {
-        return isw || super.matchTickRecipe(recipe);
+        if (!isw) return super.matchTickRecipe(recipe);
+        if (port.canDepositAll(recipe.data.getLong(GTORecipeDataKeys.WIRELESS_EUT), getTier())) return true;
+        WirelessIdle.reportDeposit(this, port, getTier());
+        return false;
     }
 
     private static class Wrapper {
@@ -213,16 +222,6 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
 
     public static double getMultiply() {
         return GTORules.GENERATOR_ARRAY_MULTIPLY.get();
-    }
-
-    @Override
-    public void setWirelessEnergyContainerCache(final WirelessEnergyContainer WirelessEnergyContainerCache) {
-        this.WirelessEnergyContainerCache = WirelessEnergyContainerCache;
-    }
-
-    @Override
-    public WirelessEnergyContainer getWirelessEnergyContainerCache() {
-        return this.WirelessEnergyContainerCache;
     }
 
     @Override

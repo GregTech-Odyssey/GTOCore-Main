@@ -1,12 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae.slots;
 
-import com.gtolib.utils.MathUtil;
-
-import com.gregtechceu.gtceu.utils.GTMath;
-
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.GenericStack;
@@ -17,9 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class ExportOnlyAEFluidSlot extends ExportOnlyAESlot implements IFluidHandler {
-
-    FluidStack forgeStock = null;
+public class ExportOnlyAEFluidSlot extends ExportOnlyAESlot {
 
     public ExportOnlyAEFluidSlot() {
         super();
@@ -33,12 +25,8 @@ public class ExportOnlyAEFluidSlot extends ExportOnlyAESlot implements IFluidHan
     public void addStack(GenericStack stack) {
         if (this.stock == null) {
             this.stock = stack;
-            this.forgeStock = null;
         } else {
             this.stock = GenericStack.sum(this.stock, stack);
-            if (this.forgeStock != null) {
-                this.forgeStock.setAmount(MathUtil.saturatedCast(this.forgeStock.getAmount() + stack.amount()));
-            }
         }
         onContentsChanged();
     }
@@ -53,48 +41,13 @@ public class ExportOnlyAEFluidSlot extends ExportOnlyAESlot implements IFluidHan
             if (stack.equals(stock)) return;
             this.stock = stack;
         }
-        this.forgeStock = null;
         onContentsChanged();
     }
 
-    public FluidStack getReadOnlyStack() {
-        if (this.stock != null && this.stock.what() instanceof AEFluidKey fluidKey) {
-            return fluidKey.getReadOnlyStack();
-        }
-        return FluidStack.EMPTY;
-    }
-
-    public FluidStack getStack() {
-        if (this.stock != null && this.stock.what() instanceof AEFluidKey fluidKey) {
-            if (forgeStock == null) forgeStock = fluidKey.toStack(GTMath.saturatedCast(this.stock.amount()));
-            return forgeStock;
-        }
-        return FluidStack.EMPTY;
-    }
-
-    @Override
-    public int getTanks() {
-        return 1;
-    }
-
-    @Override
-    public FluidStack getFluidInTank(int tank) {
-        return getStack();
-    }
-
-    @Override
-    public int getTankCapacity(int tank) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public boolean isFluidValid(int tank, FluidStack stack) {
-        return true;
-    }
-
-    @Override
-    public int fill(FluidStack resource, FluidAction action) {
-        return 0;
+    @Nullable
+    public AEFluidKey key() {
+        var s = this.stock;
+        return s != null && s.amount() > 0 && s.what() instanceof AEFluidKey k ? k : null;
     }
 
     public long extract(long amount, boolean simulate, boolean notify) {
@@ -106,27 +59,15 @@ public class ExportOnlyAEFluidSlot extends ExportOnlyAESlot implements IFluidHan
             this.stock = new GenericStack(this.stock.what(), this.stock.amount() - drained);
             if (this.stock.amount() == 0) {
                 this.stock = null;
-                forgeStock = null;
-            } else if (forgeStock != null) forgeStock.setAmount(MathUtil.saturatedCast(stock.amount()));
+            }
             if (notify) onContentsChanged();
         }
         return drained;
     }
 
-    @Override
-    public FluidStack drain(FluidStack resource, FluidAction action) {
-        if (this.getStack().isFluidEqual(resource)) {
-            return this.drain(resource.getAmount(), action);
-        }
-        return FluidStack.EMPTY;
-    }
-
-    @Override
-    public FluidStack drain(int maxDrain, FluidAction action) {
-        if (this.stock == null || !(this.stock.what() instanceof AEFluidKey fluidKey)) return FluidStack.EMPTY;
-        int drained = MathUtil.saturatedCast(extract(maxDrain, action.simulate(), true));
-        if (drained < 1) return FluidStack.EMPTY;
-        return fluidKey.toStack(drained);
+    void restore(AEFluidKey key, long amount) {
+        var s = this.stock;
+        this.stock = s == null ? new GenericStack(key, amount) : new GenericStack(s.what(), s.amount() + amount);
     }
 
     @Override

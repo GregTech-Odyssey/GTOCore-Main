@@ -48,6 +48,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.util.Platform;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -178,10 +180,11 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
         if (unit.handlerIO == IO.IN) {
             attackDamage = 1;
             activeWeapon = ItemStack.EMPTY;
-            unit.forEachItems(true, (stack, amount) -> {
-                if (stack.getItem() instanceof SwordItem swordItem) {
+            unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+                var itemKey = (AEItemKey) key;
+                if (itemKey.getItem() instanceof SwordItem swordItem) {
                     if (activeWeapon.isEmpty()) {
-                        activeWeapon = stack;
+                        activeWeapon = itemKey.toStack();
                     }
                     attackDamage += (int) swordItem.getDamage();
                 }

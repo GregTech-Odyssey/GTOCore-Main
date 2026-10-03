@@ -17,6 +17,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluid;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.util.holder.ObjHolder;
@@ -92,11 +95,12 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
             return null;
         }
         ObjHolder<Fluid> coolantFluid = new ObjHolder<>();
-        unit.forEachFluids(true, (f, a) -> {
-            if (f.isEmpty() || a < 1000) {
+        unit.forEachKey(AEKeyType.fluids(), true, (k, a) -> {
+            if (a < 1000) {
                 return false;
             }
-            var type = f.getFluid().getFluidType();
+            var fluid = ((AEFluidKey) k).getFluid();
+            var type = fluid.getFluidType();
             var fluidTemp = type.getTemperature();
             var tempDiff = heatContainer.getTemperature() - fluidTemp;
             if (fluidTemp < 320 && tempDiff / 4 > 0) {
@@ -107,7 +111,7 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
                 else setIdleReason(IdleReason.INVALID_INPUT);
                 return false;
             }
-            coolantFluid.set(f.getFluid());
+            coolantFluid.set(fluid);
             return true;
         });
         if (coolantFluid.get() == null) {

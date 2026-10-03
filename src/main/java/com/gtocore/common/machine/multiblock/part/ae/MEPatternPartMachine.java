@@ -25,7 +25,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
@@ -142,7 +142,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     // ==================== 持久化 ====================
 
     @SaveToDisk(key = PATTERN_INVENTORY)
-    private final CustomItemStackHandler patternInventory;
+    private final StackInventory patternInventory;
 
     @SaveToDisk(key = INTERNAL_INVENTORY)
     private final AbstractInternalSlot[] internalInventory;
@@ -171,7 +171,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         if (maxPatternCount > 500) throw new IllegalArgumentException("maxPatternCount " + maxPatternCount + " > 500");
         this.maxPatternCount = maxPatternCount;
         this.detailsSlotMap = HashBiMap.create(maxPatternCount);
-        this.patternInventory = new CustomItemStackHandler(maxPatternCount);
+        this.patternInventory = new StackInventory(maxPatternCount);
         this.patternInventory.setFilter(this::patternFilter);
         this.internalInventory = createInternalSlotArray();
         for (int i = 0; i < internalInventory.length; i++) {
@@ -609,7 +609,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         return maxPatternCount;
     }
 
-    public CustomItemStackHandler getPatternInventory() {
+    public StackInventory getPatternInventory() {
         return patternInventory;
     }
 

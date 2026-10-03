@@ -12,10 +12,11 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.steam.SteamEnergyContainer;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.CleanroomMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine;
@@ -27,8 +28,8 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import appeng.api.stacks.AEFluidKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +54,8 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
 
     @SaveToDisk(defaultValue = "0")
     private int amountOC;
+
+    private static final AEFluidKey STEAM = AEFluidKey.of(GTMaterials.Steam.getFluid());
 
     private final long eut;
     private final double durationMultiplier;
@@ -88,10 +91,10 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
         conversionRate = 2D;
         for (var part : getParts()) {
             if (part instanceof SteamHatchPartMachine machine) {
-                var fluid = GTMaterials.Steam.getFluid(1);
+                var fluid = STEAM;
                 if (machine instanceof LargeSteamHatchPartMachine partMachine) {
                     conversionRate = partMachine.c;
-                    fluid = partMachine.f;
+                    fluid = Keys.fluidType(partMachine.f);
                     euMultiplier = partMachine.o;
                     if (oc()) maxOCamount = partMachine.o;
                 }
@@ -155,25 +158,19 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
 
     private static class EnergyContainer extends SteamEnergyContainer {
 
-        private final FluidStack steam;
+        @Nullable
+        private final AEFluidKey steam;
 
-        private final double conversionRate;
-        private final NotifiableFluidTank steamTank;
-
-        private EnergyContainer(FluidStack steam, double conversionRate, NotifiableFluidTank steamTank) {
+        private EnergyContainer(@Nullable AEFluidKey steam, double conversionRate, NotifiableInventory<AEFluidKey> steamTank) {
             super(conversionRate, steamTank);
             this.steam = steam;
-            this.conversionRate = conversionRate;
-            this.steamTank = steamTank;
         }
 
         @Override
         public long changeEnergy(long differenceAmount) {
             differenceAmount = -differenceAmount;
             int totalSteam = Math.max(1, MathUtil.saturatedCast((long) (differenceAmount * conversionRate)));
-            var steam = this.steam.copy();
-            steam.setAmount(totalSteam);
-            var leftSteam = steamTank.drainInternal(steam, IFluidHandler.FluidAction.EXECUTE).getAmount();
+            long leftSteam = steam == null ? 0 : steamTank.storage.extract(steam, totalSteam, false);
             if (leftSteam == totalSteam) return -differenceAmount;
             differenceAmount = (long) (leftSteam / conversionRate);
             return -differenceAmount;

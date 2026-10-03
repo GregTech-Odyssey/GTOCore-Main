@@ -54,7 +54,7 @@ public class WirelessEnergyUnitBlock extends Block {
 
     @Nullable
     public static WirelessEnergyUnitBlock get(int tier) {
-        if (tier < 1 || tier > BlockMap.WIRELESS_ENERGY_UNIT.length + 1) {
+        if (tier < 1 || tier > BlockMap.WIRELESS_ENERGY_UNIT.length) {
             return null;
         }
         return (WirelessEnergyUnitBlock) BlockMap.WIRELESS_ENERGY_UNIT[tier - 1];

@@ -12,7 +12,7 @@ import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
 import com.gtocore.client.overlay.WirelessAEClientHandler;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
-import com.gtocore.client.screen.starmap.StarMapScreen;
+import com.gtocore.client.screen.starmap.rocket.RocketMapScreen;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.StructureDetectBehavior;
@@ -31,6 +31,7 @@ import com.gtolib.utils.ItemUtils;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -63,7 +64,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
-import com.hepdd.gtmthings.common.block.machine.electric.WirelessEnergyMonitor;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -77,6 +77,15 @@ import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public final class ForgeClientEvent {
+
+    private static int blockHighlightSeconds;
+    @Nullable
+    private static BlockPos blockHighlightPos;
+
+    public static void highlightBlock(BlockPos pos, int seconds) {
+        blockHighlightPos = pos;
+        blockHighlightSeconds = seconds;
+    }
 
     public static int highlightingTime = 0;
     public static int highlightingRadius;
@@ -173,15 +182,9 @@ public final class ForgeClientEvent {
             if (highlightingTime > 0) {
                 RenderHelper.highlightSphere(camera, poseStack, highlightingPos, highlightingRadius);
             }
-            if (WirelessEnergyMonitor.p > 0) {
-                if (GTValues.CLIENT_TIME % 20L == 0L) {
-                    --WirelessEnergyMonitor.p;
-                }
-                BlockPos pose = WirelessEnergyMonitor.pPos;
-                if (pose == null) {
-                    return;
-                }
-                RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, pose, pose);
+            if (blockHighlightSeconds > 0 && blockHighlightPos != null) {
+                if (GTValues.CLIENT_TIME % 20L == 0L) --blockHighlightSeconds;
+                RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, blockHighlightPos, blockHighlightPos);
             }
             ItemStack itemStack = player.getMainHandItem();
             Item item = itemStack.getItem();
@@ -257,12 +260,12 @@ public final class ForgeClientEvent {
 
     @SubscribeEvent
     public static void replacePlanetsScreen(ScreenEvent.Opening event) {
-        if (event.getNewScreen() instanceof PlanetsScreen screen) event.setNewScreen(StarMapScreen.create(screen.getMenu()));
+        if (event.getNewScreen() instanceof PlanetsScreen screen) event.setNewScreen(RocketMapScreen.create(screen.getMenu()));
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void styleStarMapTooltip(RenderTooltipEvent.Color event) {
-        if (!(Minecraft.getInstance().screen instanceof StarMapScreen)) return;
+        if (Minecraft.getInstance().screen == null || !UIStyleManager.isOverriddenBy(UIStyleManager.STARFIELD_ID)) return;
         event.setBackground(0xF80E1430);
         event.setBorderStart(0xFF3A5190);
         event.setBorderEnd(0xFF243360);

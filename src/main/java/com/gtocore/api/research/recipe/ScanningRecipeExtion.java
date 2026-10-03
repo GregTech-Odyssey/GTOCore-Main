@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -53,10 +54,12 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
         for (var entry : aeKeys) {
             DataCrystalItem.addResearchData(dataCrystal, DataScanningManager.scanData(entry.getKey(), team, entry.getLongValue(), simulate));
         }
+        var key = Keys.item(dataCrystal);
+        if (key == null) return true;
         if (simulate) {
-            return holder.simulateOutputItem(dataCrystal);
+            return holder.simulateOutput(key, dataCrystal.getCount());
         } else {
-            holder.outputItem(dataCrystal);
+            holder.output(key, dataCrystal.getCount());
         }
         return true;
     }

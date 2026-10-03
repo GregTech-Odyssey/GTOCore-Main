@@ -4,7 +4,7 @@ import com.gtocore.api.data.SpaceResourceIndex;
 import com.gtocore.api.data.SpaceResourceIndex.Entry;
 import com.gtocore.api.data.SpaceResourceIndex.Type;
 
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -153,7 +153,7 @@ public final class SpaceResourceTooltips {
             lines.add(Component.translatable(key, place.copy().withStyle(ChatFormatting.DARK_AQUA)).withStyle(ChatFormatting.GRAY));
         }
         int chance = entry.chance();
-        if (chance > 0 && chance < Content.MAX_CHANCE) {
+        if (chance > 0 && chance < ContentList.MAX_CHANCE) {
             Component base = percent(chance);
             int boost = entry.chanceBoost();
             lines.add((boost > 0 ? Component.translatable(CHANCE_BOOST_KEY, base, percent(boost)) : Component.translatable(CHANCE_KEY, base))

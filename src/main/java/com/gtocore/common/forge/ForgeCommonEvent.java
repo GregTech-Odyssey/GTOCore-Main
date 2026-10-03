@@ -6,6 +6,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.saved.*;
+import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.integration.Mods;
@@ -122,6 +123,7 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.register(ForgeCommonEvent.class);
         MinecraftForge.EVENT_BUS.register(AnimalsRevengeEvent.class);
         WirelessEvents.init();
+        WirelessGridEvents.init();
     }
 
     @SubscribeEvent

@@ -1,5 +1,8 @@
 package com.hepdd.gtmthings.data;
 
+import com.gtocore.common.wireless.energy.WirelessEnergyBindingToolBehavior;
+import com.gtocore.common.wireless.energy.WirelessEnergyTerminalBehavior;
+
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;

@@ -34,7 +34,8 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -184,20 +185,21 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
 
     private void absorptionUpdate() {
         for (ItemBusPartMachine bus : busMachines) {
-            var inv = bus.getInventory();
-            for (int i = 0; i < inv.getSlots(); i++) {
-                var stack = inv.getStackInSlot(i);
-                if (isModerator(stack)) {
-                    int consume = Math.clamp(eV / MODERATOR_EV, 1, stack.getCount());
-                    inv.extractItemInternal(i, consume, false);
+            var inv = bus.getInventory().storage;
+            for (int i = 0; i < inv.size(); i++) {
+                var key = inv.keyAt(i);
+                if (key != null && isModerator(key)) {
+                    int consume = (int) Math.clamp(eV / MODERATOR_EV, 1L, inv.amountAt(i));
+                    inv.extract(i, key, consume, false);
                     eV -= MODERATOR_EV * consume;
                 }
             }
         }
     }
 
-    static boolean isModerator(ItemStack stack) {
-        return stack.is(dustBeryllium) || stack.is(dustGraphite);
+    static boolean isModerator(AEItemKey key) {
+        var item = key.getItem();
+        return item == dustBeryllium || item == dustGraphite;
     }
 
     List<ItemBusPartMachine> getModeratorBuses() {

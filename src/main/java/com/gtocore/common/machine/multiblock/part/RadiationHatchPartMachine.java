@@ -6,14 +6,14 @@ import com.gtocore.common.data.GTOTickTimeMonitors;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.recipe.RecipeHelper;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -24,6 +24,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -45,7 +47,7 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     private static final String INHIBITION = "gtocore.machine.radiation_hatch.inhibition";
 
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableInventory<AEItemKey> inventory;
     @Getter
     @SaveToDisk(defaultValue = "0")
     private int radioactivity;
@@ -70,7 +72,7 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
 
     public RadiationHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, 1, IO.IN, IO.BOTH);
+        inventory = NotifiableInventory.items(this, 1, IO.IN, IO.BOTH);
         handlerList = RecipeHandlerUnit.of(IO.IN, inventory);
     }
 
@@ -101,8 +103,8 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
             if (recipeTypes != null) {
                 GTRecipeType recipeType = recipeTypes[0];
                 handlerList.findRecipe(recipeType, (u, r) -> {
-                    if (handlerList.handleRecipeItem(IO.IN, r.toRuntime(), RecipeHelper.copyContents(r.itemInputs, 1), false)) {
-                        count = inventory.storage.getStackInSlot(0).getCount();
+                    if (consumeInputs(r)) {
+                        count = (int) inventory.storage.amountAt(0);
                         initialRadioactivity = (int) ((r.data.getInt(GTORecipeDataKeys.RADIOACTIVITY) - inhibitionDose) * (1 + ((double) count / 64)));
                         initialTime = r.duration * (inhibitionDose + 200) / 200;
                         time = initialTime;
@@ -113,6 +115,18 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
                 });
             }
         }
+    }
+
+    private boolean consumeInputs(GTRecipeDefinition recipe) {
+        var inputs = recipe.itemInputs;
+        int size = inputs.size();
+        for (int i = 0; i < size; i++) {
+            if (!handlerList.consume(inputs.ingredient(i), inputs.amount(i), true)) return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (inputs.isConsumable(i)) handlerList.consume(inputs.ingredient(i), inputs.amount(i), false);
+        }
+        return true;
     }
 
     @Override

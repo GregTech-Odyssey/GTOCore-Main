@@ -10,7 +10,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -34,6 +35,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -117,6 +121,10 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private ItemStack resonanceItem = ItemStack.EMPTY;
     @SaveToDisk(defaultValueGetter = "getDefaultResonanceFluid")
     private FluidStack resonanceFluid = FluidStack.EMPTY;
+    @Nullable
+    private AEItemKey resonanceItemKey;
+    @Nullable
+    private AEFluidKey resonanceFluidKey;
 
     private ItemStack getDefaultResonanceItem() {
         return ItemStack.EMPTY;
@@ -127,7 +135,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     }
 
     @SaveToDisk
-    protected final NotifiableItemStackHandler machineStorage;
+    protected final NotifiableStackInventory machineStorage;
 
     public ResonanceFlowerMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -135,7 +143,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     }
 
     @Override
-    public NotifiableItemStackHandler getMachineStorage() {
+    public NotifiableStackInventory getMachineStorage() {
         return machineStorage;
     }
 
@@ -192,13 +200,15 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             // 元素消耗波动：一次脉冲吃多少随系数缩放（至少 1 个），系数失控时消耗随之暴涨
             if (!resonanceFluid.isEmpty()) {
                 int amount = scaleElementalAmount(resonanceFluid.getAmount());
-                boolean consumed = amount == resonanceFluid.getAmount() ? inputFluid(resonanceFluid) : inputFluid(new FluidStack(resonanceFluid.getFluid(), amount, resonanceFluid.getTag()));
+                if (resonanceFluidKey == null) resonanceFluidKey = Keys.fluid(resonanceFluid);
+                boolean consumed = resonanceFluidKey != null && inputFluid(resonanceFluidKey, amount);
                 if (!consumed) setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
                 return consumed;
             }
             if (!resonanceItem.isEmpty()) {
                 int count = scaleElementalAmount(resonanceItem.getCount());
-                boolean consumed = count == resonanceItem.getCount() ? inputItem(resonanceItem) : inputItem(resonanceItem.copyWithCount(count));
+                if (resonanceItemKey == null) resonanceItemKey = Keys.item(resonanceItem);
+                boolean consumed = resonanceItemKey != null && inputItem(resonanceItemKey, count);
                 if (!consumed) setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
                 return consumed;
             }
@@ -252,8 +262,8 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private Component getLastRecipeName() {
         GTRecipeDefinition recipe = lastRecipe;
         if (recipe == null) return Component.literal("");
-        if (!recipe.itemOutputs.isEmpty()) return recipe.itemOutputs.getFirst().inner.getName();
-        if (!recipe.fluidOutputs.isEmpty()) return recipe.fluidOutputs.getFirst().inner.getName();
+        if (!recipe.itemOutputs.isEmpty()) return recipe.itemOutputs.ingredient(0).getName();
+        if (!recipe.fluidOutputs.isEmpty()) return recipe.fluidOutputs.ingredient(0).getName();
         return Component.literal(recipe.id.toString());
     }
 
@@ -291,20 +301,23 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private void resetResonance() {
         resonanceItem = ItemStack.EMPTY;
         resonanceFluid = FluidStack.EMPTY;
+        resonanceItemKey = null;
+        resonanceFluidKey = null;
         frequency = Integer.MAX_VALUE;
     }
 
     private void updateStableTime() {
         if (stableTime >= 100000000) return;
-        ItemStack stack = machineStorage.getStackInSlot(0);
+        var storage = machineStorage.storage;
+        ItemStack stack = storage.getStackInSlot(0);
         if (stack.isEmpty()) return;
         if (stack.getItem() == GTOItems.STABILIZER_CORE.asItem()) {
             stableTime += 10000000;
             stack.shrink(1);
-            machineStorage.setStackInSlot(0, stack);
+            storage.setStackInSlot(0, stack);
         } else if (stack.getItem() == Items.NETHER_STAR) {
             stableTime += 5 * stack.getCount();
-            machineStorage.setStackInSlot(0, ItemStack.EMPTY);
+            storage.setStackInSlot(0, ItemStack.EMPTY);
         }
     }
 

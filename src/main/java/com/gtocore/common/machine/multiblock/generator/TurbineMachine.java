@@ -121,8 +121,8 @@ public class TurbineMachine extends ElectricMultiblockMachine {
             for (RotorHolderPartMachine part : rotorHolderMachines) {
                 if (part.getRotorStack().isEmpty()) {
                     full = false;
-                    part.setRotorStack(rotorHatchPartMachine.getInventory().getStackInSlot(0));
-                    rotorHatchPartMachine.getInventory().setStackInSlot(0, ItemStack.EMPTY);
+                    part.setRotorStack(rotorHatchPartMachine.getInventory().storage.getStackInSlot(0));
+                    rotorHatchPartMachine.getInventory().storage.setStackInSlot(0, ItemStack.EMPTY);
                     break;
                 }
             }

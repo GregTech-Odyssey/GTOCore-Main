@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
@@ -61,7 +61,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
 
     private static final int BORDER_WIDTH = 3;
     @SaveToDisk
-    protected final CustomItemStackHandler filterInventory;
+    protected final StackInventory filterInventory;
     private final int maximumRadius;
     @Nullable
     protected TickableSubscription autoOutputSubs;
@@ -110,8 +110,8 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
 
     /// ///////////////////////////////////
 
-    protected CustomItemStackHandler createFilterItemHandler() {
-        var transfer = new CustomItemStackHandler();
+    protected StackInventory createFilterItemHandler() {
+        var transfer = new StackInventory();
         transfer.setFilter(
                 item -> item.is(GTItems.ITEM_FILTER.asItem()) || item.is(GTItems.TAG_FILTER.asItem()));
         return transfer;
@@ -228,7 +228,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
         WidgetGroup slots = new WidgetGroup(8, 76 + 4 / 2, colSize * 18, rowSize * 18);
         for (int y = 0; y < rowSize; y++) {
             for (int x = 0; x < colSize; x++) {
-                var slot = new SlotWidget(exportItems, index++, x * 18, y * 18, true, false)
+                var slot = new SlotWidget(exportItems.storage, index++, x * 18, y * 18, true, false)
                         .setBackground(GuiTextures.SLOT);
                 slots.addWidget(slot);
             }

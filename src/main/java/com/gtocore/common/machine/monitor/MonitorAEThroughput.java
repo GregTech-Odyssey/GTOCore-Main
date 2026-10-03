@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.monitor;
 
+import com.gtocore.api.wireless.energy.EnergyStats;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEFluidList;
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
 import com.gtocore.common.machine.multiblock.part.ae.widget.AEFluidConfigWidget;
@@ -14,15 +15,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fluids.FluidStack;
 
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AmountFormat;
 
 import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.hepdd.gtmthings.api.misc.EnergyStat;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -45,7 +44,7 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
 
     @SyncToClient
     private CompoundTag displayingEntry = new CompoundTag();
-    private final EnergyStat[] stats = new EnergyStat[2];
+    private final EnergyStats[] stats = new EnergyStats[2];
     private final long[] lastAmount = new long[] { 0, 0 };
     @SaveToDisk
     private final AEItem aeItem = new AEItem();
@@ -103,8 +102,8 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
             hasConfig = true;
             long amount = grid.getStorageService().getCachedInventory().get(current);
             if (stats[i] == null) {
-                stats[i] = new EnergyStat(time);
-                stats[i].update(BigInteger.ZERO, time);
+                stats[i] = new EnergyStats();
+                stats[i].push(time / 20, 0, 0, 0);
                 lastAmount[i] = amount;
                 currentAmount[i] = amount;
                 lastMinuteStat[i] = 0;
@@ -115,16 +114,13 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
                 continue;
             }
             var change = amount - lastAmount[i];
-            stats[i].update(BigInteger.valueOf(change), time);
-            for (int tick = 20; tick <= elapsedTicks; tick += 20) {
-                stats[i].tick();
-            }
+            stats[i].push(time / 20, Math.max(change, 0), Math.max(-change, 0), 0);
             lastAmount[i] = amount;
             currentAmount[i] = amount;
 
-            lastMinuteStat[i] = scaleStat(stats[i].minute.getAvgByTick());
-            lastHourStat[i] = scaleStat(stats[i].hour.getAvgByTick());
-            lastDayStat[i] = scaleStat(stats[i].day.getAvgByTick());
+            lastMinuteStat[i] = scaleStat(net(stats[i], EnergyStats.Window.MINUTE, time / 20));
+            lastHourStat[i] = scaleStat(net(stats[i], EnergyStats.Window.HOUR, time / 20));
+            lastDayStat[i] = scaleStat(net(stats[i], EnergyStats.Window.DAY, time / 20));
 
             nowStat[i] = elapsedTicks > 0 ? scaleStat(BigDecimal.valueOf(change)
                     .divide(BigDecimal.valueOf(elapsedTicks), 2, RoundingMode.HALF_UP)) : 0;
@@ -240,6 +236,10 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
         return value.multiply(DISPLAY_SCALE).setScale(0, RoundingMode.HALF_UP).longValue();
     }
 
+    private static BigDecimal net(EnergyStats stats, EnergyStats.Window window, int second) {
+        return BigDecimal.valueOf(stats.avgIn(window, second) - stats.avgOut(window, second));
+    }
+
     @Override
     public Widget createUIWidget() {
         var superWidget = super.createUIWidget();
@@ -285,8 +285,13 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
         }
 
         @Override
-        public @NotNull FluidStack getFluidInTank(int tank) {
-            return FluidStack.EMPTY;
+        public @Nullable AEFluidKey keyAt(int slot) {
+            return null;
+        }
+
+        @Override
+        public long amountAt(int slot) {
+            return 0;
         }
     }
 

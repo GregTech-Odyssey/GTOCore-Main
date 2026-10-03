@@ -25,7 +25,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import lombok.Getter;
@@ -43,9 +44,10 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
     @RegisterLanguage(cn = "钻头", en = "Drill Head")
     private static final String SLOT_LABEL = "gtocore.machine.advanced_infinite_driller.slot";
 
-    private static final FluidStack DISTILLED_WATER = GTMaterials.DistilledWater.getFluid(20000);
-    private static final FluidStack OXYGEN = GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID, 20000);
-    private static final FluidStack HELIUM = GTMaterials.Helium.getFluid(FluidStorageKeys.LIQUID, 20000);
+    private static final AEFluidKey DISTILLED_WATER = AEFluidKey.of(GTMaterials.DistilledWater.getFluid());
+    private static final AEFluidKey OXYGEN = AEFluidKey.of(GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID));
+    private static final AEFluidKey HELIUM = AEFluidKey.of(GTMaterials.Helium.getFluid(FluidStorageKeys.LIQUID));
+    private static final long COOLANT_AMOUNT = 20000;
     private static final Map<Material, Integer> HEAT_MAP = Map.of(GTOMaterials.Neutron, 1);
 
     public static final int RUNNING_HEAT = 2000;
@@ -90,11 +92,11 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
         }
 
         if (isWorking) {
-            if (inputFluid(DISTILLED_WATER)) {
+            if (inputFluid(DISTILLED_WATER, COOLANT_AMOUNT)) {
                 currentHeat--;
-            } else if (inputFluid(OXYGEN)) {
+            } else if (inputFluid(OXYGEN, COOLANT_AMOUNT)) {
                 currentHeat -= 2;
-            } else if (inputFluid(HELIUM)) {
+            } else if (inputFluid(HELIUM, COOLANT_AMOUNT)) {
                 currentHeat -= 4;
             }
         }
@@ -110,7 +112,7 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
             if (process >= 200) {
                 process = 0;
                 currentHeat = 300;
-                machineStorage.setStackInSlot(0, ItemStack.EMPTY);
+                machineStorage.storage.setStackInSlot(0, ItemStack.EMPTY);
                 getRecipeLogic().interruptRecipe(IdleReason.DRILL_HEAD_MISSING.reason());
             }
         } else if (process > 0) {
@@ -188,8 +190,8 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
     }
 
     private int inputBlast() {
-        if (inputFluid(GTMaterials.Blaze.getFluid(getFluidConsume()))) return 1;
-        if (inputFluid(GTOMaterials.BlazeCube.getFluid(getFluidConsume()))) return 1000;
+        if (inputFluid(GTMaterials.Blaze.getFluid(), getFluidConsume())) return 1;
+        if (inputFluid(GTOMaterials.BlazeCube.getFluid(), getFluidConsume())) return 1000;
         return 0;
     }
 

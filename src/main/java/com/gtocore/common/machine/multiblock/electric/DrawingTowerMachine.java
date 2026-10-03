@@ -14,7 +14,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -75,7 +75,7 @@ public final class DrawingTowerMachine extends CoilMultiblockMachine {
     @Override
     protected @Nullable GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         if (spoolHatchPartMachine == null) return null;
-        CustomItemStackHandler storage = spoolHatchPartMachine.getInventory().storage;
+        StackInventory storage = spoolHatchPartMachine.getInventory().storage;
         ItemStack item = storage.getStackInSlot(0);
         int tier = getItemTier(item);
 

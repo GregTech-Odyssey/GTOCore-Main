@@ -12,7 +12,7 @@ import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeBuilder;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.machine.steam.SteamLiquidBoilerMachine;
@@ -20,7 +20,14 @@ import com.gregtechceu.gtceu.common.machine.steam.SteamSolidBoilerMachine;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluid;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+
+import org.jetbrains.annotations.Nullable;
 
 import static com.gregtechceu.gtceu.api.GTValues.MV;
 import static com.gregtechceu.gtceu.api.GTValues.VA;
@@ -69,12 +76,12 @@ public final class RecipeTypeModify {
         PLASMA_GENERATOR_FUELS.onRecipeBuild((recipeBuilder) -> {
             long eu = recipeBuilder.getDuration() * GTValues.V[GTValues.EV] * 2;
             int water = (int) (eu / 80);
-            FluidIngredient input = recipeBuilder.getFluidInputs().getFirst().inner.copy(10);
-            FluidIngredient output = recipeBuilder.getFluidOutputs().getFirst().inner.copy(9);
+            KeyIngredient input = recipeBuilder.getFluidInputs().ingredient(0);
+            KeyIngredient output = recipeBuilder.getFluidOutputs().ingredient(0);
             HEAT_EXCHANGER_RECIPES.recipeBuilder(recipeBuilder.getId())
-                    .inputFluids(input)
+                    .inputFluids(input, 10L)
                     .inputFluids(GTMaterials.DistilledWater.getFluid(water))
-                    .outputFluids(output)
+                    .outputFluids(output, 9L)
                     .outputFluids(GTOMaterials.HighPressureSteam.getFluid(water * 40))
                     .outputFluids(GTOMaterials.SupercriticalSteam.getFluid(water * 10))
                     .addData(GTORecipeDataKeys.EU, eu)
@@ -149,13 +156,12 @@ public final class RecipeTypeModify {
 
             var fluids = builder.getFluidInputs();
             if (!fluids.isEmpty()) {
-                var fluid = fluids.getFirst().inner.getFluid();
-                if (fluid != null) SteamLiquidBoilerMachine.FUEL_CACHE.add(fluid);
+                if (fluids.ingredient(0).key() instanceof AEFluidKey fluid) SteamLiquidBoilerMachine.FUEL_CACHE.add(fluid.getFluid());
             }
             var items = builder.getItemInputs();
             if (!items.isEmpty()) {
-                var item = items.getFirst().inner.getItem();
-                if (!item.isEmpty()) SteamSolidBoilerMachine.FUEL_CACHE.add(item.getItem());
+                var item = plainItem(items.ingredient(0));
+                if (item != null) SteamSolidBoilerMachine.FUEL_CACHE.add(item);
             }
         });
 
@@ -169,6 +175,16 @@ public final class RecipeTypeModify {
 
         GTRecipeTypes.FORMING_PRESS_RECIPES.getCustomRecipeLogicRunners().clear();
         GTRecipeTypes.FORMING_PRESS_RECIPES.getCustomRecipeLogicRunners().add(new FormingPressLogic());
+    }
+
+    @Nullable
+    private static Item plainItem(KeyIngredient ingredient) {
+        if (ingredient.kind == KeyIngredient.BASE && ingredient.key() instanceof AEItemKey key) return key.getItem();
+        var source = ingredient.source();
+        if (source != null && source.getClass() == Ingredient.class && source.values.length > 0 && source.values[0] instanceof Ingredient.ItemValue value && !value.item.isEmpty()) {
+            return value.item.getItem();
+        }
+        return null;
     }
 
     private static int getEUTierIndex(int euTier) {
@@ -189,7 +205,7 @@ public final class RecipeTypeModify {
     private static void addCuttingFluid(GTRecipeBuilder recipeBuilder, int index) {
         CuttingFluid selected = FLUID_TIERS[index];
         long fluidAmount = Math.max(1, recipeBuilder.getDuration() * recipeBuilder.EUt() / selected.divisor());
-        recipeBuilder.inputFluids(FluidIngredient.of(selected.fluid(), fluidAmount));
+        recipeBuilder.inputFluids(KeyIngredient.fluid(selected.fluid()), fluidAmount);
     }
 
     private static void addUpgradedCuttingFluid(GTRecipeBuilder recipeBuilder, int originalIndex, int index, int originalDuration, long originalEUt, double reductionFactor) {
@@ -197,7 +213,7 @@ public final class RecipeTypeModify {
 
         long fluidAmount = (long) Math.max(1, originalDuration * originalEUt * reductionFactor / FLUID_TIERS[originalIndex].divisor());
 
-        recipeBuilder.inputFluids(FluidIngredient.of(selected.fluid(), fluidAmount));
+        recipeBuilder.inputFluids(KeyIngredient.fluid(selected.fluid()), fluidAmount);
         recipeBuilder.save();
     }
 

@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.multiblock.storage;
 
-import com.gtocore.api.ae2.stacks.AEFluidKeyStackHandler;
-import com.gtocore.api.ae2.stacks.AEItemKeyStackHandler;
 import com.gtocore.api.ae2.stacks.AEManaKeyHandler;
+import com.gtocore.api.ae2.stacks.MEStorageKeyHandler;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.GTOMachines;
@@ -24,8 +23,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -120,9 +118,9 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     @Nullable
     private final AEKeyType type;
     @Nullable
-    private final AEItemKeyStackHandler itemStackHandler;
+    private final MEStorageKeyHandler<AEItemKey> itemStackHandler;
     @Nullable
-    private final AEFluidKeyStackHandler fluidStackHandler;
+    private final MEStorageKeyHandler<AEFluidKey> fluidStackHandler;
     @Nullable
     private final AEManaKeyHandler manaHandler;
 
@@ -132,10 +130,14 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     private LazyOptional<ManaReceiver> capabilityMana;
 
     public MultiblockMEStorageMachine(MetaMachineBlockEntity holder, @Nullable AEKeyType type) {
+        this(holder, type, type == null);
+    }
+
+    protected MultiblockMEStorageMachine(MetaMachineBlockEntity holder, @Nullable AEKeyType type, boolean mana) {
         super(holder);
         this.type = type;
         if (type == AEKeyType.items() || type == null) {
-            itemStackHandler = new AEItemKeyStackHandler(this);
+            itemStackHandler = new MEStorageKeyHandler<>(this, AEKeyType.items());
             itemStackHandler.setMap(keyMap);
             itemStackHandler.setStorage(this);
             itemStackHandler.setStorageSupplier(storageSupplier);
@@ -144,7 +146,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
             itemStackHandler = null;
         }
         if (type == AEKeyType.fluids() || type == null) {
-            fluidStackHandler = new AEFluidKeyStackHandler(this);
+            fluidStackHandler = new MEStorageKeyHandler<>(this, AEKeyType.fluids());
             fluidStackHandler.setMap(keyMap);
             fluidStackHandler.setStorage(this);
             fluidStackHandler.setStorageSupplier(storageSupplier);
@@ -152,7 +154,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         } else {
             fluidStackHandler = null;
         }
-        if (type == null) {
+        if (mana) {
             manaHandler = new AEManaKeyHandler();
             manaHandler.setMap(keyMap);
             manaHandler.setStorageSupplier(storageSupplier);
@@ -171,13 +173,13 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
 
     @Override
     @Nullable
-    public ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return isFormed ? itemStackHandler : null;
     }
 
     @Override
     @Nullable
-    public ICustomFluidStackHandler getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return isFormed ? fluidStackHandler : null;
     }
 

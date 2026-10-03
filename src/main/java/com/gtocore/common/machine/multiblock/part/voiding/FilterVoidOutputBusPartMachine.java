@@ -7,15 +7,17 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.SingleCustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
-import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.world.item.ItemStack;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
+import appeng.api.storage.AEKeyFilter;
 import appeng.hooks.IUnique;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -26,13 +28,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.function.Predicate;
 
-public final class FilterVoidOutputBusPartMachine extends VoidOutputBusPartMachine implements Predicate<ItemStack> {
+public final class FilterVoidOutputBusPartMachine extends VoidOutputBusPartMachine implements AEKeyFilter {
 
     @Getter
     @SaveToDisk
-    private final SingleCustomItemStackHandler inventory = new SingleCustomItemStackHandler(81);
+    private final StackInventory inventory = new StackInventory(81) {
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return 1;
+        }
+    };
 
     @Setter
     @Getter
@@ -46,8 +53,9 @@ public final class FilterVoidOutputBusPartMachine extends VoidOutputBusPartMachi
     }
 
     @Override
-    public boolean test(ItemStack stack) {
-        var id = ((IUnique) stack.getItem()).ae2$getUid();
+    public boolean matches(AEKey key) {
+        if (!(key instanceof AEItemKey itemKey)) return false;
+        var id = ((IUnique) itemKey.getItem()).ae2$getUid();
         if (reverse) {
             return !ids.contains(id);
         } else {
@@ -63,7 +71,7 @@ public final class FilterVoidOutputBusPartMachine extends VoidOutputBusPartMachi
             }
         }
         if (ids.isEmpty()) {
-            handler.setFilter(GTUtil.FAVORABLE);
+            handler.setFilter(null);
         } else {
             handler.setFilter(this);
         }
@@ -88,10 +96,11 @@ public final class FilterVoidOutputBusPartMachine extends VoidOutputBusPartMachi
         int colSize = 9;
         var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * colSize + 16);
         var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * colSize + 8);
+        var slots = new ForgeStackAdapter(inventory);
         int index = 0;
         for (int y = 0; y < colSize; y++) {
             for (int x = 0; x < rowSize; x++) {
-                container.addWidget(new PhantomSlotWidget(inventory, index++, 4 + x * 18, 4 + y * 18).setChangeListener(this::onSlotChanged).setBackground(GuiTextures.SLOT));
+                container.addWidget(new PhantomSlotWidget(slots, index++, 4 + x * 18, 4 + y * 18).setChangeListener(this::onSlotChanged).setBackground(GuiTextures.SLOT));
             }
         }
         container.setBackground(GuiTextures.BACKGROUND_INVERSE);

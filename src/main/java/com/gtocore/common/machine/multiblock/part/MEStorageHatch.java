@@ -1,8 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
-import com.gtocore.api.ae2.stacks.AEFluidKeyStackHandler;
-import com.gtocore.api.ae2.stacks.AEItemKeyStackHandler;
 import com.gtocore.api.ae2.stacks.AEManaKeyHandler;
+import com.gtocore.api.ae2.stacks.MEStorageKeyHandler;
 import com.gtocore.common.machine.multiblock.storage.MultiblockMEStorageMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -14,18 +13,18 @@ import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.SingleCustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.storage.MEStorage;
 import appeng.capabilities.Capabilities;
 
@@ -58,15 +57,15 @@ public final class MEStorageHatch extends MultiblockPartMachine {
 
     /** 标记的物品，非空时本仓的物品 IO 只针对它 */
     @SaveToDisk
-    private final SingleCustomItemStackHandler itemMark = new SingleCustomItemStackHandler(1);
+    private final KeyInventory<AEItemKey> itemMark = KeyInventory.items(1, 1, true);
     /** 标记的流体，非空时本仓的流体 IO 只针对它 */
     @SaveToDisk
-    private final CustomFluidTank fluidMark = new CustomFluidTank(MARK_FLUID_AMOUNT);
+    private final KeyInventory<AEFluidKey> fluidMark = KeyInventory.fluids(1, MARK_FLUID_AMOUNT);
     // 处理器本身就是本仓的物品/流体能力（MachineTrait 构造时自动挂上），每个仓体各持一份才有各自的标记
     @NotNull
-    private final AEItemKeyStackHandler itemHandler;
+    private final MEStorageKeyHandler<AEItemKey> itemHandler;
     @NotNull
-    private final AEFluidKeyStackHandler fluidHandler;
+    private final MEStorageKeyHandler<AEFluidKey> fluidHandler;
 
     @NotNull
     private LazyOptional<MEStorage> capabilityStorage = LazyOptional.empty();
@@ -78,8 +77,8 @@ public final class MEStorageHatch extends MultiblockPartMachine {
     public MEStorageHatch(MetaMachineBlockEntity holder) {
         super(holder);
         this.manaHandler = new AEManaKeyHandler();
-        this.itemHandler = new AEItemKeyStackHandler(this);
-        this.fluidHandler = new AEFluidKeyStackHandler(this);
+        this.itemHandler = new MEStorageKeyHandler<>(this, AEKeyType.items());
+        this.fluidHandler = new MEStorageKeyHandler<>(this, AEKeyType.fluids());
         this.itemHandler.setCapabilityValidator(d -> isStorageCapabilityAvailable());
         this.fluidHandler.setCapabilityValidator(d -> isStorageCapabilityAvailable());
     }
@@ -220,15 +219,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         clearHandler(fluidHandler);
     }
 
-    private static void clearHandler(AEItemKeyStackHandler handler) {
-        handler.setStorage(null);
-        handler.setMap(null);
-        handler.setStorageSupplier(null);
-        handler.setOnChange(null);
-        handler.setCapacity(0);
-    }
-
-    private static void clearHandler(AEFluidKeyStackHandler handler) {
+    private static void clearHandler(MEStorageKeyHandler<?> handler) {
         handler.setStorage(null);
         handler.setMap(null);
         handler.setStorageSupplier(null);
@@ -238,10 +229,8 @@ public final class MEStorageHatch extends MultiblockPartMachine {
 
     /** 把界面上的标记同步到处理器；标记为空即取消标记，恢复透传。 */
     private void applyMarks() {
-        var stack = itemMark.getStackInSlot(0);
-        itemHandler.setMark(stack.isEmpty() ? null : AEItemKey.of(stack));
-        var fluid = fluidMark.getFluid();
-        fluidHandler.setMark(fluid.isEmpty() ? null : AEFluidKey.of(fluid));
+        itemHandler.setMark(itemMark.keyAt(0));
+        fluidHandler.setMark(fluidMark.keyAt(0));
     }
 
     private void onMarkChanged() {
@@ -257,9 +246,13 @@ public final class MEStorageHatch extends MultiblockPartMachine {
                 .setChangeListener(this::onMarkChanged)
                 .setBackground(GuiTextures.SLOT));
         group.addWidget(new LabelWidget(26, 9, () -> MARK_ITEM));
-        group.addWidget(new PhantomFluidWidget(fluidMark, 0, 4, 26, 18, 18,
-                fluidMark::getFluid,
-                fluid -> fluidMark.setFluid(fluid.isEmpty() ? FluidStack.EMPTY : ICustomFluidStackHandler.copy(fluid, MARK_FLUID_AMOUNT)))
+        var fluidMarkAdapter = new ForgeFluidAdapter(fluidMark);
+        group.addWidget(new PhantomFluidWidget(fluidMarkAdapter, 0, 4, 26, 18, 18,
+                () -> fluidMarkAdapter.getFluidInTank(0),
+                fluid -> {
+                    var key = Keys.fluid(fluid);
+                    fluidMark.set(0, key, key == null ? 0 : MARK_FLUID_AMOUNT);
+                })
                 .setChangeListener(this::onMarkChanged)
                 .setShowAmount(false)
                 .setBackground(GuiTextures.FLUID_SLOT));

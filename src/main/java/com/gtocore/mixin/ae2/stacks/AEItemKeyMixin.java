@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
@@ -27,14 +26,8 @@ import static com.gtocore.integration.ae.hooks.IAEKeyExtension.get$Material;
 public abstract class AEItemKeyMixin implements IIngredientConvertible, IAEKeyExtension {
 
     @Shadow(remap = false)
-    public abstract ItemStack getReadOnlyStack();
-
-    @Shadow(remap = false)
     @Final
     public Item item;
-
-    @Unique
-    private int[] gtocore$is;
 
     /**
      * @author .
@@ -47,14 +40,7 @@ public abstract class AEItemKeyMixin implements IIngredientConvertible, IAEKeyEx
 
     @Override
     public void gtolib$convert(long amount, IntLongMap map) {
-        if (gtocore$is == null) {
-            var m = new IntLongMap();
-            MapIngredient.ITEM_CONVERTER.convert(getReadOnlyStack(), 1, m);
-            gtocore$is = m.toIntArray();
-        }
-        for (var i : gtocore$is) {
-            map.add(i, amount);
-        }
+        MapIngredient.ITEM_CONVERTER.convert((AEItemKey) (Object) this, amount, map);
     }
 
     @Unique

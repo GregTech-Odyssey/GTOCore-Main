@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
+import com.gtocore.common.wireless.energy.WirelessIdle;
+
 import com.gtolib.api.machine.impl.part.WirelessEnergyInterfacePartMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
@@ -48,10 +50,10 @@ public final class WirelessEnergyGeneratorMachine extends ElectricMultiblockMach
     public boolean useEnergy(long eu, boolean simulate) {
         if (eu >= 0) return true;
         if (energyInterfacePartMachine == null) return super.useEnergy(eu, simulate);
-        var container = energyInterfacePartMachine.getWirelessEnergyContainer();
-        if (container == null) return false;
-        if (simulate) return true;
-        container.unrestrictedAddEnergy(-eu);
-        return true;
+        var port = energyInterfacePartMachine.getPort();
+        if (!simulate) return port.depositAll(-eu, getTier());
+        if (port.canDepositAll(-eu, getTier())) return true;
+        WirelessIdle.reportDeposit(this, port, getTier());
+        return false;
     }
 }

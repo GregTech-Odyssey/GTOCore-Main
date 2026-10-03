@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class MERequestableInputHatchMachine extends MEInputHatchPartMachine implements ICraftingRequester {
 
-    MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, aeFluidHandler.getTanks());
+    MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, aeFluidHandler.size());
 
     public MERequestableInputHatchMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -31,7 +31,7 @@ public class MERequestableInputHatchMachine extends MEInputHatchPartMachine impl
         }
         var cg = grid.getCraftingService();
         MEStorage networkInv = grid.getStorageService().getInventory();
-        for (int i = 0; i < this.aeFluidHandler.getTanks(); i++) {
+        for (int i = 0; i < this.aeFluidHandler.size(); i++) {
             ExportOnlyAEFluidSlot aeTank = this.aeFluidHandler.getInventory()[i];
             GenericStack exceedFluid = aeTank.exceedStack();
             if (exceedFluid != null) {

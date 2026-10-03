@@ -5,7 +5,7 @@ import com.gtocore.common.machine.multiblock.electric.processing.ProcessingArray
 import com.gtolib.api.machine.part.ItemPartMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -18,7 +18,7 @@ public final class MachineAccessInterfacePartMachine extends ItemPartMachine {
     }
 
     @Override
-    public @NotNull NotifiableItemStackHandler getInventory() {
+    public @NotNull NotifiableStackInventory getInventory() {
         if (!getControllers().isEmpty() && getController() instanceof ProcessingArrayMachine arrayMachine) {
             return arrayMachine.getInventory();
         }

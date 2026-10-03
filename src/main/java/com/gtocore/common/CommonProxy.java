@@ -15,6 +15,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
+import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.SparkRange;
 import com.gtocore.data.Data;
@@ -120,6 +121,7 @@ public class CommonProxy {
         IPushResultsHandler.init();
         TechTreeCommands.init();
         TechTreeBrowser.init();
+        GridMapUIFactory.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();
         }

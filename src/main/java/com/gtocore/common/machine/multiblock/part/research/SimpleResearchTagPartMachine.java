@@ -11,9 +11,9 @@ import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
@@ -66,7 +66,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
         return (holder) -> new SimpleResearchTagPartMachine(holder, dataCapacity, researchTag);
     }
 
-    public NotifiableItemStackHandler getAsHandler() {
+    public NotifiableStackInventory getAsHandler() {
         return heldItems;
     }
 
@@ -79,7 +79,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
     public Widget createUIWidget() {
         WidgetGroup group = new WidgetGroup(new Position(0, 0));
         group.addWidget(new ImageWidget(46, 15, 84, 60, GuiTextures.PROGRESS_BAR_RESEARCH_STATION_BASE))
-                .addWidget(new SlotWidget(heldItems, 0, 79, 36)
+                .addWidget(new SlotWidget(heldItems.storage, 0, 79, 36)
                         .setBackground(GuiTextures.SLOT, GTOGuiTextures.DATA_CRYSTAL_OVERLAY))
                 .addWidget(new ScanningWidget(15, 15, 18, 60, this)
                         .setBackground(GuiTextures.SLOT));
@@ -97,7 +97,7 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
 
     public void addData(double amount) {
         amount += dataCache;
-        var dataCrystalStack = heldItems.getStackInSlot(0);
+        var dataCrystalStack = heldItems.storage.getStackInSlot(0);
         if (dataCrystalStack.getItem() instanceof DataCrystalItem) {
             var remainingCapacity = DataCrystalItem.getRemainingCapacity(dataCrystalStack) / getResearchTag().getBytePerPoint();
             long dataToAdd = (long) Math.floor(Math.min(amount, remainingCapacity));
@@ -115,35 +115,30 @@ public class SimpleResearchTagPartMachine extends MultiblockPartMachine implemen
         return false;
     }
 
-    protected static final class ScanningHolder extends NotifiableItemStackHandler {
+    protected static final class ScanningHolder extends NotifiableStackInventory {
 
         private ScanningHolder(SimpleResearchTagPartMachine machine) {
-            super(machine, 1, IO.NONE, IO.BOTH, ScanningHolderStackHandler::new);
+            super(machine, new ScanningHolderStackHandler(), IO.NONE, IO.BOTH);
         }
 
-        // 各槽位容量限制
-        @Override
-        public int getSlotLimit(int slot) {
-            return 1;
-        }
+        private static final class ScanningHolderStackHandler extends StackInventory {
 
-        // 槽位物品验证
-        @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            if (stack.isEmpty()) return true;
-
-            return stack.getItem() instanceof DataCrystalItem;
-        }
-
-        private static final class ScanningHolderStackHandler extends CustomItemStackHandler {
-
-            private ScanningHolderStackHandler(int size) {
-                super(size);
+            private ScanningHolderStackHandler() {
+                super(1);
             }
 
+            // 各槽位容量限制
             @Override
             public int getSlotLimit(int slot) {
                 return 1;
+            }
+
+            // 槽位物品验证
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                if (stack.isEmpty()) return true;
+
+                return stack.getItem() instanceof DataCrystalItem;
             }
         }
     }

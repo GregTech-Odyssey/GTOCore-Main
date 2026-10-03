@@ -5,8 +5,8 @@ import com.gtolib.api.recipe.lookup.MapIngredient;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.data.DimensionMarker;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.core.mixins.StrictNBTIngredientAccessor;
 
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
@@ -15,9 +15,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -33,28 +34,26 @@ public final class DimensionDataItem extends Item {
 
     private static final Object2IntOpenHashMap<String> NBTS = new O2IOpenCacheHashMap<>();
 
-    public static final IngredientConverter<Ingredient> INGREDIENT_CONVERTER = (ingredient, amount, map) -> {
-        if (ingredient instanceof StrictNBTIngredientAccessor nbtIngredient) {
-            var nbt = nbtIngredient.getStack().getTag();
-            if (nbt != null && nbtIngredient.getStack().getItem() == DIMENSION_DATA) {
-                if (nbt.tags.get("dim") instanceof StringTag stringTag) {
-                    map.add(NBTS.getInt(stringTag.getAsString()), amount);
-                    return;
-                }
+    public static final IngredientConverter<KeyIngredient> INGREDIENT_CONVERTER = (ingredient, amount, map) -> {
+        if (ingredient.kind == KeyIngredient.EXACT && ingredient.key() instanceof AEItemKey itemKey && itemKey.getItem() == DIMENSION_DATA) {
+            var nbt = itemKey.getTag();
+            if (nbt != null && nbt.tags.get("dim") instanceof StringTag stringTag) {
+                map.add(NBTS.getInt(stringTag.getAsString()), amount);
+                return;
             }
         }
         MapIngredient.INGREDIENT_CONVERTER.convert(ingredient, amount, map);
     };
 
-    public static final IngredientConverter<ItemStack> ITEM_CONVERTER = (stack, amount, map) -> {
-        var nbt = stack.getTag();
-        if (nbt != null && stack.getItem() == DIMENSION_DATA) {
-            if (nbt.tags.get("dim") instanceof StringTag stringTag) {
+    public static final IngredientConverter<AEItemKey> ITEM_CONVERTER = (itemKey, amount, map) -> {
+        if (itemKey.getItem() == DIMENSION_DATA) {
+            var nbt = itemKey.getTag();
+            if (nbt != null && nbt.tags.get("dim") instanceof StringTag stringTag) {
                 map.add(NBTS.getInt(stringTag.getAsString()), amount);
                 return;
             }
         }
-        MapIngredient.ITEM_CONVERTER.convert(stack, amount, map);
+        MapIngredient.ITEM_CONVERTER.convert(itemKey, amount, map);
     };
 
     public DimensionDataItem(Properties properties) {

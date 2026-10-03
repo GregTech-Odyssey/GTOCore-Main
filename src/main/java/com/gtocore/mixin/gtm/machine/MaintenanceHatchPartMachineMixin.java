@@ -109,8 +109,9 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
         return recipe;
     }
 
-    @Inject(method = "update", at = @At(value = "INVOKE", target = "Lcom/gregtechceu/gtceu/common/machine/multiblock/part/MaintenanceHatchPartMachine;consumeDuctTape(Lnet/minecraftforge/items/IItemHandler;I)Z"), remap = false, cancellable = true)
+    @Inject(method = "update", at = @At("HEAD"), remap = false, cancellable = true)
     private void update(CallbackInfo ci) {
+        if (!hasMaintenanceProblems()) return;
         IDroneControlCenterMachine centerMachine = getNetMachine();
         if (centerMachine != null) {
             var eu = getNumMaintenanceProblems() << 6;

@@ -2,13 +2,10 @@ package com.gtocore.common.machine.multiblock.steam;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Collections;
 
 public class LargeSteamCracker extends BaseSteamMultiblockMachine {
 
@@ -29,8 +26,9 @@ public class LargeSteamCracker extends BaseSteamMultiblockMachine {
     protected @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe r) {
         var r1 = super.getRealRecipe(unit, r);
         if (r1 != null) {
-            var content = r1.fluidOutputs.getFirst();
-            r1.fluidOutputs = Collections.singletonList(new Content<>(content, (long) (content.amount * getEfficiencyMultiplier())));
+            r1.bake();
+            var outputs = r1.fluidOutputs.range(0, 1);
+            r1.fluidOutputs = outputs.withAmount(0, (long) (outputs.amount(0) * getEfficiencyMultiplier()));
             return r1;
         }
         return null;

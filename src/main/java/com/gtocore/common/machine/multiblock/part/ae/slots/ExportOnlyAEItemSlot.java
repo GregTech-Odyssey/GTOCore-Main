@@ -1,11 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae.slots;
 
-import com.gtolib.utils.MathUtil;
-
-import com.gregtechceu.gtceu.utils.GTMath;
-
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.GenericStack;
@@ -17,8 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class ExportOnlyAEItemSlot extends ExportOnlyAESlot {
-
-    ItemStack stack = null;
 
     public ExportOnlyAEItemSlot() {
         super();
@@ -32,12 +25,8 @@ public class ExportOnlyAEItemSlot extends ExportOnlyAESlot {
     public void addStack(GenericStack stack) {
         if (this.stock == null) {
             this.stock = stack;
-            this.stack = null;
         } else {
             this.stock = GenericStack.sum(this.stock, stack);
-            if (this.stack != null) {
-                this.stack.setCount(MathUtil.saturatedCast(this.stack.getCount() + stack.amount()));
-            }
         }
         onContentsChanged();
     }
@@ -52,23 +41,13 @@ public class ExportOnlyAEItemSlot extends ExportOnlyAESlot {
             if (stack.equals(stock)) return;
             this.stock = stack;
         }
-        this.stack = null;
         onContentsChanged();
     }
 
-    public ItemStack getReadOnlyStack() {
-        if (this.stock != null && this.stock.what() instanceof AEItemKey itemKey) {
-            return itemKey.getReadOnlyStack();
-        }
-        return ItemStack.EMPTY;
-    }
-
-    public ItemStack getStack() {
-        if (this.stock != null) {
-            if (stack == null) stack = this.stock.what() instanceof AEItemKey itemKey ? itemKey.toStack(GTMath.saturatedCast(this.stock.amount())) : ItemStack.EMPTY;
-            return stack;
-        }
-        return ItemStack.EMPTY;
+    @Nullable
+    public AEItemKey key() {
+        var s = this.stock;
+        return s != null && s.amount() > 0 && s.what() instanceof AEItemKey k ? k : null;
     }
 
     public long extract(long amount, boolean simulate, boolean notify) {
@@ -79,13 +58,17 @@ public class ExportOnlyAEItemSlot extends ExportOnlyAESlot {
                 this.stock = ExportOnlyAESlot.copy(this.stock, this.stock.amount() - extracted);
                 if (this.stock.amount() == 0) {
                     this.stock = null;
-                    stack = null;
-                } else if (stack != null) stack.setCount(MathUtil.saturatedCast(stock.amount()));
+                }
                 if (notify) onContentsChanged();
             }
             return extracted;
         }
         return 0;
+    }
+
+    void restore(AEItemKey key, long amount) {
+        var s = this.stock;
+        this.stock = s == null ? new GenericStack(key, amount) : new GenericStack(s.what(), s.amount() + amount);
     }
 
     @Override

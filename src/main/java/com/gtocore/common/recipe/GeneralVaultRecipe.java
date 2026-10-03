@@ -1,7 +1,8 @@
 package com.gtocore.common.recipe;
 
-import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.data.machines.MultiBlockG;
+
+import com.gregtechceu.gtceu.api.transfer.key.KeyCodecs;
 
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.ByteArrayTag;
@@ -40,7 +41,7 @@ public final class GeneralVaultRecipe extends ShapedRecipe {
             if (!merged.isEmpty()) {
                 var data = new ListData(merged.size() * 2);
                 merged.fastForEach((key, amount) -> {
-                    data.add(GTOCodecs.AE_KEY_DATA_CODEC.encode(key));
+                    data.add(KeyCodecs.AE_KEY_DATA_CODEC.encode(key));
                     data.add(LongData.valueOf(amount));
                 });
                 result.getOrCreateTag().putByteArray("keymap", data.writeToBytes());
@@ -68,7 +69,7 @@ public final class GeneralVaultRecipe extends ShapedRecipe {
         if ((list.size() & 1) != 0) throw new IllegalArgumentException("Invalid vault keymap");
         merged.ensureCapacity(merged.size() + list.size() / 2);
         for (int i = 0; i < list.size(); i += 2) {
-            var key = GTOCodecs.AE_KEY_DATA_CODEC.decode(list.get(i), 0);
+            var key = KeyCodecs.AE_KEY_DATA_CODEC.decode(list.get(i), 0);
             long amount = list.getLong(i + 1);
             if (key == null || amount <= 0) {
                 throw new IllegalArgumentException("Invalid vault keymap entry");

@@ -5,9 +5,9 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistillationTower;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import lombok.Getter;
 
@@ -22,7 +22,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class DistillationTowerMachine extends ElectricMultiblockMachine implements IDistillationTower {
 
     @Getter
-    private final List<IFluidHandler> fluidOutputs = new ArrayList<>();
+    private final List<RecipeHandlerUnit> fluidOutputs = new ArrayList<>();
 
     public DistillationTowerMachine(MetaMachineBlockEntity holder) {
         super(holder);

@@ -11,7 +11,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +50,7 @@ public final class IsaMillMachine extends ElectricMultiblockMachine {
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         recipe = super.getRealRecipe(unit, recipe);
         if (recipe == null) return null;
-        CustomItemStackHandler storage = ballHatchPartMachine.getInventory().storage;
+        StackInventory storage = ballHatchPartMachine.getInventory().storage;
         ItemStack item = storage.getStackInSlot(0);
         int tier = BallHatchPartMachine.GRINDBALL.getOrDefault(item.getItem(), 0);
         if (tier == recipe.data.getInt(GTORecipeDataKeys.GRINDBALL)) {

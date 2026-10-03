@@ -4,30 +4,24 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistinctPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInfiniteSource;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraftforge.fluids.FluidStack;
 
+import appeng.api.stacks.AEFluidKey;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -37,17 +31,10 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
 
     private final int SLOT_COUNT = 9;
 
-    @SaveToDisk
-    public final NotifiableFluidTank tank;
+    public final NotifiableInfiniteSource<AEFluidKey> tank;
     private final int slots;
-    @Nullable
-    protected TickableSubscription autoIOSubs;
-
-    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
-    private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoKeep);
-    private final Int2ObjectOpenHashMap<FluidStack> fluidMap;
     @SaveToDisk
-    private final CustomFluidTank[] creativeTanks;
+    private final KeyInventory<AEFluidKey> creativeTanks;
 
     @Getter
     @SaveToDisk
@@ -58,75 +45,29 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
     public CreativeInputHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.MAX, IO.IN);
         this.slots = SLOT_COUNT;
+        this.creativeTanks = KeyInventory.fluids(SLOT_COUNT, 1);
         this.tank = createTank();
-        this.fluidMap = new Int2ObjectOpenHashMap<>();
-        this.creativeTanks = new CustomFluidTank[SLOT_COUNT];
-        for (int i = 0; i < this.creativeTanks.length; i++) {
-            this.creativeTanks[i] = new CustomFluidTank(1);
-        }
     }
 
     //////////////////////////////////////
     // ***** Initialization ******//
     //////////////////////////////////////
 
-    protected NotifiableFluidTank createTank() {
-        return new InfinityFluidTank(this, SLOT_COUNT, Integer.MAX_VALUE, IO.IN);
+    protected NotifiableInfiniteSource<AEFluidKey> createTank() {
+        return new NotifiableInfiniteSource<>(this, creativeTanks, IO.IN, IO.IN, false);
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            if (this.creativeTanks[i] != null && !this.creativeTanks[i].getFluid().isEmpty()) {
-                fluidMap.put(i, this.creativeTanks[i].getFluid());
-            }
-        }
         if (isDistinct) {
             getHandlerUnit().setDistinct(true);
         }
-        updateTankSubscription();
     }
 
     @Override
     public void onPaintingColorChanged(int color) {
         getHandlerUnit().setColor(color, true);
-    }
-
-    protected void updateTankSubscription() {
-        if (!fluidMap.isEmpty()) {
-            autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
-        } else if (autoIOSubs != null) {
-            clearAll();
-            autoIOSubs.unsubscribe();
-            autoIOSubs = null;
-        }
-    }
-
-    protected void autoKeep() {
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            if (fluidMap.containsKey(i)) {
-                var mFluid = this.creativeTanks[i].getFluid();
-                if (!this.tank.getFluidInTank(i).equals(mFluid)) {
-                    var copy = mFluid.copy();
-                    copy.setAmount(Integer.MAX_VALUE);
-                    this.tank.setFluidInTank(i, copy);
-                }
-            } else {
-                if (!this.tank.getFluidInTank(i).isEmpty()) {
-                    this.tank.setFluidInTank(i, FluidStack.EMPTY);
-                }
-            }
-        }
-        updateTankSubscription();
-    }
-
-    protected void clearAll() {
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            if (!this.tank.getFluidInTank(i).isEmpty()) {
-                this.tank.setFluidInTank(i, FluidStack.EMPTY);
-            }
-        }
     }
 
     @Override
@@ -150,34 +91,15 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
         var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * colSize + 8);
 
         int index = 0;
+        var tankAdapter = new ForgeFluidAdapter(creativeTanks);
         for (int y = 0; y < colSize; y++) {
             for (int x = 0; x < rowSize; x++) {
                 int finalIndex = index++;
                 container.addWidget(new PhantomFluidWidget(
-                        this.creativeTanks[finalIndex], finalIndex,
+                        tankAdapter, finalIndex,
                         4 + x * 18, 4 + y * 18, 18, 18,
-                        () -> this.creativeTanks[finalIndex].getFluid(),
-                        (fluid -> {
-                            if (fluid.isEmpty()) {
-                                this.creativeTanks[finalIndex].setFluid(fluid);
-                                if (!fluidMap.isEmpty() && fluidMap.containsKey(finalIndex)) fluidMap.remove(finalIndex);
-                                updateTankSubscription();
-                                return;
-                            }
-                            for (var entry : fluidMap.int2ObjectEntrySet()) {
-                                int i = entry.getIntKey();
-                                FluidStack f = entry.getValue();
-                                if (i != finalIndex && f.getFluid() == fluid.getFluid()) {
-                                    return;
-                                } else if (i == finalIndex && f.getFluid() != fluid.getFluid()) {
-                                    setFluid(finalIndex, fluid);
-                                    updateTankSubscription();
-                                    return;
-                                }
-                            }
-                            setFluid(finalIndex, fluid);
-                            updateTankSubscription();
-                        })).setShowAmount(false).setBackground(GuiTextures.FLUID_SLOT));
+                        () -> tankAdapter.getFluidInTank(finalIndex),
+                        fluid -> setFluid(finalIndex, fluid)).setShowAmount(false).setBackground(GuiTextures.FLUID_SLOT));
             }
         }
 
@@ -187,32 +109,22 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
         return group;
     }
 
-    private void setFluid(int index, FluidStack fs) {
-        var newFluid = fs.copy();
-        newFluid.setAmount(1);
-        this.creativeTanks[index].setFluid(newFluid);
-        if (fluidMap.containsKey(index)) {
-            fluidMap.replace(index, fs);
-        } else {
-            fluidMap.put(index, fs);
+    private void setFluid(int index, @Nullable FluidStack fs) {
+        if (index < 0 || index >= creativeTanks.size()) return;
+        var key = fs == null ? null : Keys.fluid(fs);
+        if (key == null) {
+            creativeTanks.set(index, null, 0);
+            return;
         }
+        for (int i = 0; i < creativeTanks.size(); i++) {
+            if (i != index && creativeTanks.keyAt(i) instanceof AEFluidKey other && other.getFluid() == key.getFluid()) return;
+        }
+        creativeTanks.set(index, key, 1);
     }
 
     @Override
     public void setDistinct(boolean isDistinct) {
         this.isDistinct = isDistinct;
         getHandlerUnit().setDistinctAndNotify(isDistinct);
-    }
-
-    private static class InfinityFluidTank extends NotifiableFluidTank {
-
-        public InfinityFluidTank(MetaMachine machine, int slots, int capacity, IO io) {
-            super(machine, slots, capacity, io);
-        }
-
-        @Override
-        public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> left, boolean simulate) {
-            return super.handleRecipeFluid(io, recipe, left, true);
-        }
     }
 }

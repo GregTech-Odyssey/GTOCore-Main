@@ -9,7 +9,6 @@ import com.gtolib.api.capability.IManaContainer;
 import com.gtolib.api.machine.ManaDistributorMachine;
 import com.gtolib.api.machine.mana.trait.ManaTrait;
 import com.gtolib.api.misc.ManaContainerList;
-import com.gtolib.api.recipe.RecipeType;
 import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -18,14 +17,14 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.handler.IItemRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 
 import net.minecraft.core.BlockPos;
@@ -34,9 +33,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.recipesearch.IntLongMap;
@@ -53,10 +55,7 @@ import vazkii.botania.common.handler.BotaniaSounds;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
-
-import static com.gtolib.api.recipe.lookup.MapIngredient.ITEM_CONVERTER;
 
 public class ManaFlowAssembler extends ManaMultiblockMachine {
 
@@ -235,90 +234,143 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         });
     }
 
-    private class ItemEntityRecipeHandler implements IItemRecipeHandler {
+    private class ItemEntityRecipeHandler implements IRecipeHandler {
+
+        private List<ItemEntity> planned = Collections.emptyList();
+
+        private List<ItemEntity> plannedEntities(PlanScratch plan, int member) {
+            for (int i = 0; i < plan.logSize(); i++) {
+                if (plan.logMember(i) == member && !plan.logIsFluid(i)) return planned;
+            }
+            planned = getItemEntitiesAbove();
+            return planned;
+        }
+
+        private static long reserved(PlanScratch plan, int member, int token, boolean consumeOnly) {
+            long r = 0;
+            for (int i = 0; i < plan.logSize(); i++) {
+                if (plan.logMember(i) == member && plan.logToken(i) == token && !plan.logIsFluid(i) && (!consumeOnly || plan.logConsumes(i))) r += plan.logAmount(i);
+            }
+            return r;
+        }
 
         @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-            if (io == IO.OUT) {
-                if (!simulate && getLevel() instanceof ServerLevel level) {
-                    var pos = getPos().above(3);
-                    var posCenter = pos.getCenter();
-                    var random = level.random;
-                    items.forEach(ingredient -> {
-                        var itemStack = ingredient.inner.getInnerItemStack().copyWithCount((int) ingredient.amount);
-                        var itemEntity = new ItemEntity(level, posCenter.x(), posCenter.y(), posCenter.z(), itemStack);
-                        itemEntity.setDeltaMovement(random.nextDouble() * 0.2 - 0.1, 0.2, random.nextDouble() * 0.2 - 0.1);
-                        level.addFreshEntity(itemEntity);
-                    });
+        public boolean handlesItems() {
+            return true;
+        }
+
+        @Override
+        public long available(AEKeyType type, KeyIngredient ingredient) {
+            if (type != AEKeyType.items()) return 0;
+            long total = 0;
+            for (var itemEntity : getItemEntitiesAbove()) {
+                if (itemEntity.isAlive() && ingredient.test(itemEntity.getItem())) total += StxckUtil.getTotalCount(itemEntity);
+            }
+            return total;
+        }
+
+        @Override
+        public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
+            if (type != AEKeyType.items()) return 0;
+            var entities = plannedEntities(plan, member);
+            long got = 0;
+            for (int s = 0; s < entities.size() && got < need; s++) {
+                var itemEntity = entities.get(s);
+                if (!itemEntity.isAlive() || itemEntity.getItem().isEmpty() || !ingredient.test(itemEntity.getItem())) continue;
+                long free = StxckUtil.getTotalCount(itemEntity) - reserved(plan, member, s, false);
+                if (free <= 0) continue;
+                long t = Math.min(free, need - got);
+                plan.logCustom(member, s, entry, t, type, consume, false);
+                got += t;
+            }
+            return got;
+        }
+
+        @Override
+        public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
+            if (type != AEKeyType.items()) return true;
+            var entities = planned;
+            for (int s = 0; s < entities.size(); s++) {
+                long take = reserved(plan, member, s, true);
+                if (take > 0) {
+                    var itemEntity = entities.get(s);
+                    if (!itemEntity.isAlive() || StxckUtil.getTotalCount(itemEntity) < take) return false;
                 }
-                return true;
-            } else {
-                var itemEntities = getItemEntitiesAbove();
-                if (itemEntities.isEmpty()) return items.isEmpty();
-                for (var itemEntity : itemEntities) {
-                    if (!itemEntity.isAlive() || itemEntity.getItem().isEmpty()) {
-                        continue;
-                    }
-                    var itemStack = itemEntity.getItem();
-                    var itemCount = StxckUtil.getTotalCount(itemEntity);
-                    var originalItemCount = itemCount;
-                    var leftConsuming = items.iterator();
-                    while (itemCount > 0 && leftConsuming.hasNext()) {
-                        var ingredient = leftConsuming.next();
-                        if (ingredient.inner.testItem(itemStack.getItem())) {
-                            var toExtract = (int) Math.min(ingredient.amount, itemCount);
-                            ingredient.shrink(toExtract);
-                            itemCount -= toExtract;
-                            if (ingredient.amount <= 0) {
-                                leftConsuming.remove();
-                            }
-                        }
-                    }
-                    if (!simulate) {
-                        StxckUtil.shrink(itemEntity, originalItemCount - itemCount);
-                    }
+            }
+            for (int s = 0; s < entities.size(); s++) {
+                long take = reserved(plan, member, s, true);
+                if (take > 0) StxckUtil.shrink(entities.get(s), (int) take);
+            }
+            return true;
+        }
+
+        @Override
+        public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
+            if (type != AEKeyType.items()) return;
+            var entities = planned;
+            for (int s = 0; s < entities.size(); s++) {
+                long take = reserved(plan, member, s, true);
+                if (take <= 0) continue;
+                var itemEntity = entities.get(s);
+                if (itemEntity.isAlive()) {
+                    StxckUtil.grow(itemEntity, (int) take);
+                } else if (itemEntity.level() instanceof ServerLevel level) {
+                    var restored = new ItemEntity(level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), itemEntity.getItem().copyWithCount((int) take));
+                    restored.setDeltaMovement(0, 0, 0);
+                    level.addFreshEntity(restored);
                 }
-                return items.isEmpty();
             }
         }
 
         @Override
-        public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
+        public long reserveOutput(PlanScratch plan, int member, AEKeyType type, int entry, AEKey key, long amount) {
+            return type == AEKeyType.items() ? amount : 0;
+        }
+
+        @Override
+        public long insertOutput(AEKeyType type, AEKey key, long amount) {
+            if (!(key instanceof AEItemKey itemKey)) return 0;
+            if (getLevel() instanceof ServerLevel level) {
+                var pos = getPos().above(3);
+                var posCenter = pos.getCenter();
+                var random = level.random;
+                var itemEntity = new ItemEntity(level, posCenter.x(), posCenter.y(), posCenter.z(), Keys.toStack(itemKey, amount));
+                itemEntity.setDeltaMovement(random.nextDouble() * 0.2 - 0.1, 0.2, random.nextDouble() * 0.2 - 0.1);
+                level.addFreshEntity(itemEntity);
+            }
+            return amount;
+        }
+
+        @Override
+        public boolean isInfiniteCapacity(AEKeyType type) {
+            return type == AEKeyType.items();
+        }
+
+        @Override
+        public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
+            if (type != AEKeyType.items()) return false;
             for (var itemEntity : getItemEntitiesAbove()) {
                 if (!itemEntity.isAlive()) continue;
-                var interrupted = function.test(itemEntity.getItem(), StxckUtil.getTotalCount(itemEntity));
-                if (itemEntity.getItem().isEmpty()) {
-                    itemEntity.discard();
-                }
-                if (interrupted) return true;
+                var key = Keys.item(itemEntity.getItem());
+                if (key != null && visitor.visit(key, StxckUtil.getTotalCount(itemEntity))) return true;
             }
             return false;
         }
 
         @Override
-        public void fastForEachItems(ObjLongConsumer<ItemStack> function) {
-            for (var itemEntity : getItemEntitiesAbove()) {
-                if (!itemEntity.isAlive()) continue;
-                function.accept(itemEntity.getItem(), StxckUtil.getTotalCount(itemEntity));
-                if (itemEntity.getItem().isEmpty()) {
-                    itemEntity.discard();
-                }
-            }
+        public IntLongMap getSearchMap(@NotNull GTRecipeType type) {
+            var intIngredientMap = new IntLongMap();
+            addToSearchMap(intIngredientMap, type);
+            return intIngredientMap;
         }
 
         @Override
-        public IntLongMap getSearchMap(@NotNull GTRecipeType type) {
-            var intIngredientMap = new IntLongMap();
-            boolean specialConverter = ((RecipeType) type).specialConverter;
+        public void addToSearchMap(@NotNull IntLongMap target, @NotNull GTRecipeType type) {
             for (var i : getItemEntitiesAbove()) {
                 if (!i.isAlive()) continue;
-                if (specialConverter) {
-                    type.convertItem(i.getItem(), StxckUtil.getTotalCount(i), intIngredientMap);
-                } else {
-                    ITEM_CONVERTER.convert(i.getItem(), StxckUtil.getTotalCount(i), intIngredientMap);
-                }
+                var key = Keys.item(i.getItem());
+                if (key != null) type.convertKey(key, StxckUtil.getTotalCount(i), target);
             }
-            return intIngredientMap;
         }
     }
 

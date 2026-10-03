@@ -16,11 +16,12 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IAutoOutputItem;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.Horizontal;
@@ -46,6 +47,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.items.ItemStackHandler;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -85,9 +89,9 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
 
     // 输入输出物品存储
     @SaveToDisk
-    private final NotifiableItemStackHandler input;
+    private final NotifiableInventory<AEItemKey> input;
     @SaveToDisk
-    private final NotifiableItemStackHandler output;
+    private final NotifiableInventory<AEItemKey> output;
 
     // 村民存储与配置
     @SaveToDisk
@@ -104,13 +108,13 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     private final boolean[] startUp = new boolean[10];
 
     private final VillagerRecipe[][] villagersDataset = new VillagerRecipe[10][];
-    private final CustomItemStackHandler RecipesHandler = new CustomItemStackHandler(3 * 10);
+    private final ItemStackHandler RecipesHandler = new ItemStackHandler(3 * 10);
 
     // 升级物品
     @SaveToDisk
-    private final CustomItemStackHandler upgrade;
+    private final KeyInventory<AEItemKey> upgrade;
     @SaveToDisk
-    private final CustomItemStackHandler enhance;
+    private final KeyInventory<AEItemKey> enhance;
 
     // 最大交易次数 32*
     private static final Item[] FIELD_GENERATOR = {
@@ -149,13 +153,14 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
 
     public VillageTradingStationMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        input = new NotifiableItemStackHandler(this, 256, IO.IN, IO.IN);
-        output = new NotifiableItemStackHandler(this, 256, IO.OUT, IO.OUT);
+        input = NotifiableInventory.items(this, 256, IO.IN, IO.IN);
+        output = NotifiableInventory.items(this, 256, IO.OUT, IO.OUT);
         villagers = new VillageHolder(this);
-        upgrade = new CustomItemStackHandler();
-        enhance = new CustomItemStackHandler();
-        enhance.setOnContentsChanged(() -> {
-            tire = ENHANCE_INDEX_MAP.getOrDefault(enhance.getStackInSlot(0).getItem(), 0);
+        upgrade = KeyInventory.items(1);
+        enhance = KeyInventory.items(1);
+        enhance.setOnChanged(() -> {
+            var key = enhance.keyAt(0);
+            tire = ENHANCE_INDEX_MAP.getOrDefault(key == null ? Items.AIR : key.getItem(), 0);
             if (tire < 9) {
                 replenishmentInterval = 2400 - 225 * tire;
                 tradingMultiple = 1;
@@ -228,100 +233,44 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         int remainingUses = trade.maxUses - trade.uses;
         if (remainingUses <= 0) return;
 
-        int maxPossibleTrades = getMaxPossibleTrades(input, trade.buy, trade.buyB);
+        int maxPossibleTrades = getMaxPossibleTrades(input.storage, trade.buyKey, trade.buy.getCount(), trade.buyBKey, trade.buyB.getCount());
         if (maxPossibleTrades <= 0) return;
 
         int actualTrades = Math.min((maxPossibleTrades / tradingMultiple), remainingUses) * tradingMultiple;
         if (actualTrades <= 0) return;
 
-        deductItems(input, trade.buy, actualTrades);
+        deductItems(input.storage, trade.buyKey, trade.buy.getCount(), actualTrades);
         if (!trade.buyB.isEmpty()) {
-            deductItems(input, trade.buyB, actualTrades);
+            deductItems(input.storage, trade.buyBKey, trade.buyB.getCount(), actualTrades);
         }
 
-        ItemStack outputStack = trade.sell.copy();
-        outputStack.setCount(trade.sell.getCount() * actualTrades);
-        addItems(output, outputStack);
+        if (trade.sellKey != null) {
+            output.storage.insert(trade.sellKey, (long) trade.sell.getCount() * actualTrades, false);
+        }
 
         villagersDataset[slot][selected[slot]].uses += actualTrades / tradingMultiple;
         syncUsesAndMaxUsesToVillagerItem(slot);
     }
 
     // 计算两个输入物品堆能支持的最大交易次数
-    private int getMaxPossibleTrades(ICustomItemStackHandler input, ItemStack buy, ItemStack buyB) {
-        int totalBuy = 0;
-        for (int i = 0; i < input.getSlots(); i++) {
-            ItemStack stack = input.getStackInSlot(i);
-            if (ItemStack.isSameItemSameTags(stack, buy)) {
-                totalBuy += stack.getCount();
-            }
-        }
-        int maxByBuy = buy.getCount() > 0 ? totalBuy / buy.getCount() : Integer.MAX_VALUE;
-
-        int maxByBuyB = Integer.MAX_VALUE;
-        if (!buyB.isEmpty() && buyB.getCount() > 0) {
-            int totalBuyB = 0;
-            for (int i = 0; i < input.getSlots(); i++) {
-                ItemStack stack = input.getStackInSlot(i);
-                if (ItemStack.isSameItemSameTags(stack, buyB)) {
-                    totalBuyB += stack.getCount();
-                }
-            }
-            maxByBuyB = totalBuyB / buyB.getCount();
+    private static int getMaxPossibleTrades(KeyInventory<AEItemKey> inventory, @Nullable AEItemKey buy, int buyCount, @Nullable AEItemKey buyB, int buyBCount) {
+        long maxByBuy = Integer.MAX_VALUE;
+        if (buyCount > 0) {
+            maxByBuy = buy == null ? 0 : inventory.count(buy) / buyCount;
         }
 
-        return Math.min(Math.min(maxByBuy, maxByBuyB), 128);
+        long maxByBuyB = Integer.MAX_VALUE;
+        if (buyB != null && buyBCount > 0) {
+            maxByBuyB = inventory.count(buyB) / buyBCount;
+        }
+
+        return (int) Math.min(Math.min(maxByBuy, maxByBuyB), 128);
     }
 
     // 从物品处理器中扣除指定数量的物品
-    private void deductItems(ICustomItemStackHandler handler, ItemStack target, int count) {
-        if (target.isEmpty() || count <= 0) return;
-
-        int remaining = target.getCount() * count;
-        for (int i = 0; i < handler.getSlots() && remaining > 0; i++) {
-            ItemStack stack = handler.getStackInSlot(i);
-            if (ItemStack.isSameItemSameTags(stack, target)) {
-                int take = Math.min(stack.getCount(), remaining);
-                stack.shrink(take);
-                if (stack.isEmpty()) {
-                    handler.setStackInSlot(i, ItemStack.EMPTY);
-                }
-                remaining -= take;
-            }
-        }
-    }
-
-    // 向物品处理器中添加物品
-    private void addItems(ICustomItemStackHandler handler, ItemStack stack) {
-        if (stack.isEmpty()) return;
-
-        ItemStack remaining = stack.copy();
-        int maxStackSize = remaining.getMaxStackSize();
-
-        for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
-            ItemStack existing = handler.getStackInSlot(i);
-            if (existing.isEmpty()) continue;
-            if (ItemStack.isSameItemSameTags(existing, remaining) && existing.getCount() < maxStackSize) {
-                int addAmount = Math.min(remaining.getCount(), maxStackSize - existing.getCount());
-                existing.grow(addAmount);
-                remaining.shrink(addAmount);
-            }
-        }
-
-        while (!remaining.isEmpty()) {
-            boolean foundSlot = false;
-            for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
-                if (handler.getStackInSlot(i).isEmpty()) {
-                    int putAmount = Math.min(remaining.getCount(), maxStackSize);
-                    ItemStack toPut = remaining.copy();
-                    toPut.setCount(putAmount);
-                    handler.setStackInSlot(i, toPut);
-                    remaining.shrink(putAmount);
-                    foundSlot = true;
-                }
-            }
-            if (!foundSlot) break;
-        }
+    private static void deductItems(KeyInventory<AEItemKey> inventory, @Nullable AEItemKey target, int targetCount, int count) {
+        if (target == null || targetCount <= 0 || count <= 0) return;
+        inventory.extract(target, (long) targetCount * count, false);
     }
 
     /////////////////////////////////////
@@ -612,7 +561,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         if (recipe == null) return -1;
         if (recipe.maxUses >= MAX_UPGRADED_USES) return -2;
         int tier = recipe.maxUses / 32;
-        int count = Math.min(getMaxPossibleTrades(upgrade, FIELD_GENERATOR_STACKS[tier], ItemStack.EMPTY), (tier + 1) * 32 - recipe.maxUses);
+        int count = Math.min(getMaxPossibleTrades(upgrade, fieldGeneratorKey(tier), 1, null, 0), (tier + 1) * 32 - recipe.maxUses);
         return (long) tier << 48 | (long) count << 24 | (recipe.maxUses + count);
     }
 
@@ -637,10 +586,10 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         if (recipes != null && isLocked(UPGRADE_SLOT) && recipes.length > 0 && selected[UPGRADE_SLOT] < recipes.length) {
             int upGread = recipes[selected[UPGRADE_SLOT]].maxUses / 32;
             if (recipes[selected[UPGRADE_SLOT]].maxUses < MAX_UPGRADED_USES) {
-                ItemStack item = FIELD_GENERATOR[upGread].getDefaultInstance();
-                int count = Math.min(getMaxPossibleTrades(upgrade, item, ItemStack.EMPTY), (upGread + 1) * 32 - recipes[selected[UPGRADE_SLOT]].maxUses);
+                AEItemKey item = fieldGeneratorKey(upGread);
+                int count = Math.min(getMaxPossibleTrades(upgrade, item, 1, null, 0), (upGread + 1) * 32 - recipes[selected[UPGRADE_SLOT]].maxUses);
                 if (count > 0) {
-                    deductItems(upgrade, item, count);
+                    deductItems(upgrade, item, 1, count);
                     villagersDataset[UPGRADE_SLOT][selected[UPGRADE_SLOT]].maxUses += count;
                     syncUsesAndMaxUsesToVillagerItem(UPGRADE_SLOT);
                 }
@@ -652,7 +601,18 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     // ********* 辅助类与方法 ********* //
     /////////////////////////////////////
 
-    private static class VillageHolder extends CustomItemStackHandler {
+    private static final AEItemKey[] FIELD_GENERATOR_KEYS = new AEItemKey[FIELD_GENERATOR.length];
+
+    private static AEItemKey fieldGeneratorKey(int tier) {
+        var key = FIELD_GENERATOR_KEYS[tier];
+        if (key == null) {
+            key = AEItemKey.of(FIELD_GENERATOR[tier]);
+            FIELD_GENERATOR_KEYS[tier] = key;
+        }
+        return key;
+    }
+
+    private static class VillageHolder extends StackInventory {
 
         private final VillageTradingStationMachine machine;
 
@@ -673,6 +633,12 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             if (machine.isLocked(slot)) return 0;
             return super.insert(slot, stack, amount, simulate);
         }
+
+        @Override
+        public long insert(int slot, AEItemKey key, long amount, boolean simulate) {
+            if (machine.isLocked(slot)) return 0;
+            return super.insert(slot, key, amount, simulate);
+        }
     }
 
     // 村民交易配方类
@@ -681,6 +647,12 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         private final ItemStack buy;
         private final ItemStack buyB;
         private final ItemStack sell;
+        @Nullable
+        private final AEItemKey buyKey;
+        @Nullable
+        private final AEItemKey buyBKey;
+        @Nullable
+        private final AEItemKey sellKey;
         private int maxUses;
         private int uses;
 
@@ -688,6 +660,9 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             this.buy = buy;
             this.buyB = buyB;
             this.sell = sell;
+            this.buyKey = Keys.item(buy);
+            this.buyBKey = Keys.item(buyB);
+            this.sellKey = Keys.item(sell);
             this.maxUses = maxUses;
             this.uses = uses;
         }

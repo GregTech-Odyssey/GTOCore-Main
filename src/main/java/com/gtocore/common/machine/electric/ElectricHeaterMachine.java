@@ -14,17 +14,19 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapability;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 
 import net.minecraft.core.Direction;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -77,19 +79,19 @@ public final class ElectricHeaterMachine extends WorkableTieredMachine implement
     }
 
     @Override
-    protected @NotNull NotifiableFluidTank createImportFluidHandler(Object @NotNull... args) {
-        return new NotifiableFluidTank(this, 0, 0, IO.NONE).setAvailable(false);
+    protected @NotNull NotifiableInventory<AEFluidKey> createImportFluidHandler(Object @NotNull... args) {
+        return NotifiableInventory.fluids(this, 0, 0, IO.NONE).setAvailable(false);
     }
 
     @Override
     @Nullable
-    public ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 
     @Override
     @Nullable
-    public ICustomFluidStackHandler getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 

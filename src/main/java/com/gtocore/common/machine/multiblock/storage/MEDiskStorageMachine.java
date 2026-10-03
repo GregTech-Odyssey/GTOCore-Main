@@ -6,7 +6,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 
 import appeng.items.materials.StorageComponentItem;
 
@@ -55,8 +55,11 @@ public final class MEDiskStorageMachine extends MEStorageMachine {
     protected double getStorageCapacity() {
         long bytes = 0;
         for (var bus : componentBuses.buses()) {
-            for (int i = 0, slots = bus.getSlots(); i < slots; i++) {
-                long term = componentBytes(bus.getStackInSlot(i));
+            var inv = bus.storage;
+            for (int i = 0, slots = inv.size(); i < slots; i++) {
+                var key = inv.keyAt(i);
+                if (key == null) continue;
+                long term = componentBytes(key.getItem(), inv.amountAt(i));
                 if (term < 1) continue;
                 bytes = bytes > Long.MAX_VALUE - term ? Long.MAX_VALUE : bytes + term;
             }
@@ -71,10 +74,9 @@ public final class MEDiskStorageMachine extends MEStorageMachine {
         return false;
     }
 
-    private static long componentBytes(ItemStack stack) {
-        if (stack.isEmpty() || !(stack.getItem() instanceof StorageComponentItem component)) return 0;
+    private static long componentBytes(Item item, long count) {
+        if (count < 1 || !(item instanceof StorageComponentItem component)) return 0;
         long bytes = component.getBytes();
-        long count = stack.getCount();
         return bytes > Long.MAX_VALUE / count ? Long.MAX_VALUE : bytes * count;
     }
 

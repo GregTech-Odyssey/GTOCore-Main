@@ -1,9 +1,8 @@
 package com.hepdd.gtmthings.api.misc;
 
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
@@ -14,14 +13,15 @@ import com.gto.datasynclib.util.DataCodecs;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class UnlimitedItemStackTransfer extends CustomItemStackHandler {
+public class UnlimitedItemStackTransfer extends StackInventory {
 
     public UnlimitedItemStackTransfer(int size) {
         super(size);
     }
 
-    public UnlimitedItemStackTransfer(NonNullList<ItemStack> stacks) {
+    public UnlimitedItemStackTransfer(List<ItemStack> stacks) {
         super(stacks);
     }
 
@@ -61,7 +61,7 @@ public class UnlimitedItemStackTransfer extends CustomItemStackHandler {
     public void readData(@NotNull Data data, int dataVersion) {
         isInputLimited = false;
         if (dataVersion < 1) {
-            GTDataFixer.decodeCustomItemStackHandler(this, data, dataVersion);
+            GTDataFixer.decodeStackInventory(this, data, dataVersion);
         } else {
             ItemStack[] stacks = this.stacks;
             Arrays.fill(stacks, ItemStack.EMPTY);

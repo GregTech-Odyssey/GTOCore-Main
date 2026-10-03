@@ -2,7 +2,6 @@ package com.gtocore.api.research;
 
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
-import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.api.data.GTODimensions;
@@ -11,6 +10,7 @@ import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.transfer.key.KeyCodecs;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -82,7 +82,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     static void writeScannedItems(DataIOStream dataIOStream, Set<AEKey> scannedItems) throws IOException {
         dataIOStream.writeInt(scannedItems.size());
         for (AEKey item : scannedItems) {
-            dataIOStream.writeByteArray(GTOCodecs.AE_KEY_DATA_CODEC.encode(item).writeToBytes());
+            dataIOStream.writeByteArray(KeyCodecs.AE_KEY_DATA_CODEC.encode(item).writeToBytes());
         }
     }
 
@@ -91,7 +91,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         Set<AEKey> scannedItems = new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY);
         for (int i = 0; i < scannedItemCount; i++) {
             byte[] itemData = dataIOStream.readByteArray();
-            AEKey item = GTOCodecs.AE_KEY_DATA_CODEC.decode(Data.readData(itemData));
+            AEKey item = KeyCodecs.AE_KEY_DATA_CODEC.decode(Data.readData(itemData));
             if (item != null) {
                 scannedItems.add(item);
             }

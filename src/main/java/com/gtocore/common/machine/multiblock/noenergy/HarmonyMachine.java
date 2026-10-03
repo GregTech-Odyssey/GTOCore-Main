@@ -1,9 +1,12 @@
 package com.gtocore.common.machine.multiblock.noenergy;
 
+import com.gtocore.api.wireless.energy.EnergyAccount;
+import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.PortKind;
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.wireless.energy.WirelessIdle;
 import com.gtocore.data.IdleReason;
 
-import com.gtolib.api.capability.IExtendWirelessEnergyContainerHolder;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -20,7 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
+import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
@@ -33,14 +36,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IExtendWirelessEnergyContainerHolder {
+public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IBindable {
 
     private static final BigInteger BASE = BigInteger.valueOf(5277655810867200L);
 
     static final Fluid HYDROGEN = GTMaterials.Hydrogen.getFluid();
     static final Fluid HELIUM = GTMaterials.Helium.getFluid();
     static final long FLUID_PER_RUN = 1024000000L;
-    private WirelessEnergyContainer WirelessEnergyContainerCache;
+    private final EnergyPort port = new EnergyPort(PortKind.HARMONY, this, 0);
     @SaveToDisk(defaultValue = "1")
     private int tier = 1;
     @SaveToDisk(defaultValue = "0")
@@ -130,16 +133,14 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
             return null;
         }
         if (getUUID() != null && hydrogen >= FLUID_PER_RUN && helium >= FLUID_PER_RUN && oc > 0) {
-            var container = getWirelessEnergyContainer();
-            if (container == null) {
-                IdleReason.HARMONY_GRID_SHORT.setReason(this, FormattingUtil.formatNumbers(getRecipeEnergy(recipe)));
-                return null;
-            }
-            if (container.getStorage().compareTo(getRecipeEnergy(recipe)) > 0) {
-                recipe.duration = recipe.duration >> (oc - 1);
+            var energy = getRecipeEnergy(recipe);
+            int duration = recipe.duration >> (oc - 1);
+            var result = port.checkSettle(energy, 0, duration);
+            if (result.ok()) {
+                recipe.duration = duration;
                 return recipe;
             }
-            IdleReason.HARMONY_GRID_SHORT.setReason(this, FormattingUtil.formatNumbers(getRecipeEnergy(recipe)));
+            WirelessIdle.report(this, result, port, 0, energy.doubleValue());
         } else if (getUUID() == null) {
             IdleReason.NO_OWNER.setReason(this);
         } else if (oc <= 0) {
@@ -157,8 +158,6 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
         super.beforeWorking(unit, recipe);
         hydrogen -= FLUID_PER_RUN;
         helium -= FLUID_PER_RUN;
-        var container = getWirelessEnergyContainer();
-        if (container != null) container.setStorage(container.getStorage().subtract(getRecipeEnergy(recipe)));
         if (tier == recipe.data.getInt(GTORecipeDataKeys.TIER)) {
             count++;
             if (count >= runsToAdvance(tier)) {
@@ -166,6 +165,21 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
                 tier++;
             }
         }
+    }
+
+    @Override
+    public boolean handleRecipeInput(RecipeHandlerUnit unit, GTRecipe recipe) {
+        return port.settleThen(getRecipeEnergy(recipe), 0, recipe.duration, () -> super.handleRecipeInput(unit, recipe));
+    }
+
+    EnergyAccount wirelessAccount() {
+        return port.account();
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        port.release();
     }
 
     private BigInteger getRecipeEnergy(GTRecipe recipe) {
@@ -198,9 +212,9 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
         textList.add(Component.translatable("gtocore.tier.value", tier));
         textList.add(Component.translatable("behaviour.lighter.uses", runsToAdvance(tier) - count));
         if (getUUID() != null) {
-            var container = getWirelessEnergyContainer();
+            var account = port.account();
             textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.getName(getLevel(), getUUID())));
-            if (container != null) textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.1", FormattingUtil.formatNumbers(container.getStorage())));
+            if (!account.isNone()) textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.1", FormattingUtil.formatNumbers(account.totalStorage())));
         }
         textList.add(Component.translatable("gtocore.machine.eye_of_harmony.eu", FormattingUtil.formatNumbers(getStartupEnergy())));
         textList.add(Component.translatable("gtocore.machine.eye_of_harmony.hydrogen", FormattingUtil.formatNumbers(hydrogen)));
@@ -214,12 +228,7 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     }
 
     @Override
-    public void setWirelessEnergyContainerCache(final WirelessEnergyContainer WirelessEnergyContainerCache) {
-        this.WirelessEnergyContainerCache = WirelessEnergyContainerCache;
-    }
-
-    @Override
-    public WirelessEnergyContainer getWirelessEnergyContainerCache() {
-        return this.WirelessEnergyContainerCache;
+    public boolean preferTeamName() {
+        return true;
     }
 }

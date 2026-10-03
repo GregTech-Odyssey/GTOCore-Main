@@ -1696,14 +1696,19 @@ object GTOMachineTooltips {
     val WirelessEnergySubstationTooltips = ComponentListSupplier {
         setTranslationPrefix("wireless_energy_substation")
 
-        highlight("为无线电网提供容量支持" translatedTo "Provides capacity support to the wireless grid")
+        highlight("所在维度的电池：本维度的无线设备直接从这里存取电" translatedTo "The battery of its dimension: wireless devices there store and draw energy here directly")
 
         section("电网容量" translatedTo "Electricity Capacity")
         content("可在内部安装任意无线能量单元来提高容量上限" translatedTo "Install wireless energy units inside to increase capacity limit")
         ok("内部空间无需全部填满" translatedTo "The interior does not need to be completely filled")
         command("实际起作用的单元受玻璃等级限制" translatedTo "Effective units are limited by glass tier")
-        info("容量奖励乘数 = （单元数 / 2）≥ 1" translatedTo "Capacity Bonus Multiplier = (Units Count / 2) ≥ 1")
-        info("总损耗 = 单元损耗平均值" translatedTo "Total Loss = Average of Unit Losses")
+        info("容量 = 生效单元的标称容量之和" translatedTo "Capacity = sum of the rated capacity of effective units")
+        info("损耗 = 按单元容量加权的平均损耗" translatedTo "Loss = unit losses averaged by unit capacity")
+        info("同一维度的多座能源塔合为一个电池" translatedTo "All towers of a team in one dimension form a single battery")
+        section("本地存取" translatedTo "Local Access")
+        function("本维度的设备存取电不限电流" translatedTo "Devices in this dimension store and draw without a current limit")
+        command("电压不超过生效单元中的最高等级" translatedTo "Voltage is capped at the highest tier among effective units")
+        info("本维度不够时，经维度中继器的线路就近从其他维度取电或存电" translatedTo "When this dimension falls short, energy moves to or from the nearest other dimensions over relay lines")
     }
 
     // 无线电网维度中继器
@@ -1711,14 +1716,12 @@ object GTOMachineTooltips {
     val WirelessDimensionRepeaterTooltips = ComponentListSupplier {
         setTranslationPrefix("wireless_dimension_repeater")
 
-        section("中继无线能源网络能量" translatedTo "Repeats the wireless energy network energy")
-        function("在不同维度间中继能量" translatedTo "Energy is repeated between different dimensions")
-        command("能量最大电压取决于使用的外壳等级" translatedTo "Maximum voltage depends on shell tier")
-        ok("与电流大小无关" translatedTo "Not related to current size")
-        content(
-            "没有电流上限简直是原始人的超级科技" translatedTo "No current limit - truly primitive super-technology",
-            { rainbowSlow().italic() },
-        )
+        section("在两个维度之间架设电网线路" translatedTo "Builds a grid line between two dimensions")
+        function("一端是所在维度，另一端在界面里选择" translatedTo "One end is its own dimension; choose the other end in its interface")
+        command("每台为线路提供 99,999,999A，电压取整体框架等级" translatedTo "Each repeater adds 99,999,999A to the line at the integral framework tier")
+        info("同一对维度之间的多台叠加，按功率折算到其中最高的电压" translatedTo "Repeaters between the same pair of dimensions stack, converted by power to the highest voltage")
+        info("线路两个方向各自独立，互不占用" translatedTo "The two directions of a line are independent of each other")
+        info("取电时先用本维度能源塔，不够再按跳数由近到远经线路从其他维度取" translatedTo "Devices draw from local towers first, then from other dimensions over lines, nearest first")
     }
 
     // 拉丝塔

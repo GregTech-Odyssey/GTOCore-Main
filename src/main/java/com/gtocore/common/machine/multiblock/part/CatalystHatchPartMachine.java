@@ -6,8 +6,8 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 
@@ -23,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class CatalystHatchPartMachine extends WorkableTieredIOPartMachine {
 
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableCatalystHandler inventory;
 
     public CatalystHatchPartMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier, IO.IN);
@@ -40,10 +40,11 @@ public final class CatalystHatchPartMachine extends WorkableTieredIOPartMachine 
         int rowSize = tier == 2 ? 2 : 6;
         var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * rowSize + 16);
         var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * rowSize + 8);
+        var handler = new ForgeStackAdapter(inventory.storage);
         int index = 0;
         for (int y = 0; y < rowSize; y++) {
             for (int x = 0; x < rowSize; x++) {
-                container.addWidget(new SlotWidget(inventory.storage, index++, 4 + x * 18, 4 + y * 18, true, io.support(IO.IN)).setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(this.io == IO.IN ? IngredientIO.INPUT : IngredientIO.OUTPUT));
+                container.addWidget(new SlotWidget(handler, index++, 4 + x * 18, 4 + y * 18, true, io.support(IO.IN)).setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(this.io == IO.IN ? IngredientIO.INPUT : IngredientIO.OUTPUT));
             }
         }
         container.setBackground(GuiTextures.BACKGROUND_INVERSE);

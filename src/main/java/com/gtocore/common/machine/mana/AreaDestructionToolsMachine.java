@@ -14,8 +14,9 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.uipro.elements.ConfirmButton;
@@ -27,9 +28,9 @@ import com.gregtechceu.gtceu.uiwidgets.inventory.SlotGridView;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import appeng.api.stacks.AEItemKey;
 import appeng.core.definitions.AEItems;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -53,7 +54,7 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
     private static final String DETONATE = "gtocore.machine.area_destruction_tools.detonate";
 
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableInventory<AEItemKey> inventory;
 
     private int model = 0;
     private int explosiveYield = 0;
@@ -62,7 +63,7 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
 
     public AreaDestructionToolsMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, 9, IO.NONE, IO.BOTH);
+        inventory = NotifiableInventory.items(this, 9, IO.NONE, IO.BOTH);
         inventory.addChangedListener(() -> {
             Level level = getLevel();
             if (level == null) return;
@@ -72,24 +73,27 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
             pos1 = null;
             pos2 = null;
 
-            for (int i = 0; i < inventory.getSlots(); i++) {
-                var stack = inventory.getStackInSlot(i);
-                var item = stack.getItem();
+            var storage = inventory.storage;
+            for (int i = 0; i < storage.size(); i++) {
+                long count = storage.amountAt(i);
+                if (count <= 0) continue;
+                var key = storage.keyAt(i);
+                var item = key.getItem();
                 if (item == GTItems.SHAPE_MOLD_BALL.asItem()) model = 1;
                 else if (item == GTItems.SHAPE_MOLD_CYLINDER.asItem()) model = 2;
                 else if (item == GTItems.SHAPE_MOLD_BLOCK.asItem()) model = 3;
                 else if (item == AEItems.SINGULARITY.asItem()) model = 4;
-                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][2].asItem()) explosiveEnergy += 5000L * stack.getCount();
-                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][1].asItem()) explosiveEnergy += 1000L * stack.getCount();
-                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][0].asItem()) explosiveEnergy += 200L * stack.getCount();
-                else if (item == GTBlocks.INDUSTRIAL_TNT.asItem()) explosiveEnergy += 30L * stack.getCount();
-                else if (item == GTOBlocks.NUKE_BOMB.asItem()) explosiveEnergy += 2048L * stack.getCount();
-                else if (item == GTOBlocks.NAQUADRIA_CHARGE.asItem()) explosiveEnergy += 3200L * stack.getCount();
-                else if (item == GTOBlocks.LEPTONIC_CHARGE.asItem()) explosiveEnergy += 2048000L * stack.getCount();
-                else if (item == GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem()) explosiveEnergy += 32000000L * stack.getCount();
+                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][2].asItem()) explosiveEnergy += 5000L * count;
+                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][1].asItem()) explosiveEnergy += 1000L * count;
+                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][0].asItem()) explosiveEnergy += 200L * count;
+                else if (item == GTBlocks.INDUSTRIAL_TNT.asItem()) explosiveEnergy += 30L * count;
+                else if (item == GTOBlocks.NUKE_BOMB.asItem()) explosiveEnergy += 2048L * count;
+                else if (item == GTOBlocks.NAQUADRIA_CHARGE.asItem()) explosiveEnergy += 3200L * count;
+                else if (item == GTOBlocks.LEPTONIC_CHARGE.asItem()) explosiveEnergy += 2048000L * count;
+                else if (item == GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem()) explosiveEnergy += 32000000L * count;
                 else if (item == GTOItems.COORDINATE_CARD.asItem()) {
-                    if (pos1 == null) pos1 = getStoredCoordinates(stack);
-                    else pos2 = getStoredCoordinates(stack);
+                    if (pos1 == null) pos1 = getStoredCoordinates(Keys.displayStack(key));
+                    else pos2 = getStoredCoordinates(Keys.displayStack(key));
                 }
             }
 
@@ -126,9 +130,7 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
         else if (model == 3) ChunkExplosion.explosion(pos, level, explosiveYield, true, true, false);
         else if (model == 4) if (explosiveYield > 0) AreaExplosion.explosion(pos, pos1, pos2, level, true, true, false);
 
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inventory.setStackInSlot(i, ItemStack.EMPTY);
-        }
+        inventory.storage.clear();
     }
 
     @Override

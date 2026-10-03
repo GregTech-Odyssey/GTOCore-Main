@@ -8,7 +8,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -29,6 +29,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.Nullable;
@@ -70,10 +72,10 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
             IdleReason.CIRCUIT_ENGRAVING.setReason(this, GTORules.STEAM_CIRCUIT_ENGRAVING.get(), count);
             return null;
         }
-        var content = recipe.itemOutputs.getFirst();
-        if (content.inner.getInnerItemStack().getItem() == item) {
+        if (recipe.itemOutputs.ingredient(0).displayKey() instanceof AEItemKey outputKey && outputKey.getItem() == item) {
             if (isMultiMode) {
-                recipe.itemOutputs = List.of(content.copy(GTORules.STEAM_CIRCUIT_OUTPUT.get()));
+                recipe.bake();
+                recipe.itemOutputs = recipe.itemOutputs.range(0, 1).scaled(GTORules.STEAM_CIRCUIT_OUTPUT.get());
                 recipe = super.getRealRecipe(unit, recipe);
                 if (recipe != null) {
                     recipe.duration = recipe.duration * GTORules.STEAM_CIRCUIT_DURATION.get();
@@ -146,25 +148,30 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
         if (!isFormed()) return;
         for (IMultiPart part : getParts()) {
             if (part instanceof ItemBusPartMachine bus) {
-                NotifiableItemStackHandler inv = bus.getInventory();
-                IO io = inv.getHandlerIO();
+                NotifiableInventory<AEItemKey> handler = bus.getInventory();
+                IO io = handler.getHandlerIO();
                 if (io == IO.IN || io == IO.BOTH) {
-                    for (int i = 0; i < inv.getSlots(); i++) {
-                        ItemStack stack = inv.getStackInSlot(i);
-                        for (TagKey<Item> tagKey : stack.getTags().toList()) {
+                    var inv = handler.storage;
+                    for (int i = 0; i < inv.size(); i++) {
+                        AEItemKey key = inv.keyAt(i);
+                        if (key == null) continue;
+                        Item stackItem = key.getItem();
+                        for (TagKey<Item> tagKey : stackItem.builtInRegistryHolder().tags().toList()) {
                             if (tagKey.location().toString().contains("gtceu:circuits/")) {
-                                int c = stack.getCount();
-                                if (stack.getItem() == item) {
-                                    c = Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count, c);
+                                long stored = inv.amountAt(i);
+                                int c;
+                                if (stackItem == item) {
+                                    c = (int) Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count, stored);
                                     count += c;
                                 } else {
-                                    c = Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get(), c);
+                                    c = (int) Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get(), stored);
                                     count = c;
                                 }
-                                item = stack.getItem();
-                                inv.extractItemInternal(i, c, false);
+                                item = stackItem;
+                                inv.extract(i, key, c, false);
                                 onChanged();
                                 if (count >= GTORules.STEAM_CIRCUIT_ENGRAVING.get()) return;
+                                break;
                             }
                         }
                     }

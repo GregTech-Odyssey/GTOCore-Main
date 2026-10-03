@@ -5,7 +5,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
@@ -21,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -68,7 +68,7 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
         });
     }
 
-    private static class FluidHandler implements ICustomFluidStackHandler {
+    private static class FluidHandler implements IFluidHandler {
 
         private ItemStack getItem() {
             return entityPlayer.getItemInHand(hand);
@@ -81,13 +81,6 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
         private FluidHandler(Player entityPlayer, InteractionHand hand) {
             this.entityPlayer = entityPlayer;
             this.hand = hand;
-        }
-
-        @Override
-        public void setFluidInTank(int i, FluidStack fluidStack) {
-            if (entityPlayer.isLocalPlayer()) return;
-            virtualFluid = ICustomFluidStackHandler.copy(fluidStack, 1000);
-            entityPlayer.setItemInHand(hand, setVirtualFluid(getItem(), virtualFluid));
         }
 
         @Override
@@ -115,7 +108,7 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
         public int fill(FluidStack fluidStack, FluidAction fluidAction) {
             if (entityPlayer.isLocalPlayer() || fluidStack.isEmpty() || fluidStack.getAmount() < 1000) return 0;
             if (fluidAction.execute()) {
-                virtualFluid = ICustomFluidStackHandler.copy(fluidStack, 1000);
+                virtualFluid = new FluidStack(fluidStack, 1000);
                 entityPlayer.setItemInHand(hand, setVirtualFluid(getItem(), virtualFluid));
             }
             return 1000;
@@ -137,7 +130,7 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
 
         private FluidStack drainStored(FluidStack stored, FluidAction fluidAction) {
             if (stored.isEmpty() || entityPlayer.isLocalPlayer() || VirtualProviderData.isLocked(getItem())) return FluidStack.EMPTY;
-            FluidStack drained = ICustomFluidStackHandler.copy(stored, 1000);
+            FluidStack drained = new FluidStack(stored, 1000);
             if (fluidAction.execute()) {
                 entityPlayer.setItemInHand(hand, setVirtualFluid(getItem(), FluidStack.EMPTY));
                 virtualFluid = FluidStack.EMPTY;

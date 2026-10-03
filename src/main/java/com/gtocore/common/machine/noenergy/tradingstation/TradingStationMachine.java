@@ -22,11 +22,12 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IAutoOutputBoth;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -62,6 +63,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -121,23 +125,23 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     @Getter
     @SaveToDisk
     @SyncToClient
-    private final NotifiableItemStackHandler inputItem;
+    private final NotifiableInventory<AEItemKey> inputItem;
     @Getter
     @SaveToDisk
     @SyncToClient
-    private final NotifiableItemStackHandler outputItem;
+    private final NotifiableInventory<AEItemKey> outputItem;
     @Getter
     @SaveToDisk
     @SyncToClient
-    private final NotifiableFluidTank inputFluid;
+    private final NotifiableInventory<AEFluidKey> inputFluid;
     @Getter
     @SaveToDisk
     @SyncToClient
-    private final NotifiableFluidTank outputFluid;
+    private final NotifiableInventory<AEFluidKey> outputFluid;
 
     /** 其他位置存储 */
     @SaveToDisk
-    private final CustomItemStackHandler cardHandler;
+    private final KeyInventory<AEItemKey> cardHandler;
 
     /** 玩家信息（只在服务端有值：不做客户端同步，界面里一律经服务端 supplier 取值） */
     @Getter
@@ -165,20 +169,20 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     public TradingStationMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder);
 
-        cardHandler = new CustomItemStackHandler();
-        cardHandler.setFilter(i -> i.getItem() == GTOItems.GREG_MEMBERSHIP_CARD.asItem());
-        cardHandler.setOnContentsChanged(() -> initializationInformation(cardHandler.getStackInSlot(0)));
+        cardHandler = KeyInventory.items(1);
+        cardHandler.setFilter(k -> k instanceof AEItemKey i && i.getItem() == GTOItems.GREG_MEMBERSHIP_CARD.asItem());
+        cardHandler.setOnChanged(() -> initializationInformation(cardStack()));
 
-        inputItem = new NotifiableItemStackHandler(this, 32 * tier, IO.IN, IO.BOTH);
-        outputItem = new NotifiableItemStackHandler(this, 32 * tier, IO.OUT, IO.OUT);
-        inputFluid = new NotifiableFluidTank(this, tier * 4, 1000 * (8000 << tier), IO.IN, IO.BOTH);
-        outputFluid = new NotifiableFluidTank(this, tier * 4, 1000 * (8000 << tier), IO.OUT, IO.OUT);
+        inputItem = NotifiableInventory.items(this, 32 * tier, IO.IN, IO.BOTH);
+        outputItem = NotifiableInventory.items(this, 32 * tier, IO.OUT, IO.OUT);
+        inputFluid = NotifiableInventory.fluids(this, tier * 4, 1000 * (8000 << tier), IO.IN, IO.BOTH);
+        outputFluid = NotifiableInventory.fluids(this, tier * 4, 1000 * (8000 << tier), IO.OUT, IO.OUT);
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
-        initializationInformation(cardHandler.getStackInSlot(0));
+        initializationInformation(cardStack());
         if (!isRemote()) {
             outputItemChangeSub = outputItem.addChangedListener(this::updateAutoOutputSubscription);
             outputFluidChangeSub = outputFluid.addChangedListener(this::updateAutoOutputSubscription);
@@ -415,9 +419,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
                 var scroller = new ScrollerView("trading_station.items", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
                         .setAdaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
                         .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
-                scroller.addScrollViewChild(storageGrid(inputItem.getSlots(), outputItem.getSlots(),
-                        index -> ItemSlot.of(inputItem, index, true, true),
-                        index -> ItemSlot.of(outputItem, index, true, false)));
+                var inputAdapter = new MenuItemAdapter(inputItem.storage);
+                var outputAdapter = new MenuItemAdapter(outputItem.storage);
+                scroller.addScrollViewChild(storageGrid(inputItem.size(), outputItem.size(),
+                        index -> ItemSlot.of(inputAdapter, index, true, true),
+                        index -> ItemSlot.of(outputAdapter, index, true, false)));
                 page.addChild(scroller);
                 return page;
             }
@@ -451,9 +457,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
                 var scroller = new ScrollerView("trading_station.fluids", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
                         .setAdaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
                         .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
-                scroller.addScrollViewChild(storageGrid(inputFluid.getTanks(), outputFluid.getTanks(),
-                        index -> FluidSlot.of(inputFluid, index, true, true),
-                        index -> FluidSlot.of(outputFluid, index, true, true)));
+                var inputAdapter = new ForgeFluidAdapter(inputFluid);
+                var outputAdapter = new ForgeFluidAdapter(outputFluid);
+                scroller.addScrollViewChild(storageGrid(inputFluid.size(), outputFluid.size(),
+                        index -> FluidSlot.of(inputAdapter, index, true, true),
+                        index -> FluidSlot.of(outputAdapter, index, true, true)));
                 page.addChild(scroller);
                 return page;
             }
@@ -971,7 +979,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
      * @return 绑定当前机器库存和会员身份的交易数据
      */
     private TradeData tradeData() {
-        return new TradeData(getLevel(), getPos(), inputItem, outputItem, inputFluid, outputFluid, uuid, sharedUUIDs, teamUUID);
+        return new TradeData(getLevel(), getPos(), inputItem.storage, outputItem.storage, inputFluid.storage, outputFluid.storage, uuid, sharedUUIDs, teamUUID);
     }
 
     /**
@@ -1024,7 +1032,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     /** 刷新（服务端）：重新读会员卡上的玩家信息，再重开界面。 */
     private void refreshMembership(Widget source) {
         if (isRemote()) return;
-        initializationInformation(cardHandler.getStackInSlot(0));
+        initializationInformation(cardStack());
         reopenUI(source);
     }
 
@@ -1086,6 +1094,11 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         return Component.translatable(TEXT_HEADER + id, args);
     }
 
+    private ItemStack cardStack() {
+        var key = cardHandler.keyAt(0);
+        return key == null ? ItemStack.EMPTY : key.toStack();
+    }
+
     // 玩家信息初始化
     private void initializationInformation(ItemStack card) {
         if (card.getItem() == GTOItems.GREG_MEMBERSHIP_CARD.asItem()) {
@@ -1132,7 +1145,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     @Override
     public boolean hasAutoOutputItem() {
-        return outputItem.getSlots() > 0;
+        return outputItem.size() > 0;
     }
 
     @Override
@@ -1165,7 +1178,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     @Override
     public boolean hasAutoOutputFluid() {
-        return outputFluid.getTanks() > 0;
+        return outputFluid.size() > 0;
     }
 
     @Override

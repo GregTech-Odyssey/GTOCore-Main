@@ -19,7 +19,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -31,6 +31,10 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +56,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     private static final String HEAT_PER_SECOND = "gtocore.machine.fast_neutron_breeder_reactor.heat_per_second";
 
     @SaveToDisk
-    private final NotifiableItemStackHandler machineStorage;
+    private final NotifiableStackInventory machineStorage;
     @SaveToDisk(defaultValue = "298")
     private float temperature = 298;
     @SaveToDisk(defaultValue = "0")
@@ -70,7 +74,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     }
 
     @Override
-    public NotifiableItemStackHandler getMachineStorage() {
+    public NotifiableStackInventory getMachineStorage() {
         return machineStorage;
     }
 
@@ -204,22 +208,24 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     private void tick() {
         if (isFormed()) {
 
-            fastForEachItems(true, (stack, amount) -> {
-                var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(stack.getItem());
+            forEachKey(AEKeyType.items(), true, (key, amount) -> {
+                var item = ((AEItemKey) key).getItem();
+                var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(item);
                 if (neutron_sources != null) {
                     neutronFluxkeV += (long) neutron_sources * amount;
-                    inputItem(stack.getItem(), amount);
+                    inputItem(item, amount);
                 }
+                return false;
             });
             neutronFluxkeV = Math.max(0, neutronFluxkeV - 10);
 
-            int reflectors = machineStorage.getStackInSlot(0).getCount();
+            int reflectors = machineStorage.storage.getStackInSlot(0).getCount();
             if (reflectors > 0 && neutronFluxkeV > 0) {
                 neutronFluxkeV += (long) Math.sqrt(neutronFluxkeV * reflectors);
             }
             temperature += (float) recipeHeat;
-            fastForEachFluids(true, (stack, amount) -> {
-                var fluid = stack.getFluid();
+            forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+                var fluid = ((AEFluidKey) key).getFluid();
                 var coolants = NeutronSeries.COOLANTS.get(fluid);
                 if (coolants != null && temperature > 298) {
                     long processAmount = Math.min((long) Math.ceil((temperature - 298f) / coolants), amount);
@@ -231,6 +237,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
                     }
                     outputFluid(NeutronSeries.COOLANT_OUTPUTS.get(fluid), outputAmount);
                 }
+                return false;
             });
             temperature = Math.max(298, temperature);
             if (temperature > MAX_TEMPERATURE) {

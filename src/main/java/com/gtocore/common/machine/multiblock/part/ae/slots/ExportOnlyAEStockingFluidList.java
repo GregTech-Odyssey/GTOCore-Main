@@ -2,31 +2,14 @@ package com.gtocore.common.machine.multiblock.part.ae.slots;
 
 import com.gtocore.common.machine.multiblock.part.ae.MEStockingHatchPartMachine;
 
-import com.gtolib.api.recipe.RecipeType;
-import com.gtolib.api.recipe.lookup.IIngredientConvertible;
-import com.gtolib.utils.MathUtil;
-
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
-
-import net.minecraftforge.fluids.FluidStack;
-
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyMap;
 import appeng.api.stacks.GenericStack;
 
-import com.gto.recipesearch.IntLongMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.function.ObjLongConsumer;
 
 public class ExportOnlyAEStockingFluidList extends ExportOnlyAEFluidList {
 
@@ -38,92 +21,29 @@ public class ExportOnlyAEStockingFluidList extends ExportOnlyAEFluidList {
     }
 
     @Override
-    public boolean forEachFluids(ObjLongPredicate<FluidStack> function) {
-        if (machine.isWorkingEnabled()) {
-            if (!machine.isOnline()) return false;
-            var grid = machine.getMainNode().getGrid();
-            if (grid == null) return false;
-            AEKeyMap<AEKey> map = null;
-            int time = machine.getOffsetTimer();
-            for (var i : inventory) {
-                if (i.config == null) continue;
-                var stock = i.stock;
-                if (stock == null) continue;
-                if (map == null) {
-                    map = grid.getStorageService().getCachedInventory().getMap();
-                    if (map.isEmpty()) return false;
-                }
-                var amount = ((ExportOnlyAEStockingFluidSlot) i).refresh(map, stock.amount(), stock.what(), time);
-                if (amount < 1) continue;
-                if (function.test(i.getReadOnlyStack(), amount)) return true;
+    boolean prepare() {
+        if (!machine.isWorkingEnabled() || !machine.isOnline()) return false;
+        var grid = machine.getMainNode().getGrid();
+        if (grid == null) return false;
+        AEKeyMap<AEKey> map = null;
+        int time = machine.getOffsetTimer();
+        for (var i : inventory) {
+            if (i.config == null) continue;
+            var stock = i.stock;
+            if (stock == null) continue;
+            if (map == null) {
+                map = grid.getStorageService().getCachedInventory().getMap();
+                if (map.isEmpty()) return false;
             }
-            return false;
+            ((ExportOnlyAEStockingFluidSlot) i).refresh(map, stock.amount(), stock.what(), time);
         }
-        return false;
-    }
-
-    @Override
-    public void fastForEachFluids(ObjLongConsumer<FluidStack> function) {
-        if (machine.isWorkingEnabled()) {
-            if (!machine.isOnline()) return;
-            var grid = machine.getMainNode().getGrid();
-            if (grid == null) return;
-            AEKeyMap<AEKey> map = null;
-            int time = machine.getOffsetTimer();
-            for (var i : inventory) {
-                if (i.config == null) continue;
-                var stock = i.stock;
-                if (stock == null) continue;
-                if (map == null) {
-                    map = grid.getStorageService().getCachedInventory().getMap();
-                    if (map.isEmpty()) return;
-                }
-                var amount = ((ExportOnlyAEStockingFluidSlot) i).refresh(map, stock.amount(), stock.what(), time);
-                if (amount < 1) continue;
-                function.accept(i.getReadOnlyStack(), amount);
-            }
-        }
-    }
-
-    @Override
-    public void fillSearchMap(@NotNull GTRecipeType type, @NotNull IntLongMap map) {
-        if (machine.isWorkingEnabled() && machine.isOnline()) {
-            var grid = machine.getMainNode().getGrid();
-            if (grid == null) return;
-            AEKeyMap<AEKey> keyMap = null;
-            boolean specialConverter = ((RecipeType) type).specialConverter;
-            int time = machine.getOffsetTimer();
-            for (var i : inventory) {
-                if (i.config == null) continue;
-                var stock = i.stock;
-                if (stock == null) continue;
-                if (stock.what() instanceof AEFluidKey fluidKey) {
-                    if (keyMap == null) {
-                        keyMap = grid.getStorageService().getCachedInventory().getMap();
-                        if (keyMap.isEmpty()) return;
-                    }
-                    var amount = ((ExportOnlyAEStockingFluidSlot) i).refresh(keyMap, stock.amount(), fluidKey, time);
-                    if (amount < 1) continue;
-                    if (specialConverter) {
-                        type.convertFluid(i.getReadOnlyStack(), amount, map);
-                    } else {
-                        ((IIngredientConvertible) (Object) fluidKey).gtolib$convert(amount, map);
-                    }
-                }
-            }
-        }
+        return true;
     }
 
     // only consumable (chance > 0) contents are handled here (preventing phantom counts).
     @Override
-    protected boolean acceptsIngredient(Content<FluidIngredient> contentFluidIngredient) {
-        return contentFluidIngredient.chance > 0;
-    }
-
-    @Override
-    public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
-        if (machine.isWorkingEnabled()) return super.handleRecipeFluid(io, recipe, fluids, simulate);
-        return false;
+    boolean accepts(boolean consume) {
+        return consume;
     }
 
     @Override
@@ -168,20 +88,13 @@ public class ExportOnlyAEStockingFluidList extends ExportOnlyAEFluidList {
                 if (storage > 0) {
                     if (amount != storage) {
                         this.stock = new GenericStack(request, storage);
-                        this.forgeStock = null;
                     }
                 } else {
                     this.stock = null;
-                    this.forgeStock = null;
                 }
                 return storage;
             }
             return amount;
-        }
-
-        @Override
-        public @NotNull ExportOnlyAEFluidSlot copy() {
-            return new ExportOnlyAEStockingFluidSlot(machine, this.config == null ? null : copy(this.config), this.stock == null ? null : copy(this.stock));
         }
 
         @Override
@@ -197,14 +110,29 @@ public class ExportOnlyAEStockingFluidList extends ExportOnlyAEFluidList {
                         this.stock = ExportOnlyAESlot.copy(stock, stock.amount() - extracted);
                         if (this.stock.amount() == 0) {
                             this.stock = null;
-                            forgeStock = null;
-                        } else if (forgeStock != null) forgeStock.setAmount(MathUtil.saturatedCast(stock.amount()));
+                        }
                         if (notify) onContentsChanged();
                     }
                     return extracted;
                 }
             }
             return 0;
+        }
+
+        @Override
+        void restore(AEFluidKey key, long amount) {
+            var grid = machine.getMainNode().getGrid();
+            if (grid == null) return;
+            long inserted = grid.getStorageService().getInventory().insert(key, amount, Actionable.MODULATE, machine.getActionSource());
+            if (inserted > 0) {
+                machine.getThroughputCounter().add(key, inserted);
+                super.restore(key, inserted);
+            }
+        }
+
+        @Override
+        public @NotNull ExportOnlyAEStockingFluidSlot copy() {
+            return new ExportOnlyAEStockingFluidSlot(machine, this.config == null ? null : copy(this.config), this.stock == null ? null : copy(this.stock));
         }
     }
 }

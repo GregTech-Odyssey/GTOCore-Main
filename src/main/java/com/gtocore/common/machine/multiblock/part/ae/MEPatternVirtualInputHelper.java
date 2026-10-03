@@ -4,11 +4,11 @@ import com.gtolib.api.ae2.MyPatternDetailsHelper;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.RLUtils;
 
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
-import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.nbt.StringTag;
 import net.minecraft.world.item.ItemStack;
@@ -55,9 +55,9 @@ final class MEPatternVirtualInputHelper {
                                                    @NotNull IPatternDetails pattern,
                                                    Supplier<IGrid> gridGetter,
                                                    Supplier<IActionSource> actionSourceGetter,
-                                                   NotifiableItemStackHandler circuitInventory,
-                                                   CustomItemStackHandler itemStorage,
-                                                   CustomFluidTank[] fluidStorage,
+                                                   NotifiableInventory<AEItemKey> circuitInventory,
+                                                   KeyInventory<AEItemKey> itemStorage,
+                                                   KeyInventory<AEFluidKey> fluidStorage,
                                                    @Nullable MEVirtualInputState virtualInputState,
                                                    BooleanSupplier lockOnce) {
         return convertPattern(pattern, gridGetter, actionSourceGetter, circuitInventory, itemStorage, fluidStorage,
@@ -68,9 +68,9 @@ final class MEPatternVirtualInputHelper {
                                                    @NotNull IPatternDetails pattern,
                                                    Supplier<IGrid> gridGetter,
                                                    Supplier<IActionSource> actionSourceGetter,
-                                                   NotifiableItemStackHandler circuitInventory,
-                                                   CustomItemStackHandler itemStorage,
-                                                   CustomFluidTank[] fluidStorage,
+                                                   NotifiableInventory<AEItemKey> circuitInventory,
+                                                   KeyInventory<AEItemKey> itemStorage,
+                                                   KeyInventory<AEFluidKey> fluidStorage,
                                                    @Nullable MEVirtualInputState virtualInputState,
                                                    @Nullable MEVirtualInputAvailability availability,
                                                    BooleanSupplier lockOnce) {
@@ -100,27 +100,31 @@ final class MEPatternVirtualInputHelper {
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
-                if (GTItems.PROGRAMMED_CIRCUIT.isIn(virtualItem)) {
+                if (virtualItem.getItem() == Circuits.item()) {
+                    var circuit = AEItemKey.of(virtualItem);
                     if (virtualInputState == null) {
-                        circuitInventory.storage.setStackInSlot(0, virtualItem.copyWithCount(1));
+                        circuitInventory.storage.set(0, circuit, 1);
                     } else {
-                        virtualInputState.setVirtualCircuit(virtualItem.copyWithCount(1));
+                        virtualInputState.setVirtualCircuit(circuit);
                     }
                     if (availability != null) availability.setCircuitMissing(missingProvider);
                     continue;
                 }
 
-                while (targetItemSlot < itemStorage.getSlots()) {
-                    ItemStack previous = itemStorage.getStackInSlot(targetItemSlot);
-                    if (previous.isEmpty() || refund(AEItemKey.of(previous), previous.getCount(), gridGetter, actionSourceGetter)) break;
+                int itemSlots = itemStorage.size();
+                while (targetItemSlot < itemSlots) {
+                    var previous = itemStorage.keyAt(targetItemSlot);
+                    if (previous == null || refund(previous, itemStorage.amountAt(targetItemSlot), gridGetter, actionSourceGetter)) break;
                     targetItemSlot++;
                 }
-                if (targetItemSlot >= itemStorage.getSlots()) continue;
-                virtualItem.setCount((int) Math.clamp(stack.amount(), 1L, VIRTUAL_ITEM_MAX_AMOUNT));
+                if (targetItemSlot >= itemSlots) continue;
+                var virtualKey = Keys.item(virtualItem);
+                if (virtualKey == null) continue;
+                long virtualAmount = Math.clamp(stack.amount(), 1L, VIRTUAL_ITEM_MAX_AMOUNT);
                 if (virtualInputState == null) {
-                    itemStorage.setStackInSlot(targetItemSlot, virtualItem);
+                    itemStorage.set(targetItemSlot, virtualKey, virtualAmount);
                 } else {
-                    virtualInputState.setVirtualItem(targetItemSlot, virtualItem);
+                    virtualInputState.setVirtualItem(targetItemSlot, virtualKey, virtualAmount);
                 }
                 if (availability != null) availability.setItemMissing(targetItemSlot, missingProvider);
                 targetItemSlot++;
@@ -132,17 +136,20 @@ final class MEPatternVirtualInputHelper {
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
-                virtualFluid.setAmount((int) Math.clamp(stack.amount(), 1L, Integer.MAX_VALUE));
-                while (targetFluidSlot < fluidStorage.length) {
-                    FluidStack previous = fluidStorage[targetFluidSlot].getFluid();
-                    if (previous.isEmpty() || refund(AEFluidKey.of(previous), previous.getAmount(), gridGetter, actionSourceGetter)) break;
+                var fluidKey = Keys.fluid(virtualFluid);
+                if (fluidKey == null) continue;
+                long fluidAmount = Math.clamp(stack.amount(), 1L, Integer.MAX_VALUE);
+                int fluidSlots = fluidStorage.size();
+                while (targetFluidSlot < fluidSlots) {
+                    var previous = fluidStorage.keyAt(targetFluidSlot);
+                    if (previous == null || refund(previous, fluidStorage.amountAt(targetFluidSlot), gridGetter, actionSourceGetter)) break;
                     targetFluidSlot++;
                 }
-                if (targetFluidSlot >= fluidStorage.length) continue;
+                if (targetFluidSlot >= fluidSlots) continue;
                 if (virtualInputState == null) {
-                    fluidStorage[targetFluidSlot].setFluid(virtualFluid);
+                    fluidStorage.set(targetFluidSlot, fluidKey, fluidAmount);
                 } else {
-                    virtualInputState.setVirtualFluid(targetFluidSlot, virtualFluid);
+                    virtualInputState.setVirtualFluid(targetFluidSlot, fluidKey, fluidAmount);
                 }
                 if (availability != null) availability.setFluidMissing(targetFluidSlot, missingProvider);
                 targetFluidSlot++;

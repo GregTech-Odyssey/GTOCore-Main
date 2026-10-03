@@ -19,6 +19,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.Nullable;
 
@@ -125,12 +128,11 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
 
     @Override
     protected @Nullable GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        var crystal = recipe.itemInputs.getFirst().inner.getInnerItemStack().getItem();
-        if (crystal instanceof DataCrystalItem item0) {
-            unit.forEachItems(false, (stack, amount) -> {
-                var item = stack.getItem();
-                if (item != item0) return false;
-                researchPoints = DataCrystalItem.getResearchData(stack);
+        var crystal = recipe.itemInputs.isEmpty() ? null : recipe.itemInputs.ingredient(0).displayKey();
+        if (crystal instanceof AEItemKey crystalKey && crystalKey.getItem() instanceof DataCrystalItem item0) {
+            unit.forEachKey(AEKeyType.items(), false, (key, amount) -> {
+                if (!(key instanceof AEItemKey itemKey) || itemKey.getItem() != item0) return false;
+                researchPoints = DataCrystalItem.getResearchData(itemKey.toStack(1));
                 return !researchPoints.isEmpty();
             });
         }

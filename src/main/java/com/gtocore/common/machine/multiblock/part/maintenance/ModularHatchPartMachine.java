@@ -13,9 +13,9 @@ import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineModifyDrops;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.item.SingleCustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -29,6 +29,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -47,13 +49,13 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     private static final String MODULES = "gtocore.machine.modular_maintenance.modules";
 
     @SaveToDisk
-    private final NotifiableItemStackHandler temperatureModuleInv;
+    private final NotifiableInventory<AEItemKey> temperatureModuleInv;
     @SaveToDisk
-    private final NotifiableItemStackHandler gravityModuleInv;
+    private final NotifiableInventory<AEItemKey> gravityModuleInv;
     @SaveToDisk
-    private final NotifiableItemStackHandler vacuumModuleInv;
+    private final NotifiableInventory<AEItemKey> vacuumModuleInv;
     @SaveToDisk
-    private final NotifiableItemStackHandler cleanroomModuleInv;
+    private final NotifiableInventory<AEItemKey> cleanroomModuleInv;
     @SaveToDisk(defaultValue = "293")
     private int activeTemperature = 293;
     @SaveToDisk(defaultValue = "0")
@@ -81,26 +83,26 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     public ModularHatchPartMachine(MetaMachineBlockEntity metaTileEntityId) {
         super(metaTileEntityId);
 
-        temperatureModuleInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
-        temperatureModuleInv.setFilter(stack -> stack.getItem() == Wrapper.TEMPERATURE_CHECK);
+        temperatureModuleInv = NotifiableInventory.items(this, KeyInventory.items(1, 1, true), IO.NONE, IO.BOTH);
+        temperatureModuleInv.setFilter(key -> key instanceof AEItemKey itemKey && itemKey.getItem() == Wrapper.TEMPERATURE_CHECK);
         temperatureModuleInv.addChangedListener(this::onConditionChange);
 
-        gravityModuleInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
-        gravityModuleInv.setFilter(stack -> stack.getItem() == Wrapper.GRAVITY_CHECK);
+        gravityModuleInv = NotifiableInventory.items(this, KeyInventory.items(1, 1, true), IO.NONE, IO.BOTH);
+        gravityModuleInv.setFilter(key -> key instanceof AEItemKey itemKey && itemKey.getItem() == Wrapper.GRAVITY_CHECK);
         gravityModuleInv.addChangedListener(this::onConditionChange);
 
-        vacuumModuleInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
-        vacuumModuleInv.setFilter(stack -> stack.getItem() == Wrapper.VACUUM_CHECK);
+        vacuumModuleInv = NotifiableInventory.items(this, KeyInventory.items(1, 1, true), IO.NONE, IO.BOTH);
+        vacuumModuleInv.setFilter(key -> key instanceof AEItemKey itemKey && itemKey.getItem() == Wrapper.VACUUM_CHECK);
         vacuumModuleInv.addChangedListener(this::onConditionChange);
 
-        cleanroomModuleInv = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.BOTH, SingleCustomItemStackHandler::new);
-        cleanroomModuleInv.setFilter(stack -> Wrapper.CLEAN_CHECK.containsKey(stack.getItem()));
+        cleanroomModuleInv = NotifiableInventory.items(this, KeyInventory.items(1, 1, true), IO.NONE, IO.BOTH);
+        cleanroomModuleInv.setFilter(key -> key instanceof AEItemKey itemKey && Wrapper.CLEAN_CHECK.containsKey(itemKey.getItem()));
         cleanroomModuleInv.addChangedListener(this::onConditionChange);
         heatContainer = new HeatHandler(holder, MAX_TEMPERATURE, 4, 8, 0);
         heatContainer.setAllowExplosion(false);
         heatContainer.setSideIOCondition(s -> s == getFrontFacing());
         heatContainer.addChangedListener(() -> {
-            if (temperatureMode) heatContainer.setCurrentHeat((long) (activeTemperature * heatContainer.getHeatCapacity()));
+            if (temperatureMode) applyActiveTemperature();
             for (var c : getControllers()) {
                 if (c instanceof IRecipeLogicMachine machine) machine.getRecipeLogic().updateTickSubscription();
             }
@@ -111,6 +113,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     public void onLoad() {
         super.onLoad();
         heatContainer.onLoad();
+        if (temperatureMode && !isRemote()) applyActiveTemperature();
     }
 
     @Override
@@ -183,7 +186,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
         }
         list.add(Component.translatable(CURRENT_CLEANROOM));
         list.add(getCurrentCleanroom().withStyle(ChatFormatting.GREEN));
-        if (cleanroomModuleInv.getStackInSlot(0).isEmpty()) {
+        if (cleanroomModuleInv.storage.amountAt(0) == 0) {
             list.add(Component.translatable(TOOLTIP_REQUIRED_KEY_CLEANROOM, getDisplayName(CLEANROOM_SHORT_NAME)));
         }
     }
@@ -226,7 +229,11 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
 
     private void setActiveTemperature(int activeTemperature) {
         this.activeTemperature = Mth.clamp(activeTemperature, MIN_TEMPERATURE, MAX_TEMPERATURE);
-        heatContainer.setCurrentHeat((long) (activeTemperature * heatContainer.getHeatCapacity()));
+        if (temperatureMode) applyActiveTemperature();
+    }
+
+    private void applyActiveTemperature() {
+        heatContainer.setCurrentHeat(Math.round(activeTemperature * heatContainer.getHeatCapacity()));
     }
 
     @Override
@@ -252,10 +259,12 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     }
 
     private void onConditionChange() {
-        temperatureMode = !temperatureModuleInv.getStackInSlot(0).isEmpty();
-        gravityMode = !gravityModuleInv.getStackInSlot(0).isEmpty();
-        vacuumMode = !vacuumModuleInv.getStackInSlot(0).isEmpty();
-        var cleanroom = Wrapper.CLEAN_CHECK.get(cleanroomModuleInv.getStackInSlot(0).getItem());
+        temperatureMode = temperatureModuleInv.storage.amountAt(0) > 0;
+        if (temperatureMode && !isRemote()) applyActiveTemperature();
+        gravityMode = gravityModuleInv.storage.amountAt(0) > 0;
+        vacuumMode = vacuumModuleInv.storage.amountAt(0) > 0;
+        var cleanroomKey = cleanroomModuleInv.storage.keyAt(0);
+        var cleanroom = cleanroomKey == null ? null : Wrapper.CLEAN_CHECK.get(cleanroomKey.getItem());
         if (getController() instanceof ICleanroomReceiver receiver && receiver.getCleanroom() != cleanroom) {
             receiver.setCleanroom(cleanroom);
         }

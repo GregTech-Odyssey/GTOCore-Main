@@ -8,7 +8,7 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
-import com.gtolib.api.machine.feature.IWirelessDimensionProvider;
+import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -27,13 +27,12 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
-import com.hepdd.gtmthings.api.misc.WirelessEnergyContainer;
+import com.hepdd.gtmthings.api.capability.IBindable;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.api.planets.PlanetApi;
@@ -53,7 +52,7 @@ import static com.gtocore.common.data.GTOMaterials.FlocculationWasteSolution;
 import static com.gtocore.data.techtree.MachinesNode.LaserSpaceEngineering;
 
 @DataGeneratorScanned
-public class Core extends AbstractSpaceStation implements ILargeSpaceStationMachine, IWirelessDimensionProvider, IMachineSubWindows {
+public class Core extends AbstractSpaceStation implements ILargeSpaceStationMachine, IBindable, ITierCasingMachine, IMachineSubWindows {
 
     private static final String WINDOW_OVERVIEW = "station_overview";
     @RegisterLanguage(cn = "核心舱", en = "Core Module")
@@ -63,7 +62,6 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     private final Map<Class<? extends ISpaceServiceMachine>, ISpaceServiceMachine> serviceMachineMap = new Reference2ObjectOpenHashMap<>();
 
     private final ReferenceOpenHashSet<ILargeSpaceStationMachine> subMachinesFlat;
-    private WirelessEnergyContainer WirelessEnergyContainerCache;
     private final TierCasingTrait tierCasingTrait;
 
     @Getter
@@ -94,12 +92,10 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
         onFormed();
         IIWirelessInteractor.addToNet(this);
         markDirty(true);
-        loadContainer();
     }
 
     @Override
     public void onUnload() {
-        unloadContainer();
         IIWirelessInteractor.removeFromNet(this);
         super.onUnload();
     }
@@ -112,17 +108,8 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     @Override
     public void setWorkingEnabled(boolean ignored) {}
 
-    private void delayedUnload() {
-        if (!isRemote()) {
-            TaskHandler.enqueueTask(Objects.requireNonNull(getLevel()), () -> {
-                if (getHolder().hasLevel() && !isFormed()) unloadContainer();
-            }, 200);
-        }
-    }
-
     @Override
     public void onStructureInvalid() {
-        delayedUnload();
         super.onStructureInvalid();
         IIWirelessInteractor.removeFromNet(this);
         onInvalid();
@@ -293,16 +280,6 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     @Nullable
     public UUID getUUID() {
         return getOwnerUUID();
-    }
-
-    @Override
-    public void setWirelessEnergyContainerCache(final WirelessEnergyContainer WirelessEnergyContainerCache) {
-        this.WirelessEnergyContainerCache = WirelessEnergyContainerCache;
-    }
-
-    @Override
-    public WirelessEnergyContainer getWirelessEnergyContainerCache() {
-        return this.WirelessEnergyContainerCache;
     }
 
     @Override

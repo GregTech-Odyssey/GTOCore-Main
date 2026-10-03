@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae.widget.slot;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.integration.ae2.gui.widget.slot.AEPatternViewSlotWidget;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -25,7 +25,7 @@ public class MEPatternViewSlotWidget extends UIElement {
     private final String popupKey;
     private final Inner inner;
 
-    public MEPatternViewSlotWidget(int slotIndex, ICustomItemStackHandler itemHandler, @Nullable String popupKey) {
+    public MEPatternViewSlotWidget(int slotIndex, StackInventory itemHandler, @Nullable String popupKey) {
         layout(l -> l.size(18, 18));
         this.slotIndex = slotIndex;
         this.popupKey = popupKey;
@@ -65,7 +65,7 @@ public class MEPatternViewSlotWidget extends UIElement {
 
     private final class Inner extends AEPatternViewSlotWidget {
 
-        private Inner(ICustomItemStackHandler itemHandler, int slotIndex) {
+        private Inner(StackInventory itemHandler, int slotIndex) {
             super(itemHandler, slotIndex, 0, 0);
         }
 

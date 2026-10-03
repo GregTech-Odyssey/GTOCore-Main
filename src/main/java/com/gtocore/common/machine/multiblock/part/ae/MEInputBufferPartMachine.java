@@ -19,17 +19,15 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.fluid.LockableIFluidHandler;
-import com.gregtechceu.gtceu.api.transfer.item.LockableItemStackHandler;
-import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.uipro.UIElement;
 
 import net.minecraft.client.Minecraft;
@@ -38,6 +36,8 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
@@ -50,6 +50,7 @@ import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.crafting.ICraftingRequester;
 import appeng.api.networking.crafting.ICraftingWatcherNode;
 import appeng.api.stacks.*;
+import appeng.api.storage.AEKeyFilter;
 import appeng.api.storage.MEStorage;
 import appeng.client.gui.me.common.StackSizeRenderer;
 import appeng.crafting.pattern.AEProcessingPattern;
@@ -222,7 +223,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
     public @NotNull IPatternDetails convertPattern(@NotNull IPatternDetails pattern, int index) {
         var slot = getInternalInventory()[index];
         return MEPatternVirtualInputHelper.convertPattern(pattern, this::getGrid, this::getActionSource,
-                slot.circuitInventory, slot.notConsumableItem.storage, slot.notConsumableFluid.getStorages(), slot.virtualInputState,
+                slot.circuitInventory, slot.notConsumableItem.storage, slot.notConsumableFluid.storage, slot.virtualInputState,
                 () -> true);
     }
 
@@ -312,6 +313,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
         /// 旧存档是 16 格：存档按下标读入、多出的格子忽略/留空（DataSyncLib 数组与旧 NBT 路径都取两者较短的长度），
         /// 所以旧的 16 格库存原样落在前 16 格，无需额外迁移；配置每次由样板重新生成
         public static final int CONFIG_SLOTS = 18;
+        private static final AEKeyFilter NOT_ENCODED_PATTERN = key -> !(key instanceof AEItemKey itemKey && itemKey.getItem() instanceof EncodedPatternItem);
 
         public final MEInputBufferPartMachine machine;
         public final int index;
@@ -325,10 +327,10 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
         @SaveToDisk
         public final ExportOnlyAEFluidList exportOnlyFluidList;
         @SaveToDisk
-        public final NotifiableItemStackHandler circuitInventory;
+        public final NotifiableInventory<AEItemKey> circuitInventory;
 
         @Getter
-        public final LockableItemStackHandler[] itemUiHandlers;
+        public final IItemHandlerModifiable[] itemUiHandlers;
 
         public AEKey reportingKey = null;
         @Getter
@@ -385,13 +387,13 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
             };
 
             this.circuitInventory = CircuitHandler.create(machine);
-            this.virtualInputState = new MEVirtualInputState(notConsumableItem.storage, notConsumableFluid.getStorages(), circuitInventory.storage);
+            this.virtualInputState = new MEVirtualInputState(notConsumableItem.storage, notConsumableFluid.storage, circuitInventory.storage);
             this.itemUiHandlers = virtualInputState.getItemUiHandlers();
         }
 
         private NotifiableNotConsumableItemHandler createShareInventory() {
             var h = new NotifiableNotConsumableItemHandler(machine, 9, IO.NONE);
-            h.setFilter(stack -> !(stack.getItem() instanceof EncodedPatternItem));
+            h.setFilter(NOT_ENCODED_PATTERN);
             return h;
         }
 
@@ -399,11 +401,11 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
             virtualInputState.clearVirtualInputs();
         }
 
-        public LockableIFluidHandler[] getFluidUiHandlers() {
+        public IFluidHandler[] getFluidUiHandlers() {
             return virtualInputState.getFluidUiHandlers();
         }
 
-        public void setCircuitConfiguration(ItemStack circuit) {
+        public void setCircuitConfiguration(int circuit) {
             if (!virtualInputState.isVirtualCircuit()) {
                 virtualInputState.setManualCircuit(circuit);
             }
@@ -601,7 +603,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
                     }
                 }
             }
-            for (int i = 0; i < exportOnlyFluidList.getTanks(); i++) {
+            for (int i = 0; i < exportOnlyFluidList.size(); i++) {
                 ExportOnlyAEFluidSlot aeTank = exportOnlyFluidList.getInventory()[i];
                 GenericStack exceedFluid = aeTank.exceedStack();
                 if (exceedFluid != null) {
@@ -634,12 +636,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
             if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
             notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
             if (tag.tags.get("tank") instanceof ListTag tanks) {
-                for (int i = 0; i < tanks.size(); i++) {
-                    var t = tanks.getCompound(i);
-                    if (t.isEmpty()) continue;
-                    var tank = notConsumableFluid.getStorages()[i];
-                    tank.deserializeNBT(t);
-                }
+                MEPatternBufferPartMachine.readLegacyTanks(notConsumableFluid.storage, tanks);
             }
             if (tag.tags.get("exI") instanceof ListTag exportItems) {
                 var slots = exportOnlyItemList.getInventory();
@@ -668,7 +665,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
                 this.multiplier = mul.getAsLong();
             }
             var c = tag.getInt("c");
-            if (c > 0) circuitInventory.storage.setStackInSlot(0, IntCircuitBehaviour.stack(c));
+            if (c > 0) Circuits.set(circuitInventory.storage, 0, Math.min(c, Circuits.MAX));
         }
 
         @Override

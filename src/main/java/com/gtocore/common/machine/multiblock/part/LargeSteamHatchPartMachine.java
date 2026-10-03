@@ -4,10 +4,12 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine;
 
 import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -33,8 +35,8 @@ public final class LargeSteamHatchPartMachine extends SteamHatchPartMachine {
     }
 
     @Override
-    protected @NotNull NotifiableFluidTank createTank(int initialCapacity, int slots, Object @NotNull... args) {
+    protected @NotNull NotifiableInventory<AEFluidKey> createTank(int initialCapacity, int slots, Object @NotNull... args) {
         return super.createTank(initialCapacity, slots, args)
-                .setFilter(fluidStack -> fluidStack.getFluid() == f.getFluid());
+                .setFilter(key -> key instanceof AEFluidKey fluidKey && fluidKey.getFluid() == f.getFluid());
     }
 }

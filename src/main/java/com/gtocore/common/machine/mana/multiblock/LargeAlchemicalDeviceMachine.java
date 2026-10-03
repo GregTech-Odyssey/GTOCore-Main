@@ -8,7 +8,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -69,17 +69,20 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
     private GTRecipe enhanceRecipe(GTRecipe recipe, int[] recipeParams) {
         int matchRate = calculateMatchRate(recipeParams);
 
-        recipe.itemOutputs = recipe.itemOutputs.stream().map(content -> {
-            if (content.chance < 11) return new Content<>(content.inner, matchRate, 0);
-            else return content;
-        }).toList();
-
-        recipe.fluidOutputs = recipe.fluidOutputs.stream().map(content -> {
-            if (content.chance < 11) return new Content<>(content.inner, matchRate, 0);
-            else return content;
-        }).toList();
-
+        recipe.itemOutputs = enhanceOutputs(recipe.itemOutputs, matchRate);
+        recipe.fluidOutputs = enhanceOutputs(recipe.fluidOutputs, matchRate);
         return recipe;
+    }
+
+    private static ContentList enhanceOutputs(ContentList list, int matchRate) {
+        ContentList.Builder builder = null;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.chance(i) < 11) {
+                if (builder == null) builder = list.toBuilder();
+                builder.set(i, list.ingredient(i), list.amount(i), matchRate, 0);
+            }
+        }
+        return builder == null ? list : builder.build();
     }
 
     /**

@@ -12,10 +12,10 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
@@ -35,6 +35,7 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 
 import com.google.common.collect.ImmutableList;
@@ -48,7 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ITesseractMarkerInteractable {
+public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ITesseractMarkerInteractable, TesseractCapCache.Holder {
 
     private static final Set<Capability<?>> CAPABILITIES = Set.of(ForgeCapabilities.ITEM_HANDLER, ForgeCapabilities.FLUID_HANDLER);
 
@@ -63,26 +64,33 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     public BlockPos pos;
 
     @SaveToDisk
-    protected NotifiableItemStackHandler inventory;
+    protected NotifiableInventory<AEItemKey> inventory;
 
     private boolean call;
 
+    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items();
+    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids();
+
     public TesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, 1, IO.NONE, IO.NONE).setFilter(stack -> stack.is(GTOItems.COORDINATE_CARD.asItem()));
-        inventory.storage.setOnContentsChanged(() -> {
+        inventory = NotifiableInventory.items(this, 1, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
+        inventory.storage.setOnChanged(() -> {
             onChanged();
             call = false;
-            pos = null;
             blockEntityReference = null;
-            ItemStack card = inventory.storage.getStackInSlot(0);
-            if (card.isEmpty()) return;
-            CompoundTag posTags = card.getTag();
-            if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z")) return;
-            var pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
-            if (pos.equals(getPos())) return;
-            this.pos = pos;
+            pos = readCardPos();
+            clearDirectionCache();
         });
+    }
+
+    @Nullable
+    private BlockPos readCardPos() {
+        var card = inventory.storage.keyAt(0);
+        if (card == null) return null;
+        CompoundTag posTags = card.getTag();
+        if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z")) return null;
+        var pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
+        return pos.equals(getPos()) ? null : pos;
     }
 
     @Override
@@ -100,7 +108,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     @Override
     public Widget createUIWidget() {
-        var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, () -> inventory.storage.getStackInSlot(0).hashCode(),
+        var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, inventory.storage::version,
                 Component.translatable(TesseractUI.ROW_EMPTY));
         var row = TesseractUI.row(ItemSlot.of(inventory.storage, 0), targets, 0, TesseractUI.face(targets, 0));
         var bound = Component.translatable(TesseractUI.VALUE_BOUND, 1, 1);
@@ -114,22 +122,78 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     private List<TesseractUI.Target> cardTargets() {
         var level = getLevel();
-        var card = inventory.storage.getStackInSlot(0);
-        var cardPos = CoordinateCardBehavior.getStoredCoordinates(card);
+        var card = inventory.storage.keyAt(0);
+        var cardPos = card == null ? null : CoordinateCardBehavior.getStoredCoordinates(card.getReadOnlyStack());
         if (level == null || cardPos == null) return Collections.singletonList(null);
         return Collections.singletonList(new TesseractUI.Target(GlobalPos.of(level.dimension(), cardPos), null));
     }
 
     @Override
-    public @Nullable ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        var cap = getCapability(ForgeCapabilities.ITEM_HANDLER, side);
-        return cap != null ? cap.orElse(null) instanceof ICustomItemStackHandler m ? m : null : null;
+    public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return itemCaps.collect(this, side);
     }
 
     @Override
-    public @Nullable ICustomFluidStackHandler getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        var cap = getCapability(ForgeCapabilities.FLUID_HANDLER, side);
-        return cap != null ? cap.orElse(null) instanceof ICustomFluidStackHandler m ? m : null : null;
+    public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return fluidCaps.collect(this, side);
+    }
+
+    @Override
+    public boolean isCalled() {
+        return call;
+    }
+
+    @Override
+    public void setCalled(boolean call) {
+        this.call = call;
+    }
+
+    @Override
+    public int getTotalBlockEntities() {
+        return pos == null ? 0 : 1;
+    }
+
+    @Override
+    public @Nullable BlockEntity getBlockEntity(int i) {
+        return getTargetBlockEntity();
+    }
+
+    @Override
+    public TesseractCapCache<AEItemKey> getItemCaps() {
+        return itemCaps;
+    }
+
+    @Override
+    public TesseractCapCache<AEFluidKey> getFluidCaps() {
+        return fluidCaps;
+    }
+
+    @Override
+    public void clearDirectionCache() {
+        super.clearDirectionCache();
+        if (itemCaps != null) {
+            itemCaps.invalidate();
+            fluidCaps.invalidate();
+        }
+    }
+
+    @Override
+    public void onCoverUpdate(@Nullable CoverBehavior coverBehavior, Direction side) {
+        super.onCoverUpdate(coverBehavior, side);
+        itemCaps.invalidate(side);
+        fluidCaps.invalidate(side);
+    }
+
+    @Nullable
+    private BlockEntity getTargetBlockEntity() {
+        if (call || pos == null) return null;
+        if (blockEntityReference != null) {
+            var blockEntity = blockEntityReference.get();
+            if (blockEntity != null && !blockEntity.isRemoved()) return blockEntity;
+        }
+        var be = ILevel.getCachedBlockEntity(getLevel(), pos);
+        if (be != null) blockEntityReference = new WeakReference<>(be);
+        return be;
     }
 
     @Override
@@ -137,37 +201,23 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (call) return null;
         if (pos != null && CAPABILITIES.contains(cap)) {
-            LazyOptional<T> result = null;
-            call = true;
-            if (blockEntityReference == null) {
-                var be = ILevel.getCachedBlockEntity(getLevel(), pos);
-                if (be != null) {
-                    blockEntityReference = new WeakReference<>(be);
-                    result = be.getCapability(cap, side);
-                }
-            } else {
-                var blockEntity = blockEntityReference.get();
-                if (blockEntity == null || blockEntity.isRemoved()) {
-                    blockEntity = ILevel.getCachedBlockEntity(getLevel(), pos);
-                    if (blockEntity != null) {
-                        blockEntityReference = new WeakReference<>(blockEntity);
-                        result = blockEntity.getCapability(cap, side);
-                    }
+            var be = getTargetBlockEntity();
+            if (be == null) return null;
+            CoverBehavior cover = side == null ? null : getCoverContainer().getCoverAtSide(side);
+            if (cover != null) {
+                if (cap == ForgeCapabilities.ITEM_HANDLER) {
+                    var handler = itemCaps.collect(this, side);
+                    if (handler != null) return itemCaps.optional(side, handler);
+                    if (itemCaps.lastHadTargets()) return LazyOptional.empty();
                 } else {
-                    result = blockEntity.getCapability(cap, side);
+                    var handler = fluidCaps.collect(this, side);
+                    if (handler != null) return fluidCaps.optional(side, handler);
+                    if (fluidCaps.lastHadTargets()) return LazyOptional.empty();
                 }
             }
+            call = true;
+            var result = be.getCapability(cap, side);
             call = false;
-            if (side != null && result != null) {
-                var handler = result.orElse(null);
-                if (handler instanceof ICustomItemStackHandler modifiable) {
-                    CoverBehavior cover = getCoverContainer().getCoverAtSide(side);
-                    return cover != null ? ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> cover.getItemHandlerCap(modifiable))) : result;
-                } else if (handler instanceof ICustomFluidStackHandler modifiable) {
-                    CoverBehavior cover = getCoverContainer().getCoverAtSide(side);
-                    return cover != null ? ForgeCapabilities.FLUID_HANDLER.orEmpty(cap, LazyOptional.of(() -> cover.getFluidHandlerCap(modifiable))) : result;
-                }
-            }
             return result;
         }
         return null;
@@ -188,7 +238,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
             return true;
         }
         ItemStack card = GTOItems.COORDINATE_CARD.asItem().getDefaultInstance();
-        if (inventory.storage.getStackInSlot(0).isEmpty()) {
+        if (inventory.storage.amountAt(0) == 0) {
             card = ItemStack.EMPTY;
             if (card.isEmpty()) {
                 var idx = player.getInventory().findSlotMatchingItem(GTOItems.COORDINATE_CARD.asItem().getDefaultInstance());
@@ -218,7 +268,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
         posTags.putInt("x", pos.getX());
         posTags.putInt("y", pos.getY());
         posTags.putInt("z", pos.getZ());
-        inventory.storage.setStackInSlot(0, card);
+        inventory.storage.set(0, Keys.item(card), card.getCount());
         player.displayClientMessage(Component.translatable(WRITE_SUCCESS_TEXT), true);
         return true;
     }

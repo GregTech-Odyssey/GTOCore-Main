@@ -9,6 +9,7 @@ import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
@@ -21,7 +22,6 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.Set;
 
 public final class DissolvingTankMachine extends ElectricMultiblockMachine implements IFluidRendererMachine {
@@ -62,15 +62,16 @@ public final class DissolvingTankMachine extends ElectricMultiblockMachine imple
             return GTORecipeModifiers.UPGRADE_PARALLELIZABLE_OVERCLOCK.applyModifier(this, unit, recipe);
         }
         var fluidList = recipe.fluidInputs;
-        var fluidStack1 = fluidList.get(0);
-        var fluidStack2 = fluidList.get(1);
-        long[] a = unit.getFluidAmount(true, fluidStack1.inner.getFluid(), fluidStack2.inner.getFluid());
-        if (a[1] > 0) {
+        long amount1 = fluidList.amount(0);
+        long amount2 = fluidList.amount(1);
+        long a0 = unit.count(fluidList.ingredient(0), true);
+        long a1 = unit.count(fluidList.ingredient(1), true);
+        if (a1 > 0) {
             recipe = GTORecipeModifiers.UPGRADE_PARALLELIZABLE_OVERCLOCK.applyModifier(this, unit, recipe);
             if (recipe != null) {
-                if ((double) a[0] / a[1] != ((double) fluidStack1.amount) / fluidStack2.amount) {
-                    recipe.fluidOutputs = Collections.emptyList();
-                    recipe.itemOutputs = Collections.emptyList();
+                if ((double) a0 / a1 != ((double) amount1) / amount2) {
+                    recipe.fluidOutputs = ContentList.EMPTY;
+                    recipe.itemOutputs = ContentList.EMPTY;
                 }
                 return recipe;
             }

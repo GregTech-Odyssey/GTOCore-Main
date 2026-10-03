@@ -13,12 +13,12 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
@@ -32,7 +32,8 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.config.Actionable;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNodeListener;
-import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 
@@ -58,7 +59,7 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
     final ExportOnlyAEFluidList aeFluidHandler;
 
     @SaveToDisk
-    protected final NotifiableItemStackHandler circuitInventory;
+    protected final NotifiableInventory<AEItemKey> circuitInventory;
 
     @Getter
     @SaveToDisk(defaultValue = "0")
@@ -69,7 +70,10 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
         aeFluidHandler = createTank();
         aeFluidHandler.addChangedListener(() -> {
             getConfiguredSetting().clear();
-            aeFluidHandler.fastForEachFluids((i, l) -> getConfiguredSetting().set(AEFluidKey.of(i), l));
+            aeFluidHandler.forEachKey(AEKeyType.fluids(), (k, l) -> {
+                getConfiguredSetting().set(k, l);
+                return false;
+            });
         });
         circuitInventory = CircuitHandler.create(this);
     }
@@ -245,8 +249,9 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
         CompoundTag tag = new CompoundTag();
         CompoundTag configStacks = new CompoundTag();
         tag.putBoolean("DistinctBuses", isDistinct());
-        if (!circuitInventory.storage.getStackInSlot(0).isEmpty()) {
-            tag.putByte("GhostCircuit", (byte) IntCircuitBehaviour.getCircuitConfiguration(circuitInventory.storage.getStackInSlot(0)));
+        int circuit = Circuits.get(circuitInventory.storage, 0);
+        if (circuit >= 0) {
+            tag.putByte("GhostCircuit", (byte) circuit);
         }
         tag.put("ConfigStacks", configStacks);
         for (int i = 0; i < CONFIG_SIZE; i++) {
@@ -266,9 +271,10 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
             setDistinct(tag.getBoolean("DistinctBuses"));
         }
         if (tag.contains("GhostCircuit")) {
-            circuitInventory.setStackInSlot(0, IntCircuitBehaviour.stack(tag.getByte("GhostCircuit")));
+            int circuit = tag.getByte("GhostCircuit");
+            Circuits.set(circuitInventory.storage, 0, circuit <= Circuits.MAX ? circuit : -1);
         } else {
-            circuitInventory.setStackInSlot(0, ItemStack.EMPTY);
+            Circuits.set(circuitInventory.storage, 0, -1);
         }
         if (tag.contains("ConfigStacks")) {
             CompoundTag configStacks = tag.getCompound("ConfigStacks");

@@ -64,6 +64,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import appeng.api.stacks.AEItemKey;
+
 import earth.terrarium.adastra.common.registry.ModItems;
 
 import java.util.*;
@@ -620,7 +622,7 @@ public final class MultiBlockD {
             .workableCasingRenderer(GTOCore.id("block/casings/inconel_625_casing"), GTCEu.id("block/multiblock/gcym/large_maceration_tower"))
             .recoveryStacks((m, r) -> {
                 if (r == null) return ItemStack.EMPTY;
-                return r.itemOutputs.getFirst().inner.getInnerItemStack().copyWithCount(1);
+                return r.itemOutputs.ingredient(0).displayKey() instanceof AEItemKey key ? key.toStack(1) : ItemStack.EMPTY;
             })
             .register();
 

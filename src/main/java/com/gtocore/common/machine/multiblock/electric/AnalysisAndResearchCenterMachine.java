@@ -10,7 +10,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -18,7 +18,6 @@ import net.minecraft.network.chat.Component;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine {
@@ -110,23 +109,23 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
         var itemOutputs = recipe.itemOutputs;
 
         // 3. 加权随机选择一个输出
-        int random = GTValues.RNG.nextInt(10000);
-        int cumulative = 0;
-        var selectedContent = itemOutputs.getLast();
-        for (var content : itemOutputs) {
-            if (content.chance <= 0) continue;
-            cumulative += content.chance;
-            if (random <= cumulative) {
-                selectedContent = content;
-                break;
+        int size = itemOutputs.size();
+        if (size > 0) {
+            int random = GTValues.RNG.nextInt(10000);
+            int cumulative = 0;
+            int selected = size - 1;
+            for (int i = 0; i < size; i++) {
+                int chance = itemOutputs.chance(i);
+                if (chance <= 0) continue;
+                cumulative += chance;
+                if (random <= cumulative) {
+                    selected = i;
+                    break;
+                }
             }
-        }
 
-        // 3. 创建新的唯一输出列表
-        if (selectedContent != null) {
-            var selectedStack = selectedContent.inner;
-            var newContent = new Content<>(selectedStack, 10000, 0);
-            recipe.itemOutputs = Collections.singletonList(newContent);
+            // 3. 创建新的唯一输出列表
+            recipe.itemOutputs = new ContentList.Builder(1).add(itemOutputs.ingredient(selected), itemOutputs.amount(selected), ContentList.MAX_CHANCE, 0).build();
         }
 
         return super.getRealRecipe(unit, recipe);

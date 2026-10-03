@@ -61,7 +61,7 @@ public final class GTORecipeTypes {
         RecipeTypeModify.init();
     }
 
-    private static final Consumer<GTRecipeBuilder> addFuelProperties = b -> PowerlessJetpack.FUELS.putIfAbsent(b.getFluidInputs().getFirst().inner, (int) (b.getDuration() * Math.abs(b.EUt())));
+    private static final Consumer<GTRecipeBuilder> addFuelProperties = b -> PowerlessJetpack.FUELS.putIfAbsent(new PowerlessJetpack.Fuel(b.getFluidInputs().ingredient(0), b.getFluidInputs().amount(0)), (int) (b.getDuration() * Math.abs(b.EUt())));
     public static final GTRecipeType HATCH_COMBINED = register("hatch_combined", "Combined / Machine", "组合模式/机器模式", DUMMY).setXEIVisible(false);
     public static final RecipeType ALLOY_BLAST_RECIPES = (RecipeType) GCYMRecipeTypes.ALLOY_BLAST_RECIPES;
     public static final RecipeType STEAM_BOILER_RECIPES = (RecipeType) GTRecipeTypes.STEAM_BOILER_RECIPES;
@@ -121,14 +121,15 @@ public final class GTORecipeTypes {
     public static final RecipeType LARGE_CHEMICAL_RECIPES = (RecipeType) GTRecipeTypes.LARGE_CHEMICAL_RECIPES;
     public static final RecipeType FUSION_RECIPES = (RecipeType) GTRecipeTypes.FUSION_RECIPES.setMaxIOSize(0, 0, 2, GTORules.RECIPE_TIER.isExpert() ? 3 : 1)
             .onRecipeBuild(GTORules.RECIPE_TIER.isExpert() ? (b) -> {
-                var lo = b.getFluidOutputs().getFirst().inner;
-                var f = lo.copy(lo.amount * 3 / 4);
-                b.getFluidOutputs().clear();
-                b.outputFluids(f);
-                var l0 = b.getFluidInputs().getFirst().inner;
-                var l1 = b.getFluidInputs().getLast().inner;
-                b.outputFluids(l0.copy(l0.amount / 8));
-                b.outputFluids(l1.copy(l1.amount / 8));
+                var outputs = b.getFluidOutputs();
+                var lo = outputs.ingredient(0);
+                long la = outputs.amount(0);
+                outputs.clear();
+                b.outputFluids(lo, la * 3 / 4);
+                var inputs = b.getFluidInputs();
+                int last = inputs.size() - 1;
+                b.outputFluids(inputs.ingredient(0), inputs.amount(0) / 8);
+                b.outputFluids(inputs.ingredient(last), inputs.amount(last) / 8);
             } : null);
     public static final RecipeType DUMMY_RECIPES = (RecipeType) GTRecipeTypes.DUMMY_RECIPES;
 

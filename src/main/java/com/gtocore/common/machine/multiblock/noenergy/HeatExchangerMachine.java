@@ -16,6 +16,8 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
+import appeng.api.stacks.AEFluidKey;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,10 +42,10 @@ public final class HeatExchangerMachine extends NoEnergyMultiblockMachine implem
     @Nullable
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        water = recipe.fluidInputs.get(1).inner.getFluid() == Fluids.WATER;
+        water = recipe.fluidInputs.ingredient(1).displayKey() instanceof AEFluidKey fluidKey && fluidKey.getFluid() == Fluids.WATER;
         var result = ParallelLogic.accurateParallel(this, unit, getRecipeBuilder()
-                .inputFluids(recipe.fluidInputs.getFirst())
-                .outputFluids(recipe.fluidOutputs.getFirst())
+                .inputFluids(recipe.fluidInputs.ingredient(0), recipe.inputAmount(recipe.fluidInputs, 0))
+                .outputFluids(recipe.fluidOutputs.ingredient(0), recipe.fluidOutputs.effective(0, recipe.scale))
                 .duration(200)
                 .buildRawRecipe(), Integer.MAX_VALUE);
         if (result == null) return null;

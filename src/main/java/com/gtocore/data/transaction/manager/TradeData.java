@@ -1,10 +1,12 @@
 package com.gtocore.data.transaction.manager;
 
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +26,8 @@ import java.util.UUID;
  * @param sharedUUIDs 与该玩家共享钱包的玩家 UUID
  * @param teamUUID    无线能量和魔力所属队伍 UUID
  */
-public record TradeData(@Nullable Level level, BlockPos pos, ICustomItemStackHandler inputItem,
-                        ICustomItemStackHandler outputItem, ICustomFluidStackHandler inputFluid,
-                        ICustomFluidStackHandler outputFluid, UUID uuid, List<UUID> sharedUUIDs, UUID teamUUID) {
+public record TradeData(@Nullable Level level, BlockPos pos, IKeyHandler<AEItemKey> inputItem,
+                        IKeyHandler<AEItemKey> outputItem, IKeyHandler<AEFluidKey> inputFluid,
+                        IKeyHandler<AEFluidKey> outputFluid, UUID uuid, List<UUID> sharedUUIDs, UUID teamUUID) {
 
 }

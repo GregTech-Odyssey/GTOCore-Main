@@ -9,15 +9,16 @@ import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
 import com.gtolib.api.player.IEnhancedPlayer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
@@ -35,11 +36,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.KeyCounter;
@@ -80,15 +81,15 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     public final List<BlockPos> poss = new ArrayList<>(MAX_TARGETS);
 
     @SaveToDisk
-    protected NotifiableItemStackHandler inventory;
+    protected NotifiableInventory<AEItemKey> inventory;
 
     @SaveToDisk(defaultValue = "false")
     private boolean roundRobin;
 
     @Getter
-    private final List<ICustomItemStackHandler> itemHandlers = new ArrayList<>(20);
+    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items();
     @Getter
-    private final List<ICustomFluidStackHandler> fluidHandlers = new ArrayList<>(20);
+    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids();
 
     @Getter
     @Setter
@@ -96,15 +97,15 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     public AdvancedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, MAX_TARGETS, IO.NONE, IO.NONE).setFilter(stack -> stack.is(GTOItems.COORDINATE_CARD.asItem()));
-        inventory.storage.setOnContentsChanged(() -> {
+        inventory = NotifiableInventory.items(this, MAX_TARGETS, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
+        inventory.storage.setOnChanged(() -> {
             onChanged();
             called = false;
             poss.clear();
             for (int i = 0; i < MAX_TARGETS; i++) {
                 blockEntityReference[i] = null;
-                ItemStack card = inventory.storage.getStackInSlot(i);
-                if (card.isEmpty()) continue;
+                var card = inventory.storage.keyAt(i);
+                if (card == null) continue;
                 CompoundTag posTags = card.getTag();
                 if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z"))
                     continue;
@@ -114,6 +115,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                     poss.add(pos);
                 }
             }
+            clearDirectionCache();
             markFieldsForSync("poss");
         });
     }
@@ -164,22 +166,21 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
         var level = getLevel();
         var result = new ArrayList<TesseractUI.Target>(MAX_TARGETS);
         for (int i = 0; i < MAX_TARGETS; i++) {
-            var cardPos = level == null ? null : CoordinateCardBehavior.getStoredCoordinates(inventory.storage.getStackInSlot(i));
+            var card = inventory.storage.keyAt(i);
+            var cardPos = level == null || card == null ? null : CoordinateCardBehavior.getStoredCoordinates(card.getReadOnlyStack());
             result.add(cardPos == null ? null : new TesseractUI.Target(GlobalPos.of(level.dimension(), cardPos), null));
         }
         return result;
     }
 
     @Override
-    public @Nullable ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        var cap = getCapability(ForgeCapabilities.ITEM_HANDLER, side);
-        return cap != null ? cap.orElse(null) instanceof ICustomItemStackHandler m ? m : null : null;
+    public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return collectItemHandler(side);
     }
 
     @Override
-    public @Nullable ICustomFluidStackHandler getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        var cap = getCapability(ForgeCapabilities.FLUID_HANDLER, side);
-        return cap != null ? cap.orElse(null) instanceof ICustomFluidStackHandler m ? m : null : null;
+    public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+        return collectFluidHandler(side);
     }
 
     @Override
@@ -214,6 +215,22 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             }
         }
         return null;
+    }
+
+    @Override
+    public void clearDirectionCache() {
+        super.clearDirectionCache();
+        if (itemCaps != null) {
+            itemCaps.invalidate();
+            fluidCaps.invalidate();
+        }
+    }
+
+    @Override
+    public void onCoverUpdate(@Nullable CoverBehavior coverBehavior, Direction side) {
+        super.onCoverUpdate(coverBehavior, side);
+        itemCaps.invalidate(side);
+        fluidCaps.invalidate(side);
     }
 
     @Override
@@ -264,7 +281,10 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             player.displayClientMessage(Component.translatable(WRITE_EMPTY_TEXT), true);
             return true;
         }
-        int availableCards = Arrays.stream(inventory.storage.stacks).filter(i -> !i.isEmpty()).toArray().length;
+        int availableCards = 0;
+        for (int slot = 0; slot < MAX_TARGETS; slot++) {
+            if (inventory.storage.amountAt(slot) > 0) availableCards++;
+        }
         inventory.storage.clear();
         var iterator = targets.iterator();
         int i = 0;
@@ -313,7 +333,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             posTags.putInt("x", pos.getX());
             posTags.putInt("y", pos.getY());
             posTags.putInt("z", pos.getZ());
-            inventory.storage.setStackInSlot(i, card);
+            inventory.storage.set(i, Keys.item(card), card.getCount());
             i++;
         }
         if (availableCards > 0) {

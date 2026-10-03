@@ -651,10 +651,11 @@ public final class HarmonyFlowPage {
             int recipeTier = running != null ? running.data.getInt(GTORecipeDataKeys.TIER) : 0;
             int oc = machine.getOverclock();
             boolean owned = machine.getUUID() != null;
-            var container = owned ? machine.getWirelessEnergyContainer() : null;
-            BigInteger stored = container != null ? container.getStorage() : BigInteger.ZERO;
+            var account = owned ? machine.wirelessAccount() : null;
+            boolean bound = account != null && !account.isNone();
+            BigInteger stored = bound ? account.totalStorage() : BigInteger.ZERO;
             BigInteger minimum = machine.getStartupEnergy();
-            boolean energyEnough = container != null && oc > 0 && stored.compareTo(minimum) > 0;
+            boolean energyEnough = bound && oc > 0 && stored.compareTo(minimum) > 0;
             hydrogen.refresh(formed);
             helium.refresh(formed);
             refreshInput(formed, working || logic.isWaiting());

@@ -25,6 +25,8 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 
+import appeng.api.stacks.AEFluidKey;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import lombok.Getter;
@@ -164,9 +166,8 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
         if (recipe != null && recipe != colorRecipe) {
             colorRecipe = recipe;
             if (!recipe.fluidOutputs.isEmpty()) {
-                var fluid = recipe.fluidOutputs.getFirst().inner.getFluid();
-                if (fluid != null) {
-                    int newColor = -16777216 | GTUtil.getFluidColor(fluid);
+                if (recipe.fluidOutputs.ingredient(0).displayKey() instanceof AEFluidKey fluidKey) {
+                    int newColor = -16777216 | GTUtil.getFluidColor(fluidKey.getFluid());
                     if (color != newColor) {
                         color = newColor;
                     }

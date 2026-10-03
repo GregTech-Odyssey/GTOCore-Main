@@ -14,8 +14,9 @@ import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IUIMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -33,7 +34,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
@@ -57,8 +57,6 @@ import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
-import java.util.stream.Stream;
-
 @Deprecated
 public final class VirtualItemProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
 
@@ -74,7 +72,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
 
     private final CellDataStorage storage = new CellDataStorage();
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableInventory<AEItemKey> inventory;
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
     @SyncToClient
@@ -82,7 +80,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
 
     public VirtualItemProviderMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        this.inventory = new NotifiableItemStackHandler(this, 288, IO.NONE, IO.BOTH);
+        this.inventory = NotifiableInventory.items(this, 288, IO.NONE, IO.BOTH);
         this.nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
         storage.setStoredMap(new AEKeyMap<>());
@@ -90,16 +88,17 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
             storage.cache.markAsDirty();
             storage.getStoredMap().clear();
             storage.getStoredMap().insert(EMPTY_STACK, IParallelMachine.MAX_PARALLEL << 6);
-            for (var i = 0; i < inventory.storage.size; i++) {
-                var stack = inventory.storage.stacks[i];
-                if (stack.isEmpty()) continue;
-                if (stack.getItem() == VIRTUAL_ITEM_PROVIDER.asItem() && stack.hasTag()) {
-                    stack = stack.copyWithCount(1);
+            var items = inventory.storage;
+            for (var i = 0; i < items.size(); i++) {
+                var key = items.keyAt(i);
+                if (key == null) continue;
+                if (key.getItem() == VIRTUAL_ITEM_PROVIDER.asItem() && key.hasTag()) {
+                    var stack = key.toStack(1);
                     stack.getOrCreateTag().putBoolean("marked", true);
                     storage.getStoredMap().insert(AEItemKey.of(stack), IParallelMachine.MAX_PARALLEL);
                 } else {
-                    int count = stack.getCount();
-                    stack = VirtualItemProviderBehavior.setVirtualItem(new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem()), stack);
+                    int count = Keys.saturatedInt(items.amountAt(i));
+                    var stack = VirtualItemProviderBehavior.setVirtualItem(new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem()), key.getReadOnlyStack());
                     stack = stack.copyWithCount(1);
                     stack.getOrCreateTag().putBoolean("marked", true);
                     storage.getStoredMap().insert(AEItemKey.of(stack), IParallelMachine.MAX_PARALLEL * count);
@@ -151,7 +150,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
         var modularUI = new ModularUI(xOffset + 19, 244, this, entityPlayer)
                 .background(GuiTextures.BACKGROUND)
                 .widget(new LabelWidget(5, 5, () -> Component.translatable(getBlockState().getBlock().getDescriptionId()).getString() +
-                        "(" + Stream.of(inventory.storage.stacks).filter(i -> !i.isEmpty()).count() + "/" + 288 + ")"))
+                        "(" + countConfigured() + "/" + 288 + ")"))
                 .widget(UITemplate.bindPlayerInventory(entityPlayer.getInventory(), GuiTextures.SLOT, 7, 162, true));
 
         var innerContainer = new DraggableScrollableWidgetGroup(4, 4, xOffset + 6, 130)
@@ -178,6 +177,15 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
         }
         var container = new WidgetGroup(3, 17, xOffset + 20, 140).addWidget(innerContainer);
         return modularUI.widget(container);
+    }
+
+    private int countConfigured() {
+        var items = inventory.storage;
+        int count = 0;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.amountAt(i) > 0) count++;
+        }
+        return count;
     }
 
     @Override
@@ -228,7 +236,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
             var tag = stack.getTag();
             if (tag != null && tag.tags.containsKey("n")) {
                 if (tag.getBoolean("marked")) return amount;
-                if (ItemHandlerHelper.insertItem(inventory.storage, stack, mode.isSimulate()).getCount() < amount) {
+                if (stack.getCount() - inventory.storage.insert(itemKey, stack.getCount(), mode.isSimulate()) < amount) {
                     return amount;
                 }
             }

@@ -38,8 +38,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
+import appeng.api.stacks.AEItemKey;
+
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
@@ -272,11 +275,14 @@ public final class GTMachineModify {
         }
         if (machine.getLevel() == null) return ash;
         if (gtRecipe != null && !gtRecipe.itemOutputs.isEmpty()) {
-            var pool = gtRecipe.itemOutputs
-                    .stream().map(ing -> ing.inner.getInnerItemStack())
-                    .filter(i -> !i.isEmpty() && ChemicalHelper.getPrefix(i.getItem()) == TagPrefix.dust)
-                    .map(i -> ChemicalHelper.get(TagPrefix.dustTiny, ChemicalHelper.getMaterialStack(i).material()))
-                    .toList();
+            var outputs = gtRecipe.itemOutputs;
+            var pool = new ArrayList<ItemStack>(outputs.size());
+            for (int i = 0; i < outputs.size(); i++) {
+                if (!(outputs.ingredient(i).displayKey() instanceof AEItemKey key)) continue;
+                var item = key.getItem();
+                if (ChemicalHelper.getPrefix(item) != TagPrefix.dust) continue;
+                pool.add(ChemicalHelper.get(TagPrefix.dustTiny, ChemicalHelper.getMaterialStack(item).material()));
+            }
             if (!pool.isEmpty()) {
                 return pool.get(GTValues.RNG.nextInt(pool.size())).copyWithCount(1);
             }

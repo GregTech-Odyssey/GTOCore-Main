@@ -8,12 +8,15 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,7 @@ import java.util.List;
 public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
 
     private AABB grindBound = new AABB(BlockPos.ZERO);
-    private final List<IItemHandler> handlers = new ArrayList<>();
+    private final List<IKeyHandler<AEItemKey>> handlers = new ArrayList<>();
 
     private TickableSubscription hurtSub;
 
@@ -33,10 +36,13 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onStructureFormed() {
         super.onStructureFormed();
         updateBounds();
-        handlers.addAll(getCapabilitiesFlat(IO.IN, IItemHandler.class));
+        for (var handler : getCapabilitiesFlat(IO.IN, IKeyHandler.class)) {
+            if (handler.keyType() == AEKeyType.items()) handlers.add((IKeyHandler<AEItemKey>) handler);
+        }
         hurtSub = subscribeServerTick(hurtSub, manaMonitor, 20);
     }
 
@@ -80,12 +86,19 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
 
         for (ItemEntity item : itemEntities) {
             if (item.isRemoved()) continue;
+            var stack = item.getItem();
+            var key = Keys.item(stack);
+            if (key == null) continue;
+            long count = stack.getCount();
+            long left = count;
             for (var holder : handlers) {
-                item.setItem(ItemHandlerHelper.insertItem(holder, item.getItem(), false));
-                if (item.getItem().isEmpty()) {
-                    item.discard();
-                    break;
-                }
+                left -= holder.insert(key, left, false);
+                if (left <= 0) break;
+            }
+            if (left <= 0) {
+                item.discard();
+            } else if (left < count) {
+                item.setItem(stack.copyWithCount((int) left));
             }
         }
     }

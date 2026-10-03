@@ -12,13 +12,14 @@ import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
-import com.gregtechceu.gtceu.utils.GTTransferUtils;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -33,8 +34,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.IItemHandler;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.storage.AEKeyFilter;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -80,11 +83,16 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
 
     private final BlockEntityCache target = new BlockEntityCache(() -> ILevel.getCachedBlockEntity(targetLever, targetPos));
 
+    private final AEKeyFilter itemKeyFilter;
+    private final AEKeyFilter fluidKeyFilter;
+
     public AdvancedWirelessTransferCover(CoverDefinition definition, ICoverable coverHolder, Direction attachedSide, int transferType) {
         super(definition, coverHolder, attachedSide);
         this.transferType = transferType;
         filterHandlerFluid = FilterHandlers.fluid(this);
         filterHandlerItem = FilterHandlers.item(this);
+        itemKeyFilter = k -> k instanceof AEItemKey itemKey && filterHandlerItem.getFilter().test(itemKey.getReadOnlyStack());
+        fluidKeyFilter = k -> k instanceof AEFluidKey fluidKey && filterHandlerFluid.getFilter().test(fluidKey.getReadOnlyStack());
     }
 
     @Override
@@ -153,13 +161,13 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
             var targetItemTransfer = getTargetItemTransfer();
             var ownItemTransfer = getOwnItemTransfer();
             if (ownItemTransfer != null && targetItemTransfer != null) {
-                GTTransferUtils.transferItemsFiltered(ownItemTransfer, targetItemTransfer, filterHandlerItem.getFilter(), Integer.MAX_VALUE);
+                KeyTransfer.transfer(ownItemTransfer, targetItemTransfer, Integer.MAX_VALUE, itemKeyFilter);
             }
         } else if (transferType == TRANSFER_FLUID) {
             var targetFluidTransfer = getTargetFluidTransfer();
             var ownFluidTransfer = getOwnFluidTransfer();
             if (ownFluidTransfer != null && targetFluidTransfer != null) {
-                GTTransferUtils.transferFluidsFiltered(ownFluidTransfer, targetFluidTransfer, filterHandlerFluid.getFilter(), Integer.MAX_VALUE);
+                KeyTransfer.transfer(ownFluidTransfer, targetFluidTransfer, Integer.MAX_VALUE, fluidKeyFilter);
             }
         }
     }
@@ -171,22 +179,22 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         this.targetLever = Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey);
     }
 
-    protected @Nullable IItemHandler getOwnItemTransfer() {
+    protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
         return coverHolder.getItemHandlerCap(attachedSide, false);
     }
 
-    protected @Nullable IItemHandler getTargetItemTransfer() {
+    protected @Nullable IKeyHandler<AEItemKey> getTargetItemTransfer() {
         if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getItemHandler(target.get(), getSafeFacing().getOpposite());
+        return GTCapabilityHelper.getItemKeyHandler(target.get(), getSafeFacing().getOpposite());
     }
 
-    protected @Nullable IFluidHandler getOwnFluidTransfer() {
+    protected @Nullable IKeyHandler<AEFluidKey> getOwnFluidTransfer() {
         return coverHolder.getFluidHandlerCap(attachedSide, false);
     }
 
-    protected @Nullable IFluidHandler getTargetFluidTransfer() {
+    protected @Nullable IKeyHandler<AEFluidKey> getTargetFluidTransfer() {
         if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getFluidHandler(target.get(), getSafeFacing().getOpposite());
+        return GTCapabilityHelper.getFluidKeyHandler(target.get(), getSafeFacing().getOpposite());
     }
 
     private Direction getSafeFacing() {

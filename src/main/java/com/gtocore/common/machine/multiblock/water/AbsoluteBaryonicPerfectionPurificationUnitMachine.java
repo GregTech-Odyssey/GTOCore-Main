@@ -7,9 +7,9 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -17,6 +17,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -103,25 +105,28 @@ public final class AbsoluteBaryonicPerfectionPurificationUnitMachine extends Wat
         if (getOffsetTimer() % 20 == 0) {
             boolean successful = false;
             for (ItemBusPartMachine bus : busMachines) {
-                NotifiableItemStackHandler inv = bus.getInventory();
-                int slots = inv.getSlots();
+                var inv = bus.getInventory().storage;
+                int slots = inv.size();
                 for (int i = 0; i < slots; i++) {
-                    ItemStack stack = inv.getStackInSlot(i);
-                    if (CATALYST.contains(stack.getItem()) && inputFluid(QUARK_GLUON, stack.getCount() * 144L)) {
-                        if (i < slots - 1 && stack.getItem() == catalyst1) {
-                            ItemStack stack1 = inv.getStackInSlot(i + 1);
-                            if (!stack1.isEmpty() && inputFluid(QUARK_GLUON, stack1.getCount() * 144L)) {
-                                if (stack1.getItem() == catalyst2) {
+                    AEItemKey key = inv.keyAt(i);
+                    if (key == null) continue;
+                    long count = inv.amountAt(i);
+                    if (CATALYST.contains(key.getItem()) && inputFluid(QUARK_GLUON, count * 144L)) {
+                        if (i < slots - 1 && key.getItem() == catalyst1) {
+                            AEItemKey key1 = inv.keyAt(i + 1);
+                            long count1 = inv.amountAt(i + 1);
+                            if (key1 != null && inputFluid(QUARK_GLUON, count1 * 144L)) {
+                                if (key1.getItem() == catalyst2) {
                                     outputFluid(STABLE_BARYONIC_MATTER, 1000);
                                     successful = true;
                                     this.successful = true;
                                 }
-                                inv.setStackInSlot(i + 1, ItemStack.EMPTY);
-                                if (!successful) outputs.add(stack1);
+                                inv.set(i + 1, null, 0);
+                                if (!successful) outputs.add(Keys.toStack(key1, count1));
                             }
                         }
-                        if (!successful) outputs.add(stack);
-                        inv.setStackInSlot(i, ItemStack.EMPTY);
+                        if (!successful) outputs.add(Keys.toStack(key, count));
+                        inv.set(i, null, 0);
                     }
                 }
             }
@@ -131,7 +136,10 @@ public final class AbsoluteBaryonicPerfectionPurificationUnitMachine extends Wat
     @Override
     public void afterWorking() {
         super.afterWorking();
-        outputs.forEach(this::outputItem);
+        for (ItemStack stack : outputs) {
+            var key = Keys.item(stack);
+            if (key != null) output(key, stack.getCount());
+        }
         outputs.clear();
         if (successful) outputFluid(WaterPurificationPlantMachine.GradePurifiedWater8, inputCount * 9 / 10);
     }

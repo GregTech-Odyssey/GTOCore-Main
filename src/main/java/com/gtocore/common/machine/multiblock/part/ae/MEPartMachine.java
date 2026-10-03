@@ -12,8 +12,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistinctPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
@@ -32,6 +31,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -85,12 +86,12 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
     }
 
     @Override
-    public @Nullable ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 
     @Override
-    public @Nullable ICustomFluidStackHandler getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 

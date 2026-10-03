@@ -17,6 +17,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +27,6 @@ import vazkii.botania.common.item.BotaniaItems;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultiblockMachine implements IManaMultiblock {
 
@@ -83,15 +85,8 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
                 time--;
                 if (signal > 0) {
                     Item item = RUNES.get(signal);
-                    AtomicBoolean success = new AtomicBoolean(false);
-                    forEachItems(true, (stack, amount) -> {
-                        if (stack.is(item) && inputItem(item, 1)) {
-                            success.set(true);
-                            return true;
-                        }
-                        return false;
-                    });
-                    if (success.get()) {
+                    boolean success = forEachKey(AEKeyType.items(), true, (key, amount) -> key instanceof AEItemKey itemKey && itemKey.getItem() == item && inputItem(item, 1));
+                    if (success) {
                         signal = 0;
                         updateSignal();
                         mana = 1 << getTier();

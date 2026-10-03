@@ -7,13 +7,11 @@ import com.gregtechceu.gtceu.integration.ae2.utils.AEUtil;
 import com.gregtechceu.gtceu.uipro.render.UIDraw;
 import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.utils.GTMath;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AmountFormat;
@@ -78,10 +76,7 @@ public class AELimitFluidConfigSlotWidget extends AEFluidConfigSlotWidget {
         if (slot.getConfig() == null || wheelDelta == 0 || !toRectangleBox().contains((int) mouseX, (int) mouseY)) {
             return false;
         }
-        long amount = slot.getConfig().what() instanceof AEFluidKey fluidKey ?
-                new FluidStack(fluidKey.getFluid(), GTMath.saturatedCast(slot.getConfig().amount()), fluidKey.getTag())
-                        .getAmount() :
-                0;
+        long amount = slot.getConfig().what() instanceof AEFluidKey ? slot.getConfig().amount() : 0;
         long amt;
         if (isCtrlDown()) {
             amt = wheelDelta > 0 ? amount * 2L : amount / 2L;
@@ -90,8 +85,7 @@ public class AELimitFluidConfigSlotWidget extends AEFluidConfigSlotWidget {
         }
         // 允许滚到 0：0 就是"禁止存入/禁止取出"
         if (amt >= 0 && amt <= Integer.MAX_VALUE) {
-            int finalAmt = (int) amt;
-            writeClientAction(AMOUNT_CHANGE_ID, buf -> buf.writeInt(finalAmt));
+            writeClientAction(AMOUNT_CHANGE_ID, buf -> buf.writeVarLong(amt));
             return true;
         }
         return false;

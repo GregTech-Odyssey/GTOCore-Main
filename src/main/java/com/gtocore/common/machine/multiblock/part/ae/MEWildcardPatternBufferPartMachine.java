@@ -9,7 +9,6 @@ import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.RecipeType;
-import com.gtolib.api.recipe.lookup.IIngredientConvertible;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
@@ -21,10 +20,14 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.transfer.fluid.CustomFluidTank;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -64,6 +67,7 @@ import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.side.item.IItemTransfer;
 import com.lowdragmc.lowdraglib.side.item.forge.ItemTransferHelperImpl;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -99,11 +103,11 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     @SaveToDisk(defaultValue = "1")
     private int maxItemsOutput = 1;
     @SaveToDisk
-    private final CustomItemStackHandler blacklistedItems;
+    private final StackInventory blacklistedItems;
     @SaveToDisk
-    private final CustomFluidTank[] blacklistedFluids;
+    private final KeyInventory<AEFluidKey> blacklistedFluids;
     @SaveToDisk
-    private final CustomItemStackHandler blacklistedAltProcessableMachines;
+    private final StackInventory blacklistedAltProcessableMachines;
     private final Int2ReferenceOpenHashMap<Material> blacklistedMaterials = new Int2ReferenceOpenHashMap<>();
     private final ReferenceOpenHashSet<Material> blacklistedMaterialSet = new ReferenceOpenHashSet<>();
     private final IntSet blacklistedAltProcessableItemIds = new IntOpenHashSet();
@@ -113,10 +117,9 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     public MEWildcardPatternBufferPartMachine(@NotNull MetaMachineBlockEntity holder, @NotNull PatternBufferType type) {
         super(holder, type);
 
-        blacklistedItems = new CustomItemStackHandler(18);
-        blacklistedFluids = new CustomFluidTank[18];
-        blacklistedAltProcessableMachines = new CustomItemStackHandler(6);
-        Arrays.setAll(blacklistedFluids, i -> new CustomFluidTank(1));
+        blacklistedItems = new StackInventory(18);
+        blacklistedFluids = KeyInventory.fluids(18, 1);
+        blacklistedAltProcessableMachines = new StackInventory(6);
 
         shareInventory.addChangedListener(this::requestPatternUpdate);
         circuitInventorySimulated.addChangedListener(this::requestPatternUpdate);
@@ -237,10 +240,10 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 blacklistedMaterialSet.add(mat);
             }
         }
-        for (; i < blacklistedItems.getSlots() + blacklistedFluids.length; i++) {
-            var tank = blacklistedFluids[i - blacklistedItems.getSlots()];
-            if (tank.isEmpty()) continue;
-            var mat = ChemicalHelper.getMaterial(tank.getFluid().getFluid());
+        for (; i < blacklistedItems.getSlots() + blacklistedFluids.size(); i++) {
+            var fluid = blacklistedFluids.keyAt(i - blacklistedItems.getSlots());
+            if (fluid == null) continue;
+            var mat = ChemicalHelper.getMaterial(fluid.getFluid());
             if (mat != GTMaterials.NULL) {
                 blacklistedMaterials.put(i, mat);
                 blacklistedMaterialSet.add(mat);
@@ -318,8 +321,10 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         maxItemsOutput = tag.getInt("maxItemsOutput");
         loadStacks(blacklistedItems, tag.getCompound("blacklistedItems"));
         var fluidsTag = tag.getList("blacklistedFluids", 10);
-        for (int i = 0; i < fluidsTag.size(); i++) {
-            blacklistedFluids[i].deserializeNBT(fluidsTag.getCompound(i));
+        int fluidCount = Math.min(fluidsTag.size(), blacklistedFluids.size());
+        for (int i = 0; i < fluidCount; i++) {
+            var fluid = FluidStack.loadFluidStackFromNBT(fluidsTag.getCompound(i));
+            blacklistedFluids.set(i, Keys.fluid(fluid), fluid.getAmount());
         }
         loadStacks(blacklistedAltProcessableMachines, tag.getCompound("blacklistedAltProcessableMachines"));
         loadBlacklistData();
@@ -333,20 +338,22 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         tag.putInt("maxItemsOutput", maxItemsOutput);
         tag.put("blacklistedItems", saveStacks(blacklistedItems));
         var fluidsTag = new ListTag();
-        for (var tank : blacklistedFluids) {
-            fluidsTag.add(tank.serializeNBT());
+        for (int i = 0; i < blacklistedFluids.size(); i++) {
+            var fluid = blacklistedFluids.keyAt(i);
+            var stack = fluid == null ? FluidStack.EMPTY : Keys.toFluidStack(fluid, blacklistedFluids.amountAt(i));
+            fluidsTag.add(stack.writeToNBT(new CompoundTag()));
         }
         tag.put("blacklistedFluids", fluidsTag);
         tag.put("blacklistedAltProcessableMachines", saveStacks(blacklistedAltProcessableMachines));
     }
 
-    private static CompoundTag saveStacks(CustomItemStackHandler handler) {
+    private static CompoundTag saveStacks(StackInventory handler) {
         var stacks = NonNullList.withSize(handler.getSlots(), ItemStack.EMPTY);
         for (int i = 0; i < stacks.size(); i++) stacks.set(i, handler.getStackInSlot(i));
         return ContainerHelper.saveAllItems(new CompoundTag(), stacks);
     }
 
-    private static void loadStacks(CustomItemStackHandler handler, CompoundTag tag) {
+    private static void loadStacks(StackInventory handler, CompoundTag tag) {
         var stacks = NonNullList.withSize(handler.getSlots(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, stacks);
         for (int i = 0; i < stacks.size(); i++) handler.setStackInSlot(i, stacks.get(i));
@@ -428,30 +435,34 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private boolean checkProb(GTRecipeDefinition recipe) {
-        for (var ingredient : recipe.itemInputs) {
-            if (ingredient.chance != 10000 && ingredient.chance != 0) return false;
+        var items = recipe.itemInputs;
+        for (int i = 0; i < items.size(); i++) {
+            int chance = items.chance(i);
+            if (chance != ContentList.MAX_CHANCE && chance != 0) return false;
         }
-        for (var ingredient : recipe.fluidInputs) {
-            if (ingredient.chance != 10000 && ingredient.chance != 0) return false;
+        var fluids = recipe.fluidInputs;
+        for (int i = 0; i < fluids.size(); i++) {
+            int chance = fluids.chance(i);
+            if (chance != ContentList.MAX_CHANCE && chance != 0) return false;
         }
         return true;
     }
 
-    private static void addSearchKey(IntLongMap map, AEKey key) {
+    private static void addSearchKey(GTRecipeType type, IntLongMap map, AEKey key) {
         var normalized = normalizeSearchKey(key);
         if (normalized != null) {
-            ((IIngredientConvertible) normalized).gtolib$convert(Integer.MAX_VALUE, map);
+            type.convertKey(normalized, Integer.MAX_VALUE, map);
         }
     }
 
-    private static @Nullable Object normalizeSearchKey(AEKey key) {
+    private static @Nullable AEKey normalizeSearchKey(AEKey key) {
         if (key instanceof AEItemKey what && MEPatternVirtualInputHelper.isVirtualProvider(what)) {
             if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
                 ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
-                return virtualItem.isEmpty() ? null : AEItemKey.of(virtualItem);
+                return virtualItem.isEmpty() ? null : Keys.item(virtualItem);
             } else if (what.getItem() == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
                 FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
-                return virtualFluid.isEmpty() ? null : AEFluidKey.of(virtualFluid);
+                return virtualFluid.isEmpty() ? null : Keys.fluid(virtualFluid);
             }
         }
         return key;
@@ -489,6 +500,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         private final TagPrefixRequirement[] tagOutputs;
         private final int fixedOutputCount;
         private final Reference2ObjectOpenHashMap<GTRecipeType, IntLongMap> fixedInputCache = new Reference2ObjectOpenHashMap<>();
+        private int fixedInputGeneration;
 
         private WildcardPatternTemplate(AEProcessingPattern pattern) {
             var fixedInputs = new ArrayList<GenericStack>();
@@ -525,6 +537,11 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
             if (activeType == null) {
                 return null;
             }
+            int generation = GTRecipeType.searchGeneration();
+            if (generation != fixedInputGeneration) {
+                fixedInputCache.clear();
+                fixedInputGeneration = generation;
+            }
             var wildcardInput = fixedInputCache.computeIfAbsent(activeType, this::buildFixedInputMap);
             var working = context.prepareWorkingInput(activeType, wildcardInput);
             for (var requirement : tagInputs) {
@@ -532,7 +549,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 if (what == null) {
                     return null;
                 }
-                addSearchKey(working, what);
+                addSearchKey(activeType, working, what);
             }
             return working;
         }
@@ -552,7 +569,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         private IntLongMap buildFixedInputMap(GTRecipeType type) {
             var map = new IntLongMap();
             for (var stack : fixedInputKeys) {
-                addSearchKey(map, stack.what());
+                addSearchKey(type, map, stack.what());
             }
             return map;
         }
@@ -629,13 +646,16 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
 
     /** 材料黑名单弹出面板：物品、流体、机器三个区块。 */
     private void buildBlacklist(UIElement column) {
-        MEPatternPartUI.slotRows(MEPatternPartUI.section(column, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_ITEMS), BLACKLIST_ITEM_SLOTS, this::createItemBlacklistSlot);
-        MEPatternPartUI.slotRows(MEPatternPartUI.section(column, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_FLUIDS), BLACKLIST_FLUID_SLOTS, this::createFluidBlacklistSlot);
-        MEPatternPartUI.slotRows(MEPatternPartUI.section(column, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_MACHINES), BLACKLIST_MACHINE_SLOTS, this::createMachineBlacklistSlot);
+        var items = ItemTransferHelperImpl.toItemTransfer(new ForgeStackAdapter(blacklistedItems));
+        var fluids = new ForgeFluidAdapter(blacklistedFluids);
+        var machines = ItemTransferHelperImpl.toItemTransfer(new ForgeStackAdapter(blacklistedAltProcessableMachines));
+        MEPatternPartUI.slotRows(MEPatternPartUI.section(column, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_ITEMS), BLACKLIST_ITEM_SLOTS, i -> createItemBlacklistSlot(items, i));
+        MEPatternPartUI.slotRows(MEPatternPartUI.section(column, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_FLUIDS), BLACKLIST_FLUID_SLOTS, i -> createFluidBlacklistSlot(fluids, i));
+        MEPatternPartUI.slotRows(MEPatternPartUI.section(column, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_MACHINES), BLACKLIST_MACHINE_SLOTS, i -> createMachineBlacklistSlot(machines, i));
     }
 
-    private Widget createItemBlacklistSlot(int finalIndex) {
-        return new PhantomItemSlot(ItemTransferHelperImpl.toItemTransfer(blacklistedItems), finalIndex) {
+    private Widget createItemBlacklistSlot(IItemTransfer transfer, int finalIndex) {
+        return new PhantomItemSlot(transfer, finalIndex) {
 
             @Override
             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -688,14 +708,14 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         }.xeiPhantom().setClearSlotOnRightClick(false).setChangeListener(this::onChanged);
     }
 
-    private Widget createFluidBlacklistSlot(int fluidIndex) {
+    private Widget createFluidBlacklistSlot(ForgeFluidAdapter handler, int fluidIndex) {
         int shift = blacklistedItems.getSlots();
-        return new PhantomFluidSlot(this.blacklistedFluids[fluidIndex], fluidIndex,
-                () -> this.blacklistedFluids[fluidIndex].getFluid(),
+        return new PhantomFluidSlot(handler, fluidIndex,
+                () -> handler.getFluidInTank(fluidIndex),
                 (fluid -> {
                     int shiftedIndex = fluidIndex + shift;
                     if (fluid.isEmpty()) {
-                        this.blacklistedFluids[fluidIndex].setFluid(fluid);
+                        this.blacklistedFluids.set(fluidIndex, null, 0);
                         if (!blacklistedMaterials.isEmpty() && blacklistedMaterials.containsKey(shiftedIndex)) {
                             blacklistedMaterials.remove(shiftedIndex);
                         }
@@ -728,8 +748,8 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         }.xeiPhantom();
     }
 
-    private Widget createMachineBlacklistSlot(int finalIndex) {
-        return new PhantomItemSlot(ItemTransferHelperImpl.toItemTransfer(blacklistedAltProcessableMachines), finalIndex) {
+    private Widget createMachineBlacklistSlot(IItemTransfer transfer, int finalIndex) {
+        return new PhantomItemSlot(transfer, finalIndex) {
 
             @Override
             public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
@@ -809,9 +829,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     private void setFluid(int index, FluidStack fs) {
-        var newFluid = fs.copy();
-        newFluid.setAmount(1);
-        this.blacklistedFluids[index].setFluid(newFluid);
+        this.blacklistedFluids.set(index, Keys.fluid(fs), 1);
         loadBlacklistData();
     }
 

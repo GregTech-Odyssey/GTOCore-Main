@@ -15,14 +15,13 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -32,8 +31,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraft.world.level.material.Fluid;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -50,14 +51,14 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::intake);
 
-    private static final FluidStack DINITROGEN_TETROXIDE_STACK = GTMaterials.DinitrogenTetroxide.getFluid(480);
-    private static final FluidStack LIQUID_OXYGEN_STACK = GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID, 320);
-    private static final FluidStack LUBRICANT_STACK = GTMaterials.Lubricant.getFluid(10);
+    private static final Fluid DINITROGEN_TETROXIDE = GTMaterials.DinitrogenTetroxide.getFluid();
+    private static final Fluid LIQUID_OXYGEN = GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID);
+    private static final Fluid LUBRICANT = GTMaterials.Lubricant.getFluid();
     private static final int tier = 5;
     private boolean isOxygenBoosted;
     private boolean isDinitrogenTetroxideBoosted;
     @SaveToDisk
-    private final NotifiableFluidTank tank;
+    private final NotifiableInventory<AEFluidKey> tank;
     private final ConditionalSubscriptionHandler tankSubs;
     @SyncToClient
     private BlockPos highlightStartPos = BlockPos.ZERO;
@@ -66,19 +67,19 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
 
     public ChemicalEnergyDevourerMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        this.tank = new NotifiableFluidTank(this, 1, 512000, IO.IN, IO.NONE);
+        this.tank = NotifiableInventory.fluids(this, 1, 512000, IO.IN, IO.NONE);
         tankSubs = new ConditionalSubscriptionHandler(this, generatorIntakeMonitor, 20, () -> isFormed && !isIntakesObstructed());
     }
 
     @Override
     @Nullable
-    public ICustomItemStackHandler getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 
     @Override
     @Nullable
-    public ICustomFluidStackHandler getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
+    public IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
         return null;
     }
 
@@ -88,7 +89,7 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
             tankSubs.unsubscribe();
             return;
         }
-        tank.fillInternal(new FluidStack(fluid, 64000), IFluidHandler.FluidAction.EXECUTE);
+        tank.storage.insert(AEFluidKey.of(fluid), 64000, false);
         tankSubs.updateSubscription();
     }
 
@@ -140,7 +141,7 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
     @Override
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         var EUt = recipe.getOutputEUt();
-        if (EUt > 0 && unit.matchFluid(LUBRICANT_STACK) && !isIntakesObstructed()) {
+        if (EUt > 0 && unit.matchFluid(LUBRICANT, 10) && !isIntakesObstructed()) {
             recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, getOverclockVoltage() / EUt);
             if (recipe == null) return null;
             if (isOxygenBoosted && isDinitrogenTetroxideBoosted) {
@@ -150,7 +151,7 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
             }
             return recipe;
         } else {
-            (EUt <= 0 ? IdleReason.NOT_APPLICABLE : !unit.matchFluid(LUBRICANT_STACK) ? IdleReason.NO_LUBRICANT : IdleReason.INTAKE_OBSTRUCTED).setReason(this);
+            (EUt <= 0 ? IdleReason.NOT_APPLICABLE : !unit.matchFluid(LUBRICANT, 10) ? IdleReason.NO_LUBRICANT : IdleReason.INTAKE_OBSTRUCTED).setReason(this);
             requestSync();
         }
         return null;
@@ -161,14 +162,14 @@ public final class ChemicalEnergyDevourerMachine extends ElectricMultiblockMachi
         if (!super.handleTickRecipe(recipe)) return false;
         long totalContinuousRunningTime = recipeLogic.getTotalContinuousRunningTime();
         if ((totalContinuousRunningTime == 1 || totalContinuousRunningTime % 72 == 0)) {
-            if (!inputFluid(LUBRICANT_STACK)) {
+            if (!inputFluid(LUBRICANT, 10)) {
                 IdleReason.NO_LUBRICANT.setReason(this);
                 return false;
             }
         }
         if ((totalContinuousRunningTime == 1 || totalContinuousRunningTime % 20 == 0) && isBoostAllowed()) {
-            isOxygenBoosted = inputFluid(LIQUID_OXYGEN_STACK);
-            isDinitrogenTetroxideBoosted = inputFluid(DINITROGEN_TETROXIDE_STACK);
+            isOxygenBoosted = inputFluid(LIQUID_OXYGEN, 320);
+            isDinitrogenTetroxideBoosted = inputFluid(DINITROGEN_TETROXIDE, 480);
         }
         return true;
     }

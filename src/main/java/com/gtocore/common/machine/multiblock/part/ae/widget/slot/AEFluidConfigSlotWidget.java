@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
@@ -94,7 +93,8 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 ItemStack hold = this.gui.getModularUIContainer().getCarried();
                 var fluid = FluidUtil.getFluidContained(hold);
                 if (fluid.isPresent()) {
-                    writeClientAction(UPDATE_ID, fluid.get()::writeToPacket);
+                    var config = AEUtil.fromFluidStack(fluid.get());
+                    writeClientAction(UPDATE_ID, buf -> GenericStack.writeBuffer(config, buf));
                 } else if (this.parentWidget.getDisplay(this.index).getConfig() == null) {
                     return true;
                 }
@@ -121,22 +121,22 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
                 writeUpdateInfo(REMOVE_ID, buf -> {});
             }
             case UPDATE_ID -> {
-                FluidStack fluid = FluidStack.readFromPacket(buffer);
-                var stack = AEUtil.fromFluidStack(fluid);
+                var stack = GenericStack.readBuffer(buffer);
+                if (stack != null && (!(stack.what() instanceof AEFluidKey) || stack.amount() <= 0)) return;
                 if (!isStackValidForSlot(stack)) return;
                 slot.setConfig(stack);
                 this.parentWidget.notifyConfigChanged();
-                if (fluid != FluidStack.EMPTY) {
-                    writeUpdateInfo(UPDATE_ID, fluid::writeToPacket);
+                if (stack != null) {
+                    writeUpdateInfo(UPDATE_ID, buf -> GenericStack.writeBuffer(stack, buf));
                 }
             }
             case AMOUNT_CHANGE_ID -> {
-                int amt = buffer.readInt();
+                long amt = buffer.readVarLong();
                 // 与数量面板同一套校验（客户端可以伪造）
                 if (amt < this.parentWidget.getMinAmount() || !this.parentWidget.canSetAmount(this.index)) return;
                 slot.setConfig(new GenericStack(slot.getConfig().what(), amt));
                 this.parentWidget.notifyConfigChanged();
-                writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeInt(amt));
+                writeUpdateInfo(AMOUNT_CHANGE_ID, buf -> buf.writeVarLong(amt));
             }
         }
     }
@@ -148,13 +148,9 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
         IConfigurableSlot slot = this.parentWidget.getDisplay(this.index);
         switch (id) {
             case REMOVE_ID -> slot.setConfig(null);
-            case UPDATE_ID -> {
-                FluidStack fluid = new FluidStack(BuiltInRegistries.FLUID.get(buffer.readResourceLocation()),
-                        buffer.readVarInt());
-                slot.setConfig(new GenericStack(AEFluidKey.of(fluid.getFluid()), fluid.getAmount()));
-            }
+            case UPDATE_ID -> slot.setConfig(GenericStack.readBuffer(buffer));
             case AMOUNT_CHANGE_ID -> {
-                if (slot.getConfig() != null) slot.setConfig(new GenericStack(slot.getConfig().what(), buffer.readInt()));
+                if (slot.getConfig() != null) slot.setConfig(new GenericStack(slot.getConfig().what(), buffer.readVarLong()));
             }
         }
     }
@@ -182,7 +178,8 @@ public class AEFluidConfigSlotWidget extends AEConfigSlotWidget implements IGhos
         }
 
         if (!fluidStack.isEmpty()) {
-            writeClientAction(UPDATE_ID, fluidStack::writeToPacket);
+            var config = AEUtil.fromFluidStack(fluidStack);
+            writeClientAction(UPDATE_ID, buf -> GenericStack.writeBuffer(config, buf));
         }
     }
 }

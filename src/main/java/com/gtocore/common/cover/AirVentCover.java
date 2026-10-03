@@ -12,8 +12,8 @@ import com.gregtechceu.gtceu.utils.TaskHandler;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import appeng.api.stacks.AEFluidKey;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -62,7 +62,7 @@ public final class AirVentCover extends CoverBehavior {
             }
             var handler = machine.getFluidHandlerCap(attachedSide, false);
             if (handler == null) return;
-            handler.fill(new FluidStack(fluid, 200), IFluidHandler.FluidAction.EXECUTE);
+            handler.insert(AEFluidKey.of(fluid), 200, false);
         }
     }
 }

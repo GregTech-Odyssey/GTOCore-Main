@@ -6,18 +6,20 @@ import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.utils.ResearchManager;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 
@@ -33,8 +35,8 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
     }
 
     @Override
-    protected NotifiableItemStackHandler createImportItemHandler(Object... args) {
-        return new NotifiableItemStackHandler(this, getRecipeType().getMaxInputs(ItemRecipeInfo.INSTANCE), IO.IN, IO.BOTH);
+    protected NotifiableInventory<AEItemKey> createImportItemHandler(Object... args) {
+        return NotifiableInventory.items(this, getRecipeType().getMaxInputs(ItemRecipeInfo.INSTANCE), IO.IN, IO.BOTH);
     }
 
     @Override
@@ -60,13 +62,13 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
     }
 
     @Override
-    public ICustomItemStackHandler getDataItemStorage() {
-        return importItems;
+    public KeyInventory<AEItemKey> getDataItemStorage() {
+        return importItems.storage;
     }
 
     @Override
-    public ICustomItemStackHandler getDataOutputStorage() {
-        return exportItems;
+    public KeyInventory<AEItemKey> getDataOutputStorage() {
+        return exportItems.storage;
     }
 
     @Override

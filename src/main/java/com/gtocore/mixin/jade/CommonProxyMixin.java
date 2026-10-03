@@ -7,10 +7,10 @@ import com.gtocore.integration.jade.GTOJadePlugin;
 import com.gtocore.integration.lang.LangAdaptor;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.transfer.fluid.FluidHandlerList;
-import com.gregtechceu.gtceu.api.transfer.fluid.ICustomFluidStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ICustomItemStackHandler;
-import com.gregtechceu.gtceu.api.transfer.item.ItemHandlerList;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyHandlerList;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine;
 
 import net.minecraftforge.common.capabilities.Capability;
@@ -18,6 +18,9 @@ import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.integration.modules.jade.JadeModule;
 
 import com.google.common.collect.ImmutableList;
@@ -60,39 +63,42 @@ public class CommonProxyMixin {
     }
 
     @Redirect(method = "createItemCollector", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/common/capabilities/CapabilityProvider;getCapability(Lnet/minecraftforge/common/capabilities/Capability;)Lnet/minecraftforge/common/util/LazyOptional;"), remap = false)
+    @SuppressWarnings("unchecked")
     private static <T> LazyOptional<T> createItemCollector(CapabilityProvider<?> instance, Capability<T> capability) {
         if (instance instanceof MetaMachineBlockEntity blockEntity && !(blockEntity instanceof TesseractBlockEntity)) {
             if (blockEntity.metaMachine instanceof MEPatternPartMachine<?>) return LazyOptional.empty();
             if (blockEntity.metaMachine instanceof MufflerPartMachine mufflerPartMachine) {
-                return LazyOptional.of(mufflerPartMachine::getInventory).cast();
+                var inventory = mufflerPartMachine.getInventory();
+                return LazyOptional.of(() -> new ForgeItemAdapter(inventory)).cast();
             }
             var ts = blockEntity.metaMachine.getTraits();
-            List<ICustomItemStackHandler> filteredTraits = new ArrayList<>(ts.size());
+            List<IKeyHandler<AEItemKey>> filteredTraits = new ArrayList<>(ts.size());
             for (var t : ts) {
-                if (t instanceof ICustomItemStackHandler handler) {
-                    filteredTraits.add(handler);
+                if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyType.items()) {
+                    filteredTraits.add((IKeyHandler<AEItemKey>) handler);
                 }
             }
             if (!filteredTraits.isEmpty()) {
-                return LazyOptional.of(() -> new ItemHandlerList(filteredTraits.toArray(new ICustomItemStackHandler[0]))).cast();
+                return LazyOptional.of(() -> new ForgeItemAdapter(new KeyHandlerList<>(AEKeyType.items(), filteredTraits))).cast();
             }
         }
         return instance.getCapability(capability);
     }
 
     @Redirect(method = "wrapFluidStorage", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/common/capabilities/CapabilityProvider;getCapability(Lnet/minecraftforge/common/capabilities/Capability;)Lnet/minecraftforge/common/util/LazyOptional;"), remap = false)
+    @SuppressWarnings("unchecked")
     private static <T> LazyOptional<T> wrapFluidStorage(CapabilityProvider<?> instance, Capability<T> capability) {
         if (instance instanceof MetaMachineBlockEntity blockEntity) {
             if (blockEntity.metaMachine instanceof MEPatternPartMachine<?>) return LazyOptional.empty();
             var ts = blockEntity.metaMachine.getTraits();
-            List<ICustomFluidStackHandler> filteredTraits = new ArrayList<>(ts.size());
+            List<IKeyHandler<AEFluidKey>> filteredTraits = new ArrayList<>(ts.size());
             for (var t : ts) {
-                if (t instanceof ICustomFluidStackHandler handler) {
-                    filteredTraits.add(handler);
+                if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyType.fluids()) {
+                    filteredTraits.add((IKeyHandler<AEFluidKey>) handler);
                 }
             }
             if (!filteredTraits.isEmpty()) {
-                return LazyOptional.of(() -> new FluidHandlerList(filteredTraits.toArray(new ICustomFluidStackHandler[0]))).cast();
+                return LazyOptional.of(() -> new ForgeFluidAdapter(new KeyHandlerList<>(AEKeyType.fluids(), filteredTraits))).cast();
             }
         }
         return instance.getCapability(capability);

@@ -6,20 +6,17 @@ import com.gtocore.utils.Caches;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.utils.GTUtil;
-
-import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKey;
+import appeng.api.storage.AEKeyFilter;
 import appeng.util.prioritylist.IPartitionList;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
-import java.util.function.Predicate;
-
-public final class TagFilterVoidOutputHatchPartMachine extends VoidOutputHatchPartMachine implements ITagFilterMachine, Predicate<FluidStack> {
+public final class TagFilterVoidOutputHatchPartMachine extends VoidOutputHatchPartMachine implements ITagFilterMachine, AEKeyFilter {
 
     @Getter
     @SaveToDisk(defaultValue = "")
@@ -35,15 +32,16 @@ public final class TagFilterVoidOutputHatchPartMachine extends VoidOutputHatchPa
     }
 
     @Override
-    public boolean test(FluidStack stack) {
+    public boolean matches(AEKey key) {
+        if (!(key instanceof AEFluidKey fluidKey)) return false;
         if (filter == null) filter = Caches.getTagPriorityList(tagWhite, tagBlack);
-        return filter.isListed(AEFluidKey.of(stack.getFluid()));
+        return filter.isListed(AEFluidKey.of(fluidKey.getFluid()));
     }
 
     private void onSlotChanged() {
         filter = null;
         if (tagWhite.isBlank() && tagBlack.isBlank()) {
-            handler.setFilter(GTUtil.FAVORABLE);
+            handler.setFilter(null);
         } else {
             handler.setFilter(this);
         }

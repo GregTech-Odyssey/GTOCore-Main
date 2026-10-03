@@ -22,11 +22,11 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -36,15 +36,15 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 
+import appeng.api.stacks.AEItemKey;
+
 import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.util.holder.BooleanHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -185,14 +185,15 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
         // electrolyte consumption adjustment
         long actuallyConsumedmB = ceilMultiplyDivide(result.parallels, fuelEnergyPerUnit, euPermB);
         if (actuallyConsumedmB <= 0 || actuallyConsumedmB > amountExisting) return null;
-        var input = new ArrayList<>(result.fluidInputs);
-        input.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE), actuallyConsumedmB), 10000, 0));
-        input.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE), actuallyConsumedmB), 10000, 0));
-        var output = new ArrayList<Content<FluidIngredient>>(2);
-        output.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_CATHODE), actuallyConsumedmB), 10000, 0));
-        output.add(new Content<>(FluidIngredient.of(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_ANODE), actuallyConsumedmB), 10000, 0));
-        result.fluidInputs = input;
-        result.fluidOutputs = output;
+        result.bake();
+        result.fluidInputs = result.fluidInputs.toBuilder()
+                .add(KeyIngredient.fluid(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE)), actuallyConsumedmB)
+                .add(KeyIngredient.fluid(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE)), actuallyConsumedmB)
+                .build();
+        result.fluidOutputs = new ContentList.Builder(2)
+                .add(KeyIngredient.fluid(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_CATHODE)), actuallyConsumedmB)
+                .add(KeyIngredient.fluid(electrolytesExisting.getFluid(GTOFluidStorageKey.ENERGY_STORAGE_ANODE)), actuallyConsumedmB)
+                .build();
         return result;
     }
 
@@ -275,7 +276,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     @Nullable
     private MembraneBonusInfo findMembraneInfo() {
         for (int membraneTier = Wrapper.MEMBRANE_MATS.length - 1; membraneTier >= 0; membraneTier--) {
-            var membrane = ChemicalHelper.get(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane);
+            var membrane = ChemicalHelper.getItem(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane);
             for (var unit : getInputUnits()) {
                 if (unit.matchItem(membrane)) return Wrapper.MEMBRANE_MATS[membraneTier];
             }
@@ -286,7 +287,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     @Nullable
     private static MembraneBonusInfo findMembraneInfo(RecipeHandlerUnit unit) {
         for (int membraneTier = Wrapper.MEMBRANE_MATS.length - 1; membraneTier >= 0; membraneTier--) {
-            if (unit.matchItem(ChemicalHelper.get(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane))) {
+            if (unit.matchItem(ChemicalHelper.getItem(GTOTagPrefix.MEMBRANE_ELECTRODE, Wrapper.MEMBRANE_MATS[membraneTier].membrane))) {
                 return Wrapper.MEMBRANE_MATS[membraneTier];
             }
         }
@@ -319,22 +320,14 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     private GTRecipe getReleaseRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
-        var input = new ArrayList<>(recipe.itemInputs);
-        var content = input.getFirst();
-        var ingredient = content.inner;
-        var item = ingredient.getInnerItemStack().getItem();
-        BooleanHolder hasMembrane = new BooleanHolder(false);
-        unit.fastForEachItems(true, (i, a) -> {
-            if (i.getItem() == item) {
-                hasMembrane.value = true;
-            }
-        });
-        if (!hasMembrane.value) {
+        var input = recipe.itemInputs;
+        var item = ((AEItemKey) input.ingredient(0).outputKey()).getItem();
+        if (unit.count(KeyIngredient.item(item), true) <= 0) {
             setIdleReason(IdleReason.LACK_MATERIAL);
             return null;
         }
         if (GTValues.RNG.nextFloat() < GTORules.FUEL_CELL_CONSUME.get()) {
-            unit.inputItem(ingredient.getInnerItemStack().getItem(), content.amount);
+            unit.inputItem(item, recipe.inputAmount(input, 0));
         }
         return ParallelLogic.accurateParallel(this, unit, recipe, MaxCanReleaseParallel);
     }

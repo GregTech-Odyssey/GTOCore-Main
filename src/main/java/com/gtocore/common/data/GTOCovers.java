@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.common.cover.*;
+import com.gtocore.common.wireless.energy.WirelessReceiveCover;
 
 import com.gtolib.GTOCore;
 
@@ -15,7 +16,6 @@ import com.gregtechceu.gtceu.common.cover.RobotArmCover;
 import com.gregtechceu.gtceu.common.data.GTCovers;
 
 import com.hepdd.gtmthings.GTMThings;
-import com.hepdd.gtmthings.common.cover.WirelessEnergyReceiveCover;
 
 import java.util.Locale;
 
@@ -80,7 +80,7 @@ public final class GTOCovers {
 
     private static CoverDefinition registerTieredWirelessCover(String id, int amperage) {
         String name = id + "." + GTValues.VN[GTValues.MAX].toLowerCase(Locale.ROOT);
-        return GTCovers.register(name, (holder, coverable, side) -> new WirelessEnergyReceiveCover(holder, coverable, side, GTValues.MAX, amperage),
+        return GTCovers.register(name, (holder, coverable, side) -> new WirelessReceiveCover(holder, coverable, side, GTValues.MAX, amperage),
                 new SimpleCoverRenderer(GTMThings.id("block/cover/overlay_" + (amperage == 1 ? "" : "4a_") + "wireless_energy_receive")));
     }
 

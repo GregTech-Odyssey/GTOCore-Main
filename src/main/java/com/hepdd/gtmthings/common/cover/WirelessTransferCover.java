@@ -7,10 +7,11 @@ import com.gregtechceu.gtceu.api.cover.CoverDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
 import com.gregtechceu.gtceu.core.ILevel;
-import com.gregtechceu.gtceu.utils.GTTransferUtils;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -23,8 +24,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.IItemHandler;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.misc.BlockEntityCache;
@@ -114,13 +116,13 @@ public class WirelessTransferCover extends CoverBehavior {
             var targetItemTransfer = getTargetItemTransfer();
             var ownItemTransfer = getOwnItemTransfer();
             if (ownItemTransfer != null && targetItemTransfer != null) {
-                GTTransferUtils.transferItemsFiltered(ownItemTransfer, targetItemTransfer, o -> true, Integer.MAX_VALUE);
+                KeyTransfer.transfer(ownItemTransfer, targetItemTransfer, Integer.MAX_VALUE);
             }
         } else if (transferType == TRANSFER_FLUID) {
             var targetFluidTransfer = getTargetFluidTransfer();
             var ownFluidTransfer = getOwnFluidTransfer();
             if (ownFluidTransfer != null && targetFluidTransfer != null) {
-                GTTransferUtils.transferFluidsFiltered(ownFluidTransfer, targetFluidTransfer, o -> true, Integer.MAX_VALUE);
+                KeyTransfer.transfer(ownFluidTransfer, targetFluidTransfer, Integer.MAX_VALUE);
             }
         }
     }
@@ -132,21 +134,21 @@ public class WirelessTransferCover extends CoverBehavior {
         this.targetLever = Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey);
     }
 
-    protected @Nullable IItemHandler getOwnItemTransfer() {
+    protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
         return coverHolder.getItemHandlerCap(attachedSide, false);
     }
 
-    protected @Nullable IItemHandler getTargetItemTransfer() {
+    protected @Nullable IKeyHandler<AEItemKey> getTargetItemTransfer() {
         if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getItemHandler(target.get(), facing);
+        return GTCapabilityHelper.getItemKeyHandler(target.get(), facing);
     }
 
-    protected @Nullable IFluidHandler getOwnFluidTransfer() {
+    protected @Nullable IKeyHandler<AEFluidKey> getOwnFluidTransfer() {
         return coverHolder.getFluidHandlerCap(attachedSide, false);
     }
 
-    protected @Nullable IFluidHandler getTargetFluidTransfer() {
+    protected @Nullable IKeyHandler<AEFluidKey> getTargetFluidTransfer() {
         if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getFluidHandler(target.get(), facing);
+        return GTCapabilityHelper.getFluidKeyHandler(target.get(), facing);
     }
 }

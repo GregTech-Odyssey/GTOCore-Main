@@ -18,6 +18,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.util.holder.ObjHolder;
 
 import java.util.List;
@@ -56,9 +59,9 @@ public final class AlgaeFarmMachine extends NoEnergyMultiblockMachine implements
         amount = amount + GTValues.RNG.nextInt(9 * amount);
         ObjHolder<GTRecipeDefinition> recipe = new ObjHolder<>();
         int finalAmount = amount;
-        unit.forEachItems(true, (stack, a) -> {
-            if (ALGAES.contains(stack.getItem())) {
-                recipe.set(getRecipe(raise, stack.copyWithCount((int) (finalAmount * Math.max(1, a / 4)))));
+        unit.forEachKey(AEKeyType.items(), true, (key, a) -> {
+            if (key instanceof AEItemKey itemKey && ALGAES.contains(itemKey.getItem())) {
+                recipe.set(getRecipe(raise, itemKey.toStack((int) (finalAmount * Math.max(1, a / 4)))));
                 return true;
             }
             return false;

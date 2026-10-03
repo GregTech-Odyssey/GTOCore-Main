@@ -8,6 +8,7 @@ import com.gtolib.utils.MachineUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
@@ -17,21 +18,23 @@ import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEKeyType;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMachine {
 
-    private static final FluidStack CLOUD_SEED_CONCENTRATED = new FluidStack(GTOFluids.CLOUD_SEED_CONCENTRATED.getSource(), 1000);
-    private static final FluidStack FIRE_WATER = new FluidStack(GTOFluids.FIRE_WATER.getSource(), 1000);
-    private static final FluidStack VAPOR_OF_LEVITY = new FluidStack(GTOFluids.VAPOR_OF_LEVITY.getSource(), 1000);
+    private static final AEFluidKey CLOUD_SEED_CONCENTRATED = AEFluidKey.of(GTOFluids.CLOUD_SEED_CONCENTRATED.getSource());
+    private static final AEFluidKey FIRE_WATER = AEFluidKey.of(GTOFluids.FIRE_WATER.getSource());
+    private static final AEFluidKey VAPOR_OF_LEVITY = AEFluidKey.of(GTOFluids.VAPOR_OF_LEVITY.getSource());
+    private static final long STAGE_AMOUNT = 1000;
 
     private static final Set<Fluid> FLUIDS = Set.of(CLOUD_SEED_CONCENTRATED.getFluid(), FIRE_WATER.getFluid(), VAPOR_OF_LEVITY.getFluid());
 
@@ -105,8 +108,8 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (getRecipeLogic().getTotalContinuousRunningTime() < 400) {
-            recipe.itemOutputs = Collections.emptyList();
-            recipe.fluidOutputs = Collections.emptyList();
+            recipe.itemOutputs = ContentList.EMPTY;
+            recipe.fluidOutputs = ContentList.EMPTY;
             return recipe;
         } else {
             return super.getRealRecipe(unit, recipe);
@@ -144,15 +147,15 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
         return false;
     }
 
-    private boolean input(FluidStack stack) {
+    private boolean input(AEFluidKey stack) {
         AtomicBoolean success = new AtomicBoolean(false);
         AtomicBoolean failed = new AtomicBoolean(false);
-        forEachFluids(true, (fluidStack, amount) -> {
-            var fluid = fluidStack.getFluid();
+        forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+            var fluid = ((AEFluidKey) key).getFluid();
             if (FLUIDS.contains(fluid)) {
                 if (fluid == stack.getFluid()) {
-                    if (amount >= stack.getAmount()) {
-                        inputFluid(stack);
+                    if (amount >= STAGE_AMOUNT) {
+                        inputFluid(stack, STAGE_AMOUNT);
                         success.set(true);
                     }
                 } else {

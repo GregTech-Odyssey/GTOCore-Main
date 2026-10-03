@@ -1,23 +1,21 @@
 package com.gtocore.common.machine.multiblock.part;
 
-import com.gtolib.utils.MathUtil;
-
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
-import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.api.transfer.item.CustomItemStackHandler;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -28,44 +26,44 @@ import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
-import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
-import com.gto.datasynclib.LogicalSide;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.data.ListData;
+import com.gto.datasynclib.datastream.data.NullData;
+import com.gto.datasynclib.datastream.data.StringMapData;
 import com.gto.datasynclib.util.DataCodecs;
-import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
-import com.hepdd.gtmthings.api.transfer.UnlimitItemTransferHelper;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.ObjLongConsumer;
 import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implements IMachineLife {
+public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implements IDropSaveMachine {
 
     @SaveToDisk
-    private final HugeNotifiableItemStackHandler inventory;
+    private final HugeInventory inventory;
     @Nullable
     private TickableSubscription autoIOSubs;
 
@@ -76,7 +74,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
     public HugeBusPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.IV, IO.IN);
-        this.inventory = new HugeNotifiableItemStackHandler(this);
+        this.inventory = new HugeInventory(this);
         workingEnabled = false;
     }
 
@@ -122,8 +120,26 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     }
 
     @Override
-    public void onMachineRemoved() {
-        clearInventory(inventory.storage);
+    public boolean saveBreak() {
+        return !inventory.storage.isEmpty();
+    }
+
+    @Override
+    public boolean savePickClone() {
+        return false;
+    }
+
+    @Override
+    public void saveToItem(CompoundTag tag) {
+        var key = inventory.storage.keyAt(0);
+        tag.put("stored", (key == null ? ItemStack.EMPTY : key.toStack(1)).serializeNBT());
+        tag.putLong("storedAmount", inventory.storage.amountAt(0));
+    }
+
+    @Override
+    public void loadFromItem(CompoundTag tag) {
+        if (!tag.contains("storedAmount")) return;
+        inventory.storage.set(0, Keys.item(ItemStack.of(tag.getCompound("stored"))), tag.getLong("storedAmount"));
     }
 
     private void updateInventorySubscription() {
@@ -143,12 +159,12 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         updateInventorySubscription();
     }
 
-    private void exportToNearby(HugeNotifiableItemStackHandler handler, Direction facing) {
-        if (handler.getCount() < 1) return;
+    @SuppressWarnings("unchecked")
+    private void exportToNearby(HugeInventory handler, Direction facing) {
+        if (handler.storage.isEmpty()) return;
         var level = getLevel();
-        var pos = getPos();
-        if (level != null) {
-            UnlimitItemTransferHelper.exportToTarget(handler.storage, Integer.MAX_VALUE, f -> true, level, pos.relative(facing), facing.getOpposite());
+        if (level != null && GTCapabilityHelper.getAdjacentKeyHandler(holder.blockEntityDirectionCache, level, getPos(), facing, AEKeyType.items()) instanceof IKeyHandler<?> target) {
+            KeyTransfer.transfer(handler.storage, (IKeyHandler<AEItemKey>) target, Integer.MAX_VALUE);
         }
     }
 
@@ -169,8 +185,8 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         // 与其他总线、仓一样分两区：上面放入槽、存储物品（只取）、取出一组按钮，下面状态面板（物品、存储数量）
         var importSlot = ItemSlot.of(createImportItems(), 0, false, true);
         importSlot.setBackgroundTexture(new GuiTextureGroup(UITheme.ITEM_SLOT, GuiTextures.IN_SLOT_OVERLAY));
-        var storedSlot = ItemSlot.of(inventory, 0, false, false);
-        storedSlot.setItemHook(s -> s.copyWithCount((int) Math.min(inventory.getCount(), s.getMaxStackSize())));
+        var storedSlot = ItemSlot.of(inventory.storage, 0, false, false);
+        storedSlot.setItemHook(s -> s.copyWithCount((int) Math.min(inventory.storage.amountAt(0), s.getMaxStackSize())));
         var extract = Button.icon(UISizes.SLOT_SIZE, UITheme.ARROW_DOWN);
         extract.setOnServerClick(() -> extractStack(extract.getGui() == null ? null : extract.getGui().entityPlayer));
         extract.setHoverTooltips(HatchViews.EXTRACT_STACK);
@@ -182,8 +198,12 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
     /** 取出一组给玩家，背包放不下的部分像原版一样丢在玩家面前。 */
     private void extractStack(@Nullable Player player) {
-        if (player == null || inventory.isEmpty()) return;
-        var extracted = inventory.extractItemInternal(0, (int) Math.min(inventory.getCount(), inventory.getStackInSlot(0).getMaxStackSize()), false);
+        if (player == null) return;
+        var key = inventory.storage.keyAt(0);
+        if (key == null) return;
+        long n = inventory.storage.extract(0, key, Math.min(inventory.storage.amountAt(0), key.getMaxStackSize()), false);
+        if (n <= 0) return;
+        var extracted = key.toStack((int) n);
         // addItem 只放进一部分时也返回 true，剩下的留在 extracted 里
         player.getInventory().add(extracted);
         if (!extracted.isEmpty()) player.drop(extracted, false);
@@ -192,15 +212,16 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     /** 存储物品的名称：物品不变时复用上次的文字。 */
     private final class StoredName implements Supplier<Component> {
 
-        private ItemStack last = ItemStack.EMPTY;
+        @Nullable
+        private AEItemKey last;
         private Component text = Component.translatable(HatchViews.EMPTY);
 
         @Override
         public Component get() {
-            var current = inventory.getStackInSlot(0);
-            if (current.isEmpty() != last.isEmpty() || !ItemStack.isSameItemSameTags(current, last)) {
-                last = current.copyWithCount(1);
-                text = current.isEmpty() ? Component.translatable(HatchViews.EMPTY) : current.getHoverName();
+            var current = inventory.storage.keyAt(0);
+            if (current != last) {
+                last = current;
+                text = current == null ? Component.translatable(HatchViews.EMPTY) : current.getReadOnlyStack().getHoverName();
             }
             return text;
         }
@@ -214,7 +235,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
         @Override
         public Component get() {
-            long current = inventory.getCount();
+            long current = inventory.storage.amountAt(0);
             if (current != count) {
                 count = current;
                 text = Component.literal(FormattingUtil.formatNumbers(current));
@@ -223,201 +244,45 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
     }
 
-    private CustomItemStackHandler createImportItems() {
-        var importItems = new CustomItemStackHandler();
-        importItems.setFilter(itemStack -> inventory.canCapInput() && (inventory.insertItem(0, itemStack, true).getCount() != itemStack.getCount()));
-        importItems.setOnContentsChanged(() -> {
-            var item = importItems.getStackInSlot(0).copy();
-            if (!item.isEmpty()) {
-                importItems.setStackInSlot(0, ItemStack.EMPTY);
-                importItems.onContentsChanged(0);
-                inventory.insertItem(0, item.copy(), false);
-            }
+    private KeyInventory<AEItemKey> createImportItems() {
+        var importItems = KeyInventory.items(1);
+        importItems.setFilter(key -> key instanceof AEItemKey itemKey && inventory.canCapInput() && inventory.storage.insert(0, itemKey, 1, true) > 0);
+        importItems.setOnChanged(() -> {
+            var key = importItems.keyAt(0);
+            if (key == null) return;
+            long amount = importItems.amountAt(0);
+            importItems.set(0, null, 0);
+            inventory.storage.insert(0, key, amount, false);
         });
         return importItems;
     }
 
-    private static final class HugeNotifiableItemStackHandler extends NotifiableItemStackHandler {
+    private static final class HugeInventory extends NotifiableInventory<AEItemKey> {
 
-        private HugeNotifiableItemStackHandler(MetaMachine machine) {
-            super(machine, 1, IO.IN, IO.BOTH, i -> new HugeCustomItemStackHandler());
-        }
-
-        private long getCount() {
-            return ((HugeCustomItemStackHandler) storage).count;
+        private HugeInventory(MetaMachine machine) {
+            super(machine, KeyInventory.items(1, Long.MAX_VALUE, false), IO.IN, IO.BOTH);
         }
 
         @Override
-        public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
-            var amount = ((HugeCustomItemStackHandler) storage).count;
-            if (amount > 0) {
-                return function.test(getStackInSlot(0), amount);
-            }
-            return false;
+        public void readCustomSaveData(StringMapData data, int dataVersion) {
+            super.readCustomSaveData(data, dataVersion);
+            readLegacyStorage(data, dataVersion);
         }
 
-        @Override
-        public void fastForEachItems(ObjLongConsumer<ItemStack> function) {
-            var amount = ((HugeCustomItemStackHandler) storage).count;
-            if (amount > 0) {
-                function.accept(getStackInSlot(0), amount);
-            }
-        }
-
-        @Override
-        public boolean updateEmpty() {
-            return storage.stacks[0].isEmpty();
-        }
-
-        @Override
-        public void fillSearchMap(GTRecipeType type, IntLongMap map) {
-            var amount = ((HugeCustomItemStackHandler) storage).count;
-            if (amount > 0) {
-                type.convertItem(getStackInSlot(0), amount, map);
-            }
-        }
-
-        @Override
-        public boolean canCapOutput() {
-            return true;
-        }
-
-        @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-            if (io != IO.IN || getCount() < 1) return items.isEmpty();
-            for (var it = items.iterator(); it.hasNext();) {
-                var ingredient = it.next();
-                if (ingredient.isEmpty()) {
-                    it.remove();
-                    continue;
-                }
-                if (ingredient.inner.test(getStackInSlot(0))) {
-                    var extracted = Math.min(ingredient.amount, getCount());
-                    if (!simulate) {
-                        ((HugeCustomItemStackHandler) storage).count -= extracted;
-                        getStackInSlot(0).setCount(MathUtil.saturatedCast(((HugeCustomItemStackHandler) storage).count));
-                        storage.onContentsChanged(0);
-                    }
-                    ingredient.shrink(extracted);
-                    if (ingredient.amount <= 0) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
-            return items.isEmpty();
+        @Deprecated(since = "0.6.0", forRemoval = true)
+        @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+        private void readLegacyStorage(StringMapData data, int dataVersion) {
+            var legacy = data.get("storage");
+            if (legacy == null || legacy instanceof ListData || legacy instanceof NullData) return;
+            data.remove("storage");
+            var nbt = DataCodecs.COMPOUND_TAG_CODEC.decode(legacy, dataVersion);
+            var stackTag = nbt.getCompound("stack").copy();
+            stackTag.putByte("Count", (byte) 1);
+            storage.set(0, Keys.item(ItemStack.of(stackTag)), nbt.getLong("count"));
         }
     }
 
-    private static final class HugeCustomItemStackHandler extends CustomItemStackHandler {
-
-        private long count;
-
-        private HugeCustomItemStackHandler() {
-            super(1);
-        }
-
-        @Override
-        public int getSlots() {
-            return 1;
-        }
-
-        @Override
-        public void onContentsChanged(int index) {
-            count = stacks[0].getCount();
-            super.onContentsChanged(index);
-        }
-
-        @Override
-        public int extract(int slot, ItemStack s, int amount, boolean simulate) {
-            var count = MathUtil.saturatedCast(this.count);
-            if (amount == 0 || count < 1 || this.stacks[0].isEmpty()) return 0;
-            if (amount >= count) {
-                if (!simulate) {
-                    this.count = 0;
-                    this.stacks[0] = ItemStack.EMPTY;
-                    super.onContentsChanged(0);
-                }
-                return count;
-            } else {
-                if (!simulate) {
-                    this.count -= amount;
-                    stacks[0].setCount(MathUtil.saturatedCast(count));
-                    super.onContentsChanged(0);
-                }
-                return amount;
-            }
-        }
-
-        @Override
-        public int insert(int slot, ItemStack stack, int amount, boolean simulate) {
-            if (amount == 0 || stack.isEmpty()) return 0;
-            if (count < 1 || this.stacks[0].isEmpty()) {
-                if (!simulate) {
-                    this.stacks[0] = stack.copy();
-                    this.count = amount;
-                    super.onContentsChanged(0);
-                }
-                return amount;
-            } else if (this.stacks[0].getItem() == stack.getItem()) {
-                var tag = this.stacks[0].getTag();
-                if (tag == null) {
-                    if (stack.getTag() == null) {
-                        if (!simulate) {
-                            this.count += amount;
-                            this.stacks[0].setCount(MathUtil.saturatedCast(this.count));
-                            super.onContentsChanged(0);
-                        }
-                        return amount;
-                    }
-                } else if (tag.equals(stack.getTag())) {
-                    if (!simulate) {
-                        this.count += amount;
-                        this.stacks[0].setCount(MathUtil.saturatedCast(this.count));
-                        super.onContentsChanged(0);
-                    }
-                    return amount;
-                }
-            }
-            return 0;
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return Integer.MAX_VALUE;
-        }
-
-        @Override
-        public void writeBuffer(LogicalSide side, FriendlyByteBuf data) {
-            // 无同步，不实现
-        }
-
-        @Override
-        public void readBuffer(LogicalSide side, FriendlyByteBuf data) {
-            // 无同步，不实现
-        }
-
-        @Override
-        public Data writeData() {
-            CompoundTag nbt = new CompoundTag();
-            nbt.put("stack", stacks[0].serializeNBT());
-            nbt.putLong("count", count);
-            return DataCodecs.COMPOUND_TAG_CODEC.encode(nbt);
-        }
-
-        @Override
-        public void readData(Data data, int dataVersion) {
-            var nbt = DataCodecs.COMPOUND_TAG_CODEC.decode(data);
-            var stack = nbt.get("stack");
-            if (stack instanceof CompoundTag tag) {
-                this.stacks[0] = ItemStack.of(tag);
-            }
-            count = nbt.getLong("count");
-            this.stacks[0].setCount(MathUtil.saturatedCast(count));
-        }
-    }
-
-    public NotifiableItemStackHandler getInventory() {
+    public NotifiableInventory<AEItemKey> getInventory() {
         return this.inventory;
     }
 }

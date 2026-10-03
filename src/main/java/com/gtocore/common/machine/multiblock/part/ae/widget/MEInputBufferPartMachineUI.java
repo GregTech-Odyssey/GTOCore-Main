@@ -33,8 +33,8 @@ public final class MEInputBufferPartMachineUI {
         var circuitStorage = slot.circuitInventory.storage;
         MEPatternPartUI.section(column, CIRCUIT_SPECIAL).addChild(MEPatternPartUI.circuitRow(
                 MEPatternPartUI.readOnlyCircuitSlot(circuitStorage),
-                () -> MEPatternPartUI.circuitOf(circuitStorage.getStackInSlot(0)),
-                circuit -> slot.setCircuitConfiguration(MEPatternPartUI.circuitStack(circuit))));
+                () -> MEPatternPartUI.circuitOf(circuitStorage),
+                slot::setCircuitConfiguration));
 
         // 补货条件：低存量阈值只在开关打开时生效，关闭时记为 -1
         var restock = UIElement.section(column.getContentWidth());

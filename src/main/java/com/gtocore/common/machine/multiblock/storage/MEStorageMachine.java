@@ -15,7 +15,7 @@ import com.gtolib.utils.StringUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -46,7 +46,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     @RegisterLanguage(en = "Data Index Position", cn = "数据索引位置")
     private static final String MODE = "gtocore.machine.me_storage.mode";
     @SaveToDisk
-    private final NotifiableItemStackHandler machineStorage;
+    private final NotifiableStackInventory machineStorage;
     @SaveToDisk
     private UUID uuid;
     @SaveToDisk(defaultValue = "false")
@@ -202,7 +202,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     }
 
     @Override
-    public NotifiableItemStackHandler getMachineStorage() {
+    public NotifiableStackInventory getMachineStorage() {
         return this.machineStorage;
     }
 

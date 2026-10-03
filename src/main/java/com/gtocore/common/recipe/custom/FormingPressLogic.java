@@ -15,6 +15,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.core.definitions.AEItems;
 import appeng.items.materials.NamePressItem;
 
@@ -68,8 +70,10 @@ public final class FormingPressLogic implements GTRecipeType.ICustomRecipeLogic 
         ObjHolder<GTRecipeDefinition> recipeObjectHolder = new ObjHolder<>();
         data.mold = ItemStack.EMPTY;
         data.item = ItemStack.EMPTY;
-        u.forEachItems(false, (stack, amount) -> {
-            var item = stack.getItem();
+        u.forEachKey(AEKeyType.items(), false, (key, amount) -> {
+            if (!(key instanceof AEItemKey itemKey)) return false;
+            var stack = itemKey.getReadOnlyStack();
+            var item = itemKey.getItem();
             var ae = AEItems.NAME_PRESS.asItem() == item;
             var isMold = ae || GTItems.SHAPE_MOLD_NAME.is(item);
             if (isMold && data.mold.isEmpty() && stack.hasTag()) {

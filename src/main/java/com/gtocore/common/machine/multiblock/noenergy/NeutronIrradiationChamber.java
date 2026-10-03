@@ -19,6 +19,9 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 
 import net.minecraft.network.chat.Component;
 
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyType;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import lombok.Getter;
 import lombok.Setter;
@@ -92,12 +95,14 @@ public class NeutronIrradiationChamber extends NoEnergyMultiblockMachine {
         if (isFormed()) {
 
             final AtomicLong neutronFluxkeV = new AtomicLong(0);
-            fastForEachItems(true, (stack, amount) -> {
-                var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(stack.getItem());
+            forEachKey(AEKeyType.items(), true, (key, amount) -> {
+                var item = ((AEItemKey) key).getItem();
+                var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(item);
                 if (neutron_sources != null) {
                     neutronFluxkeV.addAndGet((long) neutron_sources * amount);
-                    inputItem(stack.getItem(), amount);
+                    inputItem(item, amount);
                 }
+                return false;
             });
             if (parts == null || parts.length == 0) return;
 

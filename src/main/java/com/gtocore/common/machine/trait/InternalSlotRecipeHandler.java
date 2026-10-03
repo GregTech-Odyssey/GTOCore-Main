@@ -3,28 +3,19 @@ package com.gtocore.common.machine.trait;
 import com.gtocore.common.machine.multiblock.part.ae.AbstractRecipeInternalSlot;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 
-import com.gtolib.api.recipe.lookup.IIngredientConvertible;
-
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableRecipeHandlerTrait;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.recipe.content.Content;
-import com.gregtechceu.gtceu.api.recipe.content.ContentInner;
 import com.gregtechceu.gtceu.api.recipe.handler.IFilteredHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
+import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.info.ContentRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
-import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
-import com.gregtechceu.gtceu.api.recipe.ingredient.ItemIngredient;
-import com.gregtechceu.gtceu.utils.function.ObjLongPredicate;
+import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
+import appeng.api.stacks.AEKeyType;
 
 import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
@@ -35,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiPredicate;
-import java.util.function.ObjLongConsumer;
 
 @Getter
 public final class InternalSlotRecipeHandler {
@@ -102,36 +92,15 @@ public final class InternalSlotRecipeHandler {
         }
 
         @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-            if (items.isEmpty()) return true;
-            if (io != handlerIO) throw new IllegalStateException("IO is not the same");
-            if (slot.isEmpty()) return false;
-            for (var handler : itemHandlers) {
-                if (!simulate && handler.isNotConsumable()) continue;
-                handler.handleRecipeItem(io, recipe, items, simulate);
-                if (items.isEmpty()) {
-                    return true;
-                }
-            }
-            return false;
+        public boolean planInputs(GTRecipe recipe, PlanScratch p, long scale, boolean rolled) {
+            if (!recipe.itemInputs.isEmpty() && slot.isEmpty()) return false;
+            return super.planInputs(recipe, p, scale, rolled);
         }
 
         @Override
-        public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
-            if (fluids.isEmpty()) {
-                if (!simulate) onRecipeHandled(recipe);
-                return true;
-            }
-            if (io != handlerIO) throw new IllegalStateException("IO is not the same");
-            for (var handler : fluidHandlers) {
-                if (!simulate && handler.isNotConsumable()) continue;
-                handler.handleRecipeFluid(io, recipe, fluids, simulate);
-                if (fluids.isEmpty()) {
-                    if (!simulate) onRecipeHandled(recipe);
-                    return true;
-                }
-            }
-            return false;
+        public void onCommitted(GTRecipe recipe) {
+            super.onCommitted(recipe);
+            onRecipeHandled(recipe);
         }
     }
 
@@ -197,6 +166,9 @@ public final class InternalSlotRecipeHandler {
     final static class SlotRecipeHandler extends NotifiableRecipeHandlerTrait {
 
         final MEPatternBufferPartMachine.InternalSlot slot;
+        @Nullable
+        private GTRecipeType searchType;
+        private int searchGeneration;
 
         private SlotRecipeHandler(MEPatternBufferPartMachine buffer, MEPatternBufferPartMachine.InternalSlot slot) {
             super(buffer);
@@ -210,122 +182,37 @@ public final class InternalSlotRecipeHandler {
         }
 
         @Override
-        public boolean forEachItems(ObjLongPredicate<ItemStack> function) {
-            for (var it = slot.itemInventory.iterator(); it.hasNext();) {
-                var e = it.next();
-                var a = e.getLongValue();
-                if (a < 1) {
-                    it.remove();
-                    continue;
-                }
-                if (function.test(e.getKey().getReadOnlyStack(), a)) return true;
-            }
-            return false;
-        }
-
-        @Override
-        public void fastForEachItems(ObjLongConsumer<ItemStack> function) {
-            slot.itemInventory.fastForEach((k, v) -> {
-                if (v < 1) return;
-                function.accept(k.getReadOnlyStack(), v);
-            });
-        }
-
-        @Override
-        public boolean forEachFluids(ObjLongPredicate<FluidStack> function) {
-            for (var it = slot.fluidInventory.iterator(); it.hasNext();) {
-                var e = it.next();
-                var a = e.getLongValue();
-                if (a < 1) {
-                    it.remove();
-                    continue;
-                }
-                if (function.test(e.getKey().getReadOnlyStack(), a)) return true;
-            }
-            return false;
-        }
-
-        @Override
-        public void fastForEachFluids(ObjLongConsumer<FluidStack> function) {
-            slot.fluidInventory.fastForEach((k, v) -> {
-                if (v < 1) return;
-                function.accept(k.getReadOnlyStack(), v);
-            });
+        public @Nullable KeyInventory<?> storage(AEKeyType type) {
+            if (type == AEKeyType.items()) return slot.itemInventory;
+            if (type == AEKeyType.fluids()) return slot.fluidInventory;
+            return null;
         }
 
         @Override
         public IntLongMap getSearchMap(@NotNull GTRecipeType type) {
-            if (slot.isContentsChanged()) {
-                slot.ingredientMap.clear();
-                slot.fluidInventory.fastForEach((k, v) -> {
-                    if (v < 1) return;
-                    ((IIngredientConvertible) (Object) k).gtolib$convert(v, slot.ingredientMap);
-                });
-                slot.itemInventory.fastForEach((k, v) -> {
-                    if (v < 1) return;
-                    ((IIngredientConvertible) (Object) k).gtolib$convert(v, slot.ingredientMap);
-                });
+            int generation = GTRecipeType.searchGeneration();
+            if (slot.isContentsChanged() || searchType != type || searchGeneration != generation) {
+                searchType = type;
+                searchGeneration = generation;
+                var map = slot.ingredientMap;
+                map.clear();
+                fill(type, slot.fluidInventory, map);
+                fill(type, slot.itemInventory, map);
             }
             return slot.ingredientMap;
         }
 
-        @Override
-        public boolean handleRecipeItem(IO io, GTRecipe recipe, List<Content<ItemIngredient>> items, boolean simulate) {
-            return slot.handleItemInternal(items, simulate);
-        }
-
-        @Override
-        public boolean handleRecipeFluid(IO io, GTRecipe recipe, List<Content<FluidIngredient>> fluids, boolean simulate) {
-            return slot.handleFluidInternal(fluids, simulate);
-        }
-
-        @Override
-        public boolean canHandleItem() {
-            return true;
-        }
-
-        @Override
-        public boolean canHandleFluid() {
-            return true;
+        private static void fill(GTRecipeType type, KeyInventory<?> inventory, IntLongMap map) {
+            int size = inventory.size();
+            for (int i = 0; i < size; i++) {
+                long amount = inventory.amountAt(i);
+                if (amount > 0) type.convertKey(inventory.rawKeyAt(i), amount, map);
+            }
         }
 
         @Override
         public boolean isOnlyRecipe() {
             return true;
-        }
-
-        @Override
-        public <T, C extends ContentInner<T>> boolean canHandleContent(@Nullable ContentRecipeInfo<T, C> key) {
-            return key == null || key == ItemRecipeInfo.INSTANCE || key == FluidRecipeInfo.INSTANCE;
-        }
-
-        @Override
-        public <T, C extends ContentInner<T>> boolean forEachContent(@NotNull ContentRecipeInfo<T, C> key, ObjLongPredicate<T> function) {
-            if (key == ItemRecipeInfo.INSTANCE) {
-                return this.forEachItems((ObjLongPredicate<ItemStack>) function);
-            } else if (key == FluidRecipeInfo.INSTANCE) {
-                return this.forEachFluids((ObjLongPredicate<FluidStack>) function);
-            }
-            return false;
-        }
-
-        @Override
-        public <T, C extends ContentInner<T>> void fastForEachContent(@NotNull ContentRecipeInfo<T, C> key, ObjLongConsumer<T> function) {
-            if (key == ItemRecipeInfo.INSTANCE) {
-                fastForEachItems((ObjLongConsumer<ItemStack>) function);
-            } else if (key == FluidRecipeInfo.INSTANCE) {
-                fastForEachFluids((ObjLongConsumer<FluidStack>) function);
-            }
-        }
-
-        @Override
-        public <T, C extends ContentInner<T>> boolean handleRecipeContent(@NotNull ContentRecipeInfo<T, C> key, IO io, GTRecipe recipe, List<Content<C>> contents, boolean simulate) {
-            if (key == ItemRecipeInfo.INSTANCE) {
-                return handleRecipeItem(io, recipe, (List) contents, simulate);
-            } else if (key == FluidRecipeInfo.INSTANCE) {
-                return handleRecipeFluid(io, recipe, (List) contents, simulate);
-            }
-            return false;
         }
     }
 }

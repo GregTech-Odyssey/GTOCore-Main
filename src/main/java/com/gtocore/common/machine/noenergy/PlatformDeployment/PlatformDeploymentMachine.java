@@ -15,9 +15,11 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
@@ -46,6 +48,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.IntObjectHolder;
@@ -108,11 +112,11 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     }
 
     @SaveToDisk
-    private final NotifiableItemStackHandler inventory;
+    private final NotifiableInventory<AEItemKey> inventory;
 
     public PlatformDeploymentMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableItemStackHandler(this, 27, IO.NONE, IO.BOTH);
+        inventory = NotifiableInventory.items(this, 27, IO.NONE, IO.BOTH);
         inventory.addChangedListener(this::examineMaterial);
     }
 
@@ -361,7 +365,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
 
     private UIElement itemPanel() {
         var controls = ControlPanel.of(this);
-        controls.addGrid(ITEMS, SlotGrid.of(9, inventory.getSlots(), i -> ItemSlot.of(inventory, i)));
+        var adapter = new MenuItemAdapter(inventory.storage);
+        controls.addGrid(ITEMS, SlotGrid.of(9, inventory.storage.size(), i -> ItemSlot.of(adapter, i)));
         return controls.build();
     }
 
@@ -649,14 +654,16 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     }
 
     private void loadingMaterial() {
+        var storage = inventory.storage;
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
+            long count = storage.amountAt(i);
+            if (count <= 0) continue;
+            Item item = storage.keyAt(i).getItem();
             for (int k = 0; k < ITEM_VALUE_HOLDERS.size(); k++) {
                 for (IntObjectHolder<Item> holder : ITEM_VALUE_HOLDERS.get(k)) {
-                    if (holder.value.equals(stack.getItem())) {
-                        materialInventory[k] += holder.priority * stack.getCount();
-                        inventory.setStackInSlot(i, ItemStack.EMPTY);
+                    if (holder.value.equals(item)) {
+                        materialInventory[k] += holder.priority * (int) count;
+                        storage.set(i, null, 0);
                         break;
                     }
                 }
@@ -665,15 +672,15 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     }
 
     private void unloadingMaterial() {
+        var storage = inventory.storage;
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (!stack.isEmpty()) continue;
+            if (storage.amountAt(i) > 0) continue;
             boolean filled = false;
             for (int k = 0; k < ITEM_VALUE_HOLDERS.size() && !filled; k++) {
                 for (IntObjectHolder<Item> holder : ITEM_VALUE_HOLDERS.get(k)) {
                     int count = Math.min(materialInventory[k] / holder.priority, 64);
                     if (count > 0) {
-                        inventory.setStackInSlot(i, new ItemStack(holder.value, count));
+                        storage.set(i, AEItemKey.of(holder.value), count);
                         materialInventory[k] -= holder.priority * count;
                         filled = true;
                         break;
@@ -731,13 +738,16 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         List<IntObjectHolder<ItemStack>> extraMaterials = structure.extraMaterials();
         Map<Item, Integer> inventoryCount = new HashMap<>();
         int coordinateCards = 0;
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
-            inventoryCount.put(stack.getItem(), inventoryCount.getOrDefault(stack.getItem(), 0) + stack.getCount());
-            if (stack.getItem() == GTOItems.COORDINATE_CARD.asItem()) {
-                if (coordinateCards == 0) pos1 = getStoredCoordinates(stack);
-                else pos2 = getStoredCoordinates(stack);
+        var storage = inventory.storage;
+        for (int i = 0; i < storage.size(); i++) {
+            long count = storage.amountAt(i);
+            if (count <= 0) continue;
+            var key = storage.keyAt(i);
+            Item item = key.getItem();
+            inventoryCount.put(item, inventoryCount.getOrDefault(item, 0) + (int) count);
+            if (item == GTOItems.COORDINATE_CARD.asItem()) {
+                if (coordinateCards == 0) pos1 = getStoredCoordinates(Keys.displayStack(key));
+                else pos2 = getStoredCoordinates(Keys.displayStack(key));
                 coordinateCards++;
             }
         }
@@ -763,12 +773,13 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         for (IntObjectHolder<ItemStack> holder : extraMaterials) {
             Item item = holder.value.getItem();
             int remaining = holder.priority;
-            for (int i = 0; i < inventory.getSlots() && remaining > 0; i++) {
-                ItemStack stack = inventory.getStackInSlot(i);
-                if (stack.getItem() == item) {
-                    int take = Math.min(stack.getCount(), remaining);
-                    stack.shrink(take);
-                    remaining -= take;
+            var storage = inventory.storage;
+            for (int i = 0; i < storage.size() && remaining > 0; i++) {
+                long count = storage.amountAt(i);
+                if (count <= 0) continue;
+                var key = storage.keyAt(i);
+                if (key.getItem() == item) {
+                    remaining -= (int) storage.extract(i, key, Math.min(count, remaining), false);
                 }
             }
             if (remaining > 0) {
@@ -820,11 +831,13 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
 
         if (canExport) {
             BlockPos p1 = null, p2 = null;
-            for (int i = 0; i < inventory.getSlots() && (p1 == null || p2 == null); i++) {
-                ItemStack stack = inventory.getStackInSlot(i);
-                if (stack.is(GTOItems.COORDINATE_CARD.asItem())) {
-                    if (p1 == null) p1 = getStoredCoordinates(stack);
-                    else p2 = getStoredCoordinates(stack);
+            var storage = inventory.storage;
+            for (int i = 0; i < storage.size() && (p1 == null || p2 == null); i++) {
+                if (storage.amountAt(i) <= 0) continue;
+                var key = storage.keyAt(i);
+                if (key.getItem() == GTOItems.COORDINATE_CARD.asItem()) {
+                    if (p1 == null) p1 = getStoredCoordinates(Keys.displayStack(key));
+                    else p2 = getStoredCoordinates(Keys.displayStack(key));
                 }
             }
             if (p1 != null && p2 != null) {
@@ -920,11 +933,13 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         if (!(getLevel() instanceof ServerLevel serverLevel)) return;
         BlockPos pos1 = null;
         BlockPos pos2 = null;
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.getItem() == GTOItems.COORDINATE_CARD.asItem()) {
-                if (pos1 == null) pos1 = getStoredCoordinates(stack);
-                else pos2 = getStoredCoordinates(stack);
+        var storage = inventory.storage;
+        for (int i = 0; i < storage.size(); i++) {
+            if (storage.amountAt(i) <= 0) continue;
+            var key = storage.keyAt(i);
+            if (key.getItem() == GTOItems.COORDINATE_CARD.asItem()) {
+                if (pos1 == null) pos1 = getStoredCoordinates(Keys.displayStack(key));
+                else pos2 = getStoredCoordinates(Keys.displayStack(key));
             }
         }
         if (pos1 != null && pos2 != null) {
