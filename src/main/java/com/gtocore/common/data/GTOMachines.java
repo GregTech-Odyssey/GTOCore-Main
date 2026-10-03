@@ -25,6 +25,7 @@ import com.gtocore.common.machine.noenergy.*;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeploymentMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
+import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
@@ -71,6 +72,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import com.hepdd.gtmthings.GTMThings;
 import it.unimi.dsi.fastutil.Function;
@@ -1223,11 +1225,37 @@ public final class GTOMachines {
                     .register(),
             GTValues.tiersBetween(1, 8));
 
-    public static final MachineDefinition SLOT_MACHINE = machine("slot_machine", "老虎机", SlotMachine::new)
+    private static final VoxelShape SLOT_MACHINE_SHAPE = Shapes.or(
+            Shapes.box(0, 0, 0, 1, 2 / 16.0, 1),
+            Shapes.box(1 / 16.0, 2 / 16.0, 1 / 16.0, 15 / 16.0, 17 / 16.0, 15 / 16.0),
+            Shapes.box(1.75 / 16.0, 15.9 / 16.0, -0.25 / 16.0, 14.25 / 16.0, 16.9 / 16.0, 0.7 / 16.0),
+            Shapes.box(1.75 / 16.0, 3.1 / 16.0, -0.25 / 16.0, 14.25 / 16.0, 4.1 / 16.0, 0.7 / 16.0),
+            Shapes.box(1.25 / 16.0, 3.1 / 16.0, -0.25 / 16.0, 2.25 / 16.0, 16.9 / 16.0, 0.7 / 16.0),
+            Shapes.box(13.75 / 16.0, 3.1 / 16.0, -0.25 / 16.0, 14.75 / 16.0, 16.9 / 16.0, 0.7 / 16.0),
+            Shapes.box(2 / 16.0, 4 / 16.0, 0.3 / 16.0, 14 / 16.0, 1, 1.3 / 16.0),
+            Shapes.box(1 / 16.0, 2 / 16.0, 0.5 / 16.0, 15 / 16.0, 4 / 16.0, 1 / 16.0),
+            Shapes.box(9 / 16.0, 2.4 / 16.0, -0.05 / 16.0, 13 / 16.0, 3.9 / 16.0, 0.5 / 16.0),
+            Shapes.box(4.5 / 16.0, 2.4 / 16.0, 0, 8 / 16.0, 3.9 / 16.0, 0.5 / 16.0),
+            Shapes.box(1 / 16.0, 17 / 16.0, 1 / 16.0, 15 / 16.0, 23 / 16.0, 15 / 16.0),
+            Shapes.box(1.25 / 16.0, 17.75 / 16.0, -0.5 / 16.0, 14.75 / 16.0, 21.75 / 16.0, 0.6 / 16.0),
+            Shapes.box(0.5 / 16.0, 23 / 16.0, 0.5 / 16.0, 15.5 / 16.0, 24.5 / 16.0, 15.5 / 16.0));
+
+    public static final MachineDefinition SLOT_MACHINE = machine("slot_machine", "老虎机", holder -> new SlotMachine(holder, SlotMachineRules.CLASSIC))
             .langValue("Slot Machine")
             .tooltipBuilder((stack, list) -> GTOMachineTooltips.SlotMachineTooltips.apply(list))
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/slot_machine"))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition WIDE_SLOT_MACHINE = machine("wide_slot_machine", "宽幅老虎机", holder -> new SlotMachine(holder, SlotMachineRules.WIDE))
+            .langValue("Wide Slot Machine")
+            .tooltipBuilder((stack, list) -> GTOMachineTooltips.WideSlotMachineTooltips.apply(list))
+            .nonYAxisRotation()
+            .modelRenderer(() -> GTOCore.id("block/machine/slot_machine"))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
 
     public static final MachineDefinition[] DIGITAL_MINER = registerTieredMachines("digital_miner", tier -> "%s数字型采矿机%s".formatted(GTOValues.VLVHCN[tier], VLVT[tier]), SingleDigitalMiner::new,

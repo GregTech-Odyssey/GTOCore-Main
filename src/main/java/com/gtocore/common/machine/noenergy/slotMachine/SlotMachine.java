@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.noenergy.slotMachine;
 
+import com.gtocore.config.GTOConfig;
 import com.gtocore.data.transaction.data.CoinExchange;
 import com.gtocore.data.transaction.data.TradeLang;
 
@@ -23,6 +24,7 @@ import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -36,9 +38,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
 
@@ -58,6 +58,10 @@ import org.jetbrains.annotations.Nullable;
  * <p>
  * 本类只处理机器层职责：服务端状态、tick 订阅、DataSyncLib 字段存盘、掉落物保存与 Fancy UI；
  * 开奖、赔率与结果结构都在同包的底层逻辑类里。
+ *
+ * <p>
+ * 盘面由构造时注入的 {@link SlotMachineRules} 决定（列数、行数、卷轴与赔付表），界面按规则的布局铺格子，
+ * 所以同一个类同时驱动 3 列与 5 列老虎机；规则不参与存档，读档时由方块的机器工厂重新注入。
  */
 @DataGeneratorScanned
 public class SlotMachine extends MetaMachine implements IFancyUIMachine, IControllable, IDropSaveMachine {
@@ -82,6 +86,12 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     private static final String REASON_CANNOT_START = "gtocore.machine.slot_machine.reason.cannot_start";
     @RegisterLanguage(cn = "正在滚动，暂不能取出余额", en = "Cannot withdraw while spinning")
     private static final String REASON_SPINNING = "gtocore.machine.slot_machine.reason.spinning";
+    @RegisterLanguage(cn = "当前无法开始：服务器已禁用老虎机", en = "Cannot start: the slot machine is disabled on this server")
+    private static final String REASON_DISABLED = "gtocore.machine.slot_machine.reason.disabled";
+    @RegisterLanguage(cn = "老虎机已被禁用", en = "Slot machine disabled")
+    private static final String NOTICE_DISABLED_TITLE = "gtocore.machine.slot_machine.notice.disabled.title";
+    @RegisterLanguage(cn = "本服务器已关闭老虎机，禁止赌博；余额仍可取出", en = "This server has disabled the slot machine; credits can still be withdrawn")
+    private static final String NOTICE_DISABLED_DETAIL = "gtocore.machine.slot_machine.notice.disabled.detail";
     @RegisterLanguage(cn = "无", en = "None")
     private static final String VALUE_NONE = "gtocore.machine.slot_machine.value.none";
     @RegisterLanguage(cn = "%s (倍率 ×%s)", en = "%s (multiplier ×%s)")
@@ -124,11 +134,19 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     @Nullable
     private TickableSubscription tickSubs;
     private int winSoundTicksRemaining;
+    // 盘面规则由方块类型决定，不参与存档：读档时机器工厂会重新注入同一份规则。
+    private final SlotMachineRules rules;
 
-    public SlotMachine(MetaMachineBlockEntity holder) {
+    public SlotMachine(MetaMachineBlockEntity holder, SlotMachineRules rules) {
         super(holder);
+        this.rules = rules;
         depositInventory.setOnContentsChanged(this::onDepositInventoryChanged);
         syncViewFromState();
+    }
+
+    /** 服务器可以在配置里关闭老虎机：关闭后只显示禁赌提示，且永远不能开始（余额与硬币槽照常可用）。 */
+    private static boolean slotMachineEnabled() {
+        return GTOConfig.INSTANCE.gamePlay.slotMachineEnabled;
     }
 
     @Override
@@ -202,15 +220,15 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
         int elapsed = WIN_SOUND_PITCHES.length * WIN_SOUND_INTERVAL - winSoundTicksRemaining;
         if (elapsed % WIN_SOUND_INTERVAL == 0 && getLevel() instanceof ServerLevel level) {
             level.playSound(null, getPos(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS,
-                    0.6F, WIN_SOUND_PITCHES[elapsed / WIN_SOUND_INTERVAL]);
+                    1.0F, WIN_SOUND_PITCHES[elapsed / WIN_SOUND_INTERVAL]);
         }
         winSoundTicksRemaining--;
     }
 
     private void startSpin() {
         var level = getLevel();
-        if (level == null || isRemote() || !enabled) return;
-        if (state.startSpin(level.getRandom())) {
+        if (level == null || isRemote() || !enabled || !slotMachineEnabled()) return;
+        if (state.startSpin(level.getRandom(), rules)) {
             syncAndMarkChanged();
         }
     }
@@ -307,26 +325,39 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
         return result.symbolAt(reel, row).id() | (result.isWinningCell(reel, row) ? REEL_WINNING_FLAG : 0);
     }
 
+    /** 关闭老虎机时，卷轴位置改为禁赌提示；其余控件（余额、硬币槽、取出）保持不变。 */
     private UIElement createReels() {
+        if (!slotMachineEnabled()) return createDisabledNotice();
+        SlotMachineLayout layout = rules.layout();
         // 物品材质只在开界面时构建一次，渲染与滚动期间复用。
         var textures = new ItemStackTexture[SlotSymbol.count()];
         for (int i = 0; i < textures.length; i++) {
-            textures[i] = new ItemStackTexture(symbolItem(SlotSymbol.byId(i)));
+            textures[i] = new ItemStackTexture(SlotSymbol.symbolItem(SlotSymbol.byId(i)));
         }
-        var board = UIElement.column(LayoutStyle.AUTO).layout(layout -> layout.alignCenter().gapAll(UISizes.GAP));
-        int width = SlotMachineRules.REEL_COUNT * REEL_CELL_SIZE + (SlotMachineRules.REEL_COUNT - 1) * UISizes.GAP;
-        for (int row = 0; row < SlotMachineRules.VISIBLE_ROWS; row++) {
-            var cells = UIElement.centeredRow(REEL_CELL_SIZE).layout(layout -> layout.width(width));
-            for (int reel = 0; reel < SlotMachineRules.REEL_COUNT; reel++) {
-                cells.addChild(createReelCell(reel, row, textures));
+        var board = UIElement.column(LayoutStyle.AUTO).layout(style -> style.alignCenter().gapAll(UISizes.GAP));
+        int width = layout.reelCount() * REEL_CELL_SIZE + (layout.reelCount() - 1) * UISizes.GAP;
+        for (int row = 0; row < layout.visibleRows(); row++) {
+            var cells = UIElement.centeredRow(REEL_CELL_SIZE).layout(style -> style.width(width));
+            for (int reel = 0; reel < layout.reelCount(); reel++) {
+                cells.addChild(createReelCell(layout, reel, row, textures));
             }
             board.addChild(cells);
         }
         return board;
     }
 
-    private UIElement createReelCell(int reel, int row, ItemStackTexture[] textures) {
-        var cell = new UIElement().layout(layout -> layout.size(REEL_CELL_SIZE, REEL_CELL_SIZE).paddingAll(REEL_CELL_PADDING));
+    /** 禁用时的禁赌提示：固定文字，两端显示相同内容，不需要下发。 */
+    private static UIElement createDisabledNotice() {
+        var notice = UIElement.column(LayoutStyle.AUTO).layout(style -> style.alignCenter().gapAll(UISizes.GAP));
+        notice.addChild(TextLine.translatable(LayoutStyle.AUTO, NOTICE_DISABLED_TITLE)
+                .styled().bindClientColor(() -> UITheme.STATUS_TEXT_ERROR));
+        notice.addChild(TextLine.translatable(LayoutStyle.AUTO, NOTICE_DISABLED_DETAIL)
+                .bindClientColor(() -> UITheme.TEXT_SECONDARY));
+        return notice;
+    }
+
+    private UIElement createReelCell(SlotMachineLayout layout, int reel, int row, ItemStackTexture[] textures) {
+        var cell = new UIElement().layout(style -> style.size(REEL_CELL_SIZE, REEL_CELL_SIZE).paddingAll(REEL_CELL_PADDING));
         cell.setBackground(UITheme.ITEM_SLOT);
         var display = cell.addSyncValue(SyncValue.ofInt(() -> reelDisplayValue(reel, row), REEL_EMPTY));
         cell.setSelected(() -> {
@@ -337,7 +368,7 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
             int id = display.getValue();
             // 滚动只是客户端装饰，不读取也没提前同步尚未结算的结果。
             if (id == REEL_SPINNING) {
-                id = (int) ((UIClock.millis() / 100 + reel * SlotMachineRules.VISIBLE_ROWS + row) % textures.length);
+                id = (int) ((UIClock.millis() / 100 + reel * layout.visibleRows() + row) % textures.length);
             }
             return id < 0 ? IGuiTexture.EMPTY : textures[id & ~REEL_WINNING_FLAG];
         }));
@@ -347,33 +378,34 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
 
     @Override
     public Widget createUIWidget() {
+        var reels = new StatusPanel().addChildren(createReels());
+
         var status = new StatusPanel();
         status.addLine(LINE_BALANCE, () -> number(balanceView));
         status.addLine(LINE_LAST_REWARD, this::lastRewardText);
 
-        var reels = new StatusPanel().addChildren(createReels());
-
         var spin = Button.translatable(LayoutStyle.AUTO, BUTTON_SPIN)
                 .setOnServerClick(this::startSpin)
-                .disabled(() -> !enabled || !state.canStart(), REASON_CANNOT_START);
+                .disabled(() -> !slotMachineEnabled() || !enabled || !state.canStart(),
+                        slotMachineEnabled() ? REASON_CANNOT_START : REASON_DISABLED);
 
         var credits = UIElement.centeredRow(UISizes.SLOT_SIZE).layout(layout -> layout.justifyContent(AlignContent.CENTER));
         var deposit = ItemSlot.of(depositInventory, 0, true, true);
-        deposit.setGhosts(CoinExchange.itemStacks());
-        deposit.setHoverTooltips(CURRENCY_NAME);
-        deposit.setChangeListener(this::onDepositInventoryChanged);
+        deposit.setGhosts(CoinExchange.itemStacks())
+                .setChangeListener(this::onDepositInventoryChanged)
+                .setHoverTooltips(CURRENCY_NAME);
         var withdraw = Button.translatable(136, BUTTON_WITHDRAW);
-        withdraw.setHoverTooltips(CURRENCY_NAME);
-        withdraw.setOnServerClick(() -> withdrawAll(withdraw)).disabled(() -> state.isSpinning(), REASON_SPINNING);
+        withdraw.setOnServerClick(() -> withdrawAll(withdraw)).disabled(() -> state.isSpinning(), REASON_SPINNING)
+                .setHoverTooltips(CURRENCY_NAME);
         credits.addChildren(deposit, withdraw);
 
-        var operation = new StatusPanel().addChildren(
+        status.addChildren(
                 NumberField.ofInt(LayoutStyle.AUTO, () -> betView, this::setBet, SlotMachineRules.DEFAULT_BET, SlotMachineRules.DEFAULT_MAX_BET)
                         .setSteps(CREDIT_STEPS).tooltips(ROW_BET, ROW_BET_TOOLTIP),
                 credits,
                 spin);
 
-        return Form.page().addChildren(status, reels, operation);
+        return Form.page().addChildren(reels, status);
     }
 
     @Override
@@ -395,19 +427,5 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
 
     private static MutableComponent number(long value) {
         return Component.literal(FormattingUtil.formatNumbers(value)).withStyle(ChatFormatting.AQUA);
-    }
-
-    private static Item symbolItem(SlotSymbol symbol) {
-        return switch (symbol) {
-            case SWEET_BERRIES -> Items.SWEET_BERRIES;
-            case CHORUS_FRUIT -> Items.CHORUS_FRUIT;
-            case MELON_SLICE -> Items.MELON_SLICE;
-            case APPLE -> Items.APPLE;
-            case GOLDEN_CARROT -> Items.GOLDEN_CARROT;
-            case GOLDEN_APPLE -> Items.GOLDEN_APPLE;
-            case EMERALD -> Items.EMERALD;
-            case NETHER_STAR -> Items.NETHER_STAR;
-            case HONEY_BOTTLE -> Items.HONEY_BOTTLE;
-        };
     }
 }

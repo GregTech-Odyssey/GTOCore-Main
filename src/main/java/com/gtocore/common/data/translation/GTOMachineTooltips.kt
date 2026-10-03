@@ -7,12 +7,14 @@ import com.gtocore.api.lang.toLiteralSupplier
 import com.gtocore.api.lang.translatable
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine
+import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules
 import com.gtocore.common.machine.noenergy.slotMachine.SlotSymbol
 import com.gtocore.config.GTORules
 
 import net.minecraft.network.chat.Component
 
 import com.google.common.collect.ImmutableMap
+import com.gregtechceu.gtceu.GTCEu
 import com.gregtechceu.gtceu.api.GTValues
 import com.gtolib.utils.NumberUtils
 import com.lowdragmc.lowdraglib.side.fluid.FluidHelper
@@ -373,6 +375,10 @@ object GTOMachineTooltips {
     val SlotMachineTooltips = ComponentListSupplier {
         setTranslationPrefix("slot_machine")
 
+        // 符号名一律跟着 SlotSymbol 绑定的物品走，换物品不用回来改文案；datagen 只登记文案键，不解析物品名
+        val wildName = if (GTCEu.isDataGen()) Component.EMPTY else SlotSymbol.symbolName(SlotSymbol.SYMBOL8)
+        val topName = if (GTCEu.isDataGen()) Component.EMPTY else SlotSymbol.symbolName(SlotSymbol.SYMBOL7)
+
         miraculousTools("老虎机" translatedTo "Slot Machine")
         section("三列卷轴，五条中奖线" translatedTo "Three reels, five paylines")
 
@@ -383,16 +389,19 @@ object GTOMachineTooltips {
             content(
                 "%s：左侧二连 ×%s / 三连 ×%s".translatedWithArgs(
                     "%s: Left pair ×%s / Triple ×%s",
-                    Component.translatable(symbol.translateKey()),
+                    if (GTCEu.isDataGen()) Component.EMPTY else SlotSymbol.symbolName(symbol),
                     symbol.twoMatchMultiplier(),
                     symbol.threeMatchMultiplier(),
                 ),
             )
         }
         content(
-            "蜂蜜瓶：百搭符号；三瓶蜂蜜按下界之星三连，奖励 ×%s".translatedWithArgs(
-                "Honey Bottle: wild symbol; three bottles pay as a Nether Star triple, ×%s",
-                SlotSymbol.NETHER_STAR.threeMatchMultiplier(),
+            "%s：百搭符号；三个%s连成一线时按%s三连赔付，奖励 ×%s".translatedWithArgs(
+                "%s: wild symbol; when three %s line up, they pay as a %s triple, ×%s",
+                wildName,
+                wildName,
+                topName,
+                SlotSymbol.SYMBOL7.threeMatchMultiplier(),
             ),
         )
 
@@ -400,7 +409,63 @@ object GTOMachineTooltips {
         content("五条中奖线为上、中、下三条横线及两条对角线，竖列不计奖" translatedTo "The five paylines are the top, middle and bottom rows and both diagonals; vertical columns do not pay")
         content("沿中奖线从最左列连续匹配，只有右侧二连不中奖" translatedTo "Matches must start at the leftmost reel along a payline; a pair made of the right two reels alone does not pay")
         content("同一条线三连优先，不叠加该线的二连奖励；不同中奖线的奖励相加" translatedTo "A triple takes priority over a pair on the same line and the pair is not added on top; payouts from different paylines add together")
-        content("蜂蜜瓶可替代任何普通符号：一瓶蜂蜜配两个相同符号，或两瓶蜂蜜配一个符号，都按该符号的三连赔付" translatedTo "A Honey Bottle substitutes for any regular symbol: one bottle with two matching symbols, or two bottles with one symbol, both pay that symbol's triple")
+        content(
+            "%s可替代任何普通符号：一个%s配两个相同符号，或两个%s配一个符号，都按该符号的三连赔付".translatedWithArgs(
+                "%s substitutes for any regular symbol: one %s with two matching symbols, or two %s with one symbol, both pay that symbol's triple",
+                wildName,
+                wildName,
+                wildName,
+            ),
+        )
+        highlight("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还" translatedTo "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately") { gold() }
+    }
+
+    // 宽幅老虎机 - 五列九线，只赔三连以上；赔付表直接读宽幅布局的规则，改表不用改文案
+    @JvmField
+    val WideSlotMachineTooltips = ComponentListSupplier {
+        setTranslationPrefix("wide_slot_machine")
+
+        // 同 3 列老虎机：符号名跟着 SlotSymbol 的物品走
+        val wildName = if (GTCEu.isDataGen()) Component.EMPTY else SlotSymbol.symbolName(SlotSymbol.SYMBOL8)
+        val topName = if (GTCEu.isDataGen()) Component.EMPTY else SlotSymbol.symbolName(SlotSymbol.SYMBOL7)
+
+        miraculousTools("宽幅老虎机" translatedTo "Wide Slot Machine")
+        section("五列卷轴，九条中奖线" translatedTo "Five reels, nine paylines")
+
+        section("赔付表" translatedTo "Pay Table")
+        info("以下为单条中奖线的奖励倍率，×0 表示该线不中奖" translatedTo "Multipliers below apply to one payline; ×0 means that line pays nothing")
+        for (symbol in SlotSymbol.entries) {
+            if (symbol.wild()) continue
+            content(
+                "%s：三连 ×%s / 四连 ×%s / 五连 ×%s".translatedWithArgs(
+                    "%s: Triple ×%s / Four ×%s / Five ×%s",
+                    if (GTCEu.isDataGen()) Component.EMPTY else SlotSymbol.symbolName(symbol),
+                    SlotMachineRules.WIDE.multiplier(symbol, 3),
+                    SlotMachineRules.WIDE.multiplier(symbol, 4),
+                    SlotMachineRules.WIDE.multiplier(symbol, 5),
+                ),
+            )
+        }
+        content(
+            "%s：百搭符号；五格全为%s时按%s五连赔付，奖励 ×%s".translatedWithArgs(
+                "%s: wild symbol; when all five are %s, they pay as a %s five-of-a-kind, ×%s",
+                wildName,
+                wildName,
+                topName,
+                SlotMachineRules.WIDE.multiplier(SlotSymbol.SYMBOL7, 5),
+            ),
+        )
+
+        section("中奖规则" translatedTo "Winning Rules")
+        content("九条中奖线为三条横线、两条折线与四条带缺口的折线，竖列不计奖" translatedTo "The nine paylines are three rows, two zigzags and four notched zigzags; vertical columns do not pay")
+        content("沿中奖线从最左列连续匹配，只赔三连及以上，二连不中奖" translatedTo "Matches must start at the leftmost reel along a payline; three or more pay, a pair pays nothing")
+        content("同一条线按最长连中结算，不叠加该线较短连中的奖励；不同中奖线的奖励相加" translatedTo "A line pays for its longest run only and shorter runs on it are not added on top; payouts from different paylines add together")
+        content(
+            "%s可替代任何普通符号：只要连成三格及以上，就按该符号对应长度的倍率赔付".translatedWithArgs(
+                "%s substitutes for any regular symbol: as long as three or more connect, the line pays that symbol's multiplier for its length",
+                wildName,
+            ),
+        )
         highlight("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还" translatedTo "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately") { gold() }
     }
 

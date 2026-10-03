@@ -27,6 +27,7 @@ import java.util.Set;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTOMachines.SLOT_MACHINE;
 import static com.gtocore.common.data.GTOMachines.TRADING_STATION;
+import static com.gtocore.common.data.GTOMachines.WIDE_SLOT_MACHINE;
 import static com.gtocore.data.transaction.data.TradeLang.TECH_OPERATOR_COIN;
 import static com.gtocore.data.transaction.data.TradeLang.addTradeLang;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
@@ -95,6 +96,13 @@ public final class WelcomeGroup {
                 .unlockCondition(UNLOCK_BASE)
                 .inputCurrency(TECH_OPERATOR_COIN, 5)
                 .outputItem(SLOT_MACHINE.asStack())
+                .build());
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                .texture(new StackTexture(WIDE_SLOT_MACHINE.asStack()))
+                .unlockCondition(UNLOCK_BASE)
+                .inputCurrency(TECH_OPERATOR_COIN, 25)
+                .outputItem(WIDE_SLOT_MACHINE.asStack())
                 .build());
     }
 

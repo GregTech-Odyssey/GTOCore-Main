@@ -25,7 +25,8 @@ import java.util.Objects;
  * 还得靠 {@code listener} 字符串回调。读回来的数值统一在解码构造里校验，不需要「读盘完成」回调。
  *
  * <p>
- * 开奖固定用 {@link SlotMachineRules#DEFAULT}（不参与存档）：三根卷轴由档位常量一次性生成，状态只保存结果。
+ * 开奖用的规则由机器在构造时注入（{@link #startSpin} 的 {@code rules} 参数，不参与存档）：卷轴带与赔付表
+ * 由规则持有，状态只保存结果。因此 3 列与 5 列盘面共用同一个状态类，读档只依赖结果里自带的布局 id。
  * 取值方法由 Lombok 按 fluent 命名生成、与字段同名；{@code pendingResult}、{@code spinTicksRemaining}
  * 只给 {@link #CODEC} 存取。
  */
@@ -129,13 +130,13 @@ public final class SlotMachineState {
         return !isSpinning() && balance >= bet;
     }
 
-    /** 立即扣下注并预生成待结算结果（有待结算结果即滚动中）；结果先落地，动画中途卸载或存档也不会丢或重随机。 */
-    public boolean startSpin(RandomSource random) {
+    /** 立即扣下注并按传入规则预生成待结算结果（有待结算结果即滚动中）；结果先落地，动画中途卸载或存档也不会丢或重随机。 */
+    public boolean startSpin(RandomSource random, SlotMachineRules rules) {
         Objects.requireNonNull(random, "random");
         if (!canStart()) return false;
         balance -= bet;
-        pendingResult = SlotMachineRules.DEFAULT.spin(random, bet);
-        spinTicksRemaining = SlotMachineRules.DEFAULT_SPIN_TICKS;
+        pendingResult = rules.spin(random, bet);
+        spinTicksRemaining = rules.spinTicks();
         return true;
     }
 

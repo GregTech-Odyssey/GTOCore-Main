@@ -353,6 +353,14 @@ public final class GTOConfig {
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Mob Natural Regeneration", cn = "生物自然回血")
             public boolean naturalRegeneration = true;
         }
+
+        @Configurable
+        @Configurable.Comment({ "关闭后老虎机不能开始（永远禁止开始），卷轴位置显示禁赌提示",
+                "余额与硬币槽不受影响，仍可投入硬币与取出余额",
+                "When disabled, slot machines can never be started and the reels are replaced by an anti-gambling notice",
+                "Credits and the coin slot still work: coins can be deposited and credits withdrawn" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Enable Slot Machine", cn = "开启老虎机")
+        public boolean slotMachineEnabled = true;
     }
 
     @DataGeneratorScanned
