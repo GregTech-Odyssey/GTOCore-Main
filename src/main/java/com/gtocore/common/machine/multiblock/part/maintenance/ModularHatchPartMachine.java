@@ -100,7 +100,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
         heatContainer.setAllowExplosion(false);
         heatContainer.setSideIOCondition(s -> s == getFrontFacing());
         heatContainer.addChangedListener(() -> {
-            if (temperatureMode) heatContainer.setCurrentHeat(activeTemperature);
+            if (temperatureMode) heatContainer.setCurrentHeat((long) (activeTemperature * heatContainer.getHeatCapacity()));
             for (var c : getControllers()) {
                 if (c instanceof IRecipeLogicMachine machine) machine.getRecipeLogic().updateTickSubscription();
             }
