@@ -45,6 +45,7 @@ public final class ElectricHeaterMachine extends WorkableTieredMachine implement
         super(holder, 1, t -> 8000);
         heatContainer = new HeatHandler(holder, MaxTemperature, 2, 0.4, 0.01);
         heatContainer.setSideIOCondition(s -> s == Direction.UP);
+        heatContainer.setAllowExplosion(false);
         heatContainer.addChangedListener(getRecipeLogic()::updateTickSubscription);
     }
 

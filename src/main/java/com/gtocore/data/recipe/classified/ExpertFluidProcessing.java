@@ -353,7 +353,7 @@ public class ExpertFluidProcessing {
                 .outputItems(TagPrefix.dust, GTOMaterials.NaquadahContainRareEarthFluoride)
                 .outputItems(TagPrefix.dust, GTMaterials.TitaniumTrifluoride, 4)
                 .outputItems(TagPrefix.dust, GTOMaterials.Fluorite, 11)
-                .outputItems(TagPrefix.dust, GTOMaterials.TriniumTetrafluoride)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.TriniumTetrafluoride, 1250, 125)
                 .EUt(120)
                 .duration(3000)
                 .save();
