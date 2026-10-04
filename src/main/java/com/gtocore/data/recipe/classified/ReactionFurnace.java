@@ -4,6 +4,8 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
@@ -12,8 +14,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import java.util.Locale;
 
-import static com.gregtechceu.gtceu.api.GTValues.MV;
-import static com.gregtechceu.gtceu.api.GTValues.VA;
+import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.REACTION_FURNACE_RECIPES;
@@ -762,6 +763,14 @@ final class ReactionFurnace {
                 .EUt(1024000)
                 .blastFurnaceTemp(11500)
                 .duration(6500)
+                .save();
+        REACTION_FURNACE_RECIPES.builder("hyplatinum_sdb_resin_catalystdrogen")
+                .inputItems("gtocore:platinum_sdb_resin_catalyst")
+                .inputFluids(GTOMaterials.HydrogenDeuterium, 1000)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 1000))
+                .outputFluids(GTMaterials.Deuterium, 1000)
+                .duration(160).EUt(VA[EV])
+                .blastFurnaceTemp(2100)
                 .save();
     }
 }

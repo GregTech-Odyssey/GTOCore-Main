@@ -1,0 +1,61 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1",
+    "srcalpha": "0",
+    "dstalpha": "1"
+  },
+  "vertex": "gtocore:solar_storm_reactor",
+  "fragment": "gtocore:solar_storm_reactor",
+  "attributes": ["Position", "UV0"],
+  "samplers": [
+    {
+      "name": "DepthSampler"
+    }
+  ],
+  "uniforms": [
+    {
+      "name": "InverseViewProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+      "name": "CameraRelative",
+      "type": "float",
+      "count": 3,
+      "values": [0, 0, 0]
+    },
+    {
+      "name": "BeamHeight",
+      "type": "float",
+      "count": 1,
+      "values": [192.5]
+    },
+    {
+      "name": "WaveRadius",
+      "type": "float",
+      "count": 1,
+      "values": [48]
+    },
+    {
+      "name": "Axis",
+      "type": "float",
+      "count": 3,
+      "values": [0, 1, 0]
+    },
+    {
+      "name": "Time",
+      "type": "float",
+      "count": 1,
+      "values": [0]
+    },
+    {
+      "name": "Strength",
+      "type": "float",
+      "count": 1,
+      "values": [1]
+    }
+  ]
+}

@@ -90,6 +90,10 @@ public final class IdleReason extends com.gtolib.api.recipe.IdleReason {
     public static final IdleReason WIRELESS_PRIORITY_RESERVED = new IdleReason("gtocore.issue.wireless_priority_reserved", "电量让给更高优先级", "Reserved for Higher Priority", "gtocore.issue.wireless_priority_reserved.desc", "需要 %s EU：电网可用电量正优先供给优先级更高、尚未满足的设备。", "Requires %s EU: available grid energy is going to higher-priority devices that are still short.", Severity.BLOCKING);
     public static final IdleReason HEAT_FULL = new IdleReason("gtocore.issue.heat_full", "热量已满", "Heat Full", "gtocore.issue.heat_full.desc", "储热为 %s / %s HU，热量被取用后继续加热。", "Stored heat is %s / %s HU; heating resumes once heat is drawn.", Severity.INFO);
 
+    public static final IdleReason SOLAR_STORM_BLOCKED = new IdleReason("gtocore.issue.solar_storm_blocked", "太阳风干扰", "Solar Storm Interference", "gtocore.issue.solar_storm_blocked.desc", "太阳风干扰了本机器的电网连接。", "A solar storm is interfering with the grid connection of this machine.", Severity.BLOCKING);
+    public static final IdleReason SOLAR_STORM_REQUIRED = new IdleReason("gtocore.issue.solar_storm_required", "需要在太阳风暴中运行", "Requires Solar Storm", "gtocore.issue.solar_storm_required.desc", "本机器只能在太阳风暴中运行。", "This machine can only operate during a solar storm.", Severity.BLOCKING);
+    public static final IdleReason SOLAR_SURFACE_FLARE_INTERFACE = new IdleReason("gtocore.issue.solar_surface_flare_interface_required", "需要在太阳表面的炽焱界面上运行", "Requires Solar Surface Flare Interface", "gtocore.issue.solar_surface_flare_interface_required.desc", "本机器只能在太阳表面的炽焱界面上运行。", "This machine can only operate on the solar surface flare interface.", Severity.BLOCKING);
+
     public IdleReason(String key, String cn, String en) {
         super(key, en, cn);
     }

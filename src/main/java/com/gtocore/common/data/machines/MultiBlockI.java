@@ -2,6 +2,7 @@ package com.gtocore.common.data.machines;
 
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.renderer.machine.MultiFluidRenderer;
+import com.gtocore.client.renderer.machine.SolarStormAggregationReactorRenderer;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.data.GTOMaterials;
@@ -10,6 +11,7 @@ import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.LargeAlgaeFarm;
 import com.gtocore.common.machine.multiblock.electric.PigmentMixer;
+import com.gtocore.common.machine.multiblock.electric.SolarStormAggregationReactor;
 import com.gtocore.common.machine.multiblock.electric.VirtualCoinMiner;
 
 import com.gtolib.GTOCore;
@@ -152,5 +154,33 @@ public class MultiBlockI {
                     .build())
             .sidedWorkableCasingRenderer("block/casings/hpca/advanced_computer_casing",
                     GTCEu.id("block/multiblock/research_station"))
+            .register();
+
+    // 太阳风暴聚合反应器
+    public static final MultiblockMachineDefinition SOLAR_STORM_AGGREGATION_REACTOR = multiblock("solar_storm_aggregation_reactor", "太阳风暴聚合反应器", SolarStormAggregationReactor::new)
+            .nonYAxisRotation()
+            .recipeTypes(GTORecipeTypes.MIXER_RECIPES)
+            .block(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING)
+            .structure(definition -> Structure.root(MultiBlockFileReader.piece(definition.getName()).build()).symbols(Symbols.create()
+                    .wherePart('A', blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get())
+                            .or(GTOPredicates.autoLaserAbilities(definition.getRecipeTypes()))
+                            .or(abilities(MAINTENANCE).setExactLimit(1)))
+                    .where('B', blocks(GTOBlocks.HYPER_MECHANICAL_CASING.get()))
+                    .where('C', blocks(GTOBlocks.STELLAR_ENERGY_SIPHON_CASING.get()))
+                    .where('D', GTOPredicates.frame(GTMaterials.Naquadria))
+                    .where('E', blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get()))
+                    .where('F', blocks(GTOBlocks.EXTREME_DENSITY_CASING.get()))
+                    .where('G', GTOPredicates.frame(GTOMaterials.RadiationShieldingHighDensityTungstenSteel))
+                    .where('H', blocks(GTOBlocks.SUPERCRITICAL_TURBINE_CASING.get()))
+                    .where('I', blocks(GTOBlocks.PLASMA_FIELD_GLASS.get()))
+                    .where('J', blocks(GTOBlocks.NEUTRONIUM_STABLE_CASING.get()))
+                    .where('K', blocks(GTOBlocks.FERMI_ENERGY_GAP_TRANSITION_GLASS.get()))
+                    .where('L', blocks(GTOBlocks.TRANSCENDENTALLY_AMPLIFIED_MAGNETIC_CONFINEMENT_CASING.get()))
+                    .where('M', GTOPredicates.frame(GTOMaterials.HexaphaseCopper))
+                    .where('N', GTOPredicates.frame(GTMaterials.Neutronium))
+                    .where('O', blocks(GTOBlocks.CELESTIAL_MATTER_GUIDANCE_CASING.get()))
+                    .where('P', controller(definition))).build())
+            .renderer(SolarStormAggregationReactorRenderer::new)
+            .hasTESR(true)
             .register();
 }

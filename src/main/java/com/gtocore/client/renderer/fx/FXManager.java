@@ -88,5 +88,6 @@ public class FXManager {
         discarded.forEach(AbstractFX::onDiscard);
         ScreenSpaceSceneCapture.release();
         SolarStormFX.release();
+        SolarStormReactorFX.release();
     }
 }

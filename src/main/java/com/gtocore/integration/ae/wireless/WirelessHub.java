@@ -1,7 +1,7 @@
 package com.gtocore.integration.ae.wireless;
 
 import com.gtocore.common.data.GTOMachines;
-import com.gtocore.integration.ae.SolarStormConnections;
+import com.gtocore.integration.ae.SolarStormHandler;
 import com.gtocore.mixin.ae2.GridNodeAccessor;
 
 import com.gregtechceu.gtceu.core.ILevel;
@@ -46,7 +46,7 @@ public final class WirelessHub {
                 .setExposedOnSides(EnumSet.noneOf(Direction.class))
                 .setVisualRepresentation(GTOMachines.ME_WIRELESS_CONNECTION_MACHINE.asItem());
         node.create(level, null);
-        if (SolarStormConnections.isSolarSurface(level)) {
+        if (SolarStormHandler.isSolarSurface(level)) {
             GridHelper.createConnection(node(), getOrCreate(level.getServer(), networkId).node());
         }
     }
@@ -110,13 +110,13 @@ public final class WirelessHub {
 
     /** 成员连向其维度一侧；仅 hub 之间的边跨越太阳表面边界。 */
     public IGridNode node(ServerLevel level) {
-        return SolarStormConnections.isSolarSurface(level) ? getOrCreate(level, networkId).node() : node();
+        return SolarStormHandler.isSolarSurface(level) ? getOrCreate(level, networkId).node() : node();
     }
 
     /** 查询时不创建本地 hub。 */
     @Nullable
     public IGridNode existingNode(ServerLevel level) {
-        if (!SolarStormConnections.isSolarSurface(level)) return node();
+        if (!SolarStormHandler.isSolarSurface(level)) return node();
         var hub = get(level, networkId);
         return hub == null ? null : hub.node();
     }
@@ -139,7 +139,7 @@ public final class WirelessHub {
 
     @Nullable
     private WirelessHub otherHub() {
-        var otherLevel = SolarStormConnections.isSolarSurface(level) ? level.getServer().overworld() : level.getServer().getLevel(SolarStormConnections.SOLAR_SURFACE);
+        var otherLevel = SolarStormHandler.isSolarSurface(level) ? level.getServer().overworld() : level.getServer().getLevel(SolarStormHandler.SOLAR_SURFACE);
         return otherLevel == null ? null : get(otherLevel, networkId);
     }
 

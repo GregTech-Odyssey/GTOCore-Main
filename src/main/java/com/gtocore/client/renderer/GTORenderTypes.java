@@ -109,6 +109,25 @@ public final class GTORenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
+    public static final RenderType SOLAR_STORM_REACTOR = RenderType.create("solar_storm_reactor",
+            DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 256, false, false,
+            RenderType.CompositeState.builder()
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setCullState(NO_CULL)
+                    .setShaderState(new ShaderStateShard(() -> getShader(GTORenderTypes.SOLAR_STORM_REACTOR_SHADER_LOCATION)))
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
+    public static final RenderType SOLAR_STORM_REACTOR_RINGS = RenderType.create("solar_storm_reactor_rings",
+            DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 131072, false, false,
+            RenderType.CompositeState.builder()
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setShaderState(new ShaderStateShard(() -> getShader(GTORenderTypes.SOLAR_STORM_REACTOR_RINGS_SHADER_LOCATION)))
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
     private GTORenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
                            boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
         super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
@@ -119,6 +138,8 @@ public final class GTORenderTypes extends RenderType {
     public static final ResourceLocation STELLAR_FORGE_VORTEX_SHADER_LOCATION = GTOCore.id("stellar_forge_vortex");
     public static final ResourceLocation SOLAR_SURFACE_VORTEX_SHADER_LOCATION = GTOCore.id("solar_surface_vortex");
     public static final ResourceLocation SOLAR_STORM_HEAT_SHADER_LOCATION = GTOCore.id("solar_storm_heat");
+    public static final ResourceLocation SOLAR_STORM_REACTOR_SHADER_LOCATION = GTOCore.id("solar_storm_reactor");
+    public static final ResourceLocation SOLAR_STORM_REACTOR_RINGS_SHADER_LOCATION = GTOCore.id("solar_storm_reactor_rings");
 
     public static final ResourceLocation CRUPTIX = GTOCore.id("cruptix");
     public static final ResourceLocation ITEM_RESONANCE_WAVE = GTOCore.id("item_resonance_wave");

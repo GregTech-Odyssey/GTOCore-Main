@@ -173,6 +173,7 @@ public class ExpertFluidProcessing {
                 .save();
 
         impureToPure(EasyToEscapeMixedGas, PureHelium, SedimentarySludge, FineDustSoil);
+        impureToPure(EasyToEscapeMixedIsotopeGas, PureHelium3, SedimentarySludge, FineDustSoil);
         impureToPure(MixedNeon, PureNeon, FineDustSoil, MixedMetalDustSoil, IgneousSludge);
         impureToPure(MixedArgon, PureArgon, FineDustSoil, MixedMetalDustSoil, MetamorphicSludge);
         impureToPure(MixedKrypton, PureKrypton, FineDustSoil, GlassySludge, IgneousSludge);
@@ -180,6 +181,7 @@ public class ExpertFluidProcessing {
         impureToPure(HighRadiationGas, PureRadon, RadioactiveWasteMud, CalcareousSludge);
         impureToPure(BleachingGas, PureChlorine, BleachingStone, CalcareousSludge);
         impureToPure(FlashExplosionGas, PureHydrogen, MixedMetalDustSoil);
+        impureToPure(HeavyFlashExplosionGas, PureDeuterium, MixedMetalDustSoil);
         impureToPure(MixedFluorine, PureFluorine, FluorideContainingSlagMud);
         impureToPure(ImpureSulfuricAcid, PureSulfuricAcid, CalciumSulfateStone);
         impureToPure(ImpureNitricAcid, PureNitricAcid, AcidicOxidizedMudSlag);
@@ -259,8 +261,8 @@ public class ExpertFluidProcessing {
                 .chancedInput(TagPrefix.dust, SilicaGel, 600, 30)
                 .inputFluids(PureHydrogen, 3000)
                 .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 2970))
-                .outputFluids(Deuterium, 29)
-                .outputFluids(Tritium, 1)
+                .outputFluids(Deuterium, 24)
+                .outputFluids(HydrogenDeuterium, 6)
                 .EUt(120)
                 .duration(1050)
                 .save();
@@ -271,6 +273,24 @@ public class ExpertFluidProcessing {
                 .outputFluids(Helium3, 2)
                 .EUt(120)
                 .duration(700)
+                .save();
+        REACTION_FURNACE_RECIPES.builder("helium3333")
+                .chancedInput(TagPrefix.dust, SilicaGel, 400, 20)
+                .inputFluids(PureHelium3, 2000)
+                .outputFluids(Helium, 1250)
+                .outputFluids(Helium3, 750)
+                .EUt(120)
+                .duration(700)
+                .save();
+        CENTRIFUGE_RECIPES.builder("tritium_hydreide")
+                .chancedInput(TagPrefix.dust, SilicaGel, 400, 20)
+                .inputFluids(GTOMaterials.PureDeuterium, 9000)
+                .outputFluids(GTOMaterials.TritiumHydride, 500)
+                .outputFluids(GTOMaterials.HydrogenDeuterium, 6000)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 2000))
+                .outputFluids(GTMaterials.Deuterium, 500)
+                .EUt(1920)
+                .duration(1536)
                 .save();
         SIFTER_RECIPES.builder("stone_dust2")
                 .inputItems(TagPrefix.dust, SedimentarySludge)
@@ -363,7 +383,7 @@ public class ExpertFluidProcessing {
                 .outputItems(TagPrefix.dust, GTMaterials.Technetium)
                 .outputItems(TagPrefix.dust, GTOMaterials.Chromium54Source, 4)
                 .outputItems(TagPrefix.dustImpure, GTMaterials.Lead, 5)
-                .outputItems(TagPrefix.dustImpure, GTMaterials.Naquadah)
+                .outputItems(TagPrefix.dustImpure, BlueTopaz)
                 .outputItems(TagPrefix.dust, GTOMaterials.Zinc70Source)
                 .outputFluids(GTMaterials.Radon, 1000)
                 .outputFluids(GTOMaterials.Titanium50Tetrafluoride, 1000)

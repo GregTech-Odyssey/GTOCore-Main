@@ -271,5 +271,14 @@ final class PolymerizationReactor {
                 .EUt(13330)
                 .duration(2500)
                 .save();
+        POLYMERIZATION_REACTOR_RECIPES.builder("sdbhic_resin_dust")
+                .outputItems(TagPrefix.dust, GTOMaterials.SDBHICResin, 39)
+                .inputFluids(GTOMaterials.DivinylbenzeneMixture, 144)
+                .inputFluids(GTMaterials.Styrene, 5472)
+                .inputFluids(GTMaterials.TitaniumTetrachloride, 100)
+                .circuitMeta(8)
+                .EUt(496)
+                .duration(5120)
+                .save();
     }
 }

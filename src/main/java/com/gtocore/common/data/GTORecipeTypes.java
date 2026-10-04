@@ -1055,6 +1055,11 @@ public final class GTORecipeTypes {
                 return LocalizationUtils.format(nFlux > 1000 ? "gtocore.recipe.neutron_flux.m" : "gtocore.recipe.neutron_flux.k", FormattingUtil.formatNumber2Places(nFlux > 1000 ? nFlux / 1_000f : nFlux));
             });
 
+    public static final RecipeType SOLAR_STORM_AGGREGATION_REACTOR_RECIPES = register("solar_storm_aggregation_reactor", "风暴聚合", MULTIBLOCK)
+            .setMaxIOSize(6, 2, 6, 2)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.ARC);
+
     public static final RecipeType SPACE_STATION_CONSTRUCTION_RECIPES = register("space_station_construction", "空间站建造", MULTIBLOCK)
             .setMaxIOSize(9, 0, 0, 0)
             .setProgressBar(GTOGuiTextures.PROGRESS_BAR_MINING_MODULE, UP_TO_DOWN)

@@ -299,7 +299,7 @@ public final class GTOMachines {
             .renderer(() -> new HeaterRenderer(ULV))
             .register();
 
-    public static final MachineDefinition COOLER = machine("cooler", "冷却器", CoolerMachine::new)
+    public static final MachineDefinition COOLER = machine("cooler", "水冷降温器", CoolerMachine::new)
             .tier(ULV)
             .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("cooler"), GTORecipeTypes.F1A1B))
             .recipeType(GTRecipeTypes.DUMMY_RECIPES)

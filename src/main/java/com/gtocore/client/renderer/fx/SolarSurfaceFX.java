@@ -2,6 +2,7 @@ package com.gtocore.client.renderer.fx;
 
 import com.gtocore.client.renderer.GTORenderTypes;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import com.gtolib.GTOCore;
 
@@ -79,12 +80,16 @@ public final class SolarSurfaceFX extends AbstractFX {
         if (!level.isClientSide || !level.dimension().location().equals(DIMENSION)) {
             return;
         }
-        boolean erupt = !eruptedThisTick && random.nextInt(ERUPTION_CHANCE) == 0;
-        boolean vortex = !spawnedVortexThisTick && random.nextInt(VORTEX_CHANCE) == 0;
+        Minecraft minecraft = Minecraft.getInstance();
+        ParticleStatus particles = minecraft.options.particles().get();
+        boolean erupt = particles != ParticleStatus.MINIMAL && !eruptedThisTick && random.nextInt(ERUPTION_CHANCE) == 0;
+        boolean vortex = SolarStormHandler.isSolarSurface(level) &&
+                GTOConfig.INSTANCE.client.renderingConfig.enableLargeRangeShaderEffects &&
+                !spawnedVortexThisTick &&
+                random.nextInt(VORTEX_CHANCE) == 0;
         if ((!erupt && !vortex) || !level.isEmptyBlock(pos.above())) {
             return;
         }
-        Minecraft minecraft = Minecraft.getInstance();
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
         double x = pos.getX() + 0.5D;
         double y = pos.getY() + level.getFluidState(pos).getHeight(level, pos) + 0.05D;
@@ -92,8 +97,7 @@ public final class SolarSurfaceFX extends AbstractFX {
         if (cameraPos.distanceToSqr(x, y, z) > MAX_DISTANCE_SQUARED) {
             return;
         }
-        ParticleStatus particles = minecraft.options.particles().get();
-        if (erupt && particles != ParticleStatus.MINIMAL) {
+        if (erupt) {
             eruptedThisTick = true;
             int count = particles == ParticleStatus.DECREASED ? 32 : 80;
             for (int i = 0; i < count; i++) {
@@ -103,7 +107,7 @@ public final class SolarSurfaceFX extends AbstractFX {
                         spreadX * 0.3D, 0.45D + random.nextDouble() * 0.9D, spreadZ * 0.3D);
             }
         }
-        if (vortex && GTOConfig.INSTANCE.client.renderingConfig.enableLargeRangeShaderEffects) {
+        if (vortex) {
             int active = 0;
             for (int i = 0; i < FXManager.FX_LIST.size(); i++) {
                 if (FXManager.FX_LIST.get(i) instanceof SolarSurfaceFX fx && fx.level == level && !fx.isDiscarded()) {

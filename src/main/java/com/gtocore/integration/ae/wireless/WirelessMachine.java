@@ -1,6 +1,6 @@
 package com.gtocore.integration.ae.wireless;
 
-import com.gtocore.integration.ae.SolarStormConnections;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -232,7 +232,7 @@ public interface WirelessMachine extends IGridConnectedMachine {
         if (network == null) return LinkState.OFFLINE;
         if (!ownerCanUse(network)) return LinkState.NO_PERMISSION;
         if (!isWirelessLinked() || !getMainNode().isOnline()) return LinkState.OFFLINE;
-        return SolarStormConnections.isSolarSurface(self().getLevel()) && SolarStormConnections.isStormActive(self().getLevel()) ? LinkState.STORM_ISOLATED : LinkState.ONLINE;
+        return SolarStormHandler.isSolarSurface(self().getLevel()) && SolarStormHandler.isStormActive(self().getLevel()) ? LinkState.STORM_ISOLATED : LinkState.ONLINE;
     }
 
     /** 服务端：无线数据是否可用。 */

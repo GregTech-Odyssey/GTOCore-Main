@@ -1,0 +1,99 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1",
+    "srcalpha": "0",
+    "dstalpha": "1"
+  },
+  "vertex": "gtocore:solar_storm_reactor_rings",
+  "fragment": "gtocore:solar_storm_reactor_rings",
+  "attributes": ["Position", "UV0"],
+  "samplers": [],
+  "uniforms": [
+    {
+      "name": "ModelViewMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+      "name": "ProjMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+      "name": "TopHeight",
+      "type": "float",
+      "count": 1,
+      "values": [65]
+    },
+    {
+      "name": "ConeHeight",
+      "type": "float",
+      "count": 1,
+      "values": [56]
+    },
+    {
+      "name": "ConeRadius",
+      "type": "float",
+      "count": 1,
+      "values": [28]
+    },
+    {
+      "name": "ParticleStride",
+      "type": "float",
+      "count": 1,
+      "values": [1]
+    },
+    {
+      "name": "ParticleSize",
+      "type": "float",
+      "count": 1,
+      "values": [0.2]
+    },
+    {
+      "name": "ParticleSizeVariation",
+      "type": "float",
+      "count": 1,
+      "values": [0.16]
+    },
+    {
+      "name": "RingRadialThickness",
+      "type": "float",
+      "count": 1,
+      "values": [0.23]
+    },
+    {
+      "name": "RingVerticalThickness",
+      "type": "float",
+      "count": 1,
+      "values": [0.22]
+    },
+    {
+      "name": "RiseDuration",
+      "type": "float",
+      "count": 1,
+      "values": [24]
+    },
+    {
+      "name": "Axis",
+      "type": "float",
+      "count": 3,
+      "values": [0, 1, 0]
+    },
+    {
+      "name": "Time",
+      "type": "float",
+      "count": 1,
+      "values": [0]
+    },
+    {
+      "name": "Strength",
+      "type": "float",
+      "count": 1,
+      "values": [1]
+    }
+  ]
+}

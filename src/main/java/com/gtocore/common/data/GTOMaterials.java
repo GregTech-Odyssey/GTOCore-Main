@@ -279,6 +279,10 @@ public final class GTOMaterials {
     public static Material EasyToEscapeMixedGas;
     // 纯净氦
     public static Material PureHelium;
+    // 易逃逸含杂同位素气体（氦、氦3）
+    public static Material EasyToEscapeMixedIsotopeGas;
+    // 纯净氦3
+    public static Material PureHelium3;
     // 含杂氖（氖）
     public static Material MixedNeon;
     // 纯净氖
@@ -305,6 +309,12 @@ public final class GTOMaterials {
     public static Material PureChlorine;
     // 爆闪气（氢、氘）
     public static Material FlashExplosionGas;
+    // 重爆闪气
+    public static Material HeavyFlashExplosionGas;
+    // 纯净重氢
+    public static Material PureDeuterium;
+    // 氢氘
+    public static Material HydrogenDeuterium;
     // 纯净氢
     public static Material PureHydrogen;
     // 含杂氟（氟）
@@ -339,6 +349,19 @@ public final class GTOMaterials {
     public static Material FineDustSoil;
     // 杂金属尘土
     public static Material MixedMetalDustSoil;
+
+    // 交联聚（苯乙烯-二乙烯基苯）树脂
+    public static Material SDBHICResin;
+    // 二乙烯基苯混合物
+    public static Material DivinylbenzeneMixture;
+    // 氯铂酸
+    public static Material ChloroplatinicAcid;
+    // 铂-SDB树脂
+    public static Material PlatinumSDBResin;
+    // 乙炔铜
+    public static Material CopperAcetylide;
+    // 氯化硼
+    public static Material BoronTrichloride;
 
     // 小行星碎渣
     public static Material AsteroidFragment;

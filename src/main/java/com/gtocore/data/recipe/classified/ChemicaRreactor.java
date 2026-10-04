@@ -5,6 +5,8 @@ import com.gtocore.common.data.GTOFluidStorageKey;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -3513,6 +3515,35 @@ final class ChemicaRreactor {
                 .outputFluids(AntimatterRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 32000))
                 .EUt(64000)
                 .duration(250)
+                .save();
+        LARGE_CHEMICAL_RECIPES.builder("chloroplatinic_acid")
+                .inputItems(TagPrefix.dust, GTMaterials.Platinum)
+                .inputFluids(GTMaterials.AquaRegia, 2000)
+                .outputFluids(GTOMaterials.ChloroplatinicAcid, 1000)
+                .outputFluids(GTMaterials.NitrogenDioxide, 2000)
+                .outputFluids(RegistriesUtils.getFluidStack("minecraft:water", 1000))
+                .EUt(128)
+                .duration(512)
+                .save();
+        LARGE_CHEMICAL_RECIPES.builder("copper_acetylide_dust")
+                .inputItems("gtocore:platinum_catalyst")
+                .inputItems(TagPrefix.dust, GTMaterials.Copper, 2)
+                .outputItems(TagPrefix.dust, GTOMaterials.CopperAcetylide)
+                .inputFluids(GTOMaterials.Acetylene, 2000)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 2000))
+                .EUt(512)
+                .duration(512)
+                .save();
+        LARGE_CHEMICAL_RECIPES.builder("salt_duserrt")
+                .inputItems(TagPrefix.dust, GTOMaterials.CopperAcetylide, 2)
+                .inputItems(TagPrefix.dust, GTOMaterials.SodiumBorohydride)
+                .outputItems(TagPrefix.dust, GTMaterials.Salt)
+                .outputItems(TagPrefix.dust, GTMaterials.Copper, 4)
+                .inputFluids(GTMaterials.Dichlorobenzene, 1000)
+                .outputFluids(GTOMaterials.DivinylbenzeneMixture, 1000)
+                .outputFluids(BoronTrichloride, 1000)
+                .EUt(512)
+                .duration(512)
                 .save();
     }
 }

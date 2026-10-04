@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -273,6 +274,15 @@ final class ChemicalBath {
                 .inputFluids(GTOMaterials.PhototuningAgent, 12000)
                 .EUt(520000)
                 .duration(520)
+                .save();
+        CHEMICAL_BATH_RECIPES.builder("platinum_sdb_resin_dust")
+                .inputItems(TagPrefix.dust, GTOMaterials.SDBHICResin)
+                .outputItems(TagPrefix.dust, GTOMaterials.PlatinumSDBResin)
+                .inputFluids(GTOMaterials.ChloroplatinicAcid, 1000)
+                .inputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 2000))
+                .outputFluids(GTMaterials.HydrochloricAcid, 6000)
+                .EUt(488)
+                .duration(1024)
                 .save();
     }
 }

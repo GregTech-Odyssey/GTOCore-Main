@@ -294,6 +294,8 @@ public final class ClientProxy extends CommonProxy {
                     com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX), GTORenderTypes::setSolarSurfaceVortexShader);
             registerCustomItemShader(event, GTORenderTypes.CRUPTIX);
             registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_HEAT_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_REACTOR_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_REACTOR_RINGS_SHADER_LOCATION);
             registerCustomItemShader(event, GTORenderTypes.ITEM_RESONANCE_WAVE);
         } catch (java.io.IOException e) {
             throw new RuntimeException("Failed to register client shaders", e);

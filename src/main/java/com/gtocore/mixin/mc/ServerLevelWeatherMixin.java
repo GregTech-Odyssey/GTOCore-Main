@@ -1,6 +1,6 @@
 package com.gtocore.mixin.mc;
 
-import com.gtocore.integration.ae.SolarStormConnections;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -36,7 +36,7 @@ public abstract class ServerLevelWeatherMixin extends Level {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;"))
     private void gto$advanceSolarStormIntensity(CallbackInfo ci) {
         var level = (ServerLevel) (Object) this;
-        if (level.dimension() != SolarStormConnections.SOLAR_SURFACE) return;
+        if (level.dimension() != SolarStormHandler.SOLAR_SURFACE) return;
         // Run after vanilla captures the old isRaining(), before its packet broadcasts below the skylight branch.
         oRainLevel = rainLevel;
         oThunderLevel = thunderLevel;
@@ -55,7 +55,7 @@ public abstract class ServerLevelWeatherMixin extends Level {
         if (previous == data.isRaining()) return;
         // DerivedLevelData reads the overworld's rain flag and ignores its own setRaining calls.
         // Dispatch from the Level that actually changed the flag, before AE can transfer resources.
-        var solar = level.getServer().getLevel(SolarStormConnections.SOLAR_SURFACE);
-        if (solar != null) SolarStormConnections.update(solar);
+        var solar = level.getServer().getLevel(SolarStormHandler.SOLAR_SURFACE);
+        if (solar != null) SolarStormHandler.update(solar);
     }
 }

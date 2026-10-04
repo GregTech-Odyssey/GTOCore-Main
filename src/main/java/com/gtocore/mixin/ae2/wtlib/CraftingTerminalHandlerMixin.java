@@ -1,6 +1,6 @@
 package com.gtocore.mixin.ae2.wtlib;
 
-import com.gtocore.integration.ae.SolarStormConnections;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import net.minecraft.world.entity.player.Player;
 
@@ -28,12 +28,12 @@ public abstract class CraftingTerminalHandlerMixin {
     private void gto$blockStormRange(CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValueZ() || menuHost == null || player.isCreative()) return;
         var node = menuHost.getActionableNode();
-        if (node == null || SolarStormConnections.isBlocked(player.level(), node)) cir.setReturnValue(false);
+        if (node == null || SolarStormHandler.isBlocked(player.level(), node)) cir.setReturnValue(false);
     }
 
     /** GTO tools and player integrations also request the grid directly, without calling inRange. */
     @Inject(method = "getTargetGrid", at = @At("RETURN"), cancellable = true)
     private void gto$blockCachedStormGrid(CallbackInfoReturnable<IGrid> cir) {
-        if (player.isCreative() || SolarStormConnections.isGridBlocked(player.level(), cir.getReturnValue())) cir.setReturnValue(null);
+        if (player.isCreative() || SolarStormHandler.isGridBlocked(player.level(), cir.getReturnValue())) cir.setReturnValue(null);
     }
 }

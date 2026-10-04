@@ -184,9 +184,18 @@ public final class StoneDustProcess {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("tritium_hydride_output")
+                .inputItems("gtocore:platinum_sdb_resin_catalyst")
                 .inputFluids(Hydrogen, 1000)
                 .inputFluids(Tritium, 1000)
                 .outputFluids(TritiumHydride.getFluid(1000))
+                .duration(160).EUt(VA[EV])
+                .save();
+        REACTION_FURNACE_RECIPES.builder("tritium_hydride_output_inverted")
+                .inputItems("gtocore:platinum_sdb_resin_catalyst")
+                .inputFluids(GTOMaterials.TritiumHydride, 1000)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 1000))
+                .outputFluids(GTMaterials.Tritium, 1000)
+                .blastFurnaceTemp(2100)
                 .duration(160).EUt(VA[EV])
                 .save();
 

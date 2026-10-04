@@ -1,5 +1,7 @@
 package com.gtocore.integration.ae;
 
+import com.gtocore.common.machine.multiblock.electric.SolarStormAggregationReactor;
+
 import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.registries.Registries;
@@ -17,11 +19,11 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
-/** Runtime-only suspension of AE links crossing the solar surface boundary. */
-public final class SolarStormConnections {
+/** Runtime-only solar storm state for boundary AE links and aggregation reactors. */
+public final class SolarStormHandler {
 
     public static final ResourceKey<Level> SOLAR_SURFACE = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse("gtocore:solar_surface"));
-    private static final DataComponentKey<SolarStormConnections> KEY = DataComponentKey.createNoCodec("solar_storm_connections");
+    private static final DataComponentKey<SolarStormHandler> KEY = DataComponentKey.createNoCodec("solar_storm_connections");
 
     /** Keep the original connection object: QNB and addons retain its handle. */
     public interface Suspendable {
@@ -43,17 +45,18 @@ public final class SolarStormConnections {
     // Each endpoint is indexed on its own Level. The solar Level also owns the unique edge set.
     private final Reference2ObjectOpenHashMap<IGridNode, ReferenceOpenHashSet<GridConnection>> connectionsByNode = new Reference2ObjectOpenHashMap<>();
     private final ReferenceOpenHashSet<GridConnection> connections = new ReferenceOpenHashSet<>();
+    private final ReferenceOpenHashSet<SolarStormAggregationReactor> reactors = new ReferenceOpenHashSet<>();
     private boolean storm;
     private long revision;
 
-    private SolarStormConnections(Level level) {
+    private SolarStormHandler(Level level) {
         storm = level.getLevelData().isRaining();
     }
 
-    private static SolarStormConnections get(Level level) {
+    private static SolarStormHandler get(Level level) {
         var state = ILevel.getCapability(level, KEY);
         if (state == null) {
-            state = new SolarStormConnections(level);
+            state = new SolarStormHandler(level);
             ILevel.setCapability(level, KEY, state);
         }
         return state;
@@ -105,6 +108,15 @@ public final class SolarStormConnections {
         get(a.getLevel()).connectionsByNode.computeIfAbsent(a, key -> new ReferenceOpenHashSet<>(1)).add(connection);
         get(b.getLevel()).connectionsByNode.computeIfAbsent(b, key -> new ReferenceOpenHashSet<>(1)).add(connection);
         get(isSolarSurface(a.getLevel()) ? a.getLevel() : b.getLevel()).connections.add(connection);
+    }
+
+    public static void track(SolarStormAggregationReactor reactor) {
+        get(reactor.getLevel()).reactors.add(reactor);
+    }
+
+    public static void forget(SolarStormAggregationReactor reactor) {
+        var state = ILevel.getCapability(reactor.getLevel(), KEY);
+        if (state != null) state.reactors.remove(reactor);
     }
 
     /** A retry during a storm reuses the pending handle instead of creating a duplicate edge. */
@@ -162,5 +174,8 @@ public final class SolarStormConnections {
             ((Suspendable) connection).gto$setStormSuspended(active);
         }
         state.revision++;
+        for (var reactor : state.reactors) {
+            reactor.getRecipeLogic().updateTickSubscription();
+        }
     }
 }

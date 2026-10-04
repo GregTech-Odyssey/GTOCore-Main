@@ -1,6 +1,6 @@
 package com.gtocore.mixin.ae2;
 
-import com.gtocore.integration.ae.SolarStormConnections;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import net.minecraft.core.Direction;
 
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = GridConnection.class, remap = false)
-public abstract class GridConnectionMixin implements SolarStormConnections.Suspendable {
+public abstract class GridConnectionMixin implements SolarStormHandler.Suspendable {
 
     @Shadow
     private GridNode sideA;
@@ -48,23 +48,23 @@ public abstract class GridConnectionMixin implements SolarStormConnections.Suspe
 
     @Inject(method = "create", at = @At("HEAD"), cancellable = true)
     private static void gto$reusePending(IGridNode a, IGridNode b, Direction direction, CallbackInfoReturnable<GridConnection> cir) {
-        var pending = SolarStormConnections.findPending(a, b);
+        var pending = SolarStormHandler.findPending(a, b);
         if (pending != null) cir.setReturnValue(pending);
     }
 
     @Inject(method = "create", at = @At(value = "INVOKE", target = "Lappeng/me/GridConnection;mergeGrids(Lappeng/me/GridNode;Lappeng/me/GridNode;)V"), cancellable = true)
     private static void gto$deferStormConnection(IGridNode a, IGridNode b, Direction direction, CallbackInfoReturnable<GridConnection> cir,
                                                  @Local GridConnection connection) {
-        if (SolarStormConnections.isBlocked(a.getLevel(), b)) {
+        if (SolarStormHandler.isBlocked(a.getLevel(), b)) {
             ((GridConnectionMixin) (Object) connection).gto$suspended = true;
-            SolarStormConnections.track(connection);
+            SolarStormHandler.track(connection);
             cir.setReturnValue(connection);
         }
     }
 
     @Inject(method = "create", at = @At("RETURN"))
     private static void gto$trackConnection(IGridNode a, IGridNode b, Direction direction, CallbackInfoReturnable<GridConnection> cir) {
-        SolarStormConnections.track(cir.getReturnValue());
+        SolarStormHandler.track(cir.getReturnValue());
     }
 
     @Inject(method = "destroy", at = @At("HEAD"), cancellable = true)
@@ -74,7 +74,7 @@ public abstract class GridConnectionMixin implements SolarStormConnections.Suspe
             gto$detaching = false;
             return;
         }
-        SolarStormConnections.forget((GridConnection) (Object) this);
+        SolarStormHandler.forget((GridConnection) (Object) this);
         if (gto$suspended || gto$retired) ci.cancel();
         gto$retired = true;
         gto$suspended = false;

@@ -170,7 +170,7 @@ public final class GTOBedrockFluids {
     private static final BedrockFluidDefinition HELIUM_3 = create(GTCEu.id("helium3_deposit"),
             "氦-3矿藏",
             builder -> builder
-                    .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.EasyToEscapeMixedGas::getFluid : GTMaterials.Helium3::getFluid)
+                    .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.EasyToEscapeMixedIsotopeGas::getFluid : GTMaterials.Helium3::getFluid)
                     .weight(10)
                     .yield(50, 180)
                     .depletionAmount(1)
@@ -203,7 +203,7 @@ public final class GTOBedrockFluids {
     private static final BedrockFluidDefinition DEUTERIUM = create(GTCEu.id("deuterium_deposit"),
             "氘矿藏",
             builder -> builder
-                    .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.FlashExplosionGas::getFluid : GTMaterials.Deuterium::getFluid)
+                    .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.HeavyFlashExplosionGas::getFluid : GTMaterials.Deuterium::getFluid)
                     .weight(15)
                     .yield(80, 300)
                     .depletionAmount(1)

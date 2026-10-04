@@ -5195,6 +5195,45 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister().setFormula("YBa2Cu3O6");
 
+        SDBHICResin = material("sdbhic_resin", "交联聚（苯乙烯-二乙烯基苯）树脂")
+                .dust().polymer()
+                .color(0xC38CC1)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("(C8H8)m(C10H10)n");
+
+        DivinylbenzeneMixture = material("divinylbenzene_mixture", "二乙烯基苯混合物")
+                .liquid()
+                .color(0xCe5ad9)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C10H10");
+
+        ChloroplatinicAcid = material("chloroplatinic_acid", "氯铂酸")
+                .liquid()
+                .color(0xccdde9)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("H2PtCl6");
+
+        PlatinumSDBResin = material("platinum_sdb_resin", "铂-SDB树脂")
+                .dust()
+                .color(0x1f6f9f)
+                .iconSet(DULL)
+                .flags(GENERATE_CATALYST)
+                .buildAndRegister().setFormula("Pt(C8H8)m(C10H10)n");
+
+        CopperAcetylide = material("copper_acetylide", "乙炔铜")
+                .dust()
+                .color(0xE4A6A6)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("Cu2C2");
+
+        BoronTrichloride = material("boron_trichloride", "三氯化硼")
+                .gas()
+                .color(0xE4A6A6)
+                .iconSet(DULL)
+                .flags(DECOMPOSITION_BY_ELECTROLYZING)
+                .components(Boron, 1, Chlorine, 3)
+                .buildAndRegister();
+
         ShaleOil = material("shale_oil", "页岩油")
                 .fluid()
                 .color(0x3E3C3A)
@@ -5438,6 +5477,35 @@ public final class MaterialB {
         PureFluorine = material("pure_fluorine", "纯净氟")
                 .gas()
                 .color(0x9cf3fb)
+                .iconSet(DULL)
+                .flags(FLUID_TIER_EXCLUSIVE)
+                .buildAndRegister();
+        HeavyFlashExplosionGas = material("heavy_flash_explosion_gas", "重爆闪气")
+                .gas()
+                .color(0x1111e8)
+                .iconSet(DULL)
+                .flags(FLUID_TIER_EXCLUSIVE)
+                .buildAndRegister();
+        PureDeuterium = material("pure_deuterium", "纯净重氢")
+                .gas()
+                .color(0x3333ff)
+                .iconSet(DULL)
+                .flags(FLUID_TIER_EXCLUSIVE)
+                .buildAndRegister();
+        HydrogenDeuterium = material("hydrogen_deuterium", "氢化氘")
+                .gas()
+                .color(0x3333ff)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("HD");
+        EasyToEscapeMixedIsotopeGas = material("easy_to_escape_mixed_isotope_gas", "易逃逸含杂同位素气体")
+                .gas()
+                .color(0xaf88e3)
+                .iconSet(DULL)
+                .flags(FLUID_TIER_EXCLUSIVE)
+                .buildAndRegister();
+        PureHelium3 = material("pure_helium3", "纯净氦3")
+                .gas()
+                .color(0xeeeecc)
                 .iconSet(DULL)
                 .flags(FLUID_TIER_EXCLUSIVE)
                 .buildAndRegister();
