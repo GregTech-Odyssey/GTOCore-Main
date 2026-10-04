@@ -121,6 +121,12 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
     }
 
     @Override
+    public void addTempWidgets(WidgetHolder widgets) {
+        frame = COMPACT_FRAME;
+        super.addTempWidgets(widgets);
+    }
+
+    @Override
     public List<Widget> getFlatWidgetCollection(Widget widget) {
         return Collections.emptyList();
     }

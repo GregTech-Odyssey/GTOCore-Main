@@ -638,8 +638,9 @@ final class ChemicaRreactor {
 
         CHEMICAL_RECIPES.recipeBuilder("benzenediazonium_tetrafluoroborate")
                 .inputItems(TagPrefix.dust, GTMaterials.SodiumNitrite, 4)
+                .inputFluids(GTOMaterials.Aniline, 1000)
                 .inputFluids(GTMaterials.HydrochloricAcid, 1000)
-                .inputFluids(GTOMaterials.FluoroboricAcid, 2000)
+                .inputFluids(GTOMaterials.FluoroboricAcid, 1000)
                 .outputItems(TagPrefix.dust, GTMaterials.Salt, 2)
                 .outputFluids(GTOMaterials.BenzenediazoniumTetrafluoroborate, 1000)
                 .outputFluids(GTMaterials.Water, 2000)

@@ -4556,5 +4556,26 @@ final class AssemblyLine {
                 .duration(200)
                 .researchNode(ScanStation)
                 .save();
+        ASSEMBLY_LINE_RECIPES.builder("graviton_computer_casing1")
+                .inputItems(ExResearchMachines.GWCA_EMPTY_COMPONENT)
+                .inputItems(CustomTags.UXV_CIRCUITS, 8)
+                .inputItems(GTItems.FIELD_GENERATOR_UIV)
+                .outputItems(ExResearchMachines.GWCA_COMPUTING_COMPONENTS)
+                .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 2000)
+                .EUt(VA[UIV])
+                .researchNode(GWCAComputingTech)
+                .duration(300)
+                .save();
+        ASSEMBLY_LINE_RECIPES.builder("gwca_cooling_components")
+                .inputItems(ExResearchMachines.GWCA_EMPTY_COMPONENT)
+                .inputItems(TagPrefix.block, GTOMaterials.CascadeMFPC, 64)
+                .inputItems(TagPrefix.pipeTinyFluid, GTOMaterials.Enderium, 8)
+                .inputItems(TagPrefix.plate, GTOMaterials.TitaniumDioxideNanotubeReinforcedTitaniumMatrixComposite, 32)
+                .outputItems(ExResearchMachines.GWCA_COOLING_COMPONENTS)
+                .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 2000)
+                .EUt(VA[UIV])
+                .researchNode(GWCAComputingTech)
+                .duration(300)
+                .save();
     }
 }

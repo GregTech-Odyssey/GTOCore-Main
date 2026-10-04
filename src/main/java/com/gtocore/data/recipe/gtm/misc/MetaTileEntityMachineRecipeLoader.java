@@ -28,6 +28,7 @@ import static com.gregtechceu.gtceu.common.data.GTItems.*;
 import static com.gregtechceu.gtceu.common.data.GTMachines.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
 import static com.gtocore.common.data.machines.GTAEMachines.MUFFLER_HATCH_ME;
 import static com.gtocore.data.techtree.AENodes.MEWasteRecycling;
 
@@ -476,7 +477,7 @@ public final class MetaTileEntityMachineRecipeLoader {
                 .duration(300).EUt(VA[LuV])
                 .save();
 
-        ASSEMBLER_RECIPES.builder("me_muffler_hatch")
+        ASSEMBLY_LINE_RECIPES.builder("me_muffler_hatch")
                 .inputItems(GTMachines.MUFFLER_HATCH[GTValues.LuV].asItem())
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_LUV.asItem())
                 .inputItems("gtceu:me_output_bus")

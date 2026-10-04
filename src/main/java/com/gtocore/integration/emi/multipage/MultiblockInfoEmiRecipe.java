@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
+import com.gregtechceu.gtceu.integration.emi.multipage.MultiblockEmiActions;
 import com.gregtechceu.gtceu.integration.emi.multipage.StructurePreviewTrigger;
 import com.gregtechceu.gtceu.integration.emi.recipe.EmiPageLayout;
 import com.gregtechceu.gtceu.integration.xei.widgets.GTRecipeWidget;
@@ -88,7 +89,8 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
         int width = frame.minWidth(), height = frame.fillHeight();
         var structure = definition.displayStructure();
         if (structure == null) return new Widget(0, 0, width, height);
-        var preview = new StructurePreviewWidget(definition, structure, width, height, () -> openFull(structure));
+        var preview = new StructurePreviewWidget(definition, structure, width, height, () -> openFull(structure),
+                MultiblockEmiActions.of(this, definition));
         return frame.card() ? new Card(frame, preview) : preview;
     }
 
@@ -287,6 +289,7 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
 
     @Override
     public void addTempWidgets(WidgetHolder widgets) {
+        frame = COMPACT_FRAME;
         if (TEMP_CACHE != null) {
             TEMP_CACHE.modularUI.triggerCloseListeners();
             TEMP_CACHE = null;

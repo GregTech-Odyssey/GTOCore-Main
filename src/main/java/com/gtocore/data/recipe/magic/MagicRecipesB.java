@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -1621,7 +1620,7 @@ public final class MagicRecipesB {
                             .inputFluids(FinalPurifier, 1000)
                             .outputItems(plate, material[i])
                             .duration(2400).EUt(VA[UV])
-                            .cleanroom(CleanroomType.CLEANROOM)
+                            .cleanroom(1)
                             .addCondition(new VacuumCondition(4))
                             .addCondition(new GravityCondition(true))
                             .save();
@@ -1631,7 +1630,7 @@ public final class MagicRecipesB {
                             .inputFluids(FinalPurifier, 1000)
                             .chancedOutput(plate, material[i], 1000, 0)
                             .duration(2400).EUt(VA[ZPM])
-                            .cleanroom(CleanroomType.CLEANROOM)
+                            .cleanroom(1)
                             .addCondition(new VacuumCondition(4))
                             .addCondition(new GravityCondition(true))
                             .save();
@@ -1642,7 +1641,7 @@ public final class MagicRecipesB {
                             .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                             .outputItems(ETCHED_CRYSTAL[i])
                             .duration(2400).EUt(VA[ZPM])
-                            .cleanroom(CleanroomType.CLEANROOM)
+                            .cleanroom(1)
                             .addCondition(new VacuumCondition(4))
                             .addCondition(new GravityCondition(true))
                             .save();

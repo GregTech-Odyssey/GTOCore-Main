@@ -60,7 +60,6 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     private static final BigInteger BIG_INTEGER_LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger BIG_INTEGER_MAX_PARALLEL = BigInteger.valueOf(ParallelLogic.MAX_PARALLEL);
 
-    private boolean isGenerator = false;
     @SaveToDisk(defaultValue = "1.0")
     private double bonusEfficiency = 1.0f;
     @SaveToDisk(defaultValue = "1.0")
@@ -106,9 +105,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     }
 
     private void updateGeneratorState() {
-        var recipeType = getRecipeType();
-        isGenerator = recipeType == GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES;
-        if (recipeType == GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES) {
+        if (getRecipeType() == GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES) {
             var membraneInfo = getStoredAbsorptionMembraneInfo();
             if (membraneInfo != null) {
                 updateAbsorptionEfficiency(membraneInfo, accumulatedEfficiencyDecay);
@@ -127,7 +124,7 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
 
     @Override
     public boolean isGenerator() {
-        return isGenerator;
+        return getRecipeType() == GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES;
     }
 
     @Override
@@ -208,16 +205,16 @@ public class FullCellGenerator extends ElectricMultiblockMachine {
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addReading(FUEL_EFFICIENCY, MultiblockPage.cached(() -> isGenerator ? -1 : Double.doubleToLongBits(bonusEfficiency),
+        page.addReading(FUEL_EFFICIENCY, MultiblockPage.cached(() -> isGenerator() ? -1 : Double.doubleToLongBits(bonusEfficiency),
                 bits -> bits == -1 ? NO_VALUE : Component.literal(FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits) * 100) + "%")));
-        page.addReading(EFFICIENCY_DECAY, MultiblockPage.cached(() -> isGenerator ? -1 : Double.doubleToLongBits(accumulatedEfficiencyDecay),
+        page.addReading(EFFICIENCY_DECAY, MultiblockPage.cached(() -> isGenerator() ? -1 : Double.doubleToLongBits(accumulatedEfficiencyDecay),
                 bits -> bits == -1 ? NO_VALUE : Component.literal(DECIMAL_FORMAT_4F.format((1 - Double.longBitsToDouble(bits)) * 100) + "%")));
     }
 
     @Override
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
-        if (!isGenerator && !MultiblockPage.isScreenText()) {
+        if (!isGenerator() && !MultiblockPage.isScreenText()) {
             textList.add(
                     Component.translatable(FUEL_EFFICIENCY, FormattingUtil.formatNumber2Places(bonusEfficiency * 100) + "%"));
             textList.add(

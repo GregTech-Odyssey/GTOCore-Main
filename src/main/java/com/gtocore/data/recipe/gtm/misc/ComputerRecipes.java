@@ -238,7 +238,7 @@ final class ComputerRecipes {
                 .duration(200).EUt(VA[LuV])
                 .save();
 
-        ASSEMBLER_RECIPES.recipeBuilder("active_transformer")
+        ASSEMBLY_LINE_RECIPES.recipeBuilder("active_transformer")
                 .inputItems(POWER_TRANSFORMER[LuV])
                 .inputItems(CustomTags.LuV_CIRCUITS, 2)
                 .inputItems(wireGtSingle, IndiumTinBariumTitaniumCuprate, 8)

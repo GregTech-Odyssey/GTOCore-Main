@@ -7,8 +7,6 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.*;
 
-import com.gtolib.utils.RegistriesUtils;
-
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
@@ -29,7 +27,6 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
-import static com.gtocore.data.techtree.BaseNodes.GWCAComputingTech;
 
 final class Assembler {
 
@@ -4070,27 +4067,6 @@ final class Assembler {
                 .inputItems(TagPrefix.wireFine, GTOMaterials.Enderite, 64)
                 .outputItems(GTOBlocks.GRAVITON_COMPUTER_CASING.asItem())
                 .EUt(VA[UEV])
-                .duration(300)
-                .save();
-        ASSEMBLER_RECIPES.builder("graviton_computer_casing1")
-                .inputItems(ExResearchMachines.GWCA_EMPTY_COMPONENT)
-                .inputItems(CustomTags.UXV_CIRCUITS, 8)
-                .inputItems(GTItems.FIELD_GENERATOR_UIV)
-                .outputItems(ExResearchMachines.GWCA_COMPUTING_COMPONENTS)
-                .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 2000)
-                .EUt(VA[UIV])
-                .researchNode(GWCAComputingTech)
-                .duration(300)
-                .save();
-        ASSEMBLER_RECIPES.builder("gwca_cooling_components")
-                .inputItems(ExResearchMachines.GWCA_EMPTY_COMPONENT)
-                .inputItems(TagPrefix.block, GTOMaterials.CascadeMFPC, 64)
-                .inputItems(TagPrefix.pipeTinyFluid, GTOMaterials.Enderium, 8)
-                .inputItems(TagPrefix.plate, GTOMaterials.TitaniumDioxideNanotubeReinforcedTitaniumMatrixComposite, 32)
-                .outputItems(ExResearchMachines.GWCA_COOLING_COMPONENTS)
-                .inputFluids(RegistriesUtils.getFluid("gtocore:gelid_cryotheum"), 2000)
-                .EUt(VA[UIV])
-                .researchNode(GWCAComputingTech)
                 .duration(300)
                 .save();
     }
