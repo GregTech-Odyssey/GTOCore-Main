@@ -21,7 +21,6 @@ import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidContainerIngredient;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -213,14 +212,14 @@ public final class MiscRecipe {
                 .inputItems(dust, Gelatin)
                 .inputFluids(DistilledWater, 1000)
                 .outputFluids(GTOMaterials.WaterAgarMix, 1000)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         DEHYDRATOR_RECIPES.recipeBuilder("agar")
                 .inputFluids(GTOMaterials.WaterAgarMix, 1000)
                 .outputItems(dust, Agar, 1)
                 .duration(420).EUt(VA[MV])
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         UNPACKER_RECIPES.recipeBuilder("unpackage_ev_lapotronic_battery")

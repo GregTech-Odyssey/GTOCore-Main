@@ -2,8 +2,6 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -26,7 +24,7 @@ final class Distillery {
                 .outputFluids(GTOMaterials.EnrichedDragonBreath, 5)
                 .EUt(120)
                 .duration(100)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         DISTILLERY_RECIPES.recipeBuilder("cyclopentadiene")

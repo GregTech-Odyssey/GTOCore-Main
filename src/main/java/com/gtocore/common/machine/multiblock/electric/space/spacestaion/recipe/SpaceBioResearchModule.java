@@ -46,8 +46,8 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
             setIdleReason(this::getWorkspaceNotReadyReason);
             return null;
         }
-        if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getTypes().size()) {
-            IdleReason.INSUFFICIENT_CLEANROOM.setReason(this, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), core.getTypes().size());
+        if (recipe.data.containsKey(GTORecipeDataKeys.FILTER_CASING) && recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING) > core.getCleanroomTier()) {
+            IdleReason.INSUFFICIENT_CLEANROOM.setReason(this, recipe.data.getInt(GTORecipeDataKeys.FILTER_CASING), core.getCleanroomTier());
             return null;
         }
         if (recipe.definition.recipeType == GTORecipeTypes.BIO_RESEARCH_RECIPES) {

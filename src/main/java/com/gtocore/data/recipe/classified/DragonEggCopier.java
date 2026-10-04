@@ -2,8 +2,6 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
@@ -19,7 +17,7 @@ final class DragonEggCopier {
                 .chancedOutput(new ItemStack(Blocks.DRAGON_EGG.asItem()), 2000, 1000)
                 .EUt(122880)
                 .duration(200)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
     }
 }

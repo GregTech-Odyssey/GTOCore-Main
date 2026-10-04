@@ -3,8 +3,6 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gtocore.common.data.GTORecipeTypes.BREWING_RECIPES;
@@ -18,7 +16,7 @@ final class Brewing {
                 .outputFluids(GTOMaterials.DragonBlood, 1000)
                 .EUt(480)
                 .duration(6000)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
     }
 }

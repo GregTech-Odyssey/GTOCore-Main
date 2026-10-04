@@ -1,21 +1,13 @@
 package com.gtocore.common.machine.multiblock.part.maintenance;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.ICleanroomReceiver;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.machine.multiblock.DummyCleanroom;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.AutoMaintenanceHatchPartMachine;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-
-import com.google.common.collect.ImmutableSet;
-import com.gto.fastcollection.fastutil.OpenCacheHashSet;
-
-import java.util.Set;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -23,21 +15,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class CMHatchPartMachine extends AutoMaintenanceHatchPartMachine {
 
-    private static final Set<CleanroomType> CLEANROOM = new OpenCacheHashSet<>(2, 0.9F);
-    private static final Set<CleanroomType> STERILE_CLEANROOM = new OpenCacheHashSet<>(3, 0.9F);
-    private static final Set<CleanroomType> LAW_CLEANROOM = new OpenCacheHashSet<>(4, 0.9F);
-
-    static {
-        CLEANROOM.add(CleanroomType.CLEANROOM);
-        STERILE_CLEANROOM.addAll(CLEANROOM);
-        STERILE_CLEANROOM.add(CleanroomType.STERILE_CLEANROOM);
-        LAW_CLEANROOM.addAll(STERILE_CLEANROOM);
-        LAW_CLEANROOM.add(GTOCleanroomType.LAW_CLEANROOM);
-    }
-
-    public static final ICleanroomProvider DUMMY_CLEANROOM = DummyCleanroom.createForTypes(CLEANROOM);
-    public static final ICleanroomProvider STERILE_DUMMY_CLEANROOM = DummyCleanroom.createForTypes(STERILE_CLEANROOM);
-    public static final ICleanroomProvider LAW_DUMMY_CLEANROOM = DummyCleanroom.createForTypes(LAW_CLEANROOM);
+    public static final ICleanroomProvider DUMMY_CLEANROOM = DummyCleanroom.create(1);
+    public static final ICleanroomProvider STERILE_DUMMY_CLEANROOM = DummyCleanroom.create(2);
+    public static final ICleanroomProvider LAW_DUMMY_CLEANROOM = DummyCleanroom.create(3);
 
     private final ICleanroomProvider cleanroomTypes;
 
@@ -61,9 +41,5 @@ public final class CMHatchPartMachine extends AutoMaintenanceHatchPartMachine {
         if (controller instanceof ICleanroomReceiver receiver && receiver.getCleanroom() == cleanroomTypes) {
             receiver.setCleanroom(null);
         }
-    }
-
-    public static ImmutableSet<CleanroomType> getCleanroomTypes(ICleanroomProvider p) {
-        return ImmutableSet.copyOf(p.getTypes());
     }
 }

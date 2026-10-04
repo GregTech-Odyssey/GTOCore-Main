@@ -6,7 +6,6 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraftforge.fluids.FluidStack;
@@ -29,7 +28,7 @@ final class FluidHeater {
                 .outputFluids(GTOMaterials.Azafullerene, 100)
                 .EUt(480)
                 .duration(120)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FLUID_HEATER_RECIPES.recipeBuilder("biohmediumsterilized")
@@ -37,7 +36,7 @@ final class FluidHeater {
                 .outputFluids(GTOMaterials.BiohmediumSterilized, 100)
                 .EUt(480)
                 .duration(400)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         FLUID_HEATER_RECIPES.recipeBuilder("bedrock_gas")

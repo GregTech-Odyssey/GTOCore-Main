@@ -11,7 +11,6 @@ import com.gtocore.config.GTORules;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -590,7 +589,7 @@ public final class GTMTRecipe {
                 .inputItems(GTItems.EMITTER_ZPM)
                 .inputFluids(GTMaterials.Polybenzimidazole, 576)
                 .outputItems(WirelessMachines.WIRELESS_COMPUTATION_HATCH_TRANSMITTER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200)
                 .EUt(GTValues.VA[GTValues.ZPM])
                 .save();
@@ -601,7 +600,7 @@ public final class GTMTRecipe {
                 .inputItems(GTItems.SENSOR_ZPM)
                 .inputFluids(GTMaterials.Polybenzimidazole, 576)
                 .outputItems(WirelessMachines.WIRELESS_COMPUTATION_HATCH_RECEIVER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200)
                 .EUt(GTValues.VA[GTValues.ZPM])
                 .save();

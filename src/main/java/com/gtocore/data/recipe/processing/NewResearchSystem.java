@@ -8,7 +8,6 @@ import com.gtolib.api.item.MultiStepItemHelper;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.world.item.Item;
@@ -79,7 +78,7 @@ public final class NewResearchSystem {
                     .inputItems(dust, ElectronicGradeSilicon, 1)
                     .inputFluids(AbsoluteEthanol, 4000)
                     .outputFluids(EthylSilicate.getFluid(1000))
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .duration(20)
                     .EUt(VA[ZPM])
                     .save();
@@ -153,7 +152,7 @@ public final class NewResearchSystem {
                     .inputFluids(AbsoluteEthanol, 3000)
                     .outputFluids(Triethoxysilane.getFluid(1000))
                     .outputFluids(Hydrogen.getFluid(1000))
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .EUt(30720)
                     .duration(200)
                     .save();
@@ -164,7 +163,7 @@ public final class NewResearchSystem {
                     .inputFluids(AbsoluteEthanol, 3000)
                     .outputFluids(Triethoxysilane.getFluid(1000))
                     .outputFluids(Hydrogen.getFluid(1000))
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .EUt(30720 / 4)
                     .duration(3000)
                     .save();
@@ -515,7 +514,7 @@ public final class NewResearchSystem {
                     .inputItems(DUCT_TAPE, 1)
                     .inputFluids(Polytetrafluoroethylene.getFluid(8 * L))
                     .outputItems(OPTICAL_PIPES[0])
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .duration(100)
                     .EUt(VA[IV])
                     .save();
@@ -692,7 +691,7 @@ public final class NewResearchSystem {
                     .inputItems(NEURAL_MATRIX)
                     .inputFluids(Helium.getFluid(LIQUID, 8000))
                     .outputItems(NICH_EMPTY_COMPONENT)
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .duration(200)
                     .EUt(VA[UHV])
                     .researchNode(BiowareSupercomputing)
@@ -704,7 +703,7 @@ public final class NewResearchSystem {
                     .inputItems(FIELD_GENERATOR_UHV)
                     .inputFluids(Helium.getFluid(LIQUID, 8000))
                     .outputItems(NICH_COMPUTING_COMPONENTS)
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .duration(200)
                     .EUt(VA[UHV])
                     .researchNode(BiowareSupercomputing)
@@ -716,7 +715,7 @@ public final class NewResearchSystem {
                     .inputItems(pipeTinyFluid, Neutronium, 8)
                     .inputItems(plate, Orichalcum, 32)
                     .outputItems(NICH_COOLING_COMPONENTS)
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .duration(200)
                     .EUt(VA[UHV])
                     .researchNode(BiowareSupercomputing)
@@ -729,7 +728,7 @@ public final class NewResearchSystem {
                     .inputItems(OPTICAL_PIPES[0].asItem(), 32)
                     .inputFluids(Helium.getFluid(LIQUID, 8000))
                     .outputItems(NICH_BRIDGE_COMPONENT)
-                    .cleanroom(CleanroomType.CLEANROOM)
+                    .cleanroom(1)
                     .duration(200)
                     .researchNode(BiowareSupercomputing)
                     .EUt(VA[UHV])

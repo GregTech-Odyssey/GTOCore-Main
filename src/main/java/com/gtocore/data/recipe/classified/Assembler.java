@@ -7,13 +7,11 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.*;
 
-import com.gtolib.api.machine.GTOCleanroomType;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
@@ -98,7 +96,7 @@ final class Assembler {
                 .inputFluids(GTMaterials.Polybenzimidazole, 1152)
                 .EUt(122880)
                 .duration(400)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         ASSEMBLER_RECIPES.builder("law_cleaning_maintenance_hatch")
@@ -110,7 +108,7 @@ final class Assembler {
                 .inputFluids(GTOMaterials.Polyimide, 1152)
                 .EUt(7864320)
                 .duration(400)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         ASSEMBLER_RECIPES.builder("lv_power_amplifiers")
@@ -256,7 +254,7 @@ final class Assembler {
                 .inputItems(TagPrefix.wireFine, GTMaterials.Titanium)
                 .inputFluids(GTMaterials.Polyethylene, 1296)
                 .outputItems(GTOItems.ELECTRICALY_WIRED_PETRI_DISH)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .duration(100).EUt(7680).save();
 
         ASSEMBLER_RECIPES.recipeBuilder("water_purification_plant")
@@ -292,7 +290,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_RESISTOR_SUPRACAUSAL, 32)
                 .EUt(125829120)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("high_energy_ultraviolet_emitter_casing")
@@ -326,7 +324,7 @@ final class Assembler {
                 .outputItems(GTOItems.LASER_DIODE)
                 .EUt(980000)
                 .duration(260)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("max_neutron_accelerator")
@@ -448,7 +446,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_INDUCTOR_BIOWARE, 16)
                 .EUt(491520)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("dissolving_tank")
@@ -494,7 +492,7 @@ final class Assembler {
                 .outputItems(GTOItems.PLASMA_CONTAINMENT_CELL)
                 .EUt(122880)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("industrial_steam_casing")
@@ -516,7 +514,7 @@ final class Assembler {
                 .outputItems(GTOItems.GRAVITON_TRANSDUCER)
                 .EUt(31457280)
                 .duration(600)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("wyvern_energy_core")
@@ -568,7 +566,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_TRANSISTOR_BIOWARE, 16)
                 .EUt(491520)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("solar_light_splitter")
@@ -633,7 +631,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.FUSION_COIL_MK2.asItem())
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("sterile_casing")
@@ -716,7 +714,7 @@ final class Assembler {
                 .outputItems(GTOItems.MICROFOCUS_X_RAY_TUBE)
                 .EUt(8000)
                 .duration(160)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("cell_component_256m")
@@ -797,7 +795,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_RESISTOR_OPTICAL, 16)
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("smd_diode_bioware")
@@ -808,7 +806,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_DIODE_BIOWARE, 16)
                 .EUt(491520)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("pbi_radiation_resistant_mechanical_enclosure")
@@ -837,7 +835,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_INDUCTOR_SUPRACAUSAL, 32)
                 .EUt(125829120)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("advanced_fusion_coil")
@@ -853,7 +851,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.ADVANCED_FUSION_COIL.asItem())
                 .EUt(491520)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("pressure_containment_casing")
@@ -909,7 +907,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_TRANSISTOR_EXOTIC, 16)
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("naquadriatictaranium_coil_block")
@@ -931,7 +929,7 @@ final class Assembler {
                 .outputItems(GTOItems.EMPTY_LASER_COOLING_CONTAINER)
                 .EUt(1150000)
                 .duration(380)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("luv_neutron_accelerator")
@@ -1051,7 +1049,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.HYPER_CORE.asItem())
                 .EUt(7864320)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("red_steel_casing")
@@ -1196,7 +1194,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_INDUCTOR_OPTICAL, 16)
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("steam_mega_turbine")
@@ -1229,7 +1227,7 @@ final class Assembler {
                 .outputItems(GTOItems.ROTATING_TRANSPARENT_SURFACE)
                 .EUt(1250000)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("calorite_engine")
@@ -1319,7 +1317,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.MOLECULAR_CASING.asItem())
                 .EUt(491520)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("green_halide_lamp")
@@ -1445,7 +1443,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.ANNIHILATE_CORE.asItem())
                 .EUt(125829120)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("naquadah_reinforced_plant_casing")
@@ -1507,7 +1505,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_DIODE_COSMIC, 16)
                 .EUt(31457280)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("max_voltage_coil")
@@ -1527,7 +1525,7 @@ final class Assembler {
                 .outputItems(GTOItems.MAGNETIC_TRAP)
                 .EUt(1000000)
                 .duration(480)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("starmetal_coil_block")
@@ -1636,7 +1634,7 @@ final class Assembler {
                 .outputItems(GTOItems.HIGH_FREQUENCY_LASER)
                 .EUt(491520)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("desh_engine")
@@ -1680,7 +1678,7 @@ final class Assembler {
                 .outputItems(GTOItems.ELECTRON_SOURCE)
                 .EUt(750000)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("fission_fuel_component")
@@ -1702,7 +1700,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_RESISTOR_COSMIC, 16)
                 .EUt(31457280)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("rocket_fin")
@@ -1761,7 +1759,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.ACCELERATED_PIPELINE.asItem())
                 .EUt(7680)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("uruium_coil_block")
@@ -1789,7 +1787,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_DIODE_EXOTIC, 16)
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("rhenium_reinforced_energy_glass")
@@ -1928,7 +1926,7 @@ final class Assembler {
                 .outputItems(GTOItems.INSULATION_WIRE_ASSEMBLY)
                 .EUt(480)
                 .duration(200)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("mv_neutron_accelerator")
@@ -2044,7 +2042,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_RESISTOR_BIOWARE, 16)
                 .EUt(491520)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("steel_engine")
@@ -2113,7 +2111,7 @@ final class Assembler {
                 .outputItems(GTOItems.CRYOGENIC_INTERFACE)
                 .EUt(8000)
                 .duration(160)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("plasma_heater_casing")
@@ -2139,7 +2137,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.FUSION_CASING_MK5.asItem())
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("fusion_casing_mk4")
@@ -2153,7 +2151,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.FUSION_CASING_MK4.asItem())
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("conversion_simulate_card")
@@ -2222,7 +2220,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_INDUCTOR_COSMIC, 16)
                 .EUt(31457280)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("highly_dense_polymer_plate")
@@ -2233,7 +2231,7 @@ final class Assembler {
                 .outputItems(GTOItems.HIGHLY_DENSE_POLYMER_PLATE)
                 .EUt(125829120)
                 .duration(350)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("neutronium_gearbox")
@@ -2279,7 +2277,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_TRANSISTOR_SUPRACAUSAL, 32)
                 .EUt(125829120)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("smd_diode_optical")
@@ -2291,7 +2289,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_DIODE_OPTICAL, 16)
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("digestion_tank")
@@ -2316,7 +2314,7 @@ final class Assembler {
                 .outputItems(GTOItems.LASER_COOLING_UNIT)
                 .EUt(1200000)
                 .duration(300)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("ozonation_purification_unit")
@@ -2420,7 +2418,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_INDUCTOR_EXOTIC, 16)
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("magic_core")
@@ -2476,7 +2474,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.FORCE_FIELD_GLASS.asItem())
                 .EUt(7864320)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("neutron_sensor")
@@ -2637,7 +2635,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_CAPACITOR_OPTICAL, 16)
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("chemical_energy_devourer")
@@ -2675,7 +2673,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_RESISTOR_EXOTIC, 16)
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("manipulator")
@@ -2690,7 +2688,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.MANIPULATOR.asItem())
                 .EUt(30720)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("vibrant_photovoltaic_block")
@@ -2726,7 +2724,7 @@ final class Assembler {
                 .outputItems(GTOBlocks.SPACETIME_ASSEMBLY_LINE_CASING.asItem())
                 .EUt(7864320)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("two_way_foil")
@@ -2745,7 +2743,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_CAPACITOR_SUPRACAUSAL, 32)
                 .EUt(125829120)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("grating_lithography_mask")
@@ -2754,7 +2752,7 @@ final class Assembler {
                 .outputItems(GTOItems.GRATING_LITHOGRAPHY_MASK)
                 .EUt(1920)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("large_gas_collector")
@@ -2856,7 +2854,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_DIODE_SUPRACAUSAL, 32)
                 .EUt(125829120)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("graviton_field_constraint_casing")
@@ -2952,7 +2950,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_TRANSISTOR_OPTICAL, 16)
                 .EUt(1966080)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("extreme_strength_tritanium_casing")
@@ -2985,7 +2983,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_CAPACITOR_COSMIC, 16)
                 .EUt(31457280)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("uev_voltage_coil")
@@ -3031,7 +3029,7 @@ final class Assembler {
                 .outputItems(GTOItems.LOW_FREQUENCY_LASER)
                 .EUt(491520)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("neutronium_stable_casing")
@@ -3072,7 +3070,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_CAPACITOR_EXOTIC, 16)
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("slaughterhouse")
@@ -3099,7 +3097,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_TRANSISTOR_COSMIC, 16)
                 .EUt(31457280)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("ball_field_shape")
@@ -3150,7 +3148,7 @@ final class Assembler {
                 .outputItems(GTOItems.ULTRASHORT_PULSE_LASER)
                 .EUt(45000000)
                 .duration(270)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("aluminium_bronze_casing")
@@ -3183,7 +3181,7 @@ final class Assembler {
                 .outputItems(GTOItems.SMD_CAPACITOR_BIOWARE, 16)
                 .EUt(491520)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("medium_frequency_laser")
@@ -3196,7 +3194,7 @@ final class Assembler {
                 .outputItems(GTOItems.MEDIUM_FREQUENCY_LASER)
                 .EUt(491520)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("data_disc")

@@ -13,7 +13,6 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -45,11 +44,11 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
     MultiblockControllerMachine self();
 
     @Override
-    default Set<CleanroomType> getTypes() {
+    default int getCleanroomTier() {
         if (getRoot() != null) {
-            return getRoot().getTypes();
+            return getRoot().getCleanroomTier();
         }
-        return Collections.emptySet();
+        return 0;
     }
 
     default void markDirty(boolean dirty) {

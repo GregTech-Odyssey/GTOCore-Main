@@ -7,7 +7,6 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.config.ConfigHolder;
@@ -104,7 +103,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.EXOTIC_PROCESSOR.asStack(outputAmount))
                 .EUt(7864320)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("bioware_processor")
@@ -118,7 +117,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.BIOWARE_PROCESSOR)
                 .EUt(491520)
                 .duration(200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("magneto_resonatic_circuit_luv")
@@ -146,7 +145,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.SUPRACAUSAL_PROCESSOR.asStack(outputAmount))
                 .EUt(125829120)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("magneto_resonatic_circuit_mv")
@@ -243,7 +242,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.HUI_CIRCUIT_1)
                 .EUt(7680)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("bioware_circuit_board")
@@ -257,7 +256,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.BIOWARE_CIRCUIT_BOARD, 32)
                 .EUt(122880)
                 .duration(2400)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("cosmic_processor")
@@ -271,7 +270,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.COSMIC_PROCESSOR.asStack(outputAmount))
                 .EUt(31457280)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("optical_processor")
@@ -285,7 +284,7 @@ final class CircuitAssembler {
                 .outputItems(GTOItems.OPTICAL_PROCESSOR.asStack(outputAmount))
                 .EUt(1966080)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("planet_data_chip")
@@ -325,7 +324,7 @@ final class CircuitAssembler {
                 .inputItems(wireFine, YttriumBariumCuprate, 8)
                 .inputItems(bolt, Naquadah, 8)
                 .outputItems(WETWARE_PROCESSOR_LuV, outputAmount << 1)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CIRCUIT_ASSEMBLER_RECIPES.builder("wetware_board").duration(1200).EUt(VA[LuV])
@@ -337,7 +336,7 @@ final class CircuitAssembler {
                 .inputItems(foil, NiobiumTitanium, 16)
                 .inputFluids(GTOMaterials.Indalloy140, 2304)
                 .outputItems(WETWARE_BOARD, 16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 }

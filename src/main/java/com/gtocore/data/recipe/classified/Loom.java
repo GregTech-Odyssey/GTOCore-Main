@@ -63,7 +63,7 @@ final class Loom {
         // .outputItems(GTOItems.WOVEN_KEVLAR)
         // .EUt(120)
         // .duration(200)
-        // .cleanroom(CleanroomType.CLEANROOM)
+        // .cleanroom(1)
         // .save();
 
         LOOM_RECIPES.recipeBuilder("nanotube_spool")

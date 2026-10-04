@@ -7,12 +7,10 @@ import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
 
-import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -52,8 +50,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     @Nullable
     private List<RecipeHandlerUnit> outputDistilledWaterHatchesList;
     /// 空间站附赠超净间
-    @Nullable
-    private CleanroomType cleanroomType = null;
+    private int cleanroomTier;
 
     static final int MAX_WATER_PER_HATCH = 1000;
 
@@ -84,12 +81,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     public void onStructureFormed() {
         this.outputDistilledWaterHatches = getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.SPACE_MACHINE_PHOTOVOLTAIC_SUPP, Collections.emptySet());
         super.onStructureFormed();
-        IFilterType filterType = getMultiblockState().getMatchContext().get(Predicates.DataKey.FILTER_TYPE);
-        if (filterType != null) {
-            this.cleanroomType = filterType.getCleanroomType();
-        } else {
-            this.cleanroomType = CleanroomType.CLEANROOM;
-        }
+        this.cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 1);
         onFormed();
     }
 
@@ -152,8 +144,8 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     }
 
     @Override
-    public Set<CleanroomType> getTypes() {
-        return this.cleanroomType == null ? Collections.emptySet() : Set.of(this.cleanroomType);
+    public int getCleanroomTier() {
+        return this.cleanroomTier;
     }
 
     @Override

@@ -5,11 +5,8 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -71,7 +68,7 @@ final class Centrifuge {
                 .outputFluids(GTOMaterials.DragonElement, 500)
                 .EUt(7680)
                 .duration(200)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("depleted_reactor_uranium_quad")
@@ -220,7 +217,7 @@ final class Centrifuge {
                 .outputFluids(GTOMaterials.Gluons, 200)
                 .EUt(7864320)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("titanium_50_tetrafluoride")
@@ -313,7 +310,7 @@ final class Centrifuge {
                 .outputFluids(GTOMaterials.BloodPlasma, 500)
                 .EUt(480)
                 .duration(200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("blood_plasma")
@@ -323,7 +320,7 @@ final class Centrifuge {
                 .outputFluids(GTOMaterials.EpidermalGrowthFactor, 200)
                 .EUt(480)
                 .duration(50)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CENTRIFUGE_RECIPES.builder("stainless_steel_target_base_1")

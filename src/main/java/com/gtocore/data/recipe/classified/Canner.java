@@ -5,11 +5,8 @@ import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -58,7 +55,7 @@ final class Canner {
                 .outputItems(GTOItems.DENSE_NEUTRON_PLASMA_CELL)
                 .EUt(125829120)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("reactor_mox_simple")
@@ -84,7 +81,7 @@ final class Canner {
                 .outputItems(Ench.Items.INFUSED_BREATH.get(), 3)
                 .EUt(480)
                 .duration(400)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("crystal_matrix_plasma_containment_cell")
@@ -94,7 +91,7 @@ final class Canner {
                 .outputItems(GTOItems.CRYSTAL_MATRIX_PLASMA_CONTAINMENT_CELL)
                 .EUt(125829120)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("reactor_naquadah_simple")
@@ -113,7 +110,7 @@ final class Canner {
                 .outputItems(GTOItems.RHENIUM_PLASMA_CONTAINMENT_CELL)
                 .EUt(30720)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("chaos_containment_unit")
@@ -123,7 +120,7 @@ final class Canner {
                 .outputItems(GTOItems.CHAOS_CONTAINMENT_UNIT)
                 .EUt(503316480)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("bose_einstein_cooling_container")
@@ -133,7 +130,7 @@ final class Canner {
                 .outputItems(GTOItems.BOSE_EINSTEIN_COOLING_CONTAINER)
                 .EUt(90000)
                 .duration(280)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("actinium_superhydride_plasma_containment_cell")
@@ -143,7 +140,7 @@ final class Canner {
                 .outputItems(GTOItems.ACTINIUM_SUPERHYDRIDE_PLASMA_CONTAINMENT_CELL)
                 .EUt(31457280)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("awakened_draconium_plasma_containment_cell")
@@ -153,7 +150,7 @@ final class Canner {
                 .outputItems(GTOItems.AWAKENED_DRACONIUM_PLASMA_CONTAINMENT_CELL)
                 .EUt(125829120)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("charged_triplet_neutronium_sphere")
@@ -163,7 +160,7 @@ final class Canner {
                 .outputItems(GTOItems.CHARGED_TRIPLET_NEUTRONIUM_SPHERE)
                 .EUt(500000)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CANNER_RECIPES.recipeBuilder("cosmic_mesh_containment_unit")

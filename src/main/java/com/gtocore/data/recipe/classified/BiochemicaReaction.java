@@ -6,7 +6,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -363,7 +362,7 @@ final class BiochemicaReaction {
                 .inputItems(dust, GTMaterials.Sulfur, 4)
                 .inputFluids(GTMaterials.Biomass, 1000)
                 .outputFluids(GTOMaterials.LipoicAcid, 1000)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .EUt(1920)
                 .duration(200)
                 .save();

@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -283,12 +282,12 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     }
 
     @Override
-    public Set<CleanroomType> getTypes() {
+    public int getCleanroomTier() {
         CleanroomProvider provider = (CleanroomProvider) serviceMachineMap.get(CleanroomProvider.class);
         if (provider == null) {
-            return Collections.emptySet();
+            return 0;
         }
-        return provider.getTypes();
+        return provider.getCleanroomTier();
     }
 
     public boolean hasLaserBoost() {

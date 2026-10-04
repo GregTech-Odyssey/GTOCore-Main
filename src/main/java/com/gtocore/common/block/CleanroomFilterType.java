@@ -1,21 +1,18 @@
 package com.gtocore.common.block;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.block.IFilterType;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 
 import org.jetbrains.annotations.NotNull;
 
 public final class CleanroomFilterType implements IFilterType {
 
-    public static final CleanroomFilterType FILTER_CASING_LAW = new CleanroomFilterType("law_filter_casing", GTOCleanroomType.LAW_CLEANROOM);
+    public static final CleanroomFilterType FILTER_CASING_LAW = new CleanroomFilterType("law_filter_casing", 3);
     private final String name;
-    private final CleanroomType cleanroomType;
+    private final int cleanroomTier;
 
-    private CleanroomFilterType(String name, CleanroomType cleanroomType) {
+    private CleanroomFilterType(String name, int cleanroomTier) {
         this.name = name;
-        this.cleanroomType = cleanroomType;
+        this.cleanroomTier = cleanroomTier;
     }
 
     @NotNull
@@ -31,7 +28,7 @@ public final class CleanroomFilterType implements IFilterType {
     }
 
     @Override
-    public @NotNull CleanroomType getCleanroomType() {
-        return this.cleanroomType;
+    public int getCleanroomTier() {
+        return this.cleanroomTier;
     }
 }

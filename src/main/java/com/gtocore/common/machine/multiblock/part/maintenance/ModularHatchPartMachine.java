@@ -201,20 +201,11 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
         if (!getControllers().isEmpty() &&
                 getController() instanceof ICleanroomReceiver receiver) {
             if (receiver.getCleanroom() != null) {
-                List<MutableComponent> cleanroomTypes = receiver.getCleanroom().getTypes().stream()
-                        .map(type -> Component.translatable(type.getTranslationKey()))
-                        .toList();
-                if (cleanroomTypes.isEmpty()) {
+                int cleanroomTier = receiver.getCleanroom().getCleanroomTier();
+                if (cleanroomTier == 0) {
                     return Component.translatable(CLEANROOM_NOT_SET);
                 }
-                MutableComponent result = Component.empty();
-                for (int i = 0; i < cleanroomTypes.size(); i++) {
-                    result.append(cleanroomTypes.get(i));
-                    if (i < cleanroomTypes.size() - 1) {
-                        result.append(", ");
-                    }
-                }
-                return result;
+                return ICleanroomProvider.getCleanroomTooltip(cleanroomTier);
 
             } else {
                 return Component.translatable(CLEANROOM_NOT_SET);

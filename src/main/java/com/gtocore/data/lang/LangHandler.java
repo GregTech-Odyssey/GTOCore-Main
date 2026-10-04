@@ -202,7 +202,7 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.frheat", "配方基础产热：%s K/s", "Base Recipe Heat: %s K/s");
         addCNEN("gtocore.recipe.grindball", "研磨球材质：%s", "macerator Ball Material: %s");
         addCNEN("gtocore.recipe.spool", "线轴类型：%s", "Spool Type: %s");
-        addCNEN("gtocore.recipe.law_cleanroom.display_name", "绝对超净间", "Absolute Clean");
+        addCNEN("gtceu.recipe.cleanroom.3", "绝对超净间", "Absolute Clean");
         addCNEN("gtocore.recipe.nano_forge_tier", "纳米锻炉等级：%s", "Nano Forge Tier: %s");
         addCNEN("gtocore.recipe.simulation_tier", "模拟等级", "Simulation Tier");
         addCNEN("gtocore.recipe.tier", "等级", "Tier");

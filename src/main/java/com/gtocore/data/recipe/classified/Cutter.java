@@ -8,7 +8,6 @@ import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.StringUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import javax.annotation.Nullable;
@@ -25,7 +24,7 @@ final class Cutter {
                 .outputItems(GTOItems.EXOTIC_RAM_CHIP, 32)
                 .EUt(524288)
                 .duration(900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("bioware_chip")
@@ -35,7 +34,7 @@ final class Cutter {
                 .outputItems(GTOItems.BIOLOGICAL_CELLS, 8)
                 .EUt(491520)
                 .duration(600)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("fm_chip")
@@ -44,7 +43,7 @@ final class Cutter {
                 .outputItems(GTOItems.FM_CHIP, 2)
                 .EUt(524288)
                 .duration(2700)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("cosmic_soc")
@@ -53,7 +52,7 @@ final class Cutter {
                 .outputItems(GTOItems.SIMPLE_COSMIC_SOC, 8)
                 .EUt(7864320)
                 .duration(900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("pm_chip")
@@ -62,7 +61,7 @@ final class Cutter {
                 .outputItems(GTOItems.PM_CHIP, 4)
                 .EUt(122880)
                 .duration(1800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("nm_chip")
@@ -71,7 +70,7 @@ final class Cutter {
                 .outputItems(GTOItems.NM_CHIP, 4)
                 .EUt(30720)
                 .duration(1800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("photocoated_hassium_wafer")
@@ -80,7 +79,7 @@ final class Cutter {
                 .outputItems(GTOItems.PHOTOCOATED_HASSIUM_WAFER, 4)
                 .EUt(31457280)
                 .duration(280)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("cosmic_ram_chip")
@@ -89,7 +88,7 @@ final class Cutter {
                 .outputItems(GTOItems.COSMIC_RAM_CHIP, 32)
                 .EUt(2097152)
                 .duration(900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("rutherfordium_neutronium_wafer")
@@ -99,7 +98,7 @@ final class Cutter {
                 .outputItems(GTOItems.RUTHERFORDIUM_AMPROSIUM_WAFER, 32)
                 .EUt(30720)
                 .duration(3200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("supracausal_ram_chip")
@@ -108,7 +107,7 @@ final class Cutter {
                 .outputItems(GTOItems.SUPRACAUSAL_RAM_CHIP, 4)
                 .EUt(8388608)
                 .duration(900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("taranium_wafer")
@@ -118,7 +117,7 @@ final class Cutter {
                 .outputItems(GTOItems.TARANIUM_WAFER, 64)
                 .EUt(122880)
                 .duration(3200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("optical_slice")
@@ -127,7 +126,7 @@ final class Cutter {
                 .outputItems(GTOItems.OPTICAL_SLICE, 16)
                 .EUt(1966080)
                 .duration(560)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("exotic_chip")
@@ -136,7 +135,7 @@ final class Cutter {
                 .outputItems(GTOItems.EXOTIC_CHIP, 4)
                 .EUt(1966080)
                 .duration(900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("optical_ram_chip")
@@ -145,7 +144,7 @@ final class Cutter {
                 .outputItems(GTOItems.OPTICAL_RAM_CHIP, 32)
                 .EUt(122880)
                 .duration(900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CUTTER_RECIPES.recipeBuilder("silicon_crystal_seed")

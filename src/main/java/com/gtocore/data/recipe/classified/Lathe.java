@@ -4,7 +4,6 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 
 import static com.gtocore.common.data.GTORecipeTypes.LATHE_RECIPES;
 
@@ -16,7 +15,7 @@ final class Lathe {
                 .outputItems(GTOItems.NON_LINEAR_OPTICAL_LENS)
                 .EUt(1966080)
                 .duration(360)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LATHE_RECIPES.recipeBuilder("magmatter_rod")

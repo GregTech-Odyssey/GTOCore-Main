@@ -7,7 +7,6 @@ import com.gtocore.common.recipe.condition.GravityCondition;
 import com.gtocore.common.recipe.condition.VacuumCondition;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.ItemStack;
@@ -164,7 +163,7 @@ final class ArcGenerator {
                 .outputItems(Blocks.CRYING_OBSIDIAN.asItem())
                 .EUt(480)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         ARC_GENERATOR_RECIPES.recipeBuilder("energetic_alloy_dust")

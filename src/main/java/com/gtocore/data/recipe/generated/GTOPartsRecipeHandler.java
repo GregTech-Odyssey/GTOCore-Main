@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeCategories;
@@ -675,7 +674,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(stack)
                 .duration((int) material.getMass() << 4)
                 .EUt(480)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -731,7 +730,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(motorEnclosureStack)
                 .duration(mass << 1)
                 .EUt(16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -769,7 +768,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(pumpBarrelStack)
                 .duration(mass * 5 / 2)
                 .EUt(16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -807,7 +806,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(pistonHousingStack)
                 .duration(mass * 3)
                 .EUt(16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -846,7 +845,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(emitterBasesStack)
                 .duration(mass << 2)
                 .EUt(16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -884,7 +883,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(sensorCasingStack)
                 .duration(mass * 9 / 2)
                 .EUt(16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -922,7 +921,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(fieldGeneratorCasingStack)
                 .duration(mass << 3)
                 .EUt(16)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 
@@ -935,7 +934,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(stack)
                 .duration((int) material.getMass() << 2)
                 .EUt(120)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 

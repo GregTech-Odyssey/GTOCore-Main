@@ -1,18 +1,14 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
-import com.gtocore.common.machine.multiblock.part.maintenance.CMHatchPartMachine;
-
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.machine.impl.part.DroneHatchPartMachine;
 
-import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -21,9 +17,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -37,7 +31,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     @RegisterLanguage(cn = "超净环境", en = "Cleanroom")
     private static final String CLEANROOM = "gtocore.machine.space_cleanroom_provider.cleanroom";
 
-    private @Nullable ICleanroomProvider cleanroomType = null;
+    private int cleanroomTier;
     private final List<DroneHatchPartMachine> droneHatchPartMachine = new ArrayList<>();
 
     public CleanroomProvider(MetaMachineBlockEntity metaMachineBlockEntity) {
@@ -48,21 +42,14 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     public void onStructureFormed() {
         droneHatchPartMachine.clear();
         super.onStructureFormed();
-        IFilterType filterType = getMultiblockState().getMatchContext().get(Predicates.DataKey.FILTER_TYPE);
-        if (filterType != null) {
-            this.cleanroomType = switch (filterType.getCleanroomType().getName()) {
-                case "sterile_cleanroom" -> CMHatchPartMachine.STERILE_DUMMY_CLEANROOM;
-                case "law_cleanroom" -> CMHatchPartMachine.LAW_DUMMY_CLEANROOM;
-                default -> CMHatchPartMachine.DUMMY_CLEANROOM;
-            };
-        }
+        this.cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 0);
         IIWirelessInteractor.addToNet(this, IDroneControlCenterMachine.class);
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        this.cleanroomType = null;
+        this.cleanroomTier = 0;
         droneHatchPartMachine.clear();
         IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
@@ -70,7 +57,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     @Override
     public void onUnload() {
         super.onUnload();
-        this.cleanroomType = null;
+        this.cleanroomTier = 0;
         IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
@@ -88,15 +75,15 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
 
     @Override
     public long getEUt() {
-        if (cleanroomType == null) {
+        if (cleanroomTier == 0) {
             return VA[HV];
         }
-        return (long) VA[LuV] * cleanroomType.getTypes().size();
+        return (long) VA[LuV] * cleanroomTier;
     }
 
     @Override
-    public Set<CleanroomType> getTypes() {
-        return cleanroomType == null ? Collections.emptySet() : ImmutableSet.copyOf(cleanroomType.getTypes());
+    public int getCleanroomTier() {
+        return cleanroomTier;
     }
 
     @Override
@@ -117,21 +104,13 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addLine(CLEANROOM, MultiblockPage.cachedRef(() -> cleanroomType, type -> getCurrentCleanroom())).bindLevel(() -> cleanroomType == null || cleanroomType.getTypes().isEmpty() ? Level.WARNING : Level.NORMAL);
+        page.addLine(CLEANROOM, MultiblockPage.cached(this::getCleanroomTier, tier -> getCurrentCleanroom())).bindLevel(() -> cleanroomTier == 0 ? Level.WARNING : Level.NORMAL);
     }
 
     private MutableComponent getCurrentCleanroom() {
-        if (cleanroomType == null || cleanroomType.getTypes().isEmpty()) {
+        if (cleanroomTier == 0) {
             return Component.translatable(CLEANROOM_NOT_SET);
         }
-        MutableComponent result = Component.empty();
-        Iterator<CleanroomType> iterator = cleanroomType.getTypes().iterator();
-        while (iterator.hasNext()) {
-            result.append(Component.translatable(iterator.next().getTranslationKey()));
-            if (iterator.hasNext()) {
-                result.append(", ");
-            }
-        }
-        return result;
+        return ICleanroomProvider.getCleanroomTooltip(cleanroomTier);
     }
 }

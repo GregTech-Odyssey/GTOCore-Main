@@ -9,7 +9,6 @@ import com.gtolib.utils.ItemUtils;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
@@ -58,7 +57,7 @@ final class FluidSolidfication {
                 .outputItems(GTOItems.KEVLAR_FIBER)
                 .EUt(30)
                 .duration(800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FLUID_SOLIDFICATION_RECIPES.recipeBuilder("xenoxene_crystal_dust")

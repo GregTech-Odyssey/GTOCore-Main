@@ -7,7 +7,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -24,7 +23,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP_WAFER, 8)
                 .EUt(122880)
                 .duration(125)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("soc_wafer")
@@ -33,7 +32,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.SYSTEM_ON_CHIP_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ilc_wafer")
@@ -42,7 +41,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.INTEGRATED_LOGIC_CIRCUIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ulpic_wafer")
@@ -51,7 +50,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.ULTRA_LOW_POWER_INTEGRATED_CIRCUIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("lanthanum_embedded_fullerene_dust")
@@ -71,7 +70,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.LOW_POWER_INTEGRATED_CIRCUIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("nor_memory_wafer")
@@ -80,7 +79,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.NOR_MEMORY_CHIP_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("cpu_wafer")
@@ -89,7 +88,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.CENTRAL_PROCESSING_UNIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("fullerene_dust")
@@ -109,7 +108,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.NAND_MEMORY_CHIP_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("highly_advanced_soc_wafer")
@@ -118,7 +117,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.HIGHLY_ADVANCED_SOC_WAFER, 4)
                 .EUt(122880)
                 .duration(225)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ram_wafer")
@@ -127,7 +126,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.RANDOM_ACCESS_MEMORY_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("mpic_wafer")
@@ -136,7 +135,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.POWER_INTEGRATED_CIRCUIT_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("diffractor_grating_mirror")
@@ -145,7 +144,7 @@ final class LaserEngraver {
                 .outputItems(GTOItems.DIFFRACTOR_GRATING_MIRROR)
                 .EUt(31457280)
                 .duration(600)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("exotic_wafer")
@@ -154,7 +153,7 @@ final class LaserEngraver {
                 .outputItems(GTOItems.EXOTIC_WAFER)
                 .EUt(1966080)
                 .duration(600)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("simple_soc_wafer")
@@ -163,7 +162,7 @@ final class LaserEngraver {
                 .outputItems(GTItems.SIMPLE_SYSTEM_ON_CHIP_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("diamond_crystal_circuit")
@@ -205,7 +204,7 @@ final class LaserEngraver {
                 .inputItems(TagPrefix.dust, GTOMaterials.ExtremeTemperatureInterfaceStabilizedMFPC)
                 .notConsumable(GTOItems.ULTRASHORT_PULSE_LASER.asItem())
                 .outputItems(TagPrefix.dust, GTOMaterials.CascadeMFPC)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .EUt(129600)
                 .duration(20)
                 .save();
@@ -214,7 +213,7 @@ final class LaserEngraver {
                 .inputItems(GTOItems.GERMANIUM_DOPED_SILICON_WAFER)
                 .notConsumable(GTOTagPrefix.lens, Gray)
                 .outputItems(GTOItems.FPGA_WAFER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .EUt(131000)
                 .duration(500)
                 .save();
@@ -223,7 +222,7 @@ final class LaserEngraver {
                 .inputItems(GTOItems.SIC_WIDE_BANDGAP_SEMICONDUCTOR_WAFER)
                 .notConsumable(GTOTagPrefix.lens, Cyan)
                 .outputItems(GTOItems.IGBT_WAFER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .EUt(131000)
                 .duration(500)
                 .save();

@@ -8,7 +8,6 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtolib.api.data.GTODimensions;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -25,7 +24,7 @@ final class ChemicalBath {
                 .inputItems(GTOItems.CONTAMINATED_PETRI_DISH)
                 .outputItems(GTItems.PETRI_DISH)
                 .inputFluids(GTOMaterials.PiranhaSolution, 100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(25).EUt(30).save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("naquadria_sulfate_dust")
@@ -62,7 +61,7 @@ final class ChemicalBath {
                 .outputItems(TagPrefix.plate, GTOMaterials.Kevlar)
                 .EUt(480)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("photon_carrying_wafer")
@@ -71,7 +70,7 @@ final class ChemicalBath {
                 .outputItems(GTOItems.PHOTON_CARRYING_WAFER)
                 .EUt(1920)
                 .duration(800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("high_strength_concrete")
@@ -105,7 +104,7 @@ final class ChemicalBath {
                 .outputItems(GTOItems.RESONATING_GEM)
                 .EUt(31457280)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("leached_turpentine")
@@ -130,7 +129,7 @@ final class ChemicalBath {
                 .outputItems(GTOItems.X_RAY_WAVEGUIDE)
                 .EUt(8000000)
                 .duration(240)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("netherrack")
@@ -147,7 +146,7 @@ final class ChemicalBath {
                 .outputItems(GTOItems.X_RAY_MIRROR_PLATE)
                 .EUt(2000000)
                 .duration(240)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("black_candle")
@@ -172,7 +171,7 @@ final class ChemicalBath {
                 .outputItems(TagPrefix.dust, GTOMaterials.FullerenePolymerMatrixPulp, 2)
                 .EUt(8000000)
                 .duration(40)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_BATH_RECIPES.recipeBuilder("metal_residue_dust")
@@ -253,7 +252,7 @@ final class ChemicalBath {
                 .inputFluids(GTMaterials.Neutronium, 288)
                 .EUt(152000)
                 .duration(2400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("scorching_cosmic_dust_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.CosmicDust, 9)

@@ -1,7 +1,5 @@
 package com.gtocore.data.recipe.gtm.chemistry;
 
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
-
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
@@ -35,7 +33,7 @@ final class GrowthMediumRecipes {
                 .inputItems(BIO_CHAFF, 4)
                 .inputFluids(DistilledWater, 1000)
                 .outputFluids(Bacteria.getFluid(1000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         // Bacterial Sludge
@@ -43,7 +41,7 @@ final class GrowthMediumRecipes {
                 .inputFluids(Biomass, 1000)
                 .inputFluids(Bacteria, 1000)
                 .outputFluids(BacterialSludge.getFluid(1000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         // Enriched Bacterial Sludge
@@ -51,21 +49,21 @@ final class GrowthMediumRecipes {
                 .inputItems(dust, Uranium238)
                 .inputFluids(BacterialSludge, 1000)
                 .outputFluids(EnrichedBacterialSludge.getFluid(1000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         BREWING_RECIPES.recipeBuilder("enriched_bacterial_sludge_from_u235").EUt(4).duration(128)
                 .inputItems(dustTiny, Uranium235)
                 .inputFluids(BacterialSludge, 1000)
                 .outputFluids(EnrichedBacterialSludge.getFluid(1000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         BREWING_RECIPES.recipeBuilder("enriched_bacterial_sludge_from_naquadria").EUt(4).duration(128)
                 .inputItems(dustTiny, Naquadria)
                 .inputFluids(BacterialSludge, 1000)
                 .outputFluids(EnrichedBacterialSludge.getFluid(2000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         // Mutagen
@@ -73,7 +71,7 @@ final class GrowthMediumRecipes {
                 .inputFluids(EnrichedBacterialSludge, 1000)
                 .circuitMeta(1)
                 .outputFluids(Mutagen.getFluid(100))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         // Collagen
@@ -83,7 +81,7 @@ final class GrowthMediumRecipes {
                 .inputFluids(SulfuricAcid, 500)
                 .outputItems(dust, Collagen)
                 .outputFluids(DilutedSulfuricAcid.getFluid(500))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("collagen_from_bone").EUt(VA[HV]).duration(1600)
@@ -92,7 +90,7 @@ final class GrowthMediumRecipes {
                 .inputFluids(SulfuricAcid, 1000)
                 .outputItems(dust, Collagen, 2)
                 .outputFluids(DilutedSulfuricAcid.getFluid(1000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         // Gelatin
@@ -101,14 +99,14 @@ final class GrowthMediumRecipes {
                 .inputFluids(PhosphoricAcid, 1000)
                 .inputFluids(Water, 3000)
                 .outputFluids(GelatinMixture.getFluid(4000))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("gelatin").EUt(VA[HV]).duration(2400)
                 .inputFluids(GelatinMixture, 6000)
                 .outputItems(dust, Phosphorus)
                 .outputItems(dust, Gelatin, 4)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         // Sterile Growth Medium
@@ -116,7 +114,7 @@ final class GrowthMediumRecipes {
                 .circuitMeta(1)
                 .inputFluids(RawGrowthMedium, 100)
                 .outputFluids(SterileGrowthMedium.getFluid(100))
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
     }
 }

@@ -5,10 +5,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -78,7 +75,7 @@ final class FormingPress {
                 .outputItems(GTOItems.RAW_IMPRINTED_RESONATIC_CIRCUIT_BOARD)
                 .EUt(480)
                 .duration(300)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("scintillator_crystal")
@@ -91,7 +88,7 @@ final class FormingPress {
                 .outputItems(GTOItems.SCINTILLATOR_CRYSTAL)
                 .EUt(1966080)
                 .duration(280)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("reactor_fuel_rod")
@@ -118,7 +115,7 @@ final class FormingPress {
                 .outputItems(GTOItems.COSMIC_RAM_WAFER)
                 .EUt(31457280)
                 .duration(550)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("wood_gear")
@@ -148,7 +145,7 @@ final class FormingPress {
                 .outputItems(GTOItems.OPTICAL_SOC_CONTAINMENT_HOUSING)
                 .EUt(122880)
                 .duration(290)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("heavy_duty_plate_2")
@@ -178,7 +175,7 @@ final class FormingPress {
                 .outputItems(GTOItems.EXOTIC_RAM_WAFER)
                 .EUt(7864320)
                 .duration(350)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("optical_ram_wafer")
@@ -188,7 +185,7 @@ final class FormingPress {
                 .outputItems(GTOItems.OPTICAL_RAM_WAFER)
                 .EUt(1966080)
                 .duration(150)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("supracausal_ram_wafer")
@@ -200,7 +197,7 @@ final class FormingPress {
                 .outputItems(GTOItems.SUPRACAUSAL_RAM_WAFER)
                 .EUt(125829120)
                 .duration(750)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         FORMING_PRESS_RECIPES.recipeBuilder("crystal_central_processing_unit")
@@ -213,7 +210,7 @@ final class FormingPress {
                 .outputItems(GTItems.CRYSTAL_CENTRAL_PROCESSING_UNIT)
                 .EUt(10000)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         FORMING_PRESS_RECIPES.builder("beryllium_target_base")

@@ -7,7 +7,6 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -24,7 +23,7 @@ final class PhysicalVaporDeposition {
                 .outputItems(GTOItems.HIGHLY_INSULATING_FOIL)
                 .EUt(7680)
                 .duration(240)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("cosmic_soc_wafer")
@@ -33,7 +32,7 @@ final class PhysicalVaporDeposition {
                 .outputItems(GTOItems.SIMPLE_COSMIC_SOC_WAFER)
                 .EUt(7864320)
                 .duration(600)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("fullerene_polymer_matrix_soft_tubing")
@@ -50,7 +49,7 @@ final class PhysicalVaporDeposition {
                 .outputItems(GTOBlocks.ELECTRON_PERMEABLE_AMPROSIUM_COATED_GLASS.asItem())
                 .EUt(122880)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("non_photonic_matter_exclusion_glass")
@@ -59,7 +58,7 @@ final class PhysicalVaporDeposition {
                 .outputItems(GTOBlocks.NON_PHOTONIC_MATTER_EXCLUSION_GLASS.asItem())
                 .EUt(1966080)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("omni_purpose_infinity_fused_glass")
@@ -68,7 +67,7 @@ final class PhysicalVaporDeposition {
                 .outputItems(GTOBlocks.OMNI_PURPOSE_INFINITY_FUSED_GLASS.asItem())
                 .EUt(491520)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.builder("uranium_235_stainless_steel_target")
@@ -152,7 +151,7 @@ final class PhysicalVaporDeposition {
                 .inputFluids(GTMaterials.MolybdenumDisilicide, 1296)
                 .duration(200)
                 .EUt(VA[UHV])
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 }

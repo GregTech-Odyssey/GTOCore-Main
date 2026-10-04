@@ -8,6 +8,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -267,15 +268,15 @@ final class CoreFlowPage {
         }
 
         private void refreshServices(boolean formed) {
-            var types = core.getTypes();
-            cleanView = types.isEmpty() ? IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_NONE)) :
-                    IssueView.of(RecipeIssue.OK, Component.translatable(types.iterator().next().getTranslationKey()));
+            int cleanroomTier = core.getCleanroomTier();
+            cleanView = cleanroomTier == 0 ? IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_NONE)) :
+                    IssueView.of(RecipeIssue.OK, ICleanroomProvider.getCleanroomTooltip(cleanroomTier));
             double multiplier = core.getDurationMultiplier();
             elevatorView = multiplier >= 1 ? IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_NONE)) :
                     IssueView.of(RecipeIssue.OK, Component.translatable(LANG_DURATION, FormattingUtil.formatNumbers(multiplier)));
             laserView = core.hasLaserBoost() ? IssueView.of(RecipeIssue.OK, Component.translatable(LANG_UNLOCKED)) :
                     IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_LOCKED));
-            services = !formed ? FlowState.IDLE : !types.isEmpty() || multiplier < 1 ? FlowState.READY : FlowState.IDLE;
+            services = !formed ? FlowState.IDLE : cleanroomTier > 0 || multiplier < 1 ? FlowState.READY : FlowState.IDLE;
         }
 
         private void refreshSegments() {

@@ -5,11 +5,8 @@ import com.gtocore.common.data.GTOFluidStorageKey;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -369,7 +366,7 @@ final class ChemicaRreactor {
                 .outputItems(TagPrefix.dust, GTOMaterials.Hexanitrohexaaxaisowurtzitane, 36)
                 .EUt(1920)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("dmap_dust")
@@ -534,7 +531,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.QuantumDots, 1000)
                 .EUt(5000000)
                 .duration(160)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("benzyl_chloride")
@@ -648,7 +645,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Water, 2000)
                 .EUt(30720)
                 .duration(130)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("californium_cyclopentadienide")
@@ -657,7 +654,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.CaliforniumCyclopentadienide, 1000)
                 .EUt(2000000)
                 .duration(160)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("succinic_anhydride_dust")
@@ -739,7 +736,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Hydrogen, 6000)
                 .EUt(1920)
                 .duration(220)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("caesium_iodide_dust")
@@ -1020,7 +1017,7 @@ final class ChemicaRreactor {
                 .outputItems(GTOItems.HIGHLY_REFLECTIVE_MIRROR)
                 .EUt(710000)
                 .duration(240)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("hydroiodic_acid")
@@ -1089,7 +1086,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.AceticAcid, 4000)
                 .EUt(491520)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("prasiolite_dust")
@@ -1200,7 +1197,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Hydrogen, 1000)
                 .EUt(1920)
                 .duration(300)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("lithium_chloride_dust")
@@ -1439,7 +1436,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Hydrogen, 2000)
                 .EUt(1920)
                 .duration(240)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("germanium_tetrachloride_solution")
@@ -2091,7 +2088,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Toluene, 6000)
                 .EUt(122880)
                 .duration(120)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("tetracene_dust")
@@ -2105,7 +2102,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Acetone, 1000)
                 .EUt(491520)
                 .duration(260)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("californium_trichloride_dust")
@@ -2160,7 +2157,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Chlorine, 3000)
                 .EUt(31457280)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("aluminium_sulfite_dust")
@@ -2215,7 +2212,7 @@ final class ChemicaRreactor {
                 .outputItems(TagPrefix.dust, GTMaterials.RockSalt, 4)
                 .EUt(491520)
                 .duration(160)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("lithium_niobate_nanoparticles_dust")
@@ -2226,7 +2223,7 @@ final class ChemicaRreactor {
                 .outputItems(TagPrefix.dust, GTOMaterials.LithiumNiobateNanoparticles, 6)
                 .EUt(1966080)
                 .duration(1200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("unfolded_fullerene_dust")
@@ -2235,7 +2232,7 @@ final class ChemicaRreactor {
                 .outputItems(TagPrefix.dust, GTOMaterials.UnfoldedFullerene)
                 .EUt(7680)
                 .duration(250)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("trimethyltin_chloride")
@@ -2248,7 +2245,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.DilutedHydrochloricAcid, 2000)
                 .EUt(30720)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("liquidcrystalkevlar")
@@ -2347,7 +2344,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.TertButanol, 4000)
                 .EUt(30720)
                 .duration(120)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("cesium_carborane_dust")
@@ -2438,7 +2435,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Ammonia, 1000)
                 .EUt(8000000)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("saturated_fullerene_sieving_matrix")
@@ -2505,7 +2502,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.PCBs, 8000)
                 .EUt(31457280)
                 .duration(80)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("benzylamine")
@@ -2564,7 +2561,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.HydrofluoricAcid, 6000)
                 .EUt(1966080)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("phenylenedioxydiacetic_acid")
@@ -2610,7 +2607,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.Water, 2000)
                 .EUt(1966080)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("terephthalaldehyde_dust")
@@ -2704,7 +2701,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.CosmicComputingMixture, 3000)
                 .EUt(24000000)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("cycloparaphenylene")
@@ -2721,7 +2718,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.HydrofluoricAcid, 6000)
                 .EUt(1966080)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("bismuth_nitrate_solution")
@@ -2775,7 +2772,7 @@ final class ChemicaRreactor {
                 .outputItems(TagPrefix.dust, GTOMaterials.PalladiumFullereneMatrix)
                 .EUt(31457280)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("glycerol_a")
@@ -2810,7 +2807,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.CosmicSuperconductor, 10000)
                 .EUt(125829120)
                 .duration(600)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("stellar_energy_rocket_fuel")
@@ -2825,7 +2822,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.StellarEnergyRocketFuel, 5000)
                 .EUt(122880)
                 .duration(120)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("charged_lepton_trap_crystal")
@@ -2837,7 +2834,7 @@ final class ChemicaRreactor {
                 .outputItems(GTOItems.CHARGED_LEPTON_TRAP_CRYSTAL)
                 .EUt(491520)
                 .duration(240)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("potassium_ethylate_dust")
@@ -2867,7 +2864,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.Photopolymer, 8000)
                 .EUt(30720)
                 .duration(340)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("titanium_trifluoride_dust")
@@ -2886,7 +2883,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.DiaminodiphenylmethanMixture, 1000)
                 .EUt(7680)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("tetraacetyldinitrosohexaazaisowurtzitane_dust")
@@ -2911,7 +2908,7 @@ final class ChemicaRreactor {
                 .outputItems(GTOItems.OPTICAL_WAFER)
                 .EUt(1966080)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("sarcosine_dust")
@@ -2953,7 +2950,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.Photoresist, 1000)
                 .EUt(1920)
                 .duration(800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("iridium_chloride_dust")
@@ -2976,7 +2973,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTMaterials.CarbonMonoxide, 1000)
                 .EUt(1966080)
                 .duration(20)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("barium_titanate_ceramic_dust")
@@ -3089,7 +3086,7 @@ final class ChemicaRreactor {
                 .inputItems(foil, AnnealedCopper, 12)
                 .inputFluids(SodiumPersulfate, 2000)
                 .outputItems(EXTREME_CIRCUIT_BOARD)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("extreme_circuit_board_iron3").duration(1200).EUt(VA[LV])
@@ -3098,7 +3095,7 @@ final class ChemicaRreactor {
                 .inputItems(foil, AnnealedCopper, 12)
                 .inputFluids(Iron3Chloride, 1000)
                 .outputItems(EXTREME_CIRCUIT_BOARD)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("elite_circuit_board_persulfate").duration(1500).EUt(VA[MV])
@@ -3107,7 +3104,7 @@ final class ChemicaRreactor {
                 .inputItems(foil, Platinum, 8)
                 .inputFluids(SodiumPersulfate, 4000)
                 .outputItems(ELITE_CIRCUIT_BOARD)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("elite_circuit_board_iron3").duration(1500).EUt(VA[MV])
@@ -3116,7 +3113,7 @@ final class ChemicaRreactor {
                 .inputItems(foil, Platinum, 8)
                 .inputFluids(Iron3Chloride, 2000)
                 .outputItems(ELITE_CIRCUIT_BOARD)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("wetware_circuit_board_persulfate").duration(1800).EUt(VA[HV])
@@ -3125,7 +3122,7 @@ final class ChemicaRreactor {
                 .inputItems(foil, NiobiumTitanium, 32)
                 .inputFluids(SodiumPersulfate, 10000)
                 .outputItems(WETWARE_CIRCUIT_BOARD)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("wetware_circuit_board_iron3").duration(1800).EUt(VA[HV])
@@ -3134,7 +3131,7 @@ final class ChemicaRreactor {
                 .inputItems(foil, NiobiumTitanium, 32)
                 .inputFluids(Iron3Chloride, 5000)
                 .outputItems(WETWARE_CIRCUIT_BOARD)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("bioware_printed_circuit_board")
@@ -3145,7 +3142,7 @@ final class ChemicaRreactor {
                 .outputItems(GTOItems.BIOWARE_PRINTED_CIRCUIT_BOARD)
                 .EUt(1920)
                 .duration(2100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("bioware_printed_circuit_board1")
@@ -3156,7 +3153,7 @@ final class ChemicaRreactor {
                 .outputItems(GTOItems.BIOWARE_PRINTED_CIRCUIT_BOARD)
                 .EUt(1920)
                 .duration(2100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("citric_acid")
@@ -3197,7 +3194,7 @@ final class ChemicaRreactor {
                 .outputFluids(GTOMaterials.B27Supplement, 5000)
                 .EUt(7680)
                 .duration(150)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("vitamina")

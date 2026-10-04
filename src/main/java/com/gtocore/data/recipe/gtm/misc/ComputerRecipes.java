@@ -4,7 +4,6 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.data.techtree.BaseNodes;
 
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
@@ -29,7 +28,7 @@ final class ComputerRecipes {
                 .inputItems(CustomTags.EV_CIRCUITS, 4)
                 .outputItems(DATA_ACCESS_HATCH)
                 .inputFluids(Polytetrafluoroethylene, L << 1)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[EV])
                 .save();
 
@@ -139,7 +138,7 @@ final class ComputerRecipes {
                 .inputItems(TOOL_DATA_STICK)
                 .outputItems(HPCA_EMPTY_COMPONENT)
                 .inputFluids(PCBCoolant, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[IV])
                 .save();
 
@@ -149,7 +148,7 @@ final class ComputerRecipes {
                 .inputItems(screw, StainlessSteel, 8)
                 .outputItems(HPCA_HEAT_SINK_COMPONENT)
                 .inputFluids(PCBCoolant, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[IV])
                 .save();
 
@@ -160,7 +159,7 @@ final class ComputerRecipes {
                 .inputItems(screw, StainlessSteel, 8)
                 .outputItems(HPCA_ACTIVE_COOLER_COMPONENT)
                 .inputFluids(PCBCoolant, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[IV])
                 .save();
 
@@ -171,7 +170,7 @@ final class ComputerRecipes {
                 .inputItems(OPTICAL_PIPES[0].asItem(), 2)
                 .outputItems(HPCA_BRIDGE_COMPONENT)
                 .inputFluids(PCBCoolant, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[LuV])
                 .save();
 
@@ -181,7 +180,7 @@ final class ComputerRecipes {
                 .inputItems(FIELD_GENERATOR_LuV)
                 .outputItems(HPCA_COMPUTATION_COMPONENT)
                 .inputFluids(PCBCoolant, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[LuV])
                 .save();
 
@@ -191,7 +190,7 @@ final class ComputerRecipes {
                 .inputItems(FIELD_GENERATOR_ZPM)
                 .outputItems(HPCA_ADVANCED_COMPUTATION_COMPONENT)
                 .inputFluids(PCBCoolant, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[ZPM])
                 .save();
 
@@ -203,7 +202,7 @@ final class ComputerRecipes {
                 .inputItems(OPTICAL_PIPES[0].asItem(), 2)
                 .inputFluids(Polybenzimidazole, L << 1)
                 .outputItems(DATA_HATCH_RECEIVER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[LuV])
                 .save();
 
@@ -215,7 +214,7 @@ final class ComputerRecipes {
                 .inputItems(OPTICAL_PIPES[0].asItem(), 2)
                 .inputFluids(Polybenzimidazole, L << 1)
                 .outputItems(DATA_HATCH_TRANSMITTER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[LuV])
                 .save();
 
@@ -225,7 +224,7 @@ final class ComputerRecipes {
                 .inputItems(SENSOR_LuV)
                 .inputFluids(Polybenzimidazole, L << 1)
                 .outputItems(COMPUTATION_HATCH_RECEIVER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[LuV])
                 .save();
 
@@ -235,7 +234,7 @@ final class ComputerRecipes {
                 .inputItems(EMITTER_LuV)
                 .inputFluids(Polybenzimidazole, L << 1)
                 .outputItems(COMPUTATION_HATCH_TRANSMITTER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(200).EUt(VA[LuV])
                 .save();
 
@@ -255,7 +254,7 @@ final class ComputerRecipes {
                 .inputItems(foil, Osmiridium, 2)
                 .inputFluids(Polytetrafluoroethylene, L)
                 .outputItems(LASER_PIPES[0])
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(100).EUt(VA[IV])
                 .save();
     }

@@ -7,10 +7,7 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.recipe.condition.GravityCondition;
 import com.gtocore.common.recipe.condition.VacuumCondition;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -23,7 +20,7 @@ final class Autoclave {
                 .inputItems(GTItems.PETRI_DISH)
                 .inputFluids(GTOMaterials.AbsoluteEthanol, 100)
                 .outputItems(GTOItems.STERILIZED_PETRI_DISH)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .duration(25).EUt(7680).save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("spacetime_catalyst")
@@ -57,7 +54,7 @@ final class Autoclave {
                 .outputItems(GTOItems.HASSIUM_SEED_CRYSTAL)
                 .EUt(31457280)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("unstable_star")
@@ -99,7 +96,7 @@ final class Autoclave {
                 .outputItems(GTOItems.CONTAINED_KERR_SINGULARITY)
                 .EUt(1966080)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("draconium_dust")
@@ -109,7 +106,7 @@ final class Autoclave {
                 .outputItems(TagPrefix.dust, GTOMaterials.Draconium)
                 .EUt(125829120)
                 .duration(200)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("prescient_crystal")
@@ -136,7 +133,7 @@ final class Autoclave {
                 .outputItems(GTOItems.IMPRINTED_RESONATIC_CIRCUIT_BOARD)
                 .EUt(1920)
                 .duration(300)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("pulsating_crystal")
@@ -174,7 +171,7 @@ final class Autoclave {
                 .inputFluids(GTOMaterials.SodiumHydroxideSolution, 1000)
                 .EUt(1222)
                 .duration(1222)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
     }
 }

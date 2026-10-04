@@ -54,7 +54,7 @@ import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
+import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -659,10 +659,8 @@ public final class GTOMachines {
             .notAllowSharedTooltips().tooltips(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
             .tooltipBuilder((stack, tooltips) -> {
-                for (CleanroomType type : CMHatchPartMachine
-                        .getCleanroomTypes(CMHatchPartMachine.STERILE_DUMMY_CLEANROOM)) {
-                    tooltips.add(Component.literal(String.format("  %s%s", ChatFormatting.GREEN,
-                            Component.translatable(type.getTranslationKey()).getString())));
+                for (int tier = 1; tier <= CMHatchPartMachine.STERILE_DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
+                    tooltips.add(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier)).withStyle(ChatFormatting.GREEN));
                 }
             })
             .renderer(() -> new MaintenanceHatchPartRenderer(7, GTOCore.id("block/machine/part/maintenance.sterile_cleaning")))
@@ -674,10 +672,8 @@ public final class GTOMachines {
             .notAllowSharedTooltips().tooltips(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
             .tooltipBuilder((stack, tooltips) -> {
-                for (CleanroomType type : CMHatchPartMachine
-                        .getCleanroomTypes(CMHatchPartMachine.LAW_DUMMY_CLEANROOM)) {
-                    tooltips.add(Component.literal(String.format("  %s%s", ChatFormatting.GREEN,
-                            Component.translatable(type.getTranslationKey()).getString())));
+                for (int tier = 1; tier <= CMHatchPartMachine.LAW_DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
+                    tooltips.add(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier)).withStyle(ChatFormatting.GREEN));
                 }
             })
             .renderer(() -> new MaintenanceHatchPartRenderer(10, GTOCore.id("block/machine/part/maintenance.law_cleaning")))
@@ -750,10 +746,8 @@ public final class GTOMachines {
             .tooltips(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
             .tooltipBuilder((stack, tooltips) -> {
-                for (CleanroomType type : CMHatchPartMachine
-                        .getCleanroomTypes(CMHatchPartMachine.DUMMY_CLEANROOM)) {
-                    tooltips.add(Component.literal(String.format("  %s%s", ChatFormatting.GREEN,
-                            Component.translatable(type.getTranslationKey()).getString())));
+                for (int tier = 1; tier <= CMHatchPartMachine.DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
+                    tooltips.add(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier)).withStyle(ChatFormatting.GREEN));
                 }
             })
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)
@@ -769,10 +763,8 @@ public final class GTOMachines {
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
             .tooltipBuilder((stack, tooltips) -> {
-                for (CleanroomType type : CMHatchPartMachine
-                        .getCleanroomTypes(CMHatchPartMachine.STERILE_DUMMY_CLEANROOM)) {
-                    tooltips.add(Component.literal(String.format("  %s%s", ChatFormatting.GREEN,
-                            Component.translatable(type.getTranslationKey()).getString())));
+                for (int tier = 1; tier <= CMHatchPartMachine.STERILE_DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
+                    tooltips.add(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier)).withStyle(ChatFormatting.GREEN));
                 }
             })
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)
@@ -787,10 +779,8 @@ public final class GTOMachines {
             .tooltips(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0"),
                     Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1"))
             .tooltipBuilder((stack, tooltips) -> {
-                for (CleanroomType type : CMHatchPartMachine
-                        .getCleanroomTypes(CMHatchPartMachine.LAW_DUMMY_CLEANROOM)) {
-                    tooltips.add(Component.literal(String.format("  %s%s", ChatFormatting.GREEN,
-                            Component.translatable(type.getTranslationKey()).getString())));
+                for (int tier = 1; tier <= CMHatchPartMachine.LAW_DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
+                    tooltips.add(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier)).withStyle(ChatFormatting.GREEN));
                 }
             })
             .tooltipsKey(LANG_PLACEMENT_TOOLTIP)

@@ -6,7 +6,6 @@ import com.gtocore.common.machine.trait.RadioactivityTrait;
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
 
-import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -40,19 +39,7 @@ public final class IncubatorMachine extends TierCasingMultiblockMachine {
     public void onStructureFormed() {
         super.onStructureFormed();
         tier = Math.min(getCasingTier(GTORecipeDataKeys.GLASS_TIER), tier);
-        IFilterType filterType = getMultiblockState().getMatchContext().get(Predicates.DataKey.FILTER_TYPE);
-        if (filterType != null) {
-            switch (filterType.getCleanroomType().getName()) {
-                case "cleanroom":
-                    cleanroomTier = 1;
-                    break;
-                case "sterile_cleanroom":
-                    cleanroomTier = 2;
-                    break;
-                case "law_cleanroom":
-                    cleanroomTier = 3;
-            }
-        }
+        cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 1);
     }
 
     @Override

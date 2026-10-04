@@ -3,7 +3,6 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -41,7 +40,7 @@ final class PolymerizationReactor {
                 .outputFluids(GTMaterials.Oxygen, 6000)
                 .EUt(7864320)
                 .duration(50)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         POLYMERIZATION_REACTOR_RECIPES.recipeBuilder("polyetheretherketone")
@@ -53,7 +52,7 @@ final class PolymerizationReactor {
                 .outputFluids(GTMaterials.CarbonDioxide, 1000)
                 .EUt(122880)
                 .duration(250)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         POLYMERIZATION_REACTOR_RECIPES.recipeBuilder("polyurethaneresin")
@@ -64,7 +63,7 @@ final class PolymerizationReactor {
                 .outputFluids(GTOMaterials.PolyurethaneResin, 1000)
                 .EUt(7680)
                 .duration(600)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         POLYMERIZATION_REACTOR_RECIPES.recipeBuilder("polyurethane")
@@ -83,7 +82,7 @@ final class PolymerizationReactor {
                 .outputFluids(GTOMaterials.Paa, 1000)
                 .EUt(122880)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         POLYMERIZATION_REACTOR_RECIPES.recipeBuilder("polyphenylene_sulfide_from_oxygen")
@@ -99,7 +98,7 @@ final class PolymerizationReactor {
                 .inputFluids(DiphenylIsophtalate, 1000)
                 .outputFluids(Phenol.getFluid(1000))
                 .outputFluids(Polybenzimidazole.getFluid(1008))
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         POLYMERIZATION_REACTOR_RECIPES.recipeBuilder("polycaprolactam").EUt(VA[MV]).duration(450)

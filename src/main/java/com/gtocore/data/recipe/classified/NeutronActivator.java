@@ -8,7 +8,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -26,7 +25,7 @@ final class NeutronActivator {
                 .inputFluids(GTOMaterials.MetastableOganesson, 1000)
                 .outputFluids(GTMaterials.Oganesson, 1000)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .addData(GTORecipeDataKeys.EV_MIN, 720)
                 .addData(GTORecipeDataKeys.EV_MAX, 800)
                 .addData(GTORecipeDataKeys.EVT, 1200)
@@ -64,7 +63,7 @@ final class NeutronActivator {
                 .inputFluids(GTOMaterials.MetastableHassium.getFluid(FluidStorageKeys.LIQUID, 1000))
                 .outputFluids(GTMaterials.Hassium, 1000)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .addData(GTORecipeDataKeys.EV_MIN, 340)
                 .addData(GTORecipeDataKeys.EV_MAX, 380)
                 .addData(GTORecipeDataKeys.EVT, 480)

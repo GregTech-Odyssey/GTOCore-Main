@@ -6,12 +6,9 @@ import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockD;
 import com.gtocore.config.GTORules;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
@@ -44,7 +41,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.DYSON_RECEIVER_CASING.asItem())
                 .EUt(7864320)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("reinforced_echo_shard")
@@ -57,7 +54,7 @@ final class PrecisionAssembler {
                 .outputItems(DDItems.REINFORCED_ECHO_SHARD.get())
                 .EUt(7864320)
                 .duration(200)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("power_core")
@@ -72,7 +69,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.SPACE_ELEVATOR_POWER_CORE.asItem())
                 .EUt(491520)
                 .duration(2400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("compressed_fusion_coil_mk2")
@@ -84,7 +81,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.COMPRESSED_FUSION_COIL_MK2.asItem())
                 .EUt(7864320)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("infinity_antimatter_fuel_rod")
@@ -99,7 +96,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.INFINITY_ANTIMATTER_FUEL_ROD)
                 .EUt(2013265920)
                 .duration(2000)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         // PRECISION_ASSEMBLER_RECIPES.recipeBuilder("uv_kuangbiao_one_giant_nuclear_fusion_reactor")
@@ -114,7 +111,7 @@ final class PrecisionAssembler {
         // .outputItems(MultiBlockD.KUANGBIAO_ONE_GIANT_NUCLEAR_FUSION_REACTOR[GTValues.UV].asItem())
         // .EUt(491520)
         // .duration(400)
-        // .cleanroom(CleanroomType.CLEANROOM)
+        // .cleanroom(1)
         // .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("bedrock_drill")
@@ -129,7 +126,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.BEDROCK_DRILL)
                 .EUt(491520)
                 .duration(1600)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("dyson_swarm_module")
@@ -144,7 +141,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.DYSON_SWARM_MODULE, 64)
                 .EUt(31457280)
                 .duration(800)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("luv_kuangbiao_one_giant_nuclear_fusion_reactor")
@@ -159,7 +156,7 @@ final class PrecisionAssembler {
                 .outputItems(MultiBlockD.KUANGBIAO_ONE_GIANT_NUCLEAR_FUSION_REACTOR.asItem())
                 .EUt(30720)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("cosmic_neutronium_antimatter_fuel_rod")
@@ -173,7 +170,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.COSMIC_NEUTRONIUM_ANTIMATTER_FUEL_ROD)
                 .EUt(503316480)
                 .duration(2000)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("hui_circuit_3")
@@ -188,7 +185,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.HUI_CIRCUIT_3)
                 .EUt(30720)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("hui_circuit_2")
@@ -203,7 +200,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.HUI_CIRCUIT_2)
                 .EUt(30720)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("hui_circuit_5")
@@ -218,7 +215,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.HUI_CIRCUIT_5)
                 .EUt(491520)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("hui_circuit_4")
@@ -233,7 +230,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.HUI_CIRCUIT_4)
                 .EUt(122880)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("topological_manipulator_unit")
@@ -248,7 +245,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.TOPOLOGICAL_MANIPULATOR_UNIT)
                 .EUt(31457280)
                 .duration(1800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("dyson_control_casing")
@@ -263,7 +260,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.DYSON_CONTROL_CASING.asItem())
                 .EUt(7864320)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("optical_soc")
@@ -278,7 +275,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.SIMPLE_OPTICAL_SOC)
                 .EUt(1966080)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         // PRECISION_ASSEMBLER_RECIPES.recipeBuilder("uhv_kuangbiao_one_giant_nuclear_fusion_reactor")
@@ -293,7 +290,7 @@ final class PrecisionAssembler {
         // .outputItems(MultiBlockD.KUANGBIAO_ONE_GIANT_NUCLEAR_FUSION_REACTOR[GTValues.UHV].asItem())
         // .EUt(1966080)
         // .duration(400)
-        // .cleanroom(CleanroomType.CLEANROOM)
+        // .cleanroom(1)
         // .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("compressed_fusion_coil")
@@ -305,7 +302,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.COMPRESSED_FUSION_COIL.asItem())
                 .EUt(122880)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("x_ray_laser")
@@ -320,7 +317,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.X_RAY_LASER)
                 .EUt(491520)
                 .duration(320)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("compressed_fusion_coil_mk2_prototype")
@@ -332,7 +329,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.COMPRESSED_FUSION_COIL_MK2_PROTOTYPE.asItem())
                 .EUt(1966080)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("rydberg_spinorial_assembly")
@@ -347,7 +344,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.RYDBERG_SPINORIAL_ASSEMBLY)
                 .EUt(7864320)
                 .duration(560)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("improved_superconductor_coil")
@@ -360,7 +357,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.IMPROVED_SUPERCONDUCTOR_COIL.asItem())
                 .EUt(30720)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("cosmic_processing_unit_core")
@@ -375,7 +372,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.COSMIC_PROCESSING_UNIT_CORE)
                 .EUt(31457280)
                 .duration(3500)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("annihilation_constrainer")
@@ -388,7 +385,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.ANNIHILATION_CONSTRAINER)
                 .EUt(31457280)
                 .duration(800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("machine_casing_grinding_head")
@@ -403,7 +400,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.MACHINE_CASING_GRINDING_HEAD.asItem())
                 .EUt(491520)
                 .duration(1600)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("draconium_antimatter_fuel_rod")
@@ -416,7 +413,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.DRACONIUM_ANTIMATTER_FUEL_ROD)
                 .EUt(125829120)
                 .duration(2000)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         // PRECISION_ASSEMBLER_RECIPES.recipeBuilder("zpm_kuangbiao_one_giant_nuclear_fusion_reactor")
@@ -431,7 +428,7 @@ final class PrecisionAssembler {
         // .outputItems(MultiBlockD.KUANGBIAO_ONE_GIANT_NUCLEAR_FUSION_REACTOR[GTValues.ZPM].asItem())
         // .EUt(122880)
         // .duration(400)
-        // .cleanroom(CleanroomType.CLEANROOM)
+        // .cleanroom(1)
         // .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("neutronium_antimatter_fuel_rod")
@@ -443,7 +440,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.NEUTRONIUM_ANTIMATTER_FUEL_ROD)
                 .EUt(31457280)
                 .duration(2000)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("lithography_mask")
@@ -456,7 +453,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.LITHOGRAPHY_MASK)
                 .EUt(480)
                 .duration(1200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("closed_timelike_curve_guidance_unit")
@@ -471,7 +468,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT)
                 .EUt(125829120)
                 .duration(1600)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("bioware_boule")
@@ -485,7 +482,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOItems.BIOWARE_BOULE)
                 .EUt(491520)
                 .duration(600)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("advanced_compressed_fusion_coil")
@@ -497,7 +494,7 @@ final class PrecisionAssembler {
                 .outputItems(GTOBlocks.ADVANCED_COMPRESSED_FUSION_COIL.asItem())
                 .EUt(491520)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("magnetic_fluid_generator")
@@ -524,7 +521,7 @@ final class PrecisionAssembler {
                 .inputFluids(GTMaterials.Polybenzimidazole, 288)
                 .EUt(524288)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("preparation_petri_dish")
@@ -535,7 +532,7 @@ final class PrecisionAssembler {
                 .inputFluids(GTMaterials.Bacteria, 100)
                 .EUt(480)
                 .duration(200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("bio_mechanical_casing")
@@ -547,7 +544,7 @@ final class PrecisionAssembler {
                 .inputFluids(GTMaterials.Bacteria, 50)
                 .EUt(480)
                 .duration(200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("bioactive_mechanical_casing")
@@ -560,7 +557,7 @@ final class PrecisionAssembler {
                 .inputFluids(GTMaterials.Tritanium, 288)
                 .EUt(GTValues.VA[GTValues.UV])
                 .duration(200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.builder("huge_item_import_bus")

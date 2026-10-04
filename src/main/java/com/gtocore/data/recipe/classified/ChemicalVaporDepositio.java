@@ -4,7 +4,6 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.EV;
@@ -33,7 +32,7 @@ final class ChemicalVaporDepositio {
                 .inputItems(CARBON_FIBERS, 16)
                 .inputFluids(Glowstone, 576)
                 .outputItems(NANO_CENTRAL_PROCESSING_UNIT_WAFER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(1200).EUt(VA[EV]).save();
 
         CHEMICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("qbit_cpu_wafer_quantum_eye")
@@ -41,7 +40,7 @@ final class ChemicalVaporDepositio {
                 .inputItems(QUANTUM_EYE, 2)
                 .inputFluids(GalliumArsenide, 288)
                 .outputItems(QUBIT_CENTRAL_PROCESSING_UNIT_WAFER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(900).EUt(VA[EV]).save();
 
         CHEMICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("qbit_cpu_wafer_radon")
@@ -49,14 +48,14 @@ final class ChemicalVaporDepositio {
                 .inputItems(dust, IndiumGalliumPhosphide)
                 .inputFluids(Radon, 50)
                 .outputItems(QUBIT_CENTRAL_PROCESSING_UNIT_WAFER)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(1200).EUt(VA[EV]).save();
         CHEMICAL_VAPOR_DEPOSITION_RECIPES.builder("sol_gel_qd_interface_modified_mfpc_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.NanoGoldDepositedCarbonNanotubeModifiedNHSLipoicEsterQDot)
                 .inputItems(TagPrefix.dust, HighPressureStaticAdsorptionMFPC)
                 .outputItems(TagPrefix.dust, SolGelQDInterfaceModifiedMFPC)
                 .inputFluids(GTOMaterials.SilicaGelBase, 1000)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .EUt(1200)
                 .duration(1200)
                 .save();

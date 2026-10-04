@@ -7,11 +7,8 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
-import com.gtolib.api.machine.GTOCleanroomType;
-
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -42,14 +39,14 @@ final class Mixer {
                 .inputItems(TagPrefix.dust, ZeoliteSievingPellets)
                 .outputFluids(AbsoluteEthanol.getFluid(1000))
                 .outputItems(TagPrefix.dust, WetZeoliteSievingPellets)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(100).EUt(120).save();
 
         MIXER_RECIPES.recipeBuilder("piranha_solution")
                 .inputFluids(HydrogenPeroxide, 1000)
                 .inputFluids(SulfuricAcid, 1000)
                 .outputFluids(PiranhaSolution.getFluid(2000))
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(50).EUt(30).save();
 
         MIXER_RECIPES.recipeBuilder("potassium_pyrosulfate_dust")
@@ -268,7 +265,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.SilicaGelBase, 1000)
                 .EUt(120)
                 .duration(80)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("enriched_xenoxene")
@@ -340,7 +337,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.GammaRaysPhotoresist, 1000)
                 .EUt(1966080)
                 .duration(800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("germanium_containing_precipitate_dust")
@@ -374,7 +371,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.EuvPhotoresist, 1000)
                 .EUt(524288)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("hastelloy_n_dust")
@@ -396,7 +393,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.TurbidDragonBlood, 1000)
                 .EUt(1920)
                 .duration(800)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("xenoxene_mixture")
@@ -409,7 +406,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.XenoxeneMixture, 10000)
                 .EUt(1966080)
                 .duration(800)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("actinium_trinium_hydroxides_dust")
@@ -454,7 +451,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.HeavyQuarkEnrichedMixture, 1000)
                 .EUt(32500000)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("grass_block")
@@ -480,7 +477,7 @@ final class Mixer {
                 .outputItems(TagPrefix.dust, GTOMaterials.LanthanumFullereneMix, 2)
                 .EUt(30720)
                 .duration(200)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("scandium_titanium_50_mixture")
@@ -532,7 +529,7 @@ final class Mixer {
                 .outputItems(TagPrefix.dust, GTOMaterials.PolycyclicAromaticMixture, 3)
                 .EUt(7680)
                 .duration(240)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("boron_trifluoride_acetate")
@@ -581,7 +578,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.ExplosiveHydrazine, 4000)
                 .EUt(1920)
                 .duration(480)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("charged_caesium_cerium_cobalt_indium_dust")
@@ -593,7 +590,7 @@ final class Mixer {
                 .outputItems(TagPrefix.dust, GTOMaterials.ChargedCaesiumCeriumCobaltIndium, 14)
                 .EUt(31457280)
                 .duration(400)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("vibrant_alloy_dust")
@@ -683,7 +680,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.BacterialGrowthMedium, 1000)
                 .EUt(120)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("animal_cells")
@@ -692,7 +689,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.AnimalCells, 1000)
                 .EUt(480)
                 .duration(100)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("pluripotency_induction_gene_therapy_fluid")
@@ -701,7 +698,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.PluripotencyInductionGeneTherapyFluid, 1000)
                 .EUt(7680)
                 .duration(24)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         MIXER_RECIPES.recipeBuilder("clear_ammonia_solution")
@@ -710,7 +707,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.ClearAmmoniaSolution, 1000)
                 .EUt(480)
                 .duration(100)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         MIXER_RECIPES.builder("nitinol_a_dust")
@@ -749,7 +746,7 @@ final class Mixer {
                 .outputFluids(DNAExtractionBuffer.getFluid(16000))
                 .EUt(7680)
                 .duration(200)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
         MIXER_RECIPES.builder("iron_chromium_redox_flow_battery_electrolyte_energy_release_cathode")
                 .inputItems(TagPrefix.dust, GTOMaterials.IronSulfate, 4)
@@ -796,7 +793,7 @@ final class Mixer {
                 .outputFluids(GTOMaterials.EssenceMediumRaw, 8000)
                 .EUt(128000)
                 .duration(800)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
     }
 }

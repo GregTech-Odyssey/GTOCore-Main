@@ -7,6 +7,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
@@ -622,8 +623,8 @@ public final class SpaceStationFlowPage {
                 oxygenView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_OXYGEN_OFF));
                 temperatureView = IssueView.of(RecipeIssue.IDLE, Component.translatable(LANG_TEMPERATURE_OFF));
             }
-            var types = machine.getTypes();
-            Component typeName = types.isEmpty() ? FlowParts.DASH : Component.translatable(types.iterator().next().getTranslationKey());
+            int cleanroomTier = machine.getCleanroomTier();
+            Component typeName = cleanroomTier == 0 ? FlowParts.DASH : ICleanroomProvider.getCleanroomTooltip(cleanroomTier);
             cleanroomView = ready ? IssueView.of(RecipeIssue.OK, typeName) : IssueView.of(RecipeIssue.WAITING, Component.translatable(LANG_WARMING));
             var machines = machine.getSpaceMachines();
             int total = 0, busy = 0;

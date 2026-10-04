@@ -6,13 +6,11 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.recipe.condition.GravityCondition;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.machine.GTOCleanroomType;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.network.chat.Component;
@@ -79,7 +77,7 @@ final class Extractor {
                 .outputFluids(GTOMaterials.DragonBreath, 1000)
                 .EUt(30)
                 .duration(200)
-                .cleanroom(GTOCleanroomType.LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
 
         EXTRACTOR_RECIPES.recipeBuilder("tin")
@@ -110,7 +108,7 @@ final class Extractor {
                 .outputFluids(GTOMaterials.Blood, 100)
                 .EUt(120)
                 .duration(50)
-                .cleanroom(CleanroomType.STERILE_CLEANROOM)
+                .cleanroom(2)
                 .save();
 
         EXTRACTOR_RECIPES.recipeBuilder("chitin")

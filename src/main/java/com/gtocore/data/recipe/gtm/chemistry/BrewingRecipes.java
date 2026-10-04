@@ -1,7 +1,6 @@
 package com.gtocore.data.recipe.gtm.chemistry;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
@@ -85,7 +84,7 @@ final class BrewingRecipes {
                         .outputFluids(GradePurifiedWater[j], 1000)
                         .circuitMeta(j + 1)
                         .duration(20)
-                        .cleanroom(CleanroomType.CLEANROOM)
+                        .cleanroom(1)
                         .save();
             }
     }

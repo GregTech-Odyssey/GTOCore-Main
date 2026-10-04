@@ -5,7 +5,6 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
@@ -327,7 +326,7 @@ public final class BatteryRecipes {
                 .inputItems(LAPOTRON_CRYSTAL)
                 .notConsumable(lens, Color.Blue)
                 .outputItems(ENGRAVED_LAPOTRON_CHIP, 3)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(256).EUt(VA[HV]).save();
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("lapotronic_energy_orb")
@@ -339,7 +338,7 @@ public final class BatteryRecipes {
                 .inputItems(plate, Platinum, 8)
                 .outputItems(ENERGY_LAPOTRONIC_ORB)
                 .solderMultiplier(2)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .duration(512).EUt(1024).save();
     }
 

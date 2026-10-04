@@ -5,7 +5,6 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -16,7 +15,6 @@ import static com.gtocore.common.data.GTOItems.ENDER_CRYSTAL;
 import static com.gtocore.common.data.GTOItems.HIGH_PURITY_SINGLE_CRYSTAL_SILICON;
 import static com.gtocore.common.data.GTOMaterials.VibrantAlloy;
 import static com.gtocore.common.data.GTORecipeTypes.CRYSTALLIZATION_RECIPES;
-import static com.gtolib.api.machine.GTOCleanroomType.LAW_CLEANROOM;
 
 final class Crystallization {
 
@@ -86,7 +84,7 @@ final class Crystallization {
                 .EUt(3450000)
                 .duration(340)
                 .blastFurnaceTemp(10900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CRYSTALLIZATION_RECIPES.recipeBuilder("periodically_poled_lithium_niobate_boule")
@@ -97,7 +95,7 @@ final class Crystallization {
                 .EUt(1966080)
                 .duration(600)
                 .blastFurnaceTemp(9900)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         CRYSTALLIZATION_RECIPES.recipeBuilder("silicon_boule")
@@ -194,7 +192,7 @@ final class Crystallization {
                 .EUt(1048576)
                 .blastFurnaceTemp(11112)
                 .duration(600)
-                .cleanroom(LAW_CLEANROOM)
+                .cleanroom(3)
                 .save();
     }
 }

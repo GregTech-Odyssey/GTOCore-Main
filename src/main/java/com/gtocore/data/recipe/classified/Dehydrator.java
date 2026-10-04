@@ -4,7 +4,6 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gtocore.common.data.GTORecipeTypes.DEHYDRATOR_RECIPES;
@@ -45,7 +44,7 @@ final class Dehydrator {
                 .outputItems(TagPrefix.dust, GTMaterials.Salt, 2)
                 .EUt(480)
                 .duration(130)
-                .cleanroom(CleanroomType.CLEANROOM)
+                .cleanroom(1)
                 .save();
 
         DEHYDRATOR_RECIPES.recipeBuilder("boron_trioxide_dust")
