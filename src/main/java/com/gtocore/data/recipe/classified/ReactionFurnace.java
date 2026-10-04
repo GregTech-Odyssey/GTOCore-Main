@@ -608,6 +608,7 @@ final class ReactionFurnace {
         REACTION_FURNACE_RECIPES.recipeBuilder("infused_obsidian")
                 .inputItems(GTOBlocks.ENDER_OBSIDIAN.asItem())
                 .inputItems(GTOItems.DRACONIUM_DIRT)
+                .inputItems(dust, GTOMaterials.Dragonstone, 4)
                 .outputItems(GTOBlocks.INFUSED_OBSIDIAN.asItem())
                 .EUt(7864320)
                 .duration(200)

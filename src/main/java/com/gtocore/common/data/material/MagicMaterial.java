@@ -521,92 +521,12 @@ public final class MagicMaterial {
                 .buildAndRegister()
                 .setFormula("Qs", false);
 
-        Ignatius = magicMaterial("ignatius", "伊格内休斯")
-                .ingot()
-                .fluid()
-                .blastTemp(12300, HIGHEST)
-                .element(GTOElements.ORICHALCUM)
-                .color(0xFF9F34)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE)
-                .buildAndRegister().setFormula("Ig", false);
-
-        Ceruclase = magicMaterial("ceruclase", "暗影秘银")
-                .ingot()
-                .fluid()
-                .blastTemp(12100, HIGHEST)
-                .element(GTOElements.MITHRIL)
-                .color(0x3680B6)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE)
-                .buildAndRegister().setFormula("Cc", false);
-
-        Lemurite = magicMaterial("lemurite", "利莫利亚")
-                .ingot()
-                .fluid()
-                .blastTemp(12300, HIGHEST)
-                .element(GTElements.Nq2)
-                .color(0xC5CACB)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE)
-                .buildAndRegister().setFormula("Lm", false);
-
-        Alduorite = magicMaterial("alduorite", "神秘蓝金")
-                .ingot()
-                .fluid()
-                .blastTemp(13300, HIGHEST)
-                .element(GTOElements.ENDERIUM)
-                .color(0x17B4CB)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE, GENERATE_GEAR)
-                .buildAndRegister().setFormula("Ao", false);
-
-        Kalendrite = magicMaterial("kalendrite", "幽冥魂石")
-                .ingot()
-                .fluid()
-                .blastTemp(13500, HIGHEST)
-                .element(GTOElements.INFUSCOLIUM)
-                .color(0x9A3AB3)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE)
-                .buildAndRegister().setFormula("Kl", false);
-
-        Celenegil = magicMaterial("celenegil", "幽冥毒晶")
-                .ingot()
-                .fluid()
-                .blastTemp(13700, HIGHEST)
-                .element(GTOElements.INFUSCOLIUM)
-                .color(0x399936)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE)
-                .buildAndRegister().setFormula("Cg", false);
-
-        Haderoth = magicMaterial("haderoth", "幻铜")
-                .ingot()
-                .fluid()
-                .blastTemp(14100, HIGHEST)
-                .element(GTOElements.COPPER76)
-                .color(0xB34616)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE)
-                .buildAndRegister().setFormula("Hd", false);
-
-        Sanguinite = magicMaterial("sanguinite", "狱炎")
-                .ingot()
-                .fluid()
-                .blastTemp(14900, HIGHEST)
-                .element(GTOElements.ADAMANTIUM)
-                .color(0xC81B00)
-                .iconSet(METALLIC)
-                .flags(GENERATE_PLATE, GENERATE_GEAR)
-                .buildAndRegister().setFormula("Su", false);
-
         OriginCoreCrystal = magicMaterial("origin_core_crystal", "源核晶")
                 .ore(true)
                 .gem()
                 .color(0xF2E8C6)
                 .iconSet(OPAL)
-                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES)
+                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES, GENERATE_PLATE, EXCLUDE_PLATE_COMPRESSOR_RECIPE)
                 .buildAndRegister().setFormula("\uD83C\uDF00 \uD83C\uDF31 \uD83C\uDF33", false);
 
         StarBloodCrystal = magicMaterial("star_blood_crystal", "星血晶")
@@ -614,7 +534,7 @@ public final class MagicMaterial {
                 .gem()
                 .color(0x7B68EE)
                 .iconSet(OPAL)
-                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES)
+                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES, GENERATE_PLATE, EXCLUDE_PLATE_COMPRESSOR_RECIPE)
                 .buildAndRegister().setFormula("\uD83D\uDCAB \uD83E\uDE78 ⚖️", false);
 
         SoulJadeCrystal = magicMaterial("soul_jade_crystal", "魂玉晶")
@@ -622,7 +542,7 @@ public final class MagicMaterial {
                 .gem()
                 .color(0xB19CD9)
                 .iconSet(OPAL)
-                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES)
+                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES, GENERATE_PLATE, EXCLUDE_PLATE_COMPRESSOR_RECIPE)
                 .buildAndRegister().setFormula("\uD83D\uDCA0 \uD83D\uDD2E \uD83C\uDF0C", false);
 
         RemnantSpiritStone = magicMaterial("remnant_spirit_stone", "骸灵石")
@@ -630,7 +550,7 @@ public final class MagicMaterial {
                 .gem()
                 .color(0x4F4F4F)
                 .iconSet(OPAL)
-                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES)
+                .flags(GTOMaterialFlags.DISABLE_GEM_RECIPES, GENERATE_PLATE, EXCLUDE_PLATE_COMPRESSOR_RECIPE)
                 .buildAndRegister().setFormula("\uD83D\uDC80 ⚰️ ⚜️", false);
 
         OriginCoreCrystalResidue = material("origin_core_crystal_residue", "源核晶残渣")
@@ -840,6 +760,87 @@ public final class MagicMaterial {
                 .color(0xA08A6E).iconSet(LIMPID).buildAndRegister();
         CrystallizedRemnantSpiritStoneDust = material("crystallized_remnant_spirit_stone_dust", "晶化骸灵石粉体")
                 .dust().color(0xB0B0B0).iconSet(BRIGHT).buildAndRegister();
+
+        // 高阶魔法金属
+        Ignatius = magicMaterial("ignatius", "伊格内休斯")
+                .ingot()
+                .fluid()
+                .blastTemp(12300, HIGHEST)
+                .element(GTOElements.ORICHALCUM)
+                .color(0xFF9F34)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE)
+                .buildAndRegister().setFormula("Ig", false);
+
+        Ceruclase = magicMaterial("ceruclase", "暗影秘银")
+                .ingot()
+                .fluid()
+                .blastTemp(12100, HIGHEST)
+                .element(GTOElements.MITHRIL)
+                .color(0x3680B6)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE)
+                .buildAndRegister().setFormula("Cc", false);
+
+        Lemurite = magicMaterial("lemurite", "利莫利亚")
+                .ingot()
+                .fluid()
+                .blastTemp(12300, HIGHEST)
+                .element(GTElements.Nq2)
+                .color(0xC5CACB)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE)
+                .buildAndRegister().setFormula("Lm", false);
+
+        Alduorite = magicMaterial("alduorite", "神秘蓝金")
+                .ingot()
+                .fluid()
+                .blastTemp(13300, HIGHEST)
+                .element(GTOElements.ENDERIUM)
+                .color(0x17B4CB)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE, GENERATE_GEAR)
+                .buildAndRegister().setFormula("Ao", false);
+
+        Kalendrite = magicMaterial("kalendrite", "幽冥魂石")
+                .ingot()
+                .fluid()
+                .blastTemp(13500, HIGHEST)
+                .element(GTOElements.INFUSCOLIUM)
+                .color(0x9A3AB3)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE)
+                .buildAndRegister().setFormula("Kl", false);
+
+        Celenegil = magicMaterial("celenegil", "幽冥毒晶")
+                .ingot()
+                .fluid()
+                .blastTemp(13700, HIGHEST)
+                .element(GTOElements.INFUSCOLIUM)
+                .color(0x399936)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE)
+                .buildAndRegister().setFormula("Cg", false);
+
+        Haderoth = magicMaterial("haderoth", "幻铜")
+                .ingot()
+                .fluid()
+                .blastTemp(14100, HIGHEST)
+                .element(GTOElements.COPPER76)
+                .color(0xB34616)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE)
+                .buildAndRegister().setFormula("Hd", false);
+
+        Sanguinite = magicMaterial("sanguinite", "狱炎")
+                .ingot()
+                .fluid()
+                .blastTemp(14900, HIGHEST)
+                .element(GTOElements.ADAMANTIUM)
+                .color(0xC81B00)
+                .iconSet(METALLIC)
+                .flags(GENERATE_PLATE, GENERATE_GEAR)
+                .buildAndRegister().setFormula("Su", false);
     }
 
     public static GTOMaterialBuilder magicMaterial(String name, String cn) {

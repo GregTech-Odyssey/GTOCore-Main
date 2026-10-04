@@ -151,8 +151,8 @@ public final class MiscRecipe {
                 .addData(GTORecipeDataKeys.TIER, 3)
                 .save();
 
-        WOOD_DISTILLATION_RECIPES.builder("muhuayihaodianlu")
-                .inputItems(ItemTags.LOGS, 16)
+        WOOD_DISTILLATION_RECIPES.builder("wood_distillation_with_nitrogen")
+                .inputItems(ItemTags.LOGS_THAT_BURN, 16)
                 .outputItems(TagPrefix.dust, GTMaterials.Ash, 2)
                 .inputFluids(GTMaterials.Nitrogen, 1000)
                 .outputFluids(GTMaterials.Benzene, 1050)
@@ -175,8 +175,8 @@ public final class MiscRecipe {
                 .duration(300)
                 .save();
 
-        WOOD_DISTILLATION_RECIPES.builder("muhuaerhaodianlu")
-                .inputItems(ItemTags.LOGS, 16)
+        WOOD_DISTILLATION_RECIPES.builder("wood_distillation_with_steam")
+                .inputItems(ItemTags.LOGS_THAT_BURN, 16)
                 .outputItems(TagPrefix.dust, GTMaterials.Ash, 2)
                 .inputFluids(GTMaterials.Steam, 1000)
                 .outputFluids(GTMaterials.Ammonia, 600)
@@ -191,8 +191,8 @@ public final class MiscRecipe {
                 .duration(300)
                 .save();
 
-        WOOD_DISTILLATION_RECIPES.builder("muhuasanhaodianlu")
-                .inputItems(ItemTags.LOGS, 16)
+        WOOD_DISTILLATION_RECIPES.builder("wood_distillation_with_water")
+                .inputItems(ItemTags.LOGS_THAT_BURN, 16)
                 .outputItems(GTItems.FERTILIZER, 6)
                 .inputFluids(GTMaterials.Water, 6000)
                 .outputFluids(GTMaterials.Methane, 3300)

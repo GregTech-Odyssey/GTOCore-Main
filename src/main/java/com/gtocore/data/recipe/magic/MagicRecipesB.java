@@ -3,6 +3,8 @@ package com.gtocore.data.recipe.magic;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.ManaMachine;
 import com.gtocore.common.data.machines.ManaMultiBlock;
+import com.gtocore.common.recipe.condition.GravityCondition;
+import com.gtocore.common.recipe.condition.VacuumCondition;
 import com.gtocore.config.GTORules;
 import com.gtocore.data.tag.Tags;
 
@@ -11,8 +13,10 @@ import com.gtolib.api.data.GTODimensions;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -23,6 +27,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import com.gto.registrate.util.entry.ItemEntry;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
 import mythicbotany.register.ModItems;
@@ -1599,6 +1604,49 @@ public final class MagicRecipesB {
                         .outputFluids(RemnantSpiritStoneMotherLiquor, 1000)
                         .duration(460).EUt(VA[MV])
                         .save();
+            }
+
+            // 后续处理
+            {
+                Material[] material = new Material[] {
+                        OriginCoreCrystal, StarBloodCrystal, SoulJadeCrystal, RemnantSpiritStone };
+                @SuppressWarnings("unchecked")
+                ItemEntry<Item>[] ETCHED_CRYSTAL = new ItemEntry[] {
+                        ORIGIN_CORE_CRYSTAL_ETCHED_CRYSTAL_PLATE, STAR_BLOOD_CRYSTAL_ETCHED_CRYSTAL_PLATE,
+                        SOUL_JADE_CRYSTAL_ETCHED_CRYSTAL_PLATE, REMNANT_SPIRIT_STONE_ETCHED_CRYSTAL_PLATE
+                };
+                for (int i = 0; i < material.length; i++) {
+                    CUTTER_RECIPES.recipeBuilder("cutter_" + material[i].getName() + "_gem_exquisite")
+                            .inputItems(gemExquisite, material[i])
+                            .inputFluids(FinalPurifier, 1000)
+                            .outputItems(plate, material[i])
+                            .duration(2400).EUt(VA[UV])
+                            .cleanroom(CleanroomType.CLEANROOM)
+                            .addCondition(new VacuumCondition(4))
+                            .addCondition(new GravityCondition(true))
+                            .save();
+
+                    CUTTER_RECIPES.recipeBuilder("cutter_" + material[i].getName() + "_gem")
+                            .inputItems(gemFlawless, material[i])
+                            .inputFluids(FinalPurifier, 1000)
+                            .chancedOutput(plate, material[i], 1000, 0)
+                            .duration(2400).EUt(VA[ZPM])
+                            .cleanroom(CleanroomType.CLEANROOM)
+                            .addCondition(new VacuumCondition(4))
+                            .addCondition(new GravityCondition(true))
+                            .save();
+
+                    LASER_ENGRAVER_RECIPES.recipeBuilder(material[i].getName() + "_etched_crystal_plate")
+                            .notConsumable(lens, BifrostPerm)
+                            .inputItems(plate, material[i])
+                            .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
+                            .outputItems(ETCHED_CRYSTAL[i])
+                            .duration(2400).EUt(VA[ZPM])
+                            .cleanroom(CleanroomType.CLEANROOM)
+                            .addCondition(new VacuumCondition(4))
+                            .addCondition(new GravityCondition(true))
+                            .save();
+                }
             }
         }
     }

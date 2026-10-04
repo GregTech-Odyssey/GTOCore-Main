@@ -1047,6 +1047,11 @@ public final class GTOItems {
     public static final ItemEntry<Item> SOUL_JADE_CRYSTAL_ETCHED_CRYSTAL_PLATE = register("soul_jade_crystal_etched_crystal_plate", "魂玉晶蚀刻晶版");
     public static final ItemEntry<Item> REMNANT_SPIRIT_STONE_ETCHED_CRYSTAL_PLATE = register("remnant_spirit_stone_etched_crystal_plate", "骸灵石蚀刻晶版");
 
+    public static final ItemEntry<Item> WITHER_BONE = register("wither_bone", "凋零骨");
+    public static final ItemEntry<Item> SPIRIT_BONE = register("spirit_bone", "灵骨");
+    public static final ItemEntry<Item> DRAGON_BONE = register("dragon_bone", "龙骨");
+    public static final ItemEntry<Item> CHITIN = register("chitin", "甲壳");
+
     public static final ItemEntry<TarotArcanum>[] TAROT_ARCANUM = registerTarotArcanum();
 
     public static final ItemEntry<AffixCanvas> AFFIX_CANVAS = item("affix_canvas", "铭刻之布", AffixCanvas::new).register();

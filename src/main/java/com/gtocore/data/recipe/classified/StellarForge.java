@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
+import static com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys.LIQUID;
 import static com.gtocore.common.data.GTORecipeTypes.STELLAR_FORGE_RECIPES;
 
 final class StellarForge {
@@ -453,7 +454,7 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.recipeBuilder("mana1")
                 .notConsumable("botania:entropinnyum", 64)
                 .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem(), 16)
-                .chancedOutput(GTOMaterials.Mana.getFluid(14400), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 14400), 7000, 10)
                 .circuitMeta(1)
                 .MANAt(-50000000)
                 .EUt(31457280)
@@ -464,7 +465,7 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.recipeBuilder("mana2")
                 .notConsumable("botania:entropinnyum", 64)
                 .inputItems(GTOBlocks.LEPTONIC_CHARGE.asItem(), 16)
-                .chancedOutput(GTOMaterials.Mana.getFluid(57600), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 57600), 7000, 10)
                 .circuitMeta(2)
                 .MANAt(-400000000)
                 .EUt(31457280)
@@ -475,7 +476,7 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.recipeBuilder("mana3")
                 .notConsumable("botania:entropinnyum", 64)
                 .inputItems(GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem(), 16)
-                .chancedOutput(GTOMaterials.Mana.getFluid(307200), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 307200), 7000, 10)
                 .circuitMeta(3)
                 .MANAt(-3200000000L)
                 .EUt(31457280)
@@ -487,7 +488,7 @@ final class StellarForge {
                 .notConsumable("botania:entropinnyum", 4)
                 .notConsumable("botania:alfheim_portal")
                 .inputItems(Items.BREAD.asItem(), 6400)
-                .chancedOutput(GTOMaterials.Mana.getFluid(7200), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 7200), 7000, 10)
                 .EUt(69)
                 .MANAt(-420)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)

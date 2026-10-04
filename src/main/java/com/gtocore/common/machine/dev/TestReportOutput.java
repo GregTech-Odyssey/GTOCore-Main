@@ -27,13 +27,14 @@ public class TestReportOutput extends MetaMachine implements IFancyUIMachine {
     }
 
     private void addDisplayText(List<Component> textList) {
-        textList.add(ComponentPanelWidget.withButton(Component.literal(" [data_crystal]"), "data_crystal"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [enchantment]"), "enchantment"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [affix_reporter]"), "affix_reporter"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [ore_reporter]"), "ore_reporter"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [export_all_loot_tables]"), "export_all_loot_tables"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [export_loot_tables]"), "export_loot_tables"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [material_reporter]"), "material_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [tag_reporter]"), "tag_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [entity_reporter]"), "entity_reporter"));
         textList.add(ComponentPanelWidget.withButton(Component.literal(" [ItemIconReport]"), "ItemIconReport"));
     }
 
@@ -55,6 +56,8 @@ public class TestReportOutput extends MetaMachine implements IFancyUIMachine {
                     LootTableExporter.exportLootTables(LOOT_TABLES);
                 }
                 case "material_reporter" -> MaterialReport.generateReport();
+                case "tag_reporter" -> TagReport.generateReport();
+                case "entity_reporter" -> EntityReport.generateReport();
                 case "ItemIconReport" -> ItemIconReport.generateReport();
             }
         }
