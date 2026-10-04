@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.LiquidBlock;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AmountFormat;
 
 import snownee.jade.api.*;
 import snownee.jade.api.config.IPluginConfig;
@@ -37,7 +36,7 @@ public enum AEItemAmountProvider implements IBlockComponentProvider, IEntityComp
             }
             IEnhancedPlayer.fetchClientAEData(player, aeKey);
             if (IEnhancedPlayer.isClientAEReachable(player)) {
-                tooltip.add(IEnhancedPlayer.getClientAEStatusText(player, aeKey, AmountFormat.FULL));
+                tooltip.add(IEnhancedPlayer.getClientAEStatusText(player, aeKey));
             }
         }
     }
@@ -50,7 +49,7 @@ public enum AEItemAmountProvider implements IBlockComponentProvider, IEntityComp
             IEnhancedPlayer.fetchClientAEData(player, AEItemKey.of(stack));
 
             if (IEnhancedPlayer.isClientAEReachable(player)) {
-                tooltip.add(IEnhancedPlayer.getClientAEStatusText(player, AEItemKey.of(stack), AmountFormat.FULL));
+                tooltip.add(IEnhancedPlayer.getClientAEStatusText(player, AEItemKey.of(stack)));
             }
         }
     }
