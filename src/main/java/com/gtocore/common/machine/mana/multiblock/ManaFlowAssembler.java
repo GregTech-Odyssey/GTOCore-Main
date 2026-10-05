@@ -225,13 +225,8 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         }
         var pos = getPos().above(2);
         var aabb = new AABB(pos).inflate(1);
-        var counter = new AtomicInteger();
-        return level.getEntitiesOfClass(ItemEntity.class, aabb, itemEntity -> {
-            if (itemEntity.isAlive() && !itemEntity.getItem().isEmpty()) {
-                return counter.getAndIncrement() < SIZE;
-            }
-            return false;
-        });
+        int[] counter = new int[1];
+        return level.getEntitiesOfClass(ItemEntity.class, aabb, itemEntity -> itemEntity.isAlive() && !itemEntity.getItem().isEmpty() && counter[0]++ < SIZE);
     }
 
     private class ItemEntityRecipeHandler implements IRecipeHandler {
@@ -261,22 +256,22 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public long available(AEKeyType type, KeyIngredient ingredient) {
-            if (type != AEKeyType.items()) return 0;
             long total = 0;
             for (var itemEntity : getItemEntitiesAbove()) {
-                if (itemEntity.isAlive() && ingredient.test(itemEntity.getItem())) total += StxckUtil.getTotalCount(itemEntity);
+                if (itemEntity.isAlive() && KeyIngredient.acceptsStack(ingredient, itemEntity.getItem())) total += StxckUtil.getTotalCount(itemEntity);
             }
             return total;
         }
 
         @Override
         public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
-            if (type != AEKeyType.items()) return 0;
             var entities = plannedEntities(plan, member);
             long got = 0;
-            for (int s = 0; s < entities.size() && got < need; s++) {
+            for (int s = 0, size = entities.size(); s < size && got < need; s++) {
                 var itemEntity = entities.get(s);
-                if (!itemEntity.isAlive() || itemEntity.getItem().isEmpty() || !ingredient.test(itemEntity.getItem())) continue;
+                if (!itemEntity.isAlive()) continue;
+                var stack = itemEntity.getItem();
+                if (stack.isEmpty() || !KeyIngredient.acceptsStack(ingredient, stack)) continue;
                 long free = StxckUtil.getTotalCount(itemEntity) - reserved(plan, member, s, false);
                 if (free <= 0) continue;
                 long t = Math.min(free, need - got);
@@ -288,16 +283,16 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
-            if (type != AEKeyType.items()) return true;
             var entities = planned;
-            for (int s = 0; s < entities.size(); s++) {
+            int size = entities.size();
+            for (int s = 0; s < size; s++) {
                 long take = reserved(plan, member, s, true);
                 if (take > 0) {
                     var itemEntity = entities.get(s);
                     if (!itemEntity.isAlive() || StxckUtil.getTotalCount(itemEntity) < take) return false;
                 }
             }
-            for (int s = 0; s < entities.size(); s++) {
+            for (int s = 0; s < size; s++) {
                 long take = reserved(plan, member, s, true);
                 if (take > 0) StxckUtil.shrink(entities.get(s), (int) take);
             }
@@ -306,9 +301,8 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
-            if (type != AEKeyType.items()) return;
             var entities = planned;
-            for (int s = 0; s < entities.size(); s++) {
+            for (int s = 0, size = entities.size(); s < size; s++) {
                 long take = reserved(plan, member, s, true);
                 if (take <= 0) continue;
                 var itemEntity = entities.get(s);
@@ -324,17 +318,16 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public long reserveOutput(PlanScratch plan, int member, AEKeyType type, int entry, AEKey key, long amount) {
-            return type == AEKeyType.items() ? amount : 0;
+            return amount;
         }
 
         @Override
         public long insertOutput(AEKeyType type, AEKey key, long amount) {
-            if (!(key instanceof AEItemKey itemKey)) return 0;
             if (getLevel() instanceof ServerLevel level) {
                 var pos = getPos().above(3);
                 var posCenter = pos.getCenter();
                 var random = level.random;
-                var itemEntity = new ItemEntity(level, posCenter.x(), posCenter.y(), posCenter.z(), Keys.toStack(itemKey, amount));
+                var itemEntity = new ItemEntity(level, posCenter.x(), posCenter.y(), posCenter.z(), Keys.toStack((AEItemKey) key, amount));
                 itemEntity.setDeltaMovement(random.nextDouble() * 0.2 - 0.1, 0.2, random.nextDouble() * 0.2 - 0.1);
                 level.addFreshEntity(itemEntity);
             }
@@ -343,15 +336,14 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
         @Override
         public boolean isInfiniteCapacity(AEKeyType type) {
-            return type == AEKeyType.items();
+            return true;
         }
 
         @Override
         public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
-            if (type != AEKeyType.items()) return false;
             for (var itemEntity : getItemEntitiesAbove()) {
                 if (!itemEntity.isAlive()) continue;
-                var key = Keys.item(itemEntity.getItem());
+                var key = AEItemKey.of(itemEntity.getItem());
                 if (key != null && visitor.visit(key, StxckUtil.getTotalCount(itemEntity))) return true;
             }
             return false;
@@ -368,7 +360,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         public void addToSearchMap(@NotNull IntLongMap target, @NotNull GTRecipeType type) {
             for (var i : getItemEntitiesAbove()) {
                 if (!i.isAlive()) continue;
-                var key = Keys.item(i.getItem());
+                var key = AEItemKey.of(i.getItem());
                 if (key != null) type.convertKey(key, StxckUtil.getTotalCount(i), target);
             }
         }

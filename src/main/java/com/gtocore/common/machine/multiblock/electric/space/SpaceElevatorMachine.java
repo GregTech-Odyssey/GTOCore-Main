@@ -40,7 +40,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -90,7 +90,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     protected void update() {
         if (getOffsetTimer() % 80 == 0) {
             if (spoolCount < getMaxSpoolCount()) {
-                forEachKey(AEKeyType.items(), true, (key, amount) -> {
+                forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
                     if (key instanceof AEItemKey itemKey && itemKey.getItem() == GTOItems.NANOTUBE_SPOOL.get()) {
                         int count = (int) Math.min(amount, getMaxSpoolCount() - spoolCount);
                         if (count < 1) return true;

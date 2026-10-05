@@ -7,7 +7,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 
 import appbot.ae2.ManaKey;
 import lombok.Setter;
@@ -20,7 +20,7 @@ import java.util.function.LongSupplier;
 public final class AEManaKeyHandler implements ManaPool {
 
     @Setter
-    private AEKeyMap<AEKey> map;
+    private AEKeyLongMap<AEKey> map;
     @Setter
     private long capacity;
     @Setter

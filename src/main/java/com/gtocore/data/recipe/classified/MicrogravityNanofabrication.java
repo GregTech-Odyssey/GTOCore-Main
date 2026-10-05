@@ -12,6 +12,8 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
+import net.minecraft.world.level.material.Fluid;
+
 import static com.gregtechceu.gtceu.api.GTValues.UHV;
 import static com.gregtechceu.gtceu.api.GTValues.VA;
 import static com.gtocore.common.data.GTORecipeTypes.MICROGRAVITY_NANOFABRICATION_RECIPES;
@@ -83,7 +85,7 @@ public class MicrogravityNanofabrication {
                 .inputItems(GTOTagPrefix.wireFine, GTOMaterials.AbyssalAlloy, 16)
                 .outputItems(MultiBlockI.LARGE_ALGAE_FARM)
                 .inputFluids(GTOMaterials.MutatedLivingSolder, 6000)
-                .inputFluids(GTOFluids.DEW_OF_THE_VOID.getSource(), 10000)
+                .inputFluids((Fluid) GTOFluids.DEW_OF_THE_VOID.getSource(), 10000)
                 .EUt(VA[UHV])
                 .duration(200)
                 .save();

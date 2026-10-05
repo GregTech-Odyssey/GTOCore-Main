@@ -141,7 +141,8 @@ public final class TechNode {
 
     private static MutableComponent contentName(ContentList list) {
         var ingredient = list.ingredient(0);
-        Component name = (ingredient.kind == KeyIngredient.BASE || ingredient.kind == KeyIngredient.EXACT) && ingredient.key() instanceof AEItemKey key ? Keys.displayStack(key).getDisplayName() : ingredient.getName();
+        byte kind = ingredient.kind();
+        Component name = (kind == KeyIngredient.BASE || kind == KeyIngredient.EXACT) && ingredient.key() instanceof AEItemKey key ? Keys.displayStack(key).getDisplayName() : ingredient.getName();
         return Component.literal(list.amount(0) + "× ").append(name);
     }
 

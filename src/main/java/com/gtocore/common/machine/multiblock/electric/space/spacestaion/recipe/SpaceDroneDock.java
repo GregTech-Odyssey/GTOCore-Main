@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
@@ -24,7 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
@@ -50,8 +49,9 @@ public class SpaceDroneDock extends RecipeExtension {
         ObjHolder<ItemStack> outputHolder = new ObjHolder<>();
         ObjHolder<AEItemKey> inputHolder = new ObjHolder<>();
         KeyIngredient chargeable = definition.itemInputs.ingredient(0);
-        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
-            if (!(key instanceof AEItemKey itemKey) || !chargeable.test(itemKey)) return false;
+        unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
+            var itemKey = (AEItemKey) key;
+            if (!KeyIngredient.accepts(chargeable, itemKey.uid, itemKey)) return false;
             ItemStack output = itemKey.toStack(1);
             if (GTCapabilityHelper.getElectricItem(output) instanceof ElectricItem electricItem) {
                 var change = BigInteger.valueOf(electricItem.getCharge());
@@ -81,7 +81,7 @@ public class SpaceDroneDock extends RecipeExtension {
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, maxParallel);
         if (recipe == null) return null;
         unit.inputItem(inputHolder.value, 1);
-        var outputKey = Keys.item(outputHolder.value);
+        var outputKey = AEItemKey.of(outputHolder.value);
         if (outputKey != null) output(outputKey, 1);
 
         return recipe;
@@ -90,8 +90,9 @@ public class SpaceDroneDock extends RecipeExtension {
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
-        if (getLevel() == null) return;
-        var galaxy = GTODimensions.getGalaxy(getLevel().dimension());
+        var level = getLevel();
+        if (level == null) return;
+        var galaxy = GTODimensions.getGalaxy(level.dimension());
         if (galaxy == null) {
             list.add(Component.translatable(NOT_IN_SPACETIME_DOMAIN));
             return;
@@ -106,8 +107,9 @@ public class SpaceDroneDock extends RecipeExtension {
     }
 
     private Galaxy currentGalaxy() {
-        if (getLevel() == null) return Galaxy.NONE;
-        var galaxy = GTODimensions.getGalaxy(getLevel().dimension());
+        var level = getLevel();
+        if (level == null) return Galaxy.NONE;
+        var galaxy = GTODimensions.getGalaxy(level.dimension());
         return galaxy == null ? Galaxy.NONE : galaxy;
     }
 

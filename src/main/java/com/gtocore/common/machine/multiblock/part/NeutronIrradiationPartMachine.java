@@ -32,6 +32,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import appeng.api.stacks.AEItemKey;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.recipesearch.IntLongMap;
@@ -274,7 +276,7 @@ public final class NeutronIrradiationPartMachine extends MultiblockPartMachine i
                 var stack = stacks[i];
                 var amount = stack.getCount();
                 if (amount > 0) {
-                    type.convertKey(Keys.item(stack), amount, map);
+                    type.convertKey(AEItemKey.of(stack), amount, map);
                 }
             }
         }

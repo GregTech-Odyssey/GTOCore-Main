@@ -15,8 +15,6 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
-import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -28,10 +26,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
@@ -41,24 +35,17 @@ import appeng.api.stacks.AEItemKey;
 import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ITesseractMarkerInteractable, TesseractCapCache.Holder {
-
-    private static final Set<Capability<?>> CAPABILITIES = Set.of(ForgeCapabilities.ITEM_HANDLER, ForgeCapabilities.FLUID_HANDLER);
 
     @Override
     public void onMachineRemoved() {
         clearInventory(inventory.storage);
     }
-
-    private WeakReference<BlockEntity> blockEntityReference;
 
     @SaveToDisk
     public BlockPos pos;
@@ -68,8 +55,9 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     private boolean call;
 
-    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items();
-    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids();
+    private final TesseractTargets remotes = new TesseractTargets(this);
+    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items(this);
+    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids(this);
 
     public TesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -77,10 +65,29 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
         inventory.storage.setOnChanged(() -> {
             onChanged();
             call = false;
-            blockEntityReference = null;
             pos = readCardPos();
-            clearDirectionCache();
+            bindTargets();
+            notifyExposureChanged();
         });
+    }
+
+    private void bindTargets() {
+        var target = pos;
+        remotes.resize(target == null ? 0 : 1);
+        if (target != null) remotes.bind(0, getLevel(), target);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        bindTargets();
+        remotes.subscribe(!isRemote());
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        remotes.subscribe(false);
     }
 
     @Nullable
@@ -130,12 +137,12 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     @Override
     public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return itemCaps.collect(this, side);
+        return itemCaps.collect(side);
     }
 
     @Override
     public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return fluidCaps.collect(this, side);
+        return fluidCaps.collect(side);
     }
 
     @Override
@@ -149,13 +156,8 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     }
 
     @Override
-    public int getTotalBlockEntities() {
-        return pos == null ? 0 : 1;
-    }
-
-    @Override
-    public @Nullable BlockEntity getBlockEntity(int i) {
-        return getTargetBlockEntity();
+    public TesseractTargets getRemoteTargets() {
+        return remotes;
     }
 
     @Override
@@ -170,57 +172,18 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     @Override
     public void clearDirectionCache() {
-        super.clearDirectionCache();
         if (itemCaps != null) {
             itemCaps.invalidate();
             fluidCaps.invalidate();
         }
+        super.clearDirectionCache();
     }
 
     @Override
     public void onCoverUpdate(@Nullable CoverBehavior coverBehavior, Direction side) {
-        super.onCoverUpdate(coverBehavior, side);
         itemCaps.invalidate(side);
         fluidCaps.invalidate(side);
-    }
-
-    @Nullable
-    private BlockEntity getTargetBlockEntity() {
-        if (call || pos == null) return null;
-        if (blockEntityReference != null) {
-            var blockEntity = blockEntityReference.get();
-            if (blockEntity != null && !blockEntity.isRemoved()) return blockEntity;
-        }
-        var be = ILevel.getCachedBlockEntity(getLevel(), pos);
-        if (be != null) blockEntityReference = new WeakReference<>(be);
-        return be;
-    }
-
-    @Override
-    @Nullable
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (call) return null;
-        if (pos != null && CAPABILITIES.contains(cap)) {
-            var be = getTargetBlockEntity();
-            if (be == null) return null;
-            CoverBehavior cover = side == null ? null : getCoverContainer().getCoverAtSide(side);
-            if (cover != null) {
-                if (cap == ForgeCapabilities.ITEM_HANDLER) {
-                    var handler = itemCaps.collect(this, side);
-                    if (handler != null) return itemCaps.optional(side, handler);
-                    if (itemCaps.lastHadTargets()) return LazyOptional.empty();
-                } else {
-                    var handler = fluidCaps.collect(this, side);
-                    if (handler != null) return fluidCaps.optional(side, handler);
-                    if (fluidCaps.lastHadTargets()) return LazyOptional.empty();
-                }
-            }
-            call = true;
-            var result = be.getCapability(cap, side);
-            call = false;
-            return result;
-        }
-        return null;
+        super.onCoverUpdate(coverBehavior, side);
     }
 
     @Override
@@ -268,7 +231,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
         posTags.putInt("x", pos.getX());
         posTags.putInt("y", pos.getY());
         posTags.putInt("z", pos.getZ());
-        inventory.storage.set(0, Keys.item(card), card.getCount());
+        inventory.storage.set(0, AEItemKey.of(card), card.getCount());
         player.displayClientMessage(Component.translatable(WRITE_SUCCESS_TEXT), true);
         return true;
     }

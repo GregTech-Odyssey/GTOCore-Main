@@ -17,6 +17,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.UUID;
 
 public final class ProviderRegistry {
@@ -31,8 +32,13 @@ public final class ProviderRegistry {
         return Math.max(0, Math.min(GTValues.MAX, tier));
     }
 
-    public static void registerTower(MetaMachine machine, BigInteger capacity, double lossWeight, int tier) {
-        register(machine, (pos, owner, level) -> new Provider.Tower(pos, owner, capacity, lossWeight, clampTier(tier)));
+    public static void registerTower(MetaMachine machine, List<Provider.Unit> units, int tier) {
+        register(machine, (pos, owner, level) -> new Provider.Tower(pos, owner, List.copyOf(units), clampTier(tier)));
+    }
+
+    public static BigInteger towerCapacity(MetaMachine machine) {
+        if (!(machine.getLevel() instanceof ServerLevel level)) return BigInteger.ZERO;
+        return WirelessGrid.accountIfPresent(machine.getOwnerUUID()).towerCapacity(GlobalPos.of(level.dimension(), machine.getPos()));
     }
 
     public static void registerRelay(MetaMachine machine, int tier, @Nullable ResourceKey<Level> target) {

@@ -3,28 +3,20 @@ package com.gtocore.mixin.ae2.blockentity;
 import com.gtolib.api.ae2.CellInventoryFilter;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import appeng.api.storage.ITerminalHost;
-import appeng.api.storage.MEStorage;
 import appeng.api.storage.cells.ISaveProvider;
 import appeng.blockentity.grid.AENetworkPowerBlockEntity;
 import appeng.blockentity.storage.ChestBlockEntity;
-import appeng.capabilities.Capabilities;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.filter.IAEItemFilter;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,12 +30,6 @@ public abstract class ChestBlockEntityMixin extends AENetworkPowerBlockEntity im
     protected ChestBlockEntityMixin(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState blockState) {
         super(blockEntityType, pos, blockState);
     }
-
-    @Shadow(remap = false)
-    protected abstract void updateHandler();
-
-    @Shadow(remap = false)
-    private IFluidHandler fluidHandler;
 
     @Shadow(remap = false)
     protected abstract void onCellContentChanged();
@@ -66,24 +52,5 @@ public abstract class ChestBlockEntityMixin extends AENetworkPowerBlockEntity im
     @Inject(method = "saveAdditional", at = @At("HEAD"))
     private void saveAdditional(CompoundTag data, CallbackInfo ci) {
         onCellContentChanged();
-    }
-
-    /**
-     * @author .
-     * @reason .
-     */
-    @Overwrite(remap = false)
-    public <T> @NotNull LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
-        this.updateHandler();
-        if (capability == ForgeCapabilities.FLUID_HANDLER && this.fluidHandler != null && facing != getFront()) {
-            return (LazyOptional<T>) LazyOptional.of(() -> this.fluidHandler);
-        }
-        if (capability == Capabilities.STORAGE && facing != getFront()) {
-            MEStorage storage = getInventory();
-            if (storage != null) {
-                return (LazyOptional<T>) LazyOptional.of(() -> storage);
-            }
-        }
-        return super.getCapability(capability, facing);
     }
 }

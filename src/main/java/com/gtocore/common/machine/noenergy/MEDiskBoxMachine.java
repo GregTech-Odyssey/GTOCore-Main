@@ -32,7 +32,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
@@ -269,7 +269,7 @@ public final class MEDiskBoxMachine extends MetaMachine
         if (mode == Actionable.MODULATE) {
             var map = data.getStoredMap();
             if (map == null) {
-                map = new AEKeyMap<>();
+                map = new AEKeyLongMap<>();
                 data.setStoredMap(map);
             }
             map.insert(what, amount);

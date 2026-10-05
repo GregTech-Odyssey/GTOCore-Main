@@ -82,6 +82,22 @@ public class TeamUtil {
     }
 
     @Nullable
+    public static Component findTeamNameById(UUID teamUUID) {
+        if (isFTBTeamsLoaded && FTBTeamsAPI.api().isManagerLoaded()) {
+            var team = FTBTeamsAPI.api().getManager().getTeamByID(teamUUID);
+            if (team.isPresent()) {
+                return team.get().getName();
+            }
+        } else if (isFTBTeamsLoaded && FTBTeamsAPI.api().isClientManagerLoaded()) {
+            var team = FTBTeamsAPI.api().getClientManager().getTeamByID(teamUUID);
+            if (team.isPresent()) {
+                return team.get().getName();
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     public static Component findPlayerName(Level level, UUID playerUUID) {
         Player player = level.getPlayerByUUID(playerUUID);
         if (player != null) return player.getName();

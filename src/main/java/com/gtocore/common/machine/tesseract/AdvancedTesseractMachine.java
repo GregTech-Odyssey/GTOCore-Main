@@ -3,8 +3,8 @@ package com.gtocore.common.machine.tesseract;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.CoordinateCardBehavior;
 
+import com.gtolib.api.ae2.BlockingPatternTarget;
 import com.gtolib.api.ae2.IPatternProviderLogic;
-import com.gtolib.api.ae2.PatternProviderTargetCache;
 import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
 import com.gtolib.api.player.IEnhancedPlayer;
 
@@ -18,8 +18,6 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
-import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -34,7 +32,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.config.Actionable;
@@ -59,22 +56,14 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ICustomCraftingMachine, IMultiTesseract {
+public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ICustomCraftingMachine, ITesseractMarkerInteractable, TesseractCapCache.Holder {
 
     public static final Multiset<ImmutableList<Long>> HIGHLIGHTS = HashMultiset.create();
     public static final int MAX_TARGETS = 20;
-
-    private final WeakReference<BlockEntity>[] blockEntityReference = createBlockEntityReferences(MAX_TARGETS);
-
-    @SuppressWarnings("unchecked")
-    private static WeakReference<BlockEntity>[] createBlockEntityReferences(int size) {
-        return (WeakReference<BlockEntity>[]) new WeakReference<?>[size];
-    }
 
     @SaveToDisk
     @SyncToClient(autoDetect = false)
@@ -86,10 +75,11 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     @SaveToDisk(defaultValue = "false")
     private boolean roundRobin;
 
+    private final TesseractTargets remotes = new TesseractTargets(this);
     @Getter
-    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items();
+    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items(this);
     @Getter
-    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids();
+    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids(this);
 
     @Getter
     @Setter
@@ -103,7 +93,6 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             called = false;
             poss.clear();
             for (int i = 0; i < MAX_TARGETS; i++) {
-                blockEntityReference[i] = null;
                 var card = inventory.storage.keyAt(i);
                 if (card == null) continue;
                 CompoundTag posTags = card.getTag();
@@ -115,9 +104,32 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                     poss.add(pos);
                 }
             }
-            clearDirectionCache();
+            bindTargets();
+            notifyExposureChanged();
             markFieldsForSync("poss");
         });
+    }
+
+    private void bindTargets() {
+        int size = poss.size();
+        remotes.resize(size);
+        var level = getLevel();
+        for (int i = 0; i < size; i++) {
+            remotes.bind(i, level, poss.get(i));
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        bindTargets();
+        remotes.subscribe(!isRemote());
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        remotes.subscribe(false);
     }
 
     @Override
@@ -175,62 +187,33 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     @Override
     public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return collectItemHandler(side);
+        return itemCaps.collect(side);
     }
 
     @Override
     public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return collectFluidHandler(side);
+        return fluidCaps.collect(side);
     }
 
     @Override
-    public @Nullable BlockEntity getBlockEntity(int i) {
-        return getBlockEntity(poss.get(i), i);
-    }
-
-    @Override
-    public int getTotalBlockEntities() {
-        return poss.size();
-    }
-
-    public @Nullable BlockEntity getBlockEntity(@Nullable BlockPos pos, int i) {
-        if (pos == null) return null;
-        var reference = blockEntityReference[i];
-        if (reference == null) {
-            var be = ILevel.getCachedBlockEntity(getLevel(), pos);
-            if (be != null) {
-                blockEntityReference[i] = new WeakReference<>(be);
-                return be;
-            }
-        } else {
-            var blockEntity = reference.get();
-            if (blockEntity == null || blockEntity.isRemoved()) {
-                blockEntity = ILevel.getCachedBlockEntity(getLevel(), pos);
-                if (blockEntity != null) {
-                    blockEntityReference[i] = new WeakReference<>(blockEntity);
-                    return blockEntity;
-                }
-            } else {
-                return blockEntity;
-            }
-        }
-        return null;
+    public TesseractTargets getRemoteTargets() {
+        return remotes;
     }
 
     @Override
     public void clearDirectionCache() {
-        super.clearDirectionCache();
         if (itemCaps != null) {
             itemCaps.invalidate();
             fluidCaps.invalidate();
         }
+        super.clearDirectionCache();
     }
 
     @Override
     public void onCoverUpdate(@Nullable CoverBehavior coverBehavior, Direction side) {
-        super.onCoverUpdate(coverBehavior, side);
         itemCaps.invalidate(side);
         fluidCaps.invalidate(side);
+        super.onCoverUpdate(coverBehavior, side);
     }
 
     @Override
@@ -245,14 +228,12 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     @Override
     public IPatternProviderLogic.PushResult pushPattern(IPatternProviderLogic logic, IActionSource actionSource, BooleanHolder success, Operate operate, Set<AEKey> patternInputs, IPatternDetails patternDetails, ObjHolder<KeyCounter[]> inputHolder, Supplier<IPatternProviderLogic.PushResult> pushPatternSuccess, BooleanSupplier canPush, Direction direction, Direction adjBeSide) {
-        var size = poss.size();
+        var size = remotes.size();
         List<PatternProviderTarget> targets = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            var targetPos = poss.get(i);
-            if (targetPos == null) {
-                continue;
-            }
-            var target = PatternProviderTargetCache.find(getBlockEntity(targetPos, i), logic, adjBeSide, actionSource, targetPos.asLong());
+            var be = remotes.get(i).blockEntity();
+            if (be == null) continue;
+            var target = BlockingPatternTarget.find(be, logic, adjBeSide, actionSource, be.getBlockPos().asLong());
             if (target == null) continue;
             targets.add(target);
         }
@@ -333,7 +314,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             posTags.putInt("x", pos.getX());
             posTags.putInt("y", pos.getY());
             posTags.putInt("z", pos.getZ());
-            inventory.storage.set(i, Keys.item(card), card.getCount());
+            inventory.storage.set(i, AEItemKey.of(card), card.getCount());
             i++;
         }
         if (availableCards > 0) {

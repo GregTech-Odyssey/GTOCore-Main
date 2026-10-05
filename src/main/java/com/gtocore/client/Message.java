@@ -139,18 +139,21 @@ public final class Message {
         var teamManager = FTBTeamsAPI.api().getManager();
         var team = teamManager.getTeamByID(teamid).orElse(teamManager.getTeamForPlayerID(teamid).orElse(null));
         if (team == null) {
-            SEND_RESEARCH_S2C.send(buf -> {
-                buf.writeBoolean(isUnlock);
-                GTOCodecs.TECH_NODE_STREAM_CODEC.encode(buf, node);
-            }, ServerUtils.getServer().getPlayerList().getPlayer(teamid));
+            sendResearchToastTo(teamid, node, isUnlock);
             return;
         }
-        for (var player : team.getMembers()) {
-            SEND_RESEARCH_S2C.send(buf -> {
-                buf.writeBoolean(isUnlock);
-                GTOCodecs.TECH_NODE_STREAM_CODEC.encode(buf, node);
-            }, ServerUtils.getServer().getPlayerList().getPlayer(player));
+        for (var member : team.getMembers()) {
+            sendResearchToastTo(member, node, isUnlock);
         }
+    }
+
+    private static void sendResearchToastTo(UUID playerId, TechNode node, boolean isUnlock) {
+        var player = ServerUtils.getServer().getPlayerList().getPlayer(playerId);
+        if (player == null) return;
+        SEND_RESEARCH_S2C.send(buf -> {
+            buf.writeBoolean(isUnlock);
+            GTOCodecs.TECH_NODE_STREAM_CODEC.encode(buf, node);
+        }, player);
     }
 
     /**

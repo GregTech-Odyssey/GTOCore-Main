@@ -364,9 +364,7 @@ public final class EnergyPort {
         refresh();
         if (account != EnergyAccount.NONE) {
             if (buffer.pending > 0) buffer.pushed(pushAt(buffer.pending, Math.max(buffer.pendingTier, 0)));
-            long rest = Math.max(0, buffer.pending);
-            long leftover = U126.saturatedAdd(buffer.credit, rest - Loss.of(rest, Loss.combined(node.loss, extraLoss)));
-            if (leftover > 0) account.returnToNode(node, leftover);
+            account.returnToNode(node, buffer.credit, Math.max(0, buffer.pending), extraLoss);
         }
         hold.clear();
         buffer.clear();

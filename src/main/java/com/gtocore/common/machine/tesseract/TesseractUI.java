@@ -6,9 +6,11 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.GTODimensions;
 
+import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.UIIngredient;
 import com.gregtechceu.gtceu.uipro.data.SyncItem;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
@@ -42,7 +44,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+
+import appeng.api.stacks.AEKeyTypes;
+import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -334,8 +338,8 @@ public final class TesseractUI {
         int state = NO_STORAGE;
         var blockEntity = level.getBlockEntity(pos);
         if (blockEntity != null) {
-            boolean item = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, target.face()).isPresent();
-            boolean fluid = blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, target.face()).isPresent();
+            boolean item = GTCapabilityHelper.hasTarget(blockEntity, target.face(), AEKeyTypes.ITEMS, StorageAccess.EXTRACT);
+            boolean fluid = GTCapabilityHelper.hasTarget(blockEntity, target.face(), AEKeyTypes.FLUIDS, StorageAccess.EXTRACT);
             if (item && fluid) state = BOTH;
             else if (item) state = ITEM;
             else if (fluid) state = FLUID;
@@ -435,7 +439,7 @@ public final class TesseractUI {
         @Override
         public @Nullable Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
             var stack = icon.getValue().stack();
-            if (!stack.isEmpty() && isMouseOver(getPositionX(), getPositionY() + 1, ICON, ICON, mouseX, mouseY)) return stack;
+            if (!stack.isEmpty() && isMouseOver(getPositionX(), getPositionY() + 1, ICON, ICON, mouseX, mouseY)) return UIIngredient.of(stack);
             return super.getXEIIngredientOverMouse(mouseX, mouseY);
         }
 

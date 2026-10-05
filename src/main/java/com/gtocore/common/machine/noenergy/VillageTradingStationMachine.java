@@ -20,7 +20,6 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
@@ -50,6 +49,8 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.items.ItemStackHandler;
 
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyTypes;
+import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -660,9 +661,9 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
             this.buy = buy;
             this.buyB = buyB;
             this.sell = sell;
-            this.buyKey = Keys.item(buy);
-            this.buyBKey = Keys.item(buyB);
-            this.sellKey = Keys.item(sell);
+            this.buyKey = AEItemKey.of(buy);
+            this.buyBKey = AEItemKey.of(buyB);
+            this.sellKey = AEItemKey.of(sell);
             this.maxUses = maxUses;
             this.uses = uses;
         }
@@ -811,7 +812,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     private void updateAutoOutputSubscription() {
         if (getLevel() == null) return;
         Direction outputFacing = getOutputFacingItems();
-        if (autoOutputItems && !output.isEmpty() && outputFacing != null && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), outputFacing)) {
+        if (autoOutputItems && !output.isEmpty() && outputFacing != null && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), outputFacing, AEKeyTypes.ITEMS, StorageAccess.INSERT)) {
             autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
             autoOutputSubs.unsubscribe();

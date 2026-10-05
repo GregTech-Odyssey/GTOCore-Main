@@ -12,7 +12,7 @@ import appeng.api.config.Actionable;
 import appeng.api.config.IncludeExclude;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.cells.IBasicCellItem;
@@ -49,7 +49,7 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
     private CellDataStorage gtolib$cache;
 
     @Unique
-    private AEKeyMap<AEKey> gtocore$aeKeyMap;
+    private AEKeyLongMap<AEKey> gtocore$aeKeyMap;
 
     @Unique
     private UUID gtolib$uuid;
@@ -137,13 +137,13 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
 
     @Unique
     @NotNull
-    private AEKeyMap<AEKey> gtolib$getCellStoredMap() {
+    private AEKeyLongMap<AEKey> gtolib$getCellStoredMap() {
         if (gtocore$aeKeyMap == null) {
             CellDataStorage storage = gtolib$getCellStorage();
-            if (storage == CellDataStorage.EMPTY) return AEKeyMap.EMPTY;
+            if (storage == CellDataStorage.EMPTY) return AEKeyLongMap.EMPTY;
             gtocore$aeKeyMap = storage.getStoredMap();
             if (gtocore$aeKeyMap == null) {
-                gtocore$aeKeyMap = new AEKeyMap<>();
+                gtocore$aeKeyMap = new AEKeyLongMap<>();
                 storage.setStoredMap(gtocore$aeKeyMap);
             } else {
                 double totalAmount = 0;

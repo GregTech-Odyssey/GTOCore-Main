@@ -5,6 +5,7 @@ import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.api.wireless.energy.EnergyAccount;
 import com.gtocore.api.wireless.energy.GridClock;
 import com.gtocore.api.wireless.energy.IWirelessGridProvider;
+import com.gtocore.api.wireless.energy.Provider;
 import com.gtocore.api.wireless.energy.ProviderRegistry;
 import com.gtocore.api.wireless.energy.WirelessGrid;
 import com.gtocore.api.wireless.energy.WirelessText;
@@ -79,7 +80,6 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
 
     private final TierCasingTrait tierCasingTrait;
     private final Multimap<Integer, BlockPos> wirelessEnergyUnitPositions = Multimaps.newMultimap(new Int2ObjectOpenHashMap<>(), ObjectOpenHashSet::new);
-    private BigInteger stationCapacity = BigInteger.ZERO;
     private Component unitsText = MultiblockPage.NO_VALUE;
     private boolean unitsOverTier;
 
@@ -92,8 +92,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         if (isRemote()) return;
         int tier = getCasingTier(GTORecipeDataKeys.GLASS_TIER);
         var data = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.WIRELESS_ENERGY_UNIT);
-        BigInteger capacity = BigInteger.ZERO;
-        double lossWeight = 0;
+        var counts = new int[GTValues.MAX + 1];
         int unitTier = -1;
         wirelessEnergyUnitPositions.clear();
         if (data != null) {
@@ -103,17 +102,21 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
                     continue;
                 }
                 if (block.block().getTier() <= tier) {
-                    capacity = capacity.add(block.block().getCapacity());
-                    lossWeight += block.block().getCapacity().doubleValue() * block.block().getLoss();
+                    counts[block.block().getTier()]++;
                     unitTier = Math.max(unitTier, block.block().getTier());
                 }
                 wirelessEnergyUnitPositions.put(block.block().getTier(), block.pos());
             }
             data.clear();
         }
-        stationCapacity = capacity;
+        var units = new ArrayList<Provider.Unit>();
+        for (int t = 1; t <= GTValues.MAX; t++) {
+            if (counts[t] == 0) continue;
+            var unit = WirelessEnergyUnitBlock.get(t);
+            if (unit != null) units.add(new Provider.Unit(unit.isGridScaled() ? t : Provider.Unit.FIXED, counts[t], unit.getCapacity(), unit.getLoss()));
+        }
         describeUnits(tier);
-        ProviderRegistry.registerTower(this, capacity, lossWeight, unitTier);
+        ProviderRegistry.registerTower(this, units, unitTier);
     }
 
     @Override
@@ -126,7 +129,6 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     public void onStructureInvalid() {
         super.onStructureInvalid();
         wirelessEnergyUnitPositions.clear();
-        stationCapacity = BigInteger.ZERO;
         unitsText = MultiblockPage.NO_VALUE;
         unitsOverTier = false;
         ProviderRegistry.unregisterLater(this, 20);
@@ -163,7 +165,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
 
     private UIElement stationPanel() {
         var panel = new StatusPanel(LayoutStyle.AUTO);
-        panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> stationCapacity, capacity -> Component.literal(FormattingUtil.formatNumbers(capacity) + " EU")));
+        panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), capacity -> Component.literal(FormattingUtil.formatNumbers(capacity) + " EU")));
         panel.addLine(STATION_UNITS, () -> unitsText)
                 .bindLevel(() -> unitsOverTier ? Level.WARNING : Level.NORMAL)
                 .bindDetail(() -> unitsOverTier ? OVER_TIER_TEXT : NONE);

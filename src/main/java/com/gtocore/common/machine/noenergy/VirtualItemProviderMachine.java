@@ -40,7 +40,7 @@ import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
@@ -83,7 +83,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
         this.inventory = NotifiableInventory.items(this, 288, IO.NONE, IO.BOTH);
         this.nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
-        storage.setStoredMap(new AEKeyMap<>());
+        storage.setStoredMap(new AEKeyLongMap<>());
         inventory.addChangedListener(() -> {
             storage.cache.markAsDirty();
             storage.getStoredMap().clear();

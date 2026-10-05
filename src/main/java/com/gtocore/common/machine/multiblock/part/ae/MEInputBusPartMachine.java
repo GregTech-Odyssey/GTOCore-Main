@@ -33,7 +33,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNodeListener;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 
@@ -68,7 +68,7 @@ public class MEInputBusPartMachine extends StatusTrackedMEPartMachine implements
         aeItemHandler = createInventory();
         aeItemHandler.addChangedListener(() -> {
             getConfiguredSetting().clear();
-            aeItemHandler.forEachKey(AEKeyType.items(), (k, l) -> {
+            aeItemHandler.forEachKey(AEKeyTypes.ITEMS, (k, l) -> {
                 getConfiguredSetting().set(k, l);
                 return false;
             });

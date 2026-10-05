@@ -6,6 +6,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import org.jetbrains.annotations.ApiStatus;
+
+import java.math.BigInteger;
 
 /**
  * 由登记的能源塔与中继重建一个队伍的网络：节点容量/损耗/电压、线路束与单向弧、各节点到各来源的路由。
@@ -27,6 +30,8 @@ final class GridTopology {
         var topology = new GridTopology(account);
         topology.resetNodes();
         topology.aggregateTowers();
+        topology.spreadLegacy();
+        topology.spill();
         var bundles = topology.bundleRelays();
         topology.relocateStranded();
         topology.pruneShells();
@@ -79,29 +84,55 @@ final class GridTopology {
     private void resetNodes() {
         for (int i = 0, n = nodes.size(); i < n; i++) {
             var node = nodes.get(i);
-            node.capHi = 0;
-            node.capLo = 0;
-            node.tier = -1;
-            node.loss = 0;
+            node.clearCapacity();
             node.linked = false;
         }
     }
 
     private void aggregateTowers() {
+        var atOrAbove = new long[GTValues.MAX + 2];
+        for (var tower : account.towers.values()) {
+            for (var unit : tower.units()) {
+                if (unit.tier() >= 0 && unit.tier() <= GTValues.MAX) atOrAbove[unit.tier()] += unit.count();
+            }
+        }
+        for (int t = GTValues.MAX - 1; t >= 0; t--) atOrAbove[t] += atOrAbove[t + 1];
+        account.towerCapacities.clear();
         var weights = new Reference2ObjectOpenHashMap<GridNode, double[]>();
         for (var tower : account.towers.values()) {
+            var capacity = BigInteger.ZERO;
+            double lossWeight = 0;
+            for (var unit : tower.units()) {
+                long scale = unit.tier() >= 0 && unit.tier() <= GTValues.MAX ? atOrAbove[unit.tier()] : 1;
+                var unitCapacity = unit.capacity().multiply(BigInteger.valueOf(unit.count())).multiply(BigInteger.valueOf(scale));
+                capacity = capacity.add(unitCapacity);
+                lossWeight += unitCapacity.doubleValue() * unit.loss();
+            }
+            account.towerCapacities.put(tower.pos(), capacity);
             var node = account.nodeOrCreate(tower.pos().dimension());
-            node.addCapacity(U126.hi(tower.capacity()), U126.lo(tower.capacity()));
-            if (tower.tier() > node.tier) node.tier = tower.tier();
-            var w = weights.computeIfAbsent(node, k -> new double[2]);
-            w[0] += tower.lossWeight();
-            w[1] += tower.capacity().doubleValue();
+            int bank = tower.tier();
+            if (bank < 0 || capacity.signum() <= 0) continue;
+            node.addCapacity(bank, U126.hi(capacity), U126.lo(capacity));
+            var w = weights.computeIfAbsent(node, k -> new double[GridNode.BANKS << 1]);
+            w[bank << 1] += lossWeight;
+            w[bank << 1 | 1] += capacity.doubleValue();
         }
-        weights.forEach((node, w) -> node.loss = w[1] > 0 ? (int) Math.min(Loss.PERMILLE, Math.round(w[0] / w[1])) : 0);
-        for (int i = 0, n = nodes.size(); i < n; i++) {
-            var node = nodes.get(i);
-            if (!node.hasCapacity()) node.tier = -1;
-        }
+        weights.forEach((node, w) -> {
+            for (int t = 0; t < GridNode.BANKS; t++) {
+                if (w[t << 1 | 1] > 0) node.setLoss(t, (int) Math.min(Loss.PERMILLE, Math.round(w[t << 1] / w[t << 1 | 1])));
+            }
+        });
+        for (int i = 0, n = nodes.size(); i < n; i++) nodes.get(i).finishCapacity();
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private void spreadLegacy() {
+        for (int i = 0, n = nodes.size(); i < n; i++) nodes.get(i).spreadLegacy();
+    }
+
+    private void spill() {
+        for (int i = 0, n = nodes.size(); i < n; i++) nodes.get(i).spill(account);
     }
 
     private Reference2ObjectOpenHashMap<GridNode, Reference2ObjectOpenHashMap<GridNode, long[]>> bundleRelays() {
@@ -153,9 +184,10 @@ final class GridTopology {
             if (node.hasCapacity() && (best == null || node.capacityDouble() > best.capacityDouble())) best = node;
         }
         if (best == null) return;
-        best.addWide(account.pendingHi, account.pendingLo);
+        long pHi = account.pendingHi, pLo = account.pendingLo;
         account.pendingHi = 0;
         account.pendingLo = 0;
+        best.absorb(pHi, pLo, null);
     }
 
     private void buildArcs(Reference2ObjectOpenHashMap<GridNode, Reference2ObjectOpenHashMap<GridNode, long[]>> bundles) {

@@ -36,6 +36,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 
+import appeng.api.stacks.AEKeyTypes;
+import appeng.api.storage.StorageAccess;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
@@ -180,7 +183,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
 
     /// ///////////////////////////////////
     protected void updateAutoOutputSubscription() {
-        if (!exportItems.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing())) {
+        if (!exportItems.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getFrontFacing(), AEKeyTypes.ITEMS, StorageAccess.INSERT)) {
             autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
             autoOutputSubs.unsubscribe();

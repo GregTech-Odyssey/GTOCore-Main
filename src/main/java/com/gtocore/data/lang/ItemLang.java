@@ -27,6 +27,8 @@ final class ItemLang {
         addCNEN("gtocore.item.deprecated", "该物品已弃用", "This item has been deprecated");
 
         addCNEN("item.gtceu.long_rod_extruder_mold", "模头（长杆）", "Extruder Mold (Long Rod)");
+        addCNEN("item.gtceu.small_ender_pearl_dust", "小堆末影粉", "Small Pile of Ender Dust");
+        addCNEN("item.gtceu.tiny_ender_pearl_dust", "小撮末影粉", "Tiny Pile of Ender Dust");
 
         addCNEN("tagprefix.living_rock", "活%s矿石", "Living %s Ore");
         addCNEN("tagprefix.gloomslate", "幽暗%s矿石", "Gloomslate %s Ore");

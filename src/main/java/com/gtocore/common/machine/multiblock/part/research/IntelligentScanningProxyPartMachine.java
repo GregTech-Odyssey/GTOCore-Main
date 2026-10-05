@@ -24,6 +24,7 @@ import appeng.api.networking.IStackWatcher;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageWatcherNode;
 import appeng.api.stacks.*;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -33,9 +34,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
 
 public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartMachine implements
                                                  IMachineLife, IGridConnectedMachine, IStorageWatcherNode {
@@ -56,9 +56,14 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     private final ScanningContentHandler contentHandler = new ScanningContentHandler(this);
 
     @Getter
-    private Set<AEKey> cachedKeys;
-    private AEKey[] keyArray = NO_KEYS;
+    private AEKeySet<AEKey> cachedKeys;
+    private AEItemKey[] itemKeys = NO_ITEM_KEYS;
+    private AEFluidKey[] fluidKeys = NO_FLUID_KEYS;
     private static final AEKey[] NO_KEYS = new AEKey[0];
+    private static final AEItemKey[] NO_ITEM_KEYS = new AEItemKey[0];
+    private static final AEFluidKey[] NO_FLUID_KEYS = new AEFluidKey[0];
+    @Getter
+    private final IActionSource actionSource = IActionSource.ofMachine(this);
 
     public IntelligentScanningProxyPartMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -77,36 +82,50 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
             changed = false;
             var grid = getMainNode().getGrid();
             if (grid == null) {
-                cachedKeys = null;
-                keyArray = NO_KEYS;
+                clearKeys();
                 return;
             }
             var stack = grid.getStorageService().getCachedInventory();
             if (stack != null) {
-                cachedKeys = stack.keySet().stream().map(k -> {
-                    if (k instanceof AEItemKey aeItemKey) {
-                        if (aeItemKey.item instanceof DataCrystalItem) return null;
-                        if (aeItemKey.hasTag()) {
-                            return AEItemKey.of(aeItemKey.getItem());
-                        }
-                        return k;
-                    } else if (k instanceof AEFluidKey aeFluidKey) {
-                        if (stack.get(aeFluidKey) <= 1000) return null;
-                        if (aeFluidKey.hasTag()) {
-                            return AEFluidKey.of(aeFluidKey.getFluid());
-                        }
-                        return k;
-                    }
-                    return null;
-                }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+                collectKeys(stack);
             } else {
-                cachedKeys = null;
+                clearKeys();
             }
-            keyArray = cachedKeys == null ? NO_KEYS : cachedKeys.toArray(NO_KEYS);
             if (getController() instanceof IntelligentScanningManagementPlatformMachine managementPlatform) {
                 managementPlatform.reloadAvailableAEKeys();
             }
         }
+    }
+
+    private void clearKeys() {
+        cachedKeys = null;
+        itemKeys = NO_ITEM_KEYS;
+        fluidKeys = NO_FLUID_KEYS;
+    }
+
+    private void collectKeys(KeyCounter stack) {
+        var keys = new AEKeySet<AEKey>(stack.size());
+        var items = new ArrayList<AEItemKey>();
+        var fluids = new ArrayList<AEFluidKey>();
+        for (var entry : stack) {
+            var k = entry.getKey();
+            if (k instanceof AEItemKey itemKey) {
+                if (itemKey.item instanceof DataCrystalItem) continue;
+                var base = itemKey.dropSecondary();
+                if (keys.add(base)) items.add(base);
+            } else if (k instanceof AEFluidKey fluidKey) {
+                if (entry.getLongValue() <= 1000) continue;
+                var base = fluidKey.dropSecondary();
+                if (keys.add(base)) fluids.add(base);
+            }
+        }
+        cachedKeys = keys;
+        itemKeys = items.toArray(NO_ITEM_KEYS);
+        fluidKeys = fluids.toArray(NO_FLUID_KEYS);
+    }
+
+    private AEKey[] keysOf(AEKeyType type) {
+        return type == AEKeyTypes.ITEMS ? itemKeys : fluidKeys;
     }
 
     public MEStorage getMESStorage() {
@@ -173,18 +192,15 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
             return true;
         }
 
-        private static boolean ofType(AEKey key, AEKeyType type) {
-            return type == AEKeyType.items() ? key instanceof AEItemKey : key instanceof AEFluidKey;
-        }
-
         @Override
         public long available(AEKeyType type, KeyIngredient ingredient) {
-            var grid = getMachine().getMainNode().getGrid();
+            var machine = getMachine();
+            var grid = machine.getMainNode().getGrid();
             if (grid == null) return 0;
             var stored = grid.getStorageService().getCachedInventory();
             long total = 0;
-            for (var key : getMachine().keyArray) {
-                if (ofType(key, type) && ingredient.test(key)) {
+            for (var key : machine.keysOf(type)) {
+                if (KeyIngredient.accepts(ingredient, key.getUid(), key)) {
                     long t = total + stored.get(key);
                     total = t < 0 ? Long.MAX_VALUE : t;
                 }
@@ -194,14 +210,15 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
         @Override
         public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
-            var grid = getMachine().getMainNode().getGrid();
+            var machine = getMachine();
+            var grid = machine.getMainNode().getGrid();
             if (grid == null) return 0;
             var stored = grid.getStorageService().getCachedInventory();
-            var keys = getMachine().keyArray;
+            var keys = machine.keysOf(type);
             long got = 0;
             for (int s = 0; s < keys.length && got < need; s++) {
                 var key = keys[s];
-                if (!ofType(key, type) || !ingredient.test(key)) continue;
+                if (!KeyIngredient.accepts(ingredient, key.getUid(), key)) continue;
                 long free = stored.get(key) - plan.reservedOn(member, s);
                 if (free <= 0) continue;
                 long t = Math.min(free, need - got);
@@ -213,17 +230,17 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
         @Override
         public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
-            boolean fluid = type == AEKeyType.fluids();
+            boolean fluid = type == AEKeyTypes.FLUIDS;
             var undo = fluid ? fluidUndo : itemUndo;
             undo.size = 0;
             var machine = getMachine();
             var grid = machine.getMainNode().getGrid();
             if (grid == null) return false;
             var ae = grid.getStorageService().getInventory();
-            var source = IActionSource.ofMachine(machine);
-            var keys = machine.keyArray;
+            var source = machine.actionSource;
+            var keys = machine.keysOf(type);
             boolean changed = false;
-            for (int i = 0; i < plan.logSize(); i++) {
+            for (int i = 0, logSize = plan.logSize(); i < logSize; i++) {
                 if (plan.logMember(i) != member || plan.logIsFluid(i) != fluid || !plan.logConsumes(i)) continue;
                 int token = plan.logToken(i);
                 long amount = plan.logAmount(i);
@@ -253,14 +270,14 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
         @Override
         public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
-            var undo = type == AEKeyType.fluids() ? fluidUndo : itemUndo;
+            var undo = type == AEKeyTypes.FLUIDS ? fluidUndo : itemUndo;
             var machine = getMachine();
             var grid = machine.getMainNode().getGrid();
             if (grid == null) {
                 undo.size = 0;
                 return;
             }
-            undo.revert(grid.getStorageService().getInventory(), IActionSource.ofMachine(machine));
+            undo.revert(grid.getStorageService().getInventory(), machine.actionSource);
             onContentsChanged();
         }
 
@@ -270,17 +287,18 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
             if (machine.isOnline()) {
                 var grid = machine.getMainNode().getGrid();
                 if (grid == null) return;
-                KeyCounter stored = null;
-                for (var stock : machine.keyArray) {
-                    if (stored == null) {
-                        stored = grid.getStorageService().getCachedInventory();
-                        if (stored.isEmpty()) return;
-                    }
-                    var amount = stored.get(stock);
-                    if (amount < 1) continue;
-                    type.convertKey(stock, amount, map);
-                }
+                var stored = grid.getStorageService().getCachedInventory();
+                if (stored.isEmpty()) return;
+                fill(type, map, stored, machine.itemKeys);
+                fill(type, map, stored, machine.fluidKeys);
             }
+        }
+    }
+
+    private static void fill(GTRecipeType type, IntLongMap map, KeyCounter stored, AEKey[] keys) {
+        for (var stock : keys) {
+            var amount = stored.get(stock);
+            if (amount > 0) type.convertKey(stock, amount, map);
         }
     }
 

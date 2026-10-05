@@ -1,10 +1,8 @@
 package com.gtocore.common.machine.tesseract;
 
-import com.gtolib.api.ae2.AEKeyTypeMap;
+import com.gtolib.api.ae2.BlockingPatternTarget;
 import com.gtolib.api.ae2.IPatternProviderLogic;
-import com.gtolib.api.ae2.PatternProviderTargetCache;
 import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
-import com.gtolib.utils.ServerUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
@@ -34,8 +32,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
@@ -46,11 +42,11 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AmountFormat;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
+import appeng.api.storage.ExternalStorageLookup;
 import appeng.api.storage.MEStorage;
+import appeng.api.storage.StorageAccess;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.helpers.patternprovider.PatternProviderTarget;
-import appeng.me.storage.CompositeStorage;
-import appeng.me.storage.ExternalStorageFacade;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -60,13 +56,11 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
-import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -75,14 +69,16 @@ public class DirectedTesseractMachine extends MetaMachine implements
                                       IFancyUIMachine,
                                       IMachineLife,
                                       ICustomCraftingMachine,
-                                      IMultiTesseract {
+                                      ITesseractMarkerInteractable,
+                                      TesseractCapCache.Holder {
 
     public static final Multiset<ImmutableList<TesseractDirectedTarget>> HIGHLIGHTS = HashMultiset.create();
 
+    private final TesseractTargets remotes = new TesseractTargets(this);
     @Getter
-    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items();
+    private final TesseractCapCache<AEItemKey> itemCaps = TesseractCapCache.items(this);
     @Getter
-    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids();
+    private final TesseractCapCache<AEFluidKey> fluidCaps = TesseractCapCache.fluids(this);
 
     @Getter
     @Setter
@@ -98,13 +94,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
     @SaveToDisk
     private final List<GenericStack> unfinishedStacks = new ArrayList<>();
 
-    private WeakReference<BlockEntity>[] blockEntityReference;
     private final ConditionalSubscriptionHandler task;
-
-    @SuppressWarnings("unchecked")
-    private static WeakReference<BlockEntity>[] createBlockEntityReferences(int size) {
-        return (WeakReference<BlockEntity>[]) new WeakReference<?>[size];
-    }
 
     public DirectedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -121,19 +111,30 @@ public class DirectedTesseractMachine extends MetaMachine implements
         targets.clear();
         targets.addAll(newTargets);
         targets.sort(TesseractDirectedTarget.SORTER);
-        blockEntityReference = createBlockEntityReferences(targets.size());
-        clearDirectionCache();
+        bindTargets();
+        notifyExposureChanged();
         onChanged();
+    }
+
+    private void bindTargets() {
+        if (!(getLevel() instanceof ServerLevel level)) return;
+        var server = level.getServer();
+        int size = targets.size();
+        remotes.resize(size);
+        for (int i = 0; i < size; i++) {
+            var target = targets.get(i).pos();
+            remotes.bind(i, server.getLevel(target.dimension()), target.pos());
+        }
     }
 
     @Override
     public @Nullable IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return collectItemHandler(side);
+        return itemCaps.collect(side);
     }
 
     @Override
     public @Nullable IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return collectFluidHandler(side);
+        return fluidCaps.collect(side);
     }
 
     @Override
@@ -180,7 +181,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
         var target = targets.get(index);
         if (target.face() == face) return;
         targets.set(index, new TesseractDirectedTarget(target.pos(), face, target.order()));
-        clearDirectionCache();
+        notifyExposureChanged();
         onChanged();
     }
 
@@ -219,29 +220,32 @@ public class DirectedTesseractMachine extends MetaMachine implements
 
     @Override
     public void clearDirectionCache() {
-        super.clearDirectionCache();
         if (itemCaps != null) {
             itemCaps.invalidate();
             fluidCaps.invalidate();
         }
+        super.clearDirectionCache();
     }
 
     @Override
     public void onCoverUpdate(@Nullable CoverBehavior coverBehavior, Direction side) {
-        super.onCoverUpdate(coverBehavior, side);
         itemCaps.invalidate(side);
         fluidCaps.invalidate(side);
+        super.onCoverUpdate(coverBehavior, side);
     }
 
     @Override
     public void onUnload() {
         super.onUnload();
         task.unsubscribe();
+        remotes.subscribe(false);
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
+        bindTargets();
+        remotes.subscribe(!isRemote());
         task.initialize(getLevel());
     }
 
@@ -258,32 +262,6 @@ public class DirectedTesseractMachine extends MetaMachine implements
                 .setTooltipsSupplier(pressed -> Collections.singletonList(Component.translatable(HIGHLIGHT_TEXT))));
     }
 
-    public BlockEntity getBlockEntity(int index) {
-        if (blockEntityReference == null) {
-            if (targets.isEmpty()) {
-                return null;
-            }
-            blockEntityReference = createBlockEntityReferences(targets.size());
-        }
-        if (blockEntityReference[index] != null) {
-            var be = blockEntityReference[index].get();
-            if (be != null) {
-                return be.isRemoved() ? null : be;
-            }
-        }
-        var target = targets.get(index);
-        var dim = ServerUtils.getServer().getLevel(target.pos().dimension());
-        if (dim == null) {
-            return null;
-        }
-        var be = ILevel.getCachedBlockEntity(dim, target.pos().pos());
-        blockEntityReference[index] = new WeakReference<>(be);
-        if (be != null) {
-            return be.isRemoved() ? null : be;
-        }
-        return null;
-    }
-
     @Override
     public IPatternProviderLogic.PushResult pushPattern(IPatternProviderLogic logic, IActionSource actionSource, BooleanHolder success, Operate operate, Set<AEKey> patternInputs, IPatternDetails patternDetails, ObjHolder<KeyCounter[]> inputHolder, Supplier<IPatternProviderLogic.PushResult> pushPatternSuccess, BooleanSupplier canPush, Direction direction, Direction adjBeSide) {
         if (!(patternDetails instanceof AEProcessingPattern processingPattern))
@@ -296,17 +274,17 @@ public class DirectedTesseractMachine extends MetaMachine implements
             return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
         }
 
-        Map<TesseractDirectedTarget, GenericStack> remainingStacks = new O2OOpenCacheHashMap<>(sparseInputs.length);
-        Map<PatternProviderTarget, GenericStack> readyToPushStacks = new O2OOpenCacheHashMap<>(sparseInputs.length);
+        var readyToPush = new PatternProviderTarget[sparseInputs.length];
         for (var i = 0; i < sparseInputs.length; i++) {
             var targetAt = targets.get(i);
-            var be = getBlockEntity(i);
+            var remote = remotes.find(i);
+            var be = remote == null ? null : remote.blockEntity();
             var subPushStack = sparseInputs[i];
             if (subPushStack == null) continue;
             if (be == null) {
                 return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
             }
-            var toPush = PatternProviderTargetCache.find(be, logic, targetAt.face(), actionSource, targetAt.pos().pos().asLong());
+            var toPush = BlockingPatternTarget.find(be, logic, targetAt.face(), actionSource, targetAt.pos().pos().asLong());
             if (toPush == null) {
                 return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
             }
@@ -314,27 +292,33 @@ public class DirectedTesseractMachine extends MetaMachine implements
             if (blocked) {
                 return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
             }
-            var haveEnoughSpace = toPush.insert(subPushStack.what(), subPushStack.amount(), Actionable.SIMULATE) == subPushStack.amount();
-            if (!haveEnoughSpace) {
-                remainingStacks.put(targetAt, subPushStack);
-                continue;
+            long amount = subPushStack.amount();
+            if (toPush.insert(subPushStack.what(), amount, Actionable.SIMULATE) == amount) {
+                readyToPush[i] = toPush;
             }
-            readyToPushStacks.put(toPush, subPushStack);
         }
 
-        remainingStacks.forEach(this::addTask);
-        readyToPushStacks.forEach((toPush, stack) -> toPush.insert(stack.what(), stack.amount(), Actionable.MODULATE));
+        for (var i = 0; i < sparseInputs.length; i++) {
+            var stack = sparseInputs[i];
+            if (stack == null) continue;
+            var toPush = readyToPush[i];
+            if (toPush == null) {
+                addTask(targets.get(i), stack);
+            } else {
+                toPush.insert(stack.what(), stack.amount(), Actionable.MODULATE);
+            }
+        }
         this.push();
         return pushPatternSuccess.get();
     }
 
     @Override
-    public int getTotalBlockEntities() {
-        return targets.size();
+    public TesseractTargets getRemoteTargets() {
+        return remotes;
     }
 
     @Override
-    public Direction getSideForBlockEntity(int i, @Nullable Direction side) {
+    public Direction getTargetSide(int i, @Nullable Direction side) {
         return targets.get(i).face();
     }
 
@@ -366,20 +350,13 @@ public class DirectedTesseractMachine extends MetaMachine implements
         });
     }
 
+    @Nullable
     private static MEStorage getMEStorage(TesseractDirectedTarget target, MinecraftServer levelGetter) {
         var dim = levelGetter.getLevel(target.pos().dimension());
         if (dim == null) {
             return null;
         }
-        var be = ILevel.getCachedBlockEntity(dim, target.pos().pos());
-        if (be == null) {
-            return null;
-        }
-        var item = be.getCapability(ForgeCapabilities.ITEM_HANDLER, target.face()).map(ExternalStorageFacade::of).orElse(null);
-        var fluid = be.getCapability(ForgeCapabilities.FLUID_HANDLER, target.face()).map(ExternalStorageFacade::of).orElse(null);
-        if (item != null && fluid != null) return new CompositeStorage(new AEKeyTypeMap<>(item, fluid));
-        if (item != null) return item;
-        return fluid;
+        return ExternalStorageLookup.resolve(ILevel.getCachedBlockEntity(dim, target.pos().pos()), target.face(), null, StorageAccess.INSERT);
     }
 
     void push() {

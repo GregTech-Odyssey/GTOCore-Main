@@ -88,7 +88,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
     @SyncToClient
     final boolean[] disconnectStates = new boolean[getMaxPatternCount()];
 
-    private final Multimap<AEKey, InternalSlot> watcher2SlotMap = Multimaps.newSetMultimap(new Reference2ObjectOpenHashMap<>(), ReferenceOpenHashSet::new);
+    private final Multimap<AEKey, InternalSlot> watcher2SlotMap = Multimaps.newSetMultimap(new AEKeyObjectMap<>(), ReferenceOpenHashSet::new);
     private final Reference2ReferenceMap<InternalSlot, AEKey> slot2WatcherMap = new Reference2ReferenceOpenHashMap<>();
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -233,7 +233,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
                 .filter(e -> e.getKey().isEmitterMode)
                 .filter(e -> e.getValue() != null)
                 .map(Map.Entry::getValue)
-                .collect(ObjectOpenHashSet::new, Set::add, Set::addAll);
+                .collect(AEKeySet::new, Set::add, Set::addAll);
     }
 
     @Override

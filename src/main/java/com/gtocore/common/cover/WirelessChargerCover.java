@@ -114,7 +114,7 @@ public final class WirelessChargerCover extends CoverBehavior implements IWirele
                 if (amount <= 0 || !(inventory.keyAt(i) instanceof AEItemKey key) || !needsCharge(key.getReadOnlyStack())) continue;
                 var stack = Keys.toStack(key, amount);
                 IWirelessChargerInteraction.charge(getNetMachine(), stack);
-                var charged = Keys.item(stack);
+                var charged = AEItemKey.of(stack);
                 if (charged != null && charged != key) inventory.set(i, charged, amount);
             }
         }

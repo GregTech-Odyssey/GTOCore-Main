@@ -1,6 +1,5 @@
 package com.hepdd.gtmthings.common.cover;
 
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.capability.ICoverable;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.cover.CoverDefinition;
@@ -9,9 +8,9 @@ import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
+import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
-import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -20,16 +19,15 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.hepdd.gtmthings.api.misc.BlockEntityCache;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -47,7 +45,6 @@ public class WirelessTransferCover extends CoverBehavior {
 
     protected final int transferType;
     private TickableSubscription subscription;
-    protected ServerLevel targetLever;
     @SaveToDisk
     private String dimensionId;
     @SaveToDisk
@@ -55,7 +52,7 @@ public class WirelessTransferCover extends CoverBehavior {
     @SaveToDisk
     protected Direction facing;
 
-    private final BlockEntityCache target = new BlockEntityCache(() -> ILevel.getCachedBlockEntity(targetLever, targetPos));
+    private final RemoteKeyTarget target = new RemoteKeyTarget();
 
     public WirelessTransferCover(CoverDefinition definition, ICoverable coverHolder, Direction attachedSide, int transferType) {
         super(definition, coverHolder, attachedSide);
@@ -131,7 +128,7 @@ public class WirelessTransferCover extends CoverBehavior {
         if (this.dimensionId == null) return;
         ResourceLocation resLoc = tryParse(this.dimensionId);
         ResourceKey<Level> resKey = ResourceKey.create(Registries.DIMENSION, resLoc);
-        this.targetLever = Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey);
+        target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
@@ -139,8 +136,7 @@ public class WirelessTransferCover extends CoverBehavior {
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getTargetItemTransfer() {
-        if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getItemKeyHandler(target.get(), facing);
+        return target.items(facing, StorageAccess.INSERT);
     }
 
     protected @Nullable IKeyHandler<AEFluidKey> getOwnFluidTransfer() {
@@ -148,7 +144,6 @@ public class WirelessTransferCover extends CoverBehavior {
     }
 
     protected @Nullable IKeyHandler<AEFluidKey> getTargetFluidTransfer() {
-        if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getFluidKeyHandler(target.get(), facing);
+        return target.fluids(facing, StorageAccess.INSERT);
     }
 }

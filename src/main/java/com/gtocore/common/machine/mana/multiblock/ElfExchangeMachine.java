@@ -39,6 +39,7 @@ import static net.minecraft.world.level.Level.NETHER;
 public class ElfExchangeMachine extends ManaMultiblockMachine implements ICustomRecipeLogicHolder {
 
     private PiglinMerchant piglin;
+    private GTRecipeDefinition parallelProbe;
 
     public ElfExchangeMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -63,7 +64,8 @@ public class ElfExchangeMachine extends ManaMultiblockMachine implements ICustom
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         int mode = unit.getCircuit(false);
-        if (getLevel() instanceof ServerLevel level && level.dimension() == NETHER && mode > 0) {
+        var currentLevel = getLevel();
+        if (currentLevel instanceof ServerLevel level && level.dimension() == NETHER && mode > 0) {
             RecipeBuilder builder = getRecipeBuilder().duration(120).MANAt(10);
             LootTable lootTable = level.getServer().getLootData().getLootTable(BuiltInLootTables.PIGLIN_BARTERING);
             if (piglin == null) piglin = new PiglinMerchant(level);
@@ -73,7 +75,9 @@ public class ElfExchangeMachine extends ManaMultiblockMachine implements ICustom
                     .create(LootContextParamSets.PIGLIN_BARTER);
             ItemStackSet itemStacks = new ItemStackSet();
 
-            var maxParallel = ParallelLogic.getMaxParallelAmount(this, unit, builder.copy(GTOCore.id("test")).inputItems(GOLD_INGOT).outputItems(Items.STICK).build().toRuntime(), MachineUtils.getHatchParallel(this));
+            var probe = parallelProbe;
+            if (probe == null) parallelProbe = probe = builder.copy(GTOCore.id("test")).inputItems(GOLD_INGOT).outputItems(Items.STICK).build();
+            var maxParallel = ParallelLogic.getMaxParallelAmount(this, unit, probe.toRuntime(), MachineUtils.getHatchParallel(this));
             if (maxParallel == 0) {
                 setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
                 return null;
@@ -102,7 +106,7 @@ public class ElfExchangeMachine extends ManaMultiblockMachine implements ICustom
             });
             return builder.build();
         }
-        (getLevel() != null && getLevel().dimension() == NETHER ? IdleReason.SET_CIRCUIT : IdleReason.NETHER_ONLY).setReason(this);
+        (currentLevel != null && currentLevel.dimension() == NETHER ? IdleReason.SET_CIRCUIT : IdleReason.NETHER_ONLY).setReason(this);
         return null;
     }
 

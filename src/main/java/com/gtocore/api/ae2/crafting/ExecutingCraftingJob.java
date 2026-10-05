@@ -49,12 +49,12 @@ class ExecutingCraftingJob {
     boolean paused = false;
 
     final KeyCounter expectedOutputs = new KeyCounter();
-    final ReferenceOpenHashSet<AEKey> defsToPurge = new ReferenceOpenHashSet<>();
-    final AEKeyMap<AEKey> totalConsumed = new AEKeyMap<>();
-    final AEKeyMap<AEKey> currentConsumed = new AEKeyMap<>();
-    final ReferenceOpenHashSet<AEKey> purgeDefsLocal = new ReferenceOpenHashSet<>();
+    final AEKeySet<AEKey> defsToPurge = new AEKeySet<>();
+    final AEKeyLongMap<AEKey> totalConsumed = new AEKeyLongMap<>();
+    final AEKeyLongMap<AEKey> currentConsumed = new AEKeyLongMap<>();
+    final AEKeySet<AEKey> purgeDefsLocal = new AEKeySet<>();
 
-    final Reference2ObjectOpenHashMap<AEKey, Object2LongOpenHashMap<IPatternDetails>> allocations = new Reference2ObjectOpenHashMap<>();
+    final AEKeyObjectMap<AEKey, Object2LongOpenHashMap<IPatternDetails>> allocations = new AEKeyObjectMap<>();
 
     ExecutingCraftingJob(ICraftingPlan plan, ListCraftingInventory.ChangeListener changeListener, CraftingLink link, @Nullable Integer playerId, KeyCounter missingIng) {
         this(plan, changeListener, link, playerId);

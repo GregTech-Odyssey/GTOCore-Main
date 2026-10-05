@@ -14,6 +14,7 @@ final class SettleReceipt {
     int priority;
     GridNode origin = GridNode.EMPTY;
     GridNode[] nodes = new GridNode[4];
+    int[] banks = new int[4];
     long[] his = new long[4];
     long[] los = new long[4];
     Arc[] arcs = new Arc[4];
@@ -34,14 +35,16 @@ final class SettleReceipt {
         restLo = r & U126.MASK;
     }
 
-    void add(GridNode node, long hi, long lo) {
+    void add(GridNode node, int bank, long hi, long lo) {
         if (count == nodes.length) {
             int size = count << 1;
             nodes = Arrays.copyOf(nodes, size);
+            banks = Arrays.copyOf(banks, size);
             his = Arrays.copyOf(his, size);
             los = Arrays.copyOf(los, size);
         }
         nodes[count] = node;
+        banks[count] = bank;
         his[count] = hi;
         los[count] = lo;
         total += U126.toDouble(hi, lo);

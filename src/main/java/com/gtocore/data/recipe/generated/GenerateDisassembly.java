@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -57,7 +58,7 @@ public final class GenerateDisassembly {
             return;
         }
         var outIng = c.ingredient(0);
-        if (outIng.kind != KeyIngredient.BASE || !(outIng.key() instanceof AEItemKey outKey)) return;
+        if (outIng.kind() != KeyIngredient.BASE || !(outIng.key() instanceof AEItemKey outKey)) return;
         var item = outKey.getItem();
         var amount = Keys.saturatedInt(c.amount(0));
         if (recipeBuilder.getRecipeType() == LASER_WELDER_RECIPES && !(item instanceof MetaMachineItem)) {
@@ -84,15 +85,16 @@ public final class GenerateDisassembly {
             if (itemList.chance(i) != ContentList.MAX_CHANCE) continue;
             var input = itemList.ingredient(i);
             long count = itemList.amount(i);
-            if (input.kind == KeyIngredient.BASE) {
+            byte kind = input.kind();
+            if (kind == KeyIngredient.BASE) {
                 builder.outputItems(input, count);
                 hasOutput = true;
-            } else if (input.kind == KeyIngredient.TAG && input.tag() != null) {
-                Integer c1 = Tags.CIRCUITS_ARRAY.get(input.itemTagKey());
+            } else if (kind == KeyIngredient.TAG && input.tagKey() instanceof TagKey<?> tag) {
+                Integer c1 = Tags.CIRCUITS_ARRAY.get(tag);
                 if (c1 != null) builder.outputItems(GTOItems.UNIVERSAL_CIRCUIT[c1].get(), Keys.saturatedInt(count));
-            } else if (input.source() != null) {
+            } else if (input.source() instanceof Ingredient source) {
                 a:
-                for (Ingredient.Value value : input.source().values) {
+                for (Ingredient.Value value : source.values) {
                     if (value instanceof Ingredient.ItemValue itemValue) {
                         Collection<ItemStack> stacks = itemValue.getItems();
                         if (stacks.size() == 1) {

@@ -34,7 +34,7 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
@@ -208,7 +208,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     private void tick() {
         if (isFormed()) {
 
-            forEachKey(AEKeyType.items(), true, (key, amount) -> {
+            forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
                 var item = ((AEItemKey) key).getItem();
                 var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(item);
                 if (neutron_sources != null) {
@@ -224,7 +224,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
                 neutronFluxkeV += (long) Math.sqrt(neutronFluxkeV * reflectors);
             }
             temperature += (float) recipeHeat;
-            forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+            forEachKey(AEKeyTypes.FLUIDS, true, (key, amount) -> {
                 var fluid = ((AEFluidKey) key).getFluid();
                 var coolants = NeutronSeries.COOLANTS.get(fluid);
                 if (coolants != null && temperature > 298) {

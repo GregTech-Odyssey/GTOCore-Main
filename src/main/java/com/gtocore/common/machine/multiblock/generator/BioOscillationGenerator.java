@@ -38,7 +38,7 @@ import net.minecraft.world.item.Item;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -304,11 +304,11 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (tissue == null) {
-            unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
-                var item = ((AEItemKey) key).getItem();
+            var casingTier = getCasingTier(MACHINING_CONTROL_MODULE_TIER);
+            unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
+                var item = ((AEItemKey) key).item;
                 var data = TISSUE_MATERIALS_TIER.get(item);
                 if (data != null) {
-                    var casingTier = getCasingTier(MACHINING_CONTROL_MODULE_TIER);
                     if (casingTier < data.tier() && casingTier < 3) {
                         IdleReason.TISSUE_TIER.setReason(this, Math.min(3, data.tier()), casingTier);
                         return false;
@@ -325,7 +325,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
             });
         }
         if (mediumMaterial == null) {
-            unit.forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+            unit.forEachKey(AEKeyTypes.FLUIDS, true, (key, amount) -> {
                 var fluid = ((AEFluidKey) key).getFluid();
                 var material = ChemicalHelper.getMaterial(fluid);
                 if (BioOscillationGeneratorData.MEDIUM_MATERIALS_TIER.containsKey(material)) {

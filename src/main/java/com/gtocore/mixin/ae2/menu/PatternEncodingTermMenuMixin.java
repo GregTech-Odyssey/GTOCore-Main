@@ -26,7 +26,7 @@ import net.minecraft.world.level.Level;
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.storage.ITerminalHost;
 import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEPatternDecoder;
@@ -532,7 +532,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
      */
     @Unique
     private static AEKey[] gto$collectPatternOutputs(IExtendedPatternContainer container, Level level) {
-        var outputs = new AEKeyMap<AEKey>();
+        var outputs = new AEKeyLongMap<AEKey>();
         var patternInv = container.getTerminalPatternInventory();
         if (patternInv instanceof AppEngInternalInventory aeInv &&
                 aeInv.getHost() instanceof TileAssemblerMatrixPattern matrixPattern &&
@@ -553,7 +553,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     }
 
     @Unique
-    private static void gto$collectPatternOutputs(IExtendedPatternContainer container, Level level, AEKeyMap<AEKey> outputs) {
+    private static void gto$collectPatternOutputs(IExtendedPatternContainer container, Level level, AEKeyLongMap<AEKey> outputs) {
         var patterns = container.gto$getAvailablePatterns(level);
         for (int i = 0, size = patterns.size(); i < size; i++) {
             if (outputs.size() >= GTO$MAX_OUTPUTS_PER_DESTINATION) return;

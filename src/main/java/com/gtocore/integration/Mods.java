@@ -26,7 +26,8 @@ public enum Mods {
     EFFORTLESS("effortlessbuilding"),
     FACTORY_BLOCKS("factory_blocks"),
     MYTHICBOTANY("mythicbotany"),
-    MOUSETWEAKS("mousetweaks");
+    MOUSETWEAKS("mousetweaks"),
+    AE2_TOGGLEABLE_VIEW_CELL("ae2_toggleable_view_cell");
 
     @Getter
     private final boolean loaded;

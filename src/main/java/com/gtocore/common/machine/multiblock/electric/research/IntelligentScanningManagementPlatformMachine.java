@@ -28,7 +28,7 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 
@@ -116,8 +116,9 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
             var keys = scanningProxyPartMachine.getCachedKeys();
             if (keys != null) {
                 scanQueue.clear();
+                var team = TeamUtil.getTeamUUID(getOwnerUUID());
                 for (var k : keys) {
-                    if (!hasScanned(k, TeamUtil.getTeamUUID(getOwnerUUID()))) {
+                    if (!hasScanned(k, team)) {
                         scanQueue.offer(k);
                     }
                 }
@@ -149,8 +150,9 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         ObjHolder<AEItemKey> d = new ObjHolder<>();
-        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
-            if (key instanceof AEItemKey itemKey && itemKey.getItem() instanceof DataCrystalItem dataCrystalItem && (d.get() == null || dataCrystalItem.tier > ((DataCrystalItem) d.get().getItem()).tier)) {
+        unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
+            var itemKey = (AEItemKey) key;
+            if (itemKey.item instanceof DataCrystalItem dataCrystalItem && (d.get() == null || dataCrystalItem.tier > ((DataCrystalItem) d.get().item).tier)) {
                 d.set(itemKey);
             }
             return false;
@@ -186,27 +188,23 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                     continue;
                 }
                 keys.add(k);
-                var pts = DataScanningManager.scanData(k, team, true);
-                totalBytes += pts.countBytes();
+                totalBytes += p.countBytes();
             }
             if (totalBytes <= 0) return null;
             var turns = remaining / totalBytes;
+            var proxy = scanningProxyPartMachine;
+            MEStorage me = proxy == null ? null : proxy.getMESStorage();
+            IActionSource source = me == null ? null : proxy.getActionSource();
             for (var k : keys) {
                 long actualAmount = turns;
-                MEStorage me = null;
-                if (scanningProxyPartMachine != null) {
-                    me = scanningProxyPartMachine.getMESStorage();
-                }
                 if (k instanceof AEItemKey itemKey) {
                     if (me != null) {
-                        actualAmount = me.extract(k, turns,
-                                Actionable.SIMULATE, IActionSource.ofMachine(scanningProxyPartMachine));
+                        actualAmount = me.extract(k, turns, Actionable.SIMULATE, source);
                     }
-                    recipe.inputItems(KeyIngredient.item(itemKey.getItem()), actualAmount);
+                    recipe.inputItems(KeyIngredient.item(itemKey.item), actualAmount);
                 } else if (k instanceof AEFluidKey fluidKey) {
                     if (me != null) {
-                        actualAmount = me.extract(k, turns * 1000,
-                                Actionable.SIMULATE, IActionSource.ofMachine(scanningProxyPartMachine)) / 1000;
+                        actualAmount = me.extract(k, turns * 1000, Actionable.SIMULATE, source) / 1000;
                     }
                     recipe.inputFluids(fluidKey.getFluid(), 1000 * actualAmount);
                 }
@@ -237,7 +235,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                 }
                 if (remaining >= occupy) {
                     if (k instanceof AEItemKey itemKey) {
-                        recipe.inputItems(KeyIngredient.item(itemKey.getItem()), 1L);
+                        recipe.inputItems(KeyIngredient.item(itemKey.item), 1L);
                     } else if (k instanceof AEFluidKey fluidKey) {
                         recipe.inputFluids(fluidKey.getFluid(), 1000);
                     }

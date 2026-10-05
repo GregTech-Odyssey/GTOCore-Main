@@ -14,7 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.world.item.Item;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.periut.chisel.block.ChiselGroupLookup;
@@ -32,7 +32,7 @@ public final class ChiselMachine extends CustomParallelMultiblockMachine impleme
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         AtomicInteger c = new AtomicInteger();
         ObjHolder<Item> item = new ObjHolder<>();
-        unit.forEachKey(AEKeyType.items(), false, (key, amount) -> {
+        unit.forEachKey(AEKeyTypes.ITEMS, false, (key, amount) -> {
             var itemKey = (AEItemKey) key;
             if (itemKey.getItem() == Circuits.item()) {
                 c.addAndGet(Math.max(0, Circuits.configOf(itemKey)));

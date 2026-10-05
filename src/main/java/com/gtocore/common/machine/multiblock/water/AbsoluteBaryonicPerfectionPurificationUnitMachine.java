@@ -137,7 +137,7 @@ public final class AbsoluteBaryonicPerfectionPurificationUnitMachine extends Wat
     public void afterWorking() {
         super.afterWorking();
         for (ItemStack stack : outputs) {
-            var key = Keys.item(stack);
+            var key = AEItemKey.of(stack);
             if (key != null) output(key, stack.getCount());
         }
         outputs.clear();

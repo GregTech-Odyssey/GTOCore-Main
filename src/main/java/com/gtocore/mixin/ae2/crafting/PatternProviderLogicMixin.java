@@ -28,6 +28,7 @@ import appeng.core.localization.GuiText;
 import appeng.helpers.patternprovider.PatternProviderLogic;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTarget;
+import appeng.helpers.patternprovider.PatternProviderTargetCache;
 import appeng.util.ConfigManager;
 import appeng.util.inv.AppEngInternalInventory;
 
@@ -83,7 +84,7 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
     @Shadow
     private Direction sendDirection;
     @Unique
-    private PatternProviderTargetCache[] gtolib$targetCaches;
+    private final BlockingPatternTarget[] gtolib$targets = new BlockingPatternTarget[6];
     @Unique
     private IPatternDetails gtolib$currentPattern;
     @Unique
@@ -107,10 +108,12 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
     @Shadow
     protected abstract void addToSendList(AEKey what, long amount);
 
+    @Shadow
+    public abstract PatternProviderTargetCache getTargetCache(Direction side);
+
     @Inject(method = "<init>(Lappeng/api/networking/IManagedGridNode;Lappeng/helpers/patternprovider/PatternProviderLogicHost;I)V", at = @At("TAIL"), remap = false)
     private void init(IManagedGridNode mainNode, PatternProviderLogicHost host, int patternInventorySize, CallbackInfo ci) {
         configManager.registerSetting(GTOSettings.BLOCKING_TYPE, BlockingType.NONE);
-        gtolib$targetCaches = new PatternProviderTargetCache[6];
     }
 
     @Inject(method = "getTerminalGroup", at = @At("HEAD"), cancellable = true, remap = false)
@@ -201,25 +204,15 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
                     if (result.success()) success.value = true;
                     if (result.needBreak()) return result;
                 }
+            } else if (adjBe instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.metaMachine instanceof ICustomCraftingMachine craftingMachine && craftingMachine.customPush()) {
+                var result = craftingMachine.pushPattern(this, actionSource, success, this::gtolib$pushTarget, patternInputs, patternDetails, inputHolder, pushPatternSuccess, canPush, direction, adjBeSide);
+                if (result.needBreak()) return result;
             } else {
-                if (adjBe instanceof MetaMachineBlockEntity machineBlockEntity) {
-                    if (machineBlockEntity.metaMachine instanceof ICustomCraftingMachine craftingMachine && craftingMachine.customPush()) {
-                        var result = craftingMachine.pushPattern(this, actionSource, success, this::gtolib$pushTarget, patternInputs, patternDetails, inputHolder, pushPatternSuccess, canPush, direction, adjBeSide);
-                        if (result.needBreak()) return result;
-                    } else {
-                        var target = PatternProviderTargetCache.find(adjBe, this, adjBeSide, actionSource, 0);
-                        if (target == null || target.containsPatternInput(patternInputs)) continue;
-                        var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
-                        if (result.success()) success.value = true;
-                        if (result.needBreak()) return result;
-                    }
-                } else {
-                    var target = findAdapter(direction);
-                    if (target == null || target.containsPatternInput(patternInputs)) continue;
-                    var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
-                    if (result.success()) success.value = true;
-                    if (result.needBreak()) return result;
-                }
+                var target = gtolib$findTarget(direction);
+                if (target == null || target.containsPatternInput(patternInputs)) continue;
+                var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
+                if (result.success()) success.value = true;
+                if (result.needBreak()) return result;
             }
         }
         return success.value ? PushResult.SUCCESS : PushResult.NOWHERE_TO_PUSH;
@@ -262,9 +255,9 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
                         this.addToSendList(what, amount - inserted);
                     }
                 });
-                if (adapter instanceof PatternProviderTargetCache.WrapMeStorage storage) {
-                    if (storage.pos() != 0) gtolib$cachePatternPos.put(storage.pos(), patternDetails);
-                    else gtolib$cachePatternDir.put(storage.dir(), patternDetails);
+                if (adapter instanceof BlockingPatternTarget target) {
+                    if (target.pos() != 0) gtolib$cachePatternPos.put(target.pos(), patternDetails);
+                    else gtolib$cachePatternDir.put(target.dir(), patternDetails);
                 }
                 onPushPatternSuccess(patternDetails);
                 success = true;
@@ -281,19 +274,19 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
         return success ? PushResult.SUCCESS : PushResult.REJECTED;
     }
 
-    /**
-     * @author .
-     * @reason .
-     */
-    @Overwrite
+    @Unique
     @Nullable
-    private PatternProviderTarget findAdapter(Direction side) {
-        if (gtolib$targetCaches[side.get3DDataValue()] == null) {
-            gtolib$targetCaches[side.get3DDataValue()] = new PatternProviderTargetCache(host.getBlockEntity(), this, side, actionSource);
-        }
-        @Nullable
-        PatternProviderTarget ret = gtolib$targetCaches[side.get3DDataValue()].find(side.get3DDataValue());
-        return ret;
+    private PatternProviderTarget gtolib$findTarget(Direction side) {
+        var cache = getTargetCache(side);
+        var target = cache.find();
+        if (target == null) return null;
+        var blockEntity = cache.targetBlockEntity();
+        if (blockEntity == null) return null;
+        int index = side.get3DDataValue();
+        var cached = gtolib$targets[index];
+        var wrapped = BlockingPatternTarget.of(cached, target, blockEntity, this, side);
+        if (wrapped != cached) gtolib$targets[index] = wrapped;
+        return wrapped;
     }
 
     @Override

@@ -38,6 +38,7 @@ public final class EnergyAccount {
     final FlowMeter meter = new FlowMeter(this);
     final O2OOpenCacheHashMap<GlobalPos, Provider.Tower> towers = new O2OOpenCacheHashMap<>();
     final O2OOpenCacheHashMap<GlobalPos, Provider.Relay> relays = new O2OOpenCacheHashMap<>();
+    final O2OOpenCacheHashMap<GlobalPos, BigInteger> towerCapacities = new O2OOpenCacheHashMap<>();
     final Reference2ObjectOpenHashMap<ResourceKey<Level>, GridNode> nodes = new Reference2ObjectOpenHashMap<>();
     final ObjectArrayList<GridNode> nodeList = new ObjectArrayList<>();
     final ObjectArrayList<GridNode> touchedNodes = new ObjectArrayList<>();
@@ -128,11 +129,15 @@ public final class EnergyAccount {
         pendingLo = s & U126.MASK;
     }
 
-    void returnToNode(GridNode node, long amount) {
+    void returnToNode(GridNode node, long credit, long gross, int extraLoss) {
+        if (credit <= 0 && gross <= 0) return;
         if (node.hasCapacity()) {
-            GridTransfer.add(this, node, amount);
+            int stocked = node.stocked;
+            if (credit > 0) node.absorb(0, credit, null);
+            if (gross > 0) node.store(gross, extraLoss);
+            GridTransfer.arrived(this, node, stocked);
         } else {
-            addPending(0, amount);
+            addPending(0, U126.saturatedAdd(Math.max(0, credit), gross));
             markDirty();
         }
     }
@@ -170,6 +175,11 @@ public final class EnergyAccount {
         return U126.toBig(h, l);
     }
 
+    public BigInteger towerCapacity(GlobalPos pos) {
+        var capacity = towerCapacities.get(pos);
+        return capacity == null ? BigInteger.ZERO : capacity;
+    }
+
     public BigInteger totalCapacity() {
         long h = 0, l = 0;
         for (int i = 0, n = nodeList.size(); i < n; i++) {
@@ -201,9 +211,8 @@ public final class EnergyAccount {
         double weighted = 0, total = 0;
         for (int i = 0, n = nodeList.size(); i < n; i++) {
             var node = nodeList.get(i);
-            double c = node.capacityDouble();
-            weighted += c * node.loss;
-            total += c;
+            weighted += node.lossWeight();
+            total += node.capacityDouble();
         }
         return total > 0 ? (int) Math.round(weighted / total) : 0;
     }

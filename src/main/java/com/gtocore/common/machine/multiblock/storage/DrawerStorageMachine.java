@@ -39,7 +39,7 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.AmountFormat;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
@@ -416,7 +416,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     private static String formatCapacity(boolean fluid, long capacity) {
-        return fluid ? AEKeyType.fluids().formatAmount(capacity, AmountFormat.FULL) : FormattingUtil.formatNumbers(capacity);
+        return fluid ? AEKeyTypes.FLUIDS.formatAmount(capacity, AmountFormat.FULL) : FormattingUtil.formatNumbers(capacity);
     }
 
     /// 主机与密封的总加成开根号（显示用）

@@ -55,7 +55,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.core.definitions.AEBlocks;
 
 import earth.terrarium.adastra.common.registry.ModBlocks;
@@ -928,7 +928,7 @@ public final class MultiBlockG {
             .workableCasingRenderer(GTOCore.id("block/casings/iridium_casing"), GTCEu.id("block/multiblock/fusion_reactor"))
             .register();
 
-    public static final MultiblockMachineDefinition ITEM_VAULT = multiblock("item_vault", "物品保险库", h -> new MultiblockMEStorageMachine(h, AEKeyType.items()))
+    public static final MultiblockMachineDefinition ITEM_VAULT = multiblock("item_vault", "物品保险库", h -> new MultiblockMEStorageMachine(h, AEKeyTypes.ITEMS))
             .nonYAxisRotation()
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.STEEL_HULL)
@@ -938,7 +938,7 @@ public final class MultiBlockG {
             .workableCasingRenderer(GTCEu.id("block/casings/steam/steel/side"), GTCEu.id("block/multiblock/multiblock_tank"))
             .register();
 
-    public static final MultiblockMachineDefinition FLUID_VAULT = multiblock("fluid_vault", "流体保险库", h -> new MultiblockMEStorageMachine(h, AEKeyType.fluids()))
+    public static final MultiblockMachineDefinition FLUID_VAULT = multiblock("fluid_vault", "流体保险库", h -> new MultiblockMEStorageMachine(h, AEKeyTypes.FLUIDS))
             .nonYAxisRotation()
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.STEEL_HULL)

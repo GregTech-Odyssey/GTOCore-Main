@@ -92,7 +92,9 @@ public class DataCrystalItem extends Item implements IExDataItem {
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         UUID teamUUID = getTeamUUID(stack);
         if (teamUUID != null) {
-            tooltip.add(Component.translatable(TEAM_DATA_TAG, TeamUtil.findTeamName(teamUUID)));
+            var name = TeamUtil.findTeamNameById(teamUUID);
+            if (name == null && level != null) name = TeamUtil.findPlayerName(level, teamUUID);
+            tooltip.add(Component.translatable(TEAM_DATA_TAG, name == null ? Component.literal(teamUUID.toString()) : name));
         } else {
             tooltip.add(Component.translatable(EMPTY_NBT_TAG));
         }

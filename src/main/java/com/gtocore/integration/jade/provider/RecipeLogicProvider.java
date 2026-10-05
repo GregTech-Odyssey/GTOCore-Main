@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
+import com.gregtechceu.gtceu.common.machine.trait.CleanroomLogic;
 import com.gregtechceu.gtceu.integration.jade.IdleReasonJade;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -197,6 +198,13 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
 
     private static @NotNull CompoundTag getRecipeInfo(RecipeLogic capability) {
         var recipeInfo = new CompoundTag();
+        if (capability instanceof CleanroomLogic cleanroomLogic) {
+            if (cleanroomLogic.isWorking()) {
+                recipeInfo.putLong("EUt", cleanroomLogic.getEnergyPerTick());
+                recipeInfo.putLong("voltage", getVoltage(capability));
+            }
+            return recipeInfo;
+        }
         var recipe = capability.getLastRecipe();
         if (recipe != null) {
             var machine = capability.getMachine();

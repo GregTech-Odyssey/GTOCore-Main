@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.integration.ae2.utils.KeyStorage;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -104,7 +103,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
 
     @Override
     public void gtolib$insertAsh(MultiblockControllerMachine controller, GTRecipe lastRecipe) {
-        TaskHandler.enqueueAsyncTask(getLevel(), () -> IGTOMufflerMachine.super.gtolib$insertAsh(controller, lastRecipe), 0);
+        TaskHandler.enqueueTask(getLevel(), () -> IGTOMufflerMachine.super.gtolib$insertAsh(controller, lastRecipe), 0);
     }
 
     @Override
@@ -182,7 +181,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     @Override
     public void recoverItemsTable(ItemStack recoveryItems) {
         if (!workingEnabled) return;
-        var key = Keys.item(recoveryItems);
+        var key = AEItemKey.of(recoveryItems);
         if (key != null) handler.insert(key, recoveryItems.getCount(), false);
     }
 

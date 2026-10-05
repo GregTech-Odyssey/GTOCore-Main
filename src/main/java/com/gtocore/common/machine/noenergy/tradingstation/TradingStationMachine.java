@@ -66,6 +66,8 @@ import net.minecraft.world.level.block.Blocks;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyTypes;
+import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -1211,7 +1213,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
 
     private void updateAutoOutputSubscription() {
         if (getLevel() == null || isRemote()) return;
-        if ((autoOutputItems && !outputItem.isEmpty() && getOutputFacingItems() != null && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getOutputFacingItems())) || (autoOutputFluids && !outputFluid.isEmpty() && getOutputFacingFluids() != null && holder.blockEntityDirectionCache.hasAdjacentFluidHandler(getLevel(), getPos(), getOutputFacingFluids()))) {
+        if ((autoOutputItems && !outputItem.isEmpty() && getOutputFacingItems() != null && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getOutputFacingItems(), AEKeyTypes.ITEMS, StorageAccess.INSERT)) || (autoOutputFluids && !outputFluid.isEmpty() && getOutputFacingFluids() != null && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getOutputFacingFluids(), AEKeyTypes.FLUIDS, StorageAccess.INSERT))) {
             autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
             autoOutputSubs.unsubscribe();

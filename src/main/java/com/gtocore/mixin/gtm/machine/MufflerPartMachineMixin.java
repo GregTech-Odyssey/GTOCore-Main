@@ -26,7 +26,6 @@ import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachi
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTParticleTypes;
 import com.gregtechceu.gtceu.common.machine.electric.AirScrubberMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine;
@@ -272,7 +271,7 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
     @Override
     public void recoverItemsTable(ItemStack recoveryItems) {
         AirScrubberMachine machine = getAirScrubberMachine();
-        var key = Keys.item(recoveryItems);
+        var key = AEItemKey.of(recoveryItems);
         if (machine != null && GTValues.RNG.nextInt(machine.getTier() << 1 + 1) > 1) {
             if (key != null) machine.output(key, recoveryItems.getCount());
             return;

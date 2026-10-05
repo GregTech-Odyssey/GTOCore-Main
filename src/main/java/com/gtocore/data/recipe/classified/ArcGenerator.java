@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluid;
 
 import appeng.core.definitions.AEItems;
 
@@ -271,7 +272,7 @@ final class ArcGenerator {
                 .inputItems(TagPrefix.dust, GTOMaterials.FrozenVolatileIce, 256)
                 .outputItems(GTOItems.DUST_BLIZZ)
                 .inputFluids(GTOMaterials.TranscendingMatter, 2000)
-                .inputFluids(GTOFluids.CLOUD_SEED_CONCENTRATED.getSource(), 2000)
+                .inputFluids((Fluid) GTOFluids.CLOUD_SEED_CONCENTRATED.getSource(), 2000)
                 .inputFluids(GTMaterials.Ice, 10000)
                 .EUt(1920)
                 .duration(1600)

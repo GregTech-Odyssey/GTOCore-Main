@@ -64,6 +64,7 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.energy.IEnergyService;
 import appeng.api.stacks.*;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.AEKeyFilter;
 import appeng.api.storage.MEStorage;
 import appeng.api.storage.StorageHelper;
@@ -656,8 +657,8 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     static void writeBufferTag(CompoundTag data, MEPatternBufferPartMachine buffer) {
-        var items = new AEKeyMap<AEItemKey>();
-        var fluids = new AEKeyMap<AEFluidKey>();
+        var items = new AEKeyLongMap<AEItemKey>();
+        var fluids = new AEKeyLongMap<AEFluidKey>();
         for (InternalSlot slot : buffer.getInternalInventory()) {
             var itemInventory = slot.itemInventory;
             for (int i = 0; i < itemInventory.size(); i++) {
@@ -691,9 +692,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         private final InputSink inputSink;
         public final IntLongMap ingredientMap = new IntLongMap();
         @SaveToDisk
-        public final KeyInventory<AEItemKey> itemInventory = KeyInventory.growable(AEKeyType.items(), 1, Long.MAX_VALUE);
+        public final KeyInventory<AEItemKey> itemInventory = KeyInventory.growable(AEKeyTypes.ITEMS, 1, Long.MAX_VALUE);
         @SaveToDisk
-        public final KeyInventory<AEFluidKey> fluidInventory = KeyInventory.growable(AEKeyType.fluids(), 1, Long.MAX_VALUE);
+        public final KeyInventory<AEFluidKey> fluidInventory = KeyInventory.growable(AEKeyTypes.FLUIDS, 1, Long.MAX_VALUE);
         private boolean batching;
 
         @SaveToDisk(skipWhen = "isLock")

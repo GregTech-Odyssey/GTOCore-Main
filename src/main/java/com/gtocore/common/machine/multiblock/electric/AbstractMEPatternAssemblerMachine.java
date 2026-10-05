@@ -19,7 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +36,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     protected final List<MECraftPatternPartMachine> partMachines = new ArrayList<>();
 
     @SaveToDisk
-    private final AEKeyMap<AEItemKey> plannedOutputs = new AEKeyMap<>();
+    private final AEKeyLongMap<AEItemKey> plannedOutputs = new AEKeyLongMap<>();
 
     private int plannedSlots;
     private long plannedAmount;

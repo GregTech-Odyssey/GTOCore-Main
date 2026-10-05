@@ -19,7 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
+import appeng.api.storage.StorageAccess;
 
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import org.jetbrains.annotations.Nullable;
@@ -46,8 +47,8 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
 
     public PrimitiveBlastFurnaceHatch(MetaMachineBlockEntity holder) {
         super(holder);
-        this.inputInventory = new InventoryProxyTrait<>(this, AEKeyType.items(), IO.IN);
-        this.outputInventory = new InventoryProxyTrait<>(this, AEKeyType.items(), IO.OUT);
+        this.inputInventory = new InventoryProxyTrait<>(this, AEKeyTypes.ITEMS, IO.IN);
+        this.outputInventory = new InventoryProxyTrait<>(this, AEKeyTypes.ITEMS, IO.OUT);
     }
 
     //////////////////////////////////////
@@ -115,7 +116,7 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
     }
 
     private void updateAutoIOSubscription() {
-        if ((!outputInventory.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing()))) {
+        if ((!outputInventory.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getFrontFacing(), AEKeyTypes.ITEMS, StorageAccess.INSERT))) {
             autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
         } else if (autoIOSubs != null) {
             autoIOSubs.unsubscribe();

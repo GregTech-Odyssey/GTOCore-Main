@@ -31,12 +31,11 @@ import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
-import java.util.List;
 
 public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine {
 
-    private final List<KeyInventory<AEItemKey>> itemStackTransfers = new ReferenceArrayList<>();
-    private final List<KeyInventory<AEFluidKey>> fluidTankTransfers = new ReferenceArrayList<>();
+    private final ReferenceArrayList<KeyInventory<AEItemKey>> itemStackTransfers = new ReferenceArrayList<>();
+    private final ReferenceArrayList<KeyInventory<AEFluidKey>> fluidTankTransfers = new ReferenceArrayList<>();
 
     public AdvancedAssemblyLineMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -56,7 +55,7 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
         return checkOrderedInputs(fluidTankTransfers, recipe.fluidInputs);
     }
 
-    private static boolean checkOrderedInputs(List<? extends KeyInventory<?>> machineInputs, ContentList inputs) {
+    private static boolean checkOrderedInputs(ReferenceArrayList<? extends KeyInventory<?>> machineInputs, ContentList inputs) {
         int n = inputs.size();
         if (n == 0) return true;
         if (machineInputs.size() < n) return false;
@@ -79,7 +78,7 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
             if (storage.amountAt(slot) <= 0) continue;
             int uid = storage.uidAt(slot);
             if (!found) {
-                if (!currentIngredient.test(uid, storage.rawKeyAt(slot))) return false;
+                if (!KeyIngredient.accepts(currentIngredient, uid, storage.rawKeyAt(slot))) return false;
                 kind = uid;
                 found = true;
             } else if (uid != kind) {
@@ -119,7 +118,8 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
     @Override
     public boolean handleRecipeInput(RecipeHandlerUnit unit, GTRecipe recipe) {
         boolean unitUsed = false;
-        if (ConfigHolder.INSTANCE.machines.orderedAssemblyLineItems) {
+        var config = ConfigHolder.INSTANCE.machines;
+        if (config.orderedAssemblyLineItems) {
             if (!consumeOrderedInputs(itemStackTransfers, recipe, recipe.itemInputs, true)) {
                 setIdleReason(IdleReason.ORDERED_ITEM);
                 return false;
@@ -131,7 +131,7 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
             }
             unitUsed = true;
         }
-        if (ConfigHolder.INSTANCE.machines.orderedAssemblyLineFluids) {
+        if (config.orderedAssemblyLineFluids) {
             if (!consumeOrderedInputs(fluidTankTransfers, recipe, recipe.fluidInputs, false)) {
                 setIdleReason(IdleReason.ORDERED_FLUID);
                 return false;
@@ -173,7 +173,7 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
     }
 
     @SuppressWarnings("unchecked")
-    private static <K extends AEKey> boolean consumeOrderedInputs(List<KeyInventory<K>> machineInputs, GTRecipe recipe, ContentList inputs, boolean testOnce) {
+    private static <K extends AEKey> boolean consumeOrderedInputs(ReferenceArrayList<KeyInventory<K>> machineInputs, GTRecipe recipe, ContentList inputs, boolean testOnce) {
         int n = inputs.size();
         if (n == 0) return true;
         if (machineInputs.size() < n) return false;
@@ -187,7 +187,7 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
             for (int j = 0; j < size; j++) {
                 if (inputSlot.amountAt(j) <= 0) continue;
                 var key = (K) inputSlot.rawKeyAt(j);
-                if (!tested && !ingredient.test(inputSlot.uidAt(j), key)) continue;
+                if (!tested && !KeyIngredient.accepts(ingredient, inputSlot.uidAt(j), key)) continue;
                 if (testOnce) tested = true;
                 need -= inputSlot.extract(j, key, need, false);
                 if (need <= 0) break;

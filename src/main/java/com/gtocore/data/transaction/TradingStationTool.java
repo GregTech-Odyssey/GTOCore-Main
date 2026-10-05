@@ -46,7 +46,7 @@ public class TradingStationTool {
             }
 
             // 统计库存中该物品的总数量
-            AEItemKey key = Keys.item(required);
+            AEItemKey key = AEItemKey.of(required);
             long totalInStock = key == null ? 0 : handler.count(key);
 
             // 计算该物品支持的最大乘数（总库存 / 每组需求）
@@ -84,7 +84,7 @@ public class TradingStationTool {
 
             // 计算总扣除数量 = 每组数量 × 乘数
             long totalToDeduct = (long) perItemCount * multiplier;
-            AEItemKey key = Keys.item(item);
+            AEItemKey key = AEItemKey.of(item);
             if (key == null) {
                 continue;
             }
@@ -115,7 +115,7 @@ public class TradingStationTool {
 
             // 计算总添加数量 = 每组数量 × 乘数
             long totalToAdd = (long) item.getCount() * multiplier;
-            AEItemKey key = Keys.item(item);
+            AEItemKey key = AEItemKey.of(item);
             if (key == null) {
                 continue;
             }

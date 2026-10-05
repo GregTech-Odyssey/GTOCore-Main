@@ -1,15 +1,12 @@
 package com.gtocore.integration.ae;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.blockentity.IDirectionCacheBlockEntity;
 
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -18,10 +15,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-import appeng.api.behaviors.ExternalStorageStrategy;
 import appeng.api.config.AccessRestriction;
 import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
@@ -32,12 +27,12 @@ import appeng.api.parts.BusSupport;
 import appeng.api.parts.IPartHost;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.storage.ExternalStorageLookup;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
+import appeng.api.storage.StorageAccess;
 import appeng.api.util.IMenuHost;
-import appeng.capabilities.Capabilities;
 import appeng.core.AppEng;
 import appeng.core.stats.AdvancementTriggers;
 import appeng.helpers.InterfaceLogicHost;
@@ -50,15 +45,12 @@ import appeng.me.storage.MEInventoryHandler;
 import appeng.me.storage.NullInventory;
 import appeng.menu.me.items.CraftingTermMenu;
 import appeng.parts.PartModel;
-import appeng.parts.automation.StackWorldBehaviors;
 import appeng.parts.reporting.AbstractTerminalPart;
 import appeng.util.inv.AppEngInternalInventory;
 
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 
 public class SimpleCraftingTerminal extends AbstractTerminalPart
                                     implements IAEPowerStorage, IStorageProvider, IMenuHost {
@@ -74,9 +66,9 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
 
     private final MEInventoryHandler handler = new MEInventoryHandler(NullInventory.of());
     @Nullable
-    private Map<AEKeyType, ExternalStorageStrategy> externalStorageStrategies;
-    @Nullable
     private TickableSubscription subscription;
+    @Nullable
+    private ExternalStorageLookup lookup;
 
     public SimpleCraftingTerminal(IPartItem<?> partItem) {
         super(partItem);
@@ -195,52 +187,16 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
         if (isClientSide()) return;
         var side = getSide();
         if (side == null) return;
-        var host = getHost().getBlockEntity();
-        var adjacent = IDirectionCacheBlockEntity.getBlockEntityDirectionCache(host).getAdjacentBlockEntity(host.getLevel(), host.getBlockPos(), side);
-        if (adjacent == null) {
-            this.handler.setDelegate(NullInventory.of());
-            return;
+        var lookup = this.lookup;
+        if (lookup == null) {
+            var host = getHost().getBlockEntity();
+            if (!(host.getLevel() instanceof ServerLevel level)) return;
+            this.lookup = lookup = ExternalStorageLookup.create(level, host.getBlockPos().relative(side), side.getOpposite());
+        } else {
+            lookup.refresh();
         }
-        var newInventory = GTCapabilityHelper.getBlockEntityCapability(Capabilities.STORAGE, adjacent, side.getOpposite());
-        if (newInventory == null) {
-            var foundExternalApi = new Reference2ReferenceOpenHashMap<AEKeyType, MEStorage>(2);
-            findExternalStorages(foundExternalApi);
-            if (this.handler.getDelegate() instanceof CompositeStorage compositeStorage && !foundExternalApi.isEmpty()) {
-                compositeStorage.setStorages(foundExternalApi);
-                return;
-            }
-            if (!foundExternalApi.isEmpty()) {
-                newInventory = new CompositeStorage(foundExternalApi);
-            } else {
-                newInventory = NullInventory.of();
-            }
-        }
-        this.handler.setDelegate(newInventory);
-    }
-
-    private Map<AEKeyType, ExternalStorageStrategy> getExternalStorageStrategies() {
-        if (externalStorageStrategies == null) {
-            BlockEntity self = this.getHost().getBlockEntity();
-            BlockPos fromPos = self.getBlockPos().relative(this.getSide());
-            Direction fromSide = this.getSide().getOpposite();
-            this.externalStorageStrategies = StackWorldBehaviors.createExternalStorageStrategies((ServerLevel) this.getLevel(), fromPos, fromSide);
-        }
-        return externalStorageStrategies;
-    }
-
-    private void findExternalStorages(Map<AEKeyType, MEStorage> storages) {
-        for (var entry : getExternalStorageStrategies().entrySet()) {
-            var wrapper = entry.getValue().createWrapper(
-                    false,
-                    this::invalidateOnExternalStorageChange);
-            if (wrapper != null) {
-                storages.put(entry.getKey(), wrapper);
-            }
-        }
-    }
-
-    private void invalidateOnExternalStorageChange() {
-        getMainNode().ifPresent((grid, node) -> grid.getTickManager().alertDevice(node));
+        var storage = lookup.findAll(StorageAccess.FULL);
+        this.handler.setDelegate(storage == null ? NullInventory.of() : storage);
     }
 
     private void checkStorageBusOnInterface() {

@@ -118,7 +118,7 @@ final class MEPatternVirtualInputHelper {
                     targetItemSlot++;
                 }
                 if (targetItemSlot >= itemSlots) continue;
-                var virtualKey = Keys.item(virtualItem);
+                var virtualKey = AEItemKey.of(virtualItem);
                 if (virtualKey == null) continue;
                 long virtualAmount = Math.clamp(stack.amount(), 1L, VIRTUAL_ITEM_MAX_AMOUNT);
                 if (virtualInputState == null) {

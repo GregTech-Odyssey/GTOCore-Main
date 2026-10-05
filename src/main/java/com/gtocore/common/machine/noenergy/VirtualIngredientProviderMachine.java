@@ -44,7 +44,7 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
@@ -57,7 +57,7 @@ import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2LongLinkedOpenHashMap;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
         this.fluidInventory = NotifiableInventory.fluids(this, SLOT_COUNT, FLUID_CAPACITY, IO.NONE, IO.BOTH);
         this.nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
-        storage.setStoredMap(new AEKeyMap<>());
+        storage.setStoredMap(new AEKeyLongMap<>());
         inventory.addChangedListener(this::rebuildStorage);
         fluidInventory.addChangedListener(this::rebuildStorage);
     }
@@ -193,7 +193,7 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     }
 
     private static void sortInventory(KeyInventory<AEItemKey> storage) {
-        var totals = new Object2LongLinkedOpenHashMap<AEItemKey>();
+        var totals = new Reference2LongLinkedOpenHashMap<AEItemKey>();
         int size = storage.size();
         for (int i = 0; i < size; i++) {
             var key = storage.keyAt(i);

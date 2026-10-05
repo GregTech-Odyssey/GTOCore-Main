@@ -21,14 +21,14 @@ import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
+import appeng.api.stacks.AEKeySet;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -76,9 +76,9 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor mePullMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_PULL, this::pullTick);
-    private final ReferenceOpenHashSet<AEKey> countedKeys = new ReferenceOpenHashSet<>();
+    private final AEKeySet<AEKey> countedKeys = new AEKeySet<>();
 
-    private final AEKeyMap<AEKey> extractedKeys = new AEKeyMap<>();
+    private final AEKeyLongMap<AEKey> extractedKeys = new AEKeyLongMap<>();
 
     public MEPullCraftPatternPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
         super(holder, maxPatternCount);

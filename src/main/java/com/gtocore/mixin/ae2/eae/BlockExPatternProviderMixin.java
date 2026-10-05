@@ -26,7 +26,7 @@ public abstract class BlockExPatternProviderMixin extends BlockBaseGui<TileExPat
         TileExPatternProvider be = this.getBlockEntity(level, pos);
         if (be != null) {
             IDirectionCacheBlockEntity.getBlockEntityDirectionCache(be).clearCache();
-            be.getLogic().updateRedstoneState();
+            be.getLogic().onNeighborChanged();
         }
     }
 }

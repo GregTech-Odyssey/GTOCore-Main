@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
@@ -85,7 +85,7 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
                 time--;
                 if (signal > 0) {
                     Item item = RUNES.get(signal);
-                    boolean success = forEachKey(AEKeyType.items(), true, (key, amount) -> key instanceof AEItemKey itemKey && itemKey.getItem() == item && inputItem(item, 1));
+                    boolean success = forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> key instanceof AEItemKey itemKey && itemKey.getItem() == item && inputItem(item, 1));
                     if (success) {
                         signal = 0;
                         updateSignal();

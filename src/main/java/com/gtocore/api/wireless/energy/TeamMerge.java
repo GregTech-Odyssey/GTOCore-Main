@@ -76,9 +76,7 @@ public final class TeamMerge {
         from.pendingHi = 0;
         from.pendingLo = 0;
         for (var node : from.nodeList) {
-            if (node.isEmpty()) continue;
-            to.nodeOrCreate(node.dimension).addWide(Math.max(0, node.hi), node.lo);
-            node.clearStorage();
+            if (!node.isEmpty()) node.moveTo(to.nodeOrCreate(node.dimension));
         }
         var moving = new ObjectArrayList<Provider>(from.towers.values());
         moving.addAll(from.relays.values());

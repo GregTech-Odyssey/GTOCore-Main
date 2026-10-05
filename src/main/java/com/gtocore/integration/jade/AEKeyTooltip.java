@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.fluid.JadeFluidObject;
@@ -29,7 +29,7 @@ public final class AEKeyTooltip {
 
     private AEKeyTooltip() {}
 
-    public static void write(CompoundTag data, String name, AEKeyMap<? extends AEKey> keys) {
+    public static void write(CompoundTag data, String name, AEKeyLongMap<? extends AEKey> keys) {
         if (keys.isEmpty()) return;
         var list = new ListTag();
         for (var entry : keys) {

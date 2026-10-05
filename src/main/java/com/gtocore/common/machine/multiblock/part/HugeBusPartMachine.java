@@ -2,7 +2,6 @@ package com.gtocore.common.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
@@ -15,7 +14,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -38,13 +36,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
+import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.datastream.data.ListData;
-import com.gto.datasynclib.datastream.data.NullData;
 import com.gto.datasynclib.datastream.data.StringMapData;
 import com.gto.datasynclib.util.DataCodecs;
+import com.gto.datasynclib.util.NbtUtil;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
@@ -139,12 +137,12 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     @Override
     public void loadFromItem(CompoundTag tag) {
         if (!tag.contains("storedAmount")) return;
-        inventory.storage.set(0, Keys.item(ItemStack.of(tag.getCompound("stored"))), tag.getLong("storedAmount"));
+        inventory.storage.set(0, AEItemKey.of(ItemStack.of(tag.getCompound("stored"))), tag.getLong("storedAmount"));
     }
 
     private void updateInventorySubscription() {
         var level = getLevel();
-        if (level != null && isWorkingEnabled() && holder.blockEntityDirectionCache.hasAdjacentItemHandler(getLevel(), getPos(), getFrontFacing())) {
+        if (level != null && isWorkingEnabled() && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getFrontFacing(), AEKeyTypes.ITEMS, StorageAccess.EXTRACT)) {
             autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 40);
         } else if (autoIOSubs != null) {
             autoIOSubs.unsubscribe();
@@ -163,7 +161,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     private void exportToNearby(HugeInventory handler, Direction facing) {
         if (handler.storage.isEmpty()) return;
         var level = getLevel();
-        if (level != null && GTCapabilityHelper.getAdjacentKeyHandler(holder.blockEntityDirectionCache, level, getPos(), facing, AEKeyType.items()) instanceof IKeyHandler<?> target) {
+        if (level != null && holder.blockEntityDirectionCache.getAdjacentKeyHandler(level, getPos(), facing, AEKeyTypes.ITEMS, StorageAccess.INSERT) instanceof IKeyHandler<?> target) {
             KeyTransfer.transfer(handler.storage, (IKeyHandler<AEItemKey>) target, Integer.MAX_VALUE);
         }
     }
@@ -273,12 +271,12 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
         private void readLegacyStorage(StringMapData data, int dataVersion) {
             var legacy = data.get("storage");
-            if (legacy == null || legacy instanceof ListData || legacy instanceof NullData) return;
+            if (!(legacy instanceof StringMapData) && (legacy == null || legacy.toCustomData(NbtUtil.COMPOUND_TAG_TYPE) == null)) return;
             data.remove("storage");
             var nbt = DataCodecs.COMPOUND_TAG_CODEC.decode(legacy, dataVersion);
             var stackTag = nbt.getCompound("stack").copy();
             stackTag.putByte("Count", (byte) 1);
-            storage.set(0, Keys.item(ItemStack.of(stackTag)), nbt.getLong("count"));
+            storage.set(0, AEItemKey.of(ItemStack.of(stackTag)), nbt.getLong("count"));
         }
     }
 

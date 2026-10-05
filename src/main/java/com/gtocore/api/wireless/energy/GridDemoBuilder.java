@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 
 final class GridDemoBuilder {
@@ -36,7 +37,7 @@ final class GridDemoBuilder {
         var pos = GridDemo.position(key, slot++);
         var capacity = BigInteger.TWO.pow(capacityBits);
         int lossPermille = Math.max(5, (12 - tier) * 6);
-        grid.attach(account, new Provider.Tower(pos, player.getUUID(), capacity, capacity.doubleValue() * lossPermille, ProviderRegistry.clampTier(tier)));
+        grid.attach(account, new Provider.Tower(pos, player.getUUID(), Collections.singletonList(new Provider.Unit(Provider.Unit.FIXED, 1, capacity, lossPermille)), ProviderRegistry.clampTier(tier)));
         fills.put(key, fill);
         return this;
     }
@@ -76,8 +77,8 @@ final class GridDemoBuilder {
         var node = account.node(dimension);
         if (!node.hasCapacity()) return;
         var value = new BigDecimal(node.capacity()).multiply(BigDecimal.valueOf(Math.max(0, Math.min(1, ratio)))).toBigInteger();
-        node.hi = U126.hi(value);
-        node.lo = U126.lo(value);
+        node.clearStorage();
+        node.absorb(U126.hi(value), U126.lo(value), null);
         account.supplyArrived(node);
     }
 

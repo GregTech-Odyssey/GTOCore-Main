@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Biomass;
@@ -84,7 +85,7 @@ final class Fermenting {
                 .inputItems(GTOTagPrefix.block, GTMaterials.Sculk)
                 .outputItems("deeperdarker:echo_soil")
                 .inputFluids(GTMaterials.EchoShard, 60)
-                .outputFluids(GTOFluids.XP_JUICE.getSource(), 20)
+                .outputFluids((Fluid) GTOFluids.XP_JUICE.getSource(), 20)
                 .EUt(30)
                 .duration(20000)
                 .save();

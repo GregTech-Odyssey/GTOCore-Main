@@ -132,11 +132,10 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                             GTOCore.LOGGER.error("配方 {} 存在空流体输入", id);
                             continue;
                         }
-                        String s = FluidUtils.getId(stacks[0].getFluid());
-                        if (stacks[0].getTag() != null) {
-                            s = s + stacks[0].getTag();
-                        }
-                        input.add(s);
+                        var first = stacks[0];
+                        String s = FluidUtils.getId(first.getFluid());
+                        var nbt = first.getTag();
+                        input.add(nbt == null ? s : s + nbt);
                     }
                     if (input.isEmpty()) continue;
                     stringSetMap.put(id, input);
@@ -388,8 +387,8 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
 
     @Nullable
     private static String itemInputString(KeyIngredient ingredient) {
-        if (ingredient.kind == KeyIngredient.CIRCUIT) return "c" + ingredient.circuitConfiguration();
-        var tag = ingredient.tag();
+        if (ingredient.kind() == KeyIngredient.CIRCUIT) return "c" + ingredient.circuitConfiguration();
+        var tag = ingredient.tagKey();
         if (tag != null) return tag.location().toString();
         var source = ingredient.source();
         if (source != null) {
@@ -399,8 +398,8 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                         if (stack.isEmpty()) continue;
                         if (stack.is(GTItems.PROGRAMMED_CIRCUIT.get())) return "c" + IntCircuitBehaviour.getCircuitConfiguration(stack);
                         String s = ItemUtils.getId(stack);
-                        if (stack.getTag() != null) s = s + stack.getTag();
-                        return s;
+                        var nbt = stack.getTag();
+                        return nbt == null ? s : s + nbt;
                     }
                     return null;
                 } else if (value instanceof Ingredient.TagValue tagValue) {
@@ -412,9 +411,9 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
         if (!(ingredient.key() instanceof AEItemKey key)) return null;
         int circuit = Circuits.configOf(key);
         if (circuit >= 0) return "c" + circuit;
-        String s = ItemUtils.getId(key.getItem());
-        if (key.getTag() != null) s = s + key.getTag();
-        return s;
+        String s = ItemUtils.getId(key.item);
+        var nbt = key.getTag();
+        return nbt == null ? s : s + nbt;
     }
 
     @Override

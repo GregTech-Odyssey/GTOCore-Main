@@ -35,7 +35,7 @@ public final class DimensionDataItem extends Item {
     private static final Object2IntOpenHashMap<String> NBTS = new O2IOpenCacheHashMap<>();
 
     public static final IngredientConverter<KeyIngredient> INGREDIENT_CONVERTER = (ingredient, amount, map) -> {
-        if (ingredient.kind == KeyIngredient.EXACT && ingredient.key() instanceof AEItemKey itemKey && itemKey.getItem() == DIMENSION_DATA) {
+        if (ingredient.key() instanceof AEItemKey itemKey && itemKey.item == DIMENSION_DATA) {
             var nbt = itemKey.getTag();
             if (nbt != null && nbt.tags.get("dim") instanceof StringTag stringTag) {
                 map.add(NBTS.getInt(stringTag.getAsString()), amount);
@@ -46,7 +46,7 @@ public final class DimensionDataItem extends Item {
     };
 
     public static final IngredientConverter<AEItemKey> ITEM_CONVERTER = (itemKey, amount, map) -> {
-        if (itemKey.getItem() == DIMENSION_DATA) {
+        if (itemKey.item == DIMENSION_DATA) {
             var nbt = itemKey.getTag();
             if (nbt != null && nbt.tags.get("dim") instanceof StringTag stringTag) {
                 map.add(NBTS.getInt(stringTag.getAsString()), amount);

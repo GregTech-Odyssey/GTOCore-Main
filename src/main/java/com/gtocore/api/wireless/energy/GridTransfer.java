@@ -20,11 +20,8 @@ final class GridTransfer {
     private GridTransfer() {}
 
     static long draw(EnergyAccount account, GridNode d, int voltage, long want, int priority, @Nullable Outcome outcome) {
-        long got = 0;
-        if (voltage <= d.tier) {
-            got = Math.min(want, d.available());
-            if (got > 0) take(account, d, got);
-        }
+        long got = Math.min(want, d.available(voltage));
+        if (got > 0) take(account, d, voltage, got);
         boolean limited = false;
         if (got < want && d.routes.length != 0) {
             int now = GridClock.tick();
@@ -71,13 +68,11 @@ final class GridTransfer {
 
     private static long putLocal(EnergyAccount account, GridNode d, int voltage, long gross, int extraLoss) {
         if (voltage > d.tier) return 0;
-        int loss = Loss.combined(d.loss, extraLoss);
-        long done = Loss.acceptGross(d.free(), gross, loss);
+        long done = d.acceptable(gross, extraLoss);
         if (done > 0) {
-            long net = done - Loss.of(done, loss);
-            add(account, d, net);
-            account.meter.in(done, done - net);
-            NodeMeter.in(account, d, done, done - net);
+            long lost = store(account, d, done, extraLoss);
+            account.meter.in(done, lost);
+            NodeMeter.in(account, d, done, lost);
         }
         if (done < gross) d.awaitingRoom = true;
         return done;
@@ -85,15 +80,7 @@ final class GridTransfer {
 
     static boolean putLump(EnergyAccount account, GridNode d, int voltage, BigInteger gross, int extraLoss, boolean apply, int priority) {
         if (gross.signum() <= 0) return true;
-        BigInteger local = BigInteger.ZERO;
-        int localLoss = Loss.combined(d.loss, extraLoss);
-        if (voltage <= d.tier && localLoss < Loss.PERMILLE) {
-            var free = d.capacity().subtract(d.storage());
-            if (free.signum() > 0) {
-                local = gross.min(free.multiply(BigInteger.valueOf(Loss.PERMILLE)).divide(BigInteger.valueOf(Loss.PERMILLE - localLoss)));
-                while (local.signum() > 0 && Loss.netOf(local, localLoss).compareTo(free) > 0) local = local.subtract(BigInteger.ONE);
-            }
-        }
+        var local = voltage <= d.tier ? d.lumpRoom(gross, extraLoss) : BigInteger.ZERO;
         var rest = gross.subtract(local);
         if (rest.bitLength() > 63) return false;
         long remote = rest.longValue();
@@ -101,9 +88,9 @@ final class GridTransfer {
         if (remote > 0 && (d.routes.length == 0 || plan.put(d, voltage, remote, extraLoss, priority, GridClock.tick()) < remote)) return false;
         if (!apply) return true;
         if (local.signum() > 0) {
-            var net = Loss.netOf(local, localLoss);
-            if (d.isEmpty()) account.supplyArrived(d);
-            d.addWide(U126.hi(net), U126.lo(net));
+            int stocked = d.stocked;
+            var net = d.storeLump(local, extraLoss);
+            arrived(account, d, stocked);
             double localGross = local.doubleValue(), lost = local.subtract(net).doubleValue();
             account.meter.in(localGross, lost);
             NodeMeter.in(account, d, localGross, lost);
@@ -115,13 +102,19 @@ final class GridTransfer {
         return true;
     }
 
-    static void take(EnergyAccount account, GridNode node, long amount) {
-        node.take(amount);
+    static void take(EnergyAccount account, GridNode node, int voltage, long amount) {
+        node.take(voltage, amount);
         account.roomFreed(node);
     }
 
-    static void add(EnergyAccount account, GridNode node, long amount) {
-        if (node.isEmpty()) account.supplyArrived(node);
-        node.add(amount);
+    static long store(EnergyAccount account, GridNode node, long gross, int extraLoss) {
+        int stocked = node.stocked;
+        long lost = node.store(gross, extraLoss);
+        arrived(account, node, stocked);
+        return lost;
+    }
+
+    static void arrived(EnergyAccount account, GridNode node, int stocked) {
+        if ((node.stocked & ~stocked) != 0) account.supplyArrived(node);
     }
 }

@@ -285,6 +285,7 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
         widgets.add(new CustomModularEmiRecipe(modular, Collections.emptyList()));
         widgets.add(new ModularForegroundRenderWidget(modular));
         widgets.add(new SlotWidget(EmiStack.of(OrderItem.setTarget(GTOItems.ORDER.asStack(), definition.asStack())), 1000, 1000).recipeContext(this));
+        MultiblockEmiActions.blockFavoriteKey(widgets);
     }
 
     @Override

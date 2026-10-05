@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.part.ae;
 import com.gtocore.common.machine.trait.ProxySlotRecipeHandler;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
@@ -25,6 +26,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -44,7 +46,7 @@ import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartM
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartMachine implements IMachineLife, IDataStickInteractable, IWailaDisplayProvider {
+public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartMachine implements IMachineLife, IDataStickInteractable, IWailaDisplayProvider, BlockEntityWatch.Listener {
 
     private static final String JADE_BOUND = "bound";
     private static final String JADE_POS = "pos";
@@ -57,6 +59,10 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     @Nullable
     private MEPatternBufferPartMachine buffer = null;
     private boolean bufferResolved = false;
+    @Nullable
+    private BlockPos watchedPos;
+    @Nullable
+    private TaskHandler.ReusableTask resolveTask;
 
     public MEPatternBufferProxyPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.LuV, IO.IN);
@@ -71,20 +77,20 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     @Override
     public void onLoad() {
         super.onLoad();
-        if (getLevel() instanceof ServerLevel level) {
-            TaskHandler.enqueueTask(level, () -> this.setBuffer(bufferPos));
-        }
+        resolveLater();
     }
 
     @Override
     public void onUnload() {
         super.onUnload();
-        var buf = getBuffer();
-        if (buf != null) {
-            buf.unloadProxy(this);
-            proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
-            bufferResolved = false;
-        }
+        watch(null);
+        bufferResolved = false;
+        var buf = buffer;
+        if (buf == null) return;
+        buffer = null;
+        buf.unloadProxy(this);
+        proxySlotRecipeHandler.release();
+        proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
     }
 
     @Override
@@ -108,19 +114,75 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         var previous = buffer;
         if (previous != null && previous != target) previous.removeProxy(this);
         buffer = target;
+        if (target != null) bufferPos = target.getPos();
+        watch(bufferPos);
+        var old = proxySlotRecipeHandler;
+        old.release();
         if (target == null) {
-            proxySlotRecipeHandler.updateProxy(null);
-            return;
+            proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+            if (old == ProxySlotRecipeHandler.DEFAULT) return;
+        } else {
+            proxySlotRecipeHandler = new ProxySlotRecipeHandler(this, target);
+            target.addProxy(this);
         }
-        proxySlotRecipeHandler = new ProxySlotRecipeHandler(this, target);
-        bufferPos = target.getPos();
-        target.addProxy(this);
         if (!isRemote()) {
-            proxySlotRecipeHandler.updateProxy(target);
             for (var controller : getControllers()) {
                 controller.requestCheck();
             }
         }
+    }
+
+    private void watch(@Nullable BlockPos pos) {
+        var old = watchedPos;
+        if (old == null ? pos == null : old.equals(pos)) return;
+        var level = getLevel();
+        if (level == null) return;
+        if (old != null) BlockEntityWatch.unwatch(level, old, this);
+        watchedPos = pos;
+        if (pos != null) BlockEntityWatch.watch(level, pos, this);
+    }
+
+    @Override
+    public void onBlockEntityChanged(BlockEntity blockEntity) {
+        if (isRemoved()) return;
+        var buf = buffer;
+        if (buf != null && blockEntity == buf.holder) {
+            if (blockEntity.isRemoved()) onBufferUnloaded(buf);
+        } else if (!blockEntity.isRemoved()) {
+            resolveLater();
+        }
+    }
+
+    private void onBufferUnloaded(MEPatternBufferPartMachine target) {
+        buffer = null;
+        target.unloadProxy(this);
+        proxySlotRecipeHandler.release();
+        proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+        if (getLevel() instanceof ServerLevel level) {
+            TaskHandler.enqueueTask(level, this::recheckAfterBufferLost);
+        } else {
+            bufferResolved = false;
+        }
+    }
+
+    private void recheckAfterBufferLost() {
+        if (buffer != null || isRemoved()) return;
+        for (var controller : getControllers()) {
+            if (!controller.self().isRemoved()) controller.requestCheck();
+        }
+    }
+
+    private void resolveLater() {
+        if (!(getLevel() instanceof ServerLevel level)) return;
+        var task = resolveTask;
+        if (task == null) resolveTask = task = new TaskHandler.ReusableTask(this::resolveBuffer);
+        TaskHandler.enqueueTask(level, task);
+    }
+
+    private void resolveBuffer() {
+        if (isRemoved()) return;
+        var buf = buffer;
+        if (!bufferResolved || buf == null || buf.isRemoved()) setBuffer(bufferPos);
     }
 
     @Nullable
@@ -130,8 +192,12 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     @Nullable
     public MEPatternBufferPartMachine getBuffer() {
-        if (!bufferResolved) setBuffer(bufferPos);
-        return buffer;
+        var buf = buffer;
+        if (!bufferResolved || buf != null && buf.isRemoved()) {
+            setBuffer(bufferPos);
+            return buffer;
+        }
+        return buf;
     }
 
     @Override
@@ -150,6 +216,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         var buf = getBuffer();
         if (buf != null) {
             buf.removeProxy(this);
+            proxySlotRecipeHandler.release();
             proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
         }
     }

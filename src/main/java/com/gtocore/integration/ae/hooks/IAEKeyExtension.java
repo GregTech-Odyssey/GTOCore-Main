@@ -7,7 +7,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 public interface IAEKeyExtension {
 
@@ -16,9 +16,9 @@ public interface IAEKeyExtension {
     Material getGtocore$material();
 
     static Material get$Material(AEKey key) {
-        if (key.getType() == AEKeyType.fluids()) {
+        if (key.getType() == AEKeyTypes.FLUIDS) {
             return ChemicalHelper.getMaterial(((AEFluidKey) key).fluid);
-        } else if (key.getType() == AEKeyType.items()) {
+        } else if (key.getType() == AEKeyTypes.ITEMS) {
             return ChemicalHelper.getMaterialEntry(((AEItemKey) key).item).material();
         }
         return GTMaterials.NULL;

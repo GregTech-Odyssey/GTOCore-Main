@@ -5,7 +5,7 @@ import com.gtocore.common.machine.multiblock.part.ae.MEStockingBusPartMachine;
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.GenericStack;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
         if (!machine.isWorkingEnabled() || !machine.isOnline()) return false;
         var grid = machine.getMainNode().getGrid();
         if (grid == null) return false;
-        AEKeyMap<AEKey> map = null;
+        AEKeyLongMap<AEKey> map = null;
         int time = machine.getOffsetTimer();
         for (var i : inventory) {
             if (i.config == null) continue;
@@ -81,7 +81,7 @@ public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
             this.machine = machine;
         }
 
-        private long refresh(AEKeyMap<AEKey> map, long amount, AEKey request, int time) {
+        private long refresh(AEKeyLongMap<AEKey> map, long amount, AEKey request, int time) {
             if (refreshTime != time) {
                 refreshTime = time;
                 var storage = map.getAmount(request);

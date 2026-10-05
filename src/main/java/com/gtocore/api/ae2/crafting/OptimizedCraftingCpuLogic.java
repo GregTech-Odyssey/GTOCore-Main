@@ -59,9 +59,9 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
 
     private Consumer<AEKey> listener = null;
 
-    private final SetMultimap<AEKey, GlobalPos> pendingRequests = Multimaps.newSetMultimap(new Reference2ReferenceOpenHashMap<>(), OpenCacheHashSet::new);
+    private final SetMultimap<AEKey, GlobalPos> pendingRequests = Multimaps.newSetMultimap(new AEKeyObjectMap<>(), OpenCacheHashSet::new);
     @Getter
-    private final SetMultimap<AEKey, IPatternProviderLogic.PushResult> craftingResults = Multimaps.newSetMultimap(new Reference2ReferenceOpenHashMap<>(), ReferenceOpenHashSet::new);
+    private final SetMultimap<AEKey, IPatternProviderLogic.PushResult> craftingResults = Multimaps.newSetMultimap(new AEKeyObjectMap<>(), ReferenceOpenHashSet::new);
 
     public OptimizedCraftingCpuLogic(CraftingCPUCluster cluster) {
         super(cluster);
@@ -157,7 +157,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         }
     }
 
-    private static void purgePatternEverywhere(Reference2ObjectOpenHashMap<AEKey, Object2LongOpenHashMap<IPatternDetails>> allocations, Object patternDefinition) {
+    private static void purgePatternEverywhere(AEKeyObjectMap<AEKey, Object2LongOpenHashMap<IPatternDetails>> allocations, Object patternDefinition) {
         if (allocations == null || allocations.isEmpty() || patternDefinition == null) return;
         for (var outIt = allocations.reference2ObjectEntrySet().fastIterator(); outIt.hasNext();) {
             var out = outIt.next();
@@ -726,11 +726,12 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         return inputHolder;
     }
 
-    private static long getMaxParallel(long maxParallel, IPatternDetails details, AEKeyMap<AEKey> sourceInv) {
+    private static long getMaxParallel(long maxParallel, IPatternDetails details, AEKeyLongMap<AEKey> sourceInv) {
         if (sourceInv.isEmpty()) return 0;
+        var seen = new AEKeySet<AEKey>();
         for (IPatternDetails.IInput input : details.getInputs()) {
             long extracted = 0;
-            var seen = new ReferenceOpenHashSet<AEKey>();
+            seen.clear();
             for (var stack : input.getPossibleInputs()) {
                 if (seen.add(stack.what())) {
                     extracted += sourceInv.getAmount(stack.what()) / stack.amount();

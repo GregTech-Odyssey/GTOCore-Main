@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlotList;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.recipesearch.IntLongMap;
@@ -71,12 +72,12 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     @Override
     public long available(AEKeyType type, KeyIngredient ingredient) {
-        if (type != AEKeyType.fluids() || !prepare()) return 0;
+        if (!prepare()) return 0;
         long total = 0;
         for (var i : inventory) {
             if (i.config == null) continue;
             var key = i.key();
-            if (key != null && ingredient.test(key)) {
+            if (key != null && KeyIngredient.accepts(ingredient, key.uid, key)) {
                 long a = i.stock.amount();
                 total = total + a < 0 ? Long.MAX_VALUE : total + a;
             }
@@ -86,12 +87,13 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     @Override
     public long reserveInput(PlanScratch plan, int member, AEKeyType type, int entry, KeyIngredient ingredient, long need, boolean consume) {
-        if (type != AEKeyType.fluids() || !accepts(consume) || !prepare()) return 0;
+        if (!accepts(consume) || !prepare()) return 0;
         long got = 0;
-        for (int s = 0; s < inventory.length && got < need; s++) {
-            var slot = inventory[s];
+        var inv = inventory;
+        for (int s = 0; s < inv.length && got < need; s++) {
+            var slot = inv[s];
             var key = slot.key();
-            if (key == null || !ingredient.test(key)) continue;
+            if (key == null || !KeyIngredient.accepts(ingredient, key.uid, key)) continue;
             long free = slot.stock.amount() - reserved(plan, member, s, false);
             if (free <= 0) continue;
             long t = Math.min(free, need - got);
@@ -103,13 +105,12 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     @Override
     public boolean commitInput(PlanScratch plan, int member, AEKeyType type) {
-        if (type != AEKeyType.fluids()) return true;
         int n = inventory.length;
         for (int s = 0; s < n; s++) {
             taken[s] = 0;
             takenKeys[s] = null;
         }
-        for (int i = 0; i < plan.logSize(); i++) {
+        for (int i = 0, logSize = plan.logSize(); i < logSize; i++) {
             if (plan.logMember(i) == member && plan.logIsFluid(i) && plan.logConsumes(i)) taken[plan.logToken(i)] += plan.logAmount(i);
         }
         boolean changed = false;
@@ -133,7 +134,6 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     @Override
     public void rollbackInput(PlanScratch plan, int member, AEKeyType type) {
-        if (type != AEKeyType.fluids()) return;
         if (restore(inventory.length - 1)) onContentsChanged();
     }
 
@@ -154,7 +154,7 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     private static long reserved(PlanScratch plan, int member, int slot, boolean consumeOnly) {
         long r = 0;
-        for (int i = 0; i < plan.logSize(); i++) {
+        for (int i = 0, logSize = plan.logSize(); i < logSize; i++) {
             if (plan.logMember(i) == member && plan.logToken(i) == slot && plan.logIsFluid(i) && (!consumeOnly || plan.logConsumes(i))) r += plan.logAmount(i);
         }
         return r;
@@ -162,7 +162,7 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     @Override
     public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
-        if (type != AEKeyType.fluids() || !prepare()) return false;
+        if (!prepare()) return false;
         for (var i : inventory) {
             if (i.config == null) continue;
             var key = i.key();
@@ -183,7 +183,7 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
 
     @Override
     public AEKeyType keyType() {
-        return AEKeyType.fluids();
+        return AEKeyTypes.FLUIDS;
     }
 
     @Override

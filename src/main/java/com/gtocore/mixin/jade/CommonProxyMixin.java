@@ -20,7 +20,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.integration.modules.jade.JadeModule;
 
 import com.google.common.collect.ImmutableList;
@@ -74,12 +74,12 @@ public class CommonProxyMixin {
             var ts = blockEntity.metaMachine.getTraits();
             List<IKeyHandler<AEItemKey>> filteredTraits = new ArrayList<>(ts.size());
             for (var t : ts) {
-                if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyType.items()) {
+                if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyTypes.ITEMS) {
                     filteredTraits.add((IKeyHandler<AEItemKey>) handler);
                 }
             }
             if (!filteredTraits.isEmpty()) {
-                return LazyOptional.of(() -> new ForgeItemAdapter(new KeyHandlerList<>(AEKeyType.items(), filteredTraits))).cast();
+                return LazyOptional.of(() -> new ForgeItemAdapter(new KeyHandlerList<>(AEKeyTypes.ITEMS, filteredTraits))).cast();
             }
         }
         return instance.getCapability(capability);
@@ -93,12 +93,12 @@ public class CommonProxyMixin {
             var ts = blockEntity.metaMachine.getTraits();
             List<IKeyHandler<AEFluidKey>> filteredTraits = new ArrayList<>(ts.size());
             for (var t : ts) {
-                if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyType.fluids()) {
+                if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyTypes.FLUIDS) {
                     filteredTraits.add((IKeyHandler<AEFluidKey>) handler);
                 }
             }
             if (!filteredTraits.isEmpty()) {
-                return LazyOptional.of(() -> new ForgeFluidAdapter(new KeyHandlerList<>(AEKeyType.fluids(), filteredTraits))).cast();
+                return LazyOptional.of(() -> new ForgeFluidAdapter(new KeyHandlerList<>(AEKeyTypes.FLUIDS, filteredTraits))).cast();
             }
         }
         return instance.getCapability(capability);

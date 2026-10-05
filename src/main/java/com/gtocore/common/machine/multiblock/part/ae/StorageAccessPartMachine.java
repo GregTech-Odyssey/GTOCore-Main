@@ -323,7 +323,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (mode == Actionable.MODULATE) {
                 var map = data.getStoredMap();
                 if (map == null) {
-                    map = new AEKeyMap<>();
+                    map = new AEKeyLongMap<>();
                     data.setStoredMap(map);
                 }
                 map.insert(what, amount);
@@ -711,9 +711,9 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         private static final String LANG_CONFIG_FLUIDS = "gtocore.machine.configurable_storage_access_hatch.config_fluids";
 
         @SaveToDisk
-        private final AEKeyMap<AEKey> inputLimits = new AEKeyMap<>();
+        private final AEKeyLongMap<AEKey> inputLimits = new AEKeyLongMap<>();
         @SaveToDisk
-        private final AEKeyMap<AEKey> outputLimits = new AEKeyMap<>();
+        private final AEKeyLongMap<AEKey> outputLimits = new AEKeyLongMap<>();
         @SaveToDisk(defaultValue = "false")
         @SyncToClient
         private boolean inputLimitEnabled;
@@ -754,7 +754,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             }
             var map = data.getStoredMap();
             if (map == null) {
-                map = new AEKeyMap<>();
+                map = new AEKeyLongMap<>();
                 data.setStoredMap(map);
             }
             long inserted = map.insert(what, amount, limit);
@@ -805,7 +805,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             }
         }
 
-        private AEKeyMap<AEKey> editingLimits() {
+        private AEKeyLongMap<AEKey> editingLimits() {
             return editingOutput ? outputLimits : inputLimits;
         }
 
@@ -822,7 +822,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             collectConfig(limits, fluidConfig.getInventory());
         }
 
-        private static void collectConfig(AEKeyMap<AEKey> limits, IConfigurableSlot[] slots) {
+        private static void collectConfig(AEKeyLongMap<AEKey> limits, IConfigurableSlot[] slots) {
             for (var slot : slots) {
                 var config = slot.getConfig();
                 if (config == null || config.what() == null) continue;

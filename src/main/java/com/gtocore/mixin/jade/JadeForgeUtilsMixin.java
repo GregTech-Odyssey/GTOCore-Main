@@ -20,7 +20,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -63,12 +63,12 @@ public abstract class JadeForgeUtilsMixin {
                     var ts = blockEntity.metaMachine.getTraits();
                     List<IKeyHandler<AEItemKey>> filteredTraits = new ArrayList<>(ts.size());
                     for (var t : ts) {
-                        if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyType.items()) {
+                        if (t instanceof IKeyHandler<?> handler && handler.keyType() == AEKeyTypes.ITEMS) {
                             filteredTraits.add((IKeyHandler<AEItemKey>) handler);
                         }
                     }
                     if (!filteredTraits.isEmpty()) {
-                        return new ForgeItemAdapter(new KeyHandlerList<>(AEKeyType.items(), filteredTraits));
+                        return new ForgeItemAdapter(new KeyHandlerList<>(AEKeyTypes.ITEMS, filteredTraits));
                     }
                 }
                 return capProvider.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(null);

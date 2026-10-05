@@ -1,10 +1,11 @@
 package com.gtocore.mixin.arseng;
 
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -12,11 +13,14 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.storage.MEStorage;
-import appeng.capabilities.Capabilities;
+import appeng.api.storage.MEStorageHost;
+import appeng.api.storage.StorageAccess;
+import appeng.api.storage.StorageTargetResolver;
 
 import com.hollingsworth.arsnouveau.common.block.tile.ModdedTile;
 import com.hollingsworth.arsnouveau.common.block.tile.ScribesTile;
 import com.hollingsworth.arsnouveau.common.entity.EntityFlyingItem;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,7 +30,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(value = ScribesTile.class, remap = false, priority = 0)
 public abstract class ScribesTileMixin extends ModdedTile {
@@ -55,33 +58,32 @@ public abstract class ScribesTileMixin extends ModdedTile {
                 worldPosition.north(6).east(6).below(2),
                 worldPosition.south(6).west(6).above(2));
 
+        StorageTargetResolver resolver = null;
         for (var pos : area) {
             var be = ILevel.getCachedBlockEntity(level, pos);
-
-            if (be != null) {
-                var hasExtracted = new AtomicBoolean(false);
-
-                be.getCapability(Capabilities.STORAGE).ifPresent(storage -> {
-                    gto$replaceArseng$extract(storage, pos);
-                    hasExtracted.set(true);
-                });
-
-                if (hasExtracted.get()) {
-                    return;
-                }
-
-                for (var side : Direction.values()) {
-                    be.getCapability(Capabilities.STORAGE, side).ifPresent(storage -> {
-                        gto$replaceArseng$extract(storage, pos);
-                        hasExtracted.set(true);
-                    });
-
-                    if (hasExtracted.get()) {
-                        return;
-                    }
-                }
+            if (be == null) continue;
+            MEStorage storage;
+            if (be instanceof MEStorageHost host) {
+                storage = host.getAnyMEStorage();
+            } else {
+                if (resolver == null) resolver = new StorageTargetResolver();
+                storage = gto$anyStorage(resolver, be);
+            }
+            if (storage != null) {
+                gto$replaceArseng$extract(storage, pos);
+                return;
             }
         }
+    }
+
+    @Unique
+    @Nullable
+    private static MEStorage gto$anyStorage(StorageTargetResolver resolver, BlockEntity be) {
+        if (resolver.resolveAll(be, null, StorageAccess.FULL) == StorageTargetResolver.Tier.STORAGE) return (MEStorage) resolver.raw();
+        for (var side : GTUtil.DIRECTIONS) {
+            if (resolver.resolveAll(be, side, StorageAccess.FULL) == StorageTargetResolver.Tier.STORAGE) return (MEStorage) resolver.raw();
+        }
+        return null;
     }
 
     @Unique

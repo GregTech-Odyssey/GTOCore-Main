@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.KeyCounter;
 import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 import appeng.crafting.pattern.EncodedPatternItem;
@@ -156,7 +156,7 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
 
     @Override
     public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
-        var pending = new AEKeyMap<AEItemKey>();
+        var pending = new AEKeyLongMap<AEItemKey>();
         for (var slot : getInternalInventory()) {
             var output = slot.getOutput();
             var amount = slot.getAmount();

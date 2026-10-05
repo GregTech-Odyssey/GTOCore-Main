@@ -2,9 +2,7 @@ package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistinctPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
@@ -14,9 +12,11 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -26,18 +26,14 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.Position;
+import com.lowdragmc.lowdraglib.side.item.IItemTransfer;
+import com.lowdragmc.lowdraglib.side.item.forge.ItemTransferHelperImpl;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.function.Function;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-
-import static com.gregtechceu.gtceu.integration.ae2.gui.widget.list.AEListGridWidget.drawSelectionOverlay;
-import static com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawItemStack;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -118,105 +114,40 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
 
     @Override
     public Widget createUIWidget() {
-        int rowSize = ITEM_SIZE;
-        int colSize = ITEM_SIZE;
-        if (getInventorySize() == 8) {
-            rowSize = 4;
-            colSize = 2;
-        }
-        var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * colSize + 16);
-        var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * colSize + 8);
-        int index = 0;
-        var storageAdapter = new MenuItemAdapter(this.creativeStorage);
-        for (int y = 0; y < colSize; y++) {
-            for (int x = 0; x < rowSize; x++) {
-                int finalIndex = index++;
-                container.addWidget(
-                        new PhantomSlotWidget(storageAdapter, finalIndex, 4 + x * 18, 4 + y * 18) {
+        var transfer = ItemTransferHelperImpl.toItemTransfer(new MenuItemAdapter(creativeStorage));
+        return HatchViews.page(SlotGrid.square(getInventorySize(), i -> createSlot(transfer, i)));
+    }
 
-                            @Override
-                            public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
-                                ItemStack stack = ItemStack.EMPTY;
-                                ItemStack stackSlot = slot.getItem();
-                                if (!stackSlot.isEmpty()) {
-                                    stack = stackSlot.copy();
-                                }
+    private Widget createSlot(IItemTransfer transfer, int index) {
+        return new PhantomItemSlot(transfer, index) {
 
-                                if (stackHeld.isEmpty() || mouseButton == 2 || mouseButton == 1) {   // held is
-                                                                                                     // empty,right
-                                                                                                     // click,middle
-                                                                                                     // click -> clear
-                                                                                                     // slot
-                                    lstItem.remove(stackSlot.getItem());
-                                    fillPhantomSlot(slot, ItemStack.EMPTY);
-                                } else if (stackSlot.isEmpty()) {   // slot is empty
-                                    if (!stackHeld.isEmpty() && !lstItem.contains(stackHeld.getItem())) { // held is not
-                                                                                                          // empty and
-                                                                                                          // item not in
-                                                                                                          // other slot
-                                                                                                          // -> add to
-                                                                                                          // slot
-                                        lstItem.add(stackHeld.getItem());
-                                        fillPhantomSlot(slot, stackHeld);
-                                    }
-                                } else {
-                                    if (!areItemsEqual(stackSlot, stackHeld)) {  // slot item not equal to held item
-                                        if (!lstItem.contains(stackHeld.getItem())) { // item not in other slot ->
-                                                                                      // change the slot
-                                            lstItem.remove(stackSlot.getItem());
-                                            lstItem.add(stackHeld.getItem());
-                                            fillPhantomSlot(slot, stackHeld);
-                                        }
-                                    }
-                                }
-                                return stack;
-                            }
-
-                            @Override
-                            public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-                                super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-                                Position position = getPosition();
-                                GuiTextures.SLOT.draw(graphics, mouseX, mouseY, position.x, position.y, 18, 18);
-                                GuiTextures.CONFIG_ARROW_DARK.draw(graphics, mouseX, mouseY, position.x, position.y, 18, 18);
-                                int stackX = position.x + 1;
-                                int stackY = position.y + 1;
-                                ItemStack stack;
-                                if (getHandler() != null) {
-                                    stack = getHandler().getItem();
-                                    drawItemStack(graphics, stack, stackX, stackY, 0xFFFFFFFF, null);
-                                }
-                                if (mouseOverStock(mouseX, mouseY)) {
-                                    drawSelectionOverlay(graphics, stackX, stackY + 18, 16, 16);
-                                }
-                            }
-
-                            private void fillPhantomSlot(Slot slot, ItemStack stackHeld) {
-                                if (stackHeld.isEmpty()) {
-                                    slot.set(ItemStack.EMPTY);
-                                } else {
-                                    ItemStack phantomStack = stackHeld.copy();
-                                    phantomStack.setCount(1);
-                                    slot.set(phantomStack);
-                                }
-                            }
-
-                            public boolean areItemsEqual(ItemStack itemStack1, ItemStack itemStack2) {
-                                return ItemStack.matches(itemStack1, itemStack2);
-                            }
-
-                            private boolean mouseOverStock(double mouseX, double mouseY) {
-                                Position position = getPosition();
-                                return isMouseOver(position.x, position.y + 18, 18, 18, mouseX, mouseY);
-                            }
-                        }
-                                .setClearSlotOnRightClick(false)
-                                .setChangeListener(this::onChanged));
+            @Override
+            public ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickTypeIn, ItemStack stackHeld) {
+                ItemStack stackSlot = slot.getItem();
+                ItemStack stack = stackSlot.isEmpty() ? ItemStack.EMPTY : stackSlot.copy();
+                if (stackHeld.isEmpty() || mouseButton == 2 || mouseButton == 1) {
+                    lstItem.remove(stackSlot.getItem());
+                    fillPhantomSlot(slot, ItemStack.EMPTY);
+                } else if (stackSlot.isEmpty()) {
+                    if (!lstItem.contains(stackHeld.getItem())) {
+                        lstItem.add(stackHeld.getItem());
+                        fillPhantomSlot(slot, stackHeld);
+                    }
+                } else if (!ItemStack.matches(stackSlot, stackHeld) && !lstItem.contains(stackHeld.getItem())) {
+                    lstItem.remove(stackSlot.getItem());
+                    lstItem.add(stackHeld.getItem());
+                    fillPhantomSlot(slot, stackHeld);
+                }
+                return stack;
             }
-        }
 
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        group.addWidget(container);
-
-        return group;
+            private void fillPhantomSlot(Slot slot, ItemStack stackHeld) {
+                if (stackHeld.isEmpty()) {
+                    slot.set(ItemStack.EMPTY);
+                } else {
+                    slot.set(stackHeld.copyWithCount(1));
+                }
+            }
+        }.setClearSlotOnRightClick(false).setChangeListener(this::onChanged);
     }
 }

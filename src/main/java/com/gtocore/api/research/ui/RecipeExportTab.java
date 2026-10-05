@@ -723,7 +723,7 @@ public class RecipeExportTab implements IFancyUIProvider {
 
                 ItemStack exported = key.toStack(1);
                 ResearchManager.writeResearchToNBT(exported.getOrCreateTag(), recipe.id.toString(), recipe.recipeType);
-                AEItemKey exportedKey = Keys.item(exported);
+                AEItemKey exportedKey = AEItemKey.of(exported);
                 if (exportedKey == null) continue;
                 long inserted = output.insert(exportedKey, 1, false);
                 if (inserted <= 0) {

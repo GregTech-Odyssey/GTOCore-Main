@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 
 import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.recipesearch.IntLongMap;
 import lombok.Getter;
@@ -183,8 +184,8 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         public @Nullable KeyInventory<?> storage(AEKeyType type) {
-            if (type == AEKeyType.items()) return slot.itemInventory;
-            if (type == AEKeyType.fluids()) return slot.fluidInventory;
+            if (type == AEKeyTypes.ITEMS) return slot.itemInventory;
+            if (type == AEKeyTypes.FLUIDS) return slot.fluidInventory;
             return null;
         }
 

@@ -18,7 +18,6 @@ import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.StringConverter;
 
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -40,6 +39,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import appeng.api.behaviors.ContainerItemStrategies;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 
@@ -147,7 +147,7 @@ public final class GTOCommands {
             return;
         }
         GenericStack contained = ContainerItemStrategies.getContainedStack(stack);
-        AEKey key = contained == null ? Keys.item(stack) : contained.what();
+        AEKey key = contained == null ? AEItemKey.of(stack) : contained.what();
         ItemStack cell = EPPItemAndBlock.INFINITY_CELL.getRecordCell(key);
         if (!player.getInventory().add(cell)) {
             player.drop(cell, false);

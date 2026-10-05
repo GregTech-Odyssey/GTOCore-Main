@@ -98,7 +98,7 @@ public final class GridDemo {
 
     private static Session snapshot(EnergyAccount account) {
         var session = new Session();
-        for (var node : account.nodeList) session.storage.put(node.dimension, new long[] { node.hi, node.lo });
+        for (var node : account.nodeList) session.storage.put(node.dimension, node.snapshot());
         session.pendingHi = account.pendingHi;
         session.pendingLo = account.pendingLo;
         session.rate = account.rate;
@@ -133,12 +133,8 @@ public final class GridDemo {
     private static void restore(EnergyAccount account, Session session) {
         for (var node : account.nodeList) {
             var saved = session.storage.get(node.dimension);
-            if (saved == null) {
-                node.clearStorage();
-            } else {
-                node.hi = saved[0];
-                node.lo = saved[1];
-            }
+            if (saved == null) node.clearStorage();
+            else node.rollback(saved);
         }
         account.pendingHi = session.pendingHi;
         account.pendingLo = session.pendingLo;
@@ -154,11 +150,6 @@ public final class GridDemo {
     }
 
     private static void clampToCapacity(EnergyAccount account) {
-        for (var node : account.nodeList) {
-            long hi = Math.max(0, node.hi), lo = node.hi < 0 ? 0 : node.lo;
-            if (U126.compare(hi, lo, node.capHi, node.capLo) <= 0) continue;
-            node.hi = node.capHi;
-            node.lo = node.capLo;
-        }
+        for (var node : account.nodeList) node.trim();
     }
 }

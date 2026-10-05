@@ -20,7 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 
 import appeng.api.stacks.AEFluidKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -150,7 +150,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     private boolean input(AEFluidKey stack) {
         AtomicBoolean success = new AtomicBoolean(false);
         AtomicBoolean failed = new AtomicBoolean(false);
-        forEachKey(AEKeyType.fluids(), true, (key, amount) -> {
+        forEachKey(AEKeyTypes.FLUIDS, true, (key, amount) -> {
             var fluid = ((AEFluidKey) key).getFluid();
             if (FLUIDS.contains(fluid)) {
                 if (fluid == stack.getFluid()) {

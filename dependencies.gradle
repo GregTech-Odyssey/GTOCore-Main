@@ -50,6 +50,7 @@ dependencies {
     modImplementation("curse.maven:ars-energistique-905641:5504444")
     modImplementation("curse.maven:ex-pattern-provider-892005:8918777")
     modImplementation("curse.maven:merequester-688367:5689932")
+    modImplementation("curse.maven:ae2-toggleable-view-cell-1141472:8054118")
 
     // Ad Astra
     modImplementation("dev.architectury:architectury-forge:${project.architectury_version}")

@@ -16,7 +16,7 @@ final class Settlement {
         int now = GridClock.tick();
         receipt.restHi = hi;
         receipt.restLo = lo;
-        if (voltage <= d.tier) takeLocal(d, receipt);
+        takeBanks(d, voltage, hi, lo, receipt);
         if (!settled(receipt) && d.routes.length != 0) {
             if (duration > 0) reserveRemote(d, voltage, duration, priority, now, receipt);
             else tokenRemote(d, voltage, priority, now, receipt);
@@ -36,13 +36,20 @@ final class Settlement {
         return receipt.restHi == 0 && receipt.restLo == 0;
     }
 
-    private static void takeLocal(GridNode d, SettleReceipt receipt) {
-        long sh = Math.max(0, d.hi), sl = d.hi < 0 ? 0 : d.lo;
-        boolean all = U126.compare(sh, sl, receipt.restHi, receipt.restLo) >= 0;
-        long th = all ? receipt.restHi : sh, tl = all ? receipt.restLo : sl;
-        if (th == 0 && tl == 0) return;
-        receipt.add(d, th, tl);
-        receipt.consume(th, tl);
+    private static void takeBanks(GridNode node, int voltage, long hi, long lo, SettleReceipt receipt) {
+        for (int m = node.drawable(voltage); m != 0 && (hi != 0 || lo != 0); m &= m - 1) {
+            int t = Integer.numberOfTrailingZeros(m);
+            long th = node.bankHi[t], tl = node.bankLo[t];
+            if (U126.compare(th, tl, hi, lo) > 0) {
+                th = hi;
+                tl = lo;
+            }
+            receipt.add(node, t, th, tl);
+            receipt.consume(th, tl);
+            long r = lo - tl;
+            hi = hi - th + (r >> 63);
+            lo = r & U126.MASK;
+        }
     }
 
     private static void tokenRemote(GridNode d, int voltage, int priority, int now, SettleReceipt receipt) {
@@ -56,9 +63,7 @@ final class Settlement {
         }
         for (int i = 0, n = plan.nodeCount(); i < n; i++) {
             var node = plan.node(i);
-            if (node.planAmount <= 0) continue;
-            receipt.add(node, 0, node.planAmount);
-            receipt.consume(0, node.planAmount);
+            if (node.planAmount > 0) takeBanks(node, voltage, 0, node.planAmount, receipt);
         }
     }
 
@@ -74,27 +79,21 @@ final class Settlement {
             var node = plan.node(i);
             if (node.planAmount <= 0) continue;
             long th = U126.mulHi(node.planAmount, duration), tl = U126.mulLo(node.planAmount, duration);
-            long sh = Math.max(0, node.hi), sl = node.hi < 0 ? 0 : node.lo;
-            if (U126.compare(th, tl, sh, sl) > 0) {
-                th = sh;
-                tl = sl;
-            }
             if (U126.compare(th, tl, receipt.restHi, receipt.restLo) > 0) {
                 th = receipt.restHi;
                 tl = receipt.restLo;
             }
-            receipt.add(node, th, tl);
-            receipt.consume(th, tl);
+            takeBanks(node, voltage, th, tl, receipt);
         }
     }
 
     static double reachableStorage(EnergyAccount account, GridNode d, int voltage) {
         int stamp = account.nextVisit();
-        double sum = voltage <= d.tier ? d.storageDouble() : 0;
+        double sum = d.storageDouble(voltage);
         for (var r : d.routes) {
             if (r.tier < voltage || r.source.visited == stamp) continue;
             r.source.visited = stamp;
-            sum += r.source.storageDouble();
+            sum += r.source.storageDouble(voltage);
         }
         return sum;
     }
@@ -103,7 +102,7 @@ final class Settlement {
         int now = GridClock.tick();
         for (int i = 0; i < receipt.count; i++) {
             var node = receipt.nodes[i];
-            node.subtract(receipt.his[i], receipt.los[i]);
+            node.withdraw(receipt.banks[i], receipt.his[i], receipt.los[i]);
             account.roomFreed(node);
         }
         for (int i = 0; i < receipt.arcCount; i++) {
@@ -120,8 +119,8 @@ final class Settlement {
         int now = GridClock.tick();
         for (int i = 0; i < receipt.count; i++) {
             var node = receipt.nodes[i];
-            if (account.nodes.get(node.dimension) == node) {
-                node.addWide(receipt.his[i], receipt.los[i]);
+            if (account.nodes.get(node.dimension) == node && node.hasCapacity()) {
+                node.refund(receipt.banks[i], receipt.his[i], receipt.los[i]);
             } else {
                 account.addPending(receipt.his[i], receipt.los[i]);
                 account.markDirty();

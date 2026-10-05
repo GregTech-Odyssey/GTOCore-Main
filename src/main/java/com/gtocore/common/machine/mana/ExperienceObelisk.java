@@ -40,6 +40,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -345,7 +346,7 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
 
         @Override
         public AEKeyType keyType() {
-            return AEKeyType.fluids();
+            return AEKeyTypes.FLUIDS;
         }
 
         @Override

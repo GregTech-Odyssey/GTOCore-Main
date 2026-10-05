@@ -90,6 +90,7 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.vfyjxf.taffy.style.FlexWrap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceList;
 import org.jetbrains.annotations.NotNull;
@@ -808,7 +809,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final class CombinedDataAccessHatchHandler implements IItemHandlerModifiable {
 
         private final DataCenter machine;
-        private final Map<KeyInventory<AEItemKey>, MenuItemAdapter> adapters = new IdentityHashMap<>();
+        private final Reference2ObjectOpenHashMap<KeyInventory<AEItemKey>, MenuItemAdapter> adapters = new Reference2ObjectOpenHashMap<>();
 
         private CombinedDataAccessHatchHandler(DataCenter machine) {
             this.machine = machine;

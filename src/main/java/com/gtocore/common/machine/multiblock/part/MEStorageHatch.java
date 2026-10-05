@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.multiblock.part;
 
 import com.gtocore.api.ae2.stacks.AEManaKeyHandler;
-import com.gtocore.api.ae2.stacks.MEStorageKeyHandler;
 import com.gtocore.common.machine.multiblock.storage.MultiblockMEStorageMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -13,9 +12,12 @@ import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.machine.trait.InventoryProxyTrait;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageKeyView;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
@@ -24,9 +26,8 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.MEStorage;
-import appeng.capabilities.Capabilities;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -63,12 +64,16 @@ public final class MEStorageHatch extends MultiblockPartMachine {
     private final KeyInventory<AEFluidKey> fluidMark = KeyInventory.fluids(1, MARK_FLUID_AMOUNT);
     // 处理器本身就是本仓的物品/流体能力（MachineTrait 构造时自动挂上），每个仓体各持一份才有各自的标记
     @NotNull
-    private final MEStorageKeyHandler<AEItemKey> itemHandler;
+    private final InventoryProxyTrait<AEItemKey> itemHandler;
     @NotNull
-    private final MEStorageKeyHandler<AEFluidKey> fluidHandler;
+    private final InventoryProxyTrait<AEFluidKey> fluidHandler;
+    @Nullable
+    private MEStorageKeyView<AEItemKey> itemView;
+    @Nullable
+    private MEStorageKeyView<AEFluidKey> fluidView;
 
-    @NotNull
-    private LazyOptional<MEStorage> capabilityStorage = LazyOptional.empty();
+    @Nullable
+    private MEStorage storage;
     @NotNull
     private LazyOptional<ManaReceiver> capabilityMana = LazyOptional.empty();
     @SyncToClient(listener = "onStorageCapabilityAvailabilityChanged")
@@ -77,18 +82,18 @@ public final class MEStorageHatch extends MultiblockPartMachine {
     public MEStorageHatch(MetaMachineBlockEntity holder) {
         super(holder);
         this.manaHandler = new AEManaKeyHandler();
-        this.itemHandler = new MEStorageKeyHandler<>(this, AEKeyType.items());
-        this.fluidHandler = new MEStorageKeyHandler<>(this, AEKeyType.fluids());
+        this.itemHandler = new InventoryProxyTrait<>(this, AEKeyTypes.ITEMS, IO.BOTH);
+        this.fluidHandler = new InventoryProxyTrait<>(this, AEKeyTypes.FLUIDS, IO.BOTH);
         this.itemHandler.setCapabilityValidator(d -> isStorageCapabilityAvailable());
         this.fluidHandler.setCapabilityValidator(d -> isStorageCapabilityAvailable());
     }
 
     private boolean isStorageCapabilityAvailable() {
-        return isRemote() ? storageCapabilityAvailable : capabilityStorage.isPresent();
+        return isRemote() ? storageCapabilityAvailable : storage != null;
     }
 
     private void updateStorageCapabilityAvailability() {
-        boolean available = capabilityStorage.isPresent();
+        boolean available = storage != null;
         if (storageCapabilityAvailable != available) {
             storageCapabilityAvailable = available;
             clearDirectionCache();
@@ -104,18 +109,14 @@ public final class MEStorageHatch extends MultiblockPartMachine {
     }
 
     @Override
+    public @Nullable MEStorage getStorageCap(@Nullable Direction side) {
+        return side == null || side == getFrontFacing() ? storage : super.getStorageCap(side);
+    }
+
+    @Override
     public @Nullable <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        if (capabilityStorage.isPresent()) {
-            if (cap == Capabilities.STORAGE) {
-                if (side == null || side == getFrontFacing()) {
-                    return capabilityStorage.cast();
-                }
-            } else if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
-                if (side == null || side == getFrontFacing()) {
-                    return capabilityMana.cast();
-                }
-                return LazyOptional.empty();
-            }
+        if (storage != null && cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
+            return side == null || side == getFrontFacing() ? capabilityMana.cast() : LazyOptional.empty();
         }
         return null;
     }
@@ -133,8 +134,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         super.onUnload();
         unbindHandlers();
         manaHandler.setLevel(null);
-        capabilityStorage.invalidate();
-        capabilityStorage = LazyOptional.empty();
+        storage = null;
         capabilityMana.invalidate();
         capabilityMana = LazyOptional.empty();
         storageCapabilityAvailable = false;
@@ -153,7 +153,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
                 manaHandler.setOnChange(machine.getOnChange());
                 capabilityMana = LazyOptional.of(() -> manaHandler);
             }
-            capabilityStorage = LazyOptional.of(() -> machine);
+            storage = machine;
             updateStorageCapabilityAvailability();
             this.notifyNeighborsUpdate();
         }
@@ -167,8 +167,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         manaHandler.setStorageSupplier(null);
         manaHandler.setCapacity(0);
         manaHandler.setOnChange(null);
-        capabilityStorage.invalidate();
-        capabilityStorage = LazyOptional.empty();
+        storage = null;
         capabilityMana.invalidate();
         capabilityMana = LazyOptional.empty();
         updateStorageCapabilityAvailability();
@@ -192,22 +191,9 @@ public final class MEStorageHatch extends MultiblockPartMachine {
      * 保险库只支持物品或流体中的一种，另一种不绑也不当其能力，行为与改造前一致。
      */
     private void bindHandlers(MultiblockMEStorageMachine machine) {
-        if (machine.getItemHandlerCap(null, false) != null) {
-            itemHandler.setStorage(machine);
-            itemHandler.setMap(machine.getKeyMap());
-            itemHandler.setStorageSupplier(machine.getStorageSupplier());
-            itemHandler.setOnChange(machine.getOnChange());
-            itemHandler.setCapacity(machine.getCapacity());
-            applyMarks();
-        }
-        if (machine.getFluidHandlerCap(null, false) != null) {
-            fluidHandler.setStorage(machine);
-            fluidHandler.setMap(machine.getKeyMap());
-            fluidHandler.setStorageSupplier(machine.getStorageSupplier());
-            fluidHandler.setOnChange(machine.getOnChange());
-            fluidHandler.setCapacity(machine.getCapacity());
-            applyMarks();
-        }
+        itemView = machine.getItemView();
+        fluidView = machine.getFluidView();
+        applyMarks();
     }
 
     /**
@@ -215,22 +201,18 @@ public final class MEStorageHatch extends MultiblockPartMachine {
      * 容量随机械方块数量变化，重新成型时 {@link #addedToController} 会重新绑定。
      */
     private void unbindHandlers() {
-        clearHandler(itemHandler);
-        clearHandler(fluidHandler);
-    }
-
-    private static void clearHandler(MEStorageKeyHandler<?> handler) {
-        handler.setStorage(null);
-        handler.setMap(null);
-        handler.setStorageSupplier(null);
-        handler.setOnChange(null);
-        handler.setCapacity(0);
+        itemView = null;
+        fluidView = null;
+        itemHandler.setProxy(null);
+        fluidHandler.setProxy(null);
     }
 
     /** 把界面上的标记同步到处理器；标记为空即取消标记，恢复透传。 */
     private void applyMarks() {
-        itemHandler.setMark(itemMark.keyAt(0));
-        fluidHandler.setMark(fluidMark.keyAt(0));
+        var items = itemView;
+        itemHandler.setProxy(items == null ? null : items.marked(itemMark.keyAt(0)));
+        var fluids = fluidView;
+        fluidHandler.setProxy(fluids == null ? null : fluids.marked(fluidMark.keyAt(0)));
     }
 
     private void onMarkChanged() {

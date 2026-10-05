@@ -179,7 +179,7 @@ public final class RecipeTypeModify {
 
     @Nullable
     private static Item plainItem(KeyIngredient ingredient) {
-        if (ingredient.kind == KeyIngredient.BASE && ingredient.key() instanceof AEItemKey key) return key.getItem();
+        if (ingredient.kind() == KeyIngredient.BASE && ingredient.key() instanceof AEItemKey key) return key.getItem();
         var source = ingredient.source();
         if (source != null && source.getClass() == Ingredient.class && source.values.length > 0 && source.values[0] instanceof Ingredient.ItemValue value && !value.item.isEmpty()) {
             return value.item.getItem();

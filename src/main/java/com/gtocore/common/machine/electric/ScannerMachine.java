@@ -24,7 +24,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.hepdd.gtmthings.utils.TeamUtil;
@@ -52,7 +52,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
         data.dataCrystal = ItemStack.EMPTY;
         data.item = ItemStack.EMPTY;
         data.team = team;
-        u.forEachKey(AEKeyType.items(), false, (key, amount) -> {
+        u.forEachKey(AEKeyTypes.ITEMS, false, (key, amount) -> {
             if (!(key instanceof AEItemKey itemKey)) return false;
             var stack = itemKey.getReadOnlyStack();
             var item = stack.getItem();
@@ -72,7 +72,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
             return false;
         });
         if (data.fluidStack.isEmpty()) {
-            u.forEachKey(AEKeyType.fluids(), false, (key, amount) -> {
+            u.forEachKey(AEKeyTypes.FLUIDS, false, (key, amount) -> {
                 if (data.fluidStack.isEmpty() && amount >= 1000 && key instanceof AEFluidKey fluidKey) {
                     data.fluidStack = fluidKey.getReadOnlyStack();
                 }
@@ -93,7 +93,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
     public void afterWorking() {
         ObjHolder<AEItemKey> unlocked = new ObjHolder<>();
         long[] unlockedAmount = new long[1];
-        forEachKey(AEKeyType.items(), true, (key, amount) -> {
+        forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
             if (!(key instanceof AEItemKey itemKey)) return false;
             CompoundTag tag = itemKey.getTag();
             if (tag != null) {

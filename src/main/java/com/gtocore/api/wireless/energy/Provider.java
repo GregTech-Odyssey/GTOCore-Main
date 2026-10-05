@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.UUID;
 
 public sealed interface Provider {
@@ -13,7 +14,12 @@ public sealed interface Provider {
 
     UUID owner();
 
-    record Tower(GlobalPos pos, UUID owner, BigInteger capacity, double lossWeight, int tier) implements Provider {}
+    record Tower(GlobalPos pos, UUID owner, List<Unit> units, int tier) implements Provider {}
+
+    record Unit(int tier, int count, BigInteger capacity, int loss) {
+
+        public static final int FIXED = -1;
+    }
 
     record Relay(GlobalPos pos, UUID owner, int tier, int amperage, ResourceKey<Level> target) implements Provider {
 

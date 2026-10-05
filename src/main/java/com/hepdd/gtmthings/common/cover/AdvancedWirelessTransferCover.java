@@ -1,6 +1,5 @@
 package com.hepdd.gtmthings.common.cover;
 
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.capability.ICoverable;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.cover.CoverDefinition;
@@ -14,9 +13,9 @@ import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
+import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
-import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
@@ -29,7 +28,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -38,10 +36,10 @@ import net.minecraftforge.fluids.FluidStack;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.storage.AEKeyFilter;
+import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.hepdd.gtmthings.api.misc.BlockEntityCache;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -64,7 +62,6 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
 
     protected final int transferType;
     private TickableSubscription subscription;
-    protected ServerLevel targetLever;
     @SaveToDisk
     private String dimensionId;
     @SaveToDisk
@@ -81,7 +78,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     @Getter
     protected final FilterHandler<ItemStack, ItemFilter> filterHandlerItem;
 
-    private final BlockEntityCache target = new BlockEntityCache(() -> ILevel.getCachedBlockEntity(targetLever, targetPos));
+    private final RemoteKeyTarget target = new RemoteKeyTarget();
 
     private final AEKeyFilter itemKeyFilter;
     private final AEKeyFilter fluidKeyFilter;
@@ -176,7 +173,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         if (this.dimensionId == null) return;
         ResourceLocation resLoc = tryParse(this.dimensionId);
         ResourceKey<Level> resKey = ResourceKey.create(Registries.DIMENSION, resLoc);
-        this.targetLever = Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey);
+        target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
@@ -184,8 +181,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getTargetItemTransfer() {
-        if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getItemKeyHandler(target.get(), getSafeFacing().getOpposite());
+        return target.items(getSafeFacing().getOpposite(), StorageAccess.INSERT);
     }
 
     protected @Nullable IKeyHandler<AEFluidKey> getOwnFluidTransfer() {
@@ -193,8 +189,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     }
 
     protected @Nullable IKeyHandler<AEFluidKey> getTargetFluidTransfer() {
-        if (targetLever == null || targetPos == null) return null;
-        return GTCapabilityHelper.getFluidKeyHandler(target.get(), getSafeFacing().getOpposite());
+        return target.fluids(getSafeFacing().getOpposite(), StorageAccess.INSERT);
     }
 
     private Direction getSafeFacing() {
@@ -216,7 +211,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         var status = new StatusPanel();
         status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).bindLevel(this::connectionLevel);
         status.addLine("gtocore.cover.advanced_wireless_transfer.target",
-                new Memo<>(() -> isBound() ? target.get() : null, be -> be.getBlockState().getBlock().getName()));
+                new Memo<>(() -> isBound() ? target.blockEntity() : null, be -> be.getBlockState().getBlock().getName()));
         status.addLine("gtocore.cover.advanced_wireless_transfer.position",
                 new Memo<>(() -> targetPos, pos -> Component.literal(pos.toShortString())));
         status.addLine("gtocore.cover.advanced_wireless_transfer.dimension",
@@ -226,7 +221,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     }
 
     private boolean isBound() {
-        return targetLever != null && targetPos != null;
+        return target.level() != null && target.pos() != null;
     }
 
     private boolean isConnected() {

@@ -39,7 +39,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 
 import appeng.api.stacks.AEFluidKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.common.registry.ModBlocks;
@@ -659,7 +659,7 @@ public final class SpaceStationFlowPage {
             for (int u = 0; u < count; u++) {
                 unitWater[u] = 0;
                 collectingUnit = u;
-                units.get(u).forEachKey(AEKeyType.fluids(), true, waterCollector);
+                units.get(u).forEachKey(AEKeyTypes.FLUIDS, true, waterCollector);
                 total += unitWater[u];
             }
             return total < 0 ? Long.MAX_VALUE : total;

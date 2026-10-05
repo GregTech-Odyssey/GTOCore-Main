@@ -37,6 +37,7 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -86,7 +87,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         if (args.length > 0 && args[0] instanceof IO io && io == IO.IN) {
             return new ProgrammableCircuitHandler(this);
         } else {
-            return NotifiableInventory.empty(this, AEKeyType.items());
+            return NotifiableInventory.empty(this, AEKeyTypes.ITEMS);
         }
     }
 
@@ -218,8 +219,8 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public long available(AEKeyType type, KeyIngredient ingredient) {
-            if (type != AEKeyType.fluids() || storage.amountAt(0) <= 0) return 0;
-            return ingredient.test(storage.uidAt(0), storage.rawKeyAt(0)) ? Long.MAX_VALUE : 0;
+            if (storage.amountAt(0) <= 0) return 0;
+            return KeyIngredient.accepts(ingredient, storage.uidAt(0), storage.rawKeyAt(0)) ? Long.MAX_VALUE : 0;
         }
 
         @Override
@@ -229,7 +230,6 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public boolean forEachKey(AEKeyType type, KeyVisitor visitor) {
-            if (type != AEKeyType.fluids()) return false;
             long amount = storage.amountAt(0);
             return amount > 0 && visitor.visit(storage.rawKeyAt(0), amount);
         }
@@ -254,7 +254,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
 
         @Override
         public AEKeyType keyType() {
-            return AEKeyType.fluids();
+            return AEKeyTypes.FLUIDS;
         }
 
         @Override
@@ -335,7 +335,7 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             if (item == VIRTUAL_ITEM_PROVIDER && VirtualProviderData.hasData(key.getReadOnlyStack())) {
                 if (!simulate) {
                     var virtual = VirtualProviderData.getVirtualItem(key.getReadOnlyStack());
-                    storage.set(0, Keys.item(virtual), virtual.getCount());
+                    storage.set(0, AEItemKey.of(virtual), virtual.getCount());
                 }
                 return 1;
             } else if (part != null && item == VIRTUAL_FLUID_PROVIDER && VirtualProviderData.hasData(key.getReadOnlyStack())) {

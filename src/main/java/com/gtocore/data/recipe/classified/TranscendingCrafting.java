@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluid;
 
 import static com.gtocore.common.data.GTORecipeTypes.TRANSCENDING_CRAFTING_RECIPES;
 
@@ -283,7 +284,7 @@ final class TranscendingCrafting {
                 .inputItems(GTOTagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
                 .outputItems(GTOTagPrefix.gem, GTOMaterials.Resonarium, 8)
                 .inputFluids(GTOMaterials.TranscendingMatter, 1000)
-                .inputFluids(GTOFluids.DEW_OF_THE_VOID.getSource(), 1000)
+                .inputFluids((Fluid) GTOFluids.DEW_OF_THE_VOID.getSource(), 1000)
                 .EUt(1048576)
                 .duration(200)
                 .save();

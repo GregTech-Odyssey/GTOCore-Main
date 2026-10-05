@@ -3,9 +3,7 @@ package com.gtocore.common.machine.multiblock.part;
 import com.gtocore.common.data.GTOMachines;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.uipro.styletemplate.MachineEra;
@@ -14,10 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 
-import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
-
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine.IS_STEEL;
@@ -31,16 +25,6 @@ public class SteamFluidHatchPartMachine extends FluidHatchPartMachine {
     @Override
     public @Nullable ResourceLocation getWindowSkin() {
         return MachineEra.steam(IS_STEEL).getSkin();
-    }
-
-    @Override
-    protected @NotNull NotifiableInventory<AEItemKey> createCircuitItemHandler(Object @NotNull... args) {
-        return NotifiableInventory.empty(this, AEKeyType.items());
-    }
-
-    @Override
-    public void attachConfigurators(@NotNull ConfiguratorPanel configuratorPanel) {
-        super.superAttachConfigurators(configuratorPanel);
     }
 
     @Override

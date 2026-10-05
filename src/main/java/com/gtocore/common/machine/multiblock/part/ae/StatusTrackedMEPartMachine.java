@@ -12,7 +12,7 @@ import appeng.api.implementations.blockentities.PatternContainerGroup;
 import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 
 import gto_ae.api.util.DirectionalGlobalPos;
 import gto_ae.helpers.facility_management.IStatusTracked;
@@ -35,7 +35,7 @@ public abstract class StatusTrackedMEPartMachine extends MEPartMachine implement
     @Setter
     protected WorkingStatus status = WorkingStatus.IDLE;
     @Getter
-    AEKeyMap<AEKey> configuredSetting = new AEKeyMap<>();
+    AEKeyLongMap<AEKey> configuredSetting = new AEKeyLongMap<>();
 
     public StatusTrackedMEPartMachine(@NotNull MetaMachineBlockEntity holder, @NotNull IO io) {
         super(holder, io);

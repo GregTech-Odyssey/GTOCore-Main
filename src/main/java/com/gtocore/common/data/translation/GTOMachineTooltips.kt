@@ -1702,12 +1702,13 @@ object GTOMachineTooltips {
         content("可在内部安装任意无线能量单元来提高容量上限" translatedTo "Install wireless energy units inside to increase capacity limit")
         ok("内部空间无需全部填满" translatedTo "The interior does not need to be completely filled")
         command("实际起作用的单元受玻璃等级限制" translatedTo "Effective units are limited by glass tier")
-        info("容量 = 生效单元的标称容量之和" translatedTo "Capacity = sum of the rated capacity of effective units")
-        info("损耗 = 按单元容量加权的平均损耗" translatedTo "Loss = unit losses averaged by unit capacity")
-        info("同一维度的多座能源塔合为一个电池" translatedTo "All towers of a team in one dimension form a single battery")
+        info("总容量为全部生效单元的容量相加" translatedTo "Total capacity is the sum over all effective units")
+        info("损耗为各单元损耗按容量加权平均" translatedTo "Loss is the unit losses averaged by capacity")
         section("本地存取" translatedTo "Local Access")
         function("本维度的设备存取电不限电流" translatedTo "Devices in this dimension store and draw without a current limit")
-        command("电压不超过生效单元中的最高等级" translatedTo "Voltage is capped at the highest tier among effective units")
+        command("同一维度内电压等级相同的能源塔合并存储" translatedTo "Towers of the same voltage tier in one dimension share storage")
+        info("取电仅使用电压等级不低于设备的能源塔，优先使用其中等级最低者" translatedTo "Energy is drawn only from towers at or above the device's voltage tier, lowest tier first")
+        info("存电优先存入电压等级不低于输入电压的能源塔，存满后存入低等级能源塔" translatedTo "Energy is stored in towers at or above the input voltage first, then in lower-tier towers")
         info("本维度不够时，经维度中继器的线路就近从其他维度取电或存电" translatedTo "When this dimension falls short, energy moves to or from the nearest other dimensions over relay lines")
     }
 
@@ -1717,7 +1718,7 @@ object GTOMachineTooltips {
         setTranslationPrefix("wireless_dimension_repeater")
 
         section("在两个维度之间架设电网线路" translatedTo "Builds a grid line between two dimensions")
-        function("一端是所在维度，另一端在界面里选择" translatedTo "One end is its own dimension; choose the other end in its interface")
+        function("在所在维度和界面选定的维度之间建立跨维度电力传输线路" translatedTo "Builds a cross-dimension power line between its own dimension and the one chosen in its interface")
         command("每台为线路提供 99,999,999A，电压取整体框架等级" translatedTo "Each repeater adds 99,999,999A to the line at the integral framework tier")
         info("同一对维度之间的多台叠加，按功率折算到其中最高的电压" translatedTo "Repeaters between the same pair of dimensions stack, converted by power to the highest voltage")
         info("线路两个方向各自独立，互不占用" translatedTo "The two directions of a line are independent of each other")
@@ -2552,7 +2553,6 @@ object GTOMachineTooltips {
         section(ComponentSlang.MainFunction)
         highlight("提供一个保护机器正常工作，免受太空辐射等复杂环境影响的空间" translatedTo "Provides a space that protects machines from complex environments such as space radiation")
         highlight("空间站内部自带供玩家呼吸的空气" translatedTo "The interior of the space station comes with air for players to breathe")
-        highlight("且自带无线电网中继器的功能，提供的电压根据安装的整体框架的等级而定" translatedTo "And comes with the function of a wireless radio network repeater, providing voltage based on the level of the installed mainframe")
         highlight("可以向外侧安装拓展舱体以增加内部空间/更多功能" translatedTo "Can install expansion modules on the outside to increase internal space/more functions")
 
         section("建造要求" translatedTo "Construction Requirements")

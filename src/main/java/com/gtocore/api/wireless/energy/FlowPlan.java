@@ -79,7 +79,7 @@ final class FlowPlan {
         }
         for (int i = 0, n = nodes.size(); i < n; i++) {
             var node = nodes.get(i);
-            if (node.planAmount > 0) GridTransfer.take(account, node, node.planAmount);
+            if (node.planAmount > 0) GridTransfer.take(account, node, voltage, node.planAmount);
         }
     }
 
@@ -93,10 +93,8 @@ final class FlowPlan {
             var node = nodes.get(i);
             long g = node.planAmount;
             if (g <= 0) continue;
-            long net = g - Loss.of(g, Loss.combined(node.loss, extraLoss));
-            GridTransfer.add(account, node, net);
+            lost += GridTransfer.store(account, node, g, extraLoss);
             gross += g;
-            lost += g - net;
         }
         if (gross > 0) {
             account.meter.in(gross, lost);
@@ -231,7 +229,7 @@ final class FlowPlan {
         if (node == dest) return 0;
         if (node.planStamp != stamp) {
             node.planStamp = stamp;
-            node.planCap = node.tier >= voltage ? supply(node) : 0;
+            node.planCap = supply(node);
             node.planAmount = 0;
             nodes.add(node);
         }
@@ -240,9 +238,9 @@ final class FlowPlan {
 
     private long supply(GridNode node) {
         return switch (mode) {
-            case PUT -> Loss.acceptGross(node.free(), U126.MASK, Loss.combined(node.loss, extraLoss));
-            case RESERVE -> U126.divCeil(Math.max(0, node.hi), node.hi < 0 ? 0 : node.lo, duration);
-            default -> node.available();
+            case PUT -> node.tier >= voltage ? node.acceptable(U126.MASK, extraLoss) : 0;
+            case RESERVE -> node.reservable(voltage, duration);
+            default -> node.available(voltage);
         };
     }
 }

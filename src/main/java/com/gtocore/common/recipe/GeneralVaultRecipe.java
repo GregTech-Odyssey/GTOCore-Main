@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyMap;
+import appeng.api.stacks.AEKeyLongMap;
 
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.datastream.data.ListData;
@@ -29,7 +29,7 @@ public final class GeneralVaultRecipe extends ShapedRecipe {
 
     @Override
     public @NotNull ItemStack assemble(@NotNull CraftingContainer container, @NotNull RegistryAccess registryAccess) {
-        var merged = new AEKeyMap<AEKey>();
+        var merged = new AEKeyLongMap<AEKey>();
         try {
             for (int i = 0; i < container.getContainerSize(); i++) {
                 var stack = container.getItem(i);
@@ -52,7 +52,7 @@ public final class GeneralVaultRecipe extends ShapedRecipe {
         }
     }
 
-    private static void mergeKeyMap(@NotNull ItemStack stack, AEKeyMap<AEKey> merged) {
+    private static void mergeKeyMap(@NotNull ItemStack stack, AEKeyLongMap<AEKey> merged) {
         var tag = stack.getTag();
         if (tag == null || !tag.contains("keymap")) return;
         if (!(tag.get("keymap") instanceof ByteArrayTag bytes)) throw new IllegalArgumentException("Invalid vault keymap");

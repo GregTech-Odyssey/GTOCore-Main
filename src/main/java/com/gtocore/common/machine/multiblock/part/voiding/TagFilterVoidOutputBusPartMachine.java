@@ -35,7 +35,7 @@ public final class TagFilterVoidOutputBusPartMachine extends VoidOutputBusPartMa
     public boolean matches(AEKey key) {
         if (!(key instanceof AEItemKey itemKey)) return false;
         if (filter == null) filter = Caches.getTagPriorityList(tagWhite, tagBlack);
-        return filter.isListed(AEItemKey.of(itemKey.getItem()));
+        return filter.isListed(itemKey);
     }
 
     private void onSlotChanged() {

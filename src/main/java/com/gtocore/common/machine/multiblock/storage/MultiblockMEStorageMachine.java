@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.multiblock.storage;
 
 import com.gtocore.api.ae2.stacks.AEManaKeyHandler;
-import com.gtocore.api.ae2.stacks.MEStorageKeyHandler;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.GTOMachines;
@@ -24,6 +23,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageKeyView;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -38,8 +38,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.*;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.MEStorage;
-import appeng.capabilities.Capabilities;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.data.Data;
@@ -52,6 +52,7 @@ import snownee.jade.api.config.IPluginConfig;
 import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaReceiver;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -102,7 +103,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     @SaveToDisk
     @Getter
     @NotNull
-    protected final AEKeyMap<AEKey> keyMap = new AEKeyMap<>();
+    protected final AEKeyLongMap<AEKey> keyMap = new AEKeyLongMap<>();
 
     private int cells;
     private long storage;
@@ -117,15 +118,15 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
 
     @Nullable
     private final AEKeyType type;
+    @Getter
     @Nullable
-    private final MEStorageKeyHandler<AEItemKey> itemStackHandler;
+    private final MEStorageKeyView<AEItemKey> itemView;
+    @Getter
     @Nullable
-    private final MEStorageKeyHandler<AEFluidKey> fluidStackHandler;
+    private final MEStorageKeyView<AEFluidKey> fluidView;
     @Nullable
     private final AEManaKeyHandler manaHandler;
 
-    @NotNull
-    private LazyOptional<MEStorage> capabilityStorage = LazyOptional.of(() -> this);
     @NotNull
     private LazyOptional<ManaReceiver> capabilityMana;
 
@@ -136,24 +137,9 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     protected MultiblockMEStorageMachine(MetaMachineBlockEntity holder, @Nullable AEKeyType type, boolean mana) {
         super(holder);
         this.type = type;
-        if (type == AEKeyType.items() || type == null) {
-            itemStackHandler = new MEStorageKeyHandler<>(this, AEKeyType.items());
-            itemStackHandler.setMap(keyMap);
-            itemStackHandler.setStorage(this);
-            itemStackHandler.setStorageSupplier(storageSupplier);
-            itemStackHandler.setOnChange(onChange);
-        } else {
-            itemStackHandler = null;
-        }
-        if (type == AEKeyType.fluids() || type == null) {
-            fluidStackHandler = new MEStorageKeyHandler<>(this, AEKeyType.fluids());
-            fluidStackHandler.setMap(keyMap);
-            fluidStackHandler.setStorage(this);
-            fluidStackHandler.setStorageSupplier(storageSupplier);
-            fluidStackHandler.setOnChange(onChange);
-        } else {
-            fluidStackHandler = null;
-        }
+        BooleanSupplier hasRoom = () -> storage < capacity;
+        itemView = type == AEKeyTypes.ITEMS || type == null ? new MEStorageKeyView<>(this, AEKeyTypes.ITEMS, keyMap, hasRoom) : null;
+        fluidView = type == AEKeyTypes.FLUIDS || type == null ? new MEStorageKeyView<>(this, AEKeyTypes.FLUIDS, keyMap, hasRoom) : null;
         if (mana) {
             manaHandler = new AEManaKeyHandler();
             manaHandler.setMap(keyMap);
@@ -174,13 +160,13 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     @Override
     @Nullable
     public IKeyHandler<AEItemKey> getItemHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return isFormed ? itemStackHandler : null;
+        return isFormed ? itemView : null;
     }
 
     @Override
     @Nullable
     public IKeyHandler<AEFluidKey> getFluidHandlerCap(@Nullable Direction side, boolean useCoverCapability) {
-        return isFormed ? fluidStackHandler : null;
+        return isFormed ? fluidView : null;
     }
 
     public static Structure structure(MultiblockMachineDefinition definition) {
@@ -271,14 +257,13 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         updateStructureDimensions();
         refreshCapacity();
         super.onStructureFormed();
+        clearDirectionCache();
         notifyNeighborsUpdate();
     }
 
     /** 按当前结构重算容量并同步给各处理器；容量口径不同时子类覆写 {@link #computeCapacity()}。 */
     protected void refreshCapacity() {
         capacity = Math.max(0, computeCapacity());
-        if (itemStackHandler != null) itemStackHandler.setCapacity(capacity);
-        if (fluidStackHandler != null) fluidStackHandler.setCapacity(capacity);
         if (manaHandler != null) manaHandler.setCapacity(capacity);
     }
 
@@ -291,16 +276,14 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     public void onStructureInvalid() {
         super.onStructureInvalid();
         capacity = 0;
-        if (itemStackHandler != null) itemStackHandler.setCapacity(0);
-        if (fluidStackHandler != null) fluidStackHandler.setCapacity(0);
         if (manaHandler != null) manaHandler.setCapacity(0);
+        clearDirectionCache();
         this.notifyNeighborsUpdate();
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
-        capabilityStorage = LazyOptional.of(() -> this);
         if (manaHandler != null) {
             capabilityMana = LazyOptional.of(() -> manaHandler);
             manaHandler.setPos(getPos());
@@ -317,7 +300,6 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     public void onUnload() {
         super.onUnload();
         if (manaHandler != null) manaHandler.setLevel(null);
-        capabilityStorage.invalidate();
         capabilityMana.invalidate();
     }
 
@@ -334,14 +316,15 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     }
 
     @Override
+    public @Nullable MEStorage getStorageCap(@Nullable Direction side) {
+        if (!isFormed) return null;
+        return side == null || side == getFrontFacing() ? this : super.getStorageCap(side);
+    }
+
+    @Override
     public @Nullable <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (!isFormed) return null;
-        if (cap == Capabilities.STORAGE) {
-            if (side == null || side == getFrontFacing()) {
-                return capabilityStorage.cast();
-            }
-            return LazyOptional.empty();
-        } else if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
+        if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
             if (side == null || side == getFrontFacing()) {
                 return capabilityMana.cast();
             }
@@ -422,7 +405,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         compoundTag.putIntArray("dimensions", new int[] { lDist + rDist + 1, uDist + dDist + 1, bDist + 1 });
     }
 
-    private static final AEKeyType ITEM = AEKeyType.items();
+    private static final AEKeyType ITEM = AEKeyTypes.ITEMS;
 
     /** 每个内部容量单位可存入的实际数量，与插入上限和 Jade 显示共用。 */
     private static long getAmountPerCapacity(AEKeyType type) {

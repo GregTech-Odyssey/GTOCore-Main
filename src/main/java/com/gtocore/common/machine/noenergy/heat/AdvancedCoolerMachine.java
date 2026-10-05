@@ -18,7 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluid;
 
 import appeng.api.stacks.AEFluidKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -95,7 +95,7 @@ public final class AdvancedCoolerMachine extends SimpleNoEnergyMachine implement
             return null;
         }
         ObjHolder<Fluid> coolantFluid = new ObjHolder<>();
-        unit.forEachKey(AEKeyType.fluids(), true, (k, a) -> {
+        unit.forEachKey(AEKeyTypes.FLUIDS, true, (k, a) -> {
             if (a < 1000) {
                 return false;
             }

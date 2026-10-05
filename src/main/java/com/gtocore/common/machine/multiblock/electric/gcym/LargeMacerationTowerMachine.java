@@ -9,14 +9,13 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.AABB;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
         super.onStructureFormed();
         updateBounds();
         for (var handler : getCapabilitiesFlat(IO.IN, IKeyHandler.class)) {
-            if (handler.keyType() == AEKeyType.items()) handlers.add((IKeyHandler<AEItemKey>) handler);
+            if (handler.keyType() == AEKeyTypes.ITEMS) handlers.add((IKeyHandler<AEItemKey>) handler);
         }
         hurtSub = subscribeServerTick(hurtSub, manaMonitor, 20);
     }
@@ -87,7 +86,7 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
         for (ItemEntity item : itemEntities) {
             if (item.isRemoved()) continue;
             var stack = item.getItem();
-            var key = Keys.item(stack);
+            var key = AEItemKey.of(stack);
             if (key == null) continue;
             long count = stack.getCount();
             long left = count;

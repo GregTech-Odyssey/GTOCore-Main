@@ -56,6 +56,7 @@ import net.minecraftforge.fluids.FluidStack;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.*;
+import appeng.api.stacks.AEItemKey;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.ProcessingPatternItem;
 import appeng.hooks.IUnique;
@@ -459,7 +460,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         if (key instanceof AEItemKey what && MEPatternVirtualInputHelper.isVirtualProvider(what)) {
             if (what.getItem() == CustomItems.VIRTUAL_ITEM_PROVIDER.get()) {
                 ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
-                return virtualItem.isEmpty() ? null : Keys.item(virtualItem);
+                return virtualItem.isEmpty() ? null : AEItemKey.of(virtualItem);
             } else if (what.getItem() == CustomItems.VIRTUAL_FLUID_PROVIDER.get()) {
                 FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
                 return virtualFluid.isEmpty() ? null : Keys.fluid(virtualFluid);

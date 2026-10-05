@@ -33,7 +33,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNodeListener;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 
@@ -70,7 +70,7 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine implemen
         aeFluidHandler = createTank();
         aeFluidHandler.addChangedListener(() -> {
             getConfiguredSetting().clear();
-            aeFluidHandler.forEachKey(AEKeyType.fluids(), (k, l) -> {
+            aeFluidHandler.forEachKey(AEKeyTypes.FLUIDS, (k, l) -> {
                 getConfiguredSetting().set(k, l);
                 return false;
             });

@@ -25,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 import org.jetbrains.annotations.NotNull;
@@ -80,7 +80,7 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
         }
         ObjHolder<BigInteger> eu = new ObjHolder<>(BigInteger.ZERO);
         RecipeBuilder builder = getRecipeBuilder();
-        unit.forEachKey(AEKeyType.items(), true, (key, amount) -> {
+        unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
             var itemKey = (AEItemKey) key;
             int count = MathUtil.saturatedCast(amount);
             ItemStack output = itemKey.toStack(count);

@@ -36,7 +36,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.DataSyncCodec;
@@ -121,10 +120,6 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private ItemStack resonanceItem = ItemStack.EMPTY;
     @SaveToDisk(defaultValueGetter = "getDefaultResonanceFluid")
     private FluidStack resonanceFluid = FluidStack.EMPTY;
-    @Nullable
-    private AEItemKey resonanceItemKey;
-    @Nullable
-    private AEFluidKey resonanceFluidKey;
 
     private ItemStack getDefaultResonanceItem() {
         return ItemStack.EMPTY;
@@ -200,15 +195,13 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             // 元素消耗波动：一次脉冲吃多少随系数缩放（至少 1 个），系数失控时消耗随之暴涨
             if (!resonanceFluid.isEmpty()) {
                 int amount = scaleElementalAmount(resonanceFluid.getAmount());
-                if (resonanceFluidKey == null) resonanceFluidKey = Keys.fluid(resonanceFluid);
-                boolean consumed = resonanceFluidKey != null && inputFluid(resonanceFluidKey, amount);
+                boolean consumed = inputFluid(Keys.fluid(resonanceFluid), amount);
                 if (!consumed) setIdleReason(ActionResult.failInsufficientIn(FluidRecipeInfo.INSTANCE.getName()));
                 return consumed;
             }
             if (!resonanceItem.isEmpty()) {
                 int count = scaleElementalAmount(resonanceItem.getCount());
-                if (resonanceItemKey == null) resonanceItemKey = Keys.item(resonanceItem);
-                boolean consumed = resonanceItemKey != null && inputItem(resonanceItemKey, count);
+                boolean consumed = inputItem(AEItemKey.of(resonanceItem), count);
                 if (!consumed) setIdleReason(ActionResult.failInsufficientIn(ItemRecipeInfo.INSTANCE.getName()));
                 return consumed;
             }
@@ -301,8 +294,6 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     private void resetResonance() {
         resonanceItem = ItemStack.EMPTY;
         resonanceFluid = FluidStack.EMPTY;
-        resonanceItemKey = null;
-        resonanceFluidKey = null;
         frequency = Integer.MAX_VALUE;
     }
 
