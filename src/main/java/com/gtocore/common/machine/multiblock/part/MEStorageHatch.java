@@ -101,7 +101,6 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         }
     }
 
-    @SuppressWarnings("unused")
     private void onStorageCapabilityAvailabilityChanged(boolean newValue, boolean oldValue) {
         if (newValue != oldValue) {
             clearDirectionCache();
@@ -110,7 +109,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
 
     @Override
     public @Nullable MEStorage getStorageCap(@Nullable Direction side) {
-        return side == null || side == getFrontFacing() ? storage : super.getStorageCap(side);
+        return itemMark.isEmpty() && fluidMark.isEmpty() && (side == null || side == getFrontFacing()) ? storage : super.getStorageCap(side);
     }
 
     @Override
@@ -213,6 +212,7 @@ public final class MEStorageHatch extends MultiblockPartMachine {
         itemHandler.setProxy(items == null ? null : items.marked(itemMark.keyAt(0)));
         var fluids = fluidView;
         fluidHandler.setProxy(fluids == null ? null : fluids.marked(fluidMark.keyAt(0)));
+        this.clearDirectionCache();
     }
 
     private void onMarkChanged() {

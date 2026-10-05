@@ -12,11 +12,15 @@ import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.client.model.PipeModel;
 import com.gregtechceu.gtceu.client.renderer.block.PipeBlockRenderer;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +31,8 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
+
+import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -50,6 +56,14 @@ public class ManaPipeBlock extends PipeBlock<ManaPipeType, ManaPipeProperties, L
     @Override
     public @NotNull LevelManaPipeNet getWorldPipeNet(ServerLevel level) {
         return LevelManaPipeNet.getOrCreate(level);
+    }
+
+    /** 与 GT 流体管道同款：把本档的每秒流量写在工具提示里。 */
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
+        tooltip.add(Component.translatable("gtocore.mana_pipe.transfer_rate",
+                FormattingUtil.formatNumbers(pipeType.properties.manaPerSecond()), pipeType.poolsPerSecond()));
     }
 
     @Override

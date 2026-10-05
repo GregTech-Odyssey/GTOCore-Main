@@ -4,6 +4,8 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.DimensionDataItem;
 import com.gtocore.common.machine.multiblock.electric.BlockConversionRoomMachine;
+import com.gtocore.common.pipe.mana.ManaPipeType;
+import com.gtocore.common.pipe.universal.UniversalPipeType;
 import com.gtocore.common.recipe.condition.GravityCondition;
 import com.gtocore.common.recipe.condition.RestrictedMachineCondition;
 import com.gtocore.common.recipe.condition.VacuumCondition;
@@ -53,6 +55,30 @@ import static com.gtocore.common.data.GTORecipeTypes.*;
 public final class MiscRecipe {
 
     public static void init() {
+        // 通用管道：工作台配方，上下六块该档材料板，中间放该档的原版物品管道与流体管道各一根
+        for (int tier = 0; tier < UniversalPipeType.values().length; tier++) {
+            var type = UniversalPipeType.values()[tier];
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id(type.getSerializedName() + "_universal_pipe"), GTOBlocks.UNIVERSAL_PIPES[tier].asStack(),
+                    "PPP",
+                    "I F",
+                    "PPP",
+                    'P', new MaterialEntry(plate, type.material),
+                    'I', new MaterialEntry(pipeNormalItem, type.itemPipe),
+                    'F', new MaterialEntry(pipeNormalFluid, type.fluidPipe));
+        }
+
+        // 魔力管道：按魔法金属分档，各用该档材料板，流量见 ManaPipeType
+        for (int i = 0; i < ManaPipeType.values().length; i++) {
+            var type = ManaPipeType.values()[i];
+            ASSEMBLER_RECIPES.builder(type.getSerializedName() + "_mana_pipe")
+                    .inputItems(TagPrefix.plate, type.material, 6)
+                    .circuitMeta(18)
+                    .outputItems(GTOBlocks.MANA_PIPES[i].asItem())
+                    .duration(200)
+                    .EUt(120)
+                    .save();
+        }
+
         int i = 0;
         for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
             i++;

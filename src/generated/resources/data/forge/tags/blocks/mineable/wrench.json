@@ -374,7 +374,17 @@
     "gtocore:frequency_division_phase_locking_casing",
     "gtocore:laureril_source_jar",
     "gtocore:normal_heat_pipe",
-    "gtocore:normal_mana_pipe",
-    "gtocore:normal_muffler_pipe"
+    "gtocore:manasteel_mana_pipe",
+    "gtocore:terrasteel_mana_pipe",
+    "gtocore:elementium_mana_pipe",
+    "gtocore:alfsteel_mana_pipe",
+    "gtocore:gaiasteel_mana_pipe",
+    "gtocore:normal_muffler_pipe",
+    "gtocore:manganese_universal_pipe",
+    "gtocore:gallium_universal_pipe",
+    "gtocore:bismuth_bronze_universal_pipe",
+    "gtocore:palladium_universal_pipe",
+    "gtocore:rhodium_universal_pipe",
+    "gtocore:yttrium_barium_cuprate_universal_pipe"
   ]
 }

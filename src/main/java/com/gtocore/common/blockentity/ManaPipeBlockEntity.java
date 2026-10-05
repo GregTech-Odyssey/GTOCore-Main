@@ -31,6 +31,9 @@ import java.lang.ref.WeakReference;
 public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, ManaPipeProperties> implements ManaCollector {
 
     private WeakReference<ManaPipeNet> currentPipeNet = new WeakReference<>(null);
+    /** 本秒已经过手的魔力量，用来限流（按游戏刻每 20 tick 清零）。 */
+    private long transferredMana;
+    private int transferTimer;
 
     public ManaPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
@@ -87,9 +90,12 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
                     var manaInPool = pool.getCurrentMana();
                     if (manaInPool > 0 && !self.isFull()) {
                         int manaMissing = self.getMaxMana() - self.getCurrentMana();
-                        int manaToRemove = Math.min(manaInPool, manaMissing);
-                        pool.receiveMana(-manaToRemove);
-                        self.receiveMana(manaToRemove);
+                        // 先按本秒剩余额度算能抽多少，免得额度不够时把池里的魔力抽出来又送不掉
+                        int manaToRemove = (int) Math.min(Math.min(manaInPool, manaMissing), self.availableMana());
+                        if (manaToRemove > 0) {
+                            pool.receiveMana(-manaToRemove);
+                            self.receiveMana(manaToRemove);
+                        }
                     }
                 }
             }
@@ -158,23 +164,49 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         return true;
     }
 
+    /** 进料口：本档每秒能过手的魔力有上限，超出的部分送不出去（与 GT 物品管道按秒计额度同一套写法）。 */
     @Override
     public void receiveMana(int mana) {
-        if (mana > 0) {
-            var net = getManaPipeNet();
-            if (net == null) return;
-            for (var path : net.getNetData(longPos, worldPosition)) {
-                if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
-                var handler = path.getHandler(level);
-                if (handler == null || handler.isFull() || !handler.canReceiveManaFromBursts()) continue;
-                var canReceive = Math.min(mana, getMaxMana(handler) - handler.getCurrentMana());
-                if (canReceive > 0) {
-                    handler.receiveMana(canReceive);
-                    mana -= canReceive;
-                    if (mana <= 0) break;
-                }
+        if (mana <= 0) return;
+        var net = getManaPipeNet();
+        if (net == null) return;
+        long left = availableMana();
+        if (left <= 0) return;
+        if (mana > left) mana = (int) left;
+        int incoming = mana;
+        for (var path : net.getNetData(longPos, worldPosition)) {
+            if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
+            var handler = path.getHandler(level);
+            if (handler == null || handler.isFull() || !handler.canReceiveManaFromBursts()) continue;
+            var canReceive = Math.min(mana, getMaxMana(handler) - handler.getCurrentMana());
+            if (canReceive > 0) {
+                handler.receiveMana(canReceive);
+                mana -= canReceive;
+                if (mana <= 0) break;
             }
         }
+        addTransferredMana(incoming - mana);
+    }
+
+    /** 每秒（20 tick）额度重置一次。 */
+    private void updateTransferredState() {
+        int time = getOffsetTimer();
+        int dif = time - transferTimer;
+        if (dif >= 20 || dif < 0) {
+            transferredMana = 0;
+            transferTimer = time;
+        }
+    }
+
+    /** 本秒还剩多少魔力额度。 */
+    private long availableMana() {
+        updateTransferredState();
+        return getNodeData().manaPerSecond() - transferredMana;
+    }
+
+    private void addTransferredMana(long amount) {
+        updateTransferredState();
+        transferredMana += amount;
     }
 
     @Override

@@ -91,7 +91,7 @@ public class ExcitationCrystal extends SimpleNoEnergyMachine implements IBeamOpe
     }
 
     private void tick() {
-        long now = getLevel().getGameTime();
+        long now = getOffsetTimer();
         for (var state : activePasses.values()) {
             if (now - state.lastChargeTick < 10L) continue;
             state.lastChargeTick = now;

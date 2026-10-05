@@ -29,5 +29,12 @@ final class BlockLang {
             addCNEN("block.ad_astra." + dim.getLocation().getPath() + "_globe", dim.getCn() + cnSuffix, dim.getEn() + " Globe");
         }
         addCNEN("block.ad_astra.saturn_globe", "土星仪", "Saturn Globe");
+
+        // 管道工具提示，格式对齐 GT 的物品/流体管道（一条速率行）
+        addCNEN("gtocore.universal_pipe.item_transfer_rate", "§b物品传输速率：§f%s 个/s", "§bItem Transfer Rate: §f%s/s");
+        addCNEN("gtocore.universal_pipe.fluid_transfer_rate", "§b流体传输速率：§f%s 桶/s", "§bFluid Transfer Rate: §f%s B/s");
+        addCNEN("gtocore.universal_pipe.pull_mode", "管道不存货；shift+扳手把一面设为堵住后，改从其余相邻存储主动抽取",
+                "No buffer. Block a face with shift + wrench to pull from the other neighbours instead");
+        addCNEN("gtocore.mana_pipe.transfer_rate", "§b传输速率：§f%s 魔力/s（约 %s 池/s）", "§bTransfer Rate: §f%s mana/s (~%s pools/s)");
     }
 }

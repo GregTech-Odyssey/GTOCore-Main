@@ -75,7 +75,7 @@ public final class HeatThermometer extends UIElement {
     private Reading sampled = Reading.HIDDEN;
     @Nullable
     private IHeatContainer sampledContainer;
-    private long sampleTime;
+    private int sampleTime;
     private double sampleTemperature;
     private double temperatureChange;
     @Nullable
@@ -110,7 +110,7 @@ public final class HeatThermometer extends UIElement {
         double temperature = heat.getTemperature();
         if (!Double.isFinite(temperature)) temperature = 0;
         temperature = Math.max(0, temperature);
-        long time = machine.getLevel().getGameTime();
+        int time = machine.getOffsetTimer();
         if (heat != sampledContainer || time < sampleTime) {
             sampledContainer = heat;
             sampleTime = time;

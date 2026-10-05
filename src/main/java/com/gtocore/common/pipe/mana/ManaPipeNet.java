@@ -49,10 +49,12 @@ public final class ManaPipeNet extends PipeNet<ManaPipeProperties> {
     }
 
     @Override
-    protected void writeNodeData(ManaPipeProperties nodeData, CompoundTag tagCompound) {}
+    protected void writeNodeData(ManaPipeProperties nodeData, CompoundTag tagCompound) {
+        tagCompound.putLong("ManaPerSecond", nodeData.manaPerSecond());
+    }
 
     @Override
     protected ManaPipeProperties readNodeData(CompoundTag tagCompound) {
-        return ManaPipeProperties.INSTANCE;
+        return new ManaPipeProperties(tagCompound.getLong("ManaPerSecond"));
     }
 }

@@ -5,9 +5,11 @@ import com.gtocore.common.blockentity.SourceJarBE;
 import com.gtocore.common.item.HeatPipeBlockItem;
 import com.gtocore.common.item.ManaPipeBlockItem;
 import com.gtocore.common.item.MufflerPipeBlockItem;
+import com.gtocore.common.item.UniversalPipeBlockItem;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
+import com.gtocore.common.pipe.universal.UniversalPipeType;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.client.YLayeredModelBuilder;
@@ -58,6 +60,8 @@ public final class GTOBlocks {
     public static final BlockEntry<ManaPipeBlock>[] MANA_PIPES = (BlockEntry<ManaPipeBlock>[]) new BlockEntry<?>[ManaPipeType.values().length];
     @SuppressWarnings("unchecked")
     public static final BlockEntry<MufflerPipeBlock>[] MUFFLER_PIPES = (BlockEntry<MufflerPipeBlock>[]) new BlockEntry<?>[MufflerPipeType.values().length];
+    @SuppressWarnings("unchecked")
+    public static final BlockEntry<UniversalPipeBlock>[] UNIVERSAL_PIPES = (BlockEntry<UniversalPipeBlock>[]) new BlockEntry<?>[UniversalPipeType.values().length];
 
     public static void init() {
         GTO.removeDefaultCreativeTab();
@@ -815,6 +819,24 @@ public final class GTOBlocks {
                     .build()
                     .register();
             MUFFLER_PIPES[i] = entry;
+        }
+
+        for (int i = 0; i < UniversalPipeType.values().length; ++i) {
+            var type = UniversalPipeType.values()[i];
+            var entry = block("%s_universal_pipe".formatted(type.getSerializedName()), type.cnName + "通用管道", (p) -> new UniversalPipeBlock(p, type))
+                    .initialProperties(() -> Blocks.IRON_BLOCK)
+                    .properties(p -> p.dynamicShape().noOcclusion().forceSolidOn())
+                    .blockstate(NonNullBiConsumer.noop())
+                    .defaultLoot()
+                    .tag(CustomTags.MINEABLE_WITH_WRENCH)
+                    .addLayer(() -> RenderType::cutoutMipped)
+                    .color(() -> () -> HeatPipeBlock.tintedColor(type.material))
+                    .item(UniversalPipeBlockItem::new)
+                    .color(() -> () -> ITagPrefixItem.tintColor(type.material))
+                    .model(NonNullBiConsumer.noop())
+                    .build()
+                    .register();
+            UNIVERSAL_PIPES[i] = entry;
         }
     }
 }
