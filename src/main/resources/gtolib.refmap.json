@@ -358,7 +358,9 @@
       "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
       "tickRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109693_(Lnet/minecraft/client/Camera;)V",
       "renderSnowAndRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109703_(Lnet/minecraft/client/renderer/LightTexture;FDDD)V",
-      "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
+      "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V",
+      "Lnet/minecraft/world/level/biome/Biome;getPrecipitationAt(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;": "Lnet/minecraft/world/level/biome/Biome;m_264600_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;",
+      "Lnet/minecraft/world/level/biome/Biome;hasPrecipitation()Z": "Lnet/minecraft/world/level/biome/Biome;m_264473_()Z"
     },
     "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
       "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -406,7 +408,24 @@
       "setWeatherParameters": "Lnet/minecraft/server/level/ServerLevel;m_8606_(IIZZ)V",
       "advanceWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184096_()V",
       "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V": "Lnet/minecraft/world/level/storage/ServerLevelData;m_5565_(Z)V",
-      "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;"
+      "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;",
+      "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z": "Lnet/minecraft/world/level/GameRules;m_46207_(Lnet/minecraft/world/level/GameRules$Key;)Z",
+      "Lnet/minecraft/world/level/dimension/DimensionType;hasSkyLight()Z": "Lnet/minecraft/world/level/dimension/DimensionType;f_223549_()Z"
+    },
+    "com/gtocore/mixin/mc/WeatherCommandMixin": {
+      "setRain": "Lnet/minecraft/server/commands/WeatherCommand;m_139177_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+      "setClear": "Lnet/minecraft/server/commands/WeatherCommand;m_139172_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+      "setThunder": "Lnet/minecraft/server/commands/WeatherCommand;m_139182_(Lnet/minecraft/commands/CommandSourceStack;I)I"
+    },
+    "com/gtocore/mixin/mc/DerivedLevelDataWeatherMixin": {
+      "getClearWeatherTime": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6537_()I",
+      "isThundering": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6534_()Z",
+      "getThunderTime": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6558_()I",
+      "getRainTime": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6531_()I",
+      "isRaining": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6533_()Z"
+    },
+    "com/gtocore/mixin/mc/LevelWeatherMixin": {
+      "isRainingAt": "Lnet/minecraft/world/level/Level;m_46758_(Lnet/minecraft/core/BlockPos;)Z"
     }
   },
   "data": {
@@ -769,7 +788,9 @@
         "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
         "tickRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109693_(Lnet/minecraft/client/Camera;)V",
         "renderSnowAndRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109703_(Lnet/minecraft/client/renderer/LightTexture;FDDD)V",
-        "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
+        "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V",
+        "Lnet/minecraft/world/level/biome/Biome;getPrecipitationAt(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;": "Lnet/minecraft/world/level/biome/Biome;m_264600_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;",
+        "Lnet/minecraft/world/level/biome/Biome;hasPrecipitation()Z": "Lnet/minecraft/world/level/biome/Biome;m_264473_()Z"
       },
       "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
         "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -817,7 +838,24 @@
         "setWeatherParameters": "Lnet/minecraft/server/level/ServerLevel;m_8606_(IIZZ)V",
         "advanceWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184096_()V",
         "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V": "Lnet/minecraft/world/level/storage/ServerLevelData;m_5565_(Z)V",
-        "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;"
+        "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;",
+        "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z": "Lnet/minecraft/world/level/GameRules;m_46207_(Lnet/minecraft/world/level/GameRules$Key;)Z",
+        "Lnet/minecraft/world/level/dimension/DimensionType;hasSkyLight()Z": "Lnet/minecraft/world/level/dimension/DimensionType;f_223549_()Z"
+      },
+      "com/gtocore/mixin/mc/WeatherCommandMixin": {
+        "setRain": "Lnet/minecraft/server/commands/WeatherCommand;m_139177_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+        "setClear": "Lnet/minecraft/server/commands/WeatherCommand;m_139172_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+        "setThunder": "Lnet/minecraft/server/commands/WeatherCommand;m_139182_(Lnet/minecraft/commands/CommandSourceStack;I)I"
+      },
+      "com/gtocore/mixin/mc/DerivedLevelDataWeatherMixin": {
+        "getClearWeatherTime": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6537_()I",
+        "isThundering": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6534_()Z",
+        "getThunderTime": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6558_()I",
+        "getRainTime": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6531_()I",
+        "isRaining": "Lnet/minecraft/world/level/storage/DerivedLevelData;m_6533_()Z"
+      },
+      "com/gtocore/mixin/mc/LevelWeatherMixin": {
+        "isRainingAt": "Lnet/minecraft/world/level/Level;m_46758_(Lnet/minecraft/core/BlockPos;)Z"
       }
     }
   }

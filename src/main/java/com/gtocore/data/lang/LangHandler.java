@@ -8,6 +8,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformTemplateStorage;
+import com.gtocore.common.weather.WeatherTypes;
 import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.data.transaction.data.TradeLang;
@@ -63,6 +64,25 @@ public final class LangHandler {
 
     private static void init() {
         GTOItemTooltips.INSTANCE.initLanguage();
+        for (var weather : WeatherTypes.REGISTRY) addCNEN(weather.translationKey(), weather.cn(), weather.en());
+        addCNEN("gtocore.weather.unsupported", "本维度不支持该天气", "This dimension does not support that weather");
+        addCNEN("gtocore.weather.changed", "本维度天气已设为：%s", "Local weather set to: %s");
+        addCNEN("gtocore.weather.stellar_override", "已设置%s，恒星活动当前强制为%s", "Set %s; stellar activity currently forces %s");
+        addCNEN("gtocore.weather.forecast_tooltip", "右键查看所有已解锁星球未来三个游戏日的天气", "Right-click to view the next three days of weather on all unlocked planets");
+        addCNEN("gtocore.weather.forecast_time", "+%s时%s分", "+%sh %sm");
+        addCNEN("gtocore.weather.forecast_current", "当前天气", "Current weather");
+        addCNEN("gtocore.weather.forecast_next", "下一天气", "Next weather");
+        addCNEN("gtocore.weather.forecast_change_in", "距天气变化", "Weather changes in");
+        addCNEN("gtocore.weather.forecast_cycle", "天气循环", "Weather cycle");
+        addCNEN("gtocore.weather.forecast_no_change", "预报期内无变化", "No change within forecast");
+        addCNEN("gtocore.weather.forecast_running", "正常推进", "Running");
+        addCNEN("gtocore.weather.forecast_paused", "已暂停", "Paused");
+        addCNEN("gtocore.weather.forecast_now", "现在", "Now");
+        addCNEN("gtocore.weather.forecast_range", "%s至%s", "%s to %s");
+        addCNEN("gtocore.weather.forecast_bar_hint", "天气条按持续时间着色；悬停查看天气与时段", "Colors show weather duration; hover for weather and times");
+        addCNEN("gtocore.weather.forecast_scale_hint", "短刻度3小时，长刻度12小时；太阳为日出，月亮为日落", "Ticks: 3h / 12h; sun: sunrise; moon: sunset");
+        addCNEN("gtocore.weather.forecast_sunrise", "日出", "Sunrise");
+        addCNEN("gtocore.weather.forecast_sunset", "日落", "Sunset");
         GTOFluids.LANG.forEach((k, v) -> {
             addCN("fluid.gtocore." + k, v);
             addCN("item.gtocore." + k + "_bucket", v + "桶");

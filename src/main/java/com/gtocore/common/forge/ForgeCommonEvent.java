@@ -6,6 +6,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.saved.*;
+import com.gtocore.common.weather.WeatherSystem;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.techtree.BaseNodes;
@@ -381,11 +382,13 @@ public final class ForgeCommonEvent {
             TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
             CelestialSavedData.sync(player);
+            WeatherSystem.get(player.server).sync(player);
         }
     }
 
     @SubscribeEvent
     public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) WeatherSystem.get(event.getServer()).tick();
         if (event.phase == TickEvent.Phase.END) {
             TeamResearchSavedData.syncIfNeeded(event.getServer());
             TechTreeSavedData.syncIfNeeded(event.getServer());
@@ -397,8 +400,14 @@ public final class ForgeCommonEvent {
         if (event.getEntity() instanceof ServerPlayer player) {
             showVoidTimeHint(player);
             syncPlayerTime(player);
+            WeatherSystem.get(player.server).sync(player);
             // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawnEvent(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) WeatherSystem.get(player.server).sync(player);
     }
 
     @SubscribeEvent

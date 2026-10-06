@@ -55,6 +55,10 @@ import static com.gtocore.common.data.GTORecipeTypes.*;
 public final class MiscRecipe {
 
     public static void init() {
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("weather_forecaster"), GTOItems.WEATHER_FORECASTER.asStack(),
+                "SES", "CDC", "PTP",
+                'S', SENSOR_MV.asItem(), 'E', EMITTER_MV.asItem(), 'C', CustomTags.MV_CIRCUITS,
+                'D', Items.CLOCK, 'P', new MaterialEntry(plate, Steel), 'T', TOOL_DATA_STICK.asItem());
         // 通用管道：工作台配方，上下六块该档材料板，中间放该档的原版物品管道与流体管道各一根
         for (int tier = 0; tier < UniversalPipeType.values().length; tier++) {
             var type = UniversalPipeType.values()[tier];

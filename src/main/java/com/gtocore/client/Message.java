@@ -6,6 +6,8 @@ import com.gtocore.api.research.techtree.ui.TechTreeBrowser;
 import com.gtocore.common.data.CelestialOrbits;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.forge.ServerLangHook;
+import com.gtocore.common.weather.WeatherSystem;
+import com.gtocore.common.weather.WeatherTypes;
 import com.gtocore.integration.ae.hooks.ICraftAmountMenu;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 
@@ -70,6 +72,14 @@ public final class Message {
             }
         }
     }
+
+    public static final NetworkPack WEATHER_S2C = NetworkPack.registerS2C("galaxyWeatherS2C", (player, buf) -> {
+        var dimension = buf.readResourceLocation();
+        var weather = WeatherTypes.REGISTRY.streamCodec().decode(buf);
+        float rain = buf.readFloat();
+        float thunder = buf.readFloat();
+        if (player.level().dimension().location().equals(dimension)) WeatherSystem.receiveWeather(player.level(), weather, rain, thunder);
+    });
 
     public static final NetworkPack CELESTIAL_SEED_S2C = NetworkPack.registerS2C("celestialSeedS2C", (p, b) -> CelestialOrbits.setClientSeed(b.readLong()));
 

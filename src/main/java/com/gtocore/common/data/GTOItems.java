@@ -418,6 +418,11 @@ public final class GTOItems {
     public static final ItemEntry<PlanetDataChipItem> PLANET_DATA_CHIP = item("planet_data_chip", "星球数据芯片", PlanetDataChipItem::new)
             .register();
 
+    public static final ItemEntry<WeatherForecastItem> WEATHER_FORECASTER = item("weather_forecaster", "天气预报仪", WeatherForecastItem::new)
+            .lang("Weather Forecaster")
+            .properties(p -> p.stacksTo(1))
+            .register();
+
     public static final ItemEntry<DimensionDataItem> DIMENSION_DATA = item("dimension_data", "维度数据", DimensionDataItem::new).register();
 
     public static final ItemEntry<ComponentItem> OPTICAL_DATA_STICK = item("optical_data_stick", "光学闪存", ComponentItem::create)

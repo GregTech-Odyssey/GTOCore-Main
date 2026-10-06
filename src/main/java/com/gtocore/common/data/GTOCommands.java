@@ -6,6 +6,7 @@ import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.common.saved.DysonSphereSavaedData;
 import com.gtocore.common.saved.VoidWorldTimeSavedData;
+import com.gtocore.common.weather.WeatherCommands;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.Dimension;
@@ -52,6 +53,7 @@ public final class GTOCommands {
 
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher) {
         var root = Commands.literal(GTOCore.MOD_ID)
+                .then(WeatherCommands.create())
                 .then(Commands.literal("gc").executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal("Start garbage cleanup"), false);
                     GTOUtils.gc();
