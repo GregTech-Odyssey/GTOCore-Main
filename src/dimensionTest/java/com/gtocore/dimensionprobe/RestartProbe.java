@@ -13,6 +13,9 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * 两次启动同一隔离存档的探针，验证原版、Forge、AE2 及可选 FTB 有效强加载恢复，并排除过期或无资格票据。
+ */
 public final class RestartProbe {
 
     RestartProbe() {

@@ -13,6 +13,9 @@ import net.minecraftforge.fml.DistExecutor;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * 双客户端 Forge 联机探针，验证共享实例、权限撤销、休眠重开、同步顺序及断开重连后的连接缓存。
+ */
 public final class NetworkProbe {
 
     static void init() {

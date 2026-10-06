@@ -14,6 +14,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * 隔离临时目录中的实例持久化测试，覆盖身份、分页和有界缓存、事务恢复、冻结定义、长 JSON、系列地址及种子稳定性。
+ */
 class DimensionInstanceStoreTest {
 
     static {

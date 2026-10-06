@@ -54,6 +54,9 @@ public final class GTOConfig {
     @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Travel Settings", cn = "旅行手杖/旅行锚设置")
     public TravelConfig travelConfig = new TravelConfig();
 
+    /**
+     * 服务器维度懒加载、空闲卸载时长及额外常驻世界的配置入口。
+     */
     @Configurable
     @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Dimension Lifecycle", cn = "维度生命周期")
     public Dimensions dimensions = new Dimensions();
@@ -179,18 +182,30 @@ public final class GTOConfig {
 
     public static void init() {}
 
+    /**
+     * 维度懒加载配置，运行时由服务器管理器读取；原版三个世界始终常驻。
+     */
     @DataGeneratorScanned
     public static final class Dimensions {
 
+        /**
+         * 是否启用懒加载和空闲卸载；关闭时启动恢复全部固定定义，仍不枚举历史动态实例。
+         */
         @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Lazy Dimension Loading", cn = "维度懒加载")
         public boolean enabled = true;
 
+        /**
+         * 空闲卸载阈值，单位 tick，默认 1200；每 20 tick 检查运行世界并在 tick 结束时复查占用。
+         */
         @Configurable
         @Configurable.Range(min = 20, max = Integer.MAX_VALUE)
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Idle Dimension Unload Delay (ticks)", cn = "空闲维度卸载时长（tick）")
         public int idleTicks = 1200;
 
+        /**
+         * 额外常驻维度 ID 列表；启动显式加载，自动或管理员安全卸载均跳过这些维度。
+         */
         @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Additional Resident Dimensions", cn = "额外常驻维度")
         public String[] residentDimensions = new String[0];

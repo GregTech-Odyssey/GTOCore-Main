@@ -27,6 +27,7 @@ allprojects { p ->
         p.legacyForge.runs.named('server') { gameDirectory.set(new File(probeRoot, 'server')) }
         p.tasks.named('runServer') {
             dependsOn 'dimensionProbeClasses'
+            if (p.findProperty('dimensionSuggestionsProbe') == 'true') systemProperty 'dimensionSuggestionsProbe', 'true'
             if (p.findProperty('dimensionRestartProbe') == 'true') systemProperty 'dimensionRestartProbe', 'true'
             if (p.findProperty('dimensionCloseProbe') == 'true') systemProperty 'dimensionCloseProbe', 'true'
             doFirst {
@@ -55,6 +56,7 @@ max-tick-time=180000
             p.legacyForge.runs.named('client') { gameDirectory.set(new File(probeRoot, clientName)) }
             p.tasks.named('runClient') {
                 dependsOn 'dimensionProbeClasses'
+                if (p.findProperty('dimensionSuggestionsProbe') == 'true') systemProperty 'dimensionSuggestionsProbe', 'true'
                 maxHeapSize = '3G'
                 systemProperty 'dimensionNetworkProbe', 'true'
                 systemProperty 'dimensionProbeRoot', probeRoot.absolutePath

@@ -43,6 +43,13 @@ public final class WeatherProfiles {
         return DEFAULT;
     }
 
+    /**
+     * 将模板环境中的持久化天气 ID 解析为现有天气配置。
+     *
+     * @param id 冻结的天气配置 ID
+     * @return 对应天气规则
+     * @throws IllegalArgumentException ID 未受支持
+     */
     private static WeatherProfile instanceProfile(String id) {
         return switch (id) {
             case "calm" -> SPACE;

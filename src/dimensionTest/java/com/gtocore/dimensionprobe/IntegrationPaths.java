@@ -23,7 +23,9 @@ import earth.terrarium.adastra.common.network.messages.ServerboundLandPacket;
 import java.util.List;
 import java.util.UUID;
 
-/** Executes real command, planet menu, packet, spatial exchange and respawn paths. */
+/**
+ * 联机探针中的实际玩法入口验证，覆盖命令、虚空传送设备、空间交换、星球旅行、空间站、重生及队伍权限。
+ */
 final class IntegrationPaths {
 
     private final DimensionManager manager;

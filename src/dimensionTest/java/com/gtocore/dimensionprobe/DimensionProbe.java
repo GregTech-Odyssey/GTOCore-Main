@@ -20,6 +20,11 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * 隔离 Forge 测试模组的入口，按启动参数选择生命周期、重启、关闭故障或双客户端探针。
+ * <p>
+ * 仅由显式启用的 dimensions-probe Gradle 脚本加入运行环境，不进入生产构建。
+ */
 @Mod("dimension_probe")
 public final class DimensionProbe {
 
@@ -39,7 +44,14 @@ public final class DimensionProbe {
     private TestData testData;
     private java.util.List<com.gtocore.common.weather.WeatherTimeline.Period> weather;
 
+    /**
+     * 注册隔离测试所需的事件监听，根据 JVM 属性选择探针场景。
+     */
     public DimensionProbe() {
+        if (Boolean.getBoolean("dimensionSuggestionsProbe")) {
+            DimensionSuggestionsProbe.init();
+            return;
+        }
         if (Boolean.getBoolean("dimensionNetworkProbe")) {
             NetworkProbe.init();
             return;
@@ -264,6 +276,9 @@ public final class DimensionProbe {
         return hash;
     }
 
+    /**
+     * 保存探针专用 SavedData，可注入序列化失败或一次性重入加载回调，并校验数据随世界保存和恢复。
+     */
     public static final class TestData extends net.minecraft.world.level.saveddata.SavedData {
 
         final int value;
@@ -274,6 +289,13 @@ public final class DimensionProbe {
             this.value = value;
         }
 
+        /**
+         * 执行配置的故障或重入回调后编码测试值。
+         *
+         * @param tag 保存目标标签
+         * @return 写入测试值的同一标签
+         * @throws IllegalStateException 已启用保存故障注入
+         */
         @Override
         public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag) {
             if (fail) throw new IllegalStateException("INJECTED_DIMENSION_SAVE_FAILURE");

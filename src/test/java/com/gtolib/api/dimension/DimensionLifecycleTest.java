@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * 生命周期状态机测试：空闲边界、迟到占用、租约平衡、保存恢复、关闭封禁及重复加载卸载。
+ */
 class DimensionLifecycleTest {
 
     @Test

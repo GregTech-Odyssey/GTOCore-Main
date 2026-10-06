@@ -14,6 +14,9 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * 在隔离测试世界的卸载事件中注入关闭阶段故障，验证封禁、停止服务器及存档保留；不模拟操作系统关闭 IO 故障。
+ */
 public final class CloseProbe {
 
     static ResourceKey<Level> target;

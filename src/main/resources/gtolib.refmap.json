@@ -470,7 +470,8 @@
     },
     "com/gtolib/mixin/mc/DimensionArgumentMixin": {
       "getDimension": "Lnet/minecraft/commands/arguments/DimensionArgument;m_88808_(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Lnet/minecraft/server/level/ServerLevel;",
-      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;",
+      "listSuggestions": "Lnet/minecraft/commands/arguments/DimensionArgument;listSuggestions(Lcom/mojang/brigadier/context/CommandContext;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;)Ljava/util/concurrent/CompletableFuture;"
     },
     "com/gtolib/mixin/adastra/RocketMixin": {
       "tick": "Learth/terrarium/adastra/common/entities/vehicles/Rocket;m_8119_()V"
@@ -957,7 +958,8 @@
       },
       "com/gtolib/mixin/mc/DimensionArgumentMixin": {
         "getDimension": "Lnet/minecraft/commands/arguments/DimensionArgument;m_88808_(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Lnet/minecraft/server/level/ServerLevel;",
-        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;",
+        "listSuggestions": "Lnet/minecraft/commands/arguments/DimensionArgument;listSuggestions(Lcom/mojang/brigadier/context/CommandContext;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;)Ljava/util/concurrent/CompletableFuture;"
       },
       "com/gtolib/mixin/adastra/RocketMixin": {
         "tick": "Learth/terrarium/adastra/common/entities/vehicles/Rocket;m_8119_()V"

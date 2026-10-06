@@ -21,6 +21,8 @@
 
 示例模板为 `gtocore:private_void`、`gtocore:private_flat` 和 `gtocore:overworld_noise`。虚空模板首次进入时创建 5×5 平台；已保存的出生点不可站立时重新选择安全位置。指令返回的动态维度 ID 形如 `gtolib:instance/<UUID>`。
 
+`execute in` 等维度参数的补全按需向服务器查询，包含已登记的固定维度（包括休眠星球）及可访问的已加载动态实例。补全不加载世界、不扫描历史实例；休眠动态实例可通过分页列表取得完整 ID 后使用。登录时同步固定定义和当前动态实例，不广播动态历史。
+
 ## 调用约定
 
 管理器绑定服务器实例，通过 `DimensionManager.get(server)` 取得。模板注册、实例创建、权限修改、加载和卸载操作在服务器线程执行。`load(key)` 可从其他线程调用，它将工作提交给服务器，并返回共享的 `CompletableFuture<ServerLevel>`。加载回调中的重入请求使用同一个 future；保存中的加载请求等待保存结束并取消关闭。`loadNow` 不能等待一个尚未完成的重入请求。
@@ -84,6 +86,8 @@ Forge 探针位于 `src/dimensionTest`，通过 `-I gradle/scripts/dimensions-pr
 ```
 
 断言结果以测试目录的 `result.txt`、`network-server.txt` 和各客户端结果文件为准，Gradle 的退出码不能代替探针结果。服务端探针故意注入一次保存失败，相关错误日志属于验证预期。联机探针自动处理隔离客户端的首次启动界面、连接、传送和重连，完成后关闭测试进程。
+
+补全回归探针在服务器和一个 `DimensionA` 客户端的联机启动参数中额外加入 `-PdimensionSuggestionsProbe=true`。它使用真实客户端命令树及原版补全数据包验证空前缀、命名空间、部分名称、嵌套 `execute as @s in` 和登录后新增的定义，确认候选来自服务器而非登录缓存；同时检查 96 条休眠实例没有登录同步，补全前后保持启动时的世界数量。结果为 `server-suggestions.txt` 和 `DimensionA-suggestions.txt`。
 
 联机探针还执行完整管理员指令、实际放置的虚空设备传送处理、太空电梯/火箭星球菜单着陆、空间站结构建造与休眠后授权着陆、AE2 方块交换，以及动态世界的强制出生点重生。站点查询和拒绝着陆均检查没有唤醒世界。单服探针可增加 `-PdimensionProbeFTB=false` 验证不安装可选 FTB Chunks 的启动与生命周期。
 
