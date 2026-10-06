@@ -9,6 +9,13 @@ com/gtolib/mixin/mc/client/LevelSummaryMixin settings f_78344_
 com/gtolib/mixin/mc/client/MinecraftMixin singleplayerServer f_91007_
 com/gtolib/mixin/mc/client/WorldSelectionListMixin screen f_101654_
 com/gtolib/mixin/mc/DependencySorterMixin contents f_283882_
+com/gtolib/mixin/mc/DimensionServerMixin levels f_129762_
+com/gtolib/mixin/mc/DimensionServerMixin storageSource f_129744_
+com/gtolib/mixin/mc/DimensionServerMixin executor f_129738_
+com/gtolib/mixin/mc/DimensionServerMixin worldData f_129749_
+com/gtolib/mixin/mc/DimensionServerMixin registries f_244176_
+com/gtolib/mixin/mc/DimensionServerMixin commandStorage f_129732_
+com/gtolib/mixin/mc/DimensionServerMixin nextTickTime f_129726_
 com/gtolib/mixin/mc/entity/EntityMixin tickCount f_19797_
 com/gtolib/mixin/mc/entity/PlayerMixin abilities f_36077_
 com/gtolib/mixin/mc/entity/ServerPlayerMixin server f_8924_
@@ -33,32 +40,54 @@ com/gtolib/mixin/mc/ReferenceMixin tags f_205749_
 com/gtolib/mixin/mc/TagLoaderMixin directory f_13449_
 com/gtolib/mixin/mc/world/ChunkMapMixin visibleChunkMap f_140130_
 com/gtolib/mixin/mc/world/ClientLevelMixin clientLevelData f_104563_
+com/gtolib/mixin/mc/world/DimensionTicketsMixin tickets f_140761_
+com/gtolib/mixin/mc/world/DimensionTicketsMixin ticketTickCounter f_140771_
 com/gtolib/mixin/mc/world/LevelChunkMixin tickersInLevel f_156362_
 com/gtolib/mixin/mc/world/LevelChunkMixin NULL_TICKER f_156361_
 com/gtolib/mixin/mc/world/LevelMixin dimension f_46421_
 com/gtolib/mixin/mc/world/ServerChunkCacheMixin chunkMap f_8325_
 com/gtolib/mixin/mc/world/ServerChunkCacheMixin level f_8329_
+com/gtolib/mixin/mc/world/ServerLevelMixin serverLevelData f_8549_
 com/gtolib/mixin/mc/world/ServerLevelMixin entityManager f_143244_
 com/gtocore/mixin/mc/client/ClientPacketListenerMixin getLevel ()Lnet/minecraft/client/multiplayer/ClientLevel; m_105147_
 com/gtocore/mixin/mc/GameRendererMixin getNightVisionScale (Lnet/minecraft/world/entity/LivingEntity;F)F m_109108_
 com/gtocore/mixin/mc/GuiGraphicsMixin renderItem (Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V m_280405_
 com/gtocore/mixin/mc/GuiGraphicsMixin renderItemDecorations (Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V m_280302_
 com/gtocore/mixin/mc/ItemEntityMixin getItem ()Lnet/minecraft/world/item/ItemStack; m_32055_
+com/gtocore/mixin/mc/LevelWeatherMixin prepareWeather ()V m_46466_
+com/gtocore/mixin/mc/LevelWeatherMixin getRainLevel (F)F m_46722_
+com/gtocore/mixin/mc/LevelWeatherMixin getThunderLevel (F)F m_46661_
+com/gtocore/mixin/mc/LevelWeatherMixin setRainLevel (F)V m_46734_
+com/gtocore/mixin/mc/LevelWeatherMixin setThunderLevel (F)V m_46707_
+com/gtocore/mixin/mc/LevelWeatherMixin isRaining ()Z m_46471_
+com/gtocore/mixin/mc/LevelWeatherMixin isThundering ()Z m_46470_
+com/gtocore/mixin/mc/LevelWeatherMixin isRainingAt (Lnet/minecraft/core/BlockPos;)Z m_46758_
 com/gtocore/mixin/mc/mob/LivingEntityMixin dropCustomDeathLoot (Lnet/minecraft/world/damagesource/DamageSource;IZ)V m_7472_
 com/gtocore/mixin/mc/mob/LivingEntityMixin dropEquipment ()V m_5907_
 com/gtocore/mixin/mc/mob/LivingEntityMixin getRandom ()Lnet/minecraft/util/RandomSource; m_217043_
+com/gtocore/mixin/mc/ServerLevelWeatherMixin advanceWeatherCycle ()V m_184096_
+com/gtocore/mixin/mc/ServerLevelWeatherMixin setWeatherParameters (IIZZ)V m_8606_
+com/gtocore/mixin/mc/ServerLevelWeatherMixin resetWeatherCycle ()V m_184097_
 com/gtolib/mixin/forge/NamespacedWrapperMixin createTag (Lnet/minecraft/tags/TagKey;)Lnet/minecraft/core/HolderSet$Named; m_211067_
 com/gtolib/mixin/forge/NamespacedWrapperMixin bindTags (Ljava/util/Map;)V m_203652_
 com/gtolib/mixin/forge/NamespacedWrapperMixin resetTags ()V m_203635_
 com/gtolib/mixin/lowdraglib/CompassManagerMixin onResourceManagerReload (Lnet/minecraft/server/packs/resources/ResourceManager;)V m_6213_
 com/gtolib/mixin/mc/BlockMixin wasExploded (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/Explosion;)V m_7592_
-com/gtolib/mixin/mc/client/CreateWorldScreenMixin onCreate ()V m_100972_
 com/gtolib/mixin/mc/client/MinecraftMixin isConnectedToRealms ()Z m_91294_
 com/gtolib/mixin/mc/client/MinecraftMixin getCurrentServer ()Lnet/minecraft/client/multiplayer/ServerData; m_91089_
 com/gtolib/mixin/mc/client/MinecraftMixin getConnection ()Lnet/minecraft/client/multiplayer/ClientPacketListener; m_91403_
 com/gtolib/mixin/mc/DependencySorterMixin addDependencyIfNotCyclic (Lcom/google/common/collect/Multimap;Ljava/lang/Object;Ljava/lang/Object;)V m_284232_
 com/gtolib/mixin/mc/DependencySorterMixin visitDependenciesAndElement (Lcom/google/common/collect/Multimap;Ljava/util/Set;Ljava/lang/Object;Ljava/util/function/BiConsumer;)V m_284372_
 com/gtolib/mixin/mc/DependencySorterMixin orderByDependencies (Ljava/util/function/BiConsumer;)V m_284430_
+com/gtolib/mixin/mc/DimensionServerMixin readScoreboard (Lnet/minecraft/world/level/storage/DimensionDataStorage;)V m_129841_
+com/gtolib/mixin/mc/DimensionServerMixin setupDebugLevel (Lnet/minecraft/world/level/storage/WorldData;)V m_129847_
+com/gtolib/mixin/mc/DimensionServerMixin waitUntilNextTick ()V m_130012_
+com/gtolib/mixin/mc/DimensionServerMixin updateMobSpawningFlags ()V m_129962_
+com/gtolib/mixin/mc/DimensionServerMixin setInitialSpawn (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/storage/ServerLevelData;ZZ)V m_177896_
+com/gtolib/mixin/mc/DimensionServerMixin createLevels (Lnet/minecraft/server/level/progress/ChunkProgressListener;)V m_129815_
+com/gtolib/mixin/mc/DimensionServerMixin prepareLevels (Lnet/minecraft/server/level/progress/ChunkProgressListener;)V m_129940_
+com/gtolib/mixin/mc/DimensionServerMixin getAllLevels ()Ljava/lang/Iterable; m_129785_
+com/gtolib/mixin/mc/DimensionServerMixin getLevel (Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel; m_129880_
 com/gtolib/mixin/mc/EnchantmentTableBlockMixin isValidBookShelf (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z m_207909_
 com/gtolib/mixin/mc/ItemMixin getMaxStackSize ()I m_41459_
 com/gtolib/mixin/mc/ItemMixin canBeDepleted ()Z m_41465_
@@ -81,6 +110,9 @@ com/gtolib/mixin/mc/SimpleJsonResourceReloadListenerMixin scanDirectory (Lnet/mi
 com/gtolib/mixin/mc/TagLoaderMixin load (Lnet/minecraft/server/packs/resources/ResourceManager;)Ljava/util/Map; m_144495_
 com/gtolib/mixin/mc/UtilMixin getMillis ()J m_137550_
 com/gtolib/mixin/mc/world/ChunkMapMixin getChunks ()Ljava/lang/Iterable; m_140416_
+com/gtolib/mixin/mc/world/DimensionSavedDataMixin isDirty ()Z m_77764_
+com/gtolib/mixin/mc/world/DimensionSavedDataMixin save (Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag; m_7176_
+com/gtolib/mixin/mc/world/DimensionSavedDataMixin setDirty (Z)V m_77760_
 com/gtolib/mixin/mc/world/LevelChunkMixin clearAllBlockEntities ()V m_187957_
 com/gtolib/mixin/mc/world/ServerLevelMixin isNaturalSpawningAllowed (Lnet/minecraft/core/BlockPos;)Z m_201918_
 com/gtolib/mixin/mc/world/ServerLevelMixin isNaturalSpawningAllowed (Lnet/minecraft/world/level/ChunkPos;)Z m_201916_

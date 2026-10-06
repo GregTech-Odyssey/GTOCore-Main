@@ -274,7 +274,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.CRYING_OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:flat")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = server.getLevel(GTODimensions.FLAT);
+                    ServerLevel serverLevel = com.gtolib.api.dimension.DimensionManager.get(server).loadFor(player, GTODimensions.FLAT);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:void") ? 1 : 10;
                         data.putDouble("y_f", player.getY() + 1);
@@ -286,7 +286,7 @@ public final class ForgeCommonEvent {
                 } else {
                     String dima = data.getString("dim_f");
                     int value = "gtocore:void".equals(dima) ? 1 : 10;
-                    ServerUtils.teleportToDimension(server.getLevel(GTODimensions.getDimensionKey(RLUtils.parse(dima))), player, new Vec3((double) pos.getX() / value, data.getDouble("y_f"), (double) pos.getZ() / value));
+                    ServerUtils.teleportToDimension(server, player, GTODimensions.getDimensionKey(RLUtils.parse(dima)), new Vec3((double) pos.getX() / value, data.getDouble("y_f"), (double) pos.getZ() / value));
                 }
                 return;
             }
@@ -294,7 +294,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:void")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = server.getLevel(GTODimensions.VOID);
+                    ServerLevel serverLevel = com.gtolib.api.dimension.DimensionManager.get(server).loadFor(player, GTODimensions.VOID);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:flat") ? 1 : 10;
                         data.putDouble("y_v", player.getY() + 1);
@@ -306,7 +306,7 @@ public final class ForgeCommonEvent {
                 } else {
                     String dima = data.getString("dim_v");
                     int value = "gtocore:flat".equals(dima) ? 1 : 10;
-                    ServerUtils.teleportToDimension(server.getLevel(GTODimensions.getDimensionKey(RLUtils.parse(dima))), player, new Vec3((double) pos.getX() / value, data.getDouble("y_v"), (double) pos.getZ() / value));
+                    ServerUtils.teleportToDimension(server, player, GTODimensions.getDimensionKey(RLUtils.parse(dima)), new Vec3((double) pos.getX() / value, data.getDouble("y_v"), (double) pos.getZ() / value));
                 }
                 return;
             }
@@ -412,7 +412,7 @@ public final class ForgeCommonEvent {
 
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
-        if (event.getLevel() instanceof ServerLevel level) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
             if (serverLevel == null) return;
             var dataStorage = serverLevel.getDataStorage();

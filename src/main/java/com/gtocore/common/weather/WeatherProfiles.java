@@ -26,12 +26,35 @@ public final class WeatherProfiles {
             entry(CLEAR, 35, 12000, 4000), entry(SNOW, 60, 18000, 6000), entry(THUNDER, 5, 6000, 2000));
 
     public static WeatherProfile get(ResourceKey<Level> key) {
+        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server != null && server.isSameThread()) {
+            var manager = com.gtolib.api.dimension.DimensionManager.get(server);
+            var descriptor = manager == null ? null : manager.descriptor(key);
+            if (descriptor != null) return instanceProfile(descriptor.template().environment().weatherProfile());
+        } else if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+            var environment = com.gtolib.api.dimension.DimensionSync.clientEnvironment(key);
+            if (environment != null) return instanceProfile(environment.weatherProfile());
+        }
         if (GTODimensions.isOrbit(key)) return SPACE;
         var dimension = Dimension.get(key);
         if (dimension != null) {
             return dimension.getWeatherProfile();
         }
         return DEFAULT;
+    }
+
+    private static WeatherProfile instanceProfile(String id) {
+        return switch (id) {
+            case "calm" -> SPACE;
+            case "airless" -> AIRLESS;
+            case "solar" -> SOLAR;
+            case "acid" -> ACID;
+            case "mars" -> MARS;
+            case "titan" -> TITAN;
+            case "glacio" -> GLACIO;
+            case "overworld" -> DEFAULT;
+            default -> throw new IllegalArgumentException("Unknown instance weather profile: " + id);
+        };
     }
 
     public static boolean sameGalaxy(ResourceKey<Level> planet, ResourceKey<Level> star) {

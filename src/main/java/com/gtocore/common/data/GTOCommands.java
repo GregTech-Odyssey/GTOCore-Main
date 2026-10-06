@@ -53,6 +53,7 @@ public final class GTOCommands {
 
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher) {
         var root = Commands.literal(GTOCore.MOD_ID)
+                .then(com.gtolib.api.dimension.DimensionCommands.create())
                 .then(WeatherCommands.create())
                 .then(Commands.literal("gc").executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal("Start garbage cleanup"), false);

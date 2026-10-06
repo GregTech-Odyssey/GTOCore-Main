@@ -48,13 +48,27 @@ import static com.gtocore.client.renderer.machine.MonitorRenderer.gridToNetworkC
 
 public final class Manager {
 
-    private static final Queue<Runnable> Loading = new LinkedList<>();
-    private static final Map<GridFacedPoint, GridNetwork> gridToNetwork = new ConcurrentHashMap<>();
+    private static final com.gto.datasynclib.datastream.DataComponentKey<MonitorState> STATE = com.gto.datasynclib.datastream.DataComponentKey.createNoCodec("monitor_networks");
+
+    private static final class MonitorState {
+
+        private final ArrayDeque<Runnable> loading = new ArrayDeque<>();
+        private final ConcurrentHashMap<GridFacedPoint, GridNetwork> networks = new ConcurrentHashMap<>();
+    }
+
+    private static MonitorState state(Level level) {
+        var state = ILevel.getCapability(level, STATE);
+        if (state == null) {
+            state = new MonitorState();
+            ILevel.setCapability(level, STATE, state);
+        }
+        return state;
+    }
 
     private static final NetworkPack MONITOR_CHANGED = NetworkPack.registerS2C("monitorUpdateC2S", (p, buf) -> {
         CompoundTag tag = new CompoundTag();
         AtomicInteger i = new AtomicInteger(0);
-        gridToNetwork.values().forEach(network -> {
+        state(((ServerPlayer) p[0]).serverLevel()).networks.values().forEach(network -> {
             CompoundTag networkTag = network.serializeNBT();
             tag.put(String.valueOf(i.getAndIncrement()), networkTag);
         });
@@ -68,15 +82,18 @@ public final class Manager {
 
     private Manager() {}
 
-    private static void requireQueue(Runnable runnable) {
-        if (!Loading.contains(runnable)) {
-            Loading.add(runnable);
+    private static void requireQueue(Level level, Runnable runnable) {
+        var loading = state(level).loading;
+        if (!loading.contains(runnable)) {
+            loading.add(runnable);
         }
     }
 
-    private static void poll() {
-        while (!Loading.isEmpty()) {
-            Loading.poll().run();
+    private static void poll(MinecraftServer server) {
+        for (var level : server.getAllLevels()) {
+            var state = ILevel.getCapability(level, STATE);
+            if (state == null) continue;
+            while (!state.loading.isEmpty()) state.loading.poll().run();
         }
     }
 
@@ -97,11 +114,11 @@ public final class Manager {
         if (level == null || level.isClientSide() || !level.isLoaded(pos)) {
             return;
         }
-        requireQueue(() -> {
+        requireQueue(level, () -> {
             var network = GridNetwork.fromBlock(
                     getFrontFacing(blockState),
                     pos,
-                    level.dimension(),
+                    level,
                     color);
             network.merge();
             broadcast(level.getServer());
@@ -114,14 +131,14 @@ public final class Manager {
 
     static void removeBlock(BlockState pState, BlockPos pPos, @Nullable Level pLevel) {
         if (pLevel != null && !pLevel.isClientSide) {
-            requireQueue(() -> {
+            requireQueue(pLevel, () -> {
                 Direction facing = getFrontFacing(pState);
                 var point = GridFacing.of(
                         facing,
                         pLevel,
                         GridFacing.getThirdValue(facing, pPos))
                         .getPoint(pPos);
-                var network = gridToNetwork.get(point);
+                var network = state(pLevel).networks.get(point);
                 if (network != null) {
                     network.split(point);
                     // if (network.points.isEmpty()) {
@@ -171,16 +188,12 @@ public final class Manager {
      */
     record GridFacing(Direction facing, ResourceKey<Level> level, int theThirdValue) {
 
-        private static final Map<Long, GridFacing> GRID_AXES = new ConcurrentHashMap<>();
-
         static GridFacing of(Direction facing, Level level, int theThirdValue) {
             return of(facing, level.dimension(), theThirdValue);
         }
 
         static GridFacing of(Direction facing, ResourceKey<Level> level, int theThirdValue) {
-            GridFacing gridFacing = new GridFacing(facing, level, theThirdValue);
-            long key = gridFacing.hashCode();
-            return GRID_AXES.computeIfAbsent(key, k -> gridFacing);
+            return new GridFacing(facing, level, theThirdValue);
         }
 
         @Override
@@ -273,14 +286,17 @@ public final class Manager {
         int color = -1;
         // final Set<GridFacedPoint> points = new HashSet<>();
         final GridFacing facing;
+        private final ConcurrentHashMap<GridFacedPoint, GridNetwork> gridToNetwork;
         @Nullable
         GridListener listener;
 
-        private GridNetwork(GridFacing facing) {
+        private GridNetwork(GridFacing facing, ConcurrentHashMap<GridFacedPoint, GridNetwork> networks) {
             this.facing = facing;
+            this.gridToNetwork = networks;
         }
 
-        static GridNetwork fromBlock(Direction facing, BlockPos pos, ResourceKey<Level> level, int color) {
+        static GridNetwork fromBlock(Direction facing, BlockPos pos, Level level, int color) {
+            var gridToNetwork = state(level).networks;
             GridFacing axis = GridFacing.of(facing, level, GridFacing.getThirdValue(facing, pos));
             var point = axis.getPoint(pos);
             if (gridToNetwork.containsKey(point)) {
@@ -299,13 +315,14 @@ public final class Manager {
             return points;
         }
 
-        static GridNetwork createSingleBlockNetwork(Direction facing, BlockPos pos, ResourceKey<Level> level, int color) {
+        static GridNetwork createSingleBlockNetwork(Direction facing, BlockPos pos, Level level, int color) {
+            var gridToNetwork = state(level).networks;
             GridFacing axis = GridFacing.of(facing, level, GridFacing.getThirdValue(facing, pos));
             var point = axis.getPoint(pos);
             if (gridToNetwork.containsKey(point)) {
                 throw new IllegalStateException("GridNetwork already exists for point: " + point);
             }
-            GridNetwork network = new GridNetwork(axis);
+            GridNetwork network = new GridNetwork(axis, gridToNetwork);
             network.fromX = point.x;
             network.toX = point.x;
             network.fromY = point.y;
@@ -386,7 +403,7 @@ public final class Manager {
 
         private boolean canMerge(GridNetwork other, Direction2D facing2D) {
             var maxMonitorSize = GTOConfig.INSTANCE.gamePlay.maxMonitorSize;
-            return other != null && other.facing == facing && other.color == color &&
+            return other != null && other.facing.equals(facing) && other.color == color &&
                     (facing2D.isHorizontal ? other.height() == this.height() && other.width() + this.width() <= maxMonitorSize :
                             other.width() == this.width() && other.height() + this.height() <= maxMonitorSize);
         }
@@ -428,11 +445,11 @@ public final class Manager {
                     }
                     if (GTOConfig.INSTANCE.devMode.dev) {
                         if (gridToNetwork.keySet().stream().filter(
-                                p -> p.facing == facing && p.x >= fromX && p.x <= toX && p.y >= fromY && p.y <= toY).anyMatch(p -> gridToNetwork.get(p) != this)) {
+                                p -> p.facing.equals(facing) && p.x >= fromX && p.x <= toX && p.y >= fromY && p.y <= toY).anyMatch(p -> gridToNetwork.get(p) != this)) {
                             // 如果当前网格仍然有点存在
                             throw new IllegalStateException("GridNetwork still has points after split: " + otherNetwork);
                         }
-                        debugCheckValid();
+                        debugCheckValid(gridToNetwork);
                     }
                 }
                 return canMerge;
@@ -444,13 +461,13 @@ public final class Manager {
         private static GridNetwork put(GridFacedPoint point, GridNetwork network) {
             gridToNetworkLock.lock();
             try {
-                return gridToNetwork.put(point, network);
+                return network.gridToNetwork.put(point, network);
             } finally {
                 gridToNetworkLock.unlock();
             }
         }
 
-        private static GridNetwork remove(GridFacedPoint point) {
+        private GridNetwork remove(GridFacedPoint point) {
             gridToNetworkLock.lock();
             try {
                 return gridToNetwork.remove(point);
@@ -505,7 +522,7 @@ public final class Manager {
                         } // 向右分割
                     }
                     // 如果该点是网格的一部分，则重新计算边界
-                    var network1 = new GridNetwork(facing);
+                    var network1 = new GridNetwork(facing, gridToNetwork);
                     network1.fromX = newFromX;
                     network1.toX = newToX;
                     network1.fromY = newFromY;
@@ -531,7 +548,7 @@ public final class Manager {
                     // 如果当前网格仍然有点存在
                     throw new IllegalStateException("GridNetwork still has points after split: " + this);
                 }
-                debugCheckValid();
+                debugCheckValid(gridToNetwork);
             }
             // 如果创建了新的网格，尝试使他们合并
             for (var p : created) {
@@ -570,7 +587,7 @@ public final class Manager {
                     .map(rl -> ResourceKey.create(Registries.DIMENSION, rl))
                     .orElseThrow(() -> new IllegalArgumentException("Invalid level dimension: " + tag.getString("level")));
             GridFacing facing = GridFacing.of(facingDirection, level, theThirdValue);
-            GridNetwork network = new GridNetwork(facing);
+            GridNetwork network = new GridNetwork(facing, null);
             network.fromX = fromX;
             network.toX = toX;
             network.fromY = fromY;
@@ -618,16 +635,10 @@ public final class Manager {
     }
 
     private static void clearCache(Level level) {
-        // 清空网格数据
-        var grid2Network = level.isClientSide ? gridToNetworkCLIENT : Manager.gridToNetwork;
-        grid2Network.entrySet().removeIf(entry -> {
-            GridFacedPoint point = entry.getKey();
-            // 如果网格不在当前世界中，或者网格的点不在当前世界中，则移除该网格
-            return point.facing.level != level.dimension() || !level.isLoaded(point.toBlockPos());
-        });
+        if (level.isClientSide) gridToNetworkCLIENT.entrySet().removeIf(entry -> entry.getKey().facing.level == level.dimension());
     }
 
-    private static void debugCheckValid() {
+    private static void debugCheckValid(ConcurrentHashMap<GridFacedPoint, GridNetwork> gridToNetwork) {
         for (var network : gridToNetwork.values()) {
             network.points().forEach(point -> {
                 var otherNetwork = gridToNetwork.get(point);
@@ -644,29 +655,26 @@ public final class Manager {
         @SubscribeEvent
         public static void onServerStopped(ServerStoppedEvent event) {
             // 服务器完全停止时触发
-            gridToNetwork.clear();
-            Loading.clear();
-            GridFacing.GRID_AXES.clear();
+            // Server runtime data lives on each Level capability.
         }
 
         @SubscribeEvent
         public static void onWorldUnload(LevelEvent.Unload event) {
             // 世界卸载时触发（客户端/服务端均会触发）
             clearCache((Level) event.getLevel());
-            Loading.clear();
         }
 
         // static boolean enteredWorld = false;
         @SubscribeEvent
         public static void onLoad(LevelEvent.Load event) {
-            clearCache((Level) event.getLevel());
+            // Server level capabilities start empty; clients receive their current-world snapshot.
         }
 
         @SubscribeEvent
         public static void onTick(TickEvent.ServerTickEvent event) {
             // 方块可以tick多次但这个只能tick一次
             if (event.phase == TickEvent.Phase.START) {
-                poll();
+                poll(event.getServer());
             }
         }
 
@@ -697,7 +705,7 @@ public final class Manager {
 
     private static void broadcast(MinecraftServer server) {
         // check if runtime is in dedicated server mode
-        MONITOR_CHANGED.send(server);
+        for (var player : server.getPlayerList().getPlayers()) MONITOR_CHANGED.send(player);
     }
 
     @OnlyIn(Dist.CLIENT)

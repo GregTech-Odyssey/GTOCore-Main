@@ -25,7 +25,7 @@ public class ExpertFluidProcessing {
                 .inputFluids(LightOilWithSand, 1000)
                 .outputFluids(LightOilSuspension, 750)
                 .EUt(30)
-                .duration(450)
+                .duration(250)
                 .save();
         AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust1")
                 .chancedOutput(TagPrefix.dust, GTMaterials.Barite, 400, 50)
@@ -34,14 +34,14 @@ public class ExpertFluidProcessing {
                 .inputFluids(GTOMaterials.LightOilSuspension, 1000)
                 .outputFluids(GTMaterials.OilLight, 1000)
                 .EUt(120)
-                .duration(600)
+                .duration(250)
                 .save();
         CENTRIFUGE_RECIPES.builder("sand2")
                 .chancedOutput(Items.SAND, 3090, 100)
                 .inputFluids(HeavyOilWithSand, 1000)
                 .outputFluids(HeavyOilSuspension, 750)
                 .EUt(30)
-                .duration(450)
+                .duration(250)
                 .save();
         AUTOCLAVE_RECIPES.builder("sedimentary_sludge_dust2")
                 .chancedOutput(TagPrefix.dust, GTMaterials.Barite, 400, 50)
@@ -50,7 +50,7 @@ public class ExpertFluidProcessing {
                 .inputFluids(GTOMaterials.HeavyOilSuspension, 1000)
                 .outputFluids(GTMaterials.OilHeavy, 1000)
                 .EUt(120)
-                .duration(600)
+                .duration(200)
                 .save();
 
         PYROLYSE_RECIPES.builder("coal_dust1")
@@ -58,7 +58,7 @@ public class ExpertFluidProcessing {
                 .inputFluids(ShaleOil, 1000)
                 .outputFluids(RetortedShaleOil, 1000)
                 .EUt(120)
-                .duration(700)
+                .duration(200)
                 .save();
         DISTILLATION_RECIPES.builder("asphalt_residual_oil")
                 .inputFluids(RetortedShaleOil, 8000)
@@ -66,7 +66,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(RegistriesUtils.getFluidStack("ad_astra:oil", 6800))
                 .outputFluids(ShaleGas, 700)
                 .EUt(240)
-                .duration(1200)
+                .duration(800)
                 .save();
         DISTILLATION_RECIPES.builder("helium_31")
                 .inputFluids(ShaleGas, 6000)
@@ -76,14 +76,14 @@ public class ExpertFluidProcessing {
                 .outputFluids(NaturalGas, 5700)
                 .outputFluids(OilLight, 113)
                 .EUt(240)
-                .duration(900)
+                .duration(600)
                 .save();
         PYROLYSE_RECIPES.builder("coal_dust2")
                 .outputItems(TagPrefix.dust, AsphaltOilSlag)
                 .inputFluids(TightOilCrudeOil, 1000)
                 .outputFluids(ProcessedTightOilCrudeOil, 1000)
                 .EUt(120)
-                .duration(700)
+                .duration(200)
                 .save();
         DISTILLATION_RECIPES.builder("oil_light1")
                 .inputFluids(ProcessedTightOilCrudeOil, 14000)
@@ -93,7 +93,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Steam, 750)
                 .outputFluids(NaturalGas, 1000)
                 .EUt(240)
-                .duration(1600)
+                .duration(1400)
                 .save();
         CENTRIFUGE_RECIPES.builder("small_rock_salt_dust1")
                 .outputItems(TagPrefix.dustSmall, RockSalt)
@@ -124,7 +124,7 @@ public class ExpertFluidProcessing {
                 .inputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 6000))
                 .outputFluids(CrackedAsphaltResidualOil, 1000)
                 .EUt(120)
-                .duration(600)
+                .duration(200)
                 .save();
         DISTILLATION_RECIPES.builder("ammonia3")
                 .inputFluids(CrackedAsphaltResidualOil, 1000)
@@ -136,7 +136,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Naphthalene, 140)
                 .outputFluids(Dimethylnaphthalene, 100)
                 .EUt(240)
-                .duration(1200)
+                .duration(200)
                 .save();
         GAS_COMPRESSOR_RECIPES.builder("low_pressure_aromatic_hydrocarbon_mixture")
                 .inputFluids(AromaticHydrocarbonMixture, 1000)
@@ -157,7 +157,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Methane, 600)
                 .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 90))
                 .EUt(240)
-                .duration(600)
+                .duration(400)
                 .save();
         DISTILLATION_RECIPES.builder("naphthalene1")
                 .inputFluids(LowPressureAromaticHydrocarbonMixture, 4000)
@@ -169,7 +169,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Ethylbenzene, 100)
                 .outputFluids(Cumene, 10)
                 .EUt(240)
-                .duration(600)
+                .duration(400)
                 .save();
 
         impureToPure(EasyToEscapeMixedGas, PureHelium, SedimentarySludge, FineDustSoil);
@@ -192,70 +192,70 @@ public class ExpertFluidProcessing {
                 .inputFluids(PureNeon, 1000)
                 .outputFluids(Neon, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("argon1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureArgon, 1000)
                 .outputFluids(Argon, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("krypton1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureKrypton, 1000)
                 .outputFluids(Krypton, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("xenon1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureXenon, 1000)
                 .outputFluids(Xenon, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("radon1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureRadon, 1000)
                 .outputFluids(Radon, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("chlorine1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureChlorine, 1000)
                 .outputFluids(Chlorine, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("sulfuric_acid1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureSulfuricAcid, 1000)
                 .outputFluids(SulfuricAcid, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("nitric_acid1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureNitricAcid, 1000)
                 .outputFluids(NitricAcid, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("hydrochloric_acid1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 200, 10)
                 .inputFluids(PureHydrochloricAcid, 1000)
                 .outputFluids(HydrochloricAcid, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         CHEMICAL_BATH_RECIPES.builder("fluorine1")
                 .chancedInput(TagPrefix.dust, GoldTrifluoride, 200, 10)
                 .inputFluids(PureFluorine, 1000)
                 .outputFluids(Fluorine, 1000)
                 .EUt(120)
-                .duration(350)
+                .duration(200)
                 .save();
         REACTION_FURNACE_RECIPES.builder("hydrogen1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 600, 30)
@@ -264,7 +264,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Deuterium, 24)
                 .outputFluids(HydrogenDeuterium, 6)
                 .EUt(120)
-                .duration(1050)
+                .duration(300)
                 .save();
         REACTION_FURNACE_RECIPES.builder("helium1")
                 .chancedInput(TagPrefix.dust, SilicaGel, 400, 20)
@@ -272,7 +272,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Helium, 1998)
                 .outputFluids(Helium3, 2)
                 .EUt(120)
-                .duration(700)
+                .duration(400)
                 .save();
         REACTION_FURNACE_RECIPES.builder("helium3333")
                 .chancedInput(TagPrefix.dust, SilicaGel, 400, 20)
@@ -280,7 +280,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(Helium, 1250)
                 .outputFluids(Helium3, 750)
                 .EUt(120)
-                .duration(700)
+                .duration(400)
                 .save();
         CENTRIFUGE_RECIPES.builder("tritium_hydreide")
                 .chancedInput(TagPrefix.dust, SilicaGel, 400, 20)
@@ -290,7 +290,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 2000))
                 .outputFluids(GTMaterials.Deuterium, 500)
                 .EUt(1920)
-                .duration(1536)
+                .duration(900)
                 .save();
         SIFTER_RECIPES.builder("stone_dust2")
                 .inputItems(TagPrefix.dust, SedimentarySludge)
@@ -301,7 +301,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dustImpure, Pyrolusite, 7500, 700)
                 .chancedOutput(TagPrefix.dustImpure, Goethite, 7500, 700)
                 .EUt(30)
-                .duration(2000)
+                .duration(300)
                 .save();
         SIFTER_RECIPES.builder("glass_dust2")
                 .inputItems(TagPrefix.dust, GlassySludge)
@@ -311,7 +311,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dustImpure, Opal, 7500, 700)
                 .chancedOutput(TagPrefix.dustImpure, Borax, 7500, 700)
                 .EUt(30)
-                .duration(2000)
+                .duration(300)
                 .save();
         SIFTER_RECIPES.builder("impure_ilmeniete_dust")
                 .inputItems(TagPrefix.dust, IgneousSludge)
@@ -322,7 +322,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dustImpure, BasalticMineralSand, 7500, 700)
                 .chancedOutput(TagPrefix.dust, ZirconiumOxide, 2000, 100)
                 .EUt(30)
-                .duration(2000)
+                .duration(300)
                 .save();
         SIFTER_RECIPES.builder("impure_lepideolite_dust")
                 .inputItems(TagPrefix.dust, MetamorphicSludge)
@@ -333,7 +333,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dust, MetallicResidues, 7500, 700)
                 .chancedOutput(TagPrefix.dustImpure, Cassiterite, 7500, 700)
                 .EUt(30)
-                .duration(2000)
+                .duration(300)
                 .save();
         SIFTER_RECIPES.builder("quicklieme_dust")
                 .inputItems(TagPrefix.dust, CalcareousSludge)
@@ -344,7 +344,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(TagPrefix.dustImpure, Gypsum, 7500, 700)
                 .chancedOutput(TagPrefix.dust, Clay, 7500, 700)
                 .EUt(30)
-                .duration(2000)
+                .duration(300)
                 .save();
         CENTRIFUGE_RECIPES.builder("calcium_chloreide_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.BleachingStone, 6)
@@ -355,7 +355,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(GTMaterials.Chlorine, 1000)
                 .outputFluids(RegistriesUtils.getFluidStack("ad_astra:oxygen", 1000))
                 .EUt(120)
-                .duration(300)
+                .duration(1800)
                 .save();
         CENTRIFUGE_RECIPES.builder("uvarovite_deust")
                 .inputItems(TagPrefix.dust, GTOMaterials.CalciumSulfateStone, 9)
@@ -365,7 +365,7 @@ public class ExpertFluidProcessing {
                 .outputItems(TagPrefix.dustImpure, GTMaterials.Gypsum, 5)
                 .outputFluids(GTMaterials.DilutedSulfuricAcid, 1000)
                 .EUt(120)
-                .duration(300)
+                .duration(2700)
                 .save();
         CENTRIFUGE_RECIPES.builder("aluminium_treifluoride_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.FluorideContainingSlagMud, 29)
@@ -375,7 +375,7 @@ public class ExpertFluidProcessing {
                 .outputItems(TagPrefix.dust, GTOMaterials.Fluorite, 11)
                 .chancedOutput(TagPrefix.dust, GTOMaterials.TriniumTetrafluoride, 1250, 125)
                 .EUt(120)
-                .duration(3000)
+                .duration(300 * 29)
                 .save();
         CENTRIFUGE_RECIPES.builder("iron_58e_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.RadioactiveWasteMud, 15)
@@ -388,7 +388,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(GTMaterials.Radon, 1000)
                 .outputFluids(GTOMaterials.Titanium50Tetrafluoride, 1000)
                 .EUt(120)
-                .duration(3000)
+                .duration(4500)
                 .save();
         CENTRIFUGE_RECIPES.builder("chromium_tri3oxide_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.AcidicOxidizedMudSlag, 6)
@@ -399,7 +399,7 @@ public class ExpertFluidProcessing {
                 .outputFluids(GTMaterials.NitricAcid, 1000)
                 .outputFluids(GTMaterials.Iron3Chloride, 1000)
                 .EUt(120)
-                .duration(300)
+                .duration(1800)
                 .save();
         CENTRIFUGE_RECIPES.builder("small_clay_d3ust")
                 .inputItems(TagPrefix.dust, GTOMaterials.FineDustSoil)
@@ -417,7 +417,7 @@ public class ExpertFluidProcessing {
                 .outputItems(TagPrefix.dust, GTOMaterials.ParamagneticResidues)
                 .outputItems(TagPrefix.dust, GTOMaterials.HeavyFerromagneticResidues)
                 .EUt(120)
-                .duration(3000)
+                .duration(1200)
                 .save();
         PETROCHEMICAL_PLANT_RECIPES.builder("salt21_water")
                 .inputFluids(GTOMaterials.ResidualOilMixture, 1000)
@@ -441,7 +441,7 @@ public class ExpertFluidProcessing {
                 .chancedOutput(pure.getFluid(350), 5000, 500)
                 .chancedOutput(pure.getFluid(250), 3000, 500)
                 .EUt(120)
-                .duration(400);
+                .duration(300);
         for (Material m : extra) {
             c.chancedOutput(TagPrefix.dust, m, 1500, 500);
         }

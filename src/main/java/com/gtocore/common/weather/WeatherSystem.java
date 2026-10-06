@@ -6,6 +6,7 @@ import com.gtocore.integration.ae.SolarStormHandler;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.data.Galaxy;
+import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.misc.PlanetManagement;
 
 import com.gregtechceu.gtceu.core.ILevel;
@@ -136,6 +137,12 @@ public final class WeatherSystem extends SavedData {
     }
 
     private WeatherTimeline timeline(ResourceKey<Level> key) {
+        var descriptor = DimensionManager.get(server).descriptor(key);
+        if (descriptor != null) {
+            var timeline = InstanceWeatherData.timeline(server, descriptor, clock, profile(key));
+            nextUpdate = Math.min(nextUpdate, timeline.nextBoundary(clock));
+            return timeline;
+        }
         var timeline = timelines.get(key);
         if (timeline == null) {
             timeline = new WeatherTimeline(server.getWorldData().worldGenOptions().seed() ^ key.location().toString().hashCode());

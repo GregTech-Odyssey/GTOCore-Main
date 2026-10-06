@@ -1,0 +1,70 @@
+// Explicit opt-in: gradlew <run task> -I gradle/scripts/dimensions-probe.gradle
+allprojects { p ->
+    p.pluginManager.withPlugin('java') {
+        p.sourceSets.create('dimensionProbe') {
+            java.setSrcDirs([p.file('src/dimensionTest/java')])
+            resources.setSrcDirs([p.file('src/dimensionTest/resources')])
+            compileClasspath += p.sourceSets.main.compileClasspath + p.sourceSets.main.output
+            runtimeClasspath += p.sourceSets.main.runtimeClasspath + p.sourceSets.main.output
+        }
+    }
+    p.afterEvaluate {
+        if (p.findProperty('dimensionProbeFTB') != 'false') p.dependencies.add('modServerRuntimeOnly', 'curse.maven:ftb-chunks-forge-314906:7880858')
+        // The development client otherwise includes server-required channels absent on the server.
+        p.configurations.modClientRuntimeOnly {
+            exclude group: 'curse.maven', module: 'emi-loot-681783'
+            exclude group: 'curse.maven', module: 'create-328085'
+        }
+        def probe = p.sourceSets.dimensionProbe
+        def probeRoot = p.file(p.findProperty('dimensionProbeDir') ?: 'build/dimensions-test')
+        p.tasks.named('compileDimensionProbeJava') {
+            options.encoding = 'UTF-8'
+            options.compilerArgs += ['-proc:none']
+        }
+        p.sourceSets.server.runtimeClasspath += probe.output
+        p.sourceSets.client.runtimeClasspath += probe.output
+        p.legacyForge.mods.create('dimension_probe') { sourceSet(probe) }
+        p.legacyForge.runs.named('server') { gameDirectory.set(new File(probeRoot, 'server')) }
+        p.tasks.named('runServer') {
+            dependsOn 'dimensionProbeClasses'
+            if (p.findProperty('dimensionRestartProbe') == 'true') systemProperty 'dimensionRestartProbe', 'true'
+            if (p.findProperty('dimensionCloseProbe') == 'true') systemProperty 'dimensionCloseProbe', 'true'
+            doFirst {
+                def directory = new File(probeRoot, 'server')
+                directory.mkdirs()
+                def properties = new File(directory, 'server.properties')
+                if (!properties.exists()) properties.text = '''server-port=25577
+online-mode=false
+level-name=dimension-probe
+level-seed=78598634
+view-distance=3
+simulation-distance=3
+allow-flight=true
+enable-rcon=false
+max-tick-time=180000
+'''
+                if (p.findProperty('dimensionRestartProbe') == 'true') {
+                    def chunksConfig = new File(directory, 'dimension-probe/serverconfig/ftbchunks-world.snbt')
+                    chunksConfig.parentFile.mkdirs()
+                    chunksConfig.text = chunksConfig.exists() ? chunksConfig.text.replaceAll(/force_load_mode:\s*"[^"]*"/, 'force_load_mode: "always"') : '{force_load_mode: "always"}'
+                }
+            }
+        }
+        if (p.findProperty('dimensionNetworkProbe') == 'true') {
+            def clientName = p.findProperty('dimensionClientName') ?: 'DimensionA'
+            p.legacyForge.runs.named('client') { gameDirectory.set(new File(probeRoot, clientName)) }
+            p.tasks.named('runClient') {
+                dependsOn 'dimensionProbeClasses'
+                maxHeapSize = '3G'
+                systemProperty 'dimensionNetworkProbe', 'true'
+                systemProperty 'dimensionProbeRoot', probeRoot.absolutePath
+                systemProperty 'dimensionClientName', clientName
+            }
+            p.tasks.named('runServer') {
+                maxHeapSize = '3G'
+                systemProperty 'dimensionNetworkProbe', 'true'
+                systemProperty 'dimensionProbeRoot', probeRoot.absolutePath
+            }
+        }
+    }
+}

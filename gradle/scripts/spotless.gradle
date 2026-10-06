@@ -1,5 +1,5 @@
 
-def spotlessJavaTargets = ['src/main/java/**/*.java']
+def spotlessJavaTargets = ['src/main/java/**/*.java', 'src/test/java/com/gtolib/api/dimension/**/*.java', 'src/dimensionTest/java/**/*.java']
 def spotlessKotlinTargets = ['src/main/java/**/*.kt']
 def spotlessJsonTargets = ['src/*/resources/**/*.json', 'src/*/resources/**/*.mcmeta']
 

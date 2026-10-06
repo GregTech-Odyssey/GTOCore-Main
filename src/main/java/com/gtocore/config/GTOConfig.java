@@ -55,6 +55,10 @@ public final class GTOConfig {
     public TravelConfig travelConfig = new TravelConfig();
 
     @Configurable
+    @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Dimension Lifecycle", cn = "维度生命周期")
+    public Dimensions dimensions = new Dimensions();
+
+    @Configurable
     @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Dev Mode", cn = "开发模式")
     public DevMode devMode = new DevMode();
 
@@ -174,6 +178,23 @@ public final class GTOConfig {
     }
 
     public static void init() {}
+
+    @DataGeneratorScanned
+    public static final class Dimensions {
+
+        @Configurable
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Lazy Dimension Loading", cn = "维度懒加载")
+        public boolean enabled = true;
+
+        @Configurable
+        @Configurable.Range(min = 20, max = Integer.MAX_VALUE)
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Idle Dimension Unload Delay (ticks)", cn = "空闲维度卸载时长（tick）")
+        public int idleTicks = 1200;
+
+        @Configurable
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Additional Resident Dimensions", cn = "额外常驻维度")
+        public String[] residentDimensions = new String[0];
+    }
 
     private static void syncGTMConfigFile() {
         getConfig(GTCEu.MOD_ID).ifPresent(config -> {

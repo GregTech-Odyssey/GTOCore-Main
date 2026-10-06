@@ -103,7 +103,8 @@
     },
     "com/gtolib/mixin/adastra/LanderMixin": {
       "causeFallDamage": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_142535_(FFLnet/minecraft/world/damagesource/DamageSource;)Z",
-      "Learth/terrarium/adastra/common/entities/vehicles/Lander;onGround()Z": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_20096_()Z"
+      "Learth/terrarium/adastra/common/entities/vehicles/Lander;onGround()Z": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_20096_()Z",
+      "tick": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_8119_()V"
     },
     "com/gtolib/mixin/mc/nbt/CompoundTagMixin": {
       "<init>(Ljava/util/Map;)V": "Lnet/minecraft/nbt/CompoundTag;<init>(Ljava/util/Map;)V",
@@ -426,6 +427,62 @@
     },
     "com/gtocore/mixin/mc/LevelWeatherMixin": {
       "isRainingAt": "Lnet/minecraft/world/level/Level;m_46758_(Lnet/minecraft/core/BlockPos;)Z"
+    },
+    "com/gtolib/mixin/mc/world/DimensionIOWorkerMixin": {
+      "store": "Lnet/minecraft/world/level/chunk/storage/IOWorker;m_63538_(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/nbt/CompoundTag;)Ljava/util/concurrent/CompletableFuture;",
+      "close": "Lnet/minecraft/world/level/chunk/storage/IOWorker;close()V"
+    },
+    "com/gtolib/mixin/mc/world/DimensionSavedDataMixin": {
+      "save(Ljava/io/File;)V": "Lnet/minecraft/world/level/saveddata/SavedData;m_77757_(Ljava/io/File;)V"
+    },
+    "com/gtolib/mixin/mc/world/ServerLevelMixin": {
+      "getSeed": "Lnet/minecraft/server/level/ServerLevel;m_7328_()J",
+      "Lnet/minecraft/world/level/levelgen/WorldOptions;seed()J": "Lnet/minecraft/world/level/levelgen/WorldOptions;m_245499_()J",
+      "<init>": "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/dimension/LevelStem;Lnet/minecraft/server/level/progress/ChunkProgressListener;ZJLjava/util/List;ZLnet/minecraft/world/RandomSequences;)V",
+      "setChunkForced": "Lnet/minecraft/server/level/ServerLevel;m_8602_(IIZ)Z"
+    },
+    "com/gtolib/mixin/mc/world/DimensionChunkSaveMixin": {
+      "save": "Lnet/minecraft/server/level/ChunkMap;m_140258_(Lnet/minecraft/world/level/chunk/ChunkAccess;)Z"
+    },
+    "com/gtolib/mixin/mc/entity/DimensionPlayerMixin": {
+      "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V": "Lnet/minecraft/server/level/ServerPlayer;m_8999_(Lnet/minecraft/server/level/ServerLevel;DDDFF)V",
+      "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FF)Z": "Lnet/minecraft/server/level/ServerPlayer;m_264318_(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FF)Z",
+      "setServerLevel": "Lnet/minecraft/server/level/ServerPlayer;m_284127_(Lnet/minecraft/server/level/ServerLevel;)V"
+    },
+    "com/gtolib/mixin/mc/DimensionPlayerListMixin": {
+      "respawn": "Lnet/minecraft/server/players/PlayerList;m_11236_(Lnet/minecraft/server/level/ServerPlayer;Z)Lnet/minecraft/server/level/ServerPlayer;",
+      "Lnet/minecraft/server/MinecraftServer;levelKeys()Ljava/util/Set;": "Lnet/minecraft/server/MinecraftServer;m_129784_()Ljava/util/Set;",
+      "placeNewPlayer": "Lnet/minecraft/server/players/PlayerList;m_11261_(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;)V",
+      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/mc/world/DimensionTicketAccessor": {
+      "timedOut": "m_9434_(J)Z"
+    },
+    "com/gtolib/mixin/mc/DimensionServerMixin": {
+      "saveAllChunks": "Lnet/minecraft/server/MinecraftServer;m_129885_(ZZZ)Z",
+      "tickServer": "Lnet/minecraft/server/MinecraftServer;m_5705_(Ljava/util/function/BooleanSupplier;)V"
+    },
+    "com/gtolib/mixin/mc/entity/DimensionVehicleMixin": {
+      "setRemoved": "Lnet/minecraft/world/entity/Entity;m_142467_(Lnet/minecraft/world/entity/Entity$RemovalReason;)V"
+    },
+    "com/gtolib/mixin/mc/world/DimensionEntitySaveMixin": {
+      "lambda$storeEntities$1": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_156565_(Lnet/minecraft/nbt/ListTag;Lnet/minecraft/world/entity/Entity;)V"
+    },
+    "com/gtolib/mixin/mc/DimensionArgumentMixin": {
+      "getDimension": "Lnet/minecraft/commands/arguments/DimensionArgument;m_88808_(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Lnet/minecraft/server/level/ServerLevel;",
+      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/adastra/RocketMixin": {
+      "tick": "Learth/terrarium/adastra/common/entities/vehicles/Rocket;m_8119_()V"
+    },
+    "com/gtolib/mixin/adastra/DimensionPlanetPacketMixin": {
+      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/ftbchunks/DimensionFTBTicketsMixin": {
+      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/ftbchunks/DimensionFTBChunkMixin": {
+      "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
     }
   },
   "data": {
@@ -533,7 +590,8 @@
       },
       "com/gtolib/mixin/adastra/LanderMixin": {
         "causeFallDamage": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_142535_(FFLnet/minecraft/world/damagesource/DamageSource;)Z",
-        "Learth/terrarium/adastra/common/entities/vehicles/Lander;onGround()Z": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_20096_()Z"
+        "Learth/terrarium/adastra/common/entities/vehicles/Lander;onGround()Z": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_20096_()Z",
+        "tick": "Learth/terrarium/adastra/common/entities/vehicles/Lander;m_8119_()V"
       },
       "com/gtolib/mixin/mc/nbt/CompoundTagMixin": {
         "<init>(Ljava/util/Map;)V": "Lnet/minecraft/nbt/CompoundTag;<init>(Ljava/util/Map;)V",
@@ -856,6 +914,62 @@
       },
       "com/gtocore/mixin/mc/LevelWeatherMixin": {
         "isRainingAt": "Lnet/minecraft/world/level/Level;m_46758_(Lnet/minecraft/core/BlockPos;)Z"
+      },
+      "com/gtolib/mixin/mc/world/DimensionIOWorkerMixin": {
+        "store": "Lnet/minecraft/world/level/chunk/storage/IOWorker;m_63538_(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/nbt/CompoundTag;)Ljava/util/concurrent/CompletableFuture;",
+        "close": "Lnet/minecraft/world/level/chunk/storage/IOWorker;close()V"
+      },
+      "com/gtolib/mixin/mc/world/DimensionSavedDataMixin": {
+        "save(Ljava/io/File;)V": "Lnet/minecraft/world/level/saveddata/SavedData;m_77757_(Ljava/io/File;)V"
+      },
+      "com/gtolib/mixin/mc/world/ServerLevelMixin": {
+        "getSeed": "Lnet/minecraft/server/level/ServerLevel;m_7328_()J",
+        "Lnet/minecraft/world/level/levelgen/WorldOptions;seed()J": "Lnet/minecraft/world/level/levelgen/WorldOptions;m_245499_()J",
+        "<init>": "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/dimension/LevelStem;Lnet/minecraft/server/level/progress/ChunkProgressListener;ZJLjava/util/List;ZLnet/minecraft/world/RandomSequences;)V",
+        "setChunkForced": "Lnet/minecraft/server/level/ServerLevel;m_8602_(IIZ)Z"
+      },
+      "com/gtolib/mixin/mc/world/DimensionChunkSaveMixin": {
+        "save": "Lnet/minecraft/server/level/ChunkMap;m_140258_(Lnet/minecraft/world/level/chunk/ChunkAccess;)Z"
+      },
+      "com/gtolib/mixin/mc/entity/DimensionPlayerMixin": {
+        "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V": "Lnet/minecraft/server/level/ServerPlayer;m_8999_(Lnet/minecraft/server/level/ServerLevel;DDDFF)V",
+        "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FF)Z": "Lnet/minecraft/server/level/ServerPlayer;m_264318_(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FF)Z",
+        "setServerLevel": "Lnet/minecraft/server/level/ServerPlayer;m_284127_(Lnet/minecraft/server/level/ServerLevel;)V"
+      },
+      "com/gtolib/mixin/mc/DimensionPlayerListMixin": {
+        "respawn": "Lnet/minecraft/server/players/PlayerList;m_11236_(Lnet/minecraft/server/level/ServerPlayer;Z)Lnet/minecraft/server/level/ServerPlayer;",
+        "Lnet/minecraft/server/MinecraftServer;levelKeys()Ljava/util/Set;": "Lnet/minecraft/server/MinecraftServer;m_129784_()Ljava/util/Set;",
+        "placeNewPlayer": "Lnet/minecraft/server/players/PlayerList;m_11261_(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;)V",
+        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/mc/world/DimensionTicketAccessor": {
+        "timedOut": "m_9434_(J)Z"
+      },
+      "com/gtolib/mixin/mc/DimensionServerMixin": {
+        "saveAllChunks": "Lnet/minecraft/server/MinecraftServer;m_129885_(ZZZ)Z",
+        "tickServer": "Lnet/minecraft/server/MinecraftServer;m_5705_(Ljava/util/function/BooleanSupplier;)V"
+      },
+      "com/gtolib/mixin/mc/entity/DimensionVehicleMixin": {
+        "setRemoved": "Lnet/minecraft/world/entity/Entity;m_142467_(Lnet/minecraft/world/entity/Entity$RemovalReason;)V"
+      },
+      "com/gtolib/mixin/mc/world/DimensionEntitySaveMixin": {
+        "lambda$storeEntities$1": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_156565_(Lnet/minecraft/nbt/ListTag;Lnet/minecraft/world/entity/Entity;)V"
+      },
+      "com/gtolib/mixin/mc/DimensionArgumentMixin": {
+        "getDimension": "Lnet/minecraft/commands/arguments/DimensionArgument;m_88808_(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Lnet/minecraft/server/level/ServerLevel;",
+        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/adastra/RocketMixin": {
+        "tick": "Learth/terrarium/adastra/common/entities/vehicles/Rocket;m_8119_()V"
+      },
+      "com/gtolib/mixin/adastra/DimensionPlanetPacketMixin": {
+        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/ftbchunks/DimensionFTBTicketsMixin": {
+        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/ftbchunks/DimensionFTBChunkMixin": {
+        "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
       }
     }
   }
