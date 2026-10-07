@@ -1,6 +1,5 @@
 package com.gtocore.common.weather;
 
-import com.gtolib.api.dimension.DimensionDataComponents;
 import com.gtolib.api.dimension.DimensionDataIO;
 import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.dimension.InstanceDescriptor;
@@ -9,8 +8,6 @@ import com.gtolib.utils.iostream.DataIOStream;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.DimensionDataStorage;
-
-import com.gto.datasynclib.datastream.DataComponentMap;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -40,9 +37,11 @@ final class InstanceWeatherData extends FastSavedData {
      * @return 与实例独立种子关联的天气日程
      * @throws UncheckedIOException 休眠天气元数据无法保存
      */
-    static WeatherTimeline timeline(MinecraftServer server, InstanceDescriptor descriptor, long clock, WeatherProfile profile) {
+    static WeatherTimeline timeline(MinecraftServer server, InstanceDescriptor descriptor, long clock,
+                                    WeatherProfile profile) {
         var level = server.getLevel(descriptor.dimension());
-        DimensionDataStorage storage = level == null ? DimensionManager.get(server).metadataStorage(descriptor.dimension()) : level.getDataStorage();
+        DimensionDataStorage storage = level == null ?
+                DimensionManager.get(server).metadataStorage(descriptor.dimension()) : level.getDataStorage();
         var data = FastSavedData.get(NAME, storage, InstanceWeatherData::load,
                 () -> new InstanceWeatherData(new WeatherTimeline(descriptor.seed())));
         data.timeline.extend(profile, clock);
@@ -59,8 +58,7 @@ final class InstanceWeatherData extends FastSavedData {
     }
 
     static InstanceWeatherData load(DataIOStream stream) throws IOException {
-        var timeline = DimensionDataComponents.required(WeatherDataComponents.read(stream, WeatherDataComponents.INSTANCE), WeatherDataComponents.INSTANCE_TIMELINE);
-        return new InstanceWeatherData(timeline);
+        return new InstanceWeatherData(WeatherDataIO.readInstance(stream));
     }
 
     /**
@@ -71,8 +69,6 @@ final class InstanceWeatherData extends FastSavedData {
      */
     @Override
     public void save(DataIOStream stream) throws IOException {
-        var map = new DataComponentMap(1);
-        map.put(WeatherDataComponents.INSTANCE_TIMELINE, timeline);
-        WeatherDataComponents.write(stream, WeatherDataComponents.INSTANCE, map);
+        WeatherDataIO.writeInstance(stream, timeline);
     }
 }

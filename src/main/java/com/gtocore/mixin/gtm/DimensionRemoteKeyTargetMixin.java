@@ -56,7 +56,9 @@ public abstract class DimensionRemoteKeyTargetMixin implements DimensionRemoteTa
     private void gtolib$trackRuntime(Level target, BlockPos position, CallbackInfo ci) {
         gtolib$server = target == null ? null : target.getServer();
         gtolib$dimension = target == null ? null : target.dimension();
-        if (target != null && !target.isClientSide) DimensionRuntimeCaches.track(target, this);
+        if (target != null && !target.isClientSide) {
+            DimensionRuntimeCaches.track(target, this);
+        }
     }
 
     @Override
@@ -68,16 +70,22 @@ public abstract class DimensionRemoteKeyTargetMixin implements DimensionRemoteTa
 
     @Override
     public void gtolib$releaseDimension(Level closing) {
-        if (level != closing) return;
+        if (level != closing) {
+            return;
+        }
         unwatch();
         release(null);
         level = null;
-        if (listener != null) listener.onTargetChanged((RemoteKeyTarget) (Object) this);
+        if (listener != null) {
+            listener.onTargetChanged((RemoteKeyTarget) (Object) this);
+        }
     }
 
     @Inject(method = "blockEntity", at = @At("HEAD"))
     private void gtolib$resolveLoadedTarget(CallbackInfoReturnable<BlockEntity> cir) {
-        if (gtolib$server == null || gtolib$dimension == null) return;
+        if (gtolib$server == null || gtolib$dimension == null) {
+            return;
+        }
         var current = gtolib$server.getLevel(gtolib$dimension);
         if (level != current) {
             var server = gtolib$server;

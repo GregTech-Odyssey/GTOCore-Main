@@ -1,6 +1,6 @@
 # 维度生命周期与实例
 
-核心维度元数据和天气已按 [DataSyncLib 数据组件方案](dimension-data-components.md) 改用组件载荷；监控、玩家返程、坐标卡和旅行系统另行迁移。本文描述当前行为。
+核心维度元数据和天气已按 [维度与天气流式存盘](dimension-data-components.md) 改为紧凑 IO 数据流；监控、玩家返程、坐标卡和旅行系统另行迁移。本文描述当前行为。
 
 维度模板登记生成规则；实例描述保存身份、归属、种子和解析后的生成定义；`DimensionManager` 只为运行中的实例持有 `ServerLevel`。动态实例不注册到数据包 `LEVEL_STEM`。主世界常驻，其他世界默认在空闲 1200 tick 后于服务器 tick 末尾保存和关闭。关闭保留定义和原存档目录。
 
@@ -62,7 +62,7 @@ if (manager.canEnterSeries(player, address)) {
 
 ## 存盘与失败处理
 
-主世界目录下 `gtolib/dimensions/catalog.dat` 保存模板、系列及动态强加载索引。`instances/<UUID前两位>/<UUID>.dat` 保存各实例，`instances.index` 以固定 16 字节 UUID 分页寻址；`pending.dat` 是单项创建事务日志，恢复时不扫描历史。描述缓存上限 32，休眠 SavedData 缓存上限 16。未访问的序号没有描述或地形文件。目录、描述和创建日志仅支持 GZIP 压缩的 `GTDC` 组件文件；文件外壳版本为 1、组件 schema 为 2，不读取或迁移旧 NBT。生成定义使用 Data 字符串的 UTF-8/VarInt 编码，支持超过 64 KiB 的完整噪声设置和生物群系参数定义。
+主世界目录下 `gtolib/dimensions/catalog.dat` 保存模板、系列及动态强加载索引。`instances/<UUID前两位>/<UUID>.dat` 保存各实例，`instances.index` 以固定 16 字节 UUID 分页寻址；`pending.dat` 是单项创建事务日志，恢复时不扫描历史。描述缓存上限 32，休眠 SavedData 缓存上限 16。未访问的序号没有描述或地形文件。目录、描述和创建日志使用 GZIP 压缩的 `GTDC` 流式文件，外壳版本为 1、schema 为 3。datafix 从 schema 2 起维护，不读取或迁移更早的开发格式和旧 NBT；后续不兼容变更须升级版本并提供 datafix，详见 [流式存盘规范](dimension-data-components.md)。生成定义使用 UTF-8/VarInt 编码，支持超过 64 KiB 的完整噪声设置和生物群系参数定义。
 
 实例首次创建即冻结生成定义和种子；模板升级不覆盖已有描述。实例种子参与 `getSeed`、`StructureCheck`、噪声/结构生成状态、随机序列及服务端/客户端混淆种子。数据包和既有代码维度保持原主世界种子及生成器。动态出生位置、角度、实体、区块、SavedData 和随机序列在重新加载时恢复。
 

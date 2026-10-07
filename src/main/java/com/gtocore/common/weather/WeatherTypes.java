@@ -6,7 +6,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public final class WeatherTypes {
 
-    public static final GTRegistry.Str<WeatherType> REGISTRY = new GTRegistry.Str<>(ResourceLocation.parse("gtocore:weather"), WeatherType::id, false);
+    public static final GTRegistry.Str<WeatherType> REGISTRY = new GTRegistry.Str<>(
+            ResourceLocation.parse("gtocore:weather"), WeatherType::id, false);
 
     static {
         REGISTRY.unfreeze();

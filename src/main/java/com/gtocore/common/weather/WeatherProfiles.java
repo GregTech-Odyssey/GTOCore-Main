@@ -2,9 +2,13 @@ package com.gtocore.common.weather;
 
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.dimension.DimensionManager;
+import com.gtolib.api.dimension.DimensionSync;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import static com.gtocore.common.weather.WeatherTypes.*;
 
@@ -26,16 +30,22 @@ public final class WeatherProfiles {
             entry(CLEAR, 35, 12000, 4000), entry(SNOW, 60, 18000, 6000), entry(THUNDER, 5, 6000, 2000));
 
     public static WeatherProfile get(ResourceKey<Level> key) {
-        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        var server = ServerLifecycleHooks.getCurrentServer();
         if (server != null && server.isSameThread()) {
-            var manager = com.gtolib.api.dimension.DimensionManager.get(server);
+            var manager = DimensionManager.get(server);
             var descriptor = manager == null ? null : manager.descriptor(key);
-            if (descriptor != null) return instanceProfile(descriptor.template().environment().weatherProfile());
-        } else if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
-            var environment = com.gtolib.api.dimension.DimensionSync.clientEnvironment(key);
-            if (environment != null) return instanceProfile(environment.weatherProfile());
+            if (descriptor != null) {
+                return instanceProfile(descriptor.template().environment().weatherProfile());
+            }
+        } else if (FMLEnvironment.dist.isClient()) {
+            var environment = DimensionSync.clientEnvironment(key);
+            if (environment != null) {
+                return instanceProfile(environment.weatherProfile());
+            }
         }
-        if (GTODimensions.isOrbit(key)) return SPACE;
+        if (GTODimensions.isOrbit(key)) {
+            return SPACE;
+        }
         var dimension = Dimension.get(key);
         if (dimension != null) {
             return dimension.getWeatherProfile();
@@ -66,7 +76,9 @@ public final class WeatherProfiles {
 
     public static boolean sameGalaxy(ResourceKey<Level> planet, ResourceKey<Level> star) {
         var galaxy = GTODimensions.getGalaxy(planet);
-        if (galaxy == null) galaxy = Dimension.OVERWORLD.getGalaxy();
+        if (galaxy == null) {
+            galaxy = Dimension.OVERWORLD.getGalaxy();
+        }
         return galaxy != null && galaxy == GTODimensions.getGalaxy(star);
     }
 

@@ -18,17 +18,27 @@ public record WeatherProfile(boolean stellarInfluence, Entry... entries) {
 
     public Entry find(WeatherType weather) {
         for (var entry : entries) {
-            if (entry.weather() == weather) return entry;
+            if (entry.weather() == weather) {
+                return entry;
+            }
         }
         return null;
     }
 
     public WeatherType vanillaWeather(boolean rain, boolean thunder) {
-        if (!rain) return clearWeather();
-        if (find(WeatherTypes.SOLAR_STORM) != null) return WeatherTypes.SOLAR_STORM;
-        if (thunder) return find(WeatherTypes.THUNDER) == null ? null : WeatherTypes.THUNDER;
+        if (!rain) {
+            return clearWeather();
+        }
+        if (find(WeatherTypes.SOLAR_STORM) != null) {
+            return WeatherTypes.SOLAR_STORM;
+        }
+        if (thunder) {
+            return find(WeatherTypes.THUNDER) == null ? null : WeatherTypes.THUNDER;
+        }
         for (var entry : entries) {
-            if (entry.weather().raining() && !entry.weather().thundering()) return entry.weather();
+            if (entry.weather().raining() && !entry.weather().thundering()) {
+                return entry.weather();
+            }
         }
         return null;
     }

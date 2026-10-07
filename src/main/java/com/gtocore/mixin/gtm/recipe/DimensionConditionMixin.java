@@ -26,6 +26,7 @@ public abstract class DimensionConditionMixin {
      */
     @Overwrite
     public Component getTooltips() {
-        return Component.translatable("recipe.condition.dimension.tooltip", Component.translatable(GTODimensions.getTranslationKey(this.dimension)));
+        return Component.translatable("recipe.condition.dimension.tooltip",
+                Component.translatable(GTODimensions.getTranslationKey(this.dimension)));
     }
 }

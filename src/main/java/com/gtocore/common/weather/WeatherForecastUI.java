@@ -89,14 +89,18 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
     protected Target readHolderFromSyncData(FriendlyByteBuf buf) {
         int count = buf.readVarInt();
         var dimensions = new ObjectArrayList<ResourceKey<Level>>(count);
-        for (int i = 0; i < count; i++) dimensions.add(ResourceKey.create(Registries.DIMENSION, buf.readResourceLocation()));
+        for (int i = 0; i < count; i++) {
+            dimensions.add(ResourceKey.create(Registries.DIMENSION, buf.readResourceLocation()));
+        }
         return new Target(dimensions);
     }
 
     @Override
     protected void writeHolderToSyncData(FriendlyByteBuf buf, Target holder) {
         buf.writeVarInt(holder.dimensions.size());
-        for (var key : holder.dimensions) buf.writeResourceLocation(key.location());
+        for (var key : holder.dimensions) {
+            buf.writeResourceLocation(key.location());
+        }
     }
 
     public static final class Target implements IUIHolder {
@@ -110,7 +114,9 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         @Override
         public ModularUI createUI(Player player) {
             var tabs = new ObjectArrayList<PlanetTab>(dimensions.size());
-            for (var key : dimensions) tabs.add(new PlanetTab(key, player, tabs));
+            for (var key : dimensions) {
+                tabs.add(new PlanetTab(key, player, tabs));
+            }
             var window = new MachineWindow(tabs.getFirst()).setCentered(true).setTitleFollowsTab(true);
             return new ModularUI(WIDTH + 2 * UISizes.WINDOW_PADDING_X, 180, this, player).widget(window);
         }
@@ -144,7 +150,9 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
             this.tabs = tabs;
             var planet = Dimension.getIncludingOrbits(dimension);
             title = planet == null ? Component.literal(dimension.location().toString()) :
-                    Component.translatable(planet.getOrbit() == dimension ? "planet." + dimension.location().getNamespace() + "." + dimension.location().getPath() : planet.getKey());
+                    Component.translatable(planet.getOrbit() == dimension ?
+                            "planet." + dimension.location().getNamespace() + "." + dimension.location().getPath() :
+                            planet.getKey());
             icon = planet == null ? new ItemStackTexture(Items.CLOCK) : new ResourceTexture(planet.getIcon());
             tabTooltips = List.of(title);
         }
@@ -161,7 +169,8 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
             page.addChild(status);
             var axis = UIElement.row(TextLine.HEIGHT).layout(l -> l.width(WIDTH));
             axis.addChild(TextLine.translatable(WIDTH / 2, "gtocore.weather.forecast_now"));
-            axis.addChild(TextLine.constant(WIDTH / 2, time(WeatherTimeline.FORECAST_TICKS)).setTextAlign(Horizontal.RIGHT));
+            axis.addChild(
+                    TextLine.constant(WIDTH / 2, time(WeatherTimeline.FORECAST_TICKS)).setTextAlign(Horizontal.RIGHT));
             page.addChild(axis);
             page.addChild(new ForecastBar(source));
             page.addChild(TextLine.translatable(WIDTH, "gtocore.weather.forecast_bar_hint"));
@@ -174,8 +183,10 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
                     row = UIElement.row(TextLine.HEIGHT).layout(l -> l.width(WIDTH).alignCenter());
                     legend.addChild(row);
                 }
-                var entry = UIElement.row(TextLine.HEIGHT).layout(l -> l.width(WIDTH / 3).alignCenter().gapAll(UISizes.GAP));
-                entry.addChild(new UIElement().layout(l -> l.size(6, 6)).setBackground(new ColorRectTexture(color(weather))));
+                var entry = UIElement.row(TextLine.HEIGHT)
+                        .layout(l -> l.width(WIDTH / 3).alignCenter().gapAll(UISizes.GAP));
+                entry.addChild(
+                        new UIElement().layout(l -> l.size(6, 6)).setBackground(new ColorRectTexture(color(weather))));
                 entry.addChild(TextLine.constant(LayoutStyle.AUTO, weather.displayName()).layout(l -> l.flex(1)));
                 row.addChild(entry);
             }
@@ -186,7 +197,9 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         @Override
         public void attachSideTabs(TabsWidget sideTabs) {
             sideTabs.setMainTab(tabs.getFirst());
-            for (int i = 1; i < tabs.size(); i++) sideTabs.attachSubTab(tabs.get(i));
+            for (int i = 1; i < tabs.size(); i++) {
+                sideTabs.attachSubTab(tabs.get(i));
+            }
         }
 
         @Override
@@ -213,10 +226,16 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
     private static ObjectArrayList<WeatherType> possibleWeather(ResourceKey<Level> dimension) {
         var profile = WeatherSystem.profile(dimension);
         var result = new ObjectArrayList<WeatherType>(profile.entries().length + 2);
-        for (var entry : profile.entries()) result.add(entry.weather());
+        for (var entry : profile.entries()) {
+            result.add(entry.weather());
+        }
         if (profile.stellarInfluence()) {
-            if (!result.contains(WeatherTypes.CLEAR)) result.add(WeatherTypes.CLEAR);
-            if (!result.contains(WeatherTypes.THUNDER)) result.add(WeatherTypes.THUNDER);
+            if (!result.contains(WeatherTypes.CLEAR)) {
+                result.add(WeatherTypes.CLEAR);
+            }
+            if (!result.contains(WeatherTypes.THUNDER)) {
+                result.add(WeatherTypes.THUNDER);
+            }
         }
         return result;
     }
@@ -284,15 +303,21 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
                 sampledTick = tick;
                 var system = WeatherSystem.get(server);
                 var level = server.getLevel(dimension);
-                boolean hasDayNight = level != null && level.dimensionType().hasSkyLight() && !level.dimensionType().hasFixedTime() &&
-                        dimension != GTODimensions.SOLAR_SURFACE && !GTODimensions.isOrbit(dimension) && !PlanetApi.API.isSpace(level) &&
-                        !(GTODimensions.isVoid(dimension) && VoidWorldTimeSavedData.INSTANCE.isFixedTime()) && DysonSphereSavaedData.getDimensionLaunchData(dimension) <= 100;
+                boolean hasDayNight = level != null && level.dimensionType().hasSkyLight() &&
+                        !level.dimensionType().hasFixedTime() &&
+                        dimension != GTODimensions.SOLAR_SURFACE && !GTODimensions.isOrbit(dimension) &&
+                        !PlanetApi.API.isSpace(level) &&
+                        !(GTODimensions.isVoid(dimension) && VoidWorldTimeSavedData.INSTANCE.isFixedTime()) &&
+                        DysonSphereSavaedData.getDimensionLaunchData(dimension) <= 100;
                 var timeLevel = level == null ? server.overworld() : level;
-                forecast = new Forecast(system.clock(), system.forecast(dimension), !server.overworld().getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE),
-                        timeLevel.getGameTime(), timeLevel.getDayTime(), timeLevel.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT), hasDayNight);
+                forecast = new Forecast(system.clock(), system.forecast(dimension),
+                        !server.overworld().getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE),
+                        timeLevel.getGameTime(), timeLevel.getDayTime(),
+                        timeLevel.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT), hasDayNight);
                 current = forecast.periods().getFirst().weather().displayName();
                 next = forecast.periods().size() > 1 ? forecast.periods().get(1).weather().displayName() : NO_CHANGE;
-                changeIn = forecast.periods().size() > 1 ? time(forecast.periods().getFirst().end() - forecast.clock()) : NO_CHANGE;
+                changeIn = forecast.periods().size() > 1 ?
+                        time(forecast.periods().getFirst().end() - forecast.clock()) : NO_CHANGE;
             }
             return forecast;
         }
@@ -322,8 +347,10 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         private static final int SUNRISE_COLOR = 0xFFFFAD32;
         private static final int SUNSET_COLOR = 0xFF526BC9;
         private static final int ICON_SIZE = 12;
-        private static final ResourceLocation SUNRISE_SOURCE = ResourceLocation.parse("ad_astra:textures/environment/sun.png");
-        private static final ResourceLocation SUNSET_SOURCE = ResourceLocation.parse("ad_astra:textures/environment/moon.png");
+        private static final ResourceLocation SUNRISE_SOURCE = ResourceLocation
+                .parse("ad_astra:textures/environment/sun.png");
+        private static final ResourceLocation SUNSET_SOURCE = ResourceLocation
+                .parse("ad_astra:textures/environment/moon.png");
         private static final ResourceTexture SUNRISE_TEXTURE = new ResourceTexture(GTOCore.id("weather_forecast/sun"));
         private static final ResourceTexture SUNSET_TEXTURE = new ResourceTexture(GTOCore.id("weather_forecast/moon"));
 
@@ -332,7 +359,8 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         private final SyncValue<Forecast> forecast;
         private final ObjectArrayList<List<Component>> tooltips = new ObjectArrayList<>(16);
         private final ObjectArrayList<DayMarker> dayMarkers = new ObjectArrayList<>(8);
-        private final List<Component> scaleTooltip = List.of(Component.translatable("gtocore.weather.forecast_scale_hint"));
+        private final List<Component> scaleTooltip = List
+                .of(Component.translatable("gtocore.weather.forecast_scale_hint"));
         private double frameElapsed;
         private double animationGameTime;
         private long animationNanos;
@@ -341,20 +369,24 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
 
         private ForecastBar(ForecastSource source) {
             layout(l -> l.size(WIDTH, MARKER_HEIGHT + BAR_HEIGHT));
-            forecast = addSyncValue(SyncValue.of(source::get, Forecast.CODEC, Forecast.EMPTY).onChanged(this::updateTooltips));
+            forecast = addSyncValue(
+                    SyncValue.of(source::get, Forecast.CODEC, Forecast.EMPTY).onChanged(this::updateTooltips));
         }
 
         private void updateTooltips(Forecast value) {
             tooltips.clear();
             for (var period : value.periods()) {
-                tooltips.add(List.of(period.weather().displayName(), Component.translatable("gtocore.weather.forecast_range",
-                        time(period.start() - value.clock()), time(period.end() - value.clock()))));
+                tooltips.add(
+                        List.of(period.weather().displayName(), Component.translatable("gtocore.weather.forecast_range",
+                                time(period.start() - value.clock()), time(period.end() - value.clock()))));
             }
             dayMarkers.clear();
             if (value.hasDayNight() && value.daylightCycle()) {
-                for (long offset = Math.floorMod(-value.dayTime(), MAJOR_INTERVAL); offset <= WeatherTimeline.FORECAST_TICKS; offset += MAJOR_INTERVAL) {
+                for (long offset = Math.floorMod(-value.dayTime(), MAJOR_INTERVAL); offset <=
+                        WeatherTimeline.FORECAST_TICKS; offset += MAJOR_INTERVAL) {
                     boolean sunrise = Math.floorMod(value.dayTime() + offset, 24000) == 0;
-                    dayMarkers.add(new DayMarker(value.gameTime() + offset, sunrise, List.of(sunrise ? SUNRISE : SUNSET, time(offset))));
+                    dayMarkers.add(new DayMarker(value.gameTime() + offset, sunrise,
+                            List.of(sunrise ? SUNRISE : SUNSET, time(offset))));
                 }
             }
         }
@@ -371,14 +403,16 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
                 double seconds = elapsed / 1_000_000_000.0;
                 double predicted = animationGameTime + seconds * 20;
                 double error = targetGameTime - predicted;
-                animationGameTime = Math.abs(error) > 40 ? targetGameTime : predicted + error * -Math.expm1(-8 * seconds);
+                animationGameTime = Math.abs(error) > 40 ? targetGameTime :
+                        predicted + error * -Math.expm1(-8 * seconds);
             }
             animationNanos = now;
             return animationGameTime;
         }
 
         private float position(long time) {
-            return Math.clamp(offsetPosition(time - forecast.getValue().clock() - weatherElapsed()), getPositionX() + 1, getPositionX() + getSizeWidth() - 1);
+            return Math.clamp(offsetPosition(time - forecast.getValue().clock() - weatherElapsed()), getPositionX() + 1,
+                    getPositionX() + getSizeWidth() - 1);
         }
 
         @Override
@@ -389,10 +423,13 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
             UITheme.PROGRESS_TRACK.draw(graphics, mouseX, mouseY, getPositionX(), trackTop, getSizeWidth(), BAR_HEIGHT);
             var value = forecast.getValue();
             var periods = value.periods();
-            if (periods.isEmpty()) return;
+            if (periods.isEmpty()) {
+                return;
+            }
             var minecraft = Minecraft.getInstance();
             var level = minecraft.level;
-            frameElapsed = level == null ? 0 : Math.max(0, advanceAnimation(level.getGameTime() + (double) partialTicks, System.nanoTime(), minecraft.isPaused()) - value.gameTime());
+            frameElapsed = level == null ? 0 : Math.max(0, advanceAnimation(level.getGameTime() + (double) partialTicks,
+                    System.nanoTime(), minecraft.isPaused()) - value.gameTime());
             var matrix = graphics.pose().last().pose();
             pixelScale = minecraft.getWindow().getGuiScale() * matrix.m00();
             pixelOrigin = minecraft.getWindow().getGuiScale() * matrix.m30();
@@ -404,7 +441,9 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
             for (int i = 0; i < dayMarkers.size(); i++) {
                 var marker = dayMarkers.get(i);
                 double offset = marker.gameTime() - value.gameTime() - frameElapsed;
-                if (offset < 0 || offset > WeatherTimeline.FORECAST_TICKS) continue;
+                if (offset < 0 || offset > WeatherTimeline.FORECAST_TICKS) {
+                    continue;
+                }
                 float x = offsetPosition(offset);
                 int markerColor = marker.sunrise() ? SUNRISE_COLOR : SUNSET_COLOR;
                 fillBarAA(graphics, x - 0.5f, top, x + 0.5f, bottom, markerColor);
@@ -416,9 +455,12 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
             for (int i = 0; i < dayMarkers.size(); i++) {
                 var marker = dayMarkers.get(i);
                 double offset = marker.gameTime() - value.gameTime() - frameElapsed;
-                if (offset < 0 || offset > WeatherTimeline.FORECAST_TICKS) continue;
+                if (offset < 0 || offset > WeatherTimeline.FORECAST_TICKS) {
+                    continue;
+                }
                 var texture = markerTexture(minecraft.getTextureManager(), marker.sunrise());
-                texture.draw(graphics, mouseX, mouseY, offsetPosition(offset) - ICON_SIZE / 2f, getPositionY() + 1, ICON_SIZE, ICON_SIZE);
+                texture.draw(graphics, mouseX, mouseY, offsetPosition(offset) - ICON_SIZE / 2f, getPositionY() + 1,
+                        ICON_SIZE, ICON_SIZE);
             }
             graphics.disableScissor();
         }
@@ -456,14 +498,19 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         }
 
         @OnlyIn(Dist.CLIENT)
-        private void drawWeather(GuiGraphics graphics, ObjectArrayList<WeatherTimeline.Period> periods, int top, int bottom) {
+        private void drawWeather(GuiGraphics graphics, ObjectArrayList<WeatherTimeline.Period> periods, int top,
+                                 int bottom) {
             int pendingPixel = 0;
             double weight = 0, red = 0, green = 0, blue = 0;
             for (int i = 0; i < periods.size(); i++) {
                 var period = periods.get(i);
                 double start = pixelOrigin + (i == 0 ? getPositionX() + 1 : position(period.start())) * pixelScale;
-                double end = pixelOrigin + (i == periods.size() - 1 ? getPositionX() + getSizeWidth() - 1 : position(period.end())) * pixelScale;
-                if (start >= end) continue;
+                double end = pixelOrigin +
+                        (i == periods.size() - 1 ? getPositionX() + getSizeWidth() - 1 : position(period.end())) *
+                                pixelScale;
+                if (start >= end) {
+                    continue;
+                }
                 int first = (int) Math.floor(start), last = (int) Math.floor(end);
                 int color = color(period.weather());
                 int r = color >> 16 & 255, g = color >> 8 & 255, b = color & 255;
@@ -477,7 +524,9 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
                 red += r * coverage;
                 green += g * coverage;
                 blue += b * coverage;
-                if (first == last) continue;
+                if (first == last) {
+                    continue;
+                }
                 fillWeatherPixel(graphics, first, top, bottom, red, green, blue, weight);
                 fillBar(graphics, pixelPosition(first + 1), top, pixelPosition(last), bottom, color);
                 pendingPixel = last;
@@ -486,12 +535,16 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
                 green = g * weight;
                 blue = b * weight;
             }
-            if (weight > 0) fillWeatherPixel(graphics, pendingPixel, top, bottom, red, green, blue, weight);
+            if (weight > 0) {
+                fillWeatherPixel(graphics, pendingPixel, top, bottom, red, green, blue, weight);
+            }
         }
 
         @OnlyIn(Dist.CLIENT)
-        private void fillWeatherPixel(GuiGraphics graphics, int pixel, int top, int bottom, double red, double green, double blue, double weight) {
-            int color = 0xFF000000 | (int) Math.round(red / weight) << 16 | (int) Math.round(green / weight) << 8 | (int) Math.round(blue / weight);
+        private void fillWeatherPixel(GuiGraphics graphics, int pixel, int top, int bottom, double red, double green,
+                                      double blue, double weight) {
+            int color = 0xFF000000 | (int) Math.round(red / weight) << 16 | (int) Math.round(green / weight) << 8 |
+                    (int) Math.round(blue / weight);
             fillBar(graphics, pixelPosition(pixel), top, pixelPosition(pixel + 1), bottom, color);
         }
 
@@ -499,13 +552,21 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         private void fillBarAA(GuiGraphics graphics, float left, int top, float right, int bottom, int color) {
             double start = pixelOrigin + Math.max(left, getPositionX() + 1) * pixelScale;
             double end = pixelOrigin + Math.min(right, getPositionX() + getSizeWidth() - 1) * pixelScale;
-            if (start >= end) return;
+            if (start >= end) {
+                return;
+            }
             int first = (int) Math.floor(start), last = (int) Math.floor(end);
             double coverage = Math.min(end, first + 1.0) - start;
-            fillBar(graphics, pixelPosition(first), top, pixelPosition(first + 1), bottom, coverageColor(color, coverage));
-            if (first == last) return;
+            fillBar(graphics, pixelPosition(first), top, pixelPosition(first + 1), bottom,
+                    coverageColor(color, coverage));
+            if (first == last) {
+                return;
+            }
             fillBar(graphics, pixelPosition(first + 1), top, pixelPosition(last), bottom, color);
-            if (end > last) fillBar(graphics, pixelPosition(last), top, pixelPosition(last + 1), bottom, coverageColor(color, end - last));
+            if (end > last) {
+                fillBar(graphics, pixelPosition(last), top, pixelPosition(last + 1), bottom,
+                        coverageColor(color, end - last));
+            }
         }
 
         private static int coverageColor(int color, double coverage) {
@@ -516,7 +577,9 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         private void fillBar(GuiGraphics graphics, float left, int top, float right, int bottom, int color) {
             left = Math.max(left, getPositionX() + 1);
             right = Math.min(right, getPositionX() + getSizeWidth() - 1);
-            if (left >= right) return;
+            if (left >= right) {
+                return;
+            }
             var matrix = graphics.pose().last().pose();
             var vertices = graphics.bufferSource().getBuffer(RenderType.gui());
             vertices.vertex(matrix, left, top, 0).color(color).endVertex();
@@ -549,13 +612,16 @@ public final class WeatherForecastUI extends UIFactory<WeatherForecastUI.Target>
         @OnlyIn(Dist.CLIENT)
         public void drawInForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
-            if (gui == null || gui.getModularUIGui() == null || !isMouseOverElement(mouseX, mouseY)) return;
+            if (gui == null || gui.getModularUIGui() == null || !isMouseOverElement(mouseX, mouseY)) {
+                return;
+            }
             var value = forecast.getValue();
             if (mouseY < getPositionY() + MARKER_HEIGHT) {
                 for (int i = 0; i < dayMarkers.size(); i++) {
                     var marker = dayMarkers.get(i);
                     double offset = marker.gameTime() - value.gameTime() - frameElapsed;
-                    if (offset >= 0 && offset <= WeatherTimeline.FORECAST_TICKS && Math.abs(mouseX - offsetPosition(offset)) <= ICON_SIZE / 2f) {
+                    if (offset >= 0 && offset <= WeatherTimeline.FORECAST_TICKS &&
+                            Math.abs(mouseX - offsetPosition(offset)) <= ICON_SIZE / 2f) {
                         gui.getModularUIGui().setHoverTooltip(marker.tooltip(), ItemStack.EMPTY, null, null);
                         return;
                     }

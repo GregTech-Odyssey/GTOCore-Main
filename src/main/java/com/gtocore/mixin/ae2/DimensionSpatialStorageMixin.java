@@ -28,7 +28,8 @@ public abstract class DimensionSpatialStorageMixin {
     @Overwrite
     private SpatialStorageWorldData getWorldData() {
         return DimensionManager.get(ServerUtils.getServer()).metadataStorage(SpatialStorageDimensionIds.WORLD_ID)
-                .computeIfAbsent(SpatialStorageWorldData::load, SpatialStorageWorldData::new, SpatialStorageWorldData.ID);
+                .computeIfAbsent(SpatialStorageWorldData::load, SpatialStorageWorldData::new,
+                        SpatialStorageWorldData.ID);
     }
 
     /**

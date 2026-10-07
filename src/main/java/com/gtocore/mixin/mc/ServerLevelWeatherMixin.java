@@ -26,7 +26,9 @@ public abstract class ServerLevelWeatherMixin {
     public void setWeatherParameters(int clearTime, int weatherTime, boolean rain, boolean thunder) {
         var level = (ServerLevel) (Object) this;
         if (level.dimension() == Level.OVERWORLD) {
-            WeatherSystem.get(level.getServer()).change(level, WeatherSystem.profile(level.dimension()).vanillaWeather(rain, thunder), Math.max(1, rain || clearTime <= 0 ? weatherTime : clearTime));
+            WeatherSystem.get(level.getServer()).change(level,
+                    WeatherSystem.profile(level.dimension()).vanillaWeather(rain, thunder),
+                    Math.max(1, rain || clearTime <= 0 ? weatherTime : clearTime));
         }
     }
 

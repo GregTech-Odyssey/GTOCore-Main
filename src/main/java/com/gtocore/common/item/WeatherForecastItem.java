@@ -24,7 +24,8 @@ public final class WeatherForecastItem extends Item {
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player,
+                                                           @NotNull InteractionHand hand) {
         var stack = player.getItemInHand(hand);
         if (player instanceof ServerPlayer serverPlayer) {
             WeatherForecastUI.open(serverPlayer);
@@ -33,7 +34,8 @@ public final class WeatherForecastItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> lines, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> lines,
+                                @NotNull TooltipFlag flag) {
         lines.add(Component.translatable("gtocore.weather.forecast_tooltip"));
     }
 }

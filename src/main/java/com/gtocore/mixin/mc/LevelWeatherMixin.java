@@ -85,12 +85,16 @@ public abstract class LevelWeatherMixin {
     public boolean isRainingAt(BlockPos pos) {
         var level = (Level) (Object) this;
         var weather = WeatherSystem.current(level);
-        if (weather == null || !weather.raining() || weather == WeatherTypes.SNOW) return false;
+        if (weather == null || !weather.raining() || weather == WeatherTypes.SNOW) {
+            return false;
+        }
         if (weather == WeatherTypes.ACID_RAIN || weather == WeatherTypes.METHANE_RAIN ||
                 (weather == WeatherTypes.THUNDER && level.dimension() != Level.OVERWORLD)) {
-            return !level.dimensionType().hasCeiling() && level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() <= pos.getY();
+            return !level.dimensionType().hasCeiling() &&
+                    level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() <= pos.getY();
         }
-        return level.canSeeSky(pos) && level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() <= pos.getY() &&
+        return level.canSeeSky(pos) &&
+                level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() <= pos.getY() &&
                 level.getBiome(pos).value().getPrecipitationAt(pos) == Biome.Precipitation.RAIN;
     }
 }

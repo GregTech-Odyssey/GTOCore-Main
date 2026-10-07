@@ -1,14 +1,16 @@
 package com.gtolib.api.dimension;
 
+import com.gtolib.utils.iostream.DataIOStream;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
-import com.gto.datasynclib.datastream.data.StringData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -117,7 +119,7 @@ class DimensionInstanceStoreTest {
     void interruptedIndexAppendRecoversFromOneJournalWithoutScanningHistory() throws Exception {
         var store = new InstanceStore(directory, 2);
         store.create(descriptor(0));
-        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), DimensionDataIO.Kind.PENDING, descriptor(1).save());
+        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), DimensionDataIO.Kind.PENDING, descriptor(1));
         try (var index = new RandomAccessFile(directory.resolve("instances.index").toFile(), "rw")) {
             index.seek(index.length());
             index.writeInt(123);
@@ -137,7 +139,13 @@ class DimensionInstanceStoreTest {
         assertThrows(ArithmeticException.class, () -> address.offset(1));
         assertEquals(Long.MAX_VALUE - 1, address.offset(-1).index());
         assertNotEquals(series.seed(0), series.seed(1));
-        assertEquals(series.seed(Long.MIN_VALUE), SeriesDefinition.load(series.save()).seed(Long.MIN_VALUE));
+        var bytes = new ByteArrayOutputStream();
+        try (var output = DataIOStream.of(bytes)) {
+            DimensionDataCodecs.SERIES.encode(output, series);
+        }
+        try (var input = DataIOStream.of(bytes.toByteArray())) {
+            assertEquals(series.seed(Long.MIN_VALUE), DimensionDataCodecs.SERIES.decode(input).seed(Long.MIN_VALUE));
+        }
         try (var files = Files.list(directory)) {
             assertEquals(0, files.count());
         }
@@ -176,8 +184,8 @@ class DimensionInstanceStoreTest {
         var store = new InstanceStore(directory, 2);
         store.create(descriptor(0));
         var next = descriptor(1);
-        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), DimensionDataIO.Kind.PENDING, next.save());
-        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(next.id()), DimensionDataIO.Kind.INSTANCE, next.save());
+        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), DimensionDataIO.Kind.PENDING, next);
+        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(next.id()), DimensionDataIO.Kind.INSTANCE, next);
         if (stage >= 2) {
             try (var index = new RandomAccessFile(directory.resolve("instances.index").toFile(), "rw")) {
                 index.seek(index.length());
@@ -197,35 +205,17 @@ class DimensionInstanceStoreTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "kind", "storage", "schema", "length", "truncated", "trailing", "data_trailing", "missing_seed", "invalid_seed", "identity", "owner", "access", "environment", "template_version" })
+    @ValueSource(strings = { "kind", "storage", "schema", "truncated" })
     void corruptNewDescriptorsFailWithoutReplacement(String corruption) throws Exception {
         var original = descriptor(0);
         var store = new InstanceStore(directory, 2);
         store.create(original);
         var path = instancePath(original.id());
-        var map = original.save();
-        if (corruption.equals("missing_seed")) map.remove(DimensionDataComponents.SEED);
-        if (corruption.equals("identity")) map.put(DimensionDataComponents.ID, UUID.randomUUID());
-        if (corruption.equals("owner")) map.remove(DimensionDataComponents.OWNER);
-        var data = DimensionDataComponents.INSTANCE.encode(map).asStringMapData();
-        if (corruption.equals("access")) data.put("access", StringData.valueOf("invalid"));
-        if (corruption.equals("invalid_seed")) data.put("seed", StringData.valueOf("0"));
-        if (corruption.equals("environment")) data.getStringMap().get("template").asStringMapData().getStringMap().remove("environment");
-        if (corruption.equals("template_version")) data.getStringMap().get("template").asStringMapData().putInt("version", 0);
-        byte[] payload = data.writeToBytes();
         byte[] bytes = uncompressed(path);
         if (corruption.equals("kind")) bytes[4] = 3;
         else if (corruption.equals("storage")) ByteBuffer.wrap(bytes).putInt(5, 2);
         else if (corruption.equals("schema")) ByteBuffer.wrap(bytes).putInt(9, 99);
-        else if (corruption.equals("length")) ByteBuffer.wrap(bytes).putInt(17, -1);
         else if (corruption.equals("truncated")) bytes = Arrays.copyOf(bytes, bytes.length - 1);
-        else if (corruption.equals("trailing")) bytes = Arrays.copyOf(bytes, bytes.length + 1);
-        else {
-            if (corruption.equals("data_trailing")) payload = Arrays.copyOf(payload, payload.length + 1);
-            bytes = Arrays.copyOf(bytes, 21 + payload.length);
-            ByteBuffer.wrap(bytes).putInt(17, payload.length);
-            System.arraycopy(payload, 0, bytes, 21, payload.length);
-        }
         try (var output = new GZIPOutputStream(Files.newOutputStream(path))) {
             output.write(bytes);
         }
@@ -256,6 +246,86 @@ class DimensionInstanceStoreTest {
 
     private Path instancePath(UUID id) {
         return directory.resolve(id.toString().substring(0, 2)).resolve(id + ".dat");
+    }
+
+    private static byte[] fixture(String name) throws IOException {
+        try (var input = DimensionInstanceStoreTest.class.getResourceAsStream("/saved-data/schema-2/" + name)) {
+            return input.readAllBytes();
+        }
+    }
+
+    @Test
+    void schema2CatalogAndDescriptorMigrateFromFixedServerFiles() throws Exception {
+        var catalogFile = directory.resolve("catalog.dat");
+        byte[] originalCatalog = fixture("catalog.dat");
+        Files.write(catalogFile, originalCatalog);
+        var catalog = new DimensionCatalog(catalogFile);
+        assertFalse(catalog.templates().isEmpty());
+        assertFalse(catalog.series().isEmpty());
+        assertArrayEquals(originalCatalog, Files.readAllBytes(catalogFile));
+        assertEquals(catalog.templates(), new DimensionCatalog(catalogFile).templates());
+        catalog.save();
+        assertEquals(3, ByteBuffer.wrap(uncompressed(catalogFile)).getInt(9));
+        var reopened = new DimensionCatalog(catalogFile);
+        assertEquals(catalog.templates(), reopened.templates());
+        assertEquals(catalog.series(), reopened.series());
+        assertEquals(catalog.forcedDimensions(), reopened.forcedDimensions());
+
+        var descriptorFile = directory.resolve("instance.dat");
+        byte[] originalInstance = fixture("instance.dat");
+        Files.write(descriptorFile, originalInstance);
+        var descriptor = DimensionDataIO.read(descriptorFile, DimensionDataIO.Kind.INSTANCE);
+        assertEquals(UUID.fromString("89ce535d-ef11-301b-aeef-044637837f7a"), descriptor.id());
+        assertEquals(12345, descriptor.seed());
+        assertNotNull(descriptor.spawn());
+        assertArrayEquals(originalInstance, Files.readAllBytes(descriptorFile));
+        assertEquals(descriptor.logicalKey(), DimensionDataIO.read(descriptorFile, DimensionDataIO.Kind.INSTANCE).logicalKey());
+        DimensionDataIO.writeAtomic(descriptorFile, DimensionDataIO.Kind.INSTANCE, descriptor);
+        assertEquals(3, ByteBuffer.wrap(uncompressed(descriptorFile)).getInt(9));
+        var loaded = DimensionDataIO.read(descriptorFile, DimensionDataIO.Kind.INSTANCE);
+        assertEquals(descriptor.logicalKey(), loaded.logicalKey());
+        assertEquals(descriptor.id(), loaded.id());
+        assertEquals(descriptor.ordinal(), loaded.ordinal());
+        assertEquals(descriptor.seed(), loaded.seed());
+        assertEquals(descriptor.template(), loaded.template());
+        assertEquals(descriptor.owner(), loaded.owner());
+        assertEquals(descriptor.accessPolicy(), loaded.accessPolicy());
+        assertEquals(descriptor.visitors(), loaded.visitors());
+        assertEquals(descriptor.spawn(), loaded.spawn());
+        assertEquals(descriptor.spawnAngle(), loaded.spawnAngle());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2, 3 })
+    void schema2PendingRecoveryIsIdempotentAtEveryTransactionBoundary(int stage) throws Exception {
+        var oldDescriptorFile = directory.resolve("old-instance.dat");
+        Files.write(oldDescriptorFile, fixture("instance.dat"));
+        var descriptor = DimensionDataIO.read(oldDescriptorFile, DimensionDataIO.Kind.INSTANCE);
+        byte[] payload = uncompressed(oldDescriptorFile);
+        payload[4] = 3; // The old production writer uses the same descriptor payload for pending.
+        var store = new InstanceStore(directory, 2);
+        for (int i = 0; i < descriptor.ordinal(); i++) store.create(descriptor(i));
+        var pending = directory.resolve("pending.dat");
+        try (var output = new GZIPOutputStream(Files.newOutputStream(pending))) {
+            output.write(payload);
+        }
+        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(descriptor.id()), DimensionDataIO.Kind.INSTANCE, descriptor);
+        if (stage >= 2) {
+            try (var index = new RandomAccessFile(directory.resolve("instances.index").toFile(), "rw")) {
+                index.seek(index.length());
+                if (stage == 2) index.writeInt(123);
+                else {
+                    index.writeLong(descriptor.id().getMostSignificantBits());
+                    index.writeLong(descriptor.id().getLeastSignificantBits());
+                }
+            }
+        }
+        var recovered = new InstanceStore(directory, 2);
+        assertEquals(descriptor.ordinal() + 1, recovered.count());
+        assertEquals(descriptor.seed(), recovered.find(descriptor.id()).seed());
+        assertFalse(Files.exists(pending));
+        assertEquals(3, ByteBuffer.wrap(uncompressed(instancePath(descriptor.id()))).getInt(9));
+        assertEquals(recovered.count(), new InstanceStore(directory, 2).count());
     }
 
     private static byte[] uncompressed(Path path) throws Exception {

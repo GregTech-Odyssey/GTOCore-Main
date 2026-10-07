@@ -18,7 +18,8 @@ import org.spongepowered.asm.mixin.Mixin;
 public abstract class DimensionSpatialExchangeMixin {
 
     @WrapMethod(method = "swapRegions")
-    private void gtolib$pinExchange(ServerLevel src, int sx, int sy, int sz, ServerLevel dst, int dx, int dy, int dz, int sizeX, int sizeY, int sizeZ, Operation<Void> original) {
+    private void gtolib$pinExchange(ServerLevel src, int sx, int sy, int sz, ServerLevel dst, int dx, int dy, int dz,
+                                    int sizeX, int sizeY, int sizeZ, Operation<Void> original) {
         var manager = DimensionManager.get(src.getServer());
         try (var source = manager.keepAlive(src.dimension(), DimensionLifecycle.KeepAlive.SPATIAL_EXCHANGE);
                 var destination = manager.keepAlive(dst.dimension(), DimensionLifecycle.KeepAlive.SPATIAL_EXCHANGE)) {

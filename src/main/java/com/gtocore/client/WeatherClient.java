@@ -21,26 +21,38 @@ public final class WeatherClient {
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
         var minecraft = Minecraft.getInstance();
         var level = minecraft.level;
         var player = minecraft.player;
-        if (level == null || player == null || minecraft.isPaused()) return;
-        if (ILevel.getCapability(level, WeatherSystem.CLIENT_WEATHER) != WeatherTypes.DUST_STORM) return;
+        if (level == null || player == null || minecraft.isPaused()) {
+            return;
+        }
+        if (ILevel.getCapability(level, WeatherSystem.CLIENT_WEATHER) != WeatherTypes.DUST_STORM) {
+            return;
+        }
         var random = level.random;
         for (int i = 0; i < 8; i++) {
             double x = player.getX() + random.nextDouble() * 24 - 12;
             double y = player.getY() + random.nextDouble() * 8;
             double z = player.getZ() + random.nextDouble() * 24 - 12;
-            if (level.canSeeSky(PARTICLE_POS.set(x, y, z))) level.addParticle(ParticleTypes.ASH, x, y, z, 0.2, -0.02, 0.05);
+            if (level.canSeeSky(PARTICLE_POS.set(x, y, z))) {
+                level.addParticle(ParticleTypes.ASH, x, y, z, 0.2, -0.02, 0.05);
+            }
         }
     }
 
     @SubscribeEvent
     public static void fog(ViewportEvent.ComputeFogColor event) {
         var level = Minecraft.getInstance().level;
-        if (level == null || ILevel.getCapability(level, WeatherSystem.CLIENT_WEATHER) != WeatherTypes.DUST_STORM) return;
-        if (!level.canSeeSky(event.getCamera().getBlockPosition())) return;
+        if (level == null || ILevel.getCapability(level, WeatherSystem.CLIENT_WEATHER) != WeatherTypes.DUST_STORM) {
+            return;
+        }
+        if (!level.canSeeSky(event.getCamera().getBlockPosition())) {
+            return;
+        }
         event.setRed(event.getRed() * 0.4F + 0.42F);
         event.setGreen(event.getGreen() * 0.4F + 0.24F);
         event.setBlue(event.getBlue() * 0.4F + 0.12F);

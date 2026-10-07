@@ -6,7 +6,6 @@ import com.gtocore.integration.ae.SolarStormHandler;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.data.Galaxy;
-import com.gtolib.api.dimension.DimensionDataComponents;
 import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.misc.PlanetManagement;
@@ -24,7 +23,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.datastream.DataComponentKey;
-import com.gto.datasynclib.datastream.DataComponentMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
@@ -64,7 +62,9 @@ public final class WeatherSystem extends FastSavedData {
             system.timeline(BARNARDA_STAR);
             for (var dimension : Dimension.all()) {
                 system.timeline(dimension.getResourceKey());
-                if (dimension.hasOrbitDimension()) system.timeline(dimension.getOrbit());
+                if (dimension.hasOrbitDimension()) {
+                    system.timeline(dimension.getOrbit());
+                }
             }
         }
         return system;
@@ -75,7 +75,9 @@ public final class WeatherSystem extends FastSavedData {
     }
 
     public static WeatherType current(Level level) {
-        if (level.isClientSide) return ILevel.getCapability(level, CLIENT_WEATHER);
+        if (level.isClientSide) {
+            return ILevel.getCapability(level, CLIENT_WEATHER);
+        }
         var state = state(level);
         return state == null ? null : state.weather();
     }
@@ -85,7 +87,9 @@ public final class WeatherSystem extends FastSavedData {
         if (state == null && level instanceof ServerLevel serverLevel) {
             // ServerLevel's constructor queries sky brightness before the overworld is registered.
             // noinspection ConstantValue
-            if (serverLevel.getServer().overworld() == null) return null;
+            if (serverLevel.getServer().overworld() == null) {
+                return null;
+            }
             get(serverLevel.getServer()).apply(serverLevel);
             state = ILevel.getCapability(level, STATE);
         }
@@ -113,7 +117,9 @@ public final class WeatherSystem extends FastSavedData {
             var system = get(serverLevel.getServer());
             var period = system.timeline(level.dimension()).at(system.clock);
             var weather = profile(level.dimension()).vanillaWeather(strength > 0.2F, period.weather().thundering());
-            if (weather != period.weather()) system.change(serverLevel, weather, system.remaining(period));
+            if (weather != period.weather()) {
+                system.change(serverLevel, weather, system.remaining(period));
+            }
         }
     }
 
@@ -122,7 +128,9 @@ public final class WeatherSystem extends FastSavedData {
             var system = get(serverLevel.getServer());
             var period = system.timeline(level.dimension()).at(system.clock);
             var weather = profile(level.dimension()).vanillaWeather(period.weather().raining(), strength > 0.9F);
-            if (weather != period.weather()) system.change(serverLevel, weather, system.remaining(period));
+            if (weather != period.weather()) {
+                system.change(serverLevel, weather, system.remaining(period));
+            }
         }
     }
 
@@ -145,6 +153,7 @@ public final class WeatherSystem extends FastSavedData {
             nextUpdate = Math.min(nextUpdate, timeline.nextBoundary(clock));
             return timeline;
         }
+
         var timeline = timelines.get(key);
         if (timeline == null) {
             timeline = new WeatherTimeline(server.getWorldData().worldGenOptions().seed() ^ key.location().toString().hashCode());
@@ -158,11 +167,20 @@ public final class WeatherSystem extends FastSavedData {
     }
 
     private WeatherTimeline star(ResourceKey<Level> key) {
-        if (!profile(key).stellarInfluence()) return null;
+        if (!profile(key).stellarInfluence()) {
+            return null;
+        }
+
         var galaxy = GTODimensions.getGalaxy(key);
-        if (galaxy == Galaxy.PROXIMA_CENTAURI) return timeline(PROXIMA_STAR);
-        if (galaxy == Galaxy.BARNARDA) return timeline(BARNARDA_STAR);
-        if (WeatherProfiles.sameGalaxy(key, SolarStormHandler.SOLAR_SURFACE)) return timeline(SolarStormHandler.SOLAR_SURFACE);
+        if (galaxy == Galaxy.PROXIMA_CENTAURI) {
+            return timeline(PROXIMA_STAR);
+        }
+        if (galaxy == Galaxy.BARNARDA) {
+            return timeline(BARNARDA_STAR);
+        }
+        if (WeatherProfiles.sameGalaxy(key, SolarStormHandler.SOLAR_SURFACE)) {
+            return timeline(SolarStormHandler.SOLAR_SURFACE);
+        }
         return null;
     }
 
@@ -171,25 +189,35 @@ public final class WeatherSystem extends FastSavedData {
             clock++;
             setDirty();
         }
-        if (clock >= nextUpdate) update();
+        if (clock >= nextUpdate) {
+            update();
+        }
     }
 
     private void update() {
         nextUpdate = Long.MAX_VALUE;
         timelines.forEach(extendTimelines);
-        for (var level : server.getAllLevels()) apply(level);
+        for (var level : server.getAllLevels()) {
+            apply(level);
+        }
     }
 
     public ObjectArrayList<WeatherTimeline.Period> forecast(ResourceKey<Level> key) {
         var timeline = timeline(key);
         timeline.extend(profile(key), clock);
+
         var star = star(key);
-        if (star != null) star.extend(WeatherProfiles.SOLAR, clock);
+        if (star != null) {
+            star.extend(WeatherProfiles.SOLAR, clock);
+        }
         return timeline.forecast(clock, star);
     }
 
     public boolean change(ServerLevel level, WeatherType weather, int ticks) {
-        if (weather == null || profile(level.dimension()).find(weather) == null) return false;
+        if (weather == null || profile(level.dimension()).find(weather) == null) {
+            return false;
+        }
+
         timeline(level.dimension()).change(profile(level.dimension()), weather, ticks, clock);
         setDirty();
         // Recompute immediately: stellar commands also update their planets and AE links.
@@ -208,8 +236,12 @@ public final class WeatherSystem extends FastSavedData {
             float rain = previous == null ? (weather.raining() ? 1 : 0) : previous.rainLevel(now, 0);
             float thunder = previous == null ? (weather.thundering() ? 1 : 0) : previous.rawThunderLevel(now, 0);
             ILevel.setCapability(level, STATE, new WeatherState(weather, rain, thunder, now));
-            if (SolarStormHandler.isSolarSurface(level)) SolarStormHandler.update(level);
-            for (var player : level.players()) sync(player);
+            if (SolarStormHandler.isSolarSurface(level)) {
+                SolarStormHandler.update(level);
+            }
+            for (var player : level.players()) {
+                sync(player);
+            }
         }
     }
 
@@ -231,28 +263,24 @@ public final class WeatherSystem extends FastSavedData {
         result.add(current);
         for (var dimension : Dimension.all()) {
             var key = dimension.getResourceKey();
-            if (dimension.isWithinGalaxy() && key != current && PlanetManagement.isUnlocked(player, key)) result.add(key);
+            if (dimension.isWithinGalaxy() && key != current && PlanetManagement.isUnlocked(player, key)) {
+                result.add(key);
+            }
         }
         return result;
     }
 
     static WeatherSystem load(DataIOStream stream) throws IOException {
-        var map = WeatherDataComponents.read(stream, WeatherDataComponents.GLOBAL);
+        var data = WeatherDataIO.readGlobal(stream);
         var system = new WeatherSystem();
-        system.clock = DimensionDataComponents.required(map, WeatherDataComponents.CLOCK);
-        var timelines = map.getData(WeatherDataComponents.TIMELINES);
-        if (timelines != null) {
-            system.timelines = timelines;
-            system.timelines.forEach((key, timeline) -> timeline.onChange(system::setDirty));
-        }
+        system.clock = data.clock();
+        system.timelines = data.timelines();
+        system.timelines.forEach((key, timeline) -> timeline.onChange(system::setDirty));
         return system;
     }
 
     @Override
     public void save(DataIOStream stream) throws IOException {
-        var map = new DataComponentMap(2);
-        map.put(WeatherDataComponents.CLOCK, clock);
-        if (!timelines.isEmpty()) map.put(WeatherDataComponents.TIMELINES, timelines);
-        WeatherDataComponents.write(stream, WeatherDataComponents.GLOBAL, map);
+        WeatherDataIO.writeGlobal(stream, clock, timelines);
     }
 }
