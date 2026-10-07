@@ -16,6 +16,7 @@
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 | 修改天气类型、天体天气行为、天气指令或天气预报 | [星系天气](docs/galaxy-weather.md) |
+| 修改维度目录、实例描述、创建日志或天气存盘结构 | [维度与天气组件存盘](docs/dimension-data-components.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 

@@ -49,7 +49,11 @@ public final class DimensionProbe {
      */
     public DimensionProbe() {
         if (Boolean.getBoolean("dimensionSuggestionsProbe")) {
-            DimensionSuggestionsProbe.init();
+            try {
+                Class.forName("com.gtocore.dimensionprobe.DimensionSuggestionsProbe").getDeclaredMethod("init").invoke(null);
+            } catch (ReflectiveOperationException failure) {
+                throw new IllegalStateException("Suggestions probe is not available in this checkout", failure);
+            }
             return;
         }
         if (Boolean.getBoolean("dimensionNetworkProbe")) {
@@ -115,6 +119,10 @@ public final class DimensionProbe {
             require(manager.canAccess(stranger, false, instance.dimension()), "Visitor grant failed");
             manager.grant(instance.dimension(), stranger, false);
             require(!manager.canAccess(stranger, false, instance.dimension()), "Visitor revoke failed");
+            verifyVisitorSaveFailure(stranger, true);
+            manager.grant(instance.dimension(), stranger, true);
+            verifyVisitorSaveFailure(stranger, false);
+            manager.grant(instance.dimension(), stranger, false);
             require(manager.canAccess(stranger, true, instance.dimension()), "Admin access denied");
             loadingKey = instance.dimension();
             previous = manager.loadNow(loadingKey);
@@ -263,6 +271,29 @@ public final class DimensionProbe {
             e.printStackTrace();
         }
         server.halt(false);
+    }
+
+    private void verifyVisitorSaveFailure(UUID visitor, boolean grant) throws Exception {
+        String id = instance.id().toString();
+        var file = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("gtolib/dimensions/instances").resolve(id.substring(0, 2)).resolve(id + ".dat");
+        var backup = file.resolveSibling(id + ".before-failure");
+        Files.move(file, backup);
+        Files.createDirectory(file);
+        Files.writeString(file.resolve("blocked"), "injected descriptor save failure");
+        try {
+            boolean failed = false;
+            try {
+                manager.grant(instance.dimension(), visitor, grant);
+            } catch (IllegalStateException expected) {
+                failed = true;
+            }
+            require(failed, "Visitor save failure was swallowed");
+            require(instance.isVisitor(visitor) != grant, "Visitor save failure did not roll back authorization");
+        } finally {
+            Files.delete(file.resolve("blocked"));
+            Files.delete(file);
+            Files.move(backup, file);
+        }
     }
 
     private static void require(boolean condition, String message) {

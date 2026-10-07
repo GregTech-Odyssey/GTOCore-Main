@@ -1,17 +1,219 @@
 package com.gtocore.common.weather;
 
+import com.gtolib.api.dimension.DimensionDataIO;
+import com.gtolib.api.dimension.DimensionSaveAttempt;
+import com.gtolib.api.misc.FastSavedData;
+import com.gtolib.utils.iostream.DataIOStream;
+
 import net.minecraft.SharedConstants;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventListenerHelper;
 import net.minecraftforge.network.NetworkEvent;
 
+import com.gto.datasynclib.datastream.DataComponentMap;
+import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.data.ListData;
+import com.gto.datasynclib.datastream.data.LongData;
+import com.gto.datasynclib.datastream.data.StringData;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 
 import static com.gtocore.common.weather.WeatherTypes.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WeatherTimelineTest {
+
+    @TempDir
+    Path directory;
+
+    private static Data encoded(WeatherTimeline timeline) {
+        return WeatherDataComponents.TIMELINE_CODEC.encode(timeline);
+    }
+
+    private static WeatherTimeline roundTrip(WeatherTimeline timeline) {
+        return WeatherDataComponents.TIMELINE_CODEC.decode(DimensionDataIO.readPayload(encoded(timeline).writeToBytes()),
+                SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+    }
+
+    private static byte[] saved(FastSavedData data) throws Exception {
+        var bytes = new ByteArrayOutputStream();
+        try (var output = DataIOStream.of(bytes)) {
+            data.save(output);
+        }
+        return bytes.toByteArray();
+    }
+
+    private static byte[] components(DataComponentMap map, boolean global) throws Exception {
+        var bytes = new ByteArrayOutputStream();
+        try (var output = DataIOStream.of(bytes)) {
+            WeatherDataComponents.write(output, global ? WeatherDataComponents.GLOBAL : WeatherDataComponents.INSTANCE, map);
+        }
+        return bytes.toByteArray();
+    }
+
+    private static InstanceWeatherData instance(WeatherTimeline timeline) throws Exception {
+        var map = new DataComponentMap(1);
+        map.put(WeatherDataComponents.INSTANCE_TIMELINE, timeline);
+        try (var input = DataIOStream.of(components(map, false))) {
+            return InstanceWeatherData.load(input);
+        }
+    }
+
+    private static WeatherTimeline recoveringStar() {
+        var map = new DataComponentMap(3);
+        map.put(WeatherDataComponents.RANDOM_STATE, Long.MAX_VALUE);
+        map.put(WeatherDataComponents.LAST_STORM_END, 1000L);
+        var periods = new ObjectArrayList<WeatherTimeline.Period>(1);
+        periods.add(new WeatherTimeline.Period(CALM, 1000, 97000));
+        map.put(WeatherDataComponents.PERIODS, periods);
+        return WeatherTimeline.load(map);
+    }
+
+    @Test
+    void binaryGlobalAndInstanceWeatherPreserveSchedulesRecoveryAndDirtyParents() throws Exception {
+        var originalPlanet = new WeatherTimeline(Long.MIN_VALUE);
+        originalPlanet.periods().add(new WeatherTimeline.Period(RAIN, 0, 24000));
+        originalPlanet.periods().add(new WeatherTimeline.Period(CLEAR, 24000, 96000));
+        var originalStar = recoveringStar();
+        var originalTimelines = new Reference2ObjectOpenHashMap<ResourceKey<Level>, WeatherTimeline>(2);
+        originalTimelines.put(Level.OVERWORLD, originalPlanet);
+        originalTimelines.put(WeatherSystem.PROXIMA_STAR, originalStar);
+        var original = new DataComponentMap(2);
+        original.put(WeatherDataComponents.CLOCK, 1000L);
+        original.put(WeatherDataComponents.TIMELINES, originalTimelines);
+        WeatherSystem system;
+        try (var input = DataIOStream.of(components(original, true))) {
+            system = WeatherSystem.load(input);
+        }
+        assertEquals(1000, system.clock());
+        var storage = new DimensionDataStorage(directory.toFile(), null);
+        var file = storage.getDataFile("global_weather");
+        system.setDirty();
+        system.save(file);
+        assertFalse(system.isDirty());
+        assertEquals(0x47545743, ByteBuffer.wrap(Files.readAllBytes(file.toPath())).getInt());
+        var restored = FastSavedData.getFromFile("global_weather", storage, WeatherSystem::load);
+        assertNotNull(restored);
+        assertSame(restored, FastSavedData.getFromFile("global_weather", storage, WeatherSystem::load));
+        assertEquals(1000, restored.clock());
+        DataComponentMap map;
+        try (var input = DataIOStream.of(saved(restored))) {
+            map = WeatherDataComponents.read(input, WeatherDataComponents.GLOBAL);
+        }
+        var timelines = map.getData(WeatherDataComponents.TIMELINES);
+        var planet = timelines.get(Level.OVERWORLD);
+        var star = timelines.get(WeatherSystem.PROXIMA_STAR);
+        assertEquals(encoded(originalPlanet), encoded(planet));
+        assertEquals(encoded(originalStar), encoded(star));
+        for (long time = 1000; time < 73000; time++) assertSame(originalPlanet.effectiveAt(time, originalStar), planet.effectiveAt(time, star));
+        assertEquals(7000, star.nextBoundary(1000));
+
+        // Decode into the actual parent, then mutate that parent's timeline (not a separately decoded snapshot).
+        var field = WeatherSystem.class.getDeclaredField("timelines");
+        field.setAccessible(true);
+        var owned = ((Reference2ObjectOpenHashMap<?, WeatherTimeline>) field.get(restored)).get(Level.OVERWORLD);
+        restored.setDirty(false);
+        owned.extend(EARTH, 96000);
+        assertTrue(restored.isDirty());
+
+        var instance = instance(originalStar);
+        instance.setDirty();
+        DimensionDataIO.writeFastAtomic(storage.getDataFile("instance_weather").toPath(), instance);
+        var instanceRoundTrip = FastSavedData.getFromFile("instance_weather", storage, InstanceWeatherData::load);
+        try (var input = DataIOStream.of(saved(instanceRoundTrip))) {
+            var restoredTimeline = WeatherDataComponents.read(input, WeatherDataComponents.INSTANCE).getData(WeatherDataComponents.INSTANCE_TIMELINE);
+            assertEquals(encoded(originalStar), encoded(restoredTimeline));
+            assertEquals(7000, restoredTimeline.nextBoundary(1000));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "magic", "kind", "schema", "length", "truncated", "trailing", "data_trailing", "missing_timeline", "missing_random", "unknown_weather", "period_gap" })
+    void invalidWeatherFilesCannotResetThroughSavedDataLookup(String corruption) throws Exception {
+        byte[] bytes = saved(instance(recoveringStar()));
+        if (corruption.equals("magic")) ByteBuffer.wrap(bytes).putInt(0, 0x0a000000);
+        else if (corruption.equals("kind")) bytes[4] = 1;
+        else if (corruption.equals("schema")) ByteBuffer.wrap(bytes).putInt(5, 99);
+        else if (corruption.equals("length")) ByteBuffer.wrap(bytes).putInt(13, -1);
+        else if (corruption.equals("truncated")) bytes = Arrays.copyOf(bytes, bytes.length - 1);
+        else if (corruption.equals("trailing")) bytes = Arrays.copyOf(bytes, bytes.length + 1);
+        else {
+            var root = DimensionDataIO.readPayload(Arrays.copyOfRange(bytes, 17, bytes.length)).asStringMapData();
+            if (corruption.equals("missing_timeline")) root.getStringMap().remove("timeline");
+            else {
+                var timeline = root.getStringMap().get("timeline").asStringMapData();
+                if (corruption.equals("missing_random")) timeline.getStringMap().remove("random_state");
+                else {
+                    var periods = timeline.getStringMap().get("periods").asListData();
+                    if (corruption.equals("unknown_weather")) periods.get(0).asListData().set(0, StringData.valueOf("missing"));
+                    else periods.add(ListData.of(StringData.valueOf("calm"), LongData.valueOf(98000), LongData.valueOf(99000)));
+                }
+            }
+            byte[] payload = root.writeToBytes();
+            if (corruption.equals("data_trailing")) payload = Arrays.copyOf(payload, payload.length + 1);
+            bytes = Arrays.copyOf(bytes, 17 + payload.length);
+            ByteBuffer.wrap(bytes).putInt(13, payload.length);
+            System.arraycopy(payload, 0, bytes, 17, payload.length);
+        }
+        var storage = new DimensionDataStorage(directory.toFile(), null);
+        var file = storage.getDataFile("weather").toPath();
+        Files.write(file, bytes);
+        byte[] original = Files.readAllBytes(file);
+        assertThrows(RuntimeException.class, () -> FastSavedData.get("weather", storage, InstanceWeatherData::load, () -> { throw new AssertionError("Corrupt weather was recreated"); }));
+        assertNull(storage.cache.get("weather"));
+        assertArrayEquals(original, Files.readAllBytes(file));
+    }
+
+    @Test
+    void parentDirtySurvivesAtomicFailureAndEmptyTimelineCanGenerateLegitimately() throws Exception {
+        var timeline = new WeatherTimeline(0);
+        var loaded = instance(timeline);
+        // The parent attaches a listener when loading, and extended periods are saved from that same timeline.
+        var field = InstanceWeatherData.class.getDeclaredField("timeline");
+        field.setAccessible(true);
+        var owned = (WeatherTimeline) field.get(loaded);
+        loaded.setDirty(false);
+        owned.extend(EARTH, 0);
+        assertTrue(loaded.isDirty());
+        var blocked = directory.resolve("weather.dat");
+        Files.createDirectory(blocked);
+        Files.writeString(blocked.resolve("blocked"), "failure");
+        assertThrows(RuntimeException.class, () -> loaded.save(blocked.toFile()));
+        assertTrue(loaded.isDirty());
+        var attempt = DimensionSaveAttempt.begin();
+        try {
+            assertThrows(RuntimeException.class, () -> loaded.save(blocked.toFile()));
+            assertTrue(loaded.isDirty());
+            var file = directory.resolve("checked-weather.dat");
+            loaded.save(file.toFile());
+            assertFalse(loaded.isDirty());
+            assertArrayEquals(saved(loaded), Files.readAllBytes(file));
+            try (var input = DataIOStream.of(Files.readAllBytes(file))) {
+                var restored = InstanceWeatherData.load(input);
+                assertArrayEquals(saved(loaded), saved(restored));
+            }
+        } finally {
+            attempt.finish();
+        }
+        loaded.setDirty(false);
+        owned.change(EARTH, THUNDER, 5000, 0);
+        assertTrue(loaded.isDirty());
+        assertSame(THUNDER, roundTrip(owned).at(0).weather());
+    }
 
     static {
         SharedConstants.tryDetectVersion();
@@ -48,8 +250,8 @@ class WeatherTimelineTest {
         planet.extend(EARTH, 0);
         star.extend(STAR, 0);
         var forecast = planet.forecast(0, star);
-        planet = WeatherTimeline.load(planet.save());
-        star = WeatherTimeline.load(star.save());
+        planet = roundTrip(planet);
+        star = roundTrip(star);
         int index = 0;
         for (long tick = 0; tick < WeatherTimeline.FORECAST_TICKS; tick++) {
             planet.extend(EARTH, tick);
@@ -72,7 +274,7 @@ class WeatherTimelineTest {
         assertSame(CLEAR, planet.effectiveAt(4999, star));
         assertSame(THUNDER, planet.effectiveAt(5000, star));
         star.extend(STAR, 5000);
-        star = WeatherTimeline.load(star.save());
+        star = roundTrip(star);
         assertSame(THUNDER, planet.effectiveAt(10999, star));
         assertSame(RAIN, planet.effectiveAt(11000, star));
     }
@@ -83,9 +285,9 @@ class WeatherTimelineTest {
         var b = new WeatherTimeline(2);
         a.extend(EARTH, 0);
         b.extend(EARTH, 0);
-        var original = b.save();
+        var original = encoded(b);
         a.change(EARTH, THUNDER, 4000, 0);
-        assertEquals(original, b.save());
+        assertEquals(original, encoded(b));
         var star = new WeatherTimeline(3);
         star.change(STAR, SOLAR_STORM, 10000, 0);
         star.change(STAR, CALM, 24000, 2000);
@@ -98,11 +300,11 @@ class WeatherTimelineTest {
     void persistedRandomStateKeepsFutureExtensionsStableAndDurationsInRange() {
         var timeline = new WeatherTimeline(99);
         timeline.extend(EARTH, 0);
-        var restored = WeatherTimeline.load(timeline.save());
+        var restored = roundTrip(timeline);
         for (long now = 0; now < 2400000; now += 1000) {
             timeline.extend(EARTH, now);
             restored.extend(EARTH, now);
-            assertEquals(timeline.save(), restored.save());
+            assertEquals(encoded(timeline), encoded(restored));
             for (var period : timeline.periods()) {
                 var entry = EARTH.find(period.weather());
                 long duration = period.end() - period.start();
@@ -155,7 +357,7 @@ class WeatherTimelineTest {
         star.change(STAR, SOLAR_STORM, 1000, 0);
         assertEquals(1000, star.nextBoundary(0));
         star.change(STAR, CALM, 24000, 1000);
-        star = WeatherTimeline.load(star.save());
+        star = roundTrip(star);
         assertEquals(7000, star.nextBoundary(1000));
         assertEquals(7000, star.nextBoundary(6999));
         assertEquals(25000, star.nextBoundary(7000));

@@ -9,6 +9,8 @@ allprojects { p ->
         }
     }
     p.afterEvaluate {
+        // RestartProbe references the API even when FTB runtime is disabled for the lifecycle probe.
+        p.dependencies.add('modCompileOnly', 'curse.maven:ftb-chunks-forge-314906:7880858')
         if (p.findProperty('dimensionProbeFTB') != 'false') p.dependencies.add('modServerRuntimeOnly', 'curse.maven:ftb-chunks-forge-314906:7880858')
         // The development client otherwise includes server-required channels absent on the server.
         p.configurations.modClientRuntimeOnly {
@@ -29,6 +31,7 @@ allprojects { p ->
             dependsOn 'dimensionProbeClasses'
             if (p.findProperty('dimensionSuggestionsProbe') == 'true') systemProperty 'dimensionSuggestionsProbe', 'true'
             if (p.findProperty('dimensionRestartProbe') == 'true') systemProperty 'dimensionRestartProbe', 'true'
+            if (p.findProperty('dimensionRestartCoreProbe') == 'true') systemProperty 'dimensionRestartCoreProbe', 'true'
             if (p.findProperty('dimensionCloseProbe') == 'true') systemProperty 'dimensionCloseProbe', 'true'
             doFirst {
                 def directory = new File(probeRoot, 'server')

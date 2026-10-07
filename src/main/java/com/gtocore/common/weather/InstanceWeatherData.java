@@ -1,14 +1,16 @@
 package com.gtocore.common.weather;
 
+import com.gtolib.api.dimension.DimensionDataComponents;
+import com.gtolib.api.dimension.DimensionDataIO;
 import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.dimension.InstanceDescriptor;
-import com.gtolib.api.dimension.InstanceStore;
+import com.gtolib.api.misc.FastSavedData;
+import com.gtolib.utils.iostream.DataIOStream;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+
+import com.gto.datasynclib.datastream.DataComponentMap;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -18,13 +20,14 @@ import java.io.UncheckedIOException;
  * <p>
  * 运行实例复用世界 SavedData；休眠实例查询只读写其天气元数据，不加载地形或实体。
  */
-final class InstanceWeatherData extends SavedData {
+final class InstanceWeatherData extends FastSavedData {
 
     private static final String NAME = "gtocore_instance_weather";
     private final WeatherTimeline timeline;
 
     private InstanceWeatherData(WeatherTimeline timeline) {
         this.timeline = timeline;
+        timeline.onChange(this::setDirty);
     }
 
     /**
@@ -39,16 +42,14 @@ final class InstanceWeatherData extends SavedData {
      */
     static WeatherTimeline timeline(MinecraftServer server, InstanceDescriptor descriptor, long clock, WeatherProfile profile) {
         var level = server.getLevel(descriptor.dimension());
-        DimensionDataStorage storage = level == null ? new DimensionDataStorage(DimensionManager.get(server).dimensionPath(descriptor.dimension()).resolve("data").toFile(), server.getFixerUpper()) : level.getDataStorage();
-        var data = storage.computeIfAbsent(tag -> new InstanceWeatherData(WeatherTimeline.load(tag.getCompound("timeline"))),
-                () -> new InstanceWeatherData(new WeatherTimeline(descriptor.seed())), NAME);
+        DimensionDataStorage storage = level == null ? DimensionManager.get(server).metadataStorage(descriptor.dimension()) : level.getDataStorage();
+        var data = FastSavedData.get(NAME, storage, InstanceWeatherData::load,
+                () -> new InstanceWeatherData(new WeatherTimeline(descriptor.seed())));
         data.timeline.extend(profile, clock);
         data.setDirty();
         if (level == null) {
-            var tag = NbtUtils.addCurrentDataVersion(new CompoundTag());
-            tag.put("data", data.save(new CompoundTag()));
             try {
-                InstanceStore.writeAtomic(storage.getDataFile(NAME).toPath(), tag);
+                DimensionDataIO.writeFastAtomic(storage.getDataFile(NAME).toPath(), data);
             } catch (IOException exception) {
                 throw new UncheckedIOException("Cannot save dormant instance weather", exception);
             }
@@ -57,15 +58,21 @@ final class InstanceWeatherData extends SavedData {
         return data.timeline;
     }
 
+    static InstanceWeatherData load(DataIOStream stream) throws IOException {
+        var timeline = DimensionDataComponents.required(WeatherDataComponents.read(stream, WeatherDataComponents.INSTANCE), WeatherDataComponents.INSTANCE_TIMELINE);
+        return new InstanceWeatherData(timeline);
+    }
+
     /**
      * 保存实例天气日程。
      *
-     * @param tag SavedData 提供的目标标签
-     * @return 写入天气日程后的同一标签
+     * @param stream FastSavedData 提供的二进制输出流
+     * @throws IOException 天气日程无法写入
      */
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        tag.put("timeline", timeline.save());
-        return tag;
+    public void save(DataIOStream stream) throws IOException {
+        var map = new DataComponentMap(1);
+        map.put(WeatherDataComponents.INSTANCE_TIMELINE, timeline);
+        WeatherDataComponents.write(stream, WeatherDataComponents.INSTANCE, map);
     }
 }

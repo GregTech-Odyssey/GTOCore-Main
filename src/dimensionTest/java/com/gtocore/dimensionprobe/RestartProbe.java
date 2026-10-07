@@ -30,6 +30,7 @@ public final class RestartProbe {
         var manager = DimensionManager.get(server);
         try {
             Path marker = Path.of("restart-stage-v2.txt");
+            boolean coreOnly = Boolean.getBoolean("dimensionRestartCoreProbe");
             if (!Files.exists(marker)) {
                 var owner = new OwnerRef(OwnerRef.Kind.PLAYER, UUID.fromString("be10b40e-9369-49f7-a089-b666cba74a4a"));
                 var valid = manager.getOrCreatePrivate(owner, DimensionTemplates.VOID, "restart-valid", 928173L);
@@ -41,6 +42,11 @@ public final class RestartProbe {
                 require(ForgeChunkManager.forceChunk(level, "ae2", anchor, 0, 0, true, true), "AE2 force ticket was rejected");
                 var invalidLevel = manager.loadNow(invalid.dimension());
                 require(ForgeChunkManager.forceChunk(invalidLevel, "dimension_probe", BlockPos.ZERO, 0, 0, true, true), "Invalid callback candidate was not saved");
+                if (coreOnly) {
+                    Files.writeString(marker, valid.dimension().location() + "\n" + invalid.dimension().location());
+                    Files.writeString(Path.of("restart-result.txt"), "RESTART_SAVED");
+                    return;
+                }
                 var team = dev.ftb.mods.ftbteams.api.FTBTeamsAPI.api().getManager().createServerTeam(server.createCommandSourceStack(), "DimensionForceProbe_" + UUID.randomUUID(), "", dev.ftb.mods.ftblibrary.icon.Color4I.WHITE, UUID.randomUUID());
                 var ftb = manager.getOrCreatePrivate(new OwnerRef(OwnerRef.Kind.TEAM, team.getId()), DimensionTemplates.VOID, "restart-ftb", 83192L);
                 require(server.getLevel(ftb.dimension()) == null, "FTB metadata creation woke terrain");
@@ -83,14 +89,16 @@ public final class RestartProbe {
                 var saved = level.getDataStorage().get(net.minecraft.world.level.ForcedChunksSavedData::load, "chunks");
                 require(!saved.getBlockForcedChunks().isEmpty(), "AE2 valid anchor ticket was removed");
                 require(server.getLevel(invalid) == null && manager.descriptor(invalid) != null, "Invalid Forge candidate remained loaded or lost its definition");
-                var ftb = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(keys.get(2)));
-                require(server.getLevel(ftb) != null && ForgeChunkManager.hasForcedChunks(server.getLevel(ftb)), "FTB valid forced dimension did not restore");
-                require(manager.levels().size() == 5, "Startup loaded unrelated history: " + manager.levels().size());
+                require(manager.levels().size() == (coreOnly ? 4 : 5), "Startup loaded unrelated history: " + manager.levels().size());
                 require(level.getBlockEntity(new BlockPos(1, 64, 1)) instanceof appeng.blockentity.spatial.SpatialAnchorBlockEntity, "Anchor block entity did not persist");
                 level.setChunkForced(0, 0, false);
                 ForgeChunkManager.forceChunk(level, "ae2", new BlockPos(1, 64, 1), 0, 0, false, true);
-                var claim = dev.ftb.mods.ftbchunks.api.FTBChunksAPI.api().getManager().getChunk(new dev.ftb.mods.ftblibrary.math.ChunkDimPos(ftb, 0, 0));
-                claim.unload(server.createCommandSourceStack());
+                if (!coreOnly) {
+                    var ftb = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(keys.get(2)));
+                    require(server.getLevel(ftb) != null && ForgeChunkManager.hasForcedChunks(server.getLevel(ftb)), "FTB valid forced dimension did not restore");
+                    var claim = dev.ftb.mods.ftbchunks.api.FTBChunksAPI.api().getManager().getChunk(new dev.ftb.mods.ftblibrary.math.ChunkDimPos(ftb, 0, 0));
+                    claim.unload(server.createCommandSourceStack());
+                }
                 Files.writeString(Path.of("restart-result.txt"), "RESTART_PROBE_PASSED");
             }
         } catch (Throwable failure) {

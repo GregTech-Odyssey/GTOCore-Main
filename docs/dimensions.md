@@ -1,6 +1,8 @@
 # 维度生命周期与实例
 
-维度模板登记生成规则；实例描述保存身份、归属、种子和解析后的生成定义；`DimensionManager` 只为运行中的实例持有 `ServerLevel`。动态实例不注册到数据包 `LEVEL_STEM`。原版三个世界常驻，其他世界默认在空闲 1200 tick 后于服务器 tick 末尾保存和关闭。关闭保留定义和原存档目录。
+核心维度元数据和天气已按 [DataSyncLib 数据组件方案](dimension-data-components.md) 改用组件载荷；监控、玩家返程、坐标卡和旅行系统另行迁移。本文描述当前行为。
+
+维度模板登记生成规则；实例描述保存身份、归属、种子和解析后的生成定义；`DimensionManager` 只为运行中的实例持有 `ServerLevel`。动态实例不注册到数据包 `LEVEL_STEM`。主世界常驻，其他世界默认在空闲 1200 tick 后于服务器 tick 末尾保存和关闭。关闭保留定义和原存档目录。
 
 ## 配置与指令
 
@@ -19,7 +21,7 @@
 | `grant\|revoke <维度ID> <访客UUID>` | 持久化访客授权，撤销后立即检查在线玩家 |
 | `load\|unload <维度ID>` | 显式加载或申请安全卸载；占用、常驻或已休眠时拒绝卸载 |
 
-示例模板为 `gtocore:private_void`、`gtocore:private_flat` 和 `gtocore:overworld_noise`。虚空模板首次进入时创建 5×5 平台；已保存的出生点不可站立时重新选择安全位置。指令返回的动态维度 ID 形如 `gtolib:instance/<UUID>`。
+示例模板为 `gtocore:private_void`、`gtocore:private_flat` 和 `gtocore:overworld_noise`。虚空模板首次进入时创建 5×5 平台；已保存的出生点不可站立时重新选择安全位置。指令返回的动态维度 ID 形如 `gtocore:instance/<UUID>`。
 
 `execute in` 等维度参数的补全按需向服务器查询，包含已登记的固定维度（包括休眠星球）及可访问的已加载动态实例。补全不加载世界、不扫描历史实例；休眠动态实例可通过分页列表取得完整 ID 后使用。登录时同步固定定义和当前动态实例，不广播动态历史。
 
@@ -52,7 +54,7 @@ if (manager.canEnterSeries(player, address)) {
 
 个人实例默认允许本人及明确访客；队伍实例按 FTB Teams 当前队伍身份校验。加入队伍不改变个人实例归属。离队事件立即复核，队伍删除立即送回在线非管理员；删除队伍后即使有访客授权，也只有管理员可处理该实例。管理员等级 2 可以访问。私人授权与星球解锁分别保存。
 
-登录、重生、维度参数指令、统一传送工具、私人/系列指令、虚空设备和 Ad Astra 星球入口显式加载目标。空间站建造和着陆在加载前检查私人权限、原有星球规则及站点归属；站点列表和归属查询读取 SavedData。AE2 空间存储世界通过统一管理器登记，列表查询不创建世界，实际空间交换才加载并保活。FTB Chunks 的加票据操作只加载其自身规则已经判定有效的目标，移除票据不唤醒世界。
+登录、重生、维度参数指令、统一传送工具、私人/系列指令、虚空设备和 Ad Astra 星球入口显式加载目标。空间站建造和着陆在加载前检查私人权限、原有星球规则及站点归属；站点列表和归属查询读取 SavedData。AE2 空间存储世界通过统一管理器登记，列表查询不创建世界，实际空间交换才加载并保活。当前分支尚未接入 FTB Chunks 加票据时的休眠维度懒加载入口，完整 FTB 重启探针未通过，见组件方案中的验证记录。
 
 原版和 Forge 保存的强加载由加载流程恢复，并执行 Forge 注册的票据校验回调，包含 AE2、FTB Chunks 的有效性判断。动态实例的强加载索引随加减票据持久化；启动只遍历该索引。无效强加载的启动候选在校验后可回到休眠。固定数据包世界允许读取小型 `chunks` 元数据来寻找启动候选。
 
@@ -60,7 +62,7 @@ if (manager.canEnterSeries(player, address)) {
 
 ## 存盘与失败处理
 
-主世界目录下 `gtolib/dimensions/catalog.dat` 保存模板、系列及动态强加载索引。`instances/<UUID前两位>/<UUID>.dat` 保存各实例，`instances.index` 以固定 16 字节 UUID 分页寻址；`pending.dat` 是单项创建事务日志，恢复时不扫描历史。描述缓存上限 32，休眠 SavedData 缓存上限 16。未访问的序号没有描述或地形文件。生成定义使用 NBT 字节数组保存 UTF-8，支持超过 64 KiB 的完整噪声设置和生物群系参数定义。
+主世界目录下 `gtolib/dimensions/catalog.dat` 保存模板、系列及动态强加载索引。`instances/<UUID前两位>/<UUID>.dat` 保存各实例，`instances.index` 以固定 16 字节 UUID 分页寻址；`pending.dat` 是单项创建事务日志，恢复时不扫描历史。描述缓存上限 32，休眠 SavedData 缓存上限 16。未访问的序号没有描述或地形文件。目录、描述和创建日志仅支持 GZIP 压缩的 `GTDC` 组件文件；文件外壳版本为 1、组件 schema 为 2，不读取或迁移旧 NBT。生成定义使用 Data 字符串的 UTF-8/VarInt 编码，支持超过 64 KiB 的完整噪声设置和生物群系参数定义。
 
 实例首次创建即冻结生成定义和种子；模板升级不覆盖已有描述。实例种子参与 `getSeed`、`StructureCheck`、噪声/结构生成状态、随机序列及服务端/客户端混淆种子。数据包和既有代码维度保持原主世界种子及生成器。动态出生位置、角度、实体、区块、SavedData 和随机序列在重新加载时恢复。
 
@@ -85,11 +87,15 @@ Forge 探针位于 `src/dimensionTest`，通过 `-I gradle/scripts/dimensions-pr
 .\gradlew.bat runClient -I gradle/scripts/dimensions-probe.gradle -PgtolibUnprotected=true -PdimensionNetworkProbe=true -PdimensionClientName=DimensionB
 ```
 
+现有探针固定假定下界、末地常驻，隔离配置的 `dimensions.residentDimensions` 应包含 `minecraft:the_nether` 和 `minecraft:the_end`；生产默认仅主世界常驻。
+
 断言结果以测试目录的 `result.txt`、`network-server.txt` 和各客户端结果文件为准，Gradle 的退出码不能代替探针结果。服务端探针故意注入一次保存失败，相关错误日志属于验证预期。联机探针自动处理隔离客户端的首次启动界面、连接、传送和重连，完成后关闭测试进程。
 
-补全回归探针在服务器和一个 `DimensionA` 客户端的联机启动参数中额外加入 `-PdimensionSuggestionsProbe=true`。它使用真实客户端命令树及原版补全数据包验证空前缀、命名空间、部分名称、嵌套 `execute as @s in` 和登录后新增的定义，确认候选来自服务器而非登录缓存；同时检查 96 条休眠实例没有登录同步，补全前后保持启动时的世界数量。结果为 `server-suggestions.txt` 和 `DimensionA-suggestions.txt`。
+补全回归探针在服务器和一个 `DimensionA` 客户端的联机启动参数中额外加入 `-PdimensionSuggestionsProbe=true`。它使用真实客户端命令树及原版补全数据包验证空前缀、命名空间、部分名称、嵌套 `execute as @s in` 和登录后新增的定义，确认候选来自服务器而非登录缓存；同时检查 96 条休眠实例没有登录同步，补全前后保持启动时的世界数量。结果为 `server-suggestions.txt` 和 `DimensionA-suggestions.txt`。当前 checkout 缺少该可选探针的实现类，启用时会明确失败；其他探针可独立运行。
 
 联机探针还执行完整管理员指令、实际放置的虚空设备传送处理、太空电梯/火箭星球菜单着陆、空间站结构建造与休眠后授权着陆、AE2 方块交换，以及动态世界的强制出生点重生。站点查询和拒绝着陆均检查没有唤醒世界。单服探针可增加 `-PdimensionProbeFTB=false` 验证不安装可选 FTB Chunks 的启动与生命周期。
+
+`-PdimensionRestartProbe=true -PdimensionRestartCoreProbe=true -PdimensionProbeFTB=false` 可在独立测试目录执行不含 FTB 的核心两次启动场景，检查原版及 AE2 票据、组件目录/描述恢复和无效 Forge 候选清理。
 
 `-PdimensionRestartProbe=true` 使用两次独立服务器启动：第一次写入原版、AE2 锚点与 FTB 强加载，第二次验证恢复和无效票据清理。此模式将隔离测试世界的 FTB `force_load_mode` 设置为 `always`，并在测试中另外检查 `never`、过期和访问拒绝不会唤醒实例。`-PdimensionCloseProbe=true` 在卸载事件阶段注入不可恢复异常，验证停服、`POISONED` 状态、拒绝重开及保存保留；结果为 `close-result.txt`。这些故障开关只存在于探针，不进入生产包。
 

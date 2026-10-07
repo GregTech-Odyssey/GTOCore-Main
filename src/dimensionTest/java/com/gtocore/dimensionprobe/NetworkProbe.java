@@ -145,11 +145,11 @@ public final class NetworkProbe {
                         logins++;
                     }
                     var key = minecraft.level.dimension();
-                    if (key.location().getNamespace().equals("gtolib")) {
+                    if (key.location().getNamespace().equals("gtocore") && key.location().getPath().startsWith("instance/")) {
                         var environment = DimensionSync.clientEnvironment(key);
                         require(environment != null, "Dynamic environment missing before client frame");
                         require(((com.gtolib.mc.ILevel) minecraft.level).gtolib$isVoid() == environment.voidWorld(), "Client environment did not reach level capability");
-                        long known = minecraft.getConnection().levels().stream().filter(k -> k.location().getNamespace().equals("gtolib")).count();
+                        long known = minecraft.getConnection().levels().stream().filter(k -> k.location().getNamespace().equals("gtocore") && k.location().getPath().startsWith("instance/")).count();
                         require(known <= 2, "History was synchronized to the client");
                         if (previous != key) visits++;
                     }

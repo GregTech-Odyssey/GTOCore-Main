@@ -6,13 +6,15 @@ import com.gtocore.integration.ae.SolarStormHandler;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.data.Galaxy;
+import com.gtolib.api.dimension.DimensionDataComponents;
 import com.gtolib.api.dimension.DimensionManager;
+import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.misc.PlanetManagement;
+import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -20,17 +22,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.saveddata.SavedData;
 
 import com.gto.datasynclib.datastream.DataComponentKey;
+import com.gto.datasynclib.datastream.DataComponentMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.function.BiConsumer;
 
 /** Cached on the overworld capability and persisted once, with independent schedules per dimension. */
-public final class WeatherSystem extends SavedData {
+public final class WeatherSystem extends FastSavedData {
 
     private static final String DATA_NAME = "gtocore_galaxy_weather";
     private static final DataComponentKey<WeatherSystem> KEY = DataComponentKey.createNoCodec(DATA_NAME);
@@ -39,7 +41,7 @@ public final class WeatherSystem extends SavedData {
     public static final ResourceKey<Level> PROXIMA_STAR = dimension("gtocore:proxima_weather_star");
     public static final ResourceKey<Level> BARNARDA_STAR = dimension("gtocore:barnarda_weather_star");
 
-    private final Reference2ObjectOpenHashMap<ResourceKey<Level>, WeatherTimeline> timelines = new Reference2ObjectOpenHashMap<>(48);
+    private Reference2ObjectOpenHashMap<ResourceKey<Level>, WeatherTimeline> timelines = new Reference2ObjectOpenHashMap<>(48);
     private MinecraftServer server;
     private long clock;
     private long nextUpdate;
@@ -54,7 +56,7 @@ public final class WeatherSystem extends SavedData {
         var overworld = server.overworld();
         var system = ILevel.getCapability(overworld, KEY);
         if (system == null) {
-            system = overworld.getDataStorage().computeIfAbsent(WeatherSystem::load, WeatherSystem::new, DATA_NAME);
+            system = FastSavedData.get(DATA_NAME, overworld.getDataStorage(), WeatherSystem::load, WeatherSystem::new);
             system.server = server;
             ILevel.setCapability(overworld, KEY, system);
             system.timeline(SolarStormHandler.SOLAR_SURFACE);
@@ -146,6 +148,7 @@ public final class WeatherSystem extends SavedData {
         var timeline = timelines.get(key);
         if (timeline == null) {
             timeline = new WeatherTimeline(server.getWorldData().worldGenOptions().seed() ^ key.location().toString().hashCode());
+            timeline.onChange(this::setDirty);
             timeline.extend(profile(key), clock);
             timelines.put(key, timeline);
             nextUpdate = Math.min(nextUpdate, timeline.nextBoundary(clock));
@@ -233,20 +236,23 @@ public final class WeatherSystem extends SavedData {
         return result;
     }
 
-    private static WeatherSystem load(CompoundTag tag) {
+    static WeatherSystem load(DataIOStream stream) throws IOException {
+        var map = WeatherDataComponents.read(stream, WeatherDataComponents.GLOBAL);
         var system = new WeatherSystem();
-        system.clock = tag.getLong("clock");
-        var dimensions = tag.getCompound("dimensions");
-        for (var id : dimensions.getAllKeys()) system.timelines.put(dimension(id), WeatherTimeline.load(dimensions.getCompound(id)));
+        system.clock = DimensionDataComponents.required(map, WeatherDataComponents.CLOCK);
+        var timelines = map.getData(WeatherDataComponents.TIMELINES);
+        if (timelines != null) {
+            system.timelines = timelines;
+            system.timelines.forEach((key, timeline) -> timeline.onChange(system::setDirty));
+        }
         return system;
     }
 
     @Override
-    public @NotNull CompoundTag save(@NotNull CompoundTag tag) {
-        tag.putLong("clock", clock);
-        var dimensions = new CompoundTag();
-        timelines.forEach((key, timeline) -> dimensions.put(key.location().toString(), timeline.save()));
-        tag.put("dimensions", dimensions);
-        return tag;
+    public void save(DataIOStream stream) throws IOException {
+        var map = new DataComponentMap(2);
+        map.put(WeatherDataComponents.CLOCK, clock);
+        if (!timelines.isEmpty()) map.put(WeatherDataComponents.TIMELINES, timelines);
+        WeatherDataComponents.write(stream, WeatherDataComponents.GLOBAL, map);
     }
 }

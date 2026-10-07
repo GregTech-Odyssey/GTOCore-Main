@@ -1,11 +1,11 @@
 package com.gtocore.common.weather;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import com.gtolib.api.dimension.DimensionDataComponents;
 
-import com.gto.datasynclib.datastream.data.StringData;
+import com.gto.datasynclib.datastream.DataComponentMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+import static com.gtocore.common.weather.WeatherDataComponents.*;
 
 /** Persisted natural schedule. The stellar overlay never consumes or rerolls this schedule. */
 public final class WeatherTimeline {
@@ -13,9 +13,21 @@ public final class WeatherTimeline {
     public static final long FORECAST_TICKS = 3 * 24000L;
     public static final int RECOVERY_TICKS = 6000;
 
-    public record Period(WeatherType weather, long start, long end) {}
+    public record Period(WeatherType weather, long start, long end) {
 
-    private final ObjectArrayList<Period> periods = new ObjectArrayList<>(16);
+        public Period {
+            if (weather == null || end <= start) throw new IllegalArgumentException("Invalid weather period");
+        }
+    }
+
+    private static final Runnable NO_CHANGE = () -> {};
+    private ObjectArrayList<Period> periods = new ObjectArrayList<>(16);
+    private Runnable changed = NO_CHANGE;
+
+    void onChange(Runnable listener) {
+        changed = listener;
+    }
+
     private long randomState;
     private long lastStormEnd = Long.MIN_VALUE;
 
@@ -37,20 +49,25 @@ public final class WeatherTimeline {
     }
 
     public void extend(WeatherProfile profile, long now) {
+        boolean modified = false;
         while (!periods.isEmpty() && periods.getFirst().end() <= now) {
+            modified = true;
             var expired = periods.removeFirst();
             if (expired.weather() == WeatherTypes.SOLAR_STORM) lastStormEnd = expired.end();
         }
         if (periods.isEmpty()) {
+            modified = true;
             var first = profile.entries()[0];
             periods.add(new Period(first.weather(), now, now + duration(first)));
         }
         long horizon = now + FORECAST_TICKS;
         while (periods.getLast().end() < horizon) {
+            modified = true;
             var entry = choose(profile);
             long start = periods.getLast().end();
             periods.add(new Period(entry.weather(), start, start + duration(entry)));
         }
+        if (modified) changed.run();
     }
 
     private WeatherProfile.Entry choose(WeatherProfile profile) {
@@ -82,6 +99,7 @@ public final class WeatherTimeline {
         periods.clear();
         periods.add(new Period(weather, now, now + ticks));
         extend(profile, now);
+        changed.run();
     }
 
     public Period at(long time) {
@@ -135,31 +153,18 @@ public final class WeatherTimeline {
         return result;
     }
 
-    public CompoundTag save() {
-        var tag = new CompoundTag();
-        tag.putLong("random", randomState);
-        if (lastStormEnd != Long.MIN_VALUE) tag.putLong("last_storm_end", lastStormEnd);
-        var list = new ListTag();
-        for (var period : periods) {
-            var entry = new CompoundTag();
-            entry.putString("weather", WeatherTypes.REGISTRY.dataCodec().encode(period.weather()).getString());
-            entry.putLong("start", period.start());
-            entry.putLong("end", period.end());
-            list.add(entry);
-        }
-        tag.put("periods", list);
-        return tag;
+    public DataComponentMap save() {
+        var map = new DataComponentMap(3);
+        map.put(RANDOM_STATE, randomState);
+        map.put(PERIODS, periods);
+        if (lastStormEnd != Long.MIN_VALUE) map.put(LAST_STORM_END, lastStormEnd);
+        return map;
     }
 
-    public static WeatherTimeline load(CompoundTag tag) {
-        var timeline = new WeatherTimeline(tag.getLong("random"));
-        if (tag.contains("last_storm_end")) timeline.lastStormEnd = tag.getLong("last_storm_end");
-        var list = tag.getList("periods", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            var entry = list.getCompound(i);
-            var weather = WeatherTypes.REGISTRY.dataCodec().decode(StringData.valueOf(entry.getString("weather")), 0);
-            if (weather != null) timeline.periods.add(new Period(weather, entry.getLong("start"), entry.getLong("end")));
-        }
+    public static WeatherTimeline load(DataComponentMap map) {
+        var timeline = new WeatherTimeline(DimensionDataComponents.required(map, RANDOM_STATE));
+        timeline.lastStormEnd = map.getOrDefaultData(LAST_STORM_END, Long.MIN_VALUE);
+        timeline.periods = DimensionDataComponents.required(map, PERIODS);
         return timeline;
     }
 }
