@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtolib.GTOCore;
+import com.gtolib.patch.FastJsonOps;
 import com.gtolib.utils.RLUtils;
 
 import net.minecraft.resources.FileToIdConverter;
@@ -14,7 +15,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
 import lombok.experimental.UtilityClass;
 
 import java.io.Reader;
@@ -47,7 +47,7 @@ public class GTOTags {
                 try (Reader reader = resource.openAsReader()) {
                     JsonElement jsonelement = JsonParser.parseReader(reader);
                     var list = map.computeIfAbsent(resourcelocation1, (p_215974_) -> new ArrayList<>());
-                    TagFile tagfile = (TagFile) TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, jsonelement)).getOrThrow(false, s -> GTOCore.LOGGER.error(s.toString()));
+                    TagFile tagfile = (TagFile) TagFile.CODEC.parse(new Dynamic(FastJsonOps.INSTANCE, jsonelement)).getOrThrow(false, s -> GTOCore.LOGGER.error(s.toString()));
                     if (tagfile.replace()) {
                         list.clear();
                     }

@@ -5,6 +5,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import com.gto.datasynclib.util.ItemStackHashStrategy;
 import lombok.experimental.UtilityClass;
@@ -26,8 +27,8 @@ public class StxckUtil {
         var extraItemCount = getExtraItemCount(entity);
         if (extraItemCount <= 0) return;
         var stack = entity.getItem();
-        var item = stack.item;
-        if (item != null) {
+        var item = stack.getItem();
+        if (item != Items.AIR) {
             var maxSize = item.getMaxStackSize();
             if (stack.getCount() == maxSize) return;
             var x = maxSize - stack.getCount();
