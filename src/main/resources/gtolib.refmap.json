@@ -484,6 +484,9 @@
     },
     "com/gtolib/mixin/ftbchunks/DimensionFTBChunkMixin": {
       "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
+      "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
     }
   },
   "data": {
@@ -972,6 +975,9 @@
       },
       "com/gtolib/mixin/ftbchunks/DimensionFTBChunkMixin": {
         "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
+        "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
       }
     }
   }

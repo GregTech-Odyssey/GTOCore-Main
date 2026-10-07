@@ -409,13 +409,6 @@
       "setWeatherParameters": "Lnet/minecraft/server/level/ServerLevel;m_8606_(IIZZ)V",
       "advanceWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184096_()V",
       "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V": "Lnet/minecraft/world/level/storage/ServerLevelData;m_5565_(Z)V",
-      "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;"
-    },
-    "io/github/nutant/leanobject/mixin/model/BlockElementFaceMixin": {
-      "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
-    },
-    "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
-      "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
       "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;",
       "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z": "Lnet/minecraft/world/level/GameRules;m_46207_(Lnet/minecraft/world/level/GameRules$Key;)Z",
       "Lnet/minecraft/world/level/dimension/DimensionType;hasSkyLight()Z": "Lnet/minecraft/world/level/dimension/DimensionType;f_223549_()Z"
@@ -491,6 +484,9 @@
     },
     "com/gtolib/mixin/ftbchunks/DimensionFTBChunkMixin": {
       "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
+      "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
     }
   },
   "data": {
@@ -904,13 +900,6 @@
         "setWeatherParameters": "Lnet/minecraft/server/level/ServerLevel;m_8606_(IIZZ)V",
         "advanceWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184096_()V",
         "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V": "Lnet/minecraft/world/level/storage/ServerLevelData;m_5565_(Z)V",
-        "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;"
-      },
-      "io/github/nutant/leanobject/mixin/model/BlockElementFaceMixin": {
-        "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
-      },
-      "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
-        "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
         "Lnet/minecraft/server/level/ServerLevel;dimensionType()Lnet/minecraft/world/level/dimension/DimensionType;": "Lnet/minecraft/server/level/ServerLevel;m_6042_()Lnet/minecraft/world/level/dimension/DimensionType;",
         "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z": "Lnet/minecraft/world/level/GameRules;m_46207_(Lnet/minecraft/world/level/GameRules$Key;)Z",
         "Lnet/minecraft/world/level/dimension/DimensionType;hasSkyLight()Z": "Lnet/minecraft/world/level/dimension/DimensionType;f_223549_()Z"
@@ -986,6 +975,9 @@
       },
       "com/gtolib/mixin/ftbchunks/DimensionFTBChunkMixin": {
         "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129880_(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
+        "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
       }
     }
   }
