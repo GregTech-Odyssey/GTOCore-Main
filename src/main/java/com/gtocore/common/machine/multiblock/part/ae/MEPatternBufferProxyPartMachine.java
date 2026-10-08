@@ -82,6 +82,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     @Override
     public void onUnload() {
+        MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
         super.onUnload();
         watch(null);
         bufferResolved = false;
@@ -125,6 +126,11 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
             proxySlotRecipeHandler = new ProxySlotRecipeHandler(this, target);
             target.addProxy(this);
         }
+        if (target == null) {
+            MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
+        } else {
+            MEPatternBufferConnectionHandler.register(getLevel(), target.getPos(), getPos());
+        }
         if (!isRemote()) {
             for (var controller : getControllers()) {
                 controller.requestCheck();
@@ -154,6 +160,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     }
 
     private void onBufferUnloaded(MEPatternBufferPartMachine target) {
+        MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
         buffer = null;
         target.unloadProxy(this);
         proxySlotRecipeHandler.release();
@@ -219,6 +226,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
             proxySlotRecipeHandler.release();
             proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
         }
+        MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
     }
 
     @Override

@@ -170,7 +170,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     static final int SHARE_SLOTS = 9;
     static final int SHARE_TANK_CAPACITY = 64000;
-    static final String DATA_STICK_POS = "pos";
+    public static final String DATA_STICK_POS = "pos";
     static final String JADE_FORMED = "formed";
     static final String JADE_PROXIES = "proxies";
     static final String JADE_ITEMS = "items";
@@ -342,6 +342,12 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         }
         MultiMachineModeFancyConfigurator.verify(recipeTypes, recipeType, () -> recipeType = null);
         circuitInventorySimulated.setPriority(priority);
+    }
+
+    @Override
+    public void onUnload() {
+        MEPatternBufferConnectionHandler.unregisterBuffer(getLevel(), getPos());
+        super.onUnload();
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.integration.ae.wireless.WirelessClientCache;
 import com.gtocore.integration.emi.HiddenItems;
 
@@ -282,6 +283,7 @@ public final class ForgeClientEvent {
         TechTreeSavedData.clearClientInstance();
         WirelessClientCache.clear();
         ReceiverTransmitterHandler.unloadClient();
+        MEPatternBufferConnectionHandler.unloadClient();
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
         RuleManager.leaveRemoteWorld();

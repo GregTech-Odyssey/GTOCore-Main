@@ -5,6 +5,7 @@ import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
@@ -124,6 +125,7 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.register(AnimalsRevengeEvent.class);
         WirelessEvents.init();
         WirelessGridEvents.init();
+        MEPatternBufferConnectionHandler.init();
     }
 
     @SubscribeEvent
@@ -381,6 +383,7 @@ public final class ForgeCommonEvent {
             TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
             CelestialSavedData.sync(player);
+            MEPatternBufferConnectionHandler.syncToPlayer(player);
         }
     }
 
@@ -397,6 +400,7 @@ public final class ForgeCommonEvent {
         if (event.getEntity() instanceof ServerPlayer player) {
             showVoidTimeHint(player);
             syncPlayerTime(player);
+            MEPatternBufferConnectionHandler.syncToPlayer(player);
             // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
         }
     }

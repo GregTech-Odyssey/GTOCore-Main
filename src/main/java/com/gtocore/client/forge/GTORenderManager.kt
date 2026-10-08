@@ -52,6 +52,14 @@ object GTORenderManager {
 object ThickPolylineRenderer {
     @JvmStatic
     fun drawSegments(poseStack: PoseStack, camera: Camera, colorRGBA: Int, width: Float, segments: List<Pair<Vec3, Vec3>>) {
+        GradientThickPolylineRenderer.drawSegments(poseStack, camera, colorRGBA, colorRGBA, width, segments)
+    }
+}
+
+// 公用：首尾颜色线性渐变的3D加粗线段渲染器
+object GradientThickPolylineRenderer {
+    @JvmStatic
+    fun drawSegments(poseStack: PoseStack, camera: Camera, colorA: Int, colorB: Int, width: Float, segments: List<Pair<Vec3, Vec3>>) {
         if (segments.isEmpty()) return
         val half = width / 2f
 
@@ -127,11 +135,11 @@ object ThickPolylineRenderer {
             val byEy = by + ey
             val bzEz = bz + ez
 
-            // 四边形：aL -> bL -> bR -> aR
-            buffer.vertex(matrix, axEx + offx, ayEy + offy, azEz + offz).color(colorRGBA).endVertex()
-            buffer.vertex(matrix, bxEx + offx, byEy + offy, bzEz + offz).color(colorRGBA).endVertex()
-            buffer.vertex(matrix, bxEx - offx, byEy - offy, bzEz - offz).color(colorRGBA).endVertex()
-            buffer.vertex(matrix, axEx - offx, ayEy - offy, azEz - offz).color(colorRGBA).endVertex()
+            // 四边形：aL -> bL -> bR -> aR；GPU在两端顶点色之间做线性插值
+            buffer.vertex(matrix, axEx + offx, ayEy + offy, azEz + offz).color(colorA).endVertex()
+            buffer.vertex(matrix, bxEx + offx, byEy + offy, bzEz + offz).color(colorB).endVertex()
+            buffer.vertex(matrix, bxEx - offx, byEy - offy, bzEz - offz).color(colorB).endVertex()
+            buffer.vertex(matrix, axEx - offx, ayEy - offy, azEz - offz).color(colorA).endVertex()
         }
 
         for (i in segments.indices) {
