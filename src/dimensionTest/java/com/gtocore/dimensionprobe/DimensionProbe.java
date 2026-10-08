@@ -1,5 +1,6 @@
 package com.gtocore.dimensionprobe;
 
+import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.dimension.*;
 
@@ -47,6 +48,10 @@ public final class DimensionProbe {
      * 注册隔离测试所需的事件监听，根据 JVM 属性选择探针场景。
      */
     public DimensionProbe() {
+        if (Boolean.getBoolean("dimensionCrashProbe")) {
+            new CrashProbe();
+            return;
+        }
         if (Boolean.getBoolean("dimensionSuggestionsProbe")) {
             try {
                 Class.forName("com.gtocore.dimensionprobe.DimensionSuggestionsProbe").getDeclaredMethod("init").invoke(null);
@@ -89,7 +94,8 @@ public final class DimensionProbe {
             String unsaved = UUID.randomUUID().toString();
             com.gtolib.data.CommonSavaedData.getData().putString("dimension_probe_unsaved", unsaved);
             common.setDirty();
-            require(manager.levels().size() == 3, "Startup loaded " + manager.levels().size() + " worlds");
+            require(manager.levels().size() == 1 && server.getLevel(Level.NETHER) == null && server.getLevel(Level.END) == null,
+                    "Startup eagerly loaded an unforced dimension: " + manager.levels().size() + " worlds");
             require(server.getLevel(GTODimensions.MOON) == null, "Query woke the moon");
             DimensionStations.query(server, GTODimensions.MOON);
             require(server.getLevel(GTODimensions.MOON) == null, "Station metadata woke the moon");
@@ -198,7 +204,7 @@ public final class DimensionProbe {
         if (event.phase != TickEvent.Phase.END || phase == 0 || failed) return;
         try {
             if (++waitTicks > 1200) throw new AssertionError("Probe phase timed out: " + phase);
-            if (phase == 3 && manager.state(loadingKey) == DimensionLifecycle.State.LOADED) {
+            if (phase == 3 && testData.failureObserved && manager.state(loadingKey) == DimensionLifecycle.State.LOADED) {
                 require(server.getLevel(loadingKey) == previous, "Save failure discarded live world");
                 require(testData.isDirty(), "Save failure cleared dirty data");
                 testData.fail = false;
@@ -214,6 +220,7 @@ public final class DimensionProbe {
                 require(manager.requestUnload(loadingKey), "Save reentry prevented a later unload");
                 phase = 1;
             } else if (phase == 1 && manager.state(loadingKey) == DimensionLifecycle.State.DORMANT) {
+                require(!manager.catalog().forcedDimensions().contains(loadingKey.location()), "Unload retained a committed empty forced-chunk candidate");
                 require(server.getLevel(loadingKey) == null, "Closed instance retained in server map");
                 require(!manager.levels().contains(previous), "Snapshot retained a closed world");
                 require(remote.level() == null, "Device cache retained a closed level");
@@ -313,6 +320,7 @@ public final class DimensionProbe {
 
         final int value;
         boolean fail;
+        boolean failureObserved;
         Runnable onSave;
 
         TestData(int value) {
@@ -328,7 +336,10 @@ public final class DimensionProbe {
          */
         @Override
         public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag) {
-            if (fail) throw new IllegalStateException("INJECTED_DIMENSION_SAVE_FAILURE");
+            if (fail) {
+                failureObserved = true;
+                throw new IllegalStateException("INJECTED_DIMENSION_SAVE_FAILURE");
+            }
             if (onSave != null) {
                 var callback = onSave;
                 onSave = null;

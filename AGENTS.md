@@ -67,6 +67,8 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 
 ## GTOLib 与预构建安全
 
+- 动态维度存盘改动须保持单文件原子提交、pending 仅修复索引尾记录，以及强加载候选在 `chunks.dat` 提交后才能移除的顺序；崩溃边界与隔离探针见 [动态维度系统](docs/dimensions.md)。
+
 - `GTOLib/` 与 `GTOSeal/` 都是私有子模块，只有具备对应仓库权限的人员或执行环境才能初始化、拉取和更新。无权限时子模块不可用是预期状态；不要反复重试、绕过权限或要求提供凭据。只涉及主仓的任务应继续使用仓库内预构建产物完成可行工作。
 - `GTOLib/` 与 `GTOSeal/` 是独立 Git 仓库；主仓记录的是 gitlink。修改、切换或恢复它们前读取 [GTOLib 子模块与预构建](docs/gtolib.md)。
 - 修改 `GTOLib/` 代码时，完成当前任务前必须使用 JDK 21 运行一次 `buildGtolibProtected` 并确认通过。一个任务在收尾时重建一次即可，不要每改一处都重建；若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。

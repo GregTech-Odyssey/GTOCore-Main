@@ -1,5 +1,6 @@
 package com.gtocore.dimensionprobe;
 
+import com.gtolib.GTOCore;
 import com.gtolib.api.adastra.PlanetTravel;
 import com.gtolib.api.adastra.TravelSource;
 import com.gtolib.api.data.GTODimensions;

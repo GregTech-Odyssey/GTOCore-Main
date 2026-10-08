@@ -243,9 +243,9 @@ stateDiagram-v2
 **维度生命周期和实例元数据是新增实现，世界内容存盘沿用原版并加强卸载时的错误传播，天气日程使用自己的二进制协议。** 具体边界如下：（[DimensionManager.unload][src-dimensionmanager-822]；[InstanceStore.create][src-instancestore-116]；[WeatherDataIO.writeGlobal][src-weatherdataio-67]；[WeatherDataIO.writeInstance][src-weatherdataio-80]）
 
 - 动态实例不通过改写 `level.dat` 的 `LEVEL_STEM` 定义列表保存；目录、描述、索引和 pending 是本系统新增文件，由 [DimensionDataIO][src-dimensiondataio-28] / [InstanceStore][src-instancestore-17] 直接管理，不是自定义 SavedData 或磁盘 DataComponentMap。（[DimensionDataIO.writeAtomic][src-dimensiondataio-79]；[InstanceStore.create][src-instancestore-116]；[InstanceStore.appendIndex][src-instancestore-183]）
-- `ServerLevel`、区块/实体管理器、区域文件、POI 和普通第三方 SavedData 的数据结构及路径保留。受检查保存时，普通 SavedData 仍编码 `DataVersion` + `data` 的压缩 NBT，只把写入改为原子提交和成功后清 dirty。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionDataIO.writeNbtAtomic][src-dimensiondataio-113]）
+- `ServerLevel`、区块/实体管理器、区域文件、POI 和普通第三方 SavedData 的数据结构及路径保留。普通 SavedData 在自动保存、停服和卸载保存时均编码 `DataVersion` + `data` 的压缩 NBT，通过原子提交替换文件，成功后才清 dirty；覆写 `save(File)` 的第三方实现仍由其自身负责。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionDataIO.writeNbtAtomic][src-dimensiondataio-113]）
 - 两种天气数据继承 [FastSavedData][src-fastsaveddata-21]，复用 `DimensionDataStorage.cache` 和世界保存调度，覆写文件保存为流式二进制，绕过 SavedData 的 NBT 载荷。原版天气字段不再负责本系统日程。（[FastSavedData.save][src-fastsaveddata-46]；[WeatherSystem.save][src-weathersystem-283]；[InstanceWeatherData.save][src-instanceweatherdata-71]；[LevelWeatherMixin.prepareWeather][src-levelweathermixin-22]；[ServerLevelWeatherMixin.advanceWeatherCycle][src-serverlevelweathermixin-19]）
-- 普通 [FastSavedData.save(File)][src-fastsaveddata-54] 用 [FileUtils.saveToFile][src-fileutils-144] 的临时文件原子替换；受检查卸载保存和休眠天气写入用 [DimensionDataIO.writeFastAtomic][src-dimensiondataio-120]，额外 force 临时文件内容。
+- [FastSavedData.save(File)][src-fastsaveddata-54] 在所有保存入口统一使用 [DimensionDataIO.writeFastAtomic][src-dimensiondataio-120]，先 force 临时文件内容再原子替换目标。序列化、force 或替换失败都保留旧文件和 dirty。
 
 当前维度和天气文件都从 schema 整数开始，压缩方式与后续载荷分别如下：（[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionDataIO.writeAtomic(encoder)][src-dimensiondataio-102]；[DimensionDataIO.writeCatalogAtomic][src-dimensiondataio-83]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[WeatherDataIO.writeGlobal][src-weatherdataio-67]；[WeatherDataIO.writeInstance][src-weatherdataio-80]；[WeatherTimeline.save][src-weathertimeline-188]）
 
@@ -266,7 +266,7 @@ stateDiagram-v2
 
 维度和天气的自有二进制载荷均不包含 magic、storage version 或 kind 字段。载荷种类由文件路径和调用的 reader 决定：目录用 [DimensionDataIO.readCatalog][src-dimensiondataio-56]，实例描述和创建日志共用 [DimensionDataIO.read(Path)][src-dimensiondataio-52] / [DimensionDataIO.writeAtomic(Path, InstanceDescriptor)][src-dimensiondataio-79]；全局与实例天气分别用 [WeatherDataIO.readGlobal][src-weatherdataio-35]、[WeatherDataIO.readInstance][src-weatherdataio-43]。各入口检查 schema 后按对应载荷解码，没有独立的文件类型标识校验。（[InstanceStore.find][src-instancestore-78]；[InstanceStore.create][src-instancestore-116]；[InstanceStore.recoverPending][src-instancestore-173]）
 
-当前 reader 提供 schema 2 和 3 的 datafix 分流，不追溯更早开发格式或旧压缩 NBT。schema 2 入口读取 Minecraft DataVersion、定长载荷长度及旧 Data 树后还原领域对象；schema 3 直接流式读写，不构造中间组件树。读取本身不升级文件，正常保存才写当前格式，pending 恢复过程中也会重写描述。模板版本和 Minecraft DataVersion 不能代替自有 schema。（[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionDataIO.readCatalog][src-dimensiondataio-56]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[DimensionDataFixes.catalog][src-dimensiondatafixes-27]；[DimensionDataFixes.instance][src-dimensiondatafixes-87]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[InstanceStore.recoverPending][src-instancestore-173]）
+当前 reader 提供 schema 2 和 3 的 datafix 分流，不追溯更早开发格式或旧压缩 NBT。schema 2 入口读取 Minecraft DataVersion、定长载荷长度及旧 Data 树后还原领域对象；schema 3 直接流式读写，不构造中间组件树。读取本身不升级文件，正常保存才写当前格式；pending 恢复只补写缺失描述，已有匹配描述保留其最新访客和出生点。模板版本和 Minecraft DataVersion 不能代替自有 schema。（[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionDataIO.readCatalog][src-dimensiondataio-56]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[DimensionDataFixes.catalog][src-dimensiondatafixes-27]；[DimensionDataFixes.instance][src-dimensiondatafixes-87]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[InstanceStore.recoverPending][src-instancestore-173]）
 
 ### 4.4 原子提交与创建事务
 
@@ -279,7 +279,11 @@ stateDiagram-v2
 3. 按创建序号追加或核对固定长度 UUID 索引，新增写入执行 force。（[InstanceStore.appendIndex][src-instancestore-183]）
 4. 删除 pending，随后更新描述缓存。（[InstanceStore.create][src-instancestore-116]；[InstanceStore.cache][src-instancestore-210]）
 
-重启或后续访问会先恢复 pending；描述和索引已存在时核对，不重复追加。索引末尾中断写入可借 pending 修复；无 pending 的截断索引、索引间隙、身份冲突或指向缺失记录会报错，不扫描历史来猜测修补。（[InstanceStore 构造器][src-instancestore-35]；[InstanceStore.recoverPending][src-instancestore-173]；[InstanceStore.appendIndex][src-instancestore-183]；[InstanceStore.find][src-instancestore-78]）
+重启、后续查询和分页会先恢复 pending。恢复先验证日志的完整载荷和 GZIP 尾部，再核对索引位置与已有描述的不可变字段；匹配的已有描述保留其最新访客和出生点。pending 只能修复最后一条索引，包括文件已达到 16 字节但内容尚未完整写入的尾记录；恢复重新 force 索引后才删除日志。旧序号、索引间隙或描述身份冲突报错，不扫描历史来猜测修补；无 pending 的截断索引也不猜测修复。（[InstanceStore 构造器][src-instancestore-35]；[InstanceStore.recoverPending][src-instancestore-173]；[InstanceStore.appendIndex][src-instancestore-183]；[InstanceStore.find][src-instancestore-78]）
+
+强加载候选采用提交顺序保护：新增持久化票据后立即保存候选；删除最后一张票据时，如果 `chunks` SavedData 仍是 dirty，就保留候选，直到无票据状态成功提交。若在删除内存票据后、保存 `chunks.dat` 前崩溃，重启仍按磁盘旧票据加载并校验该维度；多余候选不会凭空恢复已删除的磁盘票据。（[DimensionManager.updateForcedIndex][src-dimensionmanager-814]；[DimensionManager.restoreStartup][src-dimensionmanager-715]）
+
+运行世界在周期维护时清理已提交为空的候选，安全卸载也在保存成功后、关闭前更新候选；目录写入失败会取消此次卸载，保留运行世界。
 
 ### 4.5 持久化 data 错误的处理与当前边界
 
@@ -290,13 +294,21 @@ stateDiagram-v2
 | 天气 schema 不支持、载荷截断、天气 ID 或内容无法解码 | [FastSavedData][src-fastsaveddata-21] 读取异常传播；只有文件不存在才新建日程，不重置已有文件的随机状态和日程。文件类型由 reader 选择，没有额外 kind 校验；[FastSavedData.getFromFile][src-fastsaveddata-32]；[FileUtils.loadFromFile][src-fileutils-180]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[WeatherTimeline.load][src-weathertimeline-203] |
 | 目录变更保存失败 | 模板、系列、强加载候选的内存变更回滚，保留原目标文件并传播；[DimensionCatalog.register][src-dimensioncatalog-72]；[DimensionCatalog.createSeries][src-dimensioncatalog-106]；[DimensionCatalog.setForced][src-dimensioncatalog-126] |
 | 访客变更保存失败 | 回滚授权/撤销动作，传播错误；[DimensionManager.grant][src-dimensionmanager-397] |
-| 卸载期间普通 SavedData 或 FastSavedData 保存失败 | 成功后才清 dirty，异常阻止关闭；运行世界继续保留；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionManager.unload][src-dimensionmanager-822] |
+| 任意入口的普通 SavedData 或 FastSavedData 保存失败 | 原子替换失败保留旧文件，成功后才清 dirty，异常传播；卸载流程取消关闭并保留运行世界；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionManager.unload][src-dimensionmanager-822] |
 | 卸载期间区块序列化失败 | 恢复该区块 `unsaved`，记录失败并终止刷新循环，避免无限重试；[DimensionChunkSaveMixin.gtolib$recordSaveFailure][src-dimensionchunksavemixin-24] |
 | 卸载期间实体序列化、区域写入失败 | 传播原版只记日志或异步 future 中的错误，取消卸载；[DimensionEntitySaveMixin.gtolib$abortEntitySerialization][src-dimensionentitysavemixin-23]；[DimensionIOWorkerMixin.gtolib$awaitUnloadWrite][src-dimensionioworkermixin-28]；[DimensionManager.unload][src-dimensionmanager-822] |
 | 休眠元数据保存失败 | 不淘汰对应缓存；休眠天气写入失败保留 dirty，不覆盖旧目标文件；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[WeatherSystem.timeline][src-weathersystem-149]；[DimensionDataIO.writeFastAtomic][src-dimensiondataio-120] |
 | 卸载事件或区域资源关闭失败 | 当前实例 `POISONED`、拒绝重开、停服；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionLifecycle.poison][src-dimensionlifecycle-200]；[DimensionIOWorkerMixin.gtolib$propagateCloseFailure][src-dimensionioworkermixin-39] |
 
-这些保护有明确范围：[DimensionSaveAttempt][src-dimensionsaveattempt-9] 用于卸载和休眠元数据提交，普通原版保存没有整体改成相同的失败收集流程。目录、描述和天气读取不添加重复键、载荷完整消费等额外校验层，也没有自动从备份修复坏文件的机制。（[DimensionSaveAttempt.begin][src-dimensionsaveattempt-20]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]）
+这些保护有明确范围：[DimensionSaveAttempt][src-dimensionsaveattempt-9] 用于卸载和休眠元数据提交，普通保存的区块/实体路径没有整体改成相同的失败收集流程；SavedData 的单文件原子提交则适用于普通保存。目录、描述和 pending 读取会完整消费载荷并验证 GZIP 尾部；天气仍由其 reader 解码。没有自动从备份修复坏文件的机制。（[DimensionSaveAttempt.begin][src-dimensionsaveattempt-20]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]）
+
+进程异常退出后，创建事务可以续做，已提交元数据保留，未提交的 `.tmp` 不作为新数据读取。玩家、区块、实体、POI、`level.dat` 和各模组自有文件仍是多文件保存，系统不提供整个存档的同一时刻快照；未保存进度可能回退，原版区域文件写入、第三方自有 IO、系统断电或磁盘故障不在这些单文件保证之内。
+
+崩溃回归探针使用两次启动的独立目录：`gradlew runServer -I gradle/scripts/dimensions-probe.gradle -PdimensionCrashProbe=true -PdimensionProbeFTB=false -PgtolibUnprotected=true -PdimensionProbeDir=<隔离目录>`。第一次注入普通 NBT 写入失败和二进制序列化失败，随后在强加载票据移除尚未保存时调用 `Runtime.halt(0)`，不执行停服保存；第二次核对旧元数据、实例种子、地形和磁盘强加载票据，再验证票据提交后才移除启动候选。JDK 21 前置设置仍按 [AGENTS.md](../AGENTS.md) 执行。
+
+当前依赖组合的 LeanObject AEKey Mixin 与 AE2 `15.2610.8` 有启动冲突。隔离验证可在该测试目录的 `config/leanobject.toml` 将 `[features.aeKey]` 下的 `enabled` 设为 `false`；该配置仅绕开依赖启动问题，生产配置和依赖版本不随维度修复改变。现有 schema 2 历史文件测试依赖 `src/test/resources/saved-data/schema-2/` 的真实样本；样本缺失时不能声称已验证历史迁移。
+
+运行验证采用明文开发模式；加密模式的探针当前在进入存档前遇到 `AddonFinderMixin` 类加载失败，尚未验证加密模式游戏运行。保护产物构建成功与游戏运行验证是不同的检查。生命周期探针等待注入异常确实发生后才解除故障，防止服务器 tick 的事件顺序导致提前关掉注入而假通过。
 
 原版/第三方 SavedData 的读取仍保留它们自己的错误与 fallback 语义，不能把本系统“自有坏文件不回退为空”的约束推广到所有模组。当前 reader 不识别旧 `GTDC` 维度外壳或 `GTWC` 天气外壳：解码器直接把载荷首个整数当 schema，这些 magic 值会进入“不支持的 schema”错误分支；schema 2 datafix 只支持以 schema 整数起始的旧载荷，不负责剥离外壳。后续不兼容变更应提升 schema 并提供对应迁移与真实历史文件验证。（[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[FastSavedData.getFromFile][src-fastsaveddata-32]）
 
@@ -326,7 +338,7 @@ stateDiagram-v2
 | [LevelMixin][src-levelmixin-37] | 构造尾部应用环境，提供 `ILevel` 实例环境 setter | 两端虚空标记及 Level 上的星球环境视图；[LevelMixin.init][src-levelmixin-53]；[LevelMixin.gtolib$setInstanceEnvironment][src-levelmixin-100] |
 | [DimensionTicketsMixin][src-dimensionticketsmixin-19] / [DimensionTicketAccessor][src-dimensionticketaccessor-12] | 给 `DistanceManager` 提供有效票据检查，访问 Ticket 过期状态 | 保活复查；不创建或续期普通票据；[DimensionTicketsMixin.gtolib$hasActiveTickets][src-dimensionticketsmixin-28] |
 | [DimensionVehicleMixin][src-dimensionvehiclemixin-26] | 给 Entity 增加租约/飞行票据接口，实体移除时释放 | 由活动载具 tick 调用，普通实体不持续保活；[DimensionVehicleMixin.gtolib$vehicleActive][src-dimensionvehiclemixin-41]；[DimensionVehicleMixin.gtolib$releaseFlight][src-dimensionvehiclemixin-66]；[DimensionVehicleMixin.gtolib$releaseVehicle][src-dimensionvehiclemixin-80] |
-| [DimensionSavedDataMixin][src-dimensionsaveddatamixin-24] | 受检查作用域内取消原保存并原子写原协议 NBT | 成功后清 dirty，保存失败中止卸载；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36] |
+| [DimensionSavedDataMixin][src-dimensionsaveddatamixin-24] | 所有入口取消原保存并原子写原协议 NBT | 成功后清 dirty，失败保留旧文件并传播异常；卸载时取消关闭；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36] |
 | [DimensionChunkSaveMixin][src-dimensionchunksavemixin-18] / [DimensionEntitySaveMixin][src-dimensionentitysavemixin-17] | 原版错误日志位置注入 | 把序列化失败传播到卸载流程；[DimensionChunkSaveMixin.gtolib$recordSaveFailure][src-dimensionchunksavemixin-24]；[DimensionEntitySaveMixin.gtolib$abortEntitySerialization][src-dimensionentitysavemixin-23] |
 | [DimensionIOWorkerMixin][src-dimensionioworkermixin-25] | `store` 返回处等待 future，`close` 错误位置抛出 | 捕获异步写入失败，传播区域关闭失败；[DimensionIOWorkerMixin.gtolib$awaitUnloadWrite][src-dimensionioworkermixin-28]；[DimensionIOWorkerMixin.gtolib$propagateCloseFailure][src-dimensionioworkermixin-39] |
 | [DimensionForgeTicketsMixin][src-dimensionforgeticketsmixin-20] → `ForgeChunkManager` | `forceChunk` 成功返回时注入 | 增删持久化票据后保存启动候选索引；仍使用 Forge 原票据及校验回调；[DimensionForgeTicketsMixin.gtolib$persistForcedDimension][src-dimensionforgeticketsmixin-24] |

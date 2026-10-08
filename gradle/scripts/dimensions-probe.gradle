@@ -29,6 +29,7 @@ allprojects { p ->
         p.legacyForge.runs.named('server') { gameDirectory.set(new File(probeRoot, 'server')) }
         p.tasks.named('runServer') {
             dependsOn 'dimensionProbeClasses'
+            if (p.findProperty('dimensionCrashProbe') == 'true') systemProperty 'dimensionCrashProbe', 'true'
             if (p.findProperty('dimensionSuggestionsProbe') == 'true') systemProperty 'dimensionSuggestionsProbe', 'true'
             if (p.findProperty('dimensionRestartProbe') == 'true') systemProperty 'dimensionRestartProbe', 'true'
             if (p.findProperty('dimensionRestartCoreProbe') == 'true') systemProperty 'dimensionRestartCoreProbe', 'true'
