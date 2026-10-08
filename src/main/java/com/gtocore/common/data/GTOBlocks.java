@@ -37,6 +37,14 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.DynamicLoot;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
+import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.SetContainerContents;
+import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 
 import com.gto.registrate.util.entry.BlockEntry;
@@ -49,6 +57,7 @@ import javax.annotation.Nullable;
 
 import static com.gtocore.common.block.BlockMap.*;
 import static com.gtocore.common.block.GlowingBlock.createStarStone;
+import static com.gtocore.common.data.GTOBlockEntities.SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY;
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static com.gtolib.utils.register.BlockRegisterUtils.*;
 
@@ -762,6 +771,14 @@ public final class GTOBlocks {
             })
             .tag(CustomTags.MINEABLE_WITH_WRENCH)
             .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+            .loot((ctx, prov) -> {
+                ctx.add(prov, LootTable.lootTable().withPool(LootPool.lootPool()
+                        .add(LootItem.lootTableItem(prov.asItem())
+                                .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
+                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                        .copy("source", "BlockEntityTag.source"))
+                                .apply(SetContainerContents.setContents(SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY.get()).withEntry(DynamicLoot.dynamicEntry(RLUtils.mc("contents")))))));
+            })
             .item()
             .build()
             .register();
