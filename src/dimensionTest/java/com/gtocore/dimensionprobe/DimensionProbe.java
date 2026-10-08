@@ -5,7 +5,6 @@ import com.gtolib.api.dimension.*;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -101,7 +100,7 @@ public final class DimensionProbe {
             instance = manager.getOrCreatePrivate(owner, DimensionTemplates.NOISE, slot, 12345L);
             require(manager.getOrCreatePrivate(owner, DimensionTemplates.NOISE, slot, 99L).id().equals(instance.id()), "Duplicate key changed identity");
             require(!Files.exists(manager.dimensionPath(instance.dimension())), "Metadata creation generated terrain");
-            var seriesId = new ResourceLocation("gtocore", "probe_series_" + UUID.randomUUID());
+            var seriesId = GTOCore.id("probe_series_" + UUID.randomUUID());
             manager.createSeries(seriesId, DimensionTemplates.NOISE, 123, null);
             long before = manager.instances().count();
             new SeriesAddress(seriesId, 0).offset(1);
@@ -175,9 +174,9 @@ public final class DimensionProbe {
             lander.tick();
             lander.discard();
             require(!manager.keepAliveReasons(loadingKey).contains("LANDER"), "Landed lander retained lease");
-            var random = previous.getRandomSequence(new ResourceLocation("gtocore", "probe_random"));
+            var random = previous.getRandomSequence(GTOCore.id("probe_random"));
             random.nextLong();
-            var expected = new net.minecraft.world.RandomSequences(12345L).get(new ResourceLocation("gtocore", "probe_random"));
+            var expected = new net.minecraft.world.RandomSequences(12345L).get(GTOCore.id("probe_random"));
             expected.nextLong();
             expectedRandom = expected.nextLong();
             instance.setSpawn(new BlockPos(7, 81, -4), 37);
@@ -236,7 +235,7 @@ public final class DimensionProbe {
                 require(reopened.getSeed() == 12345L, "Reopened seed changed");
                 require(reopened.getSharedSpawnPos().equals(instance.spawn()), "Reopened spawn changed");
                 require(terrain(reopened) == terrainHash, "Reopened terrain changed");
-                require(reopened.getRandomSequence(new ResourceLocation("gtocore", "probe_random")).nextLong() == expectedRandom, "Random sequence state did not persist independently");
+                require(reopened.getRandomSequence(GTOCore.id("probe_random")).nextLong() == expectedRandom, "Random sequence state did not persist independently");
                 require(reopened.getDataStorage().get(tag -> new TestData(tag.getInt("value")), "dimension_probe_data").value == 77, "SavedData was not restored");
                 var chunk = reopened.getChunk(0, 0);
                 reopened.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, new net.minecraft.world.level.ChunkPos(0, 0), 3, BlockPos.ZERO);

@@ -1,5 +1,6 @@
 package com.gtolib.api.dimension;
 
+import com.gtolib.GTOCore;
 import com.gtolib.utils.iostream.DataIOStream;
 
 import net.minecraft.core.BlockPos;
@@ -49,7 +50,7 @@ class DimensionInstanceStoreTest {
 
     @TempDir
     Path directory;
-    private static final ResourceLocation TEMPLATE = new ResourceLocation("gtocore", "test");
+    private static final ResourceLocation TEMPLATE = GTOCore.id("test");
     private static final OwnerRef OWNER = new OwnerRef(OwnerRef.Kind.PLAYER, UUID.fromString("43265327-df96-48f3-81cb-130ca1dff314"));
     private static final ResolvedTemplate DEFINITION = new ResolvedTemplate(TEMPLATE, 1, "{\"generator\":\"frozen\"}", DimensionTemplate.SpawnPolicy.VOID_PLATFORM, DimensionEnvironment.VOID);
 
@@ -108,7 +109,7 @@ class DimensionInstanceStoreTest {
         var next = new ResolvedTemplate(TEMPLATE, 3, "next", DimensionTemplate.SpawnPolicy.SURFACE, DimensionEnvironment.OVERWORLD);
         assertThrows(IOException.class, () -> catalog.register(next));
         assertEquals(upgraded, catalog.templates().get(TEMPLATE));
-        var series = new SeriesDefinition(new ResourceLocation("gtocore", "failed_series"), upgraded, 42, null, InstanceDescriptor.AccessPolicy.PUBLIC);
+        var series = new SeriesDefinition(GTOCore.id("failed_series"), upgraded, 42, null, InstanceDescriptor.AccessPolicy.PUBLIC);
         assertThrows(IOException.class, () -> catalog.createSeries(series));
         assertTrue(catalog.series().isEmpty());
         assertThrows(IOException.class, () -> catalog.setForced(original.dimension().location(), true));
@@ -119,7 +120,7 @@ class DimensionInstanceStoreTest {
     void interruptedIndexAppendRecoversFromOneJournalWithoutScanningHistory() throws Exception {
         var store = new InstanceStore(directory, 2);
         store.create(descriptor(0));
-        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), DimensionDataIO.Kind.PENDING, descriptor(1));
+        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), descriptor(1));
         try (var index = new RandomAccessFile(directory.resolve("instances.index").toFile(), "rw")) {
             index.seek(index.length());
             index.writeInt(123);
@@ -134,7 +135,7 @@ class DimensionInstanceStoreTest {
 
     @Test
     void seriesAddressesDoNotCreateFilesAndOverflowIsExplicit() throws Exception {
-        var series = new SeriesDefinition(new ResourceLocation("gtocore", "series"), DEFINITION, 123, null, InstanceDescriptor.AccessPolicy.PUBLIC);
+        var series = new SeriesDefinition(GTOCore.id("series"), DEFINITION, 123, null, InstanceDescriptor.AccessPolicy.PUBLIC);
         var address = new SeriesAddress(series.id(), Long.MAX_VALUE);
         assertThrows(ArithmeticException.class, () -> address.offset(1));
         assertEquals(Long.MAX_VALUE - 1, address.offset(-1).index());
@@ -167,14 +168,13 @@ class DimensionInstanceStoreTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "CATALOG", "INSTANCE", "PENDING" })
-    void unsupportedDimensionFormatsFailWithoutRewriting(String name) throws Exception {
-        var kind = DimensionDataIO.Kind.valueOf(name);
+    void unsupportedDimensionFormatsFailWithoutRewriting() throws Exception {
         var file = directory.resolve("unsupported.dat");
         try (var output = new GZIPOutputStream(Files.newOutputStream(file))) {
             output.write(new byte[] { 10, 0, 0, 0 });
         }
         byte[] original = Files.readAllBytes(file);
-        assertThrows(IOException.class, () -> DimensionDataIO.read(file, kind));
+        assertThrows(IOException.class, () -> DimensionDataIO.read(file));
         assertArrayEquals(original, Files.readAllBytes(file));
     }
 
@@ -184,8 +184,8 @@ class DimensionInstanceStoreTest {
         var store = new InstanceStore(directory, 2);
         store.create(descriptor(0));
         var next = descriptor(1);
-        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), DimensionDataIO.Kind.PENDING, next);
-        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(next.id()), DimensionDataIO.Kind.INSTANCE, next);
+        DimensionDataIO.writeAtomic(directory.resolve("pending.dat"), next);
+        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(next.id()), next);
         if (stage >= 2) {
             try (var index = new RandomAccessFile(directory.resolve("instances.index").toFile(), "rw")) {
                 index.seek(index.length());
@@ -274,15 +274,15 @@ class DimensionInstanceStoreTest {
         var descriptorFile = directory.resolve("instance.dat");
         byte[] originalInstance = fixture("instance.dat");
         Files.write(descriptorFile, originalInstance);
-        var descriptor = DimensionDataIO.read(descriptorFile, DimensionDataIO.Kind.INSTANCE);
+        var descriptor = DimensionDataIO.read(descriptorFile);
         assertEquals(UUID.fromString("89ce535d-ef11-301b-aeef-044637837f7a"), descriptor.id());
         assertEquals(12345, descriptor.seed());
         assertNotNull(descriptor.spawn());
         assertArrayEquals(originalInstance, Files.readAllBytes(descriptorFile));
-        assertEquals(descriptor.logicalKey(), DimensionDataIO.read(descriptorFile, DimensionDataIO.Kind.INSTANCE).logicalKey());
-        DimensionDataIO.writeAtomic(descriptorFile, DimensionDataIO.Kind.INSTANCE, descriptor);
+        assertEquals(descriptor.logicalKey(), DimensionDataIO.read(descriptorFile).logicalKey());
+        DimensionDataIO.writeAtomic(descriptorFile, descriptor);
         assertEquals(3, ByteBuffer.wrap(uncompressed(descriptorFile)).getInt(9));
-        var loaded = DimensionDataIO.read(descriptorFile, DimensionDataIO.Kind.INSTANCE);
+        var loaded = DimensionDataIO.read(descriptorFile);
         assertEquals(descriptor.logicalKey(), loaded.logicalKey());
         assertEquals(descriptor.id(), loaded.id());
         assertEquals(descriptor.ordinal(), loaded.ordinal());
@@ -300,7 +300,7 @@ class DimensionInstanceStoreTest {
     void schema2PendingRecoveryIsIdempotentAtEveryTransactionBoundary(int stage) throws Exception {
         var oldDescriptorFile = directory.resolve("old-instance.dat");
         Files.write(oldDescriptorFile, fixture("instance.dat"));
-        var descriptor = DimensionDataIO.read(oldDescriptorFile, DimensionDataIO.Kind.INSTANCE);
+        var descriptor = DimensionDataIO.read(oldDescriptorFile);
         byte[] payload = uncompressed(oldDescriptorFile);
         payload[4] = 3; // The old production writer uses the same descriptor payload for pending.
         var store = new InstanceStore(directory, 2);
@@ -309,7 +309,7 @@ class DimensionInstanceStoreTest {
         try (var output = new GZIPOutputStream(Files.newOutputStream(pending))) {
             output.write(payload);
         }
-        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(descriptor.id()), DimensionDataIO.Kind.INSTANCE, descriptor);
+        if (stage >= 1) DimensionDataIO.writeAtomic(instancePath(descriptor.id()), descriptor);
         if (stage >= 2) {
             try (var index = new RandomAccessFile(directory.resolve("instances.index").toFile(), "rw")) {
                 index.seek(index.length());

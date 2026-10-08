@@ -8,7 +8,6 @@ import com.gtolib.api.dimension.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
@@ -62,7 +61,7 @@ final class IntegrationPaths {
             var loadOnly = manager.getOrCreatePrivate(new OwnerRef(OwnerRef.Kind.PLAYER, owner.getUUID()), DimensionTemplates.VOID, slot + "-load", 936L);
             command(owner, "gtocore dimensions load " + loadOnly.dimension().location(), true);
             command(owner, "gtocore dimensions unload " + loadOnly.dimension().location(), true);
-            var series = new ResourceLocation("gtocore", "commands_" + UUID.randomUUID());
+            var series = GTOCore.id("commands_" + UUID.randomUUID());
             command(owner, "gtocore dimensions series create " + series + " gtocore:private_void 273819", true);
             long before = manager.instances().count();
             command(owner, "gtocore dimensions series enter " + series + " -9223372036854775808 " + guest.getGameProfile().getName(), true);

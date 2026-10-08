@@ -20,9 +20,6 @@ import java.io.IOException;
 final class WeatherDataIO {
 
     static final int SCHEMA_VERSION = 3;
-    static final int GLOBAL = 1;
-    static final int INSTANCE = 2;
-    private static final int MAGIC = 0x47545743; // GTWC
     static final IOStreamCodec<WeatherType> WEATHER = IOStreamCodec.convert(IOStreamCodecs.UTF8, WeatherType::id,
             WeatherTypes.REGISTRY::get);
     private static final IOStreamCodec<ResourceKey<Level>> DIMENSION = IOStreamCodec.convert(
@@ -35,18 +32,8 @@ final class WeatherDataIO {
 
     private WeatherDataIO() {}
 
-    private static int readHeader(DataIOStream stream, int kind) throws IOException {
-        if (stream.readInt() != MAGIC) {
-            throw new IOException("Unknown weather file format");
-        }
-        if (stream.readUnsignedByte() != kind) {
-            throw new IOException("Weather file kind mismatch");
-        }
-        return stream.readInt();
-    }
-
     static GlobalData readGlobal(DataIOStream stream) throws IOException {
-        return switch (readHeader(stream, GLOBAL)) {
+        return switch (stream.readInt()) {
             case SCHEMA_VERSION -> new GlobalData(stream.readLong(), TIMELINES.decode(stream));
             case 2 -> globalSchema2(DimensionDataFixes.readSchema2(stream));
             default -> throw new IOException("Unsupported weather schema");
@@ -54,7 +41,7 @@ final class WeatherDataIO {
     }
 
     static WeatherTimeline readInstance(DataIOStream stream) throws IOException {
-        return switch (readHeader(stream, INSTANCE)) {
+        return switch (stream.readInt()) {
             case SCHEMA_VERSION -> WeatherTimeline.load(stream);
             case 2 -> WeatherTimeline
                     .fromSchema2(DimensionDataFixes.readSchema2(stream).getStringMap().get("timeline"));
@@ -77,15 +64,9 @@ final class WeatherDataIO {
         return new GlobalData(map.get("clock").getLong(), timelines);
     }
 
-    static void writeHeader(DataIOStream stream, int kind) throws IOException {
-        stream.writeInt(MAGIC);
-        stream.writeByte(kind);
-        stream.writeInt(SCHEMA_VERSION);
-    }
-
     static void writeGlobal(DataIOStream stream, long clock,
                             Reference2ObjectOpenHashMap<ResourceKey<Level>, WeatherTimeline> timelines) throws IOException {
-        writeHeader(stream, GLOBAL);
+        stream.writeInt(SCHEMA_VERSION);
         stream.writeLong(clock);
         stream.writeVarInt(timelines.size());
         var iterator = timelines.reference2ObjectEntrySet().fastIterator();
@@ -97,7 +78,7 @@ final class WeatherDataIO {
     }
 
     static void writeInstance(DataIOStream stream, WeatherTimeline timeline) throws IOException {
-        writeHeader(stream, INSTANCE);
+        stream.writeInt(SCHEMA_VERSION);
         timeline.save(stream);
     }
 }
