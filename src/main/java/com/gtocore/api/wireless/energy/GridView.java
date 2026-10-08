@@ -5,10 +5,12 @@ import com.gtolib.api.data.Dimension;
 import com.gregtechceu.gtceu.uipro.data.UICodecs;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.StreamCodecs;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -175,7 +177,7 @@ public final class GridView {
         }
     }
 
-    public static final ByteStreamCodec<ResourceKey<Level>> DIMENSION = ByteStreamCodec.of((buf, key) -> {
+    public static final StreamCodec<FriendlyByteBuf, ResourceKey<Level>> DIMENSION = StreamCodec.of((buf, key) -> {
         int ref = dimRef(key);
         ByteStreamCodec.INT_CODEC.encode(buf, ref);
         if (ref == 0) StreamCodecs.RESOURCE_LOCATION_CODEC.encode(buf, key.location());
@@ -188,11 +190,11 @@ public final class GridView {
         return ResourceKey.create(Registries.DIMENSION, StreamCodecs.RESOURCE_LOCATION_CODEC.decode(buf));
     });
 
-    private static final ByteStreamCodec<Integer> TIER = ByteStreamCodec.convert(ByteStreamCodec.BYTE_CODEC, Integer::byteValue, Byte::intValue);
-    private static final ByteStreamCodec<Integer> COUNT = ByteStreamCodec.convert(ByteStreamCodec.SHORT_CODEC, i -> (short) Math.min(Short.MAX_VALUE, i),
+    private static final StreamCodec<FriendlyByteBuf, Integer> TIER = StreamCodec.convert(ByteStreamCodec.BYTE_CODEC, Integer::byteValue, Byte::intValue);
+    private static final StreamCodec<FriendlyByteBuf, Integer> COUNT = StreamCodec.convert(ByteStreamCodec.SHORT_CODEC, i -> (short) Math.min(Short.MAX_VALUE, i),
             s -> Math.max(0, (int) s));
 
-    public static final ByteStreamCodec<NodeInfo> NODE = ByteStreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, NodeInfo> NODE = StreamCodec.composite(
             DIMENSION, NodeInfo::dimension,
             TIER, NodeInfo::tier,
             TIER, NodeInfo::reachTier,
@@ -203,21 +205,21 @@ public final class GridView {
             (dimension, tier, reach, capacity, towers, top, relays) -> new NodeInfo(dimension, ProviderRegistry.clampTier(tier),
                     ProviderRegistry.clampTier(reach), Math.max(0, capacity), towers, ProviderRegistry.clampTier(top), relays));
 
-    public static final ByteStreamCodec<LineInfo> LINE = ByteStreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, LineInfo> LINE = StreamCodec.composite(
             COUNT, LineInfo::a,
             COUNT, LineInfo::b,
             TIER, LineInfo::tier,
             ByteStreamCodec.LONG_CODEC, LineInfo::budget,
             (a, b, tier, budget) -> new LineInfo(a, b, ProviderRegistry.clampLineTier(tier), Math.max(0, budget)));
 
-    public static final ByteStreamCodec<TopologyView> TOPOLOGY = ByteStreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, TopologyView> TOPOLOGY = StreamCodec.composite(
             ByteStreamCodec.INT_CODEC, TopologyView::revision,
             ByteStreamCodec.BOOLEAN_CODEC, TopologyView::isTruncated,
             UICodecs.list(NODE, MAX_NODES), TopologyView::nodes,
             UICodecs.list(LINE, MAX_LINES), TopologyView::lines,
             TopologyView::decoded);
 
-    public static final ByteStreamCodec<LiveView> LIVE = ByteStreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, LiveView> LIVE = StreamCodec.composite(
             ByteStreamCodec.INT_CODEC, LiveView::revision,
             ByteStreamCodec.INT_CODEC, LiveView::topologyRevision,
             UICodecs.floats(MAX_NODES), LiveView::storageArray,

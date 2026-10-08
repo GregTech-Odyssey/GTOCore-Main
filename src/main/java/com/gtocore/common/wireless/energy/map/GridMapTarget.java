@@ -3,15 +3,17 @@ package com.gtocore.common.wireless.energy.map;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.uipro.data.UICodecs;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 
 public final class GridMapTarget implements IUIHolder {
 
-    static final ByteStreamCodec<GridMapTarget> CODEC = ByteStreamCodec.composite(
+    static final StreamCodec<FriendlyByteBuf, GridMapTarget> CODEC = StreamCodec.composite(
             ByteStreamCodec.INT_CODEC, GridMapTarget::focusDimRef,
             UICodecs.enumOf(GridMapMode.class), GridMapTarget::mode,
             GridMapTarget::new);

@@ -54,6 +54,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -72,6 +73,7 @@ import appeng.api.storage.StorageAccess;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.StreamCodecs;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -791,7 +793,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private static final int ENTRY_LOCKED = 2;
 
         /// 逐行同步悬停说明：行数 + 每行的组件（提示接口要的是"每行一个组件"，不能拼成一条带换行符的文字）
-        private static final ByteStreamCodec<List<Component>> TOOLTIP_LINES_CODEC = ByteStreamCodec.collection(ArrayList::new, StreamCodecs.COMPONENT_CODEC);
+        private static final StreamCodec<FriendlyByteBuf, List<Component>> TOOLTIP_LINES_CODEC = ByteStreamCodec.collection(ArrayList::new, StreamCodecs.COMPONENT_CODEC);
 
         private final int groupIndex;
         private final int shopIndex;
@@ -1009,7 +1011,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private record GridState(String key, int page) {}
 
     private static final int MAX_UNLOCK_KEY_LENGTH = 256;
-    private static final ByteStreamCodec<GridState> GRID_STATE = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, GridState> GRID_STATE = StreamCodec.composite(
             UICodecs.utf(MAX_UNLOCK_KEY_LENGTH), GridState::key,
             ByteStreamCodec.INT_CODEC, GridState::page,
             GridState::new);

@@ -32,7 +32,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Size;
@@ -83,7 +83,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
     private static final int SNAPSHOT = 3;
     private static final int MAX_VALUES = 64;
     private static final RequestThrottle BUILD_THROTTLE = new RequestThrottle(20);
-    private static final ByteStreamCodec<BuildRequest> BUILD_REQUEST = ByteStreamCodec.of((buf, request) -> {
+    private static final StreamCodec<FriendlyByteBuf, BuildRequest> BUILD_REQUEST = StreamCodec.of((buf, request) -> {
         buf.writeVarInt(request.anchor());
         buf.writeResourceLocation(request.definition());
         buf.writeVarIntArray(request.values());

@@ -28,6 +28,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -336,7 +337,7 @@ public class TechTreeView extends UIElement {
         /// 一棵树节点数的上限（节点注册序号只占 16 位）
         private static final int MAX_NODES = 1 << 16;
 
-        static final ByteStreamCodec<NodeStates> CODEC = new ByteStreamCodec<>() {
+        static final StreamCodec<FriendlyByteBuf, NodeStates> CODEC = new StreamCodec<>() {
 
             @Override
             public void encode(FriendlyByteBuf buf, NodeStates value) {

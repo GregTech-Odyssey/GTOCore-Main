@@ -42,6 +42,7 @@ import appeng.api.networking.pathing.ControllerState;
 import appeng.core.definitions.AEItems;
 
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -497,7 +498,7 @@ public final class WirelessMachineUI {
     /** 成员：所在维度、坐标、机器定义 id（客户端据此取机器名与图标）。 */
     record MemberKey(String dimension, BlockPos pos, String machineId) {
 
-        static final ByteStreamCodec<MemberKey> CODEC = new ByteStreamCodec<>() {
+        static final StreamCodec<FriendlyByteBuf, MemberKey> CODEC = new StreamCodec<>() {
 
             @Override
             public void encode(FriendlyByteBuf buf, MemberKey value) {

@@ -20,8 +20,8 @@ import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 
 import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
 import com.gto.datasynclib.datastream.codec.DataCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.datastream.data.Data;
 import com.gto.datasynclib.datastream.data.ListData;
 import lombok.experimental.UtilityClass;
@@ -35,11 +35,11 @@ public class GTOCodecs {
     public final DataCodec<AEFluidKey> AE_FLUID_KEY_DATA_CODEC = KeyCodecs.AE_FLUID_KEY_DATA_CODEC;
     public final DataCodec<GenericStack> GENERIC_STACK_DATA_CODEC = KeyCodecs.GENERIC_STACK_DATA_CODEC;
     public final DataCodec<KeyCounter> KEY_COUNTER_DATA_CODEC = KeyCodecs.KEY_COUNTER_DATA_CODEC;
-    public final ByteStreamCodec<AEKey> AE_KEY_STREAM_CODEC = KeyCodecs.AE_KEY_STREAM_CODEC;
-    public final ByteStreamCodec<AEItemKey> AE_ITEM_KEY_STREAM_CODEC = KeyCodecs.AE_ITEM_KEY_STREAM_CODEC;
-    public final ByteStreamCodec<AEFluidKey> AE_FLUID_KEY_STREAM_CODEC = KeyCodecs.AE_FLUID_KEY_STREAM_CODEC;
-    public final ByteStreamCodec<GenericStack> GENERIC_STACK_STREAM_CODEC = KeyCodecs.GENERIC_STACK_STREAM_CODEC;
-    public final ByteStreamCodec<KeyCounter> KEY_COUNTER_STREAM_CODEC = KeyCodecs.KEY_COUNTER_STREAM_CODEC;
+    public final StreamCodec<FriendlyByteBuf, AEKey> AE_KEY_STREAM_CODEC = KeyCodecs.AE_KEY_STREAM_CODEC;
+    public final StreamCodec<FriendlyByteBuf, AEItemKey> AE_ITEM_KEY_STREAM_CODEC = KeyCodecs.AE_ITEM_KEY_STREAM_CODEC;
+    public final StreamCodec<FriendlyByteBuf, AEFluidKey> AE_FLUID_KEY_STREAM_CODEC = KeyCodecs.AE_FLUID_KEY_STREAM_CODEC;
+    public final StreamCodec<FriendlyByteBuf, GenericStack> GENERIC_STACK_STREAM_CODEC = KeyCodecs.GENERIC_STACK_STREAM_CODEC;
+    public final StreamCodec<FriendlyByteBuf, KeyCounter> KEY_COUNTER_STREAM_CODEC = KeyCodecs.KEY_COUNTER_STREAM_CODEC;
 
     public final DataCodec<TechNode> TECH_NODE_DATA_CODEC = new DataCodec<>() {
 
@@ -59,7 +59,7 @@ public class GTOCodecs {
         }
     };
 
-    public final ByteStreamCodec<TechNode> TECH_NODE_STREAM_CODEC = new ByteStreamCodec<>() {
+    public final StreamCodec<FriendlyByteBuf, TechNode> TECH_NODE_STREAM_CODEC = new StreamCodec<>() {
 
         @Override
         public void encode(FriendlyByteBuf buf, TechNode obj) {
@@ -85,7 +85,7 @@ public class GTOCodecs {
     }
 
     /** 网络专用编解码器：按注册整数 id 编码（紧凑）。 */
-    public final ByteStreamCodec<ResearchTag> RESEARCH_TAG_STREAM_CODEC = ResearchTag.TAGS.streamCodec();
+    public final StreamCodec<FriendlyByteBuf, ResearchTag> RESEARCH_TAG_STREAM_CODEC = ResearchTag.TAGS.streamCodec();
     /** 持久化专用编解码器：按 name key 编码（自描述、跨版本稳定）。 */
     public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = ResearchTag.TAGS.dataCodec();
     public final DataCodec<ResearchPoints> RESEARCH_POINTS_DATA_CODEC = new DataCodec<>() {
@@ -115,7 +115,7 @@ public class GTOCodecs {
         }
     };
 
-    public final ByteStreamCodec<ResearchPoints> RESEARCH_POINTS_STREAM_CODEC = new ByteStreamCodec<>() {
+    public final StreamCodec<FriendlyByteBuf, ResearchPoints> RESEARCH_POINTS_STREAM_CODEC = new StreamCodec<>() {
 
         @Override
         public void encode(FriendlyByteBuf buf, ResearchPoints obj) {

@@ -24,7 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +45,7 @@ public final class HeatThermometer extends UIElement {
         private static final Reading HIDDEN = new Reading(false, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    private static final ByteStreamCodec<Reading> CODEC = new ByteStreamCodec<>() {
+    private static final StreamCodec<FriendlyByteBuf, Reading> CODEC = new StreamCodec<>() {
 
         @Override
         public void encode(FriendlyByteBuf buffer, Reading value) {

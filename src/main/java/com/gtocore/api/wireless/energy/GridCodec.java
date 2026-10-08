@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.StreamCodecs;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -31,16 +32,16 @@ final class GridCodec {
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
     private static final int LEGACY_VERSION = 3;
 
-    private static final ByteStreamCodec<GlobalPos> GLOBAL_POS = DataSyncCodec.GLOBAL_POS_CODEC.toStreamCodec();
+    private static final StreamCodec<? super FriendlyByteBuf, GlobalPos> GLOBAL_POS = DataSyncCodec.GLOBAL_POS_CODEC.toStreamCodec();
 
-    private static final ByteStreamCodec<Provider.Unit> UNIT_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, Provider.Unit> UNIT_CODEC = StreamCodec.composite(
             ByteStreamCodec.INT_CODEC, Provider.Unit::tier,
             ByteStreamCodec.INT_CODEC, Provider.Unit::count,
             ByteStreamCodec.BIG_INTEGER_CODEC, Provider.Unit::capacity,
             ByteStreamCodec.INT_CODEC, Provider.Unit::loss,
             Provider.Unit::new);
 
-    private static final ByteStreamCodec<Provider.Tower> TOWER_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, Provider.Tower> TOWER_CODEC = StreamCodec.composite(
             GLOBAL_POS, Provider.Tower::pos,
             ByteStreamCodec.UUID_CODEC, Provider.Tower::owner,
             ByteStreamCodec.collection(ObjectArrayList::new, UNIT_CODEC), Provider.Tower::units,
@@ -59,7 +60,7 @@ final class GridCodec {
 
     @Deprecated(since = "0.6.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    private static final ByteStreamCodec<LegacyTower> LEGACY_TOWER_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, LegacyTower> LEGACY_TOWER_CODEC = StreamCodec.composite(
             GLOBAL_POS, LegacyTower::pos,
             ByteStreamCodec.UUID_CODEC, LegacyTower::owner,
             ByteStreamCodec.BIG_INTEGER_CODEC, LegacyTower::capacity,
@@ -69,7 +70,7 @@ final class GridCodec {
 
     private record RelaySave(GlobalPos pos, UUID owner, int tier, int amperage, ResourceLocation target) {}
 
-    private static final ByteStreamCodec<RelaySave> RELAY_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, RelaySave> RELAY_CODEC = StreamCodec.composite(
             GLOBAL_POS, RelaySave::pos,
             ByteStreamCodec.UUID_CODEC, RelaySave::owner,
             ByteStreamCodec.INT_CODEC, RelaySave::tier,
@@ -79,7 +80,7 @@ final class GridCodec {
 
     private record BankSave(int tier, long hi, long lo) {}
 
-    private static final ByteStreamCodec<BankSave> BANK_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, BankSave> BANK_CODEC = StreamCodec.composite(
             ByteStreamCodec.INT_CODEC, BankSave::tier,
             ByteStreamCodec.LONG_CODEC, BankSave::hi,
             ByteStreamCodec.LONG_CODEC, BankSave::lo,
@@ -87,7 +88,7 @@ final class GridCodec {
 
     private record NodeSave(ResourceLocation dimension, List<BankSave> banks) {}
 
-    private static final ByteStreamCodec<NodeSave> NODE_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, NodeSave> NODE_CODEC = StreamCodec.composite(
             StreamCodecs.RESOURCE_LOCATION_CODEC, NodeSave::dimension,
             ByteStreamCodec.collection(ObjectArrayList::new, BANK_CODEC), NodeSave::banks,
             NodeSave::new);
@@ -98,7 +99,7 @@ final class GridCodec {
 
     @Deprecated(since = "0.6.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    private static final ByteStreamCodec<LegacyNode> LEGACY_NODE_CODEC = ByteStreamCodec.composite(
+    private static final StreamCodec<FriendlyByteBuf, LegacyNode> LEGACY_NODE_CODEC = StreamCodec.composite(
             StreamCodecs.RESOURCE_LOCATION_CODEC, LegacyNode::dimension,
             ByteStreamCodec.LONG_CODEC, LegacyNode::hi,
             ByteStreamCodec.LONG_CODEC, LegacyNode::lo,
@@ -107,8 +108,10 @@ final class GridCodec {
     private record AccountSave<T, N>(UUID team, long rate, List<GlobalPos> bind, long pendingHi, long pendingLo, List<N> nodes,
                                      List<T> towers, List<RelaySave> relays) {}
 
-    private static <T, N> ByteStreamCodec<List<AccountSave<T, N>>> accountsCodec(ByteStreamCodec<T> towerCodec, ByteStreamCodec<N> nodeCodec) {
-        ByteStreamCodec<AccountSave<T, N>> account = ByteStreamCodec.composite(
+    private static <T, N> StreamCodec<FriendlyByteBuf, List<AccountSave<T, N>>> accountsCodec(
+                                                                                              StreamCodec<? super FriendlyByteBuf, T> towerCodec,
+                                                                                              StreamCodec<? super FriendlyByteBuf, N> nodeCodec) {
+        StreamCodec<FriendlyByteBuf, AccountSave<T, N>> account = StreamCodec.composite(
                 ByteStreamCodec.UUID_CODEC, AccountSave::team,
                 ByteStreamCodec.LONG_CODEC, AccountSave::rate,
                 ByteStreamCodec.collection(ObjectArrayList::new, GLOBAL_POS), AccountSave::bind,
@@ -121,10 +124,10 @@ final class GridCodec {
         return ByteStreamCodec.collection(ObjectArrayList::new, account);
     }
 
-    private static final ByteStreamCodec<List<AccountSave<Provider.Tower, NodeSave>>> ACCOUNTS_CODEC = accountsCodec(TOWER_CODEC, NODE_CODEC);
+    private static final StreamCodec<FriendlyByteBuf, List<AccountSave<Provider.Tower, NodeSave>>> ACCOUNTS_CODEC = accountsCodec(TOWER_CODEC, NODE_CODEC);
     @Deprecated(since = "0.6.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    private static final ByteStreamCodec<List<AccountSave<LegacyTower, LegacyNode>>> LEGACY_ACCOUNTS_CODEC = accountsCodec(LEGACY_TOWER_CODEC, LEGACY_NODE_CODEC);
+    private static final StreamCodec<FriendlyByteBuf, List<AccountSave<LegacyTower, LegacyNode>>> LEGACY_ACCOUNTS_CODEC = accountsCodec(LEGACY_TOWER_CODEC, LEGACY_NODE_CODEC);
 
     private GridCodec() {}
 

@@ -45,7 +45,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -139,7 +139,7 @@ public final class DataCenterAggregationUI {
     @RegisterLanguage(cn = "没有空闲的数据中心", en = "No idle Data Center")
     private static final String NO_IDLE = "gtocore.data_center_aggregation.research.no_idle";
 
-    private static final ByteStreamCodec<Binding> BINDING_CODEC = new ByteStreamCodec<>() {
+    private static final StreamCodec<FriendlyByteBuf, Binding> BINDING_CODEC = new StreamCodec<>() {
 
         @Override
         public void encode(FriendlyByteBuf buf, Binding value) {
