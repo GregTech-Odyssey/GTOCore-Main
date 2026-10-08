@@ -71,7 +71,7 @@ public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatC
     public void onWorking() {
         super.onWorking();
         if (getOffsetTimer() % 20 == 0) {
-            if (heatContainer.getCurrentHeat() < 8 && heatContainer.getTemperature() > 293) {
+            if (heatContainer.getCurrentHeat() < 8 || heatContainer.getTemperature() < 293) {
                 getRecipeLogic().markLastRecipeDirty();
             } else {
                 heatContainer.removeHeatUnrestricted(8, false);
@@ -81,7 +81,7 @@ public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatC
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (heatContainer.getCurrentHeat() < 8 && heatContainer.getTemperature() > 293) {
+        if (heatContainer.getCurrentHeat() < 8 || heatContainer.getTemperature() < 293) {
             setIdleReason(IdleReason.HEAT_SHORT, 8, heatContainer.getCurrentHeat());
             return null;
         }
