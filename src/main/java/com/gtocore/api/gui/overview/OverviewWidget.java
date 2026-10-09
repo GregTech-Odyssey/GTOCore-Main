@@ -36,6 +36,7 @@ import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Size;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -96,7 +97,9 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
 
     private record BuildRequest(int anchor, ResourceLocation definition, int[] values, BlockPos port, Direction front, Direction up, int upload) {}
 
+    @Getter
     private final MultiblockControllerMachine host;
+    @Getter
     private final OverviewAdapter adapter;
     @Nullable
     private OverviewScan scan;
@@ -127,14 +130,6 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
     public static SubWindowButton button(IMachineSubWindows machine, String key, MultiblockMachineDefinition definition, OverviewAdapter adapter) {
         return new SubWindowButton(machine, key, new ItemStackTexture(definition.asStack()), Component.translatable(adapter.titleKey()),
                 Component.translatable(adapter.openKey()).withStyle(ChatFormatting.GRAY));
-    }
-
-    public MultiblockControllerMachine getHost() {
-        return host;
-    }
-
-    public OverviewAdapter getAdapter() {
-        return adapter;
     }
 
     public void setSink(Consumer<OverviewSnapshot> sink) {
