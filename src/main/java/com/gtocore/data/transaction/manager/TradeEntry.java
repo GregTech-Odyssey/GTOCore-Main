@@ -1,7 +1,10 @@
 package com.gtocore.data.transaction.manager;
 
+import com.gtocore.api.wireless.energy.EnergyAccount;
 import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.GridNode;
 import com.gtocore.api.wireless.energy.PortKind;
+import com.gtocore.api.wireless.energy.WirelessGrid;
 
 import com.gtolib.api.wireless.WirelessManaContainer;
 import com.gtolib.utils.WalletUtils;
@@ -10,10 +13,12 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.google.common.collect.ImmutableList;
@@ -108,11 +113,10 @@ public record TradeEntry(
             }
             if (!foundCurrency) return 0;
         }
-        if (inputCurrencies == 0) return 0;
 
         int inputEnergy = Integer.MAX_VALUE;
         if (inputGroup().energy().signum() > 0 || outputGroup().energy().signum() > 0) {
-            inputEnergy = energyLimit(energyPort(data, serverLevel), Math.min(Math.min(inputItem, inputFluid), Math.min(outputFluid, inputCurrencies)));
+            inputEnergy = energyLimit(data, serverLevel, Math.min(Math.min(inputItem, inputFluid), Math.min(outputFluid, inputCurrencies)));
         }
         if (inputEnergy == 0) return 0;
 
@@ -124,12 +128,39 @@ public record TradeEntry(
         return Math.min(Math.min(Math.min(inputItem, inputFluid), Math.min(outputFluid, inputCurrencies)), Math.min(inputEnergy, inputMana));
     }
 
-    private static EnergyPort energyPort(TradeData data, ServerLevel level) {
-        return EnergyPort.forTeam(PortKind.TRADE, data.teamUUID(), level);
-    }
-
-    private int energyLimit(EnergyPort port, int upper) {
-        int low = 0, high = Math.max(0, upper);
+    /**
+     * 交易站的电网只认自己所在维度的那一张：买入的电必须放得进本维度电池，卖出的电只从本维度电池扣。
+     * <p>
+     * 次数上限先由本维度存量/剩余容量直接算出（只读公开的电网视图，不做结算），再用一次结算校验；
+     * 只有校验不过才二分收敛。整笔结算要把最大流规划、线路令牌与预约都跑一遍，而交易站一次打开要摆出整页交易格
+     * （{@code TradingStationMachine.TradeCell#refreshTooltip} 每格都要一次），逐格翻倍试探会把服务端 tick 拖死。
+     *
+     * @param data  当前交易数据
+     * @param level 交易站所在维度
+     * @param upper 其余资源允许的最大交易次数
+     * @return 本维度电网允许的最大交易次数
+     */
+    private int energyLimit(TradeData data, ServerLevel level, int upper) {
+        if (upper <= 0) return 0;
+        BigInteger in = inputGroup().energy();
+        BigInteger out = outputGroup().energy();
+        var node = localNode(data, level);
+        if (node == null) return 0;
+        int limit = upper;
+        if (in.signum() > 0) {
+            BigInteger storage = bigDouble(node.storageDouble(0));
+            limit = Math.min(limit, storage.divide(in).min(BIG_INT_MAX).intValue());
+        }
+        if (out.signum() > 0 && limit > 0) {
+            double free = node.capacityDouble() - node.storageDouble(0);
+            if (!(free > 0)) return 0;
+            BigInteger room = BigInteger.valueOf((long) Math.ceil(free));
+            limit = Math.min(limit, room.divide(out).min(BIG_INT_MAX).intValue());
+        }
+        if (limit <= 0) return 0;
+        var port = energyPort(data, level);
+        if (energyFits(port, limit)) return limit;
+        int low = 0, high = limit - 1;
         while (low < high) {
             int mid = low + (high - low + 1) / 2;
             if (energyFits(port, mid)) low = mid;
@@ -138,13 +169,51 @@ public record TradeEntry(
         return low;
     }
 
+    /**
+     * 取队伍在交易站所在维度的电网节点；维度没有登记过能源塔时为 {@code null}，对应"没电可买卖"。
+     */
+    private static GridNode localNode(TradeData data, ServerLevel level) {
+        EnergyAccount account = WirelessGrid.accountOf(data.teamUUID());
+        if (account.isNone()) return null;
+        ResourceKey<Level> dimension = level.dimension();
+        var nodes = account.nodes();
+        for (GridNode node : nodes) {
+            if (dimension.equals(node.dimension())) return node;
+        }
+        return null;
+    }
+
+    private static final BigInteger BIG_INT_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
+
+    /**
+     * 维度的存量/容量是 {@code double}（各电压电池之和），超过交易次数上界时截到 {@link #BIG_INT_MAX}，避免构造没有意义的巨整数。
+     */
+    private static BigInteger bigDouble(double value) {
+        return value >= Integer.MAX_VALUE ? BIG_INT_MAX : BigInteger.valueOf((long) value);
+    }
+
+    /**
+     * 交易站的电网端点。结算范围由能源包的端点种类决定，这里只负责按整笔交易的数额调它。
+     */
+    private static EnergyPort energyPort(TradeData data, ServerLevel level) {
+        return EnergyPort.forTeam(PortKind.TRADE, data.teamUUID(), level);
+    }
+
+    /**
+     * 校验按本次数额能否成交：买入要放得进本维度电池，卖出要从本维度电池扣得出。
+     * 早于任何改动调用，失败时电网与电池都没有被动过。
+     */
     private boolean energyFits(EnergyPort port, int multiplier) {
         var k = BigInteger.valueOf(multiplier);
         if (inputGroup().energy().signum() > 0 && !port.checkSettle(inputGroup().energy().multiply(k), 0, 0).ok()) return false;
         return outputGroup().energy().signum() <= 0 || port.canDepositLump(outputGroup().energy().multiply(k), 0);
     }
 
+    /**
+     * 扣输入、发输出。先校验后动手：校验不过时没有任何存量变化，入账放不下则退回已扣的电。
+     */
     private boolean settleEnergy(EnergyPort port, int multiplier) {
+        if (!energyFits(port, multiplier)) return false;
         var k = BigInteger.valueOf(multiplier);
         boolean paid = inputGroup().energy().signum() > 0;
         if (paid && !port.settle(inputGroup().energy().multiply(k), 0, 0).ok()) return false;
@@ -165,7 +234,6 @@ public record TradeEntry(
     private boolean executeInputOutput(TradeData data, int multiplier) {
         if (!(data.level() instanceof ServerLevel serverLevel)) return false;
         if (!settleEnergy(energyPort(data, serverLevel), multiplier)) return false;
-
         if (!inputGroup().items().isEmpty()) {
             deductMultipliedItems(data.inputItem(), inputGroup().items(), multiplier);
         }

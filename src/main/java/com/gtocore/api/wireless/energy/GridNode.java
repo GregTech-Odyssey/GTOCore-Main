@@ -180,7 +180,7 @@ public final class GridNode {
         return sum;
     }
 
-    double storageDouble(int voltage) {
+    public double storageDouble(int voltage) {
         double sum = 0;
         for (int m = drawable(voltage); m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
