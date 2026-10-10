@@ -12,23 +12,18 @@ import com.gtocore.integration.Mods;
 import com.gtolib.utils.WalletUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.capability.IControllable;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.feature.IAutoOutputBoth;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
-import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
-import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -52,8 +47,6 @@ import com.gregtechceu.gtceu.uiwidgets.side.SideOverviewTab;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -62,13 +55,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKeyTypes;
-import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -80,7 +70,6 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import dev.vfyjxf.taffy.style.FlexWrap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -114,12 +103,12 @@ import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_TRADE;
  * 标题由客户端按本地任务书与语言解析；</li>
  * <li>客户端渲染时只读同步下来的值（{@link SyncValue#getValue()}）与两端一致的静态注册数据（{@link TradingManager} 的名字、
  * 图标、条目数量）；</li>
- * <li>会改数据的点击走 {@code setOnServerClick}（如执行交易）；会改变控件树结构的点击走 {@link Button#setOnClick}
+ * <li>会改数据的点击走 {@code setOnServerClick}（如执行交易）；会改变控件树结构的点击走 {@link Button}
  * ——切换商店组、翻页、切换解锁项时两端各执行一次、各重建一份同样的结构（LDLib1 的控件更新按子控件下标路由，
  * 两端树必须一致），结构只依据静态注册数据决定，数值仍由服务端算。</li>
  * </ul>
  */
-public class TradingStationMachine extends MetaMachine implements IFancyUIMachine, IAutoOutputBoth, IMachineLife, IControllable {
+public class TradingStationMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
 
     /////////////////////////////////////
     // *********** 数据存储 *********** //
@@ -187,28 +176,6 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     public void onLoad() {
         super.onLoad();
         initializationInformation(cardStack());
-        if (!isRemote()) {
-            outputItemChangeSub = outputItem.addChangedListener(this::updateAutoOutputSubscription);
-            outputFluidChangeSub = outputFluid.addChangedListener(this::updateAutoOutputSubscription);
-            updateAutoOutputSubscription();
-        }
-    }
-
-    @Override
-    public void onUnload() {
-        super.onUnload();
-        if (autoOutputSubs != null) {
-            autoOutputSubs.unsubscribe();
-            autoOutputSubs = null;
-        }
-        if (outputItemChangeSub != null) {
-            outputItemChangeSub.unsubscribe();
-            outputItemChangeSub = null;
-        }
-        if (outputFluidChangeSub != null) {
-            outputFluidChangeSub.unsubscribe();
-            outputFluidChangeSub = null;
-        }
     }
 
     @Override
@@ -233,9 +200,9 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private static final int KEY_LIST_HEIGHT = 4 * UISizes.CONTROL_HEIGHT;
     /// 每行/每页的交易格数（与原实现一致：商店 4×8，解锁 4×8）
     private static final int SHOP_COLUMNS = 8;
-    private static final int SHOP_PER_PAGE = 32;
+    private static final int SHOP_PER_PAGE = 48;
     private static final int UNLOCK_COLUMNS = 8;
-    private static final int UNLOCK_PER_PAGE = 32;
+    private static final int UNLOCK_PER_PAGE = 48;
     /// 存储页每行几组（一组 = 左边输入、右边输出）
     private static final int STORAGE_PER_ROW = 4;
 
@@ -1117,164 +1084,5 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             this.teamUUID = null;
         }
         tradeIdentityRevision++;
-    }
-
-    /////////////////////////////////////
-    // ********* 自动输出实现 ********* //
-    /////////////////////////////////////
-
-    @SaveToDisk(defaultValue = "DOWN")
-    @SyncToClient(scheduleUpdate = true)
-    private Direction outputFacingItems = Direction.DOWN;
-    @SaveToDisk(defaultValue = "DOWN")
-    @SyncToClient(scheduleUpdate = true)
-    private Direction outputFacingFluids = Direction.DOWN;
-    @SaveToDisk(defaultValue = "false")
-    @SyncToClient(scheduleUpdate = true)
-    private boolean autoOutputItems = false;
-    @SaveToDisk(defaultValue = "false")
-    @SyncToClient(scheduleUpdate = true)
-    private boolean autoOutputFluids = false;
-    @Nullable
-    private TickableSubscription autoOutputSubs;
-
-    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
-    private TickTimeMonitor autoOutputMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_OUTPUT, this::autoOutput);
-    @Nullable
-    private ISubscription outputItemChangeSub;
-    @Nullable
-    private ISubscription outputFluidChangeSub;
-    private boolean allowInputFromOutputSideItems;
-    private boolean allowInputFromOutputSideFluids;
-
-    @Override
-    public boolean hasAutoOutputItem() {
-        return outputItem.size() > 0;
-    }
-
-    @Override
-    public boolean isAutoOutputItems() {
-        return autoOutputItems;
-    }
-
-    @Override
-    public void setAutoOutputItems(boolean autoOutputItems) {
-        if (hasAutoOutputItem()) {
-            this.autoOutputItems = autoOutputItems;
-            updateAutoOutputSubscription();
-        }
-    }
-
-    @Nullable
-    @Override
-    public Direction getOutputFacingItems() {
-        return hasAutoOutputItem() ? outputFacingItems : null;
-    }
-
-    @Override
-    public void setOutputFacingItems(@Nullable Direction direction) {
-        if (hasAutoOutputItem() && direction != null) {
-            this.outputFacingItems = direction;
-            clearDirectionCache();
-            updateAutoOutputSubscription();
-        }
-    }
-
-    @Override
-    public boolean hasAutoOutputFluid() {
-        return outputFluid.size() > 0;
-    }
-
-    @Override
-    public boolean isAutoOutputFluids() {
-        return autoOutputFluids;
-    }
-
-    @Override
-    public void setAutoOutputFluids(boolean autoOutputFluids) {
-        if (hasAutoOutputFluid()) {
-            this.autoOutputFluids = autoOutputFluids;
-            updateAutoOutputSubscription();
-        }
-    }
-
-    @Nullable
-    @Override
-    public Direction getOutputFacingFluids() {
-        return hasAutoOutputFluid() ? outputFacingFluids : null;
-    }
-
-    @Override
-    public void setOutputFacingFluids(@Nullable Direction direction) {
-        if (hasAutoOutputFluid() && direction != null) {
-            this.outputFacingFluids = direction;
-            clearDirectionCache();
-            updateAutoOutputSubscription();
-        }
-    }
-
-    private void updateAutoOutputSubscription() {
-        if (getLevel() == null || isRemote()) return;
-        if ((autoOutputItems && !outputItem.isEmpty() && getOutputFacingItems() != null && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getOutputFacingItems(), AEKeyTypes.ITEMS, StorageAccess.INSERT)) || (autoOutputFluids && !outputFluid.isEmpty() && getOutputFacingFluids() != null && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getOutputFacingFluids(), AEKeyTypes.FLUIDS, StorageAccess.INSERT))) {
-            autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
-        } else if (autoOutputSubs != null) {
-            autoOutputSubs.unsubscribe();
-            autoOutputSubs = null;
-        }
-    }
-
-    private void autoOutput() {
-        if (autoOutputItems && getOutputFacingItems() != null) {
-            outputItem.exportToNearby(getOutputFacingItems());
-        }
-        if (autoOutputFluids && getOutputFacingFluids() != null) {
-            outputFluid.exportToNearby(getOutputFacingFluids());
-        }
-        updateAutoOutputSubscription();
-    }
-
-    @Override
-    public void setAllowInputFromOutputSideItems(boolean allowInputFromOutputSideItems) {
-        this.clearDirectionCache();
-        this.allowInputFromOutputSideItems = allowInputFromOutputSideItems;
-    }
-
-    @Override
-    public void setAllowInputFromOutputSideFluids(boolean allowInputFromOutputSideFluids) {
-        this.clearDirectionCache();
-        this.allowInputFromOutputSideFluids = allowInputFromOutputSideFluids;
-    }
-
-    @Override
-    public boolean isAllowInputFromOutputSideItems() {
-        return allowInputFromOutputSideItems;
-    }
-
-    @Override
-    public boolean isAllowInputFromOutputSideFluids() {
-        return allowInputFromOutputSideFluids;
-    }
-
-    @Override
-    public void onNeighborChanged(@NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
-        super.onNeighborChanged(block, fromPos, isMoving);
-        updateAutoOutputSubscription();
-    }
-
-    /////////////////////////////////////
-    // ********** 是否运行中 ********** //
-    /////////////////////////////////////
-
-    @SaveToDisk(defaultValue = "false")
-    private boolean working = false;
-
-    @Override
-    public boolean isWorkingEnabled() {
-        return working;
-    }
-
-    @Override
-    public void setWorkingEnabled(boolean var1) {
-        this.working = var1;
     }
 }

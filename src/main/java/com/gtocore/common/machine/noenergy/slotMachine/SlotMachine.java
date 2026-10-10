@@ -2,17 +2,17 @@ package com.gtocore.common.machine.noenergy.slotMachine;
 
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.transaction.data.CoinExchange;
+import com.gtocore.data.transaction.data.CoinSeries;
 import com.gtocore.data.transaction.data.TradeLang;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.capability.IControllable;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -31,8 +31,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -47,7 +45,6 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import com.lowdragmc.lowdraglib.gui.texture.DynamicTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -59,7 +56,7 @@ import org.jetbrains.annotations.Nullable;
  * 基于 {@link SlotMachineState} 的老虎机机器。
  *
  * <p>
- * 本类只处理机器层职责：服务端状态、tick 订阅、DataSyncLib 字段存盘、掉落物保存与 Fancy UI；
+ * 本类只处理机器层职责：服务端状态、tick 订阅、DataSyncLib 字段存盘、拆除掉落与 Fancy UI；
  * 开奖、赔率与结果结构都在同包的底层逻辑类里。
  *
  * <p>
@@ -67,10 +64,8 @@ import org.jetbrains.annotations.Nullable;
  * 所以同一个类同时驱动 3 列与 5 列老虎机；规则不参与存档，读档时由方块的机器工厂重新注入。
  */
 @DataGeneratorScanned
-public class SlotMachine extends MetaMachine implements IFancyUIMachine, IControllable, IDropSaveMachine {
+public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
 
-    private static final String ITEM_DATA_TAG = "SlotMachineData";
-    private static final String[] SAVED_FIELDS = { "state", "enabled", "depositInventory" };
     private static final String CURRENCY_NAME = "gtocore.currency." + TradeLang.TECH_OPERATOR_COIN;
 
     @RegisterLanguage(cn = "余额", en = "Credits")
@@ -112,7 +107,6 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     private static final float[] WIN_SOUND_PITCHES = { 1.0F, 1.25F, 1.5F, 1.25F, 1.5F, 1.75F, 1.5F, 2.0F };
 
     // 状态是自定义元素：SlotMachineState 为整份状态注册了自己的 codec，DataSyncLib 按字段类型找到它，
-    // 区块存盘与物品掉落都走同一个 "state" 字段。
     // 字段不能是 final：final 字段只查 access 工厂（嵌套 holder、容器），不查 codec 工厂，会在字段扫描期
     // 直接抛异常；非 final 才允许读盘时整体替换实例。
     @SaveToDisk
@@ -169,23 +163,11 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
         winSoundTicksRemaining = 0;
     }
 
+    /** 拆除时机器不再保存余额与硬币槽：槽里的硬币原样掉出，余额按面额换成实体币一起掉回世界。 */
     @Override
-    public void saveToItem(CompoundTag tag) {
-        // 掉落物与区块存档共用同一套字段编解码。掉落物没有版本标记，沿用旧代码的 dataVersion 0。
-        var ops = JavaValueOps.INSTANCE;
-        var data = getFieldDataManager().writeFieldsToValue(ops, SAVED_FIELDS);
-        if (ops.isNull(data)) tag.remove(ITEM_DATA_TAG);
-        else tag.put(ITEM_DATA_TAG, new ByteArrayTag(ops.toBytes(data)));
-    }
-
-    @Override
-    public void loadFromItem(CompoundTag tag) {
-        if (tag.get(ITEM_DATA_TAG) instanceof ByteArrayTag saved) {
-            var ops = JavaValueOps.INSTANCE;
-            getFieldDataManager().readFieldsFromValue(ops.fromBytes(saved.getAsByteArray()), ops, SAVED_FIELDS);
-        }
-        syncViewFromState();
-        updateTickSubscription();
+    public void onMachineRemoved() {
+        clearInventory(depositInventory);
+        CoinExchange.dropToWorld(getLevel(), getPos(), TradeLang.TECH_OPERATOR_COIN, state.balance());
     }
 
     private void updateTickSubscription() {
@@ -246,15 +228,17 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     }
 
     private boolean canDeposit() {
-        int tier = CoinExchange.tierOf(Keys.displayStack(depositInventory.keyAt(0)));
-        return tier >= 0 && Long.MAX_VALUE - state.balance() >= CoinExchange.value(tier);
+        CoinSeries coins = CoinExchange.techOperator();
+        int tier = coins.tierOf(Keys.displayStack(depositInventory.keyAt(0)));
+        return tier >= 0 && Long.MAX_VALUE - state.balance() >= coins.value(tier);
     }
 
     private void depositCredits() {
         var key = depositInventory.keyAt(0);
-        int tier = CoinExchange.tierOf(Keys.displayStack(key));
+        CoinSeries coins = CoinExchange.techOperator();
+        int tier = coins.tierOf(Keys.displayStack(key));
         if (tier < 0) return;
-        long value = CoinExchange.value(tier);
+        long value = coins.value(tier);
         // 只接收能完整入账的硬币，不能吞掉一枚高面值币后只加剩余额度。
         long amount = Math.min(depositInventory.amountAt(0), (Long.MAX_VALUE - state.balance()) / value);
         if (amount <= 0) return;
@@ -273,16 +257,16 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
         long remaining = state.balance();
         if (remaining == 0) return;
         var destination = new PlayerMainInvWrapper(inventory);
-        // 优先大面额，再用小币补零；每档最多尝试一个背包的容量，避免大余额下无限循环。
-        for (int tier = CoinExchange.TYPE_COUNT - 1; tier >= 0 && remaining > 0; tier--) {
-            long value = CoinExchange.value(tier);
+        CoinSeries coins = CoinExchange.techOperator();
+        for (int tier = coins.typeCount() - 1; tier >= 0 && remaining > 0; tier--) {
+            long value = coins.value(tier);
             if (remaining < value) continue;
-            ItemStack coins = new ItemStack(CoinExchange.item(tier));
-            if (coins.isEmpty()) continue;
-            int amount = (int) Math.min(remaining / value, (long) inventory.items.size() * coins.getMaxStackSize());
+            ItemStack stack = new ItemStack(coins.item(tier));
+            if (stack.isEmpty()) continue;
+            int amount = (int) Math.min(remaining / value, (long) inventory.items.size() * stack.getMaxStackSize());
             if (amount == 0) continue;
-            coins.setCount(amount);
-            ItemStack remainder = ItemHandlerHelper.insertItemStacked(destination, coins, false);
+            stack.setCount(amount);
+            ItemStack remainder = ItemHandlerHelper.insertItemStacked(destination, stack, false);
             remaining -= (amount - remainder.getCount()) * value;
         }
         long withdrawn = state.balance() - remaining;
@@ -396,7 +380,7 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
 
         var credits = UIElement.centeredRow(UISizes.SLOT_SIZE).layout(layout -> layout.justifyContent(AlignContent.CENTER));
         var deposit = ItemSlot.of(depositInventory, 0, true, true);
-        deposit.setGhosts(CoinExchange.itemStacks())
+        deposit.setGhosts(CoinExchange.techOperator().itemStacks())
                 .setChangeListener(this::onDepositInventoryChanged)
                 .setHoverTooltips(CURRENCY_NAME);
         var withdraw = Button.translatable(136, BUTTON_WITHDRAW);
@@ -416,18 +400,6 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
     @Override
     public boolean hasPlayerInventory() {
         return true;
-    }
-
-    @Override
-    public boolean isWorkingEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public void setWorkingEnabled(boolean isWorkingAllowed) {
-        if (enabled == isWorkingAllowed) return;
-        enabled = isWorkingAllowed;
-        syncAndMarkChanged();
     }
 
     private static MutableComponent number(long value) {

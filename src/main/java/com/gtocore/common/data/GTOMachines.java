@@ -25,6 +25,7 @@ import com.gtocore.common.machine.multiblock.part.voiding.*;
 import com.gtocore.common.machine.noenergy.*;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeploymentMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
+import com.gtocore.common.machine.noenergy.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
@@ -1237,6 +1238,15 @@ public final class GTOMachines {
             .tips(GTOMachineTooltips.WideSlotMachineTooltips)
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/slot_machine"))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition JUST_GET_10 = machine("just_get_10_game_machine", "合成十游戏机", JustGet10Machine::new)
+            .langValue("Just Get 10 Game Machine")
+            .tips(GTOMachineTooltips.JustGet10MachineTooltips)
+            .nonYAxisRotation()
+            .modelRenderer(() -> GTOCore.id("block/machine/just_get_10"))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

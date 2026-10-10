@@ -1444,4 +1444,22 @@ public final class GTOItems {
     public static final ItemEntry<RandomPositiveFoodItem> CHOPPER_POPPER_FISH_HEAD_5 = item("chopper_popper_fish_head_5", "剁椒鱼头 V", p -> new RandomPositiveFoodItem(p, 10, 1F))
             .model((a, b) -> b.generated(a, GTOCore.id("item/food/fishhead/fish_head4")))
             .register();
+
+    public static final ItemEntry<ColoringItems> GAME_COINS_1 = gameCoin("game_coins_1", 0xFFD32F2F, 1, "I");
+    public static final ItemEntry<ColoringItems> GAME_COINS_10 = gameCoin("game_coins_10", 0xFFF57C00, 10, "II");
+    public static final ItemEntry<ColoringItems> GAME_COINS_100 = gameCoin("game_coins_100", 0xFFFBC02D, 100, "III");
+    public static final ItemEntry<ColoringItems> GAME_COINS_1K = gameCoin("game_coins_1k", 0xFF388E3C, 1_000, "IV");
+    public static final ItemEntry<ColoringItems> GAME_COINS_10K = gameCoin("game_coins_10k", 0xFF00897B, 10_000, "V");
+    public static final ItemEntry<ColoringItems> GAME_COINS_100K = gameCoin("game_coins_100k", 0xFF1976D2, 100_000, "VI");
+    public static final ItemEntry<ColoringItems> GAME_COINS_1M = gameCoin("game_coins_1m", 0xFF3949AB, 1_000_000, "VII");
+    public static final ItemEntry<ColoringItems> GAME_COINS_10M = gameCoin("game_coins_10m", 0xFF8E24AA, 10_000_000, "VIII");
+
+    private static ItemEntry<ColoringItems> gameCoin(String id, int color, int denomination, String roman) {
+        return item(id, "游戏币 " + roman, p -> ColoringItems.create(p, color, 0))
+                .tips(Tips.feature(Component.translatable("gtocore.currency.denomination", FormattingUtil.formatNumbers(denomination))))
+                .lang("Game Coins " + roman)
+                .model((ctx, prov) -> prov.generated(ctx, GTOCore.id("item/game_coins"), GTOCore.id("item/game_coins_top")))
+                .color(() -> ColoringItems::color)
+                .register();
+    }
 }

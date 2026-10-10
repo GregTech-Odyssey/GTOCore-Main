@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.TipSpec;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 
@@ -192,10 +193,10 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
             if (symbol.wild()) continue;
-            t.statText(t.tr("%s：左侧二连 ×%s / 三连 ×%s", "%s: Left pair ×%s / Triple ×%s",
+            t.feature(t.tr("%s：左侧二连 ×%s / 三连 ×%s", "%s: Left pair ×%s / Triple ×%s",
                     GTCEu.isDataGen() ? Component.empty() : SlotSymbol.symbolName(symbol),
-                    symbol.twoMatchMultiplier(),
-                    symbol.threeMatchMultiplier()));
+                    SlotMachineRules.CLASSIC.multiplier(symbol, 2),
+                    SlotMachineRules.CLASSIC.multiplier(symbol, 3)));
         }
         t.feature(t.tr("%s：百搭符号；三个%s连成一线时按%s三连赔付，奖励 ×%s", "%s: wild symbol; when three %s line up, they pay as a %s triple, ×%s",
                 wildName,
@@ -213,6 +214,14 @@ public final class GTOMachineTooltips {
                 wildName,
                 wildName));
         t.formula(t.tr("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还", "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately"));
+
+        t.heading(t.tr("货币与下注", "Currency and Bets"));
+        t.feature(t.tr("下注与余额都用技术员币：往硬币槽投入硬币即兑换入账，点「取出全部」按面额取回实体币",
+                "Bets and credits both use Tech Operator Coins: insert coins into the slot to convert them into credits, and click \"Withdraw all\" to take the coins back by denomination"));
+        t.feature(t.tr("下注范围 %s ~ %s", "Bet range %s to %s",
+                FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_BET),
+                FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_MAX_BET)));
+        t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the remaining credits back into the world"));
     });
 
     public static final TipSpec WideSlotMachineTooltips = GTOTips.of("wide_slot_machine", t -> {
@@ -225,7 +234,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
             if (symbol.wild()) continue;
-            t.statText(t.tr("%s：三连 ×%s / 四连 ×%s / 五连 ×%s", "%s: Triple ×%s / Four ×%s / Five ×%s",
+            t.feature(t.tr("%s：三连 ×%s / 四连 ×%s / 五连 ×%s", "%s: Triple ×%s / Four ×%s / Five ×%s",
                     GTCEu.isDataGen() ? Component.empty() : SlotSymbol.symbolName(symbol),
                     SlotMachineRules.WIDE.multiplier(symbol, 3),
                     SlotMachineRules.WIDE.multiplier(symbol, 4),
@@ -245,6 +254,34 @@ public final class GTOMachineTooltips {
                 "%s substitutes for any regular symbol: as long as three or more connect, the line pays that symbol's multiplier for its length",
                 wildName));
         t.formula(t.tr("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还", "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately"));
+
+        t.heading(t.tr("货币与下注", "Currency and Bets"));
+        t.feature(t.tr("下注与余额都用技术员币：往硬币槽投入硬币即兑换入账，点「取出全部」按面额取回实体币",
+                "Bets and credits both use Tech Operator Coins: insert coins into the slot to convert them into credits, and click \"Withdraw all\" to take the coins back by denomination"));
+        t.feature(t.tr("下注范围 %s ~ %s", "Bet range %s to %s",
+                FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_BET),
+                FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_MAX_BET)));
+        t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the remaining credits back into the world"));
+    });
+
+    // 合成十 - 玩法与计分说明
+    public static final TipSpec JustGet10MachineTooltips = GTOTips.of("just_get_10", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成十", "Just Get 10")));
+        t.heading(t.tr("5×5 盘面，提起整组后合并", "5×5 board; lift a group, then merge it"));
+
+        t.heading(t.tr("玩法", "How to play"));
+        t.feature(t.tr("点未提起的格子：提起该格相连的相同数字整组；点已提起的格子：整组合并成「该数字 + 1」", "Click an unpressed cell to lift the group of identical numbers connected to it; click a lifted cell to merge that group into that number plus one"));
+        t.feature(t.tr("只有两格及以上的连通组才能提起；单格点了没有反应", "Only groups of two or more can be lifted; a lone cell does nothing"));
+        t.feature(t.tr("合并出的数字落在被点中的那一格，随后整列下坠，顶部补上随机数字", "The merged number lands on the clicked cell, then the column falls and random numbers fill in from the top"));
+        t.feature(t.tr("盘面再没有相邻同数字时这一局结束，成绩留在界面上，随时可以重新开始", "The round ends when no two adjacent numbers match; the score stays on screen and you may restart at any time"));
+
+        t.heading(t.tr("计分与兑现", "Scoring and payout"));
+        t.feature(t.tr("每次合并得分 = 合并后的数字 × 组内格数，整组越大越值钱", "Each merge scores the merged number × group size, so bigger groups are worth more"));
+        t.feature(t.tr("10 到 20 的每个数字首次合出时各加一次 1000 + (数字 - 10) × 500", "Each number from 10 to 20 adds 1000 + (number − 10) × 500 the first time it is created in a round"));
+        t.feature(t.tr("本局结束或重新开始时按积分兑现游戏币：超过 1000 的部分每 20 分 1 枚，已兑现的不会重复兑现",
+                "The score is paid out in Game Coins when the round ends or you restart: 1 coin per 20 points above 1000, and already-paid score is never paid twice"));
+        t.feature(t.tr("余额可以用「取出全部」按面额换成游戏币硬币", "\"Withdraw all\" turns the balance into Game Coin coins by denomination"));
+        t.detail(t.tr("拆除机器时，未兑现的积分会先折成游戏币，余额一起掉回世界", "Breaking the machine first cashes out the unpaid score into Game Coins, then drops the balance back into the world"));
     });
 
     public static final TipSpec PatternContentAccessTerminalTooltips = GTOTips.of("pattern_content_access_terminal", t -> {

@@ -42,6 +42,11 @@ public final class TradeLang {
     public static final String ENERGY_COIN = "energy_coin";
     public static final String COMPACT_ENERGY_COIN = "compact_energy_coin";
 
+    /// - 游戏币：Game Coins
+    /// - 游戏里程碑币：Game Milestone Coins
+    public static final String GAME_COINS = "game_coins";
+    public static final String GAME_MILESTONE_COINS = "game_milestone_coins";
+
     static {
         addTradeLang("gtocore.currency." + TECH_OPERATOR_COIN, "技术员币", "Tech Operator Coin");
         addTradeLang("gtocore.currency." + RESEARCH_PIONEER_COIN, "研究员币", "Research Pioneer Coin");
@@ -52,6 +57,11 @@ public final class TradeLang {
 
         addTradeLang("gtocore.currency." + ENERGY_COIN, "能量币", "Energy Coin");
         addTradeLang("gtocore.currency." + COMPACT_ENERGY_COIN, "致密能量币", "Compact Energy Coin");
+
+        addTradeLang("gtocore.currency." + GAME_COINS, "游戏币", "Game Coin");
+        addTradeLang("gtocore.currency." + GAME_MILESTONE_COINS, "游戏里程碑币", "Game Milestone Coin");
+
+        addTradeLang("gtocore.currency.denomination", "面值: %s", "Denomination : %s");
 
         addTradeLang("gtocore.trade.quest_id", "任务 ID：%s", "Quest ID: %s");
 

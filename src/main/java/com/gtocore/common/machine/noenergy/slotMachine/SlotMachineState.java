@@ -19,7 +19,8 @@ import java.util.Objects;
  *
  * <p>
  * 状态是自定义元素：{@link #CODEC} 把整份状态编解码成一个值，{@link #addCodec()} 在 {@code GTOCodecs.init()}
- * 里注册，机器侧只在 {@code state} 字段上写 {@code @SaveToDisk}，区块存盘与物品掉落因此共用同一条路径。
+ * 里注册，机器侧只在 {@code state} 字段上写 {@code @SaveToDisk}，区块存盘因此只有这一条路径（机器物品不再保存状态，
+ * 拆除时余额由机器换成硬币掉回世界）。
  * 不要再改成嵌套 holder（编码规范第 27 条）：那样状态会自己维护一套字段管理器，多出一条持久化路径，
  * 还得靠 {@code listener} 字符串回调。读回来的数值统一在解码构造里校验，不需要「读盘完成」回调。
  *

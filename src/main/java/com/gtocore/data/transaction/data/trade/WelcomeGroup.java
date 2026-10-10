@@ -2,7 +2,9 @@ package com.gtocore.data.transaction.data.trade;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.api.gui.StackTexture;
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.data.transaction.data.CoinExchange;
+import com.gtocore.data.transaction.data.CoinSeries;
 import com.gtocore.data.transaction.manager.TradeData;
 import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
@@ -10,7 +12,6 @@ import com.gtocore.data.transaction.manager.TradingManager;
 import com.gtolib.utils.WalletUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 
 import net.minecraft.network.chat.Component;
@@ -25,9 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
-import static com.gtocore.common.data.GTOMachines.SLOT_MACHINE;
-import static com.gtocore.common.data.GTOMachines.TRADING_STATION;
-import static com.gtocore.common.data.GTOMachines.WIDE_SLOT_MACHINE;
+import static com.gtocore.common.data.GTOMachines.*;
+import static com.gtocore.data.transaction.data.TradeLang.GAME_COINS;
 import static com.gtocore.data.transaction.data.TradeLang.TECH_OPERATOR_COIN;
 import static com.gtocore.data.transaction.data.TradeLang.addTradeLang;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
@@ -51,14 +51,18 @@ public final class WelcomeGroup {
                 GroupIndex,
                 addTradeLang("格雷科技销售部兑币区", "Currency Exchange Area of Gray Technology Sales Department"),
                 UNLOCK_BASE,
-                Set.of(TECH_OPERATOR_COIN),
+                Set.of(TECH_OPERATOR_COIN, GAME_COINS),
                 new ItemStackTexture(ChemicalHelper.get(GTOTagPrefix.COIN, Neutronium)));
 
-        for (int i = 0; i < CoinExchange.TYPE_COUNT; i++) {
-            Material material = CoinExchange.material(i);
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, createCoinExchangeTrade(material, i));
-            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, createCoinWithdrawTrade(material, i));
-        }
+        addCoinTrades(GroupIndex, ShopIndex1, CoinExchange.techOperator());
+        addCoinTrades(GroupIndex, ShopIndex1, CoinExchange.gameCoins());
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1, new TradeEntry.Builder()
+                .texture(new StackTexture(ChemicalHelper.get(GTOTagPrefix.COIN, Neutronium), GTOItems.GAME_COINS_1.asStack()))
+                .addDescription(Component.translatable(addTradeLang("将游戏币兑换为技术员币", "Exchange Game Coin to Tech Operator Coin."))).unlockCondition(UNLOCK_BASE)
+                .inputCurrency(GAME_COINS, 1)
+                .outputCurrency(TECH_OPERATOR_COIN, 5)
+                .build());
 
         int ShopIndex2 = TradingManager.INSTANCE.addShopByGroupIndex(
                 GroupIndex,
@@ -104,27 +108,42 @@ public final class WelcomeGroup {
                 .inputCurrency(TECH_OPERATOR_COIN, 25)
                 .outputItem(WIDE_SLOT_MACHINE.asStack())
                 .build());
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                .texture(new StackTexture(JUST_GET_10.asStack()))
+                .unlockCondition(UNLOCK_BASE)
+                .inputCurrency(TECH_OPERATOR_COIN, 25)
+                .outputItem(JUST_GET_10.asStack())
+                .build());
     }
 
-    public static TradeEntry createCoinExchangeTrade(Material material, int tier) {
-        ItemStack Coin = ChemicalHelper.get(GTOTagPrefix.COIN, material);
+    /** 为一种货币登记各面额的「实体币换入钱包」与「钱包换出实体币」交易。 */
+    private static void addCoinTrades(int groupIndex, int shopIndex, CoinSeries coins) {
+        for (int tier = 0; tier < coins.typeCount(); tier++) {
+            TradingManager.INSTANCE.addTradeEntryByIndices(groupIndex, shopIndex, createCoinExchangeTrade(coins, tier));
+            TradingManager.INSTANCE.addTradeEntryByIndices(groupIndex, shopIndex, createCoinWithdrawTrade(coins, tier));
+        }
+    }
+
+    public static TradeEntry createCoinExchangeTrade(CoinSeries coins, int tier) {
+        ItemStack coin = coins.itemStack(tier);
         return new TradeEntry.Builder()
-                .texture(new ItemStackTexture(Coin))
-                .description(List.of(Component.translatable("gtocore.trade_group.exchanged", Component.translatable("gtocore.currency." + TECH_OPERATOR_COIN), Coin.getDisplayName())))
+                .texture(new ItemStackTexture(coin))
+                .description(List.of(Component.translatable("gtocore.trade_group.exchanged", Component.translatable("gtocore.currency." + coins.currencyId()), coin.getDisplayName())))
                 .unlockCondition(UNLOCK_BASE)
-                .inputItem(Coin)
-                .outputCurrency(TECH_OPERATOR_COIN, CoinExchange.value(tier))
+                .inputItem(coin)
+                .outputCurrency(coins.currencyId(), coins.value(tier))
                 .build();
     }
 
-    public static TradeEntry createCoinWithdrawTrade(Material material, int tier) {
-        ItemStack Coin = ChemicalHelper.get(GTOTagPrefix.COIN, material);
+    public static TradeEntry createCoinWithdrawTrade(CoinSeries coins, int tier) {
+        ItemStack coin = coins.itemStack(tier);
         return new TradeEntry.Builder()
-                .texture(new ItemStackTexture(Coin))
-                .description(List.of(Component.translatable("gtocore.trade_group.exchanged", Coin.getDisplayName(), Component.translatable("gtocore.currency." + TECH_OPERATOR_COIN))))
+                .texture(new ItemStackTexture(coin))
+                .description(List.of(Component.translatable("gtocore.trade_group.exchanged", coin.getDisplayName(), Component.translatable("gtocore.currency." + coins.currencyId()))))
                 .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, CoinExchange.value(tier))
-                .outputItem(Coin)
+                .inputCurrency(coins.currencyId(), coins.value(tier))
+                .outputItem(coin)
                 .build();
     }
 

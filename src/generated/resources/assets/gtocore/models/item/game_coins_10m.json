@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gtocore:item/game_coins",
+    "layer1": "gtocore:item/game_coins_top"
+  }
+}
