@@ -6,7 +6,7 @@ import com.gregtechceu.gtceu.uipro.data.UICodecs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -14,7 +14,7 @@ import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 public final class GridMapTarget implements IUIHolder {
 
     static final StreamCodec<FriendlyByteBuf, GridMapTarget> CODEC = StreamCodec.composite(
-            ByteStreamCodec.INT_CODEC, GridMapTarget::focusDimRef,
+            ByteBufCodecs.VAR_INT, GridMapTarget::focusDimRef,
             UICodecs.enumOf(GridMapMode.class), GridMapTarget::mode,
             GridMapTarget::new);
 

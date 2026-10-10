@@ -25,7 +25,7 @@ import net.minecraft.util.Unit;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +61,7 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
         layout(l -> l.column().alignCenter().paddingTop(UISizes.DOCK_MARGIN));
         topology = addSyncValue(SyncValue.of(ctx::topology, GridView.TOPOLOGY, GridView.TopologyView.EMPTY));
         live = addSyncValue(SyncValue.of(ctx::live, GridView.LIVE, GridView.LiveView.EMPTY));
-        pick = addRPC(ByteStreamCodec.INT_CODEC, ctx::handlePick).validate(ref -> GridView.dimension(ref) != null).limit(1);
+        pick = addRPC(ByteBufCodecs.VAR_INT, ctx::handlePick).validate(ref -> GridView.dimension(ref) != null).limit(1);
         back = addRPC(ctx::handleBack).limit(1);
         card = new CardHost("gridmap.card", this::createCard);
         canvas = new CanvasView("gridmap", SERVER_WIDTH, SERVER_HEIGHT);

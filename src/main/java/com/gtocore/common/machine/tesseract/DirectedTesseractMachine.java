@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.util.holder.BooleanHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -154,10 +154,10 @@ public class DirectedTesseractMachine extends MetaMachine implements
             window.registerPopup(TesseractUI.FACE_POPUP, index -> remote || index < targets.size() ?
                     TesseractUI.facePopup(view, index, () -> index < targets.size() ? targets.get(index).face() : null, face -> setTargetFace(index, face)) : null);
         }
-        var rows = ServerList.of(ByteStreamCodec.INT_CODEC, () -> indices(targets.size()), index -> targetRow(view, index, window))
+        var rows = ServerList.of(ByteBufCodecs.VAR_INT, () -> indices(targets.size()), index -> targetRow(view, index, window))
                 .version(targets::size).emptyText(TesseractUI.DIRECTED_EMPTY);
         rows.layout(l -> l.paddingTop(1).paddingBottom(1));
-        var pending = ServerList.of(ByteStreamCodec.INT_CODEC, () -> indices(unfinishedStacks.size()), index -> pendingRow(view, index))
+        var pending = ServerList.of(ByteBufCodecs.VAR_INT, () -> indices(unfinishedStacks.size()), index -> pendingRow(view, index))
                 .version(unfinishedStacks::size);
         var status = TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_UNLIMITED, targets.size()), true, true);
         status.addLine(TesseractUI.LINE_PENDING, () -> hasWorkToDo() ? Component.translatable(TesseractUI.VALUE_PENDING, unfinishedStacks.size()) : Component.translatable(TesseractUI.VALUE_PENDING_NONE))

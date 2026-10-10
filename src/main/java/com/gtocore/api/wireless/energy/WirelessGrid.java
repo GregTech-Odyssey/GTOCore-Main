@@ -3,10 +3,10 @@ package com.gtocore.api.wireless.energy;
 import com.gtolib.GTOCore;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.utils.FileUtils;
-import com.gtolib.utils.iostream.DataIOStream;
 
 import net.minecraft.Util;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
@@ -15,7 +15,6 @@ import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -25,6 +24,12 @@ import java.util.function.Consumer;
 public final class WirelessGrid extends FastSavedData {
 
     public static final String DATA_NAME = "gtocore_wireless_energy";
+    /**
+     * 存档文件头写的版本号：库把它作为 VarInt 写在文件最前面（见 {@link com.gtolib.utils.FileUtils#saveVersionedToFile}），
+     * 也是这份负载唯一的版本号——负载里不再有第二份。重建后的格式从 1 开始，读取时只认文件头这一个
+     * （见 {@link GridCodec#decodeVersioned}）。
+     */
+    public static final int VERSION = 1;
     private static final int VALIDATE_TICKS = 1200;
 
     @Nullable
@@ -52,7 +57,7 @@ public final class WirelessGrid extends FastSavedData {
         var file = storage.getDataFile(DATA_NAME);
         if (file.exists()) {
             try {
-                data = FileUtils.loadFromFile(file, GridCodec::decode);
+                data = FileUtils.loadVersionedFromFile(file, GridCodec::decodeVersioned, GridCodec::decodeUnversioned);
             } catch (RuntimeException e) {
                 GTOCore.LOGGER.error("[无线电网] {} 存在但无法读取：本次运行电网不可用，不迁移、不写回", DATA_NAME, e);
                 data = new WirelessGrid(false);
@@ -93,7 +98,12 @@ public final class WirelessGrid extends FastSavedData {
     }
 
     @Override
-    public void save(DataIOStream stream) throws IOException {
+    public int version() {
+        return VERSION;
+    }
+
+    @Override
+    public void save(FriendlyByteBuf stream) {
         GridCodec.encode(this, stream);
     }
 

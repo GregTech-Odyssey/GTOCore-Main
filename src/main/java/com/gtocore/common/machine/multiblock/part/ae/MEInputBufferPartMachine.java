@@ -28,6 +28,7 @@ import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 import com.gregtechceu.gtceu.uipro.UIElement;
 
 import net.minecraft.client.Minecraft;
@@ -67,8 +68,8 @@ import com.gto.datasynclib.LazyFieldDataManager;
 import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.util.DataCodecs;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -633,7 +634,10 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
         @Override
         public void deserializeNBT(CompoundTag tag) {
             virtualInputState.resetForDeserialize();
-            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) setRecipe(GTRecipeDefinition.DATA_CODEC.decode(Data.readData(byteArrayTag.getAsByteArray())));
+            if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) {
+                var ops = JavaValueOps.create(GTDataFixer.VERSION);
+                setRecipe(GTRecipeDefinition.DATA_CODEC.decode(ops, ops.fromBytes(byteArrayTag.getAsByteArray())));
+            }
             notConsumableItem.storage.deserializeNBT(tag.tags.get("inv"));
             if (tag.tags.get("tank") instanceof ListTag tanks) {
                 MEPatternBufferPartMachine.readLegacyTanks(notConsumableFluid.storage, tanks);
@@ -679,21 +683,13 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
         }
 
         @Override
-        public Data writeData() {
-            return fieldDataManager.get().writeToData();
+        public @NotNull Object writeValue(@NotNull ValueOps ops) {
+            return fieldDataManager.get().writeToValue(ops);
         }
 
         @Override
-        public void readData(Data data, int dataVersion) {
-            if (data.isNull()) return;
-            if (dataVersion < 2) {
-                var nbt = DataCodecs.TAG_CODEC.decode(data, dataVersion);
-                if (nbt instanceof CompoundTag compoundTag) {
-                    deserializeNBT(compoundTag);
-                    return;
-                }
-            }
-            fieldDataManager.get().readFromData(data, dataVersion);
+        public void readValue(@NotNull Object data, @NotNull ValueOps ops) {
+            fieldDataManager.get().readFromValue(data, ops);
         }
 
         @Override

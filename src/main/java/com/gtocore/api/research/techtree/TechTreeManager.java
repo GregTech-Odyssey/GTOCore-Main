@@ -7,8 +7,6 @@ import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 import com.gtolib.GTOCore;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.utils.AEChemicalHelper;
-import com.gtolib.utils.iostream.DataIOStream;
-import com.gtolib.utils.iostream.IOStreamCodec;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -16,6 +14,7 @@ import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.registry.GTRegistry;
 
 import net.minecraft.locale.Language;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +26,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import com.google.common.collect.ImmutableList;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -34,11 +34,10 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-public final class TechTreeManager extends GTRegistry.Str<TechNode> implements IOStreamCodec<TechTree> {
+public final class TechTreeManager extends GTRegistry.Str<TechNode> implements StreamCodec<FriendlyByteBuf, TechTree> {
 
     public static final Map<String, CNEN> NODE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
     public static final Map<String, CNEN> TREE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
@@ -119,11 +118,11 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
     }
 
     @Override
-    public TechTree decode(DataIOStream dis) throws IOException {
+    public TechTree decode(FriendlyByteBuf stream) {
         var tree = new TechTree(this);
-        var n = dis.readVarInt();
+        var n = stream.readVarInt();
         for (int i = 0; i < n; i++) {
-            var d = this.get(dis.readUTF());
+            var d = this.get(stream.readUtf());
             if (d != null) {
                 tree.addUnlockedNode(d);
             }
@@ -132,11 +131,11 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements I
     }
 
     @Override
-    public void encode(DataIOStream stream, TechTree obj) throws IOException {
+    public void encode(FriendlyByteBuf stream, TechTree obj) {
         var endNodes = obj.getEndNodes();
         stream.writeVarInt(endNodes.size());
         for (var node : endNodes) {
-            stream.writeUTF(node.name);
+            stream.writeUtf(node.name);
         }
     }
 

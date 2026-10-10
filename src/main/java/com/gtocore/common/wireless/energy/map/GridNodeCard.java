@@ -15,7 +15,7 @@ import com.gregtechceu.gtceu.uipro.window.Popup;
 
 import net.minecraft.network.chat.Component;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 
 /**
  * 星球卡片内容（两端都建）：状态、储能、流量、线路与设备列表，数值均为服务端求值的同步值；不储能、无设备时整块收成一行。
@@ -82,14 +82,14 @@ public final class GridNodeCard {
         var relay = new StatusPanel(LayoutStyle.AUTO);
         relay.addLine(GridMapLang.RELAY_IN, data::relayIn);
         relay.addLine(GridMapLang.RELAY_OUT, data::relayOut);
-        var list = ServerList.of(ByteStreamCodec.INT_CODEC, data::lineKeys, line -> new GridLineRow(data, line))
+        var list = ServerList.of(ByteBufCodecs.VAR_INT, data::lineKeys, line -> new GridLineRow(data, line))
                 .version(data::lineVersion).rowHeight(GridLineRow.HEIGHT).maxRows(GridCardLines.MAX_ROWS).emptyText(GridMapLang.LINES_EMPTY);
         return UIElement.section().addChildren(title, relay, list);
     }
 
     private static UIElement ports(GridCardData data) {
         var title = TextLine.of(LayoutStyle.AUTO, () -> data.hasPorts() ? TOP_PORTS : NO_PORTS).bindClientColor(UITheme::panelText);
-        var list = ServerList.of(ByteStreamCodec.INT_CODEC, () -> data.detail().portKeys(), key -> new GridPortRow(data, key))
+        var list = ServerList.of(ByteBufCodecs.VAR_INT, () -> data.detail().portKeys(), key -> new GridPortRow(data, key))
                 .version(() -> data.detail().revision());
         var section = UIElement.section().addChildren(title, list);
         section.addSyncValue(SyncValue.ofBool(data::hasPorts, false).onChanged(list::setDisplay));

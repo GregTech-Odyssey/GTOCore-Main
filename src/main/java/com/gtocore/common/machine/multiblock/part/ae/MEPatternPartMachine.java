@@ -69,7 +69,7 @@ import com.google.common.collect.HashBiMap;
 import com.gto.datasynclib.AbstractDataSerializable;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
@@ -572,7 +572,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         tag.putString(ITEM_NAME, customName);
         var list = new ListTag();
         for (var slot : internalInventory) {
-            list.add(new ByteArrayTag(slot.writeData().writeToBytes()));
+            list.add(new ByteArrayTag(JavaValueOps.INSTANCE.toBytes(slot.writeValue(JavaValueOps.INSTANCE))));
         }
         tag.put(ITEM_SLOTS, list);
         tag.putInt(ITEM_DATA_VERSION, GTDataFixer.VERSION);
@@ -593,7 +593,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         for (int i = 0; i < count; i++) {
             try {
                 if (list.get(i) instanceof ByteArrayTag bytes) {
-                    internalInventory[i].readData(Data.readData(bytes.getAsByteArray()), dataVersion);
+                    internalInventory[i].readValue(JavaValueOps.INSTANCE.fromBytes(bytes.getAsByteArray()), JavaValueOps.create(dataVersion));
                 } else if (list.get(i) instanceof CompoundTag compound) {
                     internalInventory[i].deserializeNBT(compound);
                 }
@@ -651,7 +651,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
         public abstract void onPatternChange();
 
-        /** 读取 LDLib 时代的 NBT 格式（{@code dataVersion < 2} 的存档与旧物品）。 */
+        /** 读取 LDLib 时代的 NBT 格式：拆下后物品 NBT 里仍是 {@link CompoundTag} 的旧槽位。 */
         public abstract void deserializeNBT(CompoundTag compoundTag);
     }
 

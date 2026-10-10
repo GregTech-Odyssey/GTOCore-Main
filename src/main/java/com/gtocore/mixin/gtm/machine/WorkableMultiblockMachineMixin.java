@@ -16,7 +16,7 @@ import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.server.level.ServerLevel;
 
-import com.gto.datasynclib.datastream.data.StringMapData;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -29,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(WorkableMultiblockMachine.class)
@@ -72,23 +73,23 @@ public abstract class WorkableMultiblockMachineMixin extends MultiblockControlle
     }
 
     @Override
-    public void writeCustomSaveData(StringMapData data) {
-        super.writeCustomSaveData(data);
+    public void writeCustomSaveData(Map<String, Object> data, ValueOps ops) {
+        super.writeCustomSaveData(data, ops);
         if (gto$solarHeat != null) {
-            var heatData = gto$solarHeat.getFieldDataManager().writeToData();
-            if (!heatData.isNull()) data.put("gto$solarHeat", heatData);
+            var heatData = gto$solarHeat.getFieldDataManager().writeToValue(ops);
+            if (!ops.isNull(heatData)) data.put("gto$solarHeat", heatData);
         }
     }
 
     @Override
-    public void readCustomSaveData(StringMapData data, int dataVersion) {
-        super.readCustomSaveData(data, dataVersion);
+    public void readCustomSaveData(Map<String, Object> data, ValueOps ops) {
+        super.readCustomSaveData(data, ops);
         var heatData = data.get("gto$solarHeat");
         if (gto$solarHeat == null) {
             gto$solarHeat = new SolarHeatHandler.MultiblockSolarHeatHandler(getHolder());
         }
-        if (heatData == null || heatData.isNull()) return;
-        gto$solarHeat.getFieldDataManager().readFromData(heatData, dataVersion);
+        if (ops.isNull(heatData)) return;
+        gto$solarHeat.getFieldDataManager().readFromValue(heatData, ops);
     }
 
     protected WorkableMultiblockMachineMixin(MetaMachineBlockEntity holder) {

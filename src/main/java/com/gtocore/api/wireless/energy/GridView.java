@@ -9,9 +9,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.gto.datasynclib.util.StreamCodecs;
+import com.gto.datasynclib.util.ByteBufCodecExtends;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
@@ -179,26 +179,26 @@ public final class GridView {
 
     public static final StreamCodec<FriendlyByteBuf, ResourceKey<Level>> DIMENSION = StreamCodec.of((buf, key) -> {
         int ref = dimRef(key);
-        ByteStreamCodec.INT_CODEC.encode(buf, ref);
-        if (ref == 0) StreamCodecs.RESOURCE_LOCATION_CODEC.encode(buf, key.location());
+        buf.writeVarInt(ref);
+        if (ref == 0) ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.encode(buf, key.location());
     }, buf -> {
-        int ref = ByteStreamCodec.INT_CODEC.decode(buf);
+        int ref = buf.readVarInt();
         if (ref != 0) {
             var key = dimension(ref);
             return key != null ? key : Level.OVERWORLD;
         }
-        return ResourceKey.create(Registries.DIMENSION, StreamCodecs.RESOURCE_LOCATION_CODEC.decode(buf));
+        return ResourceKey.create(Registries.DIMENSION, ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.decode(buf));
     });
 
-    private static final StreamCodec<FriendlyByteBuf, Integer> TIER = StreamCodec.convert(ByteStreamCodec.BYTE_CODEC, Integer::byteValue, Byte::intValue);
-    private static final StreamCodec<FriendlyByteBuf, Integer> COUNT = StreamCodec.convert(ByteStreamCodec.SHORT_CODEC, i -> (short) Math.min(Short.MAX_VALUE, i),
+    private static final StreamCodec<FriendlyByteBuf, Integer> TIER = StreamCodec.convert(ByteBufCodecs.BYTE, Integer::byteValue, Byte::intValue);
+    private static final StreamCodec<FriendlyByteBuf, Integer> COUNT = StreamCodec.convert(ByteBufCodecs.SHORT, i -> (short) Math.min(Short.MAX_VALUE, i),
             s -> Math.max(0, (int) s));
 
     public static final StreamCodec<FriendlyByteBuf, NodeInfo> NODE = StreamCodec.composite(
             DIMENSION, NodeInfo::dimension,
             TIER, NodeInfo::tier,
             TIER, NodeInfo::reachTier,
-            ByteStreamCodec.FLOAT_CODEC, NodeInfo::capacity,
+            ByteBufCodecs.FLOAT, NodeInfo::capacity,
             COUNT, NodeInfo::towers,
             TIER, NodeInfo::topTowerTier,
             COUNT, NodeInfo::relays,
@@ -209,24 +209,24 @@ public final class GridView {
             COUNT, LineInfo::a,
             COUNT, LineInfo::b,
             TIER, LineInfo::tier,
-            ByteStreamCodec.LONG_CODEC, LineInfo::budget,
+            ByteBufCodecs.LONG, LineInfo::budget,
             (a, b, tier, budget) -> new LineInfo(a, b, ProviderRegistry.clampLineTier(tier), Math.max(0, budget)));
 
     public static final StreamCodec<FriendlyByteBuf, TopologyView> TOPOLOGY = StreamCodec.composite(
-            ByteStreamCodec.INT_CODEC, TopologyView::revision,
-            ByteStreamCodec.BOOLEAN_CODEC, TopologyView::isTruncated,
+            ByteBufCodecs.VAR_INT, TopologyView::revision,
+            ByteBufCodecs.BOOL, TopologyView::isTruncated,
             UICodecs.list(NODE, MAX_NODES), TopologyView::nodes,
             UICodecs.list(LINE, MAX_LINES), TopologyView::lines,
             TopologyView::decoded);
 
     public static final StreamCodec<FriendlyByteBuf, LiveView> LIVE = StreamCodec.composite(
-            ByteStreamCodec.INT_CODEC, LiveView::revision,
-            ByteStreamCodec.INT_CODEC, LiveView::topologyRevision,
+            ByteBufCodecs.VAR_INT, LiveView::revision,
+            ByteBufCodecs.VAR_INT, LiveView::topologyRevision,
             UICodecs.floats(MAX_NODES), LiveView::storageArray,
             UICodecs.floats(MAX_NODES), LiveView::storageDeltaArray,
             UICodecs.floats(MAX_LINES), LiveView::flowABArray,
             UICodecs.floats(MAX_LINES), LiveView::flowBAArray,
-            ByteStreamCodec.FLOAT_CODEC, LiveView::maxFlow,
+            ByteBufCodecs.FLOAT, LiveView::maxFlow,
             LiveView::new);
 
     private GridView() {}

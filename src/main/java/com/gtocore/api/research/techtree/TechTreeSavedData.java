@@ -6,24 +6,24 @@ import com.gtocore.client.Message;
 import com.gtolib.GTOCore;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.network.NetworkPack;
-import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.GTCEu;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
+import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.hepdd.gtmthings.utils.TeamUtil;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.DecoderException;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,6 +32,11 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static final String DATA_NAME = "tech_tree_data";
     public static final int DATA_VERSION = 1;
+    /**
+     * 存档文件头写的版本号。负载形状至今没变过，所以文件头从 1 起：读到别的版本也按同一个形状解，
+     * 将来负载变形了再在这里分支。
+     */
+    public static final int VERSION = 1;
     public static TechTreeSavedData INSTANCE = new TechTreeSavedData();
     public static TechTreeSavedData CLIENT_INSTANCE = new TechTreeSavedData();
 
@@ -43,15 +48,9 @@ public class TechTreeSavedData extends FastSavedData {
     private static final AtomicInteger MOD_COUNT = new AtomicInteger();
 
     private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("techTreeSavedDataSyncS2C",
-            (objs, buf) -> {
+            (objs, buf) -> INSTANCE.save(buf), (player, buffer) -> {
                 try {
-                    INSTANCE.save(DataIOStream.of(buf));
-                } catch (IOException exception) {
-                    GTOCore.LOGGER.error("Failed to serialize tech tree data for synchronization", exception);
-                }
-            }, (player, buffer) -> {
-                try {
-                    TechTreeSavedData data = load(DataIOStream.of(buffer));
+                    TechTreeSavedData data = read(buffer);
                     CLIENT_INSTANCE = data == null ? new TechTreeSavedData() : data;
                     MOD_COUNT.incrementAndGet();
                 } catch (RuntimeException exception) {
@@ -73,7 +72,7 @@ public class TechTreeSavedData extends FastSavedData {
     }
 
     public static TechTreeSavedData get(DimensionDataStorage dataStorage) {
-        return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData::new);
+        return FastSavedData.get(DATA_NAME, dataStorage, TechTreeSavedData::load, TechTreeSavedData::loadLegacy, TechTreeSavedData::new);
     }
 
     public static UUID getTeamUUID(Player player) {
@@ -199,7 +198,33 @@ public class TechTreeSavedData extends FastSavedData {
         CLIENT_INSTANCE_SYNC.send(recipient);
     }
 
-    public static TechTreeSavedData load(DataIOStream stream) {
+    /**
+     * 读取文件头带版本号的存档。
+     * <p>
+     * 旧存档的第一个字段是 VarInt 队伍数，头一个字节 1 会被当成版本 1——所以"版本对得上"不等于"这份文件带文件头"：
+     * 只有整份载荷正好读完才算读对了。读不对就抛出去，交给 {@code loadVersionedFromFile} 回退到 {@link #loadLegacy}
+     * 从文件开头按旧格式重读。负载形状没变过，所以真正的读取是下面那一个共用体。
+     */
+    public static TechTreeSavedData load(VersionedFriendlyByteBuf stream) {
+        int fileVersion = stream.version();
+        if (fileVersion != VERSION) {
+            throw new DecoderException("tech_tree_data declares version " + fileVersion + ", this build reads " + VERSION);
+        }
+        var data = read(stream);
+        if (data == null || stream.isReadable()) {
+            throw new DecoderException("tech_tree_data is not a payload this build wrote");
+        }
+        return data;
+    }
+
+    /**
+     * 读取早于文件头的存档；网络快照走的是同一份负载，也调下面这个共用体。
+     */
+    public static TechTreeSavedData loadLegacy(FriendlyByteBuf stream) {
+        return read(stream);
+    }
+
+    private static TechTreeSavedData read(FriendlyByteBuf stream) {
         var data = new TechTreeSavedData();
         try {
             int teamCount = stream.readVarInt();
@@ -208,13 +233,14 @@ public class TechTreeSavedData extends FastSavedData {
                 int treeCount = stream.readVarInt();
                 Reference2ObjectOpenHashMap<TechTreeManager, TechTree> trees = new Reference2ObjectOpenHashMap<>();
                 for (int j = 0; j < treeCount; j++) {
-                    String treeId = stream.readUTF();
-                    byte[] payload = stream.readByteArray();
+                    String treeId = stream.readUtf();
+                    int payloadLength = stream.readVarInt();
                     var manager = TechTreeManager.getManager(treeId);
+                    // 单棵树的负载带上长度前缀：读侧按长度切一段共享内存的切片来解码，不复制字节
                     if (manager != null) {
-                        try (var payloadStream = DataIOStream.of(new ByteArrayInputStream(payload))) {
-                            trees.put(manager, manager.decode(payloadStream));
-                        }
+                        trees.put(manager, manager.decode(new FriendlyByteBuf(stream.readSlice(payloadLength))));
+                    } else {
+                        stream.skipBytes(payloadLength);
                     }
                 }
                 if (!trees.isEmpty()) {
@@ -228,7 +254,12 @@ public class TechTreeSavedData extends FastSavedData {
     }
 
     @Override
-    public void save(DataIOStream stream) throws IOException {
+    public int version() {
+        return VERSION;
+    }
+
+    @Override
+    public void save(FriendlyByteBuf stream) {
         stream.writeVarInt(teamTechTrees.size());
         for (var teamEntry : teamTechTrees.entrySet()) {
             int treeCount = countNonEmptyTrees(teamEntry.getValue());
@@ -238,8 +269,8 @@ public class TechTreeSavedData extends FastSavedData {
             for (var treeEntry : trees.entrySet()) {
                 if (treeEntry.getValue().isEmpty()) continue;
                 TechTreeManager manager = treeEntry.getKey();
-                stream.writeUTF(manager.getId());
-                stream.writeByteArray(encodeTree(manager, treeEntry.getValue()));
+                stream.writeUtf(manager.getId());
+                writeTree(stream, manager, treeEntry.getValue());
             }
         }
     }
@@ -254,12 +285,17 @@ public class TechTreeSavedData extends FastSavedData {
         return count;
     }
 
-    private static byte[] encodeTree(TechTreeManager manager, TechTree tree) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (var treeStream = DataIOStream.of(baos)) {
-            manager.encode(treeStream, tree);
-            treeStream.flush();
+    /**
+     * 一棵树编码进一个长度前缀的独立区块：长度先于内容写出，读侧按长度切片解码，中间不落 byte[]。
+     */
+    private static void writeTree(FriendlyByteBuf stream, TechTreeManager manager, TechTree tree) {
+        var buf = ByteBufAllocator.DEFAULT.buffer();
+        try {
+            manager.encode(new FriendlyByteBuf(buf), tree);
+            stream.writeVarInt(buf.readableBytes());
+            stream.writeBytes(buf, buf.readerIndex(), buf.readableBytes());
+        } finally {
+            buf.release();
         }
-        return baos.toByteArray();
     }
 }

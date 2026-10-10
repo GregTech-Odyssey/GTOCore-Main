@@ -42,7 +42,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
@@ -486,10 +486,10 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
     private record MiningRange(int xOffset, int zOffset, int xRadialLength, int zRadialLength) {}
 
     private static final StreamCodec<FriendlyByteBuf, MiningRange> MINING_RANGE = StreamCodec.composite(
-            ByteStreamCodec.INT_CODEC, MiningRange::xOffset,
-            ByteStreamCodec.INT_CODEC, MiningRange::zOffset,
-            ByteStreamCodec.INT_CODEC, MiningRange::xRadialLength,
-            ByteStreamCodec.INT_CODEC, MiningRange::zRadialLength,
+            ByteBufCodecs.VAR_INT, MiningRange::xOffset,
+            ByteBufCodecs.VAR_INT, MiningRange::zOffset,
+            ByteBufCodecs.VAR_INT, MiningRange::xRadialLength,
+            ByteBufCodecs.VAR_INT, MiningRange::zRadialLength,
             MiningRange::new);
 
     private class ProspectorMap extends ProspectingMapWidget implements UIChannel.Host {

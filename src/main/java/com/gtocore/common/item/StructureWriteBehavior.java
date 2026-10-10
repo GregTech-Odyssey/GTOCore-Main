@@ -7,7 +7,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.pattern.StructureScan;
 import com.gtolib.utils.*;
-import com.gtolib.utils.iostream.IOStreamCodec;
 
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
@@ -40,6 +39,7 @@ import net.minecraft.world.level.block.Block;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 
@@ -194,7 +194,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
     private static void writeExportFiles(ExportContext context, String generatedCode) {
         var directions = context.directions();
         MultiBlockFileReader.save(new File(GTOCore.getFile(), EXPORT_MBS_FILE), context.pattern().pattern, directions[0], directions[1], directions[2]);
-        FileUtils.saveToFile(generatedCode, new File(GTOCore.getFile(), EXPORT_TEXT_FILE), IOStreamCodec.STRING_CODEC);
+        FileUtils.saveToFile(generatedCode, new File(GTOCore.getFile(), EXPORT_TEXT_FILE), ByteBufCodecs.STRING_UTF8);
     }
 
     private static String inlinePiece(ExportContext context) {

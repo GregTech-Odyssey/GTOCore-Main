@@ -47,7 +47,7 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import com.lowdragmc.lowdraglib.gui.texture.DynamicTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -171,16 +171,18 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IContro
 
     @Override
     public void saveToItem(CompoundTag tag) {
-        // 掉落物与区块存档共用同一套字段编解码。
-        Data data = getFieldDataManager().writeFieldsToData(SAVED_FIELDS);
-        if (data.isNull()) tag.remove(ITEM_DATA_TAG);
-        else tag.put(ITEM_DATA_TAG, new ByteArrayTag(data.writeToBytes()));
+        // 掉落物与区块存档共用同一套字段编解码。掉落物没有版本标记，沿用旧代码的 dataVersion 0。
+        var ops = JavaValueOps.INSTANCE;
+        var data = getFieldDataManager().writeFieldsToValue(ops, SAVED_FIELDS);
+        if (ops.isNull(data)) tag.remove(ITEM_DATA_TAG);
+        else tag.put(ITEM_DATA_TAG, new ByteArrayTag(ops.toBytes(data)));
     }
 
     @Override
     public void loadFromItem(CompoundTag tag) {
         if (tag.get(ITEM_DATA_TAG) instanceof ByteArrayTag saved) {
-            getFieldDataManager().readFieldsFromData(Data.readData(saved.getAsByteArray()), 0, SAVED_FIELDS);
+            var ops = JavaValueOps.INSTANCE;
+            getFieldDataManager().readFieldsFromValue(ops.fromBytes(saved.getAsByteArray()), ops, SAVED_FIELDS);
         }
         syncViewFromState();
         updateTickSubscription();

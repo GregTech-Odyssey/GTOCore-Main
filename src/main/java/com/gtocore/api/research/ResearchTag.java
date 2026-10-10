@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 
-import com.gto.datasynclib.datastream.codec.DataCodec;
+import com.gto.datasynclib.datastream.codec.ValueCodec;
 import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import lombok.Getter;
@@ -26,12 +26,12 @@ public final class ResearchTag {
     public static final Map<String, CNEN> LNAG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
     /**
      * DataSyncLib 注册器：注册的全部 ResearchTag 以 name 为 key。freeze 后按 name 排序分配稳定整数 id，
-     * 供网络流用紧凑 id 编解码（registry.streamCodec()）；持久化走 name key（registry.dataCodec()）。
+     * 供网络流用紧凑 id 编解码（registry.streamCodec()）；持久化走 name key（registry.valueCodec()）。
      */
     public static final Registry<String, ResearchTag> TAGS = createRegistry();
 
     private static Registry<String, ResearchTag> createRegistry() {
-        var registry = new Registry<String, ResearchTag>("research_tag", DataCodec.STRING_CODEC, t -> t.name);
+        var registry = new Registry<String, ResearchTag>("research_tag", ValueCodec.STRING, t -> t.name);
         registry.unfreeze();
         return registry;
     }

@@ -42,7 +42,7 @@ import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -306,13 +306,13 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     @Override
     public void loadFromItem(CompoundTag tag) {
         if (tag.get("keymap") instanceof ByteArrayTag byteArrayTag) {
-            getFieldDataManager().readFieldFromData(Data.readData(byteArrayTag.getAsByteArray()), 0, "keyMap");
+            getFieldDataManager().readFieldFromValue(JavaValueOps.INSTANCE.fromBytes(byteArrayTag.getAsByteArray()), JavaValueOps.INSTANCE, "keyMap");
         }
     }
 
     @Override
     public void saveToItem(CompoundTag tag) {
-        tag.putByteArray("keymap", getFieldDataManager().writeFieldToData("keyMap").writeToBytes());
+        tag.putByteArray("keymap", JavaValueOps.INSTANCE.toBytes(getFieldDataManager().writeFieldToValue("keyMap", JavaValueOps.INSTANCE)));
     }
 
     @Override

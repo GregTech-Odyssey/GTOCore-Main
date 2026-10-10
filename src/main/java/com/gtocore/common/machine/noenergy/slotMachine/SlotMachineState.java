@@ -5,8 +5,7 @@ import net.minecraft.util.RandomSource;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.NullData;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -35,7 +34,7 @@ import java.util.Objects;
 public final class SlotMachineState {
 
     /**
-     * 可为空的开奖结果编解码器：网络侧先写一位存在标记，存盘侧用 {@link NullData#INSTANCE} 当空值。
+     * 可为空的开奖结果编解码器：网络侧先写一位存在标记，存盘侧用 {@code ops.createNull()} 当空值。
      *
      * <p>
      * {@link SlotMachineResult#CODEC} 描述的是完整一局，null 传进去会在取字段时抛
@@ -55,13 +54,13 @@ public final class SlotMachineState {
         }
 
         @Override
-        public @NotNull Data encode(SlotMachineResult obj) {
-            return obj == null ? NullData.INSTANCE : SlotMachineResult.CODEC.encode(obj);
+        public @NotNull Object encode(ValueOps ops, SlotMachineResult obj) {
+            return obj == null ? ops.createNull() : SlotMachineResult.CODEC.encode(ops, obj);
         }
 
         @Override
-        public SlotMachineResult decode(@NotNull Data data, int dataVersion) {
-            return data == NullData.INSTANCE ? null : SlotMachineResult.CODEC.decode(data, dataVersion);
+        public SlotMachineResult decode(ValueOps ops, @NotNull Object data) {
+            return ops.isNull(data) ? null : SlotMachineResult.CODEC.decode(ops, data);
         }
     };
 

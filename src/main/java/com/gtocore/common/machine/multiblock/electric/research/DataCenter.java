@@ -82,7 +82,7 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -380,7 +380,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
         var nodeBytes = data.getByteArray("node");
         if (nodeBytes.length == 0) return;
-        var node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nodeBytes));
+        var node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(JavaValueOps.INSTANCE, JavaValueOps.INSTANCE.fromBytes(nodeBytes));
         var ctx = TeamResearchSavedData.getOrCreateContext(getOwnerUUID());
         var capacity = node.getRequirements().getCwuNeeded();
         var storage = ctx.techNodeAccCWU().getLong(node);
@@ -399,7 +399,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
         if (selectedNode != null) {
-            data.putByteArray("node", GTOCodecs.TECH_NODE_DATA_CODEC.encode(selectedNode).writeToBytes());
+            data.putByteArray("node", JavaValueOps.INSTANCE.toBytes(GTOCodecs.TECH_NODE_DATA_CODEC.encode(JavaValueOps.INSTANCE, selectedNode)));
         }
     }
 

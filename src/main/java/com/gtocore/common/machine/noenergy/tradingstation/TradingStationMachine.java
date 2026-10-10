@@ -72,9 +72,9 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.gto.datasynclib.util.StreamCodecs;
+import com.gto.datasynclib.util.ByteBufCodecExtends;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -781,7 +781,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
      * 点击只在服务端执行，倍率取点击时的 Ctrl / Shift。
      * <p>
      * 悬停说明按<b>行</b>同步：LDLib 的悬停提示是"一个 {@link Component} 一行"，所以这里下发的是
-     * {@code List<Component>}（{@link ByteStreamCodec#collection}），服务端把每一行分开算好，
+     * {@code List<Component>}（{@link ByteBufCodecs#collection}），服务端把每一行分开算好，
      * 客户端逐行交给按钮，不会挤在一行里。
      */
     private final class TradeCell extends UIElement {
@@ -793,7 +793,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private static final int ENTRY_LOCKED = 2;
 
         /// 逐行同步悬停说明：行数 + 每行的组件（提示接口要的是"每行一个组件"，不能拼成一条带换行符的文字）
-        private static final StreamCodec<FriendlyByteBuf, List<Component>> TOOLTIP_LINES_CODEC = ByteStreamCodec.collection(ArrayList::new, StreamCodecs.COMPONENT_CODEC);
+        private static final StreamCodec<FriendlyByteBuf, List<Component>> TOOLTIP_LINES_CODEC = ByteBufCodecs.collection(ArrayList::new, ByteBufCodecExtends.COMPONENT_CODEC);
 
         private final int groupIndex;
         private final int shopIndex;
@@ -1013,7 +1013,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private static final int MAX_UNLOCK_KEY_LENGTH = 256;
     private static final StreamCodec<FriendlyByteBuf, GridState> GRID_STATE = StreamCodec.composite(
             UICodecs.utf(MAX_UNLOCK_KEY_LENGTH), GridState::key,
-            ByteStreamCodec.INT_CODEC, GridState::page,
+            ByteBufCodecs.VAR_INT, GridState::page,
             GridState::new);
 
     private static Component unlockName(@Nullable String key) {

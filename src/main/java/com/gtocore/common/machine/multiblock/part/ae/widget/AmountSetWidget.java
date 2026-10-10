@@ -15,7 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.stacks.GenericStack;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 
 /**
  * 配置格"设置数量"的小弹出面板（页内浮层 {@link PageOverlay}：画在整个窗口最上层、盖住处的鼠标先交给它）：
@@ -46,7 +46,7 @@ class AmountSetWidget extends PageOverlay {
 
     AmountSetWidget(ConfigWidget widget) {
         this.parentWidget = widget;
-        this.slotIndexRequest = addRPC(ByteStreamCodec.INT_CODEC, (player, slotIndex) -> setSlotIndex(slotIndex)).allowWhenDisabled();
+        this.slotIndexRequest = addRPC(ByteBufCodecs.VAR_INT, (player, slotIndex) -> setSlotIndex(slotIndex)).allowWhenDisabled();
         layout(l -> l.row().size(WIDTH, HEIGHT).paddingAll(PADDING).paddingBottom(PADDING_BOTTOM));
         var field = NumberField.ofLong(FIELD_WIDTH, this::getAmount, this::setAmount, parentWidget::getMinAmount, () -> Long.MAX_VALUE);
         // 两层禁用（原因不同）：自动拉取时整个面板禁用；格子没有配置时调节器禁用（打开空格子时，配置随后才到）

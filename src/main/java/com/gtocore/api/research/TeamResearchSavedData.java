@@ -1,20 +1,19 @@
 package com.gtocore.api.research;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.network.NetworkPack;
-import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.GTCEu;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import static com.hepdd.gtmthings.utils.TeamUtil.getTeamUUID;
@@ -23,26 +22,19 @@ public class TeamResearchSavedData extends FastSavedData {
 
     public static final String DATA_NAME = "team_research_data";
     public static final int DATA_VERSION = 4;
+    /**
+     * 存档文件头写的版本号。负载形状至今没变过，所以文件头从 1 起：读到别的版本也按同一个形状解，
+     * 将来负载变形了再在这里分支。
+     */
+    public static final int VERSION = 1;
     public static TeamResearchSavedData INSTANCE = new TeamResearchSavedData();
     public static TeamResearchSavedData CLIENT_INSTANCE = new TeamResearchSavedData();
 
     private static boolean syncPending;
 
     private static final NetworkPack CLIENT_INSTANCE_SYNC = NetworkPack.registerS2C("teamResearchSavedDataSyncS2C",
-            (objs, buf) -> {
-                try {
-                    INSTANCE.save(DataIOStream.of(buf));
-                } catch (IOException exception) {
-                    GTOCore.LOGGER.error("Failed to serialize team research data for synchronization", exception);
-                }
-            },
-            (player, buffer) -> {
-                try {
-                    CLIENT_INSTANCE = load(DataIOStream.of(buffer));
-                } catch (IOException | RuntimeException exception) {
-                    GTOCore.LOGGER.error("Failed to synchronize team research data", exception);
-                }
-            });
+            (objs, buf) -> INSTANCE.save(buf),
+            (player, buf) -> CLIENT_INSTANCE = read(buf));
 
     private final O2OOpenCacheHashMap<UUID, TeamResearchContext> teamResearchContexts = new O2OOpenCacheHashMap<>();
 
@@ -53,20 +45,40 @@ public class TeamResearchSavedData extends FastSavedData {
     }
 
     @Override
-    public void save(DataIOStream dataIOStream) throws IOException {
-        dataIOStream.writeInt(teamResearchContexts.size());
+    public int version() {
+        return VERSION;
+    }
+
+    @Override
+    public void save(FriendlyByteBuf buf) {
+        buf.writeInt(teamResearchContexts.size());
         for (var entry : Object2ObjectMaps.fastIterable(teamResearchContexts)) {
-            dataIOStream.writeUUID(entry.getKey());
-            TeamResearchContext.writeContext(dataIOStream, entry.getValue());
+            buf.writeUUID(entry.getKey());
+            TeamResearchContext.writeContext(buf, entry.getValue());
         }
     }
 
-    public static TeamResearchSavedData load(DataIOStream dataIOStream) throws IOException {
+    /**
+     * 读取文件头带版本号的存档。负载形状没变过，所以版本化读取就是下面那一个共用体；
+     * 版本随流带进来，将来负载变形时在这里按 {@link VersionedFriendlyByteBuf#version()} 分支。
+     */
+    public static TeamResearchSavedData load(VersionedFriendlyByteBuf stream) {
+        return read(stream);
+    }
+
+    /**
+     * 读取早于文件头的存档；网络快照走的是同一份负载，也调这里。
+     */
+    public static TeamResearchSavedData loadLegacy(FriendlyByteBuf stream) {
+        return read(stream);
+    }
+
+    private static TeamResearchSavedData read(FriendlyByteBuf buf) {
         TeamResearchSavedData savedData = new TeamResearchSavedData();
-        int teamCount = dataIOStream.readInt();
+        int teamCount = buf.readInt();
         for (int i = 0; i < teamCount; i++) {
-            UUID teamUUID = dataIOStream.readUUID();
-            savedData.teamResearchContexts.put(teamUUID, TeamResearchContext.readContext(dataIOStream));
+            UUID teamUUID = buf.readUUID();
+            savedData.teamResearchContexts.put(teamUUID, TeamResearchContext.readContext(buf));
         }
         return savedData;
     }

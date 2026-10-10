@@ -27,7 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,7 +117,7 @@ public class TechTreeView extends UIElement {
         this.manager = manager;
         layout(l -> l.column());
         states = addSyncValue(SyncValue.of(this::computeStates, NodeStates.CODEC, NodeStates.EMPTY));
-        researching = addSyncValue(SyncValue.of(this::computeResearching, ByteStreamCodec.INTS_CODEC, NO_CODES));
+        researching = addSyncValue(SyncValue.of(this::computeResearching, ByteBufCodecs.VAR_INT_ARRAY, NO_CODES));
 
         canvas = new CanvasView(canvasId, canvasWidth, canvasHeight);
         details = new CardHost("techtree.details", this::createDetails);

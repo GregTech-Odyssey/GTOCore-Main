@@ -3,7 +3,7 @@ package com.gtocore.integration.ae.wireless;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.UIStructure;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 
 /**
  * 原位切换的页面容器：同一时间只显示一个子元素，其余 {@code display: none}（不绘制、不占位置），
@@ -18,7 +18,7 @@ final class WirelessSwitch extends UIElement {
 
     WirelessSwitch(UIElement... pages) {
         addChildren(pages);
-        page = addStructure(ByteStreamCodec.INT_CODEC, () -> index)
+        page = addStructure(ByteBufCodecs.VAR_INT, () -> index)
                 .validate(value -> value >= 0 && value < widgets.size())
                 .apply(this::show);
         show(0);

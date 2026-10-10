@@ -6,22 +6,22 @@ import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.utils.AEChemicalHelper;
-import com.gtolib.utils.iostream.DataIOStream;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.transfer.key.KeyCodecs;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import appeng.api.stacks.AEKey;
 
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.*;
 
-import java.io.IOException;
 import java.util.Set;
 
 public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scannedItems,
@@ -29,48 +29,57 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
 
     private static final int TECH_NODE_MANAGER_ID_FORMAT_MARKER = -1;
 
+    /**
+     * An {@link AEKey} as the self-describing tag it writes — the disk half of the codec
+     * {@code KeyCodecs} registers for {@link AEKey}, taken from the single registry instead of being
+     * rebuilt here (it used to be a {@code Data} encoded to a {@code byte[]}, which copied the payload
+     * twice). A registry-keyed codec would be the alternative, but AE2's own tag carries the key type
+     * and the item/fluid key, and it is what {@code AEKey.fromTagGeneric} reads back.
+     */
+    private static final StreamCodec<FriendlyByteBuf, AEKey> AE_KEY_WRITE_CODEC = ByteBufCodecs.fromValueCodec(0, KeyCodecs.AE_KEY_DATA_CODEC).cast();
+
     public TeamResearchContext() {
         this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>(), new IntOpenHashSet());
     }
 
-    static void writeContext(DataIOStream dataIOStream, TeamResearchContext context) throws IOException {
-        writeResearchPoints(dataIOStream, context.researchPoints());
-        writeScannedItems(dataIOStream, context.scannedItems());
-        writeScannedMaterials(dataIOStream, context.scannedMaterials());
-        writeTechNodeAccCWU(dataIOStream, context.techNodeAccCWU());
-        writeUnlockedDimensions(dataIOStream, context.unlockedDimensions());
+    static void writeContext(FriendlyByteBuf buf, TeamResearchContext context) {
+        writeResearchPoints(buf, context.researchPoints());
+        writeScannedItems(buf, context.scannedItems());
+        writeScannedMaterials(buf, context.scannedMaterials());
+        writeTechNodeAccCWU(buf, context.techNodeAccCWU());
+        writeUnlockedDimensions(buf, context.unlockedDimensions());
     }
 
     @SuppressWarnings("unused")
-    static TeamResearchContext readContext(DataIOStream dataIOStream) {
+    static TeamResearchContext readContext(FriendlyByteBuf buf) {
         try {
             return new TeamResearchContext(
-                    readResearchPoints(dataIOStream),
-                    readScannedItems(dataIOStream),
-                    readScannedMaterials(dataIOStream),
-                    readTechNodeAccCWU(dataIOStream),
-                    readUnlockedDimensions(dataIOStream));
+                    readResearchPoints(buf),
+                    readScannedItems(buf),
+                    readScannedMaterials(buf),
+                    readTechNodeAccCWU(buf),
+                    readUnlockedDimensions(buf));
         } catch (Exception e) {
             return new TeamResearchContext();
             // throw new IllegalStateException("Failed to read TeamResearchContext", e);
         }
     }
 
-    static void writeResearchPoints(DataIOStream dataIOStream, Reference2LongOpenHashMap<ResearchTag> researchPoints) throws IOException {
-        dataIOStream.writeInt(researchPoints.size());
+    static void writeResearchPoints(FriendlyByteBuf buf, Reference2LongOpenHashMap<ResearchTag> researchPoints) {
+        buf.writeInt(researchPoints.size());
         for (ObjectIterator<Reference2LongMap.Entry<ResearchTag>> it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var researchEntry = it.next();
-            dataIOStream.writeUTF(researchEntry.getKey().getName());
-            dataIOStream.writeLong(researchEntry.getLongValue());
+            buf.writeUtf(researchEntry.getKey().getName());
+            buf.writeLong(researchEntry.getLongValue());
         }
     }
 
-    static ResearchPoints readResearchPoints(DataIOStream dataIOStream) throws IOException {
-        int researchCount = dataIOStream.readInt();
+    static ResearchPoints readResearchPoints(FriendlyByteBuf buf) {
+        int researchCount = buf.readInt();
         ResearchPoints researchPoints = new ResearchPoints();
         for (int i = 0; i < researchCount; i++) {
-            String tagName = dataIOStream.readUTF();
-            long points = dataIOStream.readLong();
+            String tagName = buf.readUtf();
+            long points = buf.readLong();
             ResearchTag tag = ResearchTag.TAGS.get(tagName);
             if (tag != null) {
                 researchPoints.put(tag, points);
@@ -79,19 +88,18 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return researchPoints;
     }
 
-    static void writeScannedItems(DataIOStream dataIOStream, Set<AEKey> scannedItems) throws IOException {
-        dataIOStream.writeInt(scannedItems.size());
+    static void writeScannedItems(FriendlyByteBuf buf, Set<AEKey> scannedItems) {
+        buf.writeInt(scannedItems.size());
         for (AEKey item : scannedItems) {
-            dataIOStream.writeByteArray(KeyCodecs.AE_KEY_DATA_CODEC.encode(item).writeToBytes());
+            AE_KEY_WRITE_CODEC.encode(buf, item);
         }
     }
 
-    static Set<AEKey> readScannedItems(DataIOStream dataIOStream) throws IOException {
-        int scannedItemCount = dataIOStream.readInt();
+    static Set<AEKey> readScannedItems(FriendlyByteBuf buf) {
+        int scannedItemCount = buf.readInt();
         Set<AEKey> scannedItems = new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY);
         for (int i = 0; i < scannedItemCount; i++) {
-            byte[] itemData = dataIOStream.readByteArray();
-            AEKey item = KeyCodecs.AE_KEY_DATA_CODEC.decode(Data.readData(itemData));
+            AEKey item = AE_KEY_WRITE_CODEC.decode(buf);
             if (item != null) {
                 scannedItems.add(item);
             }
@@ -99,29 +107,29 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return scannedItems;
     }
 
-    static void writeTechNodeAccCWU(DataIOStream dataIOStream, Reference2LongOpenHashMap<TechNode> techNodeAccCWU) throws IOException {
-        dataIOStream.writeInt(TECH_NODE_MANAGER_ID_FORMAT_MARKER);
-        dataIOStream.writeInt(techNodeAccCWU.size());
+    static void writeTechNodeAccCWU(FriendlyByteBuf buf, Reference2LongOpenHashMap<TechNode> techNodeAccCWU) {
+        buf.writeInt(TECH_NODE_MANAGER_ID_FORMAT_MARKER);
+        buf.writeInt(techNodeAccCWU.size());
         for (ObjectIterator<Reference2LongMap.Entry<TechNode>> it = techNodeAccCWU.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var techNodeEntry = it.next();
-            dataIOStream.writeUTF(techNodeEntry.getKey().getManager().getId());
-            dataIOStream.writeUTF(techNodeEntry.getKey().name);
-            dataIOStream.writeLong(techNodeEntry.getLongValue());
+            buf.writeUtf(techNodeEntry.getKey().getManager().getId());
+            buf.writeUtf(techNodeEntry.getKey().name);
+            buf.writeLong(techNodeEntry.getLongValue());
         }
     }
 
-    static Reference2LongOpenHashMap<TechNode> readTechNodeAccCWU(DataIOStream dataIOStream) throws IOException {
-        int techNodeCount = dataIOStream.readInt();
+    static Reference2LongOpenHashMap<TechNode> readTechNodeAccCWU(FriendlyByteBuf buf) {
+        int techNodeCount = buf.readInt();
         boolean hasManagerIds = techNodeCount == TECH_NODE_MANAGER_ID_FORMAT_MARKER;
         if (hasManagerIds) {
-            techNodeCount = dataIOStream.readInt();
+            techNodeCount = buf.readInt();
         }
         Reference2LongOpenHashMap<TechNode> techNodeAccCWU = new Reference2LongOpenHashMap<>();
         for (int i = 0; i < techNodeCount; i++) {
-            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(dataIOStream.readUTF()) : BaseNodes.MainTree;
+            TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(buf.readUtf()) : BaseNodes.MainTree;
             // todo remove datafix in future
-            String nodeName = dataIOStream.readUTF();
-            long accCWU = dataIOStream.readLong();
+            String nodeName = buf.readUtf();
+            long accCWU = buf.readLong();
             TechNode node = manager == null ? null : manager.getNode(nodeName);
             if (node != null) {
                 techNodeAccCWU.put(node, accCWU);
@@ -130,18 +138,18 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return techNodeAccCWU;
     }
 
-    static void writeScannedMaterials(DataIOStream dataIOStream, Set<Material> scannedMaterials) throws IOException {
-        dataIOStream.writeInt(scannedMaterials.size());
+    static void writeScannedMaterials(FriendlyByteBuf buf, Set<Material> scannedMaterials) {
+        buf.writeInt(scannedMaterials.size());
         for (Material material : scannedMaterials) {
-            dataIOStream.writeUTF(material.getResourceLocation().toString());
+            buf.writeUtf(material.getResourceLocation().toString());
         }
     }
 
-    static Set<Material> readScannedMaterials(DataIOStream dataIOStream) throws IOException {
-        int scannedMaterialCount = dataIOStream.readInt();
+    static Set<Material> readScannedMaterials(FriendlyByteBuf buf) {
+        int scannedMaterialCount = buf.readInt();
         Set<Material> scannedMaterials = new ReferenceOpenHashSet<>();
         for (int i = 0; i < scannedMaterialCount; i++) {
-            String materialName = dataIOStream.readUTF();
+            String materialName = buf.readUtf();
             Material material = GTCEuAPI.materialManager.getMaterial(materialName);
             if (material != null) {
                 scannedMaterials.add(material);
@@ -150,21 +158,12 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return scannedMaterials;
     }
 
-    static void writeUnlockedDimensions(DataIOStream dataIOStream, IntOpenHashSet unlockedDimensions) throws IOException {
-        dataIOStream.writeInt(unlockedDimensions.size());
-        for (int dimensionId : unlockedDimensions) {
-            dataIOStream.writeInt(dimensionId);
-        }
+    static void writeUnlockedDimensions(FriendlyByteBuf buf, IntOpenHashSet unlockedDimensions) {
+        ByteBufCodecs.INT_SET.encode(buf, unlockedDimensions);
     }
 
-    static IntOpenHashSet readUnlockedDimensions(DataIOStream dataIOStream) throws IOException {
-        int unlockedDimensionCount = dataIOStream.readInt();
-        IntOpenHashSet unlockedDimensions = new IntOpenHashSet();
-        for (int i = 0; i < unlockedDimensionCount; i++) {
-            int dimensionId = dataIOStream.readInt();
-            unlockedDimensions.add(dimensionId);
-        }
-        return unlockedDimensions;
+    static IntOpenHashSet readUnlockedDimensions(FriendlyByteBuf buf) {
+        return new IntOpenHashSet(ByteBufCodecs.INT_SET.decode(buf));
     }
 
     public boolean isEmpty() {

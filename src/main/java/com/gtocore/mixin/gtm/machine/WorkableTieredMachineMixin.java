@@ -13,13 +13,15 @@ import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 
 import net.minecraft.core.Direction;
 
-import com.gto.datasynclib.datastream.data.StringMapData;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Map;
 
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @org.spongepowered.asm.mixin.Mixin(com.gregtechceu.gtceu.api.machine.WorkableTieredMachine.class)
@@ -75,23 +77,23 @@ public abstract class WorkableTieredMachineMixin extends TieredEnergyMachine imp
     }
 
     @Override
-    public void writeCustomSaveData(StringMapData data) {
-        super.writeCustomSaveData(data);
+    public void writeCustomSaveData(Map<String, Object> data, ValueOps ops) {
+        super.writeCustomSaveData(data, ops);
         if (gto$solarHeat != null) {
-            var heatData = gto$solarHeat.getFieldDataManager().writeToData();
-            if (!heatData.isNull()) data.put("gto$solarHeat", heatData);
+            var heatData = gto$solarHeat.getFieldDataManager().writeToValue(ops);
+            if (!ops.isNull(heatData)) data.put("gto$solarHeat", heatData);
         }
     }
 
     @Override
-    public void readCustomSaveData(StringMapData data, int dataVersion) {
-        super.readCustomSaveData(data, dataVersion);
+    public void readCustomSaveData(Map<String, Object> data, ValueOps ops) {
+        super.readCustomSaveData(data, ops);
         var heatData = data.get("gto$solarHeat");
         if (gto$solarHeat == null) {
             gto$solarHeat = new SolarHeatHandler.SimpleSolarHeatHandler(getHolder());
         }
-        if (heatData == null || heatData.isNull()) return;
-        gto$solarHeat.getFieldDataManager().readFromData(heatData, dataVersion);
+        if (ops.isNull(heatData)) return;
+        gto$solarHeat.getFieldDataManager().readFromValue(heatData, ops);
     }
 
     @Inject(method = "onLoad", at = @At("TAIL"), remap = false)

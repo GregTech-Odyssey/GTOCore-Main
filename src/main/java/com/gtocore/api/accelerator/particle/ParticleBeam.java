@@ -6,7 +6,7 @@ import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
-import com.gto.datasynclib.datastream.codec.DataCodec;
+import com.gto.datasynclib.datastream.codec.ValueCodec;
 import lombok.Getter;
 
 /**
@@ -27,7 +27,7 @@ import lombok.Getter;
 @Getter
 public final class ParticleBeam {
 
-    /** ParticleBeam 编解码器：用组合编解码器（CombinedCodec，同时实现 DataCodec/ByteStreamCodec）按字段一次组合。 */
+    /** ParticleBeam 编解码器：用组合编解码器（CombinedCodec，同时实现 ValueCodec/StreamCodec）按字段一次组合。 */
     public static final DataSyncCodec<ParticleBeam> CODEC = CombinedCodec.composite(
             Particles.REGISTRY_KEY.combinedCodec(), ParticleBeam::getDefinition,
             DataSyncCodec.DOUBLE_CODEC, ParticleBeam::getEnergy,
@@ -37,8 +37,8 @@ public final class ParticleBeam {
             DataSyncCodec.VEC3_CODEC, ParticleBeam::getVelocity,
             ParticleBeam::new);
 
-    /** DataCodec 视图（CombinedCodec 实现了 DataCodec），兼容仅用 Data 持久化的旧引用。 */
-    public static final DataCodec<ParticleBeam> DATA_CODEC = CODEC;
+    /** ValueCodec 视图（DataSyncCodec 实现了 ValueCodec），兼容仅用值载体持久化的旧引用。 */
+    public static final ValueCodec<ParticleBeam> DATA_CODEC = CODEC;
 
     private final ParticleDefinition definition;
     private long amount;

@@ -20,16 +20,16 @@ import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
 import com.gto.datasynclib.LogicalSide;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.ListData;
-import com.gto.datasynclib.datastream.data.NullData;
-import com.gto.datasynclib.util.DataCodecs;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
+
+import java.util.ArrayList;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -125,27 +125,20 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
         }
 
         @Override
-        public Data writeData() {
-            if (output == null || amount == 0) return NullData.INSTANCE;
-            var list = new ListData(2);
-            list.addLong(amount);
-            list.add(GTOCodecs.AE_ITEM_KEY_DATA_CODEC, output);
-            return list;
+        public @NotNull Object writeValue(@NotNull ValueOps ops) {
+            if (output == null || amount == 0) return ops.createNull();
+            var list = new ArrayList<Object>(2);
+            ops.addLong(list, amount);
+            list.add(GTOCodecs.AE_ITEM_KEY_DATA_CODEC.encode(ops, output));
+            return ops.createList(list);
         }
 
         @Override
-        public void readData(Data data, int dataVersion) {
-            if (data.isNull()) return;
-            if (dataVersion < 2) {
-                var nbt = DataCodecs.TAG_CODEC.decode(data, dataVersion);
-                if (nbt instanceof CompoundTag compoundTag) {
-                    deserializeNBT(compoundTag);
-                    return;
-                }
-            }
-            var list = data.asListData();
-            amount = list.getLong(0);
-            output = GTOCodecs.AE_ITEM_KEY_DATA_CODEC.decode(list.get(1), dataVersion);
+        public void readValue(@NotNull Object data, @NotNull ValueOps ops) {
+            if (ops.isNull(data)) return;
+            var list = ops.getList(data);
+            amount = ops.getLong(list, 0);
+            output = GTOCodecs.AE_ITEM_KEY_DATA_CODEC.decode(ops, list.get(1));
         }
     }
 

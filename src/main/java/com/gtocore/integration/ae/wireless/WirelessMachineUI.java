@@ -41,7 +41,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.networking.pathing.ControllerState;
 import appeng.core.definitions.AEItems;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -353,7 +353,7 @@ public final class WirelessMachineUI {
                                     Function<Widget, WirelessStatus> currentAction, @Nullable Supplier<WirelessStatus> precheck,
                                     @Nullable Function<WirelessNetwork, WirelessStatus> afterCreate) {
         var section = UIElement.section();
-        var list = ServerList.of(ByteStreamCodec.STRING_CODEC,
+        var list = ServerList.of(ByteBufCodecs.STRING_UTF8,
                 () -> ctx.networks().listFor(ctx.uuid()).stream().map(WirelessNetwork::id).toList(),
                 id -> networkRow(id, ctx, actionKey, currentKey, isCurrent, action, currentAction))
                 .version(() -> ctx.networks().revision()).emptyText(EMPTY)

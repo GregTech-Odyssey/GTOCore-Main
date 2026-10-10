@@ -35,7 +35,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.ingredient.IGhostIngredientTarget;
 import com.lowdragmc.lowdraglib.gui.ingredient.Target;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -192,7 +192,7 @@ public final class TechNodeEditorPage {
 
         private PrerequisiteDrop(State state) {
             this.state = state;
-            this.add = addRPC(ByteStreamCodec.INT_CODEC, (player, code) -> addPrerequisite(code));
+            this.add = addRPC(ByteBufCodecs.VAR_INT, (player, code) -> addPrerequisite(code));
             layout(l -> l.height(UISizes.SLOT_SIZE));
             setBackground(UITheme.ITEM_SLOT);
             tooltips(Component.literal("Drop a tech node from EMI to append it"));

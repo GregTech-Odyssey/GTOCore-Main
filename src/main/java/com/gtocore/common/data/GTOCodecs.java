@@ -20,42 +20,43 @@ import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 
 import com.gto.datasynclib.DataSyncCodec;
-import com.gto.datasynclib.datastream.codec.DataCodec;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.ListData;
+import com.gto.datasynclib.datastream.codec.ValueCodec;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 @UtilityClass
 public class GTOCodecs {
 
-    public final DataCodec<AEKey> AE_KEY_DATA_CODEC = KeyCodecs.AE_KEY_DATA_CODEC;
-    public final DataCodec<AEItemKey> AE_ITEM_KEY_DATA_CODEC = KeyCodecs.AE_ITEM_KEY_DATA_CODEC;
-    public final DataCodec<AEFluidKey> AE_FLUID_KEY_DATA_CODEC = KeyCodecs.AE_FLUID_KEY_DATA_CODEC;
-    public final DataCodec<GenericStack> GENERIC_STACK_DATA_CODEC = KeyCodecs.GENERIC_STACK_DATA_CODEC;
-    public final DataCodec<KeyCounter> KEY_COUNTER_DATA_CODEC = KeyCodecs.KEY_COUNTER_DATA_CODEC;
+    public final ValueCodec<AEKey> AE_KEY_DATA_CODEC = KeyCodecs.AE_KEY_DATA_CODEC;
+    public final ValueCodec<AEItemKey> AE_ITEM_KEY_DATA_CODEC = KeyCodecs.AE_ITEM_KEY_DATA_CODEC;
+    public final ValueCodec<AEFluidKey> AE_FLUID_KEY_DATA_CODEC = KeyCodecs.AE_FLUID_KEY_DATA_CODEC;
+    public final ValueCodec<GenericStack> GENERIC_STACK_DATA_CODEC = KeyCodecs.GENERIC_STACK_DATA_CODEC;
+    public final ValueCodec<KeyCounter> KEY_COUNTER_DATA_CODEC = KeyCodecs.KEY_COUNTER_DATA_CODEC;
     public final StreamCodec<FriendlyByteBuf, AEKey> AE_KEY_STREAM_CODEC = KeyCodecs.AE_KEY_STREAM_CODEC;
     public final StreamCodec<FriendlyByteBuf, AEItemKey> AE_ITEM_KEY_STREAM_CODEC = KeyCodecs.AE_ITEM_KEY_STREAM_CODEC;
     public final StreamCodec<FriendlyByteBuf, AEFluidKey> AE_FLUID_KEY_STREAM_CODEC = KeyCodecs.AE_FLUID_KEY_STREAM_CODEC;
     public final StreamCodec<FriendlyByteBuf, GenericStack> GENERIC_STACK_STREAM_CODEC = KeyCodecs.GENERIC_STACK_STREAM_CODEC;
     public final StreamCodec<FriendlyByteBuf, KeyCounter> KEY_COUNTER_STREAM_CODEC = KeyCodecs.KEY_COUNTER_STREAM_CODEC;
 
-    public final DataCodec<TechNode> TECH_NODE_DATA_CODEC = new DataCodec<>() {
+    public final ValueCodec<TechNode> TECH_NODE_DATA_CODEC = new ValueCodec<>() {
 
         @Override
-        public TechNode decode(@NotNull Data data, int dataVersion) {
-            var list = data.getList();
+        public TechNode decode(ValueOps ops, @NotNull Object data) {
+            var list = ops.getList(data);
             if (list.isEmpty()) return null;
-            return resolveTechNode(list.get(0).getString(), list.get(1).getString());
+            return resolveTechNode(ops.getString(list, 0), ops.getString(list, 1));
         }
 
         @Override
-        public @NotNull Data encode(TechNode obj) {
-            var listData = new ListData(2);
-            listData.addString(obj.getManager().getId());
-            listData.addString(obj.name);
-            return listData;
+        public @NotNull Object encode(ValueOps ops, TechNode obj) {
+            var list = new ArrayList<Object>(2);
+            ops.addString(list, obj.getManager().getId());
+            ops.addString(list, obj.name);
+            return ops.createList(list);
         }
     };
 
@@ -87,31 +88,31 @@ public class GTOCodecs {
     /** 网络专用编解码器：按注册整数 id 编码（紧凑）。 */
     public final StreamCodec<FriendlyByteBuf, ResearchTag> RESEARCH_TAG_STREAM_CODEC = ResearchTag.TAGS.streamCodec();
     /** 持久化专用编解码器：按 name key 编码（自描述、跨版本稳定）。 */
-    public final DataCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = ResearchTag.TAGS.dataCodec();
-    public final DataCodec<ResearchPoints> RESEARCH_POINTS_DATA_CODEC = new DataCodec<>() {
+    public final ValueCodec<ResearchTag> RESEARCH_TAG_DATA_CODEC = ResearchTag.TAGS.valueCodec();
+    public final ValueCodec<ResearchPoints> RESEARCH_POINTS_DATA_CODEC = new ValueCodec<>() {
 
         @Override
-        public ResearchPoints decode(@NotNull Data data, int dataVersion) {
-            var list = data.asListData();
+        public ResearchPoints decode(ValueOps ops, @NotNull Object data) {
+            var list = ops.getList(data);
             ResearchPoints points = new ResearchPoints();
             for (int i = 0; i < list.size(); i += 2) {
-                ResearchTag tag = ResearchTag.TAGS.get(list.getString(i));
+                ResearchTag tag = ResearchTag.TAGS.get(ops.getString(list, i));
                 if (tag != null) {
-                    points.put(tag, list.getLong(i + 1));
+                    points.put(tag, ops.getLong(list, i + 1));
                 }
             }
             return points;
         }
 
         @Override
-        public @NotNull Data encode(ResearchPoints obj) {
-            var list = new ListData(obj.size() * 2);
+        public @NotNull Object encode(ValueOps ops, ResearchPoints obj) {
+            var list = new ArrayList<Object>(obj.size() * 2);
             for (var it = obj.reference2LongEntrySet().fastIterator(); it.hasNext();) {
                 var entry = it.next();
-                list.addString(entry.getKey().getName());
-                list.addLong(entry.getLongValue());
+                ops.addString(list, entry.getKey().getName());
+                ops.addLong(list, entry.getLongValue());
             }
-            return list;
+            return ops.createList(list);
         }
     };
 

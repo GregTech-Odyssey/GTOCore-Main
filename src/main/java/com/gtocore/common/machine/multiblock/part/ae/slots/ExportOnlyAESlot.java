@@ -10,8 +10,8 @@ import appeng.api.stacks.GenericStack;
 
 import com.gto.datasynclib.AbstractDataSerializable;
 import com.gto.datasynclib.LogicalSide;
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.util.DataCodecs;
+import com.gto.datasynclib.datastream.codec.ValueOps;
+import com.gto.datasynclib.util.ValueCodecs;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -140,12 +140,12 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
     }
 
     @Override
-    public Data writeData() {
-        return DataCodecs.COMPOUND_TAG_CODEC.encode(serializeNBT());
+    public @NotNull Object writeValue(@NotNull ValueOps ops) {
+        return ValueCodecs.COMPOUND_TAG.encode(ops, serializeNBT());
     }
 
     @Override
-    public void readData(@NotNull Data data, int dataVersion) {
-        deserializeNBT(DataCodecs.COMPOUND_TAG_CODEC.decode(data, dataVersion));
+    public void readValue(@NotNull Object data, @NotNull ValueOps ops) {
+        deserializeNBT(ValueCodecs.COMPOUND_TAG.decode(ops, data));
     }
 }

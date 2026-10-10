@@ -6,9 +6,6 @@ import com.gtocore.common.item.OrderItem;
 import com.gtolib.GTOCore;
 import com.gtolib.cache.CacheManager;
 import com.gtolib.utils.FileUtils;
-import com.gtolib.utils.ItemUtils;
-import com.gtolib.utils.iostream.IOStreamDecoder;
-import com.gtolib.utils.iostream.IOStreamEncoder;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
@@ -26,6 +23,7 @@ import com.gregtechceu.gtceu.uiwidgets.structure.StructurePreviewWidget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
@@ -36,6 +34,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.fml.loading.FMLLoader;
 
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
+import com.gto.datasynclib.datastream.codec.StreamDecoder;
+import com.gto.datasynclib.datastream.codec.StreamEncoder;
+import com.gto.datasynclib.util.DiskByteBufCodecs;
 import com.lowdragmc.lowdraglib.emi.ModularEmiRecipe;
 import com.lowdragmc.lowdraglib.emi.ModularForegroundRenderWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -56,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -217,18 +221,21 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
         for (var stack : parts) inputs.add(EmiStack.of(stack));
     }
 
-    private record CachedInputs(Collection<? extends Collection<? extends Item>> groups, List<ItemStack> parts) {
+    /**
+     * 结构输入的内存缓存，编解码走磁盘侧（{@link DiskByteBufCodecs}）：物品按注册名而不是数字 id 写，
+     * 物品组解码回插入有序的 {@link LinkedHashSet}，缓存文件里的顺序就是界面上的顺序。
+     */
+    private record CachedInputs(Set<Set<Item>> groups, List<ItemStack> parts) {
 
-        private static final IOStreamEncoder<Collection<? extends Collection<? extends Item>>> GROUPS_ENCODER = IOStreamEncoder.collection(IOStreamEncoder.collection(ItemUtils.IO_CODEC));
-        private static final IOStreamEncoder<Collection<? extends ItemStack>> PARTS_ENCODER = IOStreamEncoder.collection(ItemUtils.STACK_IO_CODEC);
-        private static final IOStreamDecoder<List<List<Item>>> GROUPS_DECODER = IOStreamDecoder.list(IOStreamDecoder.list(ItemUtils.IO_CODEC));
-        private static final IOStreamDecoder<List<ItemStack>> PARTS_DECODER = IOStreamDecoder.list(ItemUtils.STACK_IO_CODEC);
+        private static final StreamCodec<FriendlyByteBuf, Set<Set<Item>>> GROUPS_CODEC = ByteBufCodecs.collection(LinkedHashSet::new,
+                ByteBufCodecs.collection(LinkedHashSet::new, DiskByteBufCodecs.ITEM));
+        private static final StreamCodec<FriendlyByteBuf, List<ItemStack>> PARTS_CODEC = ByteBufCodecs.list(DiskByteBufCodecs.ITEM_STACK);
 
-        static final IOStreamEncoder<CachedInputs> ENCODER = (stream, inputs) -> {
-            GROUPS_ENCODER.encode(stream, inputs.groups);
-            PARTS_ENCODER.encode(stream, inputs.parts);
+        static final StreamEncoder<FriendlyByteBuf, CachedInputs> ENCODER = (stream, inputs) -> {
+            GROUPS_CODEC.encode(stream, inputs.groups);
+            PARTS_CODEC.encode(stream, inputs.parts);
         };
-        static final IOStreamDecoder<CachedInputs> DECODER = stream -> new CachedInputs(GROUPS_DECODER.decode(stream), PARTS_DECODER.decode(stream));
+        static final StreamDecoder<FriendlyByteBuf, CachedInputs> DECODER = stream -> new CachedInputs(GROUPS_CODEC.decode(stream), PARTS_CODEC.decode(stream));
     }
 
     private static void addGroups(List<SimplePredicate> predicates, Set<Set<Item>> groups) {

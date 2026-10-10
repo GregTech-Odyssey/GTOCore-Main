@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.math.BigInteger;
 
@@ -30,7 +29,6 @@ final class GridTopology {
         var topology = new GridTopology(account);
         topology.resetNodes();
         topology.aggregateTowers();
-        topology.spreadLegacy();
         topology.spill();
         var bundles = topology.bundleRelays();
         topology.relocateStranded();
@@ -123,12 +121,6 @@ final class GridTopology {
             }
         });
         for (int i = 0, n = nodes.size(); i < n; i++) nodes.get(i).finishCapacity();
-    }
-
-    @Deprecated(since = "0.6.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    private void spreadLegacy() {
-        for (int i = 0, n = nodes.size(); i < n; i++) nodes.get(i).spreadLegacy();
     }
 
     private void spill() {

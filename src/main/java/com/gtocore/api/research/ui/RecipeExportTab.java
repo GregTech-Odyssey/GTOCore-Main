@@ -58,7 +58,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.client.gui.me.common.StackSizeRenderer;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -253,7 +253,7 @@ public class RecipeExportTab implements IFancyUIProvider {
         }
     }
 
-    private static final StreamCodec<FriendlyByteBuf, BitSet> BITSET = StreamCodec.convert(ByteStreamCodec.LONGS_CODEC, BitSet::toLongArray, BitSet::valueOf);
+    private static final StreamCodec<FriendlyByteBuf, BitSet> BITSET = StreamCodec.convert(ByteBufCodecs.LONG_ARRAY, BitSet::toLongArray, BitSet::valueOf);
 
     /**
      * 配方网格：一个控件画出全部格子（条目可能上百个，不为每格建控件），点击时把条目下标发给服务端。
@@ -312,7 +312,7 @@ public class RecipeExportTab implements IFancyUIProvider {
             layout(l -> l.size(UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE));
             this.flags = addSyncValue(SyncValue.of(this::currentFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
             this.selected = addSyncValue(SyncValue.ofInt(this::selectedChecked, -1));
-            this.click = addRPC(ByteStreamCodec.INT_CODEC, (clicker, index) -> clickEntry(index))
+            this.click = addRPC(ByteBufCodecs.VAR_INT, (clicker, index) -> clickEntry(index))
                     .validate(index -> index >= 0 && index < entries.size());
             if (!remote) collectEntries();
         }

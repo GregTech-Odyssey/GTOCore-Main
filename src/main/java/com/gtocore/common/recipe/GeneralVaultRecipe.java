@@ -13,12 +13,11 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyLongMap;
 
-import com.gto.datasynclib.datastream.data.Data;
-import com.gto.datasynclib.datastream.data.ListData;
-import com.gto.datasynclib.datastream.data.LongData;
-import com.gto.datasynclib.datastream.data.NullData;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import io.netty.buffer.Unpooled;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 public final class GeneralVaultRecipe extends ShapedRecipe {
 
@@ -39,12 +38,13 @@ public final class GeneralVaultRecipe extends ShapedRecipe {
             }
             var result = super.assemble(container, registryAccess);
             if (!merged.isEmpty()) {
-                var data = new ListData(merged.size() * 2);
+                var ops = JavaValueOps.INSTANCE;
+                var list = new ArrayList<Object>(merged.size() * 2);
                 merged.fastForEach((key, amount) -> {
-                    data.add(KeyCodecs.AE_KEY_DATA_CODEC.encode(key));
-                    data.add(LongData.valueOf(amount));
+                    list.add(KeyCodecs.AE_KEY_DATA_CODEC.encode(ops, key));
+                    ops.addLong(list, amount);
                 });
-                result.getOrCreateTag().putByteArray("keymap", data.writeToBytes());
+                result.getOrCreateTag().putByteArray("keymap", ops.toBytes(ops.createList(list)));
             }
             return result;
         } catch (RuntimeException e) {
@@ -57,20 +57,21 @@ public final class GeneralVaultRecipe extends ShapedRecipe {
         if (tag == null || !tag.contains("keymap")) return;
         if (!(tag.get("keymap") instanceof ByteArrayTag bytes)) throw new IllegalArgumentException("Invalid vault keymap");
         var buffer = Unpooled.wrappedBuffer(bytes.getAsByteArray());
-        Data data;
+        Object data;
         try {
-            data = Data.readData(buffer);
+            data = JavaValueOps.INSTANCE.readValue(buffer);
             if (buffer.isReadable()) throw new IllegalArgumentException("Invalid vault keymap length");
         } finally {
             buffer.release();
         }
-        if (data == NullData.INSTANCE) return;
-        var list = data.asListData();
+        var ops = JavaValueOps.INSTANCE;
+        if (ops.isNull(data)) return;
+        var list = ops.getList(data);
         if ((list.size() & 1) != 0) throw new IllegalArgumentException("Invalid vault keymap");
         merged.ensureCapacity(merged.size() + list.size() / 2);
         for (int i = 0; i < list.size(); i += 2) {
-            var key = KeyCodecs.AE_KEY_DATA_CODEC.decode(list.get(i), 0);
-            long amount = list.getLong(i + 1);
+            var key = KeyCodecs.AE_KEY_DATA_CODEC.decode(ops, list.get(i));
+            long amount = ops.getLong(list, i + 1);
             if (key == null || amount <= 0) {
                 throw new IllegalArgumentException("Invalid vault keymap entry");
             }

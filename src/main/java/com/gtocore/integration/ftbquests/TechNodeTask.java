@@ -7,6 +7,8 @@ import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.data.techtree.ComponentNodes;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
+import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +22,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import dev.architectury.fluid.FluidStack;
 import dev.emi.emi.api.EmiApi;
 import dev.ftb.mods.ftblibrary.config.ConfigGroup;
@@ -60,7 +62,8 @@ public class TechNodeTask extends AbstractBooleanTask {
     public void readData(CompoundTag nbt) {
         super.readData(nbt);
         if (nbt.contains("node")) {
-            node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(Data.readData(nbt.getByteArray("node")));
+            var ops = JavaValueOps.create(GTDataFixer.VERSION);
+            node = GTOCodecs.TECH_NODE_DATA_CODEC.decode(ops, ops.fromBytes(nbt.getByteArray("node")));
         } else {
             var tree = TechTreeManager.getManager(nbt.getString("treeId"));
             if (tree != null) {

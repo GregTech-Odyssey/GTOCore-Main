@@ -40,9 +40,9 @@ import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.datastream.data.StringMapData;
-import com.gto.datasynclib.util.DataCodecs;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 import com.gto.datasynclib.util.NbtUtil;
+import com.gto.datasynclib.util.ValueCodecs;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
@@ -52,6 +52,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -262,18 +263,20 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
 
         @Override
-        public void readCustomSaveData(StringMapData data, int dataVersion) {
-            super.readCustomSaveData(data, dataVersion);
-            readLegacyStorage(data, dataVersion);
+        public void readCustomSaveData(Map<String, Object> data, ValueOps ops) {
+            super.readCustomSaveData(data, ops);
+            readLegacyStorage(data, ops);
         }
 
         @Deprecated(since = "0.6.0", forRemoval = true)
         @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-        private void readLegacyStorage(StringMapData data, int dataVersion) {
+        private void readLegacyStorage(Map<String, Object> data, ValueOps ops) {
             var legacy = data.get("storage");
-            if (!(legacy instanceof StringMapData) && (legacy == null || legacy.toCustomData(NbtUtil.COMPOUND_TAG_TYPE) == null)) return;
+            // 只认真正的复合标签自定义载荷：旧 Data 模型允许把 StringMapData 当复合标签再读一遍
+            // （legacy.toCustomData(...)），值模型没有这种跨形状强转，这一支随本次迁移删除。
+            if (legacy == null || !ops.isCustom(legacy) || ops.getCustomId(legacy) != NbtUtil.COMPOUND_TAG_TYPE.id()) return;
             data.remove("storage");
-            var nbt = DataCodecs.COMPOUND_TAG_CODEC.decode(legacy, dataVersion);
+            var nbt = ValueCodecs.COMPOUND_TAG.decode(ops, legacy);
             var stackTag = nbt.getCompound("stack").copy();
             stackTag.putByte("Count", (byte) 1);
             storage.set(0, AEItemKey.of(ItemStack.of(stackTag)), nbt.getLong("count"));

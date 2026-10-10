@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -37,9 +36,6 @@ public final class GridNode {
     final long[] bankCapHi = new long[BANKS];
     final long[] bankCapLo = new long[BANKS];
     final int[] bankLoss = new int[BANKS];
-    @Deprecated(since = "0.6.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    private long legacyHi, legacyLo;
     int reachTier = -1;
     Route[] routes = NO_ROUTES;
     Arc[] out = NO_ARCS;
@@ -364,35 +360,6 @@ public final class GridNode {
         hi = 0;
         lo = 0;
         stocked = 0;
-    }
-
-    @Deprecated(since = "0.6.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    void addLegacy(long aHi, long aLo) {
-        long s = legacyLo + aLo;
-        legacyHi = U126.saturatedAdd(U126.saturatedAdd(legacyHi, aHi), s >>> 63);
-        legacyLo = s & U126.MASK;
-    }
-
-    @Deprecated(since = "0.6.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    void spreadLegacy() {
-        if (legacyHi == 0 && legacyLo == 0) return;
-        var total = U126.toBig(legacyHi, legacyLo);
-        legacyHi = 0;
-        legacyLo = 0;
-        if (banks == 0) {
-            credit(0, U126.hi(total), U126.lo(total));
-            return;
-        }
-        var capacity = capacity();
-        var left = total;
-        for (int m = banks; m != 0; m &= m - 1) {
-            int t = Integer.numberOfTrailingZeros(m);
-            var share = (m & (m - 1)) == 0 ? left : total.multiply(U126.toBig(bankCapHi[t], bankCapLo[t])).divide(capacity);
-            credit(t, U126.hi(share), U126.lo(share));
-            left = left.subtract(share);
-        }
     }
 
     void clearCapacity() {

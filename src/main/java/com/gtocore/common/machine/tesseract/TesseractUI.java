@@ -48,7 +48,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.StorageAccess;
 
-import com.gto.datasynclib.datastream.codec.ByteStreamCodec;
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -550,7 +550,7 @@ public final class TesseractUI {
                 .disabled(() -> TesseractTargetMarker.count(held.get()) == 0, REASON_EMPTY);
         var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                 .addChildren(count, InfoIcon.info(MARKER_HELP_ADD, MARKER_HELP_REMOVE, MARKER_HELP_WRITE, MARKER_HELP_READ), clear);
-        var rows = ServerList.of(ByteStreamCodec.INT_CODEC, () -> indices(TesseractTargetMarker.count(held.get())), index -> markerRow(window, held, targets, index))
+        var rows = ServerList.of(ByteBufCodecs.VAR_INT, () -> indices(TesseractTargetMarker.count(held.get())), index -> markerRow(window, held, targets, index))
                 .version(() -> TesseractTargetMarker.count(held.get())).emptyText(MARKER_EMPTY);
         rows.layout(l -> l.paddingTop(1).paddingBottom(1));
         var list = UIElement.section().addChildren(header, rows);

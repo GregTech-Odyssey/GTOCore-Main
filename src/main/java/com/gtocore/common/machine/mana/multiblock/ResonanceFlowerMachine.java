@@ -41,7 +41,7 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -261,20 +261,20 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     }
 
     /**
-     * 物品形式保存：直接复用 {@code @SaveToDisk} 那套字段编解码（{@link Data} 二进制），
+     * 物品形式保存：直接复用 {@code @SaveToDisk} 那套字段编解码（{@link JavaValueOps} 二进制），
      * 不再自己手搓一份 NBT 格式——同一份数据只留一条持久化路径。
      */
     @Override
     public void saveToItem(CompoundTag tag) {
         if (recipeProgresEntrys.isEmpty() && lastRecipe == null) return;
-        byte[] data = getFieldDataManager().writeFieldsToData("recipeProgress", "lastRecipe").writeToBytes();
+        byte[] data = JavaValueOps.INSTANCE.toBytes(getFieldDataManager().writeFieldsToValue(JavaValueOps.INSTANCE, "recipeProgress", "lastRecipe"));
         tag.put(NBT_KEY_RECIPE_PROGRESS, new ByteArrayTag(data));
     }
 
     @Override
     public void loadFromItem(CompoundTag tag) {
         if (tag.get(NBT_KEY_RECIPE_PROGRESS) instanceof ByteArrayTag data) {
-            getFieldDataManager().readFieldsFromData(Data.readData(data.getAsByteArray()), 0, "recipeProgress", "lastRecipe");
+            getFieldDataManager().readFieldsFromValue(JavaValueOps.INSTANCE.fromBytes(data.getAsByteArray()), JavaValueOps.INSTANCE, "recipeProgress", "lastRecipe");
         }
     }
 

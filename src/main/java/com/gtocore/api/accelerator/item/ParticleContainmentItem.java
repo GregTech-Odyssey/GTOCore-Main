@@ -6,13 +6,14 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
+import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
-import com.gto.datasynclib.datastream.data.Data;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -35,7 +36,9 @@ public class ParticleContainmentItem implements IAddInformation {
         if (tag == null) return null;
         if (!tag.contains(NBT_KEY_PARTICLE)) return null;
         var particleTag = tag.getByteArray(NBT_KEY_PARTICLE);
-        var particle = ParticleBeam.DATA_CODEC.decode(Data.readData(particleTag));
+        // 物品 NBT 里的束流是持久化数据：读的时候显式声明版本，解码器不会替它猜。
+        var ops = JavaValueOps.create(GTDataFixer.VERSION);
+        var particle = ParticleBeam.DATA_CODEC.decode(ops, ops.fromBytes(particleTag));
         if (particle.isEmpty()) return null;
         return particle;
     }
