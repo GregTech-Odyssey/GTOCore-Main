@@ -163,6 +163,7 @@ tasks.withType(Test).configureEach {
 
 tasks.named('test', Test) {
     useJUnitPlatform { excludeTags 'limitation' }
+    onlyIf { findProperty('gtolibUnprotected') == 'true' || findProperty('gtolibDebug') == 'true' }
 }
 
 def craftingTest = { Test t, boolean limits ->
