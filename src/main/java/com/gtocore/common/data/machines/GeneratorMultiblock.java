@@ -1,8 +1,5 @@
 package com.gtocore.common.data.machines;
 
-import com.gregtechceu.gtceu.api.tooltip.StatKind;
-import com.gregtechceu.gtceu.api.tooltip.TipRole;
-import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.client.renderer.machine.AdvancedHyperRenderer;
@@ -36,6 +33,9 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.*;
 
 import net.minecraft.network.chat.Component;

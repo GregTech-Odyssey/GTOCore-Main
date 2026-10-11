@@ -1,6 +1,5 @@
 package com.hepdd.gtmthings.data;
 
-import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.common.wireless.energy.WirelessEnergyInterfaceMachine;
 import com.gtocore.common.wireless.energy.WirelessEnergyMonitorMachine;
 
@@ -10,6 +9,7 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 
 import net.minecraft.network.chat.Component;

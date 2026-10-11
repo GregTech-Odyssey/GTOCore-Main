@@ -12,7 +12,6 @@ public final class GTOTarotArcanumTooltips {
 
     public static void init() {}
 
-
     private GTOTarotArcanumTooltips() {}
 
     public static MutableComponent PandS(Component other) {

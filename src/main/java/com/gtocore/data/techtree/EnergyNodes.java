@@ -5,8 +5,9 @@ import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 
-import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.common.data.GTItems;
 
 import static com.gtocore.api.research.ResearchTag.BIOLOGY;
 import static com.gtocore.api.research.ResearchTag.ENERGY;

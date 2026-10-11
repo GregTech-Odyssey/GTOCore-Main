@@ -37,4 +37,3 @@ private inline fun drawLayered(graphics: GuiGraphics, x: Int, y: Int, w: Int, h:
     UIText.drawLabelValue(graphics, x, y, w, h, label, value, UITheme.TEXT)
     pose.popPose()
 }
-

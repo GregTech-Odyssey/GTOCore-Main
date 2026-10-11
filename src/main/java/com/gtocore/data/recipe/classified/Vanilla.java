@@ -36,10 +36,10 @@ import vectorwing.farmersdelight.common.registry.ModItems;
 import vectorwing.farmersdelight.common.tag.CommonTags;
 import vectorwing.farmersdelight.data.builder.CuttingBoardRecipeBuilder;
 
+import java.util.Arrays;
+
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Water;
 import static com.gtocore.common.data.GTOItems.SPOOLS_LARGE;
-
-import java.util.Arrays;
 
 final class Vanilla {
 

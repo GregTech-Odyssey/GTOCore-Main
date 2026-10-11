@@ -1590,7 +1590,7 @@ public final class GTOMachineTooltips {
         t.feature(ComponentSlang.PurifyLevel(6));
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("在操作过程中，需要更换透镜仓内的透镜", "During operation, you need replace the Lens in the lens chamber."));
-        t.note(t.tr("当当前透镜需要更换时，多方块结构将通过透镜指示仓输出信号","When the current Lens needs to be replaced, the multi-block structure will output a signal through the Lens indicator chamber."));
+        t.note(t.tr("当当前透镜需要更换时，多方块结构将通过透镜指示仓输出信号", "When the current Lens needs to be replaced, the multi-block structure will output a signal through the Lens indicator chamber."));
         t.note(t.tr("透镜更换请求将在6到12秒的随机间隔内出现", "Lens replacement requests will occur at random intervals between 6 and 12 seconds."));
         t.requirement(t.tr("需要在信号输出后的4秒内更换透镜", "The lens must be replaced within 4 seconds of the signal output."));
         t.note(t.tr("透镜顺序依次为红/橙/棕/黄/绿/青/蓝/紫/品红/粉", "The lens order is Red/Orange/Brown/Yellow/Green/Cyan/Blue/Purple/Magenta/Pink."));

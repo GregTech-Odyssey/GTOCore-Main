@@ -6,8 +6,11 @@ import com.gtocore.integration.ae.ExchangeStorageMonitorPart;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
 import com.gtocore.integration.ae.SimpleCraftingTerminal;
 
-import com.gregtechceu.gtceu.api.tooltip.TipSpec;
+import com.gtolib.GTOCore;
+import com.gtolib.api.ae2.me2in1.Me2in1TerminalPart;
+import com.gtolib.utils.register.ItemRegisterUtils;
 
+import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartItem;
@@ -15,11 +18,9 @@ import appeng.api.parts.PartModels;
 import appeng.core.definitions.ItemDefinition;
 import appeng.items.parts.PartItem;
 import appeng.items.parts.PartModelsHelper;
+
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
-import com.gtolib.GTOCore;
-import com.gtolib.api.ae2.me2in1.Me2in1TerminalPart;
-import com.gtolib.utils.register.ItemRegisterUtils;
 
 import java.util.function.Function;
 import java.util.function.Supplier;

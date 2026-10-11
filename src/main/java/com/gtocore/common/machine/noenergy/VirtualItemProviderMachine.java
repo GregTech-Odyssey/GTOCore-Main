@@ -49,6 +49,7 @@ import appeng.api.storage.MEStorage;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
+import com.hepdd.gtmthings.common.item.VirtualProviderData;
 import com.hepdd.gtmthings.data.CustomItems;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
@@ -66,7 +67,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     static {
         var es = VirtualItemProviderBehavior.setVirtualItem(new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem()), ItemStack.EMPTY);
         es = es.copyWithCount(1);
-        es.getOrCreateTag().putBoolean("marked", true);
+        VirtualProviderData.setLocked(es, true);
         EMPTY_STACK = AEItemKey.of(es);
     }
 
@@ -94,13 +95,13 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
                 if (key == null) continue;
                 if (key.getItem() == VIRTUAL_ITEM_PROVIDER.asItem() && key.hasTag()) {
                     var stack = key.toStack(1);
-                    stack.getOrCreateTag().putBoolean("marked", true);
+                    VirtualProviderData.setLocked(stack, true);
                     storage.getStoredMap().insert(AEItemKey.of(stack), IParallelMachine.MAX_PARALLEL);
                 } else {
                     int count = Keys.saturatedInt(items.amountAt(i));
                     var stack = VirtualItemProviderBehavior.setVirtualItem(new ItemStack(VIRTUAL_ITEM_PROVIDER.asItem()), key.getReadOnlyStack());
                     stack = stack.copyWithCount(1);
-                    stack.getOrCreateTag().putBoolean("marked", true);
+                    VirtualProviderData.setLocked(stack, true);
                     storage.getStoredMap().insert(AEItemKey.of(stack), IParallelMachine.MAX_PARALLEL * count);
                 }
 
@@ -235,7 +236,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
             var stack = itemKey.getReadOnlyStack();
             var tag = stack.getTag();
             if (tag != null && tag.tags.containsKey("n")) {
-                if (tag.getBoolean("marked")) return amount;
+                if (VirtualProviderData.isLocked(stack)) return amount;
                 if (stack.getCount() - inventory.storage.insert(itemKey, stack.getCount(), mode.isSimulate()) < amount) {
                     return amount;
                 }

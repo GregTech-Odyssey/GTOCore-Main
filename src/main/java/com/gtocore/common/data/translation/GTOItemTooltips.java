@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtocore.config.GTOConfig;
+
 import com.gtolib.api.item.IItem;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -17,10 +18,6 @@ import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.SteamHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.hepdd.gtmthings.data.CustomItems;
-import com.hepdd.gtmthings.data.CustomMachines;
-import dev.shadowsoffire.apotheosis.adventure.Adventure;
-import earth.terrarium.adastra.common.registry.ModBlocks;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -32,7 +29,12 @@ import appeng.block.crafting.ICraftingUnitType;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 import appeng.core.definitions.AEParts;
+
 import com.glodblock.github.extendedae.common.EPPItemAndBlock;
+import com.hepdd.gtmthings.data.CustomItems;
+import com.hepdd.gtmthings.data.CustomMachines;
+import dev.shadowsoffire.apotheosis.adventure.Adventure;
+import earth.terrarium.adastra.common.registry.ModBlocks;
 
 import java.util.List;
 
@@ -42,7 +44,6 @@ import static vazkii.botania.common.block.BotaniaBlocks.fabulousPool;
 public final class GTOItemTooltips {
 
     public static void init() {}
-
 
     public static final TipSpec DeprecatedItemTooltips = GTOTips.of(t -> t.attention(Component.translatable("gtocore.item.deprecated")));
 

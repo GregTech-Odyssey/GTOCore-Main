@@ -4,8 +4,9 @@ import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.common.data.machines.MultiBlockC;
 
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Carbon;
 import static com.gtocore.api.data.tag.GTOTagPrefix.NANITES;

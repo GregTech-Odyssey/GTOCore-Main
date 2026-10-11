@@ -7,11 +7,12 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.MultiBlockC;
 import com.gtocore.common.data.machines.SpaceMultiblock;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
-import com.gtolib.utils.RegistriesUtils;
 
 import static com.gregtechceu.gtceu.api.GTValues.UHV;
 import static com.gregtechceu.gtceu.common.data.machines.GTMultiMachines.LARGE_CHEMICAL_REACTOR;

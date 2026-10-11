@@ -8,8 +8,10 @@ import com.gtocore.common.data.GTOItems;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gto.registrate.util.entry.BlockEntry;
+
 import net.minecraft.world.level.block.Block;
+
+import com.gto.registrate.util.entry.BlockEntry;
 
 import static com.gregtechceu.gtceu.api.GTValues.IV;
 import static com.gregtechceu.gtceu.api.GTValues.LuV;

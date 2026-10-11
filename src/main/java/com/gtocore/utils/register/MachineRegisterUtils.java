@@ -1,6 +1,5 @@
 package com.gtocore.utils.register;
 
-import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.common.machine.mana.SimpleWorkManaMachine;
 
 import com.gtolib.GTOCore;
@@ -27,6 +26,7 @@ import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipSpec;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRenderer;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;

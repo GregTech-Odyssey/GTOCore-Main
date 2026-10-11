@@ -2,6 +2,10 @@ package com.hepdd.gtmthings.common.item;
 
 import com.gtolib.utils.RLUtils;
 
+import com.gregtechceu.gtceu.api.item.IDataComponentItem;
+import com.gregtechceu.gtceu.api.item.ItemDataComponentKey;
+
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -17,68 +21,60 @@ public final class VirtualProviderData {
     private static final String NAME_TAG = "n";
     private static final String LOCKED_TAG = "marked";
 
+    private static final ItemDataComponentKey<Boolean, ByteTag> LOCKED = ItemDataComponentKey.create(LOCKED_TAG, ByteTag::valueOf, t -> t.getAsByte() > 0);
+    private static final ItemDataComponentKey<ItemStack, CompoundTag> ITEM_STACK = ItemDataComponentKey.createCompound(null, VirtualProviderData::writeItem, VirtualProviderData::readItem, VirtualProviderData::removeItem);
+    private static final ItemDataComponentKey<FluidStack, CompoundTag> FLUID_STACK = ItemDataComponentKey.createCompound(null, VirtualProviderData::writeFluid, VirtualProviderData::readFluid, VirtualProviderData::removeFluid);
+
     private VirtualProviderData() {}
 
-    public static ItemStack setVirtualItem(ItemStack stack, ItemStack virtualItem) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (virtualItem.isEmpty()) {
-            tag.remove(MOD_TAG);
-            tag.remove(NAME_TAG);
-            tag.remove(NBT_TAG);
-            if (tag.isEmpty()) {
-                stack.setTag(null);
-            }
+    private static void writeItem(CompoundTag tag, ItemStack virtualItem) {
+        var id = ForgeRegistries.ITEMS.getKey(virtualItem.getItem());
+        tag.putString(MOD_TAG, id.getNamespace());
+        tag.putString(NAME_TAG, id.getPath());
+        CompoundTag itemTag = virtualItem.getTag();
+        if (itemTag != null) {
+            tag.put(NBT_TAG, itemTag);
         } else {
-            var id = ForgeRegistries.ITEMS.getKey(virtualItem.getItem());
-            tag.putString(MOD_TAG, id.getNamespace());
-            tag.putString(NAME_TAG, id.getPath());
-            CompoundTag itemTag = virtualItem.getTag();
-            if (itemTag != null) {
-                tag.put(NBT_TAG, itemTag);
-            } else {
-                tag.remove(NBT_TAG);
-            }
+            tag.remove(NBT_TAG);
         }
-        return stack;
     }
 
-    public static ItemStack getVirtualItem(ItemStack stack) {
-        var tag = stack.getTag();
+    private static void removeItem(CompoundTag tag) {
+        tag.remove(MOD_TAG);
+        tag.remove(NAME_TAG);
+        tag.remove(NBT_TAG);
+    }
+
+    private static ItemStack readItem(CompoundTag tag) {
         if (tag == null) return ItemStack.EMPTY;
         var mod = tag.getString(MOD_TAG);
         if (mod.isEmpty()) return ItemStack.EMPTY;
         var item = ForgeRegistries.ITEMS.getValue(RLUtils.fromNamespaceAndPath(mod, tag.getString(NAME_TAG)));
         if (item == null || item == Items.AIR) return ItemStack.EMPTY;
-        stack = item.getDefaultInstance();
+        var stack = item.getDefaultInstance();
         if (tag.get(NBT_TAG) instanceof CompoundTag compoundTag) stack.setTag(compoundTag);
         return stack;
     }
 
-    public static ItemStack setVirtualFluid(ItemStack stack, FluidStack virtualFluid) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (virtualFluid.isEmpty()) {
-            tag.remove(MOD_TAG);
-            tag.remove(NAME_TAG);
-            tag.remove(NBT_TAG);
-            if (tag.isEmpty()) {
-                stack.setTag(null);
-            }
+    private static void writeFluid(CompoundTag tag, FluidStack virtualFluid) {
+        ResourceLocation id = ForgeRegistries.FLUIDS.getKey(virtualFluid.getFluid());
+        tag.putString(MOD_TAG, id.getNamespace());
+        tag.putString(NAME_TAG, id.getPath());
+        CompoundTag itemTag = virtualFluid.getTag();
+        if (itemTag != null) {
+            tag.put(NBT_TAG, itemTag);
         } else {
-            ResourceLocation id = ForgeRegistries.FLUIDS.getKey(virtualFluid.getFluid());
-            tag.putString(MOD_TAG, id.getNamespace());
-            tag.putString(NAME_TAG, id.getPath());
-            CompoundTag itemTag = virtualFluid.getTag();
-            if (itemTag != null) {
-                tag.put(NBT_TAG, itemTag);
-            } else {
-                tag.remove(NBT_TAG);
-            }
+            tag.remove(NBT_TAG);
         }
-        return stack;
     }
 
-    public static FluidStack getVirtualFluid(final ItemStack stack) {
-        var tag = stack.getTag();
+    private static void removeFluid(CompoundTag tag) {
+        tag.remove(MOD_TAG);
+        tag.remove(NAME_TAG);
+        tag.remove(NBT_TAG);
+    }
+
+    private static FluidStack readFluid(CompoundTag tag) {
         if (tag == null) return FluidStack.EMPTY;
         var mod = tag.getString(MOD_TAG);
         if (mod.isEmpty()) return FluidStack.EMPTY;
@@ -89,22 +85,43 @@ public final class VirtualProviderData {
         return fluidStack;
     }
 
-    public static ItemStack setLocked(ItemStack stack, boolean locked) {
-        if (stack.isEmpty()) return stack;
-        if (locked) {
-            stack.getOrCreateTag().putBoolean(LOCKED_TAG, true);
+    public static ItemStack setVirtualItem(ItemStack stack, ItemStack virtualItem) {
+        if (virtualItem.isEmpty()) {
+            IDataComponentItem.set(stack, ITEM_STACK, null);
         } else {
-            var tag = stack.getTag();
-            if (tag != null) {
-                tag.remove(LOCKED_TAG);
-            }
+            IDataComponentItem.set(stack, ITEM_STACK, virtualItem);
+        }
+        return stack;
+    }
+
+    public static ItemStack getVirtualItem(ItemStack stack) {
+        return IDataComponentItem.getOrDefault(stack, ITEM_STACK, ItemStack.EMPTY);
+    }
+
+    public static ItemStack setVirtualFluid(ItemStack stack, FluidStack virtualFluid) {
+        if (virtualFluid.isEmpty()) {
+            IDataComponentItem.set(stack, FLUID_STACK, null);
+        } else {
+            IDataComponentItem.set(stack, FLUID_STACK, virtualFluid);
+        }
+        return stack;
+    }
+
+    public static FluidStack getVirtualFluid(final ItemStack stack) {
+        return IDataComponentItem.getOrDefault(stack, FLUID_STACK, FluidStack.EMPTY);
+    }
+
+    public static ItemStack setLocked(ItemStack stack, boolean locked) {
+        if (locked) {
+            IDataComponentItem.set(stack, LOCKED, true);
+        } else {
+            IDataComponentItem.set(stack, LOCKED, null);
         }
         return stack;
     }
 
     public static boolean isLocked(ItemStack stack) {
-        var tag = stack.getTag();
-        return tag != null && tag.contains(LOCKED_TAG);
+        return IDataComponentItem.getBoolean(stack, LOCKED);
     }
 
     public static boolean hasData(ItemStack stack) {

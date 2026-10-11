@@ -1,7 +1,5 @@
 package com.gtocore.mixin.gtm.registry;
 
-import com.gregtechceu.gtceu.api.tooltip.TipRole;
-import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.common.machine.multiblock.electric.DistillationTowerMachine;
 import com.gtocore.common.machine.multiblock.electric.LargeChemicalReactorMachine;
@@ -16,6 +14,8 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.registry.registrate.MultiblockMachineBuilder;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 
 import org.spongepowered.asm.mixin.Mixin;

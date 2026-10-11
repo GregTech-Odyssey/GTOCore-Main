@@ -1,9 +1,5 @@
 package com.gtocore.common.data;
 
-import com.gtocore.common.data.translation.GTOTarotArcanumTooltips;
-import com.gtocore.common.data.translation.GTOMachineStories;
-import com.gtocore.common.data.translation.MultiblockSlang;
-import com.gtocore.common.data.translation.ComponentSlang;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.OffsetGradientColor;
@@ -13,7 +9,11 @@ import com.gtocore.client.renderer.item.OrderItemProviderRenderer;
 import com.gtocore.common.cover.CreativePowerAmplifierCover;
 import com.gtocore.common.cover.HeatInterfaceCover;
 import com.gtocore.common.cover.PowerAmplifierCover;
+import com.gtocore.common.data.translation.ComponentSlang;
 import com.gtocore.common.data.translation.GTOItemTooltips;
+import com.gtocore.common.data.translation.GTOMachineStories;
+import com.gtocore.common.data.translation.GTOTarotArcanumTooltips;
+import com.gtocore.common.data.translation.MultiblockSlang;
 import com.gtocore.common.item.*;
 import com.gtocore.common.item.armor.SpaceArmorComponentItem;
 import com.gtocore.common.item.devtool.CreativeAllFluidCellItem;

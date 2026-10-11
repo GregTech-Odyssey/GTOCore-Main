@@ -1,12 +1,12 @@
 package com.gtocore.api.lang;
 
+import com.gtocore.common.data.translation.ComponentSlang;
+
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.TipSlot;
 import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
-
-import com.gtocore.common.data.translation.ComponentSlang;
 
 import net.minecraft.network.chat.Component;
 
