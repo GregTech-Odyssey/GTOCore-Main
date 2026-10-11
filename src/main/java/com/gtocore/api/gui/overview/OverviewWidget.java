@@ -265,7 +265,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
             player.sendSystemMessage(Component.translatable(LANG_BLOCKED));
             return;
         }
-        if (supply != null && !supply.take(controllerItem)) {
+        if (supply != null && supply.take(controllerItem).isEmpty()) {
             player.sendSystemMessage(Component.translatable(LANG_NO_CONTROLLER, definition.asStack().getHoverName()));
             return;
         }

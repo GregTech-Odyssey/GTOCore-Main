@@ -1,5 +1,8 @@
 package com.gtocore.common.data.machines;
 
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.client.renderer.machine.AdvancedHyperRenderer;
@@ -16,7 +19,7 @@ import com.gtocore.common.machine.multiblock.generator.*;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.annotation.NewDataAttributes;
+import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.MultiBlockFileReader;
 import com.gtolib.utils.RegistriesUtils;
@@ -74,8 +77,8 @@ public final class GeneratorMultiblock {
     private static MultiblockMachineDefinition registerPhotovoltaicPowerStation(String name, String cn, int basicRate, Supplier<? extends Block> casing, BlockEntry<?> photovoltaicBlock, ResourceLocation texture) {
         return multiblock(name + "_photovoltaic_power_station", cn + "光伏电站", holder -> new PhotovoltaicPowerStationMachine(holder, basicRate))
                 .allRotation()
-                .tooltips(GTOMachineStories.PhotovoltaicPlantTooltips.invoke(photovoltaicModel(basicRate)))
-                .tooltips(GTOMachineTooltips.PhotovoltaicPlantTooltips)
+                .tips(GTOMachineStories.PhotovoltaicPlantTooltips(photovoltaicModel(basicRate)))
+                .tips(GTOMachineTooltips.PhotovoltaicPlantTooltips)
                 .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
                 .generator()
                 .block(casing)
@@ -90,8 +93,8 @@ public final class GeneratorMultiblock {
                 .mountedOn(GTOMachineProtocols.PHOTOVOLTAIC_SAIL)
                 .allRotation()
                 .workableInSpace()
-                .tooltips(GTOMachineStories.PhotovoltaicSailTooltips.invoke(photovoltaicModel(basicRate)))
-                .tooltips(GTOMachineTooltips.PhotovoltaicSailTooltips)
+                .tips(GTOMachineStories.PhotovoltaicSailTooltips(photovoltaicModel(basicRate)))
+                .tips(GTOMachineTooltips.PhotovoltaicSailTooltips)
                 .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
                 .generator()
                 .block(casing)
@@ -103,8 +106,8 @@ public final class GeneratorMultiblock {
     public static final MultiblockMachineDefinition MAGNETIC_FLUID_GENERATOR = multiblock("magnetic_fluid_generator", "磁流体发电机", MagneticFluidGeneratorMachine::new)
             .allRotation()
             .recipeTypes(GTRecipeTypes.PLASMA_GENERATOR_FUELS)
-            .tooltipsText("等离子体洪流带着磅礴的能量奔涌", "A torrent of plasma rushes forward with majestic energy")
-            .tooltips(GTOMachineTooltipsA.magneticFluidGeneratorTooltips)
+            .tip(TipRole.LORE, "等离子体洪流带着磅礴的能量奔涌", "A torrent of plasma rushes forward with majestic energy")
+            .tips(GTOMachineTooltipsA.magneticFluidGeneratorTooltips)
             .generator()
             .moduleTooltips(new PartAbility[0])
             .block(GTBlocks.CASING_TUNGSTENSTEEL_ROBUST)
@@ -209,7 +212,7 @@ public final class GeneratorMultiblock {
             .nonYAxisRotation()
             .recipeTypes(COMBUSTION_GENERATOR_FUELS, GAS_TURBINE_FUELS, ROCKET_ENGINE_FUELS)
             .generator()
-            .tooltips(GTOMachineTooltips.ChemicalEnergyDevourerGenerateTooltips)
+            .tips(GTOMachineTooltips.ChemicalEnergyDevourerGenerateTooltips)
             .block(GTBlocks.CASING_TUNGSTENSTEEL_ROBUST)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("chemical_energy_devourer").build())
@@ -362,7 +365,7 @@ public final class GeneratorMultiblock {
             .workableInSpace()
             .generator()
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
-            .tooltips(GTOMachineTooltipsA.dysonSphereReceivingStationTooltips)
+            .tips(GTOMachineTooltipsA.dysonSphereReceivingStationTooltips)
             .block(GTBlocks.HIGH_POWER_CASING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("dyson_sphere_receiving_station").build())
@@ -428,8 +431,8 @@ public final class GeneratorMultiblock {
 
     public static final MultiblockMachineDefinition ADVANCED_HYPER_REACTOR = multiblock("advanced_hyper_reactor", "进阶超能反应堆", ElectricMultiblockMachine::new)
             .nonYAxisRotation()
-            .tooltipsText("提供不同等离子体获得不同并行", "Provides different plasmas to achieve different parallelism")
-            .tooltipsText("星辉：8，致密中子：16", "Starmetal: 8, Dense Neutrons: 16")
+            .tip(TipRole.FEATURE, "提供不同等离子体获得不同并行", "Provides different plasmas to achieve different parallelism")
+            .tip(TipRole.STAT, "星辉：8，致密中子：16", "Starmetal: 8, Dense Neutrons: 16")
             .recipeTypes(GTORecipeTypes.ADVANCED_HYPER_REACTOR_RECIPES)
             .generator()
             .recipeModifier((m, u, r) -> {
@@ -470,9 +473,9 @@ public final class GeneratorMultiblock {
     public static final MultiblockMachineDefinition HYPER_REACTOR = multiblock("hyper_reactor", "超能反应堆", ElectricMultiblockMachine::new)
             .allRotation()
             .recipeTypes(GTORecipeTypes.HYPER_REACTOR_RECIPES)
-            .tooltipsText("每次运行前提供额外的1mb等离子体将获得16的并行", "Providing additional 1mb plasma before each run will obtain 16 parallelism")
-            .tooltipsText("不同燃料所需的等离子体不同", "Different fuels required different plasmas")
-            .tooltipsText("从1-4顺序为: 山铜, 末影素, 魔金, 亚稳态\ud872\udf76", "The order from 1-4 is: Orichalcum, Enderium, Infuscolium, Metastable Hassium")
+            .tip(TipRole.BONUS, "每次运行前提供额外的1mb等离子体将获得16的并行", "Providing additional 1mb plasma before each run will obtain 16 parallelism")
+            .tip(TipRole.NOTE, "不同燃料所需的等离子体不同", "Different fuels required different plasmas")
+            .tip(TipRole.NOTE, "从1-4顺序为: 山铜, 末影素, 魔金, 亚稳态\ud872\udf76", "The order from 1-4 is: Orichalcum, Enderium, Infuscolium, Metastable Hassium")
             .generator()
             .recipeModifier((m, u, r) -> {
                 int p = 1;
@@ -549,7 +552,7 @@ public final class GeneratorMultiblock {
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
             .generator()
             .ruleTooltips(GTORules.GENERATOR_ARRAY_MULTIPLY, GTORules.GENERATOR_ARRAY_LOSS, GTORules.GENERATOR_ARRAY_LIMIT)
-            .tooltips(NewDataAttributes.RECIPES_TYPE.create(
+            .attribute(GTOAttributes.ORDER_RECIPE_TYPES, Tips.stat(StatKind.RECIPE_TYPE,
                     Component.empty().append(Component.translatable("gtceu.steam_turbine"))
                             .append(", ").append(Component.translatable("gtceu.combustion_generator"))
                             .append(", ").append(Component.translatable("gtceu.gas_turbine"))
@@ -618,7 +621,7 @@ public final class GeneratorMultiblock {
             .recipeTypes(GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES)
             .generator()
             .ruleTooltips(GTORules.FUEL_CELL_CONSUME)
-            .tooltipsSupplier(GTOMachineTooltips.FuelCellGeneratorTooltips)
+            .tips(GTOMachineTooltips.FuelCellGeneratorTooltips)
             .block(GTOBlocks.IRIDIUM_CASING)
             .recipeModifier((m, u, r) -> {
                 if (m instanceof FullCellGenerator f && f.isGenerator())
@@ -662,7 +665,7 @@ public final class GeneratorMultiblock {
             .nonYAxisRotation()
             .recipeTypes(DUMMY_RECIPES)
             .generator()
-            .tooltipsSupplier(GTOMachineTooltipsA.BioOscillationElectricStimulatorTooltips)
+            .tips(GTOMachineTooltipsA.BioOscillationElectricStimulatorTooltips)
             .block(GTOBlocks.BIOACTIVE_MECHANICAL_CASING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("bio_oscillation_generator/module").build())
@@ -690,7 +693,7 @@ public final class GeneratorMultiblock {
             .nonYAxisRotation()
             .recipeTypes(DUMMY_RECIPES)
             .generator()
-            .tooltipsSupplier(GTOMachineTooltipsA.BioOscillationGeneratorTooltips)
+            .tips(GTOMachineTooltipsA.BioOscillationGeneratorTooltips)
             .block(GTOBlocks.ANTIFREEZE_HEATPROOF_MACHINE_CASING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("bio_oscillation_generator/main").port('#', GTOMachineProtocols.MODULE_PORT).build())

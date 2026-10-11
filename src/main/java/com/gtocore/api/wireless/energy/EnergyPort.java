@@ -39,6 +39,7 @@ public final class EnergyPort {
     }
 
     public static final int IDLE_TICKS = 20;
+    private static final long HOLD_CAP = 1L << 40;
 
     private final PortKind kind;
     private final Host host;
@@ -52,11 +53,13 @@ public final class EnergyPort {
     private int boundVersion = -1;
     private int extraLoss;
     private boolean released;
+    int retryAt = -1;
+    private int retryDelay;
+    boolean homeless;
 
     @Nullable
     private Service service;
     private final GridScheduler.Handle handle = new GridScheduler.Handle(this::serveTick);
-    private final TokenBucket rateBucket = new TokenBucket();
     private final GridTransfer.Outcome outcome = new GridTransfer.Outcome();
     private final PortBuffer buffer = new PortBuffer();
     final PortCycle cycle = new PortCycle();
@@ -168,6 +171,7 @@ public final class EnergyPort {
 
     public void wake() {
         released = false;
+        if (retryAt >= 0 && boundVersion == account.version && host.owner() == owner) return;
         if (cycle.parkedAt != null) {
             if (account.removed || boundVersion != account.version) resumeNow();
             return;
@@ -201,7 +205,6 @@ public final class EnergyPort {
         long got = 0;
         if (allowed > 0) {
             got = GridTransfer.draw(account, node, voltageTier, allowed, priority, outcome);
-            rateBucket.take(got);
             flow.addOut(got);
             cycle.record(got, allowed, outcome.lineLimited);
         }
@@ -215,7 +218,6 @@ public final class EnergyPort {
         long done = 0;
         if (allowed > 0) {
             done = GridTransfer.put(account, node, voltageTier, allowed, extraLoss, priority, outcome);
-            rateBucket.take(done);
             flow.addIn(done);
             cycle.record(done, allowed, outcome.lineLimited);
         }
@@ -230,22 +232,15 @@ public final class EnergyPort {
             cycle.starved = true;
             return 0;
         }
-        long allowance = rateBucket.allowance(account.rate, GridClock.tick());
-        cycle.rateLimited |= allowance < amount;
-        return Math.min(amount, allowance);
+        return amount;
     }
 
     private long shortfall(long moved, long allowed) {
-        return moved < allowed && !outcome.lineLimited ? Math.min(allowed - moved, account.rate) : 0;
+        return moved < allowed && !outcome.lineLimited ? Math.min(allowed - moved, HOLD_CAP) : 0;
     }
 
     private void serveTick() {
         refresh();
-        if (account.rate <= 0) {
-            hold.clear();
-            handle.schedule(GridScheduler.periodIndex(IDLE_TICKS));
-            return;
-        }
         int servedTier = buffer.servedTier(tier);
         if (cycle.stillBlocked(account, node, servedTier, buffer.demand > 0)) return;
         cycle.begin();
@@ -277,7 +272,11 @@ public final class EnergyPort {
     }
 
     private void reschedule(int next, int servedTier) {
-        if (cycle.shouldPark(next)) {
+        if (cycle.shouldPark(next) && node == GridNode.EMPTY) {
+            handle.cancel();
+            hold.clear();
+            retryLater();
+        } else if (cycle.shouldPark(next)) {
             handle.cancel();
             cycle.parkedAt = node;
             cycle.parkedTier = servedTier;
@@ -288,6 +287,37 @@ public final class EnergyPort {
             handle.cancel();
             hold.clear();
         }
+    }
+
+    private void retryLater() {
+        retryDelay = PortRetry.next(retryDelay);
+        retryAt = GridClock.tick() + retryDelay;
+        WirelessGrid.retry(this, retryAt);
+        if (account != EnergyAccount.NONE && !homeless) {
+            homeless = true;
+            account.homeless.add(this);
+        }
+    }
+
+    private void leaveHomeless() {
+        if (!homeless) return;
+        homeless = false;
+        account.homeless.remove(this);
+    }
+
+    void wakeRetry() {
+        if (retryAt < 0 || released) return;
+        retryAt = -1;
+        wake();
+    }
+
+    public boolean isSearching() {
+        refresh();
+        return account != EnergyAccount.NONE && node == GridNode.EMPTY;
+    }
+
+    public int retrySeconds() {
+        return retryAt < 0 ? 0 : Math.max(0, (retryAt - GridClock.tick() + 19) / 20);
     }
 
     public SettleResult checkSettle(long hi, long lo, int voltageTier, int duration) {
@@ -368,12 +398,15 @@ public final class EnergyPort {
         }
         hold.clear();
         buffer.clear();
+        leaveHomeless();
         if (index != null) index.remove(this);
         account = EnergyAccount.NONE;
         node = GridNode.EMPTY;
         owner = null;
         boundVersion = -1;
         released = true;
+        retryAt = -1;
+        retryDelay = 0;
         settlement.forget();
     }
 
@@ -400,6 +433,7 @@ public final class EnergyPort {
         }
         owner = o;
         if (account != a) {
+            leaveHomeless();
             hold.clear();
             if (cycle.parkedAt != null) resumeNow();
             if (index != null) index.remove(this);
@@ -408,6 +442,7 @@ public final class EnergyPort {
             if (!released && a != EnergyAccount.NONE && level instanceof ServerLevel serverLevel && host.machine() != null) PortIndex.of(serverLevel).add(this);
         }
         node = n;
+        if (n != GridNode.EMPTY) retryDelay = 0;
         extraLoss = kind.extraLoss();
         boundVersion = a.version;
     }

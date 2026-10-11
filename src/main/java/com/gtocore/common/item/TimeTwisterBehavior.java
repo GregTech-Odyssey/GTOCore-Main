@@ -160,8 +160,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         BigInteger storage = isMana ? manaContainer.getStorage() : storageOf(port);
         if (storage.compareTo(unitCost) < 0) return null;
 
-        int maxPerTickByRate = isMana ? Integer.MAX_VALUE : Math.max(BigInteger.valueOf(port.account().rate()).divide(unitCost).intValue(), 0);
-        if (maxPerTickByRate == 0) return null;
+        int maxPerTickByRate = Integer.MAX_VALUE;
 
         int energyTicksLeft = storage.divide(unitCost).intValue();
         int twisterTicksLeft = TimeTwisterBehavior.TASK_DURATION;
@@ -270,7 +269,8 @@ public final class TimeTwisterBehavior implements IInteractionItem {
             if (eut.compareTo(BigInteger.ZERO) <= 0) return null;
             eut = eut.multiply(BigInteger.valueOf(energyMultiplier));
 
-            var limit = storageOf(port).min(BigInteger.valueOf(port.account().rate()));
+            var limit = storageOf(port);
+
             if (limit.compareTo(eut) < 0) return null;
             var tick = limit.divide(eut).min(BigInteger.valueOf(maxReducedDuration));
             var usedEU = eut.multiply(tick);

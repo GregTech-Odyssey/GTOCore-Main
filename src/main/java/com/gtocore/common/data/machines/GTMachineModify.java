@@ -1,11 +1,13 @@
 package com.gtocore.common.data.machines;
 
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTOMachines;
 
-import com.gtolib.api.annotation.NewDataAttributes;
+import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -34,6 +36,7 @@ import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -59,7 +62,7 @@ public final class GTMachineModify {
 
     private static void modifyModifiersAndTooltips() {
         GTMultiMachines.MULTI_SMELTER.setRecipeTypes(new GTRecipeType[] { GTRecipeTypes.FURNACE_RECIPES });
-        GTMultiMachines.MULTI_SMELTER.setTooltipBuilder((itemStack, components) -> components.add(Component.translatable("gtceu.machine.available_recipe_map_1.tooltip", Component.translatable("gtceu.electric_furnace"))));
+        GTMultiMachines.MULTI_SMELTER.setTooltipBuilder((itemStack, components) -> components.add(Tips.stat(Component.translatable("gtceu.machine.available_recipe_map_1.tooltip", Component.translatable("gtceu.electric_furnace")))));
         GTMultiMachines.MULTI_SMELTER.setRecipeModifier(GTORecipeModifiers.UPGRADE_MULTI_SMELTER_OVERCLOCK);
         GTMultiMachines.LARGE_CHEMICAL_REACTOR.setRecipeModifier(RecipeModifier.NO_MODIFIER);
         GTMultiMachines.ELECTRIC_BLAST_FURNACE.setRecipeModifier(GTORecipeModifiers.UPGRADE_EBF_OVERCLOCK);
@@ -80,30 +83,28 @@ public final class GTMachineModify {
 
         for (int tier : GTMachineUtils.LOW_TIERS) {
             GTMachines.AIR_SCRUBBER[tier].setTooltipBuilder((itemStack, components) -> {
-                components.add(Component.translatable("gtocore.machine.air_scrubber.ash_chance",
-                        Component.literal(FormattingUtil.formatNumbers(getAirScrubberAshTransferChance(tier))).withStyle(ChatFormatting.WHITE))
-                        .withStyle(ChatFormatting.GRAY));
-                components.add(Component.translatable("gtocore.machine.air_scrubber.range",
-                        Component.literal(FormattingUtil.formatNumbers(getAirScrubberRange(tier))).withStyle(ChatFormatting.WHITE))
-                        .withStyle(ChatFormatting.GRAY));
+                components.add(Tips.stat(Component.translatable("gtocore.machine.air_scrubber.ash_chance",
+                        Component.literal(FormattingUtil.formatNumbers(getAirScrubberAshTransferChance(tier))).withStyle(ChatFormatting.WHITE))));
+                components.add(Tips.stat(Component.translatable("gtocore.machine.air_scrubber.range",
+                        Component.literal(FormattingUtil.formatNumbers(getAirScrubberRange(tier))).withStyle(ChatFormatting.WHITE))));
             });
             GTMachines.AIR_SCRUBBER[tier].setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
         }
 
         for (int tier : new int[] { GTValues.LuV, GTValues.ZPM, GTValues.UV }) {
             GTMultiMachines.FUSION_REACTOR[tier].setTooltipBuilder((itemStack, components) -> {
-                components.add(Component.translatable("gtceu.machine.fusion_reactor.capacity", FusionReactorMachine.calculateEnergyStorageFactor(tier, 16) / 1000000L));
-                components.add(Component.translatable("gtceu.multiblock.%s_fusion_reactor.description".formatted(GTValues.VN[tier].toLowerCase(Locale.ROOT))));
-                components.addAll(NewDataAttributes.PREFECT_OVERCLOCK.create().get());
-                components.addAll(NewDataAttributes.RECIPES_TYPE.create(Component.translatable(GTRecipeTypes.FUSION_RECIPES.registryName.toLanguageKey()).withStyle(ChatFormatting.WHITE)).get());
+                components.add(Tips.energy(StatKind.ENERGY_CAPACITY, FusionReactorMachine.calculateEnergyStorageFactor(tier, 16), tier));
+                components.add(Tips.feature(Component.translatable("gtceu.multiblock.%s_fusion_reactor.description".formatted(GTValues.VN[tier].toLowerCase(Locale.ROOT)))));
+                components.addAll(List.of(GTOAttributes.perfectOverclock()));
+                components.add(Tips.stat(StatKind.RECIPE_TYPE, Component.translatable(GTRecipeTypes.FUSION_RECIPES.registryName.toLanguageKey()).withStyle(ChatFormatting.WHITE)));
             });
         }
 
         GTResearchMachines.HIGH_PERFORMANCE_COMPUTING_ARRAY.setTooltipBuilder((itemStack, components) -> {
-            components.add(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.0"));
-            components.add(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.1"));
-            components.add(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.2"));
-            components.add(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.3"));
+            components.add(Tips.feature(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.0")));
+            components.add(Tips.feature(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.1")));
+            components.add(Tips.requirement(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.2")));
+            components.add(Tips.warning(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.3")));
         });
     }
 

@@ -27,13 +27,24 @@ mixin {
     }
 }
 
+sourceSets.create('gametest') {
+    java.setSrcDirs(['src/gametest/java'])
+    resources.setSrcDirs(['src/gametest/resources'])
+    compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+    runtimeClasspath += sourceSets.main.output
+}
+configurations.named('gametestImplementation') { extendsFrom(configurations.implementation) }
+configurations.named('gametestCompileOnly') { extendsFrom(configurations.compileOnly) }
+configurations.named('gametestRuntimeOnly') { extendsFrom(configurations.runtimeOnly) }
+configurations.named('gametestRuntimeClasspath') { exclude group: 'curse.maven', module: 'open-parties-and-claims-636608' }
+
 legacyForge {
     version = "${minecraft_version}-${forge_version}"
 
     // Custom run source sets do not receive Minecraft/Forge runtime artifacts
     // automatically. Without these, Forge starts from the legacy classpath and
     // dependency AT/SRG remapping is skipped for runtime mods.
-    ['client', 'data', 'server'].each { runName ->
+    ['client', 'data', 'server', 'gametest'].each { runName ->
         addModdingDependenciesTo(sourceSets[runName])
     }
 
@@ -71,6 +82,13 @@ legacyForge {
             programArguments.addAll('--existing-mod', 'ars_nouveau')
         }
 
+        gameTestServer {
+            type = "gameTestServer"
+            sourceSet = sourceSets.gametest
+            gameDirectory.set(file('run/gametest'))
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             logLevel = org.slf4j.event.Level.INFO
@@ -80,6 +98,7 @@ legacyForge {
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
+            sourceSet(sourceSets.gametest)
         }
     }
 
@@ -90,7 +109,7 @@ legacyForge {
 // sets already own client/data/serverRuntimeOnly; ModDevGradle creates the
 // corresponding modClientRuntimeOnly/modDataRuntimeOnly/modServerRuntimeOnly
 // DSL buckets here.
-['client', 'data', 'server'].each { runName ->
+['client', 'data', 'server', 'gametest'].each { runName ->
     obfuscation.createRemappingConfiguration(
         configurations.getByName("${runName}RuntimeOnly")
     )

@@ -2,10 +2,13 @@ package com.gtocore.common.wireless.energy;
 
 import com.gtocore.api.wireless.energy.EnergyAccount;
 import com.gtocore.api.wireless.energy.EnergyStats;
+import com.gtocore.api.wireless.energy.GridNode;
 
-import com.gregtechceu.gtceu.api.GTValues;
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.PowerSubstationMachine;
-import com.gregtechceu.gtceu.utils.GTUtil;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -14,12 +17,17 @@ import com.hepdd.gtmthings.utils.FormatUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
+@DataGeneratorScanned
 public final class GridReadouts {
 
     public static final int TICKS_PER_SECOND = 20;
+
+    @RegisterLanguage(cn = "本维度输出吞吐：%s / %s EU/t", en = "Output throughput here: %s / %s EU/t")
+    private static final String OUTPUT_THROUGHPUT = "gtocore.wireless_energy.readout.output_throughput";
+    @RegisterLanguage(cn = "本维度输入吞吐：%s / %s EU/t", en = "Input throughput here: %s / %s EU/t")
+    private static final String INPUT_THROUGHPUT = "gtocore.wireless_energy.readout.input_throughput";
 
     public enum Flow {
 
@@ -52,10 +60,19 @@ public final class GridReadouts {
         return FormatUtil.formatWithConstantWidth("gtmthings.machine.wireless_energy_monitor.tooltip.1", Component.literal(FormatUtil.formatBigIntegerNumberOrSic(account.totalStorage()))).withStyle(ChatFormatting.GOLD);
     }
 
-    public static Component rate(EnergyAccount account) {
-        long rate = account.rate();
-        int tier = GTUtil.getFloorTierByVoltage(rate);
-        return FormatUtil.formatWithConstantWidth("gtmthings.machine.wireless_energy_monitor.tooltip.2", Component.literal(FormatUtil.formatBigIntegerNumberOrSic(BigInteger.valueOf(rate))), Component.literal(String.valueOf(rate / GTValues.VEX[tier])), Component.literal(GTValues.VNF[tier])).withStyle(ChatFormatting.GRAY);
+    public static Component throughput(GridNode node, boolean output) {
+        long used = 0, cap = 0;
+        for (int m = node.throughputBanks(); m != 0; m &= m - 1) {
+            int t = Integer.numberOfTrailingZeros(m);
+            used = saturatedAdd(used, output ? node.outputUsed(t) : node.inputUsed(t));
+            cap = saturatedAdd(cap, output ? node.outputCapacity(t) : node.inputCapacity(t));
+        }
+        return Component.translatable(output ? OUTPUT_THROUGHPUT : INPUT_THROUGHPUT, FormattingUtil.formatNumbers(used), FormattingUtil.formatNumbers(cap)).withStyle(ChatFormatting.GRAY);
+    }
+
+    private static long saturatedAdd(long a, long b) {
+        long s = a + b;
+        return s < 0 ? Long.MAX_VALUE : s;
     }
 
     public static void flow(List<Component> lines, Flow flow, @Nullable EnergyStats stats, int second) {
@@ -77,13 +94,6 @@ public final class GridReadouts {
             return Component.translatable("gtceu.multiblock.power_substation.time_to_drain", PowerSubstationMachine.getTimeToFillDrainText(BigDecimal.valueOf(seconds).toBigInteger())).withStyle(ChatFormatting.GRAY);
         }
         return Component.translatable("gtceu.multiblock.power_substation.time_to_drain", Component.translatable("gtceu.multiblock.power_substation.time_forever")).withStyle(ChatFormatting.GRAY);
-    }
-
-    @Nullable
-    public static Component binding(EnergyAccount account) {
-        var bind = account.bindPos();
-        if (bind == null) return null;
-        return Component.translatable("gtmthings.machine.wireless_energy_hatch.tooltip.2", Component.translatable("recipe.condition.dimension.tooltip", bind.dimension().location().toString()).append(" [").append(bind.pos().toShortString()).append("] ")).withStyle(ChatFormatting.GRAY);
     }
 
     private static Component average(String key, ChatFormatting color, double perTick) {

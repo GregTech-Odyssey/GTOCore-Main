@@ -2156,7 +2156,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        HexafluorophosphoricAcid = material("hexafluorophosphoric_acid", "单氟磷酸")
+        HexafluorophosphoricAcid = material("hexafluorophosphoric_acid", "六氟磷酸")
                 .liquid()
                 .color(0xd5d54b)
                 .components(Hydrogen, 1, Phosphorus, 1, Fluorine, 6)

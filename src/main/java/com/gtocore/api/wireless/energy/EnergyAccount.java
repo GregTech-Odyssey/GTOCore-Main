@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 一个队伍的电网：登记的能源塔与中继、由它们派生的维度节点与线路，以及速率、绑定与流量统计。
+ * 一个队伍的电网：登记的能源塔与中继、由它们派生的维度节点与线路，以及流量统计。
  * 存取、结算与拓扑重建分别在 GridTransfer、Settlement、GridTopology；total* 汇总只供展示，不用于任何判定。
  */
 public final class EnergyAccount {
@@ -25,9 +25,6 @@ public final class EnergyAccount {
 
     public final UUID team;
 
-    long rate;
-    @Nullable
-    GlobalPos bindPos;
     int version;
     boolean removed;
     boolean dirty;
@@ -43,6 +40,7 @@ public final class EnergyAccount {
     final ObjectArrayList<GridNode> nodeList = new ObjectArrayList<>();
     final ObjectArrayList<GridNode> touchedNodes = new ObjectArrayList<>();
     final ObjectArrayList<Arc> arcs = new ObjectArrayList<>();
+    final ObjectArrayList<EnergyPort> homeless = new ObjectArrayList<>();
     final Object2ObjectOpenHashMap<Arc.Key, Arc> retiredArcs = new Object2ObjectOpenHashMap<>();
     @Nullable
     GridTopology.Shape shape;
@@ -55,15 +53,6 @@ public final class EnergyAccount {
 
     public boolean isNone() {
         return this == NONE;
-    }
-
-    public long rate() {
-        return rate;
-    }
-
-    @Nullable
-    public GlobalPos bindPos() {
-        return bindPos;
     }
 
     @Nullable
@@ -121,6 +110,13 @@ public final class EnergyAccount {
 
     void wakeAll() {
         for (int i = 0, n = nodeList.size(); i < n; i++) nodeList.get(i).wakeParked();
+        if (homeless.isEmpty()) return;
+        var ports = homeless.toArray(new EnergyPort[0]);
+        homeless.clear();
+        for (var port : ports) {
+            port.homeless = false;
+            if (port.account == this) port.wakeRetry();
+        }
     }
 
     void addPending(long hi, long lo) {
@@ -134,7 +130,7 @@ public final class EnergyAccount {
         if (node.hasCapacity()) {
             int stocked = node.stocked;
             if (credit > 0) node.absorb(0, credit, null);
-            if (gross > 0) node.store(gross, extraLoss);
+            if (gross > 0) node.store(gross, extraLoss, false);
             GridTransfer.arrived(this, node, stocked);
         } else {
             addPending(0, U126.saturatedAdd(Math.max(0, credit), gross));

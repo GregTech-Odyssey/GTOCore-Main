@@ -156,7 +156,7 @@ public final class ElevatorOverviewAdapter implements OverviewAdapter {
             layout.worldPos(pose.port(), i, pose.front(), pose.up(), false, cursor);
             if (!level.isLoaded(cursor) || !level.getBlockState(cursor).is(concrete) || !level.mayInteract(player, cursor)) continue;
             if (supply != null) {
-                if (!supply.take(connectorItem)) {
+                if (supply.take(connectorItem).isEmpty()) {
                     player.sendSystemMessage(Component.translatable(OverviewWidget.LANG_MISSING_BLOCK, new ItemStack(connector).getHoverName()));
                     return;
                 }

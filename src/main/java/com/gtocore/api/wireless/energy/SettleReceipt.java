@@ -7,6 +7,7 @@ final class SettleReceipt {
     int count;
     int arcCount;
     int until;
+    int duration;
     boolean reserve;
     long restHi, restLo;
     double total;
@@ -27,6 +28,10 @@ final class SettleReceipt {
         arcCount = 0;
         total = 0;
         origin = GridNode.EMPTY;
+    }
+
+    long perTick(int i) {
+        return duration > 0 ? U126.divCeil(his[i], los[i], duration) : 0;
     }
 
     void consume(long h, long l) {

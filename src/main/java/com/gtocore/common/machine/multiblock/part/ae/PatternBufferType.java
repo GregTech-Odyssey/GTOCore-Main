@@ -10,9 +10,9 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -21,11 +21,9 @@ import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.IntSupplier;
-import java.util.function.Supplier;
 
 /**
  * 一种 ME 样板总成的声明：{@link Builder#register()} 注册并返回机器定义，槽数、无线、升级与清缓存按钮随定义一起登记。
@@ -103,7 +101,7 @@ public final class PatternBufferType {
         private IntSupplier slots;
         private int tier = -1;
         private ResourceLocation texture = GTCEu.id("block/machine/part/me_pattern_buffer");
-        private final ObjectArrayList<Supplier<List<Component>>> tooltips = new ObjectArrayList<>();
+        private final ObjectArrayList<TipSpec> tips = new ObjectArrayList<>();
         private BiFunction<MetaMachineBlockEntity, PatternBufferType, MEPatternBufferPartMachine> machine = MEPatternBufferPartMachine::new;
         private boolean wireless = true;
         private boolean upgradable;
@@ -140,8 +138,8 @@ public final class PatternBufferType {
             return this;
         }
 
-        public Builder tooltips(Supplier<List<Component>> tooltips) {
-            this.tooltips.add(tooltips);
+        public Builder tips(TipSpec tips) {
+            this.tips.add(tips);
             return this;
         }
 
@@ -186,9 +184,9 @@ public final class PatternBufferType {
                     .allRotation()
                     .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
                     .renderer(() -> new OverlayTieredMachineRenderer(machineTier, model));
-            for (var tooltip : tooltips) builder.tooltips(tooltip);
-            builder.tooltips(GTOMachineTooltips.MePatternHatchTooltips.invoke(type.getSlots()));
-            if (wireless) builder.tooltips(GTOMachineTooltips.AutoConnectMETooltips);
+            for (var tip : tips) builder.tips(tip);
+            builder.tips(GTOMachineTooltips.MePatternHatchTooltips(type.getSlots()));
+            if (wireless) builder.tips(GTOMachineTooltips.AutoConnectMETooltips);
             var definition = builder.register();
             type.definition = definition;
             BY_DEFINITION.put(definition, type);

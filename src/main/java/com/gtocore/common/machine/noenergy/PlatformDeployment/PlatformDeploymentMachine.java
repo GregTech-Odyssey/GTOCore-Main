@@ -559,7 +559,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     private void addDisplayText(List<Component> textList) {
         textList.add(Component.translatable(STEP_TITLES[step]));
         switch (step) {
-            case Introduction -> GTOMachineTooltips.IndustrialPlatformDeploymentToolsIntroduction.apply(textList);
+            case Introduction -> textList.addAll(GTOMachineTooltips.IndustrialPlatformDeploymentToolsIntroduction.get());
             case PresetSelection -> {
                 PlatformBlockType.PlatformPreset group = getPlatformPreset(checkGroup);
                 PlatformBlockType.PlatformBlockStructure structure = getPlatformBlockStructure(checkGroup, checkId);

@@ -28,7 +28,6 @@ import static com.gregtechceu.gtceu.api.GTValues.LV;
 public class TravelStaffBehavior extends ElectricStats {
 
     private static final long EU_COST = 128L;
-    private static final long EU_MAX = 768000L;
 
     protected TravelStaffBehavior(long maxCharge, int tier, boolean chargeable, boolean dischargeable) {
         super(maxCharge, tier, chargeable, dischargeable);
@@ -36,7 +35,7 @@ public class TravelStaffBehavior extends ElectricStats {
 
     public static TravelStaffBehavior create() {
         return new TravelStaffBehavior(
-                EU_MAX,
+                0L,
                 LV,
                 true,
                 false);

@@ -7,6 +7,7 @@ import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemComponent;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.item.component.forge.IComponentCapability;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
@@ -57,18 +58,18 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
 
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        tooltipComponents.add(Component.translatable("gtmthings.creative_tooltip"));
+        tooltipComponents.add(Tips.plain(Component.translatable("gtmthings.creative_tooltip")));
         if (stack.hasTag() && stack.getTag().contains("Fluid")) {
             FluidUtil.getFluidContained(stack).ifPresent(tank -> {
                 tooltipComponents
-                        .add(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip1", tank.getDisplayName()));
+                        .add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip1", tank.getDisplayName())));
             });
             if (getAccurate(stack)) {
                 tooltipComponents
-                        .add(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip3", getCapacity(stack)));
+                        .add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip3", getCapacity(stack))));
             }
         } else {
-            tooltipComponents.add(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip2"));
+            tooltipComponents.add(Tips.rightClick(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip2")));
         }
     }
 

@@ -271,6 +271,23 @@ public final class GTOBlocks {
     public static final BlockEntry<WirelessEnergyUnitBlock> OPV_WIRELESS_ENERGY_UNIT = createWirelessEnergyUnit(GTValues.OpV);
     public static final BlockEntry<WirelessEnergyUnitBlock> MAX_WIRELESS_ENERGY_UNIT = createWirelessEnergyUnit(GTValues.MAX);
 
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> LV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.LV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> MV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.MV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> HV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.HV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> EV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.EV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> IV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.IV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> LUV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.LuV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> ZPM_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.ZPM);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> UV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.UV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> UHV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.UHV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> UEV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.UEV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> UIV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.UIV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> UXV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.UXV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> OPV_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.OpV);
+    public static final BlockEntry<WirelessEnergyTransferUnitBlock> MAX_WIRELESS_ENERGY_TRANSFER_UNIT = createWirelessEnergyTransferUnit(GTValues.MAX);
+
+    public static final BlockEntry<Block> WIRELESS_ENERGY_TOWER_FRAME = createCasingBlock("wireless_energy_tower_frame", "Wireless Energy Tower Frame", "无线能源塔框架", GTOCore.id("block/casings/wireless_energy_tower_frame"));
+
     public static final BlockEntry<MEStorageCoreBlock> T1_ME_STORAGE_CORE = createMEStorageCore(1);
     public static final BlockEntry<MEStorageCoreBlock> T2_ME_STORAGE_CORE = createMEStorageCore(2);
     public static final BlockEntry<MEStorageCoreBlock> T3_ME_STORAGE_CORE = createMEStorageCore(3);

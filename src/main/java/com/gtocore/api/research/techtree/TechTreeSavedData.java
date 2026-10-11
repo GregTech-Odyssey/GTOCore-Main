@@ -122,9 +122,7 @@ public class TechTreeSavedData extends FastSavedData {
     }
 
     public static boolean hasNodeMetCWURequirements(UUID uuid, TechNode node) {
-        TechTree tree = findTree(TeamUtil.getTeamUUID(uuid), node.getManager());
-        var context = TeamResearchSavedData.getOrCreateContext(uuid);
-        return tree != null && tree.hasNodeMetCWURequirements(node, context);
+        return TechTree.hasNodeMetCWURequirements(node, TeamResearchSavedData.getOrCreateContext(uuid));
     }
 
     public static boolean unlock(UUID uuid, TechNode node) {

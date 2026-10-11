@@ -6,7 +6,6 @@ import com.gtocore.utils.register.MachineRegisterUtils;
 
 import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.api.registries.GTOMachineBuilder;
-import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -19,7 +18,6 @@ import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRende
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
@@ -54,7 +52,7 @@ public final class GTMachineUtilsMixin {
                             })
                             .recipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK)
                             .workableTieredHullRenderer(GTCEu.id("block/machines/macerator"))
-                            .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, GTRecipeTypes.MACERATOR_RECIPES, GTMachineUtils.defaultTankSizeFunction.apply(tier), true))
+                            .tips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, GTRecipeTypes.MACERATOR_RECIPES, GTMachineUtils.defaultTankSizeFunction.apply(tier), true))
                             .register(),
                     GTMachineUtils.ELECTRIC_TIERS));
         }
@@ -72,9 +70,7 @@ public final class GTMachineUtilsMixin {
                         .addOutputLimit(ItemRecipeInfo.INSTANCE, 0)
                         .addOutputLimit(FluidRecipeInfo.INSTANCE, 0)
                         .renderer(() -> new SimpleGeneratorMachineRenderer(tier, GTCEu.id("block/generators/" + name)))
-                        .tooltips(Component.translatable("gtocore.machine.efficiency.tooltip", GTOUtils.getGeneratorEfficiency(recipeType, tier)).append("%"))
-                        .tooltips(Component.translatable("gtceu.universal.tooltip.amperage_out", GTOUtils.getGeneratorAmperage(tier)))
-                        .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, recipeType, tankScalingFunction.apply(tier), false))
+                        .tips(MachineRegisterUtils.generatorStats(recipeType, tier, tankScalingFunction.apply(tier)))
                         .register(),
                 tiers));
     }
@@ -90,7 +86,7 @@ public final class GTMachineUtilsMixin {
                         .recipeType(recipeType)
                         .recipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK)
                         .workableTieredHullRenderer(GTCEu.id("block/machines/" + name))
-                        .tooltips(GTMachineUtils.workableTiered(tier, GTValues.V[tier], GTValues.V[tier] << 6, recipeType,
+                        .tips(GTMachineUtils.workableTiered(tier, GTValues.V[tier], GTValues.V[tier] << 6, recipeType,
                                 tankScalingFunction.apply(tier), true))
                         .register(),
                 tiers));

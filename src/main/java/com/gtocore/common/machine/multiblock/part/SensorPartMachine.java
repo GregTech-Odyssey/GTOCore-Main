@@ -2,23 +2,20 @@ package com.gtocore.common.machine.multiblock.part;
 
 import com.gtocore.common.data.GTOMachines;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.FloatInputWidget;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.widget.TextBoxWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
-import com.lowdragmc.lowdraglib.utils.Position;
-import com.lowdragmc.lowdraglib.utils.Size;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,9 +23,26 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class SensorPartMachine extends MultiblockPartMachine {
+
+    private static final double RANGE = 1.0E9;
+    @RegisterLanguage(cn = "反转红石输出", en = "Invert redstone output")
+    private static final String INVERT = "gtocore.machine.sensor.invert";
+    @RegisterLanguage(cn = "开启后，读数在范围内时输出减弱、范围外输出 15", en = "When on, the signal weakens inside the range and is 15 outside it")
+    private static final String INVERT_TIP = "gtocore.machine.sensor.invert.tip";
+    @RegisterLanguage(cn = "最小值", en = "Minimum")
+    private static final String MIN = "gtocore.machine.sensor.min";
+    @RegisterLanguage(cn = "最大值", en = "Maximum")
+    private static final String MAX = "gtocore.machine.sensor.max";
+    @RegisterLanguage(cn = "最小值（MeV）", en = "Minimum (MeV)")
+    private static final String MIN_MEV = "gtocore.machine.sensor.min_mev";
+    @RegisterLanguage(cn = "最大值（MeV）", en = "Maximum (MeV)")
+    private static final String MAX_MEV = "gtocore.machine.sensor.max_mev";
+    @RegisterLanguage(cn = "红石输出：%s", en = "Redstone output: %s")
+    private static final String OUTPUT = "gtocore.machine.sensor.output";
 
     @SaveToDisk(defaultValue = "0")
     @SyncToClient
@@ -48,15 +62,16 @@ public final class SensorPartMachine extends MultiblockPartMachine {
 
     @Override
     public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(Position.ORIGIN, new Size(176, 112));
-        boolean isNeutronSensor = getHolder().getBlockState().is(GTOMachines.NEUTRON_SENSOR.get());
-        if (isNeutronSensor) group.addWidget(new TextBoxWidget(105, 10, 45, List.of("MeV")));
-        group.addWidget(new TextBoxWidget(35, 28, 65, List.of(LocalizationUtils.format("cover.advanced_energy_detector.min") + ":")));
-        group.addWidget(new TextBoxWidget(35, 74, 65, List.of(LocalizationUtils.format("cover.advanced_energy_detector.max") + ":")));
-        group.addWidget(new FloatInputWidget(80, 26, 85, 18, this::getMin, this::setMin));
-        group.addWidget(new FloatInputWidget(80, 72, 85, 18, this::getMax, this::setMax));
-        group.addWidget(new MyToggleButtonWidget());
-        return group;
+        boolean neutron = getHolder().getBlockState().is(GTOMachines.NEUTRON_SENSOR.get());
+        return MachineDisplay.page(this, this::addDisplayText, controls -> {
+            controls.addToggle(INVERT, () -> isInverted, value -> isInverted = value, INVERT_TIP);
+            controls.addDecimal(neutron ? MIN_MEV : MIN, () -> min, value -> min = (float) value, -RANGE, RANGE, 0.01);
+            controls.addDecimal(neutron ? MAX_MEV : MAX, () -> max, value -> max = (float) value, -RANGE, RANGE, 0.01);
+        });
+    }
+
+    private void addDisplayText(List<Component> textList) {
+        textList.add(Component.translatable(OUTPUT, redstoneSignalOutput));
     }
 
     public void update(float a) {
@@ -99,19 +114,6 @@ public final class SensorPartMachine extends MultiblockPartMachine {
     @Override
     public boolean canShared() {
         return false;
-    }
-
-    private class MyToggleButtonWidget extends ToggleButtonWidget {
-
-        MyToggleButtonWidget() {
-            super(8, 8, 20, 20, GuiTextures.INVERT_REDSTONE_BUTTON, SensorPartMachine.this::isInverted, SensorPartMachine.this::setInverted);
-        }
-
-        @Override
-        public void updateScreen() {
-            super.updateScreen();
-            setHoverTooltips("gtocore.machine.sensor.invert." + (isPressed ? "enabled" : "disabled"));
-        }
     }
 
     private float getMin() {

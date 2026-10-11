@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.ICustomDescriptionId;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.item.CoverPlaceBehavior;
@@ -40,7 +41,7 @@ public class CreativeMachines {
             "creative_fluid_input_hatch", CreativeInputHatchPartMachine::new)
             .rotationState(RotationState.ALL)
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/fluid_hatch.import_9x")))
-            .tooltips(Component.translatable("gtmthings.creative_tooltip"))
+            .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")))
             .abilities(PartAbility.IMPORT_FLUIDS, PartAbility.IMPORT_FLUIDS_9X)
             .tier(MAX)
             .register();
@@ -49,7 +50,7 @@ public class CreativeMachines {
             "creative_item_input_bus", CreativeInputBusPartMachine::new)
             .rotationState(RotationState.ALL)
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/item_bus.import")))
-            .tooltips(Component.translatable("gtmthings.creative_tooltip"))
+            .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")))
             .abilities(PartAbility.IMPORT_ITEMS)
             .tier(MAX)
             .register();
@@ -59,7 +60,7 @@ public class CreativeMachines {
             "creative_energy_hatch", CreativeEnergyHatchPartMachine::new)
             .langValue(null)
             .rotationState(RotationState.ALL)
-            .tooltips(Component.translatable("gtmthings.creative_tooltip"))
+            .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")))
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/energy_hatch.input")))
             .abilities(PartAbility.INPUT_ENERGY)
             .tier(MAX)
@@ -70,7 +71,7 @@ public class CreativeMachines {
             "creative_laser_hatch", CreativeLaserHatchPartMachine::new)
             .langValue(null)
             .rotationState(RotationState.ALL)
-            .tooltips(Component.translatable("gtmthings.creative_tooltip"))
+            .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")))
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/laser_hatch.target")))
             .abilities(PartAbility.INPUT_LASER)
             .tier(MAX)
@@ -79,7 +80,7 @@ public class CreativeMachines {
     public static ItemEntry<ComponentItem> CREATIVE_ENERGY_COVER = GTMTHINGS_REGISTRATE
             .item("creative_energy_cover", ComponentItem::create)
             .onRegister(attach(new CoverPlaceBehavior(GTMTCovers.CREATIVE_ENERGY),
-                    new TooltipBehavior(lines -> lines.add(Component.translatable("gtmthings.creative_tooltip")))))
+                    new TooltipBehavior(lines -> lines.add(Tips.requirement(Component.translatable("gtmthings.creative_tooltip"))))))
             .register();
 
     public static ItemEntry<ComponentItem> CREATIVE_FLUID_CELL = GTMTHINGS_REGISTRATE

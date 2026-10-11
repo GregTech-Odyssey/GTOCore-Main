@@ -2,7 +2,7 @@ package com.gtocore.api.pattern;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.common.block.MEStorageCoreBlock;
-import com.gtocore.common.block.WirelessEnergyUnitBlock;
+import com.gtocore.common.block.WirelessEnergyTowerUnit;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.ManaMachine;
@@ -274,12 +274,13 @@ public final class GTOPredicates {
     }
 
     public static TraceabilityPredicate wirelessEnergyUnit() {
+        var blocks = new Block[WIRELESS_ENERGY_UNIT.length + WIRELESS_ENERGY_TRANSFER_UNIT.length];
+        System.arraycopy(WIRELESS_ENERGY_UNIT, 0, blocks, 0, WIRELESS_ENERGY_UNIT.length);
+        System.arraycopy(WIRELESS_ENERGY_TRANSFER_UNIT, 0, blocks, WIRELESS_ENERGY_UNIT.length, WIRELESS_ENERGY_TRANSFER_UNIT.length);
         return dataBlock(DataKeys.WIRELESS_ENERGY_UNIT, ArrayList::new, (data, state) -> {
-            if (state.getBlockState().getBlock() instanceof WirelessEnergyUnitBlock block) {
-                data.add(new WirelessEnergyUnitBlock.BlockData(block, state.getPos()));
-            } else data.add(new WirelessEnergyUnitBlock.BlockData(null, state.getPos()));
+            data.add(new WirelessEnergyTowerUnit.BlockData(state.getBlockState().getBlock() instanceof WirelessEnergyTowerUnit unit ? unit : null, state.getPos()));
             return data;
-        }, WIRELESS_ENERGY_UNIT).setPreviewCount(1);
+        }, blocks).setPreviewCount(1);
     }
 
     public static TraceabilityPredicate fissionComponent() {
@@ -364,7 +365,7 @@ public final class GTOPredicates {
         public static final DataComponentKey<Set<BlockPos>> SPACE_MACHINE_PHOTOVOLTAIC_SUPP = DataComponentKey.create("spaceMachinePhotovoltaicSupp", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
         public static final DataComponentKey<Double> ME_STORAGE_CORE = DataComponentKey.createNoCodec("MEStorageCore");
         public static final DataComponentKey<double[]> CRAFTING_STORAGE_CORE = DataComponentKey.createNoCodec("CraftingStorageCore");
-        public static final DataComponentKey<ArrayList<WirelessEnergyUnitBlock.BlockData>> WIRELESS_ENERGY_UNIT = DataComponentKey.create("wirelessEnergyUnit", DataComponentKey.collectionBuilder(ArrayList::new));
+        public static final DataComponentKey<ArrayList<WirelessEnergyTowerUnit.BlockData>> WIRELESS_ENERGY_UNIT = DataComponentKey.create("wirelessEnergyUnit", DataComponentKey.collectionBuilder(ArrayList::new));
         public static final DataComponentKey<int[]> FISSION_COMPONENT = DataComponentKey.createNoCodec("fissionComponent");
 
         public static final DataComponentKey<Set<BlockPos>> BLAST_FURNACE_HEAT = DataComponentKey.create("blastFurnaceHeat", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));

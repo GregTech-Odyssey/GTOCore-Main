@@ -39,6 +39,8 @@ import vectorwing.farmersdelight.data.builder.CuttingBoardRecipeBuilder;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Water;
 import static com.gtocore.common.data.GTOItems.SPOOLS_LARGE;
 
+import java.util.Arrays;
+
 final class Vanilla {
 
     public static void init() {
@@ -93,25 +95,25 @@ final class Vanilla {
                 "B B",
                 "ABA",
                 'A', CustomTags.EV_CIRCUITS, 'B', RegistriesUtils.getItemStack("expatternprovider:wireless_connect"));
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_pattern_content_sort_machine"), GTOAEParts.INSTANCE.getPattern_Content_Access_Terminal().get().asItem(),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_pattern_content_sort_machine"), GTOAEParts.Pattern_Content_Access_Terminal.get().asItem(),
                 "ABA",
                 "BCB",
                 "DBD",
                 'A', GTItems.ROBOT_ARM_HV.asItem(), 'B', CustomTags.HV_CIRCUITS, 'C', GTBlocks.MACHINE_CASING_HV.asItem(), 'D', new ItemStack(AEItems.BLANK_PATTERN.asItem()));
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("exchange_storage_monitor"), GTOAEParts.INSTANCE.getEXCHANGE_STORAGE_MONITOR().get().stack(1),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("exchange_storage_monitor"), GTOAEParts.EXCHANGE_STORAGE_MONITOR.get().stack(1),
                 "   ",
                 "ABA",
                 "   ",
                 'A', CustomTags.MV_CIRCUITS, 'B', RegistriesUtils.getItemStack("ae2:storage_monitor"));
 
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("simple_crafting_terminal"), GTOAEParts.INSTANCE.getSIMPLE_CRAFTING_TERMINAL().get().stack(1),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("simple_crafting_terminal"), GTOAEParts.SIMPLE_CRAFTING_TERMINAL.get().stack(1),
                 "   ",
                 "ABC",
                 "DED",
                 'A', CustomTags.CRAFTING_SAWS, 'B', Items.CRAFTING_TABLE, 'C', CustomTags.CRAFTING_SCREWDRIVERS,
                 'D', new MaterialEntry(TagPrefix.screw, GTMaterials.WroughtIron), 'E', Items.CHEST);
 
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_2in1_terminal"), GTOAEParts.INSTANCE.getME_2IN1_TERMINAL().get().stack(1),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_2in1_terminal"), GTOAEParts.ME_2IN1_TERMINAL.get().stack(1),
                 "   ",
                 "ABA",
                 "DDD",
@@ -129,7 +131,7 @@ final class Vanilla {
                 "A",
                 "B",
                 "D",
-                'A', AEItems.WIRELESS_RECEIVER.asItem(), 'B', GTOAEParts.INSTANCE.getME_2IN1_TERMINAL().get().asItem(),
+                'A', AEItems.WIRELESS_RECEIVER.asItem(), 'B', GTOAEParts.ME_2IN1_TERMINAL.get().asItem(),
                 'D', AEBlocks.DENSE_ENERGY_CELL.asItem());
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wireless_requester_terminal"), GTOItems.WIRELESS_WRT.asItem(),
                 "A",
@@ -691,7 +693,13 @@ final class Vanilla {
                 "ABA",
                 "CDC",
                 "ABA",
-                'B', CustomTags.LV_CIRCUITS, 'D', new MaterialEntry(TagPrefix.frameGt, GTMaterials.Invar), 'C', new MaterialEntry(TagPrefix.plate, GTMaterials.EnderPearl), 'A', new MaterialEntry(TagPrefix.plateDense, GTMaterials.Steel));
+                'B', CustomTags.LV_CIRCUITS, 'D', GTOBlocks.WIRELESS_ENERGY_TOWER_FRAME.asItem(), 'C', new MaterialEntry(TagPrefix.plate, GTMaterials.EnderPearl), 'A', new MaterialEntry(TagPrefix.plateDense, GTMaterials.Steel));
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("wireless_energy_tower_frame"), GTOBlocks.WIRELESS_ENERGY_TOWER_FRAME.asStack(2),
+                "PhP",
+                "EFE",
+                "PwP",
+                'P', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel), 'E', new MaterialEntry(TagPrefix.plate, GTMaterials.EnderPearl), 'F', new MaterialEntry(TagPrefix.frameGt, GTMaterials.Steel));
+
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("boss_summoner"), MultiBlockG.BOSS_SUMMONER.asItem(),
                 "ABA",
                 "BCB",
@@ -1017,11 +1025,14 @@ final class Vanilla {
                 "ABA",
                 'A', new MaterialEntry(TagPrefix.bolt, GTMaterials.Steel), 'B', new MaterialEntry(TagPrefix.rod, GTOMaterials.DarkSteel), 'C', new MaterialEntry(TagPrefix.rock, GTMaterials.Obsidian));
 
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("travel_staff"), GTOItems.TRAVEL_STAFF.asItem(),
-                "  A",
+        Ingredient lvBatteries = Ingredient.merge(Arrays.stream(CustomTags.BATTERIES_ARRAY, GTValues.LV, CustomTags.BATTERIES_ARRAY.length).map(Ingredient::of).toList());
+        VanillaRecipeHelper.addShapedEnergyTransferRecipe(false, false, true, GTOCore.id("travel_staff"), lvBatteries,
+                GTOItems.TRAVEL_STAFF.asStack(),
+                " CA",
                 " B ",
                 "B  ",
-                'A', GTOItems.VIBRANT_CRYSTAL.asItem(), 'B', new MaterialEntry(TagPrefix.rod, GTMaterials.Silver));
+                'A', GTOItems.VIBRANT_CRYSTAL.asItem(), 'B', new MaterialEntry(TagPrefix.rod, GTMaterials.Silver),
+                'C', lvBatteries);
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_wireless_machine_configurator"), GTOItems.ME_WIRELESS_MACHINE_CONFIGURATOR.asItem(),
                 " A ",

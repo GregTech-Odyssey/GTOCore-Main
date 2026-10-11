@@ -117,9 +117,9 @@ public final class GridMapLang {
     public static final String TRUNCATED = "gtocore.wireless_grid_map.truncated";
     @RegisterLanguage(cn = "尚未建立无线电网", en = "No wireless grid yet")
     public static final String EMPTY_TITLE = "gtocore.wireless_grid_map.empty.title";
-    @RegisterLanguage(cn = "建造无线能源变电站。", en = "Build a wireless energy substation.")
+    @RegisterLanguage(cn = "建造无线能源塔。", en = "Build a wireless energy tower.")
     public static final String EMPTY_STEP_1 = "gtocore.wireless_grid_map.empty.step_1";
-    @RegisterLanguage(cn = "在变电站结构中放入能源塔单元与玻璃，所在星球即成为电网节点。", en = "Place energy tower units and glass in the substation; its body becomes a grid node.")
+    @RegisterLanguage(cn = "在能源塔内放入存储单元与传输单元，所在星球即成为电网节点。", en = "Place storage and transfer units inside the tower; its body becomes a grid node.")
     public static final String EMPTY_STEP_2 = "gtocore.wireless_grid_map.empty.step_2";
     @RegisterLanguage(cn = "建造维度中继器并选择目标，将电网延伸到其他星球或异界维度。", en = "Build a dimension repeater and choose a target to extend the grid to other bodies or realms.")
     public static final String EMPTY_STEP_3 = "gtocore.wireless_grid_map.empty.step_3";

@@ -608,7 +608,7 @@ ext.compileGtolibSources = hasGtolibSources && (isGtolibDebugMode || !isGtolibJa
 // 若 Runtime 仍在启动 classpath，它会把这些明文类当作待解密类并因找不到
 // 独立 gtolib 模组而抛出 "GTOLIB init failed"。
 if (isGtolibDebugMode) {
-    ['runtimeClasspath', 'clientRuntimeClasspath', 'dataRuntimeClasspath', 'serverRuntimeClasspath'].each { name ->
+    ['runtimeClasspath', 'clientRuntimeClasspath', 'dataRuntimeClasspath', 'serverRuntimeClasspath', 'gametestRuntimeClasspath'].each { name ->
         configurations.named(name).configure {
             exclude group: 'dev', module: 'gto-seal-runtime'
         }
@@ -2906,7 +2906,7 @@ tasks.register('installGtolibIntoModOutput') {
         if (oldMixin.exists()) oldMixin.delete()
 
         // 清理 run/mods 里旧 gtolib / 旧 seal
-        ['client', 'data', 'server'].each { runName ->
+        ['client', 'data', 'server', 'gametest'].each { runName ->
             def modsDir = file("run/${runName}/mods")
             if (modsDir.exists()) {
                 modsDir.listFiles()?.findAll {
@@ -2923,7 +2923,7 @@ tasks.register('installGtolibIntoModOutput') {
             if (!sealRuntimeLibsJar.exists() || sealRuntimeLibsJar.length() < 100_000) {
                 throw new GradleException("需要完整 Seal Runtime: ${sealRuntimeLibsJar}")
             }
-            ['client', 'data', 'server'].each { runName ->
+            ['client', 'data', 'server', 'gametest'].each { runName ->
                 def modsDir = file("run/${runName}/mods")
                 modsDir.mkdirs()
                 def dest = new File(modsDir, 'gto-seal-runtime-1.0.jar')
@@ -2944,7 +2944,7 @@ tasks.register('installGtolibIntoModOutput') {
         if (!modJar.exists() || modJar.length() == 0) {
             throw new GradleException("gtolib-mod.jar 无效")
         }
-        ['client', 'data', 'server'].each { runName ->
+        ['client', 'data', 'server', 'gametest'].each { runName ->
             def modsDir = file("run/${runName}/mods")
             modsDir.mkdirs()
             def dest = new File(modsDir, 'gtolib-protected.jar')

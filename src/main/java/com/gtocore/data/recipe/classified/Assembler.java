@@ -3204,13 +3204,37 @@ final class Assembler {
                 .duration(200)
                 .save();
 
+        ASSEMBLER_RECIPES.builder("wireless_energy_tower_frame")
+                .inputItems(TagPrefix.frameGt, GTMaterials.Steel)
+                .inputItems(TagPrefix.plate, GTMaterials.Steel, 4)
+                .inputItems(TagPrefix.plate, GTMaterials.EnderPearl, 2)
+                .outputItems(GTOBlocks.WIRELESS_ENERGY_TOWER_FRAME.asItem(), 2)
+                .circuitMeta(6)
+                .EUt(16)
+                .duration(50)
+                .save();
+
         ASSEMBLER_RECIPES.builder("lv_wireless_energy_unit")
+
                 .inputItems(TagPrefix.frameGt, GTMaterials.Steel)
                 .inputItems(GTItems.FIELD_GENERATOR_LV, 4)
                 .inputItems(TagPrefix.plateDouble, GTMaterials.Steel, 4)
                 .inputItems(CustomTags.LV_CIRCUITS)
                 .inputItems(TagPrefix.foil, GTMaterials.RedAlloy, 64)
                 .outputItems(GTOBlocks.LV_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTMaterials.EnderPearl, 1000)
+                .EUt(30)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("lv_wireless_energy_transfer_unit")
+                .inputItems(TagPrefix.frameGt, GTMaterials.Steel)
+                .inputItems(GTItems.EMITTER_LV, 2)
+                .inputItems(GTItems.SENSOR_LV, 2)
+                .inputItems(TagPrefix.plateDouble, GTMaterials.Steel, 4)
+                .inputItems(CustomTags.LV_CIRCUITS)
+                .inputItems(TagPrefix.foil, GTMaterials.RedAlloy, 64)
+                .outputItems(GTOBlocks.LV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
                 .inputFluids(GTMaterials.EnderPearl, 1000)
                 .EUt(30)
                 .duration(400)
@@ -3228,6 +3252,19 @@ final class Assembler {
                 .duration(400)
                 .save();
 
+        ASSEMBLER_RECIPES.builder("mv_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.LV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputItems(GTItems.EMITTER_MV, 2)
+                .inputItems(GTItems.SENSOR_MV, 2)
+                .inputItems(TagPrefix.plateDouble, GTMaterials.Aluminium, 4)
+                .inputItems(CustomTags.MV_CIRCUITS)
+                .inputItems(GTItems.ULTRA_LOW_POWER_INTEGRATED_CIRCUIT, 8)
+                .outputItems(GTOBlocks.MV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTMaterials.Nitrogen, 1000)
+                .EUt(120)
+                .duration(400)
+                .save();
+
         ASSEMBLER_RECIPES.builder("hv_wireless_energy_unit")
                 .inputItems(GTOBlocks.MV_WIRELESS_ENERGY_UNIT.asItem())
                 .inputItems(GTItems.FIELD_GENERATOR_HV, 4)
@@ -3235,6 +3272,19 @@ final class Assembler {
                 .inputItems(CustomTags.HV_CIRCUITS)
                 .inputItems(GTItems.LOW_POWER_INTEGRATED_CIRCUIT, 8)
                 .outputItems(GTOBlocks.HV_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTMaterials.Helium, 1000)
+                .EUt(480)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("hv_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.MV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputItems(GTItems.EMITTER_HV, 2)
+                .inputItems(GTItems.SENSOR_HV, 2)
+                .inputItems(TagPrefix.plateDouble, GTMaterials.BismuthBronze, 4)
+                .inputItems(CustomTags.HV_CIRCUITS)
+                .inputItems(GTItems.LOW_POWER_INTEGRATED_CIRCUIT, 8)
+                .outputItems(GTOBlocks.HV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
                 .inputFluids(GTMaterials.Helium, 1000)
                 .EUt(480)
                 .duration(400)
@@ -3252,6 +3302,19 @@ final class Assembler {
                 .duration(400)
                 .save();
 
+        ASSEMBLER_RECIPES.builder("ev_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.HV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputItems(GTItems.EMITTER_EV, 2)
+                .inputItems(GTItems.SENSOR_EV, 2)
+                .inputItems(TagPrefix.plateDouble, GTMaterials.Palladium, 4)
+                .inputItems(CustomTags.EV_CIRCUITS)
+                .inputItems(GTItems.POWER_INTEGRATED_CIRCUIT, 8)
+                .outputItems(GTOBlocks.EV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTMaterials.Radon, 1000)
+                .EUt(1920)
+                .duration(400)
+                .save();
+
         ASSEMBLER_RECIPES.builder("iv_wireless_energy_unit")
                 .inputItems(GTOBlocks.EV_WIRELESS_ENERGY_UNIT.asItem())
                 .inputItems(GTItems.FIELD_GENERATOR_IV, 4)
@@ -3259,6 +3322,19 @@ final class Assembler {
                 .inputItems(CustomTags.IV_CIRCUITS)
                 .inputItems(GTItems.HIGH_POWER_INTEGRATED_CIRCUIT, 8)
                 .outputItems(GTOBlocks.IV_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTMaterials.Argon, 1000)
+                .EUt(7680)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("iv_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.EV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputItems(GTItems.EMITTER_IV, 2)
+                .inputItems(GTItems.SENSOR_IV, 2)
+                .inputItems(TagPrefix.plateDouble, GTMaterials.Ultimet, 4)
+                .inputItems(CustomTags.IV_CIRCUITS)
+                .inputItems(GTItems.HIGH_POWER_INTEGRATED_CIRCUIT, 8)
+                .outputItems(GTOBlocks.IV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
                 .inputFluids(GTMaterials.Argon, 1000)
                 .EUt(7680)
                 .duration(400)

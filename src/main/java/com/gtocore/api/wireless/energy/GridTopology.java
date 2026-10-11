@@ -109,7 +109,9 @@ final class GridTopology {
             account.towerCapacities.put(tower.pos(), capacity);
             var node = account.nodeOrCreate(tower.pos().dimension());
             int bank = tower.tier();
-            if (bank < 0 || capacity.signum() <= 0) continue;
+            if (bank < 0) continue;
+            node.addThroughput(bank, tower.throughput());
+            if (capacity.signum() <= 0) continue;
             node.addCapacity(bank, U126.hi(capacity), U126.lo(capacity));
             var w = weights.computeIfAbsent(node, k -> new double[GridNode.BANKS << 1]);
             w[bank << 1] += lossWeight;

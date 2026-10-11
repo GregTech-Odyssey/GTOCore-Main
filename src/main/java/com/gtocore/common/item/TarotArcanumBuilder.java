@@ -1,5 +1,7 @@
 package com.gtocore.common.item;
 
+import com.gregtechceu.gtceu.api.tooltip.TipSpec;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 
@@ -21,6 +23,10 @@ public class TarotArcanumBuilder {
     public TarotArcanumBuilder withTooltip(Consumer<List<Component>> tooltipConsumer) {
         this.tooltipConsumers.add(tooltipConsumer);
         return this;
+    }
+
+    public TarotArcanumBuilder withTooltip(TipSpec tooltip) {
+        return withTooltip(lines -> lines.addAll(tooltip.get()));
     }
 
     public TarotArcanum build(Item.Properties properties) {

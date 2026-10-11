@@ -165,7 +165,7 @@ final class AssemblerA {
 
         ASSEMBLER_RECIPES.builder("monitor_ae_throughput")
                 .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(GTOAEParts.INSTANCE.getEXCHANGE_STORAGE_MONITOR().get().asItem())
+                .inputItems(GTOAEParts.EXCHANGE_STORAGE_MONITOR.get().asItem())
                 .outputItems(GTOMachines.MONITOR_AE_THROUGHPUT)
                 .EUt(15)
                 .duration(100)

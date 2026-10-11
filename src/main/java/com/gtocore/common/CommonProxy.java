@@ -48,6 +48,7 @@ import com.gtolib.api.player.attribute.PlayerAttributes;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.common.data.GTMaterialBlocks;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
 import com.gregtechceu.gtceu.uipro.utils.NumberExpressions;
@@ -84,8 +85,6 @@ import de.mari_023.ae2wtlib.terminal.IUniversalWirelessTerminalItem;
 import de.mari_023.ae2wtlib.wut.WTDefinition;
 import earth.terrarium.adastra.api.events.AdAstraEvents;
 import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
-
-import java.util.function.Supplier;
 
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static de.mari_023.ae2wtlib.wut.WUTHandler.terminalNames;
@@ -163,18 +162,16 @@ public class CommonProxy {
         AreaShape.register();
 
         if (GTCEu.isClientSide()) {
-            Supplier<Component> tooltip = () -> Component.translatable(GTOTagPrefix.PIPE_TOOLTIP);
-            @SuppressWarnings("unchecked")
-            Supplier<Component>[] tooltips = (Supplier<Component>[]) new Supplier<?>[] { tooltip };
-            GTMaterialBlocks.ITEM_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setToolTips(tooltips));
-            GTMaterialBlocks.FLUID_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setToolTips(tooltips));
+            TipSpec tips = TipSpec.builder().lines(l -> l.plain(Component.translatable(GTOTagPrefix.PIPE_TOOLTIP))).build();
+            GTMaterialBlocks.ITEM_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setTips(tips));
+            GTMaterialBlocks.FLUID_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setTips(tips));
         } else {
             KeyMessage.init();
         }
         Message.init();
         TeamResearchSavedData.init();
         TechTreeSavedData.init();
-        GTOItemTooltips.INSTANCE.initLanguage();
+        GTOItemTooltips.initLanguage();
         DataSyncCodec.register(TesseractDirectedTarget.class, TesseractDirectedTarget.STREAM_CODEC, TesseractDirectedTarget.CODEC);
     }
 

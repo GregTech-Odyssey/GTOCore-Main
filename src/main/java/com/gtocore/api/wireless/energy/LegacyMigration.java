@@ -2,7 +2,6 @@ package com.gtocore.api.wireless.energy;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
-import com.gtolib.utils.GTOUtils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -35,13 +34,8 @@ final class LegacyMigration {
                 var sum = U126.toBig(account.pendingHi, account.pendingLo).add(parseBig(e.getString(GTOValues.WIRELESS_ENERGY_STORAGE)));
                 account.pendingHi = U126.hi(sum);
                 account.pendingLo = U126.lo(sum);
-                long rate = Math.max(0, e.getLong(GTOValues.WIRELESS_ENERGY_RATE));
-                if (rate > account.rate) {
-                    account.rate = rate;
-                    var pos = GTOUtils.readGlobalPos(e.getString(GTOValues.WIRELESS_ENERGY_DIMENSION), e.getLong(GTOValues.WIRELESS_ENERGY_POS));
-                    if (pos != null) account.bindPos = pos;
-                }
             }
+
             for (var account : grid.accounts.values()) account.rebuild();
             GTOCore.LOGGER.info("[无线电网] 从 {} 迁移了 {} 条记录，合并为 {} 个队伍账本", LEGACY_NAME, records, grid.accounts.size());
         }

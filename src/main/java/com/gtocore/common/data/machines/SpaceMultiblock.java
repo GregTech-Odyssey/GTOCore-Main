@@ -1,5 +1,6 @@
 package com.gtocore.common.data.machines;
 
+import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.client.renderer.machine.SpaceElevatorConnectorModuleRenderer;
@@ -15,7 +16,7 @@ import com.gtocore.common.machine.multiblock.electric.space.spacestaion.recipe.S
 import com.gtocore.common.machine.multiblock.electric.space.spacestaion.recipe.SpaceDroneDock;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.annotation.NewDataAttributes;
+import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.utils.MultiBlockFileReader;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -27,6 +28,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMachines;
@@ -52,8 +54,8 @@ public class SpaceMultiblock {
 
     public static final MultiblockMachineDefinition SPACE_STATION = multiblock("space_station", "探索者号空间站控制器", SimpleSpaceStationMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.SpaceStationTooltips)
-            .tooltips(GTOMachineTooltips.SpaceStationTooltips)
+            .tips(GTOMachineStories.SpaceStationTooltips)
+            .tips(GTOMachineTooltips.SpaceStationTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
             .workableInSpace()
@@ -137,10 +139,9 @@ public class SpaceMultiblock {
             .langValue("Large Space Station Core Module")
             .allRotation()
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
-            .tooltips(GTOMachineStories.LargeSpaceStationTooltips)
-            .tooltips(GTOMachineTooltips.LargeSpaceStationTooltips)
-            .tooltips(GTOMachineTooltips.CoreSpaceStationModuleTooltips)
-            .tooltips()
+            .tips(GTOMachineStories.LargeSpaceStationTooltips)
+            .tips(GTOMachineTooltips.LargeSpaceStationTooltips)
+            .tips(GTOMachineTooltips.CoreSpaceStationModuleTooltips)
             .block(GTOBlocks.SPACE_STATION_CONTROL_CASING)
             .workableInSpace()
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -243,8 +244,8 @@ public class SpaceMultiblock {
     // 工业空间站拓展舱
     public static final MachineDefinition SPACE_STATION_EXTENSION_MODULE = StationModules.module("space_station_extension_module", "工业空间站拓展舱", WorkspaceExtension::new)
             .allRotation()
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
-            .tooltips(GTOMachineTooltips.SpaceStationWorkspaceExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.SpaceStationWorkspaceExtensionTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.SPACE_STATION_CONTROL_CASING)
             .structure(d -> WorkspaceExtension.structure(d, WorkspaceExtension.MIN_LENGTH, WorkspaceExtension.MAX_LENGTH))
@@ -256,8 +257,8 @@ public class SpaceMultiblock {
             .mountedOn(GTOMachineProtocols.STATION_JUNCTION)
             .allRotation()
             .workableInSpace()
-            .tooltips(GTOMachineTooltips.ConjunctionSpaceStationModuleTooltips)
-            .tooltips(GTOMachineTooltipsA.SpaceStationDockingModule)
+            .tips(GTOMachineTooltips.ConjunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltipsA.SpaceStationDockingModule)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -323,7 +324,7 @@ public class SpaceMultiblock {
             .mountedOn(GTOMachineProtocols.STATION_JUNCTION)
             .allRotation()
             .workableInSpace()
-            .tooltips(GTOMachineTooltips.ConjunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.ConjunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -363,7 +364,7 @@ public class SpaceMultiblock {
             .mountedOn(GTOMachineProtocols.STATION_JUNCTION)
             .allRotation()
             .workableInSpace()
-            .tooltips(GTOMachineTooltips.ConjunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.ConjunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.CASING_STAINLESS_CLEAN)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -425,8 +426,8 @@ public class SpaceMultiblock {
     // 工业空间站环境维护舱
     public static final MachineDefinition SPACE_STATION_ENVIRONMENTAL_MAINTENANCE_MODULE = StationModules.module("space_station_environmental_maintenance_module", "工业空间站环境维护舱", CleanroomProvider::new)
             .allRotation()
-            .tooltips(GTOMachineTooltips.SpaceStationEnvironmentalMaintenanceModuleTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.SpaceStationEnvironmentalMaintenanceModuleTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.SPACECRAFT_SEALING_MECHANICAL_BLOCK)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -475,9 +476,9 @@ public class SpaceMultiblock {
             .parallelizableTooltips()
             .eutMultiplierTooltips(0.8)
             .durationMultiplierTooltips(0.6)
-            .tooltips(GTOMachineTooltips.OrbitalSmeltingFacilityTooltips)
-            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.OrbitalSmeltingFacilityTooltips)
+            .tips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.SPACE_SMELTING_RECIPES)
             .recipeTypes(GTORecipeTypes.ALLOY_BLAST_RECIPES)
             .recipeTypes(GTORecipeTypes.BLAST_RECIPES)
@@ -527,8 +528,8 @@ public class SpaceMultiblock {
     public static final MachineDefinition ORBITAL_FINE_MATERIALS_FACTORY = StationModules.module("orbital_fine_materials_factory", "轨道超材料锻造工厂舱", RecipeExtension::new)
             .allRotation()
             .parallelizableTooltips()
-            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.SUPERMATERIAL_FORGING_RECIPES)
             .block(GTOBlocks.SPACE_STATION_CONTROL_CASING)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -578,8 +579,8 @@ public class SpaceMultiblock {
     public static final MachineDefinition ORBITAL_NANOPRECISION_PROCESSING_CHAMBER = StationModules.module("orbital_nanoprecision_processing_chamber", "轨道纳米精密加工舱", RecipeExtension::new)
             .allRotation()
             .parallelizableTooltips()
-            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.MICROGRAVITY_NANOFABRICATION_RECIPES)
             .block(GTOBlocks.PRECISION_MACHINING_CONTROL_CASING)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -619,10 +620,10 @@ public class SpaceMultiblock {
     // 太空无人机船坞
     public static final MachineDefinition SPACE_DRONE_DOCK = StationModules.module("space_drone_dock", "太空无人机船坞", SpaceDroneDock::new)
             .allRotation()
-            .tooltips(GTOMachineTooltips.SpaceDroneDockTooltips)
-            .tooltips(NewDataAttributes.TIME_COST_MULTIPLY.create(h -> h.addLines("0.1 + 6.384 / (1.632 + (消耗的电量(单位：GEU))) ^ 4", "0.1 + 6.384 / (1.632 + (Energy consumption in GEU)) ^ 4")))
+            .tips(GTOMachineTooltips.SpaceDroneDockTooltips)
+            .attribute(GTOAttributes.ORDER_GENERIC, Tips.stat(GTOAttributes.TIME_MULTIPLIER, GTOTips.global("0.1 + 6.384 / (1.632 + (消耗的电量(单位：GEU))) ^ 4", "0.1 + 6.384 / (1.632 + (Energy consumption in GEU)) ^ 4")))
             .specialParallelizableTooltips()
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.SPACE_DEBRIS_COLLECTION_RECIPES)
             .block(GTOBlocks.SPACE_STATION_CONTROL_CASING)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -675,9 +676,9 @@ public class SpaceMultiblock {
     public static final MachineDefinition SPACE_STATION_ENERGY_CONVERSION_MODULE = StationModules.module("space_station_energy_conversion_module", "空间站高能转换调配舱", SpaceStationEnergyConversionModule::new)
             .langValue("Space Station High-Energy Conversion and Dispensing Module")
             .allRotation()
-            .tooltips(GTOMachineTooltips.SpaceStationEnergyConversionModuleTooltips)
-            .tooltips(GTOMachineTooltips.NoExtensionAvailableTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltips.SpaceStationEnergyConversionModuleTooltips)
+            .tips(GTOMachineTooltips.NoExtensionAvailableTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.SPACE_STATION_CONTROL_CASING)
             .structure(definition -> Structure.root(Piece.start(LEFT, UP, FRONT)
@@ -727,8 +728,8 @@ public class SpaceMultiblock {
     public static final MachineDefinition SPACE_ELEVATOR_CONNECTOR_MODULE = StationModules.module("space_elevator_connector_module", "太空电梯连接舱", SpaceElevatorConnectorModule::new)
             .langValue("Space Elevator Connector Module")
             .nonYAxisRotation()
-            .tooltips(GTOMachineTooltipsA.spaceElevatorConnectorModuleTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltipsA.spaceElevatorConnectorModuleTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.SPACECRAFT_DYNAMIC_PROTECTIVE_MECHANICAL_CASING)
             .structure(definition -> Structure.root(MultiBlockFileReader.piece("space_elevator_connector_module").port('Z', GTOMachineProtocols.STATION_RING).build())
@@ -769,9 +770,9 @@ public class SpaceMultiblock {
     public static final MachineDefinition SPACE_BIO_RESEARCH_MODULE = StationModules.module("space_bio_research_module", "太空生物研究舱", SpaceBioResearchModule::new)
             .langValue("Space Bio Research Module")
             .allRotation()
-            .tooltips(GTOMachineTooltipsA.spaceBioResearchModuleTooltips)
-            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltipsA.spaceBioResearchModuleTooltips)
+            .tips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.BIOCHEMICAL_REACTION_RECIPES, GTORecipeTypes.INCUBATOR_RECIPES, GTORecipeTypes.BIO_RESEARCH_RECIPES)
             .block(GTOBlocks.BIOLOGICAL_MECHANICAL_CASING)
             .structure(definition -> Structure.root(MultiBlockFileReader.piece("space_bio_research_module").port('H', GTOMachineProtocols.STATION_RING).build())
@@ -822,9 +823,9 @@ public class SpaceMultiblock {
             .langValue("Planetary Gas Collector")
             .nonYAxisRotation()
             .parallelizableTooltips()
-            .tooltips(GTOMachineTooltipsA.planetaryGasCollectorTooltips)
-            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltipsA.planetaryGasCollectorTooltips)
+            .tips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .recipeTypes(GTORecipeTypes.SPACE_GAS_COLLECTOR_RECIPES)
             .block(GTOBlocks.PRESSURE_RESISTANT_HOUSING_MECHANICAL_BLOCK)
             .structure(definition -> Structure.root(MultiBlockFileReader.piece("planetary_gas_collector").port('W', GTOMachineProtocols.STATION_RING).build())
@@ -868,9 +869,9 @@ public class SpaceMultiblock {
             .recipeType(GTORecipeTypes.THREE_DIMENSIONAL_PRINTER_RECIPES)
             .parallelizableTooltips()
             .allRotation()
-            .tooltips(GTOMachineTooltipsA.space3DPrinterTooltips)
-            .tooltips(GTOMachineTooltips.RecipeExtensionTooltips)
-            .tooltips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
+            .tips(GTOMachineTooltipsA.space3DPrinterTooltips)
+            .tips(GTOMachineTooltips.RecipeExtensionTooltips)
+            .tips(GTOMachineTooltips.FunctionSpaceStationModuleTooltips)
             .block(GTOBlocks.THREE_PROOF_COMPUTER_CASING)
             .structure(definition -> Structure.root(MultiBlockFileReader.piece("space_3d_printer").port('G', GTOMachineProtocols.STATION_RING).build())
                     .symbols(Symbols.create()

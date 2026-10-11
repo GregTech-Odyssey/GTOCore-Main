@@ -44,7 +44,7 @@ public final class OptionalMachine {
 
     public static final MultiblockMachineDefinition CARVING_CENTER = GTCEu.isDev() || Mods.CHISEL.isLoaded() ? multiblock("carving_center", "雕刻中心", ChiselMachine::new)
             .allRotation()
-            .tooltips(GTOMachineTooltips.CarvingCenterTooltips)
+            .tips(GTOMachineTooltips.CarvingCenterTooltips)
             .recipeTypes(DUMMY_RECIPES)
             .recipeModifier(GTORecipeModifiers.PARALLEL)
             .block(GTBlocks.CASING_STEEL_SOLID)

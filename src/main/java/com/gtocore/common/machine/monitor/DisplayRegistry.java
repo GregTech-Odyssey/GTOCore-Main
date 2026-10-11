@@ -17,7 +17,7 @@ public enum DisplayRegistry {
     MANA_REMAINING_TIME("mana_remaining_time", "剩余耗尽时间", "Remaining Time Until Depletion"),
 
     TOTAL_ENERGY("total_energy", "总能量", "Total Energy"),
-    ENERGY_TRANSFER_LIMIT("energy_transfer_limit", "能量传输上限", "Energy Transfer Limit"),
+    ENERGY_TRANSFER_LIMIT("energy_transfer_limit", "本维度输出吞吐", "Output Throughput Here"),
     ENERGY_STAT_TITLE("energy_stat_title", "能量统计标题", "Energy Statistics Title"),
     ENERGY_STAT_MINUTE("energy_stat_minute", "能量统计（上一分钟）", "Energy Statistics (Last Minute)"),
     ENERGY_STAT_HOUR("energy_stat_hour", "能量统计（上一小时）", "Energy Statistics (Last Hour)"),
@@ -34,7 +34,7 @@ public enum DisplayRegistry {
     ENERGY_STAT_DAY_OUTPUT("energy_stat_day_output", "能量统计（上一天 输出）", "Energy Statistics (Last Day OUTPUT)"),
     ENERGY_STAT_NOW_OUTPUT("energy_stat_now_output", "能量统计（当前 输出）", "Energy Statistics (Now OUTPUT)"),
     ENERGY_STAT_REMAINING_TIME("energy_stat_remaining_time", "能量统计（剩余时间）", "Energy Statistics (Remaining Time)"),
-    ENERGY_STAT_BOUND_INFO("energy_stat_bound_info", "能源塔绑定信息", "Energy Tower Binding Information"),
+    ENERGY_STAT_BOUND_INFO("energy_stat_bound_info", "本维度输入吞吐", "Input Throughput Here"),
     EU_STATUS_BAR("eu_status_bar", "电网存量条", "Energy Grid Status Bar"),
     EnergyInputHistoryDay("energy_input_history", "输入历史（天）", "Input History (Days)"),
     EnergyOutputHistoryDay("energy_output_history", "输出历史（天）", "Output History (Days)"),

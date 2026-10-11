@@ -81,7 +81,7 @@ public final class GridScheduler {
 
         void setPriority(int priority) {
             priority = clampPriority(priority);
-            if (priority == this.priority) return;
+            if (priority == this.priority || !WirelessGrid.onServerThread()) return;
             int current = period;
             cancel();
             this.priority = priority;
@@ -104,7 +104,7 @@ public final class GridScheduler {
         }
 
         void cancel() {
-            if (slot < 0) return;
+            if (slot < 0 || !WirelessGrid.onServerThread()) return;
             var list = scheduler.buckets[priority][period][bucket];
             if (slot < list.size() && list.get(slot) == this) {
                 var tail = list.remove(list.size() - 1);

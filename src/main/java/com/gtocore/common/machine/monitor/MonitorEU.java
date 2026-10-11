@@ -7,7 +7,6 @@ import com.gtocore.common.wireless.energy.GridReadouts;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -114,14 +113,15 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
         int second = GridClock.second();
         var stats = account.stats();
         var list = new ArrayList<Component>(DISPLAY_REGISTRY.size());
+        var node = account.node(getLevel().dimension());
         list.add(GridReadouts.storage(account));
-        list.add(GridReadouts.rate(account));
+        list.add(GridReadouts.throughput(node, true));
         GridReadouts.flow(list, GridReadouts.Flow.NET, stats, second);
         GridReadouts.flow(list, GridReadouts.Flow.INPUT, stats, second);
         GridReadouts.flow(list, GridReadouts.Flow.OUTPUT, stats, second);
         list.add(GridReadouts.fillOrDrain(account, stats, second));
-        var bind = GridReadouts.binding(account);
-        list.add(bind != null ? bind : Component.translatable("gtocore.machine.monitor.eu.no_container").withStyle(ChatFormatting.RED));
+        list.add(GridReadouts.throughput(node, false));
+
         var lines = new Component[DISPLAY_REGISTRY.size()];
         for (int i = 0, n = Math.min(lines.length, list.size()); i < n; i++) lines[i] = list.get(i);
         double capacity = account.totalCapacityDouble();

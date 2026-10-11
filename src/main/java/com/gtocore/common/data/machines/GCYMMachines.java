@@ -10,7 +10,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.electric.gcym.*;
 import com.gtocore.utils.register.MachineRegisterUtils;
 
-import com.gtolib.api.annotation.NewDataAttributes;
+import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.impl.part.ParallelHatchPartMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 
@@ -28,6 +28,9 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.*;
 
 import net.minecraft.network.chat.Component;
@@ -55,7 +58,7 @@ public final class GCYMMachines {
                     .allRotation()
                     .abilities(PARALLEL_HATCH)
                     .workableTieredHullRenderer(GTCEu.id("block/machines/parallel_hatch_mk" + (tier - 4)))
-                    .tooltips(NewDataAttributes.ALLOW_PARALLEL_NUMBER.create(ParallelHatchPartMachine.PARALLEL_FUNCTION.apply(tier)))
+                    .attribute(GTOAttributes.ORDER_PARALLEL_NUMBER, Tips.stat(StatKind.PARALLEL, ParallelHatchPartMachine.PARALLEL_FUNCTION.apply(tier)))
                     .notAllowSharedTooltips()
                     .register(),
             GTValues.tiersBetween(IV, MAX));
@@ -451,15 +454,15 @@ public final class GCYMMachines {
                 return 1;
             }))
             .genLang("合金冶炼炉")
-            .tooltipsKey("gtocore.machine.recipe.run", Component.translatable("gtceu.alloy_blast_smelter"))
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.0")
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.1")
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.2")
-            .tooltipsKey("gtocore.machine.recipe.run", Component.translatable("gtceu.alloy_smelter"))
-            .tooltipsText("线圈温度每高出900K，并行数x2", "For every 900K increase in coil temperature, the parallel number doubles")
-            .tooltipsText("§7公式 : 2^(向下取整(温度 / 900))", "§7Formula: 2^(Round down(temperature / 900))")
+            .tips(Tips.heading(Component.translatable("gtocore.machine.recipe.run", Component.translatable("gtceu.alloy_blast_smelter"))))
+            .tips(Tips.bonus(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.0")))
+            .tips(Tips.bonus(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.1")))
+            .tips(Tips.feature(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.2")))
+            .tips(Tips.heading(Component.translatable("gtocore.machine.recipe.run", Component.translatable("gtceu.alloy_smelter"))))
+            .tip(TipRole.BONUS, "线圈温度每高出900K，并行数x2", "For every 900K increase in coil temperature, the parallel number doubles")
+            .tip(TipRole.FORMULA, "§7公式 : 2^(向下取整(温度 / 900))", "§7Formula: 2^(Round down(temperature / 900))")
             .specialParallelizableTooltips()
-            .tooltipsSupplier(GTOMachineTooltipsA.AlloySmelterTooltips)
+            .tips(GTOMachineTooltipsA.AlloySmelterTooltips)
             .moduleTooltips(new PartAbility[0])
             .allRotation()
             .upgradable()
@@ -920,7 +923,7 @@ public final class GCYMMachines {
             .recipeTypes(GCYMRecipeTypes.ALLOY_BLAST_RECIPES)
             .eutMultiplierTooltips(0.8)
             .durationMultiplierTooltips(0.6)
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.2")
+            .tips(Tips.feature(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.2")))
             .parallelizableTooltips()
             .recipeModifier(GTORecipeModifiers.UPGRADE_GCYM_OVERCLOCKING)
             .block(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING)
@@ -963,7 +966,7 @@ public final class GCYMMachines {
             .recipeTypes(GTRecipeTypes.ROCK_BREAKER_RECIPES)
             .eutMultiplierTooltips(0.8)
             .durationMultiplierTooltips(0.6)
-            .tooltipsText("需要在输入仓中放入对应流体", "Requires the corresponding fluid to be placed in the input chamber")
+            .tip(TipRole.REQUIREMENT, "需要在输入仓中放入对应流体", "Requires the corresponding fluid to be placed in the input chamber")
             .parallelizableTooltips()
             .recipeModifier(GTORecipeModifiers.UPGRADE_GCYM_OVERCLOCKING)
             .block(GCYMBlocks.CASING_SECURE_MACERATION)

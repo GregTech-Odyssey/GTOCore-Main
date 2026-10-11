@@ -12,7 +12,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.mana.multiblock.*;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.annotation.NewDataAttributes;
+import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.ManaDistributorMachine;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.utils.MultiBlockFileReader;
@@ -29,18 +29,21 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.WorkableSidedCasingMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import dev.shadowsoffire.apotheosis.Apotheosis;
 import vazkii.botania.common.block.BotaniaBlocks;
 
-import java.util.Collections;
 import java.util.Map;
 
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
@@ -59,13 +62,13 @@ public final class ManaMultiBlock {
     public static final MultiblockMachineDefinition MANA_ALLOY_BLAST_SMELTER = multiblock("mana_alloy_blast_smelter", "魔力合金炉", ManaAlloyBlastSmelterMachine::new)
             .nonYAxisRotation()
             .durationMultiplierTooltips(0.5)
-            .tooltipsText("机器需要提供魔力来维持运行", "Machines need to provide mana to maintain working")
-            .tooltipsText("每tick消耗的基础量为2^机器等级", "The base consumption per tick is 2^(machine tier)")
-            .tooltipsText("机器每运行60秒，需要在10秒内输入一个指定的符文来抑制魔力，否则魔力消耗乘以4", "Machines need to provide a specified rune in 10 seconds to suppress mana consumption every 60 seconds, otherwise the mana consumption will be multiplied by 4")
-            .tooltipsText("需要输入符文时机器会产生对应的红石信号", "Machines will produce corresponding redstone signals when rune is needed")
-            .tooltipsText("符文编号：", "Rune number:")
-            .tooltipsSupplier(() -> Collections.singletonList(ManaAlloyBlastSmelterMachine.getRunes()))
-            .tooltips(NewDataAttributes.ALLOW_PARALLEL_NUMBER.create(16))
+            .tip(TipRole.REQUIREMENT, "机器需要提供魔力来维持运行", "Machines need to provide mana to maintain working")
+            .tip(TipRole.FORMULA, "每tick消耗的基础量为2^机器等级", "The base consumption per tick is 2^(machine tier)")
+            .tip(TipRole.REQUIREMENT, "机器每运行60秒，需要在10秒内输入一个指定的符文来抑制魔力，否则魔力消耗乘以4", "Machines need to provide a specified rune in 10 seconds to suppress mana consumption every 60 seconds, otherwise the mana consumption will be multiplied by 4")
+            .tip(TipRole.NOTE, "需要输入符文时机器会产生对应的红石信号", "Machines will produce corresponding redstone signals when rune is needed")
+            .tip(TipRole.PLAIN, "符文编号：", "Rune number:")
+            .tips(Tips.dynamic(ManaAlloyBlastSmelterMachine::getRunes))
+            .attribute(GTOAttributes.ORDER_PARALLEL_NUMBER, Tips.stat(StatKind.PARALLEL, 16))
             .recipeModifiers(GTORecipeModifiers.UPGRADE, GTORecipeModifiers.POWER_AMPLIFIER, GTORecipeModifiers.PARALLEL, RecipeModifier.overclocking(0.5, 1, 0.5))
             .recipeTypes(GTORecipeTypes.ALLOY_BLAST_RECIPES)
             .upgradable()
@@ -106,9 +109,9 @@ public final class ManaMultiBlock {
 
     public static final MultiblockMachineDefinition BASE_MANA_DISTRIBUTOR = multiblock("base_mana_distributor", "基础魔力分配器", ManaDistributorMachine.create(16, 32))
             .nonYAxisRotation()
-            .tooltipsText("自动为附近的魔力机器提供魔力", "Automatically provides mana to nearby mana machines")
-            .tooltipsKey("gtocore.machine.maximum_amount", 16)
-            .tooltipsKey("gui.ae2.WirelessRange", 32)
+            .tip(TipRole.FEATURE, "自动为附近的魔力机器提供魔力", "Automatically provides mana to nearby mana machines")
+            .tips(Tips.stat(Component.translatable("gtocore.machine.maximum_amount", 16)))
+            .tips(Tips.stat(Component.translatable("gui.ae2.WirelessRange", 32)))
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
             .block(RegistriesUtils.getSupplierBlock("botania:livingrock_bricks"))
             .structure(definition -> Structure
@@ -133,9 +136,9 @@ public final class ManaMultiBlock {
 
     public static final MultiblockMachineDefinition ADVANCED_MANA_DISTRIBUTOR = multiblock("advanced_mana_distributor", "进阶魔力分配器", ManaDistributorMachine.create(64, 128))
             .nonYAxisRotation()
-            .tooltipsKey("gtocore.machine.base_mana_distributor.tooltip.0")
-            .tooltipsKey("gtocore.machine.maximum_amount", 64)
-            .tooltipsKey("gui.ae2.WirelessRange", 128)
+            .tips(Tips.feature(Component.translatable("gtocore.machine.base_mana_distributor.tooltip.0")))
+            .tips(Tips.stat(Component.translatable("gtocore.machine.maximum_amount", 64)))
+            .tips(Tips.stat(Component.translatable("gui.ae2.WirelessRange", 128)))
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
             .block(RegistriesUtils.getSupplierBlock("botania:livingrock_bricks"))
             .structure(definition -> Structure
@@ -194,7 +197,7 @@ public final class ManaMultiBlock {
             .parallelizableTooltips()
             .perfectOCTooltips()
             .parallelizableManaOverclock()
-            .tooltipsSupplier(GTOMachineTooltips.ManaCondenserTooltips)
+            .tips(GTOMachineTooltips.ManaCondenserTooltips)
             .recipeTypes(GTORecipeTypes.MANA_CONDENSER_RECIPES)
             .block(GTOBlocks.MANASTEEL_CASING)
             .structure(ManaCondenserMachine::structure)
@@ -207,7 +210,7 @@ public final class ManaMultiBlock {
             .parallelizableTooltips()
             .perfectOCTooltips()
             .parallelizableManaOverclock()
-            .tooltipsSupplier(GTOMachineTooltips.ElfExchangeMachine)
+            .tips(GTOMachineTooltips.ElfExchangeMachine)
             .recipeTypes(GTORecipeTypes.ELF_EXCHANGE_RECIPES)
             .block(GTOBlocks.MANASTEEL_CASING)
             .structure(definition -> Structure
@@ -376,8 +379,8 @@ public final class ManaMultiBlock {
     public static final MultiblockMachineDefinition LARGE_ALCHEMICAL_DEVICE = multiblock("large_alchemical_device", "大型炼金装置", LargeAlchemicalDeviceMachine::new)
             .nonYAxisRotation()
             .parallelizableTooltips()
-            .tooltipsSupplier(GTOMachineTooltips.AlchemicalDeviceTooltips)
-            .tooltipsSupplier(GTOMachineTooltips.LargeAlchemicalDeviceTooltips)
+            .tips(GTOMachineTooltips.AlchemicalDeviceTooltips)
+            .tips(GTOMachineTooltips.LargeAlchemicalDeviceTooltips)
             .moduleTooltips(new PartAbility[0])
             .recipeModifiers(GTORecipeModifiers.PARALLEL)
             .recipeTypes(GTORecipeTypes.ALCHEMY_CAULDRON_RECIPES)
@@ -435,7 +438,7 @@ public final class ManaMultiBlock {
 
     public static final MultiblockMachineDefinition LARGE_PERFUSION_DEVICE = multiblock("large_perfusion_device", "大型灌注装置", ManaMultiblockMachine::new)
             .nonYAxisRotation()
-            .tooltipsText("多方块的魔源灌注装置", "Multi-block magic source infusion device")
+            .tip(TipRole.FEATURE, "多方块的魔源灌注装置", "Multi-block magic source infusion device")
             .parallelizableTooltips()
             .perfectOCTooltips()
             .parallelizableManaOverclock()
@@ -463,7 +466,7 @@ public final class ManaMultiBlock {
 
     public static final MultiblockMachineDefinition THE_PRIMORDIAL_RECONSTRUCTOR = multiblock("the_primordial_reconstructor", "源初重构仪", ThePrimordialReconstructor::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineTooltips.ThePrimordialReconstructorTooltips)
+            .tips(GTOMachineTooltips.ThePrimordialReconstructorTooltips)
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.SPELL_PRISM_CASING)
             .structure(definition -> Structure
@@ -506,7 +509,7 @@ public final class ManaMultiBlock {
             .register();
 
     public static final MultiblockMachineDefinition RESONANCE_FLOWER = multiblock("resonance_flower", "共鸣之花", ResonanceFlowerMachine::new)
-            .tooltips(GTOMachineTooltips.ResonanceFlowerTooltips)
+            .tips(GTOMachineTooltips.ResonanceFlowerTooltips)
             .specialParallelizableTooltips()
             .parallelizableManaOverclock()
             .recipeTypes(GTORecipeTypes.ELEMENTAL_RESONANCE)
@@ -538,7 +541,7 @@ public final class ManaMultiBlock {
             .register();
 
     public static final MultiblockMachineDefinition COSMIC_CELESTIAL_SPIRE_OF_CONVERGENCE = multiblock("cosmic_celestial_spire_of_convergence", "寰宇星穹天体聚合圣坛", CosmicCelestialSpireOfConvergence::new)
-            .tooltips(GTOMachineTooltips.CosmicCelestialSpireOfConvergenceTooltips)
+            .tips(GTOMachineTooltips.CosmicCelestialSpireOfConvergenceTooltips)
             .recipeTypes(GTORecipeTypes.CELESTIAL_CONDENSER_RECIPES)
             .block(GTOBlocks.SPELL_PRISM_CASING)
             .structure(definition -> Structure
@@ -583,7 +586,7 @@ public final class ManaMultiBlock {
             .nonYAxisRotation()
             .recipeTypes(GTORecipeTypes.MANA_FLOW_ASSEMBLER_RECIPES)
             .block(GTOBlocks.MANASTEEL_CASING)
-            .tooltipsSupplier(GTOMachineTooltipsA.ManaFlowAssemblerTooltips)
+            .tips(GTOMachineTooltipsA.ManaFlowAssemblerTooltips)
             .structure(definition -> Structure
                     .root(Piece.start(LEFT, UP, FRONT)
                             .aisle("HBBBI", "H   I", "D   D", "E   E")
@@ -616,7 +619,7 @@ public final class ManaMultiBlock {
             .nonYAxisRotation()
             .block(RegistriesUtils.getSupplierBlock("apotheosis:stoneshelf"))
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
-            .tooltips(GTOMachineTooltipsA.pulseMachineMaintenancePedestalTooltips)
+            .tips(GTOMachineTooltipsA.pulseMachineMaintenancePedestalTooltips)
             .structure(definition -> Structure
                     .root(Piece.start(LEFT, UP, FRONT)
                             .aisle("   BB", "     ", "     ", "     ", "     ", "     ", "     ", "     ")

@@ -3,7 +3,7 @@ package com.gtocore.api.wireless.energy;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
- * 一次远程取、存电的分配：先沿路由就近贪心；不满且有线路卡住时，在残量图上补增广路，结果即此刻的最大流。
+ * 一次远程取、存电的分配：来源节点按同档能源塔吞吐限量；先沿路由就近贪心；不满且有线路卡住时，在残量图上补增广路，结果即此刻的最大流。
  * 只在弧与节点上记下本次计划量（按印记区分），由调用方落实或写进收据。
  */
 final class FlowPlan {
@@ -17,6 +17,7 @@ final class FlowPlan {
     private long visit;
     private int mode;
     private boolean inbound;
+    private boolean metered;
     private int voltage;
     private int now;
     private int yieldTo;
@@ -33,15 +34,15 @@ final class FlowPlan {
     private FlowPlan() {}
 
     long draw(GridNode d, int voltage, long need, int now) {
-        return solve(DRAW, true, d, voltage, need, now, -1, 0, 0);
+        return solve(DRAW, true, true, d, voltage, need, now, -1, 0, 0);
     }
 
-    long put(GridNode d, int voltage, long need, int extraLoss, int yieldTo, int now) {
-        return solve(PUT, false, d, voltage, need, now, yieldTo, extraLoss, 0);
+    long put(GridNode d, int voltage, long need, int extraLoss, int yieldTo, int now, boolean metered) {
+        return solve(PUT, false, metered, d, voltage, need, now, yieldTo, extraLoss, 0);
     }
 
     long settle(GridNode d, int voltage, long need, int duration, int priority, int now) {
-        return solve(duration > 0 ? RESERVE : TOKENS, true, d, voltage, need, now, priority, 0, duration);
+        return solve(duration > 0 ? RESERVE : TOKENS, true, duration > 0, d, voltage, need, now, priority, 0, duration);
     }
 
     long total() {
@@ -51,7 +52,9 @@ final class FlowPlan {
     boolean limited() {
         if (total >= need) return false;
         for (var r : dest.routes) {
-            if (r.tier >= voltage && spare(r.source) > 0) return true;
+            if (r.tier < voltage) continue;
+            if (spare(r.source) > 0) return true;
+            if (metered && (inbound ? r.source.drawThrottled(voltage) : r.source.putThrottled())) return true;
         }
         return false;
     }
@@ -93,7 +96,7 @@ final class FlowPlan {
             var node = nodes.get(i);
             long g = node.planAmount;
             if (g <= 0) continue;
-            lost += GridTransfer.store(account, node, g, extraLoss);
+            lost += GridTransfer.store(account, node, g, extraLoss, metered);
             gross += g;
         }
         if (gross > 0) {
@@ -107,9 +110,10 @@ final class FlowPlan {
         }
     }
 
-    private long solve(int mode, boolean inbound, GridNode d, int voltage, long need, int now, int yieldTo, int extraLoss, int duration) {
+    private long solve(int mode, boolean inbound, boolean metered, GridNode d, int voltage, long need, int now, int yieldTo, int extraLoss, int duration) {
         this.mode = mode;
         this.inbound = inbound;
+        this.metered = metered;
         this.dest = d;
         this.voltage = voltage;
         this.need = need;
@@ -238,9 +242,11 @@ final class FlowPlan {
 
     private long supply(GridNode node) {
         return switch (mode) {
-            case PUT -> node.tier >= voltage ? node.acceptable(U126.MASK, extraLoss) : 0;
+            case PUT -> node.tier >= voltage ? node.acceptable(U126.MASK, extraLoss, metered) : 0;
             case RESERVE -> node.reservable(voltage, duration);
+            case TOKENS -> node.availableUnmetered(voltage);
             default -> node.available(voltage);
+
         };
     }
 }

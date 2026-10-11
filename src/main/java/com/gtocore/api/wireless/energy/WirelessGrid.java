@@ -29,13 +29,14 @@ public final class WirelessGrid extends FastSavedData {
      * 也是这份负载唯一的版本号——负载里不再有第二份。重建后的格式从 1 开始，读取时只认文件头这一个
      * （见 {@link GridCodec#decodeVersioned}）。
      */
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
     private static final int VALIDATE_TICKS = 1200;
 
     @Nullable
     private static WirelessGrid instance;
     @Nullable
     private static MinecraftServer server;
+    private static boolean offThreadReported;
 
     final boolean available;
     final O2OOpenCacheHashMap<UUID, EnergyAccount> accounts = new O2OOpenCacheHashMap<>();
@@ -44,6 +45,7 @@ public final class WirelessGrid extends FastSavedData {
     private final ObjectArrayList<EnergyAccount> dirty = new ObjectArrayList<>();
     private final ObjectArrayList<RouteJob> routeJobs = new ObjectArrayList<>();
     private final GridScheduler scheduler = new GridScheduler();
+    private final PortRetry retry = new PortRetry();
 
     WirelessGrid(boolean available) {
         this.available = available;
@@ -89,7 +91,17 @@ public final class WirelessGrid extends FastSavedData {
     @Nullable
     static GridScheduler scheduler() {
         var grid = instance;
-        return grid == null || !grid.available ? null : grid.scheduler;
+        return grid == null || !grid.available || !onServerThread() ? null : grid.scheduler;
+    }
+
+    static boolean onServerThread() {
+        var s = server;
+        if (s == null || s.isSameThread()) return true;
+        if (!offThreadReported) {
+            offThreadReported = true;
+            GTOCore.LOGGER.warn("[无线电网] 非服务端线程 {} 试图调度端点，已忽略", Thread.currentThread().getName(), new Throwable());
+        }
+        return false;
     }
 
     @Override
@@ -150,6 +162,11 @@ public final class WirelessGrid extends FastSavedData {
         return account;
     }
 
+    static void retry(EnergyPort port, int at) {
+        var grid = instance;
+        if (grid != null && onServerThread()) grid.retry.add(port, at);
+    }
+
     static void markActive(EnergyAccount account) {
         var grid = instance;
         if (grid != null) grid.active.add(account);
@@ -174,9 +191,9 @@ public final class WirelessGrid extends FastSavedData {
         var grid = instance;
         if (grid == null || !grid.available) return;
         grid.rebuildDirty();
+        grid.retry.run(GridClock.tick());
         grid.scheduler.run(GridClock.tick());
         int now = GridClock.tick();
-        if (now % GridBinding.RATE_REFRESH_TICKS == 0) GridBinding.refreshRates(grid, minecraftServer);
         if (now % VALIDATE_TICKS == 0) ProviderRegistry.validate(grid, minecraftServer);
     }
 

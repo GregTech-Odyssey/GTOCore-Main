@@ -142,11 +142,5 @@ public final class StructureModuleKeys {
     private static final String ME_STORAGE_LAYERS_DESC = "gtocore.multiblock.me_storage.layers.desc";
     public static final ParamKey ME_STORAGE_LAYERS = ParamKey.of(ME_STORAGE_LAYERS_NAME, ME_STORAGE_LAYERS_DESC);
 
-    @RegisterLanguage(cn = "储能层数", en = "Storage Layers")
-    private static final String WIRELESS_ENERGY_SUBSTATION_LAYERS_NAME = "gtocore.multiblock.wireless_energy_substation.layers";
-    @RegisterLanguage(cn = "底板与顶板之间的储能层数", en = "Number of storage layers between the floor and the roof")
-    private static final String WIRELESS_ENERGY_SUBSTATION_LAYERS_DESC = "gtocore.multiblock.wireless_energy_substation.layers.desc";
-    public static final ParamKey WIRELESS_ENERGY_SUBSTATION_LAYERS = ParamKey.of(WIRELESS_ENERGY_SUBSTATION_LAYERS_NAME, WIRELESS_ENERGY_SUBSTATION_LAYERS_DESC);
-
     private StructureModuleKeys() {}
 }

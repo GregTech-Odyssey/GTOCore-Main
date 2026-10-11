@@ -29,7 +29,6 @@ import com.hepdd.gtmthings.data.CustomMachines;
 import com.hepdd.gtmthings.data.WirelessMachines;
 
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
-import static com.gtocore.common.data.GTORecipeTypes.SCANNER_RECIPES;
 
 public final class GTMTRecipe {
 
@@ -71,14 +70,6 @@ public final class GTMTRecipe {
                 .outputItems(CustomItems.VIRTUAL_FLUID_PROVIDER.asItem())
                 .EUt(GTORules.RECIPE_TIER.isEasy() ? 120 : 480)
                 .duration(200)
-                .save();
-
-        SCANNER_RECIPES.recipeBuilder("wireless_energy_binding_tool")
-                .inputItems(TagPrefix.plate, GTMaterials.Paper)
-                .inputItems(GTItems.COVER_SCREEN)
-                .outputItems(CustomItems.WIRELESS_ENERGY_BINDING_TOOL.asItem())
-                .EUt(30)
-                .duration(400)
                 .save();
 
         ASSEMBLER_RECIPES.recipeBuilder("cover_maintenance_detector")

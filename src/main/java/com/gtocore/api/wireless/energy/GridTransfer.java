@@ -5,8 +5,8 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigInteger;
 
 /**
- * 逐 tick 的取电与存电：本地节点不限电流，不够时经 FlowPlan 跨维度按最大流分配、受线路令牌限制。
- * 一次实际取（存）不满即记入节点的负缓存，本 tick 内同电压及以上不再重算；结果里注明是否有线路受限的成分。
+ * 逐 tick 的取电与存电：本地节点受同档能源塔吞吐限制，不够时经 FlowPlan 跨维度按最大流分配、受线路令牌与来源节点吞吐限制。
+ * 一次实际取（存）不满即记入节点的负缓存，本 tick 内同电压及以上不再重算；结果里注明是否有线路或吞吐受限的成分。
  */
 final class GridTransfer {
 
@@ -22,18 +22,19 @@ final class GridTransfer {
     static long draw(EnergyAccount account, GridNode d, int voltage, long want, int priority, @Nullable Outcome outcome) {
         long got = Math.min(want, d.available(voltage));
         if (got > 0) take(account, d, voltage, got);
-        boolean limited = false;
+        boolean limited = got < want && d.drawThrottled(voltage);
         if (got < want && d.routes.length != 0) {
             int now = GridClock.tick();
             if (d.dry.hit(now, account.supplyGen, voltage)) {
-                limited = d.dry.limited;
+                limited |= d.dry.limited;
             } else {
                 long need = want - got;
                 var plan = FlowPlan.SHARED;
                 long remote = plan.draw(d, voltage, need, now);
-                limited = plan.limited();
                 plan.applyDraw(account, priority);
-                if (remote < need) d.dry.mark(now, account.supplyGen, voltage, limited);
+                boolean remoteLimited = plan.limited();
+                if (remote < need) d.dry.mark(now, account.supplyGen, voltage, remoteLimited);
+                limited |= remoteLimited;
                 got += remote;
             }
         }
@@ -47,19 +48,20 @@ final class GridTransfer {
 
     static long put(EnergyAccount account, GridNode d, int voltage, long gross, int extraLoss, int priority, @Nullable Outcome outcome) {
         var out = outcome != null ? outcome : IGNORED;
-        out.lineLimited = false;
         long done = putLocal(account, d, voltage, gross, extraLoss);
+        out.lineLimited = done < gross && voltage <= d.tier && d.putThrottled();
         if (done < gross && d.routes.length != 0) {
             int now = GridClock.tick();
             if (d.full.hit(now, account.sinkGen, voltage)) {
-                out.lineLimited = d.full.limited;
+                out.lineLimited |= d.full.limited;
             } else {
                 long rest = gross - done;
                 var plan = FlowPlan.SHARED;
-                long remote = plan.put(d, voltage, rest, extraLoss, -1, now);
-                out.lineLimited = plan.limited();
+                long remote = plan.put(d, voltage, rest, extraLoss, -1, now, true);
                 plan.applyPut(account, priority);
-                if (remote < rest) d.full.mark(now, account.sinkGen, voltage, out.lineLimited);
+                boolean remoteLimited = plan.limited();
+                if (remote < rest) d.full.mark(now, account.sinkGen, voltage, remoteLimited);
+                out.lineLimited |= remoteLimited;
                 done += remote;
             }
         }
@@ -68,9 +70,9 @@ final class GridTransfer {
 
     private static long putLocal(EnergyAccount account, GridNode d, int voltage, long gross, int extraLoss) {
         if (voltage > d.tier) return 0;
-        long done = d.acceptable(gross, extraLoss);
+        long done = d.acceptable(gross, extraLoss, true);
         if (done > 0) {
-            long lost = store(account, d, done, extraLoss);
+            long lost = store(account, d, done, extraLoss, true);
             account.meter.in(done, lost);
             NodeMeter.in(account, d, done, lost);
         }
@@ -85,7 +87,7 @@ final class GridTransfer {
         if (rest.bitLength() > 63) return false;
         long remote = rest.longValue();
         var plan = FlowPlan.SHARED;
-        if (remote > 0 && (d.routes.length == 0 || plan.put(d, voltage, remote, extraLoss, priority, GridClock.tick()) < remote)) return false;
+        if (remote > 0 && (d.routes.length == 0 || plan.put(d, voltage, remote, extraLoss, priority, GridClock.tick(), false) < remote)) return false;
         if (!apply) return true;
         if (local.signum() > 0) {
             int stocked = d.stocked;
@@ -107,9 +109,9 @@ final class GridTransfer {
         account.roomFreed(node);
     }
 
-    static long store(EnergyAccount account, GridNode node, long gross, int extraLoss) {
+    static long store(EnergyAccount account, GridNode node, long gross, int extraLoss, boolean metered) {
         int stocked = node.stocked;
-        long lost = node.store(gross, extraLoss);
+        long lost = node.store(gross, extraLoss, metered);
         arrived(account, node, stocked);
         return lost;
     }

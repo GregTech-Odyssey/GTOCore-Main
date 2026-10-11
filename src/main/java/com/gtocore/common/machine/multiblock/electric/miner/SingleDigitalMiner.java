@@ -8,10 +8,8 @@ import com.gtolib.api.machine.impl.DigitalMinerLogic;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
@@ -20,14 +18,19 @@ import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -41,10 +44,7 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.hepdd.gtmthings.api.gui.widget.SimpleNumberInputWidget;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
 import lombok.Getter;
@@ -62,7 +62,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalMiner, IDataInfoProvider {
     // modify from gtmt
 
-    private static final int BORDER_WIDTH = 3;
+    private static final int SLOT_COLUMNS = 9;
     @SaveToDisk
     protected final StackInventory filterInventory;
     private final int maximumRadius;
@@ -74,11 +74,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     protected ISubscription exportItemSubs, energySubs;
     @Getter
     protected ItemFilter itemFilter;
-    // widget
-    protected SlotWidget filterSlot;
-    protected ButtonWidget resetButton;
-    protected ButtonWidget silkButton;
-    private long energyPerTick;
+    private final long energyPerTick;
     // miner property
     @Getter
     @Setter
@@ -95,6 +91,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private int maxHeight;
+    @SaveToDisk(defaultValue = "0")
     private int silkLevel;
 
     //////////////////////////////////////
@@ -117,6 +114,9 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
         var transfer = new StackInventory();
         transfer.setFilter(
                 item -> item.is(GTItems.ITEM_FILTER.asItem()) || item.is(GTItems.TAG_FILTER.asItem()));
+        transfer.setOnContentsChanged(() -> {
+            if (getLevel() != null && !isRemote()) filterChange();
+        });
         return transfer;
     }
 
@@ -198,10 +198,11 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
 
     @Override
     public boolean drainInput(boolean simulate) {
-        long resultEnergy = energyContainer.getEnergyStored() - energyPerTick;
+        long cost = silkLevel > 0 ? energyPerTick * 4 : energyPerTick;
+        long resultEnergy = energyContainer.getEnergyStored() - cost;
         if (resultEnergy >= 0L && resultEnergy <= energyContainer.getEnergyCapacity()) {
             if (!simulate)
-                energyContainer.removeEnergy(energyPerTick);
+                energyContainer.removeEnergy(cost);
             return true;
         }
         return false;
@@ -209,71 +210,31 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
 
     @Override
     public Widget createUIWidget() {
-        int rowSize = 3;
-        int colSize = 9;
-        int width = colSize * 18 + 16;
-        int height = rowSize * 18 + 76 + 4;
-        int index = 0;
+        var page = MachineDisplay.page(this, this::addDisplayText, this::addControls);
+        page.addChild(SlotGrid.of(SLOT_COLUMNS, exportItems.storage.size(), i -> ItemSlot.of(exportItems.storage, i, true, false)));
+        return page;
+    }
 
-        WidgetGroup group = new WidgetGroup(0, 0, width, height);
+    private void addControls(ControlPanel controls) {
+        controls.add(MinerControls.filterAndSilk(this, filterInventory, () -> silkLevel != 0, this::setSilk));
+        controls.addInt(MinerControls.RADIUS, this::getMinerRadius, value -> {
+            minerRadius = value;
+            getRecipeLogic().resetArea(true);
+        }, 1, maximumRadius);
+        controls.add(MinerControls.pair(MinerControls.cell(this, MIN_HEIGHT, this::getMinHeight, this::setMinHeight, this::minBuildHeight, this::maxBuildHeight),
+                MinerControls.cell(this, MAX_HEIGHT, this::getMaxHeight, this::setMaxHeight, this::minBuildHeight, this::maxBuildHeight)));
+        var reset = MinerControls.resetButton(this, this::resetRecipe);
+        controls.add(UIElement.row(UISizes.CONTROL_HEIGHT).addChild(reset));
+    }
 
-        // information screen
-        var componentPanel = new ComponentPanelWidget(4, 5, this::addDisplayText).setMaxWidthLimit(110);
-        var container = new WidgetGroup(8, 0, 87, 76);
-        container.addWidget(new DraggableScrollableWidgetGroup(4, 4, container.getSize().width - 8,
-                container.getSize().height - 8)
-                .setBackground(GuiTextures.DISPLAY)
-                .addWidget(componentPanel));
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        group.addWidget(container);
+    private int minBuildHeight() {
+        var level = getLevel();
+        return level == null ? -64 : level.getMinBuildHeight();
+    }
 
-        // output slots
-        WidgetGroup slots = new WidgetGroup(8, 76 + 4 / 2, colSize * 18, rowSize * 18);
-        for (int y = 0; y < rowSize; y++) {
-            for (int x = 0; x < colSize; x++) {
-                var slot = new SlotWidget(exportItems.storage, index++, x * 18, y * 18, true, false)
-                        .setBackground(GuiTextures.SLOT);
-                slots.addWidget(slot);
-            }
-        }
-        group.addWidget(slots);
-
-        // filter slot
-        this.filterSlot = new SlotWidget(this.filterInventory, 0, 117, 4, true, true);
-        this.filterSlot.setChangeListener(this::filterChange).setBackground(GuiTextures.SLOT, GuiTextures.FILTER_SLOT_OVERLAY);
-        group.addWidget(filterSlot);
-
-        // Radius
-        group.addWidget(new LabelWidget(99, 26, "gtocore.digital_miner.x_radial_length"));
-        group.addWidget(new SimpleNumberInputWidget(150, 24, 24, 12, this::getMinerRadius, this::setMinerRadius)
-                .setMin(1).setMax((int) (8 * Math.pow(2, getTier()))));
-
-        // Min height
-        group.addWidget(new LabelWidget(99, 44, "gtocore.digital_miner.min_height"));
-        group.addWidget(new SimpleNumberInputWidget(150, 42, 24, 12, this::getMinHeight, this::setMinHeight)
-                .setMin(getLevel().getMinBuildHeight()).setMax(getLevel().getMaxBuildHeight()));
-
-        // Max height
-        group.addWidget(new LabelWidget(99, 62, "gtocore.digital_miner.max_height"));
-        group.addWidget(new SimpleNumberInputWidget(150, 60, 24, 12, this::getMaxHeight, this::setMaxHeight)
-                .setMin(getLevel().getMinBuildHeight()).setMax(getLevel().getMaxBuildHeight()));
-
-        // reset button
-        this.resetButton = new ButtonWidget(16, 46 + BORDER_WIDTH, 18, 16 - BORDER_WIDTH,
-                new TextTexture("gtocore.digital_miner.reset").setDropShadow(false).setColor(ChatFormatting.GRAY.getColor()), this::reset);
-        this.resetButton.setHoverTooltips(Component.translatable("gtocore.digital_miner.reset.tooltip"));
-        group.addWidget(this.resetButton);
-
-        // silk button
-        this.silkButton = new ButtonWidget(36, 46 + BORDER_WIDTH, 18, 16 - BORDER_WIDTH,
-                new TextTexture("gtocore.digital_miner.silk")
-                        .setDropShadow(false)
-                        .setColor(silkLevel == 0 ? ChatFormatting.GRAY.getColor() : ChatFormatting.GREEN.getColor()),
-                this::setSilk);
-        this.silkButton.setHoverTooltips(Component.translatable("gtocore.digital_miner.silk.tooltip"));
-        group.addWidget(this.silkButton);
-
-        return group;
+    private int maxBuildHeight() {
+        var level = getLevel();
+        return level == null ? 320 : level.getMaxBuildHeight();
     }
 
     private void resetRecipe() {
@@ -288,39 +249,23 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
         resetRecipe();
     }
 
-    private void reset(ClickData clickData) {
-        resetRecipe();
-    }
-
-    private void setSilk(ClickData clickData) {
-        if (silkLevel == 0) {
-            silkLevel = 1;
-            this.silkButton.setButtonTexture(new TextTexture("gtocore.digital_miner.silk").setDropShadow(false).setColor(ChatFormatting.GREEN.getColor()));
-            energyPerTick = GTValues.VEX[getTier() - 1] * 4;
-        } else {
-            silkLevel = 0;
-            this.silkButton.setButtonTexture(new TextTexture("gtocore.digital_miner.silk").setDropShadow(false).setColor(ChatFormatting.GRAY.getColor()));
-            energyPerTick = GTValues.VEX[getTier() - 1];
-        }
+    private void setSilk(boolean silk) {
+        silkLevel = silk ? 1 : 0;
         resetRecipe();
     }
 
     private void addDisplayText(List<Component> textList) {
         textList.add(Component.translatable("gtocore.digital_miner.to_be_mined").append(String.valueOf(getRecipeLogic().getOreAmount())));
         if (getRecipeLogic().isDone())
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.done")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)));
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.done").withStyle(ChatFormatting.GREEN));
         else if (getRecipeLogic().isWorking())
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.working")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.working").withStyle(ChatFormatting.GOLD));
         else if (!this.isWorkingEnabled())
             textList.add(Component.translatable("gtceu.multiblock.work_paused"));
         if (getRecipeLogic().isInventoryFull())
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.invfull")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.invfull").withStyle(ChatFormatting.RED));
         if (!drainInput(true))
-            textList.add(Component.translatable("gtceu.multiblock.large_miner.needspower")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+            textList.add(Component.translatable("gtceu.multiblock.large_miner.needspower").withStyle(ChatFormatting.RED));
     }
 
     //////////////////////////////////////

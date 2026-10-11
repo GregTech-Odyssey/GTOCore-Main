@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * 开发环境电网演示：在不会加载的远处坐标登记虚拟能源塔与中继，用常驻端点制造真实流量。
- * 每个队伍一份登记；切换或停止时释放端点、移除虚拟设施，并把存量与速率还原到演示前。
+ * 每个队伍一份登记；切换或停止时释放端点、移除虚拟设施，并把存量还原到演示前。
  */
 public final class GridDemo {
 
@@ -47,14 +47,14 @@ public final class GridDemo {
     public record Result(int nodes, int lines, int ports) {}
 
     static final int DEMO_X = 29_000_000, DEMO_Y = -2000, DEMO_Z = 29_000_000;
-    private static final long DEMO_RATE = 1L << 40;
+    static final long DEMO_THROUGHPUT = 1L << 50;
     private static final Reference2ObjectOpenHashMap<EnergyAccount, Session> SESSIONS = new Reference2ObjectOpenHashMap<>();
 
     private static final class Session {
 
         final ObjectArrayList<EnergyPort> ports = new ObjectArrayList<>();
         final Reference2ObjectOpenHashMap<ResourceKey<Level>, long[]> storage = new Reference2ObjectOpenHashMap<>();
-        long pendingHi, pendingLo, rate;
+        long pendingHi, pendingLo;
     }
 
     private GridDemo() {}
@@ -71,7 +71,6 @@ public final class GridDemo {
             var session = snapshot(account);
             var builder = new GridDemoBuilder(grid, account, player);
             GridDemoScenarios.build(scenario, builder);
-            account.rate = DEMO_RATE;
             builder.apply(session.ports);
             SESSIONS.put(account, session);
             ports = session.ports.size();
@@ -101,7 +100,6 @@ public final class GridDemo {
         for (var node : account.nodeList) session.storage.put(node.dimension, node.snapshot());
         session.pendingHi = account.pendingHi;
         session.pendingLo = account.pendingLo;
-        session.rate = account.rate;
         return session;
     }
 
@@ -138,7 +136,6 @@ public final class GridDemo {
         }
         account.pendingHi = session.pendingHi;
         account.pendingLo = session.pendingLo;
-        account.rate = session.rate;
     }
 
     private static void dropOrphaned(EnergyAccount account) {

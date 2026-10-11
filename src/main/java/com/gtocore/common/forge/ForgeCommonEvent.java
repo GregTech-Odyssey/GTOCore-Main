@@ -109,8 +109,10 @@ import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import com.glodblock.github.extendedae.common.parts.PartExPatternProvider;
 import com.glodblock.github.extendedae.common.tileentities.TileExPatternProvider;
 import com.google.common.collect.ImmutableMap;
+import com.hepdd.gtmthings.data.CustomItems;
 import earth.terrarium.adastra.common.entities.mob.GlacianRam;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Map;
 import java.util.Objects;
@@ -586,6 +588,15 @@ public final class ForgeCommonEvent {
                     mapping.remap(GTMaterials.RocketFuel.getFluid());
                 }
             }
+        });
+        remapBindingTool(event);
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static void remapBindingTool(MissingMappingsEvent event) {
+        event.getMappings(Registries.ITEM, "gtmthings").forEach(mapping -> {
+            if (mapping.getKey().getPath().equals("wireless_energy_binding_tool")) mapping.remap(CustomItems.WIRELESS_ENERGY_TERMINAL.asItem());
         });
     }
 

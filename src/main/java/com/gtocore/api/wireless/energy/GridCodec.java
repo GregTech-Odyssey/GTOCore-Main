@@ -2,6 +2,8 @@ package com.gtocore.api.wireless.energy;
 
 import com.gtolib.GTOCore;
 
+import com.gregtechceu.gtceu.api.GTValues;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
@@ -15,14 +17,14 @@ import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.DiskByteBufCodecs;
 import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * 无线电网存档的负载：文件头的版本号由 {@link com.gtolib.utils.FileUtils#saveVersionedToFile} 写在文件最前面，
- * 这里只读写它之后的负载。这是重建后的第一版格式，没有需要读的旧布局，也没有负载自己的版本号。
+ * 这里只读写它之后的负载。
  *
  * <p>
  * 每个编解码器都是手写的 {@link StreamCodec}：{@code StreamCodec.composite}/{@code convert} 会把每个字段
@@ -85,6 +87,7 @@ final class GridCodec {
             stream.writeUUID(tower.owner());
             UNITS_CODEC.encode(stream, tower.units());
             stream.writeVarInt(tower.tier());
+            stream.writeVarLong(tower.throughput());
         }
 
         @Override
@@ -92,7 +95,30 @@ final class GridCodec {
             var pos = GLOBAL_POS.decode(stream);
             var owner = stream.readUUID();
             var units = UNITS_CODEC.decode(stream);
-            return new Provider.Tower(pos, owner, units, stream.readVarInt());
+            int tier = stream.readVarInt();
+            return new Provider.Tower(pos, owner, units, tier, stream.readVarLong());
+        }
+    };
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, Provider.Tower> TOWER_CODEC_V1 = new StreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf stream, Provider.Tower tower) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Provider.Tower decode(FriendlyByteBuf stream) {
+            var pos = GLOBAL_POS.decode(stream);
+            var owner = stream.readUUID();
+            var units = UNITS_CODEC.decode(stream);
+            int tier = ProviderRegistry.clampTier(stream.readVarInt());
+            long count = 0;
+            for (var unit : units) count += unit.count();
+            long throughput = tier < 0 ? 0 : U126.saturatedMul(GTValues.V[tier] << 2, count);
+            return new Provider.Tower(pos, owner, units, tier, throughput);
         }
     };
 
@@ -161,11 +187,9 @@ final class GridCodec {
         }
     };
 
-    /** 一个队伍的存档：队伍、速率、绑定、待入账余额、各维度节点、能源塔与中继。 */
-    private record AccountSave(UUID team, long rate, List<GlobalPos> bind, long pendingHi, long pendingLo, List<NodeSave> nodes,
-                               List<Provider.Tower> towers, List<RelaySave> relays) {}
+    /** 一个队伍的存档：队伍、待入账余额、各维度节点、能源塔与中继。 */
+    private record AccountSave(UUID team, long pendingHi, long pendingLo, List<NodeSave> nodes, List<Provider.Tower> towers, List<RelaySave> relays) {}
 
-    private static final StreamCodec<FriendlyByteBuf, List<GlobalPos>> BIND_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, GLOBAL_POS);
     private static final StreamCodec<FriendlyByteBuf, List<NodeSave>> NODES_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, NODE_CODEC);
     private static final StreamCodec<FriendlyByteBuf, List<Provider.Tower>> TOWERS_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, TOWER_CODEC);
     private static final StreamCodec<FriendlyByteBuf, List<RelaySave>> RELAYS_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, RELAY_CODEC);
@@ -175,8 +199,6 @@ final class GridCodec {
         @Override
         public void encode(FriendlyByteBuf stream, AccountSave save) {
             stream.writeUUID(save.team());
-            stream.writeLong(save.rate());
-            BIND_CODEC.encode(stream, save.bind());
             stream.writeLong(save.pendingHi());
             stream.writeLong(save.pendingLo());
             NODES_CODEC.encode(stream, save.nodes());
@@ -187,18 +209,55 @@ final class GridCodec {
         @Override
         public AccountSave decode(FriendlyByteBuf stream) {
             var team = stream.readUUID();
-            long rate = stream.readLong();
-            var bind = BIND_CODEC.decode(stream);
             long pendingHi = stream.readLong();
             long pendingLo = stream.readLong();
             var nodes = NODES_CODEC.decode(stream);
             var towers = TOWERS_CODEC.decode(stream);
             var relays = RELAYS_CODEC.decode(stream);
-            return new AccountSave(team, rate, bind, pendingHi, pendingLo, nodes, towers, relays);
+            return new AccountSave(team, pendingHi, pendingLo, nodes, towers, relays);
         }
     };
 
     private static final StreamCodec<FriendlyByteBuf, List<AccountSave>> ACCOUNTS_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, ACCOUNT_CODEC);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<GlobalPos>> BIND_CODEC_V1 = ByteBufCodecs.collection(ObjectArrayList::new, GLOBAL_POS);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<Provider.Tower>> TOWERS_CODEC_V1 = ByteBufCodecs.collection(ObjectArrayList::new, TOWER_CODEC_V1);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, AccountSave> ACCOUNT_CODEC_V1 = new StreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf stream, AccountSave save) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AccountSave decode(FriendlyByteBuf stream) {
+            var team = stream.readUUID();
+            stream.readLong();
+            BIND_CODEC_V1.decode(stream);
+            long pendingHi = stream.readLong();
+            long pendingLo = stream.readLong();
+            var nodes = NODES_CODEC.decode(stream);
+            var towers = TOWERS_CODEC_V1.decode(stream);
+            var relays = RELAYS_CODEC.decode(stream);
+            return new AccountSave(team, pendingHi, pendingLo, nodes, towers, relays);
+        }
+    };
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<AccountSave>> ACCOUNTS_CODEC_V1 = ByteBufCodecs.collection(ObjectArrayList::new, ACCOUNT_CODEC_V1);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final int VERSION_V1 = 1;
 
     private GridCodec() {}
 
@@ -223,13 +282,11 @@ final class GridCodec {
             }
             nodes.add(new NodeSave(node.dimension.location(), banks));
         }
-        boolean empty = nodes.isEmpty() && account.pendingHi == 0 && account.pendingLo == 0 && account.rate == 0 && account.bindPos == null &&
-                account.towers.isEmpty() && account.relays.isEmpty();
+        boolean empty = nodes.isEmpty() && account.pendingHi == 0 && account.pendingLo == 0 && account.towers.isEmpty() && account.relays.isEmpty();
         if (empty) return null;
         var relays = new ObjectArrayList<RelaySave>(account.relays.size());
         for (var relay : account.relays.values()) relays.add(new RelaySave(relay.pos(), relay.owner(), relay.tier(), relay.amperage(), relay.target().location()));
-        return new AccountSave(account.team, account.rate, account.bindPos == null ? Collections.emptyList() : Collections.singletonList(account.bindPos),
-                account.pendingHi, account.pendingLo, nodes, new ObjectArrayList<>(account.towers.values()), relays);
+        return new AccountSave(account.team, account.pendingHi, account.pendingLo, nodes, new ObjectArrayList<>(account.towers.values()), relays);
     }
 
     /**
@@ -238,12 +295,12 @@ final class GridCodec {
      */
     static WirelessGrid decodeVersioned(VersionedFriendlyByteBuf stream) {
         int fileVersion = stream.version();
-        if (fileVersion != WirelessGrid.VERSION) {
+        if (fileVersion != WirelessGrid.VERSION && fileVersion != VERSION_V1) {
             GTOCore.LOGGER.error("[无线电网] {} 的文件版本 {} 与当前支持的 {} 不符：本次运行电网不可用，不读取、不写回", WirelessGrid.DATA_NAME, fileVersion, WirelessGrid.VERSION);
             return new WirelessGrid(false);
         }
         var grid = new WirelessGrid(true);
-        for (var save : ACCOUNTS_CODEC.decode(stream)) fromSave(grid, save);
+        for (var save : (fileVersion == VERSION_V1 ? ACCOUNTS_CODEC_V1 : ACCOUNTS_CODEC).decode(stream)) fromSave(grid, save);
         return grid;
     }
 
@@ -264,12 +321,11 @@ final class GridCodec {
 
     private static void fromSave(WirelessGrid grid, AccountSave save) {
         var account = grid.account(save.team());
-        account.rate = Math.max(0, save.rate());
-        account.bindPos = save.bind().isEmpty() ? null : save.bind().get(0);
         account.pendingHi = Math.max(0, save.pendingHi());
         account.pendingLo = save.pendingLo() & U126.MASK;
         for (var node : save.nodes()) loadNode(account, node);
-        for (var tower : save.towers()) grid.attach(account, new Provider.Tower(tower.pos(), tower.owner(), tower.units(), ProviderRegistry.clampTier(tower.tier())));
+        for (var tower : save.towers()) grid.attach(account, new Provider.Tower(tower.pos(), tower.owner(), tower.units(), ProviderRegistry.clampTier(tower.tier()), Math.max(0, tower.throughput())));
+
         for (var relay : save.relays()) grid.attach(account, new Provider.Relay(relay.pos(), relay.owner(), ProviderRegistry.clampLineTier(relay.tier()), Provider.Relay.AMPERAGE, dimension(relay.target())));
         account.rebuild();
     }

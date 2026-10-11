@@ -84,11 +84,8 @@ public final class TeamMerge {
             grid.detach(provider.pos());
             grid.attach(to, provider);
         }
-        if (from.rate > to.rate) {
-            to.rate = from.rate;
-            to.bindPos = from.bindPos;
-        }
         from.removed = true;
+
         grid.accounts.remove(from.team, from);
         from.invalidatePorts();
         from.wakeAll();

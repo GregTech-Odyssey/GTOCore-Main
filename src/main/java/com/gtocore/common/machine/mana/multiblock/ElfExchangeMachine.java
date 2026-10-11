@@ -106,7 +106,7 @@ public class ElfExchangeMachine extends ManaMultiblockMachine implements ICustom
             });
             return builder.build();
         }
-        (currentLevel != null && currentLevel.dimension() == NETHER ? IdleReason.SET_CIRCUIT : IdleReason.NETHER_ONLY).setReason(this);
+        if (mode > 0) IdleReason.NETHER_ONLY.setReason(this);
         return null;
     }
 

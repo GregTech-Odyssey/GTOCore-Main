@@ -4,13 +4,14 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.generator.FullCellGenerator;
 
-import com.gtolib.api.annotation.NewDataAttributes;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.api.lang.CNENS;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.TooltipsHandler;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -64,7 +65,7 @@ public final class Tooltips {
             else if (fluid == BaryonicPerfectionWater.getFluid()) tier = 8;
 
             if (tier > 0) {
-                for (var c : NewDataAttributes.LEVEL.create(tier).get()) tooltips.accept(c);
+                tooltips.accept(Tips.stat(StatKind.TIER, tier));
             }
 
             var material = ChemicalHelper.getMaterial(fluid);
@@ -81,7 +82,7 @@ public final class Tooltips {
         });
 
         ImmutableMap.Builder<Item, List<Component>> toolTipsKey = ImmutableMap.builder();
-        toolTipsKey.put(GTBlocks.CASING_TEMPERED_GLASS.asItem(), NewDataAttributes.LEVEL.create(2).get());
+        toolTipsKey.put(GTBlocks.CASING_TEMPERED_GLASS.asItem(), List.of(Tips.stat(StatKind.TIER, 2)));
         TOOL_TIPS_KEY_MAP = toolTipsKey.build();
 
         ImmutableMap.Builder<Item, CNENS> toolTipsBuilder = ImmutableMap.builder();

@@ -37,7 +37,8 @@ final class GridDemoBuilder {
         var pos = GridDemo.position(key, slot++);
         var capacity = BigInteger.TWO.pow(capacityBits);
         int lossPermille = Math.max(5, (12 - tier) * 6);
-        grid.attach(account, new Provider.Tower(pos, player.getUUID(), Collections.singletonList(new Provider.Unit(Provider.Unit.FIXED, 1, capacity, lossPermille)), ProviderRegistry.clampTier(tier)));
+        grid.attach(account, new Provider.Tower(pos, player.getUUID(), Collections.singletonList(new Provider.Unit(Provider.Unit.FIXED, 1, capacity, lossPermille)), ProviderRegistry.clampTier(tier), GridDemo.DEMO_THROUGHPUT));
+
         fills.put(key, fill);
         return this;
     }

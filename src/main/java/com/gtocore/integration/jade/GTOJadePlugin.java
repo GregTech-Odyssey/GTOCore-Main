@@ -67,6 +67,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(new ManaContainerBlockProvider(), ManaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new AccelerateBlockProvider(), BlockEntity.class);
         registration.registerBlockDataProvider(new WirelessGridProvider(), MetaMachineBlockEntity.class);
+        registration.registerBlockDataProvider(new WirelessPortProvider(), MetaMachineBlockEntity.class);
 
         registration.registerBlockDataProvider(new AEGridProvider(), BlockEntity.class);
         registration.registerBlockDataProvider(new TickTimeProvider(), GTBlockEntity.class);
@@ -103,6 +104,7 @@ public final class GTOJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(new ManaContainerBlockProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new AccelerateBlockProvider(), Block.class);
         registration.registerBlockComponent(new WirelessGridProvider(), MetaMachineBlock.class);
+        registration.registerBlockComponent(new WirelessPortProvider(), MetaMachineBlock.class);
 
         registration.registerBlockComponent(new AEGridProvider(), Block.class);
         registration.registerBlockComponent(new TickTimeProvider(), AppearanceBlock.class);

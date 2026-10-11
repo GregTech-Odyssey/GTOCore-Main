@@ -2,8 +2,6 @@ package com.gtocore.client;
 
 import com.gtocore.api.research.techtree.ui.TechTreeStyle;
 import com.gtocore.client.forge.ForgeClientEvent;
-import com.gtocore.client.forge.GTOComponentHandler;
-import com.gtocore.client.forge.GTOComponentRegistry;
 import com.gtocore.client.hud.AdAstraHUD;
 import com.gtocore.client.hud.ResearchPointsHUD;
 import com.gtocore.client.hud.WirelessEnergyHUD;
@@ -94,9 +92,7 @@ public final class ClientProxy extends CommonProxy {
         eventBus.addListener(ClientProxy::registerItemColors);
         eventBus.addListener(ClientProxy::registerShaders);
         eventBus.addListener(ClientProxy::registerReloadListeners);
-        eventBus.register(GTOComponentRegistry.class);
         MinecraftForge.EVENT_BUS.register(ForgeClientEvent.class);
-        MinecraftForge.EVENT_BUS.register(GTOComponentHandler.class);
         MinecraftForge.EVENT_BUS.register(GTORender.class);
         MinecraftForge.EVENT_BUS.register(ClientForge.class);
         registerAEModels();
@@ -255,7 +251,7 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-        event.register(new StaticItemColor(AEColor.TRANSPARENT), GTOAEParts.INSTANCE.getEXCHANGE_STORAGE_MONITOR().get(), GTOAEParts.INSTANCE.getME_2IN1_TERMINAL().get(), GTOAEParts.INSTANCE.getPattern_Content_Access_Terminal().get());
+        event.register(new StaticItemColor(AEColor.TRANSPARENT), GTOAEParts.EXCHANGE_STORAGE_MONITOR.get(), GTOAEParts.ME_2IN1_TERMINAL.get(), GTOAEParts.Pattern_Content_Access_Terminal.get());
     }
 
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {

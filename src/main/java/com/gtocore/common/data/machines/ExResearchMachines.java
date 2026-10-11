@@ -33,6 +33,8 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredActiveMachineRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.common.data.*;
@@ -68,8 +70,8 @@ public final class ExResearchMachines {
 
     public static final MachineDefinition COMPUTATIONAL_DATA_HOLDER = machine("computational_data_holder", "计算数据支架", ComputationalDataHolderMachine::new)
             .tier(LuV)
-            .tooltips(GTOMachineTooltipsA.ComputationalDataHolder)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.ComputationalDataHolder)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .abilities(HPCA_COMPONENT)
             .allRotation()
             .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/advanced_computer_casing"), GTCEu.id("block/machine/part/object_holder"),
@@ -78,7 +80,7 @@ public final class ExResearchMachines {
             .register();
 
     public static final MultiblockMachineDefinition SUPERCOMPUTING_CENTER = multiblock("supercomputing_center", "运算中心", SupercomputingCenterMachine::new)
-            .tooltips(GTOMachineTooltips.SupercomputingTooltips)
+            .tips(GTOMachineTooltips.SupercomputingTooltips)
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
             .block(GTOBlocks.OXIDATION_RESISTANT_HASTELLOY_N_MECHANICAL_CASING)
@@ -154,29 +156,29 @@ public final class ExResearchMachines {
     public static final MachineDefinition NICH_COMPUTING_COMPONENTS = registerHPCAPart(
             "nich_computing_components", "NICH计算组件",
             holder -> new ExResearchComputationPartMachine(holder, 3), true, true, 3)
-            .tooltips(
-                    Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", GTValues.VA[ZPM]),
-                    Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV]),
-                    Component.translatable("gtceu.machine.hpca.component_type.computation_cwut", 64),
-                    Component.translatable("gtceu.machine.hpca.component_type.computation_cooling", 16))
+            .tips(
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", GTValues.VA[ZPM])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cwut", 64)),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cooling", 16)))
             .tooltipBuilder(OVERHEAT_TOOLTIPS)
             .register();
 
     public static final MachineDefinition NICH_COOLING_COMPONENTS = registerHPCAPart(
             "nich_cooling_components", "NICH冷却组件",
             holder -> new ExResearchCoolerPartMachine(holder, 3), true, false, 3)
-            .tooltips(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UV]),
-                    Component.translatable("gtceu.machine.hpca.component_type.cooler_active"),
-                    Component.translatable("gtceu.machine.hpca.component_type.cooler_active_coolant",
-                            80, GTMaterials.Helium.getLocalizedName()),
-                    Component.translatable("gtceu.machine.hpca.component_type.cooler_cooling", 8))
+            .tips(Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active")),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active_coolant",
+                            80, GTMaterials.Helium.getLocalizedName())),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_cooling", 8)))
             .register();
 
     public static final MachineDefinition NICH_BRIDGE_COMPONENT = registerHPCAPart(
             "nich_bridge_component", "NICH桥接组件",
             holder -> new ExResearchBridgePartMachine(holder, 3), true, false, 3)
-            .tooltips(Component.translatable("gtceu.machine.hpca.component_type.bridge"),
-                    Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV]))
+            .tips(Tips.supported(Component.translatable("gtceu.machine.hpca.component_type.bridge")),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV])))
             .register();
 
     public static final MachineDefinition GWCA_EMPTY_COMPONENT = registerHPCAPart(
@@ -187,22 +189,22 @@ public final class ExResearchMachines {
     public static final MachineDefinition GWCA_COMPUTING_COMPONENTS = registerHPCAPart(
             "gwca_computing_components", "GWCA计算组件",
             holder -> new ExResearchComputationPartMachine(holder, 4), true, true, 4)
-            .tooltips(
-                    Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", GTValues.VA[GTValues.UV]),
-                    Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UEV]),
-                    Component.translatable("gtceu.machine.hpca.component_type.computation_cwut", 1024),
-                    Component.translatable("gtceu.machine.hpca.component_type.computation_cooling", 256))
+            .tips(
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", GTValues.VA[GTValues.UV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UEV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cwut", 1024)),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cooling", 256)))
             .tooltipBuilder(OVERHEAT_TOOLTIPS)
             .register();
 
     public static final MachineDefinition GWCA_COOLING_COMPONENTS = registerHPCAPart(
             "gwca_cooling_components", "GWCA冷却组件",
             holder -> new ExResearchCoolerPartMachine(holder, 4), true, false, 4)
-            .tooltips(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV]),
-                    Component.translatable("gtceu.machine.hpca.component_type.cooler_active"),
-                    Component.translatable("gtceu.machine.hpca.component_type.cooler_active_coolant",
-                            320, GTMaterials.Helium.getLocalizedName()),
-                    Component.translatable("gtceu.machine.hpca.component_type.cooler_cooling", 64))
+            .tips(Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active")),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active_coolant",
+                            320, GTMaterials.Helium.getLocalizedName())),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_cooling", 64)))
             .register();
 
     private static GTOMachineBuilder registerHPCAPart(String name, String cn,
@@ -231,9 +233,9 @@ public final class ExResearchMachines {
             .tier(UHV)
             .allRotation()
             .abilities(DATA_ACCESS)
-            .tooltips(Component.translatable("gtceu.machine.data_access_hatch.tooltip.0"),
-                    Component.translatable("gtceu.machine.data_access_hatch.tooltip.1", 25))
-            .tooltipsText("Can hold §2Atomic Archive§r and lower tier data storage media.", "可以放入§2原子档案§r及以下等级的数据存储介质。")
+            .tips(Tips.feature(Component.translatable("gtceu.machine.data_access_hatch.tooltip.0")),
+                    Tips.feature(Component.translatable("gtceu.machine.data_access_hatch.tooltip.1", 25)))
+            .tip(TipRole.SUPPORTED, "可以放入§2原子档案§r及以下等级的数据存储介质。", "Can hold §2Atomic Archive§r and lower tier data storage media.")
             .notAllowSharedTooltips()
 
             .renderer(() -> new OverlayTieredMachineRenderer(UHV, GTCEu.id("block/machine/part/data_access_hatch")))
@@ -243,9 +245,9 @@ public final class ExResearchMachines {
             .tier(UIV)
             .allRotation()
             .abilities(DATA_ACCESS)
-            .tooltips(Component.translatable("gtceu.machine.data_access_hatch.tooltip.0"),
-                    Component.translatable("gtceu.machine.data_access_hatch.tooltip.1", 36))
-            .tooltipsText("Can hold §6Obsidian Matrix§r and lower tier data storage media.", "可以放入§6黑曜石矩阵§r及以下等级的数据存储介质。")
+            .tips(Tips.feature(Component.translatable("gtceu.machine.data_access_hatch.tooltip.0")),
+                    Tips.feature(Component.translatable("gtceu.machine.data_access_hatch.tooltip.1", 36)))
+            .tip(TipRole.SUPPORTED, "可以放入§6黑曜石矩阵§r及以下等级的数据存储介质。", "Can hold §6Obsidian Matrix§r and lower tier data storage media.")
             .notAllowSharedTooltips()
 
             .renderer(() -> new OverlayTieredMachineRenderer(UIV, GTCEu.id("block/machine/part/data_access_hatch")))
@@ -255,9 +257,9 @@ public final class ExResearchMachines {
             .tier(OpV)
             .allRotation()
             .abilities(DATA_ACCESS)
-            .tooltips(Component.translatable("gtceu.machine.data_access_hatch.tooltip.0"),
-                    Component.translatable("gtceu.machine.data_access_hatch.tooltip.1", 49))
-            .tooltipsText("Can hold §dMiniature Universe§r and lower tier data storage media.", "可以放入§d微缩宇宙§r及以下等级的数据存储介质。")
+            .tips(Tips.feature(Component.translatable("gtceu.machine.data_access_hatch.tooltip.0")),
+                    Tips.feature(Component.translatable("gtceu.machine.data_access_hatch.tooltip.1", 49)))
+            .tip(TipRole.SUPPORTED, "可以放入§d微缩宇宙§r及以下等级的数据存储介质。", "Can hold §dMiniature Universe§r and lower tier data storage media.")
             .notAllowSharedTooltips()
 
             .renderer(() -> new OverlayTieredMachineRenderer(OpV, GTCEu.id("block/machine/part/data_access_hatch")))
@@ -273,13 +275,13 @@ public final class ExResearchMachines {
     public static final MachineDefinition INTELLIGENT_SCANNING_ME_PROXY = machine("intelligent_scanning_me_proxy", "智能扫描ME代理接口", IntelligentScanningProxyPartMachine::new)
             .tier(UV)
             .allRotation()
-            .tooltips(GTOMachineTooltipsA.IntelligentScanningProxyTooltips)
+            .tips(GTOMachineTooltipsA.IntelligentScanningProxyTooltips)
             .notAllowSharedTooltips()
             .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/neutronium_stable_casing"), GTCEu.id("block/machine/part/me_pattern_buffer_proxy"), GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 
     public static final MultiblockMachineDefinition DATA_CENTER = multiblock("data_center", "数据中心", DataCenter::new)
-            .tooltipsSupplier(GTOMachineTooltipsA.DataCenterTooltips)
+            .tips(GTOMachineTooltipsA.DataCenterTooltips)
             .nonYAxisRotation()
             .recipeType(GTRecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
@@ -335,8 +337,8 @@ public final class ExResearchMachines {
 
     public static final MachineDefinition CATALYSIS_DATA_HOLDER = machine("catalysis_data_holder", "催化反应数据支架", SimpleResearchTagPartMachine.create(ResearchTag.CATALYSIS, 1024))
             .tier(LuV)
-            .tooltips(GTOMachineTooltipsA.CatalystDataHolder)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.CatalystDataHolder)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -344,8 +346,8 @@ public final class ExResearchMachines {
             .register();
     public static final MachineDefinition THERMODYNAMIC_DATA_HOLDER = machine("thermodynamic_data_holder", "热力学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.THERMODYNAMICS, 1024))
             .tier(LuV)
-            .tooltips(GTOMachineTooltipsA.ThermaldynamicsDataHolder)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.ThermaldynamicsDataHolder)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/stable_base_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -354,8 +356,8 @@ public final class ExResearchMachines {
 
     public static final MachineDefinition ENERGY_DATA_HOLDER = machine("energy_data_holder", "能量数据支架", SimpleResearchTagPartMachine.create(ResearchTag.ENERGY, 1024))
             .tier(LuV)
-            .tooltips(GTOMachineTooltipsA.EnergyDataHolder)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.EnergyDataHolder)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .abilities(OUTPUT_ENERGY, OUTPUT_LASER)
             .allRotation()
             .renderer(() -> new OverlayTieredActiveMachineRenderer(LuV, GTCEu.id("block/machine/part/object_holder"),
@@ -364,7 +366,7 @@ public final class ExResearchMachines {
             .register();
     public static final MachineDefinition INTERSTELLAR_ENGINEERING_DATA_HOLDER = machine("interstellar_engineering_data_holder", "星际工程数据支架", SimpleResearchTagPartMachine.create(ResearchTag.INTERSTELLAR_ENGINEERING, 256))
             .tier(UV)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/space_elevator_mechanical_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -372,7 +374,7 @@ public final class ExResearchMachines {
             .register();
     public static final MachineDefinition STORAGE_DATA_HOLDER = machine("storage_data_holder", "存储数据支架", SimpleResearchTagPartMachine.create(ResearchTag.DATA_STORAGE, 256))
             .tier(LuV)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/computer_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -380,7 +382,7 @@ public final class ExResearchMachines {
             .register();
     public static final MachineDefinition BIOLOGY_DATA_HOLDER = machine("biology_data_holder", "生物学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.BIOLOGY, 256))
             .tier(LuV)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayActiveMachineRenderer(GTOCore.id("block/biological_mechanical_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -388,7 +390,7 @@ public final class ExResearchMachines {
             .register();
     public static final MachineDefinition OPTICAL_DATA_HOLDER = machine("optical_data_holder", "光学数据支架", SimpleResearchTagPartMachine.create(ResearchTag.OPTICS, 256))
             .tier(UHV)
-            .tooltips(GTOMachineTooltipsA.DataHolderUniversal)
+            .tips(GTOMachineTooltipsA.DataHolderUniversal)
             .allRotation()
             .renderer(() -> new OverlayActiveMachineRenderer(GTCEu.id("block/laser_safe_engraving_casing"), GTCEu.id("block/machine/part/object_holder"),
                     GTCEu.id("block/machine/part/object_holder_active")))
@@ -421,7 +423,7 @@ public final class ExResearchMachines {
 
     public static final MultiblockMachineDefinition PRIMORDIAL_SCANNING_STATION = multiblock("dataunit_scanning_station", "基元扫描站", ScanningStationMachine::new)
             .nonYAxisRotation()
-            .tooltipsSupplier(GTOMachineTooltipsA.ScanStationMachineTooltips)
+            .tips(GTOMachineTooltipsA.ScanStationMachineTooltips)
             .recipeTypes(CRYSTAL_SCAN_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
             .structure(definition -> Structure
@@ -484,7 +486,7 @@ public final class ExResearchMachines {
             .nonYAxisRotation()
             .recipeTypes(DATA_TESTING_RECIPES)
             .block(GTBlocks.HIGH_POWER_CASING)
-            .tooltipsSupplier(GTOMachineTooltipsA.DataFormTestingPlantMachineTooltips)
+            .tips(GTOMachineTooltipsA.DataFormTestingPlantMachineTooltips)
             .structure(definition -> Structure
                     .root(Piece.start(LEFT, UP, FRONT)
                             .aisle("           ", "    EEE    ", "    EGE    ", "    EEE    ", "           ")
@@ -522,7 +524,7 @@ public final class ExResearchMachines {
             .nonYAxisRotation()
             .recipeTypes(DUMMY_RECIPES)
             .block(GTOBlocks.STABLE_BASE_CASING)
-            .tooltipsSupplier(GTOMachineTooltipsA.ThermodynamicAnalysisPlatformMachineTooltips)
+            .tips(GTOMachineTooltipsA.ThermodynamicAnalysisPlatformMachineTooltips)
             .nonYAxisRotation()
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("thermodynamic_analysis_platform").build())
@@ -557,7 +559,7 @@ public final class ExResearchMachines {
     public static final MultiblockMachineDefinition LASER_COMPUTATION_TESTING_PLATFORM = multiblock("laser_computation_testing_platform", "激光计算测试平台", LaserComputationTestingPlatformMachine::new)
             .nonYAxisRotation()
             .recipeTypes(BEAM_GUIDED_COMPUTATION_TESTING_RECIPES)
-            .tooltipsSupplier(GTOMachineTooltipsA.LaserComputationTestingPlatformMachineTooltips)
+            .tips(GTOMachineTooltipsA.LaserComputationTestingPlatformMachineTooltips)
             .nonYAxisRotation()
             .block(GCYMBlocks.CASING_LASER_SAFE_ENGRAVING)
             .structure(definition -> Structure
@@ -589,7 +591,7 @@ public final class ExResearchMachines {
     public static final MultiblockMachineDefinition INTELLIGENT_SCANNING_MANAGEMENT_PLATFORM = multiblock("intelligent_scanning_management_platform", "智能扫描管理平台", IntelligentScanningManagementPlatformMachine::new)
             .nonYAxisRotation()
             .recipeTypes(SCANNER_RECIPES)
-            .tooltipsSupplier(GTOMachineTooltipsA.IntelligentScanningManagementPlatformMachineTooltips)
+            .tips(GTOMachineTooltipsA.IntelligentScanningManagementPlatformMachineTooltips)
             .nonYAxisRotation()
             .recipeModifier(RecipeModifier.overclocking(0.75, 1, 1))
             .block(GTOBlocks.NEUTRONIUM_STABLE_CASING)

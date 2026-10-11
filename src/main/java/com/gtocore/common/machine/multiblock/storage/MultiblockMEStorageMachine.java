@@ -91,12 +91,32 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     private static final String BACK_NAME = "gtocore.multiblock.vault.back";
     @RegisterLanguage(cn = "控制器向后连续的钢机壳/保险库仓/密封机械方块数 + 1", en = "Consecutive steel hulls / vault hatches / hermetic casings behind the controller, plus 1")
     private static final String BACK_DESC = "gtocore.multiblock.vault.back.desc";
+    @RegisterLanguage(cn = "宽度", en = "Width")
+    private static final String WIDTH_NAME = "gtocore.multiblock.vault.width";
+    @RegisterLanguage(cn = "左右方向的格数", en = "Blocks from side to side")
+    private static final String WIDTH_DESC = "gtocore.multiblock.vault.width.desc";
+    @RegisterLanguage(cn = "控制器所在列", en = "Controller Column")
+    private static final String COLUMN_NAME = "gtocore.multiblock.vault.column";
+    @RegisterLanguage(cn = "正面从左往右数，控制器在第几列", en = "Which column of the front face holds the controller, counted from the left")
+    private static final String COLUMN_DESC = "gtocore.multiblock.vault.column.desc";
+    @RegisterLanguage(cn = "高度", en = "Height")
+    private static final String HEIGHT_NAME = "gtocore.multiblock.vault.height";
+    @RegisterLanguage(cn = "上下方向的格数", en = "Blocks from bottom to top")
+    private static final String HEIGHT_DESC = "gtocore.multiblock.vault.height.desc";
+    @RegisterLanguage(cn = "控制器所在层", en = "Controller Row")
+    private static final String ROW_NAME = "gtocore.multiblock.vault.row";
+    @RegisterLanguage(cn = "正面从下往上数，控制器在第几层", en = "Which row of the front face holds the controller, counted from the bottom")
+    private static final String ROW_DESC = "gtocore.multiblock.vault.row.desc";
 
     public static final ParamKey LEFT_EDGE = ParamKey.of(LEFT_NAME, LEFT_DESC);
     public static final ParamKey RIGHT_EDGE = ParamKey.of(RIGHT_NAME, RIGHT_DESC);
     public static final ParamKey UP_EDGE = ParamKey.of(UP_NAME, UP_DESC);
     public static final ParamKey DOWN_EDGE = ParamKey.of(DOWN_NAME, DOWN_DESC);
     public static final ParamKey BACK_EDGE = ParamKey.of(BACK_NAME, BACK_DESC);
+    public static final ParamKey WIDTH = ParamKey.of(WIDTH_NAME, WIDTH_DESC);
+    public static final ParamKey COLUMN = ParamKey.of(COLUMN_NAME, COLUMN_DESC);
+    public static final ParamKey HEIGHT = ParamKey.of(HEIGHT_NAME, HEIGHT_DESC);
+    public static final ParamKey ROW = ParamKey.of(ROW_NAME, ROW_DESC);
 
     private int lDist = 0, rDist = 0, uDist = 0, dDist = 0, bDist = 0;
 
@@ -183,6 +203,9 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
                 .measure(m -> m.param(UP_EDGE).toward(UP).until(wallEnd).range(2, MAX_DEPTH + 1))
                 .measure(m -> m.param(DOWN_EDGE).toward(DOWN).until(wallEnd).range(2, MAX_DEPTH + 1))
                 .measure(m -> m.param(BACK_EDGE).toward(BACK).until(edge(true)).range(MIN_DEPTH + 1, MAX_DEPTH + 1))
+                .span(WIDTH, COLUMN, LEFT_EDGE, RIGHT_EDGE, -1, 3, MAX_DEPTH + 1)
+                .span(HEIGHT, ROW, DOWN_EDGE, UP_EDGE, -1, 3, MAX_DEPTH + 1)
+
                 .limit(hatch, size -> cells(dimensions(size::get)))
                 .build();
     }

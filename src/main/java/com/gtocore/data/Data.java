@@ -69,7 +69,7 @@ public final class Data {
     private static Throwable throwable;
 
     public static void init() {
-        BaseNodes.INSTANCE.init();
+        BaseNodes.init();
         if (GTCEu.isClientSide()) {
             GTOUtils.asyncExecute(Data::clientInit);
         } else {

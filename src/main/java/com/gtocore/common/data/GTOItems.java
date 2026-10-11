@@ -1,8 +1,12 @@
 package com.gtocore.common.data;
 
+import com.gtocore.common.data.translation.GTOTarotArcanumTooltips;
+import com.gtocore.common.data.translation.GTOMachineStories;
+import com.gtocore.common.data.translation.MultiblockSlang;
+import com.gtocore.common.data.translation.ComponentSlang;
 import com.gtocore.api.data.Algae;
+import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.OffsetGradientColor;
-import com.gtocore.api.misc.AutoInitializeImpl;
 import com.gtocore.client.renderer.item.HaloItemRenderer;
 import com.gtocore.client.renderer.item.MaterialsColorMap;
 import com.gtocore.client.renderer.item.OrderItemProviderRenderer;
@@ -22,7 +26,6 @@ import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
-import com.gtolib.api.annotation.component_builder.ComponentBuilder;
 import com.gtolib.utils.StringUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -34,6 +37,7 @@ import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.ArmorLogicSuite;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.GTCovers;
 import com.gregtechceu.gtceu.common.data.GTFluids;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -79,8 +83,12 @@ public final class GTOItems {
 
     public static void init() {
         GTOOrganItems.init();
-        GTOAEParts.INSTANCE.init();
-        AutoInitializeImpl.INSTANCE.originInit();
+        GTOAEParts.init();
+        ComponentSlang.init();
+        MultiblockSlang.init();
+        GTOMachineStories.init();
+        GTOItemTooltips.init();
+        GTOTarotArcanumTooltips.init();
         GTMaterials.Oxygen.getProperty(PropertyKey.FLUID).getStorage().store(FluidStorageKeys.GAS, ModFluids.OXYGEN, null);
         GTMaterials.Hydrogen.getProperty(PropertyKey.FLUID).getStorage().store(FluidStorageKeys.GAS, ModFluids.HYDROGEN, null);
         GTFluids.handleNonMaterialFluids(GTMaterials.Oil, ModFluids.OIL);
@@ -107,7 +115,7 @@ public final class GTOItems {
                     .model(NonNullBiConsumer.noop())
                     .register();
             item("techtree_debugger", "科技树调试器", ComponentItem::create)
-                    .toolTips(ComponentBuilder.create().addLines("§7在写了~~§r", "§7On working~~§r").build().getArray())
+                    .tips(Tips.note(GTOTips.global("§7在写了~~§r", "§7On working~~§r")))
                     .onRegister(attach(new TechTreeViewer()))
                     .model((a, b) -> b.generated(a, GTOCore.id("item/stopgap_measures")))
                     .register();
@@ -128,14 +136,14 @@ public final class GTOItems {
     public static final ItemEntry<StorageComponentItem> CELL_COMPONENT_256M = registerStorageComponentItem(256);
 
     public static final ItemEntry<ComponentItem> ORDER = item("order", "%s 订单", ComponentItem::create)
-            .toolTips(GTOItemTooltips.OrderTooltips.getArray())
+            .tips(GTOItemTooltips.OrderTooltips)
             .lang("%s Order")
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(OrderItem.INSTANCE))
             .onRegister(attachRenderer(() -> OrderItemProviderRenderer.INSTANCE))
             .register();
     public static final ItemEntry<ComponentItem> TEMP_ORDER = item("temporary_order", "%s 临时订单", ComponentItem::create)
-            .toolTips(GTOItemTooltips.OrderTooltips.getArray())
+            .tips(GTOItemTooltips.OrderTooltips)
             .lang("%s Temporary Order")
             .onRegister(attach(OrderItem.INSTANCE))
             .onRegister(attachRenderer(() -> OrderItemProviderRenderer.INSTANCE))
@@ -348,7 +356,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> HEAT_INTERFACE = item("heat_interface", "导热接口", ComponentItem::create)
-            .toolTips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, "400x(Tier+2)"), Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, "Tier+1"), Component.translatable(HeatInterfaceCover.TRANSFER_RATE, "Tier+1"), Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, "400x(Tier+2)")), Tips.stat(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, "Tier+1")), Tips.stat(Component.translatable(HeatInterfaceCover.TRANSFER_RATE, "Tier+1")), Tips.stat(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01)))
             .onRegister(attach(new CoverPlaceBehavior(GTOCovers.HEAT_INTERFACE)))
             .register();
 
@@ -364,10 +372,8 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> WIRELESS_CHARGER_COVER = item("wireless_charger_cover", "无线充能覆盖板", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("贴在存储方块上可使内部的物品自动充能", "Attach to a storage block to automatically charge its contents")
-                    .addLines("需要链接HV及以上等级的无线充能器使用", "Requires linking with a HV or higher wireless charger to use")
-                    .build().getArray())
+            .tips(Tips.feature(GTOTips.global("贴在存储方块上可使内部的物品自动充能", "Attach to a storage block to automatically charge its contents")),
+                    Tips.requirement(GTOTips.global("需要链接HV及以上等级的无线充能器使用", "Requires linking with a HV or higher wireless charger to use")))
             .onRegister(attach(new CoverPlaceBehavior(GTOCovers.WIRELESS_CHARGER_COVER)))
             .register();
 
@@ -376,7 +382,7 @@ public final class GTOItems {
     public static final ItemEntry<ComponentItem> WIRELESS_ENERGY_RECEIVE_COVER_MAX_4A = registerTieredCover(4);
 
     public static final ItemEntry<ComponentItem> TIME_TWISTER = item("time_twister", "时间扭曲者", ComponentItem::create)
-            .toolTips(GTOItemTooltips.TimeTwisterTooltips.getArray())
+            .tips(GTOItemTooltips.TimeTwisterTooltips)
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(TimeTwisterBehavior.INSTANCE))
             .register();
@@ -388,7 +394,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> PATTERN_MODIFIER_PRO = item("pattern_modifier_pro", "样板修改器pro", ComponentItem::create)
-            .toolTips(GTOItemTooltips.PatternModifierTooltips.getArray())
+            .tips(GTOItemTooltips.PatternModifierTooltips)
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(PatternModifierProBehavior.INSTANCE))
             .model(NonNullBiConsumer.noop())
@@ -1142,10 +1148,10 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<UpgradeModuleItem> SPEED_UPGRADE_MODULE = item("speed_upgrade_module", "速度升级模块", UpgradeModuleItem::new)
-            .toolTips(GTOItemTooltips.SpeedUpgradeModuleTooltips.getArray())
+            .tips(GTOItemTooltips.SpeedUpgradeModuleTooltips)
             .register();
     public static final ItemEntry<UpgradeModuleItem> ENERGY_UPGRADE_MODULE = item("energy_upgrade_module", "能量升级模块", UpgradeModuleItem::new)
-            .toolTips(GTOItemTooltips.EnergyUpgradeModuleTooltips.getArray())
+            .tips(GTOItemTooltips.EnergyUpgradeModuleTooltips)
             .register();
 
     public static final ItemEntry<Item> DISPOSABLE_FILE = item("disposable_file", "一次性锉刀")
@@ -1292,9 +1298,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> WREATH = item("wreath", "花环", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7昔为安魂之冠，今作疗身之药。§r", "§7Once a crown for the weary soul, now a cure for the ailing whole.§r")
-                    .build().getArray())
+            .tips(Tips.lore(GTOTips.global("§7昔为安魂之冠，今作疗身之药。§r", "§7Once a crown for the weary soul, now a cure for the ailing whole.§r")))
             .properties(p -> p.food(new FoodProperties.Builder()
                     .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100, 1), 0.9F)
                     .effect(() -> new MobEffectInstance(MobEffects.LUCK, 100, 1), 0.2F)
@@ -1320,7 +1324,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> PALM_SIZED_BANK = item("palm_sized_bank", "泛银河系格雷科技掌上银行", ComponentItem::create)
-            .toolTips(GTOItemTooltips.PalmSizedBankTooltips.getArray())
+            .tips(GTOItemTooltips.PalmSizedBankTooltips)
             .properties(p -> p.stacksTo(1))
             .lang("Pan-Galactic Greg Technology Palm-Sized Bank")
             .onRegister(attach(PalmSizedBankBehavior.INSTANCE))
@@ -1329,49 +1333,29 @@ public final class GTOItems {
     public static final ItemEntry<GregMembershipCardItem> GREG_MEMBERSHIP_CARD = item("greg_membership_card", "格雷会员卡", GregMembershipCardItem::new).register();
 
     public static final ItemEntry<ComponentItem> PATTERN_BUFFER_UPGRADER0 = item("pattern_buffer_upgrader", "样板总成升级器", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7Shift + 右键点击以将低级样板总成升级为当前物品对应等级的样板总成。§r",
-                            "§7Shift + Right-Click to convert a lower-tier Pattern Buffer into the tier corresponding to this item.§r")
-                    .build().getArray())
+            .tips(Tips.rightClick(GTOTips.global("§7Shift + 右键点击以将低级样板总成升级为当前物品对应等级的样板总成。§r", "§7Shift + Right-Click to convert a lower-tier Pattern Buffer into the tier corresponding to this item.§r")))
             .onRegister(attach(PatternBufferUpgraderBehavior.PatternBuffer))
             .register();
     public static final ItemEntry<ComponentItem> PATTERN_BUFFER_UPGRADER1 = item("ex_pattern_buffer_upgrader", "扩展样板总成升级器", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7Shift + 右键点击以将低级样板总成升级为当前物品对应等级的样板总成。§r",
-                            "§7Shift + Right-Click to convert a lower-tier Pattern Buffer into the tier corresponding to this item.§r")
-                    .build().getArray())
+            .tips(Tips.rightClick(GTOTips.global("§7Shift + 右键点击以将低级样板总成升级为当前物品对应等级的样板总成。§r", "§7Shift + Right-Click to convert a lower-tier Pattern Buffer into the tier corresponding to this item.§r")))
             .onRegister(attach(PatternBufferUpgraderBehavior.ExPatternBuffer))
             .register();
     public static final ItemEntry<ComponentItem> PATTERN_BUFFER_UPGRADER2 = item("ex_pattern_buffer_ultra_upgrader", "扩展样板总成ultra升级器", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7Shift + 右键点击以将低级样板总成升级为当前物品对应等级的样板总成。§r",
-                            "§7Shift + Right-Click to convert a lower-tier Pattern Buffer into the tier corresponding to this item.§r")
-                    .build().getArray())
+            .tips(Tips.rightClick(GTOTips.global("§7Shift + 右键点击以将低级样板总成升级为当前物品对应等级的样板总成。§r", "§7Shift + Right-Click to convert a lower-tier Pattern Buffer into the tier corresponding to this item.§r")))
             .onRegister(attach(PatternBufferUpgraderBehavior.UltraPatternBuffer))
             .register();
     public static final ItemEntry<ComponentItem> STORAGE_ACCESSOR_REPLACER0 = item("me_storage_access_hatch_replacer", "ME存储访问仓替换器", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7Shift + 右键点击将存储访问仓替换为当前物品对应等级的存储访问仓。§r",
-                            "§7Shift + Right-Click to convert a Storage Access Hatch into the tier corresponding to this item.§r")
-                    .addLines("§7当从大整数存储访问仓升级到该存储访问仓时，若原有存储储量超过9.2E18，则超过部分将§c§l永久丢失§r§7！§r",
-                            "§7When upgrading from a BigInt Storage Access Hatch to this Storage Access Hatch, if the original storage exceeds 9.2E18, the excess will be §c§lpermanently lost§r§7!§r")
-                    .build().getArray())
+            .tips(Tips.rightClick(GTOTips.global("§7Shift + 右键点击将存储访问仓替换为当前物品对应等级的存储访问仓。§r", "§7Shift + Right-Click to convert a Storage Access Hatch into the tier corresponding to this item.§r")),
+                    Tips.warning(GTOTips.global("§7当从大整数存储访问仓升级到该存储访问仓时，若原有存储储量超过9.2E18，则超过部分将§c§l永久丢失§r§7！§r", "§7When upgrading from a BigInt Storage Access Hatch to this Storage Access Hatch, if the original storage exceeds 9.2E18, the excess will be §c§lpermanently lost§r§7!§r")))
             .onRegister(attach(MEStorageHatchReplacer.Long))
             .register();
     public static final ItemEntry<ComponentItem> STORAGE_ACCESSOR_REPLACER1 = item("me_bigint_storage_access_hatch_replacer", "ME大整数存储访问仓替换器", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7Shift + 右键点击将存储访问仓替换为当前物品对应等级的存储访问仓。§r",
-                            "§7Shift + Right-Click to convert a Storage Access Hatch into the tier corresponding to this item.§r")
-                    .build().getArray())
+            .tips(Tips.rightClick(GTOTips.global("§7Shift + 右键点击将存储访问仓替换为当前物品对应等级的存储访问仓。§r", "§7Shift + Right-Click to convert a Storage Access Hatch into the tier corresponding to this item.§r")))
             .onRegister(attach(MEStorageHatchReplacer.BigInt))
             .register();
     public static final ItemEntry<ComponentItem> STORAGE_ACCESSOR_REPLACER2 = item("me_io_port_storage_access_hatch_replacer", "ME IO端口存储访问仓替换器", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7Shift + 右键点击将存储访问仓替换为当前物品对应等级的存储访问仓。§r",
-                            "§7Shift + Right-Click to convert a Storage Access Hatch into the tier corresponding to this item.§r")
-                    .addLines("§7当从大整数存储访问仓升级到该存储访问仓时，若原有存储储量超过9.2E18，则超过部分将§c§l永久丢失§r§7！§r",
-                            "§7When upgrading from a BigInt Storage Access Hatch to this Storage Access Hatch, if the original storage exceeds 9.2E18, the excess will be §c§lpermanently lost§r§7!§r")
-                    .build().getArray())
+            .tips(Tips.rightClick(GTOTips.global("§7Shift + 右键点击将存储访问仓替换为当前物品对应等级的存储访问仓。§r", "§7Shift + Right-Click to convert a Storage Access Hatch into the tier corresponding to this item.§r")),
+                    Tips.warning(GTOTips.global("§7当从大整数存储访问仓升级到该存储访问仓时，若原有存储储量超过9.2E18，则超过部分将§c§l永久丢失§r§7！§r", "§7When upgrading from a BigInt Storage Access Hatch to this Storage Access Hatch, if the original storage exceeds 9.2E18, the excess will be §c§lpermanently lost§r§7!§r")))
             .onRegister(attach(MEStorageHatchReplacer.LongIO))
             .register();
 
@@ -1398,33 +1382,22 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> TESSERACT_TARGET_MARKER = item("tesseract_target_marker", "坐标标签枪", ComponentItem::create)
-            .toolTips(ComponentBuilder.create()
-                    .addLines("§7可以按顺序标记超立方体传输目标位置。§r",
-                            "§7Used to mark the target location for Tesseract proxy in order.§r")
-                    .addLines("§a右键方块：§r 标记位置 §7(按正序)§r",
-                            "§aRight-Click:§r Mark Position §7(in order)§r")
-                    .addLines("§aShift + 右键方块：§r 清除该位置的标记§r",
-                            "§aShift + Right-Click:§r Clear the mark of this position§r")
-                    .addLines("§aShift + 右键空气：§r 清除所有标记§r",
-                            "§aShift + Right-Click Air:§r Clear all marks§r")
-                    .addLines("§a左键方块：§r 按当前模式从末尾添加或移除标记§r",
-                            "§aLeft-Click:§r Add from the end or remove marks, per the current mode§r")
-                    .addLines("§a右键空气：§r 打开界面，调整模式与编辑目标§r",
-                            "§aRight-Click Air:§r Open the interface to change modes and edit targets§r")
-                    .addLines("§aShift + 左键超立方体：§r 将当前的标签应用到该超立方体§r",
-                            "§aShift + Left-Click Tesseract:§r Apply the current markers to this Tesseract§r")
-                    .addLines("§a中键选取键超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r",
-                            "§aPick Block Key(default Middle-Click) Tesseract:§r Copy the coordinate configuration of this Tesseract to the marker gun§r")
-                    .addLines("§6注意：§r 向基于坐标信息卡的超立方体应用标签时需要足量的坐标信息卡！§r",
-                            "§6Note:§r Applying markers to a coordinate card-based Tesseract requires sufficient coordinate cards!§r")
-                    .build().getArray())
+            .tips(Tips.feature(GTOTips.global("§7可以按顺序标记超立方体传输目标位置。§r", "§7Used to mark the target location for Tesseract proxy in order.§r")),
+                    Tips.rightClick(GTOTips.global("§a右键方块：§r 标记位置 §7(按正序)§r", "§aRight-Click:§r Mark Position §7(in order)§r")),
+                    Tips.rightClick(GTOTips.global("§aShift + 右键方块：§r 清除该位置的标记§r", "§aShift + Right-Click:§r Clear the mark of this position§r")),
+                    Tips.rightClick(GTOTips.global("§aShift + 右键空气：§r 清除所有标记§r", "§aShift + Right-Click Air:§r Clear all marks§r")),
+                    Tips.leftClick(GTOTips.global("§a左键方块：§r 按当前模式从末尾添加或移除标记§r", "§aLeft-Click:§r Add from the end or remove marks, per the current mode§r")),
+                    Tips.rightClick(GTOTips.global("§a右键空气：§r 打开界面，调整模式与编辑目标§r", "§aRight-Click Air:§r Open the interface to change modes and edit targets§r")),
+                    Tips.leftClick(GTOTips.global("§aShift + 左键超立方体：§r 将当前的标签应用到该超立方体§r", "§aShift + Left-Click Tesseract:§r Apply the current markers to this Tesseract§r")),
+                    Tips.middleClick(GTOTips.global("§a中键选取键超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r", "§aPick Block Key(default Middle-Click) Tesseract:§r Copy the coordinate configuration of this Tesseract to the marker gun§r")),
+                    Tips.attention(GTOTips.global("§6注意：§r 向基于坐标信息卡的超立方体应用标签时需要足量的坐标信息卡！§r", "§6Note:§r Applying markers to a coordinate card-based Tesseract requires sufficient coordinate cards!§r")))
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(new TesseractTargetMarker()))
             .register();
 
     public static ItemEntry<ComponentItem> GEM_ITEM_FILTER = item("gem_item_filter", "神化宝石过滤卡", ComponentItem::create)
-            .toolTips(Component.translatable("item.gtceu.item_filter.tooltip.0"),
-                    Component.translatable("item.gtceu.item_filter.tooltip.1"))
+            .tips(Tips.feature(Component.translatable("item.gtceu.item_filter.tooltip.0")),
+                    Tips.feature(Component.translatable("item.gtceu.item_filter.tooltip.1")))
             .onRegister(attach(new ItemFilterBehaviour(ApotheosisGemFilter::loadFilter),
                     new CoverPlaceBehavior(GTCovers.ITEM_FILTER)))
             .onRegister(materialInfo(new ItemMaterialInfo(new MaterialStack(GTOMaterials.Livingsteel, GTValues.M * 2),
@@ -1433,7 +1406,7 @@ public final class GTOItems {
 
     // TODO 所有带有此物品的配方都是临时配方，后续会随时被删除
     public static final ItemEntry<ComponentItem> STOPGAP_MEASURES = item("stopgap_measures", "权宜之计", ComponentItem::create)
-            .toolTips(ComponentBuilder.create().addLines("§7在写了~~§r", "§7On working~~§r").build().getArray())
+            .tips(Tips.note(GTOTips.global("§7在写了~~§r", "§7On working~~§r")))
             .register();
 
     public static final ItemEntry<RandomPositiveFoodItem> RANDOM_POSITIVE_FOOD_1 = item("delicious_food_1", "好吃的鱼 I", p -> new RandomPositiveFoodItem(p, 4, 0.6F))

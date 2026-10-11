@@ -7,6 +7,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.item.tool.IExDataItem;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -94,21 +95,31 @@ public class DataCrystalItem extends Item implements IExDataItem {
         if (teamUUID != null) {
             var name = TeamUtil.findTeamNameById(teamUUID);
             if (name == null && level != null) name = TeamUtil.findPlayerName(level, teamUUID);
-            tooltip.add(Component.translatable(TEAM_DATA_TAG, name == null ? Component.literal(teamUUID.toString()) : name));
+            tooltip.add(Tips.stat(Component.translatable(TEAM_DATA_TAG, name == null ? Component.literal(teamUUID.toString()) : name)));
         } else {
-            tooltip.add(Component.translatable(EMPTY_NBT_TAG));
+            tooltip.add(Tips.note(Component.translatable(EMPTY_NBT_TAG)));
         }
         long usedCap = stack.getOrCreateTag().getLong(usedCapTag);
-        tooltip.add(Component.translatable(CAPACITY_TAG,
-                Component.literal(String.format("%sB/%sB", FormattingUtil.formatNumberReadable(usedCap), FormattingUtil.formatNumberReadable(dataCapacity))).withStyle(ChatFormatting.GREEN)));
-        for (var it = getResearchData(stack).reference2LongEntrySet().fastIterator(); it.hasNext();) {
+        var data = getResearchData(stack);
+        float[] ratios = new float[data.size()];
+        int[] colors = new int[data.size()];
+        int index = 0;
+        for (var it = data.reference2LongEntrySet().fastIterator(); it.hasNext(); index++) {
+            var entry = it.next();
+            ratios[index] = dataCapacity <= 0 ? 0 : (float) ((double) entry.getLongValue() * entry.getKey().getBytePerPoint() / dataCapacity);
+            colors[index] = 0xFF000000 | entry.getKey().getColor();
+        }
+        tooltip.add(Tips.segments(Component.translatable(CAPACITY_TAG,
+                Component.literal(String.format("%sB/%sB", FormattingUtil.formatNumberReadable(usedCap), FormattingUtil.formatNumberReadable(dataCapacity))).withStyle(ChatFormatting.GREEN)),
+                ratios, colors));
+        for (var it = data.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             ResearchTag rt = entry.getKey();
             long amount = entry.getLongValue();
-            tooltip.add(Component.translatable(DATA_TAG, rt.getDisplayName())
+            tooltip.add(Tips.detail(Component.translatable(DATA_TAG, rt.getDisplayName())
                     .append("x" + FormattingUtil.formatNumbers(amount))
                     .append(Component.translatable(OCCUPY_TAG, FormattingUtil.formatNumberReadable(amount * rt.getBytePerPoint())))
-                    .withStyle(style -> style.withColor(rt.getColor())));
+                    .withStyle(style -> style.withColor(rt.getColor()))));
         }
     }
 

@@ -5,6 +5,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
@@ -50,8 +51,7 @@ public final class VirtualFluidProviderBehavior implements IAddInformation, IIte
     public void appendTooltips(@NotNull ItemStack itemstack, @Nullable Level world, @NotNull List<Component> list, @NotNull TooltipFlag flag) {
         FluidStack fluid = getVirtualFluid(itemstack);
         if (fluid.isEmpty()) return;
-        list.add(Component.translatable("gui.ae2.Fluids").append(": "));
-        list.add(fluid.getDisplayName());
+        list.add(Tips.stat(Component.translatable("gui.ae2.Fluids").append(": ").append(fluid.getDisplayName())));
     }
 
     @Override

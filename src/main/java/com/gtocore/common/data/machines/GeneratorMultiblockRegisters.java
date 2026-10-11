@@ -64,8 +64,7 @@ public final class GeneratorMultiblockRegisters {
         return registrate.multiblock(name, holder -> new CombustionEngineMachine(holder, tier))
                 .nonYAxisRotation()
                 .recipeTypes(recipeType)
-                .tooltips(GTOMachineTooltips.LargeCombustionTooltips
-                        .invoke(V[tier] << 1, V[tier] * 6, tier > EV, V[tier] << 3))
+                .tips(GTOMachineTooltips.LargeCombustionTooltips(V[tier] << 1, V[tier] * 6, tier > EV, V[tier] << 3))
                 .moduleTooltips(new PartAbility[0])
                 .generator()
                 .block(casing)
@@ -137,8 +136,8 @@ public final class GeneratorMultiblockRegisters {
         var extension = TurbineExtension.of(recipeType);
         return registrate.multiblock(name, holder -> new TurbineMachine(holder, tier, special, false))
                 .ruleTooltips(GTORules.MEGA_TURBINE_OUTPUT, GTORules.MEGA_TURBINE_ROTOR_DAMAGE, GTORules.MEGA_TURBINE_FAULT)
-                .tooltips(GTOMachineTooltips.LargeTurbineTooltips.invoke((long) (V[tier] * (special ? 2.5 : 2)), tier))
-                .tooltips(GTOMachineTooltips.TurbineHighSpeedTooltips)
+                .tips(GTOMachineTooltips.LargeTurbineTooltips((long) (V[tier] * (special ? 2.5 : 2)), tier))
+                .tips(GTOMachineTooltips.TurbineHighSpeedTooltips)
                 .moduleTooltips(new PartAbility[0])
                 .nonYAxisRotation()
                 .recipeTypes(recipeType)
@@ -185,9 +184,8 @@ public final class GeneratorMultiblockRegisters {
                 .nonYAxisRotation()
                 .recipeTypes(recipeType)
                 .generator()
-                .tooltips(GTOMachineTooltips.MegaTurbineGenerateTooltips
-                        .invoke(V[tier] * (special ? 12 : 8), tier))
-                .tooltips(GTOMachineTooltips.TurbineHighSpeedTooltips)
+                .tips(GTOMachineTooltips.MegaTurbineGenerateTooltips(V[tier] * (special ? 12 : 8), tier))
+                .tips(GTOMachineTooltips.TurbineHighSpeedTooltips)
                 .moduleTooltips(new PartAbility[0])
                 .ruleTooltips(GTORules.MEGA_TURBINE_OUTPUT, GTORules.MEGA_TURBINE_ROTOR_DAMAGE, GTORules.MEGA_TURBINE_FAULT)
                 .block(casing)

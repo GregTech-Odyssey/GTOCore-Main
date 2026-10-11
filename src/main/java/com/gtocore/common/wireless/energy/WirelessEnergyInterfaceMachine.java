@@ -3,6 +3,7 @@ package com.gtocore.common.wireless.energy;
 import com.gtocore.api.wireless.energy.EnergyPort;
 import com.gtocore.api.wireless.energy.EnergyPortTrait;
 import com.gtocore.api.wireless.energy.GridBinding;
+import com.gtocore.api.wireless.energy.IEnergyPortHolder;
 import com.gtocore.api.wireless.energy.PortKind;
 import com.gtocore.api.wireless.energy.WirelessText;
 
@@ -39,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public final class WirelessEnergyInterfaceMachine extends TieredIOPartMachine implements IInteractedMachine, IMachineLife, IBindable {
+public final class WirelessEnergyInterfaceMachine extends TieredIOPartMachine implements IInteractedMachine, IMachineLife, IBindable, IEnergyPortHolder {
 
     @SaveToDisk
     private final EnergyPortTrait portTrait;
@@ -99,6 +100,11 @@ public final class WirelessEnergyInterfaceMachine extends TieredIOPartMachine im
     @Override
     public boolean preferTeamName() {
         return true;
+    }
+
+    @Override
+    public EnergyPort getEnergyPort() {
+        return port;
     }
 
     @Override

@@ -420,7 +420,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
 
     @Override
     public Widget createUIWidget() {
-        return MachineDisplay.page(this, GTOMachineTooltips.VillageTradingStationIntroduction::apply);
+        return MachineDisplay.page(this, lines -> lines.addAll(GTOMachineTooltips.VillageTradingStationIntroduction.get()));
     }
 
     @Override

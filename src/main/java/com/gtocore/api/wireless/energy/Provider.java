@@ -14,7 +14,7 @@ public sealed interface Provider {
 
     UUID owner();
 
-    record Tower(GlobalPos pos, UUID owner, List<Unit> units, int tier) implements Provider {}
+    record Tower(GlobalPos pos, UUID owner, List<Unit> units, int tier, long throughput) implements Provider {}
 
     record Unit(int tier, int count, BigInteger capacity, int loss) {
 

@@ -12,7 +12,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
- * 一个队伍在一颗星球（含其轨道）或一个异界维度里的电池与线路汇接点：本地存取不限电流，电压受本维度能源塔单元等级限制；routes 按跳数由近到远排列。
+ * 一个队伍在一颗星球（含其轨道）或一个异界维度里的电池与线路汇接点：电压受本维度能源塔等级限制；routes 按跳数由近到远排列。
  * dry/full 是本 tick 远程已取空、已存满的负缓存；另挂着在此等待资源的端点与各优先级的缺额登记，plan* 是 FlowPlan 的本次计划量。
  */
 public final class GridNode {
@@ -36,6 +36,15 @@ public final class GridNode {
     final long[] bankCapHi = new long[BANKS];
     final long[] bankCapLo = new long[BANKS];
     final int[] bankLoss = new int[BANKS];
+    final long[] outCap = new long[BANKS];
+    final long[] inCap = new long[BANKS];
+    private final long[] outUsed = new long[BANKS];
+    private final long[] inUsed = new long[BANKS];
+    private final long[] lastOut = new long[BANKS];
+    private final long[] lastIn = new long[BANKS];
+    private int budgetTick = Integer.MIN_VALUE;
+    @Nullable
+    private BankReservations reservations;
     int reachTier = -1;
     Route[] routes = NO_ROUTES;
     Arc[] out = NO_ARCS;
@@ -103,6 +112,32 @@ public final class GridNode {
         return meter == null ? null : meter.stats;
     }
 
+    public long outputCapacity(int bank) {
+        return outCap[bank];
+    }
+
+    public long inputCapacity(int bank) {
+        return inCap[bank];
+    }
+
+    public long outputUsed(int bank) {
+        roll();
+        return U126.saturatedAdd(lastOut[bank], reserved(bank));
+    }
+
+    public long inputUsed(int bank) {
+        roll();
+        return lastIn[bank];
+    }
+
+    public int throughputBanks() {
+        int mask = 0;
+        for (int t = 0; t < BANKS; t++) {
+            if (outCap[t] != 0) mask |= 1 << t;
+        }
+        return mask;
+    }
+
     public boolean hasCapacity() {
         return capHi != 0 || capLo != 0;
     }
@@ -166,6 +201,16 @@ public final class GridNode {
     }
 
     long available(int voltage) {
+        roll();
+        long sum = 0;
+        for (int m = drawable(voltage); m != 0; m &= m - 1) {
+            int t = Integer.numberOfTrailingZeros(m);
+            sum = U126.saturatedAdd(sum, Math.min(stock(t), outLeft(t)));
+        }
+        return sum;
+    }
+
+    long availableUnmetered(int voltage) {
         long sum = 0;
         for (int m = drawable(voltage); m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
@@ -174,6 +219,64 @@ public final class GridNode {
             if (sum < 0) return U126.MASK;
         }
         return sum;
+    }
+
+    boolean drawThrottled(int voltage) {
+        roll();
+        for (int m = drawable(voltage); m != 0; m &= m - 1) {
+            int t = Integer.numberOfTrailingZeros(m);
+            if (outCap[t] > 0 && outLeft(t) == 0) return true;
+        }
+        return false;
+    }
+
+    boolean putThrottled() {
+        roll();
+        for (int m = banks; m != 0; m &= m - 1) {
+            int t = Integer.numberOfTrailingZeros(m);
+            if (inCap[t] > 0 && inLeft(t) == 0 && bankFree(t) > 0) return true;
+        }
+        return false;
+    }
+
+    long outLeft(int t) {
+        return Math.max(0, outCap[t] - outUsed[t] - reserved(t));
+    }
+
+    private long inLeft(int t) {
+        return Math.max(0, inCap[t] - inUsed[t]);
+    }
+
+    private long reserved(int t) {
+        return reservations == null ? 0 : reservations.reserved(t, budgetTick);
+    }
+
+    void reserveOut(int bank, long perTick, int until) {
+        roll();
+        if (reservations == null) reservations = new BankReservations();
+        reservations.reserve(bank, perTick, until, budgetTick);
+    }
+
+    void cancelOut(int bank, long perTick, int until) {
+        roll();
+        if (reservations != null) reservations.cancel(bank, perTick, until, budgetTick);
+    }
+
+    void roll() {
+        int now = GridClock.tick();
+        if (now == budgetTick) return;
+        boolean consecutive = now - budgetTick == 1;
+        for (int t = 0; t < BANKS; t++) {
+            lastOut[t] = consecutive ? outUsed[t] : 0;
+            lastIn[t] = consecutive ? inUsed[t] : 0;
+            outUsed[t] = 0;
+            inUsed[t] = 0;
+        }
+        budgetTick = now;
+    }
+
+    private long stock(int t) {
+        return bankHi[t] != 0 ? U126.MASK : bankLo[t];
     }
 
     public double storageDouble(int voltage) {
@@ -186,21 +289,23 @@ public final class GridNode {
     }
 
     long reservable(int voltage, int duration) {
-        long sh = 0, sl = 0;
+        roll();
+        long sum = 0;
         for (int m = drawable(voltage); m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            long s = sl + bankLo[t];
-            sh = U126.saturatedAdd(U126.saturatedAdd(sh, bankHi[t]), s >>> 63);
-            sl = s & U126.MASK;
+            sum = U126.saturatedAdd(sum, Math.min(U126.divCeil(bankHi[t], bankLo[t], duration), outLeft(t)));
         }
-        return U126.divCeil(sh, sl, duration);
+        return sum;
     }
 
     void take(int voltage, long amount) {
+        roll();
         for (int m = drawable(voltage); m != 0 && amount > 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            long part = U126.minClamp(bankHi[t], bankLo[t], amount);
+            long part = Math.min(U126.minClamp(bankHi[t], bankLo[t], amount), outLeft(t));
+            if (part <= 0) continue;
             debit(t, 0, part);
+            outUsed[t] += part;
             amount -= part;
         }
     }
@@ -209,26 +314,29 @@ public final class GridNode {
         debit(bank, aHi, aLo);
     }
 
-    long acceptable(long gross, int extraLoss) {
+    long acceptable(long gross, int extraLoss, boolean metered) {
+        if (metered) roll();
         long left = gross;
         for (int m = banks; m != 0 && left > 0;) {
             int t = 31 - Integer.numberOfLeadingZeros(m);
             m ^= 1 << t;
-            left -= Loss.acceptGross(bankFree(t), left, Loss.combined(bankLoss[t], extraLoss));
+            left -= Loss.acceptGross(bankFree(t), metered ? Math.min(left, inLeft(t)) : left, Loss.combined(bankLoss[t], extraLoss));
         }
         return gross - left;
     }
 
-    long store(long gross, int extraLoss) {
+    long store(long gross, int extraLoss, boolean metered) {
+        if (metered) roll();
         long left = gross, lost = 0;
         for (int m = banks; m != 0 && left > 0;) {
             int t = 31 - Integer.numberOfLeadingZeros(m);
             m ^= 1 << t;
             int permille = Loss.combined(bankLoss[t], extraLoss);
-            long g = Loss.acceptGross(bankFree(t), left, permille);
+            long g = Loss.acceptGross(bankFree(t), metered ? Math.min(left, inLeft(t)) : left, permille);
             if (g <= 0) continue;
             long l = Loss.of(g, permille);
             credit(t, 0, g - l);
+            if (metered) inUsed[t] += g;
             lost += l;
             left -= g;
         }
@@ -236,6 +344,7 @@ public final class GridNode {
             int t = Math.max(0, tier);
             long l = Loss.of(left, Loss.combined(bankLoss[t], extraLoss));
             credit(t, 0, left - l);
+            if (metered) inUsed[t] = U126.saturatedAdd(inUsed[t], left);
             lost += l;
         }
         return lost;
@@ -366,6 +475,8 @@ public final class GridNode {
         Arrays.fill(bankCapHi, 0);
         Arrays.fill(bankCapLo, 0);
         Arrays.fill(bankLoss, 0);
+        Arrays.fill(outCap, 0);
+        Arrays.fill(inCap, 0);
         capHi = 0;
         capLo = 0;
         banks = 0;
@@ -380,6 +491,11 @@ public final class GridNode {
         s = capLo + aLo;
         capHi = U126.saturatedAdd(U126.saturatedAdd(capHi, aHi), s >>> 63);
         capLo = s & U126.MASK;
+    }
+
+    void addThroughput(int bank, long perTick) {
+        outCap[bank] = U126.saturatedAdd(outCap[bank], perTick);
+        inCap[bank] = U126.saturatedAdd(inCap[bank], perTick);
     }
 
     void setLoss(int bank, int permille) {

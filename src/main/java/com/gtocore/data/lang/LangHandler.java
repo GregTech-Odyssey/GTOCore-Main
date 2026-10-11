@@ -1,5 +1,6 @@
 package com.gtocore.data.lang;
 
+import com.gtocore.api.lang.TipKeys;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.techtree.TechTreeManager;
@@ -14,11 +15,11 @@ import com.gtocore.data.transaction.data.TradeLang;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.adastra.TravelSource;
-import com.gtolib.api.annotation.component_builder.TranslationKeyProvider;
 import com.gtolib.api.data.CelestialBody;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.Galaxy;
 import com.gtolib.api.lang.CNEN;
+import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.lang.SimplifiedChineseLanguageProvider;
 import com.gtolib.api.lang.TraditionalChineseLanguageProvider;
 import com.gtolib.api.player.OrganTier;
@@ -62,7 +63,7 @@ public final class LangHandler {
     }
 
     private static void init() {
-        GTOItemTooltips.INSTANCE.initLanguage();
+        GTOItemTooltips.initLanguage();
         GTOFluids.LANG.forEach((k, v) -> {
             addCN("fluid.gtocore." + k, v);
             addCN("item.gtocore." + k + "_bucket", v + "桶");
@@ -81,13 +82,14 @@ public final class LangHandler {
         MultiblockBuilder.LANG.forEach(LangHandler::addCNEN);
         Tooltips.LANG.forEach(LangHandler::addCNEN);
         PlatformTemplateStorage.LANG.forEach((k, v) -> addCNEN("gtocore.platform." + k, v));
-        BaseNodes.INSTANCE.init();
-        BaseNodes.INSTANCE.getLangMap().forEach((k, v) -> addCNEN("gtocore.data." + k, v));
+        BaseNodes.init();
+        BaseNodes.langMap.forEach((k, v) -> addCNEN("gtocore.data." + k, v));
         ResearchTag.LNAG.forEach(LangHandler::addCNEN);
         GTOPartAbility.LANG.forEach(LangHandler::addCNEN);
         ScanningClass.LANG.forEach(LangHandler::addCNEN);
         RuleRegistry.LANG.forEach(LangHandler::addCNEN);
-        TranslationKeyProvider.LANG.forEach(LangHandler::addCNEN);
+        TipKeys.LANG.forEach(LangHandler::addCNEN);
+        GTOAttributes.LANG.forEach(LangHandler::addCNEN);
         PlayerAttributes.NAMES.forEach((k, v) -> addCNEN(k.getLangKey(), v));
         GTOTrade.init();
         TradeLang.LANG.forEach(LangHandler::addCNEN);
@@ -251,6 +253,7 @@ public final class LangHandler {
         addCNEN("config.jade.plugin_gtocore.upgrade_module_provider", "[GTOCore] 升级模块信息", "[GTOCore] Upgrade Module Info");
         addCNEN("config.jade.plugin_gtocore.destroy_time_provider", "[GTOCore] 硬度信息", "[GTOCore] Destroy Time Info");
         addCNEN("config.jade.plugin_gtocore.wireless_grid_provider", "[GTOCore] 无线ME网络信息", "[GTOCore] Wireless ME Network Info");
+        addCNEN("config.jade.plugin_gtocore.wireless_port_provider", "[GTOCore] 无线电网接入状态", "[GTOCore] Wireless Grid Connection");
         addCNEN("config.jade.plugin_gtocore.maintenance_hatch_provider", "[GTOCore] 维护仓耗时信息", "[GTOCore] Maintenance Hatch Duration Info");
         addCNEN("config.jade.plugin_gtocore.maintenance_param_provider", "[GTOCore] 维护仓损坏信息", "[GTOCore] Maintenance Hatch Damage Info");
 
@@ -300,8 +303,6 @@ public final class LangHandler {
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density", "§d电解液能量密度：§r%s EU/mB", "§dElectrolyte Energy Density:§r %s EU/mB");
         addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density.va", "§d相当于：§r%s @ §b%s§rA/mB", "§dEquivalent to§r %s @ §b%sA§r/mB");
 
-        addCNEN("gtocore.lang.power_substation.tooltip.0", "用于确定无线EU单个仓室或者设备的传输上限的设施。", "A facility used to determine the transfer limit of a single wireless EU hatch or device.");
-        addCNEN("gtocore.lang.power_substation.tooltip.1", "安装电容可以提升传输上限。", "Installing capacitors increases the transfer limit.");
         addCNEN("gtocore.lang.power_substation.tooltip.2", "内部必须填满电容，可用空电容填补空隙。", "All internal slots must be filled with capacitors; empty capacitors can be used to fill any gaps.");
 
         addCNEN("key.ae2.me2in1_wireless_locating_service", "打开ME2合1无线终端", "Open ME2in1 Wireless Terminal");

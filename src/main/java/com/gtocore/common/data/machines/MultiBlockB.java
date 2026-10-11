@@ -35,11 +35,13 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -57,7 +59,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition DIGESTION_TANK = multiblock("digestion_tank", "煮解池", DigestionTankMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.DigestionTankTooltips)
+            .tips(GTOMachineStories.DigestionTankTooltips)
             .parallelizableTooltips()
             .recipeTypes(DIGESTION_TREATMENT_RECIPES)
             .parallelizableOverclock()
@@ -84,7 +86,7 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition WOOD_DISTILLATION = multiblock("wood_distillation", "木化工厂", CoilCrossRecipeMultiblockMachine::createCoilParallel)
             .nonYAxisRotation()
             .recipeTypes(WOOD_DISTILLATION_RECIPES)
-            .tooltips(GTOMachineStories.WoodDistillationTooltips)
+            .tips(GTOMachineStories.WoodDistillationTooltips)
             .laserTooltips()
             .coilParallelTooltips()
             .parallelizableOverclock()
@@ -266,7 +268,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition REACTION_FURNACE = multiblock("reaction_furnace", "反应炉", CoilMultiblockMachine.createCoilMachine(true, true))
             .nonYAxisRotation()
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.2")
+            .tips(Tips.bonus(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.2")))
             .recipeTypes(REACTION_FURNACE_RECIPES)
             .parallelizableOverclock()
             .moduleTooltips(PARALLEL_HATCH, ACCELERATE_HATCH)
@@ -316,7 +318,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition MEGA_BREWER = multiblock("mega_brewer", "巨型酿造厂", CoilCrossRecipeMultiblockMachine::createCoilParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.MegaBrewerTooltips)
+            .tips(GTOMachineStories.MegaBrewerTooltips)
             .coilParallelTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -347,7 +349,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition FUEL_REFINING_COMPLEX = multiblock("fuel_refining_complex", "燃料精炼复合体", CoilCrossRecipeMultiblockMachine.createCheckedTemperatureParallel(true))
             .nonYAxisRotation()
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.2")
+            .tips(Tips.bonus(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.2")))
             .laserTooltips()
             .coilParallelTooltips()
             .recipeTypes(FUEL_REFINING_RECIPES)
@@ -417,8 +419,8 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition MICROORGANISM_MASTER = multiblock("microorganism_master", "微生物之主", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
             .recipeTypes(INCUBATOR_RECIPES)
-            .tooltips(GTOMachineStories.MicroorganismMasterTooltips)
-            .tooltips(GTOMachineTooltips.MicroorganismMasterTooltips)
+            .tips(GTOMachineStories.MicroorganismMasterTooltips)
+            .tips(GTOMachineTooltips.MicroorganismMasterTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -455,7 +457,7 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition LIGHTNING_ROD = multiblock("lightning_rod", "引雷针", TierCasingCrossRecipeMultiblockMachine.createGasTieredParallel())
             .nonYAxisRotation()
             .recipeTypes(ARC_GENERATOR_RECIPES)
-            .tooltips(GTOMachineStories.LightningRodTooltips)
+            .tips(GTOMachineStories.LightningRodTooltips)
             .glassParallelTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -499,7 +501,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition MAGNETIC_ENERGY_REACTION_FURNACE = multiblock("magnetic_energy_reaction_furnace", "磁能反应炉", CoilCrossRecipeMultiblockMachine::createCoilParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.MagneticEnergyReactionFurnaceTooltips)
+            .tips(GTOMachineStories.MagneticEnergyReactionFurnaceTooltips)
             .recipeTypes(GTRecipeTypes.ARC_FURNACE_RECIPES)
             .coilParallelTooltips()
             .laserTooltips()
@@ -534,7 +536,7 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition HIGH_ENERGY_LASER_LATHE = multiblock("high_energy_laser_lathe", "高能激光车床", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.LATHE_RECIPES)
-            .tooltips(GTOMachineStories.HighEnergyLaserLatheTooltips)
+            .tips(GTOMachineStories.HighEnergyLaserLatheTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -569,7 +571,7 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition NEUTRONIUM_WIRE_CUTTING = multiblock("neutronium_wire_cutting", "中子丝线切割", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.CUTTER_RECIPES)
-            .tooltips(GTOMachineStories.NeutroniumWireCuttingTooltips)
+            .tips(GTOMachineStories.NeutroniumWireCuttingTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -606,7 +608,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition NANO_PHAGOCYTOSIS_PLANT = multiblock("nano_phagocytosis_plant", "纳米吞噬厂", NanoPhagocytosisPlantMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.NanoPhagocytosisPlantTooltips)
+            .tips(GTOMachineStories.NanoPhagocytosisPlantTooltips)
             .recipeTypes(MACERATOR_RECIPES)
             .recipeTypes(ISA_MILL_RECIPES)
             .recipeTypes(ULTRA_FINE_GRINDING_RECIPES)
@@ -720,8 +722,8 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition ROAD_OF_HEAVEN = multiblock("road_of_heaven", "通天之路", SuperSpaceElevatorMachine::new)
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
-            .tooltips(GTOMachineStories.RoadOfHeavenTooltips)
-            .tooltips(GTOMachineTooltips.RoadOfHeavenTooltips)
+            .tips(GTOMachineStories.RoadOfHeavenTooltips)
+            .tips(GTOMachineTooltips.RoadOfHeavenTooltips)
             .block(GTOBlocks.SPACE_ELEVATOR_MECHANICAL_CASING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("road_of_heaven").port('k', GTOMachineProtocols.MODULE_PORT).port('w', GTOMachineProtocols.MEGA_MODULE_PORT).build())
@@ -793,7 +795,7 @@ public final class MultiBlockB {
             .nonYAxisRotation()
             .recipeTypes(GTRecipeTypes.CHEMICAL_BATH_RECIPES)
             .recipeTypes(GTRecipeTypes.ORE_WASHER_RECIPES)
-            .tooltips(GTOMachineStories.MegaBathTankTooltips)
+            .tips(GTOMachineStories.MegaBathTankTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -825,7 +827,7 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition MEGA_VACUUM_DRYING_FURNACE = multiblock("mega_vacuum_drying_furnace", "巨型真空干燥炉", CoilCrossRecipeMultiblockMachine.createCheckedTemperatureParallel(false))
             .nonYAxisRotation()
             .recipeTypes(VACUUM_DRYING_RECIPES)
-            .tooltips(GTOMachineStories.MegaVacuumDryingFurnaceTooltips)
+            .tips(GTOMachineStories.MegaVacuumDryingFurnaceTooltips)
             .coilParallelTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -860,7 +862,7 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition MOLECULAR_OSCILLATION_DEHYDRATOR = multiblock("molecular_oscillation_dehydrator", "分子震荡脱水装置", CoilCrossRecipeMultiblockMachine::createCoilParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.MolecularOscillationDehydratorTooltips)
+            .tips(GTOMachineStories.MolecularOscillationDehydratorTooltips)
             .recipeTypes(DEHYDRATOR_RECIPES)
             .coilParallelTooltips()
             .laserTooltips()
@@ -891,7 +893,7 @@ public final class MultiBlockB {
     public static final MultiblockMachineDefinition HORIZONTAL_COMPRESSOR = multiblock("extreme_compressor", "极限压缩装置", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
             .recipeTypes(COMPRESSOR_RECIPES, GAS_COMPRESSOR_RECIPES, THERMO_PRESSING_RECIPES)
-            .tooltips(GTOMachineStories.HorizontalCompressorTooltips)
+            .tips(GTOMachineStories.HorizontalCompressorTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -926,8 +928,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition WATER_PURIFICATION_PLANT = multiblock("water_purification_plant", "净化处理厂", WaterPurificationPlantMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.WaterPurificationPlantTooltips)
-            .tooltips(GTOMachineTooltips.WaterPurificationPlantTooltips)
+            .tips(GTOMachineStories.WaterPurificationPlantTooltips)
+            .tips(GTOMachineTooltips.WaterPurificationPlantTooltips)
             .laserTooltips()
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
@@ -951,8 +953,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition CLARIFIER_PURIFICATION_UNIT = multiblock("clarifier_purification_unit", "澄清器净化装置", ClarifierPurificationUnitMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.ClarifierPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.ClarifierPurificationUnitTooltips)
+            .tips(GTOMachineStories.ClarifierPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.ClarifierPurificationUnitTooltips)
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.REINFORCED_STERILE_WATER_PLANT_CASING)
             .structure(definition -> Structure
@@ -978,8 +980,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition OZONATION_PURIFICATION_UNIT = multiblock("ozonation_purification_unit", "臭氧净化装置", OzonationPurificationUnitMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.OzonationPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.OzonationPurificationUnitTooltips)
+            .tips(GTOMachineStories.OzonationPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.OzonationPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.OZONE_CASING)
@@ -1000,8 +1002,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition FLOCCULATION_PURIFICATION_UNIT = multiblock("flocculation_purification_unit", "絮凝净化装置", FlocculationPurificationUnitMachine::new)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.FlocculationPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.FlocculationPurificationUnitTooltips)
+            .tips(GTOMachineStories.FlocculationPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.FlocculationPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.FLOCCULATION_CASING)
@@ -1025,8 +1027,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition PH_NEUTRALIZATION_PURIFICATION_UNIT = multiblock("ph_neutralization_purification_unit", "pH中和净化装置", PHNeutralizationPurificationUnitMachine::new)
             .allRotation()
-            .tooltips(GTOMachineStories.PHNeutralizationPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.PHNeutralizationPurificationUnitTooltips)
+            .tips(GTOMachineStories.PHNeutralizationPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.PHNeutralizationPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.STABILIZED_NAQUADAH_WATER_PLANT_CASING)
@@ -1049,8 +1051,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition EXTREME_TEMPERATURE_FLUCTUATION_PURIFICATION_UNIT = multiblock("extreme_temperature_fluctuation_purification_unit", "极端温度波动净化装置", ExtremeTemperatureFluctuationPurificationUnitMachine::new)
             .allRotation()
-            .tooltips(GTOMachineStories.ExtremeTemperatureFluctuationPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.ExtremeTemperatureFluctuationPurificationUnitTooltips)
+            .tips(GTOMachineStories.ExtremeTemperatureFluctuationPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.ExtremeTemperatureFluctuationPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.PLASMA_HEATER_CASING)
@@ -1074,8 +1076,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition HIGH_ENERGY_LASER_PURIFICATION_UNIT = multiblock("high_energy_laser_purification_unit", "高能激光净化装置", HighEnergyLaserPurificationUnitMachine::new)
             .allRotation()
-            .tooltips(GTOMachineStories.HighEnergyLaserPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.HighEnergyLaserPurificationUnitTooltips)
+            .tips(GTOMachineStories.HighEnergyLaserPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.HighEnergyLaserPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.NAQUADAH_REINFORCED_PLANT_CASING)
@@ -1098,8 +1100,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition RESIDUAL_DECONTAMINANT_DEGASSER_PURIFICATION_UNIT = multiblock("residual_decontaminant_degasser_purification_unit", "残余污染物脱气净化装置", ResidualDecontaminantDegasserPurificationUnitMachine::new)
             .allRotation()
-            .tooltips(GTOMachineStories.ResidualDecontaminantDegasserPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.ResidualDecontaminantDegasserPurificationUnitTooltips)
+            .tips(GTOMachineStories.ResidualDecontaminantDegasserPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.ResidualDecontaminantDegasserPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.PLASMA_HEATER_CASING)
@@ -1120,8 +1122,8 @@ public final class MultiBlockB {
 
     public static final MultiblockMachineDefinition ABSOLUTE_BARYONIC_PERFECTION_PURIFICATION_UNIT = multiblock("absolute_baryonic_perfection_purification_unit", "绝对重子完美净化装置", AbsoluteBaryonicPerfectionPurificationUnitMachine::new)
             .allRotation()
-            .tooltips(GTOMachineStories.AbsoluteBaryonicPerfectionPurificationUnitTooltips)
-            .tooltips(GTOMachineTooltips.AbsoluteBaryonicPerfectionPurificationUnitTooltips)
+            .tips(GTOMachineStories.AbsoluteBaryonicPerfectionPurificationUnitTooltips)
+            .tips(GTOMachineTooltips.AbsoluteBaryonicPerfectionPurificationUnitTooltips)
             .fromSourceTooltips("GregTech: New Horizon")
             .recipeTypes(WATER_PURIFICATION_PLANT_RECIPES)
             .block(GTOBlocks.QUARK_EXCLUSION_CASING)

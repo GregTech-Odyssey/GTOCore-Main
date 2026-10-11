@@ -27,17 +27,6 @@ class GTOProgressClientComponent(data: GTOProgressToolTipComponent) : GTOClientT
     }
 }
 
-class GTOMultiProgressToolTipComponent(val segments: List<Pair<Float, Int>>, var label: String = "", var value: String = "") : GTOToolTipComponent(height = ProgressBar.HEIGHT, width = 150)
-class GTOMultiProgressClientComponent(data: GTOMultiProgressToolTipComponent) : GTOClientTooltipComponent<GTOMultiProgressToolTipComponent>(data) {
-    override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
-        drawLayered(guiGraphics, x, y, data.width, data.height, data.label, data.value) { start ->
-            var from = start
-            for ((ratio, color) in data.segments) from = UIDraw.progressFill(guiGraphics, x, y, data.width, data.height, from, ratio, color)
-            from
-        }
-    }
-}
-
 private inline fun drawLayered(graphics: GuiGraphics, x: Int, y: Int, w: Int, h: Int, label: String, value: String, fill: (Int) -> Int) {
     val pose = graphics.pose()
     UIDraw.progressTrack(graphics, x, y, w, h)
@@ -49,6 +38,3 @@ private inline fun drawLayered(graphics: GuiGraphics, x: Int, y: Int, w: Int, h:
     pose.popPose()
 }
 
-class GTOComponentTooltipComponent(val component: Component) : GTOToolTipComponent(priority = 0)
-infix fun Int.toPercentageWith(other: Int): Float = (this.toDouble() / other.toDouble()).toFloat()
-infix fun Long.toPercentageWith(other: Long): Float = (this.toDouble() / other.toDouble()).toFloat()

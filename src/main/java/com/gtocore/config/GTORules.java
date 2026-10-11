@@ -227,8 +227,8 @@ public final class GTORules {
             .desc("gtocore.rule.power.bio_stimulation_duration.desc", "生物振荡发电机的电刺激模块每次运行的耗时。", "Duration of each run of the Bio Oscillation Generator's electrical stimulator.")
             .register();
     public static final TierRule WIRELESS_ENERGY_TIER = Rules.tierRule("power.wireless_energy_unit").group(POWER)
-            .name("gtocore.rule.power.wireless_energy_unit", "无线能量单元难度", "Wireless Energy Unit Difficulty")
-            .desc("gtocore.rule.power.wireless_energy_unit.desc", "决定无线能量单元的容量和损耗。", "Sets the capacity and loss of wireless energy units.")
+            .name("gtocore.rule.power.wireless_energy_unit", "无线能源塔单元难度", "Wireless Energy Tower Unit Difficulty")
+            .desc("gtocore.rule.power.wireless_energy_unit.desc", "决定无线能源塔存储单元的容量与损耗，以及传输单元的吞吐。", "Sets the capacity and loss of tower storage units and the throughput of tower transfer units.")
             .register();
     public static final BoolRule GTM_GENERATE_NO_MATCH = Rules.boolRule("gtm.generate_energy_no_match").group(POWER)
             .defaults(false, false, true)

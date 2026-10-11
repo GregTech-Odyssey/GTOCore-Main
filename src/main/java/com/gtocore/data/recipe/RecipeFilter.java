@@ -166,8 +166,10 @@ public final class RecipeFilter {
         filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "blasting/elementium_ingot"));
         filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "smelting/dragonstone"));
         filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "blasting/dragonstone"));
-        filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "smelting/elementium_ingot"));
-        filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "blasting/elementium_ingot"));
+        filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "smelting/elementium_ingot_from_raw_ore"));
+        filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "blasting/elementium_ingot_from_raw_ore"));
+        filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "raw_elementium_compress"));
+        filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "raw_elementium_block_decompress"));
         filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "alfsteel_pylon"));
         filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "gaia_pylon"));
         filters.add(RLUtils.fromNamespaceAndPath("mythicbotany", "kvasir_mead"));

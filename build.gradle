@@ -161,6 +161,33 @@ tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
+tasks.named('test', Test) {
+    useJUnitPlatform { excludeTags 'limitation' }
+}
+
+def craftingTest = { Test t, boolean limits ->
+    t.group = 'verification'
+    t.testClassesDirs = sourceSets.test.output.classesDirs
+    t.classpath = sourceSets.test.runtimeClasspath
+    t.filter { includeTestsMatching 'com.gtolib.ae2.crafting2.*' }
+    t.useJUnitPlatform { limits ? includeTags('limitation') : excludeTags('limitation') }
+    t.workingDir = layout.buildDirectory.dir('crafting-test').get().asFile
+    t.doFirst {
+        t.workingDir.mkdirs()
+        if (findProperty('gtolibUnprotected') != 'true' && findProperty('gtolibDebug') != 'true') {
+            throw new GradleException("${t.name} 需要明文 GTOLib：加 -PgtolibUnprotected=true")
+        }
+    }
+}
+tasks.register('testCrafting', Test) {
+    description = 'AE 自动合成：能力与性能预警测试（应全部通过）'
+    craftingTest(it, false)
+}
+tasks.register('testCraftingLimits', Test) {
+    description = 'AE 自动合成：能力边界测试（按理想语义断言，当前预期失败）'
+    craftingTest(it, true)
+}
+
 // Ensure Java compilation depends on Kotlin and can resolve Kotlin classes
 tasks.named('compileJava', JavaCompile) {
     // Mixin's annotation processors are non-incremental and always force a full

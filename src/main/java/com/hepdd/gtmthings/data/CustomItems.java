@@ -1,6 +1,5 @@
 package com.hepdd.gtmthings.data;
 
-import com.gtocore.common.wireless.energy.WirelessEnergyBindingToolBehavior;
 import com.gtocore.common.wireless.energy.WirelessEnergyTerminalBehavior;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -8,6 +7,8 @@ import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.ICustomRenderer;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.item.CoverPlaceBehavior;
 import com.gregtechceu.gtceu.common.item.TooltipBehavior;
 
@@ -54,8 +55,8 @@ public class CustomItems {
             .onRegister(attach(new WirelessTransferCoverPlaceBehavior(GTMTCovers.WIRELESS_ITEM_TRANSFER),
                     new CoverPlaceBehavior(GTMTCovers.WIRELESS_ITEM_TRANSFER),
                     new WirelessTransferCoverTooltipBehavior(lines -> {
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.item.tooltip.1"));
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2"));
+                        lines.add(Tips.feature(Component.translatable("item.gtmthings.wireless_transfer.item.tooltip.1")));
+                        lines.add(Tips.rightClick(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2")));
                     })))
             .register();
 
@@ -64,8 +65,8 @@ public class CustomItems {
             .onRegister(attach(new WirelessTransferCoverPlaceBehavior(GTMTCovers.WIRELESS_FLUID_TRANSFER),
                     new CoverPlaceBehavior(GTMTCovers.WIRELESS_FLUID_TRANSFER),
                     new WirelessTransferCoverTooltipBehavior(lines -> {
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.fluid.tooltip.1"));
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2"));
+                        lines.add(Tips.feature(Component.translatable("item.gtmthings.wireless_transfer.fluid.tooltip.1")));
+                        lines.add(Tips.rightClick(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2")));
                     })))
             .register();
 
@@ -74,9 +75,9 @@ public class CustomItems {
             .onRegister(attach(new WirelessTransferCoverPlaceBehavior(GTMTCovers.ADVANCED_WIRELESS_ITEM_TRANSFER),
                     new CoverPlaceBehavior(GTMTCovers.ADVANCED_WIRELESS_ITEM_TRANSFER),
                     new WirelessTransferCoverTooltipBehavior(lines -> {
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.item.tooltip.1"));
-                        lines.add(Component.translatable("item.gtmthings.advanced_wireless_transfer.tooltip.1"));
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2"));
+                        lines.add(Tips.feature(Component.translatable("item.gtmthings.wireless_transfer.item.tooltip.1")));
+                        lines.add(Tips.supported(Component.translatable("item.gtmthings.advanced_wireless_transfer.tooltip.1")));
+                        lines.add(Tips.rightClick(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2")));
                     })))
             .register();
 
@@ -85,9 +86,9 @@ public class CustomItems {
             .onRegister(attach(new WirelessTransferCoverPlaceBehavior(GTMTCovers.ADVANCED_WIRELESS_FLUID_TRANSFER),
                     new CoverPlaceBehavior(GTMTCovers.ADVANCED_WIRELESS_FLUID_TRANSFER),
                     new WirelessTransferCoverTooltipBehavior(lines -> {
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.fluid.tooltip.1"));
-                        lines.add(Component.translatable("item.gtmthings.advanced_wireless_transfer.tooltip.1"));
-                        lines.add(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2"));
+                        lines.add(Tips.feature(Component.translatable("item.gtmthings.wireless_transfer.fluid.tooltip.1")));
+                        lines.add(Tips.supported(Component.translatable("item.gtmthings.advanced_wireless_transfer.tooltip.1")));
+                        lines.add(Tips.rightClick(Component.translatable("item.gtmthings.wireless_transfer.tooltip.2")));
                     })))
             .register();
 
@@ -134,9 +135,9 @@ public class CustomItems {
                 .item(GTValues.VN[tier].toLowerCase(Locale.ROOT) + "_" + (amperage == 1 ? "" : amperage + "a_") + "wireless_energy_receive_cover", ComponentItem::create)
                 .lang(VNF[tier] + " " + "Wireless Energy Receive Cover")
                 .onRegister(attach(new TooltipBehavior(lines -> {
-                    lines.add(Component.translatable("item.gtmthings.wireless_energy_receive_cover.tooltip.1"));
-                    lines.add(Component.translatable("item.gtmthings.wireless_energy_receive_cover.tooltip.2"));
-                    lines.add(Component.translatable("item.gtmthings.wireless_energy_receive_cover.tooltip.3", GTValues.VEX[tier] * amperage));
+                    lines.add(Tips.feature(Component.translatable("item.gtmthings.wireless_energy_receive_cover.tooltip.1")));
+                    lines.add(Tips.requirement(Component.translatable("item.gtmthings.wireless_energy_receive_cover.tooltip.2")));
+                    lines.add(Tips.power(StatKind.ENERGY_TRANSFER, GTValues.VEX[tier] * amperage, tier));
                 }), new CoverPlaceBehavior(amperage == 1 ? GTMTCovers.WIRELESS_ENERGY_RECEIVE[tier - 1] : GTMTCovers.WIRELESS_ENERGY_RECEIVE_4A[tier - 1]))).register();
     }
 
@@ -148,13 +149,7 @@ public class CustomItems {
     public static ItemEntry<ComponentItem> WIRELESS_ENERGY_TERMINAL = GTMTHINGS_REGISTRATE
             .item("wireless_energy_terminal", ComponentItem::create)
             .properties(p -> p.stacksTo(1))
-            .onRegister(attach(new WirelessEnergyTerminalBehavior()))
-            .onRegister(attach(new WirelessEnergyBindingToolBehavior())).register();
-
-    public static ItemEntry<ComponentItem> WIRELESS_ENERGY_BINDING_TOOL = GTMTHINGS_REGISTRATE
-            .item("wireless_energy_binding_tool", ComponentItem::create)
-            .properties(p -> p.stacksTo(1))
-            .onRegister(attach(new WirelessEnergyBindingToolBehavior())).register();
+            .onRegister(attach(new WirelessEnergyTerminalBehavior())).register();
 
     public static void init() {}
 }

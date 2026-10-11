@@ -32,8 +32,8 @@ public final class ProviderRegistry {
         return Math.max(0, Math.min(GTValues.MAX, tier));
     }
 
-    public static void registerTower(MetaMachine machine, List<Provider.Unit> units, int tier) {
-        register(machine, (pos, owner, level) -> new Provider.Tower(pos, owner, List.copyOf(units), clampTier(tier)));
+    public static void registerTower(MetaMachine machine, List<Provider.Unit> units, int tier, long throughput) {
+        register(machine, (pos, owner, level) -> new Provider.Tower(pos, owner, List.copyOf(units), clampTier(tier), Math.max(0, throughput)));
     }
 
     public static BigInteger towerCapacity(MetaMachine machine) {

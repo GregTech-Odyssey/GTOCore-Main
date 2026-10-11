@@ -1,7 +1,10 @@
 package com.hepdd.gtmthings.data;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.common.wireless.energy.WirelessEnergyInterfaceMachine;
 import com.gtocore.common.wireless.energy.WirelessEnergyMonitorMachine;
+
+import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.RotationState;
@@ -26,14 +29,14 @@ public class WirelessMachines {
     public static final MachineDefinition WIRELESS_ENERGY_MONITOR = GTMTHINGS_REGISTRATE
             .machine("wireless_energy_monitor", WirelessEnergyMonitorMachine::new)
             .rotationState(RotationState.NON_Y_AXIS)
-            .workableTieredHullRenderer(GTMThings.id("block/machines/wireless_energy_monitor"))
+            .workableCasingRenderer(GTOCore.id("block/casings/wireless_energy_tower_frame"), GTMThings.id("block/machines/wireless_energy_monitor"))
             .tier(IV)
             .register();
 
     public static final MachineDefinition WIRELESS_ENERGY_INTERFACE = GTMTHINGS_REGISTRATE
             .machine("wireless_energy_interface", WirelessEnergyInterfaceMachine::new)
             .rotationState(RotationState.ALL)
-            .renderer(() -> new OverlayTieredMachineRenderer(LV, GTCEu.id("block/machine/part/energy_hatch.input")))
+            .workableCasingRenderer(GTOCore.id("block/casings/wireless_energy_tower_frame"), GTOCore.id("block/machines/wireless_energy_interface"))
             .tier(LV)
             .register();
 
@@ -42,8 +45,8 @@ public class WirelessMachines {
             .rotationState(RotationState.ALL)
             .abilities(PartAbility.COMPUTATION_DATA_TRANSMISSION)
             .renderer(() -> new OverlayTieredMachineRenderer(UV, GTCEu.id("block/machine/part/computation_data_hatch")))
-            .tooltips(Component.translatable("gtmthings.machine.wireless_computation_transmitter_hatch.tooltip.1"),
-                    Component.translatable("gtmthings.machine.wireless_computation_transmitter_hatch.tooltip.2"))
+            .tips(Tips.feature(Component.translatable("gtmthings.machine.wireless_computation_transmitter_hatch.tooltip.1")),
+                    Tips.requirement(Component.translatable("gtmthings.machine.wireless_computation_transmitter_hatch.tooltip.2")))
             .tier(UV)
             .register();
 
@@ -52,8 +55,8 @@ public class WirelessMachines {
             .rotationState(RotationState.ALL)
             .abilities(PartAbility.COMPUTATION_DATA_RECEPTION)
             .renderer(() -> new OverlayTieredMachineRenderer(UV, GTCEu.id("block/machine/part/computation_data_hatch")))
-            .tooltips(Component.translatable("gtmthings.machine.wireless_computation_receiver_hatch.tooltip.1"),
-                    Component.translatable("gtmthings.machine.wireless_computation_receiver_hatch.tooltip.2"))
+            .tips(Tips.feature(Component.translatable("gtmthings.machine.wireless_computation_receiver_hatch.tooltip.1")),
+                    Tips.requirement(Component.translatable("gtmthings.machine.wireless_computation_receiver_hatch.tooltip.2")))
             .tier(UV)
             .register();
 

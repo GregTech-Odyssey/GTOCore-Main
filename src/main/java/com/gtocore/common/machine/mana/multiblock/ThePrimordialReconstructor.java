@@ -118,14 +118,23 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         RecipeBuilder disassembleRecipeBuilder = getRecipeBuilder();
         List<ItemStack> inputsItems = new ArrayList<>();
         List<ItemStack> outputsItems = new ArrayList<>();
+        Item canvas = GTOItems.AFFIX_CANVAS.asItem();
+        Item sigil = Adventure.Items.SIGIL_OF_WITHDRAWAL.get();
+        Object2LongOpenHashMap<Item> budget = new Object2LongOpenHashMap<>();
         unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
-            var stack = Keys.toStack((AEItemKey) key, amount);
+            var itemKey = (AEItemKey) key;
+            Item item = itemKey.getItem();
+            if (!itemKey.hasTag() && (item == Items.BOOK || item == canvas || item == sigil)) budget.addTo(item, amount);
+            return false;
+        });
+        unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
+            var stack = Keys.toStack((AEItemKey) key, 1);
             if (hasApotheosisData(stack) || hasEquipmentEnchantments(stack)) {
-                if (disassembleEquipment(stack, inputsItems, outputsItems)) {
+                if (disassembleEquipment(stack, inputsItems, outputsItems, budget)) {
                     inputsItems.add(stack);
                 }
             } else if (circuit == 4 && stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("Damage")) {
-                inputsItems.add(stack);
+                inputsItems.add(Keys.toStack((AEItemKey) key, amount));
             }
             if (circuit == 2 || circuit == 4)
                 if (stack.is(Items.ENCHANTED_BOOK))
@@ -134,10 +143,10 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
                         outputsItems.add(new ItemStack(Items.BOOK));
                     }
             if (circuit == 3 || circuit == 4)
-                if (stack.getItem() == GTOItems.AFFIX_CANVAS.asItem())
+                if (stack.getItem() == canvas)
                     if (disassembleAffixCanvas(stack, outputsItems)) {
                         inputsItems.add(stack);
-                        outputsItems.add(new ItemStack(GTOItems.AFFIX_CANVAS));
+                        outputsItems.add(new ItemStack(canvas));
                     }
             return false;
         });
@@ -150,47 +159,60 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         return null;
     }
 
+    private static boolean takeBudget(Object2LongOpenHashMap<Item> budget, Item item) {
+        long left = budget.getLong(item);
+        if (left <= 0) return false;
+        budget.put(item, left - 1);
+        return true;
+    }
+
     /**
      * 将物品解构为宝石、附魔书和材料
      *
      * @param inputsItems  输入列表
      * @param outputsItems 输出列表
      */
-    private boolean disassembleEquipment(ItemStack stack, List<ItemStack> inputsItems, List<ItemStack> outputsItems) {
+    private boolean disassembleEquipment(ItemStack stack, List<ItemStack> inputsItems, List<ItemStack> outputsItems, Object2LongOpenHashMap<Item> budget) {
+        List<ItemStack> outputs = new ArrayList<>();
+        boolean needBook = false;
+        boolean needCanvas = false;
         boolean find = false;
 
-        // 提取附魔
         if (circuit == 1 || circuit == 3) {
-            if (extractEnchantmentsToBook(stack, outputsItems)) {
-                inputsItems.add(new ItemStack(Items.BOOK));
-                find = true;
-            }
+            needBook = extractEnchantmentsToBook(stack, outputs);
         } else if (circuit == 2 || circuit == 4) {
-            if (extractEnchantmentsToEssence(stack, outputsItems))
-                find = true;
+            find = extractEnchantmentsToEssence(stack, outputs);
         }
 
-        // 提取词缀
         if (circuit == 1 || circuit == 2) {
-            if (extractAffix1(stack, outputsItems)) {
-                inputsItems.add(new ItemStack(GTOItems.AFFIX_CANVAS));
-                find = true;
-            }
+            needCanvas = extractAffix1(stack, outputs);
         } else if (circuit == 3 || circuit == 4) {
-            if (extractAffix2(stack, outputsItems))
-                find = true;
+            if (extractAffix2(stack, outputs)) find = true;
         }
 
-        // 提取宝石
-        if (extractGems(stack, outputsItems)) {
-            inputsItems.add(new ItemStack(Adventure.Items.SIGIL_OF_WITHDRAWAL.get()));
-            find = true;
+        List<ItemStack> gems = new ArrayList<>();
+        boolean needSigil = extractGems(stack, gems);
+
+        Item book = Items.BOOK;
+        Item canvas = GTOItems.AFFIX_CANVAS.asItem();
+        Item sigil = Adventure.Items.SIGIL_OF_WITHDRAWAL.get();
+        if (needBook && budget.getLong(book) <= 0) return false;
+        if (needCanvas && budget.getLong(canvas) <= 0) return false;
+        if (needSigil && budget.getLong(sigil) <= 0) {
+            if (circuit != 4) return false;
+            needSigil = false;
+            gems.clear();
         }
 
-        // 电路4强行粉碎
+        if (needBook && takeBudget(budget, book)) inputsItems.add(new ItemStack(book));
+        if (needCanvas && takeBudget(budget, canvas)) inputsItems.add(new ItemStack(canvas));
+        if (needSigil && takeBudget(budget, sigil)) inputsItems.add(new ItemStack(sigil));
+        outputsItems.addAll(outputs);
+        outputsItems.addAll(gems);
+
         if (circuit == 4) find = true;
 
-        return generateMaterials(stack, outputsItems) || find;
+        return generateMaterials(stack, outputsItems) || find || needBook || needCanvas || needSigil;
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.gtocore.api.wireless.energy;
 
 /**
- * 整笔结算：本地先付，其余经 FlowPlan 按最大流分配；duration > 0 时线路按每 tick 功率预约整个时长，否则一次性占用令牌。
+ * 整笔结算：本地先付，其余经 FlowPlan 按最大流分配；duration > 0 时线路与各档能源塔吞吐按每 tick 功率预约整个时长，否则一次性占用令牌、不计吞吐。
  * plan 只计算并写出收据，commit 照收据执行，refund 照收据原路退回（存量、令牌、预约）。
  */
 final class Settlement {
@@ -16,7 +16,7 @@ final class Settlement {
         int now = GridClock.tick();
         receipt.restHi = hi;
         receipt.restLo = lo;
-        takeBanks(d, voltage, hi, lo, receipt);
+        takeBanks(d, voltage, hi, lo, duration, receipt);
         if (!settled(receipt) && d.routes.length != 0) {
             if (duration > 0) reserveRemote(d, voltage, duration, priority, now, receipt);
             else tokenRemote(d, voltage, priority, now, receipt);
@@ -24,6 +24,7 @@ final class Settlement {
         if (settled(receipt)) {
             receipt.priority = priority;
             receipt.reserve = duration > 0;
+            receipt.duration = duration;
             receipt.until = duration > 0 ? (int) Math.min(Integer.MAX_VALUE, (long) now + duration) : now;
             return SettleResult.OK;
         }
@@ -36,10 +37,20 @@ final class Settlement {
         return receipt.restHi == 0 && receipt.restLo == 0;
     }
 
-    private static void takeBanks(GridNode node, int voltage, long hi, long lo, SettleReceipt receipt) {
+    private static void takeBanks(GridNode node, int voltage, long hi, long lo, int duration, SettleReceipt receipt) {
+        if (duration > 0) node.roll();
         for (int m = node.drawable(voltage); m != 0 && (hi != 0 || lo != 0); m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
             long th = node.bankHi[t], tl = node.bankLo[t];
+            if (duration > 0) {
+                long left = node.outLeft(t);
+                if (left <= 0) continue;
+                long lh = U126.mulHi(left, duration), ll = U126.mulLo(left, duration);
+                if (U126.compare(th, tl, lh, ll) > 0) {
+                    th = lh;
+                    tl = ll;
+                }
+            }
             if (U126.compare(th, tl, hi, lo) > 0) {
                 th = hi;
                 tl = lo;
@@ -63,7 +74,7 @@ final class Settlement {
         }
         for (int i = 0, n = plan.nodeCount(); i < n; i++) {
             var node = plan.node(i);
-            if (node.planAmount > 0) takeBanks(node, voltage, 0, node.planAmount, receipt);
+            if (node.planAmount > 0) takeBanks(node, voltage, 0, node.planAmount, 0, receipt);
         }
     }
 
@@ -83,7 +94,7 @@ final class Settlement {
                 th = receipt.restHi;
                 tl = receipt.restLo;
             }
-            takeBanks(node, voltage, th, tl, receipt);
+            takeBanks(node, voltage, th, tl, duration, receipt);
         }
     }
 
@@ -103,6 +114,7 @@ final class Settlement {
         for (int i = 0; i < receipt.count; i++) {
             var node = receipt.nodes[i];
             node.withdraw(receipt.banks[i], receipt.his[i], receipt.los[i]);
+            if (receipt.reserve) node.reserveOut(receipt.banks[i], receipt.perTick(i), receipt.until);
             account.roomFreed(node);
         }
         for (int i = 0; i < receipt.arcCount; i++) {
@@ -119,7 +131,9 @@ final class Settlement {
         int now = GridClock.tick();
         for (int i = 0; i < receipt.count; i++) {
             var node = receipt.nodes[i];
+            if (receipt.reserve) node.cancelOut(receipt.banks[i], receipt.perTick(i), receipt.until);
             if (account.nodes.get(node.dimension) == node && node.hasCapacity()) {
+
                 node.refund(receipt.banks[i], receipt.his[i], receipt.los[i]);
             } else {
                 account.addPending(receipt.his[i], receipt.los[i]);

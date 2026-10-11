@@ -1,5 +1,6 @@
 package com.gtocore.utils.register;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.common.machine.mana.SimpleWorkManaMachine;
 
 import com.gtolib.GTOCore;
@@ -24,6 +25,8 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredMachineRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRenderer;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
@@ -66,8 +69,8 @@ public final class MachineRegisterUtils {
 
     public static final BiConsumer<IMultiController, List<Component>> CHEMICAL_PLANT_DISPLAY = (controller, components) -> {
         double value = 1 - ((ICoilMachine) controller).getCoilTier() * 0.05;
-        components.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(value)));
-        components.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(value)));
+        components.add(Tips.stat(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(value))));
+        components.add(Tips.stat(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(value))));
     };
 
     public static GTOMachineBuilder machine(String name, String cn, Function<MetaMachineBlockEntity, MetaMachine> metaMachine) {
@@ -100,10 +103,10 @@ public final class MachineRegisterUtils {
                     builder.langValue(GTOValues.VNFR[tier] + " " + (amperage > 2 ? FormattingUtil.formatNumbers(amperage) + (amperage > 64 ? "§eA§r " : "A ") : "") + "Wireless " + (io == IO.IN ? "Energy" : "Dynamo") + " Hatch")
                             .allRotation()
                             .abilities(ability)
-                            .tooltips(Component.translatable("gtceu.universal.tooltip.voltage_" + iao, FormattingUtil.formatNumbers(V[tier]), VNF[tier]),
-                                    Component.translatable("gtceu.universal.tooltip.amperage_" + iao, amperage),
-                                    Component.translatable("gtceu.universal.tooltip.energy_storage_capacity", FormattingUtil.formatNumbers(WirelessEnergyHatchPartMachine.getHatchEnergyCapacity(tier, amperage))),
-                                    Component.translatable("gtmthings.machine.wireless_energy_hatch." + id + ".tooltip"));
+                            .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_" + iao, FormattingUtil.formatNumbers(V[tier]), VNF[tier])),
+                                    Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_" + iao, amperage)),
+                                    Tips.energy(StatKind.ENERGY_CAPACITY, WirelessEnergyHatchPartMachine.getHatchEnergyCapacity(tier, amperage), tier),
+                                    Tips.control(Component.translatable("gtmthings.machine.wireless_energy_hatch." + id + ".tooltip")));
                     return builder.renderer(() -> new OverlayTieredMachineRenderer(tier, GTMThings.id("block/machine/part/" + finalRender)))
                             .register();
                 },
@@ -116,8 +119,8 @@ public final class MachineRegisterUtils {
                 (holder, tier) -> new LaserHatchPartMachine(holder, io, tier, amperage), (tier, builder) -> builder
                         .langValue(GTOValues.VNFR[tier] + " " + FormattingUtil.formatNumbers(amperage) + "§eA§r Laser " + FormattingUtil.toEnglishName(name) + " Hatch")
                         .allRotation()
-                        .tooltips(Component.translatable("gtceu.machine.laser_hatch." + name + ".tooltip"),
-                                Component.translatable("gtceu.machine.laser_hatch.both.tooltip"))
+                        .tips(Tips.feature(Component.translatable("gtceu.machine.laser_hatch." + name + ".tooltip")),
+                                Tips.requirement(Component.translatable("gtceu.machine.laser_hatch.both.tooltip")))
                         .notAllowSharedTooltips()
                         .abilities(ability)
                         .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/laser_hatch." + name)))
@@ -137,9 +140,7 @@ public final class MachineRegisterUtils {
                         .addOutputLimit(ItemRecipeInfo.INSTANCE, 0)
                         .addOutputLimit(FluidRecipeInfo.INSTANCE, 0)
                         .renderer(() -> new SimpleGeneratorMachineRenderer(tier, GTOCore.id("block/generators/" + name)))
-                        .tooltips(Component.translatable("gtocore.machine.efficiency.tooltip", GTOUtils.getGeneratorEfficiency(recipeType, tier)).append("%"))
-                        .tooltips(Component.translatable("gtceu.universal.tooltip.amperage_out", GTOUtils.getGeneratorAmperage(tier)))
-                        .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, recipeType, tankScalingFunction.apply(tier), false))
+                        .tips(MachineRegisterUtils.generatorStats(recipeType, tier, tankScalingFunction.apply(tier)))
                         .register(),
                 tiers);
     }
@@ -157,11 +158,20 @@ public final class MachineRegisterUtils {
                         .addOutputLimit(ItemRecipeInfo.INSTANCE, 0)
                         .addOutputLimit(FluidRecipeInfo.INSTANCE, 0)
                         .renderer(() -> new SimpleGeneratorMachineRenderer(tier, GTOCore.id("block/generators/" + name)))
-                        .tooltips(Component.translatable("gtocore.machine.efficiency.tooltip", GTOUtils.getGeneratorEfficiency(recipeType, tier)).append("%"))
-                        .tooltips(Component.translatable("gtceu.universal.tooltip.amperage_out", GTOUtils.getGeneratorAmperage(tier)))
-                        .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, recipeType, tankScalingFunction.apply(tier), false))
+                        .tips(MachineRegisterUtils.generatorStats(recipeType, tier, tankScalingFunction.apply(tier)))
                         .register(),
                 tiers);
+    }
+
+    public static Component[] generatorStats(GTRecipeType recipeType, int tier, long tankCapacity) {
+        boolean fluid = recipeType.getMaxInputs(FluidRecipeInfo.INSTANCE) > 0 || recipeType.getMaxOutputs(FluidRecipeInfo.INSTANCE) > 0;
+        return TipSpec.builder().stats(l -> {
+            l.stat(StatKind.VOLTAGE_OUT, StatKind.voltage(V[tier], tier));
+            l.stat(StatKind.AMPERAGE_OUT, GTOUtils.getGeneratorAmperage(tier));
+            l.energy(StatKind.ENERGY_CAPACITY, V[tier] << 6, tier);
+            if (fluid) l.stat(StatKind.FLUID_CAPACITY, StatKind.number(tankCapacity));
+            l.stat(StatKind.EFFICIENCY, GTOUtils.getGeneratorEfficiency(recipeType, tier));
+        }).build().toArray();
     }
 
     public static MachineDefinition[] registerSimpleMachines(String name, String cn, GTRecipeType recipeType,
@@ -189,7 +199,7 @@ public final class MachineRegisterUtils {
                             .nonYAxisRotation()
                             .recipeType(recipeType)
                             .workableTieredHullRenderer(workableModel)
-                            .tooltips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, recipeType,
+                            .tips(GTMachineUtils.workableTiered(tier, V[tier], V[tier] << 6, recipeType,
                                     tankScalingFunction.apply(tier), true))
                             .register();
                 },
@@ -215,7 +225,7 @@ public final class MachineRegisterUtils {
                         .recipeType(recipeType)
                         .noRecipeModifier()
                         .workableTieredHullRenderer(workableModel)
-                        .tooltips(workableNoEnergy(recipeType, tankScalingFunction.apply(tier)))
+                        .tips(workableNoEnergy(recipeType, tankScalingFunction.apply(tier)))
                         .register(),
                 tiers);
     }
@@ -225,8 +235,8 @@ public final class MachineRegisterUtils {
         if (recipeType.getMaxInputs(FluidRecipeInfo.INSTANCE) > 0 ||
                 recipeType.getMaxOutputs(FluidRecipeInfo.INSTANCE) > 0)
             tooltipComponents
-                    .add(Component.translatable("gtceu.universal.tooltip.fluid_storage_capacity",
-                            FormattingUtil.formatNumbers(tankCapacity)));
+                    .add(Tips.stat(Component.translatable("gtceu.universal.tooltip.fluid_storage_capacity",
+                            FormattingUtil.formatNumbers(tankCapacity))));
         return tooltipComponents.toArray(Component[]::new);
     }
 
@@ -284,11 +294,11 @@ public final class MachineRegisterUtils {
                     .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id(name), recipeType))
                     .nonYAxisRotation()
                     .recipeType(recipeType)
-                    .tooltips(Component.translatable("gtocore.machine.mana_eu").withStyle(ChatFormatting.GREEN))
-                    .tooltips(Component.translatable("gtceu.machine.perfect_oc").withStyle(ChatFormatting.YELLOW))
-                    .tooltips(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
+                    .tips(Tips.supported(Component.translatable("gtocore.machine.mana_eu")))
+                    .tips(Tips.bonus(Component.translatable("gtceu.machine.perfect_oc")))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE))))
                     .workableManaTieredHullRenderer(tier, workableModel)
-                    .tooltips(workableNoEnergy(recipeType, tankScalingFunction.apply(tier)))
+                    .tips(workableNoEnergy(recipeType, tankScalingFunction.apply(tier)))
                     .register();
         },
                 tiers);

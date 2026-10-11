@@ -29,6 +29,7 @@ import com.gtolib.api.rule.RuleManager;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
 import com.gtolib.utils.ItemUtils;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.core.ILevel;
@@ -127,20 +128,16 @@ public final class ForgeClientEvent {
         if (translationKey.startsWith(ITEM_PREFIX) || translationKey.startsWith(BLOCK_PREFIX)) {
             String tooltipKey = translationKey + ".tooltip";
             if (I18n.exists(tooltipKey)) {
-                event.getToolTip().add(1, Component.translatable(tooltipKey));
+                event.getToolTip().add(1, Tips.summary(Component.translatable(tooltipKey)));
             }
         }
         Item item = stack.getItem();
-        var arr = ((IItem) item).gtolib$getToolTips();
-        if (arr != null) {
-            for (int i = arr.length - 1; i >= 0; i--) {
-                event.getToolTip().add(1, arr[i].get());
-            }
-        }
+        var tips = ((IItem) item).gtolib$getTips();
+        if (tips != null) event.getToolTip().addAll(1, tips.get());
         var lang = Tooltips.TOOL_TIPS_MAP.get(item);
         if (lang != null) {
             for (int i = 0; i < lang.length(); i++) {
-                event.getToolTip().add(Component.translatable("gtocore.tooltip.item." + ItemUtils.getIdLocation(item).getPath() + "." + i));
+                event.getToolTip().add(Tips.feature(Component.translatable("gtocore.tooltip.item." + ItemUtils.getIdLocation(item).getPath() + "." + i)));
             }
         } else {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);
@@ -150,6 +147,11 @@ public final class ForgeClientEvent {
             event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());
         }
         SpaceResourceTooltips.append(item, event.getToolTip());
+        var tag = stack.getTag();
+        if (tag != null && tag.getInt("craft_step") > 0) {
+            int step = tag.getInt("current_craft_step"), max = tag.getInt("craft_step");
+            event.getToolTip().add(Tips.progress(Component.translatable("gtocore.tooltip.item.craft_step", step + "/" + max), (float) step / max));
+        }
     }
 
     @SubscribeEvent

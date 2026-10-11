@@ -21,7 +21,10 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.*;
+
+import net.minecraft.network.chat.Component;
 
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
@@ -35,8 +38,8 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition SUPER_BLAST_SMELTER = multiblock("super_blast_smelter", "超级冶炼炉", CoilCrossRecipeMultiblockMachine.createHatchParallel(true))
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.SuperBlastSmelterTooltips)
-            .tooltipsKey("gtceu.machine.electric_blast_furnace.tooltip.2")
+            .tips(GTOMachineStories.SuperBlastSmelterTooltips)
+            .tips(Tips.bonus(Component.translatable("gtceu.machine.electric_blast_furnace.tooltip.2")))
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -99,8 +102,8 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition COMPOUND_EXTREME_COOLING_UNIT = multiblock("compound_extreme_cooling_unit", "复合式极端冷却装置", CompoundExtremeCoolingMachine::new)
             .allRotation()
-            .tooltips(GTOMachineStories.CompoundExtremeCoolingUnitTooltips)
-            .tooltips(GTOMachineTooltips.CompoundExtremeCoolingUnitTooltips)
+            .tips(GTOMachineStories.CompoundExtremeCoolingUnitTooltips)
+            .tips(GTOMachineTooltips.CompoundExtremeCoolingUnitTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -113,7 +116,7 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition COMPOUND_DISTILLATION_FRACTIONATOR = multiblock("compound_distillation_fractionator", "复合式蒸馏分馏塔", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.CompoundDistillationTowerTooltips)
+            .tips(GTOMachineStories.CompoundDistillationTowerTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -146,7 +149,7 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition SUPERCONDUCTING_ELECTROMAGNETISM = multiblock("superconducting_electromagnetism", "超导电磁工厂", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.SuperconductingElectromagnetismTooltips)
+            .tips(GTOMachineStories.SuperconductingElectromagnetismTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -173,7 +176,7 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition CRYSTAL_BUILDER = multiblock("crystal_builder", "晶体构建者", CoilCrossRecipeMultiblockMachine::createCoilParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.CrystalBuilderTooltips)
+            .tips(GTOMachineStories.CrystalBuilderTooltips)
             .coilParallelTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -209,7 +212,7 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition HOLY_SEPARATOR = multiblock("holy_separator", "神圣分离者", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.HolySeparatorTooltips)
+            .tips(GTOMachineStories.HolySeparatorTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -244,7 +247,7 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition FIELD_EXTRUDER_FACTORY = multiblock("field_extruder_factory", "力场压模工厂", CrossRecipeMultiblockMachine::createHatchParallel)
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.FieldExtruderFactoryTooltips)
+            .tips(GTOMachineStories.FieldExtruderFactoryTooltips)
             .parallelizableTooltips()
             .laserTooltips()
             .multipleRecipesTooltips()
@@ -275,8 +278,8 @@ public final class MultiBlockF {
 
     public static final MultiblockMachineDefinition SWARM_CORE = multiblock("swarm_core", "蜂群之心", CustomParallelMultiblockMachine.createParallel(m -> 8192))
             .nonYAxisRotation()
-            .tooltips(GTOMachineStories.SwarmCoreTooltips)
-            .tooltips(GTOMachineTooltips.SwarmCoreTooltips)
+            .tips(GTOMachineStories.SwarmCoreTooltips)
+            .tips(GTOMachineTooltips.SwarmCoreTooltips)
             .perfectOCTooltips()
             .laserTooltips()
             .recipeTypes(GTORecipeTypes.NANO_FORGE_RECIPES)

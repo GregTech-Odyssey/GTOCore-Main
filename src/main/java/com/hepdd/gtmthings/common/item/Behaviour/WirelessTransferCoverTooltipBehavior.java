@@ -1,6 +1,7 @@
 package com.hepdd.gtmthings.common.item.Behaviour;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -10,7 +11,6 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -33,9 +33,7 @@ public class WirelessTransferCoverTooltipBehavior implements IAddInformation {
             String itemId = tag.getString("blockid");
             String pos = tag.getString("pos");
             if (!itemId.isEmpty() && !pos.isEmpty()) {
-                List<Component> lst = new ArrayList<>();
-                lst.add(Component.translatable("item.gtmthings.wireless_transfer.tooltip.1", Component.translatable(itemId), pos));
-                tooltipComponents.addAll(lst);
+                tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.wireless_transfer.tooltip.1", Component.translatable(itemId), pos)));
             }
         }
         tooltips.accept(tooltipComponents);

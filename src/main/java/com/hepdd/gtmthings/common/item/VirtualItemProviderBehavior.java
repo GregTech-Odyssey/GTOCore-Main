@@ -5,6 +5,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -50,8 +51,9 @@ public final class VirtualItemProviderBehavior implements IAddInformation, IItem
     public void appendTooltips(@NotNull ItemStack itemstack, @Nullable Level world, @NotNull List<Component> list, @NotNull TooltipFlag flag) {
         ItemStack item = getVirtualItem(itemstack);
         if (item.isEmpty()) return;
-        list.add(Component.translatable("gui.ae2.Items").append(": "));
-        list.addAll(item.getTooltipLines(null, TooltipFlag.Default.NORMAL));
+        List<Component> lines = item.getTooltipLines(null, TooltipFlag.Default.NORMAL);
+        list.add(Tips.stat(Component.translatable("gui.ae2.Items").append(": ").append(lines.get(0))));
+        for (int i = 1; i < lines.size(); i++) list.add(Tips.detail(lines.get(i)));
     }
 
     @Override

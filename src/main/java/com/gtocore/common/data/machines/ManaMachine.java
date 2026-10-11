@@ -1,5 +1,7 @@
 package com.gtocore.common.data.machines;
 
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.client.renderer.machine.CelestialCondenserRenderer;
 import com.gtocore.client.renderer.machine.ManaHeaterRenderer;
@@ -48,7 +50,7 @@ public final class ManaMachine {
                     .allRotation()
                     .abilities(GTOPartAbility.PASSTHROUGH_HATCH_MANA)
                     .renderer(() -> new OverlayManaTieredMachineRenderer(tier, GTCEu.id("block/machine/part/hull")))
-                    .tooltips(Component.translatable("gtceu.machine.hull.tooltip"))
+                    .tips(Tips.lore(Component.translatable("gtceu.machine.hull.tooltip")))
                     .register(),
             GTValues.tiersBetween(0, 13));
 
@@ -62,13 +64,12 @@ public final class ManaMachine {
                     .nonYAxisRotation()
                     .renderer(() -> new SimpleGeneratorMachineRenderer(tier,
                             GTOCore.id("block/generators/primitive_magic_energy")))
-                    .tooltips(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.0"))
-                    .tooltips(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.1"))
-                    .tooltips(Component.translatable("gtceu.universal.tooltip.amperage_out", GTORules.MAGIC_GENERATOR_AMPERAGE.get()))
-                    .tooltips(Component.translatable("gtceu.universal.tooltip.voltage_out",
-                            FormattingUtil.formatNumbers(V[tier]), VNF[tier]))
-                    .tooltips(Component.translatable("gtceu.universal.tooltip.energy_storage_capacity",
-                            FormattingUtil.formatNumbers(V[tier] << 8)))
+                    .tips(Tips.warning(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.0")))
+                    .tips(Tips.warning(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.1")))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_out", GTORules.MAGIC_GENERATOR_AMPERAGE.get())))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out",
+                            FormattingUtil.formatNumbers(V[tier]), VNF[tier])))
+                    .tips(Tips.energy(StatKind.ENERGY_CAPACITY, V[tier] << 8, tier))
                     .register(),
             LV, MV);
 
@@ -78,7 +79,7 @@ public final class ManaMachine {
                     .langValue(MANAN[tier] + " Mana Extract Hatch")
                     .allRotation()
                     .abilities(GTOPartAbility.EXTRACT_MANA)
-                    .tooltips(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(GTOValues.MANA[tier] << 2) + " /t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(GTOValues.MANA[tier] << 2) + " /t").withStyle(ChatFormatting.WHITE))))
                     .renderer(() -> new OverlayManaTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.input_64a")))
                     .register(),
             GTMachineUtils.ELECTRIC_TIERS);
@@ -89,7 +90,7 @@ public final class ManaMachine {
                     .langValue(MANAN[tier] + " Mana Input Hatch")
                     .allRotation()
                     .abilities(GTOPartAbility.INPUT_MANA)
-                    .tooltips(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE))))
                     .renderer(() -> new OverlayManaTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.input_64a")))
                     .register(),
             GTMachineUtils.ELECTRIC_TIERS);
@@ -100,7 +101,7 @@ public final class ManaMachine {
                     .langValue(MANAN[tier] + " Mana Output Hatch")
                     .allRotation()
                     .abilities(GTOPartAbility.OUTPUT_MANA)
-                    .tooltips(Component.translatable("gtocore.machine.mana_output", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_output", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE))))
                     .renderer(() -> new OverlayManaTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.output_64a")))
                     .register(),
             GTMachineUtils.ELECTRIC_TIERS);
@@ -111,7 +112,7 @@ public final class ManaMachine {
                     .langValue(MANAN[tier] + " Wireless Mana Input Hatch")
                     .allRotation()
                     .abilities(GTOPartAbility.INPUT_MANA)
-                    .tooltips(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_input", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE))))
                     .renderer(() -> new OverlayManaTieredMachineRenderer(tier, GTOCore.id("block/machine/part/" + "wireless_mana_hatch")))
                     .register(),
             GTMachineUtils.ELECTRIC_TIERS);
@@ -122,7 +123,7 @@ public final class ManaMachine {
                     .langValue(MANAN[tier] + " Wireless Mana Output Hatch")
                     .allRotation()
                     .abilities(GTOPartAbility.OUTPUT_MANA)
-                    .tooltips(Component.translatable("gtocore.machine.mana_output", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_output", Component.literal(FormattingUtil.formatNumbers(4 * GTOValues.MANA[tier]) + " /t").withStyle(ChatFormatting.WHITE))))
                     .renderer(() -> new OverlayManaTieredMachineRenderer(tier, GTOCore.id("block/machine/part/" + "wireless_mana_hatch")))
                     .register(),
             GTMachineUtils.ELECTRIC_TIERS);
@@ -130,14 +131,14 @@ public final class ManaMachine {
     public static final MachineDefinition MANA_AMPLIFIER_HATCH = manaMachine("mana_amplifier_hatch", "魔力增幅仓", ManaAmplifierPartMachine::new)
             .tier(MV)
             .allRotation()
-            .tooltips(GTOMachineTooltips.ManaAmplifierHatchTooltips)
+            .tips(GTOMachineTooltips.ManaAmplifierHatchTooltips)
             .workableManaTieredHullRenderer(6, GTOCore.id("block/multiblock/mana"))
             .register();
 
     public static final MachineDefinition ME_MANA_AMPLIFIER_HATCH = manaMachine("me_mana_amplifier_hatch", "ME魔力增幅仓", MEManaAmplifierPartMachine::new)
             .tier(HV)
             .allRotation()
-            .tooltips(GTOMachineTooltips.ManaAmplifierHatchTooltips)
+            .tips(GTOMachineTooltips.ManaAmplifierHatchTooltips)
             .workableManaTieredHullRenderer(7, GTOCore.id("block/multiblock/mana"))
             .register();
 
@@ -145,15 +146,15 @@ public final class ManaMachine {
             .tier(HV)
             .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("alchemy_cauldron"), GTORecipeTypes.ALCHEMY_CAULDRON_RECIPES))
             .recipeType(GTORecipeTypes.ALCHEMY_CAULDRON_RECIPES)
-            .tooltips(GTOMachineTooltips.AlchemicalDeviceTooltips)
-            .tooltips(GTOMachineTooltips.AlchemyCauldronTooltips)
-            .tooltips(Component.translatable("gtocore.machine.mana_input", Component.literal(GTOValues.MANA[HV] + "/t").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.AQUA))
-            .tooltips(workableNoEnergy(GTORecipeTypes.ALCHEMY_CAULDRON_RECIPES, 1600))
-            .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 1600))
-            .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 0.5))
-            .tooltips(Component.translatable(HeatInterfaceCover.TRANSFER_RATE, 1))
-            .tooltips(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.02))
-            .tooltips(Component.translatable(HeatInterfaceCover.CONSUMPTION_RATE, 0.25))
+            .tips(GTOMachineTooltips.AlchemicalDeviceTooltips)
+            .tips(GTOMachineTooltips.AlchemyCauldronTooltips)
+            .tips(Tips.stat(Component.translatable("gtocore.machine.mana_input", Component.literal(GTOValues.MANA[HV] + "/t").withStyle(ChatFormatting.WHITE))))
+            .tips(workableNoEnergy(GTORecipeTypes.ALCHEMY_CAULDRON_RECIPES, 1600))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 1600)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 0.5)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.TRANSFER_RATE, 1)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.02)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.CONSUMPTION_RATE, 0.25)))
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/alchemy_cauldron"))
             .blockProp(p -> p.noOcclusion().isViewBlocking((state, level, pos) -> false))
@@ -163,7 +164,7 @@ public final class ManaMachine {
             .tier(HV)
             .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTCEu.id("celestial_condenser"), GTORecipeTypes.CELESTIAL_CONDENSER_RECIPES))
             .recipeType(GTORecipeTypes.CELESTIAL_CONDENSER_RECIPES)
-            .tooltips(GTOMachineTooltips.CelestialCondenserTooltips)
+            .tips(GTOMachineTooltips.CelestialCondenserTooltips)
             .nonYAxisRotation()
             .renderer(CelestialCondenserRenderer::new)
             .hasTESR(true)
@@ -176,32 +177,32 @@ public final class ManaMachine {
             .recipeType(GTORecipeTypes.MANA_HEATER_RECIPES)
             .noRecipeModifier()
             .nonYAxisRotation()
-            .tooltips(GTOMachineTooltips.ManaHeaterTooltips)
-            .tooltips(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 2400))
-            .tooltips(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 4))
-            .tooltips(Component.translatable(HeatInterfaceCover.TRANSFER_RATE, 0.4))
-            .tooltips(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01))
-            .tooltips(Component.translatable(HeatInterfaceCover.GENERATION_RATE, 1.6))
+            .tips(GTOMachineTooltips.ManaHeaterTooltips)
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.MAX_TEMPERATURE, 2400)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.HEAT_CAPACITY, 4)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.TRANSFER_RATE, 0.4)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01)))
+            .tips(Tips.stat(Component.translatable(HeatInterfaceCover.GENERATION_RATE, 1.6)))
             .renderer(() -> new ManaHeaterRenderer(MV))
             .register();
 
     public static final MachineDefinition AREA_DESTRUCTION_TOOLS = machine("area_destruction_tools", "区域破坏器", AreaDestructionToolsMachine::new)
             .tier(EV)
-            .tooltipBuilder((stack, list) -> GTOMachineTooltips.AreaDestructionToolsTooltips.apply(list))
+            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.AreaDestructionToolsTooltips.get()))
             .nonYAxisRotation()
             .workableManaTieredHullRenderer(4, GTOCore.id("block/multiblock/area_destruction_tools"))
             .register();
 
     public static final MachineDefinition AE_MANA_INTERFACE = machine("me_mana_interface", "ME魔力接口", MEManaInterface::new)
             .tier(ZPM)
-            .tooltips(GTOMachineTooltips.AEManaInterfaceTooltips)
+            .tips(GTOMachineTooltips.AEManaInterfaceTooltips)
             .allRotation()
             .workableManaTieredHullRenderer(7, GTOCore.id("block/multiblock/mana"))
             .register();
 
     public static final MachineDefinition XP_OBELISK = machine("exp_obelisk", "经验方尖碑", ExperienceObelisk::new)
             .tier(ULV)
-            .tooltips(GTOMachineTooltips.experienceObeliskTooltips)
+            .tips(GTOMachineTooltips.experienceObeliskTooltips)
             .allRotation()
             .workableManaTieredHullRenderer(0, GTOCore.id("block/multiblock/mana"))
             .register();

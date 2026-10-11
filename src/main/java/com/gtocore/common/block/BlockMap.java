@@ -36,6 +36,7 @@ public final class BlockMap {
     public static Block[] ABS_CASING;
     public static Block[] LIGHT;
     public static Block[] WIRELESS_ENERGY_UNIT;
+    public static Block[] WIRELESS_ENERGY_TRANSFER_UNIT;
     public static Block[] ME_STORAGE_CORE;
     public static Block[] CRAFTING_STORAGE_CORE;
 
@@ -89,8 +90,11 @@ public final class BlockMap {
         return Component.translatable(namePrefix + "." + category);
     }
 
-    @RegisterLanguage(namePrefix = namePrefix, cn = "无线能量单元", en = "Wireless Energy Unit")
+    @RegisterLanguage(namePrefix = namePrefix, cn = "无线能源塔存储单元", en = "Wireless Energy Tower Storage Unit")
     private static final String wireless_energy_unit = "wireless_energy_unit";
+
+    @RegisterLanguage(namePrefix = namePrefix, cn = "无线能源塔传输单元", en = "Wireless Energy Tower Transfer Unit")
+    private static final String wireless_energy_transfer_unit = "wireless_energy_transfer_unit";
 
     @RegisterLanguage(namePrefix = namePrefix, cn = "ME存储核心", en = "ME Storage Core")
     private static final String me_storage_core = "me_storage_core";
@@ -202,6 +206,9 @@ public final class BlockMap {
 
         WIRELESS_ENERGY_UNIT = GTOUtils.array(GTOBlocks.LV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.MV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.HV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.EV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.IV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.LUV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.ZPM_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.UV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.UHV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.UEV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.UIV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.UXV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.OPV_WIRELESS_ENERGY_UNIT.get(), GTOBlocks.MAX_WIRELESS_ENERGY_UNIT.get());
         MAP.put(wireless_energy_unit, WIRELESS_ENERGY_UNIT);
+
+        WIRELESS_ENERGY_TRANSFER_UNIT = GTOUtils.array(GTOBlocks.LV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.MV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.HV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.EV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.IV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.LUV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.ZPM_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.UV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.UHV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.UEV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.UIV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.UXV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.OPV_WIRELESS_ENERGY_TRANSFER_UNIT.get(), GTOBlocks.MAX_WIRELESS_ENERGY_TRANSFER_UNIT.get());
+        MAP.put(wireless_energy_transfer_unit, WIRELESS_ENERGY_TRANSFER_UNIT);
 
         ME_STORAGE_CORE = GTOUtils.array(GTOBlocks.T1_ME_STORAGE_CORE.get(), GTOBlocks.T2_ME_STORAGE_CORE.get(), GTOBlocks.T3_ME_STORAGE_CORE.get(), GTOBlocks.T4_ME_STORAGE_CORE.get(), GTOBlocks.T5_ME_STORAGE_CORE.get());
         MAP.put(me_storage_core, ME_STORAGE_CORE);
