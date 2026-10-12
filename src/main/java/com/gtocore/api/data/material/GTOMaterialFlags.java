@@ -63,7 +63,7 @@ public final class GTOMaterialFlags {
     public static final MaterialFlag GENERATE_MXene = new MaterialFlag.Builder("generate_mxene")
             .build();
 
-    public static final MaterialFlag GENERATE_MEMBRANE_ELECTRODE = new MaterialFlag.Builder("generate_membrane_electrode")
+    public static final MaterialFlag GENERATE_ION_MEMBRANE = new MaterialFlag.Builder("generate_ion_membrane")
             .build();
 
     public static final MaterialFlag CAN_BE_COOLED_DOWN_BY_BATHING = new MaterialFlag.Builder("can_be_cooled_down_by_bathing")

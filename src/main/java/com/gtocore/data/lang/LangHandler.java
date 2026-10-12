@@ -1,5 +1,6 @@
 package com.gtocore.data.lang;
 
+import com.gtocore.api.electrochemistry.Ions;
 import com.gtocore.api.lang.TipKeys;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.ResearchTag;
@@ -76,6 +77,7 @@ public final class LangHandler {
         BlockRegisterUtils.LANG.forEach((k, v) -> addCN("block.gtocore." + k, v));
         GTORecipeCategories.LANG.forEach((k, v) -> addCNEN("gtceu.recipe.category." + k, v));
         GTOFluidStorageKey.initLang();
+        Ions.NAME_TO_transkey.forEach(LangHandler::addCNEN);
         for (var type : OrganType.VALUES) addCNEN(type.translationKey, type.cn, type.en);
         for (var tier : OrganTier.all()) addCNEN(tier.getTranslationKey(), tier.getCn(), tier.getEn());
         GTOMachineBuilder.LANG.forEach(LangHandler::addCNEN);

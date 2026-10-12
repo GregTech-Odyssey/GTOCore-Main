@@ -614,17 +614,15 @@ public final class GeneratorMultiblock {
             .hasTESR(true)
             .register();
 
-    public static final MultiblockMachineDefinition FUEL_CELL_GENERATOR = multiblock("fuel_cell_generator", "燃料电池发电机", FullCellGenerator::new)
+    public static final MultiblockMachineDefinition FUEL_CELL_GENERATOR = multiblock("fuel_cell_generator", "液流燃料电池", FlowFuelCellGenerator::new)
             .nonYAxisRotation()
             .recipeTypes(GTORecipeTypes.FUEL_CELL_ENERGY_ABSORPTION_RECIPES)
-            .recipeTypes(GTORecipeTypes.FUEL_CELL_ENERGY_TRANSFER_RECIPES)
             .recipeTypes(GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES)
             .generator()
-            .ruleTooltips(GTORules.FUEL_CELL_CONSUME)
             .tips(GTOMachineTooltips.FuelCellGeneratorTooltips)
             .block(GTOBlocks.IRIDIUM_CASING)
             .recipeModifier((m, u, r) -> {
-                if (m instanceof FullCellGenerator f && f.isGenerator())
+                if (m instanceof FlowFuelCellGenerator f && f.isGenerator())
                     return RecipeModifier.GENERATOR_OVERCLOCKING.applyModifier(m, u, r);
                 else return r;
             })
@@ -633,12 +631,14 @@ public final class GeneratorMultiblock {
                     .symbols(Symbols.create()
                             .wherePart('A', blocks(GTOBlocks.IRIDIUM_CASING.get())
                                     .or(abilities(OUTPUT_ENERGY).or(abilities(INPUT_ENERGY).or(abilities(OUTPUT_LASER))))
+                                    .or(blocks(ExResearchMachines.ENERGY_DATA_HOLDER.get()).setMaxGlobalLimited(1)))
+                            .wherePart('S', blocks(GTOBlocks.IRIDIUM_CASING.get())
                                     .or(abilities(IMPORT_ITEMS))
-                                    .or(abilities(IMPORT_FLUIDS))
+                                    .or(abilities(IMPORT_FLUIDS)))
+                            .wherePart('T', blocks(GTOBlocks.IRIDIUM_CASING.get())
                                     .or(abilities(EXPORT_ITEMS))
                                     .or(abilities(EXPORT_FLUIDS))
-                                    .or(blocks(ExResearchMachines.ENERGY_DATA_HOLDER.get()).setMaxGlobalLimited(1))
-                                    .or(blocks(GTOMachines.ION_ACTIVITY_SENSOR.get()).setMaxGlobalLimited(1)))
+                                    .or(blocks(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.get()).setMaxGlobalLimited(1)))
                             .where('B', blocks(GCYMBlocks.ELECTROLYTIC_CELL.get()))
                             .where('C', controller(definition))
                             .where('D', blocks(GTOBlocks.FLOCCULATION_CASING.get()))

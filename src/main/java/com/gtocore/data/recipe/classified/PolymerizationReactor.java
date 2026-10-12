@@ -233,7 +233,7 @@ final class PolymerizationReactor {
                 .outputItems(TagPrefix.dust, GTOMaterials.PolousPolyolefinSulfonate, 8)
                 .inputFluids(GTOMaterials.SodiumAllylsulfonate, 10000)
                 .inputFluids(GTMaterials.Acetone, 1000)
-                .EUt(19200)
+                .EUt(8000)
                 .duration(1200)
                 .save();
         POLYMERIZATION_REACTOR_RECIPES.builder("poly_dopamine")
@@ -244,16 +244,6 @@ final class PolymerizationReactor {
                 .EUt(1200)
                 .duration(1200)
                 .save();
-        POLYMERIZATION_REACTOR_RECIPES.builder("perfluorosulfonic_acid_polytetrafluoroethylene_copolymer_dust")
-                .inputItems(TagPrefix.dust, GTOMaterials.BenzoylPeroxide)
-                .inputItems(TagPrefix.dust, GTOMaterials.BromoSuccinamide)
-                .outputItems(TagPrefix.dust, GTOMaterials.PerfluorosulfonicAcidPolytetrafluoroethyleneCopolymer, 10)
-                .inputFluids(GTMaterials.Tetrafluoroethylene, 6000)
-                .inputFluids(GTOMaterials.PerfluorooctanesulfonicAcid, 4000)
-                .EUt(72000)
-                .duration(1200)
-                .save();
-
         POLYMERIZATION_REACTOR_RECIPES.builder("dye_carrier_resin")
                 .inputFluids(GTOMaterials.EmulsifiedDyeCarrierResin, 5000)
                 .inputFluids(GTMaterials.Helium, 1000)

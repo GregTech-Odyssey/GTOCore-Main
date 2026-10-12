@@ -4166,28 +4166,28 @@ public final class MaterialB {
         PolousPolyolefinSulfonate = material("polous_polyolefin_sulfonate", "多孔聚烯烃磺酸盐")
                 .polymer()
                 .flags(GENERATE_FOIL, GENERATE_PLATE)
-                .flags(GTOMaterialFlags.GENERATE_MEMBRANE_ELECTRODE)
+                .flags(GTOMaterialFlags.GENERATE_ION_MEMBRANE)
                 .color(0xffff00).iconSet(DULL)
                 .buildAndRegister().setFormula("C3H6SO3Na");
 
         PerfluorosulfonicAcidPolytetrafluoroethyleneCopolymer = material("perfluorosulfonic_acid_polytetrafluoroethylene_copolymer", "全氟磺酸-聚四氟乙烯共聚物")
                 .polymer()
                 .flags(GENERATE_FOIL, GENERATE_PLATE)
-                .flags(GTOMaterialFlags.GENERATE_MEMBRANE_ELECTRODE)
+                .flags(GTOMaterialFlags.GENERATE_ION_MEMBRANE)
                 .color(0xfd0ddf).iconSet(DULL)
                 .buildAndRegister().setFormula("(C2F4)n(CF2SO3H)m");
 
         CeOxPolyDopamineReinforcedPolytetrafluoroethylene = material("ce_ox_poly_dopamine_reinforced_polytetrafluoroethylene", "氧化铈-聚多巴胺增强聚四氟乙烯")
                 .polymer()
                 .flags(GENERATE_FOIL, GENERATE_PLATE)
-                .flags(GTOMaterialFlags.GENERATE_MEMBRANE_ELECTRODE)
+                .flags(GTOMaterialFlags.GENERATE_ION_MEMBRANE)
                 .color(0x0d7f7f).iconSet(DULL)
                 .buildAndRegister().setFormula("(C2F4)n(C8H11NO2)mCeOx");
 
         NanocrackRegulatedSelfHumidifyingCompositeMaterial = material("nanocrack_regulated_self_humidifying_composite_material", "纳米裂纹调节自加湿复合材料")
                 .polymer()
                 .flags(GENERATE_FOIL, GENERATE_PLATE)
-                .flags(GTOMaterialFlags.GENERATE_MEMBRANE_ELECTRODE)
+                .flags(GTOMaterialFlags.GENERATE_ION_MEMBRANE)
                 .color(0x0d7f0d).iconSet(DULL)
                 .buildAndRegister().setFormula("(C2F4)n(C8H11NO2)mCeOx?");
 
@@ -5199,6 +5199,7 @@ public final class MaterialB {
                 .dust().polymer()
                 .color(0xC38CC1)
                 .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
                 .buildAndRegister().setFormula("(C8H8)m(C10H10)n");
 
         DivinylbenzeneMixture = material("divinylbenzene_mixture", "二乙烯基苯混合物")
@@ -5600,5 +5601,243 @@ public final class MaterialB {
                 .color(0x52c6ca)
                 .iconSet(ASTEROID)
                 .buildAndRegister();
+
+        Dimethylformamide = material("dimethylformamide", "二甲基甲酰胺")
+                .fluid()
+                .color(0xf010C0)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C3H7NO");
+        Dioxane14 = material("dioxane_14", "1,4-二氧六环")
+                .fluid()
+                .color(0xbcC6Cd)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C4H8O2");
+        TetraethylammoniumHexafluorophosphate = material("tetraethylammonium_hexafluorophosphate", "四甲铵六氟磷酸盐")
+                .dust().fluid()
+                .color(0x4f2ab9)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("(CH3)4NPF6");
+        Cryolite = material("cryolite", "冰晶石")
+                .dust().fluid()
+                .color(0xa1a1f4)
+                .iconSet(DULL)
+                .components(Sodium, 3, Aluminium, 1, Fluorine, 6)
+                .flags(DECOMPOSITION_BY_ELECTROLYZING)
+                .buildAndRegister();
+        PolyvinylAlcohol = material("polyvinyl_alcohol", "聚乙烯醇")
+                .dust().polymer()
+                .color(0x9c7a34)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C2H3OH)n");
+        Acrylamide = material("acrylamide", "丙烯酰胺")
+                .dust()
+                .color(0xb11c77)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C3H5NO");
+        Polyacrylamide = material("polyacrylamide", "聚丙烯酰胺")
+                .dust().polymer()
+                .color(0xa20c6e)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C3H5NO)n");
+        MetallochaperoneProtein = material("metallochaperone_protein", "金属转运夹爪蛋白")
+                .dust()
+                .color(0x1c1a34)
+                .iconSet(DULL)
+                .buildAndRegister();
+        OsmoticPumpProtein = material("osmotic_pump_protein", "渗透压泵蛋白")
+                .dust()
+                .color(0xbbc3d3)
+                .iconSet(DULL)
+                .buildAndRegister();
+        TritiumNanonetLayer = material("tritium_nanonet_layer", "三钛纳米网状层")
+                .dust()
+                .color(0xdf453c)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("Tr");
+        MetallochaperoneBiomaterial = material("metallochaperone_biomaterial", "金属转运生物材料")
+                .dust().polymer()
+                .color(0xde4cc8)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister();
+        Pyrrole = material("pyrrole", "吡咯")
+                .dust()
+                .color(45, 21, 120)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C4H5N");
+        Polypyrrole = material("polypyrrole", "聚吡咯")
+                .dust().polymer().fluid()
+                .color(0x2d1578)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C4H5N)n");
+        DicarboxyBiphenyl = material("dicarboxy_biphenyl", "二羧基联苯")
+                .dust()
+                .color(66, 239, 145)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C14H10O4");
+        BPDCNiPPYHydrogel = material("bpdc_ni_ppy_hydrogel", "bpdc-镍-ppy水凝胶")
+                .dust().polymer()
+                .color(0x42ef91)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister();
+        PreformedBoronOxygenFramework = material("preformed_boron_oxygen_framework", "预成型硼氧框架")
+                .dust()
+                .color(89, 200, 116)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("(B)m(O)n");
+        BoronOxygenFramework = material("boron_oxygen_framework", "硼氧框架")
+                .dust().polymer()
+                .color(0x59c874)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(B)m(O)n");
+        SulfonatedPolyetherEtherKetone = material("sulfonated_polyether_ether_ketone", "磺化聚醚醚酮")
+                .dust().polymer().fluid()
+                .color(189, 234, 75)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_LONG_ROD, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C19H12O5S)n");
+        Polysulfone = material("polysulfone", "聚砜")
+                .dust().polymer()
+                .color(120, 112, 65)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C6H4SO2)n");
+        PolyvinylideneFluoride = material("polyvinylidene_fluoride", "聚偏氟乙烯")
+                .dust().polymer()
+                .color(16, 12, 0)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C2H2F2)n");
+        PolysulfonePolyvinylpyrrolidoneBlend = material("polysulfone_polyvinylpyrrolidone_blend", "聚砜-聚乙烯基吡咯烷酮共聚物")
+                .dust().polymer()
+                .color(231, 143, 179)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C6H4SO2)n(C6H9NO)m");
+        AmberGoldNanoFusilli = material("amber_gold_nano_fusilli", "琥珀金纳米通心粉")
+                .dust()
+                .color(0xE8E8aa)
+                .iconSet(METALLIC)
+                .flags(GENERATE_CATALYST)
+                .buildAndRegister().setFormula("AuAg");
+        SodiumCitrate = material("sodium_citrate", "柠檬酸钠")
+                .dust()
+                .color(0xEaEaba)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("Na3C6H5O7");
+        MalicAcid = material("malic_acid", "苹果酸")
+                .dust()
+                .color(0x419cad)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C4H6O5");
+        HexadecylPhosphate = material("hexadecyl_phosphate", "十六烷基磷酸酯")
+                .dust()
+                .color(111, 104, 115)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C16H33O4P");
+        AdenosineTriphosphateDisodiumSalt = material("adenosine_triphosphate_disodium_salt", "三磷酸腺苷二钠盐")
+                .dust()
+                .color(92, 30, 52)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C10H12N5Na2O13P3");
+        ProtonPumpATPSynthase = material("proton_pump_atp_synthase", "质子泵ATP合成酶")
+                .dust()
+                .color(0xeee2b0)
+                .iconSet(DULL)
+                .flags(GENERATE_CATALYST)
+                .buildAndRegister();
+        SulfonatedHydroquinone = material("sulfonated_hydroquinone", "磺化对苯二酚")
+                .fluid()
+                .color(129, 107, 15)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C6H4O2S");
+        HydroquinoneDiacetate = material("hydroquinone_diacetate", "对苯二酚二乙酸酯")
+                .dust()
+                .color(75, 118, 14)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C12H14O4");
+        ZDifluoroethylene = material("z_difluoroethylene", "Z-二氟乙烯")
+                .gas()
+                .color(78, 20, 58)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C2H2F2");
+        AcrylamideMonomer = material("acrylamide_monomer", "丙烯酰胺单体")
+                .liquid()
+                .color(193, 99, 36)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C3H5NO");
+        PeroxyaceticAcid = material("peroxyacetic_acid", "过氧乙酸")
+                .liquid()
+                .color(109, 100, 48)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C2H4O3");
+        HexadecyltriethylammoniumHexafluorophosphate = material("hexadecyltriethylammonium_hexafluorophosphate", "十六烷基三乙基铵六氟磷酸盐")
+                .dust().fluid()
+                .color(0x4f2ab9)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("C22H48NPF6");
+
+        TetrachloroauricAcidSilverNitratePremixSolution = material("tetrachloroauric_acid_silver_nitrate_premix_solution", "四氯金酸-硝酸银预混溶液")
+                .liquid()
+                .color(0xf6f75b)
+                .components(Gold, 1, Chlorine, 4, Silver, 1, Nitrogen, 1, Oxygen, 3)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("HAuCl4·AgNO3");
+
+        MetallicHydrogen = material("metallic_hydrogen", "金属氢")
+                .dust().gem()
+                .color(0xeeeecc)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("H");
+        TrimethylBoron = material("trimethyl_boron", "三甲基硼")
+                .dust()
+                .color(0x68e8db)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("B(CH3)3");
+        Phosphine = material("phosphine", "磷化氢")
+                .gas()
+                .color(0x8ff4e8)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("PH3");
+        BoronDopedDiamond = material("boron_doped_diamond", "硼掺杂金刚石")
+                .dust().gem()
+                .color(249, 225, 160)
+                .iconSet(DULL)
+                .flags(GENERATE_ROD, GENERATE_LONG_ROD, GENERATE_CRYSTAL_SEED)
+                .buildAndRegister();
+        PhosphorusDopedDiamond = material("phosphorus_doped_diamond", "磷掺杂金刚石")
+                .dust().gem()
+                .color(254, 179, 181)
+                .iconSet(DULL)
+                .flags(GENERATE_ROD, GENERATE_LONG_ROD, GENERATE_CRYSTAL_SEED)
+                .buildAndRegister();
+        SiliconDopedDiamond = material("silicon_doped_diamond", "硅掺杂金刚石")
+                .dust().gem()
+                .color(200, 234, 221)
+                .iconSet(DULL)
+                .flags(GENERATE_ROD, GENERATE_LONG_ROD, GENERATE_CRYSTAL_SEED)
+                .buildAndRegister();
+        WideBandgapSemiconductorGradeDiamond = material("wide_bandgap_semiconductor_grade_diamond", "宽带隙半导体级金刚石")
+                .dust().gem()
+                .color(255, 235, 255)
+                .iconSet(DULL)
+                .flags(GENERATE_ROD, GENERATE_LONG_ROD, GENERATE_CRYSTAL_SEED)
+                .buildAndRegister();
+
+        NickelTetracarbonyl = material("nickel_tetracarbonyl", "四羰基镍")
+                .liquid()
+                .color(0xa4E6A6)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("Ni(CO)4");
+        HydrogenSaturatedNickelTetracarbonyl = material("hydrogen_saturated_nickel_tetracarbonyl", "氢饱和四羰基镍")
+                .liquid().dust()
+                .color(0x8ad6c6)
+                .iconSet(DULL)
+                .buildAndRegister().setFormula("H2Ni(CO)4");
     }
 }

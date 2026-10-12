@@ -218,14 +218,6 @@ public final class GTOMaterials {
     public static Material DNAExtractionBuffer;
     public static Material DiethyleneGlycol;
 
-    public static Material MetallicHydrogen;
-    public static Material TrimethylBoron;
-    public static Material Phosphine;
-    public static Material BoronDopedDiamond;
-    public static Material PhosphorusDopedDiamond;
-    public static Material SiliconDopedDiamond;
-    public static Material WideBandgapSemiconductorGradeDiamond;
-
     // 物质的含杂形态（原物质）
     // 页岩油（石油）
     public static Material ShaleOil;
@@ -362,6 +354,92 @@ public final class GTOMaterials {
     public static Material CopperAcetylide;
     // 氯化硼
     public static Material BoronTrichloride;
+    // 二甲基甲酰胺
+    public static Material Dimethylformamide;
+    // 1,4-二氧六环
+    public static Material Dioxane14;
+    // 四甲铵六氟硼酸盐
+    public static Material TetraethylammoniumHexafluorophosphate;
+    // 冰晶石
+    public static Material Cryolite;
+    // 聚乙烯醇
+    public static Material PolyvinylAlcohol;
+    // 丙烯酰胺
+    public static Material Acrylamide;
+    // 聚丙烯酰胺
+    public static Material Polyacrylamide;
+    // 金属转运夹爪蛋白
+    public static Material MetallochaperoneProtein;
+    // 渗透压泵蛋白
+    public static Material OsmoticPumpProtein;
+    // 三钛纳米网状层
+    public static Material TritiumNanonetLayer;
+    // 金属转运生物材料
+    public static Material MetallochaperoneBiomaterial;
+    // 吡咯
+    public static Material Pyrrole;
+    // 聚吡咯
+    public static Material Polypyrrole;
+    // 二羧基联苯
+    public static Material DicarboxyBiphenyl;
+    // bpdc-镍-ppy水凝胶
+    public static Material BPDCNiPPYHydrogel;
+    // 预成型硼氧框架
+    public static Material PreformedBoronOxygenFramework;
+    // 硼氧框架
+    public static Material BoronOxygenFramework;
+    // 磺化聚醚醚酮
+    public static Material SulfonatedPolyetherEtherKetone;
+    // 聚砜
+    public static Material Polysulfone;
+    // 聚偏氟乙烯
+    public static Material PolyvinylideneFluoride;
+    // 聚砜-聚乙烯基吡咯烷酮共聚物
+    public static Material PolysulfonePolyvinylpyrrolidoneBlend;
+    // 琥珀金纳米通心粉
+    public static Material AmberGoldNanoFusilli;
+    // 柠檬酸钠
+    public static Material SodiumCitrate;
+    // 苹果酸
+    public static Material MalicAcid;
+    // 十六烷基磷酸酯
+    public static Material HexadecylPhosphate;
+    // 三磷酸腺苷二钠盐
+    public static Material AdenosineTriphosphateDisodiumSalt;
+    // 质子泵ATP合成酶
+    public static Material ProtonPumpATPSynthase;
+    // 磺基对苯二酚
+    public static Material SulfonatedHydroquinone;
+    // 对苯二酚二乙酸酯
+    public static Material HydroquinoneDiacetate;
+    // Z-二氟乙烯
+    public static Material ZDifluoroethylene;
+    // 丙烯酰胺
+    public static Material AcrylamideMonomer;
+    // 过氧乙酸
+    public static Material PeroxyaceticAcid;
+    // 六氟磷酸十六烷基三乙基铵
+    public static Material HexadecyltriethylammoniumHexafluorophosphate;
+    // 四氯金酸-硝酸银预混溶液
+    public static Material TetrachloroauricAcidSilverNitratePremixSolution;
+    // 金属氢
+    public static Material MetallicHydrogen;
+    // 三甲基硼
+    public static Material TrimethylBoron;
+    // 磷化氢
+    public static Material Phosphine;
+    // 硼掺杂金刚石
+    public static Material BoronDopedDiamond;
+    // 磷掺杂金刚石
+    public static Material PhosphorusDopedDiamond;
+    // 硅掺杂金刚石
+    public static Material SiliconDopedDiamond;
+    // 宽带隙半导体级金刚石
+    public static Material WideBandgapSemiconductorGradeDiamond;
+    // 四羰基镍
+    public static Material NickelTetracarbonyl;
+    // 氢饱和四羰基镍
+    public static Material HydrogenSaturatedNickelTetracarbonyl;
 
     // 小行星碎渣
     public static Material AsteroidFragment;

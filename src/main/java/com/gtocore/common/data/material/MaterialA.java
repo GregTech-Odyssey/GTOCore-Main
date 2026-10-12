@@ -1416,7 +1416,7 @@ public final class MaterialA {
                 .fluid()
                 .polymer()
                 .components(Carbon, 22, Hydrogen, 12, Nitrogen, 2, Oxygen, 6)
-                .flags(GENERATE_PLATE, DISABLE_DECOMPOSITION)
+                .flags(GENERATE_PLATE, DISABLE_DECOMPOSITION, GENERATE_ION_MEMBRANE)
                 .color(0xff6730)
                 .iconSet(DULL)
                 .buildAndRegister();

@@ -69,7 +69,7 @@ public class MaterialSpaceEra {
                 .color(0xa3bb51)
                 .secondaryColor(0x7d8c3a)
                 .iconSet(BRIGHT)
-                .flags(GENERATE_FIBER)
+                .flags(GENERATE_FIBER, GENERATE_CATALYST)
                 .blastTemp(6000, HIGH, GTValues.VA[GTValues.LuV], 600)
                 .buildAndRegister().setFormula("W");
         NanoScaleAlumina = material("nano_scale_alumina", "纳米氧化铝")
@@ -77,7 +77,7 @@ public class MaterialSpaceEra {
                 .color(0xfff5e1)
                 .secondaryColor(0xc7bfa1)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .buildAndRegister()
                 .setFormula("Al2O3");
         NanoScaleYttria = material("nano_scale_yttria", "纳米氧化钇")
@@ -85,7 +85,7 @@ public class MaterialSpaceEra {
                 .color(0xe6f6ff)
                 .secondaryColor(0xb7d9ff)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .buildAndRegister()
                 .setFormula("Y2O3");
         NanoScaleNiobium = material("nano_scale_niobium", "纳米铌")
@@ -93,7 +93,7 @@ public class MaterialSpaceEra {
                 .color(0xbfcfff)
                 .secondaryColor(0x8b9ac6)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .buildAndRegister()
                 .setFormula("Nb");
         NanoScaleZirconium = material("nano_scale_zirconium", "纳米锆")
@@ -101,7 +101,7 @@ public class MaterialSpaceEra {
                 .color(0xd9d9d9)
                 .secondaryColor(0xa1a1a1)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .buildAndRegister()
                 .setFormula("Zr");
         NanoScaleRhenium = material("nano_scale_rhenium", "纳米铼")
@@ -109,7 +109,7 @@ public class MaterialSpaceEra {
                 .color(0x6666ff)
                 .secondaryColor(0x4c4cbb)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .buildAndRegister()
                 .setFormula("Re");
         NanoScaleMolybdenum = material("nano_scale_molybdenum", "纳米钼")
@@ -117,7 +117,7 @@ public class MaterialSpaceEra {
                 .color(0x9999cc)
                 .secondaryColor(0x737399)
                 .iconSet(BRIGHT)
-                .flags(DISABLE_DECOMPOSITION)
+                .flags(DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .buildAndRegister()
                 .setFormula("Mo");
         NanoAluminum = material("nano_scale_aluminum", "纳米铝")
@@ -125,7 +125,7 @@ public class MaterialSpaceEra {
                 .color(0xffd700)
                 .secondaryColor(0xc6a300)
                 .iconSet(BRIGHT)
-                .flags(GENERATE_FIBER)
+                .flags(GENERATE_FIBER, GENERATE_CATALYST)
                 .blastTemp(2327, LOW, GTValues.VA[GTValues.EV], 600)
                 .buildAndRegister().setFormula("Al");
 
@@ -636,7 +636,7 @@ public class MaterialSpaceEra {
                 .color(0x1f281f)
                 .secondaryColor(0x2d3c2e)
                 .iconSet(DULL)
-                .flags(GENERATE_SMALL_DUST, GENERATE_TINY_DUST, DISABLE_DECOMPOSITION)
+                .flags(GENERATE_SMALL_DUST, GENERATE_TINY_DUST, DISABLE_DECOMPOSITION, GENERATE_CATALYST)
                 .formula("(Cp2Hf)2O2")
                 .buildAndRegister();
         PolyVinylBpyRheniumCarbonylHexafluorophosphate = material("poly_vinyl_bpy_rhenium_carbonyl_hexafluorophosphate", "聚[(乙烯基-联吡啶)三羰基铼]六氟磷酸盐")

@@ -731,17 +731,6 @@ final class ReactionFurnace {
                 .blastFurnaceTemp(800)
                 .duration(1200)
                 .save();
-        REACTION_FURNACE_RECIPES.builder("hydrofluoric_acidperfluorooctanesulfonic_acid")
-                .inputFluids(GTMaterials.Octane, 1000)
-                .inputFluids(GTMaterials.Fluorine, 36000)
-                .inputFluids(GTOMaterials.ChlorosulfonicAcid, 1000)
-                .outputFluids(GTMaterials.HydrofluoricAcid, 72000)
-                .outputFluids(GTOMaterials.PerfluorooctanesulfonicAcid, 1000)
-                .outputFluids(GTMaterials.HydrochloricAcid, 1000)
-                .EUt(3600)
-                .blastFurnaceTemp(6000)
-                .duration(1200)
-                .save();
         REACTION_FURNACE_RECIPES.builder("ultra_low_viscosity_ionic_carrier")
                 .inputFluids(GTMaterials.Silver.getFluid(FluidStorageKeys.PLASMA, 4000))
                 .inputFluids(GTOMaterials.FullereneDopedNanotubes, 3000)
@@ -771,6 +760,13 @@ final class ReactionFurnace {
                 .outputFluids(GTMaterials.Deuterium, 1000)
                 .duration(160).EUt(VA[EV])
                 .blastFurnaceTemp(2100)
+                .save();
+        REACTION_FURNACE_RECIPES.builder("boron_oxygen_framework_dust")
+                .inputItems(TagPrefix.dust, GTOMaterials.PreformedBoronOxygenFramework)
+                .outputItems(TagPrefix.dust, GTOMaterials.BoronOxygenFramework)
+                .EUt(1566L)
+                .duration(3272)
+                .blastFurnaceTemp(8192)
                 .save();
     }
 }

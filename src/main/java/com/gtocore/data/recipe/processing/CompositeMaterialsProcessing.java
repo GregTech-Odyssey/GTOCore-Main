@@ -1,6 +1,9 @@
 package com.gtocore.data.recipe.processing;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.api.electrochemistry.ElectrolyteType;
+import com.gtocore.api.electrochemistry.IonAmount;
+import com.gtocore.api.electrochemistry.Ions;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
@@ -103,11 +106,12 @@ public class CompositeMaterialsProcessing {
                 .save();
 
         ELECTROPLATING_RECIPES.builder("preoxidized_atomic_pan_fiber")
+                .halfReaction(ElectrolyteType.SUPERCRITICAL_FLUID, false, new IonAmount(Ions.SUPERCRITICAL_OXYGEN, 1))
                 .inputItems(GTOItems.ATOMIC_PAN_FIBER, 2)
                 .notConsumable(GTOTagPrefix.plateDouble, GTMaterials.EnrichedNaquadahTriniumEuropiumDuranide, 8)
                 .outputItems(GTOItems.PREOXIDIZED_ATOMIC_PAN_FIBER, 2)
                 .inputFluids(GTMaterials.Oxygen, FluidStorageKeys.PLASMA, 1000)
-                .inputFluids(GTOMaterials.SupercriticalCarbonDioxide, 1000)
+                .inputFluids(GTOMaterials.SupercriticalCarbonDioxide, 100)
                 .EUt(500000)
                 .duration(200)
                 .save();
@@ -180,6 +184,7 @@ public class CompositeMaterialsProcessing {
                 .save();
         ELECTROPLATING_RECIPES.builder("t900_carbon_fiber_tow_carbon_fibres")
                 .inputItems(GTOTagPrefix.FIBER_TOW, GTOMaterials.T800CarbonFiber, 4)
+                .halfReaction(ElectrolyteType.SUPERCRITICAL_FLUID, false, new IonAmount(Ions.SUPERCRITICAL_OXYGEN, 1))
                 .notConsumable(GTOTagPrefix.plateDouble, GTMaterials.YttriumBariumCuprate, 8)
                 .outputItems(GTOTagPrefix.FIBER_TOW, GTOMaterials.T900CarbonFiber, 4)
                 .inputFluids(GTMaterials.Neon, FluidStorageKeys.PLASMA, 1000)
@@ -188,6 +193,7 @@ public class CompositeMaterialsProcessing {
                 .duration(200)
                 .save();
         ELECTROPLATING_RECIPES.builder("t1000_carbon_fiber_tow_carbon_fibres")
+                .halfReaction(ElectrolyteType.SUPERCRITICAL_FLUID, false, new IonAmount(Ions.SUPERCRITICAL_OXYGEN, 1))
                 .inputItems(GTOTagPrefix.FIBER_TOW, GTOMaterials.T800CarbonFiber, 2)
                 .notConsumable(GTOTagPrefix.plateDouble, GTMaterials.IndiumTinBariumTitaniumCuprate, 8)
                 .outputItems(GTOTagPrefix.FIBER_TOW, GTOMaterials.T1000CarbonFiber, 2)
@@ -197,11 +203,12 @@ public class CompositeMaterialsProcessing {
                 .duration(200)
                 .save();
         ELECTROPLATING_RECIPES.builder("t1500_carbon_fiber_tow_carbon_fibres")
+                .halfReaction(ElectrolyteType.SUPERCRITICAL_FLUID, false, new IonAmount(Ions.SUPERCRITICAL_OXYGEN, 1))
                 .inputItems(GTOTagPrefix.FIBER_TOW, GTOMaterials.T1200CarbonFiber, 2)
                 .notConsumable(GTOTagPrefix.plateDouble, GTMaterials.EnrichedNaquadahTriniumEuropiumDuranide, 8)
                 .outputItems(GTOTagPrefix.FIBER_TOW, GTOMaterials.T1500CarbonFiber, 2)
                 .inputFluids(GTOMaterials.Orichalcum, FluidStorageKeys.PLASMA, 1000)
-                .inputFluids(GTOMaterials.SupercriticalCarbonDioxide, 4000)
+                .inputFluids(GTOMaterials.SupercriticalCarbonDioxide, 400)
                 .EUt(500000)
                 .duration(200)
                 .save();

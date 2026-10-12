@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.generator;
 
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.config.GTORules;
@@ -34,6 +35,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.common.item.TurbineRotorBehaviour;
+import com.gregtechceu.gtceu.common.item.tool.CoatedTurbineRotorBehaviour;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.RotorHolderPartMachine;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -56,6 +58,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
@@ -183,6 +186,20 @@ public class TurbineMachine extends ElectricMultiblockMachine {
                 accumulatedDamage -= damageToApply;
                 for (RotorHolderPartMachine part : rotorHolderMachines) {
                     part.damageRotor(damageToApply);
+                    var stack = part.getRotorStack();
+                    var behavior = TurbineRotorBehaviour.getBehaviour(stack);
+                    mending:
+                    if (behavior instanceof CoatedTurbineRotorBehaviour &&
+                            CoatedTurbineRotorBehaviour.isCoatingMagical(stack)) {
+                        var l = stack.getEnchantmentLevel(Enchantments.MENDING);
+                        if (l <= 0) break mending;
+                        var damage = stack.getDamageValue();
+                        if (damage <= 0) break mending;
+                        var repair = Math.min(damage, l * 10);
+                        if (inputFluid(GTOFluids.XP_JUICE.get(), repair * 100L)) {
+                            stack.setDamageValue(damage - repair);
+                        }
+                    }
                 }
             }
         }

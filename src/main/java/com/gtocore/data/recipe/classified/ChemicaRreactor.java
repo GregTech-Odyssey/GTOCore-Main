@@ -669,15 +669,6 @@ final class ChemicaRreactor {
                 .duration(20)
                 .save();
 
-        CHEMICAL_RECIPES.recipeBuilder("tetrahydrofuran")
-                .inputFluids(GTMaterials.Hydrogen, 4000)
-                .inputFluids(GTMaterials.Formaldehyde, 2000)
-                .inputFluids(GTOMaterials.Acetylene, 1000)
-                .outputFluids(GTOMaterials.Tetrahydrofuran, 1000)
-                .EUt(7680)
-                .duration(75)
-                .save();
-
         CHEMICAL_RECIPES.recipeBuilder("sodium_hydroxide_dust")
                 .inputItems(TagPrefix.dust, GTMaterials.Sodium)
                 .inputFluids(GTMaterials.Water, 1000)
@@ -1593,7 +1584,7 @@ final class ChemicaRreactor {
                 .inputItems(TagPrefix.dust, GTOMaterials.SodiumSulfate)
                 .inputFluids(GTOMaterials.ChromiumSulfate, 4000)
                 .inputFluids(GTOMaterials.IsopropylAlcohol, 100)
-                .outputFluids(IronChromiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 16000))
+                .outputFluids(IronChromiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(40)
                 .duration(120)
                 .save();
@@ -1604,7 +1595,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTMaterials.PhosphoricAcid, 3000)
                 .inputFluids(GTOMaterials.Tempo, 1000)
                 .outputFluids(GTMaterials.Hydrogen, 4000)
-                .outputFluids(VanadiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE, 16000))
+                .outputFluids(VanadiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(400)
                 .duration(120)
                 .save();
@@ -1615,7 +1606,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTOMaterials.Tempo, 500)
                 .inputFluids(GTMaterials.Oxygen, 8000)
                 .inputFluids(GTMaterials.Acetone, 500)
-                .outputFluids(VanadiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 16000))
+                .outputFluids(VanadiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(400)
                 .duration(120)
                 .save();
@@ -1659,7 +1650,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTOMaterials.IsopropylAlcohol, 1000)
                 .inputFluids(Mercury, 72)
                 .inputFluids(Tritanium, 72)
-                .outputFluids(ZincIodideFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE, 16000))
+                .outputFluids(ZincIodideFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(800)
                 .duration(120)
                 .save();
@@ -1669,7 +1660,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTMaterials.Bromine, 1000)
                 .inputFluids(GTMaterials.Water, 6000)
                 .inputFluids(GTOMaterials.Polyvinylpyrrolidone, 1000)
-                .outputFluids(ZincIodideFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 16000))
+                .outputFluids(ZincIodideFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(800)
                 .duration(120)
                 .save();
@@ -1679,7 +1670,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTOMaterials.UltraLowViscosityIonicCarrier, 10000)
                 .inputFluids(GTOMaterials.PropyleneCarbonate, 2000)
                 .inputFluids(Etrium, 800)
-                .outputFluids(SuperconductingIonRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE, 32000))
+                .outputFluids(SuperconductingIonRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 32000))
                 .EUt(2400)
                 .duration(120)
                 .save();
@@ -1689,7 +1680,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTOMaterials.PropyleneCarbonate, 2000)
                 .inputFluids(GTOMaterials.Quantanium, 800)
                 .inputFluids(GTOMaterials.Sunnarium, 10)
-                .outputFluids(SuperconductingIonRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 32000))
+                .outputFluids(SuperconductingIonRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 32000))
                 .EUt(2400)
                 .duration(120)
                 .save();
@@ -1763,7 +1754,7 @@ final class ChemicaRreactor {
                 .notConsumable(GTOTagPrefix.NANITES, Copper)
                 .inputFluids(GTOMaterials.DitertButyl1MethoxyMethoxyethoxyBenzene, 2000)
                 .inputFluids(GTOMaterials.Dimethoxyethane, 4000)
-                .outputFluids(OrganicMoleculeRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE, 16000))
+                .outputFluids(OrganicMoleculeRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(2400)
                 .duration(120)
                 .save();
@@ -1772,7 +1763,7 @@ final class ChemicaRreactor {
                 .inputItems(TagPrefix.dust, GTOMaterials.SodiumTetrafluoroborate)
                 .inputFluids(GTOMaterials.Dimethoxyethane, 4000)
                 .inputFluids(GTOMaterials.NMethylphthalimide, 1000)
-                .outputFluids(OrganicMoleculeRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 16000))
+                .outputFluids(OrganicMoleculeRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(2400)
                 .duration(120)
                 .save();
@@ -3501,7 +3492,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTOMaterials.Antiproton, 13000)
                 .inputFluids(GTOMaterials.PhotonicKristallite, 6000)
                 .inputFluids(GTOMaterials.Sanguinite, 1000)
-                .outputFluids(AntimatterRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE, 32000))
+                .outputFluids(AntimatterRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 32000))
                 .EUt(64000)
                 .duration(250)
                 .save();
@@ -3512,7 +3503,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTOMaterials.PositiveElectron, 13000)
                 .inputFluids(GTOMaterials.PhotonicKristallite, 6000)
                 .inputFluids(Sanguinite, 1000)
-                .outputFluids(AntimatterRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_ANODE, 32000))
+                .outputFluids(AntimatterRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 32000))
                 .EUt(64000)
                 .duration(250)
                 .save();
@@ -3544,6 +3535,33 @@ final class ChemicaRreactor {
                 .outputFluids(BoronTrichloride, 1000)
                 .EUt(512)
                 .duration(512)
+                .save();
+        LARGE_CHEMICAL_RECIPES.builder("preformed_boron_oxygen_framework_dust")
+                .inputItems(TagPrefix.dust, GTOMaterials.Decaborane)
+                .inputItems(TagPrefix.dustTiny, GTOMaterials.AluminumOxynitrideGlassCeramic)
+                .outputItems(TagPrefix.dust, GTOMaterials.PreformedBoronOxygenFramework)
+                .inputFluids(GTMaterials.HydrogenPeroxide, 1000)
+                .outputFluids(RegistriesUtils.getFluidStack("minecraft:water", 1000))
+                .EUt(30000L)
+                .duration(200)
+                .save();
+        LARGE_CHEMICAL_RECIPES.builder("dicarboxy_biphenyl_dust")
+                .outputItems(TagPrefix.dust, GTOMaterials.DicarboxyBiphenyl)
+                .inputFluids(GTOMaterials.BenzoicAcid, 2000)
+                .inputFluids(RegistriesUtils.getFluidStack("ad_astra:oxygen", 1000))
+                .outputFluids(RegistriesUtils.getFluidStack("minecraft:water", 1000))
+                .EUt(30000L)
+                .duration(200)
+                .save();
+        LARGE_CHEMICAL_RECIPES.builder("pyrrole_dust")
+                .inputItems(TagPrefix.dust, GTOMaterials.SodiumHypochlorite)
+                .outputItems(TagPrefix.dust, GTOMaterials.Pyrrole)
+                .outputItems(TagPrefix.dust, GTMaterials.Salt)
+                .inputFluids(GTOMaterials.Acetylene, 2000)
+                .inputFluids(GTMaterials.Formamide, 1000)
+                .outputFluids(GTMaterials.CarbonDioxide, 1000)
+                .EUt(3000L)
+                .duration(200)
                 .save();
     }
 }

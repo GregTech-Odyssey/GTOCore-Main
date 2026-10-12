@@ -2,7 +2,7 @@ package com.gtocore.client;
 
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.common.machine.multiblock.generator.FullCellGenerator;
+import com.gtocore.common.machine.multiblock.generator.FlowFuelCellGenerator;
 
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.api.lang.CNENS;
@@ -69,13 +69,13 @@ public final class Tooltips {
             }
 
             var material = ChemicalHelper.getMaterial(fluid);
-            if (FullCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.containsKey(material)) {
-                long euPerMb = FullCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.get(material);
-                tooltips.accept(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density",
-                        FormattingUtil.formatNumbers(euPerMb)));
-                tooltips.accept(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density.va",
+            if (FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.containsKey(material)) {
+                long euPerMb = FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.getLong(material);
+                tooltips.accept(Tips.stat(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density",
+                        FormattingUtil.formatNumbers(euPerMb))));
+                tooltips.accept(Tips.stat(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density.va",
                         FormatUtil.voltageName(BigDecimal.valueOf(euPerMb)),
-                        FormatUtil.voltageAmperage(BigDecimal.valueOf(euPerMb)).toEngineeringString()));
+                        FormatUtil.voltageAmperage(BigDecimal.valueOf(euPerMb)).toEngineeringString())));
             }
 
             SpaceResourceTooltips.append(fluid, tooltips);

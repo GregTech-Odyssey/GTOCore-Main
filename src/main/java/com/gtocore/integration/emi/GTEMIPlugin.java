@@ -7,6 +7,8 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.chisel.ChiselRecipe;
+import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
+import com.gtocore.integration.emi.electrochemistry.IonEmiStackSerializer;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
@@ -138,6 +140,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         }
         GTOApi.EMI_HIDE_ITEM_EVENT.addListener(HiddenItems.class, HiddenItems::registerHiddenItems);
         if (GTCEu.isClientSide()) {
+            GTOApi.EMI_ADD_STACK_EVENT.addListener(IonEmiStack.class, IonEmiStack::registerIonEmiStacks);
             GTOApi.EMI_ADD_STACK_EVENT.addListener(TechNodeEmiStack.class, TechNodeEmiStack::registerTechNodeEmiStack);
             GTOApi.EMI_ADD_STACK_EVENT.addListener(ResearchTagEmiStack.class, ResearchTagEmiStack::registerResearchTagEmiStack);
         }
@@ -307,6 +310,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addIngredientSerializer(EmiTagprefixStack.class, new EmiTagprefixStackSerializer());
         registry.addIngredientSerializer(ResearchTagEmiStack.class, new ResearchTagEmiStackSerializer());
         registry.addIngredientSerializer(TechNodeEmiStack.class, new TechNodeEmiStackSerializer());
+        registry.addIngredientSerializer(IonEmiStack.class, new IonEmiStackSerializer());
         registry.addIngredientSerializer(FrontLitEmiStack.class, new FrontLitEmiStack.Serializer());
         registry.addGenericStackProvider((Screen screen, int x, int y) -> {
             for (var widget : screen.renderables) {

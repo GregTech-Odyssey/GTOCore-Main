@@ -953,6 +953,8 @@ public final class GTOItems {
     public static final ItemEntry<Item> SIMPLE_FIBER_OPTIC_ROUGH = register("simple_fiber_optic_rough", "简易光纤粗胚");
     public static final ItemEntry<Item> SIMPLE_FIBER_OPTIC = register("simple_fiber_optic", "简易光纤");
 
+    public static final ItemEntry<Item> NAFION = register("nafion", "Nafion膜");
+
     public static final ItemEntry<Item> SPOOLS_MICRO = register("spools_micro", "微型线轴");
     public static final ItemEntry<Item> SPOOLS_SMALL = register("spools_small", "小型线轴");
     public static final ItemEntry<Item> SPOOLS_MEDIUM = register("spools_medium", "中型线轴");

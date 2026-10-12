@@ -845,6 +845,12 @@ public final class GTOMachines {
             .notAllowSharedTooltips()
             .overlayTieredHullRenderer("neutron_sensor")
             .register();
+    public static final MachineDefinition SEMIPERMEABLE_MEMBRANE_HATCH = machine("semipermeable_membrane_hatch", "半透膜仓", com.gtocore.common.machine.multiblock.part.SemipermeableMembraneHatch::new)
+            .tier(HV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .overlayTieredHullRenderer("radiation_hatch")
+            .register();
     public static final MachineDefinition TISSUE_SENSOR = machine("tissue_sensor", "组织传感器", SensorPartMachine::new)
             .tier(ZPM)
             .allRotation()

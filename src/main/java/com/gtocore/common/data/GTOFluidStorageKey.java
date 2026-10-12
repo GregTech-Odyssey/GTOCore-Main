@@ -10,28 +10,20 @@ import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKey;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
-import java.util.Map;
-
 import static com.gtocore.data.lang.LangHandler.addCNEN;
 
 public class GTOFluidStorageKey
 
 {
 
-    public static final Map<String, CNEN> LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
+    public static final O2OOpenCacheHashMap<String, CNEN> LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
 
     public static void initLang() {
         LANG.forEach((k, v) -> addCNEN("gtocore.fluid." + k, v.cn(), v.en()));
     }
 
-    // 储能阳极液
-    public static final FluidStorageKey ENERGY_STORAGE_ANODE = key(("energy_storage_anode"), "%s储能阳极液", "%s Energy Storage Anode");
-    // 储能阴极液
-    public static final FluidStorageKey ENERGY_STORAGE_CATHODE = key(("energy_storage_cathode"), "%s储能阴极液", "%s Energy Storage Cathode");
-    // 释能阳极液
-    public static final FluidStorageKey ENERGY_RELEASE_ANODE = key(("energy_release_anode"), "%s释能阳极液", "%s Energy Release Anode");
-    // 释能阴极液
-    public static final FluidStorageKey ENERGY_RELEASE_CATHODE = key(("energy_release_cathode"), "%s释能阴极液", "%s Energy Release Cathode");
+    public static final FluidStorageKey ENERGY_STORAGE = key("energy_storage", "%s储能电解液", "%s Charged Electrolyte");
+    public static final FluidStorageKey ENERGY_RELEASE = key("energy_release", "%s释能电解液", "%s Discharged Electrolyte");
 
     public static final FluidStorageKey HIGH_PRESSURE_GAS = key(("high_pressure_gas"), "高压%s", "High Pressure %s");
 

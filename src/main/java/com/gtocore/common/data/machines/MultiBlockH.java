@@ -8,6 +8,8 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
+import com.gtocore.common.machine.multiblock.electric.ElectrochemicalMachine;
+import com.gtocore.common.machine.multiblock.electric.ElectrochemicalWorkstation;
 import com.gtocore.common.machine.multiblock.electric.FastNeutronBreederReactor;
 import com.gtocore.common.machine.multiblock.electric.KerrNewmanHomogenizer;
 import com.gtocore.common.machine.multiblock.electric.space.MegaSpaceElevatorModuleMachine;
@@ -739,19 +741,28 @@ public final class MultiBlockH {
             .workableCasingRenderer(GTOCore.id("block/casings/hyper_mechanical_casing"), GTCEu.id("block/multiblock/cleanroom"))
             .register();
 
-    public static final MultiblockMachineDefinition ELECTROPLATING_BATH = multiblock("electroplating_bath", "电镀池", ElectricMultiblockMachine::new)
+    public static final MultiblockMachineDefinition ELECTROPLATING_BATH = multiblock("electroplating_bath", "电镀池", ElectrochemicalMachine::new)
             .nonYAxisRotation()
             .parallelizableTooltips()
             .recipeTypes(GTORecipeTypes.ELECTROPLATING_RECIPES)
             .tips(GTOMachineStories.electroplatingBathTooltips)
+            .tips(GTOMachineTooltips.electroplatingBathTooltips)
             .block(GTBlocks.CASING_PTFE_INERT)
             .recipeModifier(GTORecipeModifiers.UPGRADE_GCYM_OVERCLOCKING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("electroplating_bath").build())
                     .symbols(Symbols.create()
                             .wherePart('A', blocks(GTBlocks.CASING_PTFE_INERT.get())
-                                    .or(autoGCYMAbilities(definition.getRecipeTypes()))
-                                    .or(autoAbilities(true, false, true)))
+                                    .or(abilities(INPUT_ENERGY))
+                                    .or(abilities(MAINTENANCE).setExactLimit(1))
+                                    .or(abilities(PARALLEL_HATCH)))
+                            .wherePart('I', blocks(GTBlocks.CASING_PTFE_INERT.get())
+                                    .or(abilities(IMPORT_ITEMS))
+                                    .or(abilities(IMPORT_FLUIDS)))
+                            .wherePart('J', blocks(GTBlocks.CASING_PTFE_INERT.get())
+                                    .or(abilities(EXPORT_ITEMS))
+                                    .or(abilities(EXPORT_FLUIDS))
+                                    .or(blocks(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.get()).setExactLimit(1)))
                             .where('B', blocks(GCYMBlocks.CASING_NONCONDUCTING.get()))
                             .where('C', GTOPredicates.frame(GTMaterials.Polytetrafluoroethylene))
                             .where('D', blocks(GTBlocks.CASING_PTFE_INERT.get()))
@@ -763,7 +774,7 @@ public final class MultiBlockH {
             .workableCasingRenderer(GTCEu.id("block/casings/solid/machine_casing_inert_ptfe"), GTCEu.id("block/multiblock/gcym/large_chemical_bath"))
             .register();
 
-    public static final MultiblockMachineDefinition GIANT_ELECTROCHEMICAL_WORKSTATION = multiblock("giant_electrochemical_workstation", "巨型电化学工作站", CoilCrossRecipeMultiblockMachine::createCoilParallel)
+    public static final MultiblockMachineDefinition GIANT_ELECTROCHEMICAL_WORKSTATION = multiblock("giant_electrochemical_workstation", "巨型电化学工作站", ElectrochemicalWorkstation::new)
             .allRotation()
             .tips(GTOMachineStories.giantElectrochemicalWorkstationTooltips)
             .coilParallelTooltips()
@@ -778,6 +789,7 @@ public final class MultiBlockH {
                             .where('A', blocks(GTOBlocks.HYPER_MECHANICAL_CASING.get()))
                             .wherePart('B', blocks(GTOBlocks.SPACE_ELEVATOR_MECHANICAL_CASING.get())
                                     .or(GTOPredicates.autoThreadLaserAbilities(definition.getRecipeTypes()))
+                                    .or(blocks(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.get()).setMaxGlobalLimited(1))
                                     .or(abilities(MAINTENANCE).setExactLimit(1)))
                             .where('C', blocks(GTOBlocks.CHEMICAL_CORROSION_RESISTANT_PIPE_CASING.get()))
                             .where('D', blocks(GCYMBlocks.CASING_NONCONDUCTING.get()))

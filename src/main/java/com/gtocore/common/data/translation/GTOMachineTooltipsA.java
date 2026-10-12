@@ -213,7 +213,9 @@ public final class GTOMachineTooltipsA {
         t.lore(t.tr("还能让各种杂碎的产线也能得到驾驭超高能的能力，生产力获得史诗级的飞跃", "It can also allow various miscellaneous production lines to gain the ability to harness ultra-high energy, resulting in an epic leap in productivity"));
 
         t.heading(MainFunction);
-        t.feature(t.tr("机制施工中...", "Mechanism under construction..."));
+        t.feature(t.tr("提供一个光子计算的测试平台，用于测试光子计算相关的实验", "Provides a photon computation testing platform for testing photon computation-related experiments"));
+        t.feature(t.tr("向机器的光束仓输入符合要求的光束，机器将进行光子计算测试", "Input beams that meet the requirements into the machine's beam hatch, and the machine will perform photon computation tests"));
+        t.supported(t.tr("可以利用半反射镜，让一束光束在激发晶体内多次反射，利用谐振腔的原理，在调节适当的反射率等参数后，产生更高强度的光束，来达到测试要求", "You can use a semi-reflective mirror to allow a beam of light to reflect multiple times within the excitation crystal, using the principle of a resonant cavity to generate a higher intensity beam to meet the testing requirements"));
     });
 
     public static final TipSpec DataHolderUniversal = GTOTips.of("data_holder_universal", t -> {

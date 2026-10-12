@@ -105,6 +105,7 @@ public final class GTMaterialExtend {
         Emerald.addFlags(GTOMaterialFlags.GENERATE_ARTIFICIAL_GEM);
         RhodiumPlatedPalladium.addFlags(DISABLE_ALLOY_PROPERTY);
         YttriumBariumCuprate.addFlags(DISABLE_ALLOY_PROPERTY);
+        Polybenzimidazole.addFlags(GTOMaterialFlags.GENERATE_ION_MEMBRANE);
         IncoloyMA956.addFlags(GENERATE_GEAR);
         Kanthal.getProperty(BLAST).setEUtOverride(GTValues.VA[GTValues.MV]);
         Netherite.setProperty(BLAST, new BlastProperty(1748, BlastProperty.GasTier.MID, 480, 1340, 120, 120));
@@ -113,7 +114,7 @@ public final class GTMaterialExtend {
         Cadmium.setProperty(FLUID, new FluidProperty(FluidStorageKeys.LIQUID, new FluidBuilder()));
         Iron.setProperty(PropertyKey.TOOL, ToolProperty.Builder.of(2.0F, 2.0F, 256, 2, GTToolType.MINING_HAMMER, GTToolType.SPADE, GTToolType.SAW, GTToolType.HARD_HAMMER, GTToolType.WRENCH, GTToolType.FILE, GTToolType.CROWBAR, GTToolType.SCREWDRIVER, GTToolType.WIRE_CUTTER, GTToolType.SCYTHE, GTToolType.BUTCHERY_KNIFE, GTToolType.DRILL_LV, GTToolType.DRILL_MV, GTToolType.DRILL_HV, GTToolType.DRILL_EV, GTToolType.DRILL_IV, GTToolType.CHAINSAW_LV, GTToolType.WRENCH_LV, GTToolType.WRENCH_HV, GTToolType.WRENCH_IV, GTToolType.BUZZSAW, GTToolType.SCREWDRIVER_LV, GTToolType.WIRE_CUTTER_LV, GTToolType.WIRE_CUTTER_HV, GTToolType.WIRE_CUTTER_IV).enchantability(14).addTypes(GTToolType.MORTAR).build());
         Platinum.setProperty(BLAST, new BlastProperty(1810, BlastProperty.GasTier.MID, 480, 820, 120, 110));
-        Graphene.addFlags(GTOMaterialFlags.GENERATE_MEMBRANE_ELECTRODE);
+        Graphene.addFlags(GTOMaterialFlags.GENERATE_ION_MEMBRANE);
         RedAlloy.addFlags(GENERATE_SPRING_SMALL);
         Lead.addFlags(GTOMaterialFlags.GENERATE_ZIRCONIUM_CARBIDE_TARGET);
         Bismuth.addFlags(GTOMaterialFlags.GENERATE_ZIRCONIUM_CARBIDE_TARGET);
@@ -189,7 +190,7 @@ public final class GTMaterialExtend {
         BorosilicateGlass.addFlags(GENERATE_FIBER);
         RadAway.addFlags(DISABLE_DECOMPOSITION);
         Platinum.addFlags(GENERATE_SPRING);
-        Polytetrafluoroethylene.addFlags(GTOMaterialFlags.GENERATE_MEMBRANE_ELECTRODE);
+        Polytetrafluoroethylene.addFlags(GTOMaterialFlags.GENERATE_ION_MEMBRANE);
         Chromium.addFlags(GENERATE_GEAR);
         Naquadah.addFlags(GTOMaterialFlags.GENERATE_NANITES, GENERATE_FRAME);
         NaquadahAlloy.addFlags(GENERATE_FINE_WIRE);

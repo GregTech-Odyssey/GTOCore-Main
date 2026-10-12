@@ -1746,35 +1746,37 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec FuelCellGeneratorTooltips = GTOTips.of("fuel_cell_generator", t -> {
-        t.feature(t.tr("将燃料在专用电解液中‘燃烧’以转移获取400%燃料效率级别的能量", "‘Burn’ fuel in a special electrolyte to transfer and obtain energy at 400% fuel efficiency level"));
-        t.feature(t.tr("或者将储存在电解液中的能量释放出来", "Or release the energy stored in the electrolyte"));
-        Component cs1 = t.tr("连续运行效率衰减(普通及以上模式专属)", "Continuous operation efficiency decay (exclusive to Normal and above modes)");
-        Component cs2 = t.tr("每运行一轮配方，根据当前使用的电极膜，燃料效率会乘以其衰减乘数", "Each time a recipe is run, the fuel efficiency will be multiplied by its decay multiplier based on the currently used Electrode Membrane");
-        Component cs3 = t.tr("在机器空闲时，输入600mB/tick蒸馏水可使效率恢复(总损失的15%)/tick", "When the machine is idle, inputting 600mB/tick of distilled water can restore efficiency by (15% of total loss)/tick");
-        Component cs4 = t.tr("使用离子活度传感器可以监测当前燃料效率（100%效率对应传感值1.0）", "Using an Ion Activity Sensor can monitor the current fuel efficiency (100% efficiency corresponds to a sensor value of 1.0)");
-        t.heading(t.tr("工作模式", "Operating Modes"));
-        t.feature(t.tr("模式一：输入燃料，消耗少量电能将释能电解液转化为同数量的储能电解液", "Mode 1: Input fuel, consume a small amount of EU to convert Discharged Electrolyte into the same amount of Charged Electrolyte"));
-        t.requirement(t.tr("需要等量的阴极液与阳极液来吸收燃料中的能量", "Requires equal amounts of Catholyte and Anolyte to absorb the energy from the fuel"));
-        t.feature(t.tr("燃料效率与使用的电极膜有关，效率越高的电极膜能转化更多的燃料能量", "Fuel efficiency is related to the Electrode Membrane used, higher efficiency membranes can convert more fuel energy"));
-        t.formula(t.tr("并行数 = min(输入的电解液数量, 当前燃料可转化的电解液数量)", "Parallel = min(input electrolyte amount, amount of electrolyte convertible by current fuel)"));
-        t.formula(t.tr("耗能 = 1EU × 并行数", "EU cost = 1EU × parallel"));
-        t.feature(t.tr("模式二：能量交换，将A类储能电解液的能量转移给B类释能电解液", "Mode 2: Energy Exchange, transfers the energy from Type A Charged Electrolyte to Type B Discharged Electrolyte"));
-        t.requirement(t.tr("对于输入的两种电解液，均需要等量的阴极液与阳极液", "Both input electrolytes require equal amounts of Catholyte and Anolyte"));
-        t.feature(t.tr("产物为两种电解液交换能量状态后的结果", "The output is the result of the two electrolytes swapping their energy states"));
-        t.feature(t.tr("并行数仅受限于输入流体的最低储量", "Parallelism is only limited by the lowest amount of input fluid"));
-        t.penalty(t.tr("此过程有能量损耗，具体效率由配方决定", "This process involves energy loss; the specific efficiency is determined by the recipe"));
-        t.feature(t.tr("模式三：发电，将储能电解液转化为95%总量的释能电解液，并释放100%总量的能量", "Mode 3: Power generation, convert Charged Electrolyte into 95% Discharged Electrolyte and release 100% of the energy"));
-        t.formula(t.tr("最大并行数 = 50, 即每秒最多消耗1B储能电解液", "Max parallel = 50, i.e. up to 1B Charged Electrolyte can be consumed per second"));
-        t.feature(t.tr("每次发电输出的能量等于储能电解液储存的能量", "Each operation outputs energy equal to the energy stored in the Charged Electrolyte"));
-        t.requirement(t.tr("在该模式下， 不能安装能源仓", "In this mode, Energy Input Hatches cannot be installed"));
-        t.requirement(t.tr("所有工作模式均需要输入电极膜才可工作", "All operating modes require input of Electrode Membranes to operate"));
-        t.requirement(t.tr("且发电模式仅可使用特定电极膜", "And the power generation mode can only use specific Electrode Membranes"));
-        if (!GTORules.FUEL_CELL_TIER.isEasy()) {
-            t.heading(cs1);
-            t.feature(cs2);
-            t.control(cs3);
-            t.control(cs4);
-        }
+        t.feature(t.tr("通过燃料氧化半反应将能量储存在电解液中，或释放储能电解液中的能量", "Store energy in electrolyte through fuel oxidation half-reactions, or release energy from charged electrolyte"));
+        t.heading(t.tr("模式一：储能", "Mode 1: Energy Storage"));
+        t.requirement(t.tr("机器的多方块顶部区域，以主机为中心，可以将仓室放置区划分为两侧，分别用于输入不同的半反应", "The multi-block top area of the machine, centered on the mainframe, can be divided into two sides for inputting different half-reactions"));
+        t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
+        t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
+        t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
+        t.formula(t.tr("总反应的时间=两侧半反应（时间×功率）之和/总反应功率", "Total reaction time = sum of both half-reaction (time × power) / total reaction power"));
+        t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
+        t.penalty(t.tr("每次总反应会消耗半透膜√(总反应并行数)点耐久", "Each total reaction consumes √(total reaction parallels) durability points from the semipermeable membrane"));
+        t.supported(t.tr("本机器模式提供无限并行数", "This machine mode provides unlimited parallelism"));
+        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜；反应期间膜被锁定，每完成一个总反应并行消耗1点耐久", "Place a membrane permeable to the paired ions in the top-center membrane hatch; it is locked during the reaction and loses 1 durability per completed total-reaction parallel"));
+        t.heading(t.tr("模式二：放电", "Mode 2: Energy Release"));
+        t.requirement(t.tr("放电需要半透膜仓内有膜，最大并行数由膜的放电并行度决定；实际并行仍受膜剩余耐久、物料、输出容量和能源输出能力限制", "Energy release requires a membrane in the membrane hatch; its discharge parallelism sets the maximum parallels, still limited by remaining membrane durability, materials, output capacity and energy output capability"));
+        t.feature(t.tr("放电期间膜被锁定，每完成一个配方并行消耗1点耐久；不应用膜的燃料效率、时间或耗电乘数", "The membrane is locked during energy release and loses 1 durability per completed recipe parallel; its fuel efficiency, duration and EU multipliers do not apply"));
+        t.requirement(t.tr("储能时连接能源输入仓，放电时连接能源输出仓；中央顶部用于物品、流体输出及半透膜仓", "Connect energy input hatches for storage and energy output hatches for release; the top center accepts item/fluid outputs and the membrane hatch"));
+    });
+
+    public static final TipSpec electroplatingBathTooltips = GTOTips.of("electroplating_bath", t -> {
+        t.heading(ComponentSlang.RunningRequirements);
+        t.requirement(t.tr("机器的多方块顶部区域，以主机为中心，可以将仓室放置区划分为两侧，分别用于输入不同的半反应", "The multi-block top area of the machine, centered on the mainframe, can be divided into two sides for inputting different half-reactions"));
+        t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
+        t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
+        t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
+        t.formula(t.tr("总反应的时间=两侧半反应（时间×功率）之和/总反应功率", "Total reaction time = sum of both half-reaction (time × power) / total reaction power"));
+        t.heading(t.tr("半透膜", "Semipermeable Membrane"));
+        t.requirement(t.tr("阳离子交换膜：当反应产生的离子为除质子以外的阳离子时使用", "Cation Exchange Membrane: Use when the reaction produces cations other than protons"));
+        t.requirement(t.tr("阴离子交换膜：当反应产生的离子为除氢氧根以外的阴离子时使用", "Anion Exchange Membrane: Use when the reaction produces anions other than hydroxide"));
+        t.requirement(t.tr("质子交换膜：当反应产生的离子为质子时使用", "Proton Exchange Membrane: Use when the reaction produces protons"));
+        t.control(t.tr("当反应有多种离子产生时，半透膜仅需能透过其中一种离子即可", "When the reaction produces multiple ions, the semipermeable membrane only needs to allow one of them to pass through"));
+        t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
+        t.penalty(t.tr("每次总反应会消耗半透膜√(总反应并行数)点耐久", "Each total reaction consumes √(total reaction parallels) durability points from the semipermeable membrane"));
     });
 
     public static final TipSpec SpaceStationTooltips = GTOTips.of("space_station", t -> {

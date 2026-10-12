@@ -1,5 +1,6 @@
 package com.gtocore.common.forge;
 
+import com.gtocore.api.electrochemistry.ElectrochemistryMigration;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
@@ -520,6 +521,7 @@ public final class ForgeCommonEvent {
 
     @SubscribeEvent
     public static void remapIds(MissingMappingsEvent event) {
+        ElectrochemistryMigration.remap(event);
         event.getMappings(Registries.BLOCK, GTOCore.MOD_ID).forEach(mapping -> {
             if (mapping.getKey().equals(GTOCore.id("abs_rad_casing"))) {
                 mapping.remap(GTOBlocks.ABS_RED_CASING.get());

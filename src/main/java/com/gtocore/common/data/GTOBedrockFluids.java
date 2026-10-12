@@ -22,6 +22,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import lombok.experimental.ExtensionMethod;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -29,6 +30,7 @@ import java.util.function.Consumer;
 import static com.gtolib.api.data.GTODimensions.*;
 
 @SuppressWarnings("unused")
+@ExtensionMethod(GTOBedrockFluids.BuilderExtension.class)
 public final class GTOBedrockFluids {
 
     public static final Map<String, CNEN> LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
@@ -40,7 +42,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.HeavyOilWithSand::getFluid : GTMaterials.OilHeavy::getFluid)
                     .weight(15)
-                    .yield(100, 200)
+                    .conditionalYield(100, 200)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(20)
@@ -51,7 +53,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.LightOilWithSand::getFluid : GTMaterials.OilLight::getFluid)
                     .weight(25)
-                    .yield(175, 300)
+                    .conditionalYield(175, 300)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(25)
@@ -62,7 +64,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.ShaleGas::getFluid : GTMaterials.NaturalGas::getFluid)
                     .weight(15)
-                    .yield(100, 175)
+                    .conditionalYield(100, 175)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(20)
@@ -73,7 +75,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.TightOilCrudeOil::getFluid : GTMaterials.Oil::getFluid)
                     .weight(20)
-                    .yield(175, 300)
+                    .conditionalYield(175, 300)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(25)
@@ -84,7 +86,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.ShaleOil::getFluid : GTMaterials.RawOil::getFluid)
                     .weight(20)
-                    .yield(200, 300)
+                    .conditionalYield(200, 300)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(25)
@@ -106,7 +108,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.HeavyOilWithSand::getFluid : GTMaterials.OilHeavy::getFluid)
                     .weight(15)
-                    .yield(100, 200)
+                    .conditionalYield(100, 200)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(20)
@@ -117,7 +119,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.LightOilWithSand::getFluid : GTMaterials.OilLight::getFluid)
                     .weight(25)
-                    .yield(175, 300)
+                    .conditionalYield(175, 300)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(25)
@@ -128,7 +130,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.ShaleGas::getFluid : GTMaterials.NaturalGas::getFluid)
                     .weight(15)
-                    .yield(100, 175)
+                    .conditionalYield(100, 175)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(20)
@@ -139,7 +141,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.TightOilCrudeOil::getFluid : GTMaterials.Oil::getFluid)
                     .weight(20)
-                    .yield(175, 300)
+                    .conditionalYield(175, 300)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(25)
@@ -150,7 +152,7 @@ public final class GTOBedrockFluids {
             builder -> builder
                     .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.ShaleOil::getFluid : GTMaterials.RawOil::getFluid)
                     .weight(20)
-                    .yield(200, 300)
+                    .conditionalYield(200, 300)
                     .depletionAmount(1)
                     .depletionChance(100)
                     .depletedYield(25)
@@ -403,7 +405,7 @@ public final class GTOBedrockFluids {
     public static BedrockFluidDefinition HEAVY_OIL = create(GTCEu.id("heavy_oil_deposit"), "重油矿藏", builder -> builder
             .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.HeavyOilWithSand::getFluid : GTMaterials.OilHeavy::getFluid)
             .weight(15)
-            .yield(100, 200)
+            .conditionalYield(100, 200)
             .depletionAmount(1)
             .depletionChance(100)
             .depletedYield(20)
@@ -414,7 +416,7 @@ public final class GTOBedrockFluids {
     public static BedrockFluidDefinition LIGHT_OIL = create(GTCEu.id("light_oil_deposit"), "轻油矿藏", builder -> builder
             .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.LightOilWithSand::getFluid : GTMaterials.OilLight::getFluid)
             .weight(25)
-            .yield(175, 300)
+            .conditionalYield(175, 300)
             .depletionAmount(1)
             .depletionChance(100)
             .depletedYield(25)
@@ -423,7 +425,7 @@ public final class GTOBedrockFluids {
     public static BedrockFluidDefinition NATURAL_GAS = create(GTCEu.id("natural_gas_deposit"), "天然气矿藏", builder -> builder
             .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.ShaleGas::getFluid : GTMaterials.NaturalGas::getFluid)
             .weight(15)
-            .yield(100, 175)
+            .conditionalYield(100, 175)
             .depletionAmount(1)
             .depletionChance(100)
             .depletedYield(20)
@@ -432,7 +434,7 @@ public final class GTOBedrockFluids {
     public static BedrockFluidDefinition OIL = create(GTCEu.id("oil_deposit"), "石油矿藏", builder -> builder
             .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.ShaleOil::getFluid : GTMaterials.Oil::getFluid)
             .weight(20)
-            .yield(175, 300)
+            .conditionalYield(175, 300)
             .depletionAmount(1)
             .depletionChance(100)
             .depletedYield(25)
@@ -443,7 +445,7 @@ public final class GTOBedrockFluids {
     public static BedrockFluidDefinition RAW_OIL = create(GTCEu.id("raw_oil_deposit"), "原油矿藏", builder -> builder
             .fluid(GTORules.FLUID_TIER.isExpert() ? GTOMaterials.TightOilCrudeOil::getFluid : GTMaterials.RawOil::getFluid)
             .weight(20)
-            .yield(200, 300)
+            .conditionalYield(200, 300)
             .depletionAmount(1)
             .depletionChance(100)
             .depletedYield(25)
@@ -537,4 +539,16 @@ public final class GTOBedrockFluids {
     }
 
     public static void init() {}
+
+    static class BuilderExtension {
+
+        public static BedrockFluidDefinition.Builder conditionalYield(BedrockFluidDefinition.Builder builder, int min, int max) {
+            if (GTORules.FLUID_TIER.isExpert()) {
+                builder.yield((int) (min * 1.25), (int) (max * 1.25));
+            } else {
+                builder.yield(min, max);
+            }
+            return builder;
+        }
+    }
 }

@@ -183,13 +183,8 @@ public final class GTORules {
             .tooltipLine("gtocore.rule.power.wind_mill_amperage.tooltip.0", "风力涡轮机的最大输出电流。", "The maximum output amperage of the wind turbine.")
             .register();
     public static final TierRule FUEL_CELL_TIER = Rules.tierRule("power.fuel_cell").group(POWER)
-            .name("gtocore.rule.power.fuel_cell", "燃料电池机制", "Fuel Cell Mechanics")
-            .desc("gtocore.rule.power.fuel_cell.desc", "简单档的吸收效率不会衰减；专家档使用专家膜效率与衰减参数。", "On the easy tier, absorption efficiency never decays; the expert tier uses the expert membrane efficiency and decay values.")
-            .register();
-    public static final DoubleRule FUEL_CELL_CONSUME = Rules.doubleRule("power.fuel_cell_membrane_damage").group(POWER)
-            .defaults(0, 0.035, 0.055).range(0, 1)
-            .name("gtocore.rule.power.fuel_cell_membrane_damage", "放电时膜损坏概率", "Fuel Cell Membrane Damage Chance on Discharge")
-            .tooltipLine("gtocore.rule.power.fuel_cell_membrane_damage.tooltip.0", "放电时使用的膜材料的损坏概率。", "The chance of the membrane material used being damaged upon discharging.")
+            .name("gtocore.rule.power.fuel_cell", "液流燃料电池机制", "Flow Fuel Cell Mechanics")
+            .desc("gtocore.rule.power.fuel_cell.desc", "专家档使用专家膜效率；其余档使用普通膜效率。储能与放电每完成一个配方并行消耗1点膜耐久；放电并行上限由膜的放电并行度决定。", "The expert tier uses expert membrane efficiencies; other tiers use normal efficiencies. Both absorption and discharge consume 1 membrane durability per completed recipe parallel; the membrane's discharge parallelism sets the discharge parallel limit.")
             .register();
     public static final BoolRule MEGA_TURBINE_REGULATOR = Rules.boolRule("power.mega_turbine_regulator").group(POWER)
             .defaults(false, false, true)

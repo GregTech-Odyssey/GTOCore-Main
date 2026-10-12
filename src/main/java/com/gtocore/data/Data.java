@@ -133,6 +133,7 @@ public final class Data {
         MagicRecipesC.init();
         FuelRecipe.init();
         BrineRecipes.init();
+        MembraneMaterialRecipes.init();
         NaquadahProcess.init();
         PlatGroupMetals.init();
         CompositeMaterialsProcessing.init();

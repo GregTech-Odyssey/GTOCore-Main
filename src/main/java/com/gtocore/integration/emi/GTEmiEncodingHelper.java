@@ -2,6 +2,7 @@ package com.gtocore.integration.emi;
 
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.data.tag.Tags;
+import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
@@ -70,7 +71,7 @@ public class GTEmiEncodingHelper {
     }
 
     private static List<GenericStack> intoGenericStack(EmiIngredient ingredient, boolean virtual) {
-        if (ingredient.isEmpty()) {
+        if (ingredient.isEmpty() || ingredient instanceof IonEmiStack) {
             return Collections.emptyList();
         }
         if (ingredient instanceof TagEmiIngredient tag && Tags.CIRCUITS_ARRAY.containsKey(tag.key)) {

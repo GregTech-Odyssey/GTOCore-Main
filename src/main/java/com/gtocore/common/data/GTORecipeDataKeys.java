@@ -1,5 +1,7 @@
 package com.gtocore.common.data;
 
+import com.gtocore.api.electrochemistry.HalfReactionRecipeExtension;
+import com.gtocore.api.electrochemistry.PairedReactionRecipeExtension;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.machine.mana.CelestialHandler;
 
@@ -14,6 +16,9 @@ import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.DataComponentKey;
 
 public final class GTORecipeDataKeys {
+
+    public static final HalfReactionRecipeExtension HALF_REACTION = (HalfReactionRecipeExtension) GTRecipeDataKeys.REGISTRY.register(HalfReactionRecipeExtension.INSTANCE);
+    public static final PairedReactionRecipeExtension PAIRED_REACTION = (PairedReactionRecipeExtension) GTRecipeDataKeys.REGISTRY.register(PairedReactionRecipeExtension.INSTANCE);
 
     public static final DataComponentKey<Boolean> IS_CUSTOM = register("isCustom", DataSyncCodec.BOOLEAN_CODEC);
     public static final DataComponentKey<Boolean> SPECIAL = register("special", DataSyncCodec.BOOLEAN_CODEC);
@@ -60,6 +65,7 @@ public final class GTORecipeDataKeys {
     public static final DataComponentKey<Integer> RAY_INTENSITY = register("ray_intensity", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Integer> RAY_WAVELENGTH = register("ray_wavelength", DataSyncCodec.INT_CODEC);
     public static final DataComponentKey<Double> RAY_POLARIZATION = register("ray_polarization", DataSyncCodec.DOUBLE_CODEC);
+
     @SuppressWarnings("unchecked")
     public static final DataComponentKey<Integer>[] PARAM = (DataComponentKey<Integer>[]) new DataComponentKey<?>[] { PARAM1, PARAM2, PARAM3 };
 

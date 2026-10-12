@@ -72,7 +72,28 @@ final class ItemLang {
         addCNEN("tagprefix.excited_stainless_steel_target", "活化%s-不锈钢靶", "Excited %s Stainless Steel Target");
         addCNEN("tagprefix.excited_zirconium_carbide_target", "活化%s-碳化锆靶", "Excited %s Zirconium Carbide Target");
         addCNEN("tagprefix.depleted_breeder_rod", "枯竭%s增殖棒", "%s Depleted Breeder Rod");
-        addCNEN("tagprefix.membrane_electrode", "%s膜电极", "%s Membrane Electrode");
+        addCNEN("tagprefix.ion_membrane", "%s离子交换膜", "%s Ion Exchange Membrane");
+        addCNEN("tagprefix.proton_membrane", "%s质子交换膜", "%s Proton Exchange Membrane");
+        addCNEN("tagprefix.cation_membrane", "%s阳离子交换膜", "%s Cation Exchange Membrane");
+        addCNEN("tagprefix.anion_membrane", "%s阴离子交换膜", "%s Anion Exchange Membrane");
+        addCNEN("gtocore.membrane.recipe.duration_multiplier", "应用到配方时的耗时倍率：%s", "Duration multiplier when applied to recipe: %s");
+        addCNEN("gtocore.membrane.recipe.energy_multiplier", "应用到配方时的能耗倍率：%s", "Energy multiplier when applied to recipe: %s");
+        addCNEN("gtocore.machine.fuelcell_parallel", "放电并行度：%s", "Discharge Parallelism: %s");
+        addCNEN("gtocore.recipe.half_reaction.ion", "生成%s", "Generates %s");
+        addCNEN("gtocore.recipe.half_reaction.required_ion", "需要%s完成反应", "Required %s to complete the reaction");
+        addCNEN("gtocore.recipe.half_reaction.generic_ion", "离子：%s × %s mol (%s)", "Ion: %s x %s mol (%s)");
+        addCNEN("gtocore.recipe.half_reaction.charge", "半反应总电荷：%s", "Half-reaction charge: %s");
+        addCNEN("gtocore.recipe.half_reaction.electrolyte_type", "电解体系：%s", "Electrolyte system: %s");
+        addCNEN("gtocore.electrolyte_type.water", "水系", "Aqueous");
+        addCNEN("gtocore.electrolyte_type.organic", "有机体系", "Organic");
+        addCNEN("gtocore.electrolyte_type.molten_salt", "熔盐体系", "Molten Salt");
+        addCNEN("gtocore.electrolyte_type.supercritical_fluid", "超临界流体体系", "Supercritical Fluid");
+        addCNEN("gtocore.electrolyte_type.ionic_liquid", "离子液体体系", "Ionic Liquid");
+        addCNEN("gtocore.gui.electrochemical.description", "两侧独立输入，中央半透膜传递离子；下方显示当前反应与运行状态。", "Independent inputs on each side; ions cross the central membrane. Current reaction and operating status are shown below.");
+        addCNEN("gtocore.gui.electrochemical.membrane", "半透膜", "Membrane");
+        addCNEN("gtocore.gui.electrochemical.missing_membrane", "未安装", "Not installed");
+        addCNEN("gtocore.gui.electrochemical.remaining", "剩余使用次数", "Uses remaining");
+        addCNEN("gtocore.gui.electrochemical.unused_membrane", "当前模式不使用膜", "Membrane not used in this mode");
         addCNEN("tagprefix.mxene", "%s二维纳米层", "%s MXene");
         addCNEN("tagprefix.mborene", "%s二维纳米层", "%s MBorene");
         addCNEN("tagprefix.aluminium_contained_mxene_precursor", "MAXene%s二维纳米层前驱体", "A-Contained %s MXene Precursor");
@@ -95,6 +116,8 @@ final class ItemLang {
         addCNEN("metaitem.tool.tooltip.rotor.coating_efficiency", "镀层效率：%s%%", "Coating Efficiency: %s%%");
         addCNEN("metaitem.tool.tooltip.rotor.coating_power", "镀层产能：%s%%", "Coating Power: %s%%");
         addCNEN("metaitem.tool.tooltip.rotor.coating", "镀层材料：%s", "Coating Material: %s");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.ench.unbreaking", "耐久附魔减免耐久损耗：%s%%", "Durability Enchantment Reduction: %s%%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.ench.efficiency", "效率附魔加成：%s%%", "Efficiency Enchantment Bonus: %s%%");
         addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.0", "§6镀层机制：", "§6Coating Mechanism:");
         addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.1", "§b镀层会提供一道吸收转子损耗的屏障，当转子A有镀层B，镀层B的耐久为§d4 * max(B/10, min(B-A, B/2))",
                 "§bThe coating provides a barrier that absorbs rotor wear. When rotor A has coating B, the durability of coating B is §d4 * max(B/10, min(B-A, B/2))");
@@ -107,6 +130,12 @@ final class ItemLang {
                 "When the body consumes durability, the §dmagical§b coating will also consume durability. After the coating durability is exhausted, the rotor efficiency and turbine power generation will fall back to the original value. ");
         addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.3.magic", "当转子A有镀层B，镀层B的耐久为§d4 * max(B/10, min(B-A, B/2))",
                 "When rotor A has coating B, the durability of coating B is §d4 * max(B/10, min(B-A, B/2))");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.4.magic", "魔法镀层同时赋予转子可应用附魔的属性，但在镀层耐久耗尽后附魔属性将失效", "Magical coatings also give the rotor enchantable properties, but the enchantment properties will become invalid after the coating durability is exhausted");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.5.magic", "耐久附魔使转子有概率不再消耗镀层耐久，最高3级，公式与原版附魔一致", "Durability enchantment gives the rotor a chance to no longer consume coating durability, up to level 3, with the same formula as the original enchantment");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.6.magic", "效率附魔使转子效率额外提升每级10%（独立乘区），最高5级", "Efficiency enchantment increases rotor efficiency by an additional 10% per level (Independent Multiplication Area), up to level 5");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.7.magic", "经验修补附魔使转子试图消耗汁来修补本体与镀层耐久，每级在磨损时试图恢复10点耐久，但需要消耗10倍于常规经验修补的经验值（10点即1B经验汁）",
+                "Mending enchantment allows the rotor to attempt to consume juice to repair the body and coating durability, attempting to restore 10 durability points per level when worn, but requires 10 times the experience value of regular mending (10 points is 1B experience juice)");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.8.magic", "力量附魔使转子产能额外提升每级5%（独立乘区），最高5级", "Power enchantment increases rotor power generation by an additional 5% per level (Independent Multiplication Area), up to level 5");
         addCNEN("gtocore.turbine_rotor.coated", "%s镀层", "%s Coated");
         addCNEN("gtocore.tooltip.artificial_gem", "比自然的更好", "Better than nature");
         addCNEN("gtocore.tooltip.unknown", "未知", "Unknown");

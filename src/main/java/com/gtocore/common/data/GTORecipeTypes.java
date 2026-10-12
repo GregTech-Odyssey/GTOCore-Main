@@ -2,6 +2,7 @@ package com.gtocore.common.data;
 
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.api.gui.recipe.GTORecipeLayouts;
+import com.gtocore.api.gui.recipe.HalfReactionUI;
 import com.gtocore.common.item.DimensionDataItem;
 import com.gtocore.common.item.DiscItem;
 import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
@@ -56,6 +57,12 @@ import static com.lowdragmc.lowdraglib.gui.texture.ProgressTexture.FillDirection
 import static earth.terrarium.adastra.common.registry.ModItems.TIER_1_ROCKET;
 
 public final class GTORecipeTypes {
+
+    private static RecipeType halfReactionType(String name, String chineseName) {
+        var type = register(name, chineseName, MULTIBLOCK);
+        type.setRecipeUI(new HalfReactionUI(type));
+        return type;
+    }
 
     public static void init() {
         RecipeTypeModify.init();
@@ -799,7 +806,7 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_BATH, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.FURNACE);
 
-    public static final RecipeType ELECTROPLATING_RECIPES = register("electrochemical_deposition", "电化学电镀", MULTIBLOCK)
+    public static final RecipeType ELECTROPLATING_RECIPES = halfReactionType("electrochemical_deposition", "电化学电镀")
             .setEUIO(IO.IN)
             .setMaxIOSize(4, 2, 3, 2)
             .setProgressBar(GuiTextures.PROGRESS_BAR_BATH, LEFT_TO_RIGHT)
@@ -922,25 +929,17 @@ public final class GTORecipeTypes {
             .addDataInfo(data -> data.data.containsKey(GTORecipeDataKeys.RADIOACTIVITY) ? LocalizationUtils.format("gtocore.recipe.radioactivity", data.data.getInt(GTORecipeDataKeys.RADIOACTIVITY)) : "")
             .setSound(GTSoundEntries.COOLING);
 
-    public static final RecipeType FUEL_CELL_ENERGY_ABSORPTION_RECIPES = register("fuel_cell_energy_absorption", "燃料电池液能量吸收", MULTIBLOCK)
+    public static final RecipeType FUEL_CELL_ENERGY_ABSORPTION_RECIPES = halfReactionType("fuel_cell_energy_absorption", "液流燃料电池半反应")
             .setEUIO(IO.IN)
-            .setMaxIOSize(1, 0, 2, 0)
+            .setMaxIOSize(6, 6, 6, 6)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.fuelcell.converted_energy", FormattingUtil.formatNumbers(data.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY))))
             .setSound(GTSoundEntries.CHEMICAL);
 
-    public static final RecipeType FUEL_CELL_ENERGY_TRANSFER_RECIPES = register("fuel_cell_energy_transfer", "燃料电池液能量交换", MULTIBLOCK)
-            .setEUIO(IO.IN)
-            .setMaxIOSize(1, 1, 4, 4)
-            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.fuelcell.converted_efficiency", FormattingUtil.formatNumber2Places(data.data.getFloat(GTORecipeDataKeys.EFFICIENCY) * 100)))
-            .setSound(GTSoundEntries.CHEMICAL);
-
-    public static final RecipeType FUEL_CELL_ENERGY_RELEASE_RECIPES = register("fuel_cell_energy_release", "燃料电池液能量释放", MULTIBLOCK)
+    public static final RecipeType FUEL_CELL_ENERGY_RELEASE_RECIPES = register("fuel_cell_energy_release", "液流燃料电池放电", MULTIBLOCK)
             .setEUIO(IO.OUT)
             .setMaxIOSize(1, 1, 2, 2)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .addDataInfo(data -> LocalizationUtils.format("gtocore.rule.power.fuel_cell_membrane_damage") + ":" + FormattingUtil.formatPercent(GTORules.FUEL_CELL_CONSUME.get() * 100) + "%%")
             .setSound(GTSoundEntries.ARC);
 
     public static final RecipeType BIOCHEMICAL_EXTRACTION_RECIPES = register("biochemical_extraction", "生物提取", MULTIBLOCK)

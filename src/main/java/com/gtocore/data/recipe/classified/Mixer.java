@@ -753,7 +753,7 @@ final class Mixer {
                 .inputItems(TagPrefix.dust, GTOMaterials.SodiumSulfate)
                 .inputFluids(GTMaterials.SulfuricAcid, 4000)
                 .inputFluids(GTMaterials.Oxygen, 1000)
-                .outputFluids(IronChromiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE_CATHODE, 16000))
+                .outputFluids(IronChromiumRedoxFlowBatteryElectrolyte.getFluid(GTOFluidStorageKey.ENERGY_RELEASE, 16000))
                 .EUt(1920)
                 .duration(220)
                 .save();

@@ -7,6 +7,7 @@ import com.gtocore.common.machine.multiblock.electric.research.IntelligentScanni
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -34,7 +35,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartMachine implements
@@ -46,17 +46,20 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     @Getter
     @Setter
     private boolean isOnline;
-    @Setter
-    private boolean changed = true;
     private IStackWatcher storageWatcher;
     private TickableSubscription tickSubscription;
-    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
-    private final TickTimeMonitor scanMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::scanStorage);
+    private boolean initializeKeys;
+    private boolean keysChanged;
+    /** 合并同一批 watcher 回调，避免在配方提交期间替换 key 数组。 */
+    private final TickTimeMonitor storageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::updateStorageCache);
     @SaveToDisk
     private final ScanningContentHandler contentHandler = new ScanningContentHandler(this);
 
     @Getter
-    private AEKeySet<AEKey> cachedKeys;
+    private AEKeySet<AEKey> cachedKeys = new AEKeySet<>();
+    private AEKeySet<AEKey> watchedKeys = new AEKeySet<>();
+    /** 同一基础 key 可能对应多个仍有库存的 NBT 变体。 */
+    private final KeyCounter keyReferences = new KeyCounter();
     private AEItemKey[] itemKeys = NO_ITEM_KEYS;
     private AEFluidKey[] fluidKeys = NO_FLUID_KEYS;
     private static final AEKey[] NO_KEYS = new AEKey[0];
@@ -71,57 +74,100 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-        tickSubscription = subscribeServerTick(tickSubscription, scanMonitor, 40);
+    public void addedToController(IMultiController controller) {
+        super.addedToController(controller);
+        requestStorageUpdate();
     }
 
-    /** 扫描 ME 网络存储，刷新缓存的 key 集合。 */
-    private void scanStorage() {
-        if (getController() != null && changed) {
-            changed = false;
+    private void requestStorageUpdate() {
+        tickSubscription = subscribeServerTick(tickSubscription, storageMonitor);
+    }
+
+    /** 仅在接入网络时读取一次库存，后续由 watcher 增量维护。 */
+    private void updateStorageCache() {
+        tickSubscription.unsubscribe();
+        tickSubscription = null;
+        if (initializeKeys) {
+            initializeKeys = false;
+            clearKeys();
             var grid = getMainNode().getGrid();
-            if (grid == null) {
-                clearKeys();
-                return;
+            if (grid != null) {
+                collectKeys(grid.getStorageService().getCachedInventory());
             }
-            var stack = grid.getStorageService().getCachedInventory();
-            if (stack != null) {
-                collectKeys(stack);
-            } else {
-                clearKeys();
-            }
-            if (getController() instanceof IntelligentScanningManagementPlatformMachine managementPlatform) {
-                managementPlatform.reloadAvailableAEKeys();
-            }
+        }
+        if (keysChanged) {
+            keysChanged = false;
+            rebuildKeyArrays();
+        }
+        contentHandler.onContentsChanged();
+        if (getController() instanceof IntelligentScanningManagementPlatformMachine managementPlatform) {
+            managementPlatform.reloadAvailableAEKeys();
         }
     }
 
     private void clearKeys() {
-        cachedKeys = null;
+        cachedKeys.clear();
+        watchedKeys.clear();
+        keyReferences.clear();
         itemKeys = NO_ITEM_KEYS;
         fluidKeys = NO_FLUID_KEYS;
     }
 
     private void collectKeys(KeyCounter stack) {
-        var keys = new AEKeySet<AEKey>(stack.size());
-        var items = new ArrayList<AEItemKey>();
-        var fluids = new ArrayList<AEFluidKey>();
-        for (var entry : stack) {
-            var k = entry.getKey();
-            if (k instanceof AEItemKey itemKey) {
-                if (itemKey.item instanceof DataCrystalItem) continue;
-                var base = itemKey.dropSecondary();
-                if (keys.add(base)) items.add(base);
-            } else if (k instanceof AEFluidKey fluidKey) {
-                if (entry.getLongValue() <= 1000) continue;
-                var base = fluidKey.dropSecondary();
-                if (keys.add(base)) fluids.add(base);
+        cachedKeys = new AEKeySet<>(stack.size());
+        watchedKeys = new AEKeySet<>(stack.size());
+        keyReferences.ensureCapacity(stack.size());
+        stack.fastForEach(this::updateKey);
+        keysChanged = true;
+    }
+
+    private void updateKey(AEKey key, long amount) {
+        AEKey base;
+        boolean available;
+        if (key instanceof AEItemKey itemKey) {
+            if (itemKey.item instanceof DataCrystalItem) return;
+            base = itemKey.dropSecondary();
+            available = amount > 0;
+        } else if (key instanceof AEFluidKey fluidKey) {
+            base = fluidKey.dropSecondary();
+            available = amount > 1000;
+        } else {
+            return;
+        }
+        if (available) {
+            if (watchedKeys.add(key)) {
+                keyReferences.add(base, 1);
+                keysChanged |= cachedKeys.add(base);
+            }
+        } else if (watchedKeys.remove(key)) {
+            keyReferences.remove(base, 1);
+            if (keyReferences.get(base) == 0) {
+                keyReferences.remove(base);
+                keysChanged |= cachedKeys.remove(base);
             }
         }
-        cachedKeys = keys;
-        itemKeys = items.toArray(NO_ITEM_KEYS);
-        fluidKeys = fluids.toArray(NO_FLUID_KEYS);
+    }
+
+    private void rebuildKeyArrays() {
+        int itemCount = 0;
+        int fluidCount = 0;
+        for (var key : cachedKeys) {
+            if (key instanceof AEItemKey) itemCount++;
+            else if (key instanceof AEFluidKey) fluidCount++;
+        }
+        var items = itemCount == 0 ? NO_ITEM_KEYS : new AEItemKey[itemCount];
+        var fluids = fluidCount == 0 ? NO_FLUID_KEYS : new AEFluidKey[fluidCount];
+        int itemIndex = 0;
+        int fluidIndex = 0;
+        for (var key : cachedKeys) {
+            if (key instanceof AEItemKey itemKey) {
+                items[itemIndex++] = itemKey;
+            } else if (key instanceof AEFluidKey fluidKey) {
+                fluids[fluidIndex++] = fluidKey;
+            }
+        }
+        itemKeys = items;
+        fluidKeys = fluids;
     }
 
     private AEKey[] keysOf(AEKeyType type) {
@@ -136,10 +182,18 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
     @Override
     public void onUnload() {
-        if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+        if (storageWatcher != null) {
+            storageWatcher.reset();
+            storageWatcher = null;
         }
         super.onUnload();
+        if (tickSubscription != null) {
+            tickSubscription.unsubscribe();
+            tickSubscription = null;
+        }
+        clearKeys();
+        initializeKeys = false;
+        keysChanged = false;
     }
 
     @Override
@@ -148,20 +202,24 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     }
 
     @Override
-    public void updateWatcher(IStackWatcher iStackWatcher) {
-        storageWatcher = iStackWatcher;
-        iStackWatcher.setWatchAll(true);
+    public void updateWatcher(IStackWatcher newWatcher) {
+        storageWatcher = newWatcher;
+        newWatcher.setWatchAll(true);
+        initializeKeys = true;
+        requestStorageUpdate();
     }
 
     @Override
     public void onMainNodeStateChanged(IGridNodeListener.State reason) {
         IGridConnectedMachine.super.onMainNodeStateChanged(reason);
-        changed = true;
+        if (getMainNode().getGrid() == null) initializeKeys = true;
+        requestStorageUpdate();
     }
 
     @Override
-    public void onStackChange(AEKey aeKey, long l) {
-        changed = true;
+    public void onStackChange(AEKey key, long amount) {
+        if (!initializeKeys) updateKey(key, amount);
+        requestStorageUpdate();
     }
 
     private static class ScanningContentHandler extends NotifiableContentHandler {
@@ -179,7 +237,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
         @Override
         protected boolean updateEmpty() {
-            return getMachine().getCachedKeys() == null || getMachine().getCachedKeys().isEmpty();
+            return getMachine().getCachedKeys().isEmpty();
         }
 
         @Override

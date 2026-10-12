@@ -2,6 +2,9 @@ package com.gtocore.data.recipe.generated;
 
 import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.api.electrochemistry.ElectrolyteType;
+import com.gtocore.api.electrochemistry.IonAmount;
+import com.gtocore.api.electrochemistry.Ions;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeCategories;
@@ -633,6 +636,7 @@ final class GTOPartsRecipeHandler {
             Material electrolyteMaterial = isMagic ? GTOMaterials.PhantomicElectrolyteBuffer : GTOMaterials.ChromicAcid;
             Material wasteMaterial = isMagic ? GTOMaterials.Aether : GTOMaterials.ChromicAcidWaste;
             ELECTROPLATING_RECIPES.recipeBuilder("electroplate_%s_%s_turbine_rotor".formatted(material.getName(), plating.getName()))
+                    .halfReaction(isMagic ? ElectrolyteType.IONIC_LIQUID : ElectrolyteType.WATER, false, new IonAmount(Ions.ANIMIUM, 2))
                     .inputItems(turbineRotor, material)
                     .inputItems(plateDouble, plating, 5)
                     .inputFluids(DistilledWater, 1000)
