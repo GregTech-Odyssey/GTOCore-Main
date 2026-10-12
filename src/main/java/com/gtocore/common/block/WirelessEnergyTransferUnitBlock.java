@@ -47,9 +47,11 @@ public class WirelessEnergyTransferUnitBlock extends Block implements WirelessEn
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Tips.stat(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, GTValues.VNF[getIoTier()], FormattingUtil.formatNumbers(getAmperage()))));
+        tooltip.add(Tips.stat(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, GTValues.VNF[tier], FormattingUtil.formatNumbers(getAmperage()))));
         tooltip.add(Tips.feature(Component.translatable(AMPERAGE_RULE)));
         tooltip.add(Tips.feature(Component.translatable(NO_STORAGE)));
+        tooltip.add(Tips.requirement(Component.translatable(WirelessEnergyUnitBlock.REQUIRES_GLASS, GTValues.VNF[tier])));
+        tooltip.add(Tips.detail(Component.translatable(WirelessEnergyUnitBlock.SUPPLIES)));
         tooltip.add(Tips.control(Component.translatable("gtocore.machine.tooltip.upgrade_action", MultiBlockG.WIRELESS_ENERGY_SUBSTATION.get().getName(), Component.translatable("gtocore.adv_terminal.block_map.wireless_energy_transfer_unit"))));
     }
 

@@ -142,7 +142,7 @@ public final class EnergyPort {
 
     public long deposit(long gross, int voltageTier) {
         refresh();
-        if (gross <= 0 || voltageTier > node.reachTier) return 0;
+        if (gross <= 0 || node.reachTier < 0) return 0;
         long accept = buffer.roomFor(gross);
         if (accept > 0) addPending(accept, voltageTier);
         return accept;
@@ -150,7 +150,7 @@ public final class EnergyPort {
 
     public boolean canDepositAll(long gross, int voltageTier) {
         refresh();
-        return gross <= 0 || voltageTier <= node.reachTier && buffer.acceptsAll(gross);
+        return gross <= 0 || node.reachTier >= 0 && buffer.acceptsAll(gross);
     }
 
     public boolean depositAll(long gross, int voltageTier) {
@@ -214,10 +214,10 @@ public final class EnergyPort {
 
     private long pushAt(long gross, int voltageTier) {
         cycle.pushed = true;
-        long allowed = allowed(gross, voltageTier);
+        long allowed = allowedPut(gross);
         long done = 0;
         if (allowed > 0) {
-            done = GridTransfer.put(account, node, voltageTier, allowed, extraLoss, priority, outcome);
+            done = GridTransfer.put(account, node, allowed, extraLoss, priority, outcome);
             flow.addIn(done);
             cycle.record(done, allowed, outcome.lineLimited);
         }
@@ -229,6 +229,16 @@ public final class EnergyPort {
         outcome.lineLimited = false;
         if (amount <= 0) return 0;
         if (voltageTier > node.reachTier) {
+            cycle.starved = true;
+            return 0;
+        }
+        return amount;
+    }
+
+    private long allowedPut(long amount) {
+        outcome.lineLimited = false;
+        if (amount <= 0) return 0;
+        if (node.reachTier < 0) {
             cycle.starved = true;
             return 0;
         }
@@ -379,10 +389,10 @@ public final class EnergyPort {
 
     private boolean lump(BigInteger gross, int voltageTier, boolean apply) {
         refresh();
-        if (account == EnergyAccount.NONE || voltageTier > node.reachTier) return false;
+        if (account == EnergyAccount.NONE || node.reachTier < 0) return false;
         long held = node.putHeldAbove(priority);
-        if (held > 0 && !GridTransfer.putLump(account, node, voltageTier, gross.add(BigInteger.valueOf(held)), extraLoss, false, priority)) return false;
-        boolean ok = GridTransfer.putLump(account, node, voltageTier, gross, extraLoss, apply, priority);
+        if (held > 0 && !GridTransfer.putLump(account, node, gross.add(BigInteger.valueOf(held)), extraLoss, false, priority)) return false;
+        boolean ok = GridTransfer.putLump(account, node, gross, extraLoss, apply, priority);
         if (ok && apply) flow.addIn(gross.bitLength() > 63 ? U126.MASK : gross.longValue());
         return ok;
     }

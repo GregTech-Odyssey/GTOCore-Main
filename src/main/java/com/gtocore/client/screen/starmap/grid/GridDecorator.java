@@ -27,7 +27,7 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 final class GridDecorator implements BodyDecorator {
 
-    private static final int HIDDEN = 0x00FFFFFF, DIM = 0xFF5C6070;
+    private static final int DIM = 0xFF5C6070;
 
     private final GridMapClient client;
     private final StarCatalog catalog;
@@ -54,8 +54,7 @@ final class GridDecorator implements BodyDecorator {
 
     @Override
     public int tint(int body) {
-        if (lit(body)) return StarSprites.NO_TINT;
-        return client.canvas().scale() >= GridStyle.SPRITE_SCALE ? DIM : HIDDEN;
+        return lit(body) ? StarSprites.NO_TINT : DIM;
     }
 
     boolean anchorLit(int anchor) {
@@ -68,8 +67,7 @@ final class GridDecorator implements BodyDecorator {
     }
 
     public int anchorTint(int anchor) {
-        if (picking || anchorLit(anchor)) return StarSprites.NO_TINT;
-        return client.canvas().scale() >= GridStyle.SPRITE_SCALE ? DIM : HIDDEN;
+        return picking || anchorLit(anchor) ? StarSprites.NO_TINT : DIM;
     }
 
     public int anchorLabelColor(int anchor, int fallback) {

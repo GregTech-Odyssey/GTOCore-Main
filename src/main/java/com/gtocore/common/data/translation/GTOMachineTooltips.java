@@ -1185,22 +1185,23 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("棱使用无线能源塔框架，六个面使用同一等级的玻璃", "Edges use Wireless Energy Tower Frames; all six faces use glass of a single tier"));
         t.requirement(t.tr("控制器位于正面底边的正中", "The controller sits at the middle of the front bottom edge"));
         t.supported(t.tr("内部放存储单元与传输单元，无需全部填满", "Storage and transfer units go inside; the interior does not need to be filled"));
-        t.heading(t.tr("电压与容量", "Voltage and Capacity"));
-        t.feature(t.tr("玻璃等级决定能源塔的电压等级，能源塔只为电压不高于此等级的设备供电", "The glass tier sets the tower's voltage tier; the tower only supplies devices at or below that voltage"));
-        t.feature(t.tr("高于玻璃等级的单元不生效", "Units above the glass tier have no effect"));
-        t.feature(t.tr("总容量为全部生效存储单元的容量相加", "Total capacity is the sum over all effective storage units"));
-        t.feature(t.tr("损耗为各存储单元损耗按容量加权平均", "Loss is the storage unit losses averaged by capacity"));
-        t.heading(t.tr("吞吐", "Throughput"));
-        t.feature(t.tr("每个存储单元提供高一级电压 4A 的吞吐", "Each storage unit provides 4A of throughput at one voltage tier above its own"));
-        t.feature(t.tr("每个传输单元提供高一级电压的吞吐，安数等于同级存储单元的安时数", "Each transfer unit provides throughput at one voltage tier above its own, with amperage equal to the amp-hours of the same-tier storage unit"));
-        t.feature(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
-        t.feature(t.tr("同一维度内电压等级相同的能源塔合并存储，吞吐也合并计算", "Towers of the same voltage tier in one dimension share storage and pool their throughput"));
-        t.feature(t.tr("跨维度取电与存电计入电量所在维度的吞吐", "Cross-dimension draws and stores count against the throughput of the dimension holding the energy"));
-        t.feature(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
+        t.heading(t.tr("电压", "Voltage"));
+        t.feature(t.tr("提供电压 = 内部生效单元的最高等级 + 1，最高为 MAX", "Supplied voltage = highest effective unit tier + 1, at most MAX"));
+        t.requirement(t.tr("玻璃等级是单元等级的上限，高于玻璃等级的单元不生效", "The glass tier caps the unit tier; units above it have no effect"));
+        t.detail(t.tr("例如 HV 玻璃中放 HV 单元，能源塔提供 EV", "For example, HV units inside HV glass make the tower supply EV"));
+        t.heading(t.tr("容量与吞吐", "Capacity and Throughput"));
+        t.feature(t.tr("总容量为全部生效存储单元的容量之和，损耗按容量加权平均", "Total capacity is the sum over the effective storage units; loss is averaged by capacity"));
+        t.feature(t.tr("每个存储单元提供本单元电压 4A 的吞吐，每个传输单元提供本单元电压、同级存储单元安时数安的吞吐", "Each storage unit adds 4A at its own voltage; each transfer unit adds as many amps at its own voltage as the amp-hours of the same-tier storage unit"));
+        t.detail(t.tr("吞吐按功率计：以更高电压取电时安数按电压折算，例如 HV 4A 相当于 EV 1A", "Throughput is power: drawing at a higher voltage converts the amps, e.g. 4A of HV equals 1A of EV"));
+        t.detail(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
+        t.detail(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
+        t.heading(t.tr("同维度合并", "Combining in a Dimension"));
+        t.feature(t.tr("同一维度中提供电压相同的能源塔合为一档：容量、存量与吞吐相加", "Towers in one dimension that supply the same voltage form one tier: capacity, stored energy and throughput add up"));
         t.heading(t.tr("存取规则", "Access Rules"));
-        t.feature(t.tr("取电仅使用电压等级不低于设备的能源塔，优先使用其中等级最低者", "Energy is drawn only from towers at or above the device's voltage tier, lowest tier first"));
-        t.feature(t.tr("存电优先存入电压等级不低于输入电压的能源塔，存满后存入低等级能源塔", "Energy is stored in towers at or above the input voltage first, then in lower-tier towers"));
-        t.feature(t.tr("本维度不够时，经维度中继器的线路就近从其他维度取电或存电", "When this dimension falls short, energy moves to or from the nearest other dimensions over relay lines"));
+        t.requirement(t.tr("取电：设备电压不能高于档位电压，从满足条件的最低档开始取，受各档输出吞吐限制", "Drawing: the device voltage may not exceed the tier voltage; the lowest qualifying tier is used first, limited by each tier's output throughput"));
+        t.supported(t.tr("存电：不限电压，只受各档输入吞吐限制，从最高档开始存", "Storing: any voltage, limited only by each tier's input throughput, highest tier first"));
+        t.detail(t.tr("本维度不够时，经维度中继器的线路就近从其他维度存取电，取电时线路电压也不能低于设备电压", "When this dimension falls short, energy moves to or from the nearest dimensions over relay lines; for drawing, the line voltage may not be below the device voltage either"));
+        t.detail(t.tr("跨维度存取计入电量所在维度的吞吐", "Cross-dimension draws and stores count against the throughput of the dimension holding the energy"));
     });
 
     // 无线电网维度中继器
@@ -1211,6 +1212,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("同一对维度之间的多台叠加，按功率折算到其中最高的电压", "Repeaters between the same pair of dimensions stack, converted by power to the highest voltage"));
         t.feature(t.tr("线路两个方向各自独立，互不占用", "The two directions of a line are independent of each other"));
         t.feature(t.tr("取电时先用本维度能源塔，不够再按跳数由近到远经线路从其他维度取", "Devices draw from local towers first, then from other dimensions over lines, nearest first"));
+        t.requirement(t.tr("取电经过的线路电压不能低于设备电压，存电不限线路电压", "Lines a draw passes through may not be below the device voltage; storing ignores the line voltage"));
     });
 
     // 拉丝塔

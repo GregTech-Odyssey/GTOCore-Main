@@ -89,11 +89,19 @@ public class StxckUtil {
     public boolean tryRefillItemStackOnEntityRemove(Entity entity, Entity.RemovalReason reason) {
         if (entity.getType() != EntityType.ITEM || reason != Entity.RemovalReason.DISCARDED) return false;
         var itemEntity = (ItemEntity) entity;
-        if (getExtraItemCount(itemEntity) <= 0) return false;
-        var copied = itemEntity.getItem().copy();
-        itemEntity.setItem(copied);
-        copied.setCount(0);
-        refillItemStack(itemEntity);
+        var extraItemCount = getExtraItemCount(itemEntity);
+        if (extraItemCount <= 0) return false;
+        var stack = itemEntity.getItem();
+        if (stack == ItemStack.EMPTY) return false;
+        var count = stack.getCount();
+        stack.setCount(1);
+        var refilled = stack.copy();
+        stack.setCount(count);
+        if (refilled.isEmpty()) return false;
+        var refillCount = Math.min(refilled.getMaxStackSize(), extraItemCount);
+        refilled.setCount(refillCount);
+        setExtraItemCount(itemEntity, extraItemCount - refillCount);
+        itemEntity.setItem(refilled);
         return true;
     }
 

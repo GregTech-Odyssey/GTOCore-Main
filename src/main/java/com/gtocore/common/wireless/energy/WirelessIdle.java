@@ -13,7 +13,7 @@ public final class WirelessIdle {
 
     public static void reportDeposit(Object machine, EnergyPort port, int tier) {
         if (port.account().isNone()) IdleReason.NO_OWNER.setReason(machine);
-        else if (!port.isOpen(tier)) IdleReason.WIRELESS_NO_COVERAGE.setReason(machine, WirelessText.voltage(tier), WirelessText.voltage(port.node().reachTier()));
+        else if (port.node().reachTier() < 0) IdleReason.WIRELESS_NO_COVERAGE.setReason(machine, WirelessText.voltage(tier), WirelessText.voltage(port.node().reachTier()));
         else IdleReason.WIRELESS_GRID_FULL.setReason(machine);
     }
 

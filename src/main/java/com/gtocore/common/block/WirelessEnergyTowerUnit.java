@@ -13,12 +13,8 @@ public interface WirelessEnergyTowerUnit {
 
     long getAmperage();
 
-    default int getIoTier() {
-        return Math.min(getTier() + 1, GTValues.MAX);
-    }
-
     default long getThroughput() {
-        long voltage = GTValues.V[getIoTier()];
+        long voltage = GTValues.V[getTier()];
         long amperage = getAmperage();
         return amperage > Long.MAX_VALUE / voltage ? Long.MAX_VALUE : voltage * amperage;
     }

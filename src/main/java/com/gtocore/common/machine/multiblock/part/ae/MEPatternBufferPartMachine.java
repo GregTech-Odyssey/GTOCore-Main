@@ -13,6 +13,7 @@ import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
 import com.gtolib.api.network.NetworkPack;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.RecipeType;
+import com.gtolib.utils.LegacyIO;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -38,7 +39,6 @@ import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
-import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
@@ -837,7 +837,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         @Override
         public void deserializeNBT(CompoundTag tag) {
             if (tag.get("recipe") instanceof ByteArrayTag byteArrayTag) {
-                var ops = JavaValueOps.create(GTDataFixer.VERSION);
+                var ops = JavaValueOps.create(0);
                 setRecipe(GTRecipeDefinition.DATA_CODEC.decode(ops, ops.fromBytes(byteArrayTag.getAsByteArray())));
             }
             ListTag items = tag.getList("inventory", Tag.TAG_COMPOUND);
@@ -886,6 +886,14 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
         @Override
         public void readValue(@NotNull Object data, @NotNull ValueOps ops) {
+            if (ops.isNull(data)) return;
+            if (ops.dataVersion() < 2) {
+                var nbt = LegacyIO.legacyCompound(ops, data);
+                if (nbt != null) {
+                    deserializeNBT(nbt);
+                    return;
+                }
+            }
             fieldDataManager.get().readFromValue(data, ops);
         }
 

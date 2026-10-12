@@ -8,7 +8,6 @@ import com.gtocore.api.wireless.energy.IWirelessGridProvider;
 import com.gtocore.api.wireless.energy.Provider;
 import com.gtocore.api.wireless.energy.ProviderRegistry;
 import com.gtocore.api.wireless.energy.WirelessGrid;
-import com.gtocore.api.wireless.energy.WirelessText;
 import com.gtocore.client.hud.HUDConfigurator;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.block.WirelessEnergyTowerUnit;
@@ -28,11 +27,15 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoRecipeLogicMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
+import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyInfoProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
@@ -74,7 +77,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hepdd.gtmthings.api.capability.IBindable;
+import com.hepdd.gtmthings.data.WirelessMachines;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
+import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparators;
@@ -131,29 +138,50 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     public static final ParamKey BACK_EDGE = ParamKey.of(BACK_NAME, BACK_DESC);
     public static final ParamKey WIDTH = ParamKey.of(WIDTH_NAME, WIDTH_DESC);
 
-    @RegisterLanguage(cn = "本站", en = "This Station")
+    @RegisterLanguage(cn = "电网总览", en = "Grid Overview")
+    private static final String OVERVIEW = "gtocore.machine.wireless_energy_substation.overview";
+    @RegisterLanguage(cn = "本站", en = "This Tower")
     private static final String STATION = "gtocore.machine.wireless_energy_substation.station";
-    @RegisterLanguage(cn = "本站容量", en = "Station capacity")
-    private static final String STATION_CAPACITY = "gtocore.machine.wireless_energy_substation.capacity";
+    @RegisterLanguage(cn = "提供电压", en = "Supplied voltage")
+    private static final String STATION_TIER = "gtocore.machine.wireless_energy_substation.tier";
+    @RegisterLanguage(cn = "内部生效单元的最高等级 + 1，最高为 MAX；本站并入本维度的这一档", en = "Highest effective unit tier + 1, at most MAX; this tower joins that tier in its dimension")
+    private static final String STATION_TIER_DETAIL = "gtocore.machine.wireless_energy_substation.tier.detail";
+    @RegisterLanguage(cn = "单元上限", en = "Unit tier limit")
+    private static final String STATION_LIMIT = "gtocore.machine.wireless_energy_substation.limit";
+    @RegisterLanguage(cn = "%s（玻璃等级 %s）", en = "%s (glass tier %s)")
+    private static final String STATION_LIMIT_VALUE = "gtocore.machine.wireless_energy_substation.limit.value";
+    @RegisterLanguage(cn = "高于此等级的单元不生效", en = "Units above this tier have no effect")
+    private static final String STATION_LIMIT_DETAIL = "gtocore.machine.wireless_energy_substation.limit.detail";
     @RegisterLanguage(cn = "存储单元", en = "Storage units")
     private static final String STATION_UNITS = "gtocore.machine.wireless_energy_substation.units";
     @RegisterLanguage(cn = "传输单元", en = "Transfer units")
     private static final String STATION_TRANSFER_UNITS = "gtocore.machine.wireless_energy_substation.transfer_units";
-    @RegisterLanguage(cn = "本站吞吐", en = "Station throughput")
+    @RegisterLanguage(cn = "本站容量", en = "Tower capacity")
+    private static final String STATION_CAPACITY = "gtocore.machine.wireless_energy_substation.capacity";
+    @RegisterLanguage(cn = "本站吞吐", en = "Tower throughput")
     private static final String STATION_THROUGHPUT = "gtocore.machine.wireless_energy_substation.throughput";
     @RegisterLanguage(cn = "输入、输出各 %s EU/t", en = "%s EU/t each for input and output")
     private static final String STATION_THROUGHPUT_VALUE = "gtocore.machine.wireless_energy_substation.throughput.value";
-    @RegisterLanguage(cn = "本维度同档输出", en = "Same-tier output here")
+    @RegisterLanguage(cn = "本维度（同维度能源塔合并计算）", en = "This Dimension (towers here combine)")
+    private static final String DIMENSION = "gtocore.machine.wireless_energy_substation.dimension";
+    @RegisterLanguage(cn = "本档输出", en = "Tier output")
     private static final String BANK_OUTPUT = "gtocore.machine.wireless_energy_substation.bank_output";
-    @RegisterLanguage(cn = "本维度同档输入", en = "Same-tier input here")
+    @RegisterLanguage(cn = "本档输入", en = "Tier input")
     private static final String BANK_INPUT = "gtocore.machine.wireless_energy_substation.bank_input";
     @RegisterLanguage(cn = "%s / %s EU/t", en = "%s / %s EU/t")
     private static final String BANK_VALUE = "gtocore.machine.wireless_energy_substation.bank_value";
-    @RegisterLanguage(cn = "本维度节点", en = "Node in this dimension")
-    private static final String STATION_NODE = "gtocore.machine.wireless_energy_substation.node";
-    @RegisterLanguage(cn = "高于玻璃等级的单元不生效", en = "Units above the glass tier have no effect")
-    private static final String OVER_TIER = "gtocore.machine.wireless_energy_substation.over_tier";
-    private static final Component OVER_TIER_TEXT = Component.translatable(OVER_TIER);
+    @RegisterLanguage(cn = "本站所在档（提供电压那一档）在本维度的吞吐：已用 / 额度，同档能源塔合并计算", en = "Throughput of this tower's tier (its supplied voltage) here: used / budget, pooled over the towers of that tier")
+    private static final String BANK_DETAIL = "gtocore.machine.wireless_energy_substation.bank_detail";
+    @RegisterLanguage(cn = "本维度储能", en = "Storage here")
+    private static final String DIMENSION_STORAGE = "gtocore.machine.wireless_energy_substation.dimension_storage";
+    @RegisterLanguage(cn = "最高 %s · %s / %s EU", en = "Up to %s · %s / %s EU")
+    private static final String DIMENSION_STORAGE_VALUE = "gtocore.machine.wireless_energy_substation.dimension_storage.value";
+    @RegisterLanguage(cn = "本维度所有能源塔的存量与容量；最高档决定本维度能供电的最高电压", en = "Stored energy and capacity of every tower here; the highest tier is the highest voltage this dimension can supply")
+    private static final String DIMENSION_STORAGE_DETAIL = "gtocore.machine.wireless_energy_substation.dimension_storage.detail";
+    private static final Component STATION_TIER_DETAIL_TEXT = Component.translatable(STATION_TIER_DETAIL);
+    private static final Component STATION_LIMIT_DETAIL_TEXT = Component.translatable(STATION_LIMIT_DETAIL);
+    private static final Component BANK_DETAIL_TEXT = Component.translatable(BANK_DETAIL);
+    private static final Component DIMENSION_STORAGE_DETAIL_TEXT = Component.translatable(DIMENSION_STORAGE_DETAIL);
     private static final Component NONE = Component.empty();
 
     private final TierCasingTrait tierCasingTrait;
@@ -163,6 +191,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private Component transferText = MultiblockPage.NO_VALUE;
     private boolean unitsOverTier;
     private int towerTier = -1;
+    private int glassLimit = -1;
     private long throughput;
 
     public WirelessEnergySubstationMachine(MetaMachineBlockEntity holder) {
@@ -246,6 +275,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         int glassTier = getCasingTier(GTORecipeDataKeys.GLASS_TIER);
         var data = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.WIRELESS_ENERGY_UNIT);
         var counts = new int[GTValues.MAX + 1];
+        int highestUnit = -1;
         long total = 0;
         storagePositions.clear();
         transferPositions.clear();
@@ -257,6 +287,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
                 boolean storage = unit instanceof WirelessEnergyUnitBlock;
                 (storage ? storagePositions : transferPositions).put(tier, entry.pos());
                 if (tier > glassTier) continue;
+                highestUnit = Math.max(highestUnit, tier);
                 if (storage) counts[tier]++;
                 long t = unit.getThroughput();
                 total = total > Long.MAX_VALUE - t ? Long.MAX_VALUE : total + t;
@@ -269,7 +300,8 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
             var unit = WirelessEnergyUnitBlock.get(t);
             if (unit != null) units.add(new Provider.Unit(unit.isGridScaled() ? t : Provider.Unit.FIXED, counts[t], unit.getCapacity(), unit.getLoss()));
         }
-        towerTier = Math.min(glassTier, GTValues.MAX);
+        glassLimit = glassTier;
+        towerTier = highestUnit < 0 ? -1 : Math.min(highestUnit + 1, GTValues.MAX);
         throughput = total;
         unitsText = describe(storagePositions);
         transferText = describe(transferPositions);
@@ -292,6 +324,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         transferText = MultiblockPage.NO_VALUE;
         unitsOverTier = false;
         towerTier = -1;
+        glassLimit = -1;
         throughput = 0;
         ProviderRegistry.unregisterLater(this, 20);
     }
@@ -314,10 +347,11 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     public UIElement createUIWidget() {
         var invalid = MachineDisplay.page(this);
         var scroller = ScrollerView.page("wireless_energy_substation.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
-        scroller.addScrollViewChild(Form.page().addChildren(GridSummaryPanel.of(UISizes.CONTENT_WIDTH, this::getOwnerUUID),
-                stationPanel(), GridMapEntry.openButton(this, GridMapEntry.OPEN, GridMapEntry.HINT)));
+        scroller.addScrollViewChild(Form.page().addChildren(stationPanel(), dimensionPanel(), GridMapEntry.openButton(this, GridMapEntry.OPEN, GridMapEntry.HINT)));
         var formed = UIElement.column(LayoutStyle.AUTO).addChild(scroller);
         var root = UIElement.column(LayoutStyle.AUTO).addChildren(invalid, formed);
+        invalid.setDisplay(!isFormed());
+        formed.setDisplay(isFormed());
         root.addSyncValue(SyncValue.ofBool(this::isFormed).onChanged(structureFormed -> {
             invalid.setDisplay(!structureFormed);
             formed.setDisplay(structureFormed);
@@ -327,22 +361,47 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
 
     private UIElement stationPanel() {
         var panel = new StatusPanel(LayoutStyle.AUTO);
-        panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), capacity -> Component.literal(FormattingUtil.formatNumbers(capacity) + " EU")));
+        panel.addLine(STATION_TIER, MultiblockPage.cached(() -> towerTier, WirelessEnergySubstationMachine::tierName))
+                .bindDetail(() -> STATION_TIER_DETAIL_TEXT);
+        panel.addLine(STATION_LIMIT, MultiblockPage.cached(() -> glassLimit, tier -> tier < 0 ? MultiblockPage.NO_VALUE : Component.translatable(STATION_LIMIT_VALUE, tierName(tier), tier)))
+                .bindDetail(() -> STATION_LIMIT_DETAIL_TEXT);
         panel.addLine(STATION_UNITS, () -> unitsText)
                 .bindLevel(() -> unitsOverTier ? Level.WARNING : Level.NORMAL)
-                .bindDetail(() -> unitsOverTier ? OVER_TIER_TEXT : NONE);
-        panel.addLine(STATION_TRANSFER_UNITS, () -> transferText);
+                .bindDetail(() -> unitsOverTier ? STATION_LIMIT_DETAIL_TEXT : NONE);
+        panel.addLine(STATION_TRANSFER_UNITS, () -> transferText)
+                .bindLevel(() -> unitsOverTier ? Level.WARNING : Level.NORMAL)
+                .bindDetail(() -> unitsOverTier ? STATION_LIMIT_DETAIL_TEXT : NONE);
+        panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), capacity -> Component.literal(FormattingUtil.formatNumbers(capacity) + " EU")));
         panel.addLine(STATION_THROUGHPUT, MultiblockPage.cached(() -> throughput, value -> Component.translatable(STATION_THROUGHPUT_VALUE, FormattingUtil.formatNumbers(value))));
-        panel.addLine(BANK_OUTPUT, MultiblockPage.cached(() -> getOffsetTimer() / 20, second -> bankText(true)));
-        panel.addLine(BANK_INPUT, MultiblockPage.cached(() -> getOffsetTimer() / 20, second -> bankText(false)));
-        panel.addLine(STATION_NODE, MultiblockPage.cached(() -> getOffsetTimer() / 20, second -> nodeText()));
-        return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, STATION).bindClientColor(UITheme::panelText), panel);
+        return section(STATION, panel);
     }
 
-    private Component nodeText() {
+    private UIElement dimensionPanel() {
+        var panel = new StatusPanel(LayoutStyle.AUTO);
+        panel.addLine(BANK_OUTPUT, MultiblockPage.cached(() -> getOffsetTimer() / 20, second -> bankText(true)))
+                .bindDetail(() -> BANK_DETAIL_TEXT);
+        panel.addLine(BANK_INPUT, MultiblockPage.cached(() -> getOffsetTimer() / 20, second -> bankText(false)))
+                .bindDetail(() -> BANK_DETAIL_TEXT);
+        panel.addLine(DIMENSION_STORAGE, MultiblockPage.cached(() -> getOffsetTimer() / 20, second -> storageText()))
+                .bindDetail(() -> DIMENSION_STORAGE_DETAIL_TEXT);
+        return section(DIMENSION, panel);
+    }
+
+    private static UIElement section(String title, StatusPanel panel) {
+        return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
+                .addChildren(TextLine.translatable(LayoutStyle.AUTO, title).bindClientColor(UITheme::panelText), panel);
+    }
+
+    private static Component tierName(long tier) {
+        return tier < 0 || tier > GTValues.MAX ? MultiblockPage.NO_VALUE : Component.literal(GTValues.VN[(int) tier]);
+    }
+
+    private Component storageText() {
         var level = getLevel();
-        return level == null ? MultiblockPage.NO_VALUE : WirelessText.plainNode(account().node(level.dimension()));
+        if (level == null) return MultiblockPage.NO_VALUE;
+        var node = account().node(level.dimension());
+        if (node.tier() < 0) return MultiblockPage.NO_VALUE;
+        return Component.translatable(DIMENSION_STORAGE_VALUE, GTValues.VN[node.tier()], NumberUtils.formatDouble(node.storageDouble()), NumberUtils.formatDouble(node.capacityDouble()));
     }
 
     private Component bankText(boolean output) {
@@ -376,6 +435,36 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
             if (tier > casingTier) return true;
         }
         return false;
+    }
+
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new OverviewTab());
+    }
+
+    private final class OverviewTab implements IFancyUIProvider {
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            return ScrollerView.page("wireless_energy_substation.overview", UISizes.CONTENT_WIDTH).adaptiveWidth()
+                    .addScrollViewChild(Form.page().addChildren(GridSummaryPanel.of(UISizes.CONTENT_WIDTH, WirelessEnergySubstationMachine.this::getOwnerUUID)));
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return new ItemStackTexture(WirelessMachines.WIRELESS_ENERGY_MONITOR.asStack());
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(OVERVIEW));
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(OVERVIEW);
+        }
     }
 
     @Override

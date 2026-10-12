@@ -19,6 +19,7 @@ import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -259,6 +260,108 @@ final class GridCodec {
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
     private static final int VERSION_V1 = 1;
 
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final int UNHEADERED_V3 = 3;
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final int UNHEADERED_V4 = 4;
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private record LegacyNode(ResourceLocation dimension, long hi, long lo) {}
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, LegacyNode> LEGACY_NODE_CODEC = new StreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf stream, LegacyNode node) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public LegacyNode decode(FriendlyByteBuf stream) {
+            var dimension = DiskByteBufCodecs.RESOURCE_LOCATION_CODEC.decode(stream);
+            long hi = stream.readLong();
+            return new LegacyNode(dimension, hi, stream.readLong());
+        }
+    };
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<LegacyNode>> LEGACY_NODES_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, LEGACY_NODE_CODEC);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, Provider.Tower> LEGACY_TOWER_CODEC = new StreamCodec<>() {
+
+        @Override
+        public void encode(FriendlyByteBuf stream, Provider.Tower tower) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Provider.Tower decode(FriendlyByteBuf stream) {
+            var pos = GLOBAL_POS.decode(stream);
+            var owner = stream.readUUID();
+            var capacity = ByteBufCodecs.BIG_INTEGER.decode(stream);
+            double lossWeight = stream.readDouble();
+            int tier = ProviderRegistry.clampTier(stream.readVarInt());
+            int loss = capacity.signum() > 0 ? (int) Math.round(lossWeight / capacity.doubleValue()) : 0;
+            long throughput = tier < 0 ? 0 : GTValues.V[tier] << 2;
+            return new Provider.Tower(pos, owner, Collections.singletonList(new Provider.Unit(Provider.Unit.FIXED, 1, capacity, loss)), tier, throughput);
+        }
+    };
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<Provider.Tower>> LEGACY_TOWERS_CODEC = ByteBufCodecs.collection(ObjectArrayList::new, LEGACY_TOWER_CODEC);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static StreamCodec<FriendlyByteBuf, List<AccountSave>> legacyNodeAccounts(StreamCodec<FriendlyByteBuf, List<Provider.Tower>> towersCodec) {
+        StreamCodec<FriendlyByteBuf, AccountSave> account = new StreamCodec<>() {
+
+            @Override
+            public void encode(FriendlyByteBuf stream, AccountSave save) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public AccountSave decode(FriendlyByteBuf stream) {
+                var team = stream.readUUID();
+                stream.readLong();
+                BIND_CODEC_V1.decode(stream);
+                long pendingHi = stream.readLong();
+                long pendingLo = stream.readLong();
+                var legacyNodes = LEGACY_NODES_CODEC.decode(stream);
+                var towers = towersCodec.decode(stream);
+                var relays = RELAYS_CODEC.decode(stream);
+                var nodes = new ObjectArrayList<NodeSave>(legacyNodes.size());
+                for (var node : legacyNodes) {
+                    var dimension = dimension(node.dimension());
+                    int bank = 0;
+                    for (var tower : towers) {
+                        if (tower.pos().dimension() == dimension) bank = Math.max(bank, tower.tier());
+                    }
+                    nodes.add(new NodeSave(node.dimension(), Collections.singletonList(new BankSave(bank, node.hi(), node.lo()))));
+                }
+                return new AccountSave(team, pendingHi, pendingLo, nodes, towers, relays);
+            }
+        };
+        return ByteBufCodecs.collection(ObjectArrayList::new, account);
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<AccountSave>> ACCOUNTS_CODEC_UNHEADERED_V3 = legacyNodeAccounts(LEGACY_TOWERS_CODEC);
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static final StreamCodec<FriendlyByteBuf, List<AccountSave>> ACCOUNTS_CODEC_UNHEADERED_V4_DEV = legacyNodeAccounts(TOWERS_CODEC_V1);
+
     private GridCodec() {}
 
     static void encode(WirelessGrid grid, FriendlyByteBuf stream) {
@@ -304,14 +407,33 @@ final class GridCodec {
         return grid;
     }
 
-    /**
-     * {@link com.gtolib.utils.FileUtils#loadVersionedFromFile} 要求的第二个读取入口：文件不带库写的文件头版本。
-     * 电网存档是这个格式的第一版，从来没有过不带文件头的存档，所以这里不解读任何旧布局——按版本不符处理：
-     * 记一条错误，给出不可用电网。
-     */
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
     static WirelessGrid decodeUnversioned(FriendlyByteBuf stream) {
-        GTOCore.LOGGER.error("[无线电网] {} 不带文件头版本（本格式自版本 {} 起）：本次运行电网不可用，不读取、不写回", WirelessGrid.DATA_NAME, WirelessGrid.VERSION);
-        return new WirelessGrid(false);
+        if (stream.readableBytes() >= 8) {
+            int version = stream.readInt();
+            int length = stream.readInt();
+            if (length == stream.readableBytes()) {
+                int payload = stream.readerIndex();
+                List<StreamCodec<FriendlyByteBuf, List<AccountSave>>> candidates = version == UNHEADERED_V4 ? List.of(ACCOUNTS_CODEC_V1, ACCOUNTS_CODEC_UNHEADERED_V4_DEV) :
+                        version == UNHEADERED_V3 ? Collections.singletonList(ACCOUNTS_CODEC_UNHEADERED_V3) : Collections.emptyList();
+                for (var codec : candidates) {
+                    stream.readerIndex(payload);
+                    List<AccountSave> saves;
+                    try {
+                        saves = codec.decode(stream);
+                    } catch (RuntimeException e) {
+                        continue;
+                    }
+                    if (stream.isReadable()) continue;
+                    var grid = new WirelessGrid(true);
+                    for (var save : saves) fromSave(grid, save);
+                    GTOCore.LOGGER.info("[无线电网] {} 是不带文件头的旧版存档（版本 {}），已迁移 {} 个队伍，下次保存写为版本 {}", WirelessGrid.DATA_NAME, version, saves.size(), WirelessGrid.VERSION);
+                    return grid;
+                }
+            }
+        }
+        throw new IllegalStateException(WirelessGrid.DATA_NAME + " 不带文件头版本且不是可识别的旧版存档");
     }
 
     private static void loadNode(EnergyAccount account, NodeSave save) {

@@ -1,5 +1,6 @@
 package com.gtocore.api.research.techtree;
 
+import com.gtocore.api.research.LegacyResearchIO;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.client.Message;
 
@@ -18,10 +19,12 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.hepdd.gtmthings.utils.TeamUtil;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.DecoderException;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.Getter;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -32,10 +35,6 @@ public class TechTreeSavedData extends FastSavedData {
 
     public static final String DATA_NAME = "tech_tree_data";
     public static final int DATA_VERSION = 1;
-    /**
-     * 存档文件头写的版本号。负载形状至今没变过，所以文件头从 1 起：读到别的版本也按同一个形状解，
-     * 将来负载变形了再在这里分支。
-     */
     public static final int VERSION = 1;
     public static TechTreeSavedData INSTANCE = new TechTreeSavedData();
     public static TechTreeSavedData CLIENT_INSTANCE = new TechTreeSavedData();
@@ -201,7 +200,7 @@ public class TechTreeSavedData extends FastSavedData {
      * <p>
      * 旧存档的第一个字段是 VarInt 队伍数，头一个字节 1 会被当成版本 1——所以"版本对得上"不等于"这份文件带文件头"：
      * 只有整份载荷正好读完才算读对了。读不对就抛出去，交给 {@code loadVersionedFromFile} 回退到 {@link #loadLegacy}
-     * 从文件开头按旧格式重读。负载形状没变过，所以真正的读取是下面那一个共用体。
+     * 从文件开头按旧格式重读。
      */
     public static TechTreeSavedData load(VersionedFriendlyByteBuf stream) {
         int fileVersion = stream.version();
@@ -215,11 +214,43 @@ public class TechTreeSavedData extends FastSavedData {
         return data;
     }
 
-    /**
-     * 读取早于文件头的存档；网络快照走的是同一份负载，也调下面这个共用体。
-     */
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
     public static TechTreeSavedData loadLegacy(FriendlyByteBuf stream) {
-        return read(stream);
+        var data = new TechTreeSavedData();
+        int teamCount = stream.readVarInt();
+        for (int i = 0; i < teamCount; i++) {
+            UUID teamId = stream.readUUID();
+            int treeCount = stream.readVarInt();
+            Reference2ObjectOpenHashMap<TechTreeManager, TechTree> trees = new Reference2ObjectOpenHashMap<>();
+            for (int j = 0; j < treeCount; j++) {
+                var manager = TechTreeManager.getManager(LegacyResearchIO.readUtf(stream));
+                var payload = stream.readSlice(stream.readVarInt());
+                if (manager != null) {
+                    trees.put(manager, readLegacyTree(manager, payload));
+                }
+            }
+            if (!trees.isEmpty()) {
+                data.teamTechTrees.put(teamId, trees);
+            }
+        }
+        GTOCore.LOGGER.info("Migrated tech trees of {} teams from the pre-versioned save format", teamCount);
+        return data;
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static TechTree readLegacyTree(TechTreeManager manager, ByteBuf payload) {
+        var tree = new TechTree(manager);
+        var stream = new FriendlyByteBuf(payload);
+        int n = stream.readVarInt();
+        for (int i = 0; i < n; i++) {
+            var node = manager.get(LegacyResearchIO.readUtf(stream));
+            if (node != null) {
+                tree.addUnlockedNode(node);
+            }
+        }
+        return tree;
     }
 
     private static TechTreeSavedData read(FriendlyByteBuf stream) {

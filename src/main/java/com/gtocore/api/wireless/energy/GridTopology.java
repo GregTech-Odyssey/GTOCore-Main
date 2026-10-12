@@ -190,7 +190,7 @@ final class GridTopology {
         long pHi = account.pendingHi, pLo = account.pendingLo;
         account.pendingHi = 0;
         account.pendingLo = 0;
-        best.absorb(pHi, pLo, null);
+        best.absorb(pHi, pLo, account);
     }
 
     private void buildArcs(Reference2ObjectOpenHashMap<GridNode, Reference2ObjectOpenHashMap<GridNode, long[]>> bundles) {

@@ -1,5 +1,6 @@
 package com.gtocore.api.research;
 
+import com.gtolib.GTOCore;
 import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.network.NetworkPack;
 
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.UUID;
 
@@ -22,10 +24,6 @@ public class TeamResearchSavedData extends FastSavedData {
 
     public static final String DATA_NAME = "team_research_data";
     public static final int DATA_VERSION = 4;
-    /**
-     * 存档文件头写的版本号。负载形状至今没变过，所以文件头从 1 起：读到别的版本也按同一个形状解，
-     * 将来负载变形了再在这里分支。
-     */
     public static final int VERSION = 1;
     public static TeamResearchSavedData INSTANCE = new TeamResearchSavedData();
     public static TeamResearchSavedData CLIENT_INSTANCE = new TeamResearchSavedData();
@@ -58,19 +56,21 @@ public class TeamResearchSavedData extends FastSavedData {
         }
     }
 
-    /**
-     * 读取文件头带版本号的存档。负载形状没变过，所以版本化读取就是下面那一个共用体；
-     * 版本随流带进来，将来负载变形时在这里按 {@link VersionedFriendlyByteBuf#version()} 分支。
-     */
     public static TeamResearchSavedData load(VersionedFriendlyByteBuf stream) {
         return read(stream);
     }
 
-    /**
-     * 读取早于文件头的存档；网络快照走的是同一份负载，也调这里。
-     */
-    public static TeamResearchSavedData loadLegacy(FriendlyByteBuf stream) {
-        return read(stream);
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    public static TeamResearchSavedData loadLegacy(FriendlyByteBuf buf) {
+        TeamResearchSavedData savedData = new TeamResearchSavedData();
+        int teamCount = buf.readInt();
+        for (int i = 0; i < teamCount; i++) {
+            UUID teamUUID = buf.readUUID();
+            savedData.teamResearchContexts.put(teamUUID, TeamResearchContext.readLegacyContext(buf));
+        }
+        GTOCore.LOGGER.info("Migrated {} team research contexts from the pre-versioned save format", teamCount);
+        return savedData;
     }
 
     private static TeamResearchSavedData read(FriendlyByteBuf buf) {

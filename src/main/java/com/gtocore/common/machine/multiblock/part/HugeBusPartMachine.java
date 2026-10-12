@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gtolib.utils.LegacyIO;
+
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
@@ -41,8 +43,6 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.ValueOps;
-import com.gto.datasynclib.util.NbtUtil;
-import com.gto.datasynclib.util.ValueCodecs;
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
@@ -274,9 +274,9 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
             var legacy = data.get("storage");
             // 只认真正的复合标签自定义载荷：旧 Data 模型允许把 StringMapData 当复合标签再读一遍
             // （legacy.toCustomData(...)），值模型没有这种跨形状强转，这一支随本次迁移删除。
-            if (legacy == null || !ops.isCustom(legacy) || ops.getCustomId(legacy) != NbtUtil.COMPOUND_TAG_TYPE.id()) return;
+            var nbt = LegacyIO.legacyCompound(ops, legacy);
+            if (nbt == null) return;
             data.remove("storage");
-            var nbt = ValueCodecs.COMPOUND_TAG.decode(ops, legacy);
             var stackTag = nbt.getCompound("stack").copy();
             stackTag.putByte("Count", (byte) 1);
             storage.set(0, AEItemKey.of(ItemStack.of(stackTag)), nbt.getLong("count"));

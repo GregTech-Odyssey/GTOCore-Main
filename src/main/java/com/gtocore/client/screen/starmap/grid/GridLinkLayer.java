@@ -2,7 +2,6 @@ package com.gtocore.client.screen.starmap.grid;
 
 import com.gtocore.api.wireless.energy.GridView;
 import com.gtocore.client.screen.starmap.base.PixelPen;
-import com.gtocore.client.screen.starmap.base.StarSprites;
 
 import com.gregtechceu.gtceu.uipro.canvas.CanvasItem;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLayer;
@@ -27,7 +26,6 @@ final class GridLinkLayer implements CanvasLayer {
 
     private static final int RANKS = GridStyle.LEVELS + 2;
     private static final int PICK_REACH = 5, TIE = 2;
-    private static final int OUTLINE = 8;
 
     private final GridMapClient client;
     private final GridModel model;
@@ -77,7 +75,6 @@ final class GridLinkLayer implements CanvasLayer {
         }
         this.painter = painter;
         pen.begin(painter.graphics(), client.canvas());
-        outlines();
         pen.beginFine();
         for (int r = 0; r < RANKS; r++) {
             for (int l = 0; l < count; l++) {
@@ -132,23 +129,6 @@ final class GridLinkLayer implements CanvasLayer {
     private void block(int cx, int cy, int size, int color) {
         int half = size / 2;
         if (pen.fineVisible(cx - half, cy - half, cx - half + size, cy - half + size)) painter.fill(cx - half, cy - half, cx - half + size, cy - half + size, color);
-    }
-
-    private void outlines() {
-        if (pen.scale() >= GridStyle.SPRITE_SCALE) return;
-        var catalog = client.catalog();
-        var geometry = client.geometry();
-        var decorator = client.decorator();
-        for (int body = 0; body < catalog.size(); body++) {
-            if (geometry.isFolded(body) || decorator.lit(body)) continue;
-            int x = pen.x(geometry.x(body)), y = pen.y(geometry.y(body)), half = OUTLINE / 2;
-            pen.outline(x - half, y - half, x - half + OUTLINE, y - half + OUTLINE, GridStyle.outline());
-        }
-        for (int anchor = 0; anchor < catalog.anchorCount(); anchor++) {
-            if (decorator.anchorTint(anchor) == StarSprites.NO_TINT) continue;
-            int x = pen.x(geometry.anchorX(anchor)), y = pen.y(geometry.anchorY(anchor)), half = OUTLINE / 2;
-            pen.outline(x - half, y - half, x - half + OUTLINE, y - half + OUTLINE, GridStyle.outline());
-        }
     }
 
     @Override

@@ -46,21 +46,21 @@ final class GridTransfer {
         return got;
     }
 
-    static long put(EnergyAccount account, GridNode d, int voltage, long gross, int extraLoss, int priority, @Nullable Outcome outcome) {
+    static long put(EnergyAccount account, GridNode d, long gross, int extraLoss, int priority, @Nullable Outcome outcome) {
         var out = outcome != null ? outcome : IGNORED;
-        long done = putLocal(account, d, voltage, gross, extraLoss);
-        out.lineLimited = done < gross && voltage <= d.tier && d.putThrottled();
+        long done = putLocal(account, d, gross, extraLoss);
+        out.lineLimited = done < gross && d.tier >= 0 && d.putThrottled();
         if (done < gross && d.routes.length != 0) {
             int now = GridClock.tick();
-            if (d.full.hit(now, account.sinkGen, voltage)) {
+            if (d.full.hit(now, account.sinkGen, 0)) {
                 out.lineLimited |= d.full.limited;
             } else {
                 long rest = gross - done;
                 var plan = FlowPlan.SHARED;
-                long remote = plan.put(d, voltage, rest, extraLoss, -1, now, true);
+                long remote = plan.put(d, rest, extraLoss, -1, now, true);
                 plan.applyPut(account, priority);
                 boolean remoteLimited = plan.limited();
-                if (remote < rest) d.full.mark(now, account.sinkGen, voltage, remoteLimited);
+                if (remote < rest) d.full.mark(now, account.sinkGen, 0, remoteLimited);
                 out.lineLimited |= remoteLimited;
                 done += remote;
             }
@@ -68,8 +68,8 @@ final class GridTransfer {
         return done;
     }
 
-    private static long putLocal(EnergyAccount account, GridNode d, int voltage, long gross, int extraLoss) {
-        if (voltage > d.tier) return 0;
+    private static long putLocal(EnergyAccount account, GridNode d, long gross, int extraLoss) {
+        if (d.tier < 0) return 0;
         long done = d.acceptable(gross, extraLoss, true);
         if (done > 0) {
             long lost = store(account, d, done, extraLoss, true);
@@ -80,14 +80,14 @@ final class GridTransfer {
         return done;
     }
 
-    static boolean putLump(EnergyAccount account, GridNode d, int voltage, BigInteger gross, int extraLoss, boolean apply, int priority) {
+    static boolean putLump(EnergyAccount account, GridNode d, BigInteger gross, int extraLoss, boolean apply, int priority) {
         if (gross.signum() <= 0) return true;
-        var local = voltage <= d.tier ? d.lumpRoom(gross, extraLoss) : BigInteger.ZERO;
+        var local = d.tier >= 0 ? d.lumpRoom(gross, extraLoss) : BigInteger.ZERO;
         var rest = gross.subtract(local);
         if (rest.bitLength() > 63) return false;
         long remote = rest.longValue();
         var plan = FlowPlan.SHARED;
-        if (remote > 0 && (d.routes.length == 0 || plan.put(d, voltage, remote, extraLoss, priority, GridClock.tick(), false) < remote)) return false;
+        if (remote > 0 && (d.routes.length == 0 || plan.put(d, remote, extraLoss, priority, GridClock.tick(), false) < remote)) return false;
         if (!apply) return true;
         if (local.signum() > 0) {
             int stocked = d.stocked;
@@ -98,7 +98,7 @@ final class GridTransfer {
             NodeMeter.in(account, d, localGross, lost);
         }
         if (remote > 0) {
-            if (voltage <= d.tier) d.awaitingRoom = true;
+            if (d.tier >= 0) d.awaitingRoom = true;
             plan.applyPut(account, priority);
         }
         return true;

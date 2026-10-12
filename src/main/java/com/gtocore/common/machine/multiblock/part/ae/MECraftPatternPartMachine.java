@@ -3,6 +3,8 @@ package com.gtocore.common.machine.multiblock.part.ae;
 import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.integration.jade.AEKeyTooltip;
 
+import com.gtolib.utils.LegacyIO;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 
@@ -136,6 +138,13 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
         @Override
         public void readValue(@NotNull Object data, @NotNull ValueOps ops) {
             if (ops.isNull(data)) return;
+            if (ops.dataVersion() < 2) {
+                var nbt = LegacyIO.legacyCompound(ops, data);
+                if (nbt != null) {
+                    deserializeNBT(nbt);
+                    return;
+                }
+            }
             var list = ops.getList(data);
             amount = ops.getLong(list, 0);
             output = GTOCodecs.AE_ITEM_KEY_DATA_CODEC.decode(ops, list.get(1));

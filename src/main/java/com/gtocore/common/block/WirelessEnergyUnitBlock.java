@@ -30,6 +30,10 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
 
     @RegisterLanguage(cn = "吞吐：输入、输出各 %s × %sA", en = "Throughput: %s × %sA each for input and output")
     static final String THROUGHPUT = "gtocore.block.wireless_energy_unit.throughput";
+    @RegisterLanguage(cn = "生效条件：能源塔玻璃等级不低于 %s", en = "Takes effect when the tower's glass tier is at least %s")
+    static final String REQUIRES_GLASS = "gtocore.block.wireless_energy_unit.requires_glass";
+    @RegisterLanguage(cn = "能源塔的提供电压 = 内部生效单元的最高等级 + 1；吞吐按本单元电压计，以更高电压取电时按功率折算", en = "A tower supplies its highest effective unit tier + 1; throughput counts at this unit's voltage and is converted by power when drawn at a higher voltage")
+    static final String SUPPLIES = "gtocore.block.wireless_energy_unit.supplies";
     @RegisterLanguage(cn = "同一维度内电压等级相同的能源塔中，同级或更高的单元共有 N 个时，每个按基础容量的 N 倍计", en = "With N units of this tier or higher across towers of the same voltage tier in one dimension, each counts as N times its base capacity")
     private static final String SCALING = "gtocore.block.wireless_energy_unit.scaling";
     @RegisterLanguage(cn = "损耗率：%s%%", en = "Loss rate: %s%%")
@@ -78,8 +82,10 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Tips.energy(StatKind.ENERGY_CAPACITY, getCapacity().min(LONG_MAX).longValue(), tier));
-        tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, GTValues.VNF[getIoTier()], AMPERAGE)));
+        tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, GTValues.VNF[tier], AMPERAGE)));
         tooltip.add(Tips.stat(Component.translatable(LOSS, (double) getLoss() / 10)));
+        tooltip.add(Tips.requirement(Component.translatable(REQUIRES_GLASS, GTValues.VNF[tier])));
+        tooltip.add(Tips.detail(Component.translatable(SUPPLIES)));
         if (isGridScaled()) tooltip.add(Tips.bonus(Component.translatable(SCALING)));
         tooltip.add(Tips.control(Component.translatable("gtocore.machine.tooltip.upgrade_action", MultiBlockG.WIRELESS_ENERGY_SUBSTATION.get().getName(), Component.translatable("gtocore.adv_terminal.block_map.wireless_energy_unit"))));
     }

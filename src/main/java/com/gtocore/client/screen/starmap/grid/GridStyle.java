@@ -26,7 +26,6 @@ final class GridStyle {
     static final int TAIL = 2;
     static final int HOVER_CORE = 0xFFFFFFFF;
     static final int OPAQUE = 0xFF000000;
-    static final float SPRITE_SCALE = 0.8f;
     private static final float[] THRESHOLDS = { 0.02f, 0.12f, 0.5f };
     private static final float[] LOAD_THRESHOLDS = { 0.25f, 0.6f, 0.9f };
     private static final int[] WIDTH = { 1, 1, 2, 2, 3 };
@@ -91,10 +90,6 @@ final class GridStyle {
 
     static int plate() {
         return OPAQUE | UITheme.MAP_PLATE;
-    }
-
-    static int outline() {
-        return PixelPen.mix(UITheme.MAP_ORBIT, UITheme.MAP_LABEL_DIM, 0.12f);
     }
 
     static int guide() {

@@ -37,8 +37,8 @@ final class FlowPlan {
         return solve(DRAW, true, true, d, voltage, need, now, -1, 0, 0);
     }
 
-    long put(GridNode d, int voltage, long need, int extraLoss, int yieldTo, int now, boolean metered) {
-        return solve(PUT, false, metered, d, voltage, need, now, yieldTo, extraLoss, 0);
+    long put(GridNode d, long need, int extraLoss, int yieldTo, int now, boolean metered) {
+        return solve(PUT, false, metered, d, 0, need, now, yieldTo, extraLoss, 0);
     }
 
     long settle(GridNode d, int voltage, long need, int duration, int priority, int now) {
