@@ -53,6 +53,9 @@ public final class Sophisticated {
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("pickup_upgrade"), RegistriesUtils.getItemStack("sophisticatedbackpacks:pickup_upgrade"), RegistriesUtils.getItemStack("sophisticatedbackpacks:upgrade_base"), GTMachines.ITEM_COLLECTOR[GTValues.LV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("advanced_pump_upgrade"), RegistriesUtils.getItemStack("sophisticatedbackpacks:advanced_pump_upgrade"), RegistriesUtils.getItemStack("sophisticatedbackpacks:pump_upgrade"), GTItems.ELECTRIC_PUMP_MV.asStack());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("xp_pump_upgrade"), RegistriesUtils.getItem("sophisticatedbackpacks:xp_pump_upgrade"), RegistriesUtils.getItem("sophisticatedbackpacks:upgrade_base"), RegistriesUtils.getItem("gtocore:exp_obelisk"), GTItems.FLUID_REGULATOR_MV.asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("auto_smelting_upgrade"), RegistriesUtils.getItem("sophisticatedbackpacks:auto_smelting_upgrade"),
+                    RegistriesUtils.getItem("sophisticatedbackpacks:smelting_upgrade"),
+                    GTItems.CONVEYOR_MODULE_LV.asItem());
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("backpack"), RegistriesUtils.getItemStack("sophisticatedbackpacks:backpack"),
                     "ABA",
@@ -761,6 +764,13 @@ public final class Sophisticated {
             filters.add(RLUtils.sp("gold_backpack"));
             filters.add(RLUtils.sp("iron_backpack"));
             filters.add(RLUtils.sp("iron_backpack_from_copper"));
+            filters.add(RLUtils.sp("stack_upgrade_starter_tier_to_tier_1_conversion"));
+            for (int i = 1; i <= 3; i++) {
+                for (int j = i + 1; j <= 4; j++) {
+                    filters.add(RLUtils.sp("stack_upgrade_tier_%s_to_tier_%s_conversion".formatted(i, j)));
+                }
+                filters.add(RLUtils.sp("stack_upgrade_starter_tier_to_tier_%s_conversion".formatted(i + 1)));
+            }
         }
         if (Mods.SOPHISTICATEDSTORAGE.isLoaded()) {
             add(filters, "sophisticatedstorage:filter_upgrade");
@@ -847,6 +857,13 @@ public final class Sophisticated {
             add(filters, "sophisticatedstorage:gold_to_diamond_tier_upgrade");
             add(filters, "sophisticatedstorage:gold_to_netherite_tier_upgrade");
             add(filters, "sophisticatedstorage:diamond_to_netherite_tier_upgrade");
+            for (int i = 0; i <= 4; i++) {
+                String trueI = i == 0 ? "1" : i == 1 ? "1_plus" : String.valueOf(i);
+                for (int j = i + 1; j <= 5; j++) {
+                    String trueJ = j == 1 ? "1_plus" : String.valueOf(j);
+                    add(filters, ("sophisticatedstorage:stack_upgrade_tier_%s_to_tier_%s_conversion".formatted(trueI, trueJ)));
+                }
+            }
         }
     }
 
