@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.PipeBlock;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.model.PipeModel;
 import com.gregtechceu.gtceu.client.renderer.block.PipeBlockRenderer;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -62,8 +63,8 @@ public class ManaPipeBlock extends PipeBlock<ManaPipeType, ManaPipeProperties, L
     @Override
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Component.translatable("gtocore.mana_pipe.transfer_rate",
-                FormattingUtil.formatNumbers(pipeType.properties.manaPerSecond()), pipeType.poolsPerSecond()));
+        tooltip.add(Tips.stat(Component.translatable("gtocore.mana_pipe.transfer_rate",
+                FormattingUtil.formatNumbers(pipeType.properties.manaPerSecond()), pipeType.poolsPerSecond())));
     }
 
     @Override

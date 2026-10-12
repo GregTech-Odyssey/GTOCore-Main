@@ -1,5 +1,7 @@
 package com.gtocore.common.item;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +33,7 @@ public final class KineticRotorItem extends Item {
     @Override
     public void appendHoverText(ItemStack itemstack, @Nullable Level world, List<Component> list, TooltipFlag flag) {
         super.appendHoverText(itemstack, world, list, flag);
-        list.add(Component.translatable("gtocore.tooltip.item.kinetic_rotor.min", MinWind));
-        list.add(Component.translatable("gtocore.tooltip.item.kinetic_rotor.max", MaxWind));
+        list.add(Tips.stat(Component.translatable("gtocore.tooltip.item.kinetic_rotor.min", MinWind)));
+        list.add(Tips.stat(Component.translatable("gtocore.tooltip.item.kinetic_rotor.max", MaxWind)));
     }
 }

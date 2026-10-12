@@ -5,6 +5,7 @@ import com.gtolib.api.machine.impl.DroneControlCenterMachine;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
 import com.gregtechceu.gtceu.api.item.component.IItemComponent;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -52,13 +53,13 @@ public final class DroneBehavior extends ElectricStats {
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         super.appendTooltips(stack, level, tooltipComponents, isAdvanced);
-        tooltipComponents.add(Component.translatable("gui.ae2.WirelessRange", range));
+        tooltipComponents.add(Tips.stat(Component.translatable("gui.ae2.WirelessRange", range)));
         if (stack.getOrCreateTag().getInt("work") > 0) {
-            tooltipComponents.add(Component.translatable("gtceu.multiblock.large_miner.working"));
+            tooltipComponents.add(Tips.stat(Component.translatable("gtceu.multiblock.large_miner.working")));
         }
         int time = stack.getOrCreateTag().getInt("times");
         if (time > 0) {
-            tooltipComponents.add(Component.translatable(DroneControlCenterMachine.TIMES).append(String.valueOf(time)));
+            tooltipComponents.add(Tips.stat(Component.translatable(DroneControlCenterMachine.TIMES).append(String.valueOf(time))));
         }
     }
 

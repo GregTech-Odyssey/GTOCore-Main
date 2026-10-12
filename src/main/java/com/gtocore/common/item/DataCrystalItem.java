@@ -97,7 +97,7 @@ public class DataCrystalItem extends Item implements IExDataItem {
             if (name == null && level != null) name = TeamUtil.findPlayerName(level, teamUUID);
             tooltip.add(Tips.stat(Component.translatable(TEAM_DATA_TAG, name == null ? Component.literal(teamUUID.toString()) : name)));
         } else {
-            tooltip.add(Tips.note(Component.translatable(EMPTY_NBT_TAG)));
+            tooltip.add(Tips.feature(Component.translatable(EMPTY_NBT_TAG)));
         }
         long usedCap = stack.getOrCreateTag().getLong(usedCapTag);
         var data = getResearchData(stack);

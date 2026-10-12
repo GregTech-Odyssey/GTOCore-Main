@@ -479,7 +479,7 @@ public final class LangHandler {
         addCNEN("gtocore.elemental_resonance.0", "共鸣消耗: %s/%st", "Resonance consumption: %s/%st");
         addCNEN("gtocore.elemental_resonance.1", "共鸣消耗: %s×%s/%st", "Resonance consumption: %s×%s/%st");
 
-        addCNEN("tooltip.gtocore.hold_for_more", "§1按住 %s 显示更多信息。§r", "§1Hold %s for more info.§r");
+        addCNEN("tooltip.gtocore.hold_for_more", "按住 %s 显示更多信息。", "Hold %s for more info.");
 
         addCNEN("gtocore.pattern.recipe", "样板配方已识别", "Pattern recipe recognized");
         addCNEN("gtocore.pattern.type", "机器模式：%s", "Machine recipe type:%s");

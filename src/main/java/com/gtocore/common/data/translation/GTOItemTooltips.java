@@ -62,7 +62,7 @@ public final class GTOItemTooltips {
     public static final TipSpec PatternModifierTooltips = GTOTips.of("pattern_modifier", t -> {
         t.heading(t.tr("便捷地修改样板", "Modify patterns easily"));
         t.feature(t.tr("它可以自动翻倍样板，不用任何操作", "It can automatically double the pattern, no operation is required"));
-        t.note(ComponentSlang.RecommendedToUse(t.tr("样板总成", "Pattern Buffer")));
+        t.feature(ComponentSlang.RecommendedToUse(t.tr("样板总成", "Pattern Buffer")));
         t.bonus(t.tr("PRO版本可以批量应用", "PRO version can apply in batch"));
     });
 
@@ -82,7 +82,7 @@ public final class GTOItemTooltips {
         t.keepOrder();
         t.bonus(t.tr("极大地提升小麦种子掉落概率", "Greatly increases the drop rate of wheat seeds"));
         t.rightClick(t.tr("右键草以收割小麦种子和稀有作物", "Right-click grass to harvest wheat seeds and rare crops"));
-        t.note(t.tr("前期大量获取种子去种地的好帮手", "A good helper for obtaining seeds in large quantities in the early game"));
+        t.feature(t.tr("前期大量获取种子去种地的好帮手", "A good helper for obtaining seeds in large quantities in the early game"));
     });
 
     public static final TipSpec InfiniteSprayCanTooltips = GTOTips.of(t -> {
@@ -94,7 +94,7 @@ public final class GTOItemTooltips {
     });
 
     public static final TipSpec TravelStaffTooltips = GTOTips.of("the_staff_of_travelling", t -> {
-        t.note(t.tr("末影接口经典款式传送工具仿制品", "A replica of the classic teleportation tool of the Ender IO Inc."));
+        t.feature(t.tr("末影接口经典款式传送工具仿制品", "A replica of the classic teleportation tool of the Ender IO Inc."));
         t.heading(ComponentSlang.MainFunction);
         t.keepOrder();
         t.rightClick(t.tr("右键选择目标并传送", "Right click to select target and teleport"));
@@ -122,8 +122,8 @@ public final class GTOItemTooltips {
         t.feature(t.tr("普通机器：不额外消耗EU能量，每次200tick", "For normal machines: No extra EU consumption, 200 ticks per acceleration"));
         t.bonus(t.tr("GT机器：每次使当前正在工作的机器进度立即增加最多50%", "For GT machines: immediately increase current progress by up to 50% per use"));
         t.heading(t.tr("能量消耗", "Energy consumption:"));
-        t.note(t.tr("使用无线能量系统作为能量来源", "Use wireless energy system as energy source"));
-        t.note(t.tr("不同操作消耗不同数量的EU", "Different operations consume different amounts of EU"));
+        t.feature(t.tr("使用无线能量系统作为能量来源", "Use wireless energy system as energy source"));
+        t.feature(t.tr("不同操作消耗不同数量的EU", "Different operations consume different amounts of EU"));
         t.attention(t.tr("加速GT机器时，EU能量消耗会乘以难度模式对应的数值", "When accelerating GT machines, consume EU energy according to the difficulty mode"));
     });
 
@@ -172,7 +172,7 @@ public final class GTOItemTooltips {
             setTips(item, GTOTips.of("pattern_modifier", t -> {
                 t.heading(t.tr("与存储设备进行交互", "Interact with storage devices"));
                 t.supported(Tx.join(t.tr("仅支持读取", "Only supports reading "), Tx.gold(t.tr("物品和流体", "items and fluids ")), t.tr("两种类型", "two types")));
-                t.note(Tx.join(t.tr("自动化中，", "In automation, "), ComponentSlang.RecommendedToUse(t.tr("存储总线", "Storage Bus"))));
+                t.feature(Tx.join(t.tr("自动化中，", "In automation, "), ComponentSlang.RecommendedToUse(t.tr("存储总线", "Storage Bus"))));
                 t.feature(t.tr("经过优化，吞吐量性能卓越", "Throughput performance is excellent"));
                 t.edition();
             }));
@@ -244,7 +244,7 @@ public final class GTOItemTooltips {
             }));
         }
 
-        setTips(Adventure.Items.BOSS_SUMMONER.get(), GTOTips.of("boss_summoner", t -> t.note(t.tr("由捕捉附魔击杀神化Boss概率掉落", "Dropped by killing Apotheosis Bosses with the Capture enchantment"))));
+        setTips(Adventure.Items.BOSS_SUMMONER.get(), GTOTips.of("boss_summoner", t -> t.feature(t.tr("由捕捉附魔击杀神化Boss概率掉落", "Dropped by killing Apotheosis Bosses with the Capture enchantment"))));
 
         setTips(Blocks.OBSIDIAN.asItem(), GTOTips.of("obsidian", t -> t.lore(t.tr("要不试试在它上面用砧板切洋葱？", "How about trying to chop onions on it with a cutting board?"))));
 
@@ -257,9 +257,9 @@ public final class GTOItemTooltips {
             if (muffler == null) continue;
             setTips(muffler.asItem(), GTOTips.of("muffler_hatch", t -> {
                 if (GTOConfig.INSTANCE.gamePlay.disableMufflerPart) {
-                    t.note(Component.translatable("gtocore.tooltip.item.muffler.disabled"));
+                    t.feature(Component.translatable("gtocore.tooltip.item.muffler.disabled"));
                 } else {
-                    t.note(Component.translatable("gtocore.tooltip.item.muffler.enabled"));
+                    t.feature(Component.translatable("gtocore.tooltip.item.muffler.enabled"));
                 }
                 t.edition();
             }));
@@ -295,24 +295,24 @@ public final class GTOItemTooltips {
                 .orElseGet(() -> GTOTips.global("未知培养基", "Unknown Medium"));
         setTips(item, GTOTips.of("cardiomyocyte_cluster", t -> {
             t.heading(t.tr("生物振荡发电组织信息", "Bio Oscillation Generator Tissue Information"));
-            t.note(Component.translatable(BioOscillationElectricStimulator.TISSUE_TIER, data.tier()));
-            t.note(Component.translatable(
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_TIER, data.tier()));
+            t.feature(Component.translatable(
                     BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS,
                     Component.literal(String.valueOf(data.stage1Points())).withStyle(ChatFormatting.GREEN),
                     Component.literal(String.valueOf(data.stage2Points())).withStyle(ChatFormatting.YELLOW),
                     Component.literal(String.valueOf(data.stage3Points())).withStyle(ChatFormatting.GOLD),
                     Component.literal(String.valueOf(data.stage4Points())).withStyle(ChatFormatting.DARK_GRAY)));
-            t.note(Component.translatable(BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS_DESC));
-            t.note(Component.translatable(BioOscillationElectricStimulator.TISSUE_MAX_GROW_RATE, data.maxGrowRate()));
-            t.note(Component.translatable(BioOscillationElectricStimulator.TISSUE_SATURATION_FACTOR, data.saturationFactor()));
-            t.note(Component.translatable(
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_GROWTH_STAGE_POINTS_DESC));
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_MAX_GROW_RATE, data.maxGrowRate()));
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_SATURATION_FACTOR, data.saturationFactor()));
+            t.feature(Component.translatable(
                     BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS,
                     Component.literal(String.valueOf(data.electrodeStimulationFactors()[0])).withStyle(ChatFormatting.AQUA),
                     Component.literal(String.valueOf(data.electrodeStimulationFactors()[1])).withStyle(ChatFormatting.GREEN),
                     Component.literal(String.valueOf(data.electrodeStimulationFactors()[2])).withStyle(ChatFormatting.YELLOW),
                     Component.literal(String.valueOf(data.electrodeStimulationFactors()[3])).withStyle(ChatFormatting.GOLD)));
-            t.note(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC));
-            t.note(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_ENERGY_CONSUMPTION, data.energyConsumption(), data.vTier()));
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC));
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_ENERGY_CONSUMPTION, data.energyConsumption(), data.vTier()));
             t.requirement(Component.translatable(BioOscillationElectricStimulator.TISSUE_MEDIUM_REQUIREMENT, medium));
             t.requirement(Component.translatable(BioOscillationElectricStimulator.TISSUE_RUNNING_CONTROL_BLOCK_TIER, Math.min(data.tier(), 3)));
         }));
@@ -321,8 +321,8 @@ public final class GTOItemTooltips {
     private static void bomb(Block block, Item activateItem) {
         setTips(block.asItem(), GTOTips.of("charge_bomb", t -> {
             if (GTCEu.isDataGen() || !GTOConfig.INSTANCE.gamePlay.disableChargeBomb) {
-                t.note(Component.translatable("gtocore.tooltip.item.activate_by", activateItem.getDescription()));
-                t.note(t.tr("也可以把它喂给热爆花...", "It can also be fed to entropinnyum flowers..."));
+                t.feature(Component.translatable("gtocore.tooltip.item.activate_by", activateItem.getDescription()));
+                t.feature(t.tr("也可以把它喂给热爆花...", "It can also be fed to entropinnyum flowers..."));
             } else {
                 t.unsupported(Component.translatable("gtocore.tooltip.item.charge_bomb.disabled"));
             }

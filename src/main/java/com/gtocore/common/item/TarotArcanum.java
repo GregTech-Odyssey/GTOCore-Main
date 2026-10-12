@@ -1,5 +1,6 @@
 package com.gtocore.common.item;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.client.resources.language.I18n;
@@ -72,7 +73,7 @@ public final class TarotArcanum extends ColoringItems {
                 case 4 -> "SHIFT CTRL ALT";
                 default -> "";
             };
-            tooltip.add(Component.literal(I18n.get("tooltip.gtocore.hold_for_more", keys)));
+            tooltip.add(Tips.feature(Component.literal(I18n.get("tooltip.gtocore.hold_for_more", keys))));
         }
     }
 }

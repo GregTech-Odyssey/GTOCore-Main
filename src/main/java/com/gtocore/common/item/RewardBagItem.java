@@ -2,7 +2,8 @@ package com.gtocore.common.item;
 
 import com.gtolib.GTOCore;
 
-import net.minecraft.ChatFormatting;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -79,7 +80,7 @@ public class RewardBagItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Component.translatable("tooltip.item.reward_bag.increases").withStyle(ChatFormatting.BLUE));
+        tooltip.add(Tips.feature(Component.translatable("tooltip.item.reward_bag.increases")));
     }
 
     @Override

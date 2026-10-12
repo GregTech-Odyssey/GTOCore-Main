@@ -18,6 +18,7 @@ import com.gtolib.utils.RLUtils;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.common.data.GTModels;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
@@ -770,7 +771,7 @@ public final class GTOBlocks {
             if (stack.getTag() == null)
                 return;
             int mana = stack.getTag().getCompound("BlockEntityTag").getInt("source");
-            tooltip.add(Component.translatable("ars_nouveau.source_jar.fullness", FormattingUtil.formatNumber2Places((mana * 100) / 1e7)));
+            tooltip.add(Tips.stat(Component.translatable("ars_nouveau.source_jar.fullness", FormattingUtil.formatNumber2Places((mana * 100) / 1e7))));
         }
     })
             .properties(props -> props

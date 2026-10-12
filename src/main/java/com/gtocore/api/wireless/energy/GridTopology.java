@@ -88,27 +88,36 @@ final class GridTopology {
     }
 
     private void aggregateTowers() {
-        var atOrAbove = new long[GTValues.MAX + 2];
+        int stride = GTValues.MAX + 2;
+        var atOrAbove = new Reference2ObjectOpenHashMap<GridNode, long[]>();
         for (var tower : account.towers.values()) {
+            int bank = tower.tier();
+            if (bank < 0) continue;
+            var counts = atOrAbove.computeIfAbsent(account.nodeOrCreate(tower.pos().dimension()), k -> new long[GridNode.BANKS * stride]);
             for (var unit : tower.units()) {
-                if (unit.tier() >= 0 && unit.tier() <= GTValues.MAX) atOrAbove[unit.tier()] += unit.count();
+                if (unit.tier() >= 0 && unit.tier() <= GTValues.MAX) counts[bank * stride + unit.tier()] += unit.count();
             }
         }
-        for (int t = GTValues.MAX - 1; t >= 0; t--) atOrAbove[t] += atOrAbove[t + 1];
+        atOrAbove.values().forEach(counts -> {
+            for (int b = 0; b < GridNode.BANKS; b++) {
+                for (int t = GTValues.MAX - 1; t >= 0; t--) counts[b * stride + t] += counts[b * stride + t + 1];
+            }
+        });
         account.towerCapacities.clear();
         var weights = new Reference2ObjectOpenHashMap<GridNode, double[]>();
         for (var tower : account.towers.values()) {
+            var node = account.nodeOrCreate(tower.pos().dimension());
+            int bank = tower.tier();
+            var counts = bank < 0 ? null : atOrAbove.get(node);
             var capacity = BigInteger.ZERO;
             double lossWeight = 0;
             for (var unit : tower.units()) {
-                long scale = unit.tier() >= 0 && unit.tier() <= GTValues.MAX ? atOrAbove[unit.tier()] : 1;
+                long scale = counts != null && unit.tier() >= 0 && unit.tier() <= GTValues.MAX ? counts[bank * stride + unit.tier()] : 1;
                 var unitCapacity = unit.capacity().multiply(BigInteger.valueOf(unit.count())).multiply(BigInteger.valueOf(scale));
                 capacity = capacity.add(unitCapacity);
                 lossWeight += unitCapacity.doubleValue() * unit.loss();
             }
             account.towerCapacities.put(tower.pos(), capacity);
-            var node = account.nodeOrCreate(tower.pos().dimension());
-            int bank = tower.tier();
             if (bank < 0) continue;
             node.addThroughput(bank, tower.throughput());
             if (capacity.signum() <= 0) continue;

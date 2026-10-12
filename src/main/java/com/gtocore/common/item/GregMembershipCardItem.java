@@ -3,6 +3,8 @@ package com.gtocore.common.item;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.utils.PlayerNameUtils;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
+
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -54,7 +56,7 @@ public class GregMembershipCardItem extends Item {
             sharedNameComponents.add(Component.literal(PlayerNameUtils.getLastKnownName(level, sharedUuid)));
         }
 
-        tooltip.add(Component.translatable("gtocore.gray_membership_card.hover_text.1").append(ownerNameComponent));
+        tooltip.add(Tips.stat(Component.translatable("gtocore.gray_membership_card.hover_text.1").append(ownerNameComponent)));
         if (!sharedNameComponents.isEmpty()) {
             MutableComponent sharedNamesJoined = Component.empty();
             for (int i = 0; i < sharedNameComponents.size(); i++) {
@@ -63,7 +65,7 @@ public class GregMembershipCardItem extends Item {
                 }
                 sharedNamesJoined.append(sharedNameComponents.get(i));
             }
-            tooltip.add(Component.translatable("gtocore.gray_membership_card.hover_text.2").append(sharedNamesJoined));
+            tooltip.add(Tips.stat(Component.translatable("gtocore.gray_membership_card.hover_text.2").append(sharedNamesJoined)));
         }
     }
 

@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.item.armor.ArmorComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.IArmorLogic;
 import com.gregtechceu.gtceu.api.item.component.IDurabilityBar;
 import com.gregtechceu.gtceu.api.item.component.IItemComponent;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.item.armor.ArmorTooltips;
 import com.gregtechceu.gtceu.common.item.armor.QuarkTechSuite;
 
@@ -109,7 +110,7 @@ public final class SpaceArmorComponentItem extends ArmorComponentItem implements
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
-        tooltipComponents.add(TooltipUtils.getFluidComponent(FluidUtils.getTank(stack), FluidConstants.fromMillibuckets(getFluidContainer(stack).getTankCapacity(0)), ModFluids.OXYGEN.get()));
+        tooltipComponents.add(Tips.stat(TooltipUtils.getFluidComponent(FluidUtils.getTank(stack), FluidConstants.fromMillibuckets(getFluidContainer(stack).getTankCapacity(0)), ModFluids.OXYGEN.get())));
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
         addSpaceFeatures(stack, tooltipComponents);
     }

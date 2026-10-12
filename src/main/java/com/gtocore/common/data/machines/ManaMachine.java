@@ -188,7 +188,7 @@ public final class ManaMachine {
 
     public static final MachineDefinition AREA_DESTRUCTION_TOOLS = machine("area_destruction_tools", "区域破坏器", AreaDestructionToolsMachine::new)
             .tier(EV)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.AreaDestructionToolsTooltips.get()))
+            .tips(GTOMachineTooltips.AreaDestructionToolsTooltips)
             .nonYAxisRotation()
             .workableManaTieredHullRenderer(4, GTOCore.id("block/multiblock/area_destruction_tools"))
             .register();

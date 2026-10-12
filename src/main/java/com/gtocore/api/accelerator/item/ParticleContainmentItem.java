@@ -6,6 +6,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.datasynclib.GTDataFixer;
 
 import net.minecraft.network.chat.Component;
@@ -25,9 +26,9 @@ public class ParticleContainmentItem implements IAddInformation {
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         var particle = getContained(stack);
         if (particle == null) {
-            tooltipComponents.add(Component.translatable(EMPTY_TOOLTIP));
+            tooltipComponents.add(Tips.feature(Component.translatable(EMPTY_TOOLTIP)));
         } else {
-            tooltipComponents.add(Component.translatable(CONTAINS_TOOLTIP, particle.getDefinition().getDisplayName()));
+            tooltipComponents.add(Tips.stat(Component.translatable(CONTAINS_TOOLTIP, particle.getDefinition().getDisplayName())));
         }
     }
 

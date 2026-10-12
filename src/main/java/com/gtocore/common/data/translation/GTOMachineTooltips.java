@@ -56,7 +56,7 @@ public final class GTOMachineTooltips {
         t.control(t.tr("此时用两个§9坐标信息卡§r来确定区域", "Now use two §9Coordinate Cards§r to determine the area"));
         t.heading(t.tr("爆炸当量", "Explosive Yield"));
         t.bonus(t.tr("向库存添加以下物品以提高爆炸当量：", "Add the following items to inventory to increase explosive yield:"));
-        t.note(t.tr("§c工业TNT§r/§c核弹§r/§c超能硅岩爆弹§r/§c轻子爆弹§r/§c量子色动力学爆弹§r", "§cIndustrial TNT§r/§cNuke Bomb§r/§cNaquadria Charge§r/§cLeptonic Charge§r/§cQuantum Chromodynamic Charge§r"));
+        t.feature(t.tr("§c工业TNT§r/§c核弹§r/§c超能硅岩爆弹§r/§c轻子爆弹§r/§c量子色动力学爆弹§r", "§cIndustrial TNT§r/§cNuke Bomb§r/§cNaquadria Charge§r/§cLeptonic Charge§r/§cQuantum Chromodynamic Charge§r"));
     });
 
     public static final TipSpec IndustrialPlatformDeploymentToolsTooltips = GTOTips.of("industrial_platform_deployment_tools", t -> {
@@ -67,7 +67,7 @@ public final class GTOMachineTooltips {
         t.lore(t.tr("专业级工业基地搭建工具", "Professional-grade industrial base construction tool"));
         t.lore(t.tr("泛银河格雷科技销售部核心产品", "Core product of Pan-Galaxy Greg Technology Sales Department"));
         t.lore(t.tr("扩展包欢迎投稿你的蓝图", "Expansion packs welcome submissions of your blueprints"));
-        t.note(t.tr("详细操作说明请查阅工具内置手册", "For detailed instructions, refer to the tool's built-in manual"));
+        t.feature(t.tr("详细操作说明请查阅工具内置手册", "For detailed instructions, refer to the tool's built-in manual"));
     });
 
     public static final TipSpec IndustrialPlatformDeploymentToolsIntroduction = GTOTips.of("industrial_platform_deployment_tools.introduction", t -> {
@@ -90,7 +90,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("支持通过坐标卡记录指定区域(需设定对角锚点)，一键导出为可复用的自定义蓝图", "Supports recording designated areas (via diagonal anchor points) with coordinate cards, exporting as reusable custom blueprints with one click"));
         t.feature(t.tr("可调节部署速率、光照同步模式及空气方块处理策略(保留/替换)", "Adjustable deployment speed, light synchronization mode, and air block handling (retain/replace)"));
         t.heading(t.tr("材料要求", "Material Requirements"));
-        t.note(t.tr("系统会根据蓝图复杂度自动计算所需材料", "The system automatically calculates required materials based on blueprint complexity."));
+        t.feature(t.tr("系统会根据蓝图复杂度自动计算所需材料", "The system automatically calculates required materials based on blueprint complexity."));
         t.requirement(t.tr("高阶蓝图需额外投入材料", "High-tier blueprints require additional materials."));
         t.heading(t.tr("注意事项", "Cautions"));
         t.attention(t.tr("部署任务启动后将持续执行至完成，中途无法中断，启动前务必确认部署位置无障碍物且材料充足", "Once started, deployment runs to completion without interruption. Ensure the target location is obstacle-free and materials are sufficient beforehand."));
@@ -98,11 +98,11 @@ public final class GTOMachineTooltips {
         t.control(t.tr("按流程完成参数配置与材料准备后，点击控制模块的确认按钮即可启动部署", "After completing parameter configuration and material preparation as instructed, click the control module's confirm button to start deployment."));
         t.heading(t.tr("蓝图导出功能", "Blueprint Export Function"));
         t.control(t.tr("将两张带有坐标位置的坐标卡插入工具底部插槽后，打开选择预设界面可激活导出模式", "After inserting two coordinate cards with coordinate positions into the slot at the bottom of the tool, open the selection preset interface to activate the export mode"));
-        t.note(t.tr("导出蓝图在游戏根目录下logs/platform文件夹中", "The exported blueprint is located in the logs/platform folder under the game's root directory"));
+        t.feature(t.tr("导出蓝图在游戏根目录下logs/platform文件夹中", "The exported blueprint is located in the logs/platform folder under the game's root directory"));
         t.lore(Tx.rainbowSlow(t.tr("欢迎提交优质蓝图至社区仓库", "Welcome to submit high-quality blueprints to the community repository")));
         t.unsupported(t.tr("不支持框架方块和小方块", "Does not support FramedBlocks or LittleTiles"));
-        t.note(Tx.rainbowSlow(t.tr("https://github.com/GregTech-Odyssey/Gto-Extended-Platform-Presets", "https://github.com/GregTech-Odyssey/Gto-Extended-Platform-Presets")));
-        t.note(t.tr("详细导入教程请看 example/READIR_cn.md", "For detailed import tutorial, please refer to example/README_en.md"));
+        t.feature(Tx.rainbowSlow(t.tr("https://github.com/GregTech-Odyssey/Gto-Extended-Platform-Presets", "https://github.com/GregTech-Odyssey/Gto-Extended-Platform-Presets")));
+        t.feature(t.tr("详细导入教程请看 example/READIR_cn.md", "For detailed import tutorial, please refer to example/README_en.md"));
     });
 
     public static final TipSpec VillageTradingStationTooltips = GTOTips.of("village_trading_station", t -> {
@@ -113,7 +113,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("交易站系统自动协调补货，通过增强模块可优化补货间隔与交易乘数", "Trading station system auto-coordinates restocks; enhancement modules optimize restock intervals and trade multiples"));
         t.lore(t.tr("政企村协同发展的核心装备", "Core equipment for enterprise-village collaborative development"));
         t.lore(t.tr("泛银河格雷科技研发部匠心研发", "Crafted with precision by Pan-Galaxy Greg Technology R&D"));
-        t.note(t.tr("详细操作说明请查阅机器内置手册", "For detailed instructions, refer to the in-machine manual"));
+        t.feature(t.tr("详细操作说明请查阅机器内置手册", "For detailed instructions, refer to the in-machine manual"));
     });
 
     public static final TipSpec VillageTradingStationIntroduction = GTOTips.of("village_trading_station.introduction", t -> {
@@ -143,8 +143,8 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("注意事项", "Cautions"));
         t.warning(t.tr("村民信息锁定后，需先解锁才能更换，解锁会清空该村民的交易配置及已加载的配方数据", "Once villager information is locked, unlocking is required for replacement—this will clear the villager's trade configuration and loaded recipe data."));
         t.attention(t.tr("输出仓库满载时，对应交易将自动暂停；启用自动输出功能可减少此问题，清空后需确保交易处于启动状态以恢复运行", "Corresponding trades will automatically pause when the output warehouse is full. Enabling auto-output reduces this issue; after clearing, ensure trades are active to resume operation."));
-        t.note(t.tr("交易乘数会等比例增加输入物品消耗与输出物品数量（如乘数为2时，消耗2倍输入并获得2倍输出）", "Bulk trade coefficients proportionally increase input consumption and output quantity (e.g., 2x trading requires 2x input and yields 2x output)."));
-        t.note(t.tr("按流程完成配置后，锁定村民并启用交易即可自动运行，系统会按设定周期执行补货与交易", "After configuration as per the process, lock villagers and enable trading to start automatic operation—the system will execute restocks and trades at set intervals."));
+        t.feature(t.tr("交易乘数会等比例增加输入物品消耗与输出物品数量（如乘数为2时，消耗2倍输入并获得2倍输出）", "Bulk trade coefficients proportionally increase input consumption and output quantity (e.g., 2x trading requires 2x input and yields 2x output)."));
+        t.feature(t.tr("按流程完成配置后，锁定村民并启用交易即可自动运行，系统会按设定周期执行补货与交易", "After configuration as per the process, lock villagers and enable trading to start automatic operation—the system will execute restocks and trades at set intervals."));
         t.lore(Tx.rainbowSlow(t.tr("智能协同，共赢高效", "Intelligent collaboration for win-win efficiency")));
     });
 
@@ -156,7 +156,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("完整的交易记录，助你分析市场，优化你的贸易策略", "Comprehensive transaction logs to help you analyze the market and optimize your trading strategy"));
         t.lore(t.tr("你的星际贸易帝国，从这里开始", "Your interstellar trade empire starts here"));
         t.lore(t.tr("效率、规模与协作的终极贸易解决方案", "The ultimate trading solution for efficiency, scale, and collaboration"));
-        t.note(t.tr("快速上手：放置贸易站 → 插入会员卡 → 存入资源 → 解锁并执行交易 → 坐享其成！", "Quick Start: Place the Station → Insert Membership Card → Deposit Resources → Unlock & Execute Trades → Enjoy the Rewards!"));
+        t.feature(t.tr("快速上手：放置贸易站 → 插入会员卡 → 存入资源 → 解锁并执行交易 → 坐享其成！", "Quick Start: Place the Station → Insert Membership Card → Deposit Resources → Unlock & Execute Trades → Enjoy the Rewards!"));
     });
 
     public static final TipSpec PanGalaxyGregTechTradingStationIntroduction = GTOTips.of("pan_galaxy_greg_tech_trading_station.introduction", t -> {
@@ -177,7 +177,7 @@ public final class GTOMachineTooltips {
         t.attention(t.tr("1. 会员卡是你的命脉！请务必妥善保管。建议提前设置好共享权限，以防万一卡片丢失，你的伙伴还能帮你管理。", "1. Your Membership Card is your lifeline! Please keep it safe. It's advisable to set up shared permissions in advance, so in case the card is lost, your teammates can still help you manage the station."));
         t.attention(t.tr("2. 注意容量限制！在进行大规模批量交易前，确保你的输出槽有足够的空间容纳成品，以免因空间不足导致交易失败。", "2. Watch your capacity limits! Before performing large-scale bulk transactions, ensure your output slots have enough space for the finished products to avoid transaction failure due to insufficient space."));
         t.requirement(t.tr("3. 自动输出需要配合！确保你设置的输出方向上有管道或其他可接收的设备（如箱子、ME接口），否则物品会无法送出。", "3. Auto-Output needs cooperation! Ensure there are pipes or other receivable devices (like chests, ME Interfaces) in the direction you've set; otherwise, items won't be able to be sent out."));
-        t.note(t.tr("4. 幸运商店每日刷新！记得每天都来看看，也许能淘到平时买不到的稀有宝贝。高等级的贸易站刷新的商品会更好哦！", "4. Lucky Merchant refreshes daily! Remember to check back every day; you might find rare treasures that are not normally available. Higher-tier stations offer even better items!"));
+        t.feature(t.tr("4. 幸运商店每日刷新！记得每天都来看看，也许能淘到平时买不到的稀有宝贝。高等级的贸易站刷新的商品会更好哦！", "4. Lucky Merchant refreshes daily! Remember to check back every day; you might find rare treasures that are not normally available. Higher-tier stations offer even better items!"));
         t.lore(Tx.rainbowSlow(t.tr("效率、规模、自动化 —— 格雷科技贸易站，重新定义星际贸易！", "Efficiency, Scale, Automation – Greg Technology Trading Station, Redefining Interstellar Trade!")));
         t.lore(Tx.rainbowSlow(t.tr("准备好，让你的贸易帝国腾飞吧！", "Get ready to let your trade empire soar!")));
     });
@@ -189,7 +189,7 @@ public final class GTOMachineTooltips {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("老虎机", "Slot Machine")));
         t.heading(t.tr("三列卷轴，五条中奖线", "Three reels, five paylines"));
         t.heading(t.tr("赔付表", "Pay Table"));
-        t.note(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
+        t.feature(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
             if (symbol.wild()) continue;
             t.statText(t.tr("%s：左侧二连 ×%s / 三连 ×%s", "%s: Left pair ×%s / Triple ×%s",
@@ -206,7 +206,7 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("中奖规则", "Winning Rules"));
         t.feature(t.tr("五条中奖线为上、中、下三条横线及两条对角线，竖列不计奖", "The five paylines are the top, middle and bottom rows and both diagonals; vertical columns do not pay"));
         t.requirement(t.tr("沿中奖线从最左列连续匹配，只有右侧二连不中奖", "Matches must start at the leftmost reel along a payline; a pair made of the right two reels alone does not pay"));
-        t.note(t.tr("同一条线三连优先，不叠加该线的二连奖励；不同中奖线的奖励相加", "A triple takes priority over a pair on the same line and the pair is not added on top; payouts from different paylines add together"));
+        t.feature(t.tr("同一条线三连优先，不叠加该线的二连奖励；不同中奖线的奖励相加", "A triple takes priority over a pair on the same line and the pair is not added on top; payouts from different paylines add together"));
         t.feature(t.tr("%s可替代任何普通符号：一个%s配两个相同符号，或两个%s配一个符号，都按该符号的三连赔付",
                 "%s substitutes for any regular symbol: one %s with two matching symbols, or two %s with one symbol, both pay that symbol's triple",
                 wildName,
@@ -222,7 +222,7 @@ public final class GTOMachineTooltips {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("宽幅老虎机", "Wide Slot Machine")));
         t.heading(t.tr("五列卷轴，九条中奖线", "Five reels, nine paylines"));
         t.heading(t.tr("赔付表", "Pay Table"));
-        t.note(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
+        t.feature(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
             if (symbol.wild()) continue;
             t.statText(t.tr("%s：三连 ×%s / 四连 ×%s / 五连 ×%s", "%s: Triple ×%s / Four ×%s / Five ×%s",
@@ -240,7 +240,7 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("中奖规则", "Winning Rules"));
         t.feature(t.tr("九条中奖线为三条横线、两条折线与四条带缺口的折线，竖列不计奖", "The nine paylines are three rows, two zigzags and four notched zigzags; vertical columns do not pay"));
         t.requirement(t.tr("沿中奖线从最左列连续匹配，只赔三连及以上，二连不中奖", "Matches must start at the leftmost reel along a payline; three or more pay, a pair pays nothing"));
-        t.note(t.tr("同一条线按最长连中结算，不叠加该线较短连中的奖励；不同中奖线的奖励相加", "A line pays for its longest run only and shorter runs on it are not added on top; payouts from different paylines add together"));
+        t.feature(t.tr("同一条线按最长连中结算，不叠加该线较短连中的奖励；不同中奖线的奖励相加", "A line pays for its longest run only and shorter runs on it are not added on top; payouts from different paylines add together"));
         t.feature(t.tr("%s可替代任何普通符号：只要连成三格及以上，就按该符号对应长度的倍率赔付",
                 "%s substitutes for any regular symbol: as long as three or more connect, the line pays that symbol's multiplier for its length",
                 wildName));
@@ -252,8 +252,8 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("动态替换样板内容", "Dynamic Pattern Content Replacement"));
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("将此机器连接至 ME 网络后，样板在被调用时将遵循优先级配置，逐行进行内容匹配与替换。", "When connected to an ME Network, patterns will follow a priority configuration for line-by-line content matching and replacement when accessed."));
-        t.note(t.tr("每组配置中，替换的顺序为从右到左。", "In each configuration group, the replacement order is from right to left."));
-        t.note(t.tr("例如，按顺序填入“橡木木板，白桦木板，云杉木板”的配置，那么当有样板原料中用到白桦或云杉木板时，就会动态修改样板，使用橡木木板作为原料。", "For example, if you fill in the configuration with 'Oak Planks, Birch Planks, Spruce Planks' in order, then when a pattern's ingredient uses Birch or Spruce Planks, the pattern will be dynamically modified to use Oak Planks as the ingredient."));
+        t.feature(t.tr("每组配置中，替换的顺序为从右到左。", "In each configuration group, the replacement order is from right to left."));
+        t.feature(t.tr("例如，按顺序填入“橡木木板，白桦木板，云杉木板”的配置，那么当有样板原料中用到白桦或云杉木板时，就会动态修改样板，使用橡木木板作为原料。", "For example, if you fill in the configuration with 'Oak Planks, Birch Planks, Spruce Planks' in order, then when a pattern's ingredient uses Birch or Spruce Planks, the pattern will be dynamically modified to use Oak Planks as the ingredient."));
     });
 
     public static final TipSpec ManaAmplifierHatchTooltips = GTOTips.of("mana_amplifier_hatch", t -> {
@@ -273,7 +273,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec ManaCondenserTooltips = GTOTips.of("mana_condenser", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("在特定环境下只有特定的结构能够工作", "Only specific structure forms can work in specific environments"));
-        t.note(t.tr("亚尔夫海姆以外的维度使用常规形态，亚尔夫海姆使用亚尔夫海姆形态", "Dimensions other than Alfheim use the standard form; Alfheim uses the Alfheim form"));
+        t.feature(t.tr("亚尔夫海姆以外的维度使用常规形态，亚尔夫海姆使用亚尔夫海姆形态", "Dimensions other than Alfheim use the standard form; Alfheim uses the Alfheim form"));
         t.attention(t.tr("阵列形态与所在维度不符时，机器可以成型但不会工作", "If the array form does not match the current dimension, the machine forms but does not work"));
     });
 
@@ -317,14 +317,14 @@ public final class GTOMachineTooltips {
 
     public static final TipSpec RotorHatchTooltips = GTOTips.of("rotor_hatch", t -> {
         t.heading(ComponentSlang.RunningRequirements);
-        t.note(t.tr("不同类型的转子的效率，耐久不同", "Different types of rotors have different efficiency and durability"));
+        t.feature(t.tr("不同类型的转子的效率，耐久不同", "Different types of rotors have different efficiency and durability"));
     });
 
     public static final TipSpec RadiationHatchTooltips = GTOTips.of("radiation_hatch", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.feature(t.tr("仓中的辐射遵循以下规则：", "The radiation in the hatch follows the following rules:"));
         t.formula(t.tr("初始辐射=(配方辐射-抑制量)x(1+放射材料数量/64)", "Initial radiation = (Recipe radiation - inhibition) * (1 + count of radiation materials / 64)"));
-        t.note(t.tr("当仓中没有放射性材料时辐射随时间逐渐衰减", "When there are no radiation materials in the barn, the radioactivity gradually decreases over time"));
+        t.feature(t.tr("当仓中没有放射性材料时辐射随时间逐渐衰减", "When there are no radiation materials in the barn, the radioactivity gradually decreases over time"));
         t.control(t.tr("通入红石脉冲以清除残余辐射", "Input a redstone pulse to clear residual radiation"));
     });
 
@@ -377,8 +377,8 @@ public final class GTOMachineTooltips {
     public static final TipSpec MEStorageAccessHatchTooltips = GTOTips.of("me_storage_access_hatch", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("访问ME存储器内的存储", "Access storage in ME storage"));
-        t.note(t.tr("直接让ME线缆连上就好，不推荐无线连接", "Directly let ME cable connect, not recommended to use wireless connection"));
-        t.note(t.tr("装在磁盘存储器里时，数据索引与容量由机器写入，无需手动绑定", "Inside the ME Disk Storage the machine supplies the data index and capacity, no manual binding needed"));
+        t.feature(t.tr("直接让ME线缆连上就好，不推荐无线连接", "Directly let ME cable connect, not recommended to use wireless connection"));
+        t.feature(t.tr("装在磁盘存储器里时，数据索引与容量由机器写入，无需手动绑定", "Inside the ME Disk Storage the machine supplies the data index and capacity, no manual binding needed"));
     });
 
     public static final TipSpec MeCraftPatternHatchTooltips = GTOTips.of("me_craft_pattern_part_machine", t -> {
@@ -401,7 +401,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("不参与 AE 发配，只在产物不足阈值时从网络拉取原料并合成", "Does not take part in AE pattern distribution; pulls ingredients from the network to craft only when the product is below the threshold"));
         t.middleClick(t.tr("对着样板按鼠标中键可单独设置拉取开关与产物阈值", "Middle-click a pattern to set its pull mode and product threshold"));
         t.attention(t.tr("补货数量按差额补齐到阈值，上限为网络原料能支撑的次数", "Restocks by the deficit up to the threshold, capped by what the network's ingredients can support"));
-        t.note(t.tr("每 2 秒检查一次", "Checked once every 2 seconds"));
+        t.feature(t.tr("每 2 秒检查一次", "Checked once every 2 seconds"));
         t.statText(ComponentSlang.Capacity("18"));
     });
 
@@ -429,34 +429,37 @@ public final class GTOMachineTooltips {
         t.supported(t.tr("允许使用通配符生成样板", "Allows the use of wildcards to generate patterns"));
         t.control(t.tr("在样板终端中编码带有通配符的样板以使用", "Encode patterns with wildcards in the Pattern Terminal to use"));
         t.feature(t.tr("机器将自动生成所有可制作的配方", "The machine will automatically generate all craftable recipes"));
-        t.note(t.tr("例如，编写一个§6任何锭->任何板材§r的样板", "For example, write a §6any ingot -> any plate§r pattern"));
-        t.note(t.tr("机器将自动生成§6铁锭->铁板§r、§6金锭->金板§r等所有可制作的§6锭->板材§r配方", "The machine will automatically generate all craftable §6ingot -> plate§r recipes like §6iron ingot -> iron plate§r, §6gold ingot -> gold plate§r, etc."));
+        t.feature(t.tr("例如，编写一个§6任何锭->任何板材§r的样板", "For example, write a §6any ingot -> any plate§r pattern"));
+        t.feature(t.tr("机器将自动生成§6铁锭->铁板§r、§6金锭->金板§r等所有可制作的§6锭->板材§r配方", "The machine will automatically generate all craftable §6ingot -> plate§r recipes like §6iron ingot -> iron plate§r, §6gold ingot -> gold plate§r, etc."));
         t.attention(t.tr("注意：生成时，机器会检查当前配方类型与存储的电路/模具等是否与样板匹配", "Note: When generating, the machine will check whether the current recipe type matches the stored circuit/mold, etc. with the pattern"));
-        t.note(t.tr("不匹配的配方将不会被生成", "Mismatched recipes will not be generated"));
+        t.feature(t.tr("不匹配的配方将不会被生成", "Mismatched recipes will not be generated"));
         t.control(t.tr("在机器中设置黑名单材料以跳过该材料相关的配方生成", "Set blacklist materials in the machine to skip recipe generation related to that material"));
     });
 
     public static final TipSpec AutoConnectMETooltips = GTOTips.of("auto_connect_me", t -> {
-        t.heading(t.tr("无线ME网络连接", "Built-in wireless ME network connection feature"));
-        t.feature(t.tr("在机器内GUI界面中可以自由创建和连接无线网络", "You can freely create and connect wireless networks in the machine's GUI interface"));
-        t.control(t.tr("在机器内GUI界面收藏某个网络后，按下Shift放置以自动连接收藏的网络", "After favoriting a network in the machine's GUI interface, place it while holding Shift to automatically connect to the favorited network"));
+        t.heading(t.tr("无线ME网络", "Wireless ME Network"));
+        t.feature(t.tr("在机器界面中加入或断开已有的无线网络，并查看网络详情", "Join or leave an existing wireless network and view its details in the machine interface"));
+        t.feature(t.tr("新建网络需使用ME无线连接机", "New networks can only be created with an ME Wireless Connection Machine"));
+        t.control(t.tr("[Shift + 放置] 自动加入已收藏的网络", "[Shift + Place] Join the favorited network automatically"));
+        t.feature(t.tr("在网络列表中点击星标收藏网络", "Click the star in the network list to favorite a network"));
     });
 
     public static final TipSpec MeWirelessConnectionMachineTooltips = GTOTips.of("me_wireless_connection_machine", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("ME无线连接机", "ME Wireless Connection Machine")));
-        t.feature(t.tr("同一无线网络中的所有机器接入同一个ME网络", "All machines in the same wireless network join one ME network"));
-        t.supported(t.tr("可以在不同世界传输", "Can transmit across different worlds"));
-        t.supported(t.tr("可以连接GTO ME无线网络", "Can connect to GTO ME wireless network"));
-        t.heading(t.tr("无线ME网络连接", "Built-in wireless ME network connection feature"));
-        t.feature(t.tr("在机器内GUI界面中可以自由创建和连接无线网络", "You can freely create and connect wireless networks in the machine's GUI interface"));
-        t.control(t.tr("在机器内GUI界面收藏某个网络后，按下Shift放置以自动连接收藏的网络", "After favoriting a network in the machine's GUI interface, place it while holding Shift to automatically connect to the favorited network"));
+        t.feature(t.tr("同一无线网络中的机器共享同一个ME网络", "Machines in the same wireless network share one ME network"));
+        t.supported(t.tr("支持跨维度连接", "Works across dimensions"));
+        t.heading(t.tr("网络管理", "Network Management"));
+        t.feature(t.tr("在机器界面中新建、加入或断开无线网络", "Create, join or leave wireless networks in the machine interface"));
+        t.feature(t.tr("唯一可以新建网络的机器，ME部件只能加入已有网络", "The only machine that can create networks; ME parts can only join existing ones"));
+        t.control(t.tr("[Shift + 放置] 自动加入已收藏的网络", "[Shift + Place] Join the favorited network automatically"));
+        t.feature(t.tr("在网络列表中点击星标收藏网络", "Click the star in the network list to favorite a network"));
     });
 
     public static final TipSpec VaultTooltips = GTOTips.of("vault", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("可以存储大量资源", "Can store many many resources"));
-        t.note(t.tr("使用简易合成终端或者ME存储总线读取内部资源", "Use Simple Crafting Terminal or ME Storage Bus to read internal resources"));
-        t.note(t.tr("容量由密封机械方块数量和等级决定", "The capacity is determined by the number and tier of Hermetic Casings"));
+        t.feature(t.tr("使用简易合成终端或者ME存储总线读取内部资源", "Use Simple Crafting Terminal or ME Storage Bus to read internal resources"));
+        t.feature(t.tr("容量由密封机械方块数量和等级决定", "The capacity is determined by the number and tier of Hermetic Casings"));
         t.statText(t.tr("大小：3x3x3到15x15x15", "Size: 3x3x3 to 15x15x15"));
     });
 
@@ -465,7 +468,7 @@ public final class GTOMachineTooltips {
         t.supported(t.tr("可为保险库IO", "Can serve as vault IO"));
         t.formula(t.tr("最大安装数 = 密封机械方块数", "Maximum installations = hermetic casing amount"));
         t.supported(t.tr("可标记一种物品和一种流体", "Can mark one item and one fluid"));
-        t.note(t.tr("标记后该仓只读写被标记的资源，未标记的资源不进出", "Once marked, this hatch only reads and writes the marked resource; unmarked resources are rejected"));
+        t.feature(t.tr("标记后该仓只读写被标记的资源，未标记的资源不进出", "Once marked, this hatch only reads and writes the marked resource; unmarked resources are rejected"));
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
@@ -474,17 +477,17 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("抽屉与升级放进输入总线，超级箱/超级缸放进主机槽；超级箱只能存物品、超级缸只能存流体，最多 64 个", "Drawers and upgrades go into the input buses, the super chest/tank into the controller slot; a super chest stores items only, a super tank fluids only, up to 64"));
         t.formula(t.tr("可存种类 = 与主机同类抽屉的槽数 × 数量；1x 各贡献 1 种，2x/4x 各贡献 2/4 种", "Type count = slots x amount of the matching drawers; a 1x drawer contributes 1 type, 2x/4x contribute 2/4"));
         t.formula(t.tr("只限每种上限，不设总容量：每种容量 = 同类抽屉中最小的每槽容量 × √(主机等级 × 数量 × 密封等级) × 升级倍率", "Only a per-type cap, no overall capacity: capacity per type = the smallest slot amount among the matching drawers x sqrt(controller tier x amount x hermetic tier) x upgrade multiplier"));
-        t.note(t.tr("升级倍率：所有升级相乘后按同类抽屉数量均分，平均每个抽屉最多算 4 个；流体收益再减半（不低于 1）", "Upgrade multiplier: all upgrades multiplied then split over the matching drawer count, counting at most 4 per drawer on average; fluids get half of it (never below 1)"));
+        t.feature(t.tr("升级倍率：所有升级相乘后按同类抽屉数量均分，平均每个抽屉最多算 4 个；流体收益再减半（不低于 1）", "Upgrade multiplier: all upgrades multiplied then split over the matching drawer count, counting at most 4 per drawer on average; fluids get half of it (never below 1)"));
         t.warning(t.tr("开启溢出销毁后，超过每种容量或种类已满时放不下的内容会被直接销毁", "With overflow voiding on, anything that does not fit (over the per-type capacity, or no free type) is voided"));
         t.unsupported(t.tr("压缩抽屉、末影抽屉等不作为介质", "Compacting and ender drawers do not count as media"));
-        t.note(t.tr("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓", "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO"));
+        t.feature(t.tr("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓", "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO"));
     });
 
     public static final TipSpec MeDiskBoxTooltips = GTOTips.of("me_disk_box", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("ME 磁盘存储器的单方块版本，槽里的存储组件（1k…256M）提供容量", "Single-block version of the ME Disk Storage; the storage components in its slot (1k...256M) provide the capacity"));
-        t.note(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again"));
-        t.note(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
+        t.feature(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again"));
+        t.feature(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
         t.feature(t.tr("存储转移：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处", "Transfer Storage: moves everything held by the other ME storages in the network into this box, what does not fit stays where it is"));
     });
 
@@ -492,8 +495,8 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("以输入总线里的存储组件（1k…256m）提供容量，存储由结构里的存储访问仓承担", "Storage components in the input bus (1k...256m) provide the capacity; the Storage Access Hatch in the structure holds the data"));
         t.formula(t.tr("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）；没有无限存储", "Capacity = the components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...); there is no infinite storage"));
-        t.note(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，同一台重建后数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so rebuilding the same machine keeps the data"));
-        t.note(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
+        t.feature(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，同一台重建后数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so rebuilding the same machine keeps the data"));
+        t.feature(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
     });
 
     public static final TipSpec MeConfigurableStorageAccessHatchTooltips = GTOTips.of("me_configurable_storage_access_hatch", t -> {
@@ -501,8 +504,8 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("访问 ME 存储器内的存储，并可为每种东西单独设置上下限", "Accesses storage in ME storage and sets a limit for every key"));
         t.formula(t.tr("输入限制：每种最多存多少；未配置 = 不限，0 = 禁止存入", "Input limit: the most of each key that may be stored; unconfigured = unlimited, 0 = forbidden"));
         t.formula(t.tr("输出限制：每种至少保留多少；未配置 = 不限，0 = 不设下限", "Output limit: the least of each key to keep; unconfigured = unlimited, 0 = no floor"));
-        t.note(t.tr("两张表各有开关、互不影响；都不开时就是普通访问仓", "The two tables have their own switches and do not affect each other; with both off this is an ordinary access hatch"));
-        t.note(t.tr("配置面板：81 个物品格 + 81 个流体格，选中格子后在中间的输入框改数量", "Config panel: 81 item slots + 81 fluid slots; select a slot and edit the amount in the middle field"));
+        t.feature(t.tr("两张表各有开关、互不影响；都不开时就是普通访问仓", "The two tables have their own switches and do not affect each other; with both off this is an ordinary access hatch"));
+        t.feature(t.tr("配置面板：81 个物品格 + 81 个流体格，选中格子后在中间的输入框改数量", "Config panel: 81 item slots + 81 fluid slots; select a slot and edit the amount in the middle field"));
     });
 
     public static final TipSpec fishingFarmTooltips = GTOTips.of("fishing_farm", t -> {
@@ -572,7 +575,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec MonitorMachineComponentTooltips = monitor(t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("显示§6机器§r的通用数据", "Display the general data of §6machines§r"));
-        t.note(t.tr("例如耗电，产电，输入，输出等", "For example, power consumption, power production, input, output, etc."));
+        t.feature(t.tr("例如耗电，产电，输入，输出等", "For example, power consumption, power production, input, output, etc."));
         t.requirement(t.tr("需要放入坐标信息卡", "Need to put coordinate card"));
     });
 
@@ -595,7 +598,7 @@ public final class GTOMachineTooltips {
         t.control(t.tr("使用§b坐标信息卡§r绑定方块", "Use the §bCordinate Card§r to bind a storage block"));
         t.feature(t.tr("绑定某方块后，对此机器进行物品或流体操作视同对被绑定的方块操作", "Bind a storage to this machine to operate it as if it were the bound storage"));
         t.rightClick(t.tr("右键点击以打开界面", "Right click to open the interface"));
-        t.note(t.tr("此方块有升级版本", "Has upgrade version"));
+        t.feature(t.tr("此方块有升级版本", "Has upgrade version"));
     });
 
     // 进阶超立方体
@@ -605,7 +608,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("绑定某方块后，对此机器进行物品或流体操作视同对被绑定的方块操作", "Bind a storage to this machine to operate it as if it were the bound storage"));
         t.feature(t.tr("若绑定多个方块，则依序对他们操作", "Operate them in order if bind multiple storages"));
         t.rightClick(t.tr("右键点击以打开界面", "Right click to open the interface"));
-        t.note(t.tr("对装配线自动化很好用", "Good for assembly line automation"));
+        t.feature(t.tr("对装配线自动化很好用", "Good for assembly line automation"));
     });
 
     // 光伏电站
@@ -623,7 +626,7 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("仅能在星球轨道中工作", "Only operates in planetary orbit"));
         t.feature(t.tr("输出功率由所在轨道的太阳能强度决定，不受昼夜与天气影响", "Power output depends on the solar power of the current orbit and is unaffected by day, night and weather"));
         t.formula(t.tr("每秒消耗蒸馏水：输出功率(EU/t)/64 mB", "Consumes Distilled Water per second: Output Power (EU/t) / 64 mB"));
-        t.note(t.tr("与探索者号空间站两侧的对接接口相连时，由空间站供给蒸馏水并接收电能", "When connected to the docking ports on both sides of the Explorer Space Station, the station supplies Distilled Water and receives the generated power"));
+        t.feature(t.tr("与探索者号空间站两侧的对接接口相连时，由空间站供给蒸馏水并接收电能", "When connected to the docking ports on both sides of the Explorer Space Station, the station supplies Distilled Water and receives the generated power"));
         t.requirement(t.tr("控制器须水平朝向，帆板上方不得有遮挡", "The controller must face horizontally, and the space above the sails must be unobstructed"));
 
         t.heading(ComponentSlang.RecommendedUseAs(t.tr("生产魔力", "mana production")));
@@ -677,12 +680,12 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("温度管理系统", "Temperature Management System"));
         t.feature(t.tr("初始温度为 298K；停机时每秒降低 1K", "Initial temperature is 298K; temperature decreases by 1K per second while idle"));
         t.formula(t.tr("冷却不生效时，每秒升温 = 配方基础产热 × (相邻燃料组件数量 + 1)", "When cooling has no effect, heat gained per second = base recipe heat × (adjacent fuel components + 1)"));
-        t.note(t.tr("每种燃料配方拥有不同的基础产热，可在配方页面查看", "Each fuel recipe has a different base heat value, shown on its recipe page"));
+        t.feature(t.tr("每种燃料配方拥有不同的基础产热，可在配方页面查看", "Each fuel recipe has a different base heat value, shown on its recipe page"));
         t.warning(Tx.join(t.tr("温度超过 1500K 后反应堆将持续损坏，完全损坏时", "Above 1500K, the reactor continuously takes damage and, when fully damaged, "), ComponentSlang.Explosion));
 
         t.heading(t.tr("冷却系统", "Cooling System"));
         t.feature(t.tr("冷却液输入量大于冷却需求时触发冷却；每秒冷却液消耗量受冷却上限限制", "Cooling activates when the coolant input exceeds the cooling demand; coolant consumption per second is limited by the cooling limit"));
-        t.note(t.tr("每 800 mB 蒸馏水或 20 mB 钠钾合金可满足 1 单位冷却需求", "Every 800 mB of Distilled Water or 20 mB of Sodium Potassium can satisfy 1 unit of cooling demand"));
+        t.feature(t.tr("每 800 mB 蒸馏水或 20 mB 钠钾合金可满足 1 单位冷却需求", "Every 800 mB of Distilled Water or 20 mB of Sodium Potassium can satisfy 1 unit of cooling demand"));
         t.formula(t.tr("冷却需求 = 配方基础产热 × 实际并行 × 当前温度 / 1500", "Cooling demand = base recipe heat × actual parallel × current temperature / 1500"));
         t.formula(t.tr("冷却上限 = (冷却组件数量 - 相邻数 / 3) × 8", "Cooling limit = (cooling components - adjacency / 3) × 8"));
         t.penalty(t.tr("若冷却液输入量低于冷却需求，本次冷却不生效", "If the coolant input is below the cooling demand, cooling has no effect this time"));
@@ -695,7 +698,7 @@ public final class GTOMachineTooltips {
         t.plain(t.tr("蒸馏水冷却: ", "Distilled Water cooling: "));
         t.formula(t.tr("产出蒸汽，产量 = 消耗量 × min(160, 160/(1.4^(373-温度)))", "Produces steam, Output = consumption × min(160, 160/(1.4^(373-temperature)))"));
         t.plain(t.tr("钠钾合金冷却:", "Sodium Potassium cooling:"));
-        t.note(t.tr("≤825K: 热钠钾合金；>825K: 超临界钠钾合金", "≤825K: Hot Sodium Potassium; >825K: Supercritical Sodium Potassium"));
+        t.feature(t.tr("≤825K: 热钠钾合金；>825K: 超临界钠钾合金", "≤825K: Hot Sodium Potassium; >825K: Supercritical Sodium Potassium"));
     });
 
     // 计算中心
@@ -763,8 +766,8 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.control(t.tr("通过合成样板仓放入合成样板", "Insert crafting patterns via craft pattern hatches"));
         t.feature(t.tr("每次运行同时处理所有的配方以及所有的输入物品", "Processes all recipes and all input items at once each operation"));
-        t.note(t.tr("产物直接进入 ME 网络，无需输出仓", "Outputs go straight into the ME network, no output bus needed"));
-        t.note(t.tr("每个物品合成消耗1EU", "Each item crafted consumes 1 EU"));
+        t.feature(t.tr("产物直接进入 ME 网络，无需输出仓", "Outputs go straight into the ME network, no output bus needed"));
+        t.feature(t.tr("每个物品合成消耗1EU", "Each item crafted consumes 1 EU"));
     });
 
     // 分子装配工厂
@@ -773,12 +776,12 @@ public final class GTOMachineTooltips {
         t.control(t.tr("通过分子装配工厂样板仓放入合成样板", "Insert crafting patterns via molecular assembly factory pattern hatches"));
         t.feature(t.tr("每轮只处理一个样板仓，从中最多取线程数个内部槽位", "Each operation handles a single hatch, taking at most one internal slot per thread"));
         t.feature(t.tr("拉取样板仓可按产物阈值被动补货，不需要 AE 合成任务", "Pull pattern hatches top products up to a threshold on their own, without an AE crafting job"));
-        t.note(t.tr("取到的槽位整份产物一起合成，数量不设上限", "The entire stored output of every taken slot is crafted at once, with no amount cap"));
-        t.note(t.tr("产物直接进入 ME 网络，无需输出仓", "Outputs go straight into the ME network, no output bus needed"));
+        t.feature(t.tr("取到的槽位整份产物一起合成，数量不设上限", "The entire stored output of every taken slot is crafted at once, with no amount cap"));
+        t.feature(t.tr("产物直接进入 ME 网络，无需输出仓", "Outputs go straight into the ME network, no output bus needed"));
 
         t.heading(ComponentSlang.RunningRequirements);
-        t.note(t.tr("每个物品合成消耗1EU", "Each item crafted consumes 1 EU"));
-        t.note(t.tr("线程数按整体框架等级：ULV 1、LV 4，之后每级 +4（MV 8…）", "Threads scale with the Integral Framework tier: ULV 1, LV 4, then +4 per tier (MV 8, ...)"));
+        t.feature(t.tr("每个物品合成消耗1EU", "Each item crafted consumes 1 EU"));
+        t.feature(t.tr("线程数按整体框架等级：ULV 1、LV 4，之后每级 +4（MV 8…）", "Threads scale with the Integral Framework tier: ULV 1, LV 4, then +4 per tier (MV 8, ...)"));
     });
 
     // ME 超算核心
@@ -866,13 +869,13 @@ public final class GTOMachineTooltips {
             if (GTORules.MEGA_TURBINE_REGULATOR.get()) {
                 t.heading(cs1);
                 t.feature(cf1);
-                t.note(ci1);
-                t.note(Component.translatable(TurbineMachine.DESC4));
-                t.note(Component.translatable(TurbineMachine.DESC5));
+                t.feature(ci1);
+                t.feature(Component.translatable(TurbineMachine.DESC4));
+                t.feature(Component.translatable(TurbineMachine.DESC5));
 
                 t.heading(cs2);
                 t.bonus(ci2);
-                t.note(cf2);
+                t.feature(cf2);
             }
         });
     }
@@ -939,8 +942,8 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.feature(t.tr("结构等级由已搭建的扩展模块决定：未搭建为 1，搭建主扩展模块为 2，进阶装配线内芯的主扩展模块与副扩展模块同时搭建为 3", "Structure tier depends on the extension modules built: 1 with none, 2 with the primary module, 3 with an advanced-core primary module plus the secondary module"));
         t.control(t.tr("往主机内放入纳米蜂群以提供蜂群等级", "Place nanites in the controller to provide the nanoswarm tier"));
-        t.note(t.tr("碳：1，安普洛：2，龙：3", "Carbon: 1, Amprosium: 2, Draconium: 3"));
-        t.note(t.tr("生效等级取结构等级与蜂群等级中的较低者，未放入蜂群时无法运行", "The effective tier is the lower of the structure tier and the nanoswarm tier; the machine cannot run without nanites"));
+        t.feature(t.tr("碳：1，安普洛：2，龙：3", "Carbon: 1, Amprosium: 2, Draconium: 3"));
+        t.feature(t.tr("生效等级取结构等级与蜂群等级中的较低者，未放入蜂群时无法运行", "The effective tier is the lower of the structure tier and the nanoswarm tier; the machine cannot run without nanites"));
     });
 
     // 中子活化器
@@ -984,8 +987,8 @@ public final class GTOMachineTooltips {
         t.unsupported(t.tr("无法刷出boss级生物，如末影龙和凋零", "Boss-level mobs, such as the Ender Dragon and Wither, cannot be spawned"));
         t.feature(t.tr("当输入多把剑时，只会使用检测到的第一把武器去尝试击杀其中的生物", "Will only use the first weapon detected to try to kill the creature inside when multiple swords are input"));
         t.bonus(t.tr("其余的剑可以用来提供额外的伤害加成", "The rest of the swords can be used to provide additional damage bonus"));
-        t.note(t.tr("每把剑提供其基础伤害点数作为伤害加成", "Each sword provides its base damage points as damage bonus"));
-        t.note(t.tr("安装输出仓后输出经验", "Outputs XP after installing output hatch"));
+        t.feature(t.tr("每把剑提供其基础伤害点数作为伤害加成", "Each sword provides its base damage points as damage bonus"));
+        t.feature(t.tr("安装输出仓后输出经验", "Outputs XP after installing output hatch"));
     });
 
     // 基岩钻机
@@ -999,14 +1002,14 @@ public final class GTOMachineTooltips {
     public static final TipSpec ColdIceFreezerTooltips = GTOTips.of("cold_ice_freezer", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("需提供§6 2^( 电压等级 - 2 ) * 10mb/s§r的§b液态冰§r", "Requires to provide §b 2^(Voltage tier - 2 ) * 10mb/s§r of §6Liquid Ice§r"));
-        t.note(t.tr("配方开始工作时立刻消耗一次液态冰", "Consumes Liquid Ice once immediately when the recipe starts"));
+        t.feature(t.tr("配方开始工作时立刻消耗一次液态冰", "Consumes Liquid Ice once immediately when the recipe starts"));
     });
 
     // 烈焰高炉
     public static final TipSpec BlazeBlastFurnaceTooltips = GTOTips.of("blaze_blast_furnace", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("需提供§b 2^( 电压等级 - 2 ) * 10mb/s§r（最低§b 10mb/s§r）的§6液态烈焰§r", "Requires to provide §b 2^(Voltage tier - 2 ) * 10mb/s§r (at least §b10mb/s§r) of §6Liquid Blaze§r"));
-        t.note(t.tr("配方开始工作时立刻消耗一次液态烈焰", "Consumes Liquid Blaze once immediately when the recipe starts"));
+        t.feature(t.tr("配方开始工作时立刻消耗一次液态烈焰", "Consumes Liquid Blaze once immediately when the recipe starts"));
     });
 
     // PCB工厂
@@ -1014,8 +1017,8 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.feature(t.tr("结构等级由已搭建的扩展结构决定：主体为 1，搭建二级扩展结构为 2，在其后方再搭建三级扩展结构为 3", "Structure tier depends on the extensions built: 1 for the main body, 2 with the tier 2 extension, 3 with the tier 3 extension behind it"));
         t.control(t.tr("往主机内放入纳米蜂群以提供蜂群等级", "Place nanites in the controller to provide the nanoswarm tier"));
-        t.note(t.tr("金：1，山铜：2，末影素：3", "Gold: 1, Orichalcum: 2, Enderium: 3"));
-        t.note(t.tr("生效等级取结构等级与蜂群等级中的较低者，未放入蜂群时按 1 级运行", "The effective tier is the lower of the structure tier and the nanoswarm tier; without nanites the machine runs at tier 1"));
+        t.feature(t.tr("金：1，山铜：2，末影素：3", "Gold: 1, Orichalcum: 2, Enderium: 3"));
+        t.feature(t.tr("生效等级取结构等级与蜂群等级中的较低者，未放入蜂群时按 1 级运行", "The effective tier is the lower of the structure tier and the nanoswarm tier; without nanites the machine runs at tier 1"));
     });
 
     // 进阶装配线
@@ -1070,9 +1073,9 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("配方启动时从所有者的无线电网一次性扣除启动耗能，运行期间不再耗电", "Startup energy is taken from the owner's wireless network once when a recipe starts; no power is drawn while running"));
         t.requirement(t.tr("无线电网储能需大于启动耗能才能启动配方", "The wireless network must hold more than the startup energy to start a recipe"));
         t.formula(t.tr("实际启动耗能 = 基础启动耗能 × 配方倍率", "Actual startup energy = base startup energy × recipe multiplier"));
-        t.note(t.tr("1号电路的基础启动耗能约为2.1×10^16 EU，具体数值可在GUI内查看", "Base startup energy with circuit 1 is about 2.1×10^16 EU; specific values can be viewed in the GUI"));
+        t.feature(t.tr("1号电路的基础启动耗能约为2.1×10^16 EU，具体数值可在GUI内查看", "Base startup energy with circuit 1 is about 2.1×10^16 EU; specific values can be viewed in the GUI"));
         t.formula(t.tr("配方倍率 = (配方等级 - 1) × 4，至少为1", "Recipe multiplier = (recipe tier - 1) × 4, at least 1"));
-        t.note(t.tr("例：等级10配方为36倍", "e.g. a tier 10 recipe costs 36x"));
+        t.feature(t.tr("例：等级10配方为36倍", "e.g. a tier 10 recipe costs 36x"));
 
         t.heading(t.tr("特殊超频", "Special Overclocking"));
         t.bonus(t.tr("每次超频使速度乘以2、启动耗能乘以8", "Each overclock multiplies speed by 2 and startup energy by 8"));
@@ -1084,11 +1087,11 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("1024B宇宙素", "1024B Cosmic Element"));
         t.requirement(t.tr("1024KB氢", "1024KB Hydrogen"));
         t.requirement(t.tr("1024KB氦", "1024KB Helium"));
-        t.note(t.tr("氢氦每秒从输入仓抽入机器内部储存，每次启动配方各消耗1024KB", "Hydrogen & Helium are drawn from input hatches into internal storage every second; each recipe start consumes 1024KB of each"));
+        t.feature(t.tr("氢氦每秒从输入仓抽入机器内部储存，每次启动配方各消耗1024KB", "Hydrogen & Helium are drawn from input hatches into internal storage every second; each recipe start consumes 1024KB of each"));
 
         t.heading(t.tr("模拟等级", "Simulation Tier"));
         t.requirement(t.tr("只能运行等级不高于模拟等级的配方", "Only recipes whose tier does not exceed the simulation tier can run"));
-        t.note(t.tr("模拟等级从1开始，启动与模拟等级相同的配方累计17+4×等级次后提升1级", "The simulation tier starts at 1 and rises by 1 after 17 + 4 × tier starts of recipes at the simulation tier"));
+        t.feature(t.tr("模拟等级从1开始，启动与模拟等级相同的配方累计17+4×等级次后提升1级", "The simulation tier starts at 1 and rises by 1 after 17 + 4 × tier starts of recipes at the simulation tier"));
     });
 
     // 温室
@@ -1166,11 +1169,11 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("范围内的维护仓出现故障时，派出无人机自动维修", "Dispatches drones to automatically repair malfunctioning Maintenance Hatches within range"));
         t.feature(t.tr("范围内的消声仓将满时，派出无人机自动清灰", "Dispatches drones to automatically clean Silencer Hatches when full within range"));
-        t.note(t.tr("主机GUI内可查看无人机工作范围", "Drone working range can be viewed in the controller GUI"));
+        t.feature(t.tr("主机GUI内可查看无人机工作范围", "Drone working range can be viewed in the controller GUI"));
 
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("需在无人机仓内放入有电的无人机", "Requires charged drones in the Drone Hatch"));
-        t.note(t.tr("无人机等级决定工作范围与工作速度", "Drone tier determines operating range and work speed"));
+        t.feature(t.tr("无人机等级决定工作范围与工作速度", "Drone tier determines operating range and work speed"));
     });
 
     // 无线能源塔
@@ -1183,20 +1186,21 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("控制器位于正面底边的正中", "The controller sits at the middle of the front bottom edge"));
         t.supported(t.tr("内部放存储单元与传输单元，无需全部填满", "Storage and transfer units go inside; the interior does not need to be filled"));
         t.heading(t.tr("电压与容量", "Voltage and Capacity"));
-        t.feature(t.tr("能源塔的电压等级等于玻璃等级，高于玻璃等级的单元不生效", "The tower's voltage tier equals its glass tier; units above the glass tier have no effect"));
-        t.note(t.tr("总容量为全部生效存储单元的容量相加", "Total capacity is the sum over all effective storage units"));
-        t.note(t.tr("损耗为各存储单元损耗按容量加权平均", "Loss is the storage unit losses averaged by capacity"));
+        t.feature(t.tr("玻璃等级决定能源塔的电压等级，能源塔只为电压不高于此等级的设备供电", "The glass tier sets the tower's voltage tier; the tower only supplies devices at or below that voltage"));
+        t.feature(t.tr("高于玻璃等级的单元不生效", "Units above the glass tier have no effect"));
+        t.feature(t.tr("总容量为全部生效存储单元的容量相加", "Total capacity is the sum over all effective storage units"));
+        t.feature(t.tr("损耗为各存储单元损耗按容量加权平均", "Loss is the storage unit losses averaged by capacity"));
         t.heading(t.tr("吞吐", "Throughput"));
-        t.feature(t.tr("每个存储单元提供同级电压 4A 的吞吐", "Each storage unit provides 4A of throughput at its own voltage"));
-        t.feature(t.tr("每个传输单元提供同级电压的吞吐，安数等于同级存储单元的安时数", "Each transfer unit provides throughput at its own voltage, with amperage equal to the amp-hours of the same-tier storage unit"));
-        t.note(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
+        t.feature(t.tr("每个存储单元提供高一级电压 4A 的吞吐", "Each storage unit provides 4A of throughput at one voltage tier above its own"));
+        t.feature(t.tr("每个传输单元提供高一级电压的吞吐，安数等于同级存储单元的安时数", "Each transfer unit provides throughput at one voltage tier above its own, with amperage equal to the amp-hours of the same-tier storage unit"));
+        t.feature(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
         t.feature(t.tr("同一维度内电压等级相同的能源塔合并存储，吞吐也合并计算", "Towers of the same voltage tier in one dimension share storage and pool their throughput"));
-        t.note(t.tr("跨维度取电与存电计入电量所在维度的吞吐", "Cross-dimension draws and stores count against the throughput of the dimension holding the energy"));
-        t.note(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
+        t.feature(t.tr("跨维度取电与存电计入电量所在维度的吞吐", "Cross-dimension draws and stores count against the throughput of the dimension holding the energy"));
+        t.feature(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
         t.heading(t.tr("存取规则", "Access Rules"));
-        t.note(t.tr("取电仅使用电压等级不低于设备的能源塔，优先使用其中等级最低者", "Energy is drawn only from towers at or above the device's voltage tier, lowest tier first"));
-        t.note(t.tr("存电优先存入电压等级不低于输入电压的能源塔，存满后存入低等级能源塔", "Energy is stored in towers at or above the input voltage first, then in lower-tier towers"));
-        t.note(t.tr("本维度不够时，经维度中继器的线路就近从其他维度取电或存电", "When this dimension falls short, energy moves to or from the nearest other dimensions over relay lines"));
+        t.feature(t.tr("取电仅使用电压等级不低于设备的能源塔，优先使用其中等级最低者", "Energy is drawn only from towers at or above the device's voltage tier, lowest tier first"));
+        t.feature(t.tr("存电优先存入电压等级不低于输入电压的能源塔，存满后存入低等级能源塔", "Energy is stored in towers at or above the input voltage first, then in lower-tier towers"));
+        t.feature(t.tr("本维度不够时，经维度中继器的线路就近从其他维度取电或存电", "When this dimension falls short, energy moves to or from the nearest other dimensions over relay lines"));
     });
 
     // 无线电网维度中继器
@@ -1204,9 +1208,9 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("在两个维度之间架设电网线路", "Builds a grid line between two dimensions"));
         t.feature(t.tr("在所在维度和界面选定的维度之间建立跨维度电力传输线路", "Builds a cross-dimension power line between its own dimension and the one chosen in its interface"));
         t.feature(t.tr("每台为线路提供 99,999,999A，电压取整体框架等级", "Each repeater adds 99,999,999A to the line at the integral framework tier"));
-        t.note(t.tr("同一对维度之间的多台叠加，按功率折算到其中最高的电压", "Repeaters between the same pair of dimensions stack, converted by power to the highest voltage"));
-        t.note(t.tr("线路两个方向各自独立，互不占用", "The two directions of a line are independent of each other"));
-        t.note(t.tr("取电时先用本维度能源塔，不够再按跳数由近到远经线路从其他维度取", "Devices draw from local towers first, then from other dimensions over lines, nearest first"));
+        t.feature(t.tr("同一对维度之间的多台叠加，按功率折算到其中最高的电压", "Repeaters between the same pair of dimensions stack, converted by power to the highest voltage"));
+        t.feature(t.tr("线路两个方向各自独立，互不占用", "The two directions of a line are independent of each other"));
+        t.feature(t.tr("取电时先用本维度能源塔，不够再按跳数由近到远经线路从其他维度取", "Devices draw from local towers first, then from other dimensions over lines, nearest first"));
     });
 
     // 拉丝塔
@@ -1222,8 +1226,8 @@ public final class GTOMachineTooltips {
         t.supported(t.tr("不受存储类型限制", "Without storage type restrictions"));
         t.control(t.tr("你需要在结构中安装存储核心来提升容量", "Install Storage Cores in structure to increase capacity."));
         t.control(t.tr("使用§eME数据访问仓§r连接ME线缆来访问储存器。", "Connect via §eME Data Access Hatch§r to access storage."));
-        t.note(t.tr("数据索引可选玩家或机器；选玩家时，同一玩家的这类设备共用同一份存储，不同 ME 网络之间可以共通", "The data index can be the player or the machine; with the player index, such machines of the same player share one storage, so different ME networks can share contents"));
-        t.note(t.tr("结构可以延长，在EMI看看能有多长吧！", "Structure is extendable — check max length in EMI."));
+        t.feature(t.tr("数据索引可选玩家或机器；选玩家时，同一玩家的这类设备共用同一份存储，不同 ME 网络之间可以共通", "The data index can be the player or the machine; with the player index, such machines of the same player share one storage, so different ME networks can share contents"));
+        t.feature(t.tr("结构可以延长，在EMI看看能有多长吧！", "Structure is extendable — check max length in EMI."));
 
         String bytes = NumberUtils.formatLongToKorM(MEStorageMachine.infinite);
 
@@ -1237,7 +1241,7 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("运行机制", "Operation Mechanics"));
         t.bonus(t.tr("更高的底部温度和更长的连续运行时间能显著加快配方速度", "Higher bottom temperatures and longer continuous operation significantly speed up recipes"));
         t.requirement(t.tr("最高13层，每个产物都需要一个对应高度的输出仓", "Each fluid product requires a Fluid Hatch at a corresponding Y-level"));
-        t.note(t.tr("每层都可以不安装输出仓，但是对应层会没有产物", "Each layer can operate without installing an output hatch, but the corresponding layer will then produce no output"));
+        t.feature(t.tr("每层都可以不安装输出仓，但是对应层会没有产物", "Each layer can operate without installing an output hatch, but the corresponding layer will then produce no output"));
         t.requirement(t.tr("只能处理MV及以下的配方", "Can only process recipes of MV tier or lower"));
 
         t.heading(t.tr("热管理机制", "Heat Management"));
@@ -1250,7 +1254,7 @@ public final class GTOMachineTooltips {
         t.bonus(t.tr("线圈温度越高，运行速度越快", "Higher coil temperature → faster operation"));
         t.formula(t.tr("时间乘数: 0.8×0.4^((线圈温度-5400)/9000)", "Time Multiplier: 0.8x0.4^((Temperature-5400)/9000)"));
         t.heading(ComponentSlang.ParallelBonus);
-        t.note(t.tr("由电压等级决定", "Determined by Voltage Tier"));
+        t.feature(t.tr("由电压等级决定", "Determined by Voltage Tier"));
         t.formula(t.tr("公式 : 4^(电压等级 - 1)", "Formula: 4^(Voltage Tier - 1)"));
     });
 
@@ -1259,7 +1263,7 @@ public final class GTOMachineTooltips {
         t.bonus(t.tr("玻璃等级越高，运行速度越快", "Higher glass tier → faster operation"));
         t.formula(t.tr("时间乘数: √(1 / 玻璃等级)", "Time Multiplier: √(1 / Glass Tier)"));
         t.heading(ComponentSlang.ParallelBonus);
-        t.note(t.tr("由电压等级决定", "Determined by Voltage Tier"));
+        t.feature(t.tr("由电压等级决定", "Determined by Voltage Tier"));
         t.formula(t.tr("公式 : 4^(电压等级 - 1)", "Formula: 4^(Voltage Tier - 1)"));
     });
 
@@ -1278,10 +1282,10 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("连续运行20秒后需要输入1B轻盈之气一次", "After continuous operation for 20 seconds, it needs to input 1B vapor of levity once"));
         t.warning(t.tr("如果连续运行要求输入的流体不符合要求，则中断配方", "If the required fluids for continuous operation do not meet the requirements, the recipe is interrupted"));
         t.supported(t.tr("营养精华可无视限制与其他流体同时输入", "Nutrient distillation can be input simultaneously with other fluids, ignoring the restrictions"));
-        t.note(t.tr("20秒后配方开始输出，此后只需提供1B/s的营养精华", "After 20 seconds, the recipe begins outputting, and from then on it only requires 1B/s of nutrient distillation"));
+        t.feature(t.tr("20秒后配方开始输出，此后只需提供1B/s的营养精华", "After 20 seconds, the recipe begins outputting, and from then on it only requires 1B/s of nutrient distillation"));
         t.heading(t.tr("ME延缓机制（实验性）", "ME Startup Delay (Experimental)"));
         t.requirement(t.tr("结构成型后，若有ME部件尚未上线，则暂不开始运行，直到全部上线", "After the structure forms, the machine holds off running while any ME part is still offline, until all are online"));
-        t.note(t.tr("最多暂缓5秒，期间不消耗原料、不推进进度，连续运行时间保持不变", "The hold lasts at most 5 seconds; nothing is consumed or advanced meanwhile, and the continuous running time is kept"));
+        t.feature(t.tr("最多暂缓5秒，期间不消耗原料、不推进进度，连续运行时间保持不变", "The hold lasts at most 5 seconds; nothing is consumed or advanced meanwhile, and the continuous running time is kept"));
     });
 
     public static final TipSpec PlanetCoreDrillingTooltips = GTOTips.of("planet_core_drilling", t -> {
@@ -1299,9 +1303,9 @@ public final class GTOMachineTooltips {
         t.formula(t.tr("产热公式: 温度 / 2000", "Heat generation formula: Temperature / 2000"));
         t.heading(t.tr("冷却系统", "Cooling System"));
         t.statText(t.tr("冷却固定消耗(每5tick): 20B", "Fixed cooling consumption(every 5 ticks): 20B"));
-        t.note(t.tr("蒸馏水 1K/每次输入", "Distilled Water 1K/per input"));
-        t.note(t.tr("液态氧 2K/每次输入", "Liquid Oxygen 2K/per input"));
-        t.note(t.tr("液态氦 4K/每次输入", "Liquid Helium 4K/per input"));
+        t.feature(t.tr("蒸馏水 1K/每次输入", "Distilled Water 1K/per input"));
+        t.feature(t.tr("液态氧 2K/每次输入", "Liquid Oxygen 2K/per input"));
+        t.feature(t.tr("液态氦 4K/每次输入", "Liquid Helium 4K/per input"));
         t.requirement(t.tr("仅可放入中子素钻头(更多钻头待定)", "Only Neutron-element drill heads can be placed (more to be determined)"));
     });
 
@@ -1343,7 +1347,7 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.control(t.tr("安装对应模块解锁对应配方", "Install the corresponding module to unlock the corresponding recipe"));
         t.bonus(t.tr("主机中放入纳米蜂群可减少污染概率", "Placing nanites in the host can reduce pollution probability"));
-        t.note(t.tr("每放入一个纳米蜂群，最低主机电压和污染概率减少数如下所示", "Each nanite placed requires the minimum voltage and reduces pollution probability as follows"));
+        t.feature(t.tr("每放入一个纳米蜂群，最低主机电压和污染概率减少数如下所示", "Each nanite placed requires the minimum voltage and reduces pollution probability as follows"));
         MATERIAL_MAP.forEach((material, reduction) -> t.statText(Tx.join(
                 Component.translatable("material." + material),
                 Tx.lit("[" + MATERIAL_TIER_MAP.get(material) + "]: -" + reduction + "%"))));
@@ -1439,7 +1443,7 @@ public final class GTOMachineTooltips {
         t.bonus(t.tr("每层提供 2 并行", "Each layer of Steel Frames provides 2 parallels"));
         t.bonus(t.tr("每 500K 温度为配方提供 1× 并行乘数", "Provides a 1x parallel multiplier for recipes every 500K of temperature"));
         t.heading(ComponentSlang.EfficiencyBonus);
-        t.note(t.tr("随着配方运行，温度升高，空闲时则会降低", "As the recipe operates, the temperature increases, and it will decrease when idle"));
+        t.feature(t.tr("随着配方运行，温度升高，空闲时则会降低", "As the recipe operates, the temperature increases, and it will decrease when idle"));
         t.bonus(t.tr("下次配方的耗时乘以 (400 / 温度)", "The next recipe gains a duration multiplier reduction of (400 / temperature)"));
         t.warning(t.tr("运行时，烟囱内部会对生物造成致命高温伤害！", "When running, the inside of the chimney will cause fatal high-temperature damage to living beings!"));
     });
@@ -1484,7 +1488,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec CompoundExtremeCoolingUnitTooltips = GTOTips.of("compound_extreme_cooling_unit", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("机器模式为等离子冷凝模式且已搭建等离子冷凝翼时，才可以运行等离子冷凝配方", "Plasma Condenser recipes require Plasma Condenser mode and the Plasma Condensing Wings"));
-        t.note(t.tr("等离子冷凝翼为可选结构，不影响其他模式的运行", "The Plasma Condensing Wings are optional and do not affect other modes"));
+        t.feature(t.tr("等离子冷凝翼为可选结构，不影响其他模式的运行", "The Plasma Condensing Wings are optional and do not affect other modes"));
     });
 
     public static final TipSpec StellarForgeTooltips = GTOTips.of("stellar_forge", t -> {
@@ -1514,7 +1518,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("链接净化单元，同步所有净化单元的控制器的处理周期并供电", "Link purification units, synchronize the processing cycles of all controllers, and provide power"));
         t.heading(t.tr("处理单元链接系统", "Processing Unit Link System"));
         t.feature(t.tr("自动链接§e32§r个方块半径内的净化单元控制器", "Automatically link purification unit controllers within a §e32§r-blocks radius"));
-        t.note(t.tr("主机GUI中可查看链接范围", "The linking range can be viewed in the controller GUI"));
+        t.feature(t.tr("主机GUI中可查看链接范围", "The linking range can be viewed in the controller GUI"));
         t.feature(t.tr("为链接的单元控制器提供电力", "Provide power to linked unit controllers"));
         t.formula(t.tr("默认耗能 = 输出水量 × 2^(净化水等级 - 2)", "Default energy = output water × 2^(purification tier - 2)"));
         t.heading(t.tr("处理周期系统", "Processing Cycle System"));
@@ -1528,7 +1532,7 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.attention(t.tr("处理一定水量后过滤器堵塞", "Filter blocks clog after processing certain water volume"));
         t.requirement(t.tr("需输入空气(1-8KB) + 水(200-300B)进行反冲洗", "Requires air (1-8KB) + water (200-300B) for backflushing"));
-        t.note(t.tr("反冲洗时输出废料", "Outputs waste during backflushing"));
+        t.feature(t.tr("反冲洗时输出废料", "Outputs waste during backflushing"));
         t.heading(ComponentSlang.OutputProbability);
         t.statText(t.tr("基础概率: 70%", "Base probability: 70%"));
         t.bonus(t.tr("输入少量同等级净化水可提升15%", "Adding a small amount of purified water of the same grade increases probability by 15%"));
@@ -1541,7 +1545,7 @@ public final class GTOMachineTooltips {
         t.formula(t.tr("臭氧消耗量=输入水量/10,000mB", "Ozone consumption = input water amount / 10,000mB"));
         t.warning(Tx.join(t.tr("如果输入口含有超过1,024B的臭氧气体，将发生", "If the input contains more than 1,024B of ozone gas, it will cause an "), ComponentSlang.Explosion));
         t.heading(ComponentSlang.OutputProbability);
-        t.note(t.tr("臭氧气体在0-1,024B范围内的产出概率为0-80%", "Output probability ranges from 0-80% based on ozone gas amount (0-1,024B)"));
+        t.feature(t.tr("臭氧气体在0-1,024B范围内的产出概率为0-80%", "Output probability ranges from 0-80% based on ozone gas amount (0-1,024B)"));
         t.bonus(t.tr("输入少量同等级净化水可提升15%", "Adding a small amount of purified water of the same grade increases probability by 15%"));
         t.bonus(t.tr("输入更高一级净化水可额外提升5%", "Adding a higher grade of purified water provides an additional 5% increase"));
     });
@@ -1576,7 +1580,7 @@ public final class GTOMachineTooltips {
         t.feature(ComponentSlang.PurifyLevel(5));
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("完成加热周期：先加热水至10,000K以上，再冷却至10K以下", "Complete heating cycle: first heat Water above 10,000K, then cool below 10K."));
-        t.note(t.tr("配方开始时初始温度重置为298K", "Initial temperature reset to 298K at recipe start."));
+        t.feature(t.tr("配方开始时初始温度重置为298K", "Initial temperature reset to 298K at recipe start."));
         t.attention(t.tr("每秒最多消耗10mB氦等离子体和100mB液氦", "Consumes up to 10mB Helium Plasma and 100mB Liquid Helium per second."));
         t.heading(ComponentSlang.OutputProbability);
         t.bonus(t.tr("每完成一个加热周期，成功率增加33%", "For each completed heating cycle, success rate increases by 33%."));
@@ -1590,11 +1594,11 @@ public final class GTOMachineTooltips {
         t.feature(ComponentSlang.PurifyLevel(6));
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("在操作过程中，需要更换透镜仓内的透镜", "During operation, you need replace the Lens in the lens chamber."));
-        t.note(t.tr("当当前透镜需要更换时，多方块结构将通过透镜指示仓输出信号", "When the current Lens needs to be replaced, the multi-block structure will output a signal through the Lens indicator chamber."));
-        t.note(t.tr("透镜更换请求将在6到12秒的随机间隔内出现", "Lens replacement requests will occur at random intervals between 6 and 12 seconds."));
+        t.feature(t.tr("当当前透镜需要更换时，多方块结构将通过透镜指示仓输出信号", "When the current Lens needs to be replaced, the multi-block structure will output a signal through the Lens indicator chamber."));
+        t.feature(t.tr("透镜更换请求将在6到12秒的随机间隔内出现", "Lens replacement requests will occur at random intervals between 6 and 12 seconds."));
         t.requirement(t.tr("需要在信号输出后的4秒内更换透镜", "The lens must be replaced within 4 seconds of the signal output."));
-        t.note(t.tr("透镜顺序依次为红/橙/棕/黄/绿/青/蓝/紫/品红/粉", "The lens order is Red/Orange/Brown/Yellow/Green/Cyan/Blue/Purple/Magenta/Pink."));
-        t.note(t.tr("透镜需求可在GUI内查看", "The requirements for Lens can be viewed in the GUI."));
+        t.feature(t.tr("透镜顺序依次为红/橙/棕/黄/绿/青/蓝/紫/品红/粉", "The lens order is Red/Orange/Brown/Yellow/Green/Cyan/Blue/Purple/Magenta/Pink."));
+        t.feature(t.tr("透镜需求可在GUI内查看", "The requirements for Lens can be viewed in the GUI."));
         t.heading(ComponentSlang.OutputProbability);
         t.bonus(t.tr("每次成功更换后运行4秒将成功率提高10%", "Each successful replacement followed by 4 seconds of operation increases the success rate by 10%."));
     });
@@ -1604,18 +1608,18 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("要成功完成配方，需要根据要求输入材料", "To successfully complete the recipe, materials must be inputted as required."));
         t.attention(t.tr("操作开始时，脱气控制仓将输出红石信号，机器每秒将消耗全部输入的材料", "At the operation start, the degassing control chamber will output a redstone signal, and the machine will consume all input materials every second."));
-        t.note(t.tr("红石信号与需求相对应", "The redstone signal corresponds to the demand."));
+        t.feature(t.tr("红石信号与需求相对应", "The redstone signal corresponds to the demand."));
         t.heading(t.tr("信号需求", "Signal Requirement"));
         t.requirement(t.tr("1, 3, 5, 7, 9：通过惰性气体进行臭氧曝气", "1, 3, 5, 7, 9: Ozone aeration via Inert Gases"));
-        t.note(t.tr("对应 10,000mB气态氦 / 8,000mB气态氖 / 6,000mB气态氩 / 4,000mB氪 / 2,000mB气态氙", "Which is 10,000mB Helium / 8,000mB Neon / 6,000mB Argon / 4,000mB Krypton / 2,000mB Xenon"));
+        t.feature(t.tr("对应 10,000mB气态氦 / 8,000mB气态氖 / 6,000mB气态氩 / 4,000mB氪 / 2,000mB气态氙", "Which is 10,000mB Helium / 8,000mB Neon / 6,000mB Argon / 4,000mB Krypton / 2,000mB Xenon"));
         t.requirement(t.tr("2, 4, 6, 8, 10：超导去离子", "2, 4, 6, 8, 10: Superconductive deionization"));
-        t.note(t.tr("需要输入1,000mB对应IV，LuV，ZPM，UV，UHV的液态超导", "Needs input of 1,000mB of liquid superconductors corresponding to IV, LuV, ZPM, UV, UHV."));
+        t.feature(t.tr("需要输入1,000mB对应IV，LuV，ZPM，UV，UHV的液态超导", "Needs input of 1,000mB of liquid superconductors corresponding to IV, LuV, ZPM, UV, UHV."));
         t.requirement(t.tr("11, 13, 15：引力生成差异真空提取", "11, 13, 15: Gravitational Differential Vacuum Extraction"));
-        t.note(t.tr("需要输入2,000mB液态安普洛", "Requires input of 2,000mB Liquid Amprosiums."));
+        t.feature(t.tr("需要输入2,000mB液态安普洛", "Requires input of 2,000mB Liquid Amprosiums."));
         t.requirement(t.tr("12, 14：塞尔多尼安沉淀过程", "12, 14: Seldenian precipitation process"));
-        t.note(t.tr("不输入任何东西", "Do not input anything."));
+        t.feature(t.tr("不输入任何东西", "Do not input anything."));
         t.warning(t.tr("0：机器过载", "0: Machine overload"));
-        t.note(t.tr("在罕见情况下，机器可能会过载并且不会输出任何控制信号", "In rare situations, the machine may overload and not output any control signals."));
+        t.feature(t.tr("在罕见情况下，机器可能会过载并且不会输出任何控制信号", "In rare situations, the machine may overload and not output any control signals."));
         t.attention(t.tr("为防止机器损坏，输入10,000mB液态氦", "To prevent machine damage, input 10,000mB Liquid Helium."));
         t.warning(t.tr("输入信号未请求的任何流体将始终导致配方失败", "Any liquid not requested by the input signal will always cause the recipe to fail."));
     });
@@ -1626,7 +1630,7 @@ public final class GTOMachineTooltips {
         t.control(t.tr("将§b夸克释放催化剂§r放入输入总线中运行", "Put §bQuark Releasing Catalyst§r into the input bus to operate."));
         t.attention(t.tr("每秒消耗输入槽中的所有催化剂", "Consumes all Catalysts in the input slot every second."));
         t.requirement(t.tr("每消耗一个夸克催化剂还需额外消耗144mB§b夸克胶子等离子体§r", "For each quark catalyst consumed, an additional 144mB of §bquark gluon plasma§r is required."));
-        t.note(t.tr("在配方结束时，所有错误插入的催化剂将返回输出槽", "At the end of the recipe, all incorrectly inserted Catalysts will return to the output slot."));
+        t.feature(t.tr("在配方结束时，所有错误插入的催化剂将返回输出槽", "At the end of the recipe, all incorrectly inserted Catalysts will return to the output slot."));
         t.heading(ComponentSlang.OutputProbability);
         t.feature(t.tr("每个配方循环中，不同的两种夸克释放催化剂的组合将正确识别出孤立的夸克并完成配方", "Each recipe cycle, different combinations of two Quark Releasing Catalysts will correctly identify the Isolated Quarks and complete the recipe."));
         t.feature(t.tr("如果最近插入的两种催化剂是正确的组合，则立即输出稳定重子物质", "If the last two inserted Catalysts are the correct combination, Stable Baryonic Matter will be output immediately."));
@@ -1645,23 +1649,23 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("电路 5：附魔精粹合成附魔书", "Circuit 5: Essence crafting Enchanted Book"));
         t.requirement(t.tr("需要输入一本书，消耗附魔精粹和魔力合成", "Need to input a book, consume enchantment essence and magic to craft"));
         t.feature(t.tr("电路 6：附魔书合并", "Circuit 6: Enchantment Enchanted Book Merge"));
-        t.note(t.tr("消耗魔力合成，会输出额外的书", "Consume magic power to synthesize, and output additional books"));
+        t.feature(t.tr("消耗魔力合成，会输出额外的书", "Consume magic power to synthesize, and output additional books"));
         t.feature(t.tr("电路 7：刻印精粹合成铭刻之布", "Circuit 7: Affix Enchanted Book Merge"));
         t.requirement(t.tr("消耗魔力合成，需要一个铭刻之布", "Consume magic power to synthesize, and requires an Affix Canvas"));
         t.feature(t.tr("电路 8：宝石合并", "Circuit 8: Gem Merge"));
-        t.note(t.tr("使用同级的珍宝材料和宝石粉合并宝石", "Use the same level of rarity materials and gem dust to merge gems"));
+        t.feature(t.tr("使用同级的珍宝材料和宝石粉合并宝石", "Use the same level of rarity materials and gem dust to merge gems"));
         t.feature(t.tr("电路 9：宝石粉碎", "Circuit 9: Gem Crushing"));
-        t.note(t.tr("将宝石粉碎得到宝石粉", "Crushing gems to obtain gem dust"));
+        t.feature(t.tr("将宝石粉碎得到宝石粉", "Crushing gems to obtain gem dust"));
         t.feature(t.tr("电路 10：强行附魔", "Circuit 10: Forced enchantment"));
-        t.note(t.tr("消耗魔力强行将附魔书上的附魔添加到物品上", "Consume magic power to forcibly adds the enchantment from the enchanted book to the item"));
+        t.feature(t.tr("消耗魔力强行将附魔书上的附魔添加到物品上", "Consume magic power to forcibly adds the enchantment from the enchanted book to the item"));
         t.feature(t.tr("电路 11：强行刻印", "Circuit 11: Forced add affixes"));
-        t.note(t.tr("消耗魔力强行将铭刻之布上的刻印添加到物品上", "Consume magic power to forcibly adds the affixes from the affix canvas to the item"));
+        t.feature(t.tr("消耗魔力强行将铭刻之布上的刻印添加到物品上", "Consume magic power to forcibly adds the affixes from the affix canvas to the item"));
         t.feature(t.tr("电路 12：强行修改物品稀有度", "Circuit 12: Forcefully modify item rarity"));
-        t.note(t.tr("消耗魔力，珍宝材料和新生符文强行改变稀有度", "Consume magic power and enter rarity material and sigil of rebirth to forcibly change the rarity"));
+        t.feature(t.tr("消耗魔力，珍宝材料和新生符文强行改变稀有度", "Consume magic power and enter rarity material and sigil of rebirth to forcibly change the rarity"));
         t.feature(t.tr("电路 13：强行添加镶孔", "Circuit 13: Forced addition of sockets"));
-        t.note(t.tr("消耗魔力，镶孔符文强行添加镶孔", "Consume magic power and enter sigil of socketing to forcibly addition of sockets"));
+        t.feature(t.tr("消耗魔力，镶孔符文强行添加镶孔", "Consume magic power and enter sigil of socketing to forcibly addition of sockets"));
         t.feature(t.tr("电路 14：强行镶嵌宝石", "Circuit 14: Forced gem inlay"));
-        t.note(t.tr("消耗魔力，强行将宝石镶嵌到物品上", "Consume magic power to forcibly inserting gems into items"));
+        t.feature(t.tr("消耗魔力，强行将宝石镶嵌到物品上", "Consume magic power to forcibly inserting gems into items"));
     });
 
     public static final TipSpec ResonanceFlowerTooltips = GTOTips.of("resonance_flower", t -> {
@@ -1691,7 +1695,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec AlchemicalDeviceTooltips = GTOTips.of("alchemical_device", t -> {
         t.lore(t.tr("炼金是一个神秘的过程", "Alchemy is a mysterious process"));
         t.lore(t.tr("物质在连续不断的转换中获得升华", "Matter attains sublimation through continuous transformation"));
-        t.note(t.tr("部分配方产出概率随运行次数增长", "§7The probability of partial recipe output increases with the number of runs"));
+        t.feature(t.tr("部分配方产出概率随运行次数增长", "§7The probability of partial recipe output increases with the number of runs"));
     });
 
     public static final TipSpec AlchemyCauldronTooltips = GTOTips.of("alchemy_cauldron", t -> {
@@ -1706,9 +1710,9 @@ public final class GTOMachineTooltips {
 
     public static final TipSpec ElfExchangeMachine = GTOTips.of("elf_exchange_machine", t -> {
         t.heading(t.tr("下界模式", "Nether Mode"));
-        t.note(t.tr("在下界中工作，且设置电路时，交易对象不再是亚尔夫海姆世界的居民", "When working in the Nether, and setting the circuit meta, the trading partner is no longer a resident of Alfheim."));
-        t.note(t.tr("而是猪灵堡垒中的§6猪灵§r", "Instead, it is the §6Piglins§r in the Bastion Remnants."));
-        t.note(t.tr("每一笔交易将花费§e金锭§r作为交易货币", "Each trade will cost §eGold Ingots§r as the trading currency."));
+        t.feature(t.tr("在下界中工作，且设置电路时，交易对象不再是亚尔夫海姆世界的居民", "When working in the Nether, and setting the circuit meta, the trading partner is no longer a resident of Alfheim."));
+        t.feature(t.tr("而是猪灵堡垒中的§6猪灵§r", "Instead, it is the §6Piglins§r in the Bastion Remnants."));
+        t.feature(t.tr("每一笔交易将花费§e金锭§r作为交易货币", "Each trade will cost §eGold Ingots§r as the trading currency."));
         t.control(t.tr("设置§b2号电路§r时，将过滤交易物品，不允许§b装备/药水/附魔书§r", "When setting §bCircuit 2§r, it will filter traded items, disallowing §bEquipment/Potions/Enchanted Books§r."));
         t.attention(t.tr("此法过滤的物品仍然需要支付§e金锭§r", "Items filtered by this method still require payment in §eGold Ingots§r."));
     });
@@ -1754,12 +1758,12 @@ public final class GTOMachineTooltips {
         t.formula(t.tr("耗能 = 1EU × 并行数", "EU cost = 1EU × parallel"));
         t.feature(t.tr("模式二：能量交换，将A类储能电解液的能量转移给B类释能电解液", "Mode 2: Energy Exchange, transfers the energy from Type A Charged Electrolyte to Type B Discharged Electrolyte"));
         t.requirement(t.tr("对于输入的两种电解液，均需要等量的阴极液与阳极液", "Both input electrolytes require equal amounts of Catholyte and Anolyte"));
-        t.note(t.tr("产物为两种电解液交换能量状态后的结果", "The output is the result of the two electrolytes swapping their energy states"));
-        t.note(t.tr("并行数仅受限于输入流体的最低储量", "Parallelism is only limited by the lowest amount of input fluid"));
+        t.feature(t.tr("产物为两种电解液交换能量状态后的结果", "The output is the result of the two electrolytes swapping their energy states"));
+        t.feature(t.tr("并行数仅受限于输入流体的最低储量", "Parallelism is only limited by the lowest amount of input fluid"));
         t.penalty(t.tr("此过程有能量损耗，具体效率由配方决定", "This process involves energy loss; the specific efficiency is determined by the recipe"));
         t.feature(t.tr("模式三：发电，将储能电解液转化为95%总量的释能电解液，并释放100%总量的能量", "Mode 3: Power generation, convert Charged Electrolyte into 95% Discharged Electrolyte and release 100% of the energy"));
         t.formula(t.tr("最大并行数 = 50, 即每秒最多消耗1B储能电解液", "Max parallel = 50, i.e. up to 1B Charged Electrolyte can be consumed per second"));
-        t.note(t.tr("每次发电输出的能量等于储能电解液储存的能量", "Each operation outputs energy equal to the energy stored in the Charged Electrolyte"));
+        t.feature(t.tr("每次发电输出的能量等于储能电解液储存的能量", "Each operation outputs energy equal to the energy stored in the Charged Electrolyte"));
         t.requirement(t.tr("在该模式下， 不能安装能源仓", "In this mode, Energy Input Hatches cannot be installed"));
         t.requirement(t.tr("所有工作模式均需要输入电极膜才可工作", "All operating modes require input of Electrode Membranes to operate"));
         t.requirement(t.tr("且发电模式仅可使用特定电极膜", "And the power generation mode can only use specific Electrode Membranes"));
@@ -1781,14 +1785,14 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("必须在太空中建造", "Must be constructed in space"));
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("运行需要消耗1920EU/t的基础能量", "Operation requires a base energy consumption of 1920EU/t"));
-        t.note(t.tr("每10秒固定消耗：", "Fixed consumption every 10 seconds:"));
+        t.feature(t.tr("每10秒固定消耗：", "Fixed consumption every 10 seconds:"));
         t.attention(t.tr("15mB 蒸馏水", "15mB Distilled Water"));
         t.attention(t.tr("10mB 火箭燃料", "10mB Rocket Fuel"));
         t.attention(t.tr("100mB 空气", "100mB Air"));
-        t.note(t.tr("运行时每秒从空间站自身的输入仓扣除蒸馏水，经对接接口处的供水仓输送给已连接的§b光伏帆板控制器§r", "While running, Distilled Water is drawn from the station's own input hatches every second and sent through the supply hatches at the docking ports to connected §bPhotovoltaic Sail Controllers§r"));
-        t.note(t.tr("每仓每秒供水量默认为§b8mB§r，可在界面中调节（0~1000mB），设为0时停止供水", "The supply per hatch per second defaults to §b8mB§r and is adjustable in the GUI (0-1000mB); 0 stops the supply"));
+        t.feature(t.tr("运行时每秒从空间站自身的输入仓扣除蒸馏水，经对接接口处的供水仓输送给已连接的§b光伏帆板控制器§r", "While running, Distilled Water is drawn from the station's own input hatches every second and sent through the supply hatches at the docking ports to connected §bPhotovoltaic Sail Controllers§r"));
+        t.feature(t.tr("每仓每秒供水量默认为§b8mB§r，可在界面中调节（0~1000mB），设为0时停止供水", "The supply per hatch per second defaults to §b8mB§r and is adjustable in the GUI (0-1000mB); 0 stops the supply"));
         t.attention(t.tr("供水与配方共用同一批蒸馏水，库存不足时供水仓可能得不到供给", "The supply shares Distilled Water with the recipe; supply hatches may receive nothing when stock is insufficient"));
-        t.note(t.tr("运行时每10秒将排出30mB废水", "When operating, it will discharge 30mB of Waste Water every 10 seconds"));
+        t.feature(t.tr("运行时每10秒将排出30mB废水", "When operating, it will discharge 30mB of Waste Water every 10 seconds"));
     });
 
     public static final TipSpec LargeSpaceStationTooltips = GTOTips.of("large_space_station", t -> {
@@ -1804,11 +1808,11 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("运行需要消耗7680EU/t的基础能量", "Operation requires a base energy consumption of 7680EU/t"));
         t.penalty(t.tr("会根据安装的拓展舱体数量增加额外能耗以及资源消耗", "Will increase additional energy consumption and resource consumption based on the number of expansion modules installed"));
-        t.note(t.tr("每秒固定消耗：", "Fixed consumption every second:"));
+        t.feature(t.tr("每秒固定消耗：", "Fixed consumption every second:"));
         t.attention(t.tr("15mB * (1 + 拓展舱体数量) 蒸馏水", "15mB * (1 + number of expansion modules) Distilled Water"));
         t.attention(t.tr("10mB * (1 + 拓展舱体数量) 火箭燃料", "15mB * (1 + number of expansion modules) Rocket Fuel"));
         t.attention(t.tr("100mB * (1 + 拓展舱体数量) 空气", "100mB * (1 + number of expansion modules) Air"));
-        t.note(t.tr("能耗增加与拓展舱体的具体种类与数量有关", "Energy consumption increase is related to the specific types and quantities of expansion modules"));
+        t.feature(t.tr("能耗增加与拓展舱体的具体种类与数量有关", "Energy consumption increase is related to the specific types and quantities of expansion modules"));
         t.heading(t.tr("拓展舱体", "Expansion Modules"));
         t.feature(t.tr("§b核心舱§r：大型空间站的核心部分，必须安装且只能安装一个", "§bCore Module§r: The core part of the large space station, must be installed and only one can be installed"));
         t.feature(t.tr("§b衔接舱§r：用于连接核心舱/模块仓与其他拓展舱体", "§bConnection Module§r: Used to connect the core module with other expansion modules"));
@@ -1826,7 +1830,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec SpaceStationEnvironmentalMaintenanceModuleTooltips = GTOTips.of("space_station_environmental_maintenance_module", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("给当前空间站里的所有机器提供超净环境", "Provides a super clean environment for all machines in the current space station"));
-        t.note(t.tr("提供的环境等级取决于安装的过滤器方块种类", "The level of environment provided depends on the types of filter blocks installed"));
+        t.feature(t.tr("提供的环境等级取决于安装的过滤器方块种类", "The level of environment provided depends on the types of filter blocks installed"));
         t.feature(Tx.join(
                 t.tr("且不同于常规超净间，高级超净环境", "And unlike conventional super clean rooms, advanced super clean environments"),
                 Tx.scrollOptical(t.tr("向下兼容低级超净环境", " are backward compatible with lower-level super clean environments"))));
@@ -1839,7 +1843,7 @@ public final class GTOMachineTooltips {
 
     public static final TipSpec RecipeExtensionTooltips = GTOTips.of("recipe_extension", t -> {
         t.heading(t.tr("配方拓展舱室", "Recipe Extension Module"));
-        t.note(t.tr("§6被动耗能§r由§b核心舱§r提供，而§6配方耗能§r需由安装在§b此舱§r的§d能源仓§r提供", "§6Passive energy consumption§r is provided by the §bCore Module§r, while §6recipe energy consumption§r needs to be provided by the §dEnergy Input Hatch§r installed in the §bthis module§r"));
+        t.feature(t.tr("§6被动耗能§r由§b核心舱§r提供，而§6配方耗能§r需由安装在§b此舱§r的§d能源仓§r提供", "§6Passive energy consumption§r is provided by the §bCore Module§r, while §6recipe energy consumption§r needs to be provided by the §dEnergy Input Hatch§r installed in the §bthis module§r"));
         t.requirement(t.tr("无核心舱连接时，无法运行配方", "Cannot run recipes without a linked core module"));
         t.requirement(t.tr("如果解锁了[激光太空工程]科技节点", "If the [Laser Space Engineering] Node is unlocked"));
         t.bonus(t.tr("则解锁§d超高安仓§r/§d超频仓§r/§d线程仓§r等高级舱体的使用权限", "The use of advanced modules such as §dHigh-Amp Hatches§r/§dOverclocking Hatches§r/§dThread Hatches§r will be unlocked"));
@@ -1889,12 +1893,12 @@ public final class GTOMachineTooltips {
     public static final TipSpec meRequestableInputBusTooltips = GTOTips.of("me_requestable_input_bus", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("将物品从ME网络中提取出来，放入机器中进行加工", "Extract items from the ME network and insert them into machines for processing"));
-        t.note(t.tr("提取不出来则会自己下单请求", "If items cannot be extracted, it will place its own order request"));
+        t.feature(t.tr("提取不出来则会自己下单请求", "If items cannot be extracted, it will place its own order request"));
     });
 
     public static final TipSpec meRequestableInputHatchTooltips = GTOTips.of("me_requestable_input_hatch", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("将流体从ME网络中提取出来，放入机器中进行加工", "Extract fluids from the ME network and insert them into machines for processing"));
-        t.note(t.tr("提取不出来则会自己下单请求", "If items cannot be extracted, it will place its own order request"));
+        t.feature(t.tr("提取不出来则会自己下单请求", "If items cannot be extracted, it will place its own order request"));
     });
 }

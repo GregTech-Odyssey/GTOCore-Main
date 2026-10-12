@@ -5,6 +5,7 @@ import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -61,10 +62,10 @@ public class CoordinateCardBehavior implements IInteractionItem, IAddInformation
 
     @Override
     public void appendTooltips(ItemStack itemStack, @Nullable Level level, List<Component> list, TooltipFlag tooltipFlag) {
-        list.add(Component.translatable("gtocore.tooltip.item.machine_coordinate_card.tooltip.1"));
+        list.add(Tips.rightClick(Component.translatable("gtocore.tooltip.item.machine_coordinate_card.tooltip.1")));
         CompoundTag tag = itemStack.getTag();
         if (tag != null) {
-            list.add(Component.translatable("gtocore.tooltip.item.machine_coordinate_card.tooltip.2", Component.translatable("config.jade.plugin_jade.coordinates"), "§5" + tag.getInt("x"), "§d" + tag.getInt("y"), "§e" + tag.getInt("z")));
+            list.add(Tips.stat(Component.translatable("gtocore.tooltip.item.machine_coordinate_card.tooltip.2", Component.translatable("config.jade.plugin_jade.coordinates"), "§5" + tag.getInt("x"), "§d" + tag.getInt("y"), "§e" + tag.getInt("z"))));
         }
     }
 

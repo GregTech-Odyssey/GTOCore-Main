@@ -3,8 +3,8 @@ package com.gtocore.common.item;
 import com.gtocore.common.data.GTOItems;
 
 import com.gregtechceu.gtceu.api.item.ComponentItem;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -136,8 +136,8 @@ public class AffixCanvas extends ComponentItem {
             String translationId = affixId.toString();
             Component nameComponent = Component.translatable("affix." + translationId);
             Component suffixComponent = Component.translatable("affix." + translationId + ".suffix");
-            Component combined = nameComponent.copy().append(" · ").append(suffixComponent).withStyle(ChatFormatting.GRAY);
-            list.add(combined);
+            Component combined = nameComponent.copy().append(" · ").append(suffixComponent);
+            list.add(Tips.plain(combined));
         }
     }
 

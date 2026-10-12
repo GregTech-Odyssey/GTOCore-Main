@@ -9,8 +9,8 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -39,6 +39,6 @@ public final class WirelessEnergyTerminalBehavior implements IInteractionItem, I
 
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        tooltipComponents.add(Component.translatable(TOOLTIP_USE).withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Tips.rightClick(Component.translatable(TOOLTIP_USE)));
     }
 }

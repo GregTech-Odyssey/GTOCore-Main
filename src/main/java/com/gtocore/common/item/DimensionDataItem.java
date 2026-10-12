@@ -7,6 +7,7 @@ import com.gtolib.utils.RLUtils;
 import com.gregtechceu.gtceu.api.data.DimensionMarker;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
@@ -85,7 +86,7 @@ public final class DimensionDataItem extends Item {
     public void appendHoverText(@NotNull ItemStack itemstack, @Nullable Level world, @NotNull List<Component> list, @NotNull TooltipFlag flag) {
         super.appendHoverText(itemstack, world, list, flag);
         if (itemstack.hasTag()) {
-            list.add(Component.translatable("recipe.condition.dimension.tooltip", getDimensionMarker(itemstack).getIcon().getDisplayName()));
+            list.add(Tips.stat(Component.translatable("recipe.condition.dimension.tooltip", getDimensionMarker(itemstack).getIcon().getDisplayName())));
         }
     }
 }

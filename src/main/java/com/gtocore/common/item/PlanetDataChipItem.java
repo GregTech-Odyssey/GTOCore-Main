@@ -1,5 +1,7 @@
 package com.gtocore.common.item;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,8 +36,8 @@ public final class PlanetDataChipItem extends Item {
         super.appendHoverText(itemstack, world, list, flag);
         CompoundTag tag = itemstack.getTag();
         if (tag != null && tag.hasUUID("uuid")) {
-            list.add(Component.literal("UUID: ").append(tag.getUUID("uuid").toString()));
-            list.add(Component.translatable("gtceu.jei.ore_vein_diagram.dimensions").append(tag.getString("planet")));
+            list.add(Tips.stat(Component.literal("UUID: ").append(tag.getUUID("uuid").toString())));
+            list.add(Tips.stat(Component.translatable("gtceu.jei.ore_vein_diagram.dimensions").append(tag.getString("planet"))));
         }
     }
 }

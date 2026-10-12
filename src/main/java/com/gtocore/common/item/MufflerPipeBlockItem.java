@@ -3,8 +3,8 @@ package com.gtocore.common.item;
 import com.gtocore.common.block.MufflerPipeBlock;
 
 import com.gregtechceu.gtceu.api.item.PipeBlockItem;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -37,6 +37,6 @@ public class MufflerPipeBlockItem extends PipeBlockItem implements IItemRenderer
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag isAdvanced) {
         super.appendHoverText(stack, level, tooltip, isAdvanced);
-        tooltip.add(Component.translatable("gtocore.tooltip.item.muffler_pipe.desc").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Tips.feature(Component.translatable("gtocore.tooltip.item.muffler_pipe.desc")));
     }
 }

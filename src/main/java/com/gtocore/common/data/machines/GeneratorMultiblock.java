@@ -474,8 +474,8 @@ public final class GeneratorMultiblock {
             .allRotation()
             .recipeTypes(GTORecipeTypes.HYPER_REACTOR_RECIPES)
             .tip(TipRole.BONUS, "每次运行前提供额外的1mb等离子体将获得16的并行", "Providing additional 1mb plasma before each run will obtain 16 parallelism")
-            .tip(TipRole.NOTE, "不同燃料所需的等离子体不同", "Different fuels required different plasmas")
-            .tip(TipRole.NOTE, "从1-4顺序为: 山铜, 末影素, 魔金, 亚稳态\ud872\udf76", "The order from 1-4 is: Orichalcum, Enderium, Infuscolium, Metastable Hassium")
+            .tip(TipRole.FEATURE, "不同燃料所需的等离子体不同", "Different fuels required different plasmas")
+            .tip(TipRole.FEATURE, "从1-4顺序为: 山铜, 末影素, 魔金, 亚稳态\ud872\udf76", "The order from 1-4 is: Orichalcum, Enderium, Infuscolium, Metastable Hassium")
             .generator()
             .recipeModifier((m, u, r) -> {
                 int p = 1;

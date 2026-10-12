@@ -1174,14 +1174,14 @@ public final class GTOMachines {
             .register();
 
     public static final MachineDefinition INDUSTRIAL_PLATFORM_DEPLOYMENT_TOOLS = machine("industrial_platform_deployment_tools", "工业平台展开工具", PlatformDeploymentMachine::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.IndustrialPlatformDeploymentToolsTooltips.get()))
+            .tips(GTOMachineTooltips.IndustrialPlatformDeploymentToolsTooltips)
             .nonYAxisRotation()
             .workableManaTieredHullRenderer(2, GTCEu.id("block/multiblock/fusion_reactor"))
             .register();
 
     public static final MachineDefinition VILLAGE_TRADING_STATION = machine("village_trading_station", "村民交易站", VillageTradingStationMachine::new)
             .recipeTypes(GTRecipeTypes.DUMMY_RECIPES)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.VillageTradingStationTooltips.get()))
+            .tips(GTOMachineTooltips.VillageTradingStationTooltips)
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/village_trading_station"))
             .register();
@@ -1196,7 +1196,7 @@ public final class GTOMachines {
     public static final MachineDefinition[] TRADING_STATION = registerTieredMachines("trading_station", tier -> "泛银河系格雷科技贸易站 " + "Tier " + tier, TradingStationMachine::new,
             (tier, builder) -> builder
                     .langValue("Pan-Galactic Gray Technology Trading Station " + "Tier " + tier)
-                    .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.PanGalaxyGregTechTradingStationTooltips.get()))
+                    .tips(GTOMachineTooltips.PanGalaxyGregTechTradingStationTooltips)
                     .nonYAxisRotation()
                     .modelRenderer(() -> GTOCore.id("block/machine/trading_station"))
                     .register(),
@@ -1219,7 +1219,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition SLOT_MACHINE = machine("slot_machine", "老虎机", holder -> new SlotMachine(holder, SlotMachineRules.CLASSIC))
             .langValue("Slot Machine")
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.SlotMachineTooltips.get()))
+            .tips(GTOMachineTooltips.SlotMachineTooltips)
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/slot_machine"))
             .shape(SLOT_MACHINE_SHAPE)
@@ -1228,7 +1228,7 @@ public final class GTOMachines {
 
     public static final MachineDefinition WIDE_SLOT_MACHINE = machine("wide_slot_machine", "宽幅老虎机", holder -> new SlotMachine(holder, SlotMachineRules.WIDE))
             .langValue("Wide Slot Machine")
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.WideSlotMachineTooltips.get()))
+            .tips(GTOMachineTooltips.WideSlotMachineTooltips)
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/slot_machine"))
             .shape(SLOT_MACHINE_SHAPE)
@@ -1282,28 +1282,28 @@ public final class GTOMachines {
             .register();
 
     public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.BasicMonitorTooltips.get()))
+            .tips(GTOMachineTooltips.BasicMonitorTooltips)
             .register();
     public static final MachineDefinition MONITOR_MACHINE_ELECTRICITY = registerMonitor("monitor_electricity", "监控器电网组件", MonitorEU::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorPowerComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorPowerComponentTooltips)
             .register();
     public static final MachineDefinition MONITOR_MACHINE_MANA = registerMonitor("monitor_mana", "监控器魔力网络组件", MonitorMana::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorManaComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorManaComponentTooltips)
             .register();
     public static final MachineDefinition MONITOR_MACHINE_CWU = registerMonitor("monitor_cwu", "监控器算力网络组件", MonitorCWU::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorComputingComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorComputingComponentTooltips)
             .register();
     public static final MachineDefinition MONITOR_MACHINE_CUSTOM = registerMonitor("monitor_custom", "监控器自定义文本组件", MonitorCustomInfo::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorCustomTextComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorCustomTextComponentTooltips)
             .register();
     public static final MachineDefinition MONITOR_AE_THROUGHPUT = registerMonitor("monitor_ae_throughput", "监控器ME网络吞吐量组件", MonitorAEThroughput::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorMEThroughputComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorMEThroughputComponentTooltips)
             .register();
     public static final MachineDefinition MONITOR_AE_CPU = registerMonitor("monitor_ae_cpu", "监控器ME合成处理单元组件", MonitorAECPU::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorCraftingComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorCraftingComponentTooltips)
             .register();
     public static final MachineDefinition MONITOR_MACHINE = registerMonitor("monitor_machine", "监控器通用机器组件", MonitorMachine::new)
-            .tooltipBuilder((stack, list) -> list.addAll(GTOMachineTooltips.MonitorMachineComponentTooltips.get()))
+            .tips(GTOMachineTooltips.MonitorMachineComponentTooltips)
             .register();
 
     private static GTOMachineBuilder registerMonitor(String id, String cn, Function<MetaMachineBlockEntity, MetaMachine> monitorConstructor) {

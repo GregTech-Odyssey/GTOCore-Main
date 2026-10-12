@@ -145,10 +145,6 @@ public final class GTOTips {
         return line(TipRole.UNSUPPORTED, body);
     }
 
-    public GTOTips note(Component body) {
-        return line(TipRole.NOTE, body);
-    }
-
     public GTOTips detail(Component body) {
         return line(TipRole.DETAIL, body);
     }

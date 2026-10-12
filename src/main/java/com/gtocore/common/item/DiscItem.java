@@ -10,6 +10,7 @@ import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
@@ -155,9 +156,9 @@ public final class DiscItem extends Item implements IPlaceholder<Object, ItemSta
         super.appendHoverText(itemstack, world, list, flag);
         Optional<Item> storedItem = getStoredItem(itemstack);
         if (storedItem.isPresent()) {
-            list.add(Component.translatable("item.gtocore.disc.data", ((IItem) storedItem.get()).gtolib$getReadOnlyStack().getDisplayName()));
+            list.add(Tips.stat(Component.translatable("item.gtocore.disc.data", ((IItem) storedItem.get()).gtolib$getReadOnlyStack().getDisplayName())));
         } else {
-            getStoredFluid(itemstack).ifPresent(fluid -> list.add(Component.translatable("item.gtocore.disc.data", "[" + new FluidStack(fluid, 1).getDisplayName().getString() + "]")));
+            getStoredFluid(itemstack).ifPresent(fluid -> list.add(Tips.stat(Component.translatable("item.gtocore.disc.data", "[" + new FluidStack(fluid, 1).getDisplayName().getString() + "]"))));
         }
     }
 

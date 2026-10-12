@@ -1,5 +1,7 @@
 package com.gtocore.common.item;
 
+import com.gregtechceu.gtceu.api.tooltip.Tips;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -142,8 +144,8 @@ public class SlotBoostingItems extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Component.translatable("item.slot_boost.tooltip1").withStyle(style -> style.withColor(0xAAAAAA)));
-        tooltip.add(Component.translatable("item.slot_boost.tooltip2").withStyle(style -> style.withColor(0xAAAAAA)));
-        tooltip.add(Component.translatable("item.slot_boost.tooltip3", getSelectedSlot(stack)).withStyle(style -> style.withColor(0xAAAAAA)));
+        tooltip.add(Tips.rightClick(Component.translatable("item.slot_boost.tooltip1")));
+        tooltip.add(Tips.control(Component.translatable("item.slot_boost.tooltip2")));
+        tooltip.add(Tips.stat(Component.translatable("item.slot_boost.tooltip3", getSelectedSlot(stack))));
     }
 }

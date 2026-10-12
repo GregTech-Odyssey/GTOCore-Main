@@ -7,6 +7,7 @@ import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -65,17 +66,17 @@ public abstract class ProcessingPatternItemMixin extends EncodedPatternItem {
                 level = net.minecraft.client.Minecraft.getInstance().level;
             }
             UUID uuid = NbtUtils.loadUUID(arrayTag);
-            lines.add(Component.translatable("tooltip.item.pattern.uuid", Component.literal(PlayerNameUtils.getLastKnownName(level, uuid)).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(Component.translatable("tooltip.item.pattern.uuid", Component.literal(PlayerNameUtils.getLastKnownName(level, uuid)).withStyle(ChatFormatting.WHITE))));
         }
         var recipeId = tag.getString("recipe");
         if (!recipeId.isEmpty()) {
             var key = RLUtils.parse(recipeId.split("/")[0]).toLanguageKey();
-            lines.add(Component.translatable("gtocore.pattern.recipe").withStyle(ChatFormatting.GRAY));
-            lines.add(Component.literal("  ").append(Component.translatable("gtocore.pattern.machine", Component.translatable(key).withStyle(ChatFormatting.WHITE))).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.feature(Component.translatable("gtocore.pattern.recipe")));
+            lines.add(Tips.stat(Component.literal("  ").append(Component.translatable("gtocore.pattern.machine", Component.translatable(key).withStyle(ChatFormatting.WHITE)))));
             var recipe = RecipeBuilder.get(RLUtils.parse(recipeId));
             if (recipe != null && recipe.getInputEUt() > 0) {
                 long eut = recipe.getInputEUt();
-                lines.add(Component.literal("  ").append(Component.translatable("gtocore.pattern.voltage", GTValues.VNF[GTUtil.getTierByVoltage(eut)], Component.literal(FormattingUtil.formatNumbers(eut)).withStyle(ChatFormatting.WHITE))).withStyle(ChatFormatting.GRAY));
+                lines.add(Tips.stat(Component.literal("  ").append(Component.translatable("gtocore.pattern.voltage", GTValues.VNF[GTUtil.getTierByVoltage(eut)], Component.literal(FormattingUtil.formatNumbers(eut)).withStyle(ChatFormatting.WHITE)))));
             }
         }
         super.appendHoverText(stack, level, lines, advancedTooltips);

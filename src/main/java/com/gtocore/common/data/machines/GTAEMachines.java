@@ -154,7 +154,7 @@ public final class GTAEMachines {
             .tips(Tips.feature(Component.translatable("gtceu.machine.item_bus.import.tooltip")),
                     Tips.feature(Component.translatable("gtceu.machine.me.item_import.tooltip")))
             .tip(TipRole.FEATURE, "按标签自动配置网络中储量最多的至多18种物品", "Automatically configures up to 18 networked item types matching the tags, most abundant first")
-            .tip(TipRole.NOTE, "已配置的种类在网络和总线内都耗尽前不会更换", "A configured type is kept until it runs out in both the network and the bus")
+            .tip(TipRole.FEATURE, "已配置的种类在网络和总线内都耗尽前不会更换", "A configured type is kept until it runs out in both the network and the bus")
             .tips(Tips.rightClick(Component.translatable("gtceu.machine.me.copy_paste.tooltip")),
                     Tips.supported(Component.translatable("gtceu.part_sharing.enabled")))
             .tips(GTOMachineTooltips.AutoConnectMETooltips)
@@ -169,7 +169,7 @@ public final class GTAEMachines {
             .tips(Tips.feature(Component.translatable("gtceu.machine.fluid_hatch.import.tooltip")),
                     Tips.feature(Component.translatable("gtceu.machine.me.fluid_import.tooltip")))
             .tip(TipRole.FEATURE, "按标签自动配置网络中储量最多的至多18种流体", "Automatically configures up to 18 networked fluid types matching the tags, most abundant first")
-            .tip(TipRole.NOTE, "已配置的种类在网络和仓内都耗尽前不会更换", "A configured type is kept until it runs out in both the network and the hatch")
+            .tip(TipRole.FEATURE, "已配置的种类在网络和仓内都耗尽前不会更换", "A configured type is kept until it runs out in both the network and the hatch")
             .tips(Tips.rightClick(Component.translatable("gtceu.machine.me.copy_paste.tooltip")),
                     Tips.supported(Component.translatable("gtceu.part_sharing.enabled")))
             .tips(GTOMachineTooltips.AutoConnectMETooltips)
@@ -307,7 +307,7 @@ public final class GTAEMachines {
                     Tips.feature(Component.translatable("gtceu.machine.me.stocking_item.tooltip.0")),
                     Tips.feature(Component.translatable("gtceu.machine.me_import_item_hatch.configs.tooltip")),
                     Tips.rightClick(Component.translatable("gtceu.machine.me.copy_paste.tooltip")),
-                    Tips.note(Component.translatable("gtceu.machine.me.stocking_item.tooltip.1")),
+                    Tips.feature(Component.translatable("gtceu.machine.me.stocking_item.tooltip.1")),
                     Tips.supported(Component.translatable("gtceu.part_sharing.enabled")))
             .tips(GTOMachineTooltips.AutoConnectMETooltips)
             .register();
@@ -354,7 +354,7 @@ public final class GTAEMachines {
                     Tips.feature(Component.translatable("gtceu.machine.me.stocking_fluid.tooltip.0")),
                     Tips.feature(Component.translatable("gtceu.machine.me_import_fluid_hatch.configs.tooltip")),
                     Tips.rightClick(Component.translatable("gtceu.machine.me.copy_paste.tooltip")),
-                    Tips.note(Component.translatable("gtceu.machine.me.stocking_fluid.tooltip.1")),
+                    Tips.feature(Component.translatable("gtceu.machine.me.stocking_fluid.tooltip.1")),
                     Tips.supported(Component.translatable("gtceu.part_sharing.enabled")))
             .tips(GTOMachineTooltips.AutoConnectMETooltips)
             .register();

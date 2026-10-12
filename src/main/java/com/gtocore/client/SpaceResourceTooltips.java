@@ -5,6 +5,7 @@ import com.gtocore.api.data.SpaceResourceIndex.Entry;
 import com.gtocore.api.data.SpaceResourceIndex.Type;
 
 import com.gregtechceu.gtceu.api.recipe.content.ContentList;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -108,7 +109,7 @@ public final class SpaceResourceTooltips {
             hint.append(TYPE_NAMES[type.ordinal()]);
             firstType = false;
         }
-        lines.set(0, Component.translatable(HOLD_CTRL_KEY, hint).withStyle(ChatFormatting.DARK_GRAY));
+        lines.set(0, Tips.feature(Component.translatable(HOLD_CTRL_KEY, hint)));
         return lines;
     }
 
@@ -124,7 +125,7 @@ public final class SpaceResourceTooltips {
             if (entry.type() != type) continue;
             if (!matched) {
                 String titleKey = secondary ? TITLE_SECONDARY_KEY : TITLE_KEY;
-                lines.add(Component.translatable(titleKey, TYPE_NAMES[type.ordinal()]).withStyle(ChatFormatting.AQUA));
+                lines.add(Tips.heading(Component.translatable(titleKey, TYPE_NAMES[type.ordinal()])));
                 matched = true;
             }
             appendEntry(entry, lines);
@@ -137,27 +138,26 @@ public final class SpaceResourceTooltips {
         Item drone = entry.minDrone();
         if (drone != null) {
             Component name = drone.getDescription().copy().withStyle(ChatFormatting.GREEN);
-            lines.add(Component.translatable(DRONE_KEY, name, circuit).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(Component.translatable(DRONE_KEY, name, circuit)));
         } else if (entry.circuit() > 0) {
-            lines.add(Component.translatable(CIRCUIT_KEY, circuit).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(Component.translatable(CIRCUIT_KEY, circuit)));
         } else {
-            lines.add(Component.translatable(NO_CIRCUIT_KEY).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(Component.translatable(NO_CIRCUIT_KEY)));
         }
         FluidStack[] fuels = entry.fuels();
         if (fuels != null) {
-            lines.add(Component.translatable(FUEL_KEY, fuels(fuels)).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(Component.translatable(FUEL_KEY, fuels(fuels))));
         }
         Component place = entry.place();
         if (place != null) {
             String key = entry.type().place == SpaceResourceIndex.Place.GALAXY ? GALAXY_KEY : DIMENSION_KEY;
-            lines.add(Component.translatable(key, place.copy().withStyle(ChatFormatting.DARK_AQUA)).withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(Component.translatable(key, place.copy().withStyle(ChatFormatting.DARK_AQUA))));
         }
         int chance = entry.chance();
         if (chance > 0 && chance < ContentList.MAX_CHANCE) {
             Component base = percent(chance);
             int boost = entry.chanceBoost();
-            lines.add((boost > 0 ? Component.translatable(CHANCE_BOOST_KEY, base, percent(boost)) : Component.translatable(CHANCE_KEY, base))
-                    .withStyle(ChatFormatting.GRAY));
+            lines.add(Tips.stat(boost > 0 ? Component.translatable(CHANCE_BOOST_KEY, base, percent(boost)) : Component.translatable(CHANCE_KEY, base)));
         }
     }
 

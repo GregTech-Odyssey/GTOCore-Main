@@ -31,7 +31,7 @@ public class MEStorageCoreBlock extends Block {
         this.capacity = 67108864 * (1L << (tier << 1));
         tips = TipSpec.builder()
                 .stat(GTOAttributes.CAPACITY, NumberUtils.formatLongToKorM(capacity) + " Bytes")
-                .lines(l -> l.note(GTOTips.global("帮你算了一下，是 %s Bytes".formatted(capacity), "I calculated it for you, it is %s Bytes".formatted(capacity))))
+                .lines(l -> l.feature(GTOTips.global("帮你算了一下，是 %s Bytes".formatted(capacity), "I calculated it for you, it is %s Bytes".formatted(capacity))))
                 .build();
     }
 

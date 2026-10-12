@@ -7,9 +7,9 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -28,12 +28,13 @@ import javax.annotation.Nullable;
 @DataGeneratorScanned
 public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowerUnit {
 
-    @RegisterLanguage(cn = "容量：%s × %s 安时（%s EU）", en = "Capacity: %s × %s Ah (%s EU)")
-    private static final String CAPACITY = "gtocore.block.wireless_energy_unit.capacity";
     @RegisterLanguage(cn = "吞吐：输入、输出各 %s × %sA", en = "Throughput: %s × %sA each for input and output")
     static final String THROUGHPUT = "gtocore.block.wireless_energy_unit.throughput";
-    @RegisterLanguage(cn = "网络中同级或更高的单元共有 N 个时，每个按基础容量的 N 倍计", en = "With N units of this tier or higher in the grid, each counts as N times its base capacity")
+    @RegisterLanguage(cn = "同一维度内电压等级相同的能源塔中，同级或更高的单元共有 N 个时，每个按基础容量的 N 倍计", en = "With N units of this tier or higher across towers of the same voltage tier in one dimension, each counts as N times its base capacity")
     private static final String SCALING = "gtocore.block.wireless_energy_unit.scaling";
+    @RegisterLanguage(cn = "损耗率：%s%%", en = "Loss rate: %s%%")
+    private static final String LOSS = "gtocore.block.wireless_energy_unit.loss";
+    private static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
     private static final long TICKS_PER_HOUR = 20 * 3600;
     private static final long AMPERAGE = 4;
 
@@ -76,11 +77,11 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Component.translatable("gtocore.machine.tooltip.upgrade_action", MultiBlockG.WIRELESS_ENERGY_SUBSTATION.get().getName(), Component.translatable("gtocore.adv_terminal.block_map.wireless_energy_unit")).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable(CAPACITY, GTValues.VNF[tier], FormattingUtil.formatNumbers(getAmpHours()), FormattingUtil.formatNumbers(getCapacity())));
-        tooltip.add(Component.translatable(THROUGHPUT, GTValues.VNF[tier], AMPERAGE));
-        if (isGridScaled()) tooltip.add(Component.translatable(SCALING).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("gtceu.machine.fluid_drilling_rig.depletion", (double) getLoss() / 10));
+        tooltip.add(Tips.energy(StatKind.ENERGY_CAPACITY, getCapacity().min(LONG_MAX).longValue(), tier));
+        tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, GTValues.VNF[getIoTier()], AMPERAGE)));
+        tooltip.add(Tips.stat(Component.translatable(LOSS, (double) getLoss() / 10)));
+        if (isGridScaled()) tooltip.add(Tips.bonus(Component.translatable(SCALING)));
+        tooltip.add(Tips.control(Component.translatable("gtocore.machine.tooltip.upgrade_action", MultiBlockG.WIRELESS_ENERGY_SUBSTATION.get().getName(), Component.translatable("gtocore.adv_terminal.block_map.wireless_energy_unit"))));
     }
 
     @Nullable

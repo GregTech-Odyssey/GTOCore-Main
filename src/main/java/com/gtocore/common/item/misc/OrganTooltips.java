@@ -12,6 +12,7 @@ import com.gtolib.api.player.OrganTier;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.item.armor.ArmorTooltips;
 
 import net.minecraft.ChatFormatting;
@@ -156,7 +157,7 @@ public final class OrganTooltips {
         lines.add(ArmorTooltips.info(INFO_PART, white(type.translationKey), white(tier.getTranslationKey())));
         lines.add(ArmorTooltips.info(INFO_MISSING, ArmorTooltips.value(MISSING_ONE_TEXT, ChatFormatting.RED)));
         // 萌芽级：出生自带、死亡重生补发
-        if (tier == OrganTier.SPROUT) lines.add(Component.literal(" ").append(Component.translatable(INFO_SPROUT)).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        if (tier == OrganTier.SPROUT) lines.add(Tips.feature(Component.translatable(INFO_SPROUT)));
 
         @Nullable
         OrganScope section = null;

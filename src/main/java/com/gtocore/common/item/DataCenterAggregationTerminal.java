@@ -9,6 +9,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.item.armor.ArmorTooltips;
 import com.gregtechceu.gtceu.common.machine.owner.MachineOwner;
 
@@ -203,9 +204,9 @@ public enum DataCenterAggregationTerminal implements IItemUIFactory, IAddInforma
         lines.add(ArmorTooltips.info(INFO_COUNT, count == 0 ? Component.translatable(VALUE_UNBOUND).withStyle(ChatFormatting.YELLOW) :
                 Component.translatable(VALUE_COUNT, count, MAX_BINDINGS).withStyle(ChatFormatting.WHITE)));
         for (int i = 0; i < Math.min(count, TOOLTIP_LOCATIONS); i++) {
-            lines.add(Component.literal("   · ").append(location(bindings.get(i))).withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Tips.detail(location(bindings.get(i))));
         }
-        if (count > TOOLTIP_LOCATIONS) lines.add(Component.literal("   · ").append(Component.translatable(VALUE_MORE, count - TOOLTIP_LOCATIONS)).withStyle(ChatFormatting.DARK_GRAY));
+        if (count > TOOLTIP_LOCATIONS) lines.add(Tips.detail(Component.translatable(VALUE_MORE, count - TOOLTIP_LOCATIONS)));
         lines.add(ArmorTooltips.section(SECTION_FEATURES));
         feature(lines, FEATURE_OPEN, count > 0 ? ArmorTooltips.state(STATE_READY, ChatFormatting.GREEN) : ArmorTooltips.state(STATE_NEED_BIND, ChatFormatting.YELLOW), HINT_USE);
         ArmorTooltips.addDetail(lines, DETAIL_OPEN);
@@ -222,6 +223,6 @@ public enum DataCenterAggregationTerminal implements IItemUIFactory, IAddInforma
                 .append(Component.translatable(name).withStyle(ChatFormatting.WHITE));
         if (state != null) line.append("  ").append(state);
         line.append(" ").append(Component.translatable(hint).withStyle(ChatFormatting.DARK_GRAY));
-        lines.add(line);
+        lines.add(Tips.feature(line));
     }
 }

@@ -10,10 +10,10 @@ import com.gtocore.common.pipe.universal.UniversalStorages;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.PipeBlock;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.model.PipeModel;
 import com.gregtechceu.gtceu.client.renderer.block.PipeBlockRenderer;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -60,9 +60,9 @@ public class UniversalPipeBlock extends PipeBlock<UniversalPipeType, UniversalPi
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         var properties = pipeType.properties;
-        tooltip.add(Component.translatable("gtocore.universal_pipe.item_transfer_rate", properties.itemThroughput()));
-        tooltip.add(Component.translatable("gtocore.universal_pipe.fluid_transfer_rate", pipeType.bucketsPerSecond()));
-        tooltip.add(Component.translatable("gtocore.universal_pipe.pull_mode").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Tips.stat(Component.translatable("gtocore.universal_pipe.item_transfer_rate", properties.itemThroughput())));
+        tooltip.add(Tips.stat(Component.translatable("gtocore.universal_pipe.fluid_transfer_rate", pipeType.bucketsPerSecond())));
+        tooltip.add(Tips.feature(Component.translatable("gtocore.universal_pipe.pull_mode")));
     }
 
     @Override

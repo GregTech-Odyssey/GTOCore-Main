@@ -65,9 +65,9 @@ public final class GTOTarotArcanumTooltips {
     });
 
     public static final TipSpec TarotArcanum_0_Shift = GTOTips.of("tarot.the_tree_of_life_shift", t -> {
-        t.note(t.tr("本整合包并未使用韦特或者托特塔罗牌，", "This modpack does not use the Waite or Thoth Tarot decks,"));
-        t.note(t.tr("而是使用了一种自构建牌组，", "but instead employs a self-constructed deck,"));
-        t.note(t.tr("可能与常见体系有极大的区别。", "which may differ significantly from conventional systems."));
+        t.feature(t.tr("本整合包并未使用韦特或者托特塔罗牌，", "This modpack does not use the Waite or Thoth Tarot decks,"));
+        t.feature(t.tr("而是使用了一种自构建牌组，", "but instead employs a self-constructed deck,"));
+        t.feature(t.tr("可能与常见体系有极大的区别。", "which may differ significantly from conventional systems."));
         t.lore(GTOTarotArcanum);
     });
 
@@ -156,7 +156,7 @@ public final class GTOTarotArcanumTooltips {
         t.statText(PandS(t.tr("命运之轮。好交易，变迁。", "The Wheel of Fortune. Good business, changes.")));
         t.statText(Sephirah(t.tr("王国 (Malkuth)", "Malkuth")));
         t.statText(Letter(t.tr("尤德 (Iod - י)", "Iod (י)")));
-        t.note(Note(t.tr("当吾人祈求时，天使常以时钟示之作为回应。修行者当定睛时钟所示之时辰，此乃命运之钟，答案藏于时辰之中。在秘传教义隐喻里，时钟恒为回应之具，吾人需习得解读时钟之法。", "When we make a petition, oftentimes the angels answer us by showing a clock. The disciple must fix his sight on the hour of the clock. This is the clock of destiny. The answer is in the hour. In esoteric allegory, one is always answered by the clock. We have to learn how to understand the clock.")));
+        t.feature(Note(t.tr("当吾人祈求时，天使常以时钟示之作为回应。修行者当定睛时钟所示之时辰，此乃命运之钟，答案藏于时辰之中。在秘传教义隐喻里，时钟恒为回应之具，吾人需习得解读时钟之法。", "When we make a petition, oftentimes the angels answer us by showing a clock. The disciple must fix his sight on the hour of the clock. This is the clock of destiny. The answer is in the hour. In esoteric allegory, one is always answered by the clock. We have to learn how to understand the clock.")));
         t.statText(Timetable(t.tr("阿波罗尼乌斯第一时：“神秘学之超验研究”", "First Hour of Apollonius: “Transcendental study of occultism.”")));
         t.lore(Transcendental(t.tr("“以经验换得之学识，价高；汝所欠缺且需购求之学识，价更高”", "“The knowledge that thou buyest with thine experience is expensive, and the knowledge that thou lacks and thou need to buy is even more expensive.”")));
         t.statText(Forecasting(t.tr("吉凶之保障，升降起伏，合法所有与可疑所有；过往偶然事件之启示，及以独特方式重现之情境。", "Guarantees good and bad fortune, elevation and descents, legitimate possessions and doubtful possessions; recommendations of past contingencies and circumstances which are repeated in a distinct way.")));

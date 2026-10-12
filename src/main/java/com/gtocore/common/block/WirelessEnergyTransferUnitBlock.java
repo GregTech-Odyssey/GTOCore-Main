@@ -6,9 +6,9 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -47,10 +47,10 @@ public class WirelessEnergyTransferUnitBlock extends Block implements WirelessEn
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Component.translatable("gtocore.machine.tooltip.upgrade_action", MultiBlockG.WIRELESS_ENERGY_SUBSTATION.get().getName(), Component.translatable("gtocore.adv_terminal.block_map.wireless_energy_transfer_unit")).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, GTValues.VNF[tier], FormattingUtil.formatNumbers(getAmperage())));
-        tooltip.add(Component.translatable(AMPERAGE_RULE).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable(NO_STORAGE).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Tips.stat(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, GTValues.VNF[getIoTier()], FormattingUtil.formatNumbers(getAmperage()))));
+        tooltip.add(Tips.feature(Component.translatable(AMPERAGE_RULE)));
+        tooltip.add(Tips.feature(Component.translatable(NO_STORAGE)));
+        tooltip.add(Tips.control(Component.translatable("gtocore.machine.tooltip.upgrade_action", MultiBlockG.WIRELESS_ENERGY_SUBSTATION.get().getName(), Component.translatable("gtocore.adv_terminal.block_map.wireless_energy_transfer_unit"))));
     }
 
     @Nullable

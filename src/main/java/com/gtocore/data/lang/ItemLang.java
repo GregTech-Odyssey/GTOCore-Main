@@ -171,8 +171,8 @@ final class ItemLang {
 
         addCNEN("gtocore.tooltip.item.machine_coordinate_card.tooltip.1", "右键机器记录其坐标，右键空气清空记录。",
                 "Right-click a machine to record its coordinates, right-click air to clear the record");
-        addCNEN("gtocore.tooltip.item.machine_coordinate_card.tooltip.2", "§6记录信息：§r%s§b(%s§b, %s§b, %s§b)",
-                "§6Coordinate Info: §r%s§b(%s§b, %s§b, %s§b)");
+        addCNEN("gtocore.tooltip.item.machine_coordinate_card.tooltip.2", "记录信息：%s§b(%s§b, %s§b, %s§b)",
+                "Coordinate Info: %s§b(%s§b, %s§b, %s§b)");
 
         addCNEN("tooltip.ad_astra.unknown_tag", "§c未知标签§r: %s", "§cUnknown tag§r: %s");
         addCNEN("tooltip.ad_astra.unknown_ingredient", "§c未知物品§r", "§cUnknown item§r");
