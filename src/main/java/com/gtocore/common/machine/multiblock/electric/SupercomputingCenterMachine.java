@@ -168,14 +168,13 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         }
         if (machineTier == 3) canBridge = true;
 
-        for (IMultiPart part : getParts()) {
+        for (var part : getParts(HPCAComponentPartMachine.class)) {
             if (incompatible) return;
-            if (!(part instanceof HPCAComponentPartMachine componentPartMachine)) continue;
 
-            maxEUt += componentPartMachine.getMaxEUt();
-            addToComponentsMap(componentPartMachine);
+            maxEUt += part.getMaxEUt();
+            addToComponentsMap(part);
 
-            switch (componentPartMachine) {
+            switch (part) {
                 // NICH & GWCA
                 case ExResearchBasePartMachine exPart -> {
                     if (exPart.getTier() - 1 != machineTier) {
@@ -336,10 +335,10 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
 
         if (coolingAmountRequired > coolingAmountProvided) {
             int damaged = coolingAmountRequired - coolingAmountProvided;
-            for (IMultiPart part : getParts()) {
-                if (part instanceof HPCAComponentPartMachine componentPartMachine && componentPartMachine.canBeDamaged() && !componentPartMachine.isDamaged()) {
+            for (var part : getParts(HPCAComponentPartMachine.class)) {
+                if (part.canBeDamaged() && !part.isDamaged()) {
                     damaged -= GTValues.RNG.nextInt(256);
-                    componentPartMachine.setDamaged(true);
+                    part.setDamaged(true);
                     dirty = true;
                 }
                 if (damaged <= 0) break;

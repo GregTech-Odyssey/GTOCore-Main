@@ -5,7 +5,6 @@ import com.gtocore.api.machine.part.IVacuumPartMachine;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
@@ -38,7 +37,7 @@ public final class VacuumCondition extends RecipeCondition {
         MetaMachine machine = holder.self();
 
         if (machine instanceof MultiblockControllerMachine controllerMachine) {
-            if (checkVacuumTier(controllerMachine.getParts())) {
+            if (checkVacuumTier(controllerMachine)) {
                 return true;
             }
         }
@@ -52,9 +51,9 @@ public final class VacuumCondition extends RecipeCondition {
         return !OxygenApi.API.hasOxygen(level, machine.getPos()) && PlanetApi.API.isSpace(level);
     }
 
-    private boolean checkVacuumTier(IMultiPart[] parts) {
-        for (IMultiPart part : parts) {
-            if (part instanceof IVacuumPartMachine vacuumMachine && vacuumMachine.getVacuumTier() >= tier) {
+    private boolean checkVacuumTier(MultiblockControllerMachine controllerMachine) {
+        for (var part : controllerMachine.getParts(IVacuumPartMachine.class)) {
+            if (part.getVacuumTier() >= tier) {
                 return true;
             }
         }

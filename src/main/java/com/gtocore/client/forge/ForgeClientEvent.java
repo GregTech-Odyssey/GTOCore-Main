@@ -27,7 +27,7 @@ import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.rule.RuleManager;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -137,7 +137,7 @@ public final class ForgeClientEvent {
         var lang = Tooltips.TOOL_TIPS_MAP.get(item);
         if (lang != null) {
             for (int i = 0; i < lang.length(); i++) {
-                event.getToolTip().add(Tips.feature(Component.translatable("gtocore.tooltip.item." + ItemUtils.getIdLocation(item).getPath() + "." + i)));
+                event.getToolTip().add(Tips.feature(Component.translatable("gtocore.tooltip.item." + RegistriesUtils.getIdLocation(item).getPath() + "." + i)));
             }
         } else {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);

@@ -2,10 +2,11 @@ package com.gtocore.client.renderer.item;
 
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.IItemDecorator;
 
@@ -16,7 +17,7 @@ public class MonitorItemDecorations implements IItemDecorator {
     @Override
     public boolean render(GuiGraphics guiGraphics, Font font, ItemStack itemStack, int xOffset, int yOffset) {
         if (itemStack.getItem() instanceof MonitorBlockItem blockItem) {
-            var rl = BuiltInRegistries.BLOCK.getKey(blockItem.getBlock());
+            var rl = RegistriesUtils.getIdLocation(blockItem.getBlock());
             var textureRL = MonitorBlockItem.getTexturePath(rl);
             boolean exists = Minecraft.getInstance().getResourceManager().getResource(textureRL).isPresent();
             if (!exists) {

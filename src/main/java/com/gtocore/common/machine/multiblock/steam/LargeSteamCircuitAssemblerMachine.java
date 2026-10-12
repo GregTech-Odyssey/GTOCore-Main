@@ -7,7 +7,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -146,33 +145,31 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
 
     private void engraveCircuit() {
         if (!isFormed()) return;
-        for (IMultiPart part : getParts()) {
-            if (part instanceof ItemBusPartMachine bus) {
-                NotifiableInventory<AEItemKey> handler = bus.getInventory();
-                IO io = handler.getHandlerIO();
-                if (io == IO.IN || io == IO.BOTH) {
-                    var inv = handler.storage;
-                    for (int i = 0; i < inv.size(); i++) {
-                        AEItemKey key = inv.keyAt(i);
-                        if (key == null) continue;
-                        Item stackItem = key.getItem();
-                        for (TagKey<Item> tagKey : stackItem.builtInRegistryHolder().tags().toList()) {
-                            if (tagKey.location().toString().contains("gtceu:circuits/")) {
-                                long stored = inv.amountAt(i);
-                                int c;
-                                if (stackItem == item) {
-                                    c = (int) Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count, stored);
-                                    count += c;
-                                } else {
-                                    c = (int) Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get(), stored);
-                                    count = c;
-                                }
-                                item = stackItem;
-                                inv.extract(i, key, c, false);
-                                onChanged();
-                                if (count >= GTORules.STEAM_CIRCUIT_ENGRAVING.get()) return;
-                                break;
+        for (var part : getParts(ItemBusPartMachine.class)) {
+            NotifiableInventory<AEItemKey> handler = part.getInventory();
+            IO io = handler.getHandlerIO();
+            if (io == IO.IN || io == IO.BOTH) {
+                var inv = handler.storage;
+                for (int i = 0; i < inv.size(); i++) {
+                    AEItemKey key = inv.keyAt(i);
+                    if (key == null) continue;
+                    Item stackItem = key.getItem();
+                    for (TagKey<Item> tagKey : stackItem.builtInRegistryHolder().tags().toList()) {
+                        if (tagKey.location().toString().contains("gtceu:circuits/")) {
+                            long stored = inv.amountAt(i);
+                            int c;
+                            if (stackItem == item) {
+                                c = (int) Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count, stored);
+                                count += c;
+                            } else {
+                                c = (int) Math.min(GTORules.STEAM_CIRCUIT_ENGRAVING.get(), stored);
+                                count = c;
                             }
+                            item = stackItem;
+                            inv.extract(i, key, c, false);
+                            onChanged();
+                            if (count >= GTORules.STEAM_CIRCUIT_ENGRAVING.get()) return;
+                            break;
                         }
                     }
                 }

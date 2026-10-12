@@ -76,8 +76,8 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     private boolean isNotMeHolding() {
         if (meHoldUntil == 0) return true;
         if (getOffsetTimer() < meHoldUntil) {
-            for (var part : getParts()) {
-                if (part instanceof IGridConnectedMachine me && !me.isOnline()) return false;
+            for (var part : getParts(IGridConnectedMachine.class)) {
+                if (!part.isOnline()) return false;
             }
         }
         // released once per formation, so a later ME hiccup falls back to the normal rules

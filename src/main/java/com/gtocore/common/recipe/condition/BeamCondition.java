@@ -61,8 +61,8 @@ public final class BeamCondition extends RecipeCondition {
         if (!(holder instanceof IMultiController controller)) return false;
 
         var samples = new HashMap<BeamAccessPartMachine.BeamKey, long[]>();
-        for (var part : controller.getParts()) {
-            if (part instanceof BeamAccessPartMachine receiver) receiver.collectRecentIntensitySamples(samples);
+        for (var part : controller.getParts(BeamAccessPartMachine.class)) {
+            part.collectRecentIntensitySamples(samples);
         }
 
         int minimumWavelength = Math.min(minWavelength, maxWavelength);

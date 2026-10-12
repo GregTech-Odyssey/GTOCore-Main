@@ -3,11 +3,12 @@ package com.gtocore.eio_travel.api;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.eio_travel.EioTravelNbtKeys;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +36,7 @@ public abstract class AbstractTravelTarget implements ITravelTarget {
         CompoundTag nbt = new CompoundTag();
         nbt.put(EioTravelNbtKeys.BLOCK_POS, NbtUtils.writeBlockPos(getPos()));
         nbt.putString(EioTravelNbtKeys.ANCHOR_NAME, getName());
-        nbt.putString(EioTravelNbtKeys.ANCHOR_ICON, String.valueOf(ForgeRegistries.ITEMS.getKey(getIcon())));
+        nbt.putString(EioTravelNbtKeys.ANCHOR_ICON, String.valueOf(RegistriesUtils.getIdLocation(getIcon())));
         nbt.putBoolean(EioTravelNbtKeys.ANCHOR_VISIBILITY, getVisibility());
         return nbt;
     }

@@ -8,6 +8,8 @@ import com.gtocore.eio_travel.api.ITravelTarget;
 import com.gtocore.eio_travel.implementations.PatternTravelTarget;
 import com.gtocore.eio_travel.network.TravelNetworks;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -18,7 +20,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 
@@ -90,7 +91,7 @@ public interface TravelUtils {
         return targets.filter(target -> {
             BlockPos pos = target.getPos();
             BlockState blockState = level.getBlockState(pos);
-            String blockId = Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(blockState.getBlock())).toString();
+            String blockId = Objects.requireNonNull(RegistriesUtils.getIdLocation(blockState.getBlock())).toString();
             return blockId.equals(filterBlock);
         });
     }

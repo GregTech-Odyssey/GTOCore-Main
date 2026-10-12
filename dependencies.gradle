@@ -42,6 +42,7 @@ dependencies {
     modImplementation("com.lowdragmc.ldlib:ldlib-forge-1.20.1:1.0.50")
     modImplementation("curse.maven:glodium-957920:5006780")
     modImplementation("curse.maven:lean-object-1703183:8929333")
+    modImplementation("curse.maven:duplicationless-1380105:8646420")
 
     // Applied Energistics 2
     modImplementation("org.appliedenergistics:guideme:20.1.13")

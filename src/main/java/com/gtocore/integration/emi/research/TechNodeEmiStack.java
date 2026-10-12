@@ -18,7 +18,6 @@ import appeng.api.client.AEKeyRendering;
 import dev.emi.emi.api.stack.EmiStack;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.gtocore.integration.emi.research.EmiResearchHelper.TECH_NODE_NAME;
@@ -94,7 +93,7 @@ public class TechNodeEmiStack extends EmiStack {
         return Component.translatable(TECH_NODE_NAME, data.getDisplayName().withStyle(style -> style.withColor(ChatFormatting.AQUA)));
     }
 
-    public static void registerTechNodeEmiStack(Set<EmiStack> c) {
+    public static void registerTechNodeEmiStack(List<EmiStack> c) {
         TechTreeManager.getManagers().forEach(manager -> manager.getAllNodes().forEach(node -> c.add(new TechNodeEmiStack(node))));
     }
 }

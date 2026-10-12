@@ -3,6 +3,8 @@ package com.gtocore.mixin.jade;
 import com.gtocore.common.blockentity.TesseractBlockEntity;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeItemAdapter;
@@ -10,7 +12,6 @@ import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyHandlerList;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -104,7 +105,7 @@ public abstract class JadeForgeUtilsMixin {
     @Unique
     private static CompoundTag gto$fluidView(Fluid fluid, long amount, long capacity, @Nullable CompoundTag tag) {
         var nbt = new CompoundTag();
-        nbt.putString("fluid", BuiltInRegistries.FLUID.getKey(fluid).toString());
+        nbt.putString("fluid", RegistriesUtils.getIdLocation(fluid).toString());
         nbt.putLong("amount", amount);
         nbt.putLong("capacity", capacity);
         if (tag != null) nbt.put("tag", tag);

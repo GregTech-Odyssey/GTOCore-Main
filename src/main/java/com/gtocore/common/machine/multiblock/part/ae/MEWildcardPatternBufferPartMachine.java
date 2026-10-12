@@ -367,9 +367,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     public static void onMultiblockRecipeTypeChange(@NotNull MultiblockControllerMachine machine) {
-        Arrays.stream(machine.getParts())
-                .filter(MEWildcardPatternBufferPartMachine.class::isInstance)
-                .map(MEWildcardPatternBufferPartMachine.class::cast)
+        Arrays.stream(machine.getParts(MEWildcardPatternBufferPartMachine.class))
                 .forEach(MEWildcardPatternBufferPartMachine::requestPatternUpdate);
     }
 

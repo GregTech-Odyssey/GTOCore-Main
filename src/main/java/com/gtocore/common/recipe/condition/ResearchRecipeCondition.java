@@ -86,8 +86,8 @@ public class ResearchRecipeCondition extends RecipeCondition {
         if (holder instanceof IDataAccessHatch dataAccessHatch && dataAccessHatch.isRecipeAvailable(recipe)) {
             return true;
         } else if (holder instanceof IMultiController controller) {
-            for (var p : controller.getParts()) {
-                if (p instanceof IDataAccessHatch dataAccessHatch && dataAccessHatch.isRecipeAvailable(recipe)) {
+            for (var p : controller.getParts(IDataAccessHatch.class)) {
+                if (p.isRecipeAvailable(recipe)) {
                     return true;
                 }
             }

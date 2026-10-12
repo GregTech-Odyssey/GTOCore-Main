@@ -12,7 +12,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import com.arsmeteorites.arsmeteorites.common.RecipeRegistry;
 import com.google.common.collect.ObjectArrays;
@@ -83,7 +82,7 @@ public final class MeteoriteRegistryHelper {
     }
 
     public static void registerMeteoriteType(@NotNull Item input, double source, int model, Item consumeitem, Block[] meteorites, int[] weights, int[] layer) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(input);
+        ResourceLocation itemId = RegistriesUtils.getIdLocation(input);
         String id = itemId.getNamespace() + "-" + itemId.getPath();
         int totalWeight = 0;
         for (int weight : weights) totalWeight += weight;

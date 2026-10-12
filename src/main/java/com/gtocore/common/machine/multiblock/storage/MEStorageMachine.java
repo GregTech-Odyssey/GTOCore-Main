@@ -14,7 +14,6 @@ import com.gtolib.utils.StringUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
@@ -70,11 +69,9 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
         if (isRemote()) return;
         Level level = getLevel();
         if (level == null) return;
-        for (IMultiPart part : getParts()) {
-            if (part instanceof StorageAccessPartMachine storageAccessPartMachine) {
-                accessPartMachine = storageAccessPartMachine;
-                break;
-            }
+        for (var part : getParts(StorageAccessPartMachine.class)) {
+            accessPartMachine = part;
+            break;
         }
         if (accessPartMachine == null) return;
         double capacity = getStorageCapacity();

@@ -2,7 +2,6 @@ package com.gtocore.mixin.ae2.stacks;
 
 import com.gtocore.integration.ae.hooks.IAEKeyExtension;
 
-import com.gtolib.api.item.IItem;
 import com.gtolib.api.recipe.lookup.IIngredientConvertible;
 import com.gtolib.api.recipe.lookup.MapIngredient;
 
@@ -15,6 +14,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import com.gto.recipesearch.IntLongMap;
+import me.kall.duplicationless.ext.RegistryEntry;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,7 +35,7 @@ public abstract class AEItemKeyMixin implements IIngredientConvertible, IAEKeyEx
      */
     @Overwrite(remap = false)
     public ResourceLocation getId() {
-        return ((IItem) item).gtolib$getIdLocation();
+        return ((RegistryEntry) item).registry$getName();
     }
 
     @Override

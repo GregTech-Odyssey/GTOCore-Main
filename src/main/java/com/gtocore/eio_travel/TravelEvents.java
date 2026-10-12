@@ -7,6 +7,8 @@ import com.gtocore.eio_travel.logic.TravelSavedData;
 import com.gtocore.eio_travel.logic.TravelUtils;
 import com.gtocore.eio_travel.network.TravelNetworks;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 
 import net.minecraft.ChatFormatting;
@@ -28,7 +30,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -63,7 +64,7 @@ public class TravelEvents {
         if (nextMode == TravelMode.FILTER_BY_BLOCK) {
             BlockPos pos = event.getPos();
             BlockState blockState = level.getBlockState(pos);
-            String blockId = Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(blockState.getBlock())).toString();
+            String blockId = Objects.requireNonNull(RegistriesUtils.getIdLocation(blockState.getBlock())).toString();
 
             CompoundTag tag = stack.getOrCreateTag();
             tag.putString(TravelUtils.FILTER_BLOCK_TAG, blockId);

@@ -1,6 +1,6 @@
 package com.gtocore.data.recipe.gtm.misc;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
@@ -106,8 +106,8 @@ public final class CustomToolRecipes {
                     ItemStack powerUnitStack = ToolItemHelper.getMaxChargeOverrideStack(powerUnitItems.get(tier).get(),
                             maxCharge);
                     String recipeName = String.format("%s_%s",
-                            ItemUtils.getIdLocation(powerUnitItems.get(tier).get()).getPath(),
-                            ItemUtils.getIdLocation(batteryItem.get()).getPath());
+                            RegistriesUtils.getIdLocation(powerUnitItems.get(tier).get()).getPath(),
+                            RegistriesUtils.getIdLocation(batteryItem.get()).getPath());
 
                     VanillaRecipeHelper.addShapedEnergyTransferRecipe(true, false, true, recipeName,
                             Ingredient.of(batteryStack), powerUnitStack,

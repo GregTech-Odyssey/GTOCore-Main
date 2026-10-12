@@ -56,10 +56,8 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
             return maintenanceMachine;
         }
         if (machine instanceof IMultiController controller) {
-            for (var part : controller.getParts()) {
-                if (part instanceof IMaintenanceMachine maintenanceMachine) {
-                    return maintenanceMachine;
-                }
+            for (var part : controller.getParts(IMaintenanceMachine.class)) {
+                return part;
             }
         }
         return null;

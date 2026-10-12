@@ -10,7 +10,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -45,16 +44,14 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        for (IMultiPart part : getParts()) {
-            if (part instanceof ResearchHolderMachine scanningHolder) {
-                if (scanningHolder.getFrontFacing() != getFrontFacing()) {
-                    onStructureInvalid();
-                    return;
-                }
-                this.objectHolder = scanningHolder;
-                // 添加物品流体处理器（包含扫描槽、催化剂槽和数据槽）
-                addHandlerList(RecipeHandlerUnit.of(IO.IN, scanningHolder.getAsHandler()));
+        for (var part : getParts(ResearchHolderMachine.class)) {
+            if (part.getFrontFacing() != getFrontFacing()) {
+                onStructureInvalid();
+                return;
             }
+            this.objectHolder = part;
+            // 添加物品流体处理器（包含扫描槽、催化剂槽和数据槽）
+            addHandlerList(RecipeHandlerUnit.of(IO.IN, part.getAsHandler()));
         }
 
         // 必须同时有扫描部件

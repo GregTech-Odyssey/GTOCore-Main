@@ -4,6 +4,7 @@ import com.gtocore.integration.Mods;
 import com.gtocore.integration.lang.LangAdaptor;
 
 import com.gtolib.GTOCore;
+import com.gtolib.utils.RegistriesUtils;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -171,8 +172,8 @@ public class EntityReport {
     private static List<EntityType<?>> sortedEntityTypes() {
         List<EntityType<?>> entityTypes = new ArrayList<>();
         for (EntityType<?> entityType : BuiltInRegistries.ENTITY_TYPE) entityTypes.add(entityType);
-        entityTypes.sort((a, b) -> BuiltInRegistries.ENTITY_TYPE.getKey(a).toString()
-                .compareTo(BuiltInRegistries.ENTITY_TYPE.getKey(b).toString()));
+        entityTypes.sort((a, b) -> RegistriesUtils.getIdLocation(a).toString()
+                .compareTo(RegistriesUtils.getIdLocation(b).toString()));
         return entityTypes;
     }
 
@@ -181,8 +182,7 @@ public class EntityReport {
         for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof SpawnEggItem) eggItems.add(item);
         }
-        eggItems.sort((a, b) -> BuiltInRegistries.ITEM.getKey(a).toString()
-                .compareTo(BuiltInRegistries.ITEM.getKey(b).toString()));
+        eggItems.sort(Comparator.comparing(a -> RegistriesUtils.getIdLocation(a).toString()));
         return eggItems;
     }
 
@@ -209,7 +209,7 @@ public class EntityReport {
 
         List<Biome> sortedBiomes = new ArrayList<>();
         for (Biome biome : biomes) sortedBiomes.add(biome);
-        sortedBiomes.sort((a, b) -> biomes.getKey(a).toString().compareTo(biomes.getKey(b).toString()));
+        sortedBiomes.sort(Comparator.comparing(a -> biomes.getKey(a).toString()));
 
         Map<EntityType<?>, List<JsonObject>> spawnsByType = new IdentityHashMap<>();
         for (Biome biome : sortedBiomes) {
@@ -272,7 +272,7 @@ public class EntityReport {
 
     private static JsonObject buildEntityJson(EntityType<?> entityType, EntityClass entityClass, SpawnEggItem egg,
                                               List<String> tags, JsonArray biomeSpawns) {
-        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+        ResourceLocation id = RegistriesUtils.getIdLocation(entityType);
         MobCategory category = entityType.getCategory();
         String translationKey = entityType.getDescriptionId();
         SpawnPlacements.Type placementType = SpawnPlacements.getPlacementType(entityType);
@@ -346,7 +346,7 @@ public class EntityReport {
      * 生物蛋信息；{@code entityType} 为空表示该生物蛋无法对应到已注册生物。
      */
     private static JsonObject buildSpawnEggJson(SpawnEggItem egg, EntityType<?> entityType) {
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(egg);
+        ResourceLocation itemId = RegistriesUtils.getIdLocation(egg);
         JsonObject json = new JsonObject();
         json.addProperty("item", itemId.toString());
         json.addProperty("translation_key", egg.getDescriptionId());
@@ -355,7 +355,7 @@ public class EntityReport {
         json.addProperty("secondary_color", colorHex(egg.getColor(1)));
 
         if (entityType != null) {
-            ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+            ResourceLocation entityId = RegistriesUtils.getIdLocation(entityType);
             String entityTranslationKey = entityType.getDescriptionId();
             json.addProperty("entity_type", entityId.toString());
             json.addProperty("entity_translation_key", entityTranslationKey);

@@ -15,6 +15,7 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.TierDataKey;
 import com.gtolib.utils.MachineUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -46,7 +47,6 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
@@ -165,10 +165,10 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
             case MobJarItem mj -> {
                 var entity = MobJarItem.fromItem(itemStack, getLevel());
                 if (entity != null) {
-                    entityId = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+                    entityId = RegistriesUtils.getIdLocation(entity.getType()).toString();
                 }
             }
-            case SpawnEggItem egg -> entityId = ForgeRegistries.ENTITY_TYPES.getKey(egg.getType(null)).toString();
+            case SpawnEggItem egg -> entityId = RegistriesUtils.getIdLocation(egg.getType(null)).toString();
             default -> {
 
             }

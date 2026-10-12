@@ -5,7 +5,7 @@ import com.gtocore.data.tag.Tags;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.recipe.RecipeBuilder;
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeBuilder;
@@ -64,7 +64,7 @@ public final class GenerateDisassembly {
         if (recipeBuilder.getRecipeType() == LASER_WELDER_RECIPES && !(item instanceof MetaMachineItem)) {
             return;
         }
-        ResourceLocation id = ItemUtils.getIdLocation(item);
+        ResourceLocation id = RegistriesUtils.getIdLocation(item);
         if (DISASSEMBLY_BLACKLIST.contains(id)) return;
         boolean cal = recipeBuilder.getRecipeType() == CIRCUIT_ASSEMBLY_LINE_RECIPES;
         ResourceLocation typeid = RecipeBuilder.getTypeID(id, DISASSEMBLY_RECIPES);

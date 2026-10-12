@@ -3,6 +3,7 @@ package com.gtocore.common.machine.noenergy.PlatformDeployment;
 import com.gtolib.GTOCore;
 import com.gtolib.utils.MultiBlockFileReader;
 import com.gtolib.utils.RLUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
@@ -310,7 +311,7 @@ class PlatformCreators {
         @Override
         public JsonElement serialize(BlockState src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
-            ResourceLocation id = BuiltInRegistries.BLOCK.getKey(src.getBlock());
+            ResourceLocation id = RegistriesUtils.getIdLocation(src.getBlock());
             obj.addProperty("id", id.toString());
 
             JsonObject props = new JsonObject();

@@ -13,8 +13,8 @@ import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.rule.RuleManager;
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RLUtils;
+import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.StringConverter;
 
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
@@ -170,7 +170,7 @@ public final class GTOCommands {
         if (s != null) {
             player.sendSystemMessage(copy(Component.literal(s).withStyle(ChatFormatting.DARK_BLUE)));
         }
-        player.sendSystemMessage(copy(Component.literal(ItemUtils.getId(stack)).withStyle(ChatFormatting.GREEN)));
+        player.sendSystemMessage(copy(Component.literal(RegistriesUtils.getId(stack)).withStyle(ChatFormatting.GREEN)));
         if (stack.hasTag())
             player.sendSystemMessage(copy(Component.literal(stack.getTag().toString()).withStyle(ChatFormatting.AQUA)));
         for (TagKey<Item> tag : stack.getItemHolder().tags().toList()) {

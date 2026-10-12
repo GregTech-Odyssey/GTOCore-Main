@@ -1,6 +1,7 @@
 package com.hepdd.gtmthings.common.item;
 
 import com.gtolib.utils.RLUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.item.IDataComponentItem;
 import com.gregtechceu.gtceu.api.item.ItemDataComponentKey;
@@ -28,7 +29,7 @@ public final class VirtualProviderData {
     private VirtualProviderData() {}
 
     private static void writeItem(CompoundTag tag, ItemStack virtualItem) {
-        var id = ForgeRegistries.ITEMS.getKey(virtualItem.getItem());
+        var id = RegistriesUtils.getIdLocation(virtualItem.getItem());
         tag.putString(MOD_TAG, id.getNamespace());
         tag.putString(NAME_TAG, id.getPath());
         CompoundTag itemTag = virtualItem.getTag();
@@ -57,7 +58,7 @@ public final class VirtualProviderData {
     }
 
     private static void writeFluid(CompoundTag tag, FluidStack virtualFluid) {
-        ResourceLocation id = ForgeRegistries.FLUIDS.getKey(virtualFluid.getFluid());
+        ResourceLocation id = RegistriesUtils.getIdLocation(virtualFluid.getFluid());
         tag.putString(MOD_TAG, id.getNamespace());
         tag.putString(NAME_TAG, id.getPath());
         CompoundTag itemTag = virtualFluid.getTag();

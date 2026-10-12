@@ -2,7 +2,7 @@ package com.gtocore.mixin.ftbu;
 
 import com.gtocore.config.GTOConfig;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.StringUtils;
 
 import dev.ftb.mods.ftbultimine.FTBUltiminePlayerData;
@@ -21,7 +21,7 @@ public class FTBUltiminePlayerDataMixin {
         }
         return (original, state) -> {
             boolean flag = !StringUtils.containsWithWildcard(GTOConfig.INSTANCE.gamePlay.breakBlocksBlackList,
-                    ItemUtils.getId(state.getBlock()));
+                    RegistriesUtils.getId(state.getBlock()));
             return flag && state.getBlock() == original.getBlock();
         };
     }

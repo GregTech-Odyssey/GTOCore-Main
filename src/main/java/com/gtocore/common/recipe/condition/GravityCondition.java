@@ -3,7 +3,6 @@ package com.gtocore.common.recipe.condition;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IGravityPartMachine;
 
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
@@ -30,10 +29,8 @@ public final class GravityCondition extends RecipeCondition {
     @Override
     public boolean testCondition(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         if (holder instanceof MultiblockControllerMachine controllerMachine) {
-            for (IMultiPart part : controllerMachine.getParts()) {
-                if (part instanceof IGravityPartMachine gravityPart) {
-                    return gravityPart.getCurrentGravity() == (zero ? 0 : 100);
-                }
+            for (var part : controllerMachine.getParts(IGravityPartMachine.class)) {
+                return part.getCurrentGravity() == (zero ? 0 : 100);
             }
         }
         var dim = holder.self().getLevel().dimension();

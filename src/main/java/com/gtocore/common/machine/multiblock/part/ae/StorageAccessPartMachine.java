@@ -439,8 +439,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             }
 
             // check if the controller has any other storage parts than this one
-            if (this.controllers.isEmpty() || Arrays.stream(getController().getParts()).anyMatch(
-                    p -> p instanceof StorageAccessPartMachine && p != this)) {
+            if (this.controllers.isEmpty() || Arrays.stream(getController().getParts(StorageAccessPartMachine.class)).anyMatch(
+                    p -> p != this)) {
                 isWorkingEnabled = false;
                 return;
             }

@@ -13,7 +13,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uiwidgets.item.HeldItemPage;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +47,7 @@ public final class OrderItem implements IItemUIFactory, ICustomDescriptionId {
 
     public static ItemStack setTarget(ItemStack stack, ItemStack target) {
         var tag = stack.getOrCreateTag();
-        var id = BuiltInRegistries.ITEM.getKey(target.getItem());
+        var id = RegistriesUtils.getIdLocation(target.getItem());
         tag.putString("marker_id", id.toString());
         if (target.hasTag()) {
             tag.put("marker_nbt", target.getTag().copy());

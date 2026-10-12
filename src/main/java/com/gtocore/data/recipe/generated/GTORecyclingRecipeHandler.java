@@ -3,7 +3,7 @@ package com.gtocore.data.recipe.generated;
 import com.gtocore.common.data.GTORecipeTypes;
 
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -51,7 +51,7 @@ final class GTORecyclingRecipeHandler {
                 ignoreArcSmelting, prefix);
 
         if (!material.hasProperty(PropertyKey.FLUID) || material.getFluid() == null || (prefix == TagPrefix.dust && material.hasProperty(PropertyKey.BLAST))) return;
-        GTORecipeTypes.LIQUEFACTION_FURNACE_RECIPES.recipeBuilder("extract_" + ItemUtils.getIdLocation(stack.getItem()).getPath())
+        GTORecipeTypes.LIQUEFACTION_FURNACE_RECIPES.recipeBuilder("extract_" + RegistriesUtils.getIdLocation(stack.getItem()).getPath())
                 .outputFluids(material.getFluid((int) (amount * L / M)))
                 .duration((int) Math.max(1, amount * material.getMass() / M))
                 .blastFurnaceTemp(Math.max(800, (int) (material.getBlastTemperature() * 0.6)))

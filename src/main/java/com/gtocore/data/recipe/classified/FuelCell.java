@@ -12,7 +12,6 @@ import com.gtocore.common.machine.multiblock.generator.FlowFuelCellGenerator;
 import com.gtocore.common.recipe.condition.HeatCondition;
 
 import com.gtolib.api.recipe.RecipeBuilder;
-import com.gtolib.utils.FluidUtils;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -92,7 +91,7 @@ public final class FuelCell {
         PowerlessJetpack.FUELS.forEach((fuel, duration) -> {
             if (!(fuel.ingredient().key() instanceof AEFluidKey key)) return;
             var fluid = key.getFluid();
-            var composition = FuelCellFuel.find(FluidUtils.getIdLocation(fluid).toString());
+            var composition = FuelCellFuel.find(RegistriesUtils.getIdLocation(fluid).toString());
             long energy = Math.multiplyExact(Math.multiplyExact((long) duration, 4), composition.amount()) / fuel.amount();
             var builder = oxidize(fluid, composition, energy);
             addResidues(builder, composition);

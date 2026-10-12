@@ -2,7 +2,7 @@ package com.gtocore.data.lang;
 
 import com.gtocore.client.Tooltips;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 
@@ -20,7 +20,7 @@ final class ItemLang {
 
         Tooltips.TOOL_TIPS_MAP.forEach((i, s) -> {
             for (int j = 0; j < s.length(); j++) {
-                addCNEN("gtocore.tooltip.item." + ItemUtils.getIdLocation(i).getPath() + "." + j, s.cns()[j], s.ens()[j]);
+                addCNEN("gtocore.tooltip.item." + RegistriesUtils.getIdLocation(i).getPath() + "." + j, s.cns()[j], s.ens()[j]);
             }
         });
 

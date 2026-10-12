@@ -6,7 +6,6 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.ContentList;
@@ -30,15 +29,13 @@ public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine 
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        for (IMultiPart part : getParts()) {
-            if (part instanceof ResearchHolderMachine researchHolder) {
-                if (researchHolder.getFrontFacing() != getFrontFacing()) {
-                    onStructureInvalid();
-                    return;
-                }
-                this.ResearchHolder = researchHolder;
-                addHandlerList(RecipeHandlerUnit.of(IO.IN, researchHolder.getAsHandler()));
+        for (var part : getParts(ResearchHolderMachine.class)) {
+            if (part.getFrontFacing() != getFrontFacing()) {
+                onStructureInvalid();
+                return;
             }
+            this.ResearchHolder = part;
+            addHandlerList(RecipeHandlerUnit.of(IO.IN, part.getAsHandler()));
         }
 
         // 必须有扫描部件

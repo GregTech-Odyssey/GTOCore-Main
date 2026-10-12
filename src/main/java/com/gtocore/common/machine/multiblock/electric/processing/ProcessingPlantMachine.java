@@ -177,10 +177,8 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
                 }
                 cache = definition.getRecipeTypes();
                 availableRecipeTypesCache = cache;
-                for (var p : getParts()) {
-                    if (p instanceof IWorkableMultiPart part) {
-                        part.setAvailableRecipeTypes(cache);
-                    }
+                for (var p : getParts(IWorkableMultiPart.class)) {
+                    p.setAvailableRecipeTypes(cache);
                 }
             }
         }

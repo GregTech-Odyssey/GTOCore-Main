@@ -1,6 +1,7 @@
 package com.gtocore.data.recipe.builder.vanilla;
 
 import com.gtolib.GTOCore;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -125,7 +126,7 @@ public class SmithingRecipeBuilder {
     }
 
     protected ResourceLocation defaultId() {
-        return GTUtil.ITEM_ID.apply(result.getItem());
+        return RegistriesUtils.getIdLocation(result.getItem());
     }
 
     public ResourceLocation getId() {

@@ -31,7 +31,6 @@ import dev.emi.emi.runtime.EmiDrawContext;
 import org.joml.Matrix4f;
 
 import java.util.List;
-import java.util.Set;
 
 import static com.gtocore.integration.emi.research.EmiResearchHelper.*;
 
@@ -207,7 +206,7 @@ public class ResearchTagEmiStack extends EmiStack {
         return Component.translatable(DOMAIN_DATA_NAME, tag.getDisplayName().withStyle(style -> style.withColor(tag.getColor())));
     }
 
-    public static void registerResearchTagEmiStack(Set<EmiStack> c) {
+    public static void registerResearchTagEmiStack(List<EmiStack> c) {
         for (var it : ResearchTag.TAGS.values()) {
             c.add(new ResearchTagEmiStack(it));
         }

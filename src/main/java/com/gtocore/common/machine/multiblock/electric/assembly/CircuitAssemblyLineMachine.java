@@ -5,7 +5,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -34,7 +34,7 @@ public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
     private int parallel;
 
     public CircuitAssemblyLineMachine(MetaMachineBlockEntity holder) {
-        super(holder, 64, i -> ItemUtils.getId(i).contains("precision_circuit_assembly_robot_mk"));
+        super(holder, 64, i -> RegistriesUtils.getId(i).contains("precision_circuit_assembly_robot_mk"));
     }
 
     @Override

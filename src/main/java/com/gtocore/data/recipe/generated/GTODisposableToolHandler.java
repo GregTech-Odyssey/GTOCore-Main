@@ -2,7 +2,7 @@ package com.gtocore.data.recipe.generated;
 
 import com.gtocore.common.data.GTORecipeCategories;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
@@ -46,7 +46,7 @@ final class GTODisposableToolHandler {
 
         for (DisposableTool tool : toolToMoldMap) {
             if (GTMaterialItems.TOOL_ITEMS.get(material, tool.tool) == null) continue;
-            THREE_DIMENSIONAL_PRINTER_RECIPES.builder(material.getName() + "_to_" + ItemUtils.getIdLocation(tool.item).getPath())
+            THREE_DIMENSIONAL_PRINTER_RECIPES.builder(material.getName() + "_to_" + RegistriesUtils.getIdLocation(tool.item).getPath())
                     .notConsumable(tool.mold)
                     .inputFluids(fluidStack)
                     .outputItems(tool.item, durability / tool.consume)

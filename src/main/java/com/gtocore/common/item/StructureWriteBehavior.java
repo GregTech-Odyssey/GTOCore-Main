@@ -178,7 +178,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
     }
 
     private static void appendBlockPredicate(StringBuilder builder, Block block, Character character) {
-        String id = ItemUtils.getId(block);
+        String id = RegistriesUtils.getId(block);
         String[] parts = StringUtils.decompose(id);
         boolean isGT = Objects.equals(parts[0], "gtceu");
         boolean isGTO = Objects.equals(parts[0], GTOCore.MOD_ID);
@@ -345,7 +345,7 @@ public final class StructureWriteBehavior implements IItemUIFactory {
         } else {
             Block block = context.getLevel().getBlockState(context.getClickedPos()).getBlock();
             player.displayClientMessage(Component.literal("已设置 ").append(block.getName()).append(" 为仓室方块"), true);
-            tag.putString("part", ItemUtils.getId(block));
+            tag.putString("part", RegistriesUtils.getId(block));
             return InteractionResult.CONSUME;
         }
         return InteractionResult.SUCCESS;

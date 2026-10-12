@@ -2,13 +2,14 @@ package com.gtocore.data.blockstate;
 
 import com.gtocore.common.data.GTOGlobes;
 
+import com.gtolib.utils.RegistriesUtils;
+
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import earth.terrarium.adastra.AdAstra;
@@ -26,7 +27,7 @@ public class AdAstraCompatBlockStateProvider extends BlockStateProvider {
     }
 
     private ResourceLocation key(Block block) {
-        return ForgeRegistries.BLOCKS.getKey(block);
+        return RegistriesUtils.getIdLocation(block);
     }
 
     private String name(Block block) {

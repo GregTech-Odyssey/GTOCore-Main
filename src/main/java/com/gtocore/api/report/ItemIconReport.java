@@ -3,6 +3,7 @@ package com.gtocore.api.report;
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.utils.RLUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
@@ -489,7 +490,7 @@ public class ItemIconReport {
             int suppItemCount = 0;
             for (Item item : BuiltInRegistries.ITEM) {
                 try {
-                    ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+                    ResourceLocation id = RegistriesUtils.getIdLocation(item);
                     if (id == null || exportedIds.contains(id)) continue;
                     exportedIds.add(id);
 
@@ -582,7 +583,7 @@ public class ItemIconReport {
             int suppFluidCount = 0;
             for (Fluid fluid : BuiltInRegistries.FLUID) {
                 try {
-                    ResourceLocation id = BuiltInRegistries.FLUID.getKey(fluid);
+                    ResourceLocation id = RegistriesUtils.getIdLocation(fluid);
                     if (id == null || exportedIds.contains(id)) continue;
                     exportedIds.add(id);
 
@@ -765,7 +766,7 @@ public class ItemIconReport {
             return image;
 
         } catch (Exception e) {
-            GTOCore.LOGGER.debug("FBO render failed for: {}", BuiltInRegistries.ITEM.getKey(stack.getItem()), e);
+            GTOCore.LOGGER.debug("FBO render failed for: {}", RegistriesUtils.getIdLocation(stack.getItem()), e);
             return null;
         }
     }
@@ -843,7 +844,7 @@ public class ItemIconReport {
             return image;
 
         } catch (Exception e) {
-            GTOCore.LOGGER.debug("FBO fluid render failed: {}", BuiltInRegistries.FLUID.getKey(fluid), e);
+            GTOCore.LOGGER.debug("FBO fluid render failed: {}", RegistriesUtils.getIdLocation(fluid), e);
             return null;
         }
     }
@@ -1038,7 +1039,7 @@ public class ItemIconReport {
             tagJson.addProperty("type", "item");
 
             JsonArray items = new JsonArray();
-            holders.forEach(h -> items.add(BuiltInRegistries.ITEM.getKey(h.value()).toString()));
+            holders.forEach(h -> items.add(RegistriesUtils.getIdLocation(h.value()).toString()));
             tagJson.add("items", items);
             tagJson.addProperty("count", items.size());
 
@@ -1061,7 +1062,7 @@ public class ItemIconReport {
             tagJson.addProperty("type", "fluid");
 
             JsonArray fluids = new JsonArray();
-            holders.forEach(h -> fluids.add(BuiltInRegistries.FLUID.getKey(h.value()).toString()));
+            holders.forEach(h -> fluids.add(RegistriesUtils.getIdLocation(h.value()).toString()));
             tagJson.add("fluids", fluids);
             tagJson.addProperty("count", fluids.size());
 
@@ -1084,7 +1085,7 @@ public class ItemIconReport {
             tagJson.addProperty("type", "block");
 
             JsonArray blocks = new JsonArray();
-            holders.forEach(h -> blocks.add(BuiltInRegistries.BLOCK.getKey(h.value()).toString()));
+            holders.forEach(h -> blocks.add(RegistriesUtils.getIdLocation(h.value()).toString()));
             tagJson.add("blocks", blocks);
             tagJson.addProperty("count", blocks.size());
 
@@ -1358,7 +1359,7 @@ public class ItemIconReport {
     // for (ItemStack stack : ingredient.inner.getItems()) {
     // if (!stack.isEmpty()) {
     // JsonObject stackJson = new JsonObject();
-    // ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+    // ResourceLocation itemId = RegistriesUtils.getIdLocation(stack.getItem());
     // stackJson.addProperty("item", itemId.toString());
     // stackJson.addProperty("count", stack.getCount());
     // if (stack.hasTag()) stackJson.addProperty("nbt", stack.getTag().toString());
@@ -1403,7 +1404,7 @@ public class ItemIconReport {
     // if (content.inner instanceof FluidIngredient ingredient) {
     // var fluid = ingredient.getFluid();
     // if (fluid != null) {
-    // fluidJson.addProperty("fluid", BuiltInRegistries.FLUID.getKey(fluid).toString());
+    // fluidJson.addProperty("fluid", RegistriesUtils.getIdLocation(fluid).toString());
     // } else {
     // fluidJson.addProperty("fluid", ingredient.toString());
     // }
@@ -1444,7 +1445,7 @@ public class ItemIconReport {
                 ItemStack result = recipe.getResultItem(minecraft.level.registryAccess());
                 if (!result.isEmpty()) {
                     JsonObject resultJson = new JsonObject();
-                    resultJson.addProperty("item", BuiltInRegistries.ITEM.getKey(result.getItem()).toString());
+                    resultJson.addProperty("item", RegistriesUtils.getIdLocation(result.getItem()).toString());
                     resultJson.addProperty("count", result.getCount());
                     if (result.hasTag()) resultJson.addProperty("nbt", result.getTag().toString());
                     recipeJson.add("result", resultJson);
@@ -1456,7 +1457,7 @@ public class ItemIconReport {
                     JsonArray items = new JsonArray();
                     for (ItemStack stack : ingredient.getItems()) {
                         JsonObject itemJson = new JsonObject();
-                        itemJson.addProperty("item", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+                        itemJson.addProperty("item", RegistriesUtils.getIdLocation(stack.getItem()).toString());
                         itemJson.addProperty("count", stack.getCount());
                         items.add(itemJson);
                     }
@@ -1512,7 +1513,7 @@ public class ItemIconReport {
 
         for (Item item : BuiltInRegistries.ITEM) {
             try {
-                ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+                ResourceLocation id = RegistriesUtils.getIdLocation(item);
 
                 JsonObject itemJson = new JsonObject();
                 itemJson.addProperty("id", id.toString());
@@ -1580,7 +1581,7 @@ public class ItemIconReport {
 
         for (Fluid fluid : BuiltInRegistries.FLUID) {
             try {
-                ResourceLocation id = BuiltInRegistries.FLUID.getKey(fluid);
+                ResourceLocation id = RegistriesUtils.getIdLocation(fluid);
 
                 JsonObject fluidJson = new JsonObject();
                 fluidJson.addProperty("id", id.toString());
@@ -1632,7 +1633,7 @@ public class ItemIconReport {
 
         for (net.minecraft.world.level.block.Block block : BuiltInRegistries.BLOCK) {
             try {
-                ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+                ResourceLocation id = RegistriesUtils.getIdLocation(block);
 
                 JsonObject blockJson = new JsonObject();
                 blockJson.addProperty("id", id.toString());

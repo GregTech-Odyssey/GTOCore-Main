@@ -34,7 +34,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import appeng.api.stacks.AEItemKey;
 
@@ -328,7 +327,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         } else if (stack instanceof FluidStack fluidStack) {
             root.putString(KEY_TYPE, TYPE_FLUID);
             CompoundTag stackTag = new CompoundTag();
-            stackTag.putString("FluidName", Objects.requireNonNull(ForgeRegistries.FLUIDS.getKey(fluidStack.getFluid())).toString());
+            stackTag.putString("FluidName", Objects.requireNonNull(RegistriesUtils.getIdLocation(fluidStack.getFluid())).toString());
             stackTag.putInt(KEY_AMOUNT, fluidStack.getAmount());
             if (fluidStack.hasTag()) stackTag.put("tag", fluidStack.getTag().copy());
             root.put(KEY_STACK, stackTag);

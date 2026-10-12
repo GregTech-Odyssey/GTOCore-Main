@@ -1,5 +1,7 @@
 package com.gtocore.utils;
 
+import com.gregtechceu.gtceu.api.item.IDataComponentItem;
+
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -27,7 +29,7 @@ public class StxckUtil {
         var extraItemCount = getExtraItemCount(entity);
         if (extraItemCount <= 0) return;
         var stack = entity.getItem();
-        var item = stack.getItem();
+        var item = ((IDataComponentItem) (Object) stack).gtceu$getItem();
         if (item != Items.AIR) {
             var maxSize = item.getMaxStackSize();
             if (stack.getCount() == maxSize) return;
@@ -89,19 +91,11 @@ public class StxckUtil {
     public boolean tryRefillItemStackOnEntityRemove(Entity entity, Entity.RemovalReason reason) {
         if (entity.getType() != EntityType.ITEM || reason != Entity.RemovalReason.DISCARDED) return false;
         var itemEntity = (ItemEntity) entity;
-        var extraItemCount = getExtraItemCount(itemEntity);
-        if (extraItemCount <= 0) return false;
-        var stack = itemEntity.getItem();
-        if (stack == ItemStack.EMPTY) return false;
-        var count = stack.getCount();
-        stack.setCount(1);
-        var refilled = stack.copy();
-        stack.setCount(count);
-        if (refilled.isEmpty()) return false;
-        var refillCount = Math.min(refilled.getMaxStackSize(), extraItemCount);
-        refilled.setCount(refillCount);
-        setExtraItemCount(itemEntity, extraItemCount - refillCount);
-        itemEntity.setItem(refilled);
+        if (getExtraItemCount(itemEntity) <= 0) return false;
+        var copied = itemEntity.getItem().copy();
+        itemEntity.setItem(copied);
+        copied.setCount(0);
+        refillItemStack(itemEntity);
         return true;
     }
 

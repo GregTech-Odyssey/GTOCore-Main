@@ -89,18 +89,16 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
         maxOCamount = 0;
         euMultiplier = 0;
         conversionRate = 2D;
-        for (var part : getParts()) {
-            if (part instanceof SteamHatchPartMachine machine) {
-                var fluid = STEAM;
-                if (machine instanceof LargeSteamHatchPartMachine partMachine) {
-                    conversionRate = partMachine.c;
-                    fluid = Keys.fluidType(partMachine.f);
-                    euMultiplier = partMachine.o;
-                    if (oc()) maxOCamount = partMachine.o;
-                }
-                energyContainer = new EnergyContainer(fluid, conversionRate, machine.tank);
-                return;
+        for (var part : getParts(SteamHatchPartMachine.class)) {
+            var fluid = STEAM;
+            if (part instanceof LargeSteamHatchPartMachine partMachine) {
+                conversionRate = partMachine.c;
+                fluid = Keys.fluidType(partMachine.f);
+                euMultiplier = partMachine.o;
+                if (oc()) maxOCamount = partMachine.o;
             }
+            energyContainer = new EnergyContainer(fluid, conversionRate, part.tank);
+            return;
         }
     }
 

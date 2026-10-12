@@ -28,7 +28,6 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -54,9 +53,7 @@ public class NeutronIrradiationChamber extends NoEnergyMultiblockMachine {
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        parts = Arrays.stream(getParts()).filter(p -> p instanceof NeutronIrradiationPartMachine)
-                .map(p -> (NeutronIrradiationPartMachine) p)
-                .toArray(NeutronIrradiationPartMachine[]::new);
+        parts = getParts(NeutronIrradiationPartMachine.class);
     }
 
     @Override

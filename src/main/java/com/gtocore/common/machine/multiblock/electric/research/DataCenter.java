@@ -191,9 +191,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     public Set<GTRecipeDefinition> getExistRecipes() {
-        return Arrays.stream(getParts())
-                .filter(IDataAccessHatchMachineAccessor.class::isInstance)
-                .map(IDataAccessHatchMachineAccessor.class::cast)
+        return Arrays.stream(getParts(IDataAccessHatchMachineAccessor.class))
                 .flatMap(i -> i.gtocore$recipes().stream())
                 .collect(Collectors.toSet());
     }
@@ -239,9 +237,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             return Collections.emptyList();
         }
         if (dataAccessHandlers.isEmpty()) {
-            Arrays.stream(getParts())
-                    .filter(DataAccessHatchMachine.class::isInstance)
-                    .map(DataAccessHatchMachine.class::cast)
+            Arrays.stream(getParts(DataAccessHatchMachine.class))
                     .sorted(Comparator.comparingLong(hatch -> hatch.getPos().asLong()))
                     .map(hatch -> ((IDataAccessHatchMachineAccessor) hatch).gtocore$getImportItems())
                     .forEach(dataAccessHandlers::add);

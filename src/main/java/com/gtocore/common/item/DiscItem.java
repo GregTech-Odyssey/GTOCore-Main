@@ -5,9 +5,8 @@ import com.gtocore.api.placeholder.IPlaceholder;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.recipe.lookup.IngredientConverter;
 import com.gtolib.api.recipe.lookup.MapIngredient;
-import com.gtolib.utils.FluidUtils;
-import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RLUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
@@ -76,7 +75,7 @@ public final class DiscItem extends Item implements IPlaceholder<Object, ItemSta
 
     public ItemStack getDisc(ItemStack itemStack) {
         ItemStack stack = getDefaultInstance();
-        ResourceLocation id = ItemUtils.getIdLocation(itemStack.getItem());
+        ResourceLocation id = RegistriesUtils.getIdLocation(itemStack.getItem());
         stack.getOrCreateTag().putString("i", id.getNamespace());
         stack.getOrCreateTag().putString("n", id.getPath());
         NBTS.computeIfAbsent(id.getPath(), k -> MapIngredient.getCount(null));
@@ -85,7 +84,7 @@ public final class DiscItem extends Item implements IPlaceholder<Object, ItemSta
 
     public ItemStack getDisc(Fluid fluid) {
         ItemStack stack = getDefaultInstance();
-        ResourceLocation id = FluidUtils.getIdLocation(fluid);
+        ResourceLocation id = RegistriesUtils.getIdLocation(fluid);
         stack.getOrCreateTag().putString("f", id.getNamespace());
         stack.getOrCreateTag().putString("n", id.getPath());
         NBTS.computeIfAbsent(id.getPath(), k -> MapIngredient.getCount(null));

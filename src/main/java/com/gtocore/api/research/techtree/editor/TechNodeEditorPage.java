@@ -7,6 +7,7 @@ import com.gtocore.api.research.techtree.ui.TechTreeView;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 
 import com.gtolib.GTOCore;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -33,7 +34,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.ingredient.IGhostIngredientTarget;
@@ -284,12 +284,12 @@ public final class TechNodeEditorPage {
 
     private static @Nullable String iconExpression(State state) {
         if (!state.iconFluid.isEmpty()) {
-            ResourceLocation id = ForgeRegistries.FLUIDS.getKey(state.iconFluid.getFluid());
+            ResourceLocation id = RegistriesUtils.getIdLocation(state.iconFluid.getFluid());
             if (id != null) return "RegistriesUtils.getFluid(\"" + escape(id.toString()) + "\")";
         }
         var stack = state.icon.getStackInSlot(0);
         if (stack.isEmpty()) return null;
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation id = RegistriesUtils.getIdLocation(stack.getItem());
         return id == null ? null : "RegistriesUtils.getItem(\"" + escape(id.toString()) + "\")";
     }
 
@@ -330,7 +330,7 @@ public final class TechNodeEditorPage {
             code.append(nested).append(indent).append(".addMaterialNeeded(").append(tag).append(", ").append(material.amount).append("L)\n");
         }
         if (!eureka.isEmpty()) {
-            ResourceLocation id = ForgeRegistries.ITEMS.getKey(eureka.getItem());
+            ResourceLocation id = RegistriesUtils.getIdLocation(eureka.getItem());
             if (id != null) {
                 code.append(nested).append(indent).append(".setEurekaItem(RegistriesUtils.getItem(\"").append(escape(id.toString()))
                         .append("\"), ").append(state.eurekaPercent / 100f).append("F)\n");

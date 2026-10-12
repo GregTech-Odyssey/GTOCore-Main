@@ -16,7 +16,6 @@ import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.item.MultiStepItemHelper;
 import com.gtolib.api.item.tool.GTOToolType;
-import com.gtolib.utils.ItemUtils;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
@@ -116,7 +115,7 @@ public final class MiscRecipe {
             }
         }
 
-        BlockConversionRoomMachine.COV_RECIPE.forEach((a, b) -> BLOCK_CONVERSIONRECIPES.recipeBuilder(ItemUtils.getIdLocation(a).getPath())
+        BlockConversionRoomMachine.COV_RECIPE.forEach((a, b) -> BLOCK_CONVERSIONRECIPES.recipeBuilder(RegistriesUtils.getIdLocation(a).getPath())
                 .inputItems(a.asItem())
                 .outputItems(b.asItem())
                 .duration(20)

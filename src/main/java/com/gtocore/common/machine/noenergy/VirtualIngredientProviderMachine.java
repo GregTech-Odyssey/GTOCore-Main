@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy;
 
 import com.gtolib.api.ae2.storage.CellDataStorage;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
@@ -28,7 +29,6 @@ import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -200,7 +200,7 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
             if (key != null) totals.addTo(key, storage.amountAt(i));
         }
         var keys = new ArrayList<>(totals.keySet());
-        keys.sort(Comparator.comparing((AEItemKey key) -> BuiltInRegistries.ITEM.getKey(key.getItem()))
+        keys.sort(Comparator.comparing((AEItemKey key) -> RegistriesUtils.getIdLocation(key.getItem()))
                 .thenComparing(key -> Objects.toString(key.getTag(), "")));
         int slot = 0;
         for (var key : keys) {

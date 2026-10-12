@@ -5,8 +5,7 @@ import com.gtocore.common.data.GTORecipeTypes;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.DummyMachine;
-import com.gtolib.utils.FluidUtils;
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.StringConverter;
 import com.gtolib.utils.StringIndex;
 
@@ -133,7 +132,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                             continue;
                         }
                         var first = stacks[0];
-                        String s = FluidUtils.getId(first.getFluid());
+                        String s = RegistriesUtils.getId(first.getFluid());
                         var nbt = first.getTag();
                         input.add(nbt == null ? s : s + nbt);
                     }
@@ -287,13 +286,13 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                     if (!id.isEmpty()) break;
                     var key = machine.exportItems.keyAt(i);
                     if (key == null) continue;
-                    id = ItemUtils.getIdLocation(key.getItem()).getPath();
+                    id = RegistriesUtils.getIdLocation(key.getItem()).getPath();
                 }
                 for (int i = 0; i < machine.exportFluids.size(); i++) {
                     if (!id.isEmpty()) break;
                     var key = machine.exportFluids.keyAt(i);
                     if (key == null) continue;
-                    id = FluidUtils.getIdLocation(key.getFluid()).getPath();
+                    id = RegistriesUtils.getIdLocation(key.getFluid()).getPath();
                 }
             }
             stringBuilder.append("\n").append(recipeType).append(".builder(\"").append(id).append("\")\n");
@@ -344,7 +343,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
             String id = machine.id;
             var output = machine.exportItems.keyAt(0);
             if (id.isEmpty())
-                id = ItemUtils.getIdLocation(output == null ? Items.AIR : output.getItem()).getPath();
+                id = RegistriesUtils.getIdLocation(output == null ? Items.AIR : output.getItem()).getPath();
             stringBuilder.append("\nVanillaRecipeHelper.addShapedRecipe(");
             stringBuilder.append("GTOCore.id(\"").append(id).append("\"), ");
             stringBuilder.append(output == null ? null : StringConverter.fromItem(KeyIngredient.of(output.getReadOnlyStack()), machine.exportItems.amountAt(0), 0)).append(",\n\"");
@@ -397,7 +396,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
                     for (ItemStack stack : itemValue.getItems()) {
                         if (stack.isEmpty()) continue;
                         if (stack.is(GTItems.PROGRAMMED_CIRCUIT.get())) return "c" + IntCircuitBehaviour.getCircuitConfiguration(stack);
-                        String s = ItemUtils.getId(stack);
+                        String s = RegistriesUtils.getId(stack);
                         var nbt = stack.getTag();
                         return nbt == null ? s : s + nbt;
                     }
@@ -411,7 +410,7 @@ public final class RecipeEditorBehavior implements IItemUIFactory, IFancyUIProvi
         if (!(ingredient.key() instanceof AEItemKey key)) return null;
         int circuit = Circuits.configOf(key);
         if (circuit >= 0) return "c" + circuit;
-        String s = ItemUtils.getId(key.item);
+        String s = RegistriesUtils.getId(key.item);
         var nbt = key.getTag();
         return nbt == null ? s : s + nbt;
     }

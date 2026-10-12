@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeySet;
 import appeng.api.storage.MEStorage;
 
 import org.spongepowered.asm.mixin.*;
@@ -19,15 +20,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Set;
-
 @Mixin(targets = "appeng.me.cells.CreativeCellInventory")
 public abstract class CreativeCellInventoryMixin {
 
     @Mutable
     @Final
     @Shadow(remap = false)
-    private Set<AEKey> configured;
+    private AEKeySet<AEKey> configured;
 
     @Shadow(remap = false)
     @Final

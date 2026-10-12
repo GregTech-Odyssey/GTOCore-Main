@@ -358,8 +358,8 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     /// 容量变了，让结构里的保险库仓重新读一遍
     private void refreshHatches() {
-        for (var part : getParts()) {
-            if (part.self() instanceof MEStorageHatch hatch) hatch.refreshStorageBinding();
+        for (var part : getParts(MEStorageHatch.class)) {
+            part.refreshStorageBinding();
         }
     }
 

@@ -6,7 +6,7 @@ import com.gtolib.api.machine.feature.multiblock.ICrossRecipeMachine;
 import com.gtolib.api.recipe.ContentBuilder;
 import com.gtolib.utils.FluidUtils;
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
@@ -82,7 +82,7 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
                     if (!(output.key() instanceof AEItemKey key)) return;
                     var nbt = new CompoundTag();
                     nbt.putInt("c", output.chance());
-                    nbt.putString("id", ItemUtils.getId(key.getItem()));
+                    nbt.putString("id", RegistriesUtils.getId(key.getItem()));
                     nbt.putLong("a", entry.getLongValue());
                     if (key.hasTag()) {
                         nbt.put("tag", key.copyTag());
@@ -98,7 +98,7 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
                     if (!(output.key() instanceof AEFluidKey key)) return;
                     var nbt = new CompoundTag();
                     nbt.putInt("c", output.chance());
-                    nbt.putString("FluidName", FluidUtils.getId(key.getFluid()));
+                    nbt.putString("FluidName", RegistriesUtils.getId(key.getFluid()));
                     nbt.putLong("a", entry.getLongValue());
                     if (key.hasTag()) {
                         nbt.put("tag", key.copyTag());

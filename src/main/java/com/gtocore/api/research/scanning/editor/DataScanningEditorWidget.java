@@ -3,6 +3,7 @@ package com.gtocore.api.research.scanning.editor;
 import com.gtocore.api.research.ResearchTag;
 
 import com.gtolib.GTOCore;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 
@@ -292,12 +293,12 @@ final class DataScanningEditorWidget extends DraggableScrollableWidgetGroup {
             return null;
         }
         if (stack.getKey() instanceof Item item) {
-            ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
-            return id == null ? null : new IngredientValue(IngredientKind.ITEM, id);
+            ResourceLocation id = RegistriesUtils.getIdLocation(item);
+            return new IngredientValue(IngredientKind.ITEM, id);
         }
         if (stack.getKey() instanceof Fluid fluid) {
-            ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
-            return id == null ? null : new IngredientValue(IngredientKind.FLUID, id);
+            ResourceLocation id = RegistriesUtils.getIdLocation(fluid);
+            return new IngredientValue(IngredientKind.FLUID, id);
         }
         return null;
     }

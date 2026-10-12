@@ -1,6 +1,6 @@
 package com.gtocore.common.item.armor;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.item.armor.ArmorComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.IArmorLogic;
@@ -147,7 +147,7 @@ public final class SpaceArmorComponentItem extends ArmorComponentItem implements
 
     private static boolean isSpaceSetPiece(ItemStack stack) {
         if (!(stack.getItem() instanceof ArmorComponentItem item)) return false;
-        String path = ItemUtils.getIdLocation(item).getPath();
+        String path = RegistriesUtils.getIdLocation(item).getPath();
         return path.contains("nanomuscle") || path.contains("quarktech");
     }
 

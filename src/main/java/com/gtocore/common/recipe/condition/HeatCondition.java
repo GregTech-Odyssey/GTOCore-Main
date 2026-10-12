@@ -62,11 +62,9 @@ public final class HeatCondition extends RecipeCondition {
                 hasHeatSource = true;
                 if (coilMachine.getTemperature() >= temperature) return true;
             }
-            for (var p : controller.getParts()) {
-                if (p instanceof IHeatContainerPart t) {
-                    hasHeatSource = true;
-                    if (t.getHeatContainer().getTemperature() >= temperature) return true;
-                }
+            for (var p : controller.getParts(IHeatContainerPart.class)) {
+                hasHeatSource = true;
+                if (p.getHeatContainer().getTemperature() >= temperature) return true;
             }
             // check() 会反转结果；缺少热源时两种温度限制都应失败。
             return !hasHeatSource && isReverse;

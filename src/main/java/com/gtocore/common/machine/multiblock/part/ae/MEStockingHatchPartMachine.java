@@ -9,7 +9,6 @@ import com.gtolib.GTOCore;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.multiblock.IMEStockingPart;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlotList;
@@ -116,13 +115,11 @@ public class MEStockingHatchPartMachine extends MEInputHatchPartMachine implemen
     public boolean testConfiguredInOtherPart(@Nullable GenericStack config) {
         if (config == null) return false;
         if (!isFormed()) return false;
-        for (IMultiController controller : getControllers()) {
-            for (IMultiPart part : controller.getParts()) {
-                if (part instanceof MEStockingHatchPartMachine hatch) {
-                    if (hatch == this) continue;
-                    if (hatch.aeFluidHandler.hasStackInConfig(config, false)) {
-                        return true;
-                    }
+        for (var controller : getControllers()) {
+            for (var part : controller.getParts(MEStockingHatchPartMachine.class)) {
+                if (part == this) continue;
+                if (part.aeFluidHandler.hasStackInConfig(config, false)) {
+                    return true;
                 }
             }
         }

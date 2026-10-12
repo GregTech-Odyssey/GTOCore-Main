@@ -12,6 +12,7 @@ import com.gtolib.api.machine.mana.feature.IManaContainerMachine;
 import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 import com.gtolib.api.wireless.WirelessManaContainer;
 import com.gtolib.utils.RLUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -24,7 +25,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -304,7 +304,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
     }
 
     private static boolean isBlackListed(Block block) {
-        return BLACKLIST.contains(BuiltInRegistries.BLOCK.getKey(block));
+        return BLACKLIST.contains(RegistriesUtils.getIdLocation(block));
     }
 
     private static boolean isBlockEntity(UseOnContext context) {

@@ -4,7 +4,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeCategories;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -106,7 +106,7 @@ final class FluidSolidfication {
 
         for (Map.Entry<Item, TagKey<Item>> disposableMold : toolToMoldMap.entrySet()) {
             TagKey<Item> tagKey = disposableMold.getValue();
-            FLUID_SOLIDFICATION_RECIPES.builder("disposable_" + ItemUtils.getIdLocation(disposableMold.getKey()).getPath())
+            FLUID_SOLIDFICATION_RECIPES.builder("disposable_" + RegistriesUtils.getIdLocation(disposableMold.getKey()).getPath())
                     .inputItems(tagKey)
                     .inputFluids(GTMaterials.Steel.getFluid(4 * GTValues.L))
                     .outputItems(disposableMold.getKey())

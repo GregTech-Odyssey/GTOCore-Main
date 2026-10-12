@@ -3,7 +3,7 @@ package com.gtocore.data.recipe;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
-import com.gtolib.utils.ItemUtils;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -32,7 +32,7 @@ public final class FuelRecipe {
         for (var fuelEntry : FurnaceBlockEntity.getFuel().entrySet()) {
             if (fuelEntry.getKey() instanceof BucketItem) continue;
             addedItems.add(fuelEntry.getKey());
-            var resLoc = ItemUtils.getIdLocation(fuelEntry.getKey());
+            var resLoc = RegistriesUtils.getIdLocation(fuelEntry.getKey());
             long burnTime = fuelEntry.getValue();
             STEAM_BOILER_RECIPES.recipeBuilder(resLoc.getNamespace() + "_" + resLoc.getPath())
                     .inputItems(fuelEntry.getKey())
@@ -50,7 +50,7 @@ public final class FuelRecipe {
             if (item instanceof BucketItem) continue;
             long burnTime = GTUtil.getItemBurnTime(item);
             if (burnTime > 0 && !addedItems.contains(item)) {
-                var resLoc = ItemUtils.getIdLocation(item);
+                var resLoc = RegistriesUtils.getIdLocation(item);
                 STEAM_BOILER_RECIPES.recipeBuilder(resLoc.getNamespace() + "_" + resLoc.getPath())
                         .inputItems(item)
                         .duration((int) Math.min(Integer.MAX_VALUE, burnTime << 3))

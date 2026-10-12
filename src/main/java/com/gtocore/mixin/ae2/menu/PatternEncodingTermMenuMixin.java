@@ -364,10 +364,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
 
     @Unique
     private static List<IExtendedPatternContainer> gto$getSmaContainers(SuperMolecularAssemblerMachine smaMachine) {
-        return Arrays.stream(smaMachine.getParts())
-                .filter(IExtendedPatternContainer.class::isInstance)
-                .map(IExtendedPatternContainer.class::cast)
-                .toList();
+        return Arrays.asList(smaMachine.getParts(IExtendedPatternContainer.class));
     }
 
     /**
@@ -424,9 +421,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         if (patternInv instanceof MEPatternPartMachine.PatternInventory inv &&
                 inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
-            return Arrays.stream(smaMachine.getParts())
-                    .filter(IExtendedPatternContainer.class::isInstance)
-                    .map(IExtendedPatternContainer.class::cast)
+            return Arrays.stream(smaMachine.getParts(IExtendedPatternContainer.class))
                     .noneMatch(p -> gto$canAddPattern(p, patternStack));
         }
         return !gto$canAddPattern(container, patternStack);
@@ -543,8 +538,8 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
         } else if (patternInv instanceof MEPatternPartMachine.PatternInventory inv &&
                 inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
-                    for (var part : smaMachine.getParts()) {
-                        if (part instanceof IExtendedPatternContainer c) gto$collectPatternOutputs(c, level, outputs);
+                    for (var part : smaMachine.getParts(IExtendedPatternContainer.class)) {
+                        gto$collectPatternOutputs(part, level, outputs);
                     }
                 } else {
                     gto$collectPatternOutputs(container, level, outputs);

@@ -18,7 +18,6 @@ import dev.emi.emi.api.stack.EmiStack;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public final class IonEmiStack extends EmiStack {
 
@@ -109,7 +108,7 @@ public final class IonEmiStack extends EmiStack {
         return Collections.singletonList(ClientTooltipComponent.create(getTooltipText().getFirst().getVisualOrderText()));
     }
 
-    public static void registerIonEmiStacks(Set<EmiStack> stacks) {
+    public static void registerIonEmiStacks(List<EmiStack> stacks) {
         Ions.REGISTRY_KEY.forEach(ion -> stacks.add(new IonEmiStack(ion)));
     }
 }
