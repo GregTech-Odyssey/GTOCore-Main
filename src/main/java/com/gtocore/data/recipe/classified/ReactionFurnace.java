@@ -754,7 +754,7 @@ final class ReactionFurnace {
                 .duration(6500)
                 .save();
         REACTION_FURNACE_RECIPES.builder("hyplatinum_sdb_resin_catalystdrogen")
-                .inputItems("gtocore:platinum_sdb_resin_catalyst")
+                .catalyst(GTOMaterials.PlatinumSDBResin)
                 .inputFluids(GTOMaterials.HydrogenDeuterium, 1000)
                 .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 1000))
                 .outputFluids(GTMaterials.Deuterium, 1000)

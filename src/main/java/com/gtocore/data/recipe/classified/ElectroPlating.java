@@ -214,7 +214,7 @@ public class ElectroPlating {
                 .save();
         ELECTROPLATING_RECIPES.builder("cycle_of_blossoms_solvent")
                 .halfReaction(
-                        HalfReaction.builder(ElectrolyteType.IONIC_LIQUID)
+                        HalfReaction.builder(ElectrolyteType.WATER)
                                 .requiredIons(new IonAmount(Ions.ANIMIUM, 4L))
                                 .build())
                 .inputItems(GTOItems.COLORFUL_MYSTICAL_FLOWER)
@@ -227,7 +227,7 @@ public class ElectroPlating {
                 .save();
         ELECTROPLATING_RECIPES.builder("animium")
                 .halfReaction(
-                        HalfReaction.builder(ElectrolyteType.IONIC_LIQUID)
+                        HalfReaction.builder(ElectrolyteType.WATER)
                                 .requiredIons(new IonAmount(Ions.ANIMIUM, 4L))
                                 .build())
                 .inputItems("extrabotany:spirit_fragment")

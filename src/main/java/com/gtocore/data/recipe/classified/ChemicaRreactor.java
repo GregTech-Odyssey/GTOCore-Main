@@ -81,7 +81,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("propargyl_alcohol")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Copper)
+                .catalyst(GTMaterials.Copper)
                 .inputFluids(GTOMaterials.Acetylene, 1000)
                 .inputFluids(GTMaterials.Formaldehyde, 1000)
                 .outputFluids(GTOMaterials.PropargylAlcohol, 1000)
@@ -209,7 +209,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("formaldehyde")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Silver)
+                .catalyst(GTMaterials.Silver)
                 .inputFluids(GTMaterials.Methanol, 1000)
                 .inputFluids(GTMaterials.Oxygen, 1000)
                 .outputFluids(GTMaterials.Formaldehyde, 1000)
@@ -290,7 +290,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("aniline")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Zinc)
+                .catalyst(GTMaterials.Zinc)
                 .inputFluids(GTMaterials.Nitrobenzene, 1000)
                 .inputFluids(GTMaterials.Hydrogen, 3000)
                 .outputFluids(GTOMaterials.Aniline, 1000)
@@ -808,7 +808,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("butane_1_4_diol")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.MolybdenumTrioxide)
+                .catalyst(GTOMaterials.MolybdenumTrioxide)
                 .inputItems(TagPrefix.dust, GTOMaterials.TelluriumOxide, 3)
                 .inputFluids(GTMaterials.Butane, 1000)
                 .outputItems(TagPrefix.dust, GTMaterials.Tellurium)
@@ -837,7 +837,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("perfluorobenzene")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Rhenium)
+                .catalyst(GTMaterials.Rhenium)
                 .inputItems(TagPrefix.dust, GTOMaterials.PotassiumFluoride, 12)
                 .inputFluids(GTMaterials.Benzene, 1000)
                 .inputFluids(GTMaterials.Chlorine, 6000)
@@ -849,7 +849,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("sodium_nitrite_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.CoAcAbCatalyst)
+                .catalyst(GTOMaterials.CoAcAbCatalyst)
                 .inputFluids(GTOMaterials.SodiumNitrateSolution, 1000)
                 .outputItems(TagPrefix.dust, GTMaterials.SodiumNitrite, 4)
                 .outputFluids(GTMaterials.Oxygen, 1000)
@@ -951,7 +951,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("acrylonitrile")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Platinum)
+                .catalyst(GTMaterials.Platinum)
                 .inputFluids(GTMaterials.Oxygen, 3000)
                 .inputFluids(GTMaterials.Ammonia, 1000)
                 .inputFluids(GTMaterials.Propene, 1000)
@@ -979,7 +979,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("n_difluorophenylpyrrole")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.PhosphorusPentoxide)
+                .catalyst(GTMaterials.PhosphorusPentoxide)
                 .inputFluids(GTOMaterials.Succinaldehyde, 1000)
                 .inputFluids(GTOMaterials.Difluoroaniline, 1000)
                 .outputFluids(GTOMaterials.NDifluorophenylpyrrole, 1000)
@@ -1174,7 +1174,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("succinic_acid_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.RhodiumTriphenylphosphineChloride)
+                .catalyst(GTOMaterials.RhodiumTriphenylphosphineChloride)
                 .inputFluids(GTMaterials.Water, 1000)
                 .inputFluids(GTMaterials.Hydrogen, 1000)
                 .inputFluids(GTOMaterials.MaleicAnhydride, 2000)
@@ -1312,7 +1312,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("oxydianiline")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Tin)
+                .catalyst(GTMaterials.Tin)
                 .inputFluids(GTOMaterials.Aniline, 2000)
                 .inputFluids(GTMaterials.Phenol, 1000)
                 .outputFluids(GTOMaterials.Oxydianiline, 1000)
@@ -1322,7 +1322,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("maleic_anhydride")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Bismuth)
+                .catalyst(GTMaterials.Bismuth)
                 .inputFluids(GTMaterials.Oxygen, 7000)
                 .inputFluids(GTMaterials.Butane, 1000)
                 .outputFluids(GTMaterials.Water, 4000)
@@ -1377,7 +1377,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("ethylenediamine")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Palladium)
+                .catalyst(GTMaterials.Palladium)
                 .inputFluids(GTMaterials.Ammonia, 1000)
                 .inputFluids(GTOMaterials.Ethanolamine, 1000)
                 .outputFluids(Ethylenediamine.getFluid(1000))
@@ -1471,7 +1471,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("cyclooctadiene")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Nickel)
+                .catalyst(GTMaterials.Nickel)
                 .inputFluids(GTMaterials.Butadiene, 2000)
                 .outputFluids(GTOMaterials.Cyclooctadiene, 1000)
                 .EUt(30720)
@@ -1803,7 +1803,7 @@ final class ChemicaRreactor {
                 .duration(120)
                 .save();
         LARGE_CHEMICAL_RECIPES.builder("disulfonate_dichlorodiphenylsulfone")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Copper)
+                .catalyst(GTMaterials.Copper)
                 .inputFluids(GTOMaterials.BenzenesulfonicAcid, 2000)
                 .inputFluids(GTMaterials.Chlorine, 2000)
                 .inputFluids(GTOMaterials.ThionylChloride, 1000)
@@ -1813,7 +1813,7 @@ final class ChemicaRreactor {
                 .duration(1400)
                 .save();
         LARGE_CHEMICAL_RECIPES.builder("dichlorodiphenylsulfone")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Copper)
+                .catalyst(GTMaterials.Copper)
                 .inputFluids(GTMaterials.Chlorobenzene, 2000)
                 .inputFluids(GTOMaterials.ThionylChloride, 1000)
                 .outputFluids(GTOMaterials.Dichlorodiphenylsulfone, 1000)
@@ -1822,7 +1822,7 @@ final class ChemicaRreactor {
                 .duration(1400)
                 .save();
         LARGE_CHEMICAL_RECIPES.builder("difluorodiphenylsulfone")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Copper)
+                .catalyst(GTMaterials.Copper)
                 .inputFluids(GTOMaterials.FluoroBenzene, 3000)
                 .inputFluids(GTOMaterials.ThionylChloride, 1000)
                 .outputFluids(GTOMaterials.Difluorodiphenylsulfone, 1000)
@@ -1839,7 +1839,7 @@ final class ChemicaRreactor {
                 .duration(1400)
                 .save();
         LARGE_CHEMICAL_RECIPES.builder("benzoic_acid")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Silver)
+                .catalyst(GTMaterials.Silver)
                 .inputFluids(GTOMaterials.Benzaldehyde, 4000)
                 .inputFluids(GTMaterials.Oxygen, 1000)
                 .outputFluids(GTOMaterials.BenzoicAcid, 4000)
@@ -1847,7 +1847,7 @@ final class ChemicaRreactor {
                 .duration(1400)
                 .save();
         LARGE_CHEMICAL_RECIPES.builder("benzoic_anhydride")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.PhosphorusPentoxide)
+                .catalyst(GTMaterials.PhosphorusPentoxide)
                 .inputFluids(GTOMaterials.BenzoicAcid, 4000)
                 .outputFluids(GTOMaterials.BenzoicAnhydride, 2000)
                 .outputFluids(GTMaterials.Water, 1000)
@@ -1971,7 +1971,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("acetaldehyde")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.OsmiumTetroxide)
+                .catalyst(GTMaterials.OsmiumTetroxide)
                 .inputFluids(GTMaterials.Acetone, 1000)
                 .inputFluids(GTMaterials.Oxygen, 1000)
                 .outputFluids(GTMaterials.Formaldehyde, 1000)
@@ -1981,7 +1981,7 @@ final class ChemicaRreactor {
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("gammabutyrolactone")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Copper)
+                .catalyst(GTMaterials.Copper)
                 .inputFluids(GTOMaterials.Butane14Diol, 1000)
                 .outputFluids(GTOMaterials.GammaButyrolactone, 1000)
                 .outputFluids(GTMaterials.Hydrogen, 4000)
@@ -2100,7 +2100,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("californium_trichloride_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Ferrosilite)
+                .catalyst(GTMaterials.Ferrosilite)
                 .inputItems(TagPrefix.dust, GTMaterials.Californium)
                 .inputFluids(GTMaterials.HydrochloricAcid, 6000)
                 .outputItems(TagPrefix.dust, GTOMaterials.CaliforniumTrichloride, 4)
@@ -2210,7 +2210,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("lithium_niobate_nanoparticles_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Hafnium)
+                .catalyst(GTMaterials.Hafnium)
                 .inputItems(TagPrefix.dust, GTMaterials.Lithium, 2)
                 .inputItems(TagPrefix.dust, GTMaterials.Niobium)
                 .inputFluids(GTMaterials.Oxygen, 3000)
@@ -2221,7 +2221,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("unfolded_fullerene_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.TiAlChloride)
+                .catalyst(GTOMaterials.TiAlChloride)
                 .inputItems(TagPrefix.dust, GTOMaterials.BenzophenanthrenylAcetonitrile, 102)
                 .outputItems(TagPrefix.dust, GTOMaterials.UnfoldedFullerene)
                 .EUt(7680)
@@ -2230,7 +2230,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("trimethyltin_chloride")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Magnesium)
+                .catalyst(GTMaterials.Magnesium)
                 .inputItems(TagPrefix.dust, GTMaterials.Tin)
                 .inputFluids(GTMaterials.Methane, 3000)
                 .inputFluids(GTMaterials.Oxygen, 1000)
@@ -2402,7 +2402,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("dihydroiodotetracene")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.RhodiumRheniumNaquadahCatalyst)
+                .catalyst(GTOMaterials.RhodiumRheniumNaquadahCatalyst)
                 .inputItems(TagPrefix.dust, GTOMaterials.BromoSuccinamide, 12)
                 .inputFluids(GTOMaterials.IodineMonochloride, 1000)
                 .inputFluids(GTOMaterials.AcetylatingReagent, 1000)
@@ -2484,7 +2484,7 @@ final class ChemicaRreactor {
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("pcbs")
                 .inputItems(TagPrefix.dust, GTOMaterials.Fullerene, 8)
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.DMAP)
+                .catalyst(GTOMaterials.DMAP)
                 .inputFluids(GTOMaterials.PhenylPentanoicAcid, 8000)
                 .inputFluids(GTOMaterials.Dichloromethane, 8000)
                 .inputFluids(GTMaterials.Styrene, 7000)
@@ -2583,7 +2583,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("p_phenylenediamine_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Palladium)
+                .catalyst(GTMaterials.Palladium)
                 .inputFluids(GTMaterials.NitrogenDioxide, 100)
                 .inputFluids(GTMaterials.Hydrogen, 6000)
                 .inputFluids(GTOMaterials.PNitroaniline, 1000)
@@ -2726,7 +2726,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("methylbenzophenanthrene_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Iodine)
+                .catalyst(GTMaterials.Iodine)
                 .inputFluids(GTMaterials.Naphthalene, 1000)
                 .inputFluids(GTMaterials.Formaldehyde, 1000)
                 .inputFluids(GTMaterials.Oxygen, 1000)
@@ -2747,7 +2747,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("difluorobenzophenone_dust")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.ZnFeAlClCatalyst)
+                .catalyst(GTOMaterials.ZnFeAlClCatalyst)
                 .inputFluids(GTOMaterials.Fluorotoluene, 1000)
                 .inputFluids(GTMaterials.Chlorine, 6000)
                 .inputFluids(GTMaterials.Water, 1000)
@@ -2928,7 +2928,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("trichloroflerane")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Ferrosilite)
+                .catalyst(GTMaterials.Ferrosilite)
                 .inputItems(TagPrefix.dust, GTMaterials.Flerovium)
                 .inputFluids(GTMaterials.HydrochloricAcid, 3000)
                 .outputFluids(GTOMaterials.Trichloroflerane, 1000)
@@ -3030,7 +3030,7 @@ final class ChemicaRreactor {
 
         CHEMICAL_RECIPES.recipeBuilder("strontium_carbonate_ceramic_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.StrontiumSulfate, 6)
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Hafnium)
+                .catalyst(GTMaterials.Hafnium)
                 .inputFluids(GTMaterials.CarbonDioxide, 1000)
                 .inputFluids(GTMaterials.Water, 1000)
                 .outputItems(TagPrefix.dust, GTOMaterials.StrontiumCarbonateCeramic)
@@ -3202,7 +3202,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.builder("pedot")
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.IronSulfate)
+                .catalyst(GTOMaterials.IronSulfate)
                 .outputItems(TagPrefix.dust, GTOMaterials.Pedot)
                 .notConsumableFluid(GTMaterials.SodiumPersulfate, 1000)
                 .inputFluids(GTOMaterials.Ethylenedioxythiophene, 1000)
@@ -3214,7 +3214,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.builder("dietoxythiophene")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Zinc)
+                .catalyst(GTMaterials.Zinc)
                 .inputItems(TagPrefix.dust, GTOMaterials.SodiumEthylate, 18)
                 .outputItems(TagPrefix.dust, GTOMaterials.SodiumBromide, 8)
                 .inputFluids(GTOMaterials.Perbromothiophene, 1000)
@@ -3460,7 +3460,7 @@ final class ChemicaRreactor {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.builder("vinyl_2_bipyridine")
-                .inputItems(GTOTagPrefix.CATALYST, GTMaterials.Palladium)
+                .catalyst(GTMaterials.Palladium)
                 .inputFluids(GTOMaterials.Bipyridine, 1000)
                 .inputFluids(GTMaterials.VinylChloride, 1000)
                 .outputFluids(GTOMaterials.Vinyl2Bipyridine, 1000)
@@ -3517,7 +3517,7 @@ final class ChemicaRreactor {
                 .duration(512)
                 .save();
         LARGE_CHEMICAL_RECIPES.builder("copper_acetylide_dust")
-                .inputItems("gtocore:platinum_catalyst")
+                .catalyst(GTMaterials.Platinum)
                 .inputItems(TagPrefix.dust, GTMaterials.Copper, 2)
                 .outputItems(TagPrefix.dust, GTOMaterials.CopperAcetylide)
                 .inputFluids(GTOMaterials.Acetylene, 2000)

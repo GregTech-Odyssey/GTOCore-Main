@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtolib.api.machine.trait.NotifiableCatalystHandler;
 import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
+import com.gtolib.api.recipe.extension.CatalystRecipeExtension;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
@@ -16,6 +16,6 @@ public final class MECatalystPatternBufferPartMachine extends MEPatternBufferPar
     @Override
     @NotNull
     NotifiableNotConsumableItemHandler createShareInventory() {
-        return NotifiableCatalystHandler.shared(this, SHARE_SLOTS);
+        return CatalystRecipeExtension.createSharedInventory(this, SHARE_SLOTS);
     }
 }

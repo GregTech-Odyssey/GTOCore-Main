@@ -1,6 +1,5 @@
 package com.gtocore.data.recipe.processing;
 
-import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
@@ -547,7 +546,7 @@ public final class Lanthanidetreatment {
                 .save();
 
         LARGE_CHEMICAL_RECIPES.recipeBuilder("make_p507_1")
-                .inputItems(GTOTagPrefix.CATALYST, Copper)
+                .catalyst(Copper)
                 .inputFluids(SeedOil, 3000)
                 .inputFluids(Hydrogen, 8000)
                 .outputFluids(EthylHexanol.getFluid(1000))

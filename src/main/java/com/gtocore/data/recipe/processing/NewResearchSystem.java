@@ -21,7 +21,6 @@ import static com.gregtechceu.gtceu.common.data.GTBlocks.ADVANCED_COMPUTER_CASIN
 import static com.gregtechceu.gtceu.common.data.GTBlocks.OPTICAL_PIPES;
 import static com.gregtechceu.gtceu.common.data.GTItems.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
-import static com.gtocore.api.data.tag.GTOTagPrefix.CATALYST;
 import static com.gtocore.common.data.GTOBlocks.BIOCOMPUTER_CASING;
 import static com.gtocore.common.data.GTOBlocks.PHASE_CHANGE_BIOCOMPUTER_COOLING_VENTS;
 import static com.gtocore.common.data.GTOItems.*;
@@ -74,7 +73,7 @@ public final class NewResearchSystem {
                     .save();
 
             AUTOCLAVE_RECIPES.recipeBuilder("make_ethyl_silicate_2")
-                    .inputItems(CATALYST, Brass)
+                    .catalyst(Brass)
                     .inputItems(dust, ElectronicGradeSilicon, 1)
                     .inputFluids(AbsoluteEthanol, 4000)
                     .outputFluids(EthylSilicate.getFluid(1000))
@@ -147,7 +146,7 @@ public final class NewResearchSystem {
                     .save();
 
             LARGE_CHEMICAL_RECIPES.recipeBuilder("chemical_triethoxysilane")
-                    .inputItems(CATALYST, Brass)
+                    .catalyst(Brass)
                     .inputItems(dust, UltraHighPuritySilicon)
                     .inputFluids(AbsoluteEthanol, 3000)
                     .outputFluids(Triethoxysilane.getFluid(1000))
@@ -157,7 +156,7 @@ public final class NewResearchSystem {
                     .duration(200)
                     .save();
             LARGE_CHEMICAL_RECIPES.recipeBuilder("chemical_triethoxysilane111")
-                    .inputItems(CATALYST, Brass)
+                    .catalyst(Brass)
                     .inputItems(dust, ElectronicGradeSilicon)
                     .inputItems(dustSmall, ElectronicGradeSilicon, 2)
                     .inputFluids(AbsoluteEthanol, 3000)
@@ -169,7 +168,7 @@ public final class NewResearchSystem {
                     .save();
 
             CHEMICAL_RECIPES.recipeBuilder("chemical_chloropropyltriethoxysilane")
-                    .inputItems(CATALYST, Platinum)
+                    .catalyst(Platinum)
                     .inputFluids(Triethoxysilane, 1000)
                     .inputFluids(AllylChloride, 1000)
                     .outputFluids(Chloropropyltriethoxysilane.getFluid(1000))

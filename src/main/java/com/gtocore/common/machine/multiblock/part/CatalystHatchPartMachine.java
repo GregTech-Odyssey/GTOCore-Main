@@ -1,11 +1,12 @@
 package com.gtocore.common.machine.multiblock.part;
 
-import com.gtolib.api.machine.trait.NotifiableCatalystHandler;
+import com.gtolib.api.recipe.extension.CatalystRecipeExtension;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeStackAdapter;
 
@@ -23,11 +24,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class CatalystHatchPartMachine extends WorkableTieredIOPartMachine {
 
     @SaveToDisk
-    private final NotifiableCatalystHandler inventory;
+    private final NotifiableStackInventory inventory;
 
     public CatalystHatchPartMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier, IO.IN);
-        this.inventory = new NotifiableCatalystHandler(this, tier == 2 ? 4 : 36, true);
+        this.inventory = CatalystRecipeExtension.createInventory(this, tier == 2 ? 4 : 36, true);
     }
 
     @Override
