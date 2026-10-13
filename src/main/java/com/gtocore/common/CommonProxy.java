@@ -14,6 +14,7 @@ import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.forge.ForgeCommonEvent;
+import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
 import com.gtocore.config.GTOConfig;
@@ -100,6 +101,7 @@ public class CommonProxy {
         GTOFluids.FLUID_TYPE.register(eventBus);
         GTOFluids.FLUID.register(eventBus);
         GTOEffects.init(eventBus);
+        OrganFood.init(eventBus);
         GTOFeatures.init(eventBus);
         GTONumberProviders.NUMBER_PROVIDERS.register(eventBus);
         eventBus.addListener(EventPriority.HIGHEST, CommonProxy::commonSetup);

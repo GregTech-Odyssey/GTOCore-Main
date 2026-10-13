@@ -1,12 +1,12 @@
-# GTOLib 子模块与预构建
+# GTOLib 子模块与构建
 
-仅在任务涉及 `GTOLib/`、`GTOSeal/`、预构建 jar、`.PROTECTED`、gitlink、子模块状态或相关流水线时读取本文。Gradle 命令必须遵守仓库根目录 [AGENTS.md](../AGENTS.md) 的 JDK 21 前置要求。
+仅在任务涉及 `GTOLib/`、`GTOSeal/`、GTOLib 构建缓存（`build/gtolib/`）、gitlink、子模块状态或相关流水线时读取本文。Gradle 命令必须遵守仓库根目录 [AGENTS.md](../AGENTS.md) 的 JDK 21 前置要求。
 
 ## 基本模型
 
 `GTOLib/` 与 `GTOSeal/` 都是私有且相互独立的 Git 仓库。只有具备对应仓库权限的人员或执行环境才能初始化、拉取和更新这些子模块；拥有主仓权限不代表同时拥有子模块权限。无权限时子模块目录缺失、未初始化或拉取失败是预期状态，不要反复重试、绕过权限或要求提供凭据。
 
-主仓只记录它们应处于哪个 commit（gitlink，模式 `160000`），不会直接记录子模块内的文件；`.gitmodules` 只保存路径与远端地址。只涉及主仓的任务应继续使用 `libs/` 中的预构建产物完成可行的构建、检查或修改；只有任务确实需要查看或修改私有源码时，缺少子模块权限才构成阻塞。
+主仓只记录它们应处于哪个 commit（gitlink，模式 `160000`），不会直接记录子模块内的文件；`.gitmodules` 只保存路径与远端地址。**构建 gtocore 必须有 GTOLib 权限**：缺少 `GTOLib/` 源码时配置阶段直接报错（提示 `git submodule update --init GTOLib`）；非明文模式下 `GTOLib/protect/` 的 ProGuard 规则与 Seal Packager 缺失同样报错。公开仓不提交任何 GTOLib 产物，GTOLib 只在 `build/gtolib/` 构建；`libs/` 不再存放 GTOLib 产物，残留的旧 `libs/gtolib-*` 由 gitignore 兜底，禁止提交或上传。
 
 `git submodule update` 后出现 detached HEAD 是正常现象，因为主仓锁定的是 commit，而不是子模块分支。
 
@@ -53,16 +53,13 @@ git -C GTOLib rev-parse HEAD
 git -C GTOLib status --short --branch
 ```
 
-如果只是误切子模块，且已确认不保留由错误 GTOLib commit 生成的预构建，可精确恢复相关目标：
+如果只是误切子模块，确认子模块没有要保留的改动后按 gitlink 恢复；`build/gtolib/` 缓存会在下次构建时按源码指纹自动重建：
 
 ```powershell
 git submodule update --init --recursive --checkout GTOLib
-git restore --source=HEAD -- `
-  libs/gtolib-protected.jar libs/gtolib-protected.PROTECTED `
-  libs/gtolib-release.jar libs/gtolib-release.PROTECTED
 ```
 
-只恢复已确认的子模块与生成物。不要使用 `git clean -fd`，避免删除 `docs/` 等无关未跟踪文件；不要随意使用 `git submodule update --remote`，它会尝试推进远端分支，而不是恢复主仓记录的 gitlink。
+不要使用 `git clean -fd`，避免删除 `docs/` 等无关未跟踪文件；不要随意使用 `git submodule update --remote`，它会尝试推进远端分支，而不是恢复主仓记录的 gitlink。
 
 ## 有意修改 GTOLib
 
@@ -76,67 +73,62 @@ git -C GTOLib push
 git -C GTOLib status --porcelain  # 必须为空
 
 .\gradlew.bat buildGtolibProtected
-git add GTOLib libs/gtolib-protected.jar libs/gtolib-protected.PROTECTED
+git add GTOLib
 ```
 
-必须先推送子模块 commit，避免主仓指向其他人无法取得的 SHA。主仓中的 `git add GTOLib` 只暂存 gitlink；若流水线同时刷新 release jar 与侧车，也须按 `git status` 将二者成对处理。
+必须先推送子模块 commit，避免主仓指向其他人和 CI 无法取得的 SHA。主仓只提交 gitlink，不提交任何 GTOLib 构建产物。
 
-## 分支与预构建
+## 分支与本地缓存
 
 | 改动范围 | 要求 |
 |---|---|
-| 修改了 `GTOLib/` | GTOLib 与主仓使用同名分支并都推送；主仓提交包含子模块指针、新的 `libs/gtolib-protected.jar` 和 `.PROTECTED` |
-| 只修改主仓且 protected 未变 | 仅主仓开分支；不必修改 GTOLib 分支，也不必重建预构建 |
+| 修改了 `GTOLib/` | GTOLib 与主仓使用同名分支并都推送；主仓提交只包含子模块指针 |
+| 只修改主仓 | 仅主仓开分支，不必动 GTOLib |
 
-CI 或无子模块环境只读取 `libs/gtolib-protected.jar`。只推进源码指针却不刷新预构建会运行旧字节码，因此 jar 与 `.PROTECTED`（含 `jarSha256`）必须成对提交。
-
-有 GTOLib 源码时，默认走加密流水线；`build`、`runClient`、`runData` 会在源码指纹变化后自动刷新 `libs/gtolib-protected.jar` 与 `.PROTECTED`。也可显式执行：
+默认走加密流水线，产物只在 `build/gtolib/`。缓存是否有效只看源码指纹（`GTOLib/src` 与 `GTOLib/protect`）与 `build/gtolib/inputs.stamp` 记录的指纹和 jar 哈希；指纹变化、产物缺失或本次调用含 `clean` 时，`build`、`runClient`、`runData` 会自动完整重建。也可显式执行：
 
 ```powershell
 .\gradlew.bat buildGtolibProtected
 # 全量重建：.\gradlew.bat -PgtolibRebuild=true build
-# 明文调试（仅本地，不写 libs）：.\gradlew.bat runClient -PgtolibUnprotected=true
+# 明文调试（仅本地，不动加密缓存）：.\gradlew.bat runClient -PgtolibUnprotected=true
+# 明文模式只用于本地 runClient / test；jar、build 会直接拒绝，发行包只能嵌入加密的发行轨
 ```
 
-若当前任务修改了 `GTOLib/` 代码，完成任务前必须运行一次 `buildGtolibProtected`，并确认编译与预构建重建通过。只在收尾时重建一次；不要为预构建命令添加 `-PgtolibUnprotected` 或 `-PgtolibDebug`。若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。
+若当前任务修改了 `GTOLib/` 代码，完成任务前必须运行一次 `buildGtolibProtected`，并确认编译与加密通过。只在收尾时重建一次；不要为该命令添加 `-PgtolibUnprotected` 或 `-PgtolibDebug`。若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。
 
-## 三件套与一致性校验
+## 两条加密轨道
 
-`GTOLib` 指针、`libs/gtolib-protected.jar` 与 `.PROTECTED` 是一套生成物，同进同出，不单独 merge。
-
-带未提交 GTOLib 改动重建时，侧车会写成 `gtolibCommit=<sha>-dirty`，云端会拒绝；本地 `runClient` 迭代不受影响。
-
-`.PROTECTED` 有两个身份字段：
-
-| 字段 | 内容 | 校验环境 |
+| 产物 | 用途 | 名字 |
 |---|---|---|
-| `fingerprint` | `GTOLib/src` 与 `GTOLib/protect` 内容哈希 | 本地有源码时 |
-| `gtolibCommit` | 重建时的 `git -C GTOLib rev-parse HEAD` | 云端或任何无源码环境 |
+| `build/gtolib/gtolib-protected.jar`（dev 轨） | 本地 userdev 运行与缓存命中时的编译 classpath | keepnames，含 named `.dev.bin` |
+| `build/gtolib/gtolib-release.jar`（发行轨） | 嵌入玩家用的 gtocore jar | 内部类名、包名、成员名混淆，无 `.dev.bin` |
 
-云端使用 `submodules: false`：`GTOLib` 与 `GTOSeal` 是私有仓库，而 `pull_request_target` 会执行 PR 侧代码，因此不得向该工作流注入私有子模块凭据。云端无法计算 `fingerprint`，改为比对主仓 tree 中的 gitlink：
+两条轨道都是直链，任务名见括号：
 
-```powershell
-git ls-tree HEAD GTOLib
+- dev 轨：named 明文（`packageGtolibJar`）→ ProGuard `proguard-rules.pro`（`proguardGtolibDev`）→ Seal（`sealGtolibDev`）。
+- 发行轨：named 明文 → ART reobf 成 SRG（`reobfGtolib`）→ ProGuard `proguard-release-rules.pro` + gtocore 引用面（`proguardGtolibRelease`）→ Seal，剥除 `.dev.bin` 并压缩空壳（`sealGtolibRelease`）。
+
+dev 轨保留全部真实名字，**只能留在本机**。发行轨的混淆字典每次构建随机打乱，同一份源码两次构建的混淆名也不同；发行混淆规则见 `GTOLib/protect/proguard-release-rules.pro`，保名面只包括 gtocore 实际引用的类、Mixin 与入口、以及按名反射/扫描的类与成员。新增按名反射或注解扫描时须同步补 keep，否则只在生产包运行时报错。
+
+两条轨道使用同一套 ProGuard 优化，只开方法体内部的 `code/*` 类别（不改类、字段、方法的名字与签名），因此默认 `runClient` 运行的就是与发行包同样优化过的代码。不要开启 `class/*`、`field/*`、`method/*` 及 `code/*/advanced`：它们会改变成员或依赖值推导，反射与存盘写入的字段会被悄悄改坏。
+
+GTOLib 的 Mixin 只写注入点与一行转调，复杂逻辑放 mixin 包外的 `com.gtolib.<领域>.XxxHooks`：mixin 包在发行包里保持明文。
+
+混淆映射 `build/gtolib/gtolib-release-mapping.txt` 用于反混淆崩溃栈，禁止公开。云端构建只上传用 `GTO_KEY` 加密后的映射（artifact `gtolib-mapping-encrypted`），解密：
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in gtolib-release-mapping.txt.gz.enc -pass env:GTO_KEY | gunzip > mapping.txt
 ```
-
-`gtolibCommit` 与 gitlink 不一致、带 `-dirty`，或整个字段缺失时，构建必须失败并重建 `libs/`。该闸门防止“指针新、jar 旧”，但不能证明 jar 真由对应 commit 构建；重建者仍需负责。
 
 ## 多人同时修改 GTOLib
 
-指针与 jar 的冲突不要手工 merge，应丢弃冲突版本并统一重建：
-
-1. 先在 GTOLib 仓按序合并所有改动，解决源码冲突并确定最终 SHA。
-2. 主仓集成分支只合并各改动中三件套以外的内容；三件套暂取主仓旧值。
-3. 将子模块切到最终 SHA，运行 `.\gradlew.bat buildGtolibProtected`，把三件套作为一个提交。
-4. 运行 `.\gradlew.bat build`，确认主仓源码能通过新 GTOLib 编译，日志出现 `GTOLib 一致性 OK`。
-5. 将集成分支一次性合入主分支，避免出现指针新而 jar 旧的破碎窗口。
-
-`.PROTECTED` 是文本文件，Git 可能逐行拼出一方的 `jarSha256` 与另一方的 `size`。永远整体重新生成，不要手工编辑。
+先在 GTOLib 仓按序合并所有改动、解决源码冲突并确定最终 SHA，再让主仓集成分支指向该 SHA，运行 `.\gradlew.bat build` 确认主仓能通过新 GTOLib 编译。
 
 ## 相关路径
 
 | 路径 | 说明 |
 |---|---|
 | `GTOLib/` | gtocore-gtolib 子模块，需要权限才能初始化 |
-| `libs/gtolib-protected.jar` 与 `.PROTECTED` | 预构建 GTOLib 与一致性记录，成对提交 |
-| `gradle/scripts/gtolib-pipeline.gradle` | 有无源码流水线、reobf / Seal 与校验逻辑 |
+| `GTOLib/protect/` | ProGuard 规则、混淆字典与 Seal 打包器 |
+| `build/gtolib/` | GTOLib 构建产物与缓存（`inputs.stamp`），禁止提交 |
+| `gradle/scripts/gtolib-pipeline.gradle.kts` | 加密流水线、reobf / Seal 与校验逻辑 |

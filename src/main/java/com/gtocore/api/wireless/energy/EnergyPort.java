@@ -38,7 +38,8 @@ public final class EnergyPort {
         int serve(EnergyPort port);
     }
 
-    public static final int IDLE_TICKS = 20;
+    public static final int BATCH_TICKS = TokenBucket.BURST_TICKS;
+    public static final int IDLE_TICKS = BATCH_TICKS;
     private static final long HOLD_CAP = 1L << 40;
 
     private final PortKind kind;
@@ -79,6 +80,11 @@ public final class EnergyPort {
         this.kind = kind;
         this.host = host;
         this.tier = tier;
+    }
+
+    public static int batchTicks(long capacity, long perTick) {
+        long ticks = perTick <= 0 ? BATCH_TICKS : capacity / U126.saturatedMul(perTick, 2);
+        return (int) Math.max(1, Math.min(BATCH_TICKS, ticks));
     }
 
     public static EnergyPort forPlayer(PortKind kind, Player player) {
@@ -266,12 +272,13 @@ public final class EnergyPort {
         int next = 0;
         if (buffer.pending > 0) {
             buffer.pushed(pushAt(buffer.pending, Math.max(buffer.pendingTier, 0)));
-            if (buffer.pending > 0) next = 1;
+            next = BATCH_TICKS;
         }
         if (buffer.demand > 0) {
             long need = buffer.missingCredit();
             if (need > 0) buffer.credit += pullAt(need, Math.max(buffer.creditTier, 0));
-            if (!buffer.demandMet()) next = 1;
+            buffer.resetDemand();
+            next = BATCH_TICKS;
         }
         return next;
     }

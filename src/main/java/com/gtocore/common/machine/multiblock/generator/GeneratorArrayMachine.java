@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.generator;
 import com.gtocore.api.wireless.energy.EnergyPort;
 import com.gtocore.api.wireless.energy.EnergyPortTrait;
 import com.gtocore.api.wireless.energy.PortKind;
+import com.gtocore.api.wireless.energy.WirelessText;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.wireless.energy.PortPriorityUI;
@@ -176,7 +177,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
         page.addLine(WIRELESS_OUTPUT, MultiblockPage.cached(() -> isw && isActive() && getRecipeLogic().getLastRecipe() != null ? eut : 0,
-                value -> Component.literal(FormattingUtil.formatNumbers(value) + " EU/t (" + GTValues.VNF[GTUtil.getFloorTierByVoltage(value)] + "§r)")));
+                value -> WirelessText.power(value, getTier())));
     }
 
     @Override

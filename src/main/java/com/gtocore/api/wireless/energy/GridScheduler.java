@@ -16,15 +16,12 @@ public final class GridScheduler {
     private static final int[] PERIODS = { 1, 2, 4, 5, 10, 20 };
 
     @SuppressWarnings("unchecked")
-    private final ObjectArrayList<Handle>[][][] buckets = new ObjectArrayList[PRIORITIES][PERIODS.length][];
+    private final ObjectArrayList<Handle>[][] buckets = new ObjectArrayList[PRIORITIES][PERIODS.length];
     private Handle[] snapshot = new Handle[64];
 
     GridScheduler() {
         for (int p = 0; p < PRIORITIES; p++) {
-            for (int i = 0; i < PERIODS.length; i++) {
-                buckets[p][i] = new ObjectArrayList[PERIODS[i]];
-                for (int j = 0; j < PERIODS[i]; j++) buckets[p][i][j] = new ObjectArrayList<>();
-            }
+            for (int i = 0; i < PERIODS.length; i++) buckets[p][i] = new ObjectArrayList<>();
         }
     }
 
@@ -42,8 +39,8 @@ public final class GridScheduler {
     void run(int now) {
         for (int p = PRIORITIES - 1; p >= 0; p--) {
             for (int i = 0; i < PERIODS.length; i++) {
-                int b = now % PERIODS[i];
-                var list = buckets[p][i][b];
+                if (Math.floorMod(now, PERIODS[i]) != 0) continue;
+                var list = buckets[p][i];
                 int size = list.size();
                 if (size == 0) continue;
                 if (snapshot.length < size) snapshot = new Handle[Math.max(size, snapshot.length << 1)];
@@ -51,7 +48,7 @@ public final class GridScheduler {
                 int start = Math.floorMod(now / PERIODS[i], size);
                 for (int k = 0; k < size; k++) {
                     var handle = snapshot[(start + k) % size];
-                    if (handle.scheduler == this && handle.priority == p && handle.period == i && handle.bucket == b && handle.lastRun != now) {
+                    if (handle.scheduler == this && handle.priority == p && handle.period == i && handle.lastRun != now) {
                         handle.lastRun = now;
                         handle.run();
                     }
@@ -67,7 +64,6 @@ public final class GridScheduler {
         private GridScheduler scheduler;
         private int priority = DEFAULT_PRIORITY;
         private int period = -1;
-        private int bucket;
         private int slot = -1;
         private int lastRun = Integer.MIN_VALUE;
 
@@ -93,19 +89,16 @@ public final class GridScheduler {
             if (target == null) return;
             if (slot >= 0 && period == periodIndex && scheduler == target) return;
             cancel();
-            int p = PERIODS[periodIndex];
-            int b = Math.floorMod(GridClock.tick(), p);
-            var list = target.buckets[priority][periodIndex][b];
+            var list = target.buckets[priority][periodIndex];
             scheduler = target;
             period = periodIndex;
-            bucket = b;
             slot = list.size();
             list.add(this);
         }
 
         void cancel() {
             if (slot < 0 || !WirelessGrid.onServerThread()) return;
-            var list = scheduler.buckets[priority][period][bucket];
+            var list = scheduler.buckets[priority][period];
             if (slot < list.size() && list.get(slot) == this) {
                 var tail = list.remove(list.size() - 1);
                 if (tail != this) {

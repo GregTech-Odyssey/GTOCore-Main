@@ -120,13 +120,14 @@ final class GridCardData {
                 Component.translatable(GridMapLang.NONE);
         loss = Component.translatable(GridMapLang.PERCENT, GridFormat.amount(detail.lossPercent()));
         ports = detail.portCount() > 0 ? Component.translatable(GridMapLang.PORTS_VALUE, detail.portCount()) : Component.translatable(GridMapLang.NONE);
-        delta = GridFormat.netRate(detail.storageDelta());
+        int tier = detail.unitTier();
+        delta = GridFormat.netRate(detail.storageDelta(), tier);
         eta = capacity > 0 ? GridFormat.eta(stored, capacity, detail.storageDelta()) : GridFormat.NO_VALUE;
-        input = GridFormat.rate(detail.input(window));
-        output = GridFormat.rate(detail.output(window));
-        lossRate = GridFormat.rate(detail.loss(window));
-        relayIn = GridFormat.rate(detail.lineIn());
-        relayOut = GridFormat.rate(detail.lineOut());
+        input = GridFormat.rate(detail.input(window), tier);
+        output = GridFormat.rate(detail.output(window), tier);
+        lossRate = GridFormat.rate(detail.loss(window), tier);
+        relayIn = GridFormat.rate(detail.lineIn(), tier);
+        relayOut = GridFormat.rate(detail.lineOut(), tier);
     }
 
     boolean isPortHere(int key) {

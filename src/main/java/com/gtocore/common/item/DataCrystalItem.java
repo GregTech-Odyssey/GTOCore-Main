@@ -75,13 +75,19 @@ public class DataCrystalItem extends Item implements IExDataItem {
         return capacity - usedCap;
     }
 
-    public static void addResearchData(ItemStack stack, ResearchPoints researchPoints) {
+    public static String formatBytes(long bytes) {
+        return FormattingUtil.formatNumberReadable(bytes) + "B";
+    }
+
+    public static boolean addResearchData(ItemStack stack, ResearchPoints researchPoints) {
+        if (researchPoints.countBytes() > getRemainingCapacity(stack)) return false;
         for (var it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             ResearchTag rt = entry.getKey();
             long amount = entry.getLongValue();
             addResearchData(stack, rt, amount);
         }
+        return true;
     }
 
     @Override

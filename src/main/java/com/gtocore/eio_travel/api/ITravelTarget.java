@@ -8,6 +8,8 @@ public interface ITravelTarget {
 
     ResourceLocation getSerializationName();
 
+    TravelTargetType getTargetType();
+
     BlockPos getPos();
 
     CompoundTag save();

@@ -8,6 +8,7 @@ import com.gtocore.common.machine.multiblock.electric.research.ui.ScanningInfoPr
 import com.gtocore.common.machine.multiblock.electric.research.ui.ScanningSelectionTab;
 import com.gtocore.common.machine.multiblock.part.research.IntelligentScanningProxyPartMachine;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
@@ -192,6 +193,10 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
             }
             if (totalBytes <= 0) return null;
             var turns = remaining / totalBytes;
+            if (turns <= 0) {
+                IdleReason.DATA_CRYSTAL_CAPACITY.setReason(this, DataCrystalItem.formatBytes(totalBytes), DataCrystalItem.formatBytes(remaining));
+                return null;
+            }
             var proxy = scanningProxyPartMachine;
             MEStorage me = proxy == null ? null : proxy.getMESStorage();
             IActionSource source = me == null ? null : proxy.getActionSource();
@@ -208,7 +213,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                     }
                     recipe.inputFluids(fluidKey.getFluid(), 1000 * actualAmount);
                 }
-                keyCounter.add(k, actualAmount);
+                if (actualAmount > 0) keyCounter.add(k, actualAmount);
             }
             if (keyCounter.isEmpty()) return null;
             return recipe.EUt(eut(totalBytes * turns))
@@ -219,6 +224,8 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
 
         } else {
             final var initialRemaining = remaining;
+            List<AEKey> overflow = null;
+            long minOverflow = Long.MAX_VALUE;
             while (!scanQueue.isEmpty() && remaining > 0) {
                 var k = scanQueue.poll();
                 var mat = AEChemicalHelper.getMaterial(k);
@@ -241,9 +248,17 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                     }
                     remaining -= occupy;
                     keyCounter.add(k, 1);
+                } else {
+                    if (overflow == null) overflow = new ArrayList<>();
+                    overflow.add(k);
+                    minOverflow = Math.min(minOverflow, occupy);
                 }
             }
-            if (keyCounter.isEmpty()) return null;
+            if (overflow != null) scanQueue.addAll(overflow);
+            if (keyCounter.isEmpty()) {
+                if (overflow != null) IdleReason.DATA_CRYSTAL_CAPACITY.setReason(this, DataCrystalItem.formatBytes(minOverflow), DataCrystalItem.formatBytes(initialRemaining));
+                return null;
+            }
             return recipe.EUt(eut(initialRemaining - remaining))
                     .addExtension(ScanningRecipeExtion.INSTANCE)
                     .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(keyCounter, output, team))

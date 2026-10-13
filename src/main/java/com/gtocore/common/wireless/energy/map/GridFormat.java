@@ -1,5 +1,7 @@
 package com.gtocore.common.wireless.energy.map;
 
+import com.gtocore.api.wireless.energy.WirelessText;
+
 import com.gtolib.api.data.Dimension;
 import com.gtolib.utils.NumberUtils;
 
@@ -53,22 +55,26 @@ public final class GridFormat {
         return (value < 0 ? "-" : "") + (unit == 0 ? String.valueOf(Math.round(abs)) : digits + UNITS[unit]);
     }
 
-    public static String signed(double value) {
-        if (!Double.isFinite(value) || Math.abs(value) < STEADY) return "0";
-        return value > 0 ? "+" + NumberUtils.formatDouble(value) : "-" + NumberUtils.formatDouble(-value);
+    public static Component rate(double perTick, int tier) {
+        if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return WirelessText.ZERO_POWER;
+        int t = WirelessText.voltageTier(perTick, tier);
+        return Component.translatable(WirelessText.POWER, tierText(t), WirelessText.amperes(WirelessText.powerAmps(perTick, t)));
     }
 
-    public static Component rate(double perTick) {
-        return Component.translatable(GridMapLang.RATE, amount(perTick));
+    public static Component compactRate(double perTick, int tier) {
+        if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return WirelessText.ZERO_POWER;
+        int t = WirelessText.voltageTier(perTick, tier);
+        return Component.translatable(WirelessText.POWER, tierText(t), compact(WirelessText.powerAmps(perTick, t)));
     }
 
-    public static Component signedRate(double perTick) {
-        return Component.translatable(GridMapLang.RATE, signed(perTick));
+    public static Component signedRate(double perTick, int tier) {
+        if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return WirelessText.ZERO_POWER;
+        return Component.literal(perTick > 0 ? "+" : "-").append(rate(perTick, tier));
     }
 
-    public static Component netRate(double perTick) {
-        if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return rate(0);
-        return Component.translatable(GridMapLang.RATE, (perTick > 0 ? "§a▲§r " : "§6▼§r ") + signed(perTick));
+    public static Component netRate(double perTick, int tier) {
+        if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return WirelessText.ZERO_POWER;
+        return Component.literal(perTick > 0 ? "§a▲§r " : "§6▼§r ").append(signedRate(perTick, tier));
     }
 
     public static Level trend(double perTick) {

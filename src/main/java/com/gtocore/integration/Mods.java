@@ -15,6 +15,7 @@ public enum Mods {
     CHISEL("chisel"),
     SOPHISTICATEDBACKPACKS("sophisticatedbackpacks"),
     SOPHISTICATEDSTORAGE("sophisticatedstorage"),
+    SOPHISTICATEDCORE("sophisticatedcore"),
     BIOMESOPLENTY("biomesoplenty"),
     BIOMESWEVEGONE("biomeswevegone"),
     PIPEZ("pipez"),

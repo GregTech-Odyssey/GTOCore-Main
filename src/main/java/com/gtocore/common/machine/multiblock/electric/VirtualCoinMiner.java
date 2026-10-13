@@ -153,7 +153,7 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
     public static final String LANG_UNCOMMITTED_CWU_BUFFER = "gtocore.machine.virtual_coin_miner.cwu_buffer";
     @RegisterLanguage(cn = "最大每刻消耗网络算力", en = "Max CWU Consumption per Tick")
     public static final String LANG_CWU_LIMIT = "gtocore.machine.virtual_coin_miner.cwu_limit";
-    @RegisterLanguage(cn = "你已经累计挖到%s枚虚拟金币了！", en = "You have accumulated %s virtual coins!")
+    @RegisterLanguage(cn = "累计开采虚拟金币：%s 枚", en = "Virtual coins mined: %s")
     public static final String LANG_ACCUMULATED_COINS = "gtocore.machine.virtual_coin_miner.accumulated_coins";
     @RegisterLanguage(cn = "下一枚虚拟金币:%sCWU", en = "CWU needed for next coin: %s CWU")
     public static final String LANG_CWU_TO_NEXT_COIN = "gtocore.machine.virtual_coin_miner.cwu_to_next_coin";

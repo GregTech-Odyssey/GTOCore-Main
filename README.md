@@ -1,7 +1,7 @@
 <!--
 公开文件：本 README 会对外发布。
 禁止写入私有仓库名称、内部架构、保护或加密实现、凭据、密钥、内部构建流程及权限细节。
-这里只允许保留项目公开介绍、经确认的闭源声明和面向外部的贡献指南。
+这里只允许保留项目公开介绍、经确认的闭源声明和参与方式说明；团队开发流程写在 docs/development.md。
 -->
 
 # GTOCore-Main
@@ -12,7 +12,7 @@
 
 GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和 Forge 47.4.20，模组 ID 为 `gtocore`。
 
-本仓库提供 GTOCore 的公开源码、资源、数据生成入口和构建配置。外部贡献者可以使用仓库中已提供的依赖完成编译、数据生成和本地运行，不需要访问私有仓库，也不需要初始化私有 submodule。
+本仓库公开 GTOCore 的源码与资源，方便大家阅读、了解和审阅实现。
 
 `com.gtocore` 范围内的公开代码依据本仓库 [LICENSE](LICENSE) 发布；gtolib 仍为闭源组件。
 
@@ -43,106 +43,20 @@ GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和
 
 感谢您的理解与支持。
 
-## 外部贡献指南
+## 参与方式
 
-### 可贡献范围
+#### 想法与反馈
 
-欢迎提交以下改动：
+如果你有好的想法、建议，或者在游玩中发现了问题，欢迎到 [Issue](https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues) 留言。每一条反馈我们都会认真阅读，合适的想法会由维护者整理进后续版本。
 
-- `src/main/java/com/gtocore/` 下的公开源码
-- `src/main/resources/` 和 `src/generated/resources/` 中与公开源码直接相关的资源与数据
-- 面向公开项目的构建脚本和文档
-- 错误修复、兼容性改进、性能优化和可维护性改进
+#### 关于代码修改
 
-如需参与私有模块的开发，请先联系维护人员了解当前情况并取得相应授权。
+GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，因此代码改动目前统一由开发团队完成。比起直接提交代码，一条描述清楚的 Issue 往往更能帮到我们——请放心把想法交给我们来实现。
 
-请不要直接修改或替换闭源组件及仓库内的预构建二进制依赖。相关问题请提交 Issue，由维护者判断是否需要内部处理。
+#### 关于构建与测试
 
-### 开发环境
+源码公开是为了透明，便于大家查阅与审阅。完整构建依赖团队内部的组件，公开环境无法直接编译或运行，也无需自行搭建开发环境进行测试；如果想体验最新内容，请使用整合包发布的正式版本或测试版本。
 
-- **Java 25**（运行 Gradle / IDE 的 JDK）
-- 模组字节码目标为 **Java 21**（依赖与 reobf 兼容，构建脚本已自动设置；请勿用 25 作为 `--release`）
-- Git
-- 可访问 Gradle 和项目依赖仓库的网络环境
-- 足够的可用内存；当前 Gradle 配置的最大堆内存为 8 GiB
+## 许可证
 
-请确认 `java -version` 指向 Java 25，并在 IDE 和终端中使用同一个 JDK。
-
-### 克隆与构建
-
-外部贡献者只需普通 clone，不要初始化私有 submodule：
-
-```bash
-git clone https://github.com/GregTech-Odyssey/GTOCore-Main.git
-cd GTOCore-Main
-bash ./gradlew build
-```
-
-若有 gtolib 权限：在 `cd` 之后先执行 `git submodule update --init GTOLib`，再 `bash ./gradlew build`。
-
-Windows PowerShell 或命令提示符：
-
-```bat
-gradlew.bat build
-```
-
-首次构建需要下载 Gradle 和项目依赖，耗时会明显长于后续构建。
-
-### IDE 导入
-
-使用 IntelliJ IDEA 或其他支持 Gradle 的 IDE 打开仓库根目录：
-
-1. 将项目 JDK 和 Gradle JVM 设置为 Java 25。
-2. 以 Gradle 项目导入并等待依赖同步完成。
-3. 不要把 `build/`、`run/` 或 IDE 本地配置加入提交。
-
-### 常用任务
-
-| 目的 | macOS / Linux 命令 |
-|------|--------------------|
-| 格式化源码与资源 | `bash ./gradlew spotlessApply` |
-| 完整构建 | `bash ./gradlew build` |
-| 启动开发客户端 | `bash ./gradlew runClient` |
-| 启动开发服务端 | `bash ./gradlew runServer` |
-| 生成数据 | `bash ./gradlew runData` |
-
-`runData` 会写入 `src/generated/resources/`。提交前请检查生成结果，只保留与本次改动有关的文件。
-
-### 推荐贡献流程
-
-1. 从最新的 `main` 分支创建独立开发分支。
-2. 在开始大型功能或架构调整前先提交 Issue 与维护者确认方向。
-3. 让每个提交和 Pull Request 保持单一、明确的目标。
-4. 遵循现有代码风格，避免无关格式化和大范围重构。
-5. 运行 `spotlessApply`，然后执行与改动相符的运行验证。
-6. 至少运行一次完整 `build`。
-7. 使用 `git diff` 检查改动，排除生成物、日志、缓存、凭据和其他本地文件。
-8. 推送分支并创建 Pull Request。
-
-## 协作方式
-
-有 GTOLib（gtocore-gtolib）写权限的协作者请按下列规则处理分支与提交，避免主仓与 submodule 指针不一致。
-
-1. **修改了 gtocore-gtolib（`GTOLib/` submodule）时**  
-   提交与推送时，请将 **gtocore-gtolib** 与 **gtocore-main** 都上传到**同名**的各自分支（例如两边都使用 `ae-rework`）。  
-   主仓提交中需包含对 `GTOLib` submodule 指针的更新，并指向已推送到远端同名分支上的 gtolib 提交。
-
-2. **未修改 gtocore-gtolib，只修改 gtocore-main，且 `libs/gtolib-protected.jar` 没有变化时**  
-   可以只在 **gtocore-main** 迁出新分支并推送，不必同步新建 gtolib 分支。
-
-### Pull Request 要求
-
-Pull Request 请包含：
-
-- 改动目的和实现摘要
-- 主要影响范围
-- 已完成的构建与运行验证
-- 关联 Issue（如有）
-- 涉及界面或游戏内表现时的截图或录像
-- 已知限制或尚未覆盖的情况
-
-维护者可能会要求调整实现、补充验证或缩小改动范围。请不要提交来源不明或许可证不兼容的代码与资源。
-
-### 许可证
-
-提交贡献即表示你同意按本仓库 [LICENSE](LICENSE) 中的许可证发布相应内容。
+`com.gtocore` 范围内的公开代码依据本仓库 [LICENSE](LICENSE) 发布。

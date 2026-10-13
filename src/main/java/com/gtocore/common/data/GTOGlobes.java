@@ -12,6 +12,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -89,7 +90,7 @@ public final class GTOGlobes {
         public static void init() {}
 
         private static RegistryEntry<GlobeBlock> registerGlobe(String name) {
-            var entry = ModBlocks.GLOBES.register(name, () -> new GlobeBlock(BlockBehaviour.Properties.copy(IRON_BLOCK).noOcclusion()));
+            var entry = ModBlocks.GLOBES.register(name, () -> new GlobeBlock(BlockBehaviour.Properties.copy(IRON_BLOCK).sound(SoundType.COPPER).noOcclusion()));
             GLOBE_ENTRIES.add(entry);
             return entry;
         }

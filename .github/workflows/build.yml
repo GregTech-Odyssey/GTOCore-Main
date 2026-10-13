@@ -6,10 +6,10 @@ name: "Build and Sign"
 # 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
 # 4) issue_comment：组织成员在 PR 下评论，且第一行精确为 /build → 构建 PR head
 #
-# 使用 pull_request_target（而非 pull_request）以便 fork 来源的 PR 也能使用
-# 本仓/组织 secrets 签名。工作流文件始终取 base 分支，降低被 PR 篡改 workflow 的风险。
-# 安全：仅组织成员（或写权限 collaborator）可通过上述路径触发；构建仍会执行 PR 代码，
-# 成员在外部贡献上评论 /build 即表示已审阅并愿意签名构建。
+# 使用 pull_request_target：工作流文件始终取 base 分支，PR 无法篡改本文件。
+# 安全：只构建本仓分支（fork 来源的 PR 一律跳过），且仅组织成员（或写权限
+# collaborator）可触发。构建会用只读 deploy key 拉取私有 GTOLib 源码并现场加密，
+# 公开仓不再提交任何 GTOLib 预构建。
 on:
   push:
   pull_request_target:
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
     outputs:
       should_build: ${{ steps.resolve.outputs.should_build }}
       checkout_repo: ${{ steps.resolve.outputs.checkout_repo }}
@@ -150,6 +150,31 @@ jobs:
             fi
             echo "::error::Only members of ${ORG} may trigger this signed build. User @${user} denied."
             exit 1
+          }
+
+          welcome_external_pr() {
+            local body
+            body=$(cat <<'MSG'
+          你好，感谢你对 GregTech Odyssey 的关注，也谢谢你花时间整理这份改动！
+
+          GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，代码改动目前统一由开发团队完成，因此这个 Pull Request 不会被合并。不过你的想法对我们很有价值：欢迎把它整理到 [Issue](https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues) 里，写清楚想解决的问题、期望的效果和你设想的实现思路，维护者会认真评估并在合适的版本中实现。
+
+          另外说明一下：源码公开是为了透明、便于查阅，完整构建依赖团队内部组件，公开环境无法直接编译运行；想体验最新内容，请使用整合包发布的版本。
+
+          ---
+
+          Hi, and thank you for your interest in GregTech Odyssey and for the time you put into this change!
+
+          Feature design, balancing, and release planning for GTOCore are coordinated by the development team, so code changes are currently made in-house and this pull request will not be merged. Your idea is still very welcome: please describe it in an [Issue](https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues), including the problem, the expected result, and how you would approach it, and the maintainers will review it for a future release.
+
+          The source is public for transparency; a full build relies on internal components and cannot be compiled from the public repository. To try the latest content, please use the modpack releases.
+          MSG
+            )
+            body=$(printf '%s\n' "$body" | sed 's/^          //')
+            curl -sS -f -X POST "${HDR[@]}" \
+              "${API}/repos/${REPO}/issues/${PR_NUMBER}/comments" \
+              -d "$(PYTHONIOENCODING=utf-8 python3 -c 'import json,sys; print(json.dumps({"body": sys.stdin.read()}))' <<<"$body")" \
+              > /dev/null && echo "Posted guidance comment on PR #${PR_NUMBER}" || echo "::warning::Failed to post guidance comment"
           }
 
           skip() {
@@ -252,6 +277,17 @@ jobs:
             exit 1
           fi
 
+          if [ "$CHECKOUT_REPO" != "$REPO" ]; then
+            if [ "$EVENT_NAME" = "pull_request_target" ] && [ "$EVENT_ACTION" = "opened" ]; then
+              rc=0
+              check_org_member_or_writer "$PR_USER" || rc=$?
+              if [ "$rc" -eq 2 ]; then
+                welcome_external_pr
+              fi
+            fi
+            skip "head repo ${CHECKOUT_REPO} is not ${REPO}"
+          fi
+
           require_member_or_skip "$CHECK_USER" "$MEMBER_MODE"
 
           # 规范化 pr_number（0 / 空视为无 PR）
@@ -318,12 +354,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # fork PR：显式拉 head 仓与 sha；persist-credentials=false 避免把 token 留给不可信构建脚本
           repository: ${{ needs.gate.outputs.checkout_repo }}
           ref: ${{ needs.gate.outputs.checkout_ref }}
           persist-credentials: false
-          # 无权限/公开 CI：只用 libs 预构建，不拉私有 submodule
+          # 私有子模块由下一步用 deploy key 单独检出
           submodules: false
+          fetch-depth: 1
+
+      - name: Resolve GTOLib pointer
+        id: gtolib
+        env:
+          HAS_KEY: ${{ secrets.GTOLIB_DEPLOY_KEY != '' }}
+        run: |
+          set -euo pipefail
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "::error::Missing secret GTOLIB_DEPLOY_KEY（GTOLib 仓库的只读 deploy key 私钥）"
+            exit 1
+          fi
+          SHA=$(git ls-tree HEAD GTOLib | awk '$2 == "commit" { print $3 }')
+          if [ -z "$SHA" ]; then
+            echo "::error::无法从主仓 tree 读出 GTOLib gitlink"
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "GTOLib gitlink = $SHA"
+
+      - name: Checkout GTOLib
+        uses: actions/checkout@v4
+        with:
+          repository: GregTech-Odyssey/GTOCore-GTOlib
+          ref: ${{ steps.gtolib.outputs.sha }}
+          path: GTOLib
+          ssh-key: ${{ secrets.GTOLIB_DEPLOY_KEY }}
+          persist-credentials: false
           fetch-depth: 1
 
       # 与旧 GTOCore 及已成功签名 run 一致：CI 用 Java 21（模组 --release 21）。
@@ -334,8 +397,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # 默认只允许默认分支写缓存，而 main 已不构建，不放开每次都从空缓存开始
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
 
       - name: Restore signing keystore
         env:
@@ -350,82 +416,16 @@ jobs:
           test -s keystore.jks
           ls -la keystore.jks
 
-      - name: Verify Seal prebuilds
+      - name: Verify Seal runtime
         run: |
           set -euo pipefail
-          test -s libs/gtolib-protected.jar
           test -s libs/gto-seal-runtime-1.0.jar
-          ls -la libs/gtolib-protected.jar libs/gto-seal-runtime-1.0.jar
           # Seal 必须含 ITransformationService SPI，且不得打进 gtocore
           jar tf libs/gto-seal-runtime-1.0.jar | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'
           echo "OK: seal runtime has ITransformationService SPI"
-          if [ -f libs/gtolib-protected.PROTECTED ]; then
-            echo "---- gtolib-protected.PROTECTED ----"
-            cat libs/gtolib-protected.PROTECTED
-            # gtolib 预构建身份闸。本 job 是 submodules=false（私有仓 + pull_request_target 会执行
-            # PR 侧代码，不能注入 GTOLib 凭据），算不出源码指纹；改比对主仓 tree 里的 gitlink 与
-            # 重建时写进侧车的 commit。不一致 = 指针动了但 libs/ 没重建 → 会签出跑旧字节码的产物。
-            POINTER=$(git ls-tree HEAD GTOLib | awk '$2 == "commit" { print $3 }' || true)
-            RECORDED=$(sed -n 's/^gtolibCommit=//p' libs/gtolib-protected.PROTECTED)
-            echo "gtolib gitlink  = ${POINTER:-<none>}"
-            echo "gtolib recorded = ${RECORDED:-<none>}"
-            if [ -z "$POINTER" ]; then
-              echo "::error::无法从主仓 tree 读出 GTOLib gitlink"
-              exit 1
-            fi
-            case "$RECORDED" in
-              "")
-                echo "::error::.PROTECTED 缺少 gtolibCommit —— 该预构建由旧流水线生成。请由有 GTOLib 权限者重建：./gradlew buildGtolibProtected，然后把 GTOLib 指针 + libs/gtolib-protected.jar + .PROTECTED 一并提交"
-                exit 1
-                ;;
-              *-dirty)
-                echo "::error::预构建来自未提交的 GTOLib 工作区（$RECORDED）；请先提交并推送 GTOLib 再重建"
-                exit 1
-                ;;
-              "$POINTER")
-                echo "OK: gtolib pointer == prebuilt record"
-                ;;
-              *)
-                echo "::error::GTOLib 指针($POINTER) 与预构建记录($RECORDED) 不一致 —— 指针动了但 libs/gtolib-protected.jar 没重建"
-                exit 1
-                ;;
-            esac
-          fi
-          # 明文 mixin 命名空间契约（本 job 是 submodules=false，走的正是无权限开发者那条路）。
-          # dev 预构建必须 named、发行单轨必须 SRG；搞反了 build 依然全绿，只在 runClient
-          # 装载 mixin 时炸 @Shadow "was not located in the target class"（m_91294_ 事故）。
-          python3 - <<'PY'
-          import os, re, sys, zipfile
-
-          PAT = re.compile(rb'[mf]_\d+_')
-
-          def check(path, expect):
-              if not os.path.exists(path):
-                  sys.exit(f'::error::{path} 不存在')
-              zf = zipfile.ZipFile(path)
-              names = [n for n in zf.namelist()
-                       if n.startswith('com/gtolib/mixin/') and n.endswith('.class')]
-              if not names:
-                  sys.exit(f'::error::{path} 里没有明文 mixin 类')
-              blobs = {n: zf.read(n) for n in names}
-              srg = [n for n in names if PAT.search(blobs[n])]
-              lvt = [n for n in names if b'LocalVariableTable' in blobs[n]]
-              actual = 'srg' if srg else 'named'
-              print(f'{path}: {len(names)} 个 mixin 类, {len(srg)} 个含 SRG 成员名 -> {actual} (期望 {expect}), LVT={len(lvt)}')
-              if actual != expect:
-                  sample = ', '.join(n.rsplit('/', 1)[-1] for n in (srg or names)[:5])
-                  sys.exit(f'::error::{path} mixin 明文命名空间错误：期望 {expect}，实际 {actual} ({sample})')
-              # ProGuard 的 -keepattributes 不含 LocalVariableTable。出现 LVT 说明明文
-              # 档 gtolib-unprotected.jar 的字节混进了发布产物。
-              if lvt:
-                  sample = ', '.join(n.rsplit('/', 1)[-1] for n in lvt[:5])
-                  sys.exit(f'::error::{path} 明文 mixin 含 LocalVariableTable（{len(lvt)}/{len(names)}），'
-                           f'字节来自明文链而非受保护链 ({sample})')
-
-          check('libs/gtolib-protected.jar', 'named')
-          check('libs/gtolib-release.jar', 'srg')
-          print('OK: gtolib mixin 明文命名空间符合契约')
-          PY
+          test -f GTOLib/protect/proguard-release-rules.pro
+          test -s GTOLib/protect/gto-seal-packager.jar
+          echo "OK: GTOLib protect toolchain present"
 
       - name: Build and sign
         env:
@@ -462,6 +462,23 @@ jobs:
           echo "OK: gto-seal-runtime SPI present"
           # ResourceLocationMixn 必须已 reobf 成 SRG（与 maven gtolib-forge 一致）
           python3 -c "import zipfile,sys; d=zipfile.ZipFile(sys.argv[1]).read('com/gtolib/mixin/mc/ResourceLocationMixn.class').decode('latin-1'); assert 'f_135804_' in d and 'm_245413_' in d and 'assertValidNamespace' not in d; print('OK: ResourceLocationMixn SRG names present')" "$GTO"
+          # 发行包只能嵌入发行单轨：无 dev 轨字节码、无明文调试字节、内部类名确已混淆
+          python3 - "$GTO" <<'PY'
+          import re, sys, zipfile
+          zf = zipfile.ZipFile(sys.argv[1])
+          names = zf.namelist()
+          dev = [n for n in names if n.endswith('.dev.bin')]
+          if dev:
+              sys.exit(f'::error::gtocore 含 dev 轨字节码 {len(dev)} 个（{dev[0]}）')
+          gl = [n for n in names if n.startswith('com/gtolib/') and n.endswith('.class')]
+          lvt = [n for n in gl if b'LocalVariableTable' in zf.read(n)]
+          if lvt:
+              sys.exit(f'::error::gtocore 内 gtolib 类含 LocalVariableTable（{len(lvt)} 个，{lvt[0]}），疑似明文字节')
+          renamed = [n for n in gl if re.search(r'[^ -~]', n)]
+          if not renamed:
+              sys.exit('::error::gtocore 内 gtolib 类名未混淆，嵌入的不是发行单轨')
+          print(f'OK: gtolib {len(gl)} class，混淆名 {len(renamed)}，无 dev.bin、无 LVT')
+          PY
 
       - name: List outputs
         run: |
@@ -471,6 +488,26 @@ jobs:
           ls -la build/libs/gto-seal-runtime*.jar 2>/dev/null || true
           echo "Gate reason: ${{ needs.gate.outputs.reason }}"
           echo "Built: ${{ needs.gate.outputs.checkout_repo }}@${{ needs.gate.outputs.checkout_ref }}"
+
+      # 混淆映射只以加密形式归档（公开仓的 artifact 任何登录用户都能下载）
+      - name: Encrypt GTOLib release mapping
+        env:
+          MAPPING_PASS: ${{ secrets.GTO_KEY }}
+        run: |
+          set -euo pipefail
+          MAP=build/gtolib/gtolib-release-mapping.txt
+          test -s "$MAP"
+          mkdir -p build/mapping-enc
+          gzip -9 -c "$MAP" | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:MAPPING_PASS -out build/mapping-enc/gtolib-release-mapping.txt.gz.enc
+          ls -la build/mapping-enc
+
+      - name: Upload encrypted mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtolib-mapping-encrypted
+          path: build/mapping-enc/gtolib-release-mapping.txt.gz.enc
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Upload gtocore
         uses: actions/upload-artifact@v4

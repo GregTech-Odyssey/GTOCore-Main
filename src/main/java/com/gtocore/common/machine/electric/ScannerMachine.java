@@ -6,6 +6,7 @@ import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
@@ -52,6 +53,7 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
         data.dataCrystal = ItemStack.EMPTY;
         data.item = ItemStack.EMPTY;
         data.team = team;
+        data.machine = this;
         u.forEachKey(AEKeyTypes.ITEMS, false, (key, amount) -> {
             if (!(key instanceof AEItemKey itemKey)) return false;
             var stack = itemKey.getReadOnlyStack();
@@ -124,10 +126,18 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
 
         private final RecipeBuilder recipeBuilder = RecipeBuilder.ofRaw();
         private UUID team;
+        private ScannerMachine machine;
 
         private ItemStack dataCrystal = ItemStack.EMPTY;
         private ItemStack item = ItemStack.EMPTY;
         private FluidStack fluidStack = FluidStack.EMPTY;
+
+        private boolean fitsCrystal(ItemStack crystal, long bytes) {
+            long remaining = DataCrystalItem.getRemainingCapacity(crystal);
+            if (bytes <= remaining) return true;
+            IdleReason.DATA_CRYSTAL_CAPACITY.setReason(machine, DataCrystalItem.formatBytes(bytes), DataCrystalItem.formatBytes(remaining));
+            return false;
+        }
 
         private boolean found() {
             return !dataCrystal.isEmpty() && (!item.isEmpty() || !fluidStack.isEmpty()) && team != null;
@@ -142,8 +152,9 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                 if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEItemKey.of(item.getItem())).isEmpty()) {
                     return null;
                 }
-                DataCrystalItem.setTeamUUID(output, team);
                 var bytesScanned = c.countBytes();
+                if (!fitsCrystal(input, bytesScanned)) return null;
+                DataCrystalItem.setTeamUUID(output, team);
                 return recipeBuilder.inputItems(input)
                         .inputItems(item.copyWithCount(1))
                         .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
@@ -155,8 +166,9 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
                 if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEFluidKey.of(fluidStack.getFluid())).isEmpty()) {
                     return null;
                 }
-                DataCrystalItem.setTeamUUID(output, team);
                 var bytesScanned = c.countBytes();
+                if (!fitsCrystal(input, bytesScanned)) return null;
+                DataCrystalItem.setTeamUUID(output, team);
                 return recipeBuilder.inputItems(input)
                         .inputFluids(fluidStack.getFluid(), 1000)
                         .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))

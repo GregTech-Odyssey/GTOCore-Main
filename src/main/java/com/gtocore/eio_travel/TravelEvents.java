@@ -1,30 +1,20 @@
 package com.gtocore.eio_travel;
 
-import com.gtocore.api.travel.TravelMode;
-import com.gtocore.common.item.TravelStaffBehavior;
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.eio_travel.logic.TravelHandler;
 import com.gtocore.eio_travel.logic.TravelSavedData;
-import com.gtocore.eio_travel.logic.TravelUtils;
 import com.gtocore.eio_travel.network.TravelNetworks;
 
-import com.gtolib.utils.RegistriesUtils;
-
-import com.gregtechceu.gtceu.api.item.ComponentItem;
-
-import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -32,8 +22,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 @Mod.EventBusSubscriber
 public class TravelEvents {
@@ -43,57 +31,9 @@ public class TravelEvents {
 
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        Player player = event.getEntity();
-        ItemStack stack = player.getMainHandItem();
-
-        if (!(stack.getItem() instanceof ComponentItem c && c.getComponents().stream().anyMatch(comp -> comp instanceof TravelStaffBehavior))) {
-            return;
+        if (event.getEntity().getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+            event.setCanceled(true);
         }
-
-        event.setCanceled(true);
-
-        Level level = player.level();
-        if (level.isClientSide()) {
-            return;
-        }
-
-        TravelMode currentMode = gtocore$getTravelMode(stack);
-        TravelMode nextMode = currentMode.next();
-        gtocore$setTravelMode(stack, nextMode);
-
-        if (nextMode == TravelMode.FILTER_BY_BLOCK) {
-            BlockPos pos = event.getPos();
-            BlockState blockState = level.getBlockState(pos);
-            String blockId = Objects.requireNonNull(RegistriesUtils.getIdLocation(blockState.getBlock())).toString();
-
-            CompoundTag tag = stack.getOrCreateTag();
-            tag.putString(TravelUtils.FILTER_BLOCK_TAG, blockId);
-
-            player.displayClientMessage(
-                    Component.translatable("gtocore.travel.mode.switched")
-                            .append(": ")
-                            .append(nextMode.getDisplayName())
-                            .append(" [")
-                            .append(Component.literal(blockId).withStyle(ChatFormatting.YELLOW))
-                            .append("]"),
-                    true);
-        } else {
-            player.displayClientMessage(
-                    Component.translatable("gtocore.travel.mode.switched")
-                            .append(": ")
-                            .append(nextMode.getDisplayName()),
-                    true);
-        }
-    }
-
-    private static TravelMode gtocore$getTravelMode(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        return TravelMode.fromString(tag.getString(TravelUtils.MODE_TAG));
-    }
-
-    private static void gtocore$setTravelMode(ItemStack stack, TravelMode mode) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putString(TravelUtils.MODE_TAG, mode.getSerializedName());
     }
 
     @SubscribeEvent
@@ -122,9 +62,25 @@ public class TravelEvents {
     @Mod.EventBusSubscriber(Dist.CLIENT)
     public static class Client {
 
+        private static long LAST_STAFF_UI_REQUEST = 0;
         private static boolean LAST_JUMPING = false;
         private static boolean LAST_SNEAKING = false;
         private static int JUMP_COOLDOWN = 0;
+
+        @SubscribeEvent
+        public static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
+            Player player = Minecraft.getInstance().player;
+            if (!event.isAttack() || player == null || !player.getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+                return;
+            }
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            long now = player.level().getGameTime();
+            if (now - LAST_STAFF_UI_REQUEST >= 10) {
+                LAST_STAFF_UI_REQUEST = now;
+                TravelNetworks.requestStaffUI();
+            }
+        }
 
         @SubscribeEvent
         public static void movementInputUpdate(MovementInputUpdateEvent event) {
@@ -180,7 +136,7 @@ public class TravelEvents {
         @SubscribeEvent
         public static void blockClick(PlayerInteractEvent.RightClickBlock event) {
             Player player = event.getEntity();
-            if (!TravelHandler.canBlockTeleport(player)) {
+            if (!TravelHandler.canBlockTeleport(player) || TravelHandler.isAimingAtTeammate(player)) {
                 return;
             }
             if (TravelHandler.blockTeleport(event.getLevel(), event.getEntity(), true)) {
@@ -192,7 +148,7 @@ public class TravelEvents {
         @SubscribeEvent
         public static void itemClick(PlayerInteractEvent.RightClickItem event) {
             Player player = event.getEntity();
-            if (!TravelHandler.canBlockTeleport(player)) {
+            if (!TravelHandler.canBlockTeleport(player) || TravelHandler.isAimingAtTeammate(player)) {
                 return;
             }
             if (TravelHandler.blockTeleport(event.getLevel(), event.getEntity(), true)) {

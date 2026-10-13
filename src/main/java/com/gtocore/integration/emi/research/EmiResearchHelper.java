@@ -52,7 +52,7 @@ public final class EmiResearchHelper {
     static final String DOMAIN_DATA_STORAGE_TOTAL = "gtocore.research.domain_data.storage.total";
     @RegisterLanguage(cn = "这件物品已经被扫描，重复扫描仅能获得%s%%的研究点数", en = "This item has already been scanned, and repeated scanning can only obtain %s%% of the research points")
     static final String DOMAIN_DATA_STORAGE_REPEAT = "gtocore.research.domain_data.storage.repeat";
-    @RegisterLanguage(cn = "这件物品还没有被扫描", en = "This item has not been scanned yet")
+    @RegisterLanguage(cn = "该物品尚未扫描", en = "This item has not been scanned")
     static final String DOMAIN_DATA_STORAGE_NOT_SCANNED = "gtocore.research.domain_data.storage.not_scanned";
     @RegisterLanguage(cn = "打开科技树", en = "Open Tech Tree")
     static final String OPEN_TECH_TREE = "gtocore.research.open_tech_tree";

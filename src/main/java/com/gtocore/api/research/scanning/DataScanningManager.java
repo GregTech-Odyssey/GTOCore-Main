@@ -144,11 +144,9 @@ public class DataScanningManager {
                 teamContext.addScannedMaterial(mat);
             }
             teamContext.addScannedItem(key);
-            if (!hasScanned) {
-                for (var node : ResearchRequirements.getEurekaRequirements(key)) {
-                    TechTreeSavedData.unlock(team, node);
-                    Message.sendResearchToast(team, node, false);
-                }
+            for (var node : ResearchRequirements.getEurekaRequirements(key)) {
+                TechTreeSavedData.unlock(team, node);
+                if (!hasScanned) Message.sendResearchToast(team, node, false);
             }
         }
         return scanDataRaw(key, mat, effectiveTimes);

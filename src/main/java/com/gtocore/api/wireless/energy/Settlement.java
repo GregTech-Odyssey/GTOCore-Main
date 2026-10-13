@@ -43,7 +43,7 @@ final class Settlement {
             int t = Integer.numberOfTrailingZeros(m);
             long th = node.bankHi[t], tl = node.bankLo[t];
             if (duration > 0) {
-                long left = node.outLeft(t);
+                long left = node.outRate(t);
                 if (left <= 0) continue;
                 long lh = U126.mulHi(left, duration), ll = U126.mulLo(left, duration);
                 if (U126.compare(th, tl, lh, ll) > 0) {

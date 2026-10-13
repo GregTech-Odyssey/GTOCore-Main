@@ -45,7 +45,7 @@ public final class WirelessConfiguratorUI {
     static final String HINT = "gtocore.wireless.configurator.hint";
     @RegisterLanguage(cn = "潜行右键：读取机器的网络", en = "Sneak-right-click: copy its network")
     static final String HINT_SNEAK = "gtocore.wireless.configurator.hint_sneak";
-    @RegisterLanguage(cn = "配置器还没有选择目标网络：手持右键空气打开界面选择", en = "No target network selected: right-click the air to choose one")
+    @RegisterLanguage(cn = "未选择目标网络，手持配置器右键空气打开界面进行选择", en = "No target network selected; right-click the air with the configurator to choose one")
     public static final String NO_TARGET = "gtocore.wireless.configurator.no_target";
 
     private WirelessConfiguratorUI() {}

@@ -4,6 +4,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.eio_travel.api.ITravelTarget;
+import com.gtocore.eio_travel.api.TravelTargetType;
 import com.gtocore.eio_travel.network.TravelNetworks;
 
 import net.minecraft.core.BlockPos;
@@ -11,7 +12,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -24,10 +24,12 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 
+import com.hepdd.gtmthings.utils.TeamUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Thanks to the developers of
@@ -39,18 +41,21 @@ import java.util.Optional;
 public class TravelHandler {
 
     public static final int MIN_TELEPORTATION_DISTANCE_SQUARED = 25;
+    private static final double MAX_AIM_ANGLE = Math.toRadians(15);
 
     public static boolean canTeleport(Player player) {
         return canItemTeleport(player) || canBlockTeleport(player);
     }
 
     public static boolean canItemTeleport(Player player) {
-        return canItemTeleport(player, InteractionHand.MAIN_HAND) || canItemTeleport(player, InteractionHand.OFF_HAND);
+        return !getHeldStaff(player).isEmpty();
     }
 
-    private static boolean canItemTeleport(Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        return stack.is(GTOItems.TRAVEL_STAFF.asItem());
+    public static ItemStack getHeldStaff(Player player) {
+        ItemStack stack = player.getMainHandItem();
+        if (stack.is(GTOItems.TRAVEL_STAFF.asItem())) return stack;
+        stack = player.getOffhandItem();
+        return stack.is(GTOItems.TRAVEL_STAFF.asItem()) ? stack : ItemStack.EMPTY;
     }
 
     public static boolean canBlockTeleport(Player player) {
@@ -77,13 +82,72 @@ public class TravelHandler {
         }
     }
 
-    public static boolean blockTeleport(Level level, Player player) {
-        return blockTeleport(level, player, false);
-    }
-
     public static boolean blockTeleport(Level level, Player player, boolean sendToServer) {
         return getTeleportAnchorTarget(player)
                 .filter(iTravelTarget -> blockTeleportAround(level, player, iTravelTarget.getPos(), sendToServer)).isPresent();
+    }
+
+    public static boolean staffTeleport(Level level, Player player) {
+        Optional<ITravelTarget> anchor = getTeleportAnchorTarget(player);
+        Player teammate = getTeleportTeammateTarget(player, anchor.orElse(null));
+        if (teammate != null) {
+            BlockPos ground = teammate.blockPosition().below();
+            Direction side = Direction.getNearest(player.getX() - teammate.getX(), 0, player.getZ() - teammate.getZ());
+            return blockTeleportTo(level, player, ground.relative(side), false) || blockTeleportAround(level, player, ground, false);
+        }
+        return anchor.filter(target -> blockTeleportAround(level, player, target.getPos(), false)).isPresent();
+    }
+
+    public static boolean isAimingAtTeammate(Player player) {
+        return getTeleportTeammateTarget(player, getTeleportAnchorTarget(player).orElse(null)) != null;
+    }
+
+    public static boolean isTeammateTarget(Player player, UUID team, Player other) {
+        if (other == player || other.isSpectator() || !other.isAlive()) {
+            return false;
+        }
+        double distanceSquared = other.distanceToSqr(player);
+        double range = GTOConfig.INSTANCE.travelConfig.itemRange;
+        if (distanceSquared <= MIN_TELEPORTATION_DISTANCE_SQUARED || distanceSquared > range * range) {
+            return false;
+        }
+        return team.equals(TeamUtil.getTeamUUID(other.getUUID()));
+    }
+
+    public static double teammateHeadSize(double distance) {
+        return Math.max(0.6, distance * 0.05);
+    }
+
+    public static double teammateHeadCenterY(double teammateHeight, double headSize) {
+        return teammateHeight + 0.3 + headSize / 2;
+    }
+
+    @Nullable
+    public static Player getTeleportTeammateTarget(Player player, @Nullable ITravelTarget anchor) {
+        ItemStack staff = getHeldStaff(player);
+        if (staff.isEmpty() || !TravelTargetType.TEAMMATE.isEnabled(staff)) {
+            return null;
+        }
+        Vec3 eye = player.getEyePosition();
+        Vec3 look = Vec3.directionFromRotation(player.getXRot(), player.getYRot());
+        double bestAngle = anchor == null ? MAX_AIM_ANGLE : Math.abs(getAngleRadians(eye, anchor.getPos(), player.getYRot(), player.getXRot()));
+        UUID team = TeamUtil.getTeamUUID(player.getUUID());
+        Player best = null;
+        for (Player other : player.level().players()) {
+            if (!isTeammateTarget(player, team, other)) {
+                continue;
+            }
+            double distance = Math.sqrt(other.distanceToSqr(player));
+            double dx = other.getX() - eye.x;
+            double dy = other.getY() + teammateHeadCenterY(other.getBbHeight(), teammateHeadSize(distance)) - eye.y;
+            double dz = other.getZ() - eye.z;
+            double angle = Math.acos(Math.min(1, (look.x * dx + look.y * dy + look.z * dz) / Math.sqrt(dx * dx + dy * dy + dz * dz)));
+            if (angle < bestAngle) {
+                bestAngle = angle;
+                best = other;
+            }
+        }
+        return best;
     }
 
     public static boolean blockElevatorTeleport(Level level, Player player, Direction direction, boolean sendToServer) {

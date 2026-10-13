@@ -141,7 +141,7 @@ final class GridRankPanel extends UIElement {
                 GridFormat.bodyName(nodes.get(info.b()).dimension()));
         boolean saturated = GridCardLines.isSaturated(topology, live, line);
         double usage = GridCardLines.usage(topology, live, line);
-        busiest.values[r] = saturated ? Component.translatable(GridMapLang.RANK_SATURATED, GridFormat.compact(GridCardLines.peakFlow(topology, live, line))) :
+        busiest.values[r] = saturated ? Component.translatable(GridMapLang.RANK_SATURATED, GridFormat.compactRate(GridCardLines.peakFlow(topology, live, line), info.tier())) :
                 Component.translatable(GridMapLang.PERCENT, Math.round(usage * 100));
         busiest.levels[r] = usage >= SATURATED ? Level.WARNING : Level.NORMAL;
     }

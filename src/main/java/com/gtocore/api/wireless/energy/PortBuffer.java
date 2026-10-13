@@ -23,11 +23,11 @@ final class PortBuffer {
     }
 
     long roomFor(long gross) {
-        return Math.max(0, Math.min(gross, U126.saturatedAdd(gross, gross) - pending));
+        return Math.max(0, Math.min(gross, U126.saturatedMul(gross, EnergyPort.BATCH_TICKS + 1) - pending));
     }
 
     boolean acceptsAll(long gross) {
-        return pending <= gross;
+        return pending <= U126.saturatedMul(gross, EnergyPort.BATCH_TICKS);
     }
 
     void addPending(long amount, int voltageTier) {
@@ -48,11 +48,9 @@ final class PortBuffer {
         return demand - credit;
     }
 
-    boolean demandMet() {
-        boolean met = credit >= demand;
+    void resetDemand() {
         creditTier = -1;
         demand = 0;
-        return met;
     }
 
     void clear() {

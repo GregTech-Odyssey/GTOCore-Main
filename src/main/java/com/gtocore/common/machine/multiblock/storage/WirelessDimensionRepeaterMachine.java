@@ -49,11 +49,11 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
 
     @RegisterLanguage(cn = "目标维度", en = "Target Dimension")
     private static final String TARGET = "gtocore.machine.wireless_dimension_repeater.target";
-    @RegisterLanguage(cn = "线路连接到哪个维度；连接后两个维度可以互相送电", en = "The dimension this line connects to; both dimensions can then send energy to each other")
+    @RegisterLanguage(cn = "线路连接的目标维度，连接后两个维度可双向输电", en = "The dimension this line connects to; energy then flows both ways between the two dimensions")
     private static final String TARGET_TIP = "gtocore.machine.wireless_dimension_repeater.target.tooltip";
     @RegisterLanguage(cn = "线路：%s ↔ %s", en = "Line: %s ↔ %s")
     private static final String LINE = "gtocore.machine.wireless_dimension_repeater.line";
-    @RegisterLanguage(cn = "每个方向：%s · %sA", en = "Each way: %s · %sA")
+    @RegisterLanguage(cn = "每个方向：%s × %sA", en = "Each way: %s × %sA")
     private static final String CAPACITY = "gtocore.machine.wireless_dimension_repeater.capacity";
     @RegisterLanguage(cn = "在星图中选择", en = "Pick on Grid Map")
     private static final String PICK = "gtocore.machine.wireless_dimension_repeater.pick";

@@ -115,8 +115,8 @@ public class SpaceDroneDock extends RecipeExtension {
 
     @RegisterLanguage(cn = "当前空间站所在星系：%s", en = "Current Space Station Galaxy: %s")
     public static final String CURRENT_GALAXY = "gtocore.machine.space_drone_dock.current_galaxy";
-    @RegisterLanguage(cn = "当前空间站不在时空域中！", en = "The current space station is not in the spacetime domain!")
+    @RegisterLanguage(cn = "空间站不在时空域中", en = "Station Outside Spacetime Domain")
     public static final String NOT_IN_SPACETIME_DOMAIN = "gtocore.machine.space_drone_dock.not_in_spacetime_domain";
-    @RegisterLanguage(cn = "无人机内没有电，无法出发！", en = "The drone has no power and cannot set off!")
+    @RegisterLanguage(cn = "无人机电量不足", en = "Drone Out of Power")
     public static final String DRONE_NO_ENERGY = "gtocore.machine.space_drone_dock.drone_no_energy";
 }

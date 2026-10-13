@@ -52,7 +52,10 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
         var aeKeys = aeKeyDataCrystal.aeKeys();
         UUID team = aeKeyDataCrystal.team();
         for (var entry : aeKeys) {
-            DataCrystalItem.addResearchData(dataCrystal, DataScanningManager.scanData(entry.getKey(), team, entry.getLongValue(), simulate));
+            if (entry.getLongValue() <= 0) continue;
+            if (!DataCrystalItem.addResearchData(dataCrystal, DataScanningManager.scanData(entry.getKey(), team, entry.getLongValue(), simulate)) && simulate) {
+                return false;
+            }
         }
         var key = AEItemKey.of(dataCrystal);
         if (key == null) return true;

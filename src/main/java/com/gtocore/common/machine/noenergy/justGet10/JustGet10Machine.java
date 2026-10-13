@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.noenergy.justGet10;
 
-import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gtocore.data.transaction.data.CoinExchange;
 import com.gtocore.data.transaction.data.CoinSeries;
 import com.gtocore.data.transaction.data.TradeLang;
@@ -12,6 +11,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;

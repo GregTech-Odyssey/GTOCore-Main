@@ -74,8 +74,8 @@ final class RocketDetails {
         var landing = menu.getLandingPos(dimension, true);
         var land = Button.translatable(LayoutStyle.AUTO, RocketLang.LAND)
                 .setVariant(UITheme.ButtonVariant.CONFIRM)
-                .disabled(() -> here || !reachable || !decorator.unlocked(body),
-                        here ? RocketLang.HERE : !reachable ? RocketLang.ROCKET_TOO_LOW : RocketLang.LOCKED)
+                .disabled(() -> !reachable || !here && !decorator.unlocked(body),
+                        !reachable ? RocketLang.ROCKET_TOO_LOW : RocketLang.LOCKED)
                 .setOnClientClick(() -> host.land(body));
         land.tooltips(Component.translatable("tooltip.ad_astra.land", catalog.name(body), landing.getX(), landing.getZ()).withStyle(ChatFormatting.AQUA));
         column.addChild(land);

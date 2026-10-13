@@ -7,6 +7,7 @@ import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -23,8 +24,15 @@ public final class WirelessText {
     public static final String NODE_LOCAL = "gtocore.wireless_energy.node_local";
     @RegisterLanguage(cn = "仅经线路 · 最高 %s", en = "Via lines only · up to %s")
     public static final String NODE_REMOTE = "gtocore.wireless_energy.node_remote";
-    @RegisterLanguage(cn = "%s · %sA（每个方向 %s EU/t）", en = "%s · %sA (%s EU/t each way)")
+    @RegisterLanguage(cn = "%s × %sA（每个方向）", en = "%s × %sA (each way)")
     public static final String LINE = "gtocore.wireless_energy.line";
+    @RegisterLanguage(cn = "%s × %sA", en = "%s × %sA")
+    public static final String POWER = "gtocore.wireless_energy.power";
+    @RegisterLanguage(cn = "%s × %s / %sA", en = "%s × %s / %sA")
+    public static final String POWER_USAGE = "gtocore.wireless_energy.power_usage";
+    @RegisterLanguage(cn = "%s × %sA·h", en = "%s × %sA·h")
+    public static final String ENERGY = "gtocore.wireless_energy.energy";
+    private static final double TICKS_PER_HOUR = 72000;
     @RegisterLanguage(cn = "%s（含轨道）", en = "%s (incl. orbit)")
     public static final String WITH_ORBIT = "gtocore.wireless_energy.with_orbit";
     @RegisterLanguage(cn = "不连接", en = "Not connected")
@@ -33,6 +41,8 @@ public final class WirelessText {
     public static final String DIMENSION_COVERAGE = "gtocore.wireless_energy.dimension_coverage";
     @RegisterLanguage(cn = "只有所有者、同队成员或管理员可以改绑", en = "Only the owner, a teammate or an operator can rebind this")
     public static final String REBIND_DENIED = "gtocore.wireless_energy.rebind_denied";
+
+    public static final Component ZERO_POWER = Component.literal("0A");
 
     private WirelessText() {}
 
@@ -56,7 +66,53 @@ public final class WirelessText {
     }
 
     public static Component line(int tier, long budget) {
-        return Component.translatable(LINE, GTValues.VNF[tier], amperes(budget / (double) GTValues.V[tier]), NumberUtils.formatDouble(budget));
+        return Component.translatable(LINE, GTValues.VNF[tier], amperes(budget / (double) GTValues.V[tier]));
+    }
+
+    public static int voltageTier(double perTick, int tier) {
+        return tier >= GTValues.ULV && tier <= GTValues.MAX ? tier : powerTier(perTick);
+    }
+
+    public static int powerTier(double perTick) {
+        double abs = Math.abs(perTick);
+        if (!(abs >= GTValues.V[GTValues.LV])) return GTValues.ULV;
+        if (abs >= GTValues.V[GTValues.MAX]) return GTValues.MAX;
+        return GTUtil.getFloorTierByVoltage((long) abs);
+    }
+
+    public static double powerAmps(double perTick, int tier) {
+        double amps = Math.abs(perTick) / GTValues.V[tier];
+        return Double.isFinite(amps) ? amps : 0;
+    }
+
+    public static Component power(double perTick, int tier) {
+        return power(perTick, tier, GTValues.VNF);
+    }
+
+    public static Component power(double perTick, int tier, String[] tierNames) {
+        if (!(Math.abs(perTick) >= 1)) return ZERO_POWER;
+        int t = voltageTier(perTick, tier);
+        return Component.translatable(POWER, tierNames[t], amperes(powerAmps(perTick, t)));
+    }
+
+    public static Component signedPower(double perTick, int tier) {
+        var power = power(perTick, tier);
+        if (!(Math.abs(perTick) >= 1)) return power;
+        return Component.literal(perTick > 0 ? "+" : "-").append(power);
+    }
+
+    public static Component powerUsage(double used, double capacity, int tier) {
+        return powerUsage(used, capacity, tier, GTValues.VNF);
+    }
+
+    public static Component powerUsage(double used, double capacity, int tier, String[] tierNames) {
+        int t = voltageTier(capacity, tier);
+        return Component.translatable(POWER_USAGE, tierNames[t], amperes(powerAmps(used, t)), amperes(powerAmps(capacity, t)));
+    }
+
+    public static Component energy(double eu, int tier) {
+        int t = tier >= GTValues.LV && tier <= GTValues.MAX ? tier : powerTier(eu / TICKS_PER_HOUR);
+        return Component.translatable(ENERGY, GTValues.VNF[t], amperes(powerAmps(eu, t) / TICKS_PER_HOUR));
     }
 
     public static Component dimension(@Nullable ResourceKey<Level> key) {

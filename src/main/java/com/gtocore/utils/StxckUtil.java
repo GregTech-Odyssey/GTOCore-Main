@@ -90,13 +90,17 @@ public class StxckUtil {
 
     public boolean tryRefillItemStackOnEntityRemove(Entity entity, Entity.RemovalReason reason) {
         if (entity.getType() != EntityType.ITEM || reason != Entity.RemovalReason.DISCARDED) return false;
-        var itemEntity = (ItemEntity) entity;
-        if (getExtraItemCount(itemEntity) <= 0) return false;
+        return refillFromExtra((ItemEntity) entity);
+    }
+
+    public boolean refillFromExtra(ItemEntity itemEntity) {
+        var extraItemCount = getExtraItemCount(itemEntity);
+        if (extraItemCount <= 0) return false;
         var copied = itemEntity.getItem().copy();
         itemEntity.setItem(copied);
         copied.setCount(0);
         refillItemStack(itemEntity);
-        return true;
+        return getExtraItemCount(itemEntity) < extraItemCount;
     }
 
     public void tryToMerge(ItemEntity itemEntity, ItemEntity itemEntity1) {

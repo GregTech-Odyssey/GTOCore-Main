@@ -49,7 +49,7 @@ final class GridPairFlow {
             tip = Component.translatable(GridMapLang.TIP_UNREACHABLE).withStyle(ChatFormatting.GRAY);
             return;
         }
-        var amount = Component.literal(GridFormat.amount(result.flow())).withStyle(ChatFormatting.AQUA);
+        var amount = GridFormat.rate(result.flow(), result.tier()).copy().withStyle(ChatFormatting.AQUA);
         tip = Component.translatable(GridMapLang.TIP_PAIR_MAX, name(source), name(target), amount);
         route = Component.translatable(GridMapLang.TIP_PAIR_ROUTE, result.usedLines(), GridFormat.tierText(result.tier())).withStyle(ChatFormatting.GRAY);
     }

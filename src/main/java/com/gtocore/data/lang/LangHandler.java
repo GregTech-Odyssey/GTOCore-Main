@@ -454,11 +454,6 @@ public final class LangHandler {
 
         addCNEN("gtocore.adv_terminal.setting_already_existed", "存在已有设置", "Setting Already Existed");
 
-        addCNEN("gtocore.travel.mode.all", "所有目标", "All Targets");
-        addCNEN("gtocore.travel.mode.one_per_chunk", "每个区块一个目标", "One Target per Chunk");
-        addCNEN("gtocore.travel.mode.filter_by_block", "从目标类型筛选", "Filter by block type");
-        addCNEN("gtocore.travel.mode.switched", "切换模式", "Switch Mode");
-        addCNEN("gtocore.travel.mode.filter.noblock", "你的视线没有可作为目标的方块", "Your view does not have a block that can be used as a target");
         addCNEN("gtocore.travel.missing_block", "[未设置方块]", "[No block set]");
 
         addCNEN("ftbultimine.shape.area", "不定形 (不连续)", "Shapeless (Area)");

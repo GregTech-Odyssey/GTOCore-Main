@@ -372,9 +372,17 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
         @Override
         public boolean findRecipe(GTRecipeType recipeType, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle) {
             final var type = part.recipeType;
-            if (type != null && type != recipeType) {
-                recipeType = type;
+            if (type != null) return search(type, canHandle);
+            if (search(recipeType, canHandle)) return true;
+            var types = part.recipeTypes;
+            for (int i = 0, size = types.size(); i < size; i++) {
+                var other = types.get(i);
+                if (other != recipeType && search(other, canHandle)) return true;
             }
+            return false;
+        }
+
+        private boolean search(GTRecipeType recipeType, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle) {
             var map = this.getSearchMap(recipeType);
             if (map.isEmpty()) return false;
             return recipeType.search(this, map, canHandle);

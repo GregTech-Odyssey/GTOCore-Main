@@ -8,6 +8,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipTheme;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.network.chat.Component;
@@ -50,10 +51,21 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
     }
 
     public long getAmpHours() {
-        long base = tier <= GTValues.IV ? 64 : tier <= GTValues.UIV ? 256 : 1024L << ((tier - GTValues.UXV) << 1);
-        if (GTORules.WIRELESS_ENERGY_TIER.isEasy()) return base * 3 / 2;
-        if (GTORules.WIRELESS_ENERGY_TIER.isExpert()) return base / 2;
+        long base = baseAmperage(tier) / 2;
+        if (GTORules.WIRELESS_ENERGY_TIER.isEasy()) return base * 16;
+        if (GTORules.WIRELESS_ENERGY_TIER.isExpert()) return base * 3 / 4;
         return base;
+    }
+
+    public static long transferAmperage(int tier) {
+        long base = baseAmperage(tier);
+        if (GTORules.WIRELESS_ENERGY_TIER.isEasy()) return base * 16;
+        if (GTORules.WIRELESS_ENERGY_TIER.isExpert()) return base * 3 / 2;
+        return base;
+    }
+
+    private static long baseAmperage(int tier) {
+        return tier <= GTValues.IV ? 64 : tier <= GTValues.UEV ? 512 : 2048L << ((tier - GTValues.UIV) << 1);
     }
 
     @Override
@@ -81,7 +93,10 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        tooltip.add(Tips.energy(StatKind.ENERGY_CAPACITY, getCapacity().min(LONG_MAX).longValue(), tier));
+        var capacity = getCapacity();
+        tooltip.add(capacity.compareTo(LONG_MAX) <= 0 ? Tips.energy(StatKind.ENERGY_CAPACITY, capacity.longValue(), tier) :
+                Tips.stat(StatKind.ENERGY_CAPACITY.line(Component.translatable("gtceu.tip.unit.energy_hours", String.format("%,.1f", (double) getAmpHours()))
+                        .withStyle(s -> s.withColor(TipTheme.VALUE)).append(Component.translatable("gtceu.tip.unit.tier", GTValues.VNF[tier])))));
         tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, GTValues.VNF[tier], AMPERAGE)));
         tooltip.add(Tips.stat(Component.translatable(LOSS, (double) getLoss() / 10)));
         tooltip.add(Tips.requirement(Component.translatable(REQUIRES_GLASS, GTValues.VNF[tier])));

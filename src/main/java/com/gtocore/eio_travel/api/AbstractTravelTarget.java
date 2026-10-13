@@ -79,11 +79,11 @@ public abstract class AbstractTravelTarget implements ITravelTarget {
 
     @Override
     public int getItem2BlockRange() {
-        return GTOConfig.INSTANCE.travelConfig.blockRange;
+        return GTOConfig.INSTANCE.travelConfig.itemRange;
     }
 
     @Override
     public int getBlock2BlockRange() {
-        return GTOConfig.INSTANCE.travelConfig.itemRange;
+        return GTOConfig.INSTANCE.travelConfig.blockRange;
     }
 }

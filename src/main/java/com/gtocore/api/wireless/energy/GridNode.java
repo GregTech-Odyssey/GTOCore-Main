@@ -38,11 +38,14 @@ public final class GridNode {
     final int[] bankLoss = new int[BANKS];
     final long[] outCap = new long[BANKS];
     final long[] inCap = new long[BANKS];
-    private final long[] outUsed = new long[BANKS];
-    private final long[] inUsed = new long[BANKS];
+    private final long[] outTokens = new long[BANKS];
+    private final long[] inTokens = new long[BANKS];
+    private final long[] outSum = new long[BANKS];
+    private final long[] inSum = new long[BANKS];
     private final long[] lastOut = new long[BANKS];
     private final long[] lastIn = new long[BANKS];
     private int budgetTick = Integer.MIN_VALUE;
+    private int windowTick = Integer.MIN_VALUE;
     @Nullable
     private BankReservations reservations;
     int reachTier = -1;
@@ -205,7 +208,7 @@ public final class GridNode {
         long sum = 0;
         for (int m = drawable(voltage); m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            sum = U126.saturatedAdd(sum, Math.min(stock(t), outLeft(t)));
+            sum = U126.saturatedAdd(sum, Math.min(stock(t), outTokens[t]));
         }
         return sum;
     }
@@ -225,7 +228,7 @@ public final class GridNode {
         roll();
         for (int m = drawable(voltage); m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            if (outCap[t] > 0 && outLeft(t) == 0) return true;
+            if (outCap[t] > 0 && outTokens[t] == 0) return true;
         }
         return false;
     }
@@ -234,17 +237,13 @@ public final class GridNode {
         roll();
         for (int m = banks; m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            if (inCap[t] > 0 && inLeft(t) == 0 && bankFree(t) > 0) return true;
+            if (inCap[t] > 0 && inTokens[t] == 0 && bankFree(t) > 0) return true;
         }
         return false;
     }
 
-    long outLeft(int t) {
-        return Math.max(0, outCap[t] - outUsed[t] - reserved(t));
-    }
-
-    private long inLeft(int t) {
-        return Math.max(0, inCap[t] - inUsed[t]);
+    long outRate(int t) {
+        return Math.max(0, outCap[t] - reserved(t));
     }
 
     private long reserved(int t) {
@@ -255,6 +254,7 @@ public final class GridNode {
         roll();
         if (reservations == null) reservations = new BankReservations();
         reservations.reserve(bank, perTick, until, budgetTick);
+        outTokens[bank] = Math.min(outTokens[bank], U126.saturatedMul(outRate(bank), TokenBucket.BURST_TICKS));
     }
 
     void cancelOut(int bank, long perTick, int until) {
@@ -265,14 +265,28 @@ public final class GridNode {
     void roll() {
         int now = GridClock.tick();
         if (now == budgetTick) return;
-        boolean consecutive = now - budgetTick == 1;
-        for (int t = 0; t < BANKS; t++) {
-            lastOut[t] = consecutive ? outUsed[t] : 0;
-            lastIn[t] = consecutive ? inUsed[t] : 0;
-            outUsed[t] = 0;
-            inUsed[t] = 0;
-        }
+        int elapsed = now - budgetTick;
+        if (elapsed < 0 || elapsed > TokenBucket.BURST_TICKS) elapsed = TokenBucket.BURST_TICKS;
         budgetTick = now;
+        int window = now - windowTick;
+        boolean close = window < 0 || window >= TokenBucket.BURST_TICKS;
+        for (int t = 0; t < BANKS; t++) {
+            outTokens[t] = refill(outTokens[t], outRate(t), elapsed);
+            inTokens[t] = refill(inTokens[t], inCap[t], elapsed);
+            if (close) {
+                boolean live = window > 0 && window <= TokenBucket.BURST_TICKS << 1;
+                lastOut[t] = live ? outSum[t] / window : 0;
+                lastIn[t] = live ? inSum[t] / window : 0;
+                outSum[t] = 0;
+                inSum[t] = 0;
+            }
+        }
+        if (close) windowTick = now;
+    }
+
+    private static long refill(long tokens, long rate, int elapsed) {
+        if (rate <= 0) return 0;
+        return Math.min(U126.saturatedMul(rate, TokenBucket.BURST_TICKS), U126.saturatedAdd(tokens, U126.saturatedMul(rate, elapsed)));
     }
 
     private long stock(int t) {
@@ -293,7 +307,7 @@ public final class GridNode {
         long sum = 0;
         for (int m = drawable(voltage); m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            sum = U126.saturatedAdd(sum, Math.min(U126.divCeil(bankHi[t], bankLo[t], duration), outLeft(t)));
+            sum = U126.saturatedAdd(sum, Math.min(U126.divCeil(bankHi[t], bankLo[t], duration), outRate(t)));
         }
         return sum;
     }
@@ -302,10 +316,11 @@ public final class GridNode {
         roll();
         for (int m = drawable(voltage); m != 0 && amount > 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);
-            long part = Math.min(U126.minClamp(bankHi[t], bankLo[t], amount), outLeft(t));
+            long part = Math.min(U126.minClamp(bankHi[t], bankLo[t], amount), outTokens[t]);
             if (part <= 0) continue;
             debit(t, 0, part);
-            outUsed[t] += part;
+            outTokens[t] -= part;
+            outSum[t] = U126.saturatedAdd(outSum[t], part);
             amount -= part;
         }
     }
@@ -320,7 +335,7 @@ public final class GridNode {
         for (int m = banks; m != 0 && left > 0;) {
             int t = 31 - Integer.numberOfLeadingZeros(m);
             m ^= 1 << t;
-            left -= Loss.acceptGross(bankFree(t), metered ? Math.min(left, inLeft(t)) : left, Loss.combined(bankLoss[t], extraLoss));
+            left -= Loss.acceptGross(bankFree(t), metered ? Math.min(left, inTokens[t]) : left, Loss.combined(bankLoss[t], extraLoss));
         }
         return gross - left;
     }
@@ -332,11 +347,14 @@ public final class GridNode {
             int t = 31 - Integer.numberOfLeadingZeros(m);
             m ^= 1 << t;
             int permille = Loss.combined(bankLoss[t], extraLoss);
-            long g = Loss.acceptGross(bankFree(t), metered ? Math.min(left, inLeft(t)) : left, permille);
+            long g = Loss.acceptGross(bankFree(t), metered ? Math.min(left, inTokens[t]) : left, permille);
             if (g <= 0) continue;
             long l = Loss.of(g, permille);
             credit(t, 0, g - l);
-            if (metered) inUsed[t] += g;
+            if (metered) {
+                inTokens[t] -= g;
+                inSum[t] = U126.saturatedAdd(inSum[t], g);
+            }
             lost += l;
             left -= g;
         }
@@ -344,7 +362,10 @@ public final class GridNode {
             int t = Math.max(0, tier);
             long l = Loss.of(left, Loss.combined(bankLoss[t], extraLoss));
             credit(t, 0, left - l);
-            if (metered) inUsed[t] = U126.saturatedAdd(inUsed[t], left);
+            if (metered) {
+                inTokens[t] = Math.max(0, inTokens[t] - left);
+                inSum[t] = U126.saturatedAdd(inSum[t], left);
+            }
             lost += l;
         }
         return lost;

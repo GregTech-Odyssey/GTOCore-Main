@@ -187,10 +187,11 @@ public class GridSummaryPanel extends UIElement {
         progress = new ProgressBar.Progress(GridFormat.ppm(stored, capacity), 1_000_000L, 0);
         storedDetail = GridFormat.storedDetail(stored, capacity);
         double netRate = summary.net(window);
-        net = GridFormat.netRate(netRate);
-        input = GridFormat.rate(summary.input(window));
-        output = GridFormat.rate(summary.output(window));
-        loss = GridFormat.rate(summary.loss(window));
+        int tier = sampler == null ? -1 : sampler.account().unitTier(null);
+        net = GridFormat.netRate(netRate, tier);
+        input = GridFormat.rate(summary.input(window), tier);
+        output = GridFormat.rate(summary.output(window), tier);
+        loss = GridFormat.rate(summary.loss(window), tier);
         eta = capacity > 0 ? GridFormat.eta(stored, capacity, summary.storageDelta()) : GridFormat.NO_VALUE;
         scale = Component.translatable(GridMapLang.SCALE_VALUE, summary.nodes(), summary.lines(), summary.activeLines());
         coverage = summary.truncated() ? Component.translatable(GridMapLang.TRUNCATED, GridView.MAX_NODES, GridView.MAX_LINES) : GridFormat.NO_VALUE;

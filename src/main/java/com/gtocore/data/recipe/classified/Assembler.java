@@ -3209,7 +3209,7 @@ final class Assembler {
                 .inputItems(TagPrefix.plate, GTMaterials.Steel, 4)
                 .inputItems(TagPrefix.plate, GTMaterials.EnderPearl, 2)
                 .outputItems(GTOBlocks.WIRELESS_ENERGY_TOWER_FRAME.asItem(), 2)
-                .circuitMeta(6)
+                .circuitMeta(7)
                 .EUt(16)
                 .duration(50)
                 .save();

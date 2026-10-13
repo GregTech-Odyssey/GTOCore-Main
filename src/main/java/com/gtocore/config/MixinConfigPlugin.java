@@ -20,6 +20,9 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.equals("com.gtocore.mixin.mousetweaks.GuiContainerHandlerMixin")) {
             return Mods.MOUSETWEAKS.isLoaded();
         }
+        if (mixinClassName.equals("com.gtocore.mixin.sophisticatedcore.MagnetUpgradeWrapperMixin")) {
+            return Mods.SOPHISTICATEDCORE.isLoaded();
+        }
         return true;
     }
 }

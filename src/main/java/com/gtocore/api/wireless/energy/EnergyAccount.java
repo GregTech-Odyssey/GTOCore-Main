@@ -199,6 +199,15 @@ public final class EnergyAccount {
         return sum;
     }
 
+    public int unitTier(@Nullable ResourceKey<Level> dimension) {
+        var body = dimension == null ? null : GridBody.of(dimension);
+        int top = -1;
+        for (var tower : towers.values()) {
+            if (body == null || GridBody.of(tower.pos().dimension()) == body) top = Math.max(top, tower.unitTier());
+        }
+        return top;
+    }
+
     public double averageLossPercent() {
         return averageLoss() / (double) Loss.PERCENT;
     }

@@ -27,12 +27,12 @@ public final class NodeDetail {
     private static int revisions;
     public static final NodeDetail EMPTY = new NodeDetail(0);
 
-    public record Port(int key, Component name, ResourceKey<Level> dimension, BlockPos pos, double rate) {}
+    public record Port(int key, Component name, ResourceKey<Level> dimension, BlockPos pos, double rate, int tier) {}
 
     final int tick;
     int requested;
     private int revision;
-    private int towers, topTowerTier = -1, relays, portCount;
+    private int towers, topTowerTier = -1, unitTier = -1, relays, portCount;
     private double stored, capacity, storageDelta, lossPercent, lineIn, lineOut;
     private double[] input = ZERO, output = ZERO, loss = ZERO;
     private Port[] ports = NO_PORTS;
@@ -61,6 +61,7 @@ public final class NodeDetail {
             if (GridBody.of(tower.pos().dimension()) != key) continue;
             towers++;
             topTowerTier = Math.max(topTowerTier, tower.tier());
+            unitTier = Math.max(unitTier, tower.unitTier());
         }
         for (var relay : account.relays.values()) {
             if (GridBody.of(relay.pos().dimension()) == key) relays++;
@@ -130,7 +131,7 @@ public final class NodeDetail {
             var pos = machine.getPos();
             int key = (int) HashCommon.mix(pos.asLong() * 31 + dimension.location().hashCode());
             while (list.contains(key)) key++;
-            ports[i] = new Port(key, machine.getBlockState().getBlock().getName(), dimension, pos, TOP_RATES[i]);
+            ports[i] = new Port(key, machine.getBlockState().getBlock().getName(), dimension, pos, TOP_RATES[i], TOP_PORTS[i].tier());
             list.add(key);
             TOP_PORTS[i] = null;
             TOP_LEVELS[i] = null;
@@ -148,6 +149,10 @@ public final class NodeDetail {
 
     public int topTowerTier() {
         return topTowerTier;
+    }
+
+    public int unitTier() {
+        return unitTier;
     }
 
     public int relays() {

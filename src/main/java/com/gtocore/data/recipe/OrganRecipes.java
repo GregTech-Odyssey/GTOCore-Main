@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTOOrganItems;
 import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.config.GTORules;
 
@@ -56,6 +57,8 @@ public final class OrganRecipes {
                 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Titanium),
                 'D', GTItems.FIELD_GENERATOR_EV.asStack(),
                 'E', new MaterialEntry(TagPrefix.ingot, GTMaterials.Titanium));
+
+        OrganFood.initRecipes();
 
         for (var organTier : OrganTier.all()) {
             if (!organTier.isCraftable()) continue;

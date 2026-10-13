@@ -26,11 +26,11 @@ final class PortCycle {
     }
 
     boolean shouldPark(int next) {
-        return next == 1 && starved && !moved;
+        return next > 0 && starved && !moved;
     }
 
     void finish(int next, int servedTier) {
-        boolean lineBound = next == 1 && !moved && !starved;
+        boolean lineBound = next > 0 && !moved && !starved;
 
         drawBlocked = lineBound && drew && !pushed;
         pushBlocked = lineBound && pushed && !drew;

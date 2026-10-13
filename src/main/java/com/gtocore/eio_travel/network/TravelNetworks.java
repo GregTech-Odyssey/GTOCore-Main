@@ -1,5 +1,6 @@
 package com.gtocore.eio_travel.network;
 
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.eio_travel.api.ITravelTarget;
 import com.gtocore.eio_travel.api.TravelRegistry;
 import com.gtocore.eio_travel.logic.TravelHandler;
@@ -16,9 +17,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import com.google.common.base.Predicates;
+import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 
 import java.util.Optional;
 
@@ -47,6 +50,14 @@ public class TravelNetworks {
             "eio_travel:request_travel",
             TravelNetworks::handleRequest);
 
+    private static final NetworkPack OPEN_STAFF_UI = NetworkPack.registerC2S(
+            "eio_travel:open_staff_ui",
+            (player, buf) -> {
+                if (player != null && !player.isSpectator() && player.containerMenu == player.inventoryMenu && player.getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+                    HeldItemUIFactory.INSTANCE.openUI(player, InteractionHand.MAIN_HAND);
+                }
+            });
+
     public static void onServerTravelAdded(ITravelTarget target) {
         if (ServerLifecycleHooks.getCurrentServer() != null) {
             ADD_TRAVEL.send(b -> b.writeNbt(target.save()), ServerUtils.getServer());
@@ -65,6 +76,10 @@ public class TravelNetworks {
         if (ServerLifecycleHooks.getCurrentServer() != null) {
             REMOVE_TRAVEL.send(b -> b.writeBlockPos(pos), ServerUtils.getServer());
         }
+    }
+
+    public static void requestStaffUI() {
+        OPEN_STAFF_UI.send();
     }
 
     public static void requestTravel(BlockPos pos) {

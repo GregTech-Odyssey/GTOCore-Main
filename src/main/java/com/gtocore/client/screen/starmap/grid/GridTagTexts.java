@@ -1,6 +1,7 @@
 package com.gtocore.client.screen.starmap.grid;
 
 import com.gtocore.api.wireless.energy.GridView;
+import com.gtocore.api.wireless.energy.WirelessText;
 import com.gtocore.client.screen.starmap.base.StarCatalog;
 import com.gtocore.common.wireless.energy.map.GridFormat;
 import com.gtocore.common.wireless.energy.map.GridMapLang;
@@ -21,7 +22,6 @@ final class GridTagTexts {
 
     static final Component RISE = Component.literal("▲");
     static final Component FALL = Component.literal("▼");
-    private static final String STEADY_RATE = "0";
     private static final String SEPARATOR = " · ";
     private static final String BADGE = "+";
 
@@ -84,7 +84,7 @@ final class GridTagTexts {
             relayShortWidth[node] = UIText.width(relayShort[node]);
             return;
         }
-        rebuildStorage(node, info.tier());
+        rebuildStorage(node, info.tier(), info.unitTier());
     }
 
     Component parentTitle(int owner) {
@@ -119,13 +119,13 @@ final class GridTagTexts {
         return count;
     }
 
-    private void rebuildStorage(int node, int tierIndex) {
+    private void rebuildStorage(int node, int tierIndex, int unitTier) {
         float change = model.storageDelta(node);
         int direction = Math.abs(change) < GridStyle.STEADY ? 0 : change > 0 ? 1 : -1;
         trend[node] = direction;
         stored[node] = Component.translatable(GridMapLang.TAG_STORED, GridTips.compact(model.storage(node)));
         storedWidth[node] = UIText.width(stored[node]);
-        var rate = Component.translatable(GridMapLang.RATE, direction == 0 ? STEADY_RATE : GridTips.compactSigned(change));
+        var rate = direction == 0 ? WirelessText.ZERO_POWER : Component.literal(change > 0 ? "+" : "-").append(GridFormat.compactRate(change, unitTier));
         delta[node] = direction == 0 ? rate : (direction > 0 ? RISE : FALL).copy().append(" ").append(rate);
         deltaWidth[node] = UIText.width(delta[node]);
         percent[node] = Component.translatable(GridMapLang.PERCENT, Math.round(model.fill(node) * 100));

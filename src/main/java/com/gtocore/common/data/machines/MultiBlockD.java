@@ -585,7 +585,7 @@ public final class MultiBlockD {
             .specialParallelizableTooltips()
             .attribute(GTOAttributes.ORDER_PARALLEL_NUMBER,
                     Tips.bonus(GTOTips.global("机器内纳米蜂群数量，机器等级每超过配方一级，获得的并行x2", "The number of Nano Swarms in the machine; for each machine tier above the recipe tier, the obtained parallel is doubled")),
-                    Tips.formula(GTOTips.global("公式 : 纳米蜂群数量 * 2^(机器等级 - 配方等级), 算去吧", "Formula: Number of Nano Swarms * 2^(Machine Tier - Recipe Tier), do the math")))
+                    Tips.formula(GTOTips.global("公式：纳米蜂群数量 * 2^(机器等级 - 配方等级)", "Formula: Number of Nano Swarms * 2^(Machine Tier - Recipe Tier)")))
             .laserTooltips()
             .fromSourceTooltips("GregTech: New Horizon")
             .block(GTOBlocks.NAQUADAH_ALLOY_CASING)

@@ -26,7 +26,7 @@ public final class RocketLang {
     public static final String LAND = "gtocore.starmap.land";
     @RegisterLanguage(cn = "空间站", en = "Space Stations")
     public static final String STATIONS = "gtocore.starmap.stations";
-    @RegisterLanguage(cn = "这颗星球的轨道上还没有空间站", en = "No space station in this orbit yet")
+    @RegisterLanguage(cn = "该星球轨道上暂无空间站", en = "No space station in this orbit")
     public static final String NO_STATION = "gtocore.starmap.no_station";
     @RegisterLanguage(cn = "建造空间站", en = "Build Space Station")
     public static final String CONSTRUCT = "gtocore.starmap.construct";
@@ -56,8 +56,6 @@ public final class RocketLang {
     public static final String SATELLITE_OF = "gtocore.starmap.satellite_of";
     @RegisterLanguage(cn = "不可前往，可前往它的卫星", en = "Cannot land here; its moons can be visited")
     public static final String MOONS_ONLY = "gtocore.starmap.moons_only";
-    @RegisterLanguage(cn = "你已在这颗星球上", en = "You are already here")
-    public static final String HERE = "gtocore.starmap.here";
     @RegisterLanguage(cn = "WASD 或方向键平移地图，按住 Shift 加速", en = "WASD or arrow keys pan the map; hold Shift to go faster")
     public static final String HELP_KEYS = "gtocore.starmap.help_keys";
     @RegisterLanguage(cn = "需要 T%s 火箭", en = "Needs a T%s rocket")

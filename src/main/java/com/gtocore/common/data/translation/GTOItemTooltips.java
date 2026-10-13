@@ -95,16 +95,12 @@ public final class GTOItemTooltips {
     });
 
     public static final TipSpec TravelStaffTooltips = GTOTips.of("the_staff_of_travelling", t -> {
-        t.feature(t.tr("末影接口经典款式传送工具仿制品", "A replica of the classic teleportation tool of the Ender IO Inc."));
+        t.lore(t.tr("末影接口经典款式传送工具仿制品", "A replica of the classic teleportation tool of the Ender IO Inc."));
         t.heading(ComponentSlang.MainFunction);
         t.keepOrder();
-        t.rightClick(t.tr("右键选择目标并传送", "Right click to select target and teleport"));
-        t.rightClick(t.tr("潜行右键可短距离折跃", "Shift + Right click to blink a short distance"));
-        t.leftClick(t.tr("左键可以切换三种模式", "Left click air to switch between three modes"));
-        t.feature(t.tr("1.可以选中所有目标", "First mode: Can select all targets"));
-        t.feature(t.tr("2.可以在每个区块选中一个目标", "Second mode: Can select one target per block"));
-        t.feature(t.tr("3.可以选中点击到的目标", "Third mode: Can select the target you clicked"));
-        t.feature(t.tr("很多AE节点现在都可以作为传送锚点", "Many AE nodes can now be used as teleport anchors"));
+        t.rightClick(t.tr("右键：传送到准星对准的目标", "Right click: teleport to the target under the crosshair"));
+        t.rightClick(t.tr("Shift + 右键：向视线方向短距离折跃", "Shift + right click: blink a short distance forward"));
+        t.leftClick(t.tr("左键：设置哪些目标可以传送", "Left click: choose which targets can be teleported to"));
     });
 
     public static final TipSpec MEWirelessMachineConfigurator = GTOTips.of("me_wireless_machine_configurator", t -> {

@@ -114,13 +114,15 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
         var stats = account.stats();
         var list = new ArrayList<Component>(DISPLAY_REGISTRY.size());
         var node = account.node(getLevel().dimension());
+        int here = account.unitTier(getLevel().dimension());
+        int all = account.unitTier(null);
         list.add(GridReadouts.storage(account));
-        list.add(GridReadouts.throughput(node, true));
-        GridReadouts.flow(list, GridReadouts.Flow.NET, stats, second);
-        GridReadouts.flow(list, GridReadouts.Flow.INPUT, stats, second);
-        GridReadouts.flow(list, GridReadouts.Flow.OUTPUT, stats, second);
+        list.add(GridReadouts.throughput(node, true, here));
+        GridReadouts.flow(list, GridReadouts.Flow.NET, stats, second, all);
+        GridReadouts.flow(list, GridReadouts.Flow.INPUT, stats, second, all);
+        GridReadouts.flow(list, GridReadouts.Flow.OUTPUT, stats, second, all);
         list.add(GridReadouts.fillOrDrain(account, stats, second));
-        list.add(GridReadouts.throughput(node, false));
+        list.add(GridReadouts.throughput(node, false, here));
 
         var lines = new Component[DISPLAY_REGISTRY.size()];
         for (int i = 0, n = Math.min(lines.length, list.size()); i < n; i++) lines[i] = list.get(i);

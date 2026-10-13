@@ -57,8 +57,6 @@ public final class GridMapLang {
     public static final String STORED = "gtocore.wireless_grid_map.stored";
     @RegisterLanguage(cn = "%s / %s EU", en = "%s / %s EU")
     public static final String STORED_DETAIL = "gtocore.wireless_grid_map.stored.detail";
-    @RegisterLanguage(cn = "%s EU/t", en = "%s EU/t")
-    public static final String RATE = "gtocore.wireless_grid_map.rate";
     @RegisterLanguage(cn = "折叠或展开", en = "Collapse or expand")
     public static final String COLLAPSE = "gtocore.wireless_grid_map.collapse";
     @RegisterLanguage(cn = "现在", en = "Now")
@@ -137,7 +135,7 @@ public final class GridMapLang {
     public static final String RANK_TAB_LOW = "gtocore.wireless_grid_map.rank.tab.low";
     @RegisterLanguage(cn = "最忙", en = "Busiest")
     public static final String RANK_TAB_BUSY = "gtocore.wireless_grid_map.rank.tab.busy";
-    @RegisterLanguage(cn = "满载 · %s EU/t", en = "Full · %s EU/t")
+    @RegisterLanguage(cn = "满载 · %s", en = "Full · %s")
     public static final String RANK_SATURATED = "gtocore.wireless_grid_map.rank.saturated";
     @RegisterLanguage(cn = "点击：定位到该天体或线路并查看详情", en = "Click: locate this body or line and show details")
     public static final String RANK_CLICK = "gtocore.wireless_grid_map.rank.click";
@@ -192,9 +190,9 @@ public final class GridMapLang {
     public static final String LINES = "gtocore.wireless_grid_map.lines";
     @RegisterLanguage(cn = "没有线路", en = "No lines")
     public static final String LINES_EMPTY = "gtocore.wireless_grid_map.lines.empty";
-    @RegisterLanguage(cn = "%s · %sA", en = "%s · %sA")
+    @RegisterLanguage(cn = "%s × %sA", en = "%s × %sA")
     public static final String LINE_TIER = "gtocore.wireless_grid_map.line.tier";
-    @RegisterLanguage(cn = "送出 %s EU/t · 接收 %s EU/t", en = "Out %s EU/t · In %s EU/t")
+    @RegisterLanguage(cn = "送出 %s · 接收 %s", en = "Out %s · In %s")
     public static final String LINE_FLOW = "gtocore.wireless_grid_map.line.flow";
     @RegisterLanguage(cn = "利用率", en = "Usage")
     public static final String LINE_USAGE = "gtocore.wireless_grid_map.line.usage";
@@ -249,11 +247,11 @@ public final class GridMapLang {
 
     @RegisterLanguage(cn = "点击查看详情", en = "Click for details")
     public static final String TIP_DETAILS = "gtocore.wireless_grid_map.tip.details";
-    @RegisterLanguage(cn = "净流量 %s EU/t", en = "Net %s EU/t")
+    @RegisterLanguage(cn = "净流量 %s", en = "Net %s")
     public static final String TIP_DELTA = "gtocore.wireless_grid_map.tip.delta";
     @RegisterLanguage(cn = "%s 颗卫星在电网中", en = "%s moons in the grid")
     public static final String TIP_ANCHOR_MOONS = "gtocore.wireless_grid_map.tip.anchor_moons";
-    @RegisterLanguage(cn = "%s → %s：最大 %s EU/t", en = "%s → %s: up to %s EU/t")
+    @RegisterLanguage(cn = "%s → %s：最大 %s", en = "%s → %s: up to %s")
     public static final String TIP_PAIR_MAX = "gtocore.wireless_grid_map.tip.pair_max";
     @RegisterLanguage(cn = "途经 %s 段线路 · 最高 %s", en = "Via %s lines · up to %s")
     public static final String TIP_PAIR_ROUTE = "gtocore.wireless_grid_map.tip.pair_route";
@@ -261,9 +259,9 @@ public final class GridMapLang {
     public static final String TIP_UNREACHABLE = "gtocore.wireless_grid_map.tip.unreachable";
     @RegisterLanguage(cn = "%s ↔ %s", en = "%s ↔ %s")
     public static final String TIP_LINE_ENDS = "gtocore.wireless_grid_map.tip.line_ends";
-    @RegisterLanguage(cn = "%s · %sA（每方向 %s EU/t）", en = "%s · %sA (%s EU/t each way)")
+    @RegisterLanguage(cn = "%s × %sA（每方向）", en = "%s × %sA (each way)")
     public static final String TIP_LINE_CAPACITY = "gtocore.wireless_grid_map.tip.line_capacity";
-    @RegisterLanguage(cn = "%s → %s：%s EU/t（负载 %s%%）", en = "%s → %s: %s EU/t (load %s%%)")
+    @RegisterLanguage(cn = "%s → %s：%s（负载 %s%%）", en = "%s → %s: %s (load %s%%)")
     public static final String TIP_LINE_DIRECTION = "gtocore.wireless_grid_map.tip.line_direction";
     @RegisterLanguage(cn = "点击设为线路目标", en = "Click to set as the line target")
     public static final String TIP_PICK = "gtocore.wireless_grid_map.tip.pick";

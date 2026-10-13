@@ -29,7 +29,7 @@ public final class GridView {
     private static final Dimension[] BY_ID = byId();
 
     public record NodeInfo(ResourceKey<Level> dimension, int tier, int reachTier, float capacity, int towers, int topTowerTier,
-                           int relays) {}
+                           int unitTier, int relays) {}
 
     public record LineInfo(int a, int b, int tier, long budget) {}
 
@@ -201,9 +201,10 @@ public final class GridView {
             ByteBufCodecs.FLOAT, NodeInfo::capacity,
             COUNT, NodeInfo::towers,
             TIER, NodeInfo::topTowerTier,
+            TIER, NodeInfo::unitTier,
             COUNT, NodeInfo::relays,
-            (dimension, tier, reach, capacity, towers, top, relays) -> new NodeInfo(dimension, ProviderRegistry.clampTier(tier),
-                    ProviderRegistry.clampTier(reach), Math.max(0, capacity), towers, ProviderRegistry.clampTier(top), relays));
+            (dimension, tier, reach, capacity, towers, top, unit, relays) -> new NodeInfo(dimension, ProviderRegistry.clampTier(tier),
+                    ProviderRegistry.clampTier(reach), Math.max(0, capacity), towers, ProviderRegistry.clampTier(top), ProviderRegistry.clampTier(unit), relays));
 
     public static final StreamCodec<FriendlyByteBuf, LineInfo> LINE = StreamCodec.composite(
             COUNT, LineInfo::a,

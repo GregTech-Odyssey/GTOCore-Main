@@ -2,6 +2,8 @@ package com.gtocore.client.overlay;
 
 import com.gtocore.eio_travel.api.ITravelTarget;
 import com.gtocore.eio_travel.api.TravelRegistry;
+import com.gtocore.eio_travel.api.TravelTargetType;
+import com.gtocore.eio_travel.client.travel.TeammateHeadRenderer;
 import com.gtocore.eio_travel.logic.TravelHandler;
 import com.gtocore.eio_travel.logic.TravelSavedData;
 import com.gtocore.eio_travel.logic.TravelUtils;
@@ -9,15 +11,20 @@ import com.gtocore.eio_travel.logic.TravelUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import com.hepdd.gtmthings.utils.TeamUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class TravelTargetsClientHandler {
@@ -37,7 +44,11 @@ public class TravelTargetsClientHandler {
         boolean itemTeleport = TravelHandler.canItemTeleport(player);
         TravelSavedData data = TravelSavedData.getTravelData(Minecraft.getInstance().level);
         @Nullable
-        ITravelTarget activeTarget = TravelHandler.getTeleportAnchorTarget(player).orElse(null);
+        ITravelTarget anchorTarget = TravelHandler.getTeleportAnchorTarget(player).orElse(null);
+        @Nullable
+        Player activeTeammate = TravelHandler.getTeleportTeammateTarget(player, anchorTarget);
+        @Nullable
+        ITravelTarget activeTarget = activeTeammate == null ? anchorTarget : null;
         var targets = TravelUtils.filterTargets(player, data.getTravelTargets().stream()).toList();
         for (ITravelTarget target : targets) {
             double range = itemTeleport ? target.getItem2BlockRange() : target.getBlock2BlockRange();
@@ -54,6 +65,22 @@ public class TravelTargetsClientHandler {
 
             boolean active = activeTarget == target;
             TravelRegistry.getRenderer(target).render(target, event.getLevelRenderer(), poseStack, distanceSquared, active);
+            poseStack.popPose();
+        }
+
+        if (!itemTeleport || !TravelTargetType.TEAMMATE.isEnabled(TravelHandler.getHeldStaff(player))) {
+            return;
+        }
+        Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        UUID team = TeamUtil.getTeamUUID(player.getUUID());
+        for (AbstractClientPlayer other : level.players()) {
+            if (!TravelHandler.isTeammateTarget(player, team, other)) {
+                continue;
+            }
+            PoseStack poseStack = event.getPoseStack();
+            poseStack.pushPose();
+            poseStack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
+            TeammateHeadRenderer.render(other, poseStack, event.getPartialTick(), other.distanceToSqr(player), other == activeTeammate);
             poseStack.popPose();
         }
     }

@@ -1,6 +1,7 @@
 package com.gtocore.api.research.techtree;
 
 import com.gtocore.api.research.LegacyResearchIO;
+import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.client.Message;
 
@@ -131,6 +132,7 @@ public class TechTreeSavedData extends FastSavedData {
         if (changed) {
             INSTANCE.setDirty();
             Message.sendResearchToast(uuid, node, true);
+            unlockEurekaDependents(uuid, node, context);
         }
         return changed;
     }
@@ -142,7 +144,18 @@ public class TechTreeSavedData extends FastSavedData {
         }
         tree.addUnlockedNode(node);
         INSTANCE.setDirty();
+        unlockEurekaDependents(uuid, node, TeamResearchSavedData.getOrCreateContext(uuid));
         return true;
+    }
+
+    private static void unlockEurekaDependents(UUID uuid, TechNode node, TeamResearchContext context) {
+        for (var manager : TechTreeManager.getManagers()) {
+            for (var dependent : manager.values()) {
+                if (!dependent.prerequisites.contains(node)) continue;
+                var eureka = dependent.getRequirements().getEurekaItem();
+                if (eureka != null && context.hasScanned(eureka)) unlock(uuid, dependent);
+            }
+        }
     }
 
     public static boolean reset(Player player, TechTreeManager manager) {

@@ -8,6 +8,7 @@ import com.gtocore.api.wireless.energy.IWirelessGridProvider;
 import com.gtocore.api.wireless.energy.Provider;
 import com.gtocore.api.wireless.energy.ProviderRegistry;
 import com.gtocore.api.wireless.energy.WirelessGrid;
+import com.gtocore.api.wireless.energy.WirelessText;
 import com.gtocore.client.hud.HUDConfigurator;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.block.WirelessEnergyTowerUnit;
@@ -160,7 +161,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private static final String STATION_CAPACITY = "gtocore.machine.wireless_energy_substation.capacity";
     @RegisterLanguage(cn = "本站吞吐", en = "Tower throughput")
     private static final String STATION_THROUGHPUT = "gtocore.machine.wireless_energy_substation.throughput";
-    @RegisterLanguage(cn = "输入、输出各 %s EU/t", en = "%s EU/t each for input and output")
+    @RegisterLanguage(cn = "输入、输出各 %s", en = "%s each for input and output")
     private static final String STATION_THROUGHPUT_VALUE = "gtocore.machine.wireless_energy_substation.throughput.value";
     @RegisterLanguage(cn = "本维度（同维度能源塔合并计算）", en = "This Dimension (towers here combine)")
     private static final String DIMENSION = "gtocore.machine.wireless_energy_substation.dimension";
@@ -168,9 +169,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private static final String BANK_OUTPUT = "gtocore.machine.wireless_energy_substation.bank_output";
     @RegisterLanguage(cn = "本档输入", en = "Tier input")
     private static final String BANK_INPUT = "gtocore.machine.wireless_energy_substation.bank_input";
-    @RegisterLanguage(cn = "%s / %s EU/t", en = "%s / %s EU/t")
-    private static final String BANK_VALUE = "gtocore.machine.wireless_energy_substation.bank_value";
-    @RegisterLanguage(cn = "本站所在档（提供电压那一档）在本维度的吞吐：已用 / 额度，同档能源塔合并计算", en = "Throughput of this tower's tier (its supplied voltage) here: used / budget, pooled over the towers of that tier")
+    @RegisterLanguage(cn = "本站提供电压所在档位在本维度的吞吐，按已用 / 额度显示，同档能源塔合并计算", en = "Throughput of this tower's tier (its supplied voltage) here: used / budget, pooled over the towers of that tier")
     private static final String BANK_DETAIL = "gtocore.machine.wireless_energy_substation.bank_detail";
     @RegisterLanguage(cn = "本维度储能", en = "Storage here")
     private static final String DIMENSION_STORAGE = "gtocore.machine.wireless_energy_substation.dimension_storage";
@@ -372,7 +371,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
                 .bindLevel(() -> unitsOverTier ? Level.WARNING : Level.NORMAL)
                 .bindDetail(() -> unitsOverTier ? STATION_LIMIT_DETAIL_TEXT : NONE);
         panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), capacity -> Component.literal(FormattingUtil.formatNumbers(capacity) + " EU")));
-        panel.addLine(STATION_THROUGHPUT, MultiblockPage.cached(() -> throughput, value -> Component.translatable(STATION_THROUGHPUT_VALUE, FormattingUtil.formatNumbers(value))));
+        panel.addLine(STATION_THROUGHPUT, MultiblockPage.cached(() -> throughput, value -> Component.translatable(STATION_THROUGHPUT_VALUE, WirelessText.power(value, glassLimit, GTValues.VN))));
         return section(STATION, panel);
     }
 
@@ -408,8 +407,8 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         var level = getLevel();
         if (level == null || towerTier < 0) return MultiblockPage.NO_VALUE;
         var node = account().node(level.dimension());
-        return output ? Component.translatable(BANK_VALUE, FormattingUtil.formatNumbers(node.outputUsed(towerTier)), FormattingUtil.formatNumbers(node.outputCapacity(towerTier))) :
-                Component.translatable(BANK_VALUE, FormattingUtil.formatNumbers(node.inputUsed(towerTier)), FormattingUtil.formatNumbers(node.inputCapacity(towerTier)));
+        return output ? WirelessText.powerUsage(node.outputUsed(towerTier), node.outputCapacity(towerTier), glassLimit, GTValues.VN) :
+                WirelessText.powerUsage(node.inputUsed(towerTier), node.inputCapacity(towerTier), glassLimit, GTValues.VN);
     }
 
     @Override

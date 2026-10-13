@@ -62,7 +62,7 @@ final class GridPortRow extends UIElement {
             return;
         }
         name = port.name();
-        rate = GridFormat.signedRate(port.rate());
+        rate = GridFormat.signedRate(port.rate(), port.tier());
         rateLevel = port.rate() > 0 ? Level.GOOD : port.rate() < 0 ? Level.WARNING : Level.NORMAL;
         position = port.pos().asLong();
     }

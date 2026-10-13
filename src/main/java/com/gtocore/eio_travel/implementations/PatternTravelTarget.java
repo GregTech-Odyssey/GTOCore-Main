@@ -3,6 +3,7 @@ package com.gtocore.eio_travel.implementations;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 import com.gtocore.eio_travel.EioTravelNbtKeys;
 import com.gtocore.eio_travel.api.AbstractTravelTarget;
+import com.gtocore.eio_travel.api.TravelTargetType;
 
 import com.gtolib.GTOCore;
 
@@ -126,6 +127,11 @@ public class PatternTravelTarget extends AbstractTravelTarget {
     @Override
     public ResourceLocation getSerializationName() {
         return SERIALIZED_NAME;
+    }
+
+    @Override
+    public TravelTargetType getTargetType() {
+        return TravelTargetType.PATTERN_NODE;
     }
 
     @Override

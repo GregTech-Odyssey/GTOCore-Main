@@ -192,13 +192,16 @@ public final class GridSampler {
         int n = nodes.length;
         var towers = new int[n];
         var top = new int[n];
+        var unit = new int[n];
         var relays = new int[n];
         Arrays.fill(top, -1);
+        Arrays.fill(unit, -1);
         for (var tower : account.towers.values()) {
             int i = indexOf(index, tower.pos().dimension());
             if (i < 0) continue;
             towers[i]++;
             top[i] = Math.max(top[i], tower.tier());
+            unit[i] = Math.max(unit[i], tower.unitTier());
         }
         for (var relay : account.relays.values()) {
             int i = indexOf(index, relay.pos().dimension());
@@ -207,7 +210,7 @@ public final class GridSampler {
         var infos = new ObjectArrayList<GridView.NodeInfo>(n);
         for (int i = 0; i < n; i++) {
             var node = nodes[i];
-            infos.add(new GridView.NodeInfo(node.dimension, node.tier, node.reachTier, (float) node.capacityDouble(), towers[i], top[i], relays[i]));
+            infos.add(new GridView.NodeInfo(node.dimension, node.tier, node.reachTier, (float) node.capacityDouble(), towers[i], top[i], unit[i], relays[i]));
         }
         return infos;
     }

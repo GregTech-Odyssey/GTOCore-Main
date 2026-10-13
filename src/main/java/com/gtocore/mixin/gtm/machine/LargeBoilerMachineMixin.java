@@ -59,10 +59,18 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
         gto$heatContainer.onLoad();
     }
 
+    @Inject(method = "onWorking", at = @org.spongepowered.asm.mixin.injection.At("HEAD"), remap = false)
+    private void startFromCurrentTemperature(CallbackInfo ci) {
+        if (currentTemperature == 0 && gto$heatContainer != null) {
+            currentTemperature = Math.min(maxTemperature, Math.max(0, (int) Math.round(gto$heatContainer.getTemperature()) - 274));
+        }
+    }
+
     @Inject(method = "updateCurrentTemperature", at = @org.spongepowered.asm.mixin.injection.At("RETURN"), remap = false)
     private void updateCurrentTemperature(CallbackInfo ci) {
         if (gto$heatContainer != null) {
-            var heatDelta = gto$heatContainer.currentHeat - currentTemperature * gto$heatContainer.heatCapacity;
+            double target = Math.max(currentTemperature + 274, gto$heatContainer.ambientTemperature);
+            var heatDelta = gto$heatContainer.currentHeat - target * gto$heatContainer.heatCapacity;
             gto$heatContainer.currentHeat = (long) (gto$heatContainer.currentHeat - (heatDelta / 2));
         }
     }

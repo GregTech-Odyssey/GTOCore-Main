@@ -39,6 +39,7 @@ public class ItemCountRenderer {
 
     @Nullable
     private String getOverlayText(ItemEntity entity) {
+        if (entity.getItem().isEmpty()) return null;
         return switch (StxckUtil.getCountTextMode()) {
             case 1 -> getTotalCountOverlayText(entity);
             case 2 -> {

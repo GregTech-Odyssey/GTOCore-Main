@@ -142,7 +142,7 @@ public final class WirelessReceiveCover extends CoverBehavior implements IBindab
         if (target == null) {
             target = GTCapabilityHelper.getEnergyContainer(coverHolder.holder(), attachedSide);
             if (target == null) return EnergyPort.IDLE_TICKS;
-            workTicks = workTicks(target.getEnergyCapacity());
+            workTicks = EnergyPort.batchTicks(target.getEnergyCapacity(), perTick);
         }
         long free = target.getEnergyCapacity() - target.getEnergyStored();
         if (free <= 0) return EnergyPort.IDLE_TICKS;
@@ -155,12 +155,7 @@ public final class WirelessReceiveCover extends CoverBehavior implements IBindab
             delivered += accepted;
         }
         carry = got - delivered;
-        return delivered > 0 ? workTicks : got < budget ? 1 : EnergyPort.IDLE_TICKS;
-    }
-
-    private int workTicks(long capacity) {
-        long ticks = perTick <= 0 ? 1 : capacity / (perTick << 1);
-        return (int) Math.max(1, Math.min(EnergyPort.IDLE_TICKS, ticks));
+        return workTicks;
     }
 
     @Nullable

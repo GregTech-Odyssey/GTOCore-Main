@@ -41,11 +41,6 @@ final class GridTips {
         return BigDecimal.valueOf(value).setScale(unit == 0 ? 0 : decimals, RoundingMode.HALF_UP).toPlainString() + SUFFIX[unit];
     }
 
-    static String compactSigned(double value) {
-        if (!Double.isFinite(value) || Math.abs(value) < GridStyle.STEADY) return "0";
-        return (value > 0 ? "+" : "-") + compact(Math.abs(value));
-    }
-
     static String arrow(double value) {
         if (!Double.isFinite(value) || Math.abs(value) < GridStyle.STEADY) return "";
         return value > 0 ? RISE : FALL;
@@ -68,7 +63,7 @@ final class GridTips {
                     .withStyle(ChatFormatting.GRAY));
             float delta = model.storageDelta(node);
             var trend = Math.abs(delta) < GridStyle.STEADY ? ChatFormatting.GRAY : delta > 0 ? ChatFormatting.GREEN : ChatFormatting.GOLD;
-            lines.add(Component.translatable(GridMapLang.TIP_DELTA, arrow(delta) + GridFormat.signed(delta)).withStyle(trend));
+            lines.add(Component.translatable(GridMapLang.TIP_DELTA, Component.literal(arrow(delta)).append(GridFormat.signedRate(delta, info.unitTier()))).withStyle(trend));
         }
         if (node >= 0) lines.add(Component.translatable(GridMapLang.LINES, model.degree(node)).withStyle(ChatFormatting.GRAY));
         moons(catalog, model, body, -1, lines);
@@ -119,16 +114,16 @@ final class GridTips {
         long amps = info.tier() >= 0 && info.tier() < GTValues.V.length && GTValues.V[info.tier()] > 0 ? info.budget() / GTValues.V[info.tier()] : 0;
         var lines = new ObjectArrayList<Component>(6);
         lines.add(Component.translatable(GridMapLang.TIP_LINE_ENDS, nameA, nameB).withStyle(ChatFormatting.WHITE));
-        lines.add(Component.translatable(GridMapLang.TIP_LINE_CAPACITY, GridFormat.tierText(info.tier()), GridFormat.compact(amps), GridFormat.amount(info.budget()))
+        lines.add(Component.translatable(GridMapLang.TIP_LINE_CAPACITY, GridFormat.tierText(info.tier()), GridFormat.compact(amps))
                 .withStyle(ChatFormatting.GRAY));
-        lines.add(direction(nameA, nameB, model.flowAB(line), info.budget()));
-        lines.add(direction(nameB, nameA, model.flowBA(line), info.budget()));
+        lines.add(direction(nameA, nameB, model.flowAB(line), info.budget(), info.tier()));
+        lines.add(direction(nameB, nameA, model.flowBA(line), info.budget(), info.tier()));
         return Collections.unmodifiableList(lines);
     }
 
-    private static Component direction(Component from, Component to, float flow, long budget) {
+    private static Component direction(Component from, Component to, float flow, long budget, int tier) {
         long percent = budget > 0 ? Math.round(Math.min(1, flow / (double) budget) * 100) : 0;
         var style = flow >= GridStyle.STEADY ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY;
-        return Component.translatable(GridMapLang.TIP_LINE_DIRECTION, from, to, GridFormat.amount(flow), percent).withStyle(style);
+        return Component.translatable(GridMapLang.TIP_LINE_DIRECTION, from, to, GridFormat.rate(flow, tier), percent).withStyle(style);
     }
 }

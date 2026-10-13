@@ -92,7 +92,7 @@ final class GridLineRow extends UIElement {
         }
         boolean current = live.topologyRevision() == topology.revision();
         float ab = current ? live.flowAB(line) : 0, ba = current ? live.flowBA(line) : 0;
-        flow = Component.translatable(GridMapLang.LINE_FLOW, GridFormat.amount(forward ? ab : ba), GridFormat.amount(forward ? ba : ab));
+        flow = Component.translatable(GridMapLang.LINE_FLOW, GridFormat.rate(forward ? ab : ba, info.tier()), GridFormat.rate(forward ? ba : ab, info.tier()));
         usage = new ProgressBar.Progress(Math.round(GridCardLines.usage(topology, live, line) * 1000), 1000, 0);
     }
 

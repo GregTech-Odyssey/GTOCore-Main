@@ -28,8 +28,6 @@ public class WirelessEnergyTransferUnitBlock extends Block implements WirelessEn
 
     @RegisterLanguage(cn = "不储存电量，只提高所在能源塔的吞吐", en = "Stores no energy; only raises the throughput of its tower")
     private static final String NO_STORAGE = "gtocore.block.wireless_energy_transfer_unit.no_storage";
-    @RegisterLanguage(cn = "安数等于同级存储单元的安时数", en = "Amperage equals the amp-hours of the same-tier storage unit")
-    private static final String AMPERAGE_RULE = "gtocore.block.wireless_energy_transfer_unit.amperage_rule";
 
     private final int tier;
 
@@ -40,15 +38,13 @@ public class WirelessEnergyTransferUnitBlock extends Block implements WirelessEn
 
     @Override
     public long getAmperage() {
-        var storage = WirelessEnergyUnitBlock.get(tier);
-        return storage == null ? 0 : storage.getAmpHours();
+        return WirelessEnergyUnitBlock.transferAmperage(tier);
     }
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Tips.stat(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, GTValues.VNF[tier], FormattingUtil.formatNumbers(getAmperage()))));
-        tooltip.add(Tips.feature(Component.translatable(AMPERAGE_RULE)));
         tooltip.add(Tips.feature(Component.translatable(NO_STORAGE)));
         tooltip.add(Tips.requirement(Component.translatable(WirelessEnergyUnitBlock.REQUIRES_GLASS, GTValues.VNF[tier])));
         tooltip.add(Tips.detail(Component.translatable(WirelessEnergyUnitBlock.SUPPLIES)));

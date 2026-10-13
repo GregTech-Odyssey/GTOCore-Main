@@ -1215,7 +1215,7 @@ public final class GTOMachineTooltips {
 
     // 无线能源塔
     public static final TipSpec WirelessEnergySubstationTooltips = GTOTips.of("wireless_energy_substation", t -> {
-        t.line(TipRole.SUMMARY, t.tr("所在维度的电池：本维度的无线设备直接从这里存取电", "The battery of its dimension: wireless devices there store and draw energy here directly"));
+        t.line(TipRole.SUMMARY, t.tr("所在维度的储能设施，本维度的无线设备由此存取电量", "Energy storage for its dimension; wireless devices there store and draw energy from it"));
 
         t.heading(t.tr("结构", "Structure"));
         t.requirement(t.tr("宽为 3 至 11 之间的奇数，深为 3 至 11，高为 3 至 20", "Width is an odd number from 3 to 11, depth 3 to 11, height 3 to 20"));
@@ -1228,7 +1228,7 @@ public final class GTOMachineTooltips {
         t.detail(t.tr("例如 HV 玻璃中放 HV 单元，能源塔提供 EV", "For example, HV units inside HV glass make the tower supply EV"));
         t.heading(t.tr("容量与吞吐", "Capacity and Throughput"));
         t.feature(t.tr("总容量为全部生效存储单元的容量之和，损耗按容量加权平均", "Total capacity is the sum over the effective storage units; loss is averaged by capacity"));
-        t.feature(t.tr("每个存储单元提供本单元电压 4A 的吞吐，每个传输单元提供本单元电压、同级存储单元安时数安的吞吐", "Each storage unit adds 4A at its own voltage; each transfer unit adds as many amps at its own voltage as the amp-hours of the same-tier storage unit"));
+        t.feature(t.tr("每个存储单元提供本单元电压 4A 的吞吐，传输单元按等级提供更大的吞吐", "Each storage unit adds 4A at its own voltage; transfer units add more throughput by tier"));
         t.detail(t.tr("吞吐按功率计：以更高电压取电时安数按电压折算，例如 HV 4A 相当于 EV 1A", "Throughput is power: drawing at a higher voltage converts the amps, e.g. 4A of HV equals 1A of EV"));
         t.detail(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
         t.detail(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
@@ -1248,7 +1248,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("每台为线路提供 99,999,999A，电压取整体框架等级", "Each repeater adds 99,999,999A to the line at the integral framework tier"));
         t.feature(t.tr("同一对维度之间的多台叠加，按功率折算到其中最高的电压", "Repeaters between the same pair of dimensions stack, converted by power to the highest voltage"));
         t.feature(t.tr("线路两个方向各自独立，互不占用", "The two directions of a line are independent of each other"));
-        t.feature(t.tr("取电时先用本维度能源塔，不够再按跳数由近到远经线路从其他维度取", "Devices draw from local towers first, then from other dimensions over lines, nearest first"));
+        t.feature(t.tr("取电时优先使用本维度能源塔，不足时按跳数由近及远经线路从其他维度取电", "Devices draw from local towers first, then from other dimensions over lines, nearest first"));
         t.requirement(t.tr("取电经过的线路电压不能低于设备电压，存电不限线路电压", "Lines a draw passes through may not be below the device voltage; storing ignores the line voltage"));
     });
 

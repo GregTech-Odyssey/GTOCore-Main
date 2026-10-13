@@ -5,8 +5,6 @@ import com.gtocore.api.wireless.energy.SettleResult;
 import com.gtocore.api.wireless.energy.WirelessText;
 import com.gtocore.data.IdleReason;
 
-import com.gtolib.utils.NumberUtils;
-
 public final class WirelessIdle {
 
     private WirelessIdle() {}
@@ -22,9 +20,9 @@ public final class WirelessIdle {
             case OK -> {}
             case NO_ACCOUNT -> IdleReason.NO_OWNER.setReason(machine);
             case NO_COVERAGE -> IdleReason.WIRELESS_NO_COVERAGE.setReason(machine, WirelessText.voltage(tier), WirelessText.voltage(port.node().reachTier()));
-            case NO_STORAGE -> IdleReason.WIRELESS_EU_SHORT.setReason(machine, NumberUtils.formatDouble(amount), NumberUtils.formatDouble(port.shortfallStorage()));
-            case NO_TRANSFER -> IdleReason.WIRELESS_RELAY_SHORT.setReason(machine, NumberUtils.formatDouble(amount));
-            case RESERVED -> IdleReason.WIRELESS_PRIORITY_RESERVED.setReason(machine, NumberUtils.formatDouble(amount));
+            case NO_STORAGE -> IdleReason.WIRELESS_EU_SHORT.setReason(machine, WirelessText.energy(amount, tier), WirelessText.energy(port.shortfallStorage(), tier));
+            case NO_TRANSFER -> IdleReason.WIRELESS_RELAY_SHORT.setReason(machine, WirelessText.energy(amount, tier));
+            case RESERVED -> IdleReason.WIRELESS_PRIORITY_RESERVED.setReason(machine, WirelessText.energy(amount, tier));
         }
     }
 }

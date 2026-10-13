@@ -2,43 +2,33 @@ pluginManagement {
     repositories {
         mavenLocal()
         gradlePluginPortal()
-        maven { url = 'https://gtodyssey.com/maven/releases' }
-        maven { url = "https://maven.neoforged.net/releases"}
-        maven { url = "https://maven.minecraftforge.net/" }
+        maven("https://gtodyssey.com/maven/releases")
+        maven("https://maven.neoforged.net/releases")
+        maven("https://maven.minecraftforge.net/")
     }
 }
 
 dependencyResolutionManagement {
     versionCatalogs {
-        libs {
+        create("libs") {
             version("modDevGradleLegacy", "2.0.141")
-
             version("lombok", "8.11")
-
             version("spotless", "8.4.0")
-
             version("jetbrains-annotations", "26.0.2")
-
             version("kotlin", "2.3.20")
             version("kotlin-plugin", "2.3.20")
-
             version("gtopublishgradleplugin", "1.0.25")
 
             plugin("modDevGradleLegacy", "net.neoforged.moddev.legacyforge").versionRef("modDevGradleLegacy")
-
             plugin("lombok", "io.freefair.lombok").versionRef("lombok")
-
             plugin("spotless", "com.diffplug.spotless").versionRef("spotless")
-
             library("jetbrains-annotations", "org.jetbrains", "annotations").versionRef("jetbrains-annotations")
-
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kotlin-plugin", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-plugin")
             plugin("kotlin-lombok", "org.jetbrains.kotlin.plugin.lombok").versionRef("kotlin")
-
             plugin("gtopublishgradleplugin", "com.gto.gtopublishgradleplugin").versionRef("gtopublishgradleplugin")
-          }
+        }
     }
 }
 
-rootProject.name = 'GTOdyssey'
+rootProject.name = "GTOdyssey"

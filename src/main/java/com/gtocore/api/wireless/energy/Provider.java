@@ -14,7 +14,14 @@ public sealed interface Provider {
 
     UUID owner();
 
-    record Tower(GlobalPos pos, UUID owner, List<Unit> units, int tier, long throughput) implements Provider {}
+    record Tower(GlobalPos pos, UUID owner, List<Unit> units, int tier, long throughput) implements Provider {
+
+        public int unitTier() {
+            int top = -1;
+            for (var unit : units) top = Math.max(top, unit.tier());
+            return top >= 0 ? top : Math.max(0, tier - 1);
+        }
+    }
 
     record Unit(int tier, int count, BigInteger capacity, int loss) {
 

@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.common.item.OrganModifierBehaviour;
+import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.item.misc.OrganItemBase;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.item.misc.TierOrganItem;
@@ -59,9 +60,10 @@ public final class GTOOrganItems {
             for (var type : OrganType.BODY) {
                 TIER_ORGANS.get(type).put(tier, registerOrgan(tier.getItemPrefix() + "_" + type.key, type, tier.getTexture(),
                         "器官 " + type.cn + " " + tier.getCn(), "Organ " + type.en + " " + tier.getEn(),
-                        p -> new TierOrganItem(tier, p, type), item -> {}));
+                        p -> new TierOrganItem(tier, p, type), tier == OrganTier.SPROUT ? attach(OrganFood.raw(type)) : item -> {}));
             }
         }
+        OrganFood.initItems();
     }
 
     /** 分级身体器官的物品。 */

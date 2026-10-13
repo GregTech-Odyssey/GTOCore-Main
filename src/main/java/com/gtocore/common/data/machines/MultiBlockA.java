@@ -520,7 +520,7 @@ public final class MultiBlockA {
             .tips(GTOMachineStories.RecyclingMachineTooltips)
             .specialParallelizableTooltips()
             .attribute(GTOAttributes.ORDER_PARALLEL_NUMBER, Tips.stat(StatKind.PARALLEL.line(GTOTips.global("自EV起，每升一级电压，获得的并行x4", "From EV, every voltage tier increase grants x4 parallelism"))))
-            .tips(Tips.detail(GTOTips.global("公式 : max(1, 4^(tier-4)), 算去吧", "Formula: max(1, 4^(tier-4)), do the math")))
+            .tips(Tips.detail(GTOTips.global("公式：max(1, 4^(tier-4))", "Formula: max(1, 4^(tier-4))")))
             .parallelizableOverclock()
             .block(GTBlocks.STEEL_HULL)
             .structure(definition -> Structure
