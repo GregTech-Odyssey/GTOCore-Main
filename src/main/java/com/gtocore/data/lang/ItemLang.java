@@ -76,6 +76,11 @@ final class ItemLang {
         addCNEN("tagprefix.proton_membrane", "%s质子交换膜", "%s Proton Exchange Membrane");
         addCNEN("tagprefix.cation_membrane", "%s阳离子交换膜", "%s Cation Exchange Membrane");
         addCNEN("tagprefix.anion_membrane", "%s阴离子交换膜", "%s Anion Exchange Membrane");
+        addCNEN("gtocore.membrane_type.proton", "质子交换膜", "Proton Exchange Membrane");
+        addCNEN("gtocore.membrane_type.cation", "阳离子交换膜", "Cation Exchange Membrane");
+        addCNEN("gtocore.membrane_type.anion", "阴离子交换膜", "Anion Exchange Membrane");
+        addCNEN("gtocore.electrochemical.left", "左侧", "Left Side");
+        addCNEN("gtocore.electrochemical.right", "右侧", "Right Side");
         addCNEN("gtocore.membrane.recipe.duration_multiplier", "应用到配方时的耗时倍率：%s", "Duration multiplier when applied to recipe: %s");
         addCNEN("gtocore.membrane.recipe.energy_multiplier", "应用到配方时的能耗倍率：%s", "Energy multiplier when applied to recipe: %s");
         addCNEN("gtocore.machine.fuelcell_parallel", "放电并行度：%s", "Discharge Parallelism: %s");

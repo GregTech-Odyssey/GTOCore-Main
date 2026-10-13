@@ -84,6 +84,44 @@ class HalfReactionTest {
     }
 
     @Test
+    void missingIonIdentifiesSpeciesAndAggregatesRepeatedRequirements() {
+        var source = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(PROTON, 1), new IonAmount(PROTON, 2)).build();
+        var receiver = HalfReaction.builder(ElectrolyteType.WATER).requiredIons(new IonAmount(PROTON, 2), new IonAmount(PROTON, 2)).build();
+        assertSame(PROTON, source.missingIon(receiver, 1, 1));
+        assertNull(source.missingIon(receiver, 4, 3));
+        var wrongSpecies = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(SODIUM, 4)).build();
+        assertSame(PROTON, wrongSpecies.missingIon(receiver, 1, 1));
+        var noSupply = HalfReaction.builder(ElectrolyteType.WATER).requiredIons(new IonAmount(CHLORIDE, 1)).build();
+        assertSame(PROTON, noSupply.missingIon(receiver, 1, 1));
+    }
+
+    @Test
+    void membraneChoicesIncludeEitherProducedChargeWithoutRequiredIons() {
+        var first = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(Ions.PROTON, 1), new IonAmount(SODIUM, 1)).build();
+        var second = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(CHLORIDE, 2)).build();
+        assertEquals((1 << MembraneType.PROTON.ordinal()) | (1 << MembraneType.CATION.ordinal()) | (1 << MembraneType.ANION.ordinal()), first.compatibleMembranes(second));
+    }
+
+    @Test
+    void requiredProtonsRestrictChoicesEvenWhenCationsAreProduced() {
+        var source = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(Ions.PROTON, 2), new IonAmount(SODIUM, 1)).build();
+        var receiver = HalfReaction.builder(ElectrolyteType.WATER).requiredIons(new IonAmount(Ions.PROTON, 3)).build();
+        assertEquals(1 << MembraneType.PROTON.ordinal(), source.compatibleMembranes(receiver));
+        assertEquals(source.compatibleMembranes(receiver), receiver.compatibleMembranes(source));
+        assertFalse(MembraneType.CATION.permits(Ions.PROTON));
+        assertTrue(MembraneType.PROTON.permits(Ions.PROTON));
+    }
+
+    @Test
+    void incompatibleRequiredIonTypesOfferNoMembrane() {
+        var first = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(PROTON, 4)).requiredIons(new IonAmount(CHLORIDE, 2)).build();
+        var second = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(CHLORIDE, 2)).requiredIons(new IonAmount(PROTON, 4)).build();
+        assertTrue(first.canSupply(second, 1, 1));
+        assertTrue(second.canSupply(first, 1, 1));
+        assertEquals(0, first.compatibleMembranes(second));
+    }
+
+    @Test
     void chargeBalanceDoesNotSubstituteSpeciesOrAllowSelfSupply() {
         var source = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(SODIUM, 2)).build();
         var receiver = HalfReaction.builder(ElectrolyteType.WATER).ions(new IonAmount(PROTON, 1))

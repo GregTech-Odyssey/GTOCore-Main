@@ -8,6 +8,7 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.electric.ElectrochemicalMachine;
+import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -63,12 +64,17 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
 
     @Override
     protected GTRecipeDefinition combine(GTRecipeType type, GTRecipeDefinition first, GTRecipeDefinition second, HalfReaction firstHalf, HalfReaction secondHalf) {
-        if (firstHalf.fuel() == secondHalf.fuel()) return null;
-        if (!permits(firstHalf) && !permits(secondHalf)) return null;
+        if (firstHalf.fuel() == secondHalf.fuel()) {
+            recordFailure(IdleReason.FUEL_CELL_PAIR_MISMATCH, 3);
+            return null;
+        }
         var membrane = IonMembrane.of(membraneHatch.membrane());
         long efficiencyPercent = Math.round(membrane.fuelEfficiency() * 100);
         var balance = ReactionBalance.fuel(firstHalf.charge(), secondHalf.charge(), firstHalf.fuel(), efficiencyPercent);
-        if (balance == null) return null;
+        if (balance == null) {
+            recordFailure(IdleReason.ELECTROCHEMICAL_CHARGE_MISMATCH, 3);
+            return null;
+        }
         var fuel = firstHalf.fuel() ? first : second;
         var electrolyte = firstHalf.fuel() ? second : first;
         long fuelMultiplier = firstHalf.fuel() ? balance.firstMultiplier() : balance.secondMultiplier();
@@ -84,7 +90,10 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
         long efficiencyPercent = Math.round(IonMembrane.of(membraneHatch.membrane()).fuelEfficiency() * 100);
         long amount = ReactionBalance.storedAmount(fuel.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY), fuel.parallels, efficiencyPercent,
                 electrolyte.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY));
-        if (amount <= 0) return false;
+        if (amount <= 0) {
+            recordFailure(IdleReason.FUEL_CELL_STORAGE_AMOUNT, 6);
+            return false;
+        }
         electrolyte.fluidInputs = electrolyte.fluidInputs.withAmount(0, amount);
         electrolyte.fluidOutputs = electrolyte.fluidOutputs.withAmount(0, amount);
         return true;
@@ -94,9 +103,15 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
     protected GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
         if (!isGenerator()) return ParallelLogic.accurateParallel(this, unit, recipe, ParallelLogic.MAX_PARALLEL);
         var membrane = IonMembrane.of(membraneStack());
-        if (membrane == null) return null;
+        if (membrane == null) {
+            setIdleReason(IdleReason.ELECTROCHEMICAL_MEMBRANE_MISSING);
+            return null;
+        }
         long parallel = Math.min(membrane.fuelcellParallel(), membraneUsesRemaining());
-        if (parallel <= 0) return null;
+        if (parallel <= 0) {
+            setIdleReason(IdleReason.ELECTROCHEMICAL_MEMBRANE_EXHAUSTED);
+            return null;
+        }
         return ParallelLogic.accurateParallel(this, unit, recipe, parallel);
     }
 

@@ -27,6 +27,8 @@ public final class HalfReaction {
     private final boolean fuel;
     private final ElectrolyteType electrolyteType;
     private final long charge;
+    private final int producedMembraneTypes;
+    private final int requiredMembraneTypes;
     private final Reference2LongOpenHashMap<IonDefinition> producedAmounts;
     private final Reference2LongOpenHashMap<IonDefinition> requiredAmounts;
 
@@ -36,10 +38,20 @@ public final class HalfReaction {
         this.fuel = fuel;
         this.electrolyteType = Objects.requireNonNull(electrolyteType, "electrolyteType");
         long total = 0;
-        for (var ion : ions) total = Math.addExact(total, Math.multiplyExact(ion.amount(), ion.ion().getCharge()));
-        for (var ion : requiredIons) total = Math.subtractExact(total, Math.multiplyExact(ion.amount(), ion.ion().getCharge()));
+        int producedTypes = 0;
+        int requiredTypes = -1;
+        for (var ion : ions) {
+            total = Math.addExact(total, Math.multiplyExact(ion.amount(), ion.ion().getCharge()));
+            producedTypes |= 1 << MembraneType.forIon(ion.ion()).ordinal();
+        }
+        for (var ion : requiredIons) {
+            total = Math.subtractExact(total, Math.multiplyExact(ion.amount(), ion.ion().getCharge()));
+            requiredTypes &= 1 << MembraneType.forIon(ion.ion()).ordinal();
+        }
         if (total == 0) throw new IllegalArgumentException("Half reaction must transfer charge");
         charge = total;
+        producedMembraneTypes = producedTypes;
+        requiredMembraneTypes = requiredTypes;
         producedAmounts = amounts(ions);
         requiredAmounts = amounts(requiredIons);
     }
@@ -110,12 +122,21 @@ public final class HalfReaction {
     /** Compare scaled quantities without allowing the receiving half to supply its own inputs. */
     public boolean canSupply(HalfReaction receiver, long multiplier, long receiverMultiplier) {
         if (electrolyteType != receiver.electrolyteType) return false;
-        if (receiver.requiredAmounts == null) return true;
-        if (producedAmounts == null) return false;
+        return missingIon(receiver, multiplier, receiverMultiplier) == null;
+    }
+
+    /** Returns the first missing or insufficient ion after aggregating repeated entries. */
+    public IonDefinition missingIon(HalfReaction receiver, long multiplier, long receiverMultiplier) {
+        if (receiver.requiredAmounts == null) return null;
         for (var it = receiver.requiredAmounts.reference2LongEntrySet().fastIterator(); it.hasNext();) {
             var required = it.next();
-            if (Math.multiplyExact(producedAmounts.getLong(required.getKey()), multiplier) < Math.multiplyExact(required.getLongValue(), receiverMultiplier)) return false;
+            if (producedAmounts == null || Math.multiplyExact(producedAmounts.getLong(required.getKey()), multiplier) < Math.multiplyExact(required.getLongValue(), receiverMultiplier)) return required.getKey();
         }
-        return true;
+        return null;
+    }
+
+    /** Bit mask of membranes that pass a produced ion and every required ion. */
+    public int compatibleMembranes(HalfReaction other) {
+        return (producedMembraneTypes | other.producedMembraneTypes) & requiredMembraneTypes & other.requiredMembraneTypes;
     }
 }

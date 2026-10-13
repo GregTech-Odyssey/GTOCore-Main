@@ -158,21 +158,8 @@ public record IonMembrane(Material material,
     }
 
     public static boolean permits(ItemStack stack, IonDefinition ion) {
-        if (!(stack.getItem() instanceof TagPrefixItem)) return false;
-        switch (typeOf(stack)) {
-            case PROTON -> {
-                return ion == Ions.PROTON;
-            }
-            case CATION -> {
-                return ion.getCharge() > 0 && ion != Ions.PROTON;
-            }
-            case ANION -> {
-                return ion.getCharge() < 0;
-            }
-            case null -> {
-                return false;
-            }
-        }
+        var type = typeOf(stack);
+        return type != null && type.permits(ion);
     }
 
     public static void tooltip(Material material, List<Component> components) {
