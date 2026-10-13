@@ -131,7 +131,7 @@ public class ElectroPlating {
                 .outputItems(GTItems.NEUTRON_REFLECTOR)
                 .inputFluids(GTMaterials.TinAlloy, 9216)
                 .outputFluids(GTMaterials.TinAlloy, 4608)
-                .EUt(150000L)
+                .EUt(7500L)
                 .duration(20)
                 .save();
         ELECTROPLATING_RECIPES.builder("beryllium_plating")
@@ -165,7 +165,7 @@ public class ElectroPlating {
                 .inputItems(TagPrefix.dust, GTOMaterials.EtchedCarbonNanotube)
                 .outputItems(TagPrefix.dust, GTOMaterials.NanoGoldDepositedCarbonNanotube)
                 .inputFluids(GTOMaterials.ChloroauricAcid, 1000)
-                .EUt(12960)
+                .EUt(129600)
                 .duration(1296)
                 .save();
         ELECTROPLATING_RECIPES.builder("bipyridine")
