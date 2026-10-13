@@ -586,7 +586,8 @@ fun writeProguardExtraFile(taskName: String, srgInput: Boolean, mapping: File): 
     configurations.filter { it.name.endsWith("Classpath") && it.isCanBeResolved }.forEach { cfg ->
         runCatching { cfg.resolve() }.getOrNull()?.forEach { f ->
             // SRG 输入不能再混进 named Forge jar，否则 ProGuard 按 classpath 顺序解析到错误的父类方法名
-            if (f.name.endsWith(".jar") && !(srgInput && f.name == namedForgeJar.name)) libs += f.canonicalFile
+            // 自家 build/gtolib 产物（如测试编译用的 dev 轨 jar）不能当库，否则会读到上一轮的旧 gtolib 或不存在的文件
+            if (f.name.endsWith(".jar") && !(srgInput && f.name == namedForgeJar.name) && !f.canonicalFile.startsWith(gtolibOut.canonicalFile)) libs += f.canonicalFile
         }
     }
     fun path(f: File) = "'${f.absolutePath.replace('\\', '/')}'"
