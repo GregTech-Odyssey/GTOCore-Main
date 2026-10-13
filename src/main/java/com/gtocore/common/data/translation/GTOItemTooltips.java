@@ -89,8 +89,9 @@ public final class GTOItemTooltips {
         t.heading(Tx.gold(Component.literal("妙妙工具: 无尽喷漆罐")));
         t.keepOrder();
         t.rightClick(Component.literal("对方块右键：喷涂"));
-        t.rightClick(Component.literal("对空气右键：打开调色板"));
+        t.rightClick(Component.literal("Shift+右键：打开调色板"));
         t.control(Component.literal("潜行+滚轮：切换颜色"));
+        t.control(Component.literal("按住连锁键：连锁喷涂"));
     });
 
     public static final TipSpec TravelStaffTooltips = GTOTips.of("the_staff_of_travelling", t -> {
