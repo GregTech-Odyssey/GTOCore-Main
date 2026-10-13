@@ -167,6 +167,8 @@ dependencies {
     add("proguardCp", "com.guardsquare:proguard-base:7.8.0")
     if (artTool.dependencies.isEmpty()) add("artTool", "net.neoforged:AutoRenamingTool:2.0.17:all")
     if (!compileGtolibSources) add("implementation", files(protectedJar).builtBy("buildGtolibProtected"))
+    // 加密模式下 main 输出里的 com/gtolib 会在安装时删掉，测试编译改用 dev 轨 named hollow（测试只在明文模式运行）
+    if (!isGtolibDebugMode) add("testCompileOnly", files(protectedJar).builtBy("buildGtolibProtected"))
 }
 
 // ---------- jar 工具 ----------
@@ -482,6 +484,8 @@ val reobfGtolib = tasks.register<JavaExec>("reobfGtolib") {
     description = "ART 把 named 明文 reobf 成 SRG（发行轨 ProGuard/Seal 的输入）"
     onlyIf { rebuildGtolib }
     dependsOn(packageGtolibJar, "classes", "createMinecraftArtifacts")
+    outputs.file(srgJar)
+    outputs.upToDateWhen { false }
     classpath = artTool
     mainClass = "net.neoforged.art.Main"
     doFirst {
@@ -629,6 +633,7 @@ fun registerProguard(name: String, desc: String, input: File, output: File, srgI
         group = "gtolib"
         description = desc
         onlyIf { rebuildGtolib }
+        outputs.file(output)
         outputs.upToDateWhen { false }
         classpath = proguardCp
         mainClass = "proguard.ProGuard"
@@ -726,6 +731,7 @@ fun registerSeal(name: String, desc: String, input: File, output: File, finish: 
     group = "gtolib"
     description = desc
     onlyIf { rebuildGtolib }
+    outputs.file(output)
     outputs.upToDateWhen { false }
     doFirst {
         requireJar(input, "$name 输入")
@@ -785,27 +791,29 @@ tasks.register("buildGtolibProtected") {
     description = "生成加密 gtolib（dev 轨 protected + 发行轨 release）到 build/gtolib；明文仅 -PgtolibUnprotected"
     if (rebuildGtolib) dependsOn(sealGtolibDev, sealGtolibRelease)
     dependsOn("syncSealRuntimeToLibs")
-    outputs.files(protectedJar, releaseJar)
+    // 只声明自己写的 stamp：jar 由 Seal 任务生成，在这里声明会被 Gradle 当作来历不明的过期输出提前删掉
+    outputs.file(stampFile)
     outputs.upToDateWhen { isGtolibJarUpToDate }
     doLast {
-        when {
-            isGtolibDebugMode -> logger.lifecycle("GTOLib: 【未加密/本地】直接使用 main 编译输出；protected jar 与 stamp 保持不变")
-            isGtolibJarUpToDate -> {
-                logger.lifecycle("GTOLib: stamp 命中，跳过 ProGuard/Seal")
-                verifyMixinNamespace(protectedJar, true, "GTOLib dev 轨（stamp 命中）")
-                verifyDevCompileNamespace(protectedJar, "GTOLib dev 轨（stamp 命中）")
-                verifyMixinNamespace(releaseJar, false, "GTOLib 发行单轨（stamp 命中）")
-                verifyMainGtolibImportsAgainstJar(releaseJar)
-            }
-            else -> {
-                val jarSha = sha256(protectedJar)
-                stampFile.writeText("fingerprint=$gtolibFingerprint\njarSha256=$jarSha\nreleaseSha256=${sha256(releaseJar)}\n")
-                logger.lifecycle(
-                    "GTOLib protected (ProGuard+Seal): ${protectedJar.name} ${protectedJar.length()} bytes, release ${releaseJar.name} ${releaseJar.length()} bytes; " +
-                        "stamp fp=${gtolibFingerprint.take(16)}… jarSha=${jarSha.take(16)}…"
-                )
-            }
+        if (isGtolibDebugMode) {
+            logger.lifecycle("GTOLib: 【未加密/本地】直接使用 main 编译输出；protected jar 与 stamp 保持不变")
+            return@doLast
         }
+        if (isGtolibJarUpToDate) {
+            logger.lifecycle("GTOLib: stamp 命中，跳过 ProGuard/Seal")
+            verifyMixinNamespace(protectedJar, true, "GTOLib dev 轨（stamp 命中）")
+            verifyDevCompileNamespace(protectedJar, "GTOLib dev 轨（stamp 命中）")
+            verifyMixinNamespace(releaseJar, false, "GTOLib 发行单轨（stamp 命中）")
+            verifyMainGtolibImportsAgainstJar(releaseJar)
+        }
+        requireJar(protectedJar, "gtolib-protected.jar")
+        requireJar(releaseJar, "gtolib-release.jar")
+        val jarSha = sha256(protectedJar)
+        stampFile.writeText("fingerprint=$gtolibFingerprint\njarSha256=$jarSha\nreleaseSha256=${sha256(releaseJar)}\n")
+        logger.lifecycle(
+            "GTOLib protected (ProGuard+Seal): ${protectedJar.name} ${protectedJar.length()} bytes, release ${releaseJar.name} ${releaseJar.length()} bytes; " +
+                "stamp fp=${gtolibFingerprint.take(16)}… jarSha=${jarSha.take(16)}…"
+        )
     }
 }
 
