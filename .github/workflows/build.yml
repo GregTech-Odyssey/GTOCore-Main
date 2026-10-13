@@ -397,8 +397,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # 默认只允许默认分支写缓存，而 main 已不构建，不放开每次都从空缓存开始
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
 
       - name: Restore signing keystore
         env:
