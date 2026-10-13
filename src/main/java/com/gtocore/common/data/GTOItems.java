@@ -26,6 +26,7 @@ import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.recipe.editor.RecipeEditorBehavior;
 import com.gtolib.utils.StringUtils;
 
 import com.gregtechceu.gtceu.GTCEu;

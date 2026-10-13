@@ -45,6 +45,7 @@ import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
+import com.gtolib.recipe.editor.RecipeEditorUIFactory;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -121,6 +122,7 @@ public class CommonProxy {
         TechTreeCommands.init();
         TechTreeBrowser.init();
         GridMapUIFactory.init();
+        RecipeEditorUIFactory.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();
         }

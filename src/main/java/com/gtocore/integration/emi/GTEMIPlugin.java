@@ -31,6 +31,8 @@ import com.gtolib.api.emi.stack.EmiSearchTextStack;
 import com.gtolib.api.emi.stack.EmiSearchTextStackSerializer;
 import com.gtolib.api.emi.stack.EmiTagprefixStack;
 import com.gtolib.api.emi.stack.EmiTagprefixStackSerializer;
+import com.gtolib.recipe.editor.CraftAction;
+import com.gtolib.recipe.editor.GTEmiRecipeHandler;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
