@@ -2,7 +2,7 @@
 PUBLIC FILE: This README is published externally.
 Do not add private repository names, internal architecture, protection or encryption implementation details,
 credentials, keys, internal build procedures, or permission details.
-Only the public project overview, the approved closed-source statement, and the external contribution guide belong here.
+Only the public project overview, the approved closed-source statement, and the participation notes belong here; the team development workflow lives in docs/development.md.
 -->
 
 # GTOCore-Main
@@ -13,7 +13,7 @@ Only the public project overview, the approved closed-source statement, and the 
 
 GTOCore is the unified core mod for GregTech Odyssey. It targets Minecraft 1.20.1 and Forge 47.4.20, and uses the mod ID `gtocore`.
 
-This repository contains the public GTOCore source code, resources, data-generation entry points, and build configuration. External contributors can compile, generate data, and run the project using the dependencies included in the repository. Access to private repositories and initialization of private submodules are not required.
+This repository publishes the GTOCore source code and resources so that anyone can read, understand, and review the implementation.
 
 Public code under `com.gtocore` is distributed under the repository [LICENSE](LICENSE). gtolib remains a closed-source component.
 
@@ -44,106 +44,20 @@ This decision is made to protect our team's two years of dedicated work. We beli
 
 Thank you for your understanding and support.
 
-## External Contribution Guide
+## How to Take Part
 
-### Contribution Scope
+#### Ideas and Feedback
 
-Contributions are welcome in the following areas:
+If you have a good idea or suggestion, or have run into a problem while playing, you are very welcome to leave it in the [Issues](https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues). We read every piece of feedback carefully, and suitable ideas are picked up by the maintainers for future releases.
 
-- Public source code under `src/main/java/com/gtocore/`
-- Resources and generated data related to the public source code under `src/main/resources/` and `src/generated/resources/`
-- Build scripts and documentation for the public project
-- Bug fixes, compatibility improvements, performance optimizations, and maintainability improvements
+#### About Code Changes
 
-To contribute to private modules, contact the maintainers first to understand the current situation and obtain the appropriate authorization.
+Feature design, balancing, and release planning for GTOCore need to be coordinated as a whole, so code changes are currently made by the development team. A clearly described Issue usually helps us more than a code submission, so please feel free to leave the implementation to us.
 
-Do not directly modify or replace closed-source components or prebuilt binary dependencies tracked in this repository. Please open an Issue for related problems so that the maintainers can determine whether internal changes are required.
+#### About Building and Testing
 
-### Development Requirements
+The source is public for transparency, so that it can be read and reviewed. A full build relies on internal team components, so it cannot be compiled or run from the public repository, and there is no need to set up a development environment to test it yourself. To try the latest content, please use the official or test releases of the modpack.
 
-- **Java 25** (JDK used to run Gradle / the IDE)
-- Mod bytecode target is **Java 21** (required by dependencies / reobf; set automatically — do not use 25 as `--release`)
-- Git
-- Network access to Gradle and the project's dependency repositories
-- Sufficient available memory; the current Gradle configuration allows a maximum heap size of 8 GiB
+## License
 
-Confirm that `java -version` reports Java 25, and configure both your IDE and terminal to use the same JDK.
-
-### Clone and Build
-
-External contributors only need a normal clone. Do not initialize private submodules:
-
-```bash
-git clone https://github.com/GregTech-Odyssey/GTOCore-Main.git
-cd GTOCore-Main
-bash ./gradlew build
-```
-
-If you have gtolib access: after `cd`, run `git submodule update --init GTOLib`, then `bash ./gradlew build`.
-
-On Windows PowerShell or Command Prompt:
-
-```bat
-gradlew.bat build
-```
-
-The first build downloads Gradle and project dependencies, so it will take considerably longer than later builds.
-
-### IDE Import
-
-Open the repository root in IntelliJ IDEA or another IDE with Gradle support:
-
-1. Set both the project JDK and the Gradle JVM to Java 25.
-2. Import the repository as a Gradle project and wait for dependency synchronization to finish.
-3. Do not add `build/`, `run/`, or local IDE configuration files to a commit.
-
-### Common Tasks
-
-| Purpose | macOS / Linux command |
-|---------|-----------------------|
-| Format source code and resources | `bash ./gradlew spotlessApply` |
-| Run a full build | `bash ./gradlew build` |
-| Start the development client | `bash ./gradlew runClient` |
-| Start the development server | `bash ./gradlew runServer` |
-| Generate data | `bash ./gradlew runData` |
-
-`runData` writes to `src/generated/resources/`. Review the generated output before committing and keep only files related to your change.
-
-### Recommended Contribution Workflow
-
-1. Create a dedicated development branch from the latest `main`.
-2. Open an Issue and confirm the direction with the maintainers before starting a large feature or architectural change.
-3. Keep each commit and Pull Request focused on one clear objective.
-4. Follow the existing code style and avoid unrelated formatting or broad refactoring.
-5. Run `spotlessApply`, followed by runtime checks appropriate to the change.
-6. Run at least one full `build`.
-7. Review the changes with `git diff` and exclude generated outputs, logs, caches, credentials, and other local files.
-8. Push the branch and open a Pull Request.
-
-## Collaboration Workflow
-
-Collaborators with write access to GTOLib (gtocore-gtolib) should follow these branch and push rules so the main repository and the submodule pointer stay consistent.
-
-1. **When gtocore-gtolib (`GTOLib/` submodule) was modified**  
-   Push **both** gtocore-gtolib and gtocore-main to **identically named** branches on each repository (for example, `ae-rework` on both sides).  
-   The gtocore-main commit must update the `GTOLib` submodule pointer to the gtolib commit that already exists on that same-named remote branch.
-
-2. **When only gtocore-main was modified, gtocore-gtolib was not changed, and `libs/gtolib-protected.jar` is unchanged**  
-   You may create and push a new branch **only** on gtocore-main; a matching gtolib branch is not required.
-
-### Pull Request Requirements
-
-Each Pull Request should include:
-
-- The purpose of the change and an implementation summary
-- The main affected areas
-- Build and runtime verification performed
-- A related Issue, if applicable
-- Screenshots or recordings for UI or in-game behavior changes
-- Known limitations or cases not yet covered
-
-Maintainers may request implementation changes, additional verification, or a narrower scope. Do not submit code or resources with unknown origins or incompatible licenses.
-
-### License
-
-By contributing, you agree that your contribution will be distributed under the terms of this repository's [LICENSE](LICENSE).
+Public code under `com.gtocore` is distributed under the repository [LICENSE](LICENSE).

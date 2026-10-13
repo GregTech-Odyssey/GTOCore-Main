@@ -1,6 +1,6 @@
 # AGENTS
 
-面向本仓库（gtocore-main）协作与自动化代理的约定。公开介绍与外部贡献说明见 [README.md](README.md)。本文件只保留常驻规则与任务路由；专题说明仅在任务命中时读取，不要在每次工作前加载全部文档。
+面向本仓库（gtocore-main）协作与自动化代理的约定。公开介绍见 [README.md](README.md)，团队开发环境、构建命令与分支规则见 [docs/development.md](docs/development.md)。README 是对外文件，只写项目介绍、闭源声明与参与方式（想法走 Issue、代码由团队完成、公开环境不提供构建），不要写入构建步骤、内部流程或权限细节。本文件只保留常驻规则与任务路由；专题说明仅在任务命中时读取，不要在每次工作前加载全部文档。
 
 ## 任务路由
 
@@ -12,9 +12,10 @@
 | 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
 | 定位或修复 GTM/AE2 行为、考虑在主仓增加 Mixin 或调整这两个依赖 | [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md) |
 | 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖 | [本地 GTM 联调](docs/local-gtm.md) |
-| 操作 `GTOLib/`、`GTOSeal/`、预构建 jar、`.PROTECTED`、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与预构建](docs/gtolib.md) |
+| 操作 `GTOLib/`、`GTOSeal/`、GTOLib 构建缓存（`build/gtolib/`）、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与构建](docs/gtolib.md) |
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
+| 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 
@@ -52,7 +53,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 主仓、子模块和本地 GTM 仓库（如有）均遵守上述要求。禁止先裸跑 Gradle 等待 `JAVA_HOME` 报错后再重试；仓库文档与命令示例禁止写入具体用户名或用户目录绝对路径。
 - Gradle 会写入用户级缓存。若当前宿主限制实际缓存路径，按宿主权限机制在第一次调用时处理；不要先运行一个已知会因缓存权限失败的试跑。
 - `build` / `assemble` 只构建，不会自动运行单测。单测须显式执行 `test` 或 `testCrafting`；禁止添加凑数、明显正确或与行为无关的测试。
-- `src/test/` 下的 `com.gtolib.*` 测试需要明文 GTOLib 字节码；只有 Seal hollow class 的 CI prebuild 会自动跳过这些测试。
+- `src/test/` 下的 `com.gtolib.*` 测试需要明文 GTOLib 字节码，只在 `-PgtolibUnprotected=true` 下运行，加密构建会自动跳过。
 - 验证应与改动范围相称。通常只需 `compileJava`、`compileKotlin`、相关测试或专题文档要求的 `runData` / `buildGtolibProtected`，不要为纯说明修改运行 Gradle。
 - 任务报「另一个程序正在使用此文件」（如 `libs/gto-seal-runtime-1.0.jar`）时先 `.\gradlew.bat --stop`，再单独跑目标任务；`runData` 至少 1~3 分钟且可能因 datagen 崩溃偶发失败，先重试再排查。详见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
 - 用 PowerShell 管道接 `gradlew` 输出会让 `$LASTEXITCODE` 失真（可能拿到 -1）：先把输出存进变量，再读退出码。
@@ -63,18 +64,18 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 语言文件的来源、简繁转换与 HashCache 强制回写方法见 [生成资源](docs/generated-resources.md)。
 - 用 `git reset` / `git checkout --` / 合并 / 手工改写动过生成文件后再跑 `runData` 可能空转（成功但文件没变）：按 `docs/generated-resources.md` 删掉含 `Registrate Provider for gtocore` 的 `.cache` 清单并加 `--rerun-tasks`；跑完对比文件 mtime 确认真的写了。
 
-## GTOLib 与预构建安全
+## GTOLib 与构建产物安全
 
-- `GTOLib/` 与 `GTOSeal/` 都是私有子模块，只有具备对应仓库权限的人员或执行环境才能初始化、拉取和更新。无权限时子模块不可用是预期状态；不要反复重试、绕过权限或要求提供凭据。只涉及主仓的任务应继续使用仓库内预构建产物完成可行工作。
-- `GTOLib/` 与 `GTOSeal/` 是独立 Git 仓库；主仓记录的是 gitlink。修改、切换或恢复它们前读取 [GTOLib 子模块与预构建](docs/gtolib.md)。
+- `GTOLib/` 与 `GTOSeal/` 都是私有子模块，只有具备对应仓库权限的人员或执行环境才能初始化、拉取和更新。无权限时子模块不可用是预期状态；不要反复重试、绕过权限或要求提供凭据。构建 gtocore 必须有 GTOLib 源码（缺失时配置阶段直接报错），公开仓不带任何 GTOLib 预构建。
+- `GTOLib/` 与 `GTOSeal/` 是独立 Git 仓库；主仓记录的是 gitlink。修改、切换或恢复它们前读取 [GTOLib 子模块与构建](docs/gtolib.md)。
 - 修改 `GTOLib/` 代码时，完成当前任务前必须使用 JDK 21 运行一次 `buildGtolibProtected` 并确认通过。一个任务在收尾时重建一次即可，不要每改一处都重建；若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。
-- GTOLib 指针、`libs/gtolib-protected.jar` 与对应 `.PROTECTED` 是不可拆分的一套生成物；不得单独合并、手工拼接侧车或只更新其中一项。
-- `gtolib-unprotected*.jar` 始终不得提交、上传或打包分发；不要绕过 gitignore。开发运行需要 named 类，生产链使用 SRG，勿用 reobf 产物覆盖明文调试 jar。
+- GTOLib 产物只生成在 `build/gtolib/`（按源码指纹缓存），始终不得提交、上传或打包分发；dev 轨保留全部真实名字。`libs/` 不再存放 GTOLib 产物，残留的旧 `libs/gtolib-*` 由 gitignore 兜底，不要绕过。开发运行需要 named 类，生产链使用 SRG，勿用 reobf 产物覆盖明文调试 jar。
+- GTOLib 新增按名反射、注解扫描、存盘键或配置里写类名时，必须同步补 `GTOLib/protect/proguard-release-rules.pro` 的 keep，开发环境测不出漏补。
 
 ## 云端签名
 
 - 本地 jar 仅用于开发调试；进入整合包必须使用 Build and Sign 产生的签名产物。
-- `pull_request_target` 会执行 PR 侧代码并注入签名 secrets。成员评论 `/build` 即代表已审阅并接受签名风险；触发条件与产物查找见 [云端构建与签名](docs/build-signing.md)。
+- `pull_request_target` 会执行 PR 侧代码并注入签名 secrets 与 GTOLib 只读凭据，只构建本仓分支。成员评论 `/build` 即代表已审阅并接受签名风险；触发条件与产物查找见 [云端构建与签名](docs/build-signing.md)。
 
 ## 收尾
 

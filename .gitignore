@@ -15,7 +15,11 @@ libs/*-debug.jar
 libs/gtolib-unprotected.jar
 **/gtolib-unprotected.jar
 .gtolib-debug
-# libs/gtolib-protected.jar 可提交：必须是 protected 成品（buildGtolibProtected）
+# 已废弃的 libs/ 下 GTOLib 缓存（产物现只在 build/gtolib）：残留旧文件禁止提交
+libs/gtolib-protected.jar
+libs/gtolib-protected.PROTECTED
+libs/gtolib-release.jar
+libs/gtolib-release.PROTECTED
 *.launch
 *.iml
 *.ipr

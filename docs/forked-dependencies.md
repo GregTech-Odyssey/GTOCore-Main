@@ -2,7 +2,7 @@
 
 仅在定位或修复 GTM/AE2 行为、考虑为其添加 GTOCore Mixin，或调整这两个依赖时读取本文。
 
-本项目维护 [GTM fork](https://github.com/GregTech-Odyssey/GregTech-Modern) 和 [AE2 fork](https://github.com/GregTech-Odyssey/Applied-Energistics-2-gto)。主仓通过 `dependencies.gradle` 中的 Maven 坐标引用它们，版本分别由 `gradle.properties` 中的 `gtceu_version`、`ae2_version` 控制；不会自动读取任何本地 fork 工作区。需要访问源码时，默认在主仓同一父目录下查找 `GregTech-Modern/` 或 `Applied-Energistics-2-gto/`。
+本项目维护 [GTM fork](https://github.com/GregTech-Odyssey/GregTech-Modern) 和 [AE2 fork](https://github.com/GregTech-Odyssey/Applied-Energistics-2-gto)。主仓通过 `build.gradle.kts` 依赖块中的 Maven 坐标引用它们，版本分别由 `gradle.properties` 中的 `gtceu_version`、`ae2_version` 控制；不会自动读取任何本地 fork 工作区。需要访问源码时，默认在主仓同一父目录下查找 `GregTech-Modern/` 或 `Applied-Energistics-2-gto/`。
 
 ## 选择修改位置
 

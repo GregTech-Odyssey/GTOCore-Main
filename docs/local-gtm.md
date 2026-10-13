@@ -4,12 +4,12 @@
 
 ## 依赖方式
 
-主仓不会直接读取本地 GTM 工作区，而是通过 `dependencies.gradle` 中的 Maven 坐标 `com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:${gtceu_version}` 使用 GTM。GTM 源码位于 [GregTech-Odyssey/GregTech-Modern](https://github.com/GregTech-Odyssey/GregTech-Modern)。主仓正常构建不要求本地检出 GTM；确需本地联调时，默认查找与主仓同级的 `GregTech-Modern/`。若未找到，停止联调并请用户提供已有检出的路径或决定是否克隆，不自行克隆。
+主仓不会直接读取本地 GTM 工作区，而是通过 `build.gradle.kts` 依赖块中的 Maven 坐标 `com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:${gtceu_version}` 使用 GTM。GTM 源码位于 [GregTech-Odyssey/GregTech-Modern](https://github.com/GregTech-Odyssey/GregTech-Modern)。主仓正常构建不要求本地检出 GTM；确需本地联调时，默认查找与主仓同级的 `GregTech-Modern/`。若未找到，停止联调并请用户提供已有检出的路径或决定是否克隆，不自行克隆。
 
 联调前确认：
 
 - GTM `gradle.properties` 的 `mod_version` 与主仓 `gradle.properties` 的 `gtceu_version` 完全一致；
-- 主仓 `gradle/scripts/repositories.gradle` 已将 `mavenLocal()` 放在远端仓库之前；
+- 主仓 `build.gradle.kts` 的仓库块已将 `mavenLocal()` 放在远端仓库之前；
 - 不要把 jar 复制到 `libs/`，也不要改成文件依赖。
 
 ## 发布与刷新
