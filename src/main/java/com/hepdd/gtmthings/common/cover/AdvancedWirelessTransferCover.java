@@ -1,0 +1,268 @@
+package com.hepdd.gtmthings.common.cover;
+
+import com.gregtechceu.gtceu.api.capability.ICoverable;
+import com.gregtechceu.gtceu.api.cover.CoverBehavior;
+import com.gregtechceu.gtceu.api.cover.CoverDefinition;
+import com.gregtechceu.gtceu.api.cover.IUICover;
+import com.gregtechceu.gtceu.api.cover.filter.FilterHandler;
+import com.gregtechceu.gtceu.api.cover.filter.FilterHandlers;
+import com.gregtechceu.gtceu.api.cover.filter.FluidFilter;
+import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
+import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
+import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
+import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.storage.AEKeyFilter;
+import appeng.api.storage.StorageAccess;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import static net.minecraft.resources.ResourceLocation.tryParse;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class AdvancedWirelessTransferCover extends CoverBehavior implements IUICover {
+
+    public static final int TRANSFER_ITEM = 1;
+    public static final int TRANSFER_FLUID = 2;
+
+    protected final int transferType;
+    private TickableSubscription subscription;
+    @SaveToDisk
+    private String dimensionId;
+    @SaveToDisk
+    protected BlockPos targetPos;
+    @SaveToDisk
+    protected Direction facing;
+
+    @SaveToDisk
+    @SyncToClient
+    @Getter
+    protected final FilterHandler<FluidStack, FluidFilter> filterHandlerFluid;
+    @SaveToDisk
+    @SyncToClient
+    @Getter
+    protected final FilterHandler<ItemStack, ItemFilter> filterHandlerItem;
+
+    private final RemoteKeyTarget target = new RemoteKeyTarget();
+
+    private final AEKeyFilter itemKeyFilter;
+    private final AEKeyFilter fluidKeyFilter;
+
+    public AdvancedWirelessTransferCover(CoverDefinition definition, ICoverable coverHolder, Direction attachedSide, int transferType) {
+        super(definition, coverHolder, attachedSide);
+        this.transferType = transferType;
+        filterHandlerFluid = FilterHandlers.fluid(this);
+        filterHandlerItem = FilterHandlers.item(this);
+        itemKeyFilter = k -> k instanceof AEItemKey itemKey && filterHandlerItem.getFilter().test(itemKey.getReadOnlyStack());
+        fluidKeyFilter = k -> k instanceof AEFluidKey fluidKey && filterHandlerFluid.getFilter().test(fluidKey.getReadOnlyStack());
+    }
+
+    @Override
+    public boolean canAttach() {
+        if (super.canAttach()) {
+            var targetMachine = MetaMachine.getMachine(coverHolder.holder());
+            return targetMachine != null && (targetMachine.getItemHandlerCap(attachedSide, false) != null || targetMachine.getFluidHandlerCap(attachedSide, false) != null);
+        }
+        return false;
+    }
+
+    @Override
+    public void onAttached(ItemStack itemStack, ServerPlayer player) {
+        CompoundTag tag = itemStack.getTag();
+        if (tag != null) {
+            this.dimensionId = tag.getString("dimensionid");
+            var intX = tag.getInt("x");
+            var intY = tag.getInt("y");
+            var intZ = tag.getInt("z");
+            this.targetPos = new BlockPos(intX, intY, intZ);
+            this.facing = readFacingOrFallback(tag.getString("facing"), attachedSide);
+            getTargetLevel();
+        }
+        var targetMachine = MetaMachine.getMachine(coverHolder.holder());
+        if (targetMachine instanceof SimpleTieredMachine simpleTieredMachine) {
+            if (this.transferType == TRANSFER_ITEM) simpleTieredMachine.setAutoOutputItems(false);
+            if (this.transferType == TRANSFER_FLUID) simpleTieredMachine.setAutoOutputFluids(false);
+        } else if (targetMachine instanceof ItemBusPartMachine itemBusPartMachine && this.transferType == TRANSFER_ITEM) {
+            itemBusPartMachine.setWorkingEnabled(false);
+        } else if (targetMachine instanceof FluidHatchPartMachine fluidHatchPartMachine && this.transferType == TRANSFER_FLUID) {
+            fluidHatchPartMachine.setWorkingEnabled(false);
+        }
+        super.onAttached(itemStack, player);
+    }
+
+    @Override
+    public List<ItemStack> getAdditionalDrops() {
+        var list = super.getAdditionalDrops();
+        if (!filterHandlerFluid.getFilterItem().isEmpty()) {
+            list.add(filterHandlerFluid.getFilterItem());
+        }
+        if (!filterHandlerItem.getFilterItem().isEmpty()) {
+            list.add(filterHandlerItem.getFilterItem());
+        }
+        return list;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        getSafeFacing();
+        getTargetLevel();
+        subscription = coverHolder.subscribeServerTick(subscription, this::update, 20);
+    }
+
+    @Override
+    public void onRemoved() {
+        super.onRemoved();
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
+    }
+
+    private void update() {
+        if (transferType == TRANSFER_ITEM) {
+            var targetItemTransfer = getTargetItemTransfer();
+            var ownItemTransfer = getOwnItemTransfer();
+            if (ownItemTransfer != null && targetItemTransfer != null) {
+                KeyTransfer.transfer(ownItemTransfer, targetItemTransfer, Integer.MAX_VALUE, itemKeyFilter);
+            }
+        } else if (transferType == TRANSFER_FLUID) {
+            var targetFluidTransfer = getTargetFluidTransfer();
+            var ownFluidTransfer = getOwnFluidTransfer();
+            if (ownFluidTransfer != null && targetFluidTransfer != null) {
+                KeyTransfer.transfer(ownFluidTransfer, targetFluidTransfer, Integer.MAX_VALUE, fluidKeyFilter);
+            }
+        }
+    }
+
+    private void getTargetLevel() {
+        if (this.dimensionId == null) return;
+        ResourceLocation resLoc = tryParse(this.dimensionId);
+        ResourceKey<Level> resKey = ResourceKey.create(Registries.DIMENSION, resLoc);
+        target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
+    }
+
+    protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
+        return coverHolder.getItemHandlerCap(attachedSide, false);
+    }
+
+    protected @Nullable IKeyHandler<AEItemKey> getTargetItemTransfer() {
+        return target.items(getSafeFacing().getOpposite(), StorageAccess.INSERT);
+    }
+
+    protected @Nullable IKeyHandler<AEFluidKey> getOwnFluidTransfer() {
+        return coverHolder.getFluidHandlerCap(attachedSide, false);
+    }
+
+    protected @Nullable IKeyHandler<AEFluidKey> getTargetFluidTransfer() {
+        return target.fluids(getSafeFacing().getOpposite(), StorageAccess.INSERT);
+    }
+
+    private Direction getSafeFacing() {
+        this.facing = sanitizeFacing(this.facing, attachedSide);
+        return this.facing;
+    }
+
+    static Direction readFacingOrFallback(@Nullable String facingName, @Nullable Direction fallback) {
+        return sanitizeFacing(facingName == null ? null : Direction.byName(facingName), fallback);
+    }
+
+    static Direction sanitizeFacing(@Nullable Direction direction, @Nullable Direction fallback) {
+        if (direction != null) return direction;
+        return fallback != null ? fallback : Direction.NORTH;
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        var status = new StatusPanel();
+        status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).bindLevel(this::connectionLevel);
+        status.addLine("gtocore.cover.advanced_wireless_transfer.target",
+                new Memo<>(() -> isBound() ? target.blockEntity() : null, be -> be.getBlockState().getBlock().getName()));
+        status.addLine("gtocore.cover.advanced_wireless_transfer.position",
+                new Memo<>(() -> targetPos, pos -> Component.literal(pos.toShortString())));
+        status.addLine("gtocore.cover.advanced_wireless_transfer.dimension",
+                new Memo<>(() -> dimensionId, Component::literal));
+        return Form.page().addChildren(status,
+                CoverUIs.filterSection(transferType == TRANSFER_ITEM ? filterHandlerItem : filterHandlerFluid));
+    }
+
+    private boolean isBound() {
+        return target.level() != null && target.pos() != null;
+    }
+
+    private boolean isConnected() {
+        return transferType == TRANSFER_ITEM ? getTargetItemTransfer() != null : getTargetFluidTransfer() != null;
+    }
+
+    private Component connectionText() {
+        if (!isBound()) return UNBOUND;
+        return isConnected() ? CONNECTED : UNAVAILABLE;
+    }
+
+    private com.gregtechceu.gtceu.uipro.Level connectionLevel() {
+        if (!isBound()) return com.gregtechceu.gtceu.uipro.Level.WARNING;
+        return isConnected() ? com.gregtechceu.gtceu.uipro.Level.GOOD : com.gregtechceu.gtceu.uipro.Level.ERROR;
+    }
+
+    private static final Component NONE = Component.literal("—");
+    private static final Component UNBOUND = Component.translatable("gtocore.cover.advanced_wireless_transfer.unbound");
+    private static final Component CONNECTED = Component.translatable("gtocore.cover.advanced_wireless_transfer.connected");
+    private static final Component UNAVAILABLE = Component.translatable("gtocore.cover.advanced_wireless_transfer.unavailable");
+
+    private static final class Memo<K> implements Supplier<Component> {
+
+        private final Supplier<K> key;
+        private final Function<K, Component> text;
+        private @Nullable K last;
+        private Component value = NONE;
+
+        private Memo(Supplier<K> key, Function<K, Component> text) {
+            this.key = key;
+            this.text = text;
+        }
+
+        @Override
+        public Component get() {
+            K current = key.get();
+            if (current != last) {
+                last = current;
+                value = current == null ? NONE : text.apply(current);
+            }
+            return value;
+        }
+    }
+}

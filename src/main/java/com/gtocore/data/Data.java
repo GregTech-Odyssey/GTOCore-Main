@@ -1,0 +1,247 @@
+package com.gtocore.data;
+
+import com.gtocore.api.research.scanning.DataScanningManager;
+import com.gtocore.common.data.*;
+import com.gtocore.config.GTORules;
+import com.gtocore.data.recipe.*;
+import com.gtocore.data.recipe.ae2.AE2;
+import com.gtocore.data.recipe.ae2.Ae2wtlibRecipes;
+import com.gtocore.data.recipe.classified.$ClassifiedRecipe;
+import com.gtocore.data.recipe.generated.*;
+import com.gtocore.data.recipe.gtm.chemistry.ChemistryRecipes;
+import com.gtocore.data.recipe.gtm.configurable.RecipeAddition;
+import com.gtocore.data.recipe.gtm.misc.*;
+import com.gtocore.data.recipe.magic.*;
+import com.gtocore.data.recipe.misc.ComponentRecipes;
+import com.gtocore.data.recipe.misc.SpaceStationRecipes;
+import com.gtocore.data.recipe.mod.*;
+import com.gtocore.data.recipe.processing.*;
+import com.gtocore.data.recipe.research.ResearchRecipes;
+import com.gtocore.data.tag.TagsHandler;
+import com.gtocore.data.techtree.BaseNodes;
+import com.gtocore.data.transaction.data.GTOTrade;
+import com.gtocore.integration.emi.GTEMIRecipe;
+import com.gtocore.integration.emi.NanitesIntegratedProcessingEmiCategory;
+import com.gtocore.integration.emi.SpaceModuleGTEMIRecipe;
+import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
+
+import com.gtolib.GTOCore;
+import com.gtolib.api.recipe.RecipeBuilder;
+import com.gtolib.utils.GTOUtils;
+import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.data.chemical.material.ItemMaterialData;
+import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.category.GTRecipeCategory;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
+import com.gregtechceu.gtceu.common.data.GTTags;
+import com.gregtechceu.gtceu.data.recipe.MaterialInfoLoader;
+import com.gregtechceu.gtceu.data.recipe.misc.RecyclingRecipes;
+import com.gregtechceu.gtceu.data.recipe.misc.StoneMachineRecipes;
+import com.gregtechceu.gtceu.data.recipe.misc.WoodMachineRecipes;
+import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
+
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+
+import com.google.common.collect.ImmutableSet;
+import com.gto.registrate.builders.BlockBuilder;
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.config.EmiConfig;
+import dev.emi.emi.config.SidebarSide;
+import dev.emi.emi.recipe.special.EmiRepairItemRecipe;
+import dev.shadowsoffire.placebo.loot.LootSystem;
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static com.gtocore.common.data.GTORecipes.EMI_RECIPES;
+
+public final class Data {
+
+    @Getter
+    private static Throwable throwable;
+
+    public static void init() {
+        BaseNodes.init();
+        if (GTCEu.isClientSide()) {
+            GTOUtils.asyncExecute(Data::clientInit);
+        } else {
+            commonInit();
+        }
+    }
+
+    private static void commonInit() {
+        long time = System.currentTimeMillis();
+        GTRegistries.ORE_VEINS.unfreeze();
+        GTRegistries.BEDROCK_ORE_DEFINITIONS.unfreeze();
+        GTOOres.init();
+        MeteoriteRecipe.init();
+
+        ItemMaterialData.reinitializeMaterialData();
+        CraftingComponents.init();
+        MaterialInfoLoader.init();
+        MaterialInfo.init();
+        RecipeBuilder.initialization();
+        RecipeFilter.init();
+
+        OpticalRecipe.init();
+        ResearchRecipes.init();
+
+        ComponentRecipes.init();
+
+        WoodMachineRecipes.init();
+        StoneMachineRecipes.init();
+
+        CustomToolRecipes.init();
+        ChemistryRecipes.init();
+        MetaTileEntityMachineRecipeLoader.init();
+        MiscRecipeLoader.init();
+        VanillaStandardRecipes.init();
+        CraftingRecipeLoader.init();
+        FusionLoader.init();
+        MachineRecipeLoader.init();
+        AssemblerRecipeLoader.init();
+        BatteryRecipes.init();
+        DecorationRecipes.init();
+
+        CircuitRecipes.init();
+        MetaTileEntityLoader.init();
+
+        GCYMRecipes.init();
+        RecipeAddition.init();
+
+        ForEachMaterial.init();
+
+        // GTO
+        GTMTRecipe.init();
+        GCYRecipes.init();
+        MachineRecipe.init();
+        MiscRecipe.init();
+        SpaceStationRecipes.init();
+        OrganRecipes.init();
+        BotaniaRecipes.init();
+        ArsNouveauRecipes.init();
+        MagicRecipesA.init();
+        MagicRecipesB.init();
+        MagicRecipesC.init();
+        FuelRecipe.init();
+        BrineRecipes.init();
+        MembraneMaterialRecipes.init();
+        NaquadahProcess.init();
+        PlatGroupMetals.init();
+        CompositeMaterialsProcessing.init();
+        ElementCopying.init();
+        StoneDustProcess.init();
+        Lanthanidetreatment.init();
+        NewResearchSystem.init();
+        RadiationHatchRecipes.init();
+        PetrochemRecipes.init();
+        GlassRecipe.init();
+        DyeRecipes.init();
+        WoodRecipes.init();
+        AE2.init();
+        Ae2wtlibRecipes.init();
+        ImmersiveAircraft.init();
+        FunctionalStorage.init();
+        ComputerCraft.init();
+        ModularRouters.init();
+        SuperFactoryManager.init();
+        Pipez.init();
+        Sophisticated.backpack();
+        $ClassifiedRecipe.init();
+        Temporary.init();
+        if (GTCEu.isDev() || GTORules.RECIPE_TIER.isEasy()) {
+            EasyModeRecipe.init();
+        }
+
+        GenerateDisassembly.DISASSEMBLY_RECORD.clear();
+        GenerateDisassembly.DISASSEMBLY_BLACKLIST.clear();
+        RecyclingRecipes.init();
+
+        ItemMaterialData.ITEM_MATERIAL_INFO.clear();
+        RecipeBuilder.finish();
+        LootSystem.defaultBlockTable(RegistriesUtils.getBlock("farmersrespite:kettle"));
+        BlockBuilder.DEFAULT_LOOTS.forEach(b -> {
+            if (!b.getLootTable().equals(BuiltInLootTables.EMPTY)) {
+                LootSystem.defaultBlockTable(b);
+            }
+        });
+        GTOLoots.init();
+        GTTags.registryGTDynamicTags();
+        TagsHandler.initItem();
+        TagsHandler.initBlock();
+        TagsHandler.initFluid();
+
+        DataScanningManager.freeze();
+        GTOTrade.init();
+
+        GTOCore.LOGGER.info("Data loading took {}ms", System.currentTimeMillis() - time);
+    }
+
+    private static void clientInit() {
+        try {
+            commonInit();
+        } catch (Throwable t) {
+            throwable = t;
+            GTOCore.LOGGER.error("Data loading failed", t);
+        }
+        GTRegistries.RECIPE_TYPES.values().forEach(t -> t.recipes.values().forEach(recipe -> recipe.recipeCategory.addRecipe(recipe)));
+        if (GTCEu.Mods.isEMILoaded()) {
+            long time = System.currentTimeMillis();
+            EmiConfig.logUntranslatedTags = false;
+            EmiConfig.workstationLocation = SidebarSide.LEFT;
+            EmiRepairItemRecipe.TOOLS.clear();
+            ImmutableSet.Builder<EmiRecipe> recipes = ImmutableSet.builder();
+            for (GTRecipeCategory category : GTRegistries.RECIPE_CATEGORIES) {
+                if (!category.shouldRegisterDisplays()) continue;
+                var type = category.getRecipeType();
+                if (category == type.getCategory()) type.buildRepresentativeRecipes();
+                if (type == GTORecipeTypes.NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES) {
+                    addNanitesEmiRecipes(type, category, recipes);
+                    continue;
+                }
+                EmiRecipeCategory emiCategory = GTRecipeEMICategory.CATEGORIES.apply(category);
+                if (type == com.gtocore.common.data.GTORecipeTypes.MINER_MODULE_RECIPES ||
+                        type == com.gtocore.common.data.GTORecipeTypes.DRILLING_MODULE_RECIPES) {
+                    SpaceModuleGTEMIRecipe.addGroupedRecipes(type.getRecipesInCategory(category), emiCategory, recipes::add);
+                    continue;
+                }
+                type.getRecipesInCategory(category).stream().map(recipe -> new GTEMIRecipe(recipe, emiCategory)).forEach(recipes::add);
+            }
+            List<MultiblockInfoEmiRecipe> multiblocks = new ArrayList<>();
+            for (MachineDefinition machine : GTRegistries.MACHINES.values()) {
+                if (machine instanceof MultiblockMachineDefinition definition && definition.isRenderXEIPreview()) {
+                    var recipe = new MultiblockInfoEmiRecipe(definition);
+                    multiblocks.add(recipe);
+                    recipes.add(recipe);
+                }
+            }
+            EMI_RECIPES = recipes.build();
+            MultiblockInfoEmiRecipe.prepareInputsOnTagsUpdate(multiblocks);
+            for (GTRecipeType type : GTRegistries.RECIPE_TYPES) {
+                if (type == GTORecipeTypes.FURNACE_RECIPES) {
+                    type.getCategoryMap().putIfAbsent(GTRecipeTypes.FURNACE_RECIPES.getCategory(), Collections.emptySet());
+                } else {
+                    type.getCategoryMap().replaceAll((k, v) -> Collections.emptySet());
+                }
+            }
+            GTOCore.LOGGER.info("Pre initialization EMI GTRecipe took {}ms", System.currentTimeMillis() - time);
+        }
+    }
+
+    private static void addNanitesEmiRecipes(GTRecipeType type, GTRecipeCategory category, ImmutableSet.Builder<EmiRecipe> recipes) {
+        type.getRecipesInCategory(category).forEach(recipe -> {
+            var emiCategory = NanitesIntegratedProcessingEmiCategory.getCategory(recipe.data.getInt(GTORecipeDataKeys.MODULE));
+            if (emiCategory != null) {
+                recipes.add(new GTEMIRecipe(recipe, emiCategory));
+            }
+        });
+    }
+}

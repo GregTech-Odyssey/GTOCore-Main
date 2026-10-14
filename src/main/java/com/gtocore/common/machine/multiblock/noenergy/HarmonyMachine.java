@@ -1,0 +1,234 @@
+package com.gtocore.common.machine.multiblock.noenergy;
+
+import com.gtocore.api.wireless.energy.EnergyAccount;
+import com.gtocore.api.wireless.energy.EnergyPort;
+import com.gtocore.api.wireless.energy.PortKind;
+import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.wireless.energy.WirelessIdle;
+import com.gtocore.data.IdleReason;
+
+import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.material.Fluid;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.hepdd.gtmthings.api.capability.IBindable;
+import com.hepdd.gtmthings.utils.TeamUtil;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import org.jetbrains.annotations.Nullable;
+
+import java.math.BigInteger;
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public final class HarmonyMachine extends NoEnergyMultiblockMachine implements IBindable {
+
+    private static final BigInteger BASE = BigInteger.valueOf(5277655810867200L);
+
+    static final Fluid HYDROGEN = GTMaterials.Hydrogen.getFluid();
+    static final Fluid HELIUM = GTMaterials.Helium.getFluid();
+    static final long FLUID_PER_RUN = 1024000000L;
+    private final EnergyPort port = new EnergyPort(PortKind.HARMONY, this, 0);
+    @SaveToDisk(defaultValue = "1")
+    private int tier = 1;
+    @SaveToDisk(defaultValue = "0")
+    private int count;
+    @SaveToDisk(defaultValue = "0")
+    private int oc;
+    @SaveToDisk(defaultValue = "0")
+    private long hydrogen;
+    @SaveToDisk(defaultValue = "0")
+    private long helium;
+    private final ConditionalSubscriptionHandler tickSubs;
+
+    public HarmonyMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+        tickSubs = new ConditionalSubscriptionHandler(this, this::update, 20, this::isFormed);
+    }
+
+    private void update() {
+        long[] a = getFluidAmount(true, HYDROGEN, HELIUM);
+        if (inputFluid(HYDROGEN, a[0])) {
+            hydrogen += a[0];
+        }
+        if (inputFluid(HELIUM, a[1])) {
+            helium += a[1];
+        }
+        int circuit = 0;
+        if (matchCircuit(4)) {
+            circuit = 4;
+        } else if (matchCircuit(3)) {
+            circuit = 3;
+        } else if (matchCircuit(2)) {
+            circuit = 2;
+        } else if (matchCircuit(1)) {
+            circuit = 1;
+        }
+        if (circuit != oc) {
+            oc = circuit;
+            getRecipeLogic().updateTickSubscription();
+        }
+        tickSubs.updateSubscription();
+    }
+
+    static int recipeMultiplier(int recipeTier) {
+        return Math.max(1, (recipeTier - 1) << 2);
+    }
+
+    static int runsToAdvance(int tier) {
+        return 17 + (tier << 2);
+    }
+
+    long getHydrogen() {
+        return hydrogen;
+    }
+
+    long getHelium() {
+        return helium;
+    }
+
+    int getOverclock() {
+        return oc;
+    }
+
+    int getTier() {
+        return tier;
+    }
+
+    int getTierCount() {
+        return count;
+    }
+
+    BigInteger getStartupEnergy() {
+        if (oc == 0) return BigInteger.ZERO;
+        return BASE.multiply(BigInteger.ONE.shiftLeft(3 * oc - 1));
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        tickSubs.initialize(getLevel());
+    }
+
+    @Nullable
+    @Override
+    protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
+        if (tier < recipe.data.getInt(GTORecipeDataKeys.TIER)) {
+            setIdleReason(IdleReason.SIMULATION_TIER);
+            return null;
+        }
+        if (getUUID() != null && hydrogen >= FLUID_PER_RUN && helium >= FLUID_PER_RUN && oc > 0) {
+            var energy = getRecipeEnergy(recipe);
+            int duration = recipe.duration >> (oc - 1);
+            var result = port.checkSettle(energy, 0, duration);
+            if (result.ok()) {
+                recipe.duration = duration;
+                return recipe;
+            }
+            WirelessIdle.report(this, result, port, 0, energy.doubleValue());
+        } else if (getUUID() == null) {
+            IdleReason.NO_OWNER.setReason(this);
+        } else if (oc <= 0) {
+            IdleReason.SET_CIRCUIT.setReason(this);
+        } else if (hydrogen < FLUID_PER_RUN) {
+            IdleReason.HYDROGEN_RESERVE_SHORT.setReason(this, FLUID_PER_RUN, hydrogen);
+        } else {
+            IdleReason.HELIUM_RESERVE_SHORT.setReason(this, FLUID_PER_RUN, helium);
+        }
+        return null;
+    }
+
+    @Override
+    public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
+        super.beforeWorking(unit, recipe);
+        hydrogen -= FLUID_PER_RUN;
+        helium -= FLUID_PER_RUN;
+        if (tier == recipe.data.getInt(GTORecipeDataKeys.TIER)) {
+            count++;
+            if (count >= runsToAdvance(tier)) {
+                count = 0;
+                tier++;
+            }
+        }
+    }
+
+    @Override
+    public boolean handleRecipeInput(RecipeHandlerUnit unit, GTRecipe recipe) {
+        return port.settleThen(getRecipeEnergy(recipe), 0, recipe.duration, () -> super.handleRecipeInput(unit, recipe));
+    }
+
+    EnergyAccount wirelessAccount() {
+        return port.account();
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        port.release();
+    }
+
+    private BigInteger getRecipeEnergy(GTRecipe recipe) {
+        return getStartupEnergy().multiply(BigInteger.valueOf(recipeMultiplier(recipe.data.getInt(GTORecipeDataKeys.TIER))));
+    }
+
+    @Override
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return HarmonyFlowPage.create(this, widget);
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
+    }
+
+    @Override
+    public boolean windowHasPlayerInventory() {
+        return true;
+    }
+
+    @Override
+    public WindowAnchor windowAnchor() {
+        return WindowAnchor.CENTER;
+    }
+
+    @Override
+    public void customText(List<Component> textList) {
+        super.customText(textList);
+        textList.add(Component.translatable("gtocore.tier.value", tier));
+        textList.add(Component.translatable("behaviour.lighter.uses", runsToAdvance(tier) - count));
+        if (getUUID() != null) {
+            var account = port.account();
+            textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.0", TeamUtil.getName(getLevel(), getUUID())));
+            if (!account.isNone()) textList.add(Component.translatable("gtmthings.machine.wireless_energy_monitor.tooltip.1", FormattingUtil.formatNumbers(account.totalStorage())));
+        }
+        textList.add(Component.translatable("gtocore.machine.eye_of_harmony.eu", FormattingUtil.formatNumbers(getStartupEnergy())));
+        textList.add(Component.translatable("gtocore.machine.eye_of_harmony.hydrogen", FormattingUtil.formatNumbers(hydrogen)));
+        textList.add(Component.translatable("gtocore.machine.eye_of_harmony.helium", FormattingUtil.formatNumbers(helium)));
+    }
+
+    @Override
+    @Nullable
+    public UUID getUUID() {
+        return getOwnerUUID();
+    }
+
+    @Override
+    public boolean preferTeamName() {
+        return true;
+    }
+}

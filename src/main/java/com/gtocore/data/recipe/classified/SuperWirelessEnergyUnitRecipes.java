@@ -1,0 +1,193 @@
+package com.gtocore.data.recipe.classified;
+
+import com.gtocore.api.research.techtree.TechTreeManager;
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.recipe.condition.ResearchRecipeCondition;
+
+import com.gtolib.GTOCore;
+import com.gtolib.api.recipe.RecipeBuilder;
+
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.common.data.GTItems;
+
+import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+
+final class SuperWirelessEnergyUnitRecipes {
+
+    private SuperWirelessEnergyUnitRecipes() {}
+
+    static void init() {
+        ASSEMBLER_RECIPES.builder("uhv_super_wireless_energy_unit")
+                .inputItems(GTOBlocks.UHV_WIRELESS_ENERGY_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UHV, 8)
+                .inputItems(GTOItems.ENERGY_CONTROL_MODULE_MK3, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UHV, 4)
+                .inputItems(GTItems.GRAVI_STAR, 2)
+                .inputItems(TagPrefix.wireGtHex, GTOMaterials.Enderite, 4)
+                .inputItems(TagPrefix.foil, GTOMaterials.SulfonatedPolyetherEtherKetone, 32)
+                .outputItems(GTOBlocks.UHV_SUPER_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(1966080L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io9"), RecipeBuilder.getTypeID(GTOCore.id("uhv_super_wireless_energy_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("uhv_super_wireless_energye_unit")
+                .inputItems(GTOBlocks.UHV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UHV, 8)
+                .inputItems(GTOItems.ENERGY_CONTROL_MODULE_MK3, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UHV, 4)
+                .inputItems(GTItems.GRAVI_STAR, 2)
+                .inputItems(GTOItems.UHV_VOLTAGE_COIL, 32)
+                .inputItems(TagPrefix.foil, GTOMaterials.SulfonatedPolyetherEtherKetone, 32)
+                .outputItems(GTOBlocks.UHV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(1966080L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io9"), RecipeBuilder.getTypeID(GTOCore.id("uhv_super_wireless_energy_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("uev_super_wireless_energy_unit")
+                .inputItems(GTOBlocks.UEV_WIRELESS_ENERGY_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UEV, 8)
+                .inputItems(GTOItems.SEALED_SINGULARITY_PLATFORM, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UEV, 4)
+                .inputItems(GTItems.GRAVI_STAR, 16)
+                .inputItems(TagPrefix.wireGtHex, GTOMaterials.Echoite, 4)
+                .inputItems(TagPrefix.foil, GTOMaterials.PolysulfonePolyvinylpyrrolidoneBlend, 32)
+                .outputItems(GTOBlocks.UEV_SUPER_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(7864320L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io10"), RecipeBuilder.getTypeID(GTOCore.id("uhv_super_wireless_energy_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("uev_super_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.UEV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UEV, 8)
+                .inputItems(GTOItems.SEALED_SINGULARITY_PLATFORM, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UEV, 4)
+                .inputItems(GTItems.GRAVI_STAR, 16)
+                .inputItems(GTOItems.UEV_VOLTAGE_COIL, 16)
+                .inputItems(TagPrefix.foil, GTOMaterials.PolysulfonePolyvinylpyrrolidoneBlend, 32)
+                .outputItems(GTOBlocks.UEV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(7864320L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io10"), RecipeBuilder.getTypeID(GTOCore.id("uev_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("uiv_super_wireless_energy_unit")
+                .inputItems(GTOBlocks.UIV_WIRELESS_ENERGY_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UIV, 8)
+                .inputItems(GTOItems.PROTO_MATTER, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UIV, 4)
+                .inputItems(GTOItems.UNSTABLE_STAR, 2)
+                .inputItems(TagPrefix.wireGtHex, GTOMaterials.Legendarium, 4)
+                .inputItems(TagPrefix.foil, GTOMaterials.CFCSIC1500CarbonFiberReinforcedComposite, 32)
+                .outputItems(GTOBlocks.UIV_SUPER_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(31457280L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io11"), RecipeBuilder.getTypeID(GTOCore.id("uiv_super_wireless_energy_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("uiv_super_wireless_energy_uneit")
+                .inputItems(GTOBlocks.UIV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UIV, 8)
+                .inputItems(GTOItems.PROTO_MATTER, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UIV, 4)
+                .inputItems(GTOItems.UNSTABLE_STAR, 2)
+                .inputItems(GTOItems.UIV_VOLTAGE_COIL, 16)
+                .inputItems(TagPrefix.foil, GTOMaterials.CFCSIC1500CarbonFiberReinforcedComposite, 32)
+                .outputItems(GTOBlocks.UIV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(31457280L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io11"), RecipeBuilder.getTypeID(GTOCore.id("uiv_super_wireless_energy_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("uxv_super_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.UXV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UXV, 8)
+                .inputItems(GTOItems.CLOSED_TIMELIKE_CURVE_COMPUTATIONAL_UNIT, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UXV, 4)
+                .inputItems(GTOItems.UNSTABLE_STAR, 16)
+                .inputItems(GTOItems.UXV_VOLTAGE_COIL, 16)
+                .inputItems(TagPrefix.foil, GTOMaterials.Radox, 32)
+                .outputItems(GTOBlocks.UXV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1000)
+                .EUt(125829120L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io12"), RecipeBuilder.getTypeID(GTOCore.id("uxv_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+
+        ASSEMBLER_RECIPES.builder("uxv_super_wireless_energy_transfer_uneit")
+                .inputItems(GTOBlocks.UXV_WIRELESS_ENERGY_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UXV, 8)
+                .inputItems(GTOItems.CLOSED_TIMELIKE_CURVE_COMPUTATIONAL_UNIT, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_UXV, 4)
+                .inputItems(GTOItems.UNSTABLE_STAR, 16)
+                .inputItems(TagPrefix.wireGtHex, GTOMaterials.Infinity, 4)
+                .inputItems(TagPrefix.foil, GTOMaterials.Radox, 32)
+                .outputItems(GTOBlocks.UXV_SUPER_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 1000)
+                .EUt(125829120L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io12"), RecipeBuilder.getTypeID(GTOCore.id("uxv_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+
+        ASSEMBLER_RECIPES.builder("opv_super_wrwireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.OPV_WIRELESS_ENERGY_TRANSFER_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_OpV, 8)
+                .inputItems(GTOItems.QUANTUM_ANOMALY, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_OpV, 4)
+                .inputItems(GTOItems.NUCLEAR_STAR, 2)
+                .inputItems(GTOItems.OPV_VOLTAGE_COIL, 16)
+                .inputItems(TagPrefix.foil, GTOMaterials.Chaos, 32)
+                .outputItems(GTOBlocks.OPV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(503316480L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io13"), RecipeBuilder.getTypeID(GTOCore.id("opv_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("opv_super_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.OPV_WIRELESS_ENERGY_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_OpV, 8)
+                .inputItems(GTOItems.QUANTUM_ANOMALY, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_OpV, 4)
+                .inputItems(GTOItems.NUCLEAR_STAR, 2)
+                .inputItems(TagPrefix.cableGtHex, GTOMaterials.CosmicNeutronium, 4)
+                .inputItems(TagPrefix.foil, GTOMaterials.Chaos, 32)
+                .outputItems(GTOBlocks.OPV_SUPER_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(503316480L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io13"), RecipeBuilder.getTypeID(GTOCore.id("opv_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("max_super_wireless_energy_transfer_unit")
+                .inputItems(GTOBlocks.MAX_WIRELESS_ENERGY_TRANSFER_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_MAX, 8)
+                .inputItems(GTOItems.CHAOTIC_CORE, 4)
+                .inputItems(GTOItems.MAX_FIELD_GENERATOR, 4)
+                .inputItems(GTOItems.NUCLEAR_STAR, 16)
+                .inputItems(GTOItems.MAX_VOLTAGE_COIL, 16)
+                .inputItems(TagPrefix.foil, GTOMaterials.Shirabon, 32)
+                .outputItems(GTOBlocks.MAX_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(2013265920L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io14"), RecipeBuilder.getTypeID(GTOCore.id("max_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+        ASSEMBLER_RECIPES.builder("max_super_wireless_energy_transfer_uniet")
+                .inputItems(GTOBlocks.MAX_WIRELESS_ENERGY_UNIT.asItem(), 16)
+                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_MAX, 8)
+                .inputItems(GTOItems.CHAOTIC_CORE, 4)
+                .inputItems(GTOItems.MAX_FIELD_GENERATOR, 4)
+                .inputItems(GTOItems.NUCLEAR_STAR, 16)
+                .inputItems(TagPrefix.wireGtHex, GTOMaterials.SpaceTime, 4)
+                .inputItems(TagPrefix.foil, GTOMaterials.Shirabon, 32)
+                .outputItems(GTOBlocks.MAX_SUPER_WIRELESS_ENERGY_UNIT.asItem())
+                .inputFluids(GTOMaterials.MutatedLivingSolder, 1000)
+                .EUt(2013265920L)
+                .duration(400)
+                .addCondition(new ResearchRecipeCondition(TechTreeManager.getManager("energy_tree").getNode("energy_io14"), RecipeBuilder.getTypeID(GTOCore.id("max_super_wireless_energy_transfer_unit"), ASSEMBLER_RECIPES), ASSEMBLER_RECIPES, false))
+                .save();
+    }
+}

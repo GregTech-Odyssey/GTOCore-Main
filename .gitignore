@@ -1,0 +1,50 @@
+.gradle/
+build/
+out/
+classes/
+.idea/
+.settings/
+.vscode/
+.kotlin/
+bin/
+run/
+src/generated/resources/.cache/
+libs/*-sources.jar
+libs/*-debug.jar
+# 明文 gtolib：仅本地调试，禁止提交
+libs/gtolib-unprotected.jar
+**/gtolib-unprotected.jar
+.gtolib-debug
+# 已废弃的 libs/ 下 GTOLib 缓存（产物现只在 build/gtolib）：残留旧文件禁止提交
+libs/gtolib-protected.jar
+libs/gtolib-protected.PROTECTED
+libs/gtolib-release.jar
+libs/gtolib-release.PROTECTED
+*.launch
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+*.DS_Store
+/savedRun/
+keystore.jks
+tmp_gtolib/
+/.codex_tmp/
+changelog/
+.agents/
+build/gtolib/
+# 保护链只允许出现在私有 submodule；误放在 Main 根目录时忽略
+/protect/
+
+# Never commit private lib sources as normal files (must be submodule gitlink only)
+# If someone clones without submodule, empty GTOLib/ / GTOSeal/ is fine.
+
+# 旧 Runtime 文件名（已统一为 gto-seal-runtime-1.0.jar）
+libs/gtonativelib*.jar
+/.env
+
+# Machine-specific local fork checkout paths; do not commit.
+/docs/local_repo_settings.md
+/logs/
+/config/

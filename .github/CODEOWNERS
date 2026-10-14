@@ -1,0 +1,14 @@
+# GitHub cannot target the Organization Owner role dynamically. Keep this list
+# synchronized with the current GregTech-Odyssey organization owners.
+/.github/workflows/** @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+
+# Build logic runs in CI with signing secrets.
+/build.gradle.kts @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+/settings.gradle.kts @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+/gradle.properties @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+/gradle/ @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+/gradlew @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+/gradlew.bat @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried
+
+# Keep ownership changes under the same approval boundary.
+/.github/CODEOWNERS @gjmhmm8 @Hophenby @nutant233 @Ricky-fight @snylonue @wanggugu197 @xinxinsuried

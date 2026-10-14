@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gtocore:block/wireless_energy_tower_frame"
+    }
+  }
+}

@@ -1,0 +1,150 @@
+package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
+
+import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorMachine;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.capability.IIWirelessInteractor;
+import com.gtolib.utils.MathUtil;
+
+import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
+import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.gregtechceu.gtceu.api.GTValues.UHV;
+import static com.gregtechceu.gtceu.api.GTValues.VA;
+
+@DataGeneratorScanned
+public class SpaceElevatorConnectorModule extends Extension implements ISpaceServiceMachine {
+
+    private final Map<SpaceElevatorMachine, Integer> elevatorTiers = new O2IOpenCacheHashMap<>();
+    @SyncToClient
+    @Getter
+    private int maxTier = 0;
+
+    @Getter
+    @SyncToClient
+    protected double high = 15;
+    private TickableSubscription highSubscription;
+
+    public SpaceElevatorConnectorModule(MetaMachineBlockEntity metaMachineBlockEntity) {
+        super(metaMachineBlockEntity);
+    }
+
+    public void registerElevator(SpaceElevatorMachine elevatorMachine, int tier) {
+        elevatorTiers.put(elevatorMachine, tier);
+        if (tier > maxTier) {
+            maxTier = tier;
+        }
+        requestSync();
+    }
+
+    public void unregisterElevator(SpaceElevatorMachine elevatorMachine) {
+        Integer removedTier = elevatorTiers.remove(elevatorMachine);
+        if (removedTier != null && removedTier == maxTier) {
+            // Recalculate maxTier
+            maxTier = elevatorTiers.values().stream().max(Integer::compareTo).orElse(0);
+        }
+        requestSync();
+    }
+
+    public double getDurationMultiplier() {
+        if (!isWorkspaceReady()) return 1.0;
+        if (maxTier <= 0) {
+            return 1.0;
+        }
+        var factor = core.getServiceMachineMap().get(SpaceStationEnergyConversionModule.class) == null ? 0.9 : 0.8;
+        return Math.pow(factor, maxTier);
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        IIWirelessInteractor.removeFromNet(this);
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        IIWirelessInteractor.addToNet(this);
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        elevatorTiers.clear();
+        maxTier = 0;
+        super.onStructureInvalid();
+        IIWirelessInteractor.removeFromNet(this);
+    }
+
+    @Override
+    public void customText(@NotNull List<Component> list) {
+        super.customText(list);
+        if (maxTier > 0) {
+            if (MultiblockPage.isScreenText()) return;
+            list.add(Component.translatable(SPACE_ELEVATOR_CONNECTED_TEXT, maxTier));
+            list.add(Component.translatable(SPACE_ELEVATOR_TIME_COST_MULTIPLIER_TEXT, FormattingUtil.formatNumber2Places(getDurationMultiplier())));
+        } else {
+            list.add(Component.translatable(SPACE_ELEVATOR_NOT_CONNECTED_TEXT));
+        }
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addLine(MAX_POWER_MODULE_TIER, MultiblockPage.numberText(() -> maxTier, ""));
+        page.addLine(TIME_COST_MULTIPLIER, MultiblockPage.cached(() -> Double.doubleToLongBits(getDurationMultiplier()),
+                bits -> Component.literal("×" + FormattingUtil.formatNumber2Places(Double.longBitsToDouble(bits)))));
+    }
+
+    @Override
+    public long getEUt() {
+        return VA[UHV];
+    }
+
+    @Override
+    public void onStructureFormedClient() {
+        super.onStructureFormedClient();
+        highSubscription = subscribeClientTick(highSubscription, this::clientTick);
+    }
+
+    @Override
+    public void onStructureInvalidClient() {
+        super.onStructureInvalidClient();
+        highSubscription = ITickSubscription.unsubscribe(highSubscription);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void clientTick() {
+        if (maxTier > 0) high = 480 + ((480) * MathUtil.sin((float) (getOffsetTimer() / 240.0F + Math.PI))) + 15;
+    }
+
+    @RegisterLanguage(cn = "已连接到太空电梯，动力模块最高等级: %s", en = "Connected to Space Elevator, Max Power Module Tier: %s")
+    public static final String SPACE_ELEVATOR_CONNECTED_TEXT = "spacestation.space_elevator.connected";
+    @RegisterLanguage(cn = "已连接到当前星球的空间站，可使用耗时乘数: ×%s", en = "Connected to Space Station of Current Planet, Usable Time Cost Multiplier: x%s")
+    public static final String SPACE_ELEVATOR_CONNECTED_CURRENT_PLANET_TEXT = "spacestation.space_elevator.connected_current_planet";
+    @RegisterLanguage(cn = "可获得的耗时乘数增益: ×%s", en = "Time Cost Multiplier Gain: x%s")
+    public static final String SPACE_ELEVATOR_TIME_COST_MULTIPLIER_TEXT = "spacestation.space_elevator.time_cost_multiplier";
+    @RegisterLanguage(cn = "未连接到太空电梯", en = "Not Connected to Space Elevator")
+    public static final String SPACE_ELEVATOR_NOT_CONNECTED_TEXT = "spacestation.space_elevator.not_connected";
+    @RegisterLanguage(cn = "未连接到当前星球的空间站", en = "Not Connected to Space Station of Current Planet")
+    public static final String SPACE_ELEVATOR_NOT_CONNECTED_CURRENT_PLANET_TEXT = "spacestation.space_elevator.not_connected_current_planet";
+    @RegisterLanguage(cn = "太空电梯动力模块最高等级", en = "Space Elevator Max Power Module Tier")
+    private static final String MAX_POWER_MODULE_TIER = "gtocore.machine.space_elevator_connector.max_power_module_tier";
+    @RegisterLanguage(cn = "耗时乘数增益", en = "Time Cost Multiplier Gain")
+    private static final String TIME_COST_MULTIPLIER = "gtocore.machine.space_elevator_connector.time_cost_multiplier";
+}

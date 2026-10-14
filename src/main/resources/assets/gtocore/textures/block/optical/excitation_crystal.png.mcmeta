@@ -1,0 +1,9 @@
+{
+  "animation": {
+    "interpolate": true,
+    "frametime": 40
+  },
+  "ldlib": {
+    "connection": "gtocore:block/optical/excitation_crystal_ctm"
+  }
+}

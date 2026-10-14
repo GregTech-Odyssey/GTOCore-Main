@@ -1,0 +1,69 @@
+package com.gtocore.api.wireless.energy;
+
+import java.util.Arrays;
+
+final class SettleReceipt {
+
+    int count;
+    int arcCount;
+    int until;
+    int duration;
+    boolean reserve;
+    long restHi, restLo;
+    double total;
+    double reachable;
+    int priority;
+    GridNode origin = GridNode.EMPTY;
+    GridNode[] nodes = new GridNode[4];
+    int[] banks = new int[4];
+    long[] his = new long[4];
+    long[] los = new long[4];
+    Arc[] arcs = new Arc[4];
+    long[] amounts = new long[4];
+
+    void clear() {
+        Arrays.fill(nodes, 0, count, null);
+        Arrays.fill(arcs, 0, arcCount, null);
+        count = 0;
+        arcCount = 0;
+        total = 0;
+        origin = GridNode.EMPTY;
+    }
+
+    long perTick(int i) {
+        return duration > 0 ? U126.divCeil(his[i], los[i], duration) : 0;
+    }
+
+    void consume(long h, long l) {
+        long r = restLo - l;
+        restHi = restHi - h + (r >> 63);
+        restLo = r & U126.MASK;
+    }
+
+    void add(GridNode node, int bank, long hi, long lo) {
+        if (count == nodes.length) {
+            int size = count << 1;
+            nodes = Arrays.copyOf(nodes, size);
+            banks = Arrays.copyOf(banks, size);
+            his = Arrays.copyOf(his, size);
+            los = Arrays.copyOf(los, size);
+        }
+        nodes[count] = node;
+        banks[count] = bank;
+        his[count] = hi;
+        los[count] = lo;
+        total += U126.toDouble(hi, lo);
+        count++;
+    }
+
+    void addArc(Arc arc, long amount) {
+        if (arcCount == arcs.length) {
+            int size = arcCount << 1;
+            arcs = Arrays.copyOf(arcs, size);
+            amounts = Arrays.copyOf(amounts, size);
+        }
+        arcs[arcCount] = arc;
+        amounts[arcCount] = amount;
+        arcCount++;
+    }
+}

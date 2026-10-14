@@ -1,0 +1,289 @@
+package com.gtocore.common.machine.multiblock.electric;
+
+import com.gtocore.api.data.NeutronSeries;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMachines;
+import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.data.GTOTickTimeMonitors;
+import com.gtocore.common.machine.multiblock.part.SensorPartMachine;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
+import com.gtolib.api.machine.multiblock.CustomParallelMultiblockMachine;
+import com.gtolib.api.recipe.GTORecipeModifiers;
+import com.gtolib.api.recipe.IdleReason;
+import com.gtolib.utils.GTOUtils;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
+import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyTypes;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+@DataGeneratorScanned
+public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine implements IStorageMultiblock, IExplosionMachine {
+
+    @RegisterLanguage(cn = "中子反射板", en = "Neutron Reflector")
+    private static final String SLOT_LABEL = "gtocore.machine.fast_neutron_breeder_reactor.slot";
+
+    @RegisterLanguage(cn = "当前温度", en = "Current Temperature")
+    private static final String TEMPERATURE = "gtocore.machine.fast_neutron_breeder_reactor.temperature";
+    @RegisterLanguage(cn = "当前中子通量", en = "Current Neutron Flux")
+    private static final String NEUTRON_FLUX = "gtocore.machine.fast_neutron_breeder_reactor.neutron_flux";
+    @RegisterLanguage(cn = "配方每秒升温", en = "Recipe Temperature Increase Per Second")
+    private static final String HEAT_PER_SECOND = "gtocore.machine.fast_neutron_breeder_reactor.heat_per_second";
+
+    @SaveToDisk
+    private final NotifiableStackInventory machineStorage;
+    @SaveToDisk(defaultValue = "298")
+    private float temperature = 298;
+    @SaveToDisk(defaultValue = "0")
+    private double neutronFluxkeV = 0;
+    @SaveToDisk(defaultValue = "0")
+    private double recipeHeat = 0;
+    private SensorPartMachine sensorMachineTemp;
+    private SensorPartMachine sensorNeutronFlux;
+
+    private static final int MAX_TEMPERATURE = 2098;
+
+    public FastNeutronBreederReactor(MetaMachineBlockEntity holder) {
+        super(holder, h -> 2048);
+        machineStorage = createMachineStorage(i -> i.getItem() == GTItems.NEUTRON_REFLECTOR.asItem());
+    }
+
+    @Override
+    public NotifiableStackInventory getMachineStorage() {
+        return machineStorage;
+    }
+
+    /**
+     * 配方时间：
+     * 实际并行越大，运行时间越短，运行时间由以下公式决定：
+     * ![图片](https://docimg9.docs.qq.com/image/AgAABYHqnSOmBcyCRC5BK6fF-dDm6Ub4.png?w=207&h=64)
+     * 其中T 为最终运行时间，t 为配方运行时间，p 为实际并行数量；
+     */
+    @Nullable
+    @Override
+    public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        recipe = GTORecipeModifiers.parallel(this, unit, recipe);
+        if (recipe == null) return null;
+        if (recipe.data.containsKey(GTORecipeDataKeys.NEUTRON_FLUX)) {
+            var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
+            if (neutronFluxkeV < neededNeutronFlux) {
+                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.setReason(this, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000));
+                return null;
+            }
+            recipe.parallels = Math.min(recipe.parallels, 2048);
+            recipe.duration = getRecipeDuration(recipe, neededNeutronFlux);
+            return recipe;
+        }
+        return super.getRealRecipe(unit, recipe);
+    }
+
+    @Override
+    public void beforeWorking(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        recipeHeat = getRecipeHeat(recipe);
+        super.beforeWorking(unit, recipe);
+    }
+
+    @Override
+    public boolean handleTickRecipe(GTRecipe recipe) {
+        if (getRecipeLogic().getLastRecipe() != null && getOffsetTimer() % 20 == 0) {
+            var change = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX_CHANGE);
+            neutronFluxkeV = Math.max(0, neutronFluxkeV + change);
+            var neededNeutronFlux = recipe.data.getFloat(GTORecipeDataKeys.NEUTRON_FLUX);
+            if (neutronFluxkeV < neededNeutronFlux) {
+                IdleReason.NEUTRON_KINETIC_ENERGY_NOT_SATISFIES.setReason(this, (long) (neededNeutronFlux * 1000), (long) (neutronFluxkeV * 1000));
+                return false;
+            }
+            recipeHeat = getRecipeHeat(recipe);
+        }
+        return super.handleTickRecipe(recipe);
+    }
+
+    @Override
+    public void afterWorking() {
+        super.afterWorking();
+        recipeHeat = 0;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        tickSubscription = subscribeServerTick(tickSubscription, reactorHeatMonitor, 20);
+    }
+
+    @Nullable
+    private TickableSubscription tickSubscription;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::tick);
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        if (tickSubscription != null) {
+            tickSubscription.unsubscribe();
+            tickSubscription = null;
+        }
+    }
+
+    @Override
+    public void onPartScan(@NotNull IMultiPart part) {
+        super.onPartScan(part);
+        if (part instanceof SensorPartMachine sensorPartMachine) {
+            if (sensorPartMachine.getHolder().getBlockState().is(GTOMachines.HEAT_SENSOR.get()))
+                sensorMachineTemp = sensorPartMachine;
+            else if (sensorPartMachine.getHolder().getBlockState().is(GTOMachines.NEUTRON_SENSOR.get()))
+                sensorNeutronFlux = sensorPartMachine;
+        }
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        super.onStructureInvalid();
+        sensorMachineTemp = null;
+        sensorNeutronFlux = null;
+        recipeHeat = 0;
+    }
+
+    @Override
+    public void customText(@NotNull List<Component> textList) {
+        super.customText(textList);
+        if (MultiblockPage.isScreenText()) return;
+        textList.add(Component.translatable("gtocore.machine.current_temperature", FormattingUtil.formatNumber2Places(temperature)));
+        textList.add(Component.translatable("gtocore.machine.neutron_flux", FormattingUtil.formatNumber2Places(neutronFluxkeV)));
+        textList.add(Component.translatable("gtocore.machine.temp.per_second", FormattingUtil.formatNumber2Places(recipeHeat)));
+    }
+
+    @Override
+    public void addScreenReadouts(MultiblockPage page) {
+        super.addScreenReadouts(page);
+        page.addDecimal(TEMPERATURE, () -> temperature, "K");
+        page.addDecimal(NEUTRON_FLUX, () -> neutronFluxkeV, "keV");
+        page.addDecimal(HEAT_PER_SECOND, () -> recipeHeat, "K");
+    }
+
+    private double getRecipeHeat(GTRecipe recipe) {
+        if (recipe.data.containsKey(GTORecipeDataKeys.HEAT)) {
+            return (recipe.data.getFloat(GTORecipeDataKeys.HEAT) * 1.27 * Math.pow(neutronFluxkeV / 100d, 1.88));
+        }
+        return 0;
+    }
+
+    private int getRecipeDuration(GTRecipe recipe, double neededNeutronFlux) {
+        double k = Math.max(0.9 - (neutronFluxkeV - neededNeutronFlux) / 1e5d, 0.1);
+        return Math.max((int) (recipe.duration * Math.pow(k, Math.sqrt(recipe.parallels))), 1);
+    }
+
+    /**
+     * 一、消耗中子源提供初始中子通量，锑-铍粒子源提供10 keV，钚-铍粒子源提供100 keV，锎-252粒子源提供1 MeV
+     * <p>
+     * 二、中子通量每秒减少 10 keV，放入小撮石墨粉，小堆石墨粉，石墨粉立即降低 0.1 MeV，0.25 MeV，1 MeV；
+     * <p>
+     * 三、中子通量为E（keV）时，在主机内放入N个铱中子反射板后，中子通量每秒增加 (EN)^0.5 keV；
+     */
+    private void tick() {
+        if (isFormed()) {
+
+            forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
+                var item = ((AEItemKey) key).getItem();
+                var neutron_sources = NeutronSeries.NEUTRON_SOURCES.get(item);
+                if (neutron_sources != null) {
+                    neutronFluxkeV += (long) neutron_sources * amount;
+                    inputItem(item, amount);
+                }
+                return false;
+            });
+            neutronFluxkeV = Math.max(0, neutronFluxkeV - 10);
+
+            int reflectors = machineStorage.storage.getStackInSlot(0).getCount();
+            if (reflectors > 0 && neutronFluxkeV > 0) {
+                neutronFluxkeV += (long) Math.sqrt(neutronFluxkeV * reflectors);
+            }
+            temperature += (float) recipeHeat;
+            forEachKey(AEKeyTypes.FLUIDS, true, (key, amount) -> {
+                var fluid = ((AEFluidKey) key).getFluid();
+                var coolants = NeutronSeries.COOLANTS.get(fluid);
+                if (coolants != null && temperature > 298) {
+                    long processAmount = Math.min((long) Math.ceil((temperature - 298f) / coolants), amount);
+                    temperature -= processAmount * coolants;
+                    inputFluid(fluid, processAmount);
+                    long outputAmount = processAmount;
+                    if (fluid == GTMaterials.DistilledWater.getFluid()) {
+                        outputAmount = outputAmount * 160L;
+                    }
+                    outputFluid(NeutronSeries.COOLANT_OUTPUTS.get(fluid), outputAmount);
+                }
+                return false;
+            });
+            temperature = Math.max(298, temperature);
+            if (temperature > MAX_TEMPERATURE) {
+                meltDown();
+            }
+            if (sensorMachineTemp != null) {
+                sensorMachineTemp.update(temperature);
+            }
+            if (sensorNeutronFlux != null) {
+                sensorNeutronFlux.update((float) (neutronFluxkeV / 1000f)); // MeV
+            }
+
+        }
+    }
+
+    private void meltDown() {
+        outputItem(GTOItems.NUCLEAR_WASTE.asItem(), 1 + (int) (Math.random() * 4));
+        var machine = self();
+        var level = machine.getLevel();
+        var pos = machine.getPos().relative(machine.getFrontFacing().getOpposite(), 6);
+        if (level != null) {
+            for (int x = -2; x <= 2; x++) {
+                for (int y = 0; y <= 20; y++) {
+                    for (int z = -2; z <= 2; z++) {
+                        GTOUtils.fastRemoveBlock(level, pos.offset(x, y, z), false, false);
+                    }
+                }
+            }
+            GTOUtils.fastRemoveBlock(level, machine.getPos(), false, false);
+            doExplosion(20);
+        }
+    }
+
+    @Override
+    public void addControls(ControlPanel controls) {
+        addStorageSlot(controls);
+        super.addControls(controls);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public ItemStack[] getStorageSlotGhosts() {
+        return new ItemStack[] { GTItems.NEUTRON_REFLECTOR.asStack() };
+    }
+}

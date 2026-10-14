@@ -1,0 +1,92 @@
+package com.gtocore.common.machine.multiblock.electric.assembly;
+
+import com.gtocore.common.data.GTOItems;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
+import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
+
+import net.minecraft.world.item.ItemStack;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Predicate;
+
+@DataGeneratorScanned
+public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
+
+    @RegisterLanguage(cn = "电路组装机器人", en = "Circuit Assembly Robot")
+    private static final String SLOT_LABEL = "gtocore.machine.circuit_assembly_line.slot";
+
+    private int inputEUt;
+
+    private int parallel;
+
+    public CircuitAssemblyLineMachine(MetaMachineBlockEntity holder) {
+        super(holder, 64, i -> RegistriesUtils.getId(i).contains("precision_circuit_assembly_robot_mk"));
+    }
+
+    @Override
+    public @NotNull NotifiableStackInventory createMachineStorage(Predicate<ItemStack> filter) {
+        NotifiableStackInventory storage = new NotifiableStackInventory(
+                this, new StackInventory(1) {
+
+                    @Override
+                    public void onContentsChanged(int slot) {
+                        super.onContentsChanged(slot);
+                        onMachineChanged();
+                    }
+                }, IO.IN, IO.BOTH);
+        storage.storage.setFilter(filter);
+        return storage;
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        onMachineChanged();
+    }
+
+    @Override
+    public void onMachineChanged() {
+        inputEUt = 0;
+        ItemStack item = getStorageStack();
+        if (item.getItem() == GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK1.get()) {
+            inputEUt = GTValues.VA[GTValues.UV];
+        } else if (item.getItem() == GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK2.get()) {
+            inputEUt = GTValues.VA[GTValues.UHV];
+        } else if (item.getItem() == GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK3.get()) {
+            inputEUt = GTValues.VA[GTValues.UEV];
+        } else if (item.getItem() == GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK4.get()) {
+            inputEUt = GTValues.VA[GTValues.UIV];
+        } else if (item.getItem() == GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK5.get()) {
+            inputEUt = GTValues.VA[GTValues.UXV];
+        }
+        parallel = item.getCount() << 1;
+    }
+
+    @Override
+    protected @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        if (inputEUt == recipe.getInputEUt()) {
+            recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);
+            if (recipe == null) return null;
+        }
+        return super.getRealRecipe(unit, recipe);
+    }
+
+    @Override
+    public String getStorageSlotLabel() {
+        return SLOT_LABEL;
+    }
+}

@@ -1,0 +1,138 @@
+package com.gtocore.data.recipe.classified;
+
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.data.tag.Tags;
+
+import com.gtolib.GTOCore;
+import com.gtolib.utils.TagUtils;
+
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.common.data.GTBlocks;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+
+import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEItems;
+
+import static com.gtocore.common.data.GTORecipeTypes.MACERATOR_RECIPES;
+import static com.gtocore.common.data.GTORecipeTypes.ULTRA_FINE_GRINDING_RECIPES;
+
+final class Macerator {
+
+    public static void init() {
+        MACERATOR_RECIPES.recipeBuilder("spacetime_dust")
+                .inputItems(TagPrefix.ingot, GTOMaterials.SpaceTime)
+                .outputItems(TagPrefix.dust, GTOMaterials.SpaceTime)
+                .EUt(2013265920)
+                .duration(400)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("essence")
+                .inputItems(GTOBlocks.ESSENCE_BLOCK.asItem())
+                .outputItems(GTOItems.ESSENCE)
+                .chancedOutput(GTOItems.ESSENCE.asItem(), 5000, 400)
+                .chancedOutput(GTOItems.ESSENCE.asItem(), 5000, 200)
+                .chancedOutput(GTOItems.ESSENCE.asItem(), 5000, 100)
+                .EUt(30)
+                .duration(200)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("silicon_dust")
+                .inputItems(AEItems.SILICON.asItem())
+                .outputItems(TagPrefix.dust, GTMaterials.Silicon)
+                .EUt(16)
+                .duration(200)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("draconium_dust")
+                .inputItems(GTOBlocks.DRACONIUM_BLOCK_CHARGED.asItem())
+                .outputItems(GTOItems.DRACONIUM_DIRT, 9)
+                .outputItems(TagPrefix.dust, GTMaterials.Obsidian)
+                .outputItems(TagPrefix.dust, GTMaterials.EnderEye)
+                .outputItems(TagPrefix.dust, GTMaterials.Redstone)
+                .EUt(1920)
+                .duration(400)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("sculk_catalyst")
+                .inputItems(Blocks.SCULK_CATALYST.asItem())
+                .outputItems(TagPrefix.dust, GTMaterials.EchoShard)
+                .EUt(7)
+                .duration(100)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("sculk_shrieker")
+                .inputItems(Blocks.SCULK_SHRIEKER.asItem())
+                .outputItems(TagPrefix.dust, GTMaterials.EchoShard)
+                .EUt(7)
+                .duration(100)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("sculk_sensor")
+                .inputItems(Blocks.SCULK_SENSOR.asItem())
+                .outputItems(TagPrefix.dust, GTMaterials.EchoShard)
+                .EUt(7)
+                .duration(100)
+                .save();
+
+        ULTRA_FINE_GRINDING_RECIPES.recipeBuilder("degenerate_rhenium_dust")
+                .inputItems(TagPrefix.plate, GTOMaterials.DegenerateRhenium)
+                .outputItems(TagPrefix.dust, GTOMaterials.DegenerateRhenium)
+                .EUt(31457280)
+                .duration(100)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("prismarine_shard")
+                .inputItems(Blocks.PRISMARINE.asItem())
+                .outputItems(Items.PRISMARINE_SHARD.asItem())
+                .EUt(2)
+                .duration(200)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("wheat_seeds")
+                .inputItems(Items.WHEAT.asItem())
+                .outputItems(Blocks.WHEAT.asItem(), 8)
+                .EUt(2)
+                .duration(200)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("sky_dust")
+                .inputItems(AEBlocks.SKY_STONE_BLOCK.block().asItem())
+                .outputItems(AEItems.SKY_DUST.asItem())
+                .EUt(2)
+                .duration(200)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("treated_wood_dust")
+                .inputItems(GTBlocks.TREATED_WOOD_PLANK.asItem())
+                .outputItems(TagPrefix.dust, GTMaterials.TreatedWood)
+                .EUt(2)
+                .duration(98)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("algae_paper")
+                .inputItems(TagUtils.createItemTag(GTOCore.id("algae_fiber")))
+                .outputItems(TagPrefix.dust, GTMaterials.Paper)
+                .duration(320)
+                .EUt(2)
+                .save();
+
+        MACERATOR_RECIPES.recipeBuilder("yeast")
+                .inputItems(Items.SWEET_BERRIES.asItem())
+                .chancedOutput(TagPrefix.dust, GTOMaterials.Yeast, 500, 500)
+                .EUt(30)
+                .duration(50)
+                .save();
+
+        MACERATOR_RECIPES.builder("star_stone_dust")
+                .inputItems(Tags.STAR_STONE)
+                .outputItems(TagPrefix.dust, GTOMaterials.StarStone)
+                .EUt(30)
+                .duration(150)
+                .save();
+    }
+}

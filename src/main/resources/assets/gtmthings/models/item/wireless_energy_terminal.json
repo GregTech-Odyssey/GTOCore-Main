@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gtmthings:item/wireless_energy_terminal"
+  }
+}

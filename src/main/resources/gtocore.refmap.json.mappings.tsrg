@@ -1,0 +1,6 @@
+com/gtolib/mixin/mc/ResourceLocationMixn namespace f_135804_
+com/gtolib/mixin/mc/ResourceLocationMixn path f_135805_
+com/gtolib/mixin/mc/ResourceLocationMixn toString ()Ljava/lang/String; toString
+com/gtolib/mixin/mc/ResourceLocationMixn assertValidNamespace (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245413_
+com/gtolib/mixin/mc/ResourceLocationMixn assertValidPath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; m_245185_
+com/gtolib/mixin/mc/ResourceLocationMixn withPath (Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation; m_247449_

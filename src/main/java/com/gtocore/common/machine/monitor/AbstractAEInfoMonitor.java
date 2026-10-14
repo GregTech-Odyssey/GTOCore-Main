@@ -1,0 +1,94 @@
+package com.gtocore.common.machine.monitor;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
+import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+
+import appeng.api.networking.IManagedGridNode;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.EnumSet;
+import java.util.List;
+
+public abstract class AbstractAEInfoMonitor extends AbstractInfoProviderMonitor implements IGridConnectedMachine {
+
+    @SyncToClient
+    @NotNull
+    protected State state = State.NO_GRID;
+
+    int lastUpdateTime = 0;
+
+    @SaveToDisk
+    final GridNodeHolder nodeHolder;
+
+    @SyncToClient
+    protected boolean isOnline;
+
+    AbstractAEInfoMonitor(MetaMachineBlockEntity holder) {
+        super(holder);
+        this.nodeHolder = new GridNodeHolder(this);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        getMainNode().setExposedOnSides(EnumSet.allOf(Direction.class));
+    }
+
+    @Override
+    public void onRotated(@NotNull Direction oldFacing, @NotNull Direction newFacing) {
+        super.onRotated(oldFacing, newFacing);
+        if (oldFacing != newFacing) getMainNode().setExposedOnSides(EnumSet.allOf(Direction.class));
+    }
+
+    @Override
+    public IManagedGridNode getMainNode() {
+        return nodeHolder.getMainNode();
+    }
+
+    @Override
+    public void setOnline(final boolean isOnline) {
+        this.isOnline = isOnline;
+    }
+
+    @Override
+    public boolean isOnline() {
+        return this.isOnline;
+    }
+
+    @Override
+    public DisplayComponentList provideInformation() {
+        var infoList = super.provideInformation();
+
+        switch (state) {
+            case NO_GRID -> infoList.addIfAbsent(
+                    DisplayRegistry.AE_ERROR.id(),
+                    Component.translatable("gtocore.machine.monitor.ae.status.no_grid").withStyle(ChatFormatting.RED).getVisualOrderText());
+            case NO_CONFIG -> infoList.addIfAbsent(
+                    DisplayRegistry.AE_ERROR.id(),
+                    Component.translatable("gtocore.machine.monitor.ae.status.no_config").withStyle(ChatFormatting.RED).getVisualOrderText());
+        }
+        return infoList;
+    }
+
+    @Override
+    public List<ResourceLocation> getAvailableRLs() {
+        var rls = super.getAvailableRLs();
+        rls.add(DisplayRegistry.AE_ERROR.id());
+        return rls;
+    }
+
+    protected enum State {
+        NO_GRID,
+        NO_CONFIG,
+        NORMAL,
+    }
+}

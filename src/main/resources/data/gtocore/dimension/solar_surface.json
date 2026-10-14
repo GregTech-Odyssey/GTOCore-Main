@@ -1,0 +1,87 @@
+{
+  "type": "gtocore:solar_surface",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "biome": "gtocore:solar_surface_biome",
+          "parameters": {
+            "temperature": -0.5,
+            "humidity": 0,
+            "continentalness": 0,
+            "weirdness": 0,
+            "erosion": 0,
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "gtocore:solar_surface_tartarite_biome",
+          "parameters": {
+            "temperature": 0.5,
+            "humidity": 0,
+            "continentalness": 0,
+            "weirdness": 0,
+            "erosion": 0,
+            "depth": 0,
+            "offset": 0
+          }
+        }
+      ]
+    },
+    "settings": {
+      "name": "gtocore:solar_surface",
+      "aquifers_enabled": true,
+      "default_block": {
+        "Name": "gtocore:blazing_pyrotheum"
+      },
+      "default_fluid": {
+        "Name": "gtocore:blazing_pyrotheum",
+        "Properties": {
+          "level": "0"
+        }
+      },
+      "disable_mob_generation": true,
+      "legacy_random_source": false,
+      "noise": {
+        "height": 320,
+        "min_y": 0,
+        "size_horizontal": 1,
+        "size_vertical": 2
+      },
+      "noise_router": {
+        "barrier": 1,
+        "continents": 0,
+        "depth": 0,
+        "erosion": 0,
+        "final_density": 0,
+        "fluid_level_floodedness": 1,
+        "fluid_level_spread": 1,
+        "initial_density_without_jaggedness": 0,
+        "lava": 1,
+        "ridges": 0,
+        "temperature": {
+          "type": "minecraft:noise",
+          "noise": "gtocore:solar_surface_biomes",
+          "xz_scale": 1,
+          "y_scale": 0
+        },
+        "vegetation": 0.25,
+        "vein_gap": 1,
+        "vein_ridged": 0,
+        "vein_toggle": 0
+      },
+      "ore_veins_enabled": true,
+      "sea_level": 63,
+      "spawn_target": [],
+      "surface_rule": {
+        "type": "minecraft:block",
+        "result_state": {
+          "Name": "gtocore:blazing_pyrotheum"
+        }
+      }
+    }
+  }
+}

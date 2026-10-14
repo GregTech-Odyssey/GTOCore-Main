@@ -1,0 +1,52 @@
+package com.gtocore.common.machine.multiblock.electric.smelter;
+
+import com.gtocore.data.IdleReason;
+
+import com.gtolib.api.machine.multiblock.CoilCustomParallelMultiblockMachine;
+import com.gtolib.api.recipe.GTORecipeModifiers;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+
+import net.minecraft.world.level.material.Fluid;
+
+import org.jetbrains.annotations.NotNull;
+
+public final class BlazeBlastFurnaceMachine extends CoilCustomParallelMultiblockMachine {
+
+    private static final Fluid BLAZE = GTMaterials.Blaze.getFluid();
+
+    public BlazeBlastFurnaceMachine(MetaMachineBlockEntity holder) {
+        super(holder, true, true, m -> 64);
+    }
+
+    private boolean inputFluid(RecipeHandlerUnit unit) {
+        if (inputFluid(unit, BLAZE, (1L << Math.max(0, getTier() - 2)) * 10L)) {
+            return true;
+        }
+        IdleReason.BLAZE_SHORT.setReason(this, (1L << Math.max(0, getTier() - 2)) * 10L, -1);
+        return false;
+    }
+
+    @Override
+    public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        recipe.duration = recipe.duration / 2;
+        recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallel());
+        if (recipe == null) return null;
+        return GTORecipeModifiers.UPGRADE_EBF_OVERCLOCK.applyModifier(this, unit, recipe);
+    }
+
+    @Override
+    public boolean handleTickRecipe(GTRecipe recipe) {
+        if (getOffsetTimer() % 20 == 0 && !inputFluid(getRecipeLogic().getLastOriginUnit())) return false;
+        return super.handleTickRecipe(recipe);
+    }
+
+    @Override
+    public boolean handleRecipeInput(RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        return inputFluid(unit) && super.handleRecipeInput(unit, recipe);
+    }
+}
