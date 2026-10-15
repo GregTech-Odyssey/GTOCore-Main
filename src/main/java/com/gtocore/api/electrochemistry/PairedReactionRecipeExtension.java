@@ -33,9 +33,7 @@ public final class PairedReactionRecipeExtension extends RecipeExtension<PairedR
     @Override
     public long getParallel(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipe recipe, long parallel) {
         var machine = (ElectrochemicalMachine) holder;
-        var inputs = recipe.data.getData(INSTANCE);
-        parallel = Math.min(parallel, machine.membraneUsesRemaining());
-        return Math.min(machine.leftUnit().inputParallel(inputs.left(), parallel), machine.rightUnit().inputParallel(inputs.right(), parallel));
+        return machine.getPairedInputParallel(recipe, parallel);
     }
 
     @Override

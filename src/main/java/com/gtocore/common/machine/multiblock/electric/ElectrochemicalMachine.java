@@ -35,12 +35,13 @@ import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
 
-/** Two independent search pools; both input plans commit as one transaction. */
+/** Pairs half reactions with either separate side pools or one shared input unit. */
 public class ElectrochemicalMachine extends ElectricMultiblockMachine {
 
     protected SemipermeableMembraneHatch membraneHatch;
@@ -48,6 +49,8 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     private RecipeHandlerUnit right = RecipeHandlerUnit.NO_DATA;
     private RecipeHandlerUnit paired = RecipeHandlerUnit.NO_DATA;
     protected List<RecipeHandlerUnit> ordinaryInputUnits = Collections.emptyList();
+    private final ArrayList<GTRecipeDefinition> firstCandidates = new ArrayList<>(16);
+    private final ArrayList<GTRecipeDefinition> secondCandidates = new ArrayList<>(16);
     private final Reference2LongOpenHashMap<IonDefinition> transferred = new Reference2LongOpenHashMap<>(8);
     private static final MembraneType[] MEMBRANE_TYPES = MembraneType.values();
     private int failurePriority;
@@ -70,6 +73,18 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
         return right;
     }
 
+    protected boolean sharedReactionInputs() {
+        return false;
+    }
+
+    public long getPairedInputParallel(GTRecipe recipe, long parallel) {
+        parallel = Math.min(parallel, membraneHatch.parallelLimit(membraneUsesRemaining()));
+        // ParallelLogic already bounds the combined inputs against this unit.
+        if (sharedReactionInputs()) return parallel;
+        var inputs = recipe.data.getData(PairedReactionRecipeExtension.INSTANCE);
+        return Math.min(left.inputParallel(inputs.left(), parallel), right.inputParallel(inputs.right(), parallel));
+    }
+
     public ItemStack membraneStack() {
         return membraneHatch == null ? ItemStack.EMPTY : membraneHatch.membrane();
     }
@@ -79,6 +94,8 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
         super.onPartScan(part);
         if (part instanceof SemipermeableMembraneHatch hatch) {
             membraneHatch = hatch;
+            // Older saves only recorded the controller's total reservation.
+            if (pendingMembraneDamage > 0 && !hatch.hasReservedUses() && !hatch.membrane().isEmpty()) hatch.reserveUses(pendingMembraneDamage);
             hatch.setLocked(pendingMembraneDamage > 0);
         }
     }
@@ -87,6 +104,7 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     public void arrangeHandlerList() {
         super.arrangeHandlerList();
         ordinaryInputUnits = getInputUnits();
+        if (sharedReactionInputs()) return;
         var inputs = getCapabilitiesProxy(IO.IN);
         if (inputs.isEmpty()) return;
         var leftHandlers = new ReferenceOpenHashSet<IRecipeHandler>(inputs.size());
@@ -140,37 +158,21 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
             setIdleReason(IdleReason.ELECTROCHEMICAL_MEMBRANE_MISSING);
             return false;
         }
-        if (membraneUsesRemaining() <= 0) {
+        if (!membraneHatch.hasAvailableUses()) {
             setIdleReason(IdleReason.ELECTROCHEMICAL_MEMBRANE_EXHAUSTED);
             return false;
         }
-        boolean found = left.findRecipe(type, (u, first) -> {
-            var firstHalf = first.data.getData(HalfReactionRecipeExtension.INSTANCE);
-            if (!acceptHalf(firstHalf)) return false;
-            leftCandidateFound = true;
-            if (!checkTier(first) || !checkConditions(left, first)) {
-                recordRecipeFailure(1);
-                return false;
+        boolean found = false;
+        if (sharedReactionInputs()) {
+            for (var unit : getInputUnits()) {
+                if (findPairedRecipe(type, canHandle, unit, unit, unit)) {
+                    found = true;
+                    break;
+                }
             }
-            return right.findRecipe(type, (v, second) -> {
-                var secondHalf = second.data.getData(HalfReactionRecipeExtension.INSTANCE);
-                if (!acceptHalf(secondHalf)) return false;
-                if (!checkTier(second) || !checkConditions(right, second)) {
-                    recordRecipeFailure(1);
-                    return false;
-                }
-                if (firstHalf.electrolyteType() != secondHalf.electrolyteType()) {
-                    recordFailure(IdleReason.ELECTROCHEMICAL_ELECTROLYTE_MISMATCH, 2);
-                    return false;
-                }
-                var combined = combine(type, first, second, firstHalf, secondHalf);
-                if (combined == null) return false;
-                if (canHandle.test(paired, combined)) return true;
-                // Preserve input, voltage, condition and output failures from a fully paired recipe.
-                recordRecipeFailure(8);
-                return false;
-            });
-        });
+        } else {
+            found = findPairedRecipe(type, canHandle, left, right, paired);
+        }
         if (!found) {
             if (recipeFailure != null) setIdleReason(recipeFailure);
             else if (searchFailure != null) {
@@ -182,6 +184,55 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
         failureArguments = null;
         recipeFailure = null;
         return found;
+    }
+
+    private boolean findPairedRecipe(GTRecipeType type, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle,
+                                     RecipeHandlerUnit firstUnit, RecipeHandlerUnit secondUnit, RecipeHandlerUnit pairedUnit) {
+        firstCandidates.clear();
+        secondCandidates.clear();
+        // RecipeDB reuses its search state, so finish searching before pairing candidates.
+        collectHalfRecipes(type, firstUnit, firstCandidates, true);
+        if (firstUnit != secondUnit) collectHalfRecipes(type, secondUnit, secondCandidates, false);
+        var seconds = firstUnit == secondUnit ? firstCandidates : secondCandidates;
+        boolean found = false;
+        for (int i = 0; i < firstCandidates.size(); i++) {
+            var first = firstCandidates.get(i);
+            var firstHalf = first.data.getData(HalfReactionRecipeExtension.INSTANCE);
+            for (int j = 0; j < seconds.size(); j++) {
+                var second = seconds.get(j);
+                var secondHalf = second.data.getData(HalfReactionRecipeExtension.INSTANCE);
+                if (firstHalf.electrolyteType() != secondHalf.electrolyteType()) {
+                    recordFailure(IdleReason.ELECTROCHEMICAL_ELECTROLYTE_MISMATCH, 2);
+                    continue;
+                }
+                if (!selectMembrane(firstHalf, secondHalf)) continue;
+                var combined = combine(type, first, second, firstHalf, secondHalf);
+                if (combined == null) continue;
+                if (canHandle.test(pairedUnit, combined)) {
+                    found = true;
+                    break;
+                }
+                // Preserve input, voltage, condition and output failures from a fully paired recipe.
+                recordRecipeFailure(8);
+            }
+            if (found) break;
+        }
+        firstCandidates.clear();
+        secondCandidates.clear();
+        return found;
+    }
+
+    private void collectHalfRecipes(GTRecipeType type, RecipeHandlerUnit unit, ArrayList<GTRecipeDefinition> candidates, boolean firstSide) {
+        unit.findRecipe(type, (u, recipe) -> {
+            if (!acceptHalf(recipe.data.getData(HalfReactionRecipeExtension.INSTANCE))) return false;
+            if (firstSide) leftCandidateFound = true;
+            if (!checkTier(recipe) || !checkConditions(u, recipe)) {
+                recordRecipeFailure(1);
+                return false;
+            }
+            candidates.add(recipe);
+            return false;
+        });
     }
 
     /** Keep the failure from the candidate that reached the furthest matching stage. */
@@ -266,13 +317,30 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
             }
             return false;
         }
+        transferred.clear();
+        for (var ion : first.ions()) transferred.addTo(ion.ion(), Math.multiplyExact(ion.amount(), firstMultiplier));
+        for (var ion : second.ions()) transferred.addTo(ion.ion(), Math.multiplyExact(ion.amount(), secondMultiplier));
+        for (var ion : first.requiredIons()) transferred.addTo(ion.ion(), -Math.multiplyExact(ion.amount(), firstMultiplier));
+        for (var ion : second.requiredIons()) transferred.addTo(ion.ion(), -Math.multiplyExact(ion.amount(), secondMultiplier));
+        return true;
+    }
+
+    private boolean selectMembrane(HalfReaction first, HalfReaction second) {
         int types = first.compatibleMembranes(second);
         if (types == 0) {
             recordFailure(IdleReason.ELECTROCHEMICAL_NO_COMMON_MEMBRANE, 5);
             return false;
         }
+        boolean exhausted = false;
+        for (var type : MEMBRANE_TYPES) {
+            if ((types & (1 << type.ordinal())) == 0) continue;
+            if (membraneHatch.selectMembrane(type)) return true;
+            if (!membraneHatch.membrane(type).isEmpty()) exhausted = true;
+        }
         var detected = IonMembrane.typeOf(membraneStack());
-        if (detected == null || (types & (1 << detected.ordinal())) == 0) {
+        if (exhausted) {
+            recordFailure(IdleReason.ELECTROCHEMICAL_MEMBRANE_EXHAUSTED, 5);
+        } else {
             if (recordFailure(IdleReason.ELECTROCHEMICAL_MEMBRANE_MISMATCH, 5)) {
                 var allowed = Component.empty();
                 for (var type : MEMBRANE_TYPES) {
@@ -282,14 +350,8 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
                 }
                 failureArguments = new Object[] { allowed, detected == null ? membraneStack().getHoverName() : Component.translatable(detected.translationKey()) };
             }
-            return false;
         }
-        transferred.clear();
-        for (var ion : first.ions()) transferred.addTo(ion.ion(), Math.multiplyExact(ion.amount(), firstMultiplier));
-        for (var ion : second.ions()) transferred.addTo(ion.ion(), Math.multiplyExact(ion.amount(), secondMultiplier));
-        for (var ion : first.requiredIons()) transferred.addTo(ion.ion(), -Math.multiplyExact(ion.amount(), firstMultiplier));
-        for (var ion : second.requiredIons()) transferred.addTo(ion.ion(), -Math.multiplyExact(ion.amount(), secondMultiplier));
-        return true;
+        return false;
     }
 
     private void addCombinations(RecipeBuilder builder) {
@@ -309,10 +371,11 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     public boolean matchRecipeInput(RecipeHandlerUnit unit, GTRecipe recipe) {
         var inputs = recipe.data.getData(PairedReactionRecipeExtension.INSTANCE);
         if (inputs == null) return super.matchRecipeInput(unit, recipe);
-        if (recipe.parallels > membraneUsesRemaining()) {
+        if (membraneHatch.durabilityCost(recipe.parallels, false) > membraneUsesRemaining()) {
             setIdleReason(IdleReason.ELECTROCHEMICAL_MEMBRANE_EXHAUSTED);
             return false;
         }
+        if (sharedReactionInputs()) return super.matchRecipeInput(unit, recipe);
         if (!left.matchInputs(inputs.left())) {
             setIdleReason(IdleReason.ELECTROCHEMICAL_INPUT_SHORT, sideName(false));
             return false;
@@ -327,7 +390,7 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     @Override
     public boolean handleRecipeInput(RecipeHandlerUnit unit, GTRecipe recipe) {
         var inputs = recipe.data.getData(PairedReactionRecipeExtension.INSTANCE);
-        if (inputs == null) return super.handleRecipeInput(unit, recipe);
+        if (inputs == null || sharedReactionInputs()) return super.handleRecipeInput(unit, recipe);
         var leftPlan = PlanScratch.acquire();
         var rightPlan = PlanScratch.acquire();
         try {
@@ -354,26 +417,25 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
         super.beforeWorking(unit, recipe);
         if (recipe.data.getData(PairedReactionRecipeExtension.INSTANCE) != null) {
-            reserveMembraneUses((long) Math.ceil(Math.sqrt(recipe.parallels)));
+            reserveMembraneUses(membraneHatch.durabilityCost(recipe.parallels, false));
         }
     }
 
     protected void reserveMembraneUses(long amount) {
         pendingMembraneDamage += amount;
+        membraneHatch.reserveUses(amount);
         onChanged();
         membraneHatch.setLocked(true);
     }
 
     public long membraneUsesRemaining() {
-        if (membraneHatch == null) return 0;
-        var stack = membraneHatch.membrane();
-        return stack.isEmpty() ? 0 : stack.getMaxDamage() - stack.getDamageValue() - pendingMembraneDamage;
+        return membraneHatch == null ? 0 : membraneHatch.remainingUses();
     }
 
     @Override
     public void afterWorking() {
         if (pendingMembraneDamage > 0 && membraneHatch != null) {
-            membraneHatch.damage(pendingMembraneDamage);
+            membraneHatch.consumeReservedUses();
             pendingMembraneDamage = 0;
             onChanged();
             membraneHatch.setLocked(false);

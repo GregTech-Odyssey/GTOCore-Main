@@ -36,12 +36,27 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 final class AssemblerA {
 
     public static void init() {
-        ASSEMBLER_RECIPES.builder("semipermeable_membrane_hatch")
-                .inputItems(GTMachines.ITEM_IMPORT_BUS[HV].asItem())
-                .inputItems(TagPrefix.plate, GTMaterials.Polytetrafluoroethylene, 4)
-                .inputItems(GTItems.SENSOR_HV)
+        ASSEMBLER_RECIPES.builder("advanced_semipermeabl42e_membrane_hatch")
+                .inputItems(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.asItem())
+                .inputItems(GTOBlocks.AMPROSIUM_PIPE_CASING.asItem())
+                .inputItems(TagPrefix.plate, GTOMaterials.Polysulfone, 4)
+                .inputItems(GTItems.SENSOR_UHV, 2)
+                .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.UHV].asItem())
+                .outputItems(GTOMachines.ADVANCED_SEMIPERMEABLE_MEMBRANE_HATCH.asItem())
+                .EUt(7680L)
+                .duration(200)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("advanced_semipermeable_membrane_hatch")
+                .inputItems(TagPrefix.frameGt, GTMaterials.Polytetrafluoroethylene)
+                .inputItems(GTBlocks.CASING_POLYTETRAFLUOROETHYLENE_PIPE.asItem())
+                .inputItems(TagPrefix.plate, GTMaterials.Polybenzimidazole, 4)
+                .inputItems(GTItems.SENSOR_IV, 2)
+                .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.IV].asItem())
                 .outputItems(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.asItem())
-                .EUt(480).duration(200).save();
+                .EUt(7680L)
+                .duration(200)
+                .save();
 
         ASSEMBLER_RECIPES.builder("heat_pipes")
                 .inputItems(TagPrefix.pipeNormalFluid, GTMaterials.Copper, 1)

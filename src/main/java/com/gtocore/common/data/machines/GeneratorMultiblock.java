@@ -638,7 +638,7 @@ public final class GeneratorMultiblock {
                             .wherePart('T', blocks(GTOBlocks.IRIDIUM_CASING.get())
                                     .or(abilities(EXPORT_ITEMS))
                                     .or(abilities(EXPORT_FLUIDS))
-                                    .or(blocks(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.get()).setMaxGlobalLimited(1)))
+                                    .or(blocks(GTOMachines.SEMIPERMEABLE_MEMBRANE_HATCH.get(), GTOMachines.ADVANCED_SEMIPERMEABLE_MEMBRANE_HATCH.get()).setMaxGlobalLimited(1)))
                             .where('B', blocks(GCYMBlocks.ELECTROLYTIC_CELL.get()))
                             .where('C', controller(definition))
                             .where('D', blocks(GTOBlocks.FLOCCULATION_CASING.get()))

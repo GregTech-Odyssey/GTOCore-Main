@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric;
 
+import com.gtocore.api.electrochemistry.HalfReaction;
+import com.gtocore.api.electrochemistry.PairedReactionRecipeExtension;
 import com.gtocore.common.data.GTORecipeTypes;
 
 import com.gtolib.api.machine.feature.multiblock.ICrossRecipeElectricMachine;
@@ -20,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiPredicate;
 
-/** Keeps the workstation's coil parallelism and recipe threads for paired plating. */
+/** Pairs plating reactions within each input unit with coil parallelism and recipe threads. */
 public final class ElectrochemicalWorkstation extends ElectrochemicalMachine implements ICrossRecipeElectricMachine, ICoilMachine {
 
     @SaveToDisk
@@ -36,6 +38,26 @@ public final class ElectrochemicalWorkstation extends ElectrochemicalMachine imp
     @Override
     public CrossRecipeTrait getCrossRecipeTrait() {
         return crossRecipeTrait;
+    }
+
+    @Override
+    protected boolean sharedReactionInputs() {
+        return true;
+    }
+
+    @Override
+    protected GTRecipeDefinition combine(GTRecipeType type, GTRecipeDefinition first, GTRecipeDefinition second, HalfReaction firstHalf, HalfReaction secondHalf) {
+        if (crossRecipeTrait.duplicateCheck) {
+            // Combined definitions are transient; identify duplicates by their source pair.
+            for (var recipe : crossRecipeTrait.lastRecipes) {
+                var inputs = recipe.data.getData(PairedReactionRecipeExtension.INSTANCE);
+                if (inputs == null) continue;
+                var previousFirst = inputs.left().definition;
+                var previousSecond = inputs.right().definition;
+                if ((previousFirst == first && previousSecond == second) || (previousFirst == second && previousSecond == first)) return null;
+            }
+        }
+        return super.combine(type, first, second, firstHalf, secondHalf);
     }
 
     @Override

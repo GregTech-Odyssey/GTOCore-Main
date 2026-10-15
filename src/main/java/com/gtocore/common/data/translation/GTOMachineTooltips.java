@@ -1842,6 +1842,12 @@ public final class GTOMachineTooltips {
         t.formula(t.tr("每秒温度变化：ΔT=H-C×M，C×M为消耗的冷却剂提供的冷却量，结果向下取整", "Temperature change per second: ΔT=H-C×M, where C×M is the cooling capacity provided by the consumed coolant(s). Result rounded down"));
     });
 
+    public static final TipSpec AdvancedMembraneHatchTooltips = GTOTips.of("advanced_semipermeable_membrane_hatch", t -> {
+        t.feature(t.tr("拥有9格膜槽，按配方所需膜类型自动选择，同类型膜优先使用槽位靠前且有剩余耐久的膜", "Stores 9 membranes and automatically selects a compatible membrane for each recipe; membranes of the same type are used in slot order while durability remains"));
+        t.formula(t.tr("每次配方消耗膜耐久=⌈(配方并行数)^0.25⌉", "Membrane durability consumed per recipe = ceil((recipe parallels)^0.25)"));
+        t.requirement(t.tr("每次配方只使用选中膜的属性与剩余耐久，并扣除对应槽位的耐久；反应期间所有膜槽均锁定", "Each recipe uses the selected membrane's properties and remaining durability and consumes durability from that slot; all membrane slots are locked during reactions"));
+    });
+
     public static final TipSpec FuelCellGeneratorTooltips = GTOTips.of("fuel_cell_generator", t -> {
         t.feature(t.tr("通过燃料氧化半反应将能量储存在电解液中，或释放储能电解液中的能量", "Store energy in electrolyte through fuel oxidation half-reactions, or release energy from charged electrolyte"));
         t.heading(t.tr("模式一：储能", "Mode 1: Energy Storage"));
@@ -1852,13 +1858,13 @@ public final class GTOMachineTooltips {
         t.formula(t.tr("总反应的时间=两侧半反应（时间×功率）之和/总反应功率", "Total reaction time = sum of both half-reaction (time × power) / total reaction power"));
         t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
         t.feature(t.tr("且提供的燃料效率乘数会与转化的热值相乘，影响总反应的能量储存", "And the provided fuel efficiency multiplier will multiply with the converted heat value, affecting the total energy storage of the reaction"));
-        t.penalty(t.tr("每次总反应会消耗半透膜√(总反应并行数)点耐久", "Each total reaction consumes √(total reaction parallels) durability points from the semipermeable membrane"));
+        t.penalty(t.tr("每次总反应消耗膜耐久：普通仓为⌈√(总反应并行数)⌉，高级仓为⌈(总反应并行数)^0.25⌉", "Membrane durability consumed per total reaction: ceil(sqrt(total reaction parallels)) with a basic hatch, or ceil((total reaction parallels)^0.25) with an advanced hatch"));
         t.supported(t.tr("本机器模式提供无限并行数", "This machine mode provides unlimited parallelism"));
-        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜；反应期间膜被锁定，每完成一个总反应并行消耗1点耐久", "Place a membrane permeable to the paired ions in the top-center membrane hatch; it is locked during the reaction and loses 1 durability per completed total-reaction parallel"));
+        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜；反应期间膜被锁定", "Place a membrane permeable to the paired ions in a membrane hatch at the top center; membranes are locked during reactions"));
         t.heading(t.tr("模式二：放电", "Mode 2: Energy Release"));
         t.requirement(t.tr("放电需要半透膜仓内有膜，任意膜均可使配方运行", "Discharge requires a membrane in the membrane hatch; any membrane allows the recipe to run"));
         t.requirement(t.tr("此时的最大并行数由膜的放电并行度决定", "The maximum parallelism at this time is determined by the discharge parallelism of the membrane"));
-        t.feature(t.tr("放电期间膜被锁定，每完成一个配方并行消耗1点耐久；不应用膜的燃料效率、时间或耗电乘数", "The membrane is locked during energy release and loses 1 durability per completed recipe parallel; its fuel efficiency, duration and EU multipliers do not apply"));
+        t.feature(t.tr("放电期间膜被锁定，固定消耗与配方并行数相同的耐久", "Membranes are locked during energy release: fixed durability consumption equal to the recipe parallelism"));
         t.requirement(t.tr("储能时连接能源输入仓，放电时连接能源输出仓；中央顶部用于物品、流体输出及半透膜仓", "Connect energy input hatches for storage and energy output hatches for release; the top center accepts item/fluid outputs and the membrane hatch"));
     });
 
@@ -1875,7 +1881,7 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("质子交换膜：当反应产生的离子为质子时使用", "Proton Exchange Membrane: Use when the reaction produces protons"));
         t.control(t.tr("当反应有多种离子产生时，半透膜仅需能透过其中一种离子即可", "When the reaction produces multiple ions, the semipermeable membrane only needs to allow one of them to pass through"));
         t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
-        t.penalty(t.tr("每次总反应会消耗半透膜√(总反应并行数)点耐久", "Each total reaction consumes √(total reaction parallels) durability points from the semipermeable membrane"));
+        t.penalty(t.tr("每次总反应消耗膜耐久：普通仓为⌈√(总反应并行数)⌉，高级仓为⌈(总反应并行数)^0.25⌉", "Membrane durability consumed per total reaction: ceil(sqrt(total reaction parallels)) with a basic hatch, or ceil((total reaction parallels)^0.25) with an advanced hatch"));
     });
 
     public static final TipSpec SpaceStationTooltips = GTOTips.of("space_station", t -> {

@@ -184,7 +184,7 @@ public final class GTORules {
             .register();
     public static final TierRule FUEL_CELL_TIER = Rules.tierRule("power.fuel_cell").group(POWER)
             .name("gtocore.rule.power.fuel_cell", "液流燃料电池机制", "Flow Fuel Cell Mechanics")
-            .desc("gtocore.rule.power.fuel_cell.desc", "专家档使用专家膜效率；其余档使用普通膜效率。储能与放电每完成一个配方并行消耗1点膜耐久；放电并行上限由膜的放电并行度决定。", "The expert tier uses expert membrane efficiencies; other tiers use normal efficiencies. Both absorption and discharge consume 1 membrane durability per completed recipe parallel; the membrane's discharge parallelism sets the discharge parallel limit.")
+            .desc("gtocore.rule.power.fuel_cell.desc", "专家档使用专家膜效率；其余档使用普通膜效率。普通仓储能消耗⌈√(配方并行数)⌉点膜耐久，放电消耗与配方并行数相同的膜耐久；高级仓均消耗⌈(配方并行数)^0.25⌉点膜耐久。放电并行上限由膜的放电并行度决定。", "The expert tier uses expert membrane efficiencies; other tiers use normal efficiencies. Basic hatches consume ceil(sqrt(recipe parallels)) membrane durability for storage and recipe parallels for discharge; advanced hatches consume ceil((recipe parallels)^0.25) in both modes. The membrane's discharge parallelism sets the discharge parallel limit.")
             .register();
     public static final BoolRule MEGA_TURBINE_REGULATOR = Rules.boolRule("power.mega_turbine_regulator").group(POWER)
             .defaults(false, false, true)
