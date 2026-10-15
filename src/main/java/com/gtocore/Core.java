@@ -10,6 +10,10 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import static com.hepdd.gtmthings.common.registry.GTMTRegistration.GTMTHINGS_REGISTRATE;
 
 /**
@@ -23,7 +27,8 @@ public final class Core {
         GTOCore.bootstrap();
         String buildId = context.getContainer().getModInfo().getOwningFile().getFile().getSecureJar().moduleDataProvider().getManifest().getMainAttributes().getValue("GTO-Build-Id");
         String shownBuildId = buildId == null ? "dev" : buildId;
-        GTOCore.LOGGER.info("GTO-Build-Id: {}", shownBuildId);
+        Configurator.setLevel("GTO Build", Level.INFO);
+        LogManager.getLogger("GTO Build").info("GTO-Build-Id: {}", shownBuildId);
         CrashReportCallables.registerCrashCallable("GTO-Build-Id", () -> shownBuildId);
         DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
         GTMTHINGS_REGISTRATE.registerEventListeners(context.getModEventBus());
