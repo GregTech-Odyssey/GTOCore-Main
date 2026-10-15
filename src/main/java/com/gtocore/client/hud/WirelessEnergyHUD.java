@@ -23,6 +23,7 @@ import appeng.client.gui.Rects;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static com.hepdd.gtmthings.utils.FormatUtil.formatBigIntegerNumberOrSic;
@@ -36,14 +37,25 @@ public class WirelessEnergyHUD implements IMoveableHUD {
     @RegisterLanguage(en = "Wireless Energy HUD", cn = "无线能量 HUD")
     public static final String DISPLAY_NAME = "gtocore.hud.wireless_energy.name";
 
-    @RegisterLanguage(en = "%s / %s EU (%d%%)", cn = "%s / %s EU (%d%%)")
+    @RegisterLanguage(en = "Capacity: %s / %s EU (%d%%)", cn = "容量：%s / %s EU (%d%%)")
     public static final String FORMAT_WIRELESS_ENERGY_HUD = "hud.gtocore.wireless_energy";
+
+    @RegisterLanguage(en = "Throughput: %s / %s EU/t", cn = "吞吐：%s / %s EU/t")
+    public static final String FORMAT_THROUGHPUT = "hud.gtocore.wireless_energy.throughput";
+
+    @RegisterLanguage(en = "Active consumers: %s machines", cn = "正在用电的机器：%s台")
+    public static final String FORMAT_ACTIVE_CONSUMERS = "hud.gtocore.wireless_energy.active_consumers";
 
     private final static int width = 80;
     private final static int height = 40;
 
     private int realWidth = width;
     private int realHeight = height;
+    private double displayedNetPower = Double.NaN;
+    private double displayedThroughput = Double.NaN;
+    private Component throughputLabel;
+    private int displayedConsumers = -1;
+    private Component consumersLabel;
 
     private boolean isDragging = false;
     private int dragStartX = 0;
@@ -76,7 +88,8 @@ public class WirelessEnergyHUD implements IMoveableHUD {
         }
 
         Component label = createLabel(playerData);
-        updateDimensions(font, label);
+        Component throughput = createThroughputLabel(playerData);
+        Component consumers = createConsumersLabel(playerData);
         Rect2i bounds = getBounds(screenWidth, screenHeight);
 
         guiGraphics.pose().pushPose();
@@ -97,6 +110,8 @@ public class WirelessEnergyHUD implements IMoveableHUD {
                 .draw();
         // 绘制文本标签
         guiGraphics.drawString(font, label, 2, height + 2, 0xFFFFFF, false);
+        guiGraphics.drawString(font, throughput, 2, height + font.lineHeight + 2, 0xFFFFFF, false);
+        guiGraphics.drawString(font, consumers, 2, height + font.lineHeight * 2 + 2, 0xFFFFFF, false);
 
         guiGraphics.pose().popPose();
     }
@@ -109,7 +124,7 @@ public class WirelessEnergyHUD implements IMoveableHUD {
         if (playerData.electricityCapacityCache.compareTo(BigInteger.ZERO) <= 0) {
             return Rects.ZERO;
         }
-        updateDimensions(Minecraft.getInstance().font, getPreviewLabel());
+        updateDimensions(Minecraft.getInstance().font, createLabel(playerData), createThroughputLabel(playerData), createConsumersLabel(playerData));
         int absX = (int) (GTOConfig.INSTANCE.client.hud.wirelessEnergyHUDDefaultX / 100d * (screenWidth - realWidth));
         int absY = (int) (GTOConfig.INSTANCE.client.hud.wirelessEnergyHUDDefaultY / 100d * (screenHeight - realHeight));
         return new Rect2i(absX, absY, realWidth, realHeight);
@@ -166,7 +181,10 @@ public class WirelessEnergyHUD implements IMoveableHUD {
 
     @Override
     public void setTopLeftPosition(int x, int y, int screenWidth, int screenHeight) {
-        updateDimensions(Minecraft.getInstance().font, getPreviewLabel());
+        PlayerData playerData = getPlayerData(Minecraft.getInstance());
+        if (playerData != null && playerData.electricityCapacityCache.signum() > 0) {
+            updateDimensions(Minecraft.getInstance().font, createLabel(playerData), createThroughputLabel(playerData), createConsumersLabel(playerData));
+        }
         int maxX = Math.max(0, screenWidth - realWidth);
         int maxY = Math.max(0, screenHeight - realHeight);
         int clampedX = Mth.clamp(x, 0, maxX);
@@ -209,16 +227,32 @@ public class WirelessEnergyHUD implements IMoveableHUD {
                 playerData.electricityStorageCache.multiply(BigInteger.valueOf(100)).divide(playerData.electricityCapacityCache).intValue());
     }
 
-    private Component getPreviewLabel() {
-        PlayerData playerData = getPlayerData(Minecraft.getInstance());
-        if (playerData != null && playerData.electricityCapacityCache.compareTo(BigInteger.ZERO) > 0) {
-            return createLabel(playerData);
-        }
-        return Component.translatable(DISPLAY_NAME);
+    private Component createThroughputLabel(PlayerData playerData) {
+        double power = playerData.electricityNetPowerCache;
+        double throughput = playerData.electricityThroughputCache;
+        if (power == displayedNetPower && throughput == displayedThroughput) return throughputLabel;
+        var signedPower = Component.literal(power > 0 ? "+" : power < 0 ? "-" : "")
+                .append(formatBigIntegerNumberOrSic(BigDecimal.valueOf(Math.abs(power)).toBigInteger()))
+                .withStyle(power < 0 ? ChatFormatting.RED : ChatFormatting.GREEN);
+        displayedNetPower = power;
+        displayedThroughput = throughput;
+        throughputLabel = Component.translatable(FORMAT_THROUGHPUT, signedPower,
+                Component.literal(formatBigIntegerNumberOrSic(BigDecimal.valueOf(throughput).toBigInteger())).withStyle(ChatFormatting.GOLD));
+        return throughputLabel;
     }
 
-    private void updateDimensions(Font font, Component label) {
-        realWidth = Math.max(width, font.width(label) + 4);
-        realHeight = height + font.lineHeight + 2;
+    private Component createConsumersLabel(PlayerData playerData) {
+        int consumers = playerData.electricityActiveConsumersCache;
+        if (consumers != displayedConsumers) {
+            displayedConsumers = consumers;
+            consumersLabel = Component.translatable(FORMAT_ACTIVE_CONSUMERS,
+                    Component.literal(Integer.toString(consumers)).withStyle(ChatFormatting.GOLD));
+        }
+        return consumersLabel;
+    }
+
+    private void updateDimensions(Font font, Component label, Component throughput, Component consumers) {
+        realWidth = Math.max(width, Math.max(font.width(label), Math.max(font.width(throughput), font.width(consumers))) + 4);
+        realHeight = height + font.lineHeight * 3 + 2;
     }
 }

@@ -1,6 +1,7 @@
 package com.gtocore.api.wireless.energy;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceKey;
@@ -11,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -33,6 +35,11 @@ public final class EnergyAccount {
     long pendingHi, pendingLo;
     int supplyGen, sinkGen;
     private int visitStamp;
+    private int hudTick = Integer.MIN_VALUE;
+    private HudStatus hudStatus = new HudStatus(0, 0, 0);
+    private final ReferenceOpenHashSet<MetaMachine> consumingMachines = new ReferenceOpenHashSet<>();
+
+    public record HudStatus(double netPower, double throughput, int activeConsumers) {}
 
     final FlowMeter meter = new FlowMeter(this);
     final O2OOpenCacheHashMap<GlobalPos, Provider.Tower> towers = new O2OOpenCacheHashMap<>();
@@ -60,6 +67,35 @@ public final class EnergyAccount {
     @Nullable
     public EnergyStats stats() {
         return meter.stats();
+    }
+
+    /** HUD 与监视器的“当前”流量一致，取最近一秒；同队玩家共用一次汇总。 */
+    public HudStatus hudStatus() {
+        int now = GridClock.tick();
+        if (hudTick != Integer.MIN_VALUE && now >= hudTick && now - hudTick < 20) return hudStatus;
+        double throughput = 0;
+        for (int i = 0, n = nodeList.size(); i < n; i++) {
+            var node = nodeList.get(i);
+            for (int bank = 0; bank < GridNode.BANKS; bank++) throughput += node.outputCapacity(bank);
+        }
+        var server = WirelessGrid.server();
+        if (server != null) {
+            for (var level : server.getAllLevels()) {
+                var ports = PortIndex.ports(level, this);
+                for (int i = 0, n = ports.size(); i < n; i++) {
+                    var port = ports.get(i);
+                    var machine = port.machine();
+                    if (machine != null && !machine.isRemoved() && port.isConsuming()) consumingMachines.add(machine);
+                }
+            }
+        }
+        var stats = stats();
+        int second = GridClock.second();
+        double netPower = stats == null ? 0 : stats.nowIn(second) - stats.nowOut(second) - stats.nowLoss(second);
+        hudStatus = new HudStatus(netPower, throughput, consumingMachines.size());
+        consumingMachines.clear();
+        hudTick = now;
+        return hudStatus;
     }
 
     public List<GridNode> nodes() {

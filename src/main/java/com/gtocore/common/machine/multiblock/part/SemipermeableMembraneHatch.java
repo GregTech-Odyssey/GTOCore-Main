@@ -22,17 +22,17 @@ import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ValueOps;
+import com.gto.fastcollection.map.enums.Enum2IntMap;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.function.Predicate;
 
 public class SemipermeableMembraneHatch extends ItemPartMachine {
 
     private static final MembraneType[] MEMBRANE_TYPES = MembraneType.values();
-    private final EnumMap<MembraneType, Integer> membranesByType = new EnumMap<>(MembraneType.class);
+    private final Enum2IntMap<MembraneType> membranesByType = new Enum2IntMap<>(MembraneType.class);
     private int firstMembraneSlot = -1;
 
     @SaveToDisk(defaultValue = "false")
@@ -120,8 +120,8 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
     }
 
     public ItemStack membrane(MembraneType type) {
-        var slot = membranesByType.get(type);
-        return slot == null ? ItemStack.EMPTY : inventory.storage.getStackInSlot(slot);
+        var slot = membranesByType.getInt(type);
+        return inventory.storage.getStackInSlot(slot);
     }
 
     @Override
@@ -142,16 +142,15 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
             var type = IonMembrane.typeOf(inventory.storage.getStackInSlot(slot));
             if (type == null) continue;
             if (firstMembraneSlot < 0) firstMembraneSlot = slot;
-            var previous = membranesByType.get(type);
-            if (previous == null || (remainingUses(previous) <= 0 && remainingUses(slot) > 0)) {
+            var previous = membranesByType.getInt(type);
+            if ((remainingUses(previous) <= 0 && remainingUses(slot) > 0)) {
                 membranesByType.put(type, slot);
             }
         }
     }
 
     public boolean selectMembrane(MembraneType type) {
-        var slot = membranesByType.get(type);
-        if (slot == null) return false;
+        var slot = membranesByType.getInt(type);
         selectSlot(slot);
         return remainingUses(slot) > 0;
     }
@@ -170,8 +169,8 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
 
     public boolean hasAvailableUses() {
         for (var type : MEMBRANE_TYPES) {
-            var slot = membranesByType.get(type);
-            if (slot != null && remainingUses(slot) > 0) return true;
+            var slot = membranesByType.getInt(type);
+            if (remainingUses(slot) > 0) return true;
         }
         return false;
     }
