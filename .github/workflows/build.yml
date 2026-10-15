@@ -515,7 +515,7 @@ jobs:
           test -s "$MAP"
           test -s "$CORE_MAP"
           GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
-          BUILD_ID=$(unzip -p "$GTO" META-INF/MANIFEST.MF | tr -d '' | sed -n 's/^GTO-Build-Id: //p')
+          BUILD_ID=$(unzip -p "$GTO" META-INF/MANIFEST.MF | tr -d '\r' | sed -n 's/^GTO-Build-Id: //p')
           test -n "$BUILD_ID" || { echo "::error::$GTO 的 MANIFEST 缺少 GTO-Build-Id"; exit 1; }
           for f in "$MAP" "$CORE_MAP"; do
             [ "$(head -n1 "$f")" = "# GTO-Build-Id: $BUILD_ID" ] || { echo "::error::$f 文件头的构建编号与 jar 不一致"; exit 1; }
