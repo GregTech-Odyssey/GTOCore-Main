@@ -3,8 +3,12 @@ package com.gtocore.mixin.ftbu;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.apotheosis.FTBUltimineAffix;
 
+import com.gtolib.api.item.tool.VajraItem;
+
 import com.gregtechceu.gtceu.api.block.OreBlock;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.IGTTool;
+import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 
@@ -59,8 +63,8 @@ public class ShapeContextMixin {
                 ret = Math.min(base, maxBlocks);
             }
             case IGTTool gtTool -> {
-                String type = gtTool.getToolType().name;
-                if (type.contains("_vajra") || (original.getBlock() instanceof OreBlock && ("mining_hammer".equals(type) || type.contains("_drill"))) || (original.getSoundType() == SoundType.WOOD && "lv_chainsaw".equals(type)))
+                GTToolType type = gtTool.getToolType();
+                if (gtTool instanceof VajraItem || (original.getBlock() instanceof OreBlock && (type == GTToolType.MINING_HAMMER || type.toolHead() == TagPrefix.toolHeadDrill)) || (original.getSoundType() == SoundType.WOOD && type == GTToolType.CHAINSAW_LV))
                     base <<= 2;
                 if (gtTool.isElectric()) base *= 1 << (gtTool.getElectricTier());
                 ret = Math.min(base, maxBlocks);

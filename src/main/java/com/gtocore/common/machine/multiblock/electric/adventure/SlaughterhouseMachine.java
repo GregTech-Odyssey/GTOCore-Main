@@ -19,6 +19,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.item.IGTTool;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -47,6 +48,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ToolActions;
 
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
@@ -187,6 +189,12 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
                         activeWeapon = itemKey.toStack();
                     }
                     attackDamage += (int) swordItem.getDamage();
+                } else if (itemKey.getItem() instanceof IGTTool tool && tool.getToolType().toolActions.contains(ToolActions.SWORD_SWEEP)) {
+                    ItemStack stack = itemKey.toStack();
+                    if (activeWeapon.isEmpty()) {
+                        activeWeapon = stack;
+                    }
+                    attackDamage += (int) tool.getMaterialAttackDamage(stack);
                 }
                 return false;
             });

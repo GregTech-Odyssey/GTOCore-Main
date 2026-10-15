@@ -154,7 +154,8 @@
       "travel": "Lnet/minecraft/world/entity/player/Player;m_7023_(Lnet/minecraft/world/phys/Vec3;)V",
       "Lnet/minecraft/world/food/FoodData;setFoodLevel(I)V": "Lnet/minecraft/world/food/FoodData;m_38705_(I)V",
       "readAdditionalSaveData": "Lnet/minecraft/world/entity/player/Player;m_7378_(Lnet/minecraft/nbt/CompoundTag;)V",
-      "hurt": "Lnet/minecraft/world/entity/player/Player;m_6469_(Lnet/minecraft/world/damagesource/DamageSource;F)Z"
+      "hurt": "Lnet/minecraft/world/entity/player/Player;m_6469_(Lnet/minecraft/world/damagesource/DamageSource;F)Z",
+      "causeFoodExhaustion": "Lnet/minecraft/world/entity/player/Player;m_36399_(F)V"
     },
     "com/gtolib/mixin/mc/OreConfigurationMixin": {
       "<init>(Ljava/util/List;IF)V": "Lnet/minecraft/world/level/levelgen/feature/configurations/OreConfiguration;<init>(Ljava/util/List;IF)V"
@@ -571,7 +572,8 @@
         "travel": "Lnet/minecraft/world/entity/player/Player;m_7023_(Lnet/minecraft/world/phys/Vec3;)V",
         "Lnet/minecraft/world/food/FoodData;setFoodLevel(I)V": "Lnet/minecraft/world/food/FoodData;m_38705_(I)V",
         "readAdditionalSaveData": "Lnet/minecraft/world/entity/player/Player;m_7378_(Lnet/minecraft/nbt/CompoundTag;)V",
-        "hurt": "Lnet/minecraft/world/entity/player/Player;m_6469_(Lnet/minecraft/world/damagesource/DamageSource;F)Z"
+        "hurt": "Lnet/minecraft/world/entity/player/Player;m_6469_(Lnet/minecraft/world/damagesource/DamageSource;F)Z",
+        "causeFoodExhaustion": "Lnet/minecraft/world/entity/player/Player;m_36399_(F)V"
       },
       "com/gtolib/mixin/mc/OreConfigurationMixin": {
         "<init>(Ljava/util/List;IF)V": "Lnet/minecraft/world/level/levelgen/feature/configurations/OreConfiguration;<init>(Ljava/util/List;IF)V"

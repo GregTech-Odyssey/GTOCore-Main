@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.gtm.misc;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
+import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.utils.RegistriesUtils;
@@ -1218,14 +1219,12 @@ public final class MachineRecipeLoader {
                 GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem());
 
         // pattern_buffer
-        VanillaRecipeHelper.addShapelessNBTClearingRecipe("me_pattern_buffer", GTAEMachines.ME_PATTERN_BUFFER.asStack(),
-                GTAEMachines.ME_PATTERN_BUFFER.asItem());
-        VanillaRecipeHelper.addShapelessNBTClearingRecipe("me_extend_pattern_buffer", GTAEMachines.ME_EXTEND_PATTERN_BUFFER.asStack(),
-                GTAEMachines.ME_EXTEND_PATTERN_BUFFER.asItem());
-        VanillaRecipeHelper.addShapelessNBTClearingRecipe("me_extend_pattern_buffer_ultra", GTAEMachines.ME_EXTEND_PATTERN_BUFFER_ULTRA.asStack(),
-                GTAEMachines.ME_EXTEND_PATTERN_BUFFER_ULTRA.asItem());
-        VanillaRecipeHelper.addShapelessNBTClearingRecipe("me_catalyst_me_pattern_buffer", GTAEMachines.ME_CATALYST_ME_PATTERN_BUFFER.asStack(),
-                GTAEMachines.ME_CATALYST_ME_PATTERN_BUFFER.asItem());
+        for (var type : PatternBufferType.all()) {
+            var definition = type.getDefinition();
+            VanillaRecipeHelper.addShapelessNBTClearingRecipe(type.getId(), definition.asStack(), definition.asItem());
+        }
+        VanillaRecipeHelper.addShapelessNBTClearingRecipe("me_input_buffer_part_machine", GTAEMachines.ME_INPUT_BUFFER_PART_MACHINE.asStack(),
+                GTAEMachines.ME_INPUT_BUFFER_PART_MACHINE.asItem());
 
         // Jetpacks
         VanillaRecipeHelper.addShapelessRecipe("fluid_jetpack_clear", LIQUID_FUEL_JETPACK.asStack(),

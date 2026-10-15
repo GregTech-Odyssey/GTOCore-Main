@@ -65,6 +65,8 @@ public final class OrganTooltips {
     private static final String INFO_SET_TIER = "gtocore.organ.info.set_tier";
     @RegisterLanguage(cn = "生命上限 %s", en = "Max health %s")
     private static final String INFO_HEALTH = "gtocore.organ.info.health";
+    @RegisterLanguage(cn = "饥饿值消耗 %s", en = "Hunger drain %s")
+    private static final String INFO_HUNGER = "gtocore.organ.info.hunger";
     @RegisterLanguage(cn = "可停留星球 %s", en = "Habitable planets %s")
     private static final String INFO_PLANET = "gtocore.organ.info.planet";
     @RegisterLanguage(cn = "翅膀 %s / %s", en = "Wings %s / %s")
@@ -131,9 +133,12 @@ public final class OrganTooltips {
     }
 
     /** 生命上限的数值文字：完整，或「−20% · 缺少 2 件」。 */
-    public static MutableComponent healthValue(int missing) {
-        if (missing <= 0) return Component.translatable(VALUE_HEALTH_FULL);
-        return Component.translatable(VALUE_HEALTH_MISSING, MISSING_HEALTH_TEXT[Math.min(missing, OrganType.BODY.length)], missing);
+    public static MutableComponent healthValue(OrganInventory organs) {
+        int missing = organs.getMissingBodyCount();
+        if (missing > 0) return Component.translatable(VALUE_HEALTH_MISSING, MISSING_HEALTH_TEXT[Math.min(missing, OrganType.BODY.length)], missing);
+        OrganTier setTier = organs.getSetTier();
+        if (OrganEffects.healthBonus(setTier) > 0) return Component.literal(OrganEffects.healthBonusText(setTier));
+        return Component.translatable(VALUE_HEALTH_FULL);
     }
 
     public static ChatFormatting healthColor(int missing) {
@@ -220,7 +225,8 @@ public final class OrganTooltips {
             int missing = organs.getMissingBodyCount();
             lines.add(ArmorTooltips.section(SECTION_BODY));
             lines.add(ArmorTooltips.info(INFO_SET_TIER, tierValue(setTier).withStyle(setTierColor(setTier))));
-            lines.add(ArmorTooltips.info(INFO_HEALTH, healthValue(missing).withStyle(healthColor(missing))));
+            lines.add(ArmorTooltips.info(INFO_HEALTH, healthValue(organs).withStyle(healthColor(missing))));
+            lines.add(ArmorTooltips.info(INFO_HUNGER, OrganEffects.hungerValue(setTier).withStyle(ChatFormatting.WHITE)));
             lines.add(ArmorTooltips.info(INFO_PLANET, OrganEffects.planetValue(setTier).withStyle(ChatFormatting.WHITE)));
             lines.add(ArmorTooltips.info(INFO_WINGS, ArmorTooltips.value(String.valueOf(wingCount(organs))), ArmorTooltips.value(String.valueOf(OrganType.WING.slotCount))));
         }

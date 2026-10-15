@@ -562,15 +562,23 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("以功能存储的抽屉为存储介质：可存种类与每种容量都由抽屉决定", "Stores through Functional Storage drawers: the drawer setup decides both the type count and the capacity per type"));
-        t.requirement(t.tr("抽屉与升级放进输入总线，超级箱/超级缸放进主机槽；超级箱只能存物品、超级缸只能存流体，最多 64 个", "Drawers and upgrades go into the input buses, the super chest/tank into the controller slot; a super chest stores items only, a super tank fluids only, up to 64"));
-        t.formula(t.tr("可存种类 = 与主机同类抽屉的槽数 × 数量；1x 各贡献 1 种，2x/4x 各贡献 2/4 种", "Type count = slots x amount of the matching drawers; a 1x drawer contributes 1 type, 2x/4x contribute 2/4"));
-        t.formula(t.tr("只限每种上限，不设总容量：每种容量 = 同类抽屉中最小的每槽容量 × √(主机等级 × 数量 × 密封等级) × 升级倍率", "Only a per-type cap, no overall capacity: capacity per type = the smallest slot amount among the matching drawers x sqrt(controller tier x amount x hermetic tier) x upgrade multiplier"));
-        t.feature(t.tr("升级倍率：所有升级相乘后按同类抽屉数量均分，平均每个抽屉最多算 4 个；流体收益再减半（不低于 1）", "Upgrade multiplier: all upgrades multiplied then split over the matching drawer count, counting at most 4 per drawer on average; fluids get half of it (never below 1)"));
-        t.warning(t.tr("开启溢出销毁后，超过每种容量或种类已满时放不下的内容会被直接销毁", "With overflow voiding on, anything that does not fit (over the per-type capacity, or no free type) is voided"));
-        t.unsupported(t.tr("压缩抽屉、末影抽屉等不作为介质", "Compacting and ender drawers do not count as media"));
-        t.feature(t.tr("和保险库一样：存储能力挂控制器正面，箱外 IO 用保险库仓", "Like the vault: the storage capability is on the controller's front face, and the vault hatch serves as external IO"));
+        t.line(TipRole.SUMMARY, t.tr("用功能存储的抽屉作存储介质的多方块仓库", "Multiblock storage that uses Functional Storage drawers as its medium"));
+
+        t.heading(t.tr("怎么用", "Setup"));
+        t.requirement(t.tr("主机槽放超级箱或超级缸（最多 64 个）：超级箱存物品，超级缸存流体", "Put Super Chests or Super Tanks in the controller slot (up to 64): chests store items, tanks store fluids"));
+        t.requirement(t.tr("输入总线放抽屉和存储升级；只有与主机同类的抽屉生效（超级箱配物品抽屉，超级缸配流体抽屉）", "Put drawers and storage upgrades in the input buses; only drawers matching the controller count (item drawers for chests, fluid drawers for tanks)"));
+        t.unsupported(t.tr("压缩抽屉、末影抽屉不算", "Compacting and ender drawers do not count"));
+
+        t.heading(t.tr("容量", "Capacity"));
+        t.feature(t.tr("能存的种类数：生效抽屉的格数之和，1x 抽屉算 1 种、2x 算 2 种、4x 算 4 种", "Type count: the slot total of the counted drawers; 1x drawers give 1 type, 2x give 2, 4x give 4"));
+        t.feature(t.tr("每种能存的数量：抽屉单格容量 × √(超级箱/缸等级 × 数量 × 密封等级) × 升级倍率", "Amount per type: drawer slot capacity x sqrt(chest/tank tier x count x hermetic tier) x upgrade multiplier"));
+        t.detail(t.tr("混放不同抽屉时，按单格容量最小的抽屉算", "With mixed drawers, the smallest slot capacity is used"));
+        t.detail(t.tr("升级倍率：所有升级的倍率相乘后平均到每个抽屉，每个抽屉最多算 4 个；存流体时每个升级的倍率减半；最大存储升级不计", "Upgrade multiplier: all upgrade multipliers multiplied and averaged per drawer, at most 4 per drawer; halved per upgrade for fluids; max storage upgrades do not count"));
+        t.feature(t.tr("不限总量，只限每种的上限", "No overall limit, only a per-type cap"));
+
+        t.heading(t.tr("其他", "Other"));
+        t.warning(t.tr("开启溢出销毁后，超过每种上限或种类已满时，放不下的部分直接销毁", "With overflow voiding on, whatever does not fit (per-type cap reached or no free type) is destroyed"));
+        t.feature(t.tr("和保险库一样：存储挂在主机正面，外部存取用保险库仓", "Like the vault: storage is exposed on the controller's front, and the vault hatch handles external IO"));
     });
 
     public static final TipSpec MeDiskBoxTooltips = GTOTips.of("me_disk_box", t -> {
@@ -876,19 +884,17 @@ public final class GTOMachineTooltips {
 
     // ME 超算核心
     public static final TipSpec MECPUTooltips = GTOTips.of("me_cpu", t -> {
-        t.line(TipRole.SUMMARY, Tx.rainbowSlow(t.tr("ME 网络超级 CPU", "Super CPU in ME Network")));
+        t.line(TipRole.SUMMARY, Tx.rainbowSlow(t.tr("多方块合成 CPU，为 ME 网络执行合成任务", "Multiblock crafting CPU that runs ME network crafting jobs")));
 
         t.heading(ComponentSlang.RunningRequirements);
-        t.requirement(t.tr("结构内部空间必须全部填满，可使用合成单元替代", "The interior must be completely filled; Crafting Units can be used instead"));
+        t.requirement(t.tr("内部 481 格须全部填满：合成存储核心（T1~T5），或 AE 合成单元（最多 480 个）", "All 481 interior blocks must be filled: Crafting Storage Cores (T1-T5) or AE Crafting Units (at most 480)"));
+        t.requirement(t.tr("需要 1 个合成CPU接口，可再放 1 个并行仓", "Needs 1 Crafting CPU Interface; 1 Parallel Hatch is optional"));
 
         t.heading(t.tr("CPU 性能", "CPU Performance"));
-        t.feature(t.tr("容量：决定CPU可以处理的总任务大小", "Capacity: Determines the total task size the CPU can handle"));
-        t.bonus(Tx.rainbowSlow(t.tr("填满481个T5元件解锁无限存储", "Fill 481 T5 storage units to unlock infinity storage")));
-        t.formula(t.tr("公式：Σ合成单元存储量", "Formula: ΣCrafting unit storage"));
-        t.feature(t.tr("并行数：决定CPU一次可发配的样板数量", "Parallel: Determines the number of patterns the CPU can dispatch at once"));
-        t.formula(t.tr("公式：合成单元个数 x 并行仓并行数", "Formula: Number of crafting units x parallel number of parallel hatch"));
-        t.feature(t.tr("线程数：决定CPU能同时进行的任务数量", "Threads: Determines the number of tasks the CPU can perform simultaneously"));
-        t.formula(t.tr("公式：2^玻璃等级", "Formula: 2^Glass Tier"));
+        t.feature(t.tr("容量：所有合成存储核心的容量之和，决定能接多大的合成任务；合成单元不提供容量", "Capacity: the sum of all Crafting Storage Core capacities, limiting the job size; Crafting Units add none"));
+        t.bonus(Tx.rainbowSlow(t.tr("481 格全部是 T5 合成存储核心时，容量无限", "With all 481 blocks being T5 Crafting Storage Cores, capacity is unlimited")));
+        t.feature(t.tr("并行：合成存储核心数量 × 并行仓并行数，即一次能发出的样板数", "Parallel: Crafting Storage Core count x Parallel Hatch parallel, the patterns sent out at once"));
+        t.feature(t.tr("线程：2 的玻璃等级次方（最多 256），即能同时进行的合成任务数", "Threads: 2 to the power of the glass tier (at most 256), the crafting jobs that can run at once"));
     });
 
     // 大型内燃机

@@ -150,9 +150,11 @@ final class ItemLang {
         addCNEN("item.gtceu.tool.iv_vajra", "%s 终极金刚杵", "%s Ultimate Vajra");
         addCNEN("block.ad_astra.gto_flag", "GTO旗帜", "GTO Flag");
 
-        addCNEN("item.gtceu.tool.vajra.tooltip", "手持工具时按[%s]调整挖掘速度", "Hold [%s] to adjust mining speed when holding the tool");
-        addCNEN("item.gtceu.tool.vajra.tooltip.shift", "手持工具时按[Shift + %s]启用/禁用矿工热忱", "Hold [Shift + %s] to enable/disable Miner Fervor when holding the tool");
-        addCNEN("item.gtceu.tool.vajra.tooltip.max_speed", "当前挖掘速度: §a%s§r (最大§a%s§r)", "Current mining speed: §a%s§r (Max §a%s§r)");
+        addCNEN("item.gtocore.tool.setting.vajra_speed", "挖掘速度", "Mining Speed");
+        addCNEN("item.gtocore.tool.setting.vajra_speed.detail", "限制挖掘速度上限，便于精确挖掘单个方块；速度越低每次使用耗电越少。矿工热忱开启时此项不生效", "Caps mining speed for precise single-block mining; lower speeds cost less energy per use. Ignored while Miner's Fervor is on");
+        addCNEN("item.gtocore.tool.setting.vajra_speed.full", "%s（不限制）", "%s (Uncapped)");
+        addCNEN("item.gtocore.tool.setting.miners_fervor", "矿工热忱", "Miner's Fervor");
+        addCNEN("item.gtocore.tool.setting.miners_fervor.detail", "开启后按矿工热忱 V 计算挖掘速度：不同硬度的方块挖掘耗时接近，挖坚硬方块明显更快", "When on, mining speed follows Miner's Fervor V: blocks of different hardness take about the same time, so hard blocks mine much faster");
         addCNEN("gtocore.tooltip.item.kinetic_rotor.max", "最大风力: %s", "Max Wind Speed: %s");
         addCNEN("gtocore.tooltip.item.kinetic_rotor.min", "最小风力: %s", "Min Wind Speed: %s");
         addCNEN("gtocore.tooltip.item.virtual_item_provider", "为机器的虚拟电路槽提供物品", "Provide items for the machine's virtual circuit slot.");
@@ -198,10 +200,7 @@ final class ItemLang {
         addCNEN("gtocore.behaviour.grass_harvest.description", GOLD + "极大" + RESET + "地提升小麦种子掉落概率", GOLD + "Greatly" + RESET + " increase the probability of wheat seed dropping");
         addCNEN("gtocore.behaviour.grass_harvest.description2", "右键以收割", "Right click to harvest");
 
-        addCNEN("gtocore.tooltip.item.prospector.mana.1", "魔力: §b%s§r / §a%s§r ",
-                "Mana: §b%s§r / §a%s§r ");
-        addCNEN("gtocore.tooltip.item.prospector.mana.2", "（§b%s§r / §a%s§r 个魔力池）",
-                "（§b%s§r / §a%s§r Mana Pools）");
+        addCNEN("gtocore.tooltip.item.prospector.mana.2", "相当于 %s / %s 个魔力池", "Equivalent to %s / %s Mana Pools");
 
         addCNEN("gtocore.tooltip.item.machine_coordinate_card.tooltip.1", "右键机器记录其坐标，右键空气清空记录。",
                 "Right-click a machine to record its coordinates, right-click air to clear the record");

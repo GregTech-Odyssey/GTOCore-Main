@@ -79,34 +79,19 @@ public final class CustomToolRecipes {
                 List.of(GTItems.BATTERY_LuV_VANADIUM, GTItems.ENERGY_LAPOTRONIC_ORB_CLUSTER));
         batteryItems.put(GTValues.ZPM, List.of(GTItems.BATTERY_ZPM_NAQUADRIA, GTItems.ENERGY_MODULE));
         batteryItems.put(GTValues.UV, List.of(GTItems.BATTERY_UV_NAQUADRIA, GTItems.ENERGY_CLUSTER));
-
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadDrill, GTToolType.DRILL_LV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadDrill, GTToolType.DRILL_MV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadDrill, GTToolType.DRILL_HV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadDrill, GTToolType.DRILL_EV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadDrill, GTToolType.DRILL_IV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadChainsaw, GTToolType.CHAINSAW_LV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadWrench, GTToolType.WRENCH_LV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadWrench, GTToolType.WRENCH_HV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadWrench, GTToolType.WRENCH_IV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadBuzzSaw, GTToolType.BUZZSAW);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadScrewdriver, GTToolType.SCREWDRIVER_LV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadWireCutter, GTToolType.WIRE_CUTTER_LV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadWireCutter, GTToolType.WIRE_CUTTER_HV);
-        ToolHeadReplaceRecipe.setToolHeadForTool(toolHeadWireCutter, GTToolType.WIRE_CUTTER_IV);
     }
 
     private static void registerPowerUnitRecipes() {
-        for (int tier : powerUnitItems.keySet()) {
+        for (int tier = GTValues.LV; tier < GTItems.powerUnitTierCount(); tier++) {
             List<ItemEntry<? extends Item>> tieredBatteryItems = batteryItems.get(tier);
             for (ItemEntry<? extends Item> batteryItem : tieredBatteryItems) {
-                if (powerUnitItems.get(tier) != null) {
+                if (GTItems.powerUnit(tier) != null) {
                     ItemStack batteryStack = batteryItem.asStack();
                     long maxCharge = GTCapabilityHelper.getElectricItem(batteryStack).getMaxCharge();
-                    ItemStack powerUnitStack = ToolItemHelper.getMaxChargeOverrideStack(powerUnitItems.get(tier).get(),
+                    ItemStack powerUnitStack = ToolItemHelper.getMaxChargeOverrideStack(GTItems.powerUnit(tier).get(),
                             maxCharge);
                     String recipeName = String.format("%s_%s",
-                            RegistriesUtils.getIdLocation(powerUnitItems.get(tier).get()).getPath(),
+                            RegistriesUtils.getIdLocation(GTItems.powerUnit(tier).get()).getPath(),
                             RegistriesUtils.getIdLocation(batteryItem.get()).getPath());
 
                     VanillaRecipeHelper.addShapedEnergyTransferRecipe(true, false, true, recipeName,
@@ -136,37 +121,37 @@ public final class CustomToolRecipes {
         final MaterialEntry flint = new MaterialEntry(TagPrefix.gem, GTMaterials.Flint);
         final ItemStack stick = new ItemStack(Items.STICK);
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.MORTAR, false,
+        addToolRecipe(GTMaterials.Flint, GTToolType.MORTAR,
                 " I ", "SIS", "SSS",
                 'I', flint,
                 'S', new ItemStack(Blocks.STONE));
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.SWORD, false,
+        addToolRecipe(GTMaterials.Flint, GTToolType.SWORD,
                 "I", "I", "S",
                 'I', flint,
                 'S', stick);
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.PICKAXE, false,
+        addToolRecipe(GTMaterials.Flint, GTToolType.PICKAXE,
                 "III", " S ", " S ",
                 'I', flint,
                 'S', stick);
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.SHOVEL, false,
+        addToolRecipe(GTMaterials.Flint, GTToolType.SHOVEL,
                 "I", "S", "S",
                 'I', flint,
                 'S', stick);
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.AXE, true,
+        addToolRecipe(GTMaterials.Flint, GTToolType.AXE,
                 "II", "IS", " S",
                 'I', flint,
                 'S', stick);
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.HOE, true,
+        addToolRecipe(GTMaterials.Flint, GTToolType.HOE,
                 "II", " S", " S",
                 'I', flint,
                 'S', stick);
 
-        addToolRecipe(GTMaterials.Flint, GTToolType.KNIFE, false,
+        addToolRecipe(GTMaterials.Flint, GTToolType.KNIFE,
                 "I", "S",
                 'I', flint,
                 'S', stick);
@@ -177,7 +162,7 @@ public final class CustomToolRecipes {
                 GTMaterials.Bronze, GTMaterials.Iron, GTMaterials.Invar, GTMaterials.Steel,
                 GTMaterials.DamascusSteel, GTMaterials.CobaltBrass, GTMaterials.WroughtIron }) {
 
-            addToolRecipe(material, GTToolType.MORTAR, false,
+            addToolRecipe(material, GTToolType.MORTAR,
                     " I ", "SIS", "SSS",
                     'I',
                     new MaterialEntry(material.hasProperty(PropertyKey.GEM) ? TagPrefix.gem : TagPrefix.ingot,
@@ -207,7 +192,7 @@ public final class CustomToolRecipes {
                         'S', stick);
 
                 VanillaRecipeHelper.addShapedRecipe(String.format("plunger_%s", material.getName()),
-                        ToolHelper.getAndSetToolData(GTToolType.PLUNGER, material, 128 * (i << 1), 1, 4F, 0F),
+                        ToolHelper.getPlain(GTToolType.PLUNGER, material),
                         "xPP", " SP", "S f",
                         'P', new MaterialEntry(TagPrefix.plate, material),
                         'S', rod);

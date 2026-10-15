@@ -8,7 +8,6 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeCommands;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.api.research.techtree.ui.TechTreeBrowser;
-import com.gtocore.client.KeyMessage;
 import com.gtocore.client.Message;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.*;
@@ -169,9 +168,7 @@ public class CommonProxy {
             TipSpec tips = TipSpec.builder().lines(l -> l.plain(Component.translatable(GTOTagPrefix.PIPE_TOOLTIP))).build();
             GTMaterialBlocks.ITEM_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setTips(tips));
             GTMaterialBlocks.FLUID_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setTips(tips));
-        } else {
-            KeyMessage.init();
-        }
+        } else {}
         Message.init();
         TeamResearchSavedData.init();
         TechTreeSavedData.init();

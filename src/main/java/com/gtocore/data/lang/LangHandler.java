@@ -126,7 +126,6 @@ public final class LangHandler {
         addCN("item.ae2.facility_terminal", "IO设施管理终端");
         addCNEN("key.gtocore.flyingspeed", "飞行速度调节", "Flight Speed Adjustment");
         addCNEN("key.gtocore.nightvision", "夜视开关", "Night Vision Toggle");
-        addCNEN("key.gtocore.vajra", "金刚杵按键", "Vajra Key");
         addCNEN("key.gtocore.drift", "飞行惯性", "Flight Inertia");
         addCNEN("key.gtocore.debug_inspect", "调试检查GUI槽位", "Debug Inspect GUI Slot");
         addCNEN("key.keybinding.gtocore", "GTO按键绑定", "GTO Key Bindings");

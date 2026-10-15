@@ -7,7 +7,6 @@ import com.gregtechceu.gtceu.api.item.component.forge.IComponentCapability;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.item.ProspectorScannerBehavior;
 import com.gregtechceu.gtceu.uiwidgets.prospector.ProspectorMapView;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -177,7 +176,7 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
         int mana = getMana(stack);
         String formattedManaPool = String.format("%.2f", mana / (double) ManaPoolBlockEntity.MAX_MANA);
         String formattedMaxMana = String.format("%.2f", maxMana / (double) ManaPoolBlockEntity.MAX_MANA);
-        tooltipComponents.add(Tips.stat(Component.translatable("gtocore.tooltip.item.prospector.mana.1", FormattingUtil.formatNumbers(mana), FormattingUtil.formatNumbers(maxMana))));
+        tooltipComponents.add(Tips.mana(mana, maxMana));
         tooltipComponents.add(Tips.detail(Component.translatable("gtocore.tooltip.item.prospector.mana.2", formattedManaPool, formattedMaxMana)));
     }
 
