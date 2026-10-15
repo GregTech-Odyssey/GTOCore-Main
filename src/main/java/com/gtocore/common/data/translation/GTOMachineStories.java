@@ -1278,6 +1278,8 @@ public final class GTOMachineStories {
         t.lore(t.tr("它集成了多种先进的化学处理技术", "It integrates multiple advanced chemical processing technologies"));
         t.lore(t.tr("能够高效地进行复杂的化学反应和物质分离", "Capable of efficiently performing complex chemical reactions and material separations"));
         t.line(TipRole.SUMMARY, t.tr("工业化学的未来已然到来", "The future of industrial chemistry is here"));
+        t.feature(t.tr("运行电镀池配方时，在同一染色的输入仓中，或同一格内的样板总成中匹配阴阳极两侧的半反应", "When running plating bath recipes, match the half-reactions on both sides of the anode and cathode in the same colored input tank or in the same slot of the template assembly"));
+        t.feature(t.tr("离子膜仍然由半透膜仓提供", "Ion exchange membranes are still provided by semipermeable membrane hatches"));
     });
 
     public static final TipSpec travelAnchorTooltips = GTOTips.of("travel_anchor", t -> {
