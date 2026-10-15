@@ -17,7 +17,6 @@ import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
-import com.gtolib.network.HeaderIndexManager;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.SparkRange;
@@ -51,6 +50,7 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.gtm.recipe.editor.RecipeEditorUIFactory;
+import com.gtolib.network.HeaderIndexManager;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;

@@ -12,6 +12,7 @@ import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
 import com.gtocore.client.overlay.WirelessAEClientHandler;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
+import com.gtocore.client.screen.GTOTitleScreen;
 import com.gtocore.client.screen.starmap.rocket.RocketMapScreen;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
@@ -40,6 +41,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
@@ -105,6 +107,7 @@ public final class ForgeClientEvent {
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onRenderWorldLast);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::autoConfirmExperimentalWarning);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::replacePlanetsScreen);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::replaceTitleScreen);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ForgeClientEvent::styleStarMapTooltip);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::registerCommands);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientDisconnect);
@@ -270,6 +273,12 @@ public final class ForgeClientEvent {
 
     public static void replacePlanetsScreen(ScreenEvent.Opening event) {
         if (event.getNewScreen() instanceof PlanetsScreen screen) event.setNewScreen(RocketMapScreen.create(screen.getMenu()));
+    }
+
+    public static void replaceTitleScreen(ScreenEvent.Opening event) {
+        if (event.getNewScreen() != null && event.getNewScreen().getClass() == TitleScreen.class) {
+            event.setNewScreen(new GTOTitleScreen());
+        }
     }
 
     public static void styleStarMapTooltip(RenderTooltipEvent.Color event) {
