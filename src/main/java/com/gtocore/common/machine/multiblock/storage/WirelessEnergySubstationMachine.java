@@ -14,6 +14,7 @@ import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.block.WirelessEnergyTowerUnit;
 import com.gtocore.common.block.WirelessEnergyTransferUnitBlock;
 import com.gtocore.common.block.WirelessEnergyUnitBlock;
+import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.wireless.energy.GridMapEntry;
@@ -220,6 +221,8 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private int storageMultiplierHalf;
     private String storageMultiplierExpression = "1";
     private Component throughputFormulaText = MultiblockPage.NO_VALUE;
+    @Nullable
+    private WirelessEnergyUnitBlockEntity.Snapshot pendingRelease;
 
     public WirelessEnergySubstationMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -349,17 +352,25 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         transferText = describe(transferPositions, superTransferPositions);
         unitsOverTier = overTier(storagePositions, glassTier) || overTier(transferPositions, glassTier) || overTier(superStoragePositions, glassTier) || overTier(superTransferPositions, glassTier);
         ProviderRegistry.registerTower(this, units, towerTier, throughput);
+        WirelessEnergyUnitBlockEntity.absorb(this, storagePositions, glassTier);
     }
 
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
+        pendingRelease = null;
         register();
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
+        if (getLevel() instanceof ServerLevel level) {
+            pendingRelease = WirelessEnergyUnitBlockEntity.Snapshot.of(storagePositions, glassLimit, storageMultiplierHalf);
+            TaskHandler.enqueueTask(level, () -> {
+                if (!isRemoved() && level.isLoaded(getPos()) && !isFormed()) release();
+            }, 20);
+        }
         storagePositions.clear();
         transferPositions.clear();
         superStoragePositions.clear();
@@ -373,12 +384,18 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         storageMultiplierHalf = 0;
         storageMultiplierExpression = "1";
         throughputFormulaText = MultiblockPage.NO_VALUE;
-        ProviderRegistry.unregisterLater(this, 20);
     }
 
     @Override
     public void onMachineRemoved() {
-        ProviderRegistry.unregister(this);
+        if (pendingRelease == null && isFormed()) pendingRelease = WirelessEnergyUnitBlockEntity.Snapshot.of(storagePositions, glassLimit, storageMultiplierHalf);
+        release();
+    }
+
+    private void release() {
+        var snapshot = pendingRelease;
+        pendingRelease = null;
+        WirelessEnergyUnitBlockEntity.release(this, snapshot);
     }
 
     @Override

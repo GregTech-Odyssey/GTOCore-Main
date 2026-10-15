@@ -462,7 +462,7 @@ jobs:
           echo "OK: gto-seal-runtime SPI present"
           # ResourceLocationMixn 必须已 reobf 成 SRG（与 maven gtolib-forge 一致）
           python3 -c "import zipfile,sys; d=zipfile.ZipFile(sys.argv[1]).read('com/gtolib/mixin/mc/ResourceLocationMixn.class').decode('latin-1'); assert 'f_135804_' in d and 'm_245413_' in d and 'assertValidNamespace' not in d; print('OK: ResourceLocationMixn SRG names present')" "$GTO"
-          # 发行包只能嵌入发行单轨：无 dev 轨字节码、无明文调试字节、内部类名确已混淆
+          # 发行包只能嵌入发行单轨：无 dev 轨字节码、无明文调试字节、内部类名确已改名
           python3 - "$GTO" <<'PY'
           import re, sys, zipfile
           zf = zipfile.ZipFile(sys.argv[1])
@@ -476,8 +476,17 @@ jobs:
               sys.exit(f'::error::gtocore 内 gtolib 类含 LocalVariableTable（{len(lvt)} 个，{lvt[0]}），疑似明文字节')
           renamed = [n for n in gl if re.search(r'[^ -~]', n)]
           if not renamed:
-              sys.exit('::error::gtocore 内 gtolib 类名未混淆，嵌入的不是发行单轨')
-          print(f'OK: gtolib {len(gl)} class，混淆名 {len(renamed)}，无 dev.bin、无 LVT')
+              sys.exit('::error::gtocore 内 gtolib 类名未经代码保护，嵌入的不是发行单轨')
+          print(f'OK: gtolib {len(gl)} class，改名 {len(renamed)}，无 dev.bin、无 LVT')
+          mf = zf.read('META-INF/MANIFEST.MF').decode('utf-8', 'replace')
+          if 'GTO-Core-Obfuscated: 1' not in mf:
+              sys.exit('::error::gtocore 自身类未经发行代码保护（缺 GTO-Core-Obfuscated）')
+          gc = [n for n in names if n.endswith('.class') and not n.startswith(('com/gtolib/', 'META-INF/'))]
+          gc_renamed = [n for n in gc if re.search(r'[^ -~]', n)]
+          gc_lvt = [n for n in gc if b'LocalVariableTable' in zf.read(n)]
+          if not gc_renamed or gc_lvt:
+              sys.exit(f'::error::gtocore 代码保护异常：改名 {len(gc_renamed)}，带 LVT {len(gc_lvt)}')
+          print(f'OK: gtocore {len(gc)} class，改名 {len(gc_renamed)}，无 LVT')
           PY
 
       - name: List outputs
@@ -489,27 +498,42 @@ jobs:
           echo "Gate reason: ${{ needs.gate.outputs.reason }}"
           echo "Built: ${{ needs.gate.outputs.checkout_repo }}@${{ needs.gate.outputs.checkout_ref }}"
 
-      # 混淆映射只以加密形式归档（公开仓的 artifact 任何登录用户都能下载）
-      - name: Encrypt GTOLib release mapping
+      # 代码保护映射只以加密形式归档（公开仓的 artifact 任何登录用户都能下载）
+      # 文件名与 artifact 名带构建编号（GTO-Build-Id），玩家日志/崩溃报告里的编号据此对回 mapping
+      - name: Encrypt release mappings
+        id: mapping_enc
         env:
           MAPPING_PASS: ${{ secrets.GTOLIB_MAPPING_KEY }}
         run: |
           set -euo pipefail
           if [ -z "${MAPPING_PASS:-}" ]; then
-            echo "::error::Missing secret GTOLIB_MAPPING_KEY（混淆映射专用加密密钥，与签名密码分开）"
+            echo "::error::Missing secret GTOLIB_MAPPING_KEY（代码保护映射专用加密密钥，与签名密码分开）"
             exit 1
           fi
           MAP=build/gtolib/gtolib-release-mapping.txt
+          CORE_MAP=build/gtocore-obf/gtocore-release-mapping.txt
           test -s "$MAP"
+          test -s "$CORE_MAP"
+          GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
+          BUILD_ID=$(unzip -p "$GTO" META-INF/MANIFEST.MF | tr -d '' | sed -n 's/^GTO-Build-Id: //p')
+          test -n "$BUILD_ID" || { echo "::error::$GTO 的 MANIFEST 缺少 GTO-Build-Id"; exit 1; }
+          for f in "$MAP" "$CORE_MAP"; do
+            [ "$(head -n1 "$f")" = "# GTO-Build-Id: $BUILD_ID" ] || { echo "::error::$f 文件头的构建编号与 jar 不一致"; exit 1; }
+          done
           mkdir -p build/mapping-enc
-          gzip -9 -c "$MAP" | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:MAPPING_PASS -out build/mapping-enc/gtolib-release-mapping.txt.gz.enc
+          gzip -9 -c "$MAP" | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:MAPPING_PASS -out "build/mapping-enc/gtolib-release-mapping-$BUILD_ID.txt.gz.enc"
+          gzip -9 -c "$CORE_MAP" | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:MAPPING_PASS -out "build/mapping-enc/gtocore-release-mapping-$BUILD_ID.txt.gz.enc"
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+          echo "GTO-Build-Id: $BUILD_ID"
           ls -la build/mapping-enc
 
       - name: Upload encrypted mapping
         uses: actions/upload-artifact@v4
         with:
-          name: gtolib-mapping-encrypted
-          path: build/mapping-enc/gtolib-release-mapping.txt.gz.enc
+          name: gtolib-mapping-encrypted-${{ steps.mapping_enc.outputs.build_id }}
+          path: |
+            build/mapping-enc/gtolib-release-mapping-${{ steps.mapping_enc.outputs.build_id }}.txt.gz.enc
+            build/mapping-enc/gtocore-release-mapping-${{ steps.mapping_enc.outputs.build_id }}.txt.gz.enc
           if-no-files-found: error
           retention-days: 90
 

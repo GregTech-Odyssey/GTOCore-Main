@@ -1,5 +1,7 @@
 package com.gtocore.api.wireless.energy;
 
+import com.gregtechceu.gtceu.api.GTValues;
+
 import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -174,6 +176,19 @@ public final class EnergyAccount {
     public BigInteger towerCapacity(GlobalPos pos) {
         var capacity = towerCapacities.get(pos);
         return capacity == null ? BigInteger.ZERO : capacity;
+    }
+
+    long[] gridScales(Provider.Tower tower) {
+        var scales = new long[GTValues.MAX + 1];
+        var body = GridBody.of(tower.pos().dimension());
+        for (var other : towers.values()) {
+            if (other.tier() != tower.tier() || GridBody.of(other.pos().dimension()) != body) continue;
+            for (var unit : other.units()) {
+                if (unit.tier() >= 0 && unit.tier() <= GTValues.MAX) scales[unit.tier()] += unit.count();
+            }
+        }
+        for (int t = GTValues.MAX - 1; t >= 0; t--) scales[t] += scales[t + 1];
+        return scales;
     }
 
     public BigInteger totalCapacity() {

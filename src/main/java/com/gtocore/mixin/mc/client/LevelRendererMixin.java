@@ -2,8 +2,10 @@ package com.gtocore.mixin.mc.client;
 
 import com.gtocore.client.renderer.fx.SolarStormFX;
 import com.gtocore.client.renderer.item.ItemCountRenderer;
+import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.utils.StxckUtil;
 
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -13,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,6 +32,11 @@ public abstract class LevelRendererMixin {
     @ModifyExpressionValue(method = "renderSky", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private float preserveSolarSkyBrightness(float rain) {
         return SolarStormFX.isSolarSurface(Minecraft.getInstance().level) ? 0.0F : rain;
+    }
+
+    @Inject(method = "renderSky", at = @At("RETURN"))
+    private void renderCelestialBodies(PoseStack poseStack, Matrix4f projectionMatrix, float partialTick, Camera camera, boolean isFoggy, Runnable skyFogSetup, CallbackInfo ci) {
+        CelestialSkyRenderer.renderSky(poseStack, partialTick);
     }
 
     @Inject(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))

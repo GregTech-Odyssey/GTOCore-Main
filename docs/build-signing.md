@@ -17,7 +17,8 @@
 
 - 工作流产出签名版 jar，只有该版本可以放入整合包。本地构建只用于开发调试。
 - 组织成员可在 PR 下以 `/build` 作为第一行评论，触发对 PR head 的签名构建。
-- 另有 `gtolib-mapping-encrypted`：GTOLib 发行混淆映射，用映射专用 secret `GTOLIB_MAPPING_KEY` 加密，解密方法见 [GTOLib 子模块与构建](gtolib.md)。
+- 另有 `gtolib-mapping-encrypted-<构建编号>`：加密的发行代码保护映射，保留 90 天。
+- 构建编号（`GTO-Build-Id`）、映射的下载与解密、代码保护报错栈对回源码名：见 GTOLib 仓 [`docs/release-obfuscation.md`](../GTOLib/docs/release-obfuscation.md) 与 [`docs/deobfuscate-stacktrace.md`](../GTOLib/docs/deobfuscate-stacktrace.md)。
 - 构建开始时，bot 会在 PR 下发送“正在构建”评论与 Actions 链接；完成、失败或取消后原地更新同一条评论。
 - `issue_comment` 触发的 run 不会出现在 PR Checks 页，应查看 bot 评论或 Actions 页面。
 

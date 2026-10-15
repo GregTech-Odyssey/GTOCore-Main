@@ -41,6 +41,59 @@ public final class ProviderRegistry {
         return WirelessGrid.accountIfPresent(machine.getOwnerUUID()).towerCapacity(GlobalPos.of(level.dimension(), machine.getPos()));
     }
 
+    public record TowerCharge(BigInteger energy, long[] scales) {
+
+        public long scale(int tier) {
+            return tier >= 0 && tier < scales.length ? Math.max(1, scales[tier]) : 1;
+        }
+    }
+
+    @Nullable
+    public static TowerCharge towerCharge(MetaMachine machine) {
+        var grid = WirelessGrid.get();
+        if (grid == null || !grid.available || !(machine.getLevel() instanceof ServerLevel level)) return null;
+        var pos = GlobalPos.of(level.dimension(), machine.getPos());
+        var account = grid.providerOwners.get(pos);
+        var tower = account == null ? null : account.towers.get(pos);
+        if (tower == null || tower.tier() < 0) return null;
+        var node = account.nodes.get(GridBody.of(pos.dimension()));
+        if (node == null) return null;
+        int bank = tower.tier();
+        var stored = U126.toBig(Math.max(0, node.bankHi[bank]), node.bankLo[bank]);
+        var bankCapacity = U126.toBig(node.bankCapHi[bank], node.bankCapLo[bank]);
+        var capacity = account.towerCapacity(pos);
+        if (stored.signum() <= 0 || bankCapacity.signum() <= 0 || capacity.signum() <= 0) return new TowerCharge(BigInteger.ZERO, account.gridScales(tower));
+        var share = capacity.compareTo(bankCapacity) >= 0 ? stored : stored.multiply(capacity).divide(bankCapacity);
+        return new TowerCharge(share, account.gridScales(tower));
+    }
+
+    public static void releaseTower(MetaMachine machine, BigInteger taken) {
+        var grid = WirelessGrid.get();
+        if (grid == null || !(machine.getLevel() instanceof ServerLevel level)) return;
+        var pos = GlobalPos.of(level.dimension(), machine.getPos());
+        var account = grid.providerOwners.get(pos);
+        var tower = account == null ? null : account.towers.get(pos);
+        if (tower != null && tower.tier() >= 0) {
+            var node = account.nodes.get(GridBody.of(pos.dimension()));
+            if (node != null) node.release(tower.tier(), taken, account.towerCapacity(pos));
+            account.towerCapacities.remove(pos);
+        }
+        unregister(grid, pos);
+    }
+
+    public static boolean chargeTower(MetaMachine machine, BigInteger amount) {
+        if (amount.signum() <= 0) return true;
+        var grid = WirelessGrid.get();
+        if (grid == null || !grid.available || !(machine.getLevel() instanceof ServerLevel level)) return false;
+        var pos = GlobalPos.of(level.dimension(), machine.getPos());
+        var account = grid.providerOwners.get(pos);
+        var tower = account == null ? null : account.towers.get(pos);
+        if (tower == null || tower.tier() < 0) return false;
+        account.nodeOrCreate(pos.dimension()).load(tower.tier(), U126.hi(amount), U126.lo(amount));
+        account.markDirty();
+        return true;
+    }
+
     public static void registerRelay(MetaMachine machine, int tier, @Nullable ResourceKey<Level> target) {
         register(machine, (pos, owner, level) -> new Provider.Relay(pos, owner, clampLineTier(tier), Provider.Relay.AMPERAGE, target == null ? level.dimension() : target));
     }

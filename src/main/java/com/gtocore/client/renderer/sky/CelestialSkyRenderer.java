@@ -6,6 +6,10 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.data.CelestialBody;
 import com.gtolib.api.data.Dimension;
 
+import com.gregtechceu.gtceu.GTCEu;
+
+import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
@@ -13,7 +17,6 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -59,6 +62,7 @@ public final class CelestialSkyRenderer {
     private static final double[] OBSERVER = new double[3];
     private static final double[] TARGET = new double[3];
     private static final Object2ObjectOpenHashMap<ResourceLocation, ResourceLocation> RESAMPLED = new Object2ObjectOpenHashMap<>();
+    private static final boolean OCULUS = GTCEu.isModLoaded("oculus");
 
     private CelestialSkyRenderer() {}
 
@@ -84,22 +88,38 @@ public final class CelestialSkyRenderer {
         CelestialOrbits.clearClientSeed();
     }
 
-    @SubscribeEvent
-    public static void onRenderStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
+    public static void renderSky(PoseStack poseStack, float partialTick) {
         var level = Minecraft.getInstance().level;
         if (level == null || !CelestialOrbits.hasClientSeed()) return;
         var observer = observer(level);
         if (observer == null) return;
-        float partialTick = event.getPartialTick();
         boolean orbit = inOrbit(level);
         var dimension = Dimension.get(level.dimension());
         var environment = dimension != null ? dimension.getEnvironment() : null;
         float daylight = environment != null && environment.oxygen() ? 1 - Math.min(1, level.getStarBrightness(partialTick) * 2) : 0;
         int count = collect(observer, orbit, level.getGameTime() + partialTick, daylight);
         if (count == 0) return;
-        draw(event.getPoseStack(), count, level.getTimeOfDay(partialTick) * 360, (float) Math.toDegrees(observer.getObliquity()),
+        var phase = OCULUS ? IrisPhase.enter() : null;
+        draw(poseStack, count, level.getTimeOfDay(partialTick) * 360, (float) Math.toDegrees(observer.getObliquity()),
                 1 - level.getRainLevel(partialTick));
+        if (OCULUS) IrisPhase.exit(phase);
+    }
+
+    private static final class IrisPhase {
+
+        @Nullable
+        static Object enter() {
+            var pipeline = Iris.getPipelineManager().getPipelineNullable();
+            if (pipeline == null) return null;
+            var previous = pipeline.getPhase();
+            pipeline.setPhase(WorldRenderingPhase.CUSTOM_SKY);
+            return previous;
+        }
+
+        static void exit(@Nullable Object previous) {
+            var pipeline = Iris.getPipelineManager().getPipelineNullable();
+            if (pipeline != null && previous instanceof WorldRenderingPhase phase) pipeline.setPhase(phase);
+        }
     }
 
     private static int collect(CelestialBody observer, boolean orbit, double ticks, float daylight) {

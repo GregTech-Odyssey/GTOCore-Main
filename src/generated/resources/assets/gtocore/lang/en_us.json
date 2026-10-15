@@ -2605,6 +2605,7 @@
   "gtocore.block.wireless_energy_unit.multiplier_only": "With multiple super units installed, the total multiplier is the sum of each unit's multiplier",
   "gtocore.block.wireless_energy_unit.requires_glass": "Takes effect when the tower's glass tier is at least %s",
   "gtocore.block.wireless_energy_unit.scaling": "With N units of this tier or higher across towers of the same voltage tier in one dimension, each counts as N times its base capacity",
+  "gtocore.block.wireless_energy_unit.stored.detail": "Stored when the tower's structure breaks; returns to the grid once the tower forms again",
   "gtocore.block.wireless_energy_unit.super_storage": "Provides ×%s energy storage multiplier for the current tower",
   "gtocore.block.wireless_energy_unit.supplies": "A tower supplies its highest effective ordinary unit tier + 1; super units do not raise its supplied voltage",
   "gtocore.block.wireless_energy_unit.throughput": "Throughput: %s × %sA each for input and output",

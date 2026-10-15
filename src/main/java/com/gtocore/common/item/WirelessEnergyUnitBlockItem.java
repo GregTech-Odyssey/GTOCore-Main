@@ -1,6 +1,8 @@
 package com.gtocore.common.item;
 
+import com.gtocore.api.wireless.energy.ProviderRegistry;
 import com.gtocore.common.block.WirelessEnergyTowerUnit;
+import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
 import com.gtocore.common.machine.multiblock.storage.WirelessEnergySubstationMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -12,6 +14,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
+
+import java.math.BigInteger;
 
 public class WirelessEnergyUnitBlockItem extends BlockItem {
 
@@ -29,6 +33,8 @@ public class WirelessEnergyUnitBlockItem extends BlockItem {
                     mbe.getMetaMachine() instanceof WirelessEnergySubstationMachine machine) {
                 var substituted = machine.substituteBlocks(unit, stack.getCount(), serverPlayer);
                 if (substituted > 0) {
+                    var stored = WirelessEnergyUnitBlockEntity.stored(stack);
+                    if (stored != null) ProviderRegistry.chargeTower(machine, stored.multiply(BigInteger.valueOf(substituted)));
                     stack.shrink(substituted);
                     return InteractionResult.SUCCESS;
                 }

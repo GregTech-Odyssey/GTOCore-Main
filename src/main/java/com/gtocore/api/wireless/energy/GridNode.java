@@ -433,6 +433,20 @@ public final class GridNode {
         credit(bank, aHi, aLo);
     }
 
+    void release(int bank, BigInteger taken, BigInteger capacity) {
+        if (taken.signum() > 0) debit(bank, U126.hi(taken), U126.lo(taken));
+        long cHi = U126.hi(capacity), cLo = U126.lo(capacity);
+        long dl = bankCapLo[bank] - cLo;
+        long dh = bankCapHi[bank] - cHi + (dl >> 63);
+        bankCapHi[bank] = Math.max(0, dh);
+        bankCapLo[bank] = dh < 0 ? 0 : dl & U126.MASK;
+        dl = capLo - cLo;
+        dh = capHi - cHi + (dl >> 63);
+        capHi = Math.max(0, dh);
+        capLo = dh < 0 ? 0 : dl & U126.MASK;
+        finishCapacity();
+    }
+
     void moveTo(GridNode target) {
         for (int m = stocked; m != 0; m &= m - 1) {
             int t = Integer.numberOfTrailingZeros(m);

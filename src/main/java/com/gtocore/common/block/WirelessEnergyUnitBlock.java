@@ -1,5 +1,7 @@
 package com.gtocore.common.block;
 
+import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
+import com.gtocore.common.data.GTOBlockEntities;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.config.GTORules;
 
@@ -11,11 +13,19 @@ import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipTheme;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +37,7 @@ import javax.annotation.Nullable;
 
 @Getter
 @DataGeneratorScanned
-public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowerUnit {
+public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowerUnit, EntityBlock {
 
     @RegisterLanguage(cn = "吞吐：输入、输出各 %s × %sA", en = "Throughput: %s × %sA each for input and output")
     static final String THROUGHPUT = "gtocore.block.wireless_energy_unit.throughput";
@@ -103,6 +113,23 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
     }
 
     @Override
+    @Nullable
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
+        return superUnit ? null : GTOBlockEntities.WIRELESS_ENERGY_UNIT.create(pos, state);
+    }
+
+    @Override
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder params) {
+        return WirelessEnergyUnitBlockEntity.withEnergy(super.getDrops(state, params), params.getOptionalParameter(LootContextParams.BLOCK_ENTITY), asItem());
+    }
+
+    @Override
+    public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, @NotNull ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!superUnit) WirelessEnergyUnitBlockEntity.onPlaced(level, pos, stack);
+    }
+
+    @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         if (superUnit) {
@@ -116,6 +143,7 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
             tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, GTValues.VNF[tier], AMPERAGE)));
             tooltip.add(Tips.stat(Component.translatable(LOSS, (double) getLoss() / 10)));
             if (isGridScaled()) tooltip.add(Tips.bonus(Component.translatable(SCALING)));
+            WirelessEnergyUnitBlockEntity.appendTooltip(stack, tier, tooltip);
         }
         tooltip.add(Tips.requirement(Component.translatable(REQUIRES_GLASS, GTValues.VNF[tier])));
         tooltip.add(Tips.detail(Component.translatable(SUPPLIES)));

@@ -81,11 +81,13 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
     }
 
     public static TravelStaffBehavior create() {
-        return new TravelStaffBehavior(
+        var behavior = new TravelStaffBehavior(
                 0L,
                 LV,
                 true,
                 false);
+        behavior.tierFromBattery();
+        return behavior;
     }
 
     @Override

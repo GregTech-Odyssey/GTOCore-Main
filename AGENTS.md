@@ -14,6 +14,7 @@
 | 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖 | [本地 GTM 联调](docs/local-gtm.md) |
 | 操作 `GTOLib/`、`GTOSeal/`、GTOLib 构建缓存（`build/gtolib/`）、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与构建](docs/gtolib.md) |
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
+| 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
 
@@ -69,7 +70,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - `GTOLib/` 与 `GTOSeal/` 都是私有子模块，只有具备对应仓库权限的人员或执行环境才能初始化、拉取和更新。无权限时子模块不可用是预期状态；不要反复重试、绕过权限或要求提供凭据。构建 gtocore 必须有 GTOLib 源码（缺失时配置阶段直接报错），公开仓不带任何 GTOLib 预构建。
 - `GTOLib/` 与 `GTOSeal/` 是独立 Git 仓库；主仓记录的是 gitlink。修改、切换或恢复它们前读取 [GTOLib 子模块与构建](docs/gtolib.md)。
 - 修改 `GTOLib/` 代码时，完成当前任务前必须使用 JDK 21 运行一次 `buildGtolibProtected` 并确认通过。一个任务在收尾时重建一次即可，不要每改一处都重建；若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。
-- GTOLib 产物只生成在 `build/gtolib/`（按源码指纹缓存），始终不得提交、上传或打包分发；dev 轨保留类名/包名（`GTOLib/protect/proguard-rules.pro`），只有发行轨混淆（`proguard-release-rules.pro`，字典每次构建重新打乱）。`libs/` 不再存放 GTOLib 产物，残留的旧 `libs/gtolib-*` 由 gitignore 兜底，不要绕过。开发运行需要 named 类，生产链使用 SRG，勿用 reobf 产物覆盖明文调试 jar。
+- GTOLib 产物只生成在 `build/gtolib/`（按源码指纹缓存），始终不得提交、上传或打包分发；dev 轨保留类名/包名（`GTOLib/protect/proguard-rules.pro`），只有发行轨改名（`proguard-release-rules.pro`，字典每次构建重新打乱）。`libs/` 不再存放 GTOLib 产物，残留的旧 `libs/gtolib-*` 由 gitignore 兜底，不要绕过。开发运行需要 named 类，生产链使用 SRG，勿用 reobf 产物覆盖明文调试 jar。
 - GTOLib 新增按名反射、注解扫描、存盘键或配置里写类名时，必须用 `com.gtolib.api.annotation.KeepName` 标注（类级保类名+包名，成员级保成员名+所属类名）；第三方或 GTOSeal Runtime 写死、改不了源码的名字再补 `GTOLib/protect/proguard-release-rules.pro` 的 `-keepnames`。开发环境测不出漏补。
 
 ## 云端签名

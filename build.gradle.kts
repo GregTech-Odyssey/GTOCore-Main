@@ -428,6 +428,7 @@ dependencies {
 
 // GTOLib：打包 → 加密 → 嵌入 gtocore；run*/jar 都依赖这条流水线
 apply(from = "gradle/scripts/gtolib-pipeline.gradle.kts")
+apply(from = "gradle/scripts/release-smoke.gradle.kts")
 if (extra["isGtolibDebugMode"] == true) {
     legacyForge.runs.configureEach { systemProperty("gtolib.debug", "true") }
 }

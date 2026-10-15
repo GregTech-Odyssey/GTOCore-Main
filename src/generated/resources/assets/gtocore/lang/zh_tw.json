@@ -2733,6 +2733,7 @@
   "gtocore.block.wireless_energy_unit.multiplier_only": "安裝多個超級單元時，總倍率為各單元倍率之和",
   "gtocore.block.wireless_energy_unit.requires_glass": "生效條件：能源塔玻璃等級不低於 %s",
   "gtocore.block.wireless_energy_unit.scaling": "同一維度內電壓等級相同的能源塔中，同級或更高的單元共有 N 個時，每個按基礎容量的 N 倍計",
+  "gtocore.block.wireless_energy_unit.stored.detail": "能源塔結構失效時存入；裝回能源塔併成型後併入電網",
   "gtocore.block.wireless_energy_unit.super_storage": "為當前能源塔提供×%s的儲能倍率",
   "gtocore.block.wireless_energy_unit.supplies": "能源塔的提供電壓 = 內部生效普通單元的最高等級 + 1；超級單元不提高提供電壓",
   "gtocore.block.wireless_energy_unit.throughput": "吞吐：輸入、輸出各 %s × %sA",

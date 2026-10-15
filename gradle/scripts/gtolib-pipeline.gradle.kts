@@ -1,5 +1,5 @@
 /**
- * GTOLib 流水线：源码 → dev 轨 build/gtolib/gtolib-protected.jar（named hollow，本机运行与编译）+ 发行轨 build/gtolib/gtolib-release.jar（类名/成员名混淆，嵌入玩家 jar）。
+ * GTOLib 流水线：源码 → dev 轨 build/gtolib/gtolib-protected.jar（named hollow，本机运行与编译）+ 发行轨 build/gtolib/gtolib-release.jar（类名/成员名改名，嵌入玩家 jar）。
  * 两条轨道用各自规则：dev 轨 proguard-rules.pro（保留类名/包名），发行轨 proguard-release-rules.pro（改名）；gtocore 对 com.gtolib 的引用在打包时按发行 mapping remap。
  * 明文开关 -PgtolibUnprotected=true | -PgtolibDebug=true | -PskipGtolibProtect=true（或 env GTOLIB_DEBUG / PROGUARD_DISABLE / .gtolib-debug）；强制重建 -PgtolibRebuild=true。
  */
@@ -133,6 +133,7 @@ val isGtolibJarUpToDate: Boolean = run {
         stamp["fingerprint"] != gtolibFingerprint -> "stamp 源码指纹缺失或过期"
         sha256(protectedJar) != stamp["jarSha256"] -> "build/gtolib/gtolib-protected.jar 缺失或与 stamp 不一致"
         sha256(releaseJar) != stamp["releaseSha256"] -> "build/gtolib/gtolib-release.jar 缺失或与 stamp 不一致"
+        !proguardReleaseJar.isFile || !forgeSrgLibraryJar.isFile -> "gtocore 代码保护所需的发行轨中间产物缺失"
         else -> null
     }
     if (reason != null) logger.lifecycle("GTOLib: $reason -> 重建保护产物")
@@ -310,7 +311,7 @@ fun gtocoreSourceImports(): Sequence<MatchResult> =
  * 把 @KeepName 展开成具体类名的 -keepnames（类级保类名+包名；成员级保成员名+所属类名）。
  * 必须扫描该轨的 ProGuard 输入 jar：dev 轨是 named、发行轨是 SRG，成员名按各自命名空间取。
  * 不能在规则文件里写 `-keepnames class * { @KeepName <fields>; }`：ProGuard 7.8 实测会把
- * 「class * + 成员说明」当成命中全部类，混淆类数直接变 0。
+ * 「class * + 成员说明」当成命中全部类，改名类数直接变 0。
  */
 fun writeKeepNameRules(inputJar: File, target: File): File {
     requireJar(inputJar, "writeKeepNameRules 输入")
@@ -673,20 +674,14 @@ fun zipEntryCount(jar: File): Int = ZipFile(jar).use { zf -> zf.entries().asSequ
 
 // ---------- ProGuard ----------
 
-/** 生成 ProGuard 附加配置：libraryjars + 每次构建随机打乱的混淆字典 + mapping 输出 */
-fun writeProguardExtraFile(taskName: String, srgInput: Boolean, mapping: File): File {
-    val dict = protectDir.resolve("my_dict.txt").readLines()
-    val rnd = SecureRandom()
-    val dicts = listOf("class", "package", "member").associateWith { kind ->
-        out("$taskName-$kind-dict.txt").also { it.writeText(dict.shuffled(rnd).joinToString("\n") + "\n") }
-    }
+/** ProGuard libraryjars：JDK + （SRG 输入时）SRG Forge + 各运行/编译 classpath 上的依赖 jar。 */
+fun proguardLibraryJars(srgInput: Boolean): LinkedHashSet<File> {
     val libs = linkedSetOf<File>()
     File(System.getProperty("java.home")).let { home -> listOf(home.resolve("lib/rt.jar"), home.resolve("jmods/java.base.jmod")).firstOrNull { it.exists() } }?.let(libs::add)
     if (srgInput) {
-        requireJar(forgeSrgLibraryJar, "GTOLib ProGuard: SRG Forge library（先运行 prepareForgeSrgLibrary）", 1024)
+        requireJar(forgeSrgLibraryJar, "ProGuard: SRG Forge library（先运行 prepareForgeSrgLibrary）", 1024)
         libs += forgeSrgLibraryJar
     }
-    (if (srgInput) gtocoreSrgLibraryJar else gtocoreNamedLibraryJar).also { requireJar(it, "GTOLib ProGuard: 主工程类库（gtocore）", 1024) }.let(libs::add)
     configurations.filter { it.name.endsWith("Classpath") && it.isCanBeResolved }.forEach { cfg ->
         runCatching { cfg.resolve() }.getOrNull()?.forEach { f ->
             // SRG 输入不能再混进 named Forge jar，否则 ProGuard 按 classpath 顺序解析到错误的父类方法名
@@ -694,8 +689,18 @@ fun writeProguardExtraFile(taskName: String, srgInput: Boolean, mapping: File): 
             if (f.name.endsWith(".jar") && !(srgInput && f.name == namedForgeJar.name) && !f.canonicalFile.startsWith(gtolibOut.canonicalFile)) libs += f.canonicalFile
         }
     }
+    return libs
+}
+
+/** 写 ProGuard 附加配置：libraryjars + 每次构建随机打乱的代码保护字典 + mapping 输出 */
+fun writeProguardExtraFile(taskName: String, libs: Collection<File>, mapping: File, dir: File = gtolibOut): File {
+    val dict = protectDir.resolve("my_dict.txt").readLines()
+    val rnd = SecureRandom()
+    val dicts = listOf("class", "package", "member").associateWith { kind ->
+        dir.resolve("$taskName-$kind-dict.txt").also { it.writeText(dict.shuffled(rnd).joinToString("\n") + "\n") }
+    }
     fun path(f: File) = "'${f.absolutePath.replace('\\', '/')}'"
-    return out("$taskName-extra.pro").also { extraFile ->
+    return dir.resolve("$taskName-extra.pro").also { extraFile ->
         extraFile.writeText(
             (libs.map { "-libraryjars ${path(it)}" } + listOf(
                 "-classobfuscationdictionary ${path(dicts.getValue("class"))}",
@@ -710,8 +715,8 @@ fun writeProguardExtraFile(taskName: String, srgInput: Boolean, mapping: File): 
 /**
  * gtocore 字节码与源码 import 引用的 com.gtolib 是发行轨的链接面：用 -keepclassmembers,allowobfuscation
  * 固定 public/protected 成员的可见性与可优化性（不会被优化成 private 或被 code/merging 内联掉），
- * 但类名与成员名照常混淆 —— 打包时由 prepareGtolibRefRemapper 按 mapping 改写 gtocore 侧引用。
- * 注意不要改成 -keep（ProGuard 7.8 实测会连类名一起钉住，混淆类数变 0）。
+ * 但类名与成员名照常改名 —— 打包时由 prepareGtolibRefRemapper 按 mapping 改写 gtocore 侧引用。
+ * 注意不要改成 -keep（ProGuard 7.8 实测会连类名一起钉住，改名类数变 0）。
  */
 fun writeReleaseKeepFromGtocoreRefs(target: File) {
     val refs = sortedSetOf<String>()
@@ -735,7 +740,7 @@ fun writeReleaseKeepFromGtocoreRefs(target: File) {
     }
     val keeps = refs.map { it.trimEnd('.', '$') }.filter { it.length > "com.gtolib.".length && ".." !in it }.distinct()
     target.writeText(
-        "# generated: gtocore 字节码+import 对 com.gtolib 的引用面（发行轨固定成员可见性，名字仍混淆、由 remap 对齐）\n" +
+        "# generated: gtocore 字节码+import 对 com.gtolib 的引用面（发行轨固定成员可见性，名字照常改、由 remap 对齐）\n" +
             keeps.joinToString("") { "-keepclassmembers,allowobfuscation class $it { public protected *; }\n" }
     )
     logger.lifecycle("GTOLib release: gtocore 引用面 ${keeps.size} 项 → ${target.name}（扫描 $scanned class）")
@@ -750,18 +755,23 @@ fun verifyNoStaleGtolibRefs(jar: File, mappingFile: File, label: String) {
     val mapping = parseGtolibReleaseMapping(mappingFile)
     val renamed = mapping.classNames.filter { (original, obf) -> original != obf }.keys
     if (renamed.isEmpty()) return
+    val rawNames = (renamed + renamed.map { it.replace('/', '.') }).sortedByDescending { it.length }
+    val rawPattern = Regex("(?<![A-Za-z0-9_$/.])(?:" + rawNames.joinToString("|") { Regex.escape(it) } + ")(?![A-Za-z0-9_$])")
     val stale = linkedSetOf<String>()
     var scanned = 0
     ZipFile(jar).use { zf ->
         zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { e ->
             scanned++
+            val bytes = zf.getInputStream(e).readBytes()
             val checker = object : Remapper() {
                 override fun map(internalName: String): String {
                     if (internalName in renamed) stale += "${e.name} 仍引用 $internalName"
                     return internalName
                 }
             }
-            ClassReader(zf.getInputStream(e).readBytes()).accept(ClassRemapper(ClassWriter(0), checker), 0)
+            ClassReader(bytes).accept(ClassRemapper(ClassWriter(0), checker), 0)
+            val text = latin1(bytes)
+            if ("com/gtolib" in text || "com.gtolib" in text) rawPattern.find(text)?.let { stale += "${e.name} 常量池仍含 ${it.value}" }
         }
     }
     if (stale.isNotEmpty()) {
@@ -786,7 +796,8 @@ fun registerProguard(name: String, desc: String, input: File, output: File, srgI
         doFirst {
             requireJar(input, "$name 输入")
             output.delete()
-            val extra = writeProguardExtraFile(name, srgInput, mapping)
+            val gtocoreLib = (if (srgInput) gtocoreSrgLibraryJar else gtocoreNamedLibraryJar).also { requireJar(it, "GTOLib ProGuard: 主工程类库（gtocore）", 1024) }
+            val extra = writeProguardExtraFile(name, proguardLibraryJars(srgInput) + gtocoreLib, mapping)
             setArgs((rules() + extra).map { "@${it.absolutePath}" } + listOf("-injars", input.absolutePath, "-outjars", output.absolutePath))
         }
         doLast {
@@ -808,7 +819,7 @@ val proguardGtolibDev = registerProguard(
 proguardGtolibDev { dependsOn(packageGtolibJar, "classes", prepareGtocoreNamedLibrary) }
 
 val proguardGtolibRelease = registerProguard(
-    "proguardGtolibRelease", "发行轨 ProGuard：SRG 输入，内部类名/包名混淆",
+    "proguardGtolibRelease", "发行轨 ProGuard：SRG 输入，内部类名/包名改名",
     srgJar, proguardReleaseJar, srgInput = true, mapping = releaseMappingFile,
     rules = {
         listOf(
@@ -824,12 +835,12 @@ val proguardGtolibRelease = registerProguard(
     val renamed = srgLines.filter { it.groupValues[1] != it.groupValues[2] }
     if (srgLines.isEmpty()) throw GradleException("GTOLib release mapping 中没有 SRG 方法，无法验证继承契约")
     if (renamed.isNotEmpty()) throw GradleException("GTOLib release ProGuard 错误重命名了 Minecraft override:\n  " + renamed.take(12).joinToString("\n  ") { "${it.groupValues[1]} → ${it.groupValues[2]}" })
-    // 混淆必须真的发生：与 named 明文比对类路径集合
+    // 代码保护必须真的生效：与 named 明文比对类路径集合
     fun classes(jar: File) = jarEntryNames(jar).filter { it.startsWith("com/gtolib") && it.endsWith(".class") }.toSet()
     val rel = classes(proguardReleaseJar)
     val dev = classes(unprotectedJar)
     val hidden = dev - rel
-    if ((rel - dev).isEmpty() || hidden.isEmpty()) throw GradleException("proguardGtolibRelease: 类名混淆未生效，检查 proguard-release-rules.pro 的 keep 面是否过宽")
+    if ((rel - dev).isEmpty() || hidden.isEmpty()) throw GradleException("proguardGtolibRelease: 类名改名未生效，检查 proguard-release-rules.pro 的 keep 面是否过宽")
     verifyNoStaleGtolibRefs(proguardReleaseJar, releaseMappingFile, "GTOLib 发行轨 ProGuard")
     logger.lifecycle("GTOLib release ProGuard OK: ${rel.size} class，改名/隐藏 ${hidden.size}，保名 ${rel.size - (rel - dev).size}，SRG 方法 ${srgLines.size} 个保持原名")
 }
@@ -838,7 +849,7 @@ proguardGtolibRelease { dependsOn(reobfGtolib, "classes", prepareForgeSrgLibrary
 // ---------- gtocore 引用面 remap ----------
 
 /**
- * gtolib 发行 mapping：原始内部名 → 混淆内部名，以及每个原始类的成员改名表（键为 名字 + 原始描述符）。
+ * gtolib 发行 mapping：原始内部名 → 保护后内部名，以及每个原始类的成员改名表（键为 名字 + 原始描述符）。
  * 键用原始描述符：gtocore 常量池与 ProGuard 的 mapping 都是原始名字与原始描述符。
  */
 class GtolibReleaseMapping(
@@ -847,7 +858,7 @@ class GtolibReleaseMapping(
 ) {
     val obfToOriginal: Map<String, String> = classNames.entries.associate { (original, obf) -> obf to original }
 
-    /** 原始类 -> 方法名 -> 混淆名（含所有重载），用于 SAM 名在描述符对不上时的兜底解析。 */
+    /** 原始类 -> 方法名 -> 保护后名字（含所有重载），用于 SAM 名在描述符对不上时的兜底解析。 */
     val methodNames: Map<String, Map<String, Set<String>>> = run {
         val byOwner = LinkedHashMap<String, MutableMap<String, MutableSet<String>>>()
         members.forEach { (owner, table) ->
@@ -1022,7 +1033,7 @@ class GtolibRefRemapper(
         return null
     }
 
-    /** 自检：原始类里解析到改名的成员，混淆后必须真的以新名字+新描述符出现（否则覆盖会悄悄失效）。 */
+    /** 自检：原始类里解析到改名的成员，代码保护后必须真的以新名字+新描述符出现（否则覆盖会悄悄失效）。 */
     fun verifyDeclarations(before: ClassNode, after: ClassNode) {
         before.methods.forEach { m ->
             val expected = resolveMember(before.name, m.name, m.desc) ?: return@forEach
@@ -1040,13 +1051,13 @@ class GtolibRefRemapper(
         val methodKeys = HashSet<String>()
         after.methods.forEach { m ->
             if (!methodKeys.add(m.name + m.desc)) {
-                conflicts += "${before.name} 混淆后重复方法 ${m.name}${m.desc}（两个父类/接口的成员被改成同名，给其中一个加 @KeepName）"
+                conflicts += "${before.name} 代码保护后重复方法 ${m.name}${m.desc}（两个父类/接口的成员被改成同名，给其中一个加 @KeepName）"
             }
         }
         val fieldKeys = HashSet<String>()
         after.fields.forEach { f ->
             if (!fieldKeys.add(f.name + f.desc)) {
-                conflicts += "${before.name} 混淆后重复字段 ${f.name}${f.desc}（同上）"
+                conflicts += "${before.name} 代码保护后重复字段 ${f.name}${f.desc}（同上）"
             }
         }
     }
@@ -1095,7 +1106,7 @@ fun remapGtolibRefs(remapper: GtolibRefRemapper, bytes: ByteArray): ByteArray {
 fun finishGtolibRefRemap(remapper: GtolibRefRemapper, jar: File, classes: Int) {
     if (remapper.conflicts.isNotEmpty()) {
         throw GradleException(
-            "GTOLib remap 冲突：${remapper.conflicts.size} 个成员在多个 gtolib 父类/接口里有不同混淆名，gtocore 侧无法同时满足。\n" +
+            "GTOLib remap 冲突：${remapper.conflicts.size} 个成员在多个 gtolib 父类/接口里有不同的保护后名字，gtocore 侧无法同时满足。\n" +
                 "给其中一个成员加 @KeepName（或补 -keepnames）后重建：\n" +
                 remapper.conflicts.take(20).joinToString("\n") { "  - $it" }
         )
@@ -1112,13 +1123,13 @@ fun finishGtolibRefRemap(remapper: GtolibRefRemapper, jar: File, classes: Int) {
         throw GradleException("GTOLib remap 后引用不存在的 com.gtolib 类型：\n" + missing.take(20).joinToString("\n") { "  - $it" })
     }
     logger.lifecycle(
-        "GTOLib remap: gtocore 侧 $classes 个 class 对齐发行混淆名" +
+        "GTOLib remap: gtocore 侧 $classes 个 class 对齐发行代码保护后的名字" +
             "（类名字符串 ${remapper.stringRefs} 处，函数式接口 SAM 名 ${remapper.samNamesFixed} 处）"
     )
 }
 
 /**
- * 函数式接口 lambda 自检：invokedynamic 的 SAM 名必须能在（已混淆的）gtolib 接口层次里解析到。
+ * 函数式接口 lambda 自检：invokedynamic 的 SAM 名必须能在（代码保护后的）gtolib 接口层次里解析到。
  * 否则 LambdaMetafactory 生成的类实现的是旧名字，运行时 AbstractMethodError
  * （ASM ClassRemapper 不改 SAM 名，remapGtolibRefs 负责改，这里校验结果）。
  */
@@ -1183,13 +1194,13 @@ fun verifyGtolibSamTargets(jar: File) {
 
 /**
  * 第三种漏法：gtolib 接口的抽象方法被改名，但它的实现来自 library（gtceu/AE2 等）里**同名同签名**的方法
- * —— Mixin 把 gtolib 接口挂到 library 类上，实现继承自父类，library 名字不会被混淆，
+ * —— Mixin 把 gtolib 接口挂到 library 类上，实现继承自父类，library 名字不会被改名，
  * 于是接口方法成了"没有实现的抽象方法"，运行时 AbstractMethodError。
  * 判定：jar+library 层次里找不到新名字的具体实现，但 library 里有旧名字的同签名实现。
  * 修法：给该接口方法加 @KeepName（library 实现保名，接口也得保名）。
  */
 fun verifyLibraryBackedInterfaceMethods(jar: File, extraProFile: File, mapping: GtolibReleaseMapping) {
-    // 混淆类 -> (混淆方法名+描述符 -> 原始方法名)，只保留改过名的方法
+    // 保护后类 -> (保护后方法名+描述符 -> 原始方法名)，只保留改过名的方法
     val renamedMembers = HashMap<String, MutableMap<String, String>>()
     mapping.members.forEach { (origClass, table) ->
         val obfClass = mapping.classNames[origClass] ?: return@forEach
@@ -1358,14 +1369,14 @@ fun registerSeal(name: String, desc: String, input: File, output: File, finish: 
     }
 }
 
-val sealGtolibDev = registerSeal("sealGtolibDev", "Seal 加密 dev 轨（named hollow、同样混淆，只在本机使用）", proguardDevJar, protectedJar) {
+val sealGtolibDev = registerSeal("sealGtolibDev", "Seal 加密 dev 轨（named hollow、同样改名，只在本机使用）", proguardDevJar, protectedJar) {
     verifySealShells(protectedJar, "GTO Seal(dev)")
     injectMixinResources(protectedJar, true)
     verifyMixinNamespace(protectedJar, true, "GTOLib dev 轨")
 }
 sealGtolibDev { dependsOn(proguardGtolibDev) }
 
-val sealGtolibRelease = registerSeal("sealGtolibRelease", "Seal 加密发行轨（类名混淆），剥除 .dev.bin 并压缩空壳", proguardReleaseJar, releaseJar) {
+val sealGtolibRelease = registerSeal("sealGtolibRelease", "Seal 加密发行轨（类名改名），剥除 .dev.bin 并压缩空壳", proguardReleaseJar, releaseJar) {
     var stripped = 0
     var compacted = 0
     var before = 0L
@@ -1778,3 +1789,310 @@ val verifyResourceLocationMixnReobf = tasks.register("verifyResourceLocationMixn
 tasks.named("build") { dependsOn(verifyResourceLocationMixnReobf) }
 tasks.matching { it.name == "signJar" }.configureEach { dependsOn(verifyResourceLocationMixnReobf) }
 tasks.matching { it.name == "sourcesJar" }.configureEach { (this as Jar).exclude("com/gtolib/**", "**/GTOLib/**") }
+
+// ---------- gtocore 发行代码保护 ----------
+// reobfJar 之后、签名之前，把 jar 里 gtocore 自身类交给 ProGuard 改名；gtolib 发行包与资源只作 library 原样保留。
+
+val gtocoreObfDir: File = layout.buildDirectory.dir("gtocore-obf").get().asFile
+val gtocoreObfRules = file("gradle/scripts/proguard-gtocore-rules.pro")
+val gtocoreMappingFile = gtocoreObfDir.resolve("gtocore-release-mapping.txt")
+val gtocoreObfMarker = "GTO-Core-Obfuscated"
+val gtocoreNameAnnotationPrefixes = listOf("Lcom/gto/datasynclib/", "Ldev/toma/configuration/", "Lcom/lowdragmc/lowdraglib/")
+val gtocoreClassToken = Regex("""com[./](?:gtocore|hepdd)[./][A-Za-z0-9_$./]+""")
+val fieldDescriptor = Regex("""^\[*(?:[BCDFIJSZ]|L[^;]+;)$""")
+val srgMemberName = Regex("""^[mf]_\d+_""")
+
+// 构建编号：写进发行 jar 的 MANIFEST 与两份 mapping 文件头，玩家日志/崩溃报告里的编号据此对回 mapping
+val gtoBuildIdKey = "GTO-Build-Id"
+val gtoBuildId: String = run {
+    val sha = runCatching {
+        val p = ProcessBuilder("git", "rev-parse", "--short=10", "HEAD").directory(rootDir).redirectErrorStream(true).start()
+        p.inputStream.bufferedReader().readText().trim().takeIf { p.waitFor() == 0 && it.isNotEmpty() }
+    }.getOrNull() ?: "nogit"
+    val runId = System.getenv("GITHUB_RUN_ID")
+    if (!runId.isNullOrBlank()) {
+        "ci-$runId.${System.getenv("GITHUB_RUN_ATTEMPT") ?: "1"}-$sha"
+    } else {
+        "local-${java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))}-$sha"
+    }
+}
+
+fun stampMappingBuildId(file: File) {
+    requireJar(file, "构建编号: mapping")
+    val body = file.readLines(Charsets.UTF_8).dropWhile { it.startsWith("# $gtoBuildIdKey:") }
+    file.writeText((listOf("# $gtoBuildIdKey: $gtoBuildId") + body).joinToString("\n", postfix = "\n"), Charsets.UTF_8)
+}
+
+fun gtocoreReleaseJar(): File = layout.buildDirectory.dir("libs").get().asFile.resolve("$modId-forge-1.20.1-${project.version}.jar").takeIf { it.isFile }
+    ?: throw GradleException("找不到 reobf 后的 gtocore 发行 jar: build/libs/$modId-forge-1.20.1-${project.version}.jar")
+
+fun isGtocoreProgramEntry(name: String) = name.endsWith(".class") && !name.startsWith("com/gtolib/") && !name.startsWith("META-INF/")
+
+fun readJarManifest(jar: File) = java.util.jar.Manifest((readJarEntry(jar, "META-INF/MANIFEST.MF") ?: ByteArray(0)).inputStream())
+
+fun readClassNodes(jar: File): Map<String, ClassNode> = ZipFile(jar).use { zf ->
+    zf.entries().asSequence().filter { it.name.endsWith(".class") }.associate { e ->
+        val node = ClassNode(Opcodes.ASM9)
+        ClassReader(zf.getInputStream(e).readBytes()).accept(node, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+        node.name to node
+    }
+}
+
+fun annotationValueStrings(value: Any?): Sequence<String> = when (value) {
+    is String -> sequenceOf(value)
+    is AnnotationNode -> annotationValueStrings(value.values)
+    is List<*> -> value.asSequence().flatMap { annotationValueStrings(it) }
+    else -> emptySequence()
+}
+
+fun annotationStrings(vararg lists: List<AnnotationNode>?): Sequence<String> =
+    lists.asSequence().flatMap { it.orEmpty().asSequence() }.flatMap { annotationValueStrings(it.values) }
+
+fun hasNameAnnotation(vararg lists: List<AnnotationNode>?) =
+    lists.any { list -> list.orEmpty().any { a -> gtocoreNameAnnotationPrefixes.any { a.desc.startsWith(it) } } }
+
+fun classTokenCandidates(token: String): Sequence<String> {
+    val path = token.replace('.', '/').trimEnd('/')
+    return generateSequence(path) { p -> p.lastIndexOf('/').takeIf { it > 0 }?.let { p.substring(0, it) } }
+}
+
+fun memberKeptName(key: String, obf: String): Boolean {
+    if (!key.startsWith(obf)) return false
+    val rest = key.substring(obf.length)
+    return rest.startsWith("(") || fieldDescriptor.matches(rest)
+}
+
+fun writeGtocoreKeepRules(program: Map<String, ClassNode>, target: File): Set<String> {
+    requireJar(proguardReleaseJar, "gtocore 代码保护: GTOLib 发行轨 ProGuard 产物（-PgtolibRebuild=true 重建）", 1024)
+    val keepClasses = sortedSetOf<String>()
+    fun keepWithAncestors(name: String) {
+        val node = program[name] ?: return
+        if (!keepClasses.add(name)) return
+        node.superName?.let(::keepWithAncestors)
+        node.interfaces.forEach(::keepWithAncestors)
+    }
+    val collector = object : Remapper() {
+        override fun map(internalName: String): String {
+            keepWithAncestors(internalName)
+            return internalName
+        }
+    }
+    ZipFile(proguardReleaseJar).use { zf ->
+        zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { e ->
+            val bytes = zf.getInputStream(e).readBytes()
+            ClassReader(bytes).accept(ClassRemapper(ClassWriter(0), collector), 0)
+            gtocoreClassToken.findAll(latin1(bytes)).forEach { m ->
+                val path = m.value.replace('.', '/')
+                val exact = classTokenCandidates(m.value).firstOrNull { it in program }
+                if (exact != null) {
+                    keepWithAncestors(exact)
+                } else if (!path.endsWith('/')) {
+                    program.keys.filter { it.startsWith(path) && it.indexOf('/', path.length) < 0 }.forEach(::keepWithAncestors)
+                }
+            }
+        }
+    }
+    val fromGtolib = keepClasses.size
+    program.values.filter { it.name.startsWith("com/gtocore/mixin/") }.forEach { n ->
+        n.superName?.let(::keepWithAncestors)
+        n.interfaces.forEach(::keepWithAncestors)
+    }
+
+    val memberKeeps = sortedMapOf<String, MutableSet<String>>()
+    fun keepMember(owner: String, spec: String) = memberKeeps.getOrPut(owner) { sortedSetOf() }.add(spec)
+    fun programHierarchy(start: String): Collection<ClassNode> {
+        val seen = LinkedHashMap<String, ClassNode>()
+        val queue = ArrayDeque(listOf(start))
+        while (queue.isNotEmpty()) {
+            val node = program[queue.removeFirst()] ?: continue
+            if (seen.put(node.name, node) != null) continue
+            node.superName?.let(queue::add)
+            queue.addAll(node.interfaces)
+        }
+        return seen.values
+    }
+    program.values.forEach { n ->
+        n.fields.filter { hasNameAnnotation(it.visibleAnnotations, it.invisibleAnnotations) }.forEach { keepMember(n.name, "*** ${it.name};") }
+        n.methods.filter { it.name[0] != '<' && hasNameAnnotation(it.visibleAnnotations, it.invisibleAnnotations) }.forEach { keepMember(n.name, "*** ${it.name}(...);") }
+        val strings = (
+            annotationStrings(n.visibleAnnotations, n.invisibleAnnotations) +
+                n.fields.asSequence().flatMap { annotationStrings(it.visibleAnnotations, it.invisibleAnnotations) } +
+                n.methods.asSequence().flatMap { annotationStrings(it.visibleAnnotations, it.invisibleAnnotations) }
+            ).toSet()
+        if (strings.isEmpty()) return@forEach
+        programHierarchy(n.name).forEach { owner ->
+            owner.fields.filter { it.name in strings }.forEach { keepMember(owner.name, "*** ${it.name};") }
+            owner.methods.filter { it.name[0] != '<' && it.name in strings }.forEach { keepMember(owner.name, "*** ${it.name}(...);") }
+        }
+    }
+
+    target.writeText(
+        "# generated: GTOLib 引用 / mixin 祖先整类保名；名字型注解与注解字符串引用的成员保名\n" +
+            keepClasses.joinToString("") { "-keep class ${it.replace('/', '.')} { *; }\n" } +
+            memberKeeps.entries.joinToString("") { (owner, specs) ->
+                "-keepclassmembernames class ${owner.replace('/', '.')} {\n" + specs.joinToString("") { "    $it\n" } + "}\n"
+            }
+    )
+    logger.lifecycle(
+        "gtocore 代码保护: 整类保名 ${keepClasses.size}（GTOLib 引用 $fromGtolib，mixin 祖先 ${keepClasses.size - fromGtolib}），" +
+            "成员保名 ${memberKeeps.values.sumOf { it.size }} 项 / ${memberKeeps.size} 类 → ${target.name}"
+    )
+    return keepClasses
+}
+
+fun verifyGtocoreLibraryOverrides(program: Map<String, ClassNode>, libs: Collection<File>, mapping: GtolibReleaseMapping) {
+    val location = HashMap<String, File>()
+    libs.filter { it.isFile && it.name.endsWith(".jar") }.forEach { jar ->
+        ZipFile(jar).use { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { location.putIfAbsent(it.name.removeSuffix(".class"), jar) } }
+    }
+    val opened = HashMap<File, ZipFile>()
+    val cache = HashMap<String, ClassNode?>()
+    fun libraryNode(name: String): ClassNode? = cache.getOrPut(name) {
+        val jar = location[name] ?: return@getOrPut null
+        val zf = opened.getOrPut(jar) { ZipFile(jar) }
+        ClassNode(Opcodes.ASM9).also { ClassReader(zf.getInputStream(zf.getEntry("$name.class")).readBytes()).accept(it, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES) }
+    }
+    val broken = linkedSetOf<String>()
+    var checked = 0
+    try {
+        program.values.forEach { cls ->
+            val table = mapping.members[cls.name] ?: return@forEach
+            val renamed = cls.methods.asSequence()
+                .filter { it.name[0] != '<' && it.access and (Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC) == 0 }
+                .map { it.name + it.desc }
+                .filter { key -> table[key]?.let { !memberKeptName(key, it) } == true }
+                .toSet()
+            if (renamed.isEmpty()) return@forEach
+            checked += renamed.size
+            val seen = HashSet<String>()
+            val queue = ArrayDeque<String>()
+            cls.superName?.let(queue::add)
+            queue.addAll(cls.interfaces)
+            while (queue.isNotEmpty()) {
+                val name = queue.removeFirst()
+                if (!seen.add(name)) continue
+                val node = program[name] ?: libraryNode(name) ?: continue
+                if (name !in program) {
+                    node.methods.forEach { m ->
+                        if (m.access and (Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC) == 0 && (m.name + m.desc) in renamed) broken += "${cls.name}.${m.name}${m.desc} 覆盖 library $name 却被改名"
+                    }
+                }
+                node.superName?.let(queue::add)
+                queue.addAll(node.interfaces)
+            }
+        }
+    } finally {
+        opened.values.forEach { it.close() }
+    }
+    if (broken.isNotEmpty()) {
+        throw GradleException("gtocore 代码保护: ${broken.size} 个覆盖 library 的方法被改名（运行时会 AbstractMethodError）:\n" + broken.take(15).joinToString("\n") { "  - $it" })
+    }
+    logger.lifecycle("gtocore 代码保护: library 覆盖校验 OK（改名方法 $checked 个，library 索引 ${location.size} class）")
+}
+
+fun verifyNoOriginalGtocoreNames(jar: File, renamed: Set<String>) {
+    val hits = linkedSetOf<String>()
+    ZipFile(jar).use { zf ->
+        zf.entries().asSequence().filter { e ->
+            !isGtocoreProgramEntry(e.name) && !e.isDirectory && !e.name.endsWith(".jar") &&
+                (e.name.endsWith(".class") || e.name.startsWith("META-INF/") || e.name.startsWith("coremods/") || '/' !in e.name)
+        }.forEach { e ->
+            gtocoreClassToken.findAll(latin1(zf.getInputStream(e).readBytes())).forEach { m ->
+                classTokenCandidates(m.value).firstOrNull { it in renamed }?.let { hits += "${e.name} → $it" }
+            }
+        }
+    }
+    if (hits.isNotEmpty()) {
+        throw GradleException("gtocore 代码保护: ${hits.size} 处未随改名同步的原始类名引用（补 proguard-gtocore-rules.pro 的 keep）:\n" + hits.take(20).joinToString("\n") { "  - $it" })
+    }
+}
+
+val obfuscateGtocoreRelease = tasks.register<JavaExec>("obfuscateGtocoreRelease") {
+    group = "gtolib"
+    description = "发行 jar：对 gtocore 自身类名与成员名做代码保护（gtolib 发行包与资源原样保留）"
+    dependsOn("reobfJar")
+    onlyIf { !isGtolibDebugMode }
+    outputs.upToDateWhen { false }
+    classpath = proguardCp
+    mainClass = "proguard.ProGuard"
+    maxHeapSize = "4g"
+    val toolOutput = captureToolOutput()
+    val programJar = gtocoreObfDir.resolve("program.jar")
+    val embeddedLibraryJar = gtocoreObfDir.resolve("embedded-library.jar")
+    val obfJar = gtocoreObfDir.resolve("program-obf.jar")
+    val generatedKeep = gtocoreObfDir.resolve("keep-generated.pro")
+    var program: Map<String, ClassNode> = emptyMap()
+    var keptClasses: Set<String> = emptySet()
+    var libs: Collection<File> = emptyList()
+    doFirst {
+        val jar = gtocoreReleaseJar()
+        if (readJarManifest(jar).mainAttributes.getValue(gtocoreObfMarker) != null) {
+            throw GradleException("${jar.name} 已经过代码保护，重新运行 reobfJar 后再处理（例如 clean build）")
+        }
+        gtocoreObfDir.deleteRecursively()
+        gtocoreObfDir.mkdirs()
+        ZipFile(jar).use { zf ->
+            ZipOutputStream(programJar.outputStream().buffered()).use { programOut ->
+                ZipOutputStream(embeddedLibraryJar.outputStream().buffered()).use { libraryOut ->
+                    zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { e ->
+                        val target = if (isGtocoreProgramEntry(e.name)) programOut else libraryOut
+                        target.putNextEntry(ZipEntry(e.name))
+                        target.write(zf.getInputStream(e).readBytes())
+                        target.closeEntry()
+                    }
+                }
+            }
+        }
+        program = readClassNodes(programJar)
+        if (program.isEmpty()) throw GradleException("gtocore 代码保护: ${jar.name} 里没有 gtocore 类")
+        keptClasses = writeGtocoreKeepRules(program, generatedKeep)
+        libs = proguardLibraryJars(true) + embeddedLibraryJar
+        val extra = writeProguardExtraFile(name, libs, gtocoreMappingFile, gtocoreObfDir)
+        setArgs(listOf(gtocoreObfRules, generatedKeep, extra).map { "@${it.absolutePath}" } + listOf("-injars", programJar.absolutePath, "-outjars", obfJar.absolutePath))
+    }
+    doLast {
+        finishToolOutput(name, executionResult.get().exitValue, toolOutput)
+        requireJar(obfJar, "gtocore 代码保护输出", 1024)
+        val mapping = parseGtolibReleaseMapping(gtocoreMappingFile)
+        val renamedClasses = mapping.classNames.filter { (original, obf) -> original != obf }.keys
+        val renamedMembers = mapping.members.values.sumOf { table -> table.count { (key, obf) -> !memberKeptName(key, obf) } }
+        if (renamedClasses.isEmpty()) throw GradleException("gtocore 代码保护未生效：没有类被改名，检查 proguard-gtocore-rules.pro 的 keep 面")
+        val srgRenamed = mapping.members.flatMap { (owner, table) ->
+            table.filter { (key, obf) -> srgMemberName.containsMatchIn(key) && !memberKeptName(key, obf) }.map { "$owner.${it.key} → ${it.value}" }
+        }
+        if (srgRenamed.isNotEmpty()) throw GradleException("gtocore 代码保护错误重命名了 Minecraft 成员:\n  " + srgRenamed.take(12).joinToString("\n  "))
+        val keptBroken = keptClasses.filter { c -> mapping.classNames[c] != c || mapping.members[c].orEmpty().any { (key, obf) -> !memberKeptName(key, obf) } }
+        if (keptBroken.isNotEmpty()) throw GradleException("gtocore 代码保护: GTOLib 引用的 gtocore 类被改名:\n  " + keptBroken.take(12).joinToString("\n  "))
+        verifyGtocoreLibraryOverrides(program, libs, mapping)
+
+        val jar = gtocoreReleaseJar()
+        val obfClasses = ZipFile(obfJar).use { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.associate { it.name to zf.getInputStream(it).readBytes() } }
+        if (obfClasses.size != program.size) throw GradleException("gtocore 代码保护: 输出 ${obfClasses.size} 个类，输入 ${program.size} 个")
+        rewriteJar(jar, extra = obfClasses) { entry, bytes ->
+            when {
+                isGtocoreProgramEntry(entry) -> null
+                entry == "META-INF/MANIFEST.MF" -> {
+                    val mf = java.util.jar.Manifest(bytes.inputStream())
+                    mf.mainAttributes.putValue(gtocoreObfMarker, "1")
+                    mf.mainAttributes.putValue(gtoBuildIdKey, gtoBuildId)
+                    java.io.ByteArrayOutputStream().also { mf.write(it) }.toByteArray()
+                }
+                else -> bytes
+            }
+        }
+        verifyNoOriginalGtocoreNames(jar, renamedClasses)
+        val lvt = obfClasses.count { (entry, bytes) -> !entry.startsWith("com/gtocore/mixin/") && "LocalVariableTable" in latin1(bytes) }
+        if (lvt > 0) throw GradleException("gtocore 代码保护: $lvt 个非 mixin 类仍带 LocalVariableTable")
+        logger.lifecycle("gtocore 代码保护 OK: ${program.size} class，改名类 ${renamedClasses.size}、改名成员 $renamedMembers，整类保名 ${keptClasses.size} → ${jar.name}")
+
+        if (readJarManifest(jar).mainAttributes.getValue(gtoBuildIdKey) != gtoBuildId) throw GradleException("构建编号: ${jar.name} 的 MANIFEST 缺少 $gtoBuildIdKey")
+        listOf(gtocoreMappingFile, releaseMappingFile).forEach(::stampMappingBuildId)
+        logger.lifecycle(
+            "GTO 构建编号 $gtoBuildId → jar build/libs/${jar.name}；mapping ${gtocoreMappingFile.relativeTo(projectDir).invariantSeparatorsPath}、" +
+                releaseMappingFile.relativeTo(projectDir).invariantSeparatorsPath
+        )
+    }
+}
+tasks.matching { it.name == "reobfJar" }.configureEach { finalizedBy(obfuscateGtocoreRelease) }
+tasks.matching { it.name == "signJar" || it.name == "verifyResourceLocationMixnReobf" }.configureEach { dependsOn(obfuscateGtocoreRelease) }
+tasks.named("build") { dependsOn(obfuscateGtocoreRelease) }
