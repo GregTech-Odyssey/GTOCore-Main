@@ -1897,6 +1897,10 @@ fun writeGtocoreKeepRules(program: Map<String, ClassNode>, target: File): Set<St
         n.superName?.let(::keepWithAncestors)
         n.interfaces.forEach(::keepWithAncestors)
     }
+    val nestHosts = (keepClasses.asSequence().mapNotNull { program[it] } + program.values.asSequence().filter { n -> n.methods.any { it.access and Opcodes.ACC_NATIVE != 0 } })
+        .mapNotNull { it.nestHostClass }
+        .filter { it in program && it !in keepClasses }
+        .toSortedSet()
 
     val memberKeeps = sortedMapOf<String, MutableSet<String>>()
     fun keepMember(owner: String, spec: String) = memberKeeps.getOrPut(owner) { sortedSetOf() }.add(spec)
@@ -1929,12 +1933,13 @@ fun writeGtocoreKeepRules(program: Map<String, ClassNode>, target: File): Set<St
     target.writeText(
         "# generated: GTOLib 引用 / mixin 祖先整类保名；名字型注解与注解字符串引用的成员保名\n" +
             keepClasses.joinToString("") { "-keep class ${it.replace('/', '.')} { *; }\n" } +
+            nestHosts.joinToString("") { "-keepnames class ${it.replace('/', '.')}\n" } +
             memberKeeps.entries.joinToString("") { (owner, specs) ->
                 "-keepclassmembernames class ${owner.replace('/', '.')} {\n" + specs.joinToString("") { "    $it\n" } + "}\n"
             }
     )
     logger.lifecycle(
-        "gtocore 代码保护: 整类保名 ${keepClasses.size}（GTOLib 引用 $fromGtolib，mixin 祖先 ${keepClasses.size - fromGtolib}），" +
+        "gtocore 代码保护: 整类保名 ${keepClasses.size}（GTOLib 引用 $fromGtolib，mixin 祖先 ${keepClasses.size - fromGtolib}），同 nest 外部类保类名 ${nestHosts.size}，" +
             "成员保名 ${memberKeeps.values.sumOf { it.size }} 项 / ${memberKeeps.size} 类 → ${target.name}"
     )
     return keepClasses
@@ -1990,11 +1995,37 @@ fun verifyGtocoreLibraryOverrides(program: Map<String, ClassNode>, libs: Collect
     logger.lifecycle("gtocore 代码保护: library 覆盖校验 OK（改名方法 $checked 个，library 索引 ${location.size} class）")
 }
 
-fun verifyNoOriginalGtocoreNames(jar: File, renamed: Set<String>) {
+fun internalPackage(name: String) = name.substringBeforeLast('/', "")
+
+fun verifyGtocoreNoNameClash(mapping: GtolibReleaseMapping, renamed: Set<String>, gtolibJar: File, releaseJar: File) {
+    val gtolibNames = ZipFile(gtolibJar).use { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.map { it.name.removeSuffix(".class") }.toHashSet() }
+    jarEntryNames(releaseJar).filter { it.startsWith(SEAL_BIN_DIR) && it.endsWith(".prod.bin") }
+        .mapTo(gtolibNames) { it.removePrefix(SEAL_BIN_DIR).removeSuffix(".prod.bin") }
+    val newNames = renamed.map { mapping.classNames.getValue(it) }
+    val clash = newNames.filter { it in gtolibNames || it in mapping.classNames } + newNames.groupBy { it }.filterValues { it.size > 1 }.keys
+    if (clash.isNotEmpty()) {
+        throw GradleException("gtocore 代码保护: ${clash.size} 个 gtocore 新类名与已有类名重名（GTOLib 发行包或 gtocore 原有类）:\n" + clash.take(15).joinToString("\n") { "  - $it" })
+    }
+    logger.lifecycle("gtocore 代码保护: 新类名不重名 OK（改名 ${newNames.size} 类，对照 GTOLib ${gtolibNames.size} 个名字、gtocore 原有 ${mapping.classNames.size} 类）")
+}
+
+fun verifyGtocoreNestPackages(obfNodes: Map<String, ClassNode>) {
+    val broken = obfNodes.values.flatMap { n ->
+        (listOfNotNull(n.nestHostClass) + n.nestMembers.orEmpty())
+            .filter { internalPackage(it) != internalPackage(n.name) }
+            .map { "${n.name} ↔ $it" }
+    }
+    if (broken.isNotEmpty()) {
+        throw GradleException("gtocore 代码保护: ${broken.size} 处同一 nest 的类不在同一个包（运行时私有访问 IllegalAccessError）:\n" + broken.take(15).joinToString("\n") { "  - $it" })
+    }
+    logger.lifecycle("gtocore 代码保护: nest 同包 OK（${obfNodes.values.count { it.nestHostClass != null }} 个嵌套类）")
+}
+
+fun verifyNoOriginalGtocoreNames(jar: File, renamed: Set<String>, obfEntries: Set<String>) {
     val hits = linkedSetOf<String>()
     ZipFile(jar).use { zf ->
         zf.entries().asSequence().filter { e ->
-            !isGtocoreProgramEntry(e.name) && !e.isDirectory && !e.name.endsWith(".jar") &&
+            e.name !in obfEntries && !isGtocoreProgramEntry(e.name) && !e.isDirectory && !e.name.endsWith(".jar") &&
                 (e.name.endsWith(".class") || e.name.startsWith("META-INF/") || e.name.startsWith("coremods/") || '/' !in e.name)
         }.forEach { e ->
             gtocoreClassToken.findAll(latin1(zf.getInputStream(e).readBytes())).forEach { m ->
@@ -2068,9 +2099,18 @@ val obfuscateGtocoreRelease = tasks.register<JavaExec>("obfuscateGtocoreRelease"
         val jar = gtocoreReleaseJar()
         val obfClasses = ZipFile(obfJar).use { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.associate { it.name to zf.getInputStream(it).readBytes() } }
         if (obfClasses.size != program.size) throw GradleException("gtocore 代码保护: 输出 ${obfClasses.size} 个类，输入 ${program.size} 个")
+        verifyGtocoreNoNameClash(mapping, renamedClasses, embeddedLibraryJar, jar)
+        verifyGtocoreNestPackages(readClassNodes(obfJar))
+        val flattened = renamedClasses.filter { internalPackage(mapping.classNames.getValue(it)) == "com/gtocore" }
+        val strayed = renamedClasses.filter { internalPackage(mapping.classNames.getValue(it)).let { p -> p != "com/gtocore" && p != internalPackage(it) } }
+        if (strayed.isNotEmpty()) throw GradleException("gtocore 代码保护: ${strayed.size} 个类被挪进了 com.gtocore 以外的包:\n  " + strayed.take(12).joinToString("\n  "))
+        val liveFiles = jarEntryNames(jar).filterTo(HashSet()) { !it.endsWith("/") && !isGtocoreProgramEntry(it) } + obfClasses.keys
+        val liveDirs = liveFiles.flatMapTo(HashSet()) { f -> generateSequence(f.substringBeforeLast('/', "")) { it.substringBeforeLast('/', "").ifEmpty { null } }.filter { it.isNotEmpty() }.map { "$it/" } }
+        var emptyDirs = 0
         rewriteJar(jar, extra = obfClasses) { entry, bytes ->
             when {
                 isGtocoreProgramEntry(entry) -> null
+                entry.endsWith("/") && (entry.startsWith("com/gtocore/") || entry.startsWith("com/hepdd/")) && entry !in liveDirs -> null.also { emptyDirs++ }
                 entry == "META-INF/MANIFEST.MF" -> {
                     val mf = java.util.jar.Manifest(bytes.inputStream())
                     mf.mainAttributes.putValue(gtocoreObfMarker, "1")
@@ -2080,10 +2120,14 @@ val obfuscateGtocoreRelease = tasks.register<JavaExec>("obfuscateGtocoreRelease"
                 else -> bytes
             }
         }
-        verifyNoOriginalGtocoreNames(jar, renamedClasses)
+        verifyNoOriginalGtocoreNames(jar, renamedClasses, obfClasses.keys)
         val lvt = obfClasses.count { (entry, bytes) -> !entry.startsWith("com/gtocore/mixin/") && "LocalVariableTable" in latin1(bytes) }
         if (lvt > 0) throw GradleException("gtocore 代码保护: $lvt 个非 mixin 类仍带 LocalVariableTable")
-        logger.lifecycle("gtocore 代码保护 OK: ${program.size} class，改名类 ${renamedClasses.size}、改名成员 $renamedMembers，整类保名 ${keptClasses.size} → ${jar.name}")
+        logger.lifecycle(
+            "gtocore 代码保护 OK: ${program.size} class，改名类 ${renamedClasses.size}、改名成员 $renamedMembers，整类保名 ${keptClasses.size}，" +
+                "平铺进 com.gtocore ${flattened.size}（原 com.gtocore ${flattened.count { it.startsWith("com/gtocore/") }}、原 com.hepdd ${flattened.count { it.startsWith("com/hepdd/") }}），" +
+                "留在原包 ${program.size - flattened.size}，移除空目录 $emptyDirs → ${jar.name}"
+        )
 
         if (readJarManifest(jar).mainAttributes.getValue(gtoBuildIdKey) != gtoBuildId) throw GradleException("构建编号: ${jar.name} 的 MANIFEST 缺少 $gtoBuildIdKey")
         listOf(gtocoreMappingFile, releaseMappingFile).forEach(::stampMappingBuildId)

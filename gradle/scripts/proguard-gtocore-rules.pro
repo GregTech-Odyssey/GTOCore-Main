@@ -4,7 +4,7 @@
 # 输入是 reobfJar 产物里 com/gtolib 与 META-INF 以外的类（SRG 命名空间）；gtolib 发行包、资源原样保留，
 # 只当 library 参与解析。gtocore 引用 gtolib 的名字在 jar 阶段已按 gtolib 发行 mapping 改写过。
 #
-# 只改类名与成员名，不改包名、不做优化、不删类；去掉局部变量表与参数名。
+# 不做优化、不删类；去掉局部变量表与参数名。
 #
 # 流水线另外拼接 build/gtocore-obf/keep-generated.pro（扫描生成）：
 #   * GTOLib 发行轨（加密前明文）引用到的 gtocore 类及其 gtocore 祖先：整类保名
@@ -23,7 +23,8 @@
 -ignorewarnings
 -verbose
 
--keeppackagenames
+-repackageclasses com.gtocore
+-allowaccessmodification
 -keepattributes *Annotation*,Signature,Exceptions,InnerClasses,EnclosingMethod,Record,PermittedSubclasses,NestHost,NestMembers,LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile
 
@@ -39,9 +40,6 @@
 
 # coremods/gsonhelper_fast_path.js 写死类名与 21 个方法名
 -keep class com.gtocore.utils.GsonHelperPatches { *; }
-
-# LDLib 编辑器注册扫描
--keep @com.lowdragmc.lowdraglib.gui.editor.annotation.LDLRegister class * { *; }
 
 # JNI：native 方法名与所属类名由原生库按名绑定
 -keepclasseswithmembernames,includedescriptorclasses class * {
