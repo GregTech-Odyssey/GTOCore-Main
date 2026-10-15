@@ -51,6 +51,10 @@ final class PortSettlement {
         receipt.clear();
     }
 
+    boolean isConsuming() {
+        return receipt.count > 0 && receipt.reserve && GridClock.tick() < receipt.until;
+    }
+
     double shortfallStorage() {
         return failStorage;
     }

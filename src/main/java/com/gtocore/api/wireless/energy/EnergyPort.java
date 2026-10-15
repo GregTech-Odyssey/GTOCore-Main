@@ -435,6 +435,10 @@ public final class EnergyPort {
         return flow.outRate();
     }
 
+    boolean isConsuming() {
+        return settlement.isConsuming() || flow.outRate() > 0;
+    }
+
     private void refresh() {
         if (boundVersion != account.version | host.owner() != owner) rebind();
     }
