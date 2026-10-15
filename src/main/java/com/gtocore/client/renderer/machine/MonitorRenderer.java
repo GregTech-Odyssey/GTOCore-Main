@@ -37,8 +37,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.lowdragmc.lowdraglib.client.model.ModelFactory;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -226,11 +225,13 @@ public class MonitorRenderer extends MachineRenderer {
         }
     }
 
-    @Mod.EventBusSubscriber(Dist.CLIENT)
     @OnlyIn(Dist.CLIENT)
     public static class RenderedCacheClearer {
 
-        @SubscribeEvent
+        public static void init() {
+            MinecraftForge.EVENT_BUS.addListener(RenderedCacheClearer::clearRenderCache);
+        }
+
         public static void clearRenderCache(ScreenEvent.Render.Pre event) {
             renderedThisTick.clear();
         }

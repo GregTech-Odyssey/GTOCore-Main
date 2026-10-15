@@ -1,6 +1,5 @@
 package com.gtocore.client.hud;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
@@ -10,13 +9,11 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
 
 import dev.emi.emi.config.EmiConfig;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -118,10 +115,16 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
         return b;
     }
 
-    @Mod.EventBusSubscriber(modid = GTOCore.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
     class EventHandler {
 
-        @SubscribeEvent
+        public static void init() {
+            MinecraftForge.EVENT_BUS.addListener(EventHandler::onGuiRender);
+            MinecraftForge.EVENT_BUS.addListener(EventHandler::onMouseClicked);
+            MinecraftForge.EVENT_BUS.addListener(EventHandler::onMouseDragged);
+            MinecraftForge.EVENT_BUS.addListener(EventHandler::onMouseReleased);
+            MinecraftForge.EVENT_BUS.addListener(EventHandler::onClosing);
+        }
+
         public static void onGuiRender(ScreenEvent.Render.Post event) {
             if (event.getScreen() instanceof HUDScreen) return;
             for (IMoveableHUD hud : activeHuds) {
@@ -131,7 +134,6 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             }
         }
 
-        @SubscribeEvent
         public static void onMouseClicked(ScreenEvent.MouseButtonPressed.Pre event) {
             if (event.getScreen() instanceof HUDScreen) return;
             boolean handled = false;
@@ -143,7 +145,6 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             event.setCanceled(handled);
         }
 
-        @SubscribeEvent
         public static void onMouseDragged(ScreenEvent.MouseDragged.Pre event) {
             if (event.getScreen() instanceof HUDScreen) return;
             boolean handled = false;
@@ -156,7 +157,6 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             event.setCanceled(handled);
         }
 
-        @SubscribeEvent
         public static void onMouseReleased(ScreenEvent.MouseButtonReleased.Pre event) {
             if (event.getScreen() instanceof HUDScreen) return;
             boolean handled = false;
@@ -168,7 +168,6 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             event.setCanceled(handled);
         }
 
-        @SubscribeEvent
         public static void onClosing(ScreenEvent.Closing event) {
             if (event.getScreen() instanceof HUDScreen) return;
             activeHuds.clear();

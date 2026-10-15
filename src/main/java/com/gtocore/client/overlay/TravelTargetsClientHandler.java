@@ -15,10 +15,8 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -26,10 +24,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(Dist.CLIENT)
 public class TravelTargetsClientHandler {
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(TravelTargetsClientHandler::renderLevel);
+    }
+
     public static void renderLevel(RenderLevelStageEvent event) {
         ClientLevel level = Minecraft.getInstance().level;
         LocalPlayer player = Minecraft.getInstance().player;

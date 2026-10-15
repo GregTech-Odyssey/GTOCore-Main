@@ -17,7 +17,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraftforge.common.data.DatapackBuiltinEntriesProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import com.gto.registrate.providers.ProviderType;
 
@@ -38,7 +37,7 @@ public final class Datagen {
         }
     }
 
-    @SubscribeEvent
+    // 由 CommonProxy 显式注册：eventBus.addListener(Datagen::onGatherData)；本仓禁用 @SubscribeEvent
     public static void onGatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         CompletableFuture<HolderLookup.Provider> future = event.getLookupProvider();

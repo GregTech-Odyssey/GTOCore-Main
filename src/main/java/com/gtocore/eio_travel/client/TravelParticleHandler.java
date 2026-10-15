@@ -8,22 +8,22 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Calendar;
 
-@Mod.EventBusSubscriber(Dist.CLIENT)
 public class TravelParticleHandler {
 
     private static int tick = 0;
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(TravelParticleHandler::clientTick);
+    }
+
     public static void clientTick(TickEvent.ClientTickEvent e) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (e.phase == TickEvent.Phase.END && player != null) {

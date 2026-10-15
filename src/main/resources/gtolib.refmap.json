@@ -414,6 +414,16 @@
     },
     "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
       "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
+    },
+    "com/gtocore/mixin/mc/ConnectionMixin": {
+      "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V": "Lnet/minecraft/network/Connection;m_243124_(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
+      "channelRead0": "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
+      "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/network/Connection;channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V"
+    },
+    "com/gtolib/mixin/mc/ConnectionMixin": {
+      "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V": "Lnet/minecraft/network/Connection;m_243124_(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
+      "channelRead0": "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
+      "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/network/Connection;channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V"
     }
   },
   "data": {
@@ -832,6 +842,16 @@
       },
       "com/gtolib/mixin/mc/client/BlockElementFaceMixin": {
         "<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V": "Lnet/minecraft/client/renderer/block/model/BlockElementFace;<init>(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/minecraftforge/client/model/ForgeFaceData;)V"
+      },
+      "com/gtocore/mixin/mc/ConnectionMixin": {
+        "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V": "Lnet/minecraft/network/Connection;m_243124_(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
+        "channelRead0": "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
+        "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/network/Connection;channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V"
+      },
+      "com/gtolib/mixin/mc/ConnectionMixin": {
+        "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V": "Lnet/minecraft/network/Connection;m_243124_(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
+        "channelRead0": "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
+        "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/network/Connection;channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V"
       }
     }
   }

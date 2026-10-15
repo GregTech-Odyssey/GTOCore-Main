@@ -13,30 +13,32 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import org.jetbrains.annotations.Nullable;
 
-@Mod.EventBusSubscriber
 public class TravelEvents {
 
     @Nullable
     public static Runnable syncTask = null;
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onLeftClickBlock);
+        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onPlayerLogin);
+        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onDimensionChange);
+        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onServerTick);
+    }
+
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         if (event.getEntity().getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
             event.setCanceled(true);
         }
     }
 
-    @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
         if (player instanceof ServerPlayer serverPlayer) {
@@ -44,7 +46,6 @@ public class TravelEvents {
         }
     }
 
-    @SubscribeEvent
     public static void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
         Player player = event.getEntity();
         if (player instanceof ServerPlayer serverPlayer) {
@@ -52,14 +53,12 @@ public class TravelEvents {
         }
     }
 
-    @SubscribeEvent
     public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
         if (event.phase == net.minecraftforge.event.TickEvent.Phase.END && syncTask != null) {
             syncTask.run();
         }
     }
 
-    @Mod.EventBusSubscriber(Dist.CLIENT)
     public static class Client {
 
         private static long LAST_STAFF_UI_REQUEST = 0;
@@ -67,7 +66,14 @@ public class TravelEvents {
         private static boolean LAST_SNEAKING = false;
         private static int JUMP_COOLDOWN = 0;
 
-        @SubscribeEvent
+        public static void init() {
+            MinecraftForge.EVENT_BUS.addListener(Client::onAttackKey);
+            MinecraftForge.EVENT_BUS.addListener(Client::movementInputUpdate);
+            MinecraftForge.EVENT_BUS.addListener(Client::emptyClick);
+            MinecraftForge.EVENT_BUS.addListener(Client::blockClick);
+            MinecraftForge.EVENT_BUS.addListener(Client::itemClick);
+        }
+
         public static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
             Player player = Minecraft.getInstance().player;
             if (!event.isAttack() || player == null || !player.getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
@@ -82,7 +88,6 @@ public class TravelEvents {
             }
         }
 
-        @SubscribeEvent
         public static void movementInputUpdate(MovementInputUpdateEvent event) {
             Input input = event.getInput();
             Player player = event.getEntity();
@@ -118,7 +123,6 @@ public class TravelEvents {
             }
         }
 
-        @SubscribeEvent
         public static void emptyClick(PlayerInteractEvent.RightClickEmpty event) {
             Player player = event.getEntity();
             // Credit to castcrafter/travel_anchors
@@ -133,7 +137,6 @@ public class TravelEvents {
             }
         }
 
-        @SubscribeEvent
         public static void blockClick(PlayerInteractEvent.RightClickBlock event) {
             Player player = event.getEntity();
             if (!TravelHandler.canBlockTeleport(player) || TravelHandler.isAimingAtTeammate(player)) {
@@ -145,7 +148,6 @@ public class TravelEvents {
             }
         }
 
-        @SubscribeEvent
         public static void itemClick(PlayerInteractEvent.RightClickItem event) {
             Player player = event.getEntity();
             if (!TravelHandler.canBlockTeleport(player) || TravelHandler.isAimingAtTeammate(player)) {

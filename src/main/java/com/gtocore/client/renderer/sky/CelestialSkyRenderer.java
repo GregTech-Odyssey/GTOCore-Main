@@ -15,10 +15,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -34,7 +32,6 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 在星球天空按轨道位置画恒星与其他天体（方形贴图，统一 16 格）：黄道按自转轴倾角斜穿太阳轨迹，轨道倾角放大显示；张角压缩后换算大小。
  */
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
 public final class CelestialSkyRenderer {
 
     private static final float SKY_DISTANCE = 100;
@@ -83,7 +80,10 @@ public final class CelestialSkyRenderer {
         return body != null && (body != CelestialBody.EARTH || inOrbit(level));
     }
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(CelestialSkyRenderer::onLoggingOut);
+    }
+
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         CelestialOrbits.clearClientSeed();
     }

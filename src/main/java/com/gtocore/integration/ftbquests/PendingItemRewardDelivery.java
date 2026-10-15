@@ -1,16 +1,13 @@
 package com.gtocore.integration.ftbquests;
 
-import com.gtolib.GTOCore;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import dev.architectury.hooks.item.ItemStackHooks;
 
@@ -57,12 +54,14 @@ public final class PendingItemRewardDelivery {
         return persistedData;
     }
 
-    @Mod.EventBusSubscriber(modid = GTOCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static final class Events {
 
         private Events() {}
 
-        @SubscribeEvent
+        public static void init() {
+            MinecraftForge.EVENT_BUS.addListener(Events::onPlayerRespawn);
+        }
+
         public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
             if (event.getEntity() instanceof ServerPlayer player) {
                 player.server.execute(() -> {

@@ -95,7 +95,6 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.MissingMappingsEvent;
 
@@ -124,24 +123,41 @@ import java.util.function.Supplier;
 public final class ForgeCommonEvent {
 
     public static void init() {
-        MinecraftForge.EVENT_BUS.register(ForgeCommonEvent.class);
-        MinecraftForge.EVENT_BUS.register(AnimalsRevengeEvent.class);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onDropsEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPortalSpawnEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onEntityTravelToDimension);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLivingDeathEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLivingJumpEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onRightClickBlock);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onRightClickItem);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerLoggedInEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerTickEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerChangedDimensionEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLevelLoad);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerStoppedEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onCommandRegister);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onGTToolRightClickBlock);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::serverStarting);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::harvestCheck);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::remapIds);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onEntityDeath);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onEntityHurt);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onLivingAttack);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onLivingDamage);
+        AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();
         MEPatternBufferConnectionHandler.init();
     }
 
-    @SubscribeEvent
     public static void onDropsEvent(LivingDropsEvent e) {
         dev.shadowsoffire.apotheosis.Apoth.Enchantments.CAPTURING.get().handleCapturing(e);
     }
 
-    @SubscribeEvent
     public static void onPortalSpawnEvent(BlockEvent.PortalSpawnEvent event) {
         event.setCanceled(true);
     }
 
-    @SubscribeEvent
     public static void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
         if (event.getEntity() instanceof FallingBlockEntity fallingBlock) {
             fallingBlock.discard();
@@ -156,7 +172,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onLivingDeathEvent(LivingDeathEvent event) {
         if (event.getEntity() instanceof GlacianRam glacianRam) {
             var level = glacianRam.level();
@@ -167,7 +182,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onLivingJumpEvent(LivingEvent.LivingJumpEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.level() instanceof ServerLevel serverLevel) {
             Optional.ofNullable(player.getEffect(GTOEffects.MYSTERIOUS_BOOST.get())).ifPresent(effect -> {
@@ -194,7 +208,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     @SuppressWarnings("all")
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
@@ -350,7 +363,6 @@ public final class ForgeCommonEvent {
         machine.setAllowInputFromOutputSideFluids(true);
     }
 
-    @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         Level level = event.getLevel();
         if (level == null) return;
@@ -371,7 +383,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (!GTCEu.isDev()) {
@@ -390,7 +401,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             TeamResearchSavedData.syncIfNeeded(event.getServer());
@@ -398,7 +408,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onPlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             showVoidTimeHint(player);
@@ -408,7 +417,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel level) {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
@@ -435,7 +443,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onServerStoppedEvent(ServerStoppedEvent event) {
         TechTreeSavedData.INSTANCE = new TechTreeSavedData();
         DysonSphereSavaedData.INSTANCE = new DysonSphereSavaedData();
@@ -493,23 +500,19 @@ public final class ForgeCommonEvent {
         player.displayClientMessage(Component.translatable("gtocore.lang." + VOID_WORLD_TIME_HINT).withStyle(ChatFormatting.AQUA), false);
     }
 
-    @SubscribeEvent
     public static void onCommandRegister(RegisterCommandsEvent event) {
         GTOCommands.init(event.getDispatcher());
     }
 
-    @SubscribeEvent
     public static void onGTToolRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         var item = event.getEntity().getMainHandItem().getItem();
         if (item instanceof GTToolItem) event.setUseBlock(Event.Result.ALLOW);
     }
 
-    @SubscribeEvent
     public static void serverStarting(ServerStartingEvent event) {
         DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> ServerLangHook.reload(event.getServer()));
     }
 
-    @SubscribeEvent
     public static void harvestCheck(PlayerEvent.HarvestCheck harvestCheck) {
         ItemStack stack = harvestCheck.getEntity().getMainHandItem();
         if (stack.getItem() instanceof VajraItem tool) {
@@ -519,7 +522,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent
     public static void remapIds(MissingMappingsEvent event) {
         ElectrochemistryMigration.remap(event);
         event.getMappings(Registries.BLOCK, GTOCore.MOD_ID).forEach(mapping -> {
@@ -618,7 +620,6 @@ public final class ForgeCommonEvent {
             .put("neutron", ChemicalHelper.getBlock(TagPrefix.block, GTOMaterials.Neutron))
             .build());
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onEntityDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (isPlayerInvincible(player)) {
@@ -627,7 +628,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onEntityHurt(LivingHurtEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (isPlayerInvincible(player)) {
@@ -636,7 +636,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLivingAttack(LivingAttackEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (isPlayerInvincible(player)) {
@@ -645,7 +644,6 @@ public final class ForgeCommonEvent {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (isPlayerInvincible(player)) {

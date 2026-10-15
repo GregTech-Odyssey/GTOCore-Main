@@ -153,3 +153,14 @@
    - **不写重载适配**：不为重载监听 `AddReloadListenerEvent`、`TagsUpdatedEvent`、`RecipesUpdatedEvent` 等事件，也不为此添加版本号、脏标记或重复计算。
    - **派生数据一次构建**：由注册表、配方、标签计算出的缓存与索引，在加载完成后构建一次，之后视为不可变。
    - **审查不以此为问题**：「重载后数据过期」不作为代码审查意见提出。
+
+### 事件注册（`com.gtocore` 包）
+
+39. **`com.gtocore` 与随包发布的 `com.hepdd` 包内的类（`com.gtocore.mixin.**` 除外）禁止使用 `@SubscribeEvent` 与 `@Mod.EventBusSubscriber`，事件一律显式注册。**
+   - **为什么**：Forge 的 `EventBus.register(Object)` 会为每个 `@SubscribeEvent` 方法生成一个 `IEventListener` 子类，类名由 `IEventListenerFactory.getUniqueName` 拼成 `<包名>.__<类简单名>_<方法名>_<事件类简单名>`，**不含参数描述符**（源码位置标记 `.dynamic`，崩溃栈里会看到 `xxx.invoke(.dynamic)`）。本仓发行轨会对 gtocore 做代码保护改名，两个参数不同但**方法名相同、事件类简单名相同**的处理器（如 `ScreenEvent.MouseButtonReleased.Pre` 与 `ScreenEvent.MouseDragged.Pre` 的简单名都是 `Pre`）会落到同一个混淆名，两个处理器解析到同一个生成类，`invoke` 里的 `CHECKCAST` 对不上 → 运行到该事件即 `ClassCastException`（`Xxx$Pre cannot be cast to Yyy$Pre`）。
+   - **显式注册不生成类**：`addListener(Consumer)` 走 `EventBus` 自己的 `NamedEventListener` 包装，不派生子类，因此不存在按方法名派生的类名，从根上消除该问题。
+   - **做法**：类里保留处理方法（`static`，签名照旧），另加一个 `public static void init()`，用 `MinecraftForge.EVENT_BUS.addListener(Owner::handler)` 逐个注册；Forge 总线用 `net.minecraftforge.common.MinecraftForge.EVENT_BUS`，mod 总线用 `FMLJavaModLoadingContext.get().getModEventBus().addListener(...)`。
+   - **带参数的事件照旧表达**：`addListener(EventPriority.HIGHEST, Owner::handler)`；需要取消态用 `addListener(priority, true, Owner::handler)`；需要按事件类型注册用 `addListener(priority, receiveCanceled, EventClass.class, Owner::handler)`。子类事件不会被父类注册点接收，注册时写实际监听的事件类型。
+   - **接线**：`init()` 必须被调用，不得只写不接。通用端在 `CommonProxy` 的构造/`init()` 里调，客户端专属在 `ClientProxy` 的对应位置调；时机与原先 `@Mod.EventBusSubscriber` 的注册时机一致。别忘了删掉旧的 `MinecraftForge.EVENT_BUS.register(Xxx.class)`——去掉注解后它找不到处理器，会静默什么都不注册。
+   - **mixin 除外**：`com.gtocore.mixin.**` 的处理器方法要合并进目标类、且 mixin 包在保护里整类保名，保持原有 `@SubscribeEvent` 写法，迁移时不要动。
+   - **构建期有守卫**：`obfuscateGtocoreRelease` 会扫描 `com.gtocore` 与随包发布的 `com.hepdd`（各含嵌套类），发现 `mixin` 包以外仍有 `@SubscribeEvent` 直接失败并列出 `类.方法`。

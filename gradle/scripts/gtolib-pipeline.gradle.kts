@@ -1945,6 +1945,38 @@ fun writeGtocoreKeepRules(program: Map<String, ClassNode>, target: File): Set<St
     return keepClasses
 }
 
+/**
+ * gtocore 禁止使用 @SubscribeEvent：EventBus.register(Object) 为每个 @SubscribeEvent 方法生成一个 IEventListener 子类，
+ * 类名由 IEventListenerFactory.getUniqueName 拼成 `<包名>.__<类简单名>_<方法名>_<事件类简单名>`（不含参数描述符，
+ * 源码标记 .dynamic）。改名后两个参数不同、方法名与事件简单名相同的方法（ScreenEvent$MouseDragged$Pre 与
+ * ScreenEvent$MouseButtonReleased$Pre 的简单名都是 Pre）落到同一混淆名、解析到同一生成类 → invoke 的 CHECKCAST
+ * 对不上 → 运行时 ClassCastException。
+ * 统一改成显式注册：MinecraftForge.EVENT_BUS.addListener(...) / FMLJavaModLoadingContext.get().getModEventBus().addListener(...)
+ * ——该路径用 NamedEventListener 包装，不派生子类。
+ * mixin 包除外：它的处理器方法要合并进被注入的类，且 mixin 类在保护里整类保名。
+ */
+fun verifyNoSubscribeEvent(program: Map<String, ClassNode>) {
+    val hits = linkedSetOf<String>()
+    program.values.forEach { node ->
+        // 随包发布的 com.hepdd 与 gtocore 同属 program、一起改名，同受此约束；mixin 包除外。
+        val owned = node.name.startsWith("com/gtocore/") || node.name.startsWith("com/hepdd/")
+        if (!owned || node.name.startsWith("com/gtocore/mixin/")) return@forEach
+        node.methods.forEach { m ->
+            val annotated = (m.visibleAnnotations.orEmpty() + m.invisibleAnnotations.orEmpty())
+                .any { it.desc == "Lnet/minecraftforge/eventbus/api/SubscribeEvent;" }
+            if (annotated) hits += "${node.name.replace('/', '.')}.${m.name}"
+        }
+    }
+    if (hits.isNotEmpty()) {
+        throw GradleException(
+            "gtocore 代码保护: ${hits.size} 处仍在使用 @SubscribeEvent（保护改名后 EventBus 生成的监听器类名会撞车）。" +
+                "改用 MinecraftForge.EVENT_BUS.addListener(...) / FMLJavaModLoadingContext.get().getModEventBus().addListener(...) 显式注册:\n" +
+                hits.take(20).joinToString("\n") { "  - $it" }
+        )
+    }
+    logger.lifecycle("gtocore 代码保护: 无 @SubscribeEvent 用法 OK（扫描 ${program.size} class）")
+}
+
 fun verifyGtocoreLibraryOverrides(program: Map<String, ClassNode>, libs: Collection<File>, mapping: GtolibReleaseMapping) {
     val location = HashMap<String, File>()
     libs.filter { it.isFile && it.name.endsWith(".jar") }.forEach { jar ->
@@ -2076,6 +2108,7 @@ val obfuscateGtocoreRelease = tasks.register<JavaExec>("obfuscateGtocoreRelease"
         }
         program = readClassNodes(programJar)
         if (program.isEmpty()) throw GradleException("gtocore 代码保护: ${jar.name} 里没有 gtocore 类")
+        verifyNoSubscribeEvent(program)
         keptClasses = writeGtocoreKeepRules(program, generatedKeep)
         libs = proguardLibraryJars(true) + embeddedLibraryJar
         val extra = writeProguardExtraFile(name, libs, gtocoreMappingFile, gtocoreObfDir)

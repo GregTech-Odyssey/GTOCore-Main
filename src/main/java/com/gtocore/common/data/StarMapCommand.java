@@ -7,9 +7,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -24,7 +23,6 @@ import java.util.UUID;
 /**
  * 调试指令：召唤指定等级的火箭让玩家乘坐，等客户端收到乘坐状态后打开选星界面。
  */
-@Mod.EventBusSubscriber
 public final class StarMapCommand {
 
     private static final ResourceLocation[] ROCKETS = {
@@ -64,7 +62,10 @@ public final class StarMapCommand {
                 }));
     }
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(StarMapCommand::onServerTick);
+    }
+
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || PENDING.isEmpty()) return;
         MinecraftServer server = event.getServer();

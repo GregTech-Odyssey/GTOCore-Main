@@ -21,10 +21,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent
 import net.minecraftforge.event.entity.living.LivingEvent
 import net.minecraftforge.event.level.LevelEvent
-import net.minecraftforge.eventbus.api.SubscribeEvent
 
 import com.gregtechceu.gtceu.api.machine.TickableSubscription
 import com.gregtechceu.gtceu.utils.TaskHandler
@@ -39,6 +39,14 @@ import kotlin.math.max
 
 @DataGeneratorScanned
 object AnimalsRevengeEvent {
+
+    @JvmStatic
+    fun init() {
+        MinecraftForge.EVENT_BUS.addListener(AnimalsRevengeEvent::onLevelLoad)
+        MinecraftForge.EVENT_BUS.addListener(AnimalsRevengeEvent::onLivingTick)
+        MinecraftForge.EVENT_BUS.addListener(AnimalsRevengeEvent::onFinishEat)
+    }
+
     // 实体 -> 掉落物
     private val entityLootCache = Object2ObjectOpenHashMap<EntityType<*>, ObjectOpenHashSet<Item>>()
 
@@ -54,7 +62,6 @@ object AnimalsRevengeEvent {
     private data class EatState(val eatenItem: Item, var maxRemainingSeen: Int, var halfTriggered: Boolean = false)
     private val eatStates = Object2ObjectOpenHashMap<UUID, EatState>()
 
-    @SubscribeEvent
     @JvmStatic
     fun onLevelLoad(event: LevelEvent.Load) {
         val level = event.level
@@ -69,7 +76,6 @@ object AnimalsRevengeEvent {
         stackCache.clear()
     }
 
-    @SubscribeEvent
     @JvmStatic
     fun onLivingTick(event: LivingEvent.LivingTickEvent) {
         val player = event.entity as? ServerPlayer ?: return
@@ -97,7 +103,6 @@ object AnimalsRevengeEvent {
         }
     }
 
-    @SubscribeEvent
     @JvmStatic
     fun onFinishEat(event: LivingEntityUseItemEvent.Finish) {
         val player = event.entity as? ServerPlayer ?: return

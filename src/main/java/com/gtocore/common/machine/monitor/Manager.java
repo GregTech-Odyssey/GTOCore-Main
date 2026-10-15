@@ -23,12 +23,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import lombok.Getter;
@@ -67,6 +66,10 @@ public final class Manager {
     });
 
     private Manager() {}
+
+    public static void init() {
+        Factory.init();
+    }
 
     private static void requireQueue(Runnable runnable) {
         if (!Loading.contains(runnable)) {
@@ -638,10 +641,18 @@ public final class Manager {
         }
     }
 
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
     static class Factory {
 
-        @SubscribeEvent
+        public static void init() {
+            MinecraftForge.EVENT_BUS.addListener(Factory::onServerStopped);
+            MinecraftForge.EVENT_BUS.addListener(Factory::onWorldUnload);
+            MinecraftForge.EVENT_BUS.addListener(Factory::onLoad);
+            MinecraftForge.EVENT_BUS.addListener(Factory::onTick);
+            MinecraftForge.EVENT_BUS.addListener(Factory::onPlayerLogin);
+            MinecraftForge.EVENT_BUS.addListener(Factory::onPlayerChangeDimension);
+            MinecraftForge.EVENT_BUS.addListener(Factory::onPlayerRespawn);
+        }
+
         public static void onServerStopped(ServerStoppedEvent event) {
             // 服务器完全停止时触发
             gridToNetwork.clear();
@@ -649,7 +660,6 @@ public final class Manager {
             GridFacing.GRID_AXES.clear();
         }
 
-        @SubscribeEvent
         public static void onWorldUnload(LevelEvent.Unload event) {
             // 世界卸载时触发（客户端/服务端均会触发）
             clearCache((Level) event.getLevel());
@@ -657,12 +667,10 @@ public final class Manager {
         }
 
         // static boolean enteredWorld = false;
-        @SubscribeEvent
         public static void onLoad(LevelEvent.Load event) {
             clearCache((Level) event.getLevel());
         }
 
-        @SubscribeEvent
         public static void onTick(TickEvent.ServerTickEvent event) {
             // 方块可以tick多次但这个只能tick一次
             if (event.phase == TickEvent.Phase.START) {
@@ -670,7 +678,6 @@ public final class Manager {
             }
         }
 
-        @SubscribeEvent
         public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
             // 玩家登录时触发
             if (event.getEntity() instanceof ServerPlayer sp) {
@@ -678,7 +685,6 @@ public final class Manager {
             }
         }
 
-        @SubscribeEvent
         public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
             // 玩家切换维度时触发
             if (event.getEntity() instanceof ServerPlayer sp) {
@@ -686,7 +692,6 @@ public final class Manager {
             }
         }
 
-        @SubscribeEvent
         public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
             // 玩家重生时触发
             if (event.getEntity() instanceof ServerPlayer sp) {

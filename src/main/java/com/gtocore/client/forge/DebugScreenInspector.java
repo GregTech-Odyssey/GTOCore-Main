@@ -4,8 +4,6 @@ import com.gtocore.client.KeyBind;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.integration.Mods;
 
-import com.gtolib.GTOCore;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -17,8 +15,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
 
 import appeng.client.gui.AEBaseScreen;
 import appeng.menu.SlotSemantic;
@@ -32,13 +29,16 @@ import lombok.Getter;
 /// [link](https://github.com/TeamDman/SuperFactoryManager/blob/1.20.1/src/main/java/ca/teamdman/sfm/client/handler/ContainerScreenInspectorHandler.java)
 /// @author teamdman
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(modid = GTOCore.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DebugScreenInspector {
 
     @Getter
     private static boolean visible = false;
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(DebugScreenInspector::onGuiRender);
+        MinecraftForge.EVENT_BUS.addListener(DebugScreenInspector::onKeyDown);
+    }
+
     public static void onGuiRender(ScreenEvent.Render.Post event) {
         if (!visible) return;
         if (event.getScreen() instanceof AbstractContainerScreen<?> screen) {
@@ -139,7 +139,6 @@ public class DebugScreenInspector {
         }
     }
 
-    @SubscribeEvent
     public static void onKeyDown(ScreenEvent.KeyPressed.Pre event) {
         if (Mods.SFM.isLoaded()) return; // Skip if SFM is loaded, as it handles the hotkey itself
         if (!GTOConfig.INSTANCE.devMode.dev) return; // Only enable in dev mode

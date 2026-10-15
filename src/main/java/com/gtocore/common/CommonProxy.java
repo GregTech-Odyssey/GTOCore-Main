@@ -13,8 +13,11 @@ import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.forge.ForgeCommonEvent;
+import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
+import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
+import com.gtolib.network.HeaderIndexManager;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.SparkRange;
@@ -22,6 +25,7 @@ import com.gtocore.data.Data;
 import com.gtocore.data.Datagen;
 import com.gtocore.data.IdleReason;
 import com.gtocore.data.lootTables.tool.GTONumberProviders;
+import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.api.TravelRegistry;
 import com.gtocore.eio_travel.client.travel.TravelAnchorRenderers;
 import com.gtocore.eio_travel.implementations.AnchorTravelTarget;
@@ -34,6 +38,7 @@ import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.construction_wand.ConstructionWandRegistrar;
 import com.gtocore.integration.emi.GTEMIPlugin;
 import com.gtocore.integration.ftbquests.GTOQuestTypes;
+import com.gtocore.integration.ftbquests.PendingItemRewardDelivery;
 import com.gtocore.integration.ftbu.AreaShape;
 import com.gtocore.utils.AdvMathExpParser;
 
@@ -115,6 +120,7 @@ public class CommonProxy {
     }
 
     private static void init() {
+        HeaderIndexManager.init();
         IdleReason.init();
         GTOCodecs.init();
         GTOCreativeModeTabs.init();
@@ -124,6 +130,11 @@ public class CommonProxy {
         TechTreeBrowser.init();
         GridMapUIFactory.init();
         RecipeEditorUIFactory.init();
+        Manager.init();
+        StarMapCommand.init();
+        TesseractTargetMarker.init();
+        TravelEvents.init();
+        PendingItemRewardDelivery.Events.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();
         }

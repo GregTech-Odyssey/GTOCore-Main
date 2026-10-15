@@ -58,6 +58,10 @@ public final class GTOConfig {
     @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Dev Mode", cn = "开发模式")
     public DevMode devMode = new DevMode();
 
+    @Configurable
+    @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Packet Header Index", cn = "包头索引")
+    public HeaderIndex headerIndex = new HeaderIndex();
+
     static {
         GTORules.init();
         ConfigHolder.init();
@@ -652,5 +656,29 @@ public final class GTOConfig {
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Extended Pattern Provider Size", cn = "扩展样板供应器容量")
         @Configurable.Gui.Slider
         public int exPatternSize = 36;
+    }
+
+    @DataGeneratorScanned
+    public static class HeaderIndex {
+
+        @Configurable
+        @Configurable.Comment({ "把 custom payload 的通道标识换成每连接索引并合并发送，削减同步流每包的固定开销；仅当连接两端都装了 GTOCore 时生效，否则完全走原版路径",
+                "Replaces custom payload channel ids with a per-connection index and merges packets in one container, cutting the fixed per-packet overhead of sync traffic; only active when both ends of the connection run GTOCore, otherwise the vanilla path is untouched" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Enable Packet Header Index", cn = "启用包头索引")
+        public boolean enabled = true;
+
+        @Configurable
+        @Configurable.Range(min = 1, max = 200)
+        @Configurable.Comment({ "合并窗口（毫秒）：窗口内到达的 payload 会合并成同一个容器包发出",
+                "Merge window in milliseconds: payloads arriving inside the window are merged into a single container packet" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Merge Window (ms)", cn = "合并窗口（毫秒）")
+        @Configurable.Gui.Slider
+        public int flushMillis = 20;
+
+        @Configurable
+        @Configurable.Comment({ "开启时，遇到非 payload 包会先把队列冲刷掉，收包顺序与原版完全一致；关闭时合批率更高，但部分 payload 可能排到紧随其后的原版包之后",
+                "When on, the queue is flushed before any other packet, so the receive order matches vanilla exactly; when off, merging is more effective but some payloads may arrive after a following vanilla packet" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Keep Vanilla Packet Order", cn = "保持原版包顺序")
+        public boolean flushOnForeign = true;
     }
 }

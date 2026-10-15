@@ -11,8 +11,8 @@ import net.minecraft.network.chat.Style
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.api.distmarker.OnlyIn
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.EventPriority
-import net.minecraftforge.eventbus.api.SubscribeEvent
 
 import com.google.gson.GsonBuilder
 import com.gregtechceu.gtceu.utils.TaskHandler
@@ -32,6 +32,11 @@ import java.util.regex.Pattern
 
 @OnlyIn(Dist.CLIENT)
 object ClientForge {
+
+    @JvmStatic
+    fun init() {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ClientForge::onClientLoggedIn)
+    }
 
     private val GSON = GsonBuilder().setPrettyPrinting().create()
 
@@ -276,7 +281,6 @@ object ClientForge {
     }
 
     // 【入口】登录时显示消息
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     @JvmStatic
     fun onClientLoggedIn(event: ClientPlayerNetworkEvent.LoggingIn) {
         val mc = Minecraft.getInstance()

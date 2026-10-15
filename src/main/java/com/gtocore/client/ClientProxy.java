@@ -1,21 +1,29 @@
 package com.gtocore.client;
 
 import com.gtocore.api.research.techtree.ui.TechTreeStyle;
+import com.gtocore.client.forge.DebugScreenInspector;
 import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.client.hud.AdAstraHUD;
+import com.gtocore.client.hud.IMoveableHUD;
 import com.gtocore.client.hud.ResearchPointsHUD;
 import com.gtocore.client.hud.WirelessEnergyHUD;
 import com.gtocore.client.hud.attribute.PlayerAttrHUD;
 import com.gtocore.client.model.ShaderItemModelLoader;
 import com.gtocore.client.overlay.GTORender;
+import com.gtocore.client.overlay.TesseractClientHandler;
+import com.gtocore.client.overlay.TravelTargetsClientHandler;
 import com.gtocore.client.renderer.GTORenderTypes;
 import com.gtocore.client.renderer.SolarGlobeGlowShader;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
+import com.gtocore.client.renderer.machine.MonitorRenderer;
+import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
+import com.gtocore.eio_travel.TravelEvents;
+import com.gtocore.eio_travel.client.TravelParticleHandler;
 import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
@@ -55,7 +63,6 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -93,9 +100,6 @@ public final class ClientProxy extends CommonProxy {
         eventBus.addListener(ClientProxy::registerItemColors);
         eventBus.addListener(ClientProxy::registerShaders);
         eventBus.addListener(ClientProxy::registerReloadListeners);
-        MinecraftForge.EVENT_BUS.register(ForgeClientEvent.class);
-        MinecraftForge.EVENT_BUS.register(GTORender.class);
-        MinecraftForge.EVENT_BUS.register(ClientForge.class);
         registerAEModels();
         AEKeyRendering.register(TagPrefixKeyType.TYPE, TagPrefixKey.class, new TagPrefixRenderer.AEKeyHandler());
         if (GTCEu.Mods.isShimmerLoaded()) eventBus.addListener(ClientProxy::registerLights);
@@ -104,6 +108,18 @@ public final class ClientProxy extends CommonProxy {
 
     private static void init() {
         KeyBind.init();
+        // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
+        ForgeClientEvent.init();
+        GTORender.init();
+        DebugScreenInspector.init();
+        MonitorRenderer.RenderedCacheClearer.init();
+        CelestialSkyRenderer.init();
+        TravelTargetsClientHandler.init();
+        TesseractClientHandler.init();
+        TravelEvents.Client.init();
+        TravelParticleHandler.init();
+        IMoveableHUD.EventHandler.init();
+        ClientForge.init();
         ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
         GTDynamicResourcePack.EVENT.addListener(ClientProxy.class, () -> {
             for (var tagPrefix : TagPrefix.values()) {

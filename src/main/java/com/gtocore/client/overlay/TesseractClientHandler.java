@@ -9,19 +9,16 @@ import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.awt.*;
 import java.util.List;
 
 import static com.gregtechceu.gtceu.utils.GTUtil.getClientLevel;
 
-@Mod.EventBusSubscriber(Dist.CLIENT)
 public class TesseractClientHandler {
 
     private static final float HUE_RED = 0.0f;
@@ -31,7 +28,12 @@ public class TesseractClientHandler {
         return HUE_RED + percent * (HUE_PURPLE - HUE_RED);
     }
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(TesseractClientHandler::renderLevel);
+        MinecraftForge.EVENT_BUS.addListener(TesseractClientHandler::clientTick);
+        MinecraftForge.EVENT_BUS.addListener(TesseractClientHandler::onInteractionKeyPressed);
+    }
+
     public static void renderLevel(RenderLevelStageEvent event) {
         if (Minecraft.getInstance().player == null) return;
         var item = Minecraft.getInstance().player.getMainHandItem();
@@ -47,7 +49,6 @@ public class TesseractClientHandler {
         }
     }
 
-    @SubscribeEvent
     public static void clientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             List.copyOf(DirectedTesseractMachine.HIGHLIGHTS.elementSet()).forEach(DirectedTesseractMachine.HIGHLIGHTS::remove);
@@ -141,7 +142,6 @@ public class TesseractClientHandler {
         }
     }
 
-    @SubscribeEvent
     public static void onInteractionKeyPressed(InputEvent.InteractionKeyMappingTriggered event) {
         if (event.isPickBlock() &&
                 TesseractTargetMarker.isTesseractTargetMarker(Minecraft.getInstance().player.getMainHandItem())) {

@@ -59,10 +59,10 @@ import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
@@ -98,7 +98,18 @@ public final class ForgeClientEvent {
     private static final String ITEM_PREFIX = "item." + GTOCore.MOD_ID;
     private static final String BLOCK_PREFIX = "block." + GTOCore.MOD_ID;
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTickEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onTooltipEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTick);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onRenderWorldLast);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::autoConfirmExperimentalWarning);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::replacePlanetsScreen);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ForgeClientEvent::styleStarMapTooltip);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::registerCommands);
+        MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientDisconnect);
+    }
+
     public static void onClientTickEvent(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             if (highlightingTime > 0) {
@@ -119,7 +130,6 @@ public final class ForgeClientEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onTooltipEvent(ItemTooltipEvent event) {
         Player player = event.getEntity();
         if (player == null) return;
@@ -154,7 +164,6 @@ public final class ForgeClientEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         FXManager.tickFXs();
@@ -169,7 +178,6 @@ public final class ForgeClientEvent {
         }
     }
 
-    @SubscribeEvent
     public static void onRenderWorldLast(RenderLevelStageEvent event) {
         RenderLevelStageEvent.Stage stage = event.getStage();
         FXManager.dispatchFXs(event);
@@ -236,7 +244,6 @@ public final class ForgeClientEvent {
     @Nullable
     private static Screen autoConfirmedScreen;
 
-    @SubscribeEvent
     public static void autoConfirmExperimentalWarning(ScreenEvent.Init.Post event) {
         if (FMLEnvironment.production || !(event.getScreen() instanceof ConfirmScreen screen)) return;
         if (!(screen.getTitle().getContents() instanceof TranslatableContents title)) return;
@@ -261,12 +268,10 @@ public final class ForgeClientEvent {
         }
     }
 
-    @SubscribeEvent
     public static void replacePlanetsScreen(ScreenEvent.Opening event) {
         if (event.getNewScreen() instanceof PlanetsScreen screen) event.setNewScreen(RocketMapScreen.create(screen.getMenu()));
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void styleStarMapTooltip(RenderTooltipEvent.Color event) {
         if (Minecraft.getInstance().screen == null || !UIStyleManager.isOverriddenBy(UIStyleManager.STARFIELD_ID)) return;
         event.setBackground(0xF80E1430);
@@ -274,12 +279,10 @@ public final class ForgeClientEvent {
         event.setBorderEnd(0xFF243360);
     }
 
-    @SubscribeEvent
     public static void registerCommands(RegisterClientCommandsEvent evt) {
         GTOClientCommands.init(evt.getDispatcher());
     }
 
-    @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         TeamResearchSavedData.clearClientInstance();
         TechTreeSavedData.clearClientInstance();

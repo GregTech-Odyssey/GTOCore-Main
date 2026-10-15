@@ -32,9 +32,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -48,7 +47,6 @@ import java.util.Objects;
 
 import static com.gtocore.common.machine.tesseract.ITesseractMarkerInteractable.IMPORT_SUCCESS_TEXT;
 
-@Mod.EventBusSubscriber
 public class TesseractTargetMarker implements IItemUIFactory {
 
     public static final int LEFT_TAIL = 0;
@@ -96,7 +94,10 @@ public class TesseractTargetMarker implements IItemUIFactory {
         return IItemUIFactory.super.use(item, level, player, usedHand);
     }
 
-    @SubscribeEvent
+    public static void init() {
+        MinecraftForge.EVENT_BUS.addListener(TesseractTargetMarker::onLeftClickBlock);
+    }
+
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         ItemStack itemStack = event.getEntity().getMainHandItem();
 
