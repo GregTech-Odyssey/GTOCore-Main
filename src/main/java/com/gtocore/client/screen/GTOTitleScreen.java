@@ -154,6 +154,11 @@ public final class GTOTitleScreen extends TitleScreen {
                 backgroundWidth, backgroundHeight, 0, 0, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT);
     }
 
+    // A named callback avoids ART mapping this lambda to TitleScreen's private lambda$init$1.
+    private static void openWiki(Button button) {
+        Util.getPlatform().openUri(WIKI_URL);
+    }
+
     private record BrandingLine(String text, int x, int y) {}
 
     private static final class TextureButton extends Button {

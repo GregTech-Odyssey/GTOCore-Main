@@ -56,6 +56,10 @@ public final class TesseractTargets implements RemoteKeyTarget.Listener {
         targets[i].bind(level, pos);
     }
 
+    public void bind(int i, net.minecraft.server.MinecraftServer server, net.minecraft.resources.ResourceKey<Level> key, BlockPos pos) {
+        ((com.gtolib.api.dimension.DimensionRemoteTarget) (Object) targets[i]).gtolib$bindDimension(server, key, pos);
+    }
+
     public void subscribe(boolean subscribed) {
         if (this.subscribed == subscribed) return;
         this.subscribed = subscribed;

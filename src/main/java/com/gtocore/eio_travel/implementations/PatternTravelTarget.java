@@ -114,7 +114,7 @@ public class PatternTravelTarget extends AbstractTravelTarget {
 
     @Override
     public String getName() {
-        if (isClient || (dimension != null && !Objects.requireNonNull(getServer().getLevel(dimension)).isLoaded(getPos()))) {
+        if (!isHostLoaded()) {
             // on client side the patternProviderLogicHost is not available in some cases (e.g. when coming from a world
             // load)
             // so we fall back to the name stored in the parent class
@@ -145,7 +145,7 @@ public class PatternTravelTarget extends AbstractTravelTarget {
 
     @Override
     public Item getIcon() {
-        if (isClient || (dimension != null && !Objects.requireNonNull(getServer().getLevel(dimension)).isLoaded(getPos()))) {
+        if (!isHostLoaded()) {
             return super.getIcon();
         }
         return getAdjacentMachineIcon();
@@ -153,11 +153,18 @@ public class PatternTravelTarget extends AbstractTravelTarget {
 
     @Override
     public boolean getVisibility() {
-        if (isClient || (dimension != null && !Objects.requireNonNull(getServer().getLevel(dimension)).isLoaded(getPos()))) {
+        if (!isHostLoaded()) {
             return super.getVisibility();
         }
         return patternBufferHost != null ? patternBufferHost.getShowInTravelNetwork() :
                 patternProviderLogicHost.isVisibleInTerminal();
+    }
+
+    private boolean isHostLoaded() {
+        if (isClient) return false;
+        if (dimension == null) return true;
+        var level = getServer().getLevel(dimension);
+        return level != null && level.isLoaded(getPos());
     }
 
     @Nullable

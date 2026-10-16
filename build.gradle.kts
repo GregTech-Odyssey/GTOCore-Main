@@ -431,6 +431,10 @@ apply(from = "gradle/scripts/gtolib-pipeline.gradle.kts")
 apply(from = "gradle/scripts/release-smoke.gradle.kts")
 if (extra["isGtolibDebugMode"] == true) {
     legacyForge.runs.configureEach { systemProperty("gtolib.debug", "true") }
+} else {
+    // Protected packaging removes GTOLib from main output; tests still compile against its named API.
+    sourceSets.test.get().compileClasspath += files(layout.buildDirectory.file("gtolib/gtolib-protected.jar"))
+        .builtBy("buildGtolibProtected")
 }
 
 // ---------- 资源与 jar ----------
@@ -667,7 +671,11 @@ eclipse {
 spotless {
     encoding("UTF-8")
     java {
-        target("src/main/java/**/*.java", "GTOLib/src/main/java/**/*.java")
+        target(
+            "src/main/java/**/*.java", "GTOLib/src/main/java/**/*.java",
+            "src/test/java/com/gtolib/api/dimension/**/*.java",
+            "src/test/java/com/gtocore/common/weather/**/*.java", "src/dimensionTest/java/**/*.java",
+        )
         toggleOffOn()
         importOrderFile(file("gradle/spotless/spotless.importorder"))
         removeUnusedImports("cleanthat-javaparser-unnecessaryimport")

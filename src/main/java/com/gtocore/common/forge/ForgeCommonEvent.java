@@ -8,6 +8,7 @@ import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
+import com.gtocore.common.weather.WeatherSystem;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.techtree.BaseNodes;
@@ -133,6 +134,7 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerLoggedInEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerTickEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerChangedDimensionEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerRespawnEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLevelLoad);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerStoppedEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onCommandRegister);
@@ -291,7 +293,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.CRYING_OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:flat")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = server.getLevel(GTODimensions.FLAT);
+                    ServerLevel serverLevel = com.gtolib.api.dimension.DimensionManager.get(server).loadFor(player, GTODimensions.FLAT);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:void") ? 1 : 10;
                         data.putDouble("y_f", player.getY() + 1);
@@ -303,7 +305,7 @@ public final class ForgeCommonEvent {
                 } else {
                     String dima = data.getString("dim_f");
                     int value = "gtocore:void".equals(dima) ? 1 : 10;
-                    ServerUtils.teleportToDimension(server.getLevel(GTODimensions.getDimensionKey(RLUtils.parse(dima))), player, new Vec3((double) pos.getX() / value, data.getDouble("y_f"), (double) pos.getZ() / value));
+                    ServerUtils.teleportToDimension(server, player, GTODimensions.getDimensionKey(RLUtils.parse(dima)), new Vec3((double) pos.getX() / value, data.getDouble("y_f"), (double) pos.getZ() / value));
                 }
                 return;
             }
@@ -311,7 +313,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:void")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = server.getLevel(GTODimensions.VOID);
+                    ServerLevel serverLevel = com.gtolib.api.dimension.DimensionManager.get(server).loadFor(player, GTODimensions.VOID);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:flat") ? 1 : 10;
                         data.putDouble("y_v", player.getY() + 1);
@@ -323,7 +325,7 @@ public final class ForgeCommonEvent {
                 } else {
                     String dima = data.getString("dim_v");
                     int value = "gtocore:flat".equals(dima) ? 1 : 10;
-                    ServerUtils.teleportToDimension(server.getLevel(GTODimensions.getDimensionKey(RLUtils.parse(dima))), player, new Vec3((double) pos.getX() / value, data.getDouble("y_v"), (double) pos.getZ() / value));
+                    ServerUtils.teleportToDimension(server, player, GTODimensions.getDimensionKey(RLUtils.parse(dima)), new Vec3((double) pos.getX() / value, data.getDouble("y_v"), (double) pos.getZ() / value));
                 }
                 return;
             }
@@ -398,10 +400,12 @@ public final class ForgeCommonEvent {
             TechTreeSavedData.sync(player);
             CelestialSavedData.sync(player);
             MEPatternBufferConnectionHandler.syncToPlayer(player);
+            WeatherSystem.get(player.server).sync(player);
         }
     }
 
     public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) WeatherSystem.get(event.getServer()).tick();
         if (event.phase == TickEvent.Phase.END) {
             TeamResearchSavedData.syncIfNeeded(event.getServer());
             TechTreeSavedData.syncIfNeeded(event.getServer());
@@ -413,12 +417,17 @@ public final class ForgeCommonEvent {
             showVoidTimeHint(player);
             syncPlayerTime(player);
             MEPatternBufferConnectionHandler.syncToPlayer(player);
+            WeatherSystem.get(player.server).sync(player);
             // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
         }
     }
 
+    public static void onPlayerRespawnEvent(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) WeatherSystem.get(player.server).sync(player);
+    }
+
     public static void onLevelLoad(LevelEvent.Load event) {
-        if (event.getLevel() instanceof ServerLevel level) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
             if (serverLevel == null) return;
             var dataStorage = serverLevel.getDataStorage();

@@ -17,6 +17,7 @@ import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
+import com.gtocore.common.weather.WeatherForecastUI;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.SparkRange;
@@ -135,6 +136,7 @@ public class CommonProxy {
         TesseractTargetMarker.init();
         TravelEvents.init();
         PendingItemRewardDelivery.Events.init();
+        WeatherForecastUI.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();
         }
