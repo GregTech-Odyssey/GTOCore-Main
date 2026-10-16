@@ -88,7 +88,7 @@ public final class GTOTitleScreen extends TitleScreen {
         BrandingControl.forEachAboveCopyrightLine((line, text) -> branding.add(new BrandingLine(text, width - font.width(text), height - (10 + (line + 1) * (font.lineHeight + 1)))));
 
         var logo = new TextureButton(logoX, logoY, logoSize, logoSize,
-                Component.literal("gtodyssey.com"), button -> Util.getPlatform().openUri(WIKI_URL), LOGO, LOGO, false);
+                Component.literal("gtodyssey.com"), GTOTitleScreen::openWiki, LOGO, LOGO, false);
         logo.setTooltip(Tooltip.create(Component.literal(WIKI_URL)));
         addRenderableWidget(logo);
 
@@ -109,6 +109,10 @@ public final class GTOTitleScreen extends TitleScreen {
             addRenderableWidget(button);
         }
         if (copyright != null) addRenderableWidget(copyright);
+    }
+
+    private static void openWiki(Button button) {
+        Util.getPlatform().openUri(WIKI_URL);
     }
 
     @Override
