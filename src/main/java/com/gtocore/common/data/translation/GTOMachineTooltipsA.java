@@ -404,8 +404,12 @@ public final class GTOMachineTooltipsA {
     });
 
     public static final TipSpec LargeSteamCrackerTooltips = GTOTips.of("large_steam_cracker", t -> {
-        t.penalty(t.tr("原料效率仅正常裂化机的40%", "The raw material efficiency is only 40% of that of a normal cracker"));
-        t.bonus(t.tr("每使用高一等级的蒸汽输入仓，配方产出提升100mb", "For each higher level of steam input hatch used, the output increases by 100mb"));
+        t.feature(t.tr("机器的温度将影响机器的并行与蒸汽裂化程度", "The machine's temperature will affect the machine's parallelism and the degree of steam cracking"));
+        t.formula(t.tr("并行上限 = 向下取整(4^((温度 - 300) / 300))", "Temperature parallel limit = floor(4^((temperature - 300) / 300))"));
+        t.formula(t.tr("重度蒸汽裂化产物占比 = (温度 - 300) / 600，其余为轻度产物", "Severely steam-cracked product share = (temperature - 300) / 600; the remainder is lightly cracked"));
+        t.detail(t.tr("600K时4并行，重度:轻度为1:1；900K时16并行，只产出重度产物", "At 600K: 4 parallels and a 1:1 severe-to-light ratio; at 900K: 16 parallels and only severely cracked products"));
+        t.bonus(t.tr("连续运行提高原料效率，最高提升至105%", "Continuous operation increases raw material efficiency, up to a maximum of 105%"));
+        t.control(t.tr("（emi显示的基础配方效率为40%）", "(The base recipe efficiency displayed in EMI is 40%)"));
     });
 
     public static final TipSpec ManaFlowAssemblerTooltips = GTOTips.of("mana_flow_assembler", t -> {

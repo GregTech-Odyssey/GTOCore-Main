@@ -44,7 +44,7 @@ public class WirelessEnergyHUD implements IMoveableHUD {
     @RegisterLanguage(en = "Throughput: %s", cn = "吞吐：%s")
     public static final String FORMAT_THROUGHPUT = "hud.gtocore.wireless_energy.throughput";
 
-    @RegisterLanguage(en = "Active consumers: %s machines", cn = "正在用电的机器：%s台")
+    @RegisterLanguage(en = "Consumers: %s machines|Generators: %s machines", cn = "用电器：%s台|发电机：%s台")
     public static final String FORMAT_ACTIVE_CONSUMERS = "hud.gtocore.wireless_energy.active_consumers";
 
     private final static int width = 80;
@@ -56,6 +56,7 @@ public class WirelessEnergyHUD implements IMoveableHUD {
     private double displayedThroughput = Double.NaN;
     private Component throughputLabel;
     private int displayedConsumers = -1;
+    private int displayedGenerators = -1;
     private Component consumersLabel;
 
     private boolean isDragging = false;
@@ -245,10 +246,13 @@ public class WirelessEnergyHUD implements IMoveableHUD {
 
     private Component createConsumersLabel(PlayerData playerData) {
         int consumers = playerData.electricityActiveConsumersCache;
-        if (consumers != displayedConsumers) {
+        int generators = playerData.electricityActiveGeneratorsCache;
+        if (consumers != displayedConsumers || generators != displayedGenerators) {
             displayedConsumers = consumers;
+            displayedGenerators = generators;
             consumersLabel = Component.translatable(FORMAT_ACTIVE_CONSUMERS,
-                    Component.literal(Integer.toString(consumers)).withStyle(ChatFormatting.GOLD));
+                    Component.literal(Integer.toString(consumers)).withStyle(ChatFormatting.GOLD),
+                    Component.literal(Integer.toString(generators)).withStyle(ChatFormatting.GOLD));
         }
         return consumersLabel;
     }

@@ -111,6 +111,7 @@ public final class MultiBlockC {
                             .where('~', controller(definition))
                             .wherePart('A', blocks(GTBlocks.CASING_BRONZE_BRICKS.get())
                                     .or(abilities(STEAM).setExactLimit(1))
+                                    .or(abilities(HEAT_CONDUCTION).setExactLimit(1).setPreviewCount(1))
                                     .or(blocks(GTMachines.ITEM_IMPORT_BUS[GTValues.ULV].get()).setMaxGlobalLimited(1).setPreviewCount(1))
                                     .or(abilities(GTOPartAbility.STEAM_IMPORT_FLUIDS).setMaxGlobalLimited(2).setPreviewCount(1))
                                     .or(abilities(GTOPartAbility.STEAM_EXPORT_FLUIDS).setMaxGlobalLimited(2).setPreviewCount(1)))

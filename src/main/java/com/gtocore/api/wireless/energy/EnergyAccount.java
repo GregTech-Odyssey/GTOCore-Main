@@ -36,10 +36,11 @@ public final class EnergyAccount {
     int supplyGen, sinkGen;
     private int visitStamp;
     private int hudTick = Integer.MIN_VALUE;
-    private HudStatus hudStatus = new HudStatus(0, 0, 0);
+    private HudStatus hudStatus = new HudStatus(0, 0, 0, 0);
     private final ReferenceOpenHashSet<MetaMachine> consumingMachines = new ReferenceOpenHashSet<>();
+    private final ReferenceOpenHashSet<MetaMachine> generatingMachines = new ReferenceOpenHashSet<>();
 
-    public record HudStatus(double netPower, double throughput, int activeConsumers) {}
+    public record HudStatus(double netPower, double throughput, int activeConsumers, int activeGenerators) {}
 
     final FlowMeter meter = new FlowMeter(this);
     final O2OOpenCacheHashMap<GlobalPos, Provider.Tower> towers = new O2OOpenCacheHashMap<>();
@@ -85,15 +86,18 @@ public final class EnergyAccount {
                 for (int i = 0, n = ports.size(); i < n; i++) {
                     var port = ports.get(i);
                     var machine = port.machine();
-                    if (machine != null && !machine.isRemoved() && port.isConsuming()) consumingMachines.add(machine);
+                    if (machine == null || machine.isRemoved()) continue;
+                    if (port.isConsuming()) consumingMachines.add(machine);
+                    if (port.inRate() > 0) generatingMachines.add(machine);
                 }
             }
         }
         var stats = stats();
         int second = GridClock.second();
         double netPower = stats == null ? 0 : stats.nowIn(second) - stats.nowOut(second) - stats.nowLoss(second);
-        hudStatus = new HudStatus(netPower, throughput, consumingMachines.size());
+        hudStatus = new HudStatus(netPower, throughput, consumingMachines.size(), generatingMachines.size());
         consumingMachines.clear();
+        generatingMachines.clear();
         hudTick = now;
         return hudStatus;
     }

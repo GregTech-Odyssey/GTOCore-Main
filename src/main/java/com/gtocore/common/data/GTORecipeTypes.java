@@ -746,7 +746,7 @@ public final class GTORecipeTypes {
             .setUiBuilder(COIL_UI);
 
     public static final RecipeType STEAM_CRACKING_RECIPES = register("steam_cracker", "蒸汽裂化", MULTIBLOCK)
-            .setMaxIOSize(1, 0, 1, 1)
+            .setMaxIOSize(0, 0, 1, 2)
             .setEUIO(IO.IN)
             .setSlotOverlay(false, true, GuiTextures.CRACKING_OVERLAY_1)
             .setSlotOverlay(true, true, GuiTextures.CRACKING_OVERLAY_2)

@@ -75,6 +75,10 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
         return false;
     }
 
+    protected int getParallelLimit() {
+        return maxParallels;
+    }
+
     @Override
     public int getRecipeTier() {
         return GTUtil.getTierByVoltage(this.eut << euMultiplier);
@@ -113,7 +117,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
     protected GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long eut = recipe.getInputEUt();
         if (eut <= (this.eut << euMultiplier)) {
-            recipe = ParallelLogic.accurateParallel(this, unit, recipe, maxParallels);
+            recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallelLimit());
             if (recipe == null) return null;
             recipe.duration = (int) (recipe.duration * durationMultiplier);
             if (maxOCamount > 0) {
