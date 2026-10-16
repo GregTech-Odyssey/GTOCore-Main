@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -66,7 +67,7 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
                 }
                 int eu = 256 * (1 << tier);
                 if (electricStack.getCharge() < eu) {
-                    setIdleReason(IdleReason.CHARGE, eu, electricStack.getCharge());
+                    setIdleReason(IdleReason.CHARGE, ElectricText.energyExact(eu), ElectricText.energyExact(electricStack.getCharge()));
                     return null;
                 } else {
                     electricStack.discharge(eu * (1L << tier), electricStack.getTier(), true, false, false);

@@ -23,6 +23,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeBuilder;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.sound.ExistingSoundEntry;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GCYMRecipeTypes;
 import com.gregtechceu.gtceu.common.data.GTRecipeDataKeys;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
@@ -933,7 +934,7 @@ public final class GTORecipeTypes {
             .setEUIO(IO.IN)
             .setMaxIOSize(6, 6, 6, 6)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.fuelcell.converted_energy", FormattingUtil.formatNumbers(data.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY))))
+            .addDataInfo(data -> LocalizationUtils.format("gtocore.recipe.fuelcell.converted_energy", ElectricText.energyExact(data.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY)).getString()))
             .setSound(GTSoundEntries.CHEMICAL);
 
     public static final RecipeType FUEL_CELL_ENERGY_RELEASE_RECIPES = register("fuel_cell_energy_release", "液流燃料电池放电", MULTIBLOCK)

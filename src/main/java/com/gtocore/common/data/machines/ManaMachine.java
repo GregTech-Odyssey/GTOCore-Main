@@ -21,6 +21,7 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRenderer;
@@ -66,9 +67,8 @@ public final class ManaMachine {
                             GTOCore.id("block/generators/primitive_magic_energy")))
                     .tips(Tips.warning(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.0")))
                     .tips(Tips.warning(Component.translatable("gtocore.machine.primitive_magic_energy.tooltip.1")))
-                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_out", GTORules.MAGIC_GENERATOR_AMPERAGE.get())))
-                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out",
-                            FormattingUtil.formatNumbers(V[tier]), VNF[tier])))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_out", ElectricText.amps(GTORules.MAGIC_GENERATOR_AMPERAGE.get()))))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out", ElectricText.voltage(V[tier], tier))))
                     .tips(Tips.energy(StatKind.ENERGY_CAPACITY, V[tier] << 8, tier))
                     .register(),
             LV, MV);

@@ -10,12 +10,12 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.TooltipsHandler;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -23,10 +23,8 @@ import net.minecraft.world.level.ItemLike;
 
 import com.google.common.collect.ImmutableMap;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
-import com.hepdd.gtmthings.utils.FormatUtil;
 import vectorwing.farmersdelight.common.registry.ModItems;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -72,10 +70,9 @@ public final class Tooltips {
             if (FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.containsKey(material)) {
                 long euPerMb = FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.getLong(material);
                 tooltips.accept(Tips.stat(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density",
-                        FormattingUtil.formatNumbers(euPerMb))));
+                        ElectricText.energyExact(euPerMb))));
                 tooltips.accept(Tips.stat(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density.va",
-                        FormatUtil.voltageName(BigDecimal.valueOf(euPerMb)),
-                        FormatUtil.voltageAmperage(BigDecimal.valueOf(euPerMb)).toEngineeringString())));
+                        ElectricText.flowOf(euPerMb))));
             }
 
             SpaceResourceTooltips.append(fluid, tooltips);

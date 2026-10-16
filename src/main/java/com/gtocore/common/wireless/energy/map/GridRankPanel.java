@@ -126,7 +126,7 @@ final class GridRankPanel extends UIElement {
         double ratio = info.capacity() > 0 ? live.storage(node) / (double) info.capacity() : 0;
         var percent = (long) Math.floor(ratio * 100);
         group.names[r] = GridFormat.bodyName(info.dimension());
-        group.values[r] = amount ? Component.translatable(GridMapLang.RANK_STORED_VALUE, GridFormat.compact(live.storage(node)), percent) :
+        group.values[r] = amount ? Component.translatable(GridMapLang.RANK_STORED_VALUE, GridFormat.energy(live.storage(node), info.unitTier()), percent) :
                 Component.translatable(GridMapLang.PERCENT, percent);
         group.levels[r] = !amount && ratio < LOW_STORAGE ? Level.WARNING : Level.NORMAL;
     }

@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTRecipeDataKeys;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -132,13 +133,13 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     public GTRecipe getRealRecipe(RecipeHandlerUnit unit, GTRecipe recipe) {
         long eu_to_start = recipe.data.getLong(GTRecipeDataKeys.EU_TO_START);
         if (eu_to_start > energyContainer.getEnergyCapacity()) {
-            setIdleReason(IdleReason.START_ENERGY_CAPACITY, eu_to_start, energyContainer.getEnergyCapacity());
+            setIdleReason(IdleReason.START_ENERGY_CAPACITY, ElectricText.energyExact(eu_to_start), ElectricText.energyExact(energyContainer.getEnergyCapacity()));
             return null;
         }
         long heatDiff = eu_to_start - heat;
         if (heatDiff > 0) {
             if (energyContainer.getEnergyStored() < heatDiff) {
-                setIdleReason(IdleReason.START_ENERGY_SHORT, heatDiff, energyContainer.getEnergyStored());
+                setIdleReason(IdleReason.START_ENERGY_SHORT, ElectricText.energyExact(heatDiff), ElectricText.energyExact(energyContainer.getEnergyStored()));
                 return null;
             }
             energyContainer.removeEnergy(heatDiff);
@@ -188,7 +189,7 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addLine(ENERGY_BUFFER, MultiblockPage.fractionText(() -> energyContainer.getEnergyStored(), () -> energyContainer.getEnergyCapacity(), "EU"));
+        page.addLine(ENERGY_BUFFER, MultiblockPage.chargeText(() -> energyContainer.getEnergyStored(), () -> energyContainer.getEnergyCapacity()));
         page.addNumber(HEAT, () -> heat, "");
     }
 

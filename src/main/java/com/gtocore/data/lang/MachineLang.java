@@ -39,10 +39,10 @@ final class MachineLang {
         addCNEN("gtocore.machine.dimensionally_transcendent_plasma_forge.coil", "当前配方模式无法使用该线圈", "Current recipe mode cannot use this coil");
         addCNEN("gtocore.machine.duration_multiplier.tooltip", "耗时乘数: %s", "Duration Multiplication: %s");
         addCNEN("gtocore.machine.dyson_sphere.amount", "该星系发射次数: %s / 100000", "Launch Times: %s / 100000");
-        addCNEN("gtocore.machine.dyson_sphere.voltage", "最大能量输出: %s EU/t", "Maximum Energy Output: %s EU/t");
+        addCNEN("gtocore.machine.dyson_sphere.voltage", "最大能量输出: %s", "Maximum Energy Output: %s");
         addCNEN("gtocore.machine.efficiency.tooltip", "§7效率: §r%s", "§7Efficiency: §r%s");
         addCNEN("gtocore.machine.eut_multiplier.tooltip", "耗能乘数: %s", "Energy Consumption Multiplier: %s");
-        addCNEN("gtocore.machine.eye_of_harmony.eu", "启动耗能: %s EU", "Startup Energy Consumption: %s EU");
+        addCNEN("gtocore.machine.eye_of_harmony.eu", "启动耗能: %s", "Startup Energy Consumption: %s");
         addCNEN("gtocore.machine.eye_of_harmony.helium", "氦储量: %smB", "Helium Storage: %smB");
         addCNEN("gtocore.machine.eye_of_harmony.hydrogen", "氢储量: %smB", "Hydrogen Storage: %smB");
         addCNEN("gtocore.machine.fission_reactor.cooler", "冷却组件数量: %s，相邻数: %s", "Amount of Cooling Components: %s, Adjacent Count: %s");
@@ -97,7 +97,7 @@ final class MachineLang {
         addCNEN("gtocore.machine.total_time", "连续运行时间: %s Tick", "Continuous Running Time: %s Tick");
         addCNEN("gtocore.machine.uev_fusion_reactor.description", "核聚变反应堆MK-V是台大型多方块结构，用于融合元素形成更重的元素。它仅可使用UEV等级的能源仓。每个能源仓可增加160MEU的能量缓存，最大能量缓存为2560MEU。", "The Fusion Reactor MK V is a large multiblock structure used for fusing elements into heavier ones. It can only use UEV Energy Hatches. For every Hatch it has, its buffer increases by 160M EU, and has a maximum of 2560M.");
         addCNEN("gtocore.machine.uhv_fusion_reactor.description", "核聚变反应堆MK-IV是台大型多方块结构，用于融合元素形成更重的元素。它仅可使用UHV等级的能源仓。每个能源仓可增加80MEU的能量缓存，最大能量缓存为1280MEU。", "The Fusion Reactor MK-IV is a large multiblock structure used for fusing elements into heavier ones. It can only use UHV Energy Hatches. For every Hatch it has, its buffer increases by 80M EU, and has a maximum of 1280M.");
-        addCNEN("gtocore.machine.wind_mill_turbine.actualPower", "能量输出: %s EU/t", "Energy Output: %s EU/t");
+        addCNEN("gtocore.machine.wind_mill_turbine.actualPower", "能量输出: %s", "Energy Output: %s");
         addCNEN("gtocore.machine.wind_mill_turbine.tooltip.0", "风速低于转子最小值无法工作，高于最大值转子将快速损坏", "The rotor cannot operate below the minimum wind speed, and it will be damaged quickly above the maximum wind speed");
         addCNEN("gtocore.machine.wind_mill_turbine.tooltip.1", "风速加成: 雨天x1.5，雷雨天x2，风速决定最高转速", "Wind Speed Bonus: x1.5 for rainy days, x2 for thunderstorms, the wind speed determines the maximum rotation speed");
         addCNEN("gtocore.machine.wind_mill_turbine.wind", "当前风力: %s", "Current Wind Speed: %s");
@@ -132,7 +132,7 @@ final class MachineLang {
         addCNEN("gtocore.recipe.neutron_flux.m", "最小中子通量: %s MeV", "Minimum Neutron Flux: %s MeV");
         addCNEN("gtocore.recipe.neutron_flux.change", "每秒中子通量变化: %s keV", "Neutron Flux Change Per Second: %s keV");
         addCNEN("gtocore.recipe.heat.change", "配方基础产热: %sK/s", "Recipe Base Heat Production: %sK/s");
-        addCNEN("gtocore.recipe.fuelcell.converted_energy", "可转换的基础能量: %s EU", "Convertible Base Energy: %s EU");
+        addCNEN("gtocore.recipe.fuelcell.converted_energy", "可转换的基础能量: %s", "Convertible Base Energy: %s");
         addCNEN("gtocore.machine.advanced_infinite_driller.drilled_fluid", "流体: %s 产量: %s", "Fluid: %s Output: %s");
         addCNEN("gtocore.machine.steam.tooltip.1", "默认支持%s等级及以下的配方处理", "default can process %s Tier recipes and below, processing time is 1.5 times");
         addCNEN("gtocore.machine.steam.tooltip.2", "安装大型蒸汽输入仓后提升一个配方等级，并解锁超频功能", "After installing a large steam input hatch, upgrade one recipe tier and unlock the overclocking function");
@@ -251,7 +251,7 @@ final class MachineLang {
         addCNEN("gtocore.compound_extreme_cooling_unit.tooltips.combined", "选择等离子冷凝模式以启用", "Select plasma condensation mode to enable");
         addCNEN("gtocore.machine.spacestation.ready", "空间站准备： %s%%就绪", "Space Station Readiness: %s%% Ready");
         addCNEN("gtocore.machine.spacestation.module_count", "连接的舱室模块数量： %s", "Amount of Connected Module Hatches: %s");
-        addCNEN("gtocore.machine.spacestation.energy_consumption.total", "所有空间站舱室总能量消耗： %s EU/t", "Total Energy Consumption of All Space Station Modules: %s EU/t");
+        addCNEN("gtocore.machine.spacestation.energy_consumption.total", "所有空间站舱室总能量消耗： %s", "Total Energy Consumption of All Space Station Modules: %s");
         addCNEN("gtocore.machine.spacestation.require_module", "当前空间站缺少必要的舱室模块： %s", "The current space station is missing the required module: %s");
         addCNEN("gtocore.machine.space_shield_hatch.info", "机器太空护盾：运转正常", "Machine Space Shield: Operating Normally");
         addCNEN("gtocore.machine.space_shield_hatch.insufficient", "机器太空护盾：无激光供应", "Machine Space Shield: No Laser Supply");

@@ -12,6 +12,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayouts;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.integration.emi.recipe.EmiPageLayout;
 import com.gregtechceu.gtceu.integration.emi.recipe.EmiPageSizes;
@@ -68,14 +69,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.gregtechceu.gtceu.api.GTValues.V;
-import static com.gregtechceu.gtceu.api.GTValues.VN;
 import static com.gtocore.integration.emi.research.EmiResearchHelper.*;
 
 public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Paged {
 
     private static final String AMPERAGE = "gtceu.recipe.info.amperage";
-    private static final String EU_TIER = "gtceu.recipe.eu.tier";
 
     private static final int BASE_WIDTH = 102;
     private static final int HEIGHT = 72;
@@ -400,8 +398,8 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         private Widget createPanel() {
             long eut = EmiResearchHelper.getScannerEUt(key);
             int tier = GTUtil.getTierByVoltage(eut);
-            var power = Component.literal(FormattingUtil.formatNumbers(eut) + " EU/t");
-            var amperage = Component.translatable(EU_TIER, FormattingUtil.formatNumber2Places((float) eut / V[tier]), VN[tier]);
+            var power = ElectricText.power(eut);
+            var amperage = ElectricText.flowOf(eut, tier);
             var scanned = Component.translatable(SCAN_STATE_REPEAT, repeatYield());
             var notScanned = Component.translatable(SCAN_STATE_NEW);
             var panel = new RecipeSpecPanel();

@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -307,7 +308,7 @@ public final class HarmonyFlowPage {
     }
 
     private static Component eu(BigInteger energy) {
-        return Component.literal(FormattingUtil.formatNumberReadable(energy.doubleValue(), false, FormattingUtil.DECIMAL_FORMAT_1F, " EU"));
+        return ElectricText.energyExact(energy);
     }
 
     private static Component gray(Component component) {
@@ -745,7 +746,7 @@ public final class HarmonyFlowPage {
             lines.add(gray(Component.translatable(LANG_EU_RULE_FORMULA)));
             lines.add(gray(Component.translatable(LANG_EU_RULE_MULTIPLIER)));
             lines.add(gray(Component.translatable(LANG_EU_RULE_STRICT)));
-            if (formed && oc > 0) lines.add(gray(Component.translatable(LANG_EU_CURRENT, FormattingUtil.formatNumbers(minimum))));
+            if (formed && oc > 0) lines.add(gray(Component.translatable(LANG_EU_CURRENT, ElectricText.energyExact(minimum))));
             lines.add(sentence(energyView, description));
             energyDetail = lines;
         }

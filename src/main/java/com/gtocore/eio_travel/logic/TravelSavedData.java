@@ -65,8 +65,8 @@ public class TravelSavedData extends SavedData {
     }
 
     public void addTravelTarget(Level level, ITravelTarget target) {
-        if (!level.isClientSide) {
-            TravelNetworks.onServerTravelAdded(target);
+        if (level instanceof ServerLevel serverLevel) {
+            TravelNetworks.onServerTravelAdded(serverLevel, target);
         }
         if (TravelRegistry.isRegistered(target)) {
             travelTargets.put(target.getPos(), target);
@@ -76,8 +76,8 @@ public class TravelSavedData extends SavedData {
     }
 
     public void removeTravelTargetAt(Level level, BlockPos pos) {
-        if (!level.isClientSide) {
-            TravelNetworks.onServerTravelRemoved(pos);
+        if (level instanceof ServerLevel serverLevel) {
+            TravelNetworks.onServerTravelRemoved(serverLevel, pos);
         }
         travelTargets.remove(pos);
     }

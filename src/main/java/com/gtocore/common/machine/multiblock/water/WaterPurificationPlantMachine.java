@@ -16,9 +16,9 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -173,7 +173,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
         for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
             MutableComponent component = Component.translatable(entry.getKey().getBlockState().getBlock().getDescriptionId()).append(" ");
             if (entry.getBooleanValue()) {
-                component.append(Component.translatable("gtceu.multiblock.running").append("\n").append(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(entry.getKey().eut), Component.literal(GTValues.VNF[GTUtil.getTierByVoltage(entry.getKey().eut)]))));
+                component.append(Component.translatable("gtceu.multiblock.running").append("\n").append(Component.translatable("gtceu.multiblock.energy_consumption", ElectricText.power(entry.getKey().eut), Component.literal(GTValues.VNF[GTUtil.getTierByVoltage(entry.getKey().eut)]))));
             } else {
                 component.append(Component.translatable("gtceu.multiblock.idling"));
             }
@@ -206,7 +206,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         long eut = 0;
         if (getEnergyContainer().getEnergyStored() < 1000) {
-            IdleReason.INSUFFICIENT_ENERGY_BUFFER.setReason(this, 1000, getEnergyContainer().getEnergyStored());
+            IdleReason.INSUFFICIENT_ENERGY_BUFFER.setReason(this, ElectricText.energyExact(1000), ElectricText.energyExact(getEnergyContainer().getEnergyStored()));
             return null;
         }
         availableEu = getOverclockVoltage();

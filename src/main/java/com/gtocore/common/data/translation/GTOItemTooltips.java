@@ -11,6 +11,7 @@ import com.gtocore.config.GTOConfig;
 import com.gtolib.api.item.IItem;
 
 import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
@@ -175,6 +176,8 @@ public final class GTOItemTooltips {
             }));
         }
 
+        setTips(EPPItemAndBlock.PRECISE_EXPORT_BUS.asItem(), GTOTips.of("precise_export_bus", t -> t.attention(t.tr("提示：当设定的精确输出数量大于输出速度承载时，将停止工作", "Note: The bus stops working when the configured exact amount exceeds what its export speed can carry"))));
+
         for (Item item : List.of(
                 AEItems.ITEM_CELL_1K.asItem(),
                 AEItems.ITEM_CELL_4K.asItem(),
@@ -309,7 +312,7 @@ public final class GTOItemTooltips {
                     Component.literal(String.valueOf(data.electrodeStimulationFactors()[2])).withStyle(ChatFormatting.YELLOW),
                     Component.literal(String.valueOf(data.electrodeStimulationFactors()[3])).withStyle(ChatFormatting.GOLD)));
             t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC));
-            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_ENERGY_CONSUMPTION, data.energyConsumption(), data.vTier()));
+            t.feature(Component.translatable(BioOscillationElectricStimulator.TISSUE_ELECTRODE_ENERGY_CONSUMPTION, ElectricText.energyExact(data.energyConsumption()), data.vTier()));
             t.requirement(Component.translatable(BioOscillationElectricStimulator.TISSUE_MEDIUM_REQUIREMENT, medium));
             t.requirement(Component.translatable(BioOscillationElectricStimulator.TISSUE_RUNNING_CONTROL_BLOCK_TIER, Math.min(data.tier(), 3)));
         }));

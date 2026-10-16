@@ -17,9 +17,9 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -126,7 +126,7 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
 
     default void customText(@NotNull List<Component> list) {
         boolean screen = MultiblockPage.isScreenText();
-        if (!screen) list.add(Component.translatable("gui.ae2.PowerUsageRate", "%s EU/t".formatted(FormattingUtil.formatNumbers(getEUt()))).withStyle(ChatFormatting.YELLOW));
+        if (!screen) list.add(Component.translatable("gui.ae2.PowerUsageRate", ElectricText.power(getEUt())).withStyle(ChatFormatting.YELLOW));
         if (getRoot() != null) {
             if (!screen) list.add(Component.translatable("gui.ae2.AttachedTo", "[" + getRoot().getPos().toShortString() + "]"));
             getRoot().customText(list);
@@ -134,16 +134,16 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
     }
 
     default void addStationReadouts(MultiblockPage page) {
-        page.addReading("gui.ae2.PowerUsageRate", MultiblockPage.numberText(this::getEUt, "EU/t"));
+        page.addReading("gui.ae2.PowerUsageRate", MultiblockPage.cached(this::getEUt, ElectricText::power));
         page.addLine(Core.CORE_MODULE, MultiblockPage.cached(() -> getRoot() == null ? Long.MAX_VALUE : getRoot().getPos().asLong(),
                 pos -> pos == Long.MAX_VALUE ? Component.translatable("theoneprobe.ae2.p2p_unlinked") : Component.literal("[" + BlockPos.of(pos).toShortString() + "]")))
                 .bindLevel(() -> getRoot() == null ? Level.WARNING : Level.NORMAL)
                 .bindDetail(MultiblockPage.cached(() -> getRoot() == null ? 0 : getRoot().getEUt(),
-                        eut -> eut == 0 ? Component.empty() : Component.translatable("gui.ae2.PowerUsageRate", FormattingUtil.formatNumbers(eut) + " EU/t")));
+                        eut -> eut == 0 ? Component.empty() : Component.translatable("gui.ae2.PowerUsageRate", ElectricText.power(eut))));
         page.addReading("gtocore.machine.spacestation.ready", MultiblockPage.numberText(() -> getRoot() == null ? 0 : Math.min(getRoot().getReadyCount() * 10, 100), ""));
         page.addReading(TierCasingTrait.getTierTranslationKey(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER.name),
                 MultiblockPage.numberText(() -> getRoot() == null ? 0 : getRoot().getCasingTiers().getInt(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER), ""));
-        page.addReading("gtocore.machine.spacestation.energy_consumption.total", MultiblockPage.numberText(() -> getRoot() == null ? 0 : getRoot().getTotalEUt(), ""));
+        page.addReading("gtocore.machine.spacestation.energy_consumption.total", MultiblockPage.cached(() -> getRoot() == null ? 0 : getRoot().getTotalEUt(), ElectricText::power));
         page.addReading("gtocore.machine.spacestation.module_count", MultiblockPage.numberText(() -> getRoot() == null ? 0 : getRoot().getModuleCount(), ""));
     }
 

@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -84,7 +85,7 @@ public final class GeneratorMultiblockRegisters {
                                         .or(autoAbilities(true, true, false)))
                                 .where('D', ability(PartAbility.OUTPUT_ENERGY,
                                         tier == EV ? Stream.of(HV, EV, IV, LuV, ZPM, UV, UHV).mapToInt(Integer::intValue).toArray() : Stream.of(EV, IV, LuV, ZPM, UV, UHV).filter(t -> t >= tier).mapToInt(Integer::intValue).toArray())
-                                        .addTooltips(Component.translatable("gtceu.machine.large_combustion_engine.tooltip.boost_regular", V[tier] * 6)))
+                                        .addTooltips(Component.translatable("gtceu.machine.large_combustion_engine.tooltip.boost_regular", ElectricText.power(V[tier] * 6))))
                                 .where('A', blocks(intake.get()).addTooltips(Component.translatable("gtceu.multiblock.pattern.clear_amount_1")))
                                 .where('Y', controller(definition))
                                 .where('a', blocks(extTurbine.get()))

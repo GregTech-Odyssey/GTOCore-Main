@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
@@ -85,7 +86,6 @@ public final class MachineRegisterUtils {
 
     public static MachineDefinition[] registerWirelessEnergyHatch(IO io, int amperage, PartAbility ability) {
         String id = io == IO.IN ? "input" : "output";
-        String iao = io == IO.IN ? "in" : "out";
         String render = "wireless_energy_hatch";
         render = switch (amperage) {
             case 2 -> render;
@@ -103,8 +103,8 @@ public final class MachineRegisterUtils {
                     builder.langValue(GTOValues.VNFR[tier] + " " + (amperage > 2 ? FormattingUtil.formatNumbers(amperage) + (amperage > 64 ? "§eA§r " : "A ") : "") + "Wireless " + (io == IO.IN ? "Energy" : "Dynamo") + " Hatch")
                             .allRotation()
                             .abilities(ability)
-                            .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_" + iao, FormattingUtil.formatNumbers(V[tier]), VNF[tier])),
-                                    Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_" + iao, amperage)),
+                            .tips(Tips.stat(io == IO.IN ? StatKind.VOLTAGE_IN : StatKind.VOLTAGE_OUT, StatKind.voltage(V[tier], tier)),
+                                    Tips.stat(io == IO.IN ? StatKind.AMPERAGE_IN : StatKind.AMPERAGE_OUT, ElectricText.ampsValue(amperage)),
                                     Tips.energy(StatKind.ENERGY_CAPACITY, WirelessEnergyHatchPartMachine.getHatchEnergyCapacity(tier, amperage), tier),
                                     Tips.control(Component.translatable("gtmthings.machine.wireless_energy_hatch." + id + ".tooltip")));
                     return builder.renderer(() -> new OverlayTieredMachineRenderer(tier, GTMThings.id("block/machine/part/" + finalRender)))

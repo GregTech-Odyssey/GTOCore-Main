@@ -8,10 +8,10 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -105,7 +105,7 @@ public class CreativeEnergyCover extends CoverBehavior {
 
     private void updatePower(Player player) {
         this.energyPerTick = GTValues.VEX[this.tier] * this.amperage;
-        player.displayClientMessage(Component.literal(this.amperage + "A"), false);
+        player.displayClientMessage(ElectricText.flow(this.amperage, this.tier), false);
     }
 
     private void updateCoverSub() {

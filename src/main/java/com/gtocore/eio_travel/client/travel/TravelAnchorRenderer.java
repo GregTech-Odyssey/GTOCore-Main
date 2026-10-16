@@ -36,9 +36,6 @@ public interface TravelAnchorRenderer<T extends ITravelTarget> extends TravelRen
     @Override
     default void render(T travelData, LevelRenderer levelRenderer, PoseStack poseStack, double distanceSquared, boolean active) {
         var renderInfo = getRenderInfo(travelData);
-        if (!renderInfo.visibility()) {
-            return;
-        }
 
         poseStack.pushPose();
         poseStack.translate(travelData.getPos().getX(), travelData.getPos().getY(), travelData.getPos().getZ());
@@ -130,7 +127,7 @@ public interface TravelAnchorRenderer<T extends ITravelTarget> extends TravelRen
         minecraft.renderBuffers().bufferSource().endBatch();
     }
 
-    record RenderInfo(boolean visibility, String name, Item icon) {}
+    record RenderInfo(String name, Item icon) {}
 
     RenderInfo getRenderInfo(T travelData);
 }

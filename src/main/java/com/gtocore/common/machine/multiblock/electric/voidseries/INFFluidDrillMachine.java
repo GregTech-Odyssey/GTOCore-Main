@@ -7,6 +7,7 @@ import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -54,9 +55,7 @@ public final class INFFluidDrillMachine extends ElectricMultiblockMachine {
     public void addDisplayText(List<Component> textList) {
         if (isFormed()) {
             int energyContainer = getEnergyTier();
-            long maxVoltage = GTValues.V[energyContainer];
-            String voltageName = GTValues.VNF[energyContainer];
-            textList.add(Component.translatable("gtceu.multiblock.max_energy_per_tick", maxVoltage, voltageName));
+            textList.add(Component.translatable("gtceu.multiblock.max_energy_per_tick", ElectricText.voltage(GTValues.V[energyContainer], energyContainer)));
             if (getRecipeLogic().getVeinFluid() != null) {
                 // Fluid name
                 Fluid drilledFluid = getRecipeLogic().getVeinFluid();

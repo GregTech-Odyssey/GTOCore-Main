@@ -67,11 +67,6 @@ public class MECraftPatternPartMachine extends MEPatternPartMachine<MECraftPatte
         return new InternalSlot(this);
     }
 
-    @Override
-    public boolean defaultShowInTravel() {
-        return false;
-    }
-
     public static final class InternalSlot extends AbstractInternalSlot {
 
         @Getter

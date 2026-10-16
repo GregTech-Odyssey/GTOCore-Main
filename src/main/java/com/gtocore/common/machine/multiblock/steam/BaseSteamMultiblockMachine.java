@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.CleanroomMachine;
@@ -122,7 +123,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
             }
             return recipe;
         }
-        IdleReason.LOW_POWER.setReason(this, eut, this.eut << euMultiplier);
+        IdleReason.LOW_POWER.setReason(this, ElectricText.power(eut), ElectricText.power(this.eut << euMultiplier));
         return null;
     }
 

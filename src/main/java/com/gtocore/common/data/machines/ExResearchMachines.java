@@ -33,6 +33,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.OverlayTieredActiveMachineRenderer;
@@ -157,8 +158,8 @@ public final class ExResearchMachines {
             "nich_computing_components", "NICH计算组件",
             holder -> new ExResearchComputationPartMachine(holder, 3), true, true, 3)
             .tips(
-                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", GTValues.VA[ZPM])),
-                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", ElectricText.power(GTValues.VA[ZPM]))),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", ElectricText.power(GTValues.VA[GTValues.UHV]))),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cwut", 64)),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cooling", 16)))
             .tooltipBuilder(OVERHEAT_TOOLTIPS)
@@ -167,7 +168,7 @@ public final class ExResearchMachines {
     public static final MachineDefinition NICH_COOLING_COMPONENTS = registerHPCAPart(
             "nich_cooling_components", "NICH冷却组件",
             holder -> new ExResearchCoolerPartMachine(holder, 3), true, false, 3)
-            .tips(Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UV])),
+            .tips(Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", ElectricText.power(GTValues.VA[GTValues.UV]))),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active")),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active_coolant",
                             80, GTMaterials.Helium.getLocalizedName())),
@@ -178,7 +179,7 @@ public final class ExResearchMachines {
             "nich_bridge_component", "NICH桥接组件",
             holder -> new ExResearchBridgePartMachine(holder, 3), true, false, 3)
             .tips(Tips.supported(Component.translatable("gtceu.machine.hpca.component_type.bridge")),
-                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV])))
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", ElectricText.power(GTValues.VA[GTValues.UHV]))))
             .register();
 
     public static final MachineDefinition GWCA_EMPTY_COMPONENT = registerHPCAPart(
@@ -190,8 +191,8 @@ public final class ExResearchMachines {
             "gwca_computing_components", "GWCA计算组件",
             holder -> new ExResearchComputationPartMachine(holder, 4), true, true, 4)
             .tips(
-                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", GTValues.VA[GTValues.UV])),
-                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UEV])),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.upkeep_eut", ElectricText.power(GTValues.VA[GTValues.UV]))),
+                    Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", ElectricText.power(GTValues.VA[GTValues.UEV]))),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cwut", 1024)),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.computation_cooling", 256)))
             .tooltipBuilder(OVERHEAT_TOOLTIPS)
@@ -200,7 +201,7 @@ public final class ExResearchMachines {
     public static final MachineDefinition GWCA_COOLING_COMPONENTS = registerHPCAPart(
             "gwca_cooling_components", "GWCA冷却组件",
             holder -> new ExResearchCoolerPartMachine(holder, 4), true, false, 4)
-            .tips(Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", GTValues.VA[GTValues.UHV])),
+            .tips(Tips.stat(Component.translatable("gtceu.machine.hpca.component_general.max_eut", ElectricText.power(GTValues.VA[GTValues.UHV]))),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active")),
                     Tips.stat(Component.translatable("gtceu.machine.hpca.component_type.cooler_active_coolant",
                             320, GTMaterials.Helium.getLocalizedName())),

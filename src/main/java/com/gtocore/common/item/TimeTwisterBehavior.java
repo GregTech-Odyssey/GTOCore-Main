@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IOverclockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
@@ -55,11 +56,11 @@ import javax.annotation.Nullable;
 @DataGeneratorScanned
 public final class TimeTwisterBehavior implements IInteractionItem {
 
-    @RegisterLanguage(cn = "消耗了 %s EU，使方块实体额外执行了 %s Tick", en = "Consumed %s EU, making the block entity execute an additional %s ticks")
+    @RegisterLanguage(cn = "消耗了 %s，使方块实体额外执行了 %s Tick", en = "Consumed %s, making the block entity execute an additional %s ticks")
     private static final String CONSUMED_EU = "gtocore.item.time_twister.consumed_eu";
     @RegisterLanguage(cn = "消耗了 %s Mana，使方块实体额外执行了 %s Tick", en = "Consumed %s Mana, making the block entity execute an additional %s ticks")
     private static final String CONSUMED_MANA = "gtocore.item.time_twister.consumed_mana";
-    @RegisterLanguage(cn = "预计消耗 %s EU（当前无线能源的 %s%%）", en = "Expected to consume %s EU (%s%% of current energy storage)")
+    @RegisterLanguage(cn = "预计消耗 %s（当前无线能源的 %s%%）", en = "Expected to consume %s (%s%% of current energy storage)")
     private static final String EXPECTED_EU = "gtocore.item.time_twister.expected_eu";
     @RegisterLanguage(cn = "预计消耗 %s Mana（当前无线魔力的 %s%%）", en = "Expected to consume %s Mana (%s%% of current mana storage)")
     private static final String EXPECTED_MANA = "gtocore.item.time_twister.expected_mana";
@@ -98,7 +99,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         } else if (port.settle(SINGLE_COST, 0, 0).ok()) {
             if (isBlockEntity(context)) {
                 tickBlock(context.getLevel(), context.getClickedPos(), 0);
-                player.displayClientMessage(Component.translatable(CONSUMED_EU, 8192, 200), true);
+                player.displayClientMessage(Component.translatable(CONSUMED_EU, ElectricText.energyExact(8192), 200), true);
                 return InteractionResult.CONSUME;
             } else if (tickGT(port, manaContainer, context, false) != null) {
                 return InteractionResult.CONSUME;
@@ -242,7 +243,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
         if (isMana) {
             iTooltip.add(Component.translatable(EXPECTED_MANA, formattedBig, formattedPercent));
         } else {
-            iTooltip.add(Component.translatable(EXPECTED_EU, formattedBig, formattedPercent));
+            iTooltip.add(Component.translatable(EXPECTED_EU, ElectricText.energyExact(new BigInteger(cost)), formattedPercent));
         }
     }
 
@@ -278,7 +279,7 @@ public final class TimeTwisterBehavior implements IInteractionItem {
                 if (!port.settle(usedEU, 0, 0).ok()) return null;
                 recipeLogic.setProgress(recipeLogic.getProgress() + tick.intValue());
                 if (context.getPlayer() == null) return null;
-                context.getPlayer().displayClientMessage(Component.translatable(CONSUMED_EU, FormattingUtil.formatNumbers(usedEU), tick), true);
+                context.getPlayer().displayClientMessage(Component.translatable(CONSUMED_EU, ElectricText.energyExact(usedEU), tick), true);
             }
             return usedEU;
         } else if (machine instanceof IManaContainerMachine) {

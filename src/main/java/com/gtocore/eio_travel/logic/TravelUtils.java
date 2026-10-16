@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 
@@ -26,8 +27,10 @@ import java.util.stream.Stream;
 public interface TravelUtils {
 
     static Stream<ITravelTarget> filterTargets(Player player, Stream<ITravelTarget> targets) {
-        int mask = TravelTargetType.getMask(TravelHandler.getHeldStaff(player));
-        return targets.filter(target -> target.getTargetType().isEnabled(mask));
+        ItemStack staff = TravelHandler.getHeldStaff(player);
+        int mask = TravelTargetType.getMask(staff);
+        boolean showHidden = TravelTargetType.showsHidden(staff);
+        return targets.filter(target -> target.getTargetType().isEnabled(mask) && (showHidden || target.canTeleportTo()));
     }
 
     static Optional<Double> gto$isTeleportPositionAndSurroundingClear(BlockGetter level, BlockPos target) {

@@ -9,8 +9,8 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
-import com.gregtechceu.gtceu.api.tooltip.TipTheme;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.core.BlockPos;
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 @DataGeneratorScanned
 public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowerUnit, EntityBlock {
 
-    @RegisterLanguage(cn = "吞吐：输入、输出各 %s × %sA", en = "Throughput: %s × %sA each for input and output")
+    @RegisterLanguage(cn = "吞吐：输入、输出各 %s", en = "Throughput: %s each for input and output")
     static final String THROUGHPUT = "gtocore.block.wireless_energy_unit.throughput";
     @RegisterLanguage(cn = "生效条件：能源塔玻璃等级不低于 %s", en = "Takes effect when the tower's glass tier is at least %s")
     static final String REQUIRES_GLASS = "gtocore.block.wireless_energy_unit.requires_glass";
@@ -138,9 +138,8 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
         } else {
             var capacity = getCapacity();
             tooltip.add(capacity.compareTo(LONG_MAX) <= 0 ? Tips.energy(StatKind.ENERGY_CAPACITY, capacity.longValue(), tier) :
-                    Tips.stat(StatKind.ENERGY_CAPACITY.line(Component.translatable("gtceu.tip.unit.energy_hours", String.format("%,.1f", (double) getAmpHours()))
-                            .withStyle(s -> s.withColor(TipTheme.VALUE)).append(Component.translatable("gtceu.tip.unit.tier", GTValues.VNF[tier])))));
-            tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, GTValues.VNF[tier], AMPERAGE)));
+                    Tips.stat(StatKind.ENERGY_CAPACITY.line(ElectricText.energy(capacity, tier))));
+            tooltip.add(Tips.stat(Component.translatable(THROUGHPUT, ElectricText.flow(AMPERAGE, tier))));
             tooltip.add(Tips.stat(Component.translatable(LOSS, (double) getLoss() / 10)));
             if (isGridScaled()) tooltip.add(Tips.bonus(Component.translatable(SCALING)));
             WirelessEnergyUnitBlockEntity.appendTooltip(stack, tier, tooltip);

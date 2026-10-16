@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
 import net.minecraft.core.Direction;
@@ -70,7 +71,7 @@ public final class DysonSphereReceivingStationMcahine extends ElectricMultiblock
         if (MultiblockPage.isScreenText()) return;
         IntIntImmutablePair pair = DysonSphereSavaedData.getDimensionData(getDimension());
         textList.add(Component.translatable("gtocore.machine.dyson_sphere.amount", pair.leftInt()));
-        textList.add(Component.translatable("gtocore.machine.dyson_sphere.voltage", (pair.leftInt() > 0 ? getOverclockVoltage() : 0)));
+        textList.add(Component.translatable("gtocore.machine.dyson_sphere.voltage", ElectricText.power(pair.leftInt() > 0 ? getOverclockVoltage() : 0)));
         textList.add(Component.translatable("gtocore.machine.fission_reactor.damaged", pair.rightInt()).append("%"));
     }
 
@@ -78,7 +79,7 @@ public final class DysonSphereReceivingStationMcahine extends ElectricMultiblock
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
         page.addReading("gtocore.machine.dyson_sphere.amount", MultiblockPage.numberText(() -> DysonSphereSavaedData.getDimensionLaunchData(getDimension()), ""));
-        page.addReading("gtocore.machine.dyson_sphere.voltage", MultiblockPage.numberText(() -> DysonSphereSavaedData.getDimensionLaunchData(getDimension()) > 0 ? getOverclockVoltage() : 0, ""));
+        page.addReading("gtocore.machine.dyson_sphere.voltage", MultiblockPage.cached(() -> DysonSphereSavaedData.getDimensionLaunchData(getDimension()) > 0 ? getOverclockVoltage() : 0, ElectricText::power));
         page.addReading("gtocore.machine.fission_reactor.damaged", MultiblockPage.percentText(this::getDamage))
                 .bindLevel(() -> getDamage() > 60 ? com.gregtechceu.gtceu.uipro.Level.WARNING : com.gregtechceu.gtceu.uipro.Level.NORMAL);
     }

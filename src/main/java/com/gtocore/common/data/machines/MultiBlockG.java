@@ -48,6 +48,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
@@ -354,7 +355,7 @@ public final class MultiBlockG {
     public static final MultiblockMachineDefinition NETHER_REACTOR_CORE = multiblock("nether_reactor_core", "下界反应核", VoidTransporterMachine.create(2, 1920, VoidTransporterMachine.teleportToDimension(GTODimensions.THE_NETHER, new BlockPos(0, 63, 0))))
             .nonYAxisRotation()
             .recipeTypes(DUMMY_RECIPES)
-            .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in", VA[EV], VNF[EV])))
+            .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in", ElectricText.voltage(VA[EV], EV))))
             .tip(TipRole.CONTROL_RIGHT, "运行后右键核心传送到下界", "Right-click the core to send it to the Nether.")
             .block(() -> ChemicalHelper.getBlock(TagPrefix.block, GTOMaterials.Soularium))
             .structure(definition -> Structure
@@ -371,7 +372,7 @@ public final class MultiBlockG {
     public static final MultiblockMachineDefinition VOID_TRANSPORTER = multiblock("void_transporter", "虚空传送器", VoidTransporterMachine.create(0, 480))
             .nonYAxisRotation()
             .recipeTypes(DUMMY_RECIPES)
-            .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in", VA[HV], VNF[HV])))
+            .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in", ElectricText.voltage(VA[HV], HV))))
             .tip(TipRole.CONTROL_RIGHT, "运行后右键黑曜石传送到虚空，如果是哭泣黑曜石则为超平坦", "Right-click obsidian to send it to the void, and if it is crying obsidian, it will be flat.")
             .block(GTOBlocks.REINFORCED_OBSIDIAN)
             .structure(definition -> Structure

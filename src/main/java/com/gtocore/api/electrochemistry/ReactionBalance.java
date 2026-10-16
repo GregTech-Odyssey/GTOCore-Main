@@ -7,7 +7,10 @@ public record ReactionBalance(long firstMultiplier, long secondMultiplier) {
 
     public static ReactionBalance cross(long firstCharge, long secondCharge) {
         if (firstCharge == 0 || secondCharge == 0 || firstCharge == Long.MIN_VALUE || secondCharge == Long.MIN_VALUE || (firstCharge > 0) == (secondCharge > 0)) return null;
-        return new ReactionBalance(Math.abs(secondCharge), Math.abs(firstCharge));
+        long first = Math.abs(secondCharge);
+        long second = Math.abs(firstCharge);
+        long divisor = gcd(first, second);
+        return new ReactionBalance(first / divisor, second / divisor);
     }
 
     public static ReactionBalance fuel(long firstCharge, long secondCharge, boolean firstIsFuel, long efficiencyPercent) {

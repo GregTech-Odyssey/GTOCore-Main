@@ -7,7 +7,6 @@ import com.gtocore.eio_travel.logic.TravelHandler;
 import com.gtocore.eio_travel.logic.TravelSavedData;
 
 import com.gtolib.api.network.NetworkPack;
-import com.gtolib.utils.ServerUtils;
 
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -18,7 +17,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import com.google.common.base.Predicates;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -58,10 +56,8 @@ public class TravelNetworks {
                 }
             });
 
-    public static void onServerTravelAdded(ITravelTarget target) {
-        if (ServerLifecycleHooks.getCurrentServer() != null) {
-            ADD_TRAVEL.send(b -> b.writeNbt(target.save()), ServerUtils.getServer());
-        }
+    public static void onServerTravelAdded(ServerLevel level, ITravelTarget target) {
+        ADD_TRAVEL.send(b -> b.writeNbt(target.save()), level.players());
     }
 
     public static void syncTravelData(CompoundTag nbt, ServerPlayer player) {
@@ -72,10 +68,8 @@ public class TravelNetworks {
         SYNC_TRAVEL.send(b -> b.writeNbt(nbt), level.getPlayers(Predicates.alwaysTrue()));
     }
 
-    public static void onServerTravelRemoved(BlockPos pos) {
-        if (ServerLifecycleHooks.getCurrentServer() != null) {
-            REMOVE_TRAVEL.send(b -> b.writeBlockPos(pos), ServerUtils.getServer());
-        }
+    public static void onServerTravelRemoved(ServerLevel level, BlockPos pos) {
+        REMOVE_TRAVEL.send(b -> b.writeBlockPos(pos), level.players());
     }
 
     public static void requestStaffUI() {

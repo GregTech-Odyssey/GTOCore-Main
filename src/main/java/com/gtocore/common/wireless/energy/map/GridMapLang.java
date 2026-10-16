@@ -55,7 +55,7 @@ public final class GridMapLang {
 
     @RegisterLanguage(cn = "储能", en = "Storage")
     public static final String STORED = "gtocore.wireless_grid_map.stored";
-    @RegisterLanguage(cn = "%s / %s EU", en = "%s / %s EU")
+    @RegisterLanguage(cn = "%s", en = "%s")
     public static final String STORED_DETAIL = "gtocore.wireless_grid_map.stored.detail";
     @RegisterLanguage(cn = "折叠或展开", en = "Collapse or expand")
     public static final String COLLAPSE = "gtocore.wireless_grid_map.collapse";
@@ -127,7 +127,7 @@ public final class GridMapLang {
     public static final String RANK_BUSY = "gtocore.wireless_grid_map.rank.busy";
     @RegisterLanguage(cn = "储能最多", en = "Most storage")
     public static final String RANK_MOST = "gtocore.wireless_grid_map.rank.most";
-    @RegisterLanguage(cn = "%s EU · %s%%", en = "%s EU · %s%%")
+    @RegisterLanguage(cn = "%s · %s%%", en = "%s · %s%%")
     public static final String RANK_STORED_VALUE = "gtocore.wireless_grid_map.rank.stored_value";
     @RegisterLanguage(cn = "最多", en = "Most")
     public static final String RANK_TAB_MOST = "gtocore.wireless_grid_map.rank.tab.most";
@@ -190,7 +190,7 @@ public final class GridMapLang {
     public static final String LINES = "gtocore.wireless_grid_map.lines";
     @RegisterLanguage(cn = "没有线路", en = "No lines")
     public static final String LINES_EMPTY = "gtocore.wireless_grid_map.lines.empty";
-    @RegisterLanguage(cn = "%s × %sA", en = "%s × %sA")
+    @RegisterLanguage(cn = "%s", en = "%s")
     public static final String LINE_TIER = "gtocore.wireless_grid_map.line.tier";
     @RegisterLanguage(cn = "送出 %s · 接收 %s", en = "Out %s · In %s")
     public static final String LINE_FLOW = "gtocore.wireless_grid_map.line.flow";
@@ -238,7 +238,7 @@ public final class GridMapLang {
     @RegisterLanguage(cn = "名称 +N：折叠的卫星数", en = "Name +N: folded moons")
     public static final String LEGEND_FOLDED_COUNT = "gtocore.wireless_grid_map.legend.folded_count";
 
-    @RegisterLanguage(cn = "%s EU", en = "%s EU")
+    @RegisterLanguage(cn = "%s", en = "%s")
     public static final String TAG_STORED = "gtocore.wireless_grid_map.tag.stored";
     @RegisterLanguage(cn = "无储能节点 · 线路最高 %s", en = "No-storage node · lines up to %s")
     public static final String TAG_RELAY = "gtocore.wireless_grid_map.tag.relay";
@@ -259,7 +259,7 @@ public final class GridMapLang {
     public static final String TIP_UNREACHABLE = "gtocore.wireless_grid_map.tip.unreachable";
     @RegisterLanguage(cn = "%s ↔ %s", en = "%s ↔ %s")
     public static final String TIP_LINE_ENDS = "gtocore.wireless_grid_map.tip.line_ends";
-    @RegisterLanguage(cn = "%s × %sA（每方向）", en = "%s × %sA (each way)")
+    @RegisterLanguage(cn = "%s（每方向）", en = "%s (each way)")
     public static final String TIP_LINE_CAPACITY = "gtocore.wireless_grid_map.tip.line_capacity";
     @RegisterLanguage(cn = "%s → %s：%s（负载 %s%%）", en = "%s → %s: %s (load %s%%)")
     public static final String TIP_LINE_DIRECTION = "gtocore.wireless_grid_map.tip.line_direction";

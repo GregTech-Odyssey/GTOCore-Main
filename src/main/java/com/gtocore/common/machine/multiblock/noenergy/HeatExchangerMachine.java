@@ -28,6 +28,8 @@ public final class HeatExchangerMachine extends NoEnergyMultiblockMachine implem
     private static final Fluid HighPressureSteam = GTOMaterials.HighPressureSteam.getFluid();
     private static final Fluid SupercriticalSteam = GTOMaterials.SupercriticalSteam.getFluid();
     private static final Fluid DistilledWater = GTMaterials.DistilledWater.getFluid();
+    private static final int DURATION = 200;
+    private static final int WARMUP_TIME = 800;
 
     public HeatExchangerMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -43,13 +45,22 @@ public final class HeatExchangerMachine extends NoEnergyMultiblockMachine implem
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         water = recipe.fluidInputs.ingredient(1).displayKey() instanceof AEFluidKey fluidKey && fluidKey.getFluid() == Fluids.WATER;
-        var result = ParallelLogic.accurateParallel(this, unit, getRecipeBuilder()
+        long eu = recipe.data.getLong(GTORecipeDataKeys.EU);
+        boolean warmedUp = getRecipeLogic().getTotalContinuousRunningTime() + DURATION > WARMUP_TIME;
+        var builder = getRecipeBuilder()
                 .inputFluids(recipe.fluidInputs.ingredient(0), recipe.inputAmount(recipe.fluidInputs, 0))
                 .outputFluids(recipe.fluidOutputs.ingredient(0), recipe.fluidOutputs.effective(0, recipe.scale))
-                .duration(200)
-                .buildRawRecipe(), Integer.MAX_VALUE);
+                .duration(DURATION);
+        if (water) {
+            if (warmedUp) builder.outputFluids(HighPressureSteam, eu / 2);
+            else builder.outputFluids(Steam, eu * 2);
+        } else {
+            if (warmedUp) builder.outputFluids(SupercriticalSteam, eu / 8);
+            else builder.outputFluids(HighPressureSteam, eu / 2);
+        }
+        var result = ParallelLogic.accurateParallel(this, unit, builder.buildRawRecipe(), Integer.MAX_VALUE);
         if (result == null) return null;
-        hs = result.parallels * recipe.data.getLong(GTORecipeDataKeys.EU) / 2;
+        hs = result.parallels * eu / 2;
         return result;
     }
 
@@ -69,21 +80,6 @@ public final class HeatExchangerMachine extends NoEnergyMultiblockMachine implem
     @Override
     public void afterWorking() {
         super.afterWorking();
-        if (hs != 0) {
-            if (getRecipeLogic().getTotalContinuousRunningTime() > 800) {
-                if (water) {
-                    outputFluid(HighPressureSteam, hs);
-                } else {
-                    outputFluid(SupercriticalSteam, hs >> 2);
-                }
-            } else {
-                if (water) {
-                    outputFluid(Steam, hs << 2);
-                } else {
-                    outputFluid(HighPressureSteam, hs);
-                }
-            }
-        }
         hs = 0;
     }
 }

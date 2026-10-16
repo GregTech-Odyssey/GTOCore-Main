@@ -14,12 +14,12 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
@@ -249,7 +249,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     private UIElement buildPage() {
         var status = new StatusPanel();
         status.addLine(LINE_ENERGY, () -> controller == null || isRemoved() ? Component.translatable(VALUE_NO_CONTROLLER) :
-                Component.literal(FormattingUtil.formatNumbers(getEnergyStored()) + " / " + FormattingUtil.formatNumbers(getEnergyCapacity()) + " EU"))
+                ElectricText.chargeExact(getEnergyStored(), getEnergyCapacity()))
                 .bindLevel(() -> controller == null || isRemoved() ? Level.WARNING : Level.NORMAL);
         return Form.page().addChild(status);
     }

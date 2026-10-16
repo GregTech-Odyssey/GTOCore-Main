@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.MachineProtocol;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -303,7 +304,7 @@ final class ElevatorFlowPage {
             int planned = Math.max(SpaceElevatorMachine.REQUIRED_TIER, Math.min(GTValues.MAX, tier));
             if (planned != diagnoserTier) diagnoser = diagnoser(planned);
             diagnoser.diagnoseEnergy(formed, working, machine.getEnergyContainer(), machine.getMaxVoltage(), tier);
-            usageText = Component.translatable(LANG_EUT, FormattingUtil.formatNumbers(diagnoser.getEUt()));
+            usageText = ElectricText.power(diagnoser.getEUt());
             usageLevel = formed && diagnoser.energyIssue().isProblem() ? Level.ERROR : Level.NORMAL;
             computationView = working ? RecipeIssue.RUNNING.view() : RecipeIssue.IDLE.view();
             voltageOk = formed && tier >= SpaceElevatorMachine.REQUIRED_TIER;
@@ -342,7 +343,7 @@ final class ElevatorFlowPage {
             var lines = new ArrayList<Component>(4);
             lines.add(machine.getDefinition().asStack().getHoverName());
             lines.add((reason != null && !working ? reason.copy() : Component.translatable(view.issue().descriptionKey())).withStyle(RecipeDiagnoser.style(view.issue())));
-            lines.add(Component.translatable(LANG_CORE_DESC, Component.literal(FormattingUtil.formatNumbers(diagnoser.getEUt()) + " EU/t"),
+            lines.add(Component.translatable(LANG_CORE_DESC, ElectricText.power(diagnoser.getEUt()),
                     Component.translatable(LANG_CWU, FormattingUtil.formatNumbers(cwu))).withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable(LANG_TIER_DESC, GTValues.VN[SpaceElevatorMachine.REQUIRED_TIER]).withStyle(ChatFormatting.GRAY));
             coreDetail = lines;

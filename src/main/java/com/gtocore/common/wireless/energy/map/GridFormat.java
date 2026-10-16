@@ -6,6 +6,7 @@ import com.gtolib.api.data.Dimension;
 import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.uipro.Level;
 
 import net.minecraft.network.chat.Component;
@@ -58,13 +59,18 @@ public final class GridFormat {
     public static Component rate(double perTick, int tier) {
         if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return WirelessText.ZERO_POWER;
         int t = WirelessText.voltageTier(perTick, tier);
-        return Component.translatable(WirelessText.POWER, tierText(t), WirelessText.amperes(WirelessText.powerAmps(perTick, t)));
+        return ElectricText.flow(WirelessText.powerAmps(perTick, t), tierText(t));
     }
 
     public static Component compactRate(double perTick, int tier) {
         if (!Double.isFinite(perTick) || Math.abs(perTick) < STEADY) return WirelessText.ZERO_POWER;
         int t = WirelessText.voltageTier(perTick, tier);
-        return Component.translatable(WirelessText.POWER, tierText(t), compact(WirelessText.powerAmps(perTick, t)));
+        return ElectricText.flow(WirelessText.powerAmps(perTick, t), tierText(t));
+    }
+
+    public static Component energy(double eu, int tier) {
+        int t = tier >= GTValues.LV && tier <= GTValues.MAX ? tier : WirelessText.powerTier(eu / 72000);
+        return ElectricText.energy(eu, t, tierText(t));
     }
 
     public static Component signedRate(double perTick, int tier) {
@@ -129,7 +135,7 @@ public final class GridFormat {
     }
 
     static Component storedDetail(double stored, double capacity) {
-        return Component.translatable(GridMapLang.STORED_DETAIL, amount(stored), amount(capacity));
+        return Component.translatable(GridMapLang.STORED_DETAIL, ElectricText.chargeExact(stored, capacity));
     }
 
     static long ppm(double stored, double capacity) {

@@ -400,7 +400,8 @@
     "com/gtocore/mixin/mc/client/FogRendererMixin": {
       "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
       "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
-      "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V"
+      "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V",
+      "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F"
     },
     "com/gtocore/mixin/mc/ServerLevelWeatherMixin": {
       "resetWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184097_()V",
@@ -828,7 +829,8 @@
       "com/gtocore/mixin/mc/client/FogRendererMixin": {
         "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
         "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
-        "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V"
+        "setupColor": "Lnet/minecraft/client/renderer/FogRenderer;m_109018_(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)V",
+        "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F"
       },
       "com/gtocore/mixin/mc/ServerLevelWeatherMixin": {
         "resetWeatherCycle": "Lnet/minecraft/server/level/ServerLevel;m_184097_()V",

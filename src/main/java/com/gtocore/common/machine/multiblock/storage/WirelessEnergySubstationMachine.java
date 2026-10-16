@@ -29,7 +29,6 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoRecipeLogicMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
-import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -49,6 +48,7 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -66,7 +66,6 @@ import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
@@ -177,13 +176,13 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private static final String STATION_THROUGHPUT_VALUE = "gtocore.machine.wireless_energy_substation.throughput.value";
     @RegisterLanguage(cn = "容量公式", en = "Capacity calculation")
     private static final String CAPACITY_CALCULATION = "gtocore.machine.wireless_energy_substation.capacity_calculation";
-    @RegisterLanguage(cn = "%s EU × (%s) = %s EU", en = "%s EU × (%s) = %s EU")
+    @RegisterLanguage(cn = "%s × (%s) = %s", en = "%s × (%s) = %s")
     private static final String CAPACITY_FORMULA = "gtocore.machine.wireless_energy_substation.capacity_formula";
     @RegisterLanguage(cn = "传输上限公式", en = "Transfer limit calculation")
     private static final String TRANSFER_CALCULATION = "gtocore.machine.wireless_energy_substation.transfer_calculation";
-    @RegisterLanguage(cn = "%s EU/t × (%s) = %s EU/t", en = "%s EU/t × (%s) = %s EU/t")
+    @RegisterLanguage(cn = "%s × (%s) = %s", en = "%s × (%s) = %s")
     private static final String TRANSFER_FORMULA = "gtocore.machine.wireless_energy_substation.transfer_formula";
-    @RegisterLanguage(cn = "min(%s EU/t × (%s), %s EU/t) = %s EU/t", en = "min(%s EU/t × (%s), %s EU/t) = %s EU/t")
+    @RegisterLanguage(cn = "min(%s × (%s), %s) = %s", en = "min(%s × (%s), %s) = %s")
     private static final String TRANSFER_FORMULA_CAPPED = "gtocore.machine.wireless_energy_substation.transfer_formula.capped";
     private static final Component CAPACITY_CALCULATION_TEXT = Component.translatable(CAPACITY_CALCULATION);
     private static final Component TRANSFER_CALCULATION_TEXT = Component.translatable(TRANSFER_CALCULATION);
@@ -197,7 +196,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private static final String BANK_DETAIL = "gtocore.machine.wireless_energy_substation.bank_detail";
     @RegisterLanguage(cn = "本维度储能", en = "Storage here")
     private static final String DIMENSION_STORAGE = "gtocore.machine.wireless_energy_substation.dimension_storage";
-    @RegisterLanguage(cn = "最高 %s · %s / %s EU", en = "Up to %s · %s / %s EU")
+    @RegisterLanguage(cn = "最高 %s · %s", en = "Up to %s · %s")
     private static final String DIMENSION_STORAGE_VALUE = "gtocore.machine.wireless_energy_substation.dimension_storage.value";
     @RegisterLanguage(cn = "本维度所有能源塔的存量与容量；最高档决定本维度能供电的最高电压", en = "Stored energy and capacity of every tower here; the highest tier is the highest voltage this dimension can supply")
     private static final String DIMENSION_STORAGE_DETAIL = "gtocore.machine.wireless_energy_substation.dimension_storage.detail";
@@ -346,8 +345,8 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         String transferMultiplierExpression = multiplierExpression(superTransferPositions, glassTier);
         var uncappedThroughput = WirelessEnergyTowerUnit.boostCapacity(BigInteger.valueOf(total), transferMultiplierHalf);
         throughputFormulaText = uncappedThroughput.bitLength() > 63 ?
-                Component.translatable(TRANSFER_FORMULA_CAPPED, FormattingUtil.formatNumbers(total), transferMultiplierExpression, FormattingUtil.formatNumbers(Long.MAX_VALUE), FormattingUtil.formatNumbers(throughput)) :
-                Component.translatable(TRANSFER_FORMULA, FormattingUtil.formatNumbers(total), transferMultiplierExpression, FormattingUtil.formatNumbers(throughput));
+                Component.translatable(TRANSFER_FORMULA_CAPPED, ElectricText.power(total), transferMultiplierExpression, ElectricText.power(Long.MAX_VALUE), ElectricText.power(throughput)) :
+                Component.translatable(TRANSFER_FORMULA, ElectricText.power(total), transferMultiplierExpression, ElectricText.power(throughput));
         unitsText = describe(storagePositions, superStoragePositions);
         transferText = describe(transferPositions, superTransferPositions);
         unitsOverTier = overTier(storagePositions, glassTier) || overTier(transferPositions, glassTier) || overTier(superStoragePositions, glassTier) || overTier(superTransferPositions, glassTier);
@@ -444,7 +443,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         panel.addLine(STATION_TRANSFER_UNITS, () -> transferText)
                 .bindLevel(() -> unitsOverTier ? Level.WARNING : Level.NORMAL)
                 .bindDetail(() -> unitsOverTier ? STATION_LIMIT_DETAIL_TEXT : NONE);
-        panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), capacity -> Component.literal(FormattingUtil.formatNumbers(capacity) + " EU")));
+        panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), ElectricText::energyExact));
         panel.addLine(STATION_THROUGHPUT, MultiblockPage.cached(() -> throughput, value -> Component.translatable(STATION_THROUGHPUT_VALUE, WirelessText.power(value, glassLimit, GTValues.VN))));
         return section(STATION, panel).addChildren(calculationButton(CAPACITY_CALCULATION), calculationButton(TRANSFER_CALCULATION));
     }
@@ -474,7 +473,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private Component capacityFormula() {
         var capacity = ProviderRegistry.towerCapacity(this);
         var baseCapacity = storageMultiplierHalf == 0 ? capacity : capacity.shiftLeft(1).divide(BigInteger.valueOf(storageMultiplierHalf));
-        return Component.translatable(CAPACITY_FORMULA, FormattingUtil.formatNumbers(baseCapacity), storageMultiplierExpression, FormattingUtil.formatNumbers(capacity));
+        return Component.translatable(CAPACITY_FORMULA, ElectricText.energyExact(baseCapacity), storageMultiplierExpression, ElectricText.energyExact(capacity));
     }
 
     private static String multiplierExpression(Multimap<Integer, BlockPos> positions, int glassTier) {
@@ -515,7 +514,9 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         if (level == null) return MultiblockPage.NO_VALUE;
         var node = account().node(level.dimension());
         if (node.tier() < 0) return MultiblockPage.NO_VALUE;
-        return Component.translatable(DIMENSION_STORAGE_VALUE, GTValues.VN[node.tier()], NumberUtils.formatDouble(node.storageDouble()), NumberUtils.formatDouble(node.capacityDouble()));
+        int unit = account().unitTier(level.dimension());
+        int tier = unit < 0 ? node.tier() : unit;
+        return Component.translatable(DIMENSION_STORAGE_VALUE, GTValues.VN[node.tier()], ElectricText.charge(node.storageDouble(), node.capacityDouble(), tier, GTValues.VN[tier]));
     }
 
     private Component bankText(boolean output) {

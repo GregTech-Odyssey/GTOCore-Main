@@ -301,8 +301,8 @@ public final class LangHandler {
             if (orbit != null) addCNEN("planet." + orbit.getNamespace() + "." + orbit.getPath(), dim.getOrbitCn(), dim.getOrbitEn());
         }
 
-        addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density", "§d电解液能量密度：§r%s EU/mB", "§dElectrolyte Energy Density:§r %s EU/mB");
-        addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density.va", "§d相当于：§r%s @ §b%s§rA/mB", "§dEquivalent to§r %s @ §b%sA§r/mB");
+        addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density", "§d电解液能量密度：§r%s/mB", "§dElectrolyte Energy Density:§r %s/mB");
+        addCNEN("gtocore.tooltip.fluid.electrolyte_energy_density.va", "§d相当于：§r%s/mB", "§dEquivalent to§r %s/mB");
 
         addCNEN("gtocore.lang.power_substation.tooltip.2", "内部必须填满电容，可用空电容填补空隙。", "All internal slots must be filled with capacitors; empty capacitors can be used to fill any gaps.");
 
@@ -480,7 +480,7 @@ public final class LangHandler {
         addCNEN("gtocore.pattern.recipe", "样板配方已识别", "Pattern recipe recognized");
         addCNEN("gtocore.pattern.type", "机器模式：%s", "Machine recipe type:%s");
         addCNEN("gtocore.pattern.machine", "机器：%s", "Machine: %s");
-        addCNEN("gtocore.pattern.voltage", "电压：%s · %s EU/t", "Voltage: %s · %s EU/t");
+        addCNEN("gtocore.pattern.voltage", "电压：%s · %s", "Voltage: %s · %s");
 
         // 配方信息按钮翻译
         addCNEN("gtocore.pattern.recipeInfoButton.title.enabled", "配方信息已启用", "Recipe Info Recording");

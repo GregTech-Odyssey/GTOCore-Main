@@ -11,8 +11,8 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.item.IDataComponentItem;
 import com.gregtechceu.gtceu.api.item.ItemDataComponentKey;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
-import com.gregtechceu.gtceu.api.tooltip.TipTheme;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.core.BlockPos;
@@ -112,8 +112,7 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
         var value = IDataComponentItem.get(stack, ENERGY);
         if (value == null) return;
         tooltip.add(value.bitLength() < 63 ? Tips.energy(StatKind.CHARGE, value.longValue(), tier) :
-                Tips.stat(StatKind.CHARGE.line(Component.translatable("gtceu.tip.unit.energy_hours", String.format("%,.1f", value.doubleValue() / (GTValues.VEX[tier] * TICKS_PER_HOUR)))
-                        .withStyle(s -> s.withColor(TipTheme.VALUE)).append(Component.translatable("gtceu.tip.unit.tier", GTValues.VNF[tier])))));
+                Tips.stat(StatKind.CHARGE.line(ElectricText.energy(value, tier))));
         tooltip.add(Tips.detail(Component.translatable(STORED_DETAIL)));
     }
 

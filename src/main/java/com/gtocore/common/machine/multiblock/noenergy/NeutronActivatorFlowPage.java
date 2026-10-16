@@ -17,6 +17,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -818,8 +819,8 @@ public final class NeutronActivatorFlowPage {
                     powered++;
                     drain += accelerator.getMaxEUConsume();
                 }
-                lines.add(gray(Component.translatable(LANG_ACC_LINE, accelerator.getBlockState().getBlock().getName(), FormattingUtil.formatNumbers(stored),
-                        FormattingUtil.formatNumbers(container.getEnergyCapacity()), Component.translatable(on ? LANG_ENABLED : LANG_DISABLED))));
+                lines.add(gray(Component.translatable(LANG_ACC_LINE, accelerator.getBlockState().getBlock().getName(), ElectricText.chargeExact(stored, container.getEnergyCapacity()),
+                        Component.translatable(on ? LANG_ENABLED : LANG_DISABLED))));
             }
             long gain = auto ? 0 : Math.round(drain * 20D * AVERAGE_EV_PER_EU * efficiency);
             String description;
@@ -1050,7 +1051,7 @@ public final class NeutronActivatorFlowPage {
             else if (usage > 0 && voltage < usage) energyView = RecipeIssue.LOW_POWER.view();
             else if (usage > 0 && stored < usage) energyView = RecipeIssue.LOW_BUFFER.view();
             else energyView = working ? RecipeIssue.ENERGY_ACTIVE.view() : RecipeIssue.ENERGY_READY.view();
-            usageText = formed && auto && usage > 0 ? Component.literal(FormattingUtil.formatNumbers(usage) + " EU/t") : NONE;
+            usageText = formed && auto && usage > 0 ? ElectricText.power(usage) : NONE;
             voltageText = formed && capacity > 0 ? Component.literal(GTValues.VN[GTUtil.getTierByVoltage(voltage)]) : NONE;
             energyDetail = List.of(Component.translatable(LANG_ENERGY), gray(Component.translatable(LANG_ENERGY_RULE)),
                     gray(Component.translatable(LANG_RECIPE_AUTO_RULE)), sentence(energyView, description));

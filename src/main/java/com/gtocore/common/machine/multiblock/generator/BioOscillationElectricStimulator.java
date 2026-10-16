@@ -97,7 +97,7 @@ public class BioOscillationElectricStimulator extends ElectricMultiblockMachine 
     public static final String TISSUE_ELECTRODE_STIMULATION_FACTORS = "gtocore.biooscillation.tissue.electrode.stimulation.factors";
     @RegisterLanguage(cn = "（§b幼年§r/§a成年§r/§e壮年§r/§6老年§r）", en = "(§bJuvenile§r/§aAdult§r/§eMature§r/§6Elderly§r)")
     public static final String TISSUE_ELECTRODE_STIMULATION_FACTORS_DESC = "gtocore.biooscillation.tissue.electrode.stimulation.factors.desc";
-    @RegisterLanguage(cn = "电刺激需求：§b%s§r EU（电压等级：§a%s§r）", en = "Electrical stimulation demand: §b%s§r EU (Voltage level: §a%s§r)")
+    @RegisterLanguage(cn = "电刺激需求：§b%s§r（电压等级：§a%s§r）", en = "Electrical stimulation demand: §b%s§r (Voltage level: §a%s§r)")
     public static final String TISSUE_ELECTRODE_ENERGY_CONSUMPTION = "gtocore.biooscillation.tissue.electrode.energy.consumption";
     @RegisterLanguage(cn = "培养液与等级需求：§b%s§r及以上", en = "Culture medium demand: §b%s§r and above")
     public static final String TISSUE_MEDIUM_REQUIREMENT = "gtocore.biooscillation.tissue.medium.requirement";

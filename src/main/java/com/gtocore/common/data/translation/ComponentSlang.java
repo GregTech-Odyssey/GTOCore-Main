@@ -3,6 +3,7 @@ package com.gtocore.common.data.translation;
 import com.gtocore.api.lang.Tx;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -83,7 +84,7 @@ public final class ComponentSlang {
     }
 
     public static MutableComponent BaseProductionEut(long eut) {
-        return Tx.join(global("基础产能功率: ", "Base Production EUt: "), Tx.yellow(Tx.lit(eut)), Tx.lit("EU/t"));
+        return Tx.join(global("基础产能功率: ", "Base Production: "), Tx.yellow(ElectricText.power(eut)));
     }
 
     public static Component RotorEfficiency(int tier) {

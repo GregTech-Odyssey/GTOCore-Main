@@ -1,34 +1,56 @@
 package com.gtocore.common.machine.noenergy;
 
-import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.eio_travel.api.ITravelTarget;
 import com.gtocore.eio_travel.implementations.AnchorTravelTarget;
 import com.gtocore.eio_travel.logic.TravelSavedData;
 import com.gtocore.eio_travel.logic.TravelUtils;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.util.holder.ObjHolder;
-import com.lowdragmc.lowdraglib.LDLib;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+@DataGeneratorScanned
 public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
+
+    private static final int NAME_MAX_LENGTH = 32;
+    private static final String PAGE_SCROLLER = "travel_anchor.page";
+
+    @RegisterLanguage(cn = "锚点设置", en = "Anchor Settings")
+    private static final String SETTINGS = "gtocore.travel_anchor.settings";
+    @RegisterLanguage(cn = "名称", en = "Name")
+    private static final String NAME = "gtocore.travel_anchor.name";
+    @RegisterLanguage(cn = "手持旅行手杖时显示在锚点上方，留空则不显示", en = "Shown above the anchor while holding a Travel Staff; leave empty to hide")
+    private static final String NAME_TIP = "gtocore.travel_anchor.name.tip";
+    @RegisterLanguage(cn = "未命名", en = "Unnamed")
+    private static final String UNNAMED = "gtocore.travel_anchor.unnamed";
+    @RegisterLanguage(cn = "图标", en = "Icon")
+    private static final String ICON = "gtocore.travel_anchor.icon";
+    @RegisterLanguage(cn = "手持旅行手杖时显示在锚点前方，可从 EMI 拖入", en = "Shown in front of the anchor while holding a Travel Staff; can be dragged in from EMI")
+    private static final String ICON_TIP = "gtocore.travel_anchor.icon.tip";
+    @RegisterLanguage(cn = "在旅行网络中显示", en = "Show in Travel Network")
+    private static final String VISIBLE = "gtocore.travel_anchor.visible";
+    @RegisterLanguage(cn = "关闭后不再作为传送目标，开启了“激活隐藏节点”的旅行手杖除外", en = "When off, the anchor is no longer a teleport target, except for Travel Staffs with Include Hidden Nodes on")
+    private static final String VISIBLE_TIP = "gtocore.travel_anchor.visible.tip";
 
     @SaveToDisk
     private final ItemStackTransfer itemTransfer;
@@ -37,6 +59,15 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
         super(holder);
         itemTransfer = new ItemStackTransfer();
         itemTransfer.setOnContentsChanged(this::onInventoryContentsChanged);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (isServerSide() && findTravelTarget().isEmpty()) {
+            getOrCreateTravelTarget();
+            requestTravelResync();
+        }
     }
 
     @Override
@@ -49,44 +80,31 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
 
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 140, 100);
-        var setNameLabel = new LabelWidget(14, 8, "ftblibrary.select_item.display_name");
-        group.addWidget(setNameLabel);
-        var textInputWidget = new TextFieldWidget()
-                .setTextSupplier(this::getName)
-                .setTextResponder(this::setName);
-        textInputWidget.setSelfPosition(14, 20);
-        group.addWidget(textInputWidget);
-        var toggleButton = createToggleButton();
-        toggleButton.setSelfPosition(110, 20);
-        group.addWidget(toggleButton);
-        var size = group.getSize();
-        var setIconLabel = new LabelWidget(14, size.height - 30, "ftbquests.icon");
-        group.addWidget(setIconLabel);
-        var slot = new PhantomSlotWidget(itemTransfer, 0, size.width - 30, size.height - 30);
-        slot.setMaxStackSize(1);
-        slot.setBackground(GuiTextures.SLOT);
-        group.addWidget(slot);
-        return group;
+        var name = TextField.of(UISizes.INLINE_ADJUSTER_WIDTH, this::getName, this::setName).setPlaceholder(Component.translatable(UNNAMED));
+        name.getInput().setMaxStringLength(NAME_MAX_LENGTH);
+        name.tooltips(NAME_TIP);
+        var icon = PhantomItemSlot.of(itemTransfer, 0).xeiPhantom();
+        icon.setMaxStackSize(1);
+        var section = Form.section(SETTINGS).addChildren(
+                Form.controlRow(NAME, name, NAME_TIP),
+                Form.controlRow(UISizes.SLOT_SIZE, ICON, icon, ICON_TIP),
+                Form.controlRow(VISIBLE, Switch.of(this::getVisibility, this::setVisibility), VISIBLE_TIP));
+        var scroller = ScrollerView.page(PAGE_SCROLLER, UISizes.CONTENT_WIDTH).adaptiveWidth();
+        scroller.addScrollViewChild(Form.page().addChild(section));
+        return scroller;
     }
 
     private void onInventoryContentsChanged() {
-        ItemStack stack = itemTransfer.getStackInSlot(0);
-        setIcon(stack.getItem());
+        if (isServerSide()) setIcon(itemTransfer.getStackInSlot(0).getItem());
     }
 
-    @Nullable
     public String getName() {
-        return getOrCreateTravelTarget().getName();
+        return findTravelTarget().map(AnchorTravelTarget::getName).orElse("");
     }
 
     public void setName(String name) {
         getOrCreateTravelTarget().setName(name);
         requestTravelResync();
-    }
-
-    public Item getIcon() {
-        return getOrCreateTravelTarget().getIcon();
     }
 
     public void setIcon(Item icon) {
@@ -95,7 +113,7 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
     }
 
     public boolean getVisibility() {
-        return getOrCreateTravelTarget().getVisibility();
+        return findTravelTarget().map(AnchorTravelTarget::getVisibility).orElse(false);
     }
 
     public void setVisibility(boolean visible) {
@@ -103,13 +121,21 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
         requestTravelResync();
     }
 
+    private boolean isServerSide() {
+        return getLevel() != null && !getLevel().isClientSide;
+    }
+
+    private Optional<AnchorTravelTarget> findTravelTarget() {
+        Optional<ITravelTarget> travelTarget = getTravelData().getTravelTarget(getPos());
+        return travelTarget.filter(AnchorTravelTarget.class::isInstance).map(AnchorTravelTarget.class::cast);
+    }
+
     private AnchorTravelTarget getOrCreateTravelTarget() {
-        var worldPosition = getPos();
-        Optional<ITravelTarget> travelTarget = getTravelData().getTravelTarget(worldPosition);
-        if (travelTarget.isPresent() && travelTarget.get() instanceof AnchorTravelTarget anchorTravelTarget) {
-            return anchorTravelTarget;
+        var existing = findTravelTarget();
+        if (existing.isPresent()) {
+            return existing.get();
         }
-        AnchorTravelTarget anchorTravelTarget = new AnchorTravelTarget(worldPosition, "", Items.AIR, false);
+        AnchorTravelTarget anchorTravelTarget = new AnchorTravelTarget(getPos(), "", Items.AIR, false);
         getTravelData().addTravelTarget(getLevel(), anchorTravelTarget);
         return anchorTravelTarget;
     }
@@ -118,33 +144,9 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
         return TravelSavedData.getTravelData(getLevel());
     }
 
-    private ToggleButtonWidget createToggleButton() {
-        ObjHolder<ToggleButtonWidget> toggleHolder = new ObjHolder<>();
-        ToggleButtonWidget toggleButton = new ToggleButtonWidget(
-                0, 40, 16, 16,
-                this::getVisibility,
-                pressed -> {
-                    setVisibility(pressed);
-                    if (LDLib.isRemote()) {
-                        toggleHolder.value.setHoverTooltips(getConfigureLevelsOrPointsTooltip(pressed));
-                    }
-                });
-        toggleHolder.value = toggleButton;
-        toggleButton.setPressed(getVisibility());
-        toggleButton.setTexture(new GuiTextureGroup(GuiTextures.BUTTON, GTOGuiTextures.SMALL_XP_ORB),
-                new GuiTextureGroup(GuiTextures.BUTTON, GTOGuiTextures.LARGE_XP_ORB.scale(0.8f)));
-        toggleButton.setHoverTooltips(getConfigureLevelsOrPointsTooltip(getVisibility()));
-        return toggleButton;
-    }
-
-    private Component getConfigureLevelsOrPointsTooltip(boolean pressed) {
-        return Component.translatable("emi.header." + (pressed ? "visible" : "invisible"));
-    }
-
     private void requestTravelResync() {
-        if (getLevel() == null || getLevel().isClientSide) {
-            return;
+        if (isServerSide()) {
+            TravelUtils.requireResync(getLevel());
         }
-        TravelUtils.requireResync(getLevel());
     }
 }

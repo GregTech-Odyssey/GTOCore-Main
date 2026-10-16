@@ -34,6 +34,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.RecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.item.TurbineRotorBehaviour;
 import com.gregtechceu.gtceu.common.item.tool.CoatedTurbineRotorBehaviour;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.RotorHolderPartMachine;
@@ -434,7 +435,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addLine(ESTIMATED_MAX_OUTPUT_LABEL, MultiblockPage.cached(this::getVoltage, v -> Component.literal(FormattingUtil.formatNumbers(v) + " EU/t")))
+        page.addLine(ESTIMATED_MAX_OUTPUT_LABEL, MultiblockPage.cached(this::getVoltage, ElectricText::power))
                 .bindDetail(MultiblockPage.cached(this::getVoltage, v -> Component.empty()
                         .append(Component.literal(FormatUtil.voltageAmperage(BigDecimal.valueOf(v)).toEngineeringString()).append("A "))
                         .append(FormatUtil.voltageName(BigDecimal.valueOf(v)))));
@@ -486,19 +487,15 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         super.customText(textList);
         if (MultiblockPage.isScreenText()) return;
         var v = getVoltage();
-        textList.add(Component.translatable(ESTIMATED_MAX_OUTPUT, FormattingUtil.formatNumbers(v))
-                .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        Component.empty()
-                                .append(Component.literal(FormatUtil.voltageAmperage(BigDecimal.valueOf(v)).toEngineeringString()).append("A "))
-                                .append(FormatUtil.voltageName(BigDecimal.valueOf(v)))))));
+        textList.add(Component.translatable(ESTIMATED_MAX_OUTPUT, ElectricText.power(v))
+                .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ElectricText.flowOf(v)))));
         var rotorHolder = getRotorHolder();
         if (rotorHolder != null && rotorHolder.getRotorEfficiency() > 0) {
             double extension = extensionMultiplier();
             textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed", FormattingUtil.formatNumbers(getRotorSpeed() * (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extension), FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed() * (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extension)));
             textList.add(Component.translatable("gtceu.multiblock.turbine.efficiency", rotorHolder.getTotalEfficiency() * extensionEfficiency()));
             if (isActive()) {
-                String voltageName = GTValues.VNF[GTUtil.getTierByVoltage(energyPerTick)];
-                textList.add(3, Component.translatable("gtceu.multiblock.turbine.energy_per_tick", FormattingUtil.formatNumbers(energyPerTick), voltageName));
+                textList.add(3, Component.translatable("gtceu.multiblock.turbine.energy_per_tick_maxed", ElectricText.power(energyPerTick)).append(" (").append(ElectricText.tier(GTUtil.getTierByVoltage(energyPerTick))).append(")"));
             }
             if (!mega) {
                 int rotorDurability = rotorHolder.getRotorDurabilityPercent();
@@ -594,7 +591,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     public static final String OUTPUT_MULTIPLIER = "gtocore.machine.mega_turbine.expert.output_multiplier";
     @RegisterLanguage(cn = "转子损坏乘数", en = "Rotor Damage Multiplier")
     public static final String DAMAGE_MULTIPLIER = "gtocore.machine.mega_turbine.expert.damage_multiplier";
-    @RegisterLanguage(cn = "预计最大输出：%s EU/t", en = "Estimated Max Output: %s EU/t")
+    @RegisterLanguage(cn = "预计最大输出：%s", en = "Estimated Max Output: %s")
     public static final String ESTIMATED_MAX_OUTPUT = "gtocore.machine.mega_turbine.expert.estimated_max_output";
     @RegisterLanguage(cn = "预计最大输出", en = "Estimated Max Output")
     private static final String ESTIMATED_MAX_OUTPUT_LABEL = "gtocore.machine.turbine.estimated_max_output";

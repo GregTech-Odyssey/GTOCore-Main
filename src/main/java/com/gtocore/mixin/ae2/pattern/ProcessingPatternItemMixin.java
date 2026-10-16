@@ -6,9 +6,8 @@ import com.gtolib.api.ae2.MyPatternDetailsHelper;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.RLUtils;
 
-import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
@@ -76,7 +75,7 @@ public abstract class ProcessingPatternItemMixin extends EncodedPatternItem {
             var recipe = RecipeBuilder.get(RLUtils.parse(recipeId));
             if (recipe != null && recipe.getInputEUt() > 0) {
                 long eut = recipe.getInputEUt();
-                lines.add(Tips.stat(Component.literal("  ").append(Component.translatable("gtocore.pattern.voltage", GTValues.VNF[GTUtil.getTierByVoltage(eut)], Component.literal(FormattingUtil.formatNumbers(eut)).withStyle(ChatFormatting.WHITE)))));
+                lines.add(Tips.stat(Component.literal("  ").append(Component.translatable("gtocore.pattern.voltage", ElectricText.tier(GTUtil.getTierByVoltage(eut)), ElectricText.power(eut).withStyle(ChatFormatting.WHITE)))));
             }
         }
         super.appendHoverText(stack, level, lines, advancedTooltips);

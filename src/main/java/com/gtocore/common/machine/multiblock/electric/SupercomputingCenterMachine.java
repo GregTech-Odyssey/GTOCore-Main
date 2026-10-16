@@ -26,6 +26,7 @@ import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCABridgePartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComponentPartMachine;
@@ -33,7 +34,6 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComputation
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCACoolerPartMachine;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
@@ -461,7 +461,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         if (!MultiblockPage.isScreenText()) {
             textList.add(Component.translatable("gtocore.tier.value", machineTier));
             textList.add(Component.translatable(canBridge ? "gtceu.multiblock.hpca.info_bridging_enabled" : "gtceu.multiblock.hpca.info_bridging_disabled").withStyle(canBridge ? ChatFormatting.GREEN : ChatFormatting.RED));
-            textList.add(Component.translatable("gtceu.multiblock.energy_consumption", FormattingUtil.formatNumbers(maxEUt), GTValues.VNF[GTUtil.getTierByVoltage(maxEUt)]).withStyle(ChatFormatting.YELLOW));
+            textList.add(Component.translatable("gtceu.multiblock.energy_consumption", ElectricText.power(maxEUt), GTValues.VNF[GTUtil.getTierByVoltage(maxEUt)]).withStyle(ChatFormatting.YELLOW));
             textList.add(Component.translatable("gtceu.multiblock.hpca.computation", Component.literal(cacheCWUt + " / " + getAdjustedMaxCWU()).append(Component.literal(" CWU/t")).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
             textList.add(Component.translatable("gtocore.machine.cwut_modification", ((double) maxCWUtModification / 10000)).withStyle(ChatFormatting.AQUA));
             textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_coolant_required", Component.literal(coolingAmountRequired + " / " + coolingAmountProvided + "  " + coolantAmount).withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
@@ -479,7 +479,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         page.addReading("gtocore.tier.value", MultiblockPage.numberText(() -> machineTier, ""));
         page.addOnOff(BRIDGING, () -> canBridge).bindLevel(() -> canBridge ? Level.GOOD : Level.ERROR);
         page.addLine(ENERGY_CONSUMPTION, MultiblockPage.cached(() -> maxEUt,
-                eut -> Component.literal(FormattingUtil.formatNumbers(eut) + " EU/t (" + GTValues.VNF[GTUtil.getTierByVoltage(eut)] + "§r)")));
+                eut -> ElectricText.power(eut).append(" (").append(ElectricText.tier(GTUtil.getTierByVoltage(eut))).append(")")));
         page.addReading("gtceu.multiblock.hpca.computation", MultiblockPage.fractionText(() -> cacheCWUt, this::getAdjustedMaxCWU, "CWU/t"));
         page.addReading("gtocore.machine.cwut_modification", MultiblockPage.decimalText(() -> maxCWUtModification / 10000D, ""));
         page.addReading("gtceu.multiblock.hpca.info_max_cooling_demand", MultiblockPage.numberText(() -> coolingAmountRequired, ""));

@@ -21,9 +21,9 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -53,7 +53,7 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
     private static final String TARGET_TIP = "gtocore.machine.wireless_dimension_repeater.target.tooltip";
     @RegisterLanguage(cn = "线路：%s ↔ %s", en = "Line: %s ↔ %s")
     private static final String LINE = "gtocore.machine.wireless_dimension_repeater.line";
-    @RegisterLanguage(cn = "每个方向：%s × %sA", en = "Each way: %s × %sA")
+    @RegisterLanguage(cn = "每个方向：%s", en = "Each way: %s")
     private static final String CAPACITY = "gtocore.machine.wireless_dimension_repeater.capacity";
     @RegisterLanguage(cn = "在星图中选择", en = "Pick on Grid Map")
     private static final String PICK = "gtocore.machine.wireless_dimension_repeater.pick";
@@ -165,7 +165,7 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
         int tier = getCasingTier(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
         textList.add(Component.translatable(LINE, WirelessText.dimension(level.dimension()), WirelessText.dimension(targetKey())).withStyle(ChatFormatting.GRAY));
         if (tier >= 0 && tier <= GTValues.MAX) {
-            textList.add(Component.translatable(CAPACITY, GTValues.VNF[tier], FormattingUtil.formatNumbers(Provider.Relay.AMPERAGE)).withStyle(ChatFormatting.GRAY));
+            textList.add(Component.translatable(CAPACITY, ElectricText.flow(Provider.Relay.AMPERAGE, tier)).withStyle(ChatFormatting.GRAY));
         }
     }
 

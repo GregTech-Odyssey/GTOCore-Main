@@ -98,13 +98,15 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
             }
             double duration = recipe.duration * 1600.0D / largeBoilerMachine.maxTemperature;
             if (duration < 1) {
+                long parallels = recipe.parallels;
                 recipe = ParallelLogic.accurateParallel(machine, unit, recipe, (long) (1 / duration));
                 if (recipe == null) return null;
+                duration = duration * recipe.parallels / parallels;
             }
             if (largeBoilerMachine.getThrottle() < 100) {
                 duration = duration * 100 / largeBoilerMachine.getThrottle();
             }
-            recipe.duration = (int) duration;
+            recipe.duration = Math.max(1, (int) duration);
             return recipe;
         }
         IdleReason.NOT_APPLICABLE.setReason(machine);

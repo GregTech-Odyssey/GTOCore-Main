@@ -22,10 +22,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -124,16 +124,16 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
         if (MultiblockPage.isScreenText()) return;
-        list.add(Component.translatable("gui.ae2.PowerUsageRate", "%s EU/t".formatted(FormattingUtil.formatNumbers(getEUt()))).withStyle(ChatFormatting.YELLOW));
-        list.add(Component.translatable("gtocore.machine.spacestation.energy_consumption.total", FormattingUtil.formatNumbers(getTotalEUt())).withStyle(ChatFormatting.GOLD));
+        list.add(Component.translatable("gui.ae2.PowerUsageRate", ElectricText.power(getEUt())).withStyle(ChatFormatting.YELLOW));
+        list.add(Component.translatable("gtocore.machine.spacestation.energy_consumption.total", ElectricText.power(getTotalEUt())).withStyle(ChatFormatting.GOLD));
         list.add(Component.translatable("gtocore.machine.spacestation.module_count", subMachinesFlat.size()));
     }
 
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addReading("gui.ae2.PowerUsageRate", MultiblockPage.numberText(this::getEUt, "EU/t"));
-        page.addReading("gtocore.machine.spacestation.energy_consumption.total", MultiblockPage.numberText(this::getTotalEUt, ""));
+        page.addReading("gui.ae2.PowerUsageRate", MultiblockPage.cached(this::getEUt, ElectricText::power));
+        page.addReading("gtocore.machine.spacestation.energy_consumption.total", MultiblockPage.cached(this::getTotalEUt, ElectricText::power));
         page.addReading("gtocore.machine.spacestation.module_count", MultiblockPage.numberText(this::getModuleCount, ""));
     }
 

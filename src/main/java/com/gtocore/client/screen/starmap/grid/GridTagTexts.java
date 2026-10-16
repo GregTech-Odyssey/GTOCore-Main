@@ -123,7 +123,7 @@ final class GridTagTexts {
         float change = model.storageDelta(node);
         int direction = Math.abs(change) < GridStyle.STEADY ? 0 : change > 0 ? 1 : -1;
         trend[node] = direction;
-        stored[node] = Component.translatable(GridMapLang.TAG_STORED, GridTips.compact(model.storage(node)));
+        stored[node] = Component.translatable(GridMapLang.TAG_STORED, GridFormat.energy(model.storage(node), unitTier));
         storedWidth[node] = UIText.width(stored[node]);
         var rate = direction == 0 ? WirelessText.ZERO_POWER : Component.literal(change > 0 ? "+" : "-").append(GridFormat.compactRate(change, unitTier));
         delta[node] = direction == 0 ? rate : (direction > 0 ? RISE : FALL).copy().append(" ").append(rate);

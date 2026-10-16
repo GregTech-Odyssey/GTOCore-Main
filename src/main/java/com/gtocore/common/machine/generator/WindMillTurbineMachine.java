@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -211,7 +212,7 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
     @Override
     public void attachTooltips(TooltipsPanel tooltipsPanel) {
         tooltipsPanel.attachTooltips(new Basic(() -> WidgetIcons.STATUS_OBSTRUCTED, () -> List.of(Component.translatable("gtceu.multiblock.large_combustion_engine.obstructed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED))), this::isObstructed, () -> null));
-        tooltipsPanel.attachTooltips(new IFancyTooltip.Basic(() -> WidgetIcons.STATUS_INFO, () -> List.of(Component.translatable("gtocore.machine.wind_mill_turbine.wind", FormattingUtil.formatNumbers(wind)), Component.translatable("gtocore.machine.wind_mill_turbine.actualPower", actualPower)), () -> true, () -> null));
+        tooltipsPanel.attachTooltips(new IFancyTooltip.Basic(() -> WidgetIcons.STATUS_INFO, () -> List.of(Component.translatable("gtocore.machine.wind_mill_turbine.wind", FormattingUtil.formatNumbers(wind)), Component.translatable("gtocore.machine.wind_mill_turbine.actualPower", ElectricText.power(actualPower))), () -> true, () -> null));
     }
 
     @Override

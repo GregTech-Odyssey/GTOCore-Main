@@ -151,7 +151,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @SaveToDisk(key = "customName", defaultValue = "")
     private String customName = "";
 
-    /// 默认值随机型变化（见 {@link #defaultShowInTravel()}），等于默认值时不写盘
+    /// 默认不在旅行网络显示（见 {@link #defaultShowInTravel()}），等于默认值时不写盘
     @SaveToDisk(key = "showInTravelNetwork", defaultValueGetter = "defaultShowInTravel")
     private boolean showInTravelNetwork;
 
@@ -206,7 +206,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     public void onDetailsPostInit() {}
 
     public boolean defaultShowInTravel() {
-        return true;
+        return false;
     }
 
     public void clearPatternRecipeCache() {}

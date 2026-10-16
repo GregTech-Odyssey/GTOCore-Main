@@ -6,7 +6,6 @@ public class TravelAnchorRenderers {
 
     public static TravelAnchorRenderer<AbstractTravelTarget> getRenderer() {
         return travelData -> new TravelAnchorRenderer.RenderInfo(
-                travelData.getVisibility(),
                 travelData.getName(),
                 travelData.getIcon());
     }

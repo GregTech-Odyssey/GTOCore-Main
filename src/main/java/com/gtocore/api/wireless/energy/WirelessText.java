@@ -3,13 +3,14 @@ package com.gtocore.api.wireless.energy;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.Dimension;
-import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
@@ -20,19 +21,12 @@ public final class WirelessText {
 
     @RegisterLanguage(cn = "无覆盖", en = "No coverage")
     public static final String NO_COVERAGE = "gtocore.wireless_energy.no_coverage";
-    @RegisterLanguage(cn = "本地 %s · %s / %s EU", en = "Local %s · %s / %s EU")
+    @RegisterLanguage(cn = "本地 %s", en = "Local %s")
     public static final String NODE_LOCAL = "gtocore.wireless_energy.node_local";
     @RegisterLanguage(cn = "仅经线路 · 最高 %s", en = "Via lines only · up to %s")
     public static final String NODE_REMOTE = "gtocore.wireless_energy.node_remote";
-    @RegisterLanguage(cn = "%s × %sA（每个方向）", en = "%s × %sA (each way)")
+    @RegisterLanguage(cn = "%s（每个方向）", en = "%s (each way)")
     public static final String LINE = "gtocore.wireless_energy.line";
-    @RegisterLanguage(cn = "%s × %sA", en = "%s × %sA")
-    public static final String POWER = "gtocore.wireless_energy.power";
-    @RegisterLanguage(cn = "%s × %s / %sA", en = "%s × %s / %sA")
-    public static final String POWER_USAGE = "gtocore.wireless_energy.power_usage";
-    @RegisterLanguage(cn = "%s × %sA·h", en = "%s × %sA·h")
-    public static final String ENERGY = "gtocore.wireless_energy.energy";
-    private static final double TICKS_PER_HOUR = 72000;
     @RegisterLanguage(cn = "%s（含轨道）", en = "%s (incl. orbit)")
     public static final String WITH_ORBIT = "gtocore.wireless_energy.with_orbit";
     @RegisterLanguage(cn = "不连接", en = "Not connected")
@@ -42,7 +36,8 @@ public final class WirelessText {
     @RegisterLanguage(cn = "只有所有者、同队成员或管理员可以改绑", en = "Only the owner, a teammate or an operator can rebind this")
     public static final String REBIND_DENIED = "gtocore.wireless_energy.rebind_denied";
 
-    public static final Component ZERO_POWER = Component.literal("0A");
+    public static final Component ZERO_POWER = ElectricText.amps(0);
+    private static final double TICKS_PER_HOUR = 72000;
 
     private WirelessText() {}
 
@@ -52,7 +47,7 @@ public final class WirelessText {
     }
 
     public static Component node(int tier, int reachTier, double storage, double capacity, String[] tierNames) {
-        if (tier >= 0) return Component.translatable(NODE_LOCAL, tierNames[tier], NumberUtils.formatDouble(storage), NumberUtils.formatDouble(capacity));
+        if (tier >= 0) return Component.translatable(NODE_LOCAL, ElectricText.charge(storage, capacity, tier, tierNames[tier]));
         if (reachTier >= 0) return Component.translatable(NODE_REMOTE, tierNames[reachTier]);
         return Component.translatable(NO_COVERAGE);
     }
@@ -66,7 +61,7 @@ public final class WirelessText {
     }
 
     public static Component line(int tier, long budget) {
-        return Component.translatable(LINE, GTValues.VNF[tier], amperes(budget / (double) GTValues.V[tier]));
+        return Component.translatable(LINE, ElectricText.flow(budget / (double) GTValues.V[tier], tier));
     }
 
     public static int voltageTier(double perTick, int tier) {
@@ -92,7 +87,7 @@ public final class WirelessText {
     public static Component power(double perTick, int tier, String[] tierNames) {
         if (!(Math.abs(perTick) >= 1)) return ZERO_POWER;
         int t = voltageTier(perTick, tier);
-        return Component.translatable(POWER, tierNames[t], amperes(powerAmps(perTick, t)));
+        return ElectricText.flow(powerAmps(perTick, t), tierNames[t]);
     }
 
     public static Component signedPower(double perTick, int tier) {
@@ -107,12 +102,20 @@ public final class WirelessText {
 
     public static Component powerUsage(double used, double capacity, int tier, String[] tierNames) {
         int t = voltageTier(capacity, tier);
-        return Component.translatable(POWER_USAGE, tierNames[t], amperes(powerAmps(used, t)), amperes(powerAmps(capacity, t)));
+        return ElectricText.flowUsage(powerAmps(used, t), powerAmps(capacity, t), tierNames[t]);
+    }
+
+    public static MutableComponent signedPowerUsage(double net, double capacity, int tier, ChatFormatting netColor) {
+        int t = voltageTier(Math.max(Math.abs(net), capacity), tier);
+        double amps = powerAmps(net, t);
+        String sign = !(amps > 0) ? "" : net > 0 ? "+" : "-";
+        var used = Component.literal(sign + ElectricText.ampsOf(amps, powerAmps(capacity, t))).withStyle(netColor);
+        return ElectricText.flowUsage(used, powerAmps(capacity, t), GTValues.VNF[t]);
     }
 
     public static Component energy(double eu, int tier) {
         int t = tier >= GTValues.LV && tier <= GTValues.MAX ? tier : powerTier(eu / TICKS_PER_HOUR);
-        return Component.translatable(ENERGY, GTValues.VNF[t], amperes(powerAmps(eu, t) / TICKS_PER_HOUR));
+        return ElectricText.energy(eu, t);
     }
 
     public static Component dimension(@Nullable ResourceKey<Level> key) {
@@ -124,11 +127,6 @@ public final class WirelessText {
     }
 
     public static String amperes(double amperage) {
-        if (amperage >= 1000) return FormattingUtil.formatNumbers((long) amperage);
-        long whole = (long) amperage;
-        if (whole == amperage) return Long.toString(whole);
-        double rounded = Math.round(amperage * 100) / 100.0;
-        String text = Double.toString(rounded);
-        return text.endsWith(".0") ? text.substring(0, text.length() - 2) : text;
+        return ElectricText.ampsValue(amperage);
     }
 }

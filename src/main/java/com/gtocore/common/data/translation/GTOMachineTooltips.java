@@ -14,6 +14,7 @@ import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.TipSpec;
@@ -983,12 +984,10 @@ public final class GTOMachineTooltips {
         t.requirement(ComponentSlang.UsePerHourLubricant(10 * FluidHelper.getBucket()));
         t.bonus(Tx.join(
                 t.tr("提供320mB/s的§a液态氧§r，并消耗§4双倍§r燃料以产生", "Provide 80mB/s of §eLiquid Oxygen§r, consuming §adouble§r fuel to produce up to "),
-                Tx.yellow(Tx.lit(GTValues.V[GTValues.UV])),
-                t.tr(" EU/t的功率", " EU/t")));
+                Tx.yellow(ElectricText.power(GTValues.V[GTValues.UV]))));
         t.bonus(Tx.join(
                 t.tr("再提供480mB/s的§a四氧化二氮§r，并消耗§4四倍§r燃料以产生", "Provide extra 480mB/s of §eDinitrogen Tetroxide§r, consuming §afour times§r fuel to produce up to "),
-                Tx.yellow(Tx.lit(GTValues.V[GTValues.UHV])),
-                t.tr(" EU/t的功率", " EU/t")));
+                Tx.yellow(ElectricText.power(GTValues.V[GTValues.UHV]))));
     });
 
     // 化工厂

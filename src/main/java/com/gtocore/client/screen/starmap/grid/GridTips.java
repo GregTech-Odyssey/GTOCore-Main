@@ -5,6 +5,7 @@ import com.gtocore.common.wireless.energy.map.GridFormat;
 import com.gtocore.common.wireless.energy.map.GridMapLang;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -114,7 +115,7 @@ final class GridTips {
         long amps = info.tier() >= 0 && info.tier() < GTValues.V.length && GTValues.V[info.tier()] > 0 ? info.budget() / GTValues.V[info.tier()] : 0;
         var lines = new ObjectArrayList<Component>(6);
         lines.add(Component.translatable(GridMapLang.TIP_LINE_ENDS, nameA, nameB).withStyle(ChatFormatting.WHITE));
-        lines.add(Component.translatable(GridMapLang.TIP_LINE_CAPACITY, GridFormat.tierText(info.tier()), GridFormat.compact(amps))
+        lines.add(Component.translatable(GridMapLang.TIP_LINE_CAPACITY, ElectricText.flow(amps, GridFormat.tierText(info.tier())))
                 .withStyle(ChatFormatting.GRAY));
         lines.add(direction(nameA, nameB, model.flowAB(line), info.budget(), info.tier()));
         lines.add(direction(nameB, nameA, model.flowBA(line), info.budget(), info.tier()));

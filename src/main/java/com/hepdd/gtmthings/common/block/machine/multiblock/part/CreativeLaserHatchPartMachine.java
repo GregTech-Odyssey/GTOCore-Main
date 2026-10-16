@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMac
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableLaserContainer;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -155,8 +156,7 @@ public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine i
     @Override
     public List<Component> getDataInfo(PortableScannerBehavior.DisplayMode mode) {
         if (mode == PortableScannerBehavior.DisplayMode.SHOW_ALL || mode == PortableScannerBehavior.DisplayMode.SHOW_ELECTRICAL_INFO) {
-            return Collections.singletonList(Component.literal(
-                    String.format("%d/%d EU", buffer.getEnergyStored(), buffer.getEnergyCapacity())));
+            return Collections.singletonList(ElectricText.chargeExact(buffer.getEnergyStored(), buffer.getEnergyCapacity()));
         }
         return new ArrayList<>();
     }

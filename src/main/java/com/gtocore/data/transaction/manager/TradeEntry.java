@@ -10,6 +10,7 @@ import com.gtolib.api.wireless.WirelessManaContainer;
 import com.gtolib.utils.WalletUtils;
 
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -402,9 +403,7 @@ public record TradeEntry(
             }
             if (!energy.equals(BigInteger.ZERO)) {
                 list.add(Component.literal("  - ").withStyle(color)
-                        .append(Component.literal(energy.toString()).withStyle(ChatFormatting.AQUA))
-                        .append(Component.literal(" "))
-                        .append(Component.literal("EU").withStyle(ChatFormatting.DARK_AQUA)));
+                        .append(ElectricText.energyExact(energy).withStyle(ChatFormatting.AQUA)));
             }
             if (!mana.equals(BigInteger.ZERO)) {
                 list.add(Component.literal("  - ").withStyle(color)

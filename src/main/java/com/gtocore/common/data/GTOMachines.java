@@ -62,6 +62,7 @@ import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
@@ -264,9 +265,8 @@ public final class GTOMachines {
                     .tips(Tips.feature(Component.translatable("gtocore.machine.lightning_rod.tooltip.0")))
                     .tips(Tips.warning(Component.translatable("gtocore.machine.lightning_rod.tooltip.1")))
                     .tips(Tips.warning(Component.translatable("gtocore.machine.lightning_rod.tooltip.2")))
-                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_out", 256)))
-                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out",
-                            FormattingUtil.formatNumbers(V[tier - 1]), VNF[tier - 1])))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_out", ElectricText.amps(256))))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out", ElectricText.voltage(V[tier - 1], tier - 1))))
                     .tips(Tips.energy(StatKind.ENERGY_CAPACITY, 24414 * (1L << (2 * tier)), tier))
                     .ruleTooltips(GTORules.LIGHTNING_ROD_BREAK)
                     .register(),
@@ -283,8 +283,7 @@ public final class GTOMachines {
                     .hasTESR(true)
                     .tips(Tips.warning(Component.translatable("gtocore.machine.wind_mill_turbine.tooltip.0")))
                     .tips(Tips.bonus(Component.translatable("gtocore.machine.wind_mill_turbine.tooltip.1")))
-                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out",
-                            FormattingUtil.formatNumbers(V[tier]), VNF[tier])))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_out", ElectricText.voltage(V[tier], tier))))
                     .tips(Tips.energy(StatKind.ENERGY_CAPACITY, V[tier] << 6, tier))
                     .register(),
             ULV, LV, MV, HV);
@@ -1285,11 +1284,9 @@ public final class GTOMachines {
                     .nonYAxisRotation()
                     .recipeType(GTORecipeTypes.DIGITAL_MINER_RECIPE)
                     .workableTieredHullRenderer(GTCEu.id("block/machines/miner"))
-                    .tips(Tips.requirement(Component.translatable("gtceu.universal.tooltip.uses_per_tick", GTValues.VEX[tier - 1])))
+                    .tips(Tips.requirement(Component.translatable("gtceu.universal.tooltip.uses_per_tick", ElectricText.power(GTValues.VEX[tier - 1]))))
                     .tips(Tips.requirement(Component.translatable("gtceu.machine.miner.per_block", Math.pow(2, 1 - tier))))
-                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in",
-                            FormattingUtil.formatNumbers(GTValues.VEX[tier]),
-                            GTValues.VNF[tier])))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in", ElectricText.voltage(GTValues.VEX[tier], tier))))
                     .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.working_area_max", (int) (8 * Math.pow(2, tier)), (int) (8 * Math.pow(2, tier)))))
                     .register(),
             LV, MV, HV);

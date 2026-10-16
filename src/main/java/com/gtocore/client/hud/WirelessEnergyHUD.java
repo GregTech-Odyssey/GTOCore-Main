@@ -1,12 +1,16 @@
 package com.gtocore.client.hud;
 
 import com.gtocore.api.gui.helper.LineChartHelper;
+import com.gtocore.api.wireless.energy.WirelessText;
 import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -23,10 +27,7 @@ import appeng.client.gui.Rects;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-
-import static com.hepdd.gtmthings.utils.FormatUtil.formatBigIntegerNumberOrSic;
 
 @OnlyIn(Dist.CLIENT)
 @DataGeneratorScanned
@@ -37,10 +38,10 @@ public class WirelessEnergyHUD implements IMoveableHUD {
     @RegisterLanguage(en = "Wireless Energy HUD", cn = "无线能量 HUD")
     public static final String DISPLAY_NAME = "gtocore.hud.wireless_energy.name";
 
-    @RegisterLanguage(en = "Capacity: %s / %s EU (%d%%)", cn = "容量：%s / %s EU (%d%%)")
+    @RegisterLanguage(en = "Capacity: %s (%d%%)", cn = "容量：%s (%d%%)")
     public static final String FORMAT_WIRELESS_ENERGY_HUD = "hud.gtocore.wireless_energy";
 
-    @RegisterLanguage(en = "Throughput: %s / %s EU/t", cn = "吞吐：%s / %s EU/t")
+    @RegisterLanguage(en = "Throughput: %s", cn = "吞吐：%s")
     public static final String FORMAT_THROUGHPUT = "hud.gtocore.wireless_energy.throughput";
 
     @RegisterLanguage(en = "Active consumers: %s machines", cn = "正在用电的机器：%s台")
@@ -222,22 +223,23 @@ public class WirelessEnergyHUD implements IMoveableHUD {
 
     private Component createLabel(PlayerData playerData) {
         return Component.translatable(FORMAT_WIRELESS_ENERGY_HUD,
-                Component.literal(formatBigIntegerNumberOrSic(playerData.electricityStorageCache)).withStyle(ChatFormatting.GOLD),
-                Component.literal(formatBigIntegerNumberOrSic(playerData.electricityCapacityCache)).withStyle(ChatFormatting.GOLD),
+                hudCharge(playerData.electricityStorageCache.doubleValue(), playerData.electricityCapacityCache.doubleValue()),
                 playerData.electricityStorageCache.multiply(BigInteger.valueOf(100)).divide(playerData.electricityCapacityCache).intValue());
+    }
+
+    private static Component hudCharge(double stored, double capacity) {
+        int tier = WirelessText.powerTier(capacity / 72000);
+        return ElectricText.charge(stored, capacity, tier, GTValues.VNF[tier]).withStyle(ChatFormatting.GOLD);
     }
 
     private Component createThroughputLabel(PlayerData playerData) {
         double power = playerData.electricityNetPowerCache;
         double throughput = playerData.electricityThroughputCache;
         if (power == displayedNetPower && throughput == displayedThroughput) return throughputLabel;
-        var signedPower = Component.literal(power > 0 ? "+" : power < 0 ? "-" : "")
-                .append(formatBigIntegerNumberOrSic(BigDecimal.valueOf(Math.abs(power)).toBigInteger()))
-                .withStyle(power < 0 ? ChatFormatting.RED : ChatFormatting.GREEN);
         displayedNetPower = power;
         displayedThroughput = throughput;
-        throughputLabel = Component.translatable(FORMAT_THROUGHPUT, signedPower,
-                Component.literal(formatBigIntegerNumberOrSic(BigDecimal.valueOf(throughput).toBigInteger())).withStyle(ChatFormatting.GOLD));
+        throughputLabel = Component.translatable(FORMAT_THROUGHPUT, WirelessText.signedPowerUsage(power, throughput, -1,
+                power < 0 ? ChatFormatting.RED : ChatFormatting.GREEN).withStyle(ChatFormatting.GOLD));
         return throughputLabel;
     }
 

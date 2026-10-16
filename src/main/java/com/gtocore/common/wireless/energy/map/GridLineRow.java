@@ -3,6 +3,7 @@ package com.gtocore.common.wireless.energy.map;
 import com.gtocore.api.wireless.energy.GridView;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -88,7 +89,7 @@ final class GridLineRow extends UIElement {
         boolean forward = info.a() == node;
         if (structural) {
             peer = GridFormat.bodyName(topology.nodes().get(forward ? info.b() : info.a()).dimension());
-            tier = Component.translatable(GridMapLang.LINE_TIER, GridFormat.tierText(info.tier()), GridFormat.compact(amps(info)));
+            tier = Component.translatable(GridMapLang.LINE_TIER, ElectricText.flow(amps(info), GridFormat.tierText(info.tier())));
         }
         boolean current = live.topologyRevision() == topology.revision();
         float ab = current ? live.flowAB(line) : 0, ba = current ? live.flowBA(line) : 0;

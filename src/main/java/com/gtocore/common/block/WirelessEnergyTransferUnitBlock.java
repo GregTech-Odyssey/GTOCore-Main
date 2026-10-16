@@ -6,8 +6,8 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -56,7 +56,7 @@ public class WirelessEnergyTransferUnitBlock extends Block implements WirelessEn
             tooltip.add(Tips.bonus(Component.translatable(SUPER_TRANSFER, getSuperMultiplierHalf() / 2.0)));
             tooltip.add(Tips.feature(Component.translatable(WirelessEnergyUnitBlock.MULTIPLIER_ONLY)));
         } else {
-            tooltip.add(Tips.stat(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, GTValues.VNF[tier], FormattingUtil.formatNumbers(getAmperage()))));
+            tooltip.add(Tips.stat(Component.translatable(WirelessEnergyUnitBlock.THROUGHPUT, ElectricText.flow(getAmperage(), tier))));
             tooltip.add(Tips.feature(Component.translatable(NO_STORAGE)));
         }
         tooltip.add(Tips.requirement(Component.translatable(WirelessEnergyUnitBlock.REQUIRES_GLASS, GTValues.VNF[tier])));

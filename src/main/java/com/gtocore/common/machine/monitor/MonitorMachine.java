@@ -1,16 +1,15 @@
 package com.gtocore.common.machine.monitor;
 
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent;
+import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.mana.feature.IManaEnergyMachine;
 import com.gtolib.api.recipe.ContentBuilder;
 import com.gtolib.utils.FluidUtils;
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
@@ -18,11 +17,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineModifyDrops;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.client.util.TooltipHelper;
+import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -324,10 +322,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
             BigInteger energy = new BigInteger(capData.getByteArray("Energy"));
             BigInteger maxEnergy = new BigInteger(capData.getByteArray("MaxEnergy"));
             if (maxEnergy.compareTo(BigInteger.ZERO) > 0) {
-                BigInteger threshold = BigInteger.valueOf(1000000000000L);
-                String energyStr = FormattingUtil.formatNumberOrSic(energy, threshold);
-                String maxEnergyStr = FormattingUtil.formatNumberOrSic(maxEnergy, threshold);
-                component = Component.translatable("gtceu.jade.energy_stored", energyStr, maxEnergyStr);
+                component = Component.translatable("gtceu.jade.energy_stored", ElectricText.chargeExact(energy, maxEnergy));
             }
         }
         return component;
@@ -367,26 +362,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
             if (!recipeInfo.isEmpty()) {
                 double totalEu = recipeInfo.getDouble("totalEu");
                 if (totalEu > 0) {
-                    var text = Component.translatable("gtceu.top.energy_consumption").append(" ").append(Component.literal(NumberUtils.formatDouble(totalEu)).withStyle(ChatFormatting.RED)).append(Component.literal(" EU").withStyle(ChatFormatting.RESET))
-                            .append(Component.literal(" (").withStyle(ChatFormatting.GREEN));
-                    var tier = GTUtil.getOCTierByVoltage(totalEu > Long.MAX_VALUE ? Long.MAX_VALUE : (long) totalEu);
-                    text = text.append(Component.literal(String.format("%sA",
-                            FormattingUtil.formatNumber2Places(totalEu / (float) GTValues.VEX[tier]))));
-                    if (tier < GTValues.TIER_COUNT) {
-                        text = text.append(Component.literal(GTValues.VNF[tier])
-                                .withStyle(style -> style.withColor(GTValues.VC[tier])));
-                    } else {
-                        int speed = tier - 14;
-                        text = text.append(Component
-                                .literal("MAX")
-                                .withStyle(style -> style.withColor(TooltipHelper.rainbowColor(speed)))
-                                .append(Component.literal("+")
-                                        .withStyle(style -> style.withColor(GTValues.VC[Math.min(14, speed)]))
-                                        .append(Component.literal(FormattingUtil.formatNumbers(tier - 14)))
-                                        .withStyle(style -> style.withColor(GTValues.VC[Math.min(14, speed)]))));
-
-                    }
-                    text = text.append(Component.literal(")").withStyle(ChatFormatting.GREEN));
+                    var text = Component.translatable("gtceu.top.energy_consumption").append(" ").append(RecipeLogicProvider.energyRate(totalEu));
                     components[0] = text;
                 } else {
                     var EUt = recipeInfo.getLong("EUt");
@@ -414,28 +390,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
                             text = Component.literal(FormattingUtil.formatNumbers(EUt)).withStyle(ChatFormatting.GREEN)
                                     .append(Component.literal(" mB/t").withStyle(ChatFormatting.RESET));
                         } else {
-                            var tier = GTUtil.getOCTierByVoltage(EUt);
-
-                            text = Component.literal(FormattingUtil.formatNumbers(EUt)).withStyle(ChatFormatting.RED)
-                                    .append(Component.literal(" EU/t").withStyle(ChatFormatting.RESET)
-                                            .append(Component.literal(" (").withStyle(ChatFormatting.GREEN)));
-                            text = text.append(Component.literal(String.format("%sA",
-                                    FormattingUtil.formatNumber2Places(EUt / (float) GTValues.VEX[tier]))));
-                            if (tier < GTValues.TIER_COUNT) {
-                                text = text.append(Component.literal(GTValues.VNF[tier])
-                                        .withStyle(style -> style.withColor(GTValues.VC[tier])));
-                            } else {
-                                int speed = tier - 14;
-                                text = text.append(Component
-                                        .literal("MAX")
-                                        .withStyle(style -> style.withColor(TooltipHelper.rainbowColor(speed)))
-                                        .append(Component.literal("+")
-                                                .withStyle(style -> style.withColor(GTValues.VC[Math.min(14, speed)]))
-                                                .append(Component.literal(FormattingUtil.formatNumbers(tier - 14)))
-                                                .withStyle(style -> style.withColor(GTValues.VC[Math.min(14, speed)]))));
-
-                            }
-                            text = text.append(Component.literal(")").withStyle(ChatFormatting.GREEN));
+                            text = RecipeLogicProvider.energyRate(EUt);
                         }
 
                         if (isInput) {

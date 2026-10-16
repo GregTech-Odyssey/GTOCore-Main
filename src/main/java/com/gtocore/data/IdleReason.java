@@ -29,7 +29,7 @@ public final class IdleReason extends com.gtolib.api.recipe.IdleReason {
 
     public static final IdleReason GRIND_BALL = new IdleReason("gtocore.idle_reason.grindball", "缺少研磨球", "No Grinding Ball", "gtocore.issue.grindball.desc", "需要安装研磨球。", "A grinding ball must be installed.", Severity.BLOCKING);
 
-    public static final IdleReason CHARGE = new IdleReason("gtocore.issue.charge", "工具电量不足", "Tool Charge Low", "gtocore.issue.charge.desc", "需要工具电量 %s EU，剩余 %s EU。", "Requires %s EU of tool charge, remaining %s EU.", Severity.BLOCKING);
+    public static final IdleReason CHARGE = new IdleReason("gtocore.issue.charge", "工具电量不足", "Tool Charge Low", "gtocore.issue.charge.desc", "需要工具电量 %s，剩余 %s。", "Requires %s of tool charge, remaining %s.", Severity.BLOCKING);
 
     public static final IdleReason FELLING_TOOL = new IdleReason("gtocore.idle_reason.felling_tool", "缺少伐木工具", "No Felling Tool", "gtocore.issue.felling_tool.desc", "需要放入斧头等伐木工具。", "An axe or other felling tool must be installed.", Severity.BLOCKING);
 

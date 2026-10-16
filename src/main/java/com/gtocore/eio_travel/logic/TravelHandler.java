@@ -282,7 +282,6 @@ public class TravelHandler {
                 .getTravelData(player.level())
                 .getTravelTargetsInItemRange(player.blockPosition()))
 
-                .filter(ITravelTarget::canTeleportTo)
                 .filter(target -> target.getPos().distToCenterSqr(player.position()) > MIN_TELEPORTATION_DISTANCE_SQUARED)
                 .filter(target -> Math.abs(getAngleRadians(positionVec, target.getPos(), player.getYRot(), player.getXRot())) <= Math.toRadians(15))
                 .filter(target -> TravelUtils.gto$isTeleportPositionAndSurroundingClear(player.level(), target.getPos()).isPresent())

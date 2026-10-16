@@ -73,6 +73,10 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
     private static final String PATTERN_NODE = "gtocore.travel_staff.target.pattern_node";
     @RegisterLanguage(cn = "AE 样板供应器与 ME 样板总成，数量多时会占满视野", en = "AE pattern providers and ME pattern buffers; many of them can crowd the view")
     private static final String PATTERN_NODE_TIP = "gtocore.travel_staff.target.pattern_node.tip";
+    @RegisterLanguage(cn = "激活隐藏节点", en = "Include Hidden Nodes")
+    private static final String SHOW_HIDDEN = "gtocore.travel_staff.show_hidden";
+    @RegisterLanguage(cn = "方块设置里未开启旅行网络显示的旅行锚与样板节点也作为传送目标", en = "Also target travel anchors and pattern nodes that are hidden from the travel network in their own settings")
+    private static final String SHOW_HIDDEN_TIP = "gtocore.travel_staff.show_hidden.tip";
     @RegisterLanguage(cn = "服务器配置已关闭样板节点传送", en = "Disabled in the server config")
     private static final String PATTERN_NODE_DISABLED = "gtocore.travel_staff.target.pattern_node.disabled";
 
@@ -223,6 +227,7 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
                 }
                 targets.addChild(row);
             }
+            targets.addChild(Form.controlRow(SHOW_HIDDEN, Switch.of(() -> TravelTargetType.showsHidden(holder.held), this::setShowHidden), SHOW_HIDDEN_TIP));
             var scroller = ScrollerView.page("travel_staff.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
             scroller.addScrollViewChild(Form.page().addChild(targets));
             return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
@@ -231,6 +236,12 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
         private void setEnabled(TravelTargetType type, boolean enabled) {
             if (!holder.isInvalid() && holder.held.is(GTOItems.TRAVEL_STAFF.asItem())) {
                 type.setEnabled(holder.held, enabled);
+            }
+        }
+
+        private void setShowHidden(boolean show) {
+            if (!holder.isInvalid() && holder.held.is(GTOItems.TRAVEL_STAFF.asItem())) {
+                TravelTargetType.setShowHidden(holder.held, show);
             }
         }
 
