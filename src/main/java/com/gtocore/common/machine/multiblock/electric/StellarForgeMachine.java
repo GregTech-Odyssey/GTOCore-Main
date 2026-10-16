@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.electric;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.data.IdleReason;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -79,6 +80,9 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
     @Nullable
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
+        if (SolarStormHandler.isSolarSurface(getLevel())) {
+            RecipeModifier.multiplier(recipe, 1, 0.5);
+        }
         consecutiveRecipes++;
         var manat = MANATRecipeExtension.getMANAt(recipe);
         if (manat < 0) {
