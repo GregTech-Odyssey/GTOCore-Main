@@ -14,7 +14,7 @@ val smokeServerDir = smokeDir.resolve("server")
 val forgeServerHome: File = gradle.gradleUserHomeDir.resolve("caches/gto-release-smoke/forge-$smokeMcVersion-$smokeForgeVersion")
 val smokeFailureSignatures = Regex(
     "ClassNotFoundException|NoClassDefFoundError|NoSuchFieldException|NoSuchFieldError|NoSuchMethodException|NoSuchMethodError|" +
-        "AbstractMethodError|IncompatibleClassChangeError|Mixin apply failed|MixinApplyError|MixinTransformerError|InvalidMixinException|" +
+        "AbstractMethodError|IncompatibleClassChangeError|IllegalAccessError|Mixin apply failed|MixinApplyError|MixinTransformerError|InvalidMixinException|" +
         "InvalidInjectionException|InjectionError|Critical injection failure|failed injection check|Error encountered reading mixin config"
 )
 val smokeRelated = Regex("""com[./](?:gtocore|gtolib|hepdd)|gtocore|gtolib|[\u3164\u0300-\u036F\u1AB0-\u1AFF\u20D0-\u20FF]""", RegexOption.IGNORE_CASE)

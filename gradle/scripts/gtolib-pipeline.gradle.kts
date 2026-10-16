@@ -2053,6 +2053,73 @@ fun verifyGtocoreNestPackages(obfNodes: Map<String, ClassNode>) {
     logger.lifecycle("gtocore 代码保护: nest 同包 OK（${obfNodes.values.count { it.nestHostClass != null }} 个嵌套类）")
 }
 
+fun fixGtocoreCrossPackageAccess(obfClasses: MutableMap<String, ByteArray>) {
+    val nodes = obfClasses.mapValues { (_, bytes) -> ClassNode(Opcodes.ASM9).also { ClassReader(bytes).accept(it, 0) } }.mapKeys { it.key.removeSuffix(".class") }
+    fun findMember(owner: String, name: String, desc: String, field: Boolean): Pair<ClassNode, Any>? {
+        var c = nodes[owner]
+        while (c != null) {
+            val m: Any? = if (field) c.fields.firstOrNull { it.name == name && it.desc == desc } else c.methods.firstOrNull { it.name == name && it.desc == desc }
+            if (m != null) return c to m
+            c = c.superName?.let { nodes[it] }
+        }
+        return null
+    }
+    fun isSubclass(sub: String, sup: String): Boolean = generateSequence(nodes[sub]) { n -> n.superName?.let { nodes[it] } }.any { it.superName == sup || it.name == sup }
+    fun refs(n: ClassNode): Sequence<Triple<String, Pair<String, String>, Boolean>> = n.methods.asSequence().flatMap { m ->
+        m.instructions.asSequence().flatMap { insn ->
+            when (insn) {
+                is org.objectweb.asm.tree.MethodInsnNode -> sequenceOf(Triple(insn.owner, insn.name to insn.desc, false))
+                is org.objectweb.asm.tree.FieldInsnNode -> sequenceOf(Triple(insn.owner, insn.name to insn.desc, true))
+                is InvokeDynamicInsnNode -> (insn.bsmArgs.asSequence() + insn.bsm).filterIsInstance<Handle>()
+                    .map { h -> Triple(h.owner, h.name to h.desc, h.tag <= Opcodes.H_PUTSTATIC) }
+                is org.objectweb.asm.tree.LdcInsnNode -> (insn.cst as? Handle)?.let { h -> sequenceOf(Triple(h.owner, h.name to h.desc, h.tag <= Opcodes.H_PUTSTATIC)) } ?: emptySequence()
+                else -> emptySequence()
+            }
+        }
+    }
+    val changed = HashSet<String>()
+    var widenedMembers = 0
+    val widenedClassNames = HashSet<String>()
+    val broken = ArrayList<String>()
+    fun widen(n: ClassNode, access: Int, set: (Int) -> Unit) {
+        set((access and (Opcodes.ACC_PROTECTED or Opcodes.ACC_PRIVATE).inv()) or Opcodes.ACC_PUBLIC)
+        changed += n.name
+    }
+    for (pass in 0..1) {
+        for (n in nodes.values) {
+            for ((owner, key, field) in refs(n)) {
+                if (owner.startsWith("[") || internalPackage(owner) == internalPackage(n.name)) continue
+                val ownerNode = nodes[owner] ?: continue
+                if (ownerNode.access and Opcodes.ACC_PUBLIC == 0) {
+                    if (pass == 1) broken += "${n.name} → 类 $owner"
+                    else { ownerNode.access = ownerNode.access or Opcodes.ACC_PUBLIC; changed += owner; widenedClassNames += owner }
+                }
+                val (decl, member) = findMember(owner, key.first, key.second, field) ?: continue
+                val access = if (member is org.objectweb.asm.tree.FieldNode) member.access else (member as org.objectweb.asm.tree.MethodNode).access
+                val ok = access and Opcodes.ACC_PUBLIC != 0 || (access and Opcodes.ACC_PROTECTED != 0 && isSubclass(n.name, decl.name))
+                if (ok || internalPackage(decl.name) == internalPackage(n.name)) continue
+                if (pass == 1 || access and Opcodes.ACC_PRIVATE != 0) { broken += "${n.name} → ${decl.name}.${key.first}${key.second}"; continue }
+                if (member is org.objectweb.asm.tree.FieldNode) widen(decl, access) { member.access = it } else widen(decl, access) { (member as org.objectweb.asm.tree.MethodNode).access = it }
+                widenedMembers++
+            }
+        }
+    }
+    if (broken.isNotEmpty()) {
+        throw GradleException("gtocore 代码保护: ${broken.size} 处跨包访问不到的成员（运行时 IllegalAccessError）:\n" + broken.distinct().take(20).joinToString("\n") { "  - $it" })
+    }
+    for (n in nodes.values) {
+        for (ic in n.innerClasses) {
+            if (ic.name !in widenedClassNames) continue
+            ic.access = (ic.access and (Opcodes.ACC_PROTECTED or Opcodes.ACC_PRIVATE).inv()) or Opcodes.ACC_PUBLIC
+            changed += n.name
+        }
+    }
+    for (name in changed) {
+        obfClasses["$name.class"] = ClassWriter(0).also { nodes.getValue(name).accept(it) }.toByteArray()
+    }
+    logger.lifecycle("gtocore 代码保护: 跨包访问 OK（补为 public：成员 $widenedMembers、类 ${widenedClassNames.size}，改写 ${changed.size} 个类）")
+}
+
 fun verifyNoOriginalGtocoreNames(jar: File, renamed: Set<String>, obfEntries: Set<String>) {
     val hits = linkedSetOf<String>()
     ZipFile(jar).use { zf ->
@@ -2130,10 +2197,11 @@ val obfuscateGtocoreRelease = tasks.register<JavaExec>("obfuscateGtocoreRelease"
         verifyGtocoreLibraryOverrides(program, libs, mapping)
 
         val jar = gtocoreReleaseJar()
-        val obfClasses = ZipFile(obfJar).use { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.associate { it.name to zf.getInputStream(it).readBytes() } }
+        val obfClasses = ZipFile(obfJar).use { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.associate { it.name to zf.getInputStream(it).readBytes() } }.toMutableMap()
         if (obfClasses.size != program.size) throw GradleException("gtocore 代码保护: 输出 ${obfClasses.size} 个类，输入 ${program.size} 个")
         verifyGtocoreNoNameClash(mapping, renamedClasses, embeddedLibraryJar, jar)
         verifyGtocoreNestPackages(readClassNodes(obfJar))
+        fixGtocoreCrossPackageAccess(obfClasses)
         val flattened = renamedClasses.filter { internalPackage(mapping.classNames.getValue(it)) == "com/gtocore" }
         val strayed = renamedClasses.filter { internalPackage(mapping.classNames.getValue(it)).let { p -> p != "com/gtocore" && p != internalPackage(it) } }
         if (strayed.isNotEmpty()) throw GradleException("gtocore 代码保护: ${strayed.size} 个类被挪进了 com.gtocore 以外的包:\n  " + strayed.take(12).joinToString("\n  "))
