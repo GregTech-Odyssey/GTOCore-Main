@@ -16,6 +16,8 @@
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
 | 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
+| 修改天气类型、天体天气行为、天气指令或天气预报 | [星系天气](docs/galaxy-weather.md) |
+| 修改动态维度生命周期、同步、兼容适配、实例元数据或天气存盘结构 | [动态维度系统](docs/dimensions.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
@@ -67,6 +69,8 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 用 `git reset` / `git checkout --` / 合并 / 手工改写动过生成文件后再跑 `runData` 可能空转（成功但文件没变）：按 `docs/generated-resources.md` 删掉含 `Registrate Provider for gtocore` 的 `.cache` 清单并加 `--rerun-tasks`；跑完对比文件 mtime 确认真的写了。
 
 ## GTOLib 与构建产物安全
+
+- 动态维度存盘改动须保持单文件原子提交、pending 仅修复索引尾记录，以及强加载候选在 `chunks.dat` 提交后才能移除的顺序；崩溃边界与隔离探针见 [动态维度系统](docs/dimensions.md)。
 
 - `GTOLib/` 与 `GTOSeal/` 都是私有子模块，只有具备对应仓库权限的人员或执行环境才能初始化、拉取和更新。无权限时子模块不可用是预期状态；不要反复重试、绕过权限或要求提供凭据。构建 gtocore 必须有 GTOLib 源码（缺失时配置阶段直接报错），公开仓不带任何 GTOLib 预构建。
 - `GTOLib/` 与 `GTOSeal/` 是独立 Git 仓库；主仓记录的是 gitlink。修改、切换或恢复它们前读取 [GTOLib 子模块与构建](docs/gtolib.md)。

@@ -123,7 +123,7 @@ public class DirectedTesseractMachine extends MetaMachine implements
         remotes.resize(size);
         for (int i = 0; i < size; i++) {
             var target = targets.get(i).pos();
-            remotes.bind(i, server.getLevel(target.dimension()), target.pos());
+            remotes.bind(i, server, target.dimension(), target.pos());
         }
     }
 
