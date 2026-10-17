@@ -24,6 +24,8 @@ import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.MEStorageKeyView;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProvider;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProviderIndex;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -61,7 +63,7 @@ import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
 import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
 
 @DataGeneratorScanned
-public class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, IDropSaveMachine, IWailaDisplayProvider {
+public class MultiblockMEStorageMachine extends MultiblockControllerMachine implements MEStorage, MEStorageProvider, IDropSaveMachine, IWailaDisplayProvider {
 
     public static final int MIN_DEPTH = 2;
     public static final int MAX_DEPTH = 14;
@@ -282,6 +284,8 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         super.onStructureFormed();
         clearDirectionCache();
         notifyNeighborsUpdate();
+        // 结构成型后才算"世界里的一个容器"，注册进八叉树索引供合成站/其它设备查找
+        MEStorageProviderIndex.add(getLevel(), this);
     }
 
     /** 按当前结构重算容量并同步给各处理器；容量口径不同时子类覆写 {@link #computeCapacity()}。 */
@@ -302,6 +306,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         if (manaHandler != null) manaHandler.setCapacity(0);
         clearDirectionCache();
         this.notifyNeighborsUpdate();
+        MEStorageProviderIndex.remove(getLevel(), this);
     }
 
     @Override
@@ -317,10 +322,13 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
             totalAmount += getCapacityUsage(e.getKey().getType(), e.getLongValue());
         }
         this.storage = (long) totalAmount;
+        // 区块重新加载时成型状态可能已经从盘上恢复，这里补一次注册（结构失效时会再移除）
+        if (isFormed()) MEStorageProviderIndex.add(getLevel(), this);
     }
 
     @Override
     public void onUnload() {
+        MEStorageProviderIndex.remove(getLevel(), this);
         super.onUnload();
         if (manaHandler != null) manaHandler.setLevel(null);
         capabilityMana.invalidate();

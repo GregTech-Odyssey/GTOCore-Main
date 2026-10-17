@@ -43,6 +43,7 @@ import com.gtolib.api.GTOValues;
 import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
+import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.api.machine.impl.part.*;
 import com.gtolib.api.machine.part.ItemPartMachine;
 import com.gtolib.api.registries.GTOMachineBuilder;
@@ -1217,6 +1218,11 @@ public final class GTOMachines {
                     .modelRenderer(() -> GTOCore.id("block/machine/trading_station"))
                     .register(),
             GTValues.tiersBetween(1, 8));
+
+    public static final MachineDefinition CRAFTING_STATION = machine("crafting_station", "合成站", CraftingStationMachine::new)
+            .langValue("Crafting Station")
+            .nonYAxisRotation()
+            .register();
 
     private static final VoxelShape SLOT_MACHINE_SHAPE = Shapes.or(
             Shapes.box(0, 0, 0, 1, 2 / 16.0, 1),
