@@ -36,6 +36,14 @@ GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，
 - 注册 Forge / mod 事件总线监听（新写处理器、`@SubscribeEvent`、`EventBusSubscriber`、`addListener`），或需要给已有处理器补接线入口：读取“事件注册”。`com.gtocore` 包（`mixin` 除外）已禁用 `@SubscribeEvent`，发行构建会直接失败。
 - 改动跨越多个领域或无法判断适用范围时，读取全文。优先跟随仓库已有实现和容器类型，不另造平行模式。
 
+## 依赖源码与性能（硬性）
+
+- **只以本仓 fork 的实际源码为准**：GTM 读 `../GregTech-Modern`，AE2 读 GTO 的 AE fork（`ae2_version` 指向的 `appeng:appliedenergistics2-forge-1.20.1:*`，本地解 jar/`javap` 或用仓库里的调用点）。不要读上游 AE/GT 官方源码，不要凭记忆或"看起来是这么回事"写实现；方法是否存在、签名与语义以实际字节码/源码为准（见 [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md)）。
+- **性能优先，不写自造遍历**：能在既有容器/API 上一次查到的，不写 `for` 全扫。典型例：模糊匹配用 GTO AE fork 在 `KeyCounter` 上的 `findFuzzyValue`（只要数量）/ `findFuzzyKey`（要具体 key）/ `containsFuzzy`（先判定再决定是否分配），语义与 `IExpandedStorageService#fuzzyExtract`、`crafting2` 取料一致；精确命中优先，未命中再走模糊。掉耐久物品（GT 工具、桶、流体容器）必须按"同类物品"匹配，`AEKey` 是引用类型，普通物品按引用比较。
+- **热路径零无谓分配**：先精确查 `get`/`contains`，需要集合时用仓库既有类型（`AEKeyLongMap`/`KeyCounter`/`ObjectArrayList`/`ReferenceOpenHashSet`），不要 streams、`Optional`、临时 `List` 装箱。
+- **DataSyncLib 持久化/同步**：自定义类型字段用 `@SaveToDisk` 时**不加 `final`**（final 会走 `@Access` 工厂，定义建不起来），编解码必须在 `GTOCodecs.init()` 里注册（早于机器注册）；机器字段不要拿 `@SyncToClient` 当界面同步用，界面走 uipro 的 `SyncValue`/`RPC`，可变的列表类数据要给"内容变了就换新快照实例"的 getter（`SyncValue` 用 `Objects.equals` 判变化）。
+- **uipro 界面**：尺寸按 `UISizes` 常量给死（例如 3×3 槽位所在行高必须是 `3 * SLOT_SIZE`，否则会压到下一行）；主页面用 `Form.page()` + `column/row/centeredRow` 竖排，不要给主页面套没必要的 `ScrollerView`；列表页用 `ScrollerView` + `VirtualList`/`AEStackGrid`。
+
 ## 构建与验证
 
 - 代码推送到远程仓库前，或在本地执行 `build` / `assemble` 前，必须先按下方要求设置有效的 JDK 21，再使用 Spotless 应用并检查格式：

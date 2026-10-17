@@ -74,7 +74,8 @@ public final class RecipeTypeModify {
         });
 
         PLASMA_GENERATOR_FUELS.onRecipeBuild((recipeBuilder) -> {
-            long eu = recipeBuilder.getDuration() * GTValues.V[GTValues.EV] * 2;
+            // 等离子配方的电压挡随燃料等级提高、时长同比缩短，取配方自身 EUt 才能保持这条热交换配方的总热量不变
+            long eu = recipeBuilder.getDuration() * Math.abs(recipeBuilder.EUt()) * 2;
             int water = (int) (eu / 80);
             KeyIngredient input = recipeBuilder.getFluidInputs().ingredient(0);
             KeyIngredient output = recipeBuilder.getFluidOutputs().ingredient(0);
