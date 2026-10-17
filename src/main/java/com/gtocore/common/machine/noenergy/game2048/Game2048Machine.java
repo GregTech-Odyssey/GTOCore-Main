@@ -126,13 +126,15 @@ public class Game2048Machine extends AbstractRoundGameMachine<Game2048Machine.Bo
 
     /**
      * 读档后的收尾：档位在基类已经校验过，这里按它重建规则；盘面尺寸对不上（旧档或换过档位）会被整成空盘，进而当成
-     * 「还没开这一局」，等下次打开界面重发。
+     * 「还没开这一局」，等下次打开界面重发——那种情况下残留的积分不属于任何一局，一并清掉，免得被当成有效成绩兑现。
      */
     @Override
     protected void sanitizeRound() {
         rules = Game2048Rules.create(Game2048Rules.BoardSize.ALL[boardSize()]);
         board = rules.normalizeBoard(board);
-        if (Game2048Rules.isEmpty(board)) setIdle();
+        if (!Game2048Rules.isEmpty(board)) return;
+        resetScore();
+        setIdle();
     }
 
     @Override

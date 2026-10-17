@@ -377,6 +377,7 @@
     "gtocore:phase_stabilization_casing",
     "gtocore:frequency_division_phase_locking_casing",
     "gtocore:laureril_source_jar",
+    "gtocore:minesweeper_core",
     "gtocore:reactor_core"
   ]
 }

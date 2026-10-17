@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.Set;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gtocore.common.data.GTOBlocks.MINESWEEPER_CORE;
 import static com.gtocore.common.data.GTOMachines.*;
+import static com.gtocore.data.transaction.data.GTOTrade.limitedTimesCondition;
+import static com.gtocore.data.transaction.data.GTOTrade.performAddMultiplier;
 import static com.gtocore.data.transaction.data.TradeLang.GAME_COINS;
 import static com.gtocore.data.transaction.data.TradeLang.TECH_OPERATOR_COIN;
 import static com.gtocore.data.transaction.data.TradeLang.addTradeLang;
@@ -62,6 +65,8 @@ public final class WelcomeGroup {
                 .addDescription(Component.translatable(addTradeLang("将游戏币兑换为技术员币", "Exchange Game Coin to Tech Operator Coin."))).unlockCondition(UNLOCK_BASE)
                 .inputCurrency(GAME_COINS, 1)
                 .outputCurrency(TECH_OPERATOR_COIN, 5)
+                .condition(limitedTimesCondition(Game_coin_to_tech_coin, Game_coin_to_tech_coin_limit))
+                .onExecute((data, entry, multiplier) -> performAddMultiplier(data, entry, multiplier, Game_coin_to_tech_coin, Weekly_time))
                 .build());
 
         int ShopIndex2 = TradingManager.INSTANCE.addShopByGroupIndex(
@@ -129,6 +134,13 @@ public final class WelcomeGroup {
                 .inputCurrency(TECH_OPERATOR_COIN, 25)
                 .outputItem(GAME_24.asStack())
                 .build());
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                .texture(new StackTexture(MINESWEEPER_CORE.asStack()))
+                .unlockCondition(UNLOCK_BASE)
+                .inputCurrency(TECH_OPERATOR_COIN, 25)
+                .outputItem(MINESWEEPER_CORE.asStack())
+                .build());
     }
 
     /** 为一种货币登记各面额的「实体币换入钱包」与「钱包换出实体币」交易。 */
@@ -163,6 +175,10 @@ public final class WelcomeGroup {
 
     private static final String Weekly_check_in = "Weekly check-in";
     private static final long Weekly_time = 140L;
+
+    /** 游戏币换技术员币：交易历史标记与每游戏周（{@link #Weekly_time} 游戏分钟）的兑换上限。 */
+    private static final String Game_coin_to_tech_coin = "Game coin -> tech operator coin";
+    private static final int Game_coin_to_tech_coin_limit = 50;
 
     // 前置检查逻辑：检查本周是否签过到
     private static int checkThisWeek(TradeData data, TradeEntry entry) {

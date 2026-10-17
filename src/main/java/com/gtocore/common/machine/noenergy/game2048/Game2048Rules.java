@@ -34,9 +34,9 @@ public final class Game2048Rules {
      */
     public enum BoardSize {
 
-        SMALL(4, 20),
-        MEDIUM(6, 60),
-        LARGE(8, 180);
+        SMALL(4, 100),
+        MEDIUM(6, 300),
+        LARGE(8, 900);
 
         public static final BoardSize[] ALL = values();
 

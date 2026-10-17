@@ -7,6 +7,10 @@ import com.gtocore.common.item.ManaPipeBlockItem;
 import com.gtocore.common.item.MufflerPipeBlockItem;
 import com.gtocore.common.item.UniversalPipeBlockItem;
 import com.gtocore.common.item.WirelessEnergyUnitBlockItem;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlock;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperCoreBlock;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperDisplayBlock;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperFrameBlock;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
@@ -879,6 +883,26 @@ public final class GTOBlocks {
             })
             .item()
             .build()
+            .register();
+
+    public static BlockEntry<MinesweeperCoreBlock> MINESWEEPER_CORE = block("minesweeper_core", "扫雷核心方块", MinesweeperCoreBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.5f).sound(SoundType.STONE))
+            .blockstate(NonNullBiConsumer.noop())
+            .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+            .simpleItem()
+            .register();
+    public static BlockEntry<MinesweeperDisplayBlock> MINESWEEPER_DISPLAY = block("minesweeper_display", "扫雷显示方块", MinesweeperDisplayBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(0.8f).sound(SoundType.STONE))
+            .blockstate(NonNullBiConsumer.noop())
+            .register();
+    public static BlockEntry<MinesweeperFrameBlock> MINESWEEPER_FRAME = block("minesweeper_frame", "扫雷边框方块", MinesweeperFrameBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE))
+            .blockstate(NonNullBiConsumer.noop())
+            .register();
+    public static BlockEntry<MinesweeperControlBlock> MINESWEEPER_CONTROL = block("minesweeper_control", "扫雷控制方块", MinesweeperControlBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE))
+            .blockstate(NonNullBiConsumer.noop())
+            .simpleItem()
             .register();
 
     private static void registerPipeBlocks() {

@@ -6,6 +6,9 @@ import com.gtocore.common.blockentity.MufflerPipeBlockEntity;
 import com.gtocore.common.blockentity.SourceJarBE;
 import com.gtocore.common.blockentity.UniversalPipeBlockEntity;
 import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlockEntity;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperCoreBlockEntity;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperDisplayBlockEntity;
 
 import com.gto.registrate.util.entry.BlockEntityEntry;
 
@@ -46,5 +49,20 @@ public class GTOBlockEntities {
                     GTOBlocks.IV_WIRELESS_ENERGY_UNIT, GTOBlocks.LUV_WIRELESS_ENERGY_UNIT, GTOBlocks.ZPM_WIRELESS_ENERGY_UNIT, GTOBlocks.UV_WIRELESS_ENERGY_UNIT,
                     GTOBlocks.UHV_WIRELESS_ENERGY_UNIT, GTOBlocks.UEV_WIRELESS_ENERGY_UNIT, GTOBlocks.UIV_WIRELESS_ENERGY_UNIT, GTOBlocks.UXV_WIRELESS_ENERGY_UNIT,
                     GTOBlocks.OPV_WIRELESS_ENERGY_UNIT, GTOBlocks.MAX_WIRELESS_ENERGY_UNIT)
+            .register();
+
+    public static final BlockEntityEntry<MinesweeperCoreBlockEntity> MINESWEEPER_CORE = GTO
+            .blockEntity("minesweeper_core", MinesweeperCoreBlockEntity::new)
+            .validBlocks(GTOBlocks.MINESWEEPER_CORE)
+            .register();
+
+    public static final BlockEntityEntry<MinesweeperDisplayBlockEntity> MINESWEEPER_DISPLAY = GTO
+            .blockEntity("minesweeper_display", MinesweeperDisplayBlockEntity::new)
+            .validBlocks(GTOBlocks.MINESWEEPER_DISPLAY)
+            .register();
+
+    public static final BlockEntityEntry<MinesweeperControlBlockEntity> MINESWEEPER_CONTROL = GTO
+            .blockEntity("minesweeper_control", MinesweeperControlBlockEntity::new)
+            .validBlocks(GTOBlocks.MINESWEEPER_CONTROL)
             .register();
 }

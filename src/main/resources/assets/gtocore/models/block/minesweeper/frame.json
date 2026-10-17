@@ -1,0 +1,5 @@
+{
+  "parent": "block/cube_all",
+  "render_type": "cutout",
+  "textures": { "all": "minecraft:block/quartz_pillar" }
+}
